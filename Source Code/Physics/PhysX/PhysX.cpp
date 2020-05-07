@@ -182,7 +182,7 @@ void PhysX::createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 
 }
 
 inline void PhysX::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
-    CLAMP<U8>(timeStepFactor, 1, timeStepFactor);
+    timeStepFactor = to_U8(std::max(1u, timeStepFactor * 1u));
     _timeStepFactor = timeStepFactor;
     _timeStep = 1.0f / _timeStepFactor;
     _timeStep *= simSpeed;

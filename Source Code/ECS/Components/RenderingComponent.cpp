@@ -441,7 +441,7 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
     const auto[state, level] = _lodLockLevels[to_base(renderStage)];
 
     if (state) {
-        return CLAMPED<U8>(to_U8(level), 0u, MAX_LOD_LEVEL);
+        return CLAMPED(level, to_U8(0u), MAX_LOD_LEVEL);
     }
 
     const F32 distSQtoCenter = std::max(bComp.getBoundingSphere().getCenter().distanceSquared(cameraEye), EPSILON_F32);

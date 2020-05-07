@@ -172,9 +172,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     ResourceCache* parentCache = _context.kernel().resourceCache();
     _fontTexture = CreateResource<Texture>(parentCache, resDescriptor);
     assert(_fontTexture);
-
-    Texture::TextureLoadInfo info = {};
-    _fontTexture->loadData(info, (bufferPtr)pPixels, vec2<U16>(iWidth, iHeight));
+    _fontTexture->loadData({(Byte*)pPixels, iWidth * iHeight * 4 }, vec2<U16>(iWidth, iHeight));
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -893,12 +891,14 @@ bool Editor::Redo() {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!isInit() || !running() || !inEditMode()) {
+    if (!isInit() || !running() || (!inEditMode() && scenePreviewFocused())) {
         return false;
     }
 
-    for (ImGuiContext* ctx : _imguiContexts) {
-        ImGuiIO& io = ctx->IO;
+    if (scenePreviewFocused()) {
+        return _gizmo->onKey(true, key);
+    } else {
+        ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
 
         io.KeysDown[to_I32(key._key)] = true;
         if (key._text != nullptr) {
@@ -919,33 +919,27 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
         }
     }
 
-    if (scenePreviewFocused()) {
-        return _gizmo->onKey(true, key);
-    }
-
     return wantsKeyboard();
 }
 
 // Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!isInit() || !running() || !inEditMode()) {
+    if (!isInit() || !running() || (!inEditMode() && scenePreviewFocused())) {
         return false;
     }
 
-    {
-        ImGuiIO& io = _imguiContexts[to_base(to_base(ImGuiContextType::Editor))]->IO;
-        if (io.KeyCtrl) {
-            if (key._key == Input::KeyCode::KC_Z) {
-                Undo();
-            } else if (key._key == Input::KeyCode::KC_Y) {
-                Redo();
-            }
+    ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
+    if (io.KeyCtrl) {
+        if (key._key == Input::KeyCode::KC_Z) {
+            Undo();
+        } else if (key._key == Input::KeyCode::KC_Y) {
+            Redo();
         }
     }
 
-    for (ImGuiContext* ctx : _imguiContexts) {
-        ImGuiIO& io = ctx->IO;
-
+    if (scenePreviewFocused()) {
+        return _gizmo->onKey(false, key);
+    } else {
         io.KeysDown[to_I32(key._key)] = false;
 
         if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
@@ -963,10 +957,6 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
         if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
             io.KeySuper = false;
         }
-    }
-
-    if (scenePreviewFocused()) {
-        return _gizmo->onKey(false, key);
     }
 
     return wantsKeyboard();

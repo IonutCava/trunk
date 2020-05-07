@@ -63,12 +63,10 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
       PlatformContextComponent(context),
       _parent(parent),
       _resCache(cache),
-      _currentSky(nullptr),
       _LRSpeedFactor(5.0f),
       _loadComplete(false),
       _cookCollisionMeshesScheduled(false),
-      _pxScene(nullptr),
-      _sun(nullptr)
+      _pxScene(nullptr)
 {
     _sceneTimerUS = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
@@ -885,7 +883,7 @@ U16 Scene::registerInputActions() {
     };
 
     const auto dragSelectEnd = [this](InputParams param) {
-        endDragSelection(getPlayerIndexForDevice(param._deviceIndex));
+        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true);
     };
 
     InputActionList& actions = _input->actionList();
@@ -1018,18 +1016,17 @@ bool Scene::load(const Str128& name) {
     // We always add a sky
     const auto& skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
     assert(!skies.empty());
-    _currentSky = skies[0];
+    Sky& currentSky = skies[0]->getNode<Sky>();
+    const auto& dirLights = _lightPool->getLights(LightType::DIRECTIONAL);
+    DirectionalLightComponent* sun = nullptr;
+    if (!dirLights.empty()) {
+        sun = dirLights.front()->getSGN().get<DirectionalLightComponent>();
+    }
+    if (sun != nullptr) {
+        sun->castsShadows(true);
+        initDayNightCycle(currentSky, *sun);
+    }
 
-    if (_sun == nullptr) {
-        auto dirLights = _lightPool->getLights(LightType::DIRECTIONAL);
-        if (!dirLights.empty()) {
-            _sun = &dirLights.front()->getSGN();
-        }
-    }
-    if (_sun != nullptr) {
-        // We always add at least one light
-        _sun->get<DirectionalLightComponent>()->castsShadows(true);
-    }
     _loadComplete = true;
 
     return _loadComplete;
@@ -1301,7 +1298,7 @@ void Scene::onLostFocus() {
 
     for (const Player* player : _scenePlayers) {
         state().playerState(player->index()).resetMovement();
-        endDragSelection(player->index());
+        endDragSelection(player->index(), false);
     }
     _parent.wantsMouse(false);
     //_paramHandler.setParam(_ID_32("freezeLoopTime"), true);
@@ -1324,7 +1321,7 @@ void Scene::clearTasks() {
     // Performance shouldn't be an issue here
     UniqueLock<SharedMutex> w_lock(_tasksMutex);
     for (Task* task : _tasks) {
-        Wait(Stop(*task));
+        Wait(*task);
     }
 
     _tasks.clear();
@@ -1335,7 +1332,7 @@ void Scene::removeTask(Task& task) {
     vectorEASTL<Task*>::iterator it;
     for (it = eastl::begin(_tasks); it != eastl::end(_tasks); ++it) {
         if ((*it)->_id == task._id) {
-            Wait(Stop(*(*it)));
+            Wait(*(*it));
             _tasks.erase(it);
             return;
         }
@@ -1357,6 +1354,55 @@ void Scene::processTasks(const U64 deltaTimeUS) {
 
     eastl::transform(eastl::begin(_taskTimers), eastl::end(_taskTimers), eastl::begin(_taskTimers),
                    [delta](D64 timer) { return timer + delta; });
+
+    if (_dayNightData._skyInstance != nullptr) {
+        static struct tm timeOfDay = { 0 };
+        if (_dayNightData._resetTime) {
+            time_t t = time(NULL);
+            timeOfDay = *localtime(&t);
+            timeOfDay.tm_hour = _dayNightData._time._hour;
+            timeOfDay.tm_min = _dayNightData._time._minutes;
+            _dayNightData._resetTime = false;
+            _dayNightData._timeAccumulator = Time::Seconds(1.1f);
+        }
+
+        _dayNightData._timeAccumulator += Time::MillisecondsToSeconds<F32>(delta) * dayNightCycleEnabled() ? _dayNightData._speedFactor : 0.0f;
+        if (std::abs(_dayNightData._timeAccumulator) > Time::Seconds(1.f)) {
+            timeOfDay.tm_sec += to_I32(_dayNightData._timeAccumulator);
+            const time_t now = mktime(&timeOfDay); // normalize it
+            _dayNightData._timeAccumulator = 0.f;
+
+            const SunDetails details = _dayNightData._skyInstance->setDateTime(localtime(&now));
+            _dayNightData._dirLight->getSGN().get<TransformComponent>()->setRotationEuler(details._eulerDirection);
+
+            const FColour3 sunsetOrange = FColour3(99.2f, 36.9f, 32.5f) / 100.f;
+            Light* light = _dayNightData._dirLight;
+            static bool shadowCaster = light->castsShadows();
+            // Sunset / sunrise
+            light->enabled(true);
+            light->castsShadows(shadowCaster);
+
+            if (IS_IN_RANGE_INCLUSIVE(details._intensity, 0.0f, 25.0f)) {
+                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::WHITE.rgb(), details._intensity / 25.f));
+            }
+            // Early night time
+            else if (IS_IN_RANGE_INCLUSIVE(details._intensity, -25.0f, 0.0f)) {
+                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::BLACK.rgb(), -details._intensity / 25.f));
+                light->castsShadows(false);
+            }
+            // Night
+            else if (details._intensity < -25.f) {
+                light->setDiffuseColour(DefaultColours::BLACK.rgb());
+                light->enabled(false);
+            }
+            // Day
+            else {
+                light->setDiffuseColour(DefaultColours::WHITE.rgb());
+            }
+            _dayNightData._time._hour = to_U8(timeOfDay.tm_hour);
+            _dayNightData._time._minutes = to_U8(timeOfDay.tm_min);
+        }
+    }
 }
 
 void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
@@ -1517,7 +1563,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
         if (target != nullptr) {
             _currentHoverTarget[idx] = target->getGUID();
             if (!target->hasFlag(SceneGraphNode::Flags::SELECTED)) {
-                target->setFlag(SceneGraphNode::Flags::HOVERED);
+                target->setFlag(SceneGraphNode::Flags::HOVERED, true);
             }
         }
     }
@@ -1558,8 +1604,8 @@ void Scene::resetSelection(PlayerIndex idx) {
     for (I8 i = 0; i < playerSelections._selectionCount; ++i) {
         SceneGraphNode* node = sceneGraph().findNode(playerSelections._selections[i]);
         if (node != nullptr) {
-            node->clearFlag(SceneGraphNode::Flags::HOVERED);
-            node->clearFlag(SceneGraphNode::Flags::SELECTED);
+            node->clearFlag(SceneGraphNode::Flags::HOVERED, true);
+            node->clearFlag(SceneGraphNode::Flags::SELECTED, true);
         }
     }
     playerSelections._selections.fill(-1);
@@ -1570,13 +1616,13 @@ void Scene::resetSelection(PlayerIndex idx) {
     }
 }
 
-void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
+void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
     Selections& playerSelections = _currentSelection[idx];
 
     for (SceneGraphNode* sgn : sgns) {
         if (!sgn->hasFlag(SceneGraphNode::Flags::SELECTED)) {
             playerSelections._selections[playerSelections._selectionCount++] = sgn->getGUID();
-            sgn->setFlag(SceneGraphNode::Flags::SELECTED);
+            sgn->setFlag(SceneGraphNode::Flags::SELECTED, recursive);
         }
     }
     for (auto& cbk : _selectionChangeCallbacks) {
@@ -1606,7 +1652,7 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
 
     SceneGraphNode* selectedNode = _sceneGraph->findNode(hoverGUID);
     if (selectedNode != nullptr) {
-        _parent.setSelected(idx, { selectedNode });
+        _parent.setSelected(idx, { selectedNode }, false);
         return true;
     }
     _parent.resetSelection(idx);
@@ -1622,7 +1668,7 @@ void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos) {
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
-        if (editor.running()&& !editor.scenePreviewFocused()) {
+        if (editor.running() && (!editor.scenePreviewFocused() || !editor.scenePreviewHovered())) {
             return;
         }
     }
@@ -1644,7 +1690,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
         const Editor& editor = _context.editor();
         if (editor.running()) {
             if (!editor.scenePreviewFocused()) {
-                endDragSelection(idx);
+                endDragSelection(idx, false);
                 return;
             } else if (!remaped) {
                 const Rect<I32> previewRect = _context.editor().scenePreviewRect(false);
@@ -1696,16 +1742,61 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
         _parent.resetSelection(idx);
         const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
         vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, data._targetViewport);
-        _parent.setSelected(idx, nodes);
+        _parent.setSelected(idx, nodes, false);
     }
 }
 
-void Scene::endDragSelection(PlayerIndex idx) {
+void Scene::endDragSelection(PlayerIndex idx, bool clearSelection) {
     _dragSelectData[idx]._isDragging = false;
     _linesPrimitive->clearBatch();
     _parent.wantsMouse(false);
     if (_dragSelectData[idx]._startDragPos.distanceSquared(_dragSelectData[idx]._endDragPos) < 4.0f) {
-        findSelection(idx, true);
+        findSelection(idx, clearSelection);
+    }
+}
+
+void Scene::initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) {
+    _dayNightData._skyInstance = &skyInstance;
+    _dayNightData._dirLight = &sunLight;
+    _dayNightData._timeAccumulator = Time::Seconds(1.1f);
+}
+
+void Scene::setDayNightCycleTimeFactor(F32 factor) {
+    _dayNightData._speedFactor = factor;
+}
+
+F32 Scene::getDayNightCycleTimeFactor() const noexcept {
+    return _dayNightData._speedFactor;
+}
+
+void Scene::setTimeOfDay(const SimpleTime& time) noexcept {
+    _dayNightData._time = time;
+    _dayNightData._resetTime = true;
+}
+
+const SimpleTime& Scene::getTimeOfDay() const noexcept {
+    return _dayNightData._time;
+}
+
+SunDetails Scene::getCurrentSunDetails() const noexcept {
+    if (_dayNightData._skyInstance != nullptr) {
+        return _dayNightData._skyInstance->getCurrentDetails();
+    }
+
+    return {};
+}
+
+Sky::Atmosphere Scene::getCurrentAtmosphere() const noexcept {
+    if (_dayNightData._skyInstance != nullptr) {
+        return _dayNightData._skyInstance->atmosphere();
+    }
+
+    return {};
+}
+
+void Scene::setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) noexcept {
+    if (_dayNightData._skyInstance != nullptr) {
+        return _dayNightData._skyInstance->setAtmosphere(atmosphere);
     }
 }
 

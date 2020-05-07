@@ -223,8 +223,27 @@ namespace Divide {
             _wasUsed = false;
         }
 
+        ImGuiIO & io = _imguiContext->IO;
+
+        io.KeysDown[to_I32(key._key)] = pressed;
+
+        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+            io.KeyCtrl = pressed;
+        }
+
+        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+            io.KeyShift = pressed;
+        }
+
+        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+            io.KeyAlt = pressed;
+        }
+
+        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+            io.KeySuper = pressed;
+        }
+
         bool ret = false;
-        ImGuiIO& io = _imguiContext->IO;
         if (active() && io.KeyCtrl) {
             TransformSettings settings = _parent.getTransformSettings();
             if (key._key == Input::KeyCode::KC_T) {

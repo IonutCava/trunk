@@ -194,7 +194,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
 
         template <>
-        inline TransformComponent* get() const noexcept { return Hacks._transformComponentCache; }
+       inline TransformComponent* get() const noexcept { return Hacks._transformComponentCache; }
 
         template <>
         inline BoundsComponent* get() const noexcept { return Hacks._boundsComponentCache; }

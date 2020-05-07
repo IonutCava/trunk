@@ -215,7 +215,6 @@ void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll) {
 
 bool AIManager::shouldStop() const {
     if (_activeTask != nullptr) {
-        Stop(*_activeTask);
         Wait(*_activeTask);
     }
     return _shouldStop;

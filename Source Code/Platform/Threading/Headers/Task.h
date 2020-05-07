@@ -53,14 +53,11 @@ struct alignas(64) Task {
     Task* _parent = nullptr;
     U32 _id = 0;
     std::atomic_ushort _unfinishedJobs = 0u;
-    std::atomic_bool _stopRequested = false;
     bool _runWhileIdle = true;
 };
 
 Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE<void>&& onCompletionFunction = {});
-Task& Stop(Task& task) noexcept;
 void Wait(const Task& task);
-bool StopRequested(const Task& task) noexcept;
 bool Finished(const Task& task) noexcept;
 void TaskYield(const Task& task);
 

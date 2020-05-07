@@ -80,7 +80,7 @@ bool NavigationMesh::unload() {
 void NavigationMesh::stopThreadedBuild() {
     if (_buildJobGUID != -1){
         assert(_buildTask);
-        Wait(Stop(*_buildTask));
+        Wait(*_buildTask);
     }
 }
 

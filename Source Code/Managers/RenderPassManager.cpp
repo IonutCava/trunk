@@ -95,18 +95,6 @@ namespace Divide {
         _postRenderBuffer = GFX::allocateCommandBuffer();
     }
 
-    namespace {
-        inline bool all_of(vectorEASTL<bool>::const_iterator first, vectorEASTL<bool>::const_iterator last, bool state)
-        {
-            for (; first != last; ++first) {
-                if (*first != state) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    };
-
     void RenderPassManager::render(const RenderParams& params) {
         OPTICK_EVENT();
 
@@ -222,17 +210,10 @@ namespace Divide {
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
             eastl::fill(eastl::begin(_completedPasses), eastl::end(_completedPasses), false);
-
-            Task* whileRendering = CreateTask(pool, nullptr, [](const Task& parentTask) {
-                //ToDo: Do other stuff here: some physx, some AI, some whatever.
-                // This will be called in parallel to flushing a command buffer so be aware of any CPU AND GPU race conditions
-            });
-            ACKNOWLEDGE_UNUSED(whileRendering);
-
             {
                 OPTICK_EVENT("FLUSH_PASSES_WHEN_READY");
                 bool slowIdle = false;
-                while (!all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), true)) {
+                while (!eastl::all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), [](bool v) { return v; })) {
 
                     // For every render pass
                     bool finished = true;

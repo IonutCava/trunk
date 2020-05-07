@@ -95,6 +95,13 @@ enum class SceneNodeType : U16 {
     COUNT
 };
 
+enum class EditorDataState : U8
+{
+    CHANGED = 0,
+    QUEUED,
+    IDLE
+};
+
 class SceneNode : public CachedResource {
     friend class Attorney::SceneNodePlayer;
     friend class Attorney::SceneNodeSceneGraph;

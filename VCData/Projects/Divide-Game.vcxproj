@@ -91,6 +91,7 @@
     <ClCompile Include="../../Source Code\Environment\Terrain\TerrainChunk.cpp" />
     <ClCompile Include="../../Source Code\Environment\Terrain\TerrainDescriptor.cpp" />
     <ClCompile Include="../../Source Code\Environment\Terrain\TileRing.cpp" />
+    <ClCompile Include="..\..\Source Code\Environment\Sky\Sun.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/AI\ActionInterface\Headers\AIProcessor.h" />
@@ -169,6 +170,7 @@
     <ClInclude Include="../../Source Code\Environment\Terrain\Headers\TileRing.h" />
     <ClInclude Include="../../Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
     <ClInclude Include="../../Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
+    <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sun.h" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="../../XML/Editor\Editor.xml" />

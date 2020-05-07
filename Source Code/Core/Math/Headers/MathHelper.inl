@@ -256,22 +256,28 @@ void SeedRandom(U32 seed) {
 }
 
 /// Clamps value n between min and max
-template <typename T>
-void CLAMP(T& n, const T min, const T max) noexcept {
-    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
-    n = std::min(std::max(n, min), max);
+template <typename T, typename U>
+void CLAMP(T& n, const U min, const U max) noexcept {
+    static_assert(std::is_arithmetic<T>::value &&
+                  std::is_arithmetic<U>::value,
+                  "Only arithmetic values can be clamped!");
+    n = std::min(std::max(n, (T)min), (T)max);
 }
 
 template <typename T>
 void CLAMP_01(T& n) noexcept {
-    return CLAMP(n, (T)0, (T)1);
+    return CLAMP(n, 0, 1);
 }
 
-template <typename T>
-T CLAMPED(const T& n, const T min, const T max) noexcept {
-    static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be clamped!");
+template <typename T, typename U>
+T CLAMPED(const T& n, const U min, const U max) noexcept {
+    static_assert(std::is_arithmetic<T>::value &&
+                  std::is_arithmetic<U>::value,
+                  "Only arithmetic values can be clamped!");
 
-    return std::min(std::max(n, min), max);
+    T ret = n;
+    CLAMP(ret, min, max);
+    return ret;
 }
 
 template <typename T>

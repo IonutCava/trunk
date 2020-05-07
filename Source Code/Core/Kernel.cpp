@@ -766,7 +766,7 @@ void Kernel::shutdown() {
     _platformContext.config().save();
 
     for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
-        WaitForAllTasks(_platformContext.taskPool(static_cast<TaskPoolType>(i)), true, true, true);
+        WaitForAllTasks(_platformContext.taskPool(static_cast<TaskPoolType>(i)), true, true);
     }
     
     if_constexpr (Config::Build::ENABLE_EDITOR) {

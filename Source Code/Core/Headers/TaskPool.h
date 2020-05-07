@@ -73,7 +73,7 @@ public:
     void shutdown();
 
     void flushCallbackQueue();
-    void waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear = false);
+    void waitForAllTasks(bool yield, bool flushCallbacks);
 
     template<class Predicate>
     Task* createTask(Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
@@ -101,7 +101,6 @@ public:
     friend void TaskYield(const Task& task);
 
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE<void>&& onCompletionFunction);
-    friend bool StopRequested(const Task& task) noexcept;
 
     template<class Predicate>
     friend void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor);
@@ -109,7 +108,6 @@ public:
     void taskCompleted(U32 taskIndex, bool hasOnCompletionFunction);
     
     bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE<void>&& onCompletionFunction);
-    bool stopRequested() const noexcept;
 
     void runCbkAndClearTask(U32 taskIdentifier);
 
@@ -140,7 +138,6 @@ public:
      stringImpl _threadNamePrefix = "";
      std::atomic_uint _runningTaskCount = 0u;
      std::atomic_uint _threadCount = 0u;
-     std::atomic_bool _stopRequested = false;
      U32 _workerThreadCount = 0u;
 };
 
@@ -153,7 +150,7 @@ Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction,
 template<class Predicate>
 void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor);
 
-void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear);
+void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks);
 
 }; //namespace Divide
 

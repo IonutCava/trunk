@@ -435,6 +435,9 @@
     <ClCompile Include="../../Source Code\Environment\Terrain\TileRing.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Environment\Sky\Sun.cpp">
+      <Filter>Environment\Sky</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -662,6 +665,9 @@
     </ClInclude>
     <ClInclude Include="../../Source Code\Environment\Terrain\Headers\TileRing.h">
       <Filter>Environment\Terrain\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sun.h">
+      <Filter>Environment\Sky\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

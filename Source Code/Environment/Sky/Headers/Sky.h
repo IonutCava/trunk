@@ -30,9 +30,10 @@
  */
 
 #pragma once
-#ifndef _SKY_H
-#define _SKY_H
+#ifndef _SKY_H_
+#define _SKY_H_
 
+#include "Sun.h"
 #include "Graphs/Headers/SceneNode.h"
 
 namespace Divide {
@@ -53,26 +54,53 @@ enum class RebuildCommandsState : U8 {
 };
 
 class Sky : public SceneNode {
+   public: 
+       struct Atmosphere {
+           vec3<F32> _RayleighCoeff =
+           { 5.5f, 13.0f, 22.4f };         // Rayleigh scattering coefficient
+           F32 _sunIntensity = 11.2f;      // intensity of the sun
+           F32 _planetRadius = 0.5f;       // x 6371e3m (radius of the planet in meters)
+           F32 _atmosphereOffset = 100.f;  // planetRadius + (atmoOffset * distanceMult) = radius of the atmosphere in meters
+           F32 _MieCoeff = 21.f;           // Mie scattering coefficient
+           F32 _RayleighScale = 8.f;       // Rayleigh scale height
+           F32 _MieScaleHeight = 1.2f;     // Mie scale height
+           F32 _MieScatterDir = 0.758f;    // Mie preferred scattering direction
+           F32 _rayOriginDistance = 1.25f; // Offset from planetRadius for the ray origin
+           I32 _distanceMultiplier = 1000; // Factor to multiply all distances by
+       };
+
    public:
     explicit Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, U32 diameter);
     ~Sky();
 
-    void enableSun(bool state, const FColour3& sunColour, const vec3<F32>& sunVector);
+    // Returns the sun position and intensity details for the specified date-time
+    SunDetails setDateTime(struct tm *dateTime);
+    SunDetails getCurrentDetails() const noexcept;
+
+    PROPERTY_R(Atmosphere, atmosphere);
+    void setAtmosphere(const Atmosphere& atmosphere) noexcept;
+
+    PROPERTY_R(Atmosphere, defaultAtmosphere);
+
+    PROPERTY_RW(bool, useDaySkybox, true);
+    PROPERTY_RW(bool, useNightSkybox, true);
+    PROPERTY_RW(FColour4, nightSkyColour, DefaultColours::BLACK);
+
    protected:
     void postLoad(SceneGraphNode& sgn) override;
+
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) final;
 
     void buildDrawCommands(SceneGraphNode& sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
-    void onRefreshNodeData(const SceneGraphNode& sgn,
-                           const RenderStagePass& renderStagePass,
-                           const Camera& crtCamera,
-                           bool refreshData,
-                           GFX::CommandBuffer& bufferInOut) final;
-
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
+    bool prepareRender(SceneGraphNode& sgn,
+                        RenderingComponent& rComp,
+                        const RenderStagePass& renderStagePass,
+                        const Camera& camera,
+                        bool refreshData) final;
 
    protected:
     template <typename T>
@@ -82,14 +110,12 @@ class Sky : public SceneNode {
 
     const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
-  private:
-    bool _enableSun = true;
-    FColour3 _sunColour;
-    vec3<F32>_sunVector;
-    RebuildCommandsState _rebuildDrawCommands;
-    U32       _diameter = 1u;
+    const std::array<vec4<F32>, 3> atmoTooShaderData() const noexcept;
+  
     GFXDevice& _context;
-    Texture_ptr  _skybox = nullptr;
+    std::unique_ptr<Sun> _sun = nullptr;
+    vec4<F32> _sunDirectionAndIntensity;
+    Texture_ptr  _skybox[2] = { nullptr, nullptr };
     Sphere3D_ptr _sky = nullptr;
     ShaderProgram_ptr _skyShader = nullptr;
     ShaderProgram_ptr _skyShaderPrePass = nullptr;
@@ -98,10 +124,12 @@ class Sky : public SceneNode {
 
     size_t _skyboxRenderStateReflectedHash = 0;
     size_t _skyboxRenderStateReflectedHashPrePass = 0;
+    U32  _diameter = 1u;
+    EditorDataState _atmosphereChanged = EditorDataState::IDLE;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Sky);
 
 };  // namespace Divide
 
-#endif
+#endif //_SKY_H_

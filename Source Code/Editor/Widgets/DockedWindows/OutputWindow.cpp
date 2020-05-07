@@ -6,9 +6,13 @@
 #include "Core/Headers/StringHelper.h"
 
 namespace Divide {
+    constexpr U16 g_maxLogEntries = 512;
+
+    size_t g_writeIndex = 0;
+    std::array<Console::OutputEntry, g_maxLogEntries> g_log;
+
     OutputWindow::OutputWindow(Editor& parent, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
-         _log(512),
          _scrollToBottom(true)
     {
         memset(_inputBuf, 0, sizeof(_inputBuf));
@@ -26,7 +30,8 @@ namespace Divide {
 
 
     void OutputWindow::clearLog() {
-        _log.reset();
+        g_log.fill({ "", Console::EntryType::Info });
+        g_writeIndex = 0;
         _scrollToBottom = true;
     }
 
@@ -64,7 +69,6 @@ namespace Divide {
             ImGui::LogToClipboard();
         }
 
-        size_t entryCount = _log.size();
         static ImVec4 colours[] = {
             ImVec4(1.0f, 1.0f, 1.0f, 1.0f),
             ImVec4(1.0f, 1.0f, 0.0f, 1.0f),
@@ -72,19 +76,18 @@ namespace Divide {
             ImVec4(0.0f, 0.0f, 1.0f, 1.0f)
         };
 
-        if (entryCount > 0) {
-            for (size_t i = 0; i < entryCount; ++i) {
-                const Console::OutputEntry& message = _log.get(i);
-
-                if (!_filter.PassFilter(message._text.c_str())) {
-                    continue;
-                }
-
-                ImGui::PushStyleColor(ImGuiCol_Text, colours[to_U8(message._type)]);
-                ImGui::TextUnformatted(message._text.c_str());
-                ImGui::PopStyleColor();
+        for (U16 i = 0; i < g_maxLogEntries;  ++i) {
+            const size_t index = (g_writeIndex + 1 + i) % g_maxLogEntries;
+            const Console::OutputEntry& message = g_log[index];
+            if (!_filter.PassFilter(message._text.c_str())) {
+                continue;
             }
+
+            ImGui::PushStyleColor(ImGuiCol_Text, colours[to_U8(message._type)]);
+            ImGui::TextUnformatted(message._text.c_str());
+            ImGui::PopStyleColor();
         }
+        
         if (copy_to_clipboard) {
             ImGui::LogFinish();
         }
@@ -126,7 +129,8 @@ namespace Divide {
     }
 
     void OutputWindow::printText(const Console::OutputEntry& entry) {
-        _log.put(entry);
+        g_log[g_writeIndex] = entry;
+        g_writeIndex = ++g_writeIndex % g_maxLogEntries;
     }
 
     void OutputWindow::executeCommand(const char* command_line) {

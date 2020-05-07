@@ -68,6 +68,7 @@ namespace Divide {
     enum class EditorComponentFieldType : U8 {
         PUSH_TYPE = 0,
         SLIDER_TYPE,
+        SEPARATOR,
         BUTTON,
         DROPDOWN_TYPE,
         BOUNDING_BOX,
@@ -83,10 +84,10 @@ namespace Divide {
         std::function<void(const void*)> _dataSetter = {};
         Str128 _tooltip = "";
         void* _data = nullptr;
-        vec2<F32> _range = { 0.0f, 1.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
+        vec2<F32> _range = { 0.0f, 0.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
         Str32  _name = "";
         F32 _step = 0.0f; //< 0.0f == no +- buttons
-
+        const char* _format = "";
         GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
         EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
         // Use this to configure smaller data sizes for integers only (signed or unsigned) like:

@@ -70,15 +70,8 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
     currentBB.reset();
     for (const vectorEASTL<mat4<F32> >& transforms : currentAnimation) {
-        if (StopRequested(parentTask)) {
-            return;
-        }
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
-            if (StopRequested(parentTask)) {
-                return;
-            }
-
             const U32 idx = parentVB->getIndex(j + partitionOffset);
             const P32 ind = parentVB->getBoneIndices(idx);
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);

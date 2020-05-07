@@ -59,7 +59,7 @@ Task* CreateTask(PlatformContext& context, Task* parentTask, Predicate&& threade
 template<class Predicate>
 void parallel_for(PlatformContext& context, Predicate&& cbk, const ParallelForDescriptor& descriptor);
 
-void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks, bool foceClear);
+void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks);
 
 }; //namespace Divide
 

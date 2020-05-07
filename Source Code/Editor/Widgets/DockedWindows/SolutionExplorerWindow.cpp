@@ -75,9 +75,11 @@ namespace Divide {
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                 const bool wasSelected = sgn.hasFlag(SceneGraphNode::Flags::SELECTED);
                 const bool parentSelected = (sgn.parent() != nullptr && sgn.parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
+                const bool childrenSelected = sgn.getChildCount() > 0 && sgn.getChild(0u).hasFlag(SceneGraphNode::Flags::SELECTED);
+
                 sceneManager.resetSelection(0);
-                if (!wasSelected || parentSelected) {
-                    sceneManager.setSelected(0, { &sgn });
+                if (!wasSelected || parentSelected || childrenSelected) {
+                    sceneManager.setSelected(0, { &sgn }, !wasSelected);
                 }
                 Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
             }
@@ -203,6 +205,43 @@ namespace Divide {
 
         ImGui::Text("HiZ Cull Count: %d", cullCount);
         ImGui::Separator();
+
+        bool dayNightEnabled = activeScene.dayNightCycleEnabled();
+        if (ImGui::Checkbox("Enable day/night cycle", &dayNightEnabled)) {
+            activeScene.dayNightCycleEnabled(dayNightEnabled);
+        }
+
+        ImGui::Text("Time of Day:");
+        SimpleTime time = activeScene.getTimeOfDay();
+        constexpr U8 min = 0u;
+        constexpr U8 maxHour = 24u;
+        constexpr U8 maxMinute = 59u;
+
+        if (ImGui::SliderScalar("Hour", ImGuiDataType_U8, &time._hour, &min, &maxHour, "%02d") ||
+            ImGui::SliderScalar("Minute", ImGuiDataType_U8, &time._minutes, &min, &maxMinute, "%02d"))
+        {
+            activeScene.setTimeOfDay(time);
+        }
+
+        if (!dayNightEnabled) {
+            PushReadOnly();
+        }
+
+        F32 timeFactor = activeScene.getDayNightCycleTimeFactor();
+        if (ImGui::InputFloat("Time factor", &timeFactor)) {
+            activeScene.setDayNightCycleTimeFactor(CLAMPED(timeFactor, -500.f, 500.f));
+        }
+
+        const SunDetails sun = activeScene.getCurrentSunDetails();
+        ImGui::Text("Sunset: %02d:%02d", sun._info.sunsetTime._hour, sun._info.sunsetTime._minutes);
+        ImGui::SameLine(); ImGui::Text(" | "); ImGui::SameLine();
+        ImGui::Text("Sunrise: %02d:%02d", sun._info.sunriseTime._hour, sun._info.sunriseTime._minutes);
+        ImGui::SameLine();  ImGui::Text(" | "); ImGui::SameLine();
+        ImGui::Text("Noon: %02d:%02d", sun._info.noonTime._hour, sun._info.noonTime._minutes);
+
+        if (!dayNightEnabled) {
+            PopReadOnly();
+        }
     }
 
     void SolutionExplorerWindow::drawTransformSettings() {

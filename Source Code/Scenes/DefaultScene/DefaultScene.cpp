@@ -25,15 +25,6 @@ DefaultScene::DefaultScene(PlatformContext& context, ResourceCache* cache, Scene
 
 bool DefaultScene::load(const Str128& name) {
     bool loadState = SCENE_LOAD(name);
-    // Add a light
-    vec2<F32> sunAngle(0.0f, Angle::to_RADIANS(45.0f));
-    vec3<F32> sunvector(-cosf(sunAngle.x) * sinf(sunAngle.y),
-                        -cosf(sunAngle.y),
-                        -sinf(sunAngle.x) * sinf(sunAngle.y));
-    
-    _sun->get<TransformComponent>()->setRotationEuler(sunvector);
-    _currentSky->getNode<Sky>().enableSun(true, _sun->get<DirectionalLightComponent>()->getDiffuseColour(), sunvector);
-
     state().saveLoadDisabled(true);
 
     _taskTimers.push_back(0.0);

@@ -59,8 +59,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
    
-    _noiseTexture->loadData(Texture::TextureLoadInfo(),
-                            noiseData.data(),
+    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(FColour3) },
                             vec2<U16>(ssaoNoiseSize));
 
     SamplerDescriptor screenSampler = {};

@@ -47,13 +47,20 @@ ImageData::~ImageData()
 {
 }
 
-bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
+bool ImageData::addLayer(Byte* data, size_t size, U16 width, U16 height, U16 depth) {
+    ImageLayer& layer = _layers.emplace_back();
+    layer.allocateMip(data, size, width, height, depth);
+    return true;
+}
+
+bool ImageData::addLayer(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
     _name = filename;
 
     if (Util::CompareIgnoreCase(_name.substr(_name.find_last_of('.') + 1), "DDS")) {
         return loadDDS_IL(srgb, refWidth, refHeight, filename);
     }
 
+    ImageLayer& layer = _layers.emplace_back();
     stbi_set_flip_vertically_on_load_thread(_flip ? TRUE : FALSE);
 
     I32 width = 0, height = 0, comp = 0;
@@ -74,9 +81,6 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         return false;
     }
-
-    _data.resize(1);
-    ImageLayer& image = _data.front();
 
     switch (comp) {
         case 1 : {
@@ -136,18 +140,18 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
         }
     }
 
-    image._dimensions.set(width, height, 1);
+    const size_t baseSize = width * height * _bpp / 8;
+
     // most formats do not have an alpha channel
     _alpha = comp % 2 == 0;
     _compressed = false;
-    image._size = width * height * _bpp / 8;
     if (data != nullptr) {
         if (_isHDR) {
-            image.writeData((F32*)data, to_U32(image._size / 4));
+            layer.allocateMip((F32*)data, baseSize / 4, to_U16(width), to_U16(height), 1u);
         } else if (is16Bit()) {
-            image.writeData((U16*)data, to_U32(image._size / 2));
+            layer.allocateMip((U16*)data, baseSize / 2, to_U16(width), to_U16(height), 1u);
         } else {
-            image.writeData((U8*)data, to_U32(image._size));
+            layer.allocateMip((U8*)data, baseSize / 1, to_U16(width), to_U16(height), 1u);
         }
         stbi_image_free(data);
     }
@@ -156,22 +160,31 @@ bool ImageData::create(bool srgb, U16 refWidth, U16 refHeight, const stringImpl&
 }
 
 bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename) {
+    const auto CheckError = []() {
+        const ILenum error = ilGetError();
+        while (error != IL_NO_ERROR) {
+            DebugBreak();
+        }
+    };
+
     ACKNOWLEDGE_UNUSED(srgb);
     std::lock_guard<Mutex> lock(ImageDataInterface::_loadingMutex);
 
     U32 ilTexture = 0;
-    ilInit();
-    ilGenImages(1, &ilTexture);
-    ilBindImage(ilTexture);
-    
-    ilEnable(IL_TYPE_SET);
+    ilInit(); 
+    CheckError();
 
+    ilGenImages(1, &ilTexture);
+    CheckError();
+
+    ilBindImage(ilTexture);
+    ilEnable(IL_TYPE_SET);
     //ilEnable(IL_ORIGIN_SET);
     //ilOriginFunc(_flip ? IL_ORIGIN_LOWER_LEFT : IL_ORIGIN_UPPER_LEFT);
     ilSetInteger(IL_KEEP_DXTC_DATA, IL_TRUE);
     ilTypeFunc(IL_UNSIGNED_BYTE);
-
     if (ilLoadImage(filename.c_str()) == IL_FALSE) {
+        CheckError();
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         ilDeleteImage(ilTexture);
         return false;
@@ -179,16 +192,16 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
 
     ILinfo imageInfo;
     iluGetImageInfo(&imageInfo);
+    CheckError();
+
     if (imageInfo.Origin == IL_ORIGIN_UPPER_LEFT) {
         iluFlipImage();
     }
 
-    const I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
+    const I32 numLayers = ilGetInteger(IL_NUM_LAYERS) + 1;
     assert(ilGetInteger(IL_IMAGE_TYPE) == IL_UNSIGNED_BYTE);
-
     const I32 dxtc = ilGetInteger(IL_DXTC_DATA_FORMAT);
     _bpp = to_U8(ilGetInteger(IL_IMAGE_BPP));
-
     if (ilGetInteger(IL_IMAGE_CUBEFLAGS) > 0) {
         _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;
     } else {
@@ -196,7 +209,6 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
                                      ? TextureType::TEXTURE_3D
                                      : TextureType::TEXTURE_2D;
     }
-
     _compressed = ((dxtc == IL_DXT1) ||
                    (dxtc == IL_DXT2) ||
                    (dxtc == IL_DXT3) ||
@@ -204,6 +216,7 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
                    (dxtc == IL_DXT5));
 
     const I32 channelCount = ilGetInteger(IL_IMAGE_CHANNELS);
+    CheckError();
 
     _alpha = false;
     if (_compressed) {
@@ -223,6 +236,7 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
             default: {
                 DIVIDE_UNEXPECTED_CALL("Unsupported compressed format!");
                 ilDeleteImage(ilTexture);
+                CheckError();
                 return false;
             }
         };
@@ -237,9 +251,11 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
                 break;
             case IL_BGRA:
                 _format = GFXImageFormat::BGRA;
+                _alpha = true;
                 break;
             case IL_RGBA: {
                 _format = GFXImageFormat::RGBA;
+                _alpha = true;
             } break;
             case IL_LUMINANCE: {
                 assert(false && "LUMINANCE image format is no longer supported!");
@@ -247,57 +263,62 @@ bool ImageData::loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringI
             default: {
                 DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
                 ilDeleteImage(ilTexture);
+                CheckError();
                 return false;
             }
         };
     }
 
-    _dataType = GFXDataFormat::UNSIGNED_BYTE;
-    _data.resize(numMips);
-
+    const I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
     if (_compressed && _alpha) {
+        ilBindImage(ilTexture);
+        ilActiveLayer(0);
+        ilActiveImage(0);
+        ilActiveMipmap(0);
+
         const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
         const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
         const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
         _decompressedData.resize(to_size(width) * height * depth * 4);
 
         ilCopyPixels(0, 0, 0, width, height, depth, IL_RGBA, IL_UNSIGNED_BYTE, _decompressedData.data());
-        assert(ilGetError() == IL_NO_ERROR);
+        CheckError();
     }
 
-    for (U8 i = 0; i < numMips; ++i) {
-        ilBindImage(ilTexture);
-        ilActiveMipmap(i);
+    const I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
+    _dataType = GFXDataFormat::UNSIGNED_BYTE;
 
-        const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
-        const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
-        const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
+    _layers.reserve(_layers.size() + numLayers * numImagePasses);
+    for (I32 l = 0; l < numLayers; ++l) {
+        for (I32 p = 0; p < numImagePasses; ++p) {
+            ImageLayer& layer = _layers.emplace_back();
 
-        ImageLayer& layer = _data[i];
-        layer._dimensions.set(width, height, depth);
-
-        const I32 size = _compressed ? ilGetDXTCData(nullptr, 0, dxtc)
-                                     : width * height * depth * _bpp;
-
-        const I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
-        layer._size = to_size(size) * numImagePasses;
-        U8* data = layer.allocate<U8>(layer._size);
-
-        for (I32 j = 0, offset = 0; j < numImagePasses; ++j, offset += size) {
-            if (_compressedTextureType == TextureType::TEXTURE_CUBE_MAP) {
+            for (U8 m = 0; m < numMips; ++m) {
                 ilBindImage(ilTexture);
-                ilActiveImage(j);
-                ilActiveMipmap(i);
-            }
-            if (_compressed) {
-                ilGetDXTCData(data + offset, size, dxtc);
-            } else {
-                memcpy(data + offset, ilGetData(), size);
+                ilActiveLayer(l);
+                ilActiveImage(p);
+                ilActiveMipmap(m);
+                const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
+                const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
+                const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
+                CheckError();
+
+                const I32 size = _compressed ? ilGetDXTCData(nullptr, 0, dxtc) : width * height * depth * _bpp;
+                CheckError();
+
+                U8* data = layer.allocateMip<U8>(to_size(size), to_U16(width), to_U16(height), to_U16(depth));
+                if (_compressed) {
+                    ilGetDXTCData(data, size, dxtc);
+                    CheckError();
+                } else {
+                    memcpy(data, ilGetData(), size);
+                }
             }
         }
     }
-    
+
     ilDeleteImage(ilTexture);
+    CheckError();
     return true;
 }
 
@@ -357,83 +378,79 @@ bool ImageData::loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringI
                 break;
         };
     }
+
     _dataType = GFXDataFormat::UNSIGNED_BYTE;
 
     const U32 numMips = image.get_num_mipmaps();
-    _data.resize(to_size(numMips) + 1);
-    ImageLayer& base = _data[0];
-    base._dimensions.set(image.get_width(),
-                         image.get_height(),
-                         image.get_depth());
-    base._size = image.get_size();
-    base.writeData((U8*)image, base._dimensions.width * base._dimensions.height);
+    ImageLayer& layer = _layers.emplace_back();
+    layer.allocateMip<U8>((U8*)image, image.get_size(), to_U16(image.get_width()), to_U16(image.get_height()), to_U16(image.get_depth()));
 
     for (U8 i = 0; i < numMips; ++i) {
-        ImageLayer& layer = _data[i + 1];
         const nv_dds::CSurface& mipMap = image.get_mipmap(i);
-
-        layer._dimensions.set(mipMap.get_width(),
-                              mipMap.get_height(),
-                              mipMap.get_depth());
-        layer._size = mipMap.get_size();
-        layer.writeData((U8*)mipMap, layer._dimensions.width * layer._dimensions.height);
+        layer.allocateMip<U8>((U8*)mipMap, mipMap.get_size(), to_U16(mipMap.get_width()), to_U16(mipMap.get_height()), to_U16(mipMap.get_depth()));
     }
 
     image.clear();
     return true;
 }
 
-UColour4 ImageData::getColour(I32 x, I32 y, U32 mipLevel) const {
+UColour4 ImageData::getColour(I32 x, I32 y, U32 layer, U8 mipLevel) const {
     UColour4 returnColour;
     getColour(x, y, returnColour.r, returnColour.g, returnColour.b, returnColour.a, mipLevel);
     return returnColour;
 }
 
-void ImageData::getRed(I32 x, I32 y, U8& r, U32 mipLevel) const {
+void ImageData::getRed(I32 x, I32 y, U8& r, U32 layer, U8 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
+    assert(_layers.size() > layer);
 
-    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    r = _compressed ? _decompressedData[idx + 0] : ((U8*)_data[mipLevel].data())[idx + 0];
+    const I32 idx = (y * _layers[layer].getMip(mipLevel)->_dimensions.width + x) * (_bpp / 8);
+    r = _compressed ? _decompressedData[idx + 0] : ((U8*)_layers[layer].getMip(mipLevel)->data())[idx + 0];
 }
 
-void ImageData::getGreen(I32 x, I32 y, U8& g, U32 mipLevel) const {
+void ImageData::getGreen(I32 x, I32 y, U8& g, U32 layer, U8 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
+    assert(_layers.size() > layer);
 
-    const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    g = _compressed ? _decompressedData[idx + 1] : ((U8*)_data[mipLevel].data())[idx + 1];
+    const size_t idx = to_size(y * _layers[layer].getMip(mipLevel)->_dimensions.width + x) * (_bpp / 8);
+    g = _compressed ? _decompressedData[idx + 1] : ((U8*)_layers[layer].getMip(mipLevel)->data())[idx + 1];
 }
 
-void ImageData::getBlue(I32 x, I32 y, U8& b, U32 mipLevel) const {
+void ImageData::getBlue(I32 x, I32 y, U8& b, U32 layer, U8 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
+    assert(_layers.size() > layer);
 
-    const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    b = _compressed ? _decompressedData[idx + 2] : ((U8*)_data[mipLevel].data())[idx + 2];
+    const size_t idx = to_size(y * _layers[layer].getMip(mipLevel)->_dimensions.width + x) * (_bpp / 8);
+    b = _compressed ? _decompressedData[idx + 2] : ((U8*)_layers[layer].getMip(mipLevel)->data())[idx + 2];
 }
 
-void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 mipLevel) const {
+void ImageData::getAlpha(I32 x, I32 y, U8& a, U32 layer, U8 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
+    assert(_layers.size() > layer);
 
     a = 255;
     if (_alpha) {
-        const size_t idx = to_size(y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-        a = _compressed ? _decompressedData[idx + 3] : ((U8*)_data[mipLevel].data())[idx + 3];
+        const size_t idx = to_size(y * _layers[layer].getMip(mipLevel)->_dimensions.width + x) * (_bpp / 8);
+        a = _compressed ? _decompressedData[idx + 3] : ((U8*)_layers[layer].getMip(mipLevel)->data())[idx + 3];
     }
 }
 
-void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 mipLevel) const {
+void ImageData::getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 layer, U8 mipLevel) const {
     assert(!_compressed || mipLevel == 0);
+    assert(_layers.size() > layer);
 
-    const I32 idx = (y * _data[mipLevel]._dimensions.width + x) * (_bpp / 8);
-    const U8* src = _compressed ? _decompressedData.data() : ((U8*)_data[mipLevel].data());
+    const I32 idx = (y * _layers[layer].getMip(mipLevel)->_dimensions.width + x) * (_bpp / 8);
+    const U8* src = _compressed ? _decompressedData.data() : ((U8*)_layers[layer].getMip(mipLevel)->data());
 
     r = src[idx + 0]; g = src[idx + 1]; b = src[idx + 2]; a = _alpha ? src[idx + 3] : 255;
 }
 
-
-void ImageDataInterface::CreateImageData(const stringImpl& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut) {
+bool ImageDataInterface::CreateImageData(const stringImpl& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut) {
     if (fileExists(filename.c_str())) {
-        imgOut.create(srgb, refWidth, refHeight, filename);
+        return imgOut.addLayer(srgb, refWidth, refHeight, filename);
     }
+
+    return false;
 }
 
 I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData) noexcept {

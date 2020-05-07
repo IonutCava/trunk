@@ -62,16 +62,6 @@ void Wait(const Task& task) {
     }
 }
 
-Task& Stop(Task& task) noexcept {
-    task._stopRequested.store(true);
-    return task;
-}
-
-bool StopRequested(const Task& task) noexcept {
-    return task._stopRequested.load() ||
-           task._parentPool->stopRequested();
-}
-
 bool Finished(const Task& task) noexcept {
     return task._unfinishedJobs.load(std::memory_order_relaxed) == 0;
 }

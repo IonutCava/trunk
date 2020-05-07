@@ -48,7 +48,6 @@
 namespace Divide {
 
 namespace {
-    vec2<F32> g_sunAngle(0.0f, Angle::to_RADIANS(45.0f));
     bool g_direction = false;
     U64 elapsedGameTimeUs = 0;
 };
@@ -190,40 +189,14 @@ void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, 
     Scene::debugDraw(activeCamera, stagePass, bufferInOut);
 }
 
-bool _updatedSun = false;
 void WarScene::processTasks(const U64 deltaTimeUS) {
     if (!_sceneReady) {
         return;
     }
 
-    constexpr D64 SunTimer = Time::Milliseconds(33);
     constexpr D64 AnimationTimer1 = Time::SecondsToMilliseconds(5);
     constexpr D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
     constexpr D64 updateLights = Time::Milliseconds(32);
-
-    if (!_updatedSun && _taskTimers[0] >= SunTimer) {
-        g_sunAngle += 0.000125f * (g_direction ? 1.0f : -1.0f);
-
-        if (!IS_IN_RANGE_INCLUSIVE(g_sunAngle.y, 
-                                   Angle::DEGREES<F32>(20.0f),
-                                   Angle::DEGREES<F32>(55.0f))) {
-            g_direction = !g_direction;
-        }
-
-        vec3<F32> sunVector(Angle::to_DEGREES(-cosf(g_sunAngle.x) * sinf(g_sunAngle.y)),
-                            Angle::to_DEGREES(-cosf(g_sunAngle.y)),
-                            Angle::to_DEGREES(-sinf(g_sunAngle.x) * sinf(g_sunAngle.y)));
-
-        _sun->get<TransformComponent>()->setRotationEuler(sunVector);
-        FColour3 sunColour(1.0f, 1.0f, 1.0f);
-
-        _sun->get<DirectionalLightComponent>()->setDiffuseColour(sunColour);
-
-        _currentSky->getNode<Sky>().enableSun(true, sunColour, sunVector);
-
-        _taskTimers[0] = 0.0;
-        _updatedSun = true;
-    }
 
     /*if (_taskTimers[1] >= AnimationTimer1) {
         for (SceneGraphNode* npc : _armyNPCs[0]) {
@@ -405,7 +378,9 @@ bool WarScene::load(const Str128& name) {
                                to_base(ComponentType::NETWORKING);
 
     // Load scene resources
-    bool loadState = SCENE_LOAD(name);
+    const bool loadState = SCENE_LOAD(name);
+    setDayNightCycleTimeFactor(24);
+
     // Position camera
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setEye(vec3<F32>(43.13f, 147.09f, -4.41f));
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setGlobalRotation(-90.0f /*yaw*/, 59.21f /*pitch*/);

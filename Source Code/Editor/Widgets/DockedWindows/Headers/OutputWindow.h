@@ -58,7 +58,6 @@ class OutputWindow final : public DockedWindow {
         bool _scrollToBottom;
         char _inputBuf[256];
         ImGuiTextFilter _filter;
-        circular_buffer<Console::OutputEntry> _log;
 };
 }; //namespace Divide
 

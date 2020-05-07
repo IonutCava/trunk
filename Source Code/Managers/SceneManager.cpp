@@ -78,7 +78,7 @@ void SceneManager::idle() {
                     _sceneSwitchTarget._unloadPreviousScene,
                     _sceneSwitchTarget._targetViewRect,
                     _sceneSwitchTarget._loadInSeparateThread);
-        WaitForAllTasks(getActiveScene().context(), true, true, false);
+        WaitForAllTasks(getActiveScene().context(), true, true);
         parent().platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
     } else {
         if (_playerQueueDirty) {

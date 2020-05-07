@@ -157,11 +157,6 @@ class Terrain final : public Object3D {
      vectorEASTL<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
-    enum class EditorDataState : U8 {
-        CHANGED = 0,
-        QUEUED,
-        IDLE
-    };
 
     F32 _drawDistance = 0.0f;
     ShaderBuffer* _shaderData = nullptr;

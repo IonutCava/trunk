@@ -162,7 +162,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     bool findSelection(PlayerIndex idx, bool clearOld);
     void beginDragSelection(PlayerIndex idx, vec2<I32> mousePos);
-    void endDragSelection(PlayerIndex idx);
+    void endDragSelection(PlayerIndex idx, bool clearSelection);
 
     inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -187,7 +187,32 @@ class Scene : public Resource, public PlatformContextComponent {
     // can save at any time, I guess?
     virtual bool saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) const;
 
+
+    void initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight);
+
+    // negative values should work
+    void setDayNightCycleTimeFactor(F32 factor);
+    F32 getDayNightCycleTimeFactor() const noexcept;
+
+    void setTimeOfDay(const SimpleTime& time) noexcept;
+    const SimpleTime& getTimeOfDay() const noexcept;
+
+    SunDetails getCurrentSunDetails() const noexcept;
+    Sky::Atmosphere getCurrentAtmosphere() const noexcept;
+    void setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) noexcept;
+
+    PROPERTY_RW(bool, dayNightCycleEnabled, true);
+
    protected:
+    struct DayNightData
+    {
+        Sky* _skyInstance = nullptr;
+        DirectionalLightComponent* _dirLight = nullptr;
+        F32 _speedFactor = 1.0f;
+        F32 _timeAccumulator = 0.0f;
+        SimpleTime _time = { 14u, 30u };
+        bool _resetTime = true;
+    } _dayNightData = {};
 
     virtual void rebuildShaders();
     virtual void onSetActive();
@@ -267,7 +292,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void currentPlayerPass(PlayerIndex idx);
 
     void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgn);
+    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgn, bool recursive);
 
     bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState);
 
@@ -285,8 +310,6 @@ class Scene : public Resource, public PlatformContextComponent {
        AI::AIManager* _aiManager = nullptr;
        SceneGUIElements* _GUI = nullptr;
 
-       SceneGraphNode* _sun = nullptr;
-
        vectorEASTL<Player*> _scenePlayers;
        U64 _sceneTimerUS = 0ULL;
        vectorEASTL<D64> _taskTimers;
@@ -301,7 +324,6 @@ class Scene : public Resource, public PlatformContextComponent {
        hashMap<PlayerIndex, I64> _currentHoverTarget;
        hashMap<PlayerIndex, DragSelectData> _dragSelectData;
 
-       SceneGraphNode* _currentSky = nullptr;
        hashMap<PlayerIndex, SceneGraphNode*> _flashLight;
        hashMap<PlayerIndex, U32> _cameraUpdateListeners;
        /// Scene::load must be called by every scene. Add a load flag to make sure!
@@ -410,8 +432,8 @@ class SceneManager {
         scene.resetSelection(idx);
     }
 
-    static void setSelected(Scene& scene, PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns) {
-        scene.setSelected(idx, sgns);
+    static void setSelected(Scene& scene, PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
+        scene.setSelected(idx, sgns, recursive);
     }
 
     static void clearHoverTarget(Scene& scene, const Input::MouseMoveEvent& arg) {

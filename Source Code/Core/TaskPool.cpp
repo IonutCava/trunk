@@ -17,8 +17,7 @@ TaskPool::TaskPool()
     : GUIDWrapper(),
       _taskCallbacks(Config::MAX_POOLED_TASKS),
       _runningTaskCount(0u),
-      _workerThreadCount(0u),
-      _stopRequested(false)
+      _workerThreadCount(0u)
 {
     _threadCount = 0u;
 }
@@ -46,13 +45,11 @@ bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void,
         } break;
     }
 
-    _stopRequested.store(false);
-
     return true;
 }
 
 void TaskPool::shutdown() {
-    waitForAllTasks(true, true, true);
+    waitForAllTasks(true, true);
 }
 
 void TaskPool::onThreadCreate(const std::thread::id& threadID) {
@@ -117,13 +114,9 @@ void TaskPool::flushCallbackQueue() {
     } while (count > 0);
 }
 
-void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear) {
+void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks) {
     if (!_poolImpl.init()) {
         return;
-    }
-
-    if (forceClear) {
-        _stopRequested.store(true);
     }
 
     bool finished = _workerThreadCount == 0u;
@@ -138,7 +131,6 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks, bool forceClear)
         flushCallbackQueue();
     }
 
-    _stopRequested.store(false);
     _poolImpl.waitAndJoin();
 }
 
@@ -151,10 +143,6 @@ void TaskPool::taskCompleted(U32 taskIndex, bool hasOnCompletionFunction) {
 }
 
 Task* TaskPool::allocateTask(Task* parentTask, bool allowedInIdle) {
-    if (parentTask != nullptr) {
-        parentTask->_unfinishedJobs.fetch_add(1);
-    }
-
     Task* task = nullptr;
     do {
         Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
@@ -168,7 +156,9 @@ Task* TaskPool::allocateTask(Task* parentTask, bool allowedInIdle) {
     task->_parent = parentTask;
     task->_parentPool = this;
     task->_runWhileIdle = allowedInIdle;
-
+    if (task->_parent != nullptr) {
+        task->_parent->_unfinishedJobs.fetch_add(1);
+    }
     if (task->_id == 0) {
         task->_id = g_taskIDCounter.fetch_add(1u);
     }
@@ -176,16 +166,12 @@ Task* TaskPool::allocateTask(Task* parentTask, bool allowedInIdle) {
     return task;
 }
 
-bool TaskPool::stopRequested() const noexcept {
-    return _stopRequested.load();
-}
-
 void TaskPool::threadWaiting() {
     _poolImpl.threadWaiting();
 }
 
-void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks, bool foceClear) {
-    pool.waitForAllTasks(yield, flushCallbacks, foceClear);
+void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks) {
+    pool.waitForAllTasks(yield, flushCallbacks);
 }
 
 bool TaskPool::PoolHolder::init() const noexcept {

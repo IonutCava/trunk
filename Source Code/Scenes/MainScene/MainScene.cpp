@@ -33,8 +33,7 @@ MainScene::MainScene(PlatformContext& context, ResourceCache* cache, SceneManage
     _beep(nullptr),
     _freeflyCamera(true/*false*/),
     _updateLights(true),
-    _musicPlaying(false),
-    _sun_cosy(0.0f)
+    _musicPlaying(false)
 {
 }
 
@@ -42,17 +41,6 @@ void MainScene::updateLights() {
     if (!_updateLights) {
         return;
     }
-
-    _sun_cosy = cosf(_sunAngle.y);
-    _sunColour =
-        Lerp(FColour3(1.0f, 0.5f, 0.0f),
-             FColour3(1.0f, 1.0f, 0.8f), 0.25f + _sun_cosy * 0.75f);
-
-    _sun->get<TransformComponent>()->setRotationEuler(_sunvector);
-    _sun->get<DirectionalLightComponent>()->setDiffuseColour(_sunColour);
-
-    _currentSky->getNode<Sky>().enableSun(true, _sunColour, _sunvector);
-
     _updateLights = false;
     return;
 }
@@ -130,14 +118,6 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
     constexpr D64 SunDisplay = Time::SecondsToMilliseconds(1.50);
 
     if (_taskTimers[0] >= SunDisplay) {
-        _sunAngle.y += 0.0005f;
-        _sunvector = vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y),
-                               -cosf(_sunAngle.y),
-                               -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
-        _taskTimers[0] = 0.0;
-        _updateLights = true;
-
-
         vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
 
         //for (SceneGraphNode* terrainNode : terrains) {
@@ -182,11 +162,6 @@ bool MainScene::load(const Str128& name) {
         _taskTimers.push_back(0.0); // Sun
         _guiTimersMS.push_back(0.0);  // Fps
         _guiTimersMS.push_back(0.0);  // Time
-
-        _sunAngle = vec2<F32>(0.0f, Angle::to_RADIANS(45.0f));
-        _sunvector =
-            vec4<F32>(-cosf(_sunAngle.x) * sinf(_sunAngle.y), -cosf(_sunAngle.y),
-                -sinf(_sunAngle.x) * sinf(_sunAngle.y), 0.0f);
 
         removeTask(*g_boxMoveTaskID);
         g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
@@ -269,49 +244,43 @@ bool MainScene::unload() {
 }
 
 void MainScene::test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size) {
-    if(!StopRequested(parentTask)) {
-        static bool switchAB = false;
-        vec3<F32> pos;
-        SceneGraphNode* boxNode(_sceneGraph->findNode("box"));
+    static bool switchAB = false;
+    vec3<F32> pos;
+    SceneGraphNode* boxNode(_sceneGraph->findNode("box"));
 
-        if (boxNode) {
-            pos = boxNode->get<TransformComponent>()->getPosition();
-        }
+    if (boxNode) {
+        pos = boxNode->get<TransformComponent>()->getPosition();
+    }
 
-        if (!switchAB) {
-            if (pos.x < 300 && pos.z == 0) pos.x++;
-            if (pos.x == 300) {
-                if (pos.y < 800 && pos.z == 0) pos.y++;
-                if (pos.y == 800) {
-                    if (pos.z > -500) pos.z--;
-                    if (pos.z == -500) switchAB = true;
-                }
-            }
-        } else {
-            if (pos.x > -300 && pos.z == -500) pos.x--;
-            if (pos.x == -300) {
-                if (pos.y > 100 && pos.z == -500) pos.y--;
-                if (pos.y == 100) {
-                    if (pos.z < 0) pos.z++;
-                    if (pos.z == 0) switchAB = false;
-                }
+    if (!switchAB) {
+        if (pos.x < 300 && pos.z == 0) pos.x++;
+        if (pos.x == 300) {
+            if (pos.y < 800 && pos.z == 0) pos.y++;
+            if (pos.y == 800) {
+                if (pos.z > -500) pos.z--;
+                if (pos.z == -500) switchAB = true;
             }
         }
-        if (boxNode) {
-            boxNode->get<TransformComponent>()->setPosition(pos);
-        }
-
-        std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        if (g_boxMoveTaskID != nullptr) {
-            if (!StopRequested(parentTask)) {
-                g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
-                    test(parent, stringImpl("test"), GFX::PushConstantType::COUNT, GFX::PushConstantSize::COUNT);
-                });
-
-                registerTask(*g_boxMoveTaskID);
+    } else {
+        if (pos.x > -300 && pos.z == -500) pos.x--;
+        if (pos.x == -300) {
+            if (pos.y > 100 && pos.z == -500) pos.y--;
+            if (pos.y == 100) {
+                if (pos.z < 0) pos.z++;
+                if (pos.z == 0) switchAB = false;
             }
         }
     }
+    if (boxNode) {
+        boxNode->get<TransformComponent>()->setPosition(pos);
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
+        g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
+            test(parent, stringImpl("test"), GFX::PushConstantType::COUNT, GFX::PushConstantSize::COUNT);
+        });
+
+        registerTask(*g_boxMoveTaskID);
 }
 
 void MainScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {

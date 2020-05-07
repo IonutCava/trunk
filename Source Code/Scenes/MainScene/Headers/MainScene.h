@@ -59,10 +59,6 @@ class MainScene : public Scene {
     U16 registerInputActions() override;
 
    private:
-    vec2<F32> _sunAngle;
-    vec4<F32> _sunvector;
-    FColour3 _sunColour;
-    F32 _sun_cosy;
     bool _musicPlaying;
     bool _freeflyCamera;
     bool _updateLights;

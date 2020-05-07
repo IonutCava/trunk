@@ -183,11 +183,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
 
         // Internal node cull (check against camera frustum and all that ...)
         F32 distanceSqToCamera = 0.0f;
-        bool isVisible = isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera);
-        if (task != nullptr && StopRequested(*task)) {
-            isVisible = false;
-        }
-        if (isVisible) {
+        if (isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera)) {
             if (!isTransformNode) {
                 VisibleNode node = {};
                 node._node = &currentNode;
