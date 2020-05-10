@@ -126,6 +126,10 @@ namespace Divide {
             if (ImGui::SliderFloat("Veclocity Scale", &velocity, 0.01f, 3.0f)) {
                 blurOP.velocityScale(velocity);
             }
+            U8 samples = blurOP.maxSamples(); constexpr U8 min = 1u, max = 16u;
+            if (ImGui::SliderScalar("Max Samples", ImGuiDataType_U8, &samples, &min, &max)) {
+                blurOP.maxSamples(samples);
+            }
         }
 
         if (ImGui::CollapsingHeader("Tone Mapping")) {

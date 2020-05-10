@@ -22,8 +22,7 @@ namespace {
 };
 
 MotionBlurPreRenderOperator::MotionBlurPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
-    : PreRenderOperator(context, parent, FilterType::FILTER_MOTION_BLUR),
-      _velocityScale(1.0f)
+    : PreRenderOperator(context, parent, FilterType::FILTER_MOTION_BLUR)
 {
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -45,7 +44,7 @@ MotionBlurPreRenderOperator::MotionBlurPreRenderOperator(GFXDevice& context, Pre
 
     _blurApply = CreateResource<ShaderProgram>(cache, motionBlur);
     _blurApply->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
-        PipelineDescriptor pipelineDescriptor;
+        PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _blurApply->getGUID();
 
@@ -78,6 +77,7 @@ bool MotionBlurPreRenderOperator::execute(const Camera& camera, const RenderTarg
 
     const F32 velocityFactor = (fps / Config::TARGET_FRAME_RATE) * _velocityScale;
     _blurApplyConstants.set(_ID("dvd_velocityScale"), GFX::PushConstantType::FLOAT, velocityFactor);
+    _blurApplyConstants.set(_ID("dvd_maxSamples"), GFX::PushConstantType::INT, to_I32(maxSamples()));
 
     const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
     const TextureData velocityTex = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
@@ -89,6 +89,7 @@ bool MotionBlurPreRenderOperator::execute(const Camera& camera, const RenderTarg
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = output._targetID;
+    beginRenderPassCmd._descriptor = _screenOnlyDraw;
     beginRenderPassCmd._name = "DO_MOTION_BLUR_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 

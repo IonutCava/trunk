@@ -218,10 +218,9 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texVelocity;
 
 uniform float dvd_velocityScale;
+uniform int dvd_maxSamples;
 
 out vec4 _outColour;
-
-#define MAX_SAMPLES 16
 
 void main(void) {
     vec2 texelSize = 1.0 / vec2(textureSize(texScreen, 0));
@@ -231,7 +230,7 @@ void main(void) {
     velocity *= dvd_velocityScale;
 
     float speed = length(velocity / texelSize);
-    int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
+    int nSamples = clamp(int(speed), 1, dvd_maxSamples);
 
     _outColour = texture(texScreen, screenTexCoords);
     for (int i = 1; i < nSamples; ++i) {

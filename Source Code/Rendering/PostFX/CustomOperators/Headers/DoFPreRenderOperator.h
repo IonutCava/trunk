@@ -55,6 +55,7 @@ class DoFPreRenderOperator final : public PreRenderOperator {
 
    private:
      ShaderProgram_ptr _dofShader = nullptr;
+     Pipeline* _pipeline = nullptr;
      PushConstants _constants;
      F32 _focalDepth = 1.0f;
      bool _autoFocus = true;

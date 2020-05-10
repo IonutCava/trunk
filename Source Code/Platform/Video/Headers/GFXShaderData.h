@@ -49,16 +49,14 @@ class GFXShaderData {
           GPUData() noexcept;
 
           mat4<F32> _ProjectionMatrix;
-          mat4<F32> _InvProjectionMatrix;
-          mat4<F32> _InvViewProjectionMatrix;
           mat4<F32> _ViewMatrix;
-          mat4<F32> _InvViewMatrix;
           mat4<F32> _ViewProjectionMatrix;
-          mat4<F32> _PreviousViewMatrix;
-          mat4<F32> _PreviousProjectionMatrix;
-          vec4<F32> _cameraPosition = { 0.0f, 0.0f, 0.0f, 1.0f }; // xyz - position, w - aspect ratio
+          mat4<F32> _PreviousViewProjectionMatrix;
+          // xyz - position, w - aspect ratio
+          vec4<F32> _cameraPosition = { 0.0f, 0.0f, 0.0f, 1.0f };
           vec4<F32> _ViewPort = { 0.0f, 0.0f, 1.0f, 1.0f };
-          vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f }; //x - near plane, y - far plane, z - FoV, w - reserved
+          //x - near plane, y - far plane, z - FoV, w - reserved
+          vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f };
           //x - material debug flag, y - CSM splits view index
           vec4<F32> _otherProperties;
           vec4<F32> _clipPlanes[to_base(Frustum::FrustPlane::COUNT)];

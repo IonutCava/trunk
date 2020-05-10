@@ -49,6 +49,7 @@ class MotionBlurPreRenderOperator : public PreRenderOperator {
 
     bool ready() const final;
 
+    PROPERTY_RW(U8, maxSamples, 16u);
    private:
     ShaderProgram_ptr _blurApply = nullptr;
     Pipeline* _blurApplyPipeline = nullptr;

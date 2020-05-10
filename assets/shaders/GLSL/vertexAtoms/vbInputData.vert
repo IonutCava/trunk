@@ -64,13 +64,15 @@ void computeDataNoClip() {
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 
 #if defined(HAS_VELOCITY)
-    const mat4 prevVP = dvd_ViewProjectionMatrix;//dvd_PreviousProjectionMatrix * dvd_PreviousViewMatrix;
-    //VAR._prevVertexWVP = prevVP * vec4(dvd_PrevWorldMatrix(DATA_IDX) * dvd_Vertex, 1.0f);
+#define USE_CAMERA_BLUR
 
-    mat4 worldMat = dvd_PrevWorldMatrix(DATA_IDX);
-    worldMat[0][3] = worldMat[1][3] = worldMat[2][3] = 0.0f;
-    worldMat[3][3] = 1.0f;
-    VAR._prevVertexWVP = prevVP * worldMat * dvd_Vertex;
+    const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_Vertex, 1.0f);
+#if defined(USE_CAMERA_BLUR)
+    VAR._prevVertexWVP = dvd_PreviousViewProjectionMatrix * worldPos;
+#else
+    VAR._prevVertexWVP = dvd_ViewProjectionMatrix * worldPos;
+#endif
+    
 #endif
 }
 
@@ -81,7 +83,7 @@ void computeData() {
 
 vec3 rotate_vertex_position(vec3 position, vec4 q) {
     const vec3 v = position.xyz;
-    return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+    return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
 #if 0

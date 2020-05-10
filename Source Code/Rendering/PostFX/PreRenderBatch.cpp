@@ -565,6 +565,9 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
             }
         }
     }
+
+    // At this point, the last output should remain the general output. So the last swap was redundant
+    _swapped = !_swapped;
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {

@@ -32,9 +32,16 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     dof.waitForReady(false);
     dof.propertyDescriptor(shaderDescriptor);
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
+    _dofShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+        pipelineDescriptor._shaderProgramHandle = _dofShader->getGUID();
+        _pipeline = _context.newPipeline(pipelineDescriptor);
+    });
 
     focalDepth(0.5f);
     autoFocus(true);
+
     _constants.set(_ID("size"), GFX::PushConstantType::VEC2, _parent.screenRT()._rt->getResolution());
 }
 
@@ -67,30 +74,21 @@ void DoFPreRenderOperator::autoFocus(const bool state) {
 
 bool DoFPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
-    const TextureData depthTex = input._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+    const TextureData depthTex = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-    pipelineDescriptor._shaderProgramHandle = _dofShader->getGUID();
-
-    GFX::BindPipelineCommand pipelineCmd;
-    pipelineCmd._pipeline = _context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
-
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants = _constants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
-
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
     descriptorSetCmd._set._textureData.setTexture(depthTex, to_U8(TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = output._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
     beginRenderPassCmd._name = "DO_DOF_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _pipeline });
+    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _constants });
 
     GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 

@@ -1319,19 +1319,16 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     bool needsUpdate = false, projectionDirty = false, viewDirty = false;
     if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
         data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
-        data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
         projectionDirty = true;
     }
 
     if (cameraSnapshot._viewMatrix != data._ViewMatrix) {
         data._ViewMatrix.set(cameraSnapshot._viewMatrix);
-        data._ViewMatrix.getInverse(data._InvViewMatrix);
         viewDirty = true;
     }
 
     if (projectionDirty || viewDirty) {
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
-        data._ViewProjectionMatrix.getInverse(data._InvViewProjectionMatrix);
         needsUpdate = true;
     }
 
@@ -1386,8 +1383,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 }
 
 void GFXDevice::setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>& projection) noexcept {
-    _gpuBlock._data._PreviousViewMatrix = view;
-    _gpuBlock._data._PreviousProjectionMatrix = projection;
+    mat4<F32>::Multiply(view, projection, _gpuBlock._data._PreviousViewProjectionMatrix);
     _gpuBlock._needsUpload = true;
 }
 

@@ -16,9 +16,7 @@
 	<!-- memFile: file name that the application should use to write  memory allocation info. Leave empty for none! -->
 	<memFile>mem.log</memFile>
 </debug>
-
 <language>enGB</language>
-
 <!-- RUNTIME: Values use by the application after loading is complete -->
 <runtime>
 	<!-- 0 = primary display, 1 = secondary display, etc. Value is clamped between [1, LAST_DISPLAY] -->
@@ -33,9 +31,9 @@
 	<windowedMode>0</windowedMode>
 	<!-- do we allow window resizing if running in windowed mode? -->
 	<windowResizable>true</windowResizable>
-    <!-- start maximized or use the provided window dimensions? -->
-    <maximizeOnStart>true</maximizeOnStart>
-    <!-- cap framerate. Set to 0 or less to disable -->
+	<!-- start maximized or use the provided window dimensions? -->
+	<maximizeOnStart>true</maximizeOnStart>
+	<!-- cap framerate. Set to 0 or less to disable -->
 	<frameRateLimit>0</frameRateLimit>
 	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
 	<enableVSync>false</enableVSync>
@@ -85,14 +83,14 @@
 	<postFX>
 		<!-- Select the type of post processing AA: FXAA or SMAA -->
 		<!-- Defaults to FXAA -->
-		<PostAAType>FXAA</PostAAType>
+		<PostAAType>SMAA</PostAAType>
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
 		<PostAAQualityLevel>2</PostAAQualityLevel>
 		<enableDepthOfField>false</enableDepthOfField>
-        <enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
+		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>
-        <velocityScale>1.0</velocityScale>
+		<velocityScale>1</velocityScale>
 		<enableSSAO>true</enableSSAO>
 		<ssaoRadius>0.5</ssaoRadius>
 		<ssaoPower>2</ssaoPower>

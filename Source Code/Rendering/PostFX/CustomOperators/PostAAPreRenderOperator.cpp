@@ -47,7 +47,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
         vertModule._sourceFile = "baseVertexShaders.glsl";
-        vertModule._variant = "Dummy";
+        vertModule._variant = "FullScreenQuad";
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
@@ -209,6 +209,7 @@ bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHa
         { //Step 2: Blend
             GFX::BeginRenderPassCommand beginRenderPassCmd = {};
             beginRenderPassCmd._target = output._targetID;
+            beginRenderPassCmd._descriptor = _screenOnlyDraw;
             beginRenderPassCmd._name = "DO_SMAA_BLEND_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
@@ -230,6 +231,7 @@ bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHa
         // Apply FXAA/SMAA to the specified render target
         GFX::BeginRenderPassCommand beginRenderPassCmd;
         beginRenderPassCmd._target = output._targetID;
+        beginRenderPassCmd._descriptor = _screenOnlyDraw;
         beginRenderPassCmd._name = "DO_POSTAA_PASS";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
@@ -240,7 +242,7 @@ bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHa
         descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-        GFX::EnqueueCommand(bufferInOut, _pointDrawCmd);
+        GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
     }

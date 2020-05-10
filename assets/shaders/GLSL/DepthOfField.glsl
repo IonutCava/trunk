@@ -1,14 +1,15 @@
 -- Fragment
 
 #define PI  3.14159265
-out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 
 uniform vec2 size;
-uniform float focalDepth;  //external focal point value, but you may use autofocus option below
-uniform bool autofocus = true; //use autofocus in shader? disable if you use external focalDepth value
+uniform float focalDepth = 0.5f;  //external focal point value, but you may use autofocus option below
+uniform bool autofocus = true;    //use autofocus in shader? disable if you use external focalDepth value
+
+out vec4 _colourOut;
 
 float width = size.x; //texture width
 float height = size.y; //texture height
