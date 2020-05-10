@@ -42,8 +42,7 @@ class DoFPreRenderOperator final : public PreRenderOperator {
     DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~DoFPreRenderOperator();
 
-    void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
-    void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
+    bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
     inline F32 focalDepth() const { return _focalDepth; }

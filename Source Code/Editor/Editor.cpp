@@ -246,7 +246,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 winDescriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
                 winDescriptor.position.set(viewport->Pos.x, viewport->Pos.y);
                 winDescriptor.externalClose = true;
-                winDescriptor.targetAPI = window.context().gfx().getRenderAPI();
+                winDescriptor.targetAPI = window.context().gfx().renderAPI();
 
                 ErrorCode err = ErrorCode::NO_ERR;
                 DisplayWindow* newWindow = g_windowManager->createWindow(winDescriptor, err);

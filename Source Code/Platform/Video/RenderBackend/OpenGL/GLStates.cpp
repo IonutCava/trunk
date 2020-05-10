@@ -19,12 +19,11 @@ GLuint GL_API::s_UBOffsetAlignment = 0;
 GLuint GL_API::s_UBMaxSize = 0;
 GLuint GL_API::s_SSBOffsetAlignment = 0;
 GLuint GL_API::s_SSBMaxSize = 0;
-GLint  GL_API::s_lineWidthLimit = 1;
-GLuint GL_API::s_dummyVAO = 0;
+GLuint GL_API::s_dummyVAO = 0u;
 GLint  GL_API::s_maxTextureUnits = 0;
 GLint  GL_API::s_maxAttribBindings = 0;
 GLint  GL_API::s_maxFBOAttachments = 0;
-GLuint GL_API::s_anisoLevel = 0;
+GLuint GL_API::s_anisoLevel = 0u;
 
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
@@ -52,7 +51,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
         //stateTracker._commandBufferOffset = 0u;
         stateTracker._activePixelBuffer = nullptr;
     }
-    stateTracker._previousStateBlockHash = 0;
+
     stateTracker.setActiveVAO(0);
     stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     stateTracker.setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_WRITE, 0);
@@ -70,6 +69,9 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker._activeRenderTarget = nullptr;
     stateTracker.setActiveProgram(0u);
     stateTracker.setActiveShaderPipeline(0u);
+
+    stateTracker._previousStateBlockHash = 0;
+    stateTracker.setStateBlock(RenderStateBlock::defaultHash());
 }
 
 bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {

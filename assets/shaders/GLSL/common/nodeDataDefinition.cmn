@@ -18,8 +18,12 @@ struct NodeData {
     // [3][2] = lod level
     // [3][3] = occlusion cull flag (if negative - no culling. use value for something else. if positive - cull)
     mat4 _colourMatrix;
-    // x = texture operation; y = bump method; z = ; w = ;
-    vec4 _extraProperties;
+    // [0][0] ... [3][2] = previous world matrix
+    // [0][3] = texture operation
+    // [1][3] = bump method
+    // [2][3] = reserved
+    // [3][3] = reserved
+    mat4 _prevWorldMatrix;
 };
 
 #endif //_NODE_DATA_DEFINITION_CMN_

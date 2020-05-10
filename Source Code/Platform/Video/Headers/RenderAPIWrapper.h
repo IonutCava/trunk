@@ -79,23 +79,19 @@ public:
 
 protected:
     friend class GFXDevice;
-    virtual void idle() = 0;
 
-    /*Application display frame*/
     /// Clear buffers, set default states, etc
     virtual void beginFrame(DisplayWindow& window, bool global = false) = 0;
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame(DisplayWindow& window, bool global = false) = 0;
+    virtual void idle() = 0;
 
-    virtual RenderAPI renderAPI() const = 0;
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 
     // Returns the time in milliseconds that it took to render one frame
     // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
-    virtual F32 getFrameDurationGPU() const = 0;
-
-    virtual size_t setStateBlock(size_t stateBlockHash) = 0;
+    virtual F32 getFrameDurationGPU() const noexcept = 0;
 
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 

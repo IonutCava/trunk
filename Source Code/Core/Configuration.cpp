@@ -71,8 +71,10 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.postAAType);
         GET_PARAM(rendering.postFX.PostAAQualityLevel);
         GET_PARAM(rendering.postFX.enableDepthOfField);
+        GET_PARAM(rendering.postFX.enablePerObjectMotionBlur);
         GET_PARAM(rendering.postFX.enableBloom);
         GET_PARAM(rendering.postFX.bloomFactor);
+        GET_PARAM(rendering.postFX.velocityScale);
         GET_PARAM(rendering.postFX.enableSSAO);
         GET_PARAM(rendering.postFX.ssaoRadius);
         GET_PARAM(rendering.postFX.ssaoPower);
@@ -154,8 +156,10 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.postAAType);
         PUT_PARAM(rendering.postFX.PostAAQualityLevel);
         PUT_PARAM(rendering.postFX.enableDepthOfField);
+        PUT_PARAM(rendering.postFX.enablePerObjectMotionBlur);
         PUT_PARAM(rendering.postFX.enableBloom);
         PUT_PARAM(rendering.postFX.bloomFactor);
+        PUT_PARAM(rendering.postFX.velocityScale);
         PUT_PARAM(rendering.postFX.enableSSAO);
         PUT_PARAM(rendering.postFX.ssaoRadius);
         PUT_PARAM(rendering.postFX.ssaoPower);

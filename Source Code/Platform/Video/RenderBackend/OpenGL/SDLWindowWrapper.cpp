@@ -23,13 +23,15 @@
 #include <GL3Renderer.h>
 
 #include <GLIM/glim.h>
-#include <chrono>
-#include <thread>
-
-#define HAVE_M_PI
-#include <SDL.h>
 
 #include <glbinding/Binding.h>
+
+#ifndef GLFONTSTASH_IMPLEMENTATION
+#define GLFONTSTASH_IMPLEMENTATION
+#define FONTSTASH_IMPLEMENTATION
+#include "Text/Headers/fontstash.h"
+#include "Text/Headers/glfontstash.h"
+#endif
 
 namespace Divide {
 namespace {
@@ -69,10 +71,6 @@ namespace {
         vectorEASTL<std::pair<SDL_GLContext, bool /*in use*/>> _contexts;
     } g_ContextPool;
 };
-
-RenderAPI GL_API::renderAPI() const noexcept {
-    return (s_glConfig._glES ? RenderAPI::OpenGLES : RenderAPI::OpenGL);
-}
 
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& config) {
@@ -221,7 +219,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     glEnable(GL_MULTISAMPLE);
     // Line smoothing should almost always be used
     glEnable(GL_LINE_SMOOTH);
-    glGetIntegerv(GL_SMOOTH_LINE_WIDTH_RANGE, &s_lineWidthLimit);
 
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
@@ -315,8 +312,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         }
     );
 
-    // Prepare font rendering subsystem
-    if (!createFonsContext()) {
+    // FontStash library initialization
+    // 512x512 atlas with bottom-left origin
+    _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
+    if (_fonsContext == nullptr) {
         Console::errorfn(Locale::get(_ID("ERROR_FONT_INIT")));
         return ErrorCode::FONT_INIT_ERROR;
     }
@@ -366,7 +365,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     if (initGLSW(config)) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
-
         return ErrorCode::NO_ERR;
     }
 
@@ -393,7 +391,9 @@ void GL_API::closeRenderingAPI() {
         s_samplerMap.clear();
     }
     // Destroy the text rendering system
-    deleteFonsContext();
+    glfonsDelete(_fonsContext);
+    _fonsContext = nullptr;
+
     _fonts.clear();
     if (s_dummyVAO > 0) {
         GL_API::deleteVAOs(1, &s_dummyVAO);

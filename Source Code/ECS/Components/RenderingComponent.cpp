@@ -823,7 +823,10 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
                 const vectorEASTL<Line>& skeletonLines = animComp->skeletonLines();
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
-                _skeletonPrimitive->worldMatrix(_parentSGN.get<TransformComponent>()->getWorldMatrix());
+
+                mat4<F32> mat = MAT4_IDENTITY;
+                _parentSGN.get<TransformComponent>()->getWorldMatrix(mat);
+                _skeletonPrimitive->worldMatrix(mat);
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
                 return;
             }

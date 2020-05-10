@@ -206,8 +206,12 @@ public:
         // [3][2] = lod level
         // [3][3] = occlusion cull flag (if negative - no culling. use value for something else. if positive - cull)
         mat4<F32> _colourMatrix = MAT4_ZERO;
-        // x = ; y = ; z = ; w = ;
-        vec4<F32> _extraProperties = VECTOR4_ZERO;
+        // [0][0] ... [3][2] = previous world matrix
+        // [0][3] = texture operation
+        // [1][3] = bump method
+        // [2][3] = reserved
+        // [3][3] = reserved
+        mat4<F32> _prevWorldMatrix = MAT4_ZERO;
     };
 
     enum class MaterialDebugFlag : U8 {
@@ -276,6 +280,8 @@ public:  // GPU interface
     inline bool setViewport(I32 x, I32 y, I32 width, I32 height);
     inline const Rect<I32>& getViewport() const noexcept;
 
+    void setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>& projection) noexcept;
+
     inline F32 renderingAspectRatio() const noexcept;
     inline const vec2<U16>& renderingResolution() const noexcept;
 
@@ -300,7 +306,6 @@ public:  // Accessors and Mutators
     /// returns the standard state block
     size_t getDefaultStateBlock(bool noDepth) const noexcept;
     inline size_t get2DStateBlock() const noexcept;
-    inline const Texture_ptr& getPrevDepthBuffer() const noexcept;
     inline GFXRTPool& renderTargetPool() noexcept;
     inline const GFXRTPool& renderTargetPool() const noexcept;
     inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const noexcept;
@@ -319,11 +324,10 @@ public:  // Accessors and Mutators
     void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>& namesOut);
 
     /// In milliseconds
-    inline F32 getFrameDurationGPU() const;
+    inline F32 getFrameDurationGPU() const noexcept;
     inline vec2<U16> getDrawableSize(const DisplayWindow& window) const;
     inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
     inline void onThreadCreated(const std::thread::id& threadID);
-    inline RenderAPI getRenderAPI() const;
 
     static void setFrameInterpolationFactor(const D64 interpolation) noexcept { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() noexcept { return s_interpolationFactor; }
@@ -387,6 +391,7 @@ public:
 
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
     PROPERTY_RW(I32, csmPreviewIndex, -1);
+    PROPERTY_RW(RenderAPI, renderAPI, RenderAPI::COUNT);
 
 protected:
     /// Create and return a new framebuffer.
@@ -458,7 +463,6 @@ private:
 
     std::pair<vec2<U16>, bool> _resolutionChangeQueued;
 
-    Texture_ptr _prevDepthBuffer = nullptr;
     /// The default render state buth with depth testing disabled
     size_t _defaultStateNoDepthHash = 0;
     /// Special render state for 2D rendering

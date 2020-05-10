@@ -92,7 +92,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     if (config.rendering.postFX.enableDepthOfField) {
         _postFX->pushFilter(FilterType::FILTER_DEPTH_OF_FIELD);
     }
-    if (false) {
+    if (config.rendering.postFX.enablePerObjectMotionBlur) {
         _postFX->pushFilter(FilterType::FILTER_MOTION_BLUR);
     }
     if (config.rendering.postFX.enableBloom) {

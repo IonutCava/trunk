@@ -99,7 +99,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     borderTexture.waitForReady(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture), loadTasks;
 
-    _preRenderBatch = std::make_unique<PreRenderBatch>(context.gfx(), *this, cache, RenderTargetID(RenderTargetUsage::SCREEN));
+    _preRenderBatch = std::make_unique<PreRenderBatch>(context.gfx(), *this, cache);
 
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
@@ -193,10 +193,10 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 
     _preRenderBatch->execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
 
-    TextureData output = _preRenderBatch->getOutput();
-    TextureData data0 = _underwaterTexture->data();
-    TextureData data1 = _noise->data();
-    TextureData data2 = _screenBorder->data();
+    const TextureData output = _preRenderBatch->getOutput(false)._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+    const TextureData data0 = _underwaterTexture->data();
+    const TextureData data1 = _noise->data();
+    const TextureData data2 = _screenBorder->data();
 
     RenderTarget& screenRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
     TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->data();

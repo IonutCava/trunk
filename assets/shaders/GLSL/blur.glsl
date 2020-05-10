@@ -209,3 +209,34 @@ void main(void)
         _outColour = texture(texScreen, _blurCoords[0]).rg;
     }
 }
+
+
+--Fragment.ObjectMotionBlur
+
+//ref: http://john-chapman-graphics.blogspot.com/2013/01/per-object-motion-blur.html
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+layout(binding = TEXTURE_UNIT1) uniform sampler2D texVelocity;
+
+uniform float dvd_velocityScale;
+
+out vec4 _outColour;
+
+#define MAX_SAMPLES 16
+
+void main(void) {
+    vec2 texelSize = 1.0 / vec2(textureSize(texScreen, 0));
+    vec2 screenTexCoords = gl_FragCoord.xy * texelSize;
+
+    vec2 velocity = texture(texVelocity, screenTexCoords).ba;
+    velocity *= dvd_velocityScale;
+
+    float speed = length(velocity / texelSize);
+    int nSamples = clamp(int(speed), 1, MAX_SAMPLES);
+
+    _outColour = texture(texScreen, screenTexCoords);
+    for (int i = 1; i < nSamples; ++i) {
+        vec2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
+        _outColour += texture(texScreen, screenTexCoords + offset);
+    }
+    _outColour /= float(nSamples);
+}

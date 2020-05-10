@@ -26,10 +26,6 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(global);
     }
 
-    RenderAPI NONE_API::renderAPI() const {
-        return RenderAPI::None;
-    }
-
     ErrorCode NONE_API::initRenderingAPI(I32 argc, char** argv, Configuration& config) {
         ACKNOWLEDGE_UNUSED(argc);
         ACKNOWLEDGE_UNUSED(argv);
@@ -41,14 +37,8 @@ namespace Divide {
     void NONE_API::closeRenderingAPI() {
     }
 
-    F32 NONE_API::getFrameDurationGPU() const {
+    F32 NONE_API::getFrameDurationGPU() const noexcept {
         return 0.f;
-    }
-
-    size_t NONE_API::setStateBlock(size_t stateBlockHash) {
-        ACKNOWLEDGE_UNUSED(stateBlockHash);
-
-        return 0;
     }
 
     void NONE_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {

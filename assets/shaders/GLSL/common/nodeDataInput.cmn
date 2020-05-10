@@ -52,8 +52,12 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4  dvd_ProjectionMatrix;
     mat4  dvd_InvProjectionMatrix;
+    mat4  dvd_InvViewProjectionMatrix;
     mat4  dvd_ViewMatrix;
+    mat4  dvd_InvViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
+    mat4  dvd_PreviousViewMatrix;
+    mat4  dvd_PreviousProjectionMatrix;
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
     //x - nearPlane, y - farPlane, z - FoV, w - lightTilesX

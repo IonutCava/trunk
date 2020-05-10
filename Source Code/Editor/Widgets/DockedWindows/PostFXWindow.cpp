@@ -9,6 +9,7 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/PostFX/CustomOperators/Headers/SSAOPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
+#include "Rendering/PostFX/CustomOperators/Headers/MotionBlurPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/PostAAPreRenderOperator.h"
 
@@ -29,6 +30,7 @@ namespace Divide {
 
         const auto checkBox = [this](FilterType filter, bool overrideScene = false, const char* label = "Enabled") {
             bool filterEnabled = _postFX.getFilterState(filter);
+            ImGui::PushID(to_base(filter));
             if (ImGui::Checkbox(label, &filterEnabled)) {
                 if (filterEnabled) {
                     _postFX.pushFilter(filter, overrideScene);
@@ -36,6 +38,7 @@ namespace Divide {
                     _postFX.popFilter(filter, overrideScene);
                 }
             }
+            ImGui::PopID();
         };
 
         F32 edgeThreshold = batch->edgeDetectionThreshold();
@@ -115,6 +118,16 @@ namespace Divide {
             }
         }
 
+        if (ImGui::CollapsingHeader("Motion Blur")) {
+            checkBox(FilterType::FILTER_MOTION_BLUR);
+            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_MOTION_BLUR);
+            MotionBlurPreRenderOperator& blurOP = static_cast<MotionBlurPreRenderOperator&>(*op);
+            F32 velocity = blurOP.velocityScale();
+            if (ImGui::SliderFloat("Veclocity Scale", &velocity, 0.01f, 3.0f)) {
+                blurOP.velocityScale(velocity);
+            }
+        }
+
         if (ImGui::CollapsingHeader("Tone Mapping")) {
             bool adaptiveExposure = batch->adaptiveExposureControl();
             if (ImGui::Checkbox("Adaptive Exposure", &adaptiveExposure)) {
@@ -154,9 +167,6 @@ namespace Divide {
         PushReadOnly();
         if (ImGui::CollapsingHeader("SS Reflections")) {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
-        }
-        if (ImGui::CollapsingHeader("Motion Blur")) {
-            checkBox(FilterType::FILTER_MOTION_BLUR);
         }
         PopReadOnly();
     }

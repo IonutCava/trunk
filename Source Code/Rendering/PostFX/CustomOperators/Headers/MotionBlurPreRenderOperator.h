@@ -30,36 +30,33 @@
  */
 
 #pragma once
-#ifndef _NONE_WRAPPER_H_
-#define _NONE_WRAPPER_H_
+#ifndef _MOTION_BLUR_PRE_RENDER_OPERATOR_H_
+#define _MOTION_BLUR_PRE_RENDER_OPERATOR_H_
 
-#include "config.h"
-#include "NonePlaceholderObjects.h"
-
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
 namespace Divide {
 
-class NONE_API final : public RenderAPIWrapper {
-  public:
-    NONE_API(GFXDevice& context);
-    ~NONE_API();
+class MotionBlurPreRenderOperator : public PreRenderOperator {
+   public:
+    MotionBlurPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
+    ~MotionBlurPreRenderOperator();
 
-  protected:
-      void idle() final;
-      void beginFrame(DisplayWindow& window, bool global = false) final;
-      void endFrame(DisplayWindow& window, bool global = false) final;
+    bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
 
-      ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
-      void closeRenderingAPI() final;
-      F32 getFrameDurationGPU() const noexcept final;
-      void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
-      void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
-      vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
-      U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
-      bool setViewport(const Rect<I32>& newViewport) final;
-      void onThreadCreated(const std::thread::id& threadID) final;
+    inline F32 velocityScale() const noexcept { return _velocityScale; }
+    void velocityScale(F32 val);
+
+    bool ready() const final;
+
+   private:
+    ShaderProgram_ptr _blurApply = nullptr;
+    Pipeline* _blurApplyPipeline = nullptr;
+    PushConstants _blurApplyConstants;
+
+    F32 _velocityScale = 1.0f;
 };
 
 };  // namespace Divide
-#endif //_NONE_WRAPPER_H_
+
+#endif

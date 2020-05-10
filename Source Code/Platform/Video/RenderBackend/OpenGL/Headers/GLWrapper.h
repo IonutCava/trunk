@@ -75,11 +75,6 @@ namespace GLUtil {
     class glVAOCache;
 };
 
-struct GLConfig {
-    bool _glES = false;
-};
-
-
 /// OpenGL implementation of the RenderAPIWrapper
 class GL_API final : public RenderAPIWrapper {
     friend class glShader;
@@ -96,38 +91,31 @@ class GL_API final : public RenderAPIWrapper {
 
 public:
     GL_API(GFXDevice& context, const bool glES);
-    ~GL_API();
+    ~GL_API() = default;
 
 protected:
-    RenderAPI renderAPI() const noexcept final;
 
     /// Try and create a valid OpenGL context taking in account the specified command line arguments
     ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
     /// Clear everything that was setup in initRenderingAPI()
     void closeRenderingAPI() final;
 
-    void idle() final;
     /// Prepare the GPU for rendering a frame
     void beginFrame(DisplayWindow& window, bool global = false) final;
     /// Finish rendering the current frame
     void endFrame(DisplayWindow& window, bool global = false) final;
+    void idle() final;
 
-    /// Verify if we have a sampler object created and available for the given
-    /// descriptor
-    static U32 getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
+    GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
 
-    /// Return the OpenGL sampler object's handle for the given hash value
-    static GLuint getSamplerHandle(size_t samplerHash);
     /// Text rendering is handled exclusively by Mikko Mononen's FontStash library
     /// (https://github.com/memononen/fontstash)
     /// with his OpenGL frontend adapted for core context profiles
     void drawText(const TextElementBatch& batch);
+
     void drawIMGUI(ImDrawData* data, I64 windowGUID);
 
     bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset);
-
-    /// Sets the current state block to the one passed as a param
-    size_t setStateBlock(size_t stateBlockHash) final;
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
 
@@ -135,7 +123,7 @@ protected:
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
-    F32 getFrameDurationGPU() const final;
+    F32 getFrameDurationGPU() const noexcept final;
 
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
     vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
@@ -154,6 +142,9 @@ protected:
     bool makeImagesResident(const vectorEASTLFast<Image>& images);
 
     bool setViewport(const Rect<I32>& viewport) final;
+    bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady);
+    void sendPushConstants(const PushConstants & pushConstants);
+
 public:
     static GLStateTracker& getStateTracker() noexcept;
 
@@ -179,23 +170,19 @@ public:
 
     static IMPrimitive* newIMP(Mutex& lock, GFXDevice& parent);
     static bool destroyIMP(Mutex& lock, IMPrimitive*& primitive);
+
+    /// Verify if we have a sampler object created and available for the given descriptor
+    static U32 getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
+    /// Return the OpenGL sampler object's handle for the given hash value
+    static GLuint getSamplerHandle(size_t samplerHash);
 private:
     static bool initGLSW(Configuration& config);
     static bool deInitGLSW();
 
-    bool bindPipeline(const Pipeline& pipeline, bool& shaderWasReady);
-    void sendPushConstants(const PushConstants& pushConstants);
-
-    /// FontStash library initialization
-    bool createFonsContext();
-    /// FontStash library deinitialization
-    void deleteFonsContext();
-    /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to
-    /// all stages
+    /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to all stages
     using ShaderOffsetArray = std::array<GLint, to_base(ShaderType::COUNT) + 1>;
     static void appendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
 
-    GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
 protected:
     /// Number of available texture units
     static GLint s_maxTextureUnits;
@@ -211,63 +198,49 @@ public:
     static GLuint s_SSBOffsetAlignment;
     static GLuint s_SSBMaxSize;
     static glHardwareQueryPool* s_hardwareQueryPool;
-    static GLConfig s_glConfig;
 
 private:
     GFXDevice& _context;
-    /// The previous Text3D node's font face size
-    GLfloat _prevSizeNode;
-    /// The previous plain text string's font face size
-    GLfloat _prevSizeString;
-    /// The previous Text3D node's line width
-    GLfloat _prevWidthNode;
-    /// The previous plain text string's line width
-    GLfloat _prevWidthString;
-    /// Line width limit (hardware upper limit)
-    static GLint s_lineWidthLimit;
-    /// Used to render points (e.g. to render full screen quads with geometry shaders)
-    static GLuint s_dummyVAO;
-    /// Preferred anisotropic filtering level
-    static GLuint s_anisoLevel;
-    /// A cache of all fonts used
-    using FontCache = hashMap<U64, I32>;
-    FontCache _fonts;
-    hashAlg::pair<Str64, I32> _fontCache;
+    Time::ProfileTimer& _swapBufferTimer;
 
+    /// A cache of all fonts used
+    hashMap<U64, I32> _fonts;
+    hashAlg::pair<Str64, I32> _fontCache = {"", -1};
+
+    /// Hardware query objects used for performance measurements
+    std::unique_ptr<glHardwareQueryRing> _elapsedTimeQuery = nullptr;
+    /// Duration in milliseconds to render a frame
+    F32 FRAME_DURATION_GPU = 0.f;
+    /// FontStash's context
+    FONScontext* _fonsContext = nullptr;
+
+    I32 _glswState = -1;
+    CEGUI::OpenGL3Renderer* _GUIGLrenderer = nullptr;
+    hashMap<I64, GenericVertexData*> _IMGUIBuffers;
+    std::pair<I64, SDL_GLContext> _currentContext = {-1, nullptr};
+
+private:
     static bool s_glFlushQueued;
     static bool s_enabledDebugMSGGroups;
-    /// Hardware query objects used for performance measurements
-    std::unique_ptr<glHardwareQueryRing> _elapsedTimeQuery;
-
-    /// Duration in milliseconds to render a frame
-    F32 FRAME_DURATION_GPU;
-    /// FontStash's context
-    FONScontext* _fonsContext;
 
     static SharedMutex s_mipmapQueueSetLock;
     static eastl::unordered_set<GLuint> s_mipmapQueue;
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
-
+    /// Used to render points (e.g. to render full screen quads with geometry shaders)
+    static GLuint s_dummyVAO;
+    /// Preferred anisotropic filtering level
+    static GLuint s_anisoLevel;
     /// /*sampler hash value*/ /*sampler object*/
     using SamplerObjectMap = hashMap<size_t, GLuint, NoHash<size_t>>;
     static Mutex s_samplerMapLock;
     static SamplerObjectMap s_samplerMap;
-
-    I32 _glswState;
-    CEGUI::OpenGL3Renderer* _GUIGLrenderer;
-    hashMap<I64, GenericVertexData*> _IMGUIBuffers;
-    Time::ProfileTimer& _swapBufferTimer;
-
     static GLStateTracker  s_stateTracker;
 
     static GLUtil::glTexturePool s_texturePool;
 
     static IMPrimitivePool s_IMPrimitivePool;
     static eastl::fixed_vector<BufferLockEntry, 64, true> s_bufferLockQueue;
-
-    std::pair<I64, SDL_GLContext> _currentContext;
-
 };
 
 };  // namespace Divide

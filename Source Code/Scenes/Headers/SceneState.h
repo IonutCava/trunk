@@ -180,9 +180,11 @@ struct SceneStatePerPlayer {
     PROPERTY_RW(MoveDirection, angleLR, MoveDirection::NONE);  ///< left-right angle change detected
     PROPERTY_RW(MoveDirection, roll, MoveDirection::NONE);     ///< roll left or right change detected
     PROPERTY_RW(MoveDirection, zoom, MoveDirection::NONE);     ///< zoom in or out detected
+    PROPERTY_RW(mat4<F32>, previousViewMatrix);
+    PROPERTY_RW(mat4<F32>, previousProjectionMatrix);
     POINTER_RW(Camera, overrideCamera, nullptr);
-    const F32 _headHeight = DEFAULT_PLAYER_HEIGHT;
 
+    const F32 _headHeight = DEFAULT_PLAYER_HEIGHT;
 };
 
 struct WaterDetails {

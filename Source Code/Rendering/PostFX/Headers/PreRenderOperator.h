@@ -14,11 +14,10 @@ class ShaderProgram;
 
 enum class RenderStage : U8;
 
-// ALL FILTERS MUST MODIFY THE INPUT RENDERTARGET ONLY!
 enum class FilterType : U16 {
     FILTER_SS_ANTIALIASING = toBit(1),
-    FILTER_SS_REFLECTIONS = toBit(2),
-    FILTER_SS_AMBIENT_OCCLUSION = toBit(3),
+    FILTER_SS_AMBIENT_OCCLUSION = toBit(2),
+    FILTER_SS_REFLECTIONS = toBit(3),
     FILTER_DEPTH_OF_FIELD = toBit(4),
     FILTER_MOTION_BLUR = toBit(5),
     FILTER_BLOOM = toBit(6),
@@ -47,9 +46,9 @@ class NOINITVTABLE PreRenderOperator {
     PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, FilterType operatorType);
     virtual ~PreRenderOperator();
 
-
-    virtual void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
-    virtual void execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) = 0;
+    virtual void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    /// Return true if we rendered into "output"
+    virtual bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut);
 
     virtual void reshape(U16 width, U16 height);
 
@@ -64,9 +63,8 @@ class NOINITVTABLE PreRenderOperator {
     GFXDevice& _context;
 
     PreRenderBatch& _parent;
-
     GFX::DrawCommand _pointDrawCmd = {};
-    RenderTargetHandle _samplerCopy;
+    GFX::DrawCommand _triangleDrawCmd = {};
     RTDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType = FilterType::FILTER_COUNT;
 };

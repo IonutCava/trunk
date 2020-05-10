@@ -37,10 +37,10 @@ float ssao(in mat3 kernelBasis, in vec4 posView) {
 
     for (int i = 0; i < KERNEL_SIZE; ++i) {
         // Reorient sample vector in view space ...
-        vec3 sampleVectorView = kernelBasis * sampleKernel[i];
+        const vec3 sampleVectorView = kernelBasis * sampleKernel[i];
 
         // ... and calculate sample point.
-        vec4 samplePointView = posView + radius * vec4(sampleVectorView, 0.0);
+        const vec4 samplePointView = posView + radius * vec4(sampleVectorView, 0.0);
 
         // Project point and calculate NDC.
         vec4 samplePointNDC = projectionMatrix * samplePointView;
@@ -48,12 +48,12 @@ float ssao(in mat3 kernelBasis, in vec4 posView) {
         samplePointNDC /= samplePointNDC.w;
 
         // Create texture coordinate out of it.
-        vec2 samplePointTexCoord = samplePointNDC.xy * 0.5 + 0.5;
+        const vec2 samplePointTexCoord = samplePointNDC.xy * 0.5 + 0.5;
 
         // Get sample out of depth texture
-        float zSceneNDC = positionFromDepth(texture(texDepthMap, samplePointTexCoord).r, invProjectionMatrix, samplePointTexCoord).z;
+        const float zSceneNDC = viewPositionFromDepth(texture(texDepthMap, samplePointTexCoord).r, invProjectionMatrix, samplePointTexCoord).z;
 
-        float rangeCheck = smoothstep(0.0, 1.0, radius / abs(posView.z - zSceneNDC));
+        const float rangeCheck = smoothstep(0.0, 1.0, radius / abs(posView.z - zSceneNDC));
 
         // If scene fragment is before (smaller in z) sample point, increase occlusion.
         occlusion += (zSceneNDC >= samplePointView.z + bias ? 1.0f : 0.0f) * rangeCheck;
@@ -66,7 +66,7 @@ float ssao(in mat3 kernelBasis, in vec4 posView) {
 void main(void) {
     // Calculate out of the current fragment in screen space the view space position.
     float originDepth = texture(texDepthMap, VAR._texCoord).r;
-    vec4 originPos = positionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
+    vec4 originPos = viewPositionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
 
     //	get view space normal:
     vec3 normal = normalize(unpackNormal(texture(texNormal, VAR._texCoord).rg));

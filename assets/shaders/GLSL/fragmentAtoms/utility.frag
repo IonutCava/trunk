@@ -167,14 +167,16 @@ float computeDepth(in vec4 posWV) {
     return (((far - near) * ndc_depth) + near + far) * 0.5f;
 }
 
-vec4 positionFromDepth(in float depth,
-                       in mat4 invProjectionMatrix,
-                       in vec2 uv) {
+vec4 viewPositionFromDepth(in float depth,
+                           in mat4 invProjectionMatrix,
+                           in vec2 uv) {
+    //to clip space
     float x = uv.x * 2.0f - 1.0f;
     float y = uv.y * 2.0f - 1.0f;
     float z = 2.0f * depth - 1.0f;
     vec4 pos = vec4(x, y, z, 1.0f);
 
+    // to view space
     pos = invProjectionMatrix * pos;
     pos /= pos.w;
 

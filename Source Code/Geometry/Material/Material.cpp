@@ -599,6 +599,11 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         }
         fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
         shaderName += ".DNrmls";
+        if (!hasTransparency()) {
+            fragDefines.emplace_back("HAS_VELOCITY", true);
+            vertDefines.emplace_back("HAS_VELOCITY", true);
+            shaderName += ".Vel";
+        }
     }
 
     globalDefines.emplace_back("DEFINE_PLACEHOLDER", false);

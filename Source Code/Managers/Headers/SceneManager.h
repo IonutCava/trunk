@@ -388,6 +388,10 @@ class SceneManagerRenderPass {
         return *mgr.playerCamera();
     }
 
+    static const SceneStatePerPlayer& playerState(const Divide::SceneManager& mgr) {
+        return mgr.getActiveScene().state().playerState();
+    }
+
     friend class Divide::RenderPass;
     friend class Divide::RenderPassManager;
 };

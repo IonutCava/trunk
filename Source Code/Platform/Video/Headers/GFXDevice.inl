@@ -61,11 +61,6 @@ GFXDevice::get2DStateBlock() const noexcept {
     return _state2DRenderingHash;
 }
 
-inline const Texture_ptr&
-GFXDevice::getPrevDepthBuffer() const noexcept {
-    return _prevDepthBuffer;
-}
-
 inline GFXRTPool&
 GFXDevice::renderTargetPool() noexcept {
     return *_rtPool;
@@ -118,7 +113,7 @@ GFXDevice::getCurrentViewport() const noexcept {
 }
 
 inline F32
-GFXDevice::getFrameDurationGPU() const {
+GFXDevice::getFrameDurationGPU() const noexcept {
     return _api->getFrameDurationGPU();
 }
 
@@ -135,11 +130,6 @@ GFXDevice::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
 inline void
 GFXDevice::onThreadCreated(const std::thread::id& threadID) {
     _api->onThreadCreated(threadID);
-}
-
-inline RenderAPI
-GFXDevice::getRenderAPI() const {
-    return _api->renderAPI();
 }
 
 inline const vec2<U16>& 

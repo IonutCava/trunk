@@ -587,6 +587,9 @@
     <ClCompile Include="..\..\Source Code\ECS\Systems\ECSSystem.cpp">
       <Filter>ECS\Systems</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\MotionBlurPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1034,6 +1037,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\ScriptComponent.h">
       <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\MotionBlurPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

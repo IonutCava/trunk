@@ -404,7 +404,9 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                (nodeType == SceneNodeType::TYPE_OBJECT3D &&
                 static_cast<const Object3D&>(sn).getObjectType()._value != ObjectType::TERRAIN))
             {
-                mat4<F32> nodeTransform = nodeSGN->get<TransformComponent>()->getWorldMatrix();
+                mat4<F32> nodeTransform = MAT4_IDENTITY;
+                nodeSGN->get<TransformComponent>()->getWorldMatrix(nodeTransform);
+
                 for (U32 i = 0; i < vertices.size(); ++i) {
                     // Apply the node's transform and add the vertex to the NavMesh
                     addVertex(&outData, nodeTransform * (vertices[i]._position));

@@ -147,6 +147,7 @@ FONS_DEF void fonsSetSpacing(FONScontext* s, float spacing);
 FONS_DEF void fonsSetBlur(FONScontext* s, float blur);
 FONS_DEF void fonsSetAlign(FONScontext* s, int align);
 FONS_DEF void fonsSetFont(FONScontext* s, int font);
+FONS_DEF void fonsSetColour(FONScontext* s, unsigned char colourR, unsigned char colourG, unsigned char colourB, unsigned char colourA);
 
 // Draw text
 FONS_DEF float fonsDrawText(FONScontext* s, float x, float y, const char* string, const char* end);

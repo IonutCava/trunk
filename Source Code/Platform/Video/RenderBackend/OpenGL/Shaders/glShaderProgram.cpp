@@ -406,7 +406,9 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
                 }
             }
 
-            programName.append("-" + GLUtil::glShaderStageNameTable[shaderIdx]);
+            programName.append("-");
+            programName.append(Names::shaderTypes[shaderIdx]);
+
             if (!shaderDescriptor._variant.empty()) {
                 programName.append("." + shaderDescriptor._variant);
             }
@@ -417,7 +419,9 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             glShader::LoadData& stageData = loadData[shaderIdx];
             stageData._type = shaderDescriptor._moduleType;
             stageData._name = Str64(shaderDescriptor._sourceFile.substr(0, shaderDescriptor._sourceFile.find_first_of(".,")));
-            stageData._name.append("." + GLUtil::glShaderStageNameTable[shaderIdx]);
+            stageData._name.append(".");
+            stageData._name.append(Names::shaderTypes[shaderIdx]);
+
             if (!shaderDescriptor._variant.empty()) {
                 stageData._name.append("." + shaderDescriptor._variant);
             }

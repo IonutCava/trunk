@@ -80,7 +80,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
         RenderTargetDescriptor desc = {};
         desc._name = "SSAO_Out";
-        desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
+        desc._resolution = parent.screenRT()._rt->getResolution();
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
@@ -162,72 +162,75 @@ void SSAOPreRenderOperator::power(const F32 val) {
 }
 
 void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    GenericDrawCommand triangleCmd;
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
-
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = _context.get2DStateBlock();
-
     if (_enabled) {
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._stateHash = _context.get2DStateBlock();
+
         _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
         _ssaoGenerateConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera.getProjectionMatrix()));
 
         // Generate AO
-        GFX::BeginRenderPassCommand beginRenderPassCmd;
-        beginRenderPassCmd._target = _ssaoOutput._targetID;
-        beginRenderPassCmd._name = "DO_SSAO_CALC";
-        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        {
+            GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+            beginRenderPassCmd._target = _ssaoOutput._targetID;
+            beginRenderPassCmd._name = "DO_SSAO_CALC";
+            GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        pipelineDescriptor._shaderProgramHandle = _ssaoGenerateShader->getGUID();
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+            pipelineDescriptor._shaderProgramHandle = _ssaoGenerateShader->getGUID();
+            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
-        TextureData data = _noiseTexture->data();
-        GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
+            TextureData data = _noiseTexture->data();
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
 
-        data = _parent.inputRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::DEPTH));
+            data = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::DEPTH));
 
-        data = _parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::NORMALMAP));
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+            data = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
+            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::NORMALMAP));
+            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
 
-        GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });
+            GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });
 
-        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        }
+        {
+            // Blur AO
+            GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+            beginRenderPassCmd._descriptor.drawMask().disableAll();
+            beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+            beginRenderPassCmd._target = _parent.screenRT()._targetID;
+            beginRenderPassCmd._name = "DO_SSAO_BLUR";
+            GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+            pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getGUID();
+            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+
+            const TextureData data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // AO texture
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
+            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+            GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
+
+
+            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+
+            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        }
     }
-
-    // Blur AO
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._descriptor.drawMask().disableAll();
-    beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
-    beginRenderPassCmd._target = _parent.inputRT()._targetID;
-    beginRenderPassCmd._name = "DO_SSAO_BLUR";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getGUID();
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
-
-    TextureData data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // AO texture
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
-
-
-    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
-
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
-void SSAOPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+bool SSAOPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(input);
+    ACKNOWLEDGE_UNUSED(output);
     ACKNOWLEDGE_UNUSED(bufferInOut);
+
+    return false;
 }
 
 void SSAOPreRenderOperator::onToggle(const bool state) {

@@ -15,7 +15,7 @@ layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
 layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 #endif
 
-void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor, in float crtDepth) {
+void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor) {
 #if defined(USE_ALPHA_DISCARD)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     float alpha = getAlbedo(colourMatrix, uv).a;
@@ -29,24 +29,8 @@ void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor, in float crtD
     for (int i = 0; i < 3; ++i) {
         //_extraDetailsOut[i] = getShadowFactor(i);
     }
+    _normalAndVelocityOut.ba = velocityCalc();
 #endif
-
-#if defined(USE_DEFERRED_NORMALS)
-#   if defined(NODE_STATIC)
-        _normalAndVelocityOut.ba = vec2(1.0f);
-#   else
-        _normalAndVelocityOut.ba = velocityCalc(crtDepth, dvd_InvProjectionMatrix, dvd_screenPositionNormalised);
-#   endif
-#endif
-}
-
-void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor) {
-#if defined(NODE_STATIC)
-    const float crtDepth = 1.0f;
-#else
-    const float crtDepth = computeDepth(VAR._vertexWV);
-#endif
-    writeOutput(uv, normal, alphaFactor, crtDepth);
 }
 
 void writeOutput(in vec2 uv, in vec3 normal) {

@@ -1259,6 +1259,9 @@ bool Scene::updateCameraControls(PlayerIndex idx) {
     
     SceneStatePerPlayer& playerState = state().playerState(idx);
 
+    playerState.previousViewMatrix(cam.getViewMatrix());
+    playerState.previousProjectionMatrix(cam.getProjectionMatrix());
+
     bool updated = false;
     updated = cam.moveRelative(vec3<I32>(to_I32(playerState.moveFB()),
                                          to_I32(playerState.moveLR()),

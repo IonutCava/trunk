@@ -48,11 +48,10 @@ class VK_API final : public RenderAPIWrapper {
       void idle() final;
       void beginFrame(DisplayWindow& window, bool global = false) final;
       void endFrame(DisplayWindow& window, bool global = false) final;
-      RenderAPI renderAPI() const final;
+
       ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
       void closeRenderingAPI() final;
-      F32 getFrameDurationGPU() const final;
-      size_t setStateBlock(size_t stateBlockHash) final;
+      F32 getFrameDurationGPU() const noexcept final;
       void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
       void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
       vec2<U16> getDrawableSize(const DisplayWindow& window) const final;

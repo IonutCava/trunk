@@ -68,14 +68,14 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
         _bloomApplyPipeline = _context.newPipeline(pipelineDescriptor);
     });
 
-    vec2<U16> res(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
+    vec2<U16> res = parent.screenRT()._rt->getResolution();
     if (res.width > 2500) { //over 1440p
         resolutionDownscaleFactor = 4.0f;
     }
 
     vectorEASTL<RTAttachmentDescriptor> att = {
         {
-            parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(),
+            parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO)).texture()->descriptor(),
             RTAttachmentType::Colour,
             0,
             DefaultColours::BLACK
@@ -116,8 +116,8 @@ bool BloomPreRenderOperator::ready() const {
 void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     PreRenderOperator::reshape(width, height);
 
-    U16 w = to_U16(width / resolutionDownscaleFactor);
-    U16 h = to_U16(height / resolutionDownscaleFactor);
+    const U16 w = to_U16(width / resolutionDownscaleFactor);
+    const U16 h = to_U16(height / resolutionDownscaleFactor);
     _bloomOutput._rt->resize(w, h);
     _bloomBlurBuffer[0]._rt->resize(width, height);
     _bloomBlurBuffer[1]._rt->resize(width, height);
@@ -134,30 +134,21 @@ void BloomPreRenderOperator::luminanceThreshold(F32 val) {
     _bloomCalcConstants.set(_ID("luminanceThreshold"), GFX::PushConstantType::FLOAT, _bloomThreshold);
 }
 
-void BloomPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-}
-
 // Order: luminance calc -> bloom -> tonemap
-void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+bool BloomPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+    assert(input._targetID != output._targetID);
 
-    GenericDrawCommand triangleCmd = {};
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
+    const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
 
-    RenderTargetHandle screen = _parent.inputRT();
-    TextureData data = screen._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //screen
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
+    
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomCalcConstants });
 
-     // Step 1: generate bloom
-
-    // render all of the "bright spots"
+    // Step 1: generate bloom - render all of the "bright spots"
     RTClearDescriptor clearTarget = {};
     clearTarget.clearDepth(false);
     clearTarget.clearColours(true);
@@ -172,8 +163,7 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
     beginRenderPassCmd._name = "DO_BLOOM_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::DrawCommand drawCmd = { triangleCmd };
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
@@ -187,29 +177,25 @@ void BloomPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& b
                         bufferInOut);
 
     // Step 3: apply bloom
-    GFX::BlitRenderTargetCommand blitRTCommand = {};
-    blitRTCommand._source = screen._targetID;
-    blitRTCommand._destination = _bloomBlurBuffer[0]._targetID;
-    blitRTCommand._blitColours.emplace_back();
-    GFX::EnqueueCommand(bufferInOut, blitRTCommand);
+    const TextureData bloomTex = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 
-    TextureData data0 = _bloomBlurBuffer[0]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Screen
-    TextureData data1 = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data(); //Bloom
-
-    descriptorSetCmd._set._textureData.setTexture(data0, to_U8(TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(data1, to_U8(TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(bloomTex, to_U8(TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomApplyConstants });
 
-    beginRenderPassCmd._target = screen._targetID;
+    beginRenderPassCmd._target = output._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+
+
+    return true;
 }
 
 };

@@ -11,8 +11,7 @@ namespace Divide {
         _uniformScaled(false),
         _parentUsageContext(parentSGN.usageContext())
     {
-        _transformUpdatedMask.store(to_base(TransformType::ALL));
-
+        _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
 
         EditorComponentField transformField = {};
         transformField._name = "Transform";
@@ -25,7 +24,7 @@ namespace Divide {
 
         EditorComponentField worldMatField = {};
         worldMatField._name = "WorldMat";
-        worldMatField._data = &_worldMatrix;
+        worldMatField._dataGetter = [this](void* dataOut) { getWorldMatrix(*static_cast<mat4<F32>*>(dataOut)); };
         worldMatField._type = EditorComponentFieldType::PUSH_TYPE;
         worldMatField._readOnly = true;
         worldMatField._serialise = false;
@@ -81,6 +80,7 @@ namespace Divide {
 
     void TransformComponent::reset() {
         _worldMatrix.identity();
+        _prevWorldMatrix.identity();
         _prevTransformValues._translation.set(0.0f);
 
         _prevTransformValues._scale.set(1.0f);
@@ -89,7 +89,7 @@ namespace Divide {
             _transformStack.pop();
         }
 
-        _transformUpdatedMask.store(to_base(TransformType::ALL));
+        _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
     }
 
     void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
@@ -111,7 +111,7 @@ namespace Divide {
         // Cleanup our dirty transforms
         const U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
         if (previousMask != to_U32(TransformType::NONE)) {
-            updateWorldMatrix();
+            updateWorldMatrix(previousMask);
 
             _parentSGN.SendEvent(
             {
@@ -467,21 +467,43 @@ namespace Divide {
         return Slerp(_prevTransformValues._orientation, quat, to_F32(interpolationFactor));
     }
 
-    const mat4<F32>& TransformComponent::updateWorldMatrix() {
-        mat4<F32> parentMat = {};
-        SceneGraphNode* grandParentPtr = _parentSGN.parent();
-        if (grandParentPtr) {
-            parentMat = grandParentPtr->get<TransformComponent>()->getWorldMatrix();
-        }
-
+    void TransformComponent::updateWorldMatrix(U32 updateMask) {
+        const bool initPrevMatrix = BitCompare(updateMask, to_U32(TransformType::PREVIOUS_MAT));
         UniqueLock<SharedMutex> w_lock(_worldMatrixLock);
+        if (!initPrevMatrix) {
+            _prevWorldMatrix = _worldMatrix;
+        }
         getMatrix(_worldMatrix);
-        return _worldMatrix *= parentMat;
+
+        if (initPrevMatrix) {
+            _prevWorldMatrix = _worldMatrix;
+        }
     }
 
-    const mat4<F32>& TransformComponent::getWorldMatrix() const {
-        SharedLock<SharedMutex> r_lock(_worldMatrixLock);
-        return _worldMatrix;
+    void TransformComponent::getPreviousWorldMatrix(mat4<F32>& matOut) const {
+        mat4<F32> parentMat = MAT4_IDENTITY;
+        SceneGraphNode* grandParentPtr = _parentSGN.parent();
+        if (grandParentPtr) {
+            grandParentPtr->get<TransformComponent>()->getPreviousWorldMatrix(parentMat);
+        }
+
+        matOut.set(_prevWorldMatrix);
+        matOut *= parentMat;
+    }
+
+    void TransformComponent::getWorldMatrix(mat4<F32>& matOut) const {
+        mat4<F32> parentMat = MAT4_IDENTITY;
+        SceneGraphNode* grandParentPtr = _parentSGN.parent();
+        if (grandParentPtr) {
+            grandParentPtr->get<TransformComponent>()->getWorldMatrix(parentMat);
+        }
+
+        {
+            SharedLock<SharedMutex> r_lock(_worldMatrixLock);
+            matOut.set(_worldMatrix);
+        }
+
+        matOut *= parentMat;
     }
 
     mat4<F32> TransformComponent::getWorldMatrix(D64 interpolationFactor) const {
@@ -494,7 +516,7 @@ namespace Divide {
         OPTICK_EVENT();
 
         if (_parentUsageContext == NodeUsageContext::NODE_STATIC || interpolationFactor > 0.985) {
-            matrixOut.set(getWorldMatrix());
+            getWorldMatrix(matrixOut);
         } else {
             getMatrix(interpolationFactor, matrixOut);
 

@@ -401,18 +401,6 @@ void MenuBar::drawToolsMenu() {
                     }
                 }
             }
-
-            const Texture_ptr& prevDepthBufferTex = _context.gfx().getPrevDepthBuffer();
-            if (prevDepthBufferTex != nullptr) {
-                if (ImGui::BeginMenu("Miscellaneous"))
-                {
-                    if (ImGui::MenuItem(prevDepthBufferTex->resourceName().c_str()))
-                    {
-                        _previewTextures.push_back(prevDepthBufferTex);
-                    }
-                    ImGui::EndMenu();
-                }
-            }
             ImGui::EndMenu();
         }
         ImGui::EndMenu();

@@ -106,8 +106,10 @@ struct Configuration final : public XML::IXMLSerializable {
             stringImpl postAAType = "FXAA";
             U8 PostAAQualityLevel = 2;
             bool enableDepthOfField = false;
+            bool enablePerObjectMotionBlur = true;
             bool enableBloom = false;
             F32 bloomFactor = 0.f;
+            F32 velocityScale = 1.f;
             bool enableSSAO = false;
             F32 ssaoRadius = 0.5f;
             F32 ssaoPower = 2.0f;

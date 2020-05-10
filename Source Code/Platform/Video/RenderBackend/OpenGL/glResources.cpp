@@ -98,7 +98,6 @@ std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
-std::array<Str16, to_base(ShaderType::COUNT)> glShaderStageNameTable;
 std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
 
 void fillEnumTables() {
@@ -228,13 +227,6 @@ void fillEnumTables() {
     glProgramStageMask[to_base(ShaderType::TESSELLATION_EVAL)] = GL_TESS_EVALUATION_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COUNT)] = GL_NONE_BIT;
-
-    glShaderStageNameTable[to_base(ShaderType::VERTEX)] = "Vertex";
-    glShaderStageNameTable[to_base(ShaderType::FRAGMENT)] = "Fragment";
-    glShaderStageNameTable[to_base(ShaderType::GEOMETRY)] = "Geometry";
-    glShaderStageNameTable[to_base(ShaderType::TESSELLATION_CTRL)] = "TessellationC";
-    glShaderStageNameTable[to_base(ShaderType::TESSELLATION_EVAL)] = "TessellationE";
-    glShaderStageNameTable[to_base(ShaderType::COMPUTE)] = "Compute";
 
     glQueryTypeTable[to_base(QueryType::TIME)] = GL_TIME_ELAPSED;
     glQueryTypeTable[to_base(QueryType::PRIMITIVES_GENERATED)] = GL_PRIMITIVES_GENERATED;

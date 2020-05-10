@@ -14,22 +14,40 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
     _screenOnlyDraw.drawMask().disableAll();
     _screenOnlyDraw.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
 
-    GenericDrawCommand pointsCmd;
+    GenericDrawCommand pointsCmd = {};
     pointsCmd._primitiveType = PrimitiveType::API_POINTS;
     pointsCmd._drawCount = 1;
 
     _pointDrawCmd = { pointsCmd };
+
+    GenericDrawCommand triangleCmd = {};
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
+
+    _triangleDrawCmd = { triangleCmd };
 }
 
 PreRenderOperator::~PreRenderOperator()
 {
-    _context.renderTargetPool().deallocateRT(_samplerCopy);
+}
+
+void PreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+}
+
+bool PreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(input);
+    ACKNOWLEDGE_UNUSED(output);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+
+    return false;
 }
 
 void PreRenderOperator::reshape(U16 width, U16 height) {
-    if (_samplerCopy._rt) {
-        _samplerCopy._rt->resize(width, height);
-    }
+    ACKNOWLEDGE_UNUSED(width);
+    ACKNOWLEDGE_UNUSED(height);
 }
 
 void PreRenderOperator::idle(const Configuration& config) {

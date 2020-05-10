@@ -26,28 +26,16 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 
-#ifndef GLFONTSTASH_IMPLEMENTATION
-#define GLFONTSTASH_IMPLEMENTATION
-#define FONTSTASH_IMPLEMENTATION
-#include "Text/Headers/fontstash.h"
-#include "Text/Headers/glfontstash.h"
-#endif
-
 #include <SDL_video.h>
 
 #include <CEGUI/CEGUI.h>
 #include <GL3Renderer.h>
 #include <Texture.h>
 
-#define MAX_IMGUI_VERTS 65535 
+#include "Text/Headers/fontstash.h"
 
 namespace Divide {
 
-namespace {
-    bool g_frameTimeRequested = false;
-};
-
-GLConfig GL_API::s_glConfig = {};
 GLStateTracker GL_API::s_stateTracker = {};
 bool GL_API::s_enabledDebugMSGGroups = false;
 bool GL_API::s_glFlushQueued = false;
@@ -58,52 +46,17 @@ eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueue;
 GL_API::GL_API(GFXDevice& context, const bool glES)
     : RenderAPIWrapper(),
       _context(context),
-      _prevSizeNode(0),
-      _prevSizeString(0),
-      _prevWidthNode(0),
-      _prevWidthString(0),
-      _fonsContext(nullptr),
-      _GUIGLrenderer(nullptr),
-      _glswState(-1),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
-    // Only updated in Debug builds
-    FRAME_DURATION_GPU = 0.f;
-    _fontCache.second = -1;
-
-    s_glConfig._glES = glES;
 }
 
-GL_API::~GL_API()
-{
-}
-
-/// FontStash library initialization
-bool GL_API::createFonsContext() {
-    // 512x512 atlas with bottom-left origin
-    _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
-    return _fonsContext != nullptr;
-}
-
-/// FontStash library deinitialization
-void GL_API::deleteFonsContext() {
-    glfonsDelete(_fonsContext);
-    _fonsContext = nullptr;
-}
-
-void GL_API::idle() {
-    //s_texturePool.clean();
-    //s_texture2DPool.clean();
-    //s_texture2DMSPool.clean();
-    //s_textureCubePool.clean();
-}
 
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame(DisplayWindow& window, bool global) {
     OPTICK_EVENT();
 
     // Start a duration query in debug builds
-    if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+    if (global && Config::ENABLE_GPU_VALIDATION) {
         _elapsedTimeQuery->begin();
     }
 
@@ -150,7 +103,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
     //clearStates(window, global);
 
     // End the timing query started in beginFrame() in debug builds
-    if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+    if (global && Config::ENABLE_GPU_VALIDATION) {
         _elapsedTimeQuery->end();
     }
     // Swap buffers
@@ -179,61 +132,27 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
     }
 
-    if (global && Config::ENABLE_GPU_VALIDATION && g_frameTimeRequested) {
+    if (global && Config::ENABLE_GPU_VALIDATION) {
         // The returned results are 'g_performanceQueryRingLength - 1' frames old!
         const I64 time = _elapsedTimeQuery->getResultNoWait();
         FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
         _elapsedTimeQuery->incQueue();
-
-        g_frameTimeRequested = false;
     }
 }
 
-F32 GL_API::getFrameDurationGPU() const {
-    g_frameTimeRequested = true;
+void GL_API::idle() {
+    NOP();
+}
+
+F32 GL_API::getFrameDurationGPU() const noexcept {
     return FRAME_DURATION_GPU;
 }
 
 void GL_API::appendToShaderHeader(ShaderType type,
                                   const stringImpl& entry,
                                   ShaderOffsetArray& inOutOffset) {
-    const GLuint index = to_U32(type);
-    stringImpl stage;
-
-    switch (type) {
-
-        case ShaderType::VERTEX:
-            stage = "Vertex";
-            break;
-
-        case ShaderType::FRAGMENT:
-            stage = "Fragment";
-            break;
-
-        case ShaderType::GEOMETRY:
-            stage = "Geometry";
-            break;
-
-        case ShaderType::TESSELLATION_CTRL:
-            stage = "TessellationC";
-            break;
-
-        case ShaderType::TESSELLATION_EVAL:
-            stage = "TessellationE";
-            break;
-        case ShaderType::COMPUTE:
-            stage = "Compute";
-            break;
-
-        case ShaderType::COUNT:
-            stage.clear();
-            break;
-
-        default:
-            return;
-    }
-
-    glswAddDirectiveToken(stage.c_str(), entry.c_str());
+    const U8 index = to_U8(type);
+    glswAddDirectiveToken(type != ShaderType::COUNT ? Names::shaderTypes[index] : "", entry.c_str());
 
     // include directives are handles differently
     if (entry.find("#include") == stringImpl::npos) {
@@ -266,6 +185,11 @@ bool GL_API::initGLSW(Configuration& config) {
         { "mat3" , "_tbn"}
     };
 
+    constexpr std::pair<const char*, const char*> shaderVaryingsVelocity[] =
+    {
+        { "vec4" , "_prevVertexWVP"},
+    };
+
     constexpr const char* crossTypeGLSLHLSL = "#define float2 vec2\n"
                                               "#define float3 vec3\n"
                                               "#define float4 vec4\n"
@@ -296,7 +220,13 @@ bool GL_API::initGLSW(Configuration& config) {
         }
         passData.append("#endif\n");
 
-            
+        passData.append("#if defined(HAS_VELOCITY)\n");
+        for (U8 i = 0; i < (sizeof(shaderVaryingsVelocity) / sizeof(shaderVaryingsVelocity[0])); ++i) {
+            passData.append(Util::StringFormat(baseString.c_str(), shaderVaryingsVelocity[i].second, shaderVaryingsVelocity[i].second));
+            passData.append("\n");
+        }
+        passData.append("#endif\n");
+
         passData.append("}\n");
 
         return passData;
@@ -585,12 +515,6 @@ bool GL_API::initGLSW(Configuration& config) {
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_DEPTH_MAP_PREV " +
-        to_stringImpl(to_base(TextureUsage::DEPTH_PREV)),
-        lineOffsets);
-
-    appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFLECTION_PLANAR " +
         to_stringImpl(to_base(TextureUsage::REFLECTION_PLANAR)),
@@ -712,39 +636,54 @@ bool GL_API::initGLSW(Configuration& config) {
         to_stringImpl(to_base(AttribLocation::GENERIC)),
         lineOffsets);
 
-    const auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets, bool bump) {
-        if (bump) {
-            for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
-                appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), lineOffsets);
-            }
-        } else {
-            for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
-                appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryings[i].first, shaderVaryings[i].second), lineOffsets);
-            }
+    const auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+        for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryings[i].first, shaderVaryings[i].second), lineOffsets);
+        }
+    };
+
+    const auto addVaryingsBump = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+        for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), lineOffsets);
+        }
+    };
+
+    const auto addVaryingsVelocity = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+        for (U8 i = 0; i < (sizeof(shaderVaryingsVelocity) / sizeof(shaderVaryingsVelocity[0])); ++i) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsVelocity[i].first, shaderVaryingsVelocity[i].second), lineOffsets);
         }
     };
 
     // Vertex shader output
     appendToShaderHeader(ShaderType::VERTEX, "out Data {", lineOffsets);
-    addVaryings(ShaderType::VERTEX, lineOffsets, false);
+    addVaryings(ShaderType::VERTEX, lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::VERTEX, lineOffsets, true);
+    addVaryingsBump(ShaderType::VERTEX, lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::VERTEX, lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX, "} _out;\n", lineOffsets);
 
     // Tessellation Control shader input
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, false);
+    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, true);
+    addVaryingsBump(ShaderType::TESSELLATION_CTRL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _in[];\n", lineOffsets);
 
     // Tessellation Control shader output
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, false);
+    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets, true);
+    addVaryingsBump(ShaderType::TESSELLATION_CTRL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _out[];\n", lineOffsets);
 
@@ -752,17 +691,23 @@ bool GL_API::initGLSW(Configuration& config) {
 
     // Tessellation Eval shader input
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets,false);
+    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets, true);
+    addVaryingsBump(ShaderType::TESSELLATION_EVAL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _in[];\n", lineOffsets);
 
     // Tessellation Eval shader output
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets, false);
+    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets, true);
+    addVaryingsBump(ShaderType::TESSELLATION_EVAL, lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL, lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _out;\n", lineOffsets);
 
@@ -770,17 +715,23 @@ bool GL_API::initGLSW(Configuration& config) {
 
     // Geometry shader input
     appendToShaderHeader(ShaderType::GEOMETRY, "in Data {", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets, false);
+    addVaryings(ShaderType::GEOMETRY, lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets, true);
+    addVaryingsBump(ShaderType::GEOMETRY, lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::GEOMETRY, lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "} _in[];\n", lineOffsets);
 
     // Geometry shader output
     appendToShaderHeader(ShaderType::GEOMETRY, "out Data {", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets, false);
+    addVaryings(ShaderType::GEOMETRY, lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets, true);
+    addVaryingsBump(ShaderType::GEOMETRY, lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::GEOMETRY, lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "} _out;\n", lineOffsets);
 
@@ -788,9 +739,12 @@ bool GL_API::initGLSW(Configuration& config) {
 
     // Fragment shader input
     appendToShaderHeader(ShaderType::FRAGMENT, "in Data {", lineOffsets);
-    addVaryings(ShaderType::FRAGMENT, lineOffsets, false);
+    addVaryings(ShaderType::FRAGMENT, lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryings(ShaderType::FRAGMENT, lineOffsets, true);
+    addVaryingsBump(ShaderType::FRAGMENT, lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#endif", lineOffsets);
+    appendToShaderHeader(ShaderType::FRAGMENT, "#if defined(HAS_VELOCITY)", lineOffsets);
+    addVaryingsVelocity(ShaderType::FRAGMENT, lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#endif", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n", lineOffsets);
 
@@ -828,7 +782,7 @@ I32 GL_API::getFont(const Str64& fontName) {
         _fontCache.first = fontName;
         const U64 fontNameHash = _ID(fontName.c_str());
         // Search for the requested font by name
-        const FontCache::const_iterator it = _fonts.find(fontNameHash);
+        const auto& it = _fonts.find(fontNameHash);
         // If we failed to find it, it wasn't loaded yet
         if (it == std::cend(_fonts)) {
             // Fonts are stored in the general asset directory -> in the GUI
@@ -932,17 +886,16 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
     OPTICK_EVENT();
 
     if (data != nullptr && data->Valid) {
+        auto& stateTracker = GL_API::getStateTracker();
 
         GenericVertexData::IndexBuffer idxBuffer;
         GenericDrawCommand cmd = {};
         cmd._primitiveType = PrimitiveType::TRIANGLES;
 
         const ImVec2 pos = data->DisplayPos;
-        for (int n = 0; n < data->CmdListsCount; n++)
+        for (I32 n = 0; n < data->CmdListsCount; n++)
         {
             const ImDrawList* cmd_list = data->CmdLists[n];
-            const U32 vertCount = to_U32(cmd_list->VtxBuffer.size());
-            assert(vertCount < MAX_IMGUI_VERTS);
 
             cmd._cmd.firstIndex = 0;
 
@@ -953,10 +906,10 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
             GenericVertexData* buffer = getOrCreateIMGUIBuffer(windowGUID);
             assert(buffer != nullptr);
 
-            buffer->updateBuffer(0u, vertCount, 0u, cmd_list->VtxBuffer.Data);
+            buffer->updateBuffer(0u, to_U32(cmd_list->VtxBuffer.size()), 0u, cmd_list->VtxBuffer.Data);
             buffer->updateIndexBuffer(idxBuffer);
 
-            for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); cmd_i++)
+            for (I32 cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); ++cmd_i)
             {
                 const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
@@ -964,7 +917,6 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                     // User callback (registered via ImDrawList::AddCallback)
                     pcmd->UserCallback(cmd_list, pcmd);
                 } else {
-                    const Rect<I32>& viewport = GL_API::getStateTracker()._activeViewport;
                     Rect<I32> clip_rect = {
                         pcmd->ClipRect.x - pos.x,
                         pcmd->ClipRect.y - pos.y,
@@ -972,6 +924,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         pcmd->ClipRect.w - pos.y
                     };
 
+                    const Rect<I32>& viewport = stateTracker._activeViewport;
                     if (clip_rect.x < viewport.z &&
                         clip_rect.y < viewport.w &&
                         clip_rect.z >= 0 &&
@@ -981,10 +934,10 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         clip_rect.z -= clip_rect.x;
                         clip_rect.w -= clip_rect.y;
                         clip_rect.y  = viewport.w - tempW;
-                        getStateTracker().setScissor(clip_rect);
-                        cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
 
-                        GL_API::getStateTracker().bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
+                        stateTracker.setScissor(clip_rect);
+                        stateTracker.bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
+                        cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
                         buffer->draw(cmd, 0);
                     }
                 }
@@ -996,8 +949,9 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 
 bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
     OPTICK_EVENT();
+    auto& stateTracker = GL_API::getStateTracker();
 
-    if (GL_API::getStateTracker()._activePipeline && *GL_API::getStateTracker()._activePipeline == pipeline) {
+    if (stateTracker._activePipeline && *stateTracker._activePipeline == pipeline) {
         return true;
     }
 
@@ -1006,9 +960,12 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
         return false;
     }
 
-    GL_API::getStateTracker()._activePipeline = &pipeline;
+    stateTracker._activePipeline = &pipeline;
     // Set the proper render states
-    setStateBlock(pipeline.stateHash());
+    const size_t stateBlockHash = pipeline.stateHash();
+    // Passing 0 is a perfectly acceptable way of enabling the default render state block
+    stateTracker.setStateBlock(stateBlockHash != 0 ? stateBlockHash : _context.getDefaultStateBlock(false));
+
     glShaderProgram& glProgram = static_cast<glShaderProgram&>(*program);
     // We need a valid shader as no fixed function pipeline is available
 
@@ -1026,9 +983,9 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
         return true;
     }
 
-    GL_API::getStateTracker().setActiveProgram(0u);
-    GL_API::getStateTracker().setActiveShaderPipeline(0u);
-    GL_API::getStateTracker()._activePipeline = nullptr;
+    stateTracker.setActiveProgram(0u);
+    stateTracker.setActiveShaderPipeline(0u);
+    stateTracker._activePipeline = nullptr;
 
     return false;
 }
@@ -1362,76 +1319,48 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
-    GenericVertexData* ret = nullptr;
-
     const auto it = _IMGUIBuffers.find(windowGUID);
-    if (it == eastl::cend(_IMGUIBuffers)) {
-        // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
-        // We update and draw multiple times in a loop
-        ret = _context.newGVD(1);
-
-        GenericVertexData::IndexBuffer idxBuff;
-        idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
-        idxBuff.count = MAX_IMGUI_VERTS * 3;
-
-        ret->create(1);
-
-        GenericVertexData::SetBufferParams params = {};
-        params._buffer = 0;
-        params._elementCount = MAX_IMGUI_VERTS;
-        params._elementSize = sizeof(ImDrawVert);
-        params._useRingBuffer = true;
-        params._updateFrequency = BufferUpdateFrequency::OFTEN;
-        params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        params._storageType = BufferStorageType::NORMAL;
-        params._sync = true;
-        params._data = NULL;
-
-        ret->setBuffer(params); //Pos, UV and Colour
-        ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
-
-#define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
-        AttributeDescriptor& descPos = ret->attribDescriptor(to_base(AttribLocation::GENERIC));
-        AttributeDescriptor& descUV = ret->attribDescriptor(to_base(AttribLocation::TEXCOORD));
-        AttributeDescriptor& descColour = ret->attribDescriptor(to_base(AttribLocation::COLOR));
-
-        descPos.set(0,
-                    2,
-                    GFXDataFormat::FLOAT_32,
-                    false,
-                    to_U32(OFFSETOF(ImDrawVert, pos)));
-
-        descUV.set(0,
-                   2,
-                   GFXDataFormat::FLOAT_32,
-                   false,
-                   to_U32(OFFSETOF(ImDrawVert, uv)));
-
-        descColour.set(0,
-                       4,
-                       GFXDataFormat::UNSIGNED_BYTE,
-                       true,
-                       to_U32(OFFSETOF(ImDrawVert, col)));
-
-#undef OFFSETOF
-        _IMGUIBuffers[windowGUID] = ret;
-    } else {
-        ret = it->second;
+    if (it != eastl::cend(_IMGUIBuffers)) {
+        return it->second;
     }
+
+    // Ring buffer wouldn't work properly with an IMMEDIATE MODE gui
+    // We update and draw multiple times in a loop
+    GenericVertexData* ret = _context.newGVD(1);
+
+    GenericVertexData::IndexBuffer idxBuff;
+    idxBuff.smallIndices = sizeof(ImDrawIdx) == 2;
+    idxBuff.count = (1 << 16) * 3;
+
+    ret->create(1);
+
+    GenericVertexData::SetBufferParams params = {};
+    params._buffer = 0;
+    params._elementCount = (1 << 16);
+    params._elementSize = sizeof(ImDrawVert);
+    params._useRingBuffer = true;
+    params._updateFrequency = BufferUpdateFrequency::OFTEN;
+    params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    params._storageType = BufferStorageType::NORMAL;
+    params._sync = true;
+    params._data = NULL;
+
+    ret->setBuffer(params); //Pos, UV and Colour
+    ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
+
+    AttributeDescriptor& descPos = ret->attribDescriptor(to_base(AttribLocation::GENERIC));
+    AttributeDescriptor& descUV = ret->attribDescriptor(to_base(AttribLocation::TEXCOORD));
+    AttributeDescriptor& descColour = ret->attribDescriptor(to_base(AttribLocation::COLOR));
+
+#   define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
+    descPos.set(   0, 2, GFXDataFormat::FLOAT_32,      false, to_U32(OFFSETOF(ImDrawVert, pos)));
+    descUV.set(    0, 2, GFXDataFormat::FLOAT_32,      false, to_U32(OFFSETOF(ImDrawVert, uv)));
+    descColour.set(0, 4, GFXDataFormat::UNSIGNED_BYTE, true,  to_U32(OFFSETOF(ImDrawVert, col)));
+#   undef OFFSETOF
+
+    _IMGUIBuffers[windowGUID] = ret;
 
     return ret;
-}
-
-/// Activate the render state block described by the specified hash value (0 == default state block)
-size_t GL_API::setStateBlock(size_t stateBlockHash) {
-    OPTICK_EVENT();
-
-    // Passing 0 is a perfectly acceptable way of enabling the default render state block
-    if (stateBlockHash == 0) {
-        stateBlockHash = _context.getDefaultStateBlock(false);
-    }
-
-    return getStateTracker().setStateBlock(stateBlockHash);
 }
 
 bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {

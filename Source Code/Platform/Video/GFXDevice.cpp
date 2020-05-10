@@ -47,12 +47,7 @@
 #include <RenderDoc-Manager/RenderDocManager.h>
 
 namespace Divide {
-    constexpr bool g_UseImmutableDataStorageForGPUData = true;
-
-    constexpr HiZMethod GetHiZMethod() {
-        constexpr HiZMethod method = HiZMethod::RASTER_GRID;
-        return method;
-    }
+    constexpr HiZMethod GetHiZMethod() { return HiZMethod::RASTER_GRID; }
 
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {
@@ -165,6 +160,8 @@ ErrorCode GFXDevice::createAPIInstance(RenderAPI API) {
     };
 
     DIVIDE_ASSERT(_api != nullptr, Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+    renderAPI(API);
+
     return err;
 }
 
@@ -231,10 +228,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     bufferDescriptor._initialData = &_gpuBlock._data;
     bufferDescriptor._name = "DVD_GPU_DATA";
     bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-    // Persistent storage 
-    if (g_UseImmutableDataStorageForGPUData) {
-        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
-    }
+    bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
     _gfxDataBuffer = newSB(bufferDescriptor);
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
@@ -259,9 +253,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     assert(_stateDepthOnlyRenderingHash != _state2DRenderingHash && "GFXDevice error: Invalid default state hash detected!");
     assert(_state2DRenderingHash != _defaultStateNoDepthHash && "GFXDevice error: Invalid default state hash detected!");
     assert(_defaultStateNoDepthHash != RenderStateBlock::defaultHash() && "GFXDevice error: Invalid default state hash detected!");
-
-    // Activate the default render states
-    _api->setStateBlock(RenderStateBlock::defaultHash());
 
     // We need to create all of our attachments for the default render targets
     // Start with the screen render target: Try a half float, multisampled
@@ -316,14 +307,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     }
 
     const U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
-
-    ResourceDescriptor prevDepthTex("PREV_DEPTH");
-    depthDescriptor.msaaSamples(0);
-    prevDepthTex.propertyDescriptor(depthDescriptor);
-    prevDepthTex.threaded(false);
-    _prevDepthBuffer = CreateResource<Texture>(cache, prevDepthTex);
-    assert(_prevDepthBuffer);
-    _prevDepthBuffer->loadData({ NULL, 0 }, renderResolution);
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
@@ -813,9 +796,7 @@ void GFXDevice::closeRenderingAPI() {
     _displayShader = nullptr;
     _depthShader = nullptr;
     _textRenderShader = nullptr;
-    _prevDepthBuffer = nullptr;
     _blurShader = nullptr;
-    _prevDepthBuffer = nullptr;
 
     // Close the shader manager
     MemoryManager::DELETE(_shaderComputeQueue);
@@ -883,7 +864,6 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     }
 
     _api->beginFrame(window, global);
-    _api->setStateBlock(RenderStateBlock::defaultHash());
 
     const vec2<U16>& drawableSize = window.getDrawableSize();
     setViewport(0, 0, drawableSize.width, drawableSize.height);
@@ -1252,8 +1232,6 @@ bool GFXDevice::onSizeChange(const SizeChangeParams& params) {
             _rtPool->resizeTargets(RenderTargetUsage::EDITOR, w, h);
         }
 
-        _prevDepthBuffer->resize({ NULL, 0 }, vec2<U16>(w, h));
-
         // Update post-processing render targets and buffers
         _renderer->updateResolution(w, h);
 
@@ -1347,11 +1325,13 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
     if (cameraSnapshot._viewMatrix != data._ViewMatrix) {
         data._ViewMatrix.set(cameraSnapshot._viewMatrix);
+        data._ViewMatrix.getInverse(data._InvViewMatrix);
         viewDirty = true;
     }
 
     if (projectionDirty || viewDirty) {
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+        data._ViewProjectionMatrix.getInverse(data._InvViewProjectionMatrix);
         needsUpdate = true;
     }
 
@@ -1403,6 +1383,12 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     }
 
     return false;
+}
+
+void GFXDevice::setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>& projection) noexcept {
+    _gpuBlock._data._PreviousViewMatrix = view;
+    _gpuBlock._data._PreviousProjectionMatrix = projection;
+    _gpuBlock._needsUpload = true;
 }
 
 #pragma endregion
@@ -1803,7 +1789,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
 
     GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
     beginDebugScopeCmd._scopeID = 123456332;
-    beginDebugScopeCmd._scopeName = "Draw Fullscreen Texture";
+    beginDebugScopeCmd._scopeName = "Draw Texture In Viewport";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
@@ -1822,8 +1808,8 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
     }
 
-    // Blit render target to screen
     GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+
     GFX::EnqueueCommand(bufferInOut, GFX::PopViewportCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -2387,7 +2373,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
     {
         UniqueLock<Mutex> w_lock(objectArenaMutex());
 
-        switch (getRenderAPI()) {
+        switch (renderAPI()) {
             case RenderAPI::OpenGL:
             case RenderAPI::OpenGLES: {
                 temp =  new (objectArena()) glFramebuffer(*this, descriptor);
@@ -2418,8 +2404,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
 }
 
 IMPrimitive* GFXDevice::newIMP() {
-
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             return GL_API::newIMP(_imprimitiveMutex , *this);
@@ -2439,7 +2424,7 @@ IMPrimitive* GFXDevice::newIMP() {
 }
 
 bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             return GL_API::destroyIMP(_imprimitiveMutex , primitive);
@@ -2463,7 +2448,7 @@ VertexBuffer* GFXDevice::newVB() {
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     VertexBuffer* temp = nullptr;
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             temp = new (objectArena()) glVertexArray(*this);
@@ -2491,7 +2476,7 @@ PixelBuffer* GFXDevice::newPB(PBType type, const char* name) {
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     PixelBuffer* temp = nullptr;
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             temp = new (objectArena()) glPixelBuffer(*this, type, name);
@@ -2519,7 +2504,7 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     GenericVertexData* temp = nullptr;
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             temp = new (objectArena()) glGenericVertexData(*this, ringBufferLength, name);
@@ -2554,7 +2539,7 @@ Texture* GFXDevice::newTexture(size_t descriptorHash,
 
     // Texture is a resource! Do not use object arena!
     Texture* temp = nullptr;
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             temp = new (objectArena()) glTexture(*this, descriptorHash, resourceName, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor);
@@ -2602,7 +2587,7 @@ ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     ShaderProgram* temp = nullptr;
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             temp = new (objectArena()) glShaderProgram(*this, descriptorHash, resourceName, assetName, assetLocation, descriptor, asyncLoad);
@@ -2630,7 +2615,7 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) {
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
     ShaderBuffer* temp = nullptr;
-    switch (getRenderAPI()) {
+    switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             temp = new (objectArena()) glUniformBuffer(*this, descriptor);

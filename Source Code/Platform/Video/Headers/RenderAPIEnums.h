@@ -78,7 +78,6 @@ enum class TextureUsage : U8 {
     REFLECTION_PLANAR = 12,
     REFRACTION_PLANAR = 13,
     GBUFFER_EXTRA = 14,
-    DEPTH_PREV = 15,
     COUNT,
 
     GLOSS = SPECULAR,
@@ -93,7 +92,7 @@ enum class TextureUsage : U8 {
 namespace Names {
     static const char* textureUsage[] = {
         "UNIT0", "NORMALMAP", "HEIGHTMAP", "SHADOW_LAYERED", "DEPTH", "SHADOW_SINGLE", "REFLECTION_CUBE", "SHADOW_CUBE", "OPACITY",
-        "SPECULAR", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "GBUFFER_EXTRA", "DEPTH_PREV", "NONE"
+        "SPECULAR", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "GBUFFER_EXTRA", "NONE"
     };
 };
 
@@ -281,6 +280,13 @@ enum class ShaderType : U8 {
     COMPUTE = 5,
     COUNT
 };
+
+namespace Names {
+    static const char* shaderTypes[] = {
+        "Fragment", "Vertex", "Geometry", "TessellationC", "TessellationE", "Compute", "ERROR!"
+    };
+};
+
 
 /// Valid front and back stencil test actions
 enum class StencilOperation : U8 {

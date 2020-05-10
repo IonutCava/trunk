@@ -194,8 +194,11 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
 
     if (node.getObjectType()._value != ObjectType::SUBMESH ||
         (node.getObjectType()._value == ObjectType::SUBMESH &&
-         !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))) {
-        return _parentSGN.get<TransformComponent>()->getWorldMatrix();
+         !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))
+    {
+        mat4<F32> mat = MAT4_IDENTITY;
+        _parentSGN.get<TransformComponent>()->getWorldMatrix(mat);
+        return mat;
     }
 
     I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp);

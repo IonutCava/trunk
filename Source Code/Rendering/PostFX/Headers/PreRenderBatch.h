@@ -32,7 +32,7 @@ class PreRenderBatch {
            COUNT
        };
    public:
-    PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache* cache, RenderTargetID renderTarget);
+    PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache* cache);
     ~PreRenderBatch();
 
     PostFX& parent() const noexcept { return _parent; }
@@ -47,11 +47,10 @@ class PreRenderBatch {
     void onFilterEnabled(FilterType filter);
     void onFilterDisabled(FilterType filter);
 
-    TextureData getOutput();
+    RenderTargetHandle getInput(bool hdr) const;
+    RenderTargetHandle getOutput(bool hdr) const;
 
-    RenderTargetHandle& outputRT() noexcept;
-
-    RenderTargetHandle inputRT() const noexcept;
+    RenderTargetHandle screenRT() const noexcept;
     RenderTargetHandle edgesRT() const noexcept;
     RenderTargetHandle luminanceRT() const noexcept;
 
@@ -101,6 +100,7 @@ class PreRenderBatch {
             case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
             case FilterType::FILTER_DEPTH_OF_FIELD:
             case FilterType::FILTER_BLOOM:
+            case FilterType::FILTER_MOTION_BLUR:
                 return FilterSpace::FILTER_SPACE_HDR;
 
             default: break;
@@ -122,9 +122,24 @@ class PreRenderBatch {
     PostFX&    _parent;
     ResourceCache* _resCache = nullptr;
 
-    RenderTargetID     _renderTarget = RenderTargetUsage::SCREEN;
     ShaderBuffer*      _histogramBuffer = nullptr;
-    RenderTargetHandle _postFXOutput;
+
+    struct HDRTargets {
+        RenderTargetHandle _screenRef;
+        RenderTargetHandle _screenCopy;
+    };
+    struct LDRTargets {
+        RenderTargetHandle _temp[2];
+    };
+
+    struct ScreenTargets {
+        HDRTargets _hdr;
+        LDRTargets _ldr;
+    };
+
+    ScreenTargets _screenRTs;
+    bool _swapped = false;
+
     RenderTargetHandle _sceneEdges;
     RenderTargetHandle _currentLuminance;
     ShaderProgram_ptr _toneMap = nullptr;

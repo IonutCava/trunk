@@ -1,16 +1,17 @@
 #ifndef _VELOCITY_CALC_FRAG_
 #define _VELOCITY_CALC_FRAG_
 
-layout(binding = TEXTURE_DEPTH_MAP_PREV) uniform sampler2D texDepthMapPrev;
+//ref: https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
+vec2 velocityCalc() {
+#   if defined(HAS_VELOCITY)
+    const vec4 posWVP = dvd_ProjectionMatrix * VAR._vertexWV;
+    vec2 a = (posWVP.xy / posWVP.w) * 0.5f + 0.5f;
+    vec2 b = (VAR._prevVertexWVP.xy / VAR._prevVertexWVP.w) * 0.5f + 0.5f;
+    return a - b;
 
-vec2 velocityCalc(float crtDepth, mat4 invProj, vec2 screenNormalisedPos) {
-    float prevDepth = textureLod(texDepthMapPrev, screenNormalisedPos, 0).r;
-
-    vec4 crtPos  = positionFromDepth(crtDepth, invProj, screenNormalisedPos);
-    vec4 prevPos = positionFromDepth(prevDepth, invProj, screenNormalisedPos);
-
-    vec4 velocity = (crtPos - prevPos) * 0.5f;
-    return velocity.xy;
+#else
+    return vec2(0.0f);
+#endif
 }
 
 #endif //_VELOCITY_CALC_FRAG_

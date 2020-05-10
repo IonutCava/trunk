@@ -33,21 +33,9 @@ DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& p
     dof.propertyDescriptor(shaderDescriptor);
     _dofShader = CreateResource<ShaderProgram>(cache, dof);
 
-    vectorEASTL<RTAttachmentDescriptor> att = {
-        { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
-    };
-
-    RenderTargetDescriptor desc = {};
-    desc._name = "DoF";
-    desc._resolution = vec2<U16>(parent.inputRT()._rt->getWidth(), parent.inputRT()._rt->getHeight());
-    desc._attachmentCount = to_U8(att.size());
-    desc._attachments = att.data();
-
-    _samplerCopy = _context.renderTargetPool().allocateRT(desc);
-
     focalDepth(0.5f);
     autoFocus(true);
-    _constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(desc._resolution.width, desc._resolution.height));
+    _constants.set(_ID("size"), GFX::PushConstantType::VEC2, _parent.screenRT()._rt->getResolution());
 }
 
 DoFPreRenderOperator::~DoFPreRenderOperator()
@@ -67,11 +55,6 @@ void DoFPreRenderOperator::reshape(U16 width, U16 height) {
     _constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(width, height));
 }
 
-void DoFPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-}
-
 void DoFPreRenderOperator::focalDepth(const F32 val) {
     _focalDepth = val;
     _constants.set(_ID("focalDepth"), GFX::PushConstantType::FLOAT, _focalDepth);
@@ -82,16 +65,9 @@ void DoFPreRenderOperator::autoFocus(const bool state) {
     _constants.set(_ID("autoFocus"), GFX::PushConstantType::BOOL, _autoFocus);
 }
 
-void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    // Copy current screen
-    GFX::BlitRenderTargetCommand blitRTCommand;
-    blitRTCommand._source = _parent.inputRT()._targetID;
-    blitRTCommand._destination = _samplerCopy._targetID;
-    blitRTCommand._blitColours.emplace_back();
-    GFX::EnqueueCommand(bufferInOut, blitRTCommand);
-
-    TextureData data0 = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-    TextureData depthData = _parent.inputRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+bool DoFPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+    const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
+    const TextureData depthTex = input._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = _context.get2DStateBlock();
@@ -106,19 +82,21 @@ void DoFPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& buf
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(data0, to_U8(TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(depthData, to_U8(TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(depthTex, to_U8(TextureUsage::UNIT1));
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = _parent.inputRT()._targetID;
+    beginRenderPassCmd._target = output._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
     beginRenderPassCmd._name = "DO_DOF_PASS";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, _pointDrawCmd);
+    GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+
+    return true;
 }
 
 };

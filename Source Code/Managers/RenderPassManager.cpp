@@ -104,13 +104,15 @@ namespace Divide {
             params._parentTimer->addChildTimer(*_flushCommandBufferTimer);
         }
 
+        GFXDevice& gfx = _context;
+        PlatformContext& context = parent().platformContext();
         const SceneRenderState& sceneRenderState = *params._sceneRenderState;
         const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(*parent().sceneManager());
+        const SceneStatePerPlayer& playerState = Attorney::SceneManagerRenderPass::playerState(*parent().sceneManager());
+        gfx.setPreviousViewProjection(playerState.previousViewMatrix(), playerState.previousProjectionMatrix());
 
         Attorney::SceneManagerRenderPass::preRenderAllPasses(*parent().sceneManager(), cam);
 
-        PlatformContext& context = parent().platformContext();
-        GFXDevice& gfx = _context;
         TaskPool& pool = context.taskPool(TaskPoolType::HIGH_PRIORITY);
         RenderTarget& resolvedScreenTarget = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
 
@@ -154,19 +156,6 @@ namespace Divide {
 
                                                 Time::ScopedTimer time(timer);
                                                 gfx.getRenderer().postFX().apply(cam, *buf);
-
-                                                const Texture_ptr& srcTex = resolvedScreenTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
-                                                const Texture_ptr& dstTex = gfx.getPrevDepthBuffer();
-                                                GFX::CopyTextureCommand copyCmd = {};
-                                                copyCmd._source = srcTex->data();
-                                                copyCmd._destination = dstTex->data();
-                                                copyCmd._params._dimensions = {
-                                                    dstTex->width(),
-                                                    dstTex->height(),
-                                                    dstTex->numLayers()
-                                                };
-                                                GFX::EnqueueCommand(*buf, copyCmd);
-
                                                 buf->batch();
                                             },
                                             false);
@@ -358,10 +347,11 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
     assert(transform != nullptr);
 
     // ... get the node's world matrix properly interpolated
+    transform->getPreviousWorldMatrix(dataOut._prevWorldMatrix);
     if (needsInterp) {
         transform->getWorldMatrix(interpolationFactor, dataOut._worldMatrix);
     } else {
-        dataOut._worldMatrix.set(transform->getWorldMatrix());
+        transform->getWorldMatrix(dataOut._worldMatrix);
     }
 
     dataOut._normalMatrixW.set(dataOut._worldMatrix);
@@ -406,8 +396,10 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
         dataOut._colourMatrix.setRow(2, matColour);
     }
 
-    dataOut._extraProperties.x = to_F32(properties._texOperation);
-    dataOut._extraProperties.y = to_F32(properties._bumpMethod);
+    dataOut._prevWorldMatrix.element(0, 3) = to_F32(properties._texOperation);
+    dataOut._prevWorldMatrix.element(1, 3) = to_F32(properties._bumpMethod);
+    dataOut._prevWorldMatrix.element(2, 3) = 0.0f;
+    dataOut._prevWorldMatrix.element(3, 3) = 1.0f;
 }
 
 void RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
@@ -974,12 +966,6 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
         clearMainTarget._target = params._target;
         clearMainTarget._descriptor = clearDescriptor;
         GFX::EnqueueCommand(bufferInOut, clearMainTarget);
-    }
-
-    if (params._target._usage == _context.renderTargetPool().screenTargetID()._usage) {
-        GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(_context.getPrevDepthBuffer()->data(), to_U8(TextureUsage::DEPTH_PREV));
-        GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
     }
 
     // Cull the scene and grab the visible nodes

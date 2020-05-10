@@ -62,6 +62,16 @@ void computeDataNoClip() {
 
     VAR._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
+
+#if defined(HAS_VELOCITY)
+    const mat4 prevVP = dvd_ViewProjectionMatrix;//dvd_PreviousProjectionMatrix * dvd_PreviousViewMatrix;
+    //VAR._prevVertexWVP = prevVP * vec4(dvd_PrevWorldMatrix(DATA_IDX) * dvd_Vertex, 1.0f);
+
+    mat4 worldMat = dvd_PrevWorldMatrix(DATA_IDX);
+    worldMat[0][3] = worldMat[1][3] = worldMat[2][3] = 0.0f;
+    worldMat[3][3] = 1.0f;
+    VAR._prevVertexWVP = prevVP * worldMat * dvd_Vertex;
+#endif
 }
 
 void computeData() {

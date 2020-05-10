@@ -9,12 +9,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Headers/SDLEventManager.h"
 
-#ifndef HAVE_M_PI
-#define HAVE_M_PI
-#endif //HAVE_M_PI
-
-//#include <SDL.h>
-
 namespace Divide {
 
 DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)

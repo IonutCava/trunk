@@ -20,20 +20,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     postAAQualityLevel(cache->context().config().rendering.postFX.PostAAQualityLevel);
 
     RenderTargetDescriptor desc = {};
-    desc._resolution = parent.inputRT()._rt->getResolution();
-
-    {
-        vectorEASTL<RTAttachmentDescriptor> att = {
-            { parent.inputRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor(), RTAttachmentType::Colour },
-        };
-
-        desc._name = "PostAA";
-        desc._attachmentCount = to_U8(att.size());
-        desc._attachments = att.data();
-
-        _samplerCopy = _context.renderTargetPool().allocateRT(desc);
-    }
-
+    desc._resolution = parent.screenRT()._rt->getResolution();
     {
         SamplerDescriptor sampler = {};
         sampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
@@ -160,10 +147,8 @@ void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
     _smaaWeights._rt->resize(width, height);
 }
 
-void PostAAPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-
+/// This is tricky as we use our screen as both input and output
+bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     if (useSMAA() != currentUseSMAA()) {
         currentUseSMAA(useSMAA());
 
@@ -185,25 +170,10 @@ void PostAAPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& 
             _parent.parent().pushFilter(_operatorType);
         }
     }
-}
 
-/// This is tricky as we use our screen as both input and output
-void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-    STUBBED("ToDo: Move PostAA to compute shaders to avoid a blit and RT swap. -Ionut");
-
-    GFX::BlitRenderTargetCommand blitRTCommand = {};
-    blitRTCommand._source = _parent.outputRT()._targetID;
-    blitRTCommand._destination = _samplerCopy._targetID;
-    blitRTCommand._blitColours.emplace_back();
-    GFX::EnqueueCommand(bufferInOut, blitRTCommand);
-
-    const TextureData screenTex = _samplerCopy._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+    const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
 
     if (useSMAA()) {
-        GenericDrawCommand triangleCmd = {};
-        triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-        triangleCmd._drawCount = 1;
-
         { //Step 1: Compute weights
             RTClearDescriptor clearTarget = {};
             clearTarget.clearDepth(false);
@@ -232,13 +202,13 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaWeightPipeline });
             GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
         }
         { //Step 2: Blend
             GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-            beginRenderPassCmd._target = _parent.outputRT()._targetID;
+            beginRenderPassCmd._target = output._targetID;
             beginRenderPassCmd._name = "DO_SMAA_BLEND_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
@@ -252,14 +222,14 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaBlendPipeline });
             GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
         }
     } else {
         // Apply FXAA/SMAA to the specified render target
         GFX::BeginRenderPassCommand beginRenderPassCmd;
-        beginRenderPassCmd._target = _parent.outputRT()._targetID;
+        beginRenderPassCmd._target = output._targetID;
         beginRenderPassCmd._name = "DO_POSTAA_PASS";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
@@ -274,6 +244,8 @@ void PostAAPreRenderOperator::execute(const Camera& camera, GFX::CommandBuffer& 
 
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
     }
+
+    return true;
 }
 
 };

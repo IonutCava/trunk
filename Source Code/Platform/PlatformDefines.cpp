@@ -8,15 +8,11 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIMessageBox.h"
 
-#include <Allocator/xallocator.h>
 
 #include "Utility/Headers/Localization.h"
 #include "Utility/Headers/MemoryTracker.h"
 
 #include "Platform/File/Headers/FileManagement.h"
-
-#define HAVE_M_PI
-#include <SDL.h>
 
 namespace Divide {
 

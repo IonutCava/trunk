@@ -46,8 +46,9 @@ namespace Divide {
         TRANSLATION = toBit(1),
         SCALE = toBit(2),
         ROTATION = toBit(3),
+        PREVIOUS_MAT = toBit(4),
         ALL = TRANSLATION | SCALE | ROTATION,
-        COUNT = 4
+        COUNT = 5
     };
 
     class TransformComponent final : public BaseComponentType<TransformComponent, ComponentType::TRANSFORM>,
@@ -61,7 +62,9 @@ namespace Divide {
 
          void reset();
 
-         const mat4<F32>& getWorldMatrix() const;
+         void getPreviousWorldMatrix(mat4<F32>& matOut) const;
+         void getWorldMatrix(mat4<F32>& matOut) const;
+
          mat4<F32> getWorldMatrix(D64 interpolationFactor) const;
          void      getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const;
 
@@ -166,6 +169,7 @@ namespace Divide {
          void onParentUsageChanged(NodeUsageContext context) noexcept;
 
          void getMatrix(mat4<F32>& matOut) override;
+
          void getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const;
 
          //A simple lock-unlock and mutex-free matrix calculation system //
@@ -174,7 +178,7 @@ namespace Divide {
          Quaternion<F32> getLocalOrientationLocked(D64 interpolationFactor) const;
 
          //Called only when transformed chaged in the main update loop!
-         const mat4<F32>& updateWorldMatrix();
+         void updateWorldMatrix(U32 updateMask);
 
          // Local transform interface access (all are in local space)
          void getScale(vec3<F32>& scaleOut) const override;
@@ -197,6 +201,7 @@ namespace Divide {
         
         mutable SharedMutex _worldMatrixLock;
         mat4<F32> _worldMatrix;
+        mat4<F32> _prevWorldMatrix;
 
         mutable SharedMutex _lock;
     };

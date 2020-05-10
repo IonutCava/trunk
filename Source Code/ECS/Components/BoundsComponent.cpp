@@ -128,7 +128,9 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
         return true;
     });
 
-    _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), _tCompCache->getWorldMatrix());
+    mat4<F32> mat = MAT4_IDENTITY;
+    _tCompCache->getWorldMatrix(mat);
+    _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), mat);
     _boundingSphere.fromBoundingBox(_boundingBox);
 
     _parentSGN.SendEvent(

@@ -150,7 +150,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                                 validationBuffer.append(" ... ");
                             }
 
-                            Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _name.c_str(), shader, GLUtil::glShaderStageNameTable[i].c_str(), validationBuffer.c_str());
+                            Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _name.c_str(), shader, Names::shaderTypes[i], validationBuffer.c_str());
 
                             glDeleteShader(shader);
                         } else {

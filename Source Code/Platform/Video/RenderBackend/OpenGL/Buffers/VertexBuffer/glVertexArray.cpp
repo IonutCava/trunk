@@ -205,14 +205,9 @@ bool glVertexArray::getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* data
 bool glVertexArray::create(bool staticDraw) {
     // If we want a dynamic buffer, then we are doing something outdated, such
     // as software skinning, or software water rendering
-    if (!staticDraw) {
-        // OpenGLES support isn't added, but this check doesn't break anything,
-        // so I'll just leave it here -Ionut
-        const GLenum usage = (GL_API::s_glConfig._glES ? GL_STREAM_DRAW : GL_DYNAMIC_DRAW);
-        if (usage != _usage) {
-            _usage = usage;
-            _refreshQueued = true;
-        }
+    if (!staticDraw && _usage != GL_DYNAMIC_DRAW) {
+        _usage = GL_DYNAMIC_DRAW;
+        _refreshQueued = true;
     }
 
     return VertexBuffer::create(staticDraw);
