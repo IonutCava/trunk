@@ -89,7 +89,7 @@
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -97,8 +97,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>ThirdPartyLibs;WIN32;_WINDOWS;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR="Debug";IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS;%(PreprocessorDefinitions);_ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>_DEBUG</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -106,7 +106,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <OpenMPSupport>true</OpenMPSupport>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <StringPooling>true</StringPooling>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -120,7 +120,9 @@
       <SupportJustMyCode>true</SupportJustMyCode>
       <CompileAsWinRT>false</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)..\pch_d.pch</PrecompiledHeaderOutputFile>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -150,11 +152,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>ThirdPartyLibs;WIN32;_WINDOWS;NDEBUG;_RELEASE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;CMAKE_INTDIR="Release";IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS;%(PreprocessorDefinitions);_ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>_RELEASE;NDEBUG</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <AdditionalOptions>/bigobj /Zc:twoPhase- </AdditionalOptions>
       <OpenMPSupport>true</OpenMPSupport>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
@@ -162,7 +163,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
       <FunctionLevelLinking>true</FunctionLevelLinking>
@@ -174,6 +175,7 @@
       <SDLCheck>true</SDLCheck>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeaderOutputFile>$(IntDir)..\pch.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -196,7 +198,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Profile/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <ExceptionHandling>Sync</ExceptionHandling>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -204,8 +206,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
-      <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>ThirdPartyLibs;WIN32;_WINDOWS;NDEBUG;_PROFILE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;CMAKE_INTDIR="Profile";IMGUI_INCLUDE_IMGUI_USER_H;IMGUI_INCLUDE_IMGUI_USER_INL;IMGUI_DEFINE_MATH_OPERATORS;%(PreprocessorDefinitions);_ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>_PROFILE;NDEBUG</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
       <OpenMPSupport>true</OpenMPSupport>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
@@ -213,7 +215,7 @@
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <LanguageStandard>stdcpp14</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/bigobj /Zc:twoPhase-  /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
@@ -227,7 +229,7 @@
       <SupportJustMyCode>true</SupportJustMyCode>
       <CompileAsWinRT>false</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>
-      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)..\pch_p.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CEGUI_STATIC;CEGUI_BUILD_STATIC_FACTORY_MODULE;_CRT_SECURE_NO_WARNINGS;NOMINMAX;GLEW_STATIC;CMAKE_INTDIR=\"Profile\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -394,11 +396,6 @@
     <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator_.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\stdafx-third-party-libs.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Texture.cpp" />
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\TextureTarget.cpp" />
     <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp" />
@@ -577,11 +574,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_core.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_core.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -635,7 +628,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl" />
+    <None Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\RenderTarget.inl" />
     <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl" />
     <None Include="..\..\Source Code\Libs\imgui\imgui_user.inl" />
   </ItemGroup>

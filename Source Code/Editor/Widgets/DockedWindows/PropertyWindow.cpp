@@ -954,7 +954,7 @@ namespace Divide {
                     const char* stages[] = { "PS", "VS", "GS" "HS", "DS","CS" };
                     if (ImGui::CollapsingHeader(Util::StringFormat("%s: File [ %s ] Variant [ %s ]",
                                                                 stages[to_base(module._moduleType)],
-                                                                module._sourceFile.c_str(),
+                                                                module._sourceFile.data(),
                                                                 module._variant.empty() ? "-" : module._variant.c_str()).c_str())) 
                     {
                         ImGui::Text("Defines: ");
@@ -967,7 +967,7 @@ namespace Divide {
                             if (textEditor.empty()) {
                                 Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: No text editor specified!", Time::SecondsToMilliseconds<F32>(3));
                             } else {
-                                if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.c_str())) {
+                                if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.data())) {
                                     Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
                                 }
                             }

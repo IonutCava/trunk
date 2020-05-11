@@ -44,28 +44,18 @@ inline bool ParamHandler::isParam(HashType paramID) const {
     return _params.find(paramID) != std::cend(_params);
 }
 
+#if !defined(CPP_17_SUPPORT)
+namespace cast = boost;
+#else
+namespace cast = std;
+#endif
+
 template <typename T>
 inline T ParamHandler::getParam(HashType nameID, T defaultValue) const {
     SharedLock<SharedMutex> r_lock(_mutex);
     ParamMap::const_iterator it = _params.find(nameID);
     if (it != std::cend(_params)) {
-        bool success = false;
-#       if !defined(CPP_17_SUPPORT)
-        const T& ret = it->second.constant_cast<T>(success);
-#       else
-        const T& ret = std::any_cast<T>(it->second);
-        success = true;
-#       endif
-        if_constexpr (Config::Build::IS_DEBUG_BUILD) {
-            if (!success) {
-                Console::errorfn(Locale::get(_ID("ERROR_PARAM_CAST")), nameID);
-                DIVIDE_ASSERT(success,
-                              "ParamHandler error: Can't cast requested param to "
-                              "specified type!");
-            }
-        }
-
-        return ret;
+        return cast::any_cast<T>(it->second);
     }
 
     Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), nameID);

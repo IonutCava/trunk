@@ -55,12 +55,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #   endif
 #endif 
 
-// As of March 2020
-#if !defined(CPP_17_SUPPORT) && !defined(ThirdPartyLibs)
+// As of May 2020
+#if !defined(CPP_17_SUPPORT)
 #error "Divide Framework requires C++17 support at a minimum!."
-#endif 
-
+#else
+#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
 #define _SILENCE_CXX17_OLD_ALLOCATOR_MEMBERS_DEPRECATION_WARNING
+#define _ENABLE_EXTENDED_ALIGNED_STORAGE
+#define _ENFORCE_MATCHING_ALLOCATORS 0
+#endif 
 
 #ifndef BOOST_EXCEPTION_DISABLE
 #define BOOST_EXCEPTION_DISABLE
@@ -69,6 +72,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #define BOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
 #endif 
+
+#ifndef GLEW_STATIC
+#define GLEW_STATIC
+#endif 
+
+#ifndef CEGUI_BUILD_STATIC_FACTORY_MODULE
+#define CEGUI_BUILD_STATIC_FACTORY_MODULE
+#endif
+
+#ifndef TINYXML_STATIC
+#define TINYXML_STATIC
+#endif
 
 #ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
@@ -120,9 +135,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <any>
 #include <variant>
 #include <execution>
+#include <string_view>
 #else
 #include <boost/any.hpp>
 #include <boost/variant.hpp>
+#include <boost/utility/string_view.hpp>
 #endif
 
 #include <boost/intrusive/slist.hpp>

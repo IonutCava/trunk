@@ -43,6 +43,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif //_CRT_SECURE_NO_WARNINGS
 
+#ifndef _SCL_SECURE
+#define _SCL_SECURE  0
+#endif //_SCL_SECURE
+
 /// Reduce Build time on Windows Platform
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1

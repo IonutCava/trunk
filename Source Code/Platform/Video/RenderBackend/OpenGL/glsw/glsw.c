@@ -12,7 +12,8 @@ extern "C" {
 #include "Headers/bstrlib.h"
 #include "Headers/glsw.h"
 
-#ifdef WIN32
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996) // allow "fopen"
 #endif
 

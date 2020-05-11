@@ -122,8 +122,9 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/test/;$(SolutionDir)/../Source Code/UnitTests/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/ReCast/;$(SolutionDir)/../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)/../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)/../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/physx\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0;_NO_DEBUG_HEAP=1;_CRT_SECURE_NO_WARNINGS;_DEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503;4127;4996</DisableSpecificWarnings>
@@ -188,8 +189,9 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/test/;$(SolutionDir)/../Source Code/UnitTests/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/ReCast/;$(SolutionDir)/../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)/../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)/../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/physx\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
-      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_RELEASE;NDEBUG</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <FloatingPointExceptions>false</FloatingPointExceptions>
@@ -246,8 +248,9 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/test/;$(SolutionDir)/../Source Code/UnitTests/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/ReCast/;$(SolutionDir)/../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)/../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)/../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/physx\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
-      <PreprocessorDefinitions>ECS_DISABLE_LOGGING;ECS_STATIC;IS_UNIT_TEST;_SCL_SECURE=0;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG; CEGUI_STATIC;TINYXML_STATIC;ECS_DISABLE_LOGGING;; _ENABLE_EXTENDED_ALIGNED_STORAGE</PreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
+      <PreprocessorDefinitions>_PROFILE;NDEBUG</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <SmallerTypeCheck>false</SmallerTypeCheck>

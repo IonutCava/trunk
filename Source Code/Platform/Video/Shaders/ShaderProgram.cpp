@@ -29,7 +29,7 @@ size_t ShaderProgramDescriptor::getHash() const noexcept {
     for (const ShaderModuleDescriptor& desc : _modules) {
         Util::Hash_combine(_hash, ShaderProgram::definesHash(desc._defines));
         Util::Hash_combine(_hash, std::string(desc._variant.c_str()));
-        Util::Hash_combine(_hash, std::string(desc._sourceFile.c_str()));
+        Util::Hash_combine(_hash, desc._sourceFile.data());
         Util::Hash_combine(_hash, desc._moduleType);
         Util::Hash_combine(_hash, desc._batchSameFile);
     }

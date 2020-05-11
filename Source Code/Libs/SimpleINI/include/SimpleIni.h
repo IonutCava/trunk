@@ -430,7 +430,7 @@ public:
             }
             return SI_CONVERTER::ConvertToStore(
                 a_pszString,
-                const_cast<char*>(m_scratch.data()),
+                m_scratch.data(),
                 m_scratch.size());
         }
         const char * Data() { return m_scratch.data(); }

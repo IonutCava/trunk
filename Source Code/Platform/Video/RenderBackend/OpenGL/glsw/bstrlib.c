@@ -19,7 +19,8 @@
 #include <ctype.h>
 #include "Headers/bstrlib.h"
 
-#ifdef WIN32
+#ifdef _WIN32
+#define _CRT_SECURE_NO_WARNINGS
 #pragma warning(disable:4996)
 #endif
 
@@ -1017,9 +1018,9 @@ int binstr (const_bstring b1, int pos, const_bstring b2) {
 int j, ii, ll, lf;
 unsigned char * d0;
 unsigned char c0;
-register unsigned char * d1;
-register unsigned char c1;
-register int i;
+/*register*/ unsigned char * d1;
+/*register*/ unsigned char c1;
+/*register*/ int i;
 
     if (b1 == NULL || b1->data == NULL || b1->slen < 0 ||
         b2 == NULL || b2->data == NULL || b2->slen < 0) return BSTR_ERR;

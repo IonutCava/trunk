@@ -621,14 +621,14 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._variant = vertVariant;
-    vertModule._sourceFile = vertSource + ".glsl";
+    vertModule._sourceFile = (vertSource + ".glsl").c_str();
     vertModule._batchSameFile = false;
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._defines = vertDefines;
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._variant = fragVariant;
-    fragModule._sourceFile = fragSource + ".glsl";
+    fragModule._sourceFile = (fragSource + ".glsl").c_str();
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._defines = fragDefines;
 

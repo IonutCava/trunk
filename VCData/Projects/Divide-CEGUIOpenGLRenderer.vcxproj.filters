@@ -608,7 +608,6 @@
     <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp">
       <Filter>ImGUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\src\stdafx-third-party-libs.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc">
       <Filter>fmt\src</Filter>
     </ClCompile>
@@ -815,14 +814,14 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RenderTarget.inl">
-      <Filter>CEGUIOpenglRenderer\Source Files</Filter>
-    </None>
     <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl">
       <Filter>ImGUI</Filter>
     </None>
     <None Include="..\..\Source Code\Libs\imgui\imgui_user.inl">
       <Filter>ImGUI</Filter>
+    </None>
+    <None Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\RenderTarget.inl">
+      <Filter>CEGUIOpenglRenderer\Header Files</Filter>
     </None>
   </ItemGroup>
 </Project>

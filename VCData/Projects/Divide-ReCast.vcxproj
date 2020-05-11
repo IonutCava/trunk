@@ -157,7 +157,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>RECAST;_CRT_SECURE_NO_WARNINGS;_DEBUG;_ENABLE_EXTENDED_ALIGNED_STORAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG</PreprocessorDefinitions>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/sdl\;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)/../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)/../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -171,7 +171,8 @@
       <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <UndefinePreprocessorDefinitions>_RELEASE;_PROFILE;NDEBUG</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
       <CompileAsWinRT>false</CompileAsWinRT>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -214,9 +215,10 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_RELEASE;NDEBUG;_ENABLE_EXTENDED_ALIGNED_STORAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_RELEASE;NDEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/sdl\;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)/../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)/../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>_DEBUG;_PROFILE</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -268,9 +270,10 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>RECAST;_SCL_SECURE=0;_CRT_SECURE_NO_WARNINGS;_PROFILE;NDEBUG;_ENABLE_EXTENDED_ALIGNED_STORAGE;_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING;_ENFORCE_MATCHING_ALLOCATORS=0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_PROFILE;NDEBUG</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/sdl\;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher\;$(SolutionDir)/../Source Code/Libs/ReCast\ReCast\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourTileCache\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DetourCrowd\Include;$(SolutionDir)/../Source Code/Libs/ReCast\DebugUtils\Include;$(SolutionDir)/../Source Code/Libs/ReCast\Detour\Include;$(SolutionDir)/../Source Code/Libs/ReCast\RecastContrib\fastlz;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <UndefinePreprocessorDefinitions>_RELEASE;_DEBUG</UndefinePreprocessorDefinitions>
+      <UndefinePreprocessorDefinitions>
+      </UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <MinimalRebuild>false</MinimalRebuild>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>

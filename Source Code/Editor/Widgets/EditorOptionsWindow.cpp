@@ -70,8 +70,8 @@ namespace Divide {
 
         ImGui::Separator();
 
-        const stringImpl& externalTextEditorPath = Attorney::EditorOptionsWindow::externalTextEditorPath(_context.editor());
-        ImGui::InputText("Text Editor", const_cast<char*>(externalTextEditorPath.c_str()), externalTextEditorPath.size(), ImGuiInputTextFlags_ReadOnly);
+        stringImpl externalTextEditorPath = Attorney::EditorOptionsWindow::externalTextEditorPath(_context.editor());
+        ImGui::InputText("Text Editor", externalTextEditorPath.data(), externalTextEditorPath.size(), ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
         openDialog = ImGui::Button("Select");
         if (openDialog) {

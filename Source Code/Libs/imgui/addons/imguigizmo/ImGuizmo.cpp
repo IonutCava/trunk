@@ -825,9 +825,7 @@ namespace ImGuizmo
 
     void BeginFrame()
     {
-        ImGuiIO& io = ImGui::GetIO();
-
-        const ImU32 flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
+       const ImU32 flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus;
     
 #ifdef IMGUI_HAS_VIEWPORT
       ImGui::SetNextWindowSize(ImGui::GetMainViewport()->Size);
@@ -2018,7 +2016,7 @@ namespace ImGuizmo
     {
         matrix_t viewInverse;
         viewInverse.Inverse(*(matrix_t*)view);
-        const matrix_t& model = *(matrix_t*)matrix;
+        //const matrix_t& model = *(matrix_t*)matrix;
         matrix_t res = *(matrix_t*)matrix * *(matrix_t*)view * *(matrix_t*)projection;
       matrix_t modelView = *(matrix_t*)matrix * *(matrix_t*)view;
 

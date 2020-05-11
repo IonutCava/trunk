@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 // The MIT License(MIT)
 //
 // Copyright(c) 2019 Vadim Slyusarev

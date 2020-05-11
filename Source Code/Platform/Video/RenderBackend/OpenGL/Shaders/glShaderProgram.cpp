@@ -376,7 +376,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
     U64 batchCounter = 0;
     hashMap<U64, vectorEASTL<ShaderModuleDescriptor>> modulesByFile;
     for (const ShaderModuleDescriptor& shaderDescriptor : _descriptor._modules) {
-        const U64 fileHash = shaderDescriptor._batchSameFile ? _ID(shaderDescriptor._sourceFile.c_str()) : batchCounter++;
+        const U64 fileHash = shaderDescriptor._batchSameFile ? _ID(shaderDescriptor._sourceFile.data()) : batchCounter++;
         vectorEASTL<ShaderModuleDescriptor>& modules = modulesByFile[fileHash];
         modules.push_back(shaderDescriptor);
     }
@@ -387,7 +387,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
 
         glShader::ShaderLoadData loadData;
 
-        Str256 programName = modules.front()._sourceFile;
+        Str256 programName = modules.front()._sourceFile.data();
         programName = Str256(programName.substr(0, programName.find_first_of(".,")));
 
         bool hasData = false;
@@ -418,7 +418,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
 
             glShader::LoadData& stageData = loadData[shaderIdx];
             stageData._type = shaderDescriptor._moduleType;
-            stageData._name = Str64(shaderDescriptor._sourceFile.substr(0, shaderDescriptor._sourceFile.find_first_of(".,")));
+            stageData._name = Str64(stringImpl(shaderDescriptor._sourceFile.data()).substr(0, shaderDescriptor._sourceFile.find_first_of(".,")));
             stageData._name.append(".");
             stageData._name.append(Names::shaderTypes[shaderIdx]);
 
@@ -431,7 +431,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             if (!sourceCode.first) {
                 continue;
             }
-            stageData.atoms.insert(_ID(shaderDescriptor._sourceFile.c_str()));
+            stageData.atoms.insert(_ID(shaderDescriptor._sourceFile.data()));
             for (auto atomIt : atomsTemp) {
                 stageData.atoms.insert(_ID(atomIt.c_str()));
             }

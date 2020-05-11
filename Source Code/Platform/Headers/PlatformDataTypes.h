@@ -63,6 +63,7 @@ using D128 = long double;
 using bufferPtr = void*;
 
 #if !defined(CPP_17_SUPPORT)
+#warning "Native byte type not detected. Consider updating language version for current project"
 enum class Byte : U8 {};
 #else
 using Byte = std::byte;
