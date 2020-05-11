@@ -99,7 +99,7 @@ template <> struct hash<std::string>
     size_t operator()(const std::string& x) const
     {
         const char* p = x.c_str();
-        uint32_t c, result = 2166136261U;   // Intentionally uint32_t instead of size_t, so the behavior is the same regardless of size.
+        uint32_t c = 0u, result = 2166136261U;   // Intentionally uint32_t instead of size_t, so the behavior is the same regardless of size.
         while ((c = (uint8_t)*p++) != 0)     // cast to unsigned 8 bit.
             result = (result * 16777619) ^ c;
         return (size_t)result;

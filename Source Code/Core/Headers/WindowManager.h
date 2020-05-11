@@ -102,7 +102,7 @@ public:
 
     void update(const U64 deltaTimeUS);
 
-    bool anyWindowFocus() const;
+    bool anyWindowFocus() const noexcept;
 
     inline DisplayWindow* createWindow(const WindowDescriptor& descriptor);
     inline DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err);

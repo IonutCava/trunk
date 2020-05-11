@@ -199,7 +199,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
      virtual bool recompileInternal(bool force) = 0;
 
      static void useShaderTextCache(bool state) noexcept { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
-     static void useShaderBinaryCache(bool state) { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
+     static void useShaderBinaryCache(bool state) noexcept { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
 
    protected:
     /// Used to render geometry without valid materials.

@@ -695,7 +695,7 @@ T mat2<T>::elementSum() const noexcept {
 }
 
 template<typename T>
-void mat2<T>::inverse() {
+void mat2<T>::inverse() noexcept {
     F32 idet = static_cast<F32>(det());
     assert(!IS_ZERO(idet));
     idet = 1 / idet;
@@ -711,20 +711,20 @@ void mat2<T>::transpose() noexcept {
 }
 
 template<typename T>
-void mat2<T>::inverseTranspose() {
+void mat2<T>::inverseTranspose() noexcept {
     inverse();
     transpose();
 }
 
 template<typename T>
-mat2<T> mat2<T>::getInverse() const {
+mat2<T> mat2<T>::getInverse() const noexcept {
     mat2<T> ret(mat);
     ret.inverse();
     return ret;
 }
 
 template<typename T>
-void mat2<T>::getInverse(mat2<T> &ret) const {
+void mat2<T>::getInverse(mat2<T> &ret) const noexcept {
     ret.set(mat);
     ret.inverse();
 }
@@ -743,7 +743,7 @@ void mat2<T>::getTranspose(mat2 &ret) const noexcept {
 }
 
 template<typename T>
-mat2<T> mat2<T>::getInverseTranspose() const {
+mat2<T> mat2<T>::getInverseTranspose() const noexcept {
     mat2 ret;
     getInverse(ret);
     ret.transpose();
@@ -751,7 +751,7 @@ mat2<T> mat2<T>::getInverseTranspose() const {
 }
 
 template<typename T>
-void mat2<T>::getInverseTranspose(mat2 &ret) const {
+void mat2<T>::getInverseTranspose(mat2 &ret) const noexcept  {
     getInverse(ret);
     ret.transpose();
 }
@@ -1244,9 +1244,12 @@ T mat3<T>::elementSum() const noexcept {
 }
 
 template<typename T>
-void mat3<T>::inverse() {
+void mat3<T>::inverse() noexcept {
     F32 idet = det();
-    assert(!IS_ZERO(idet));
+    if (IS_ZERO(idet)) {
+        return;
+    }
+
     idet = 1 / idet;
 
     set( (mat[4] * mat[8] - mat[7] * mat[5]) * idet,
@@ -1268,20 +1271,20 @@ void mat3<T>::transpose() noexcept {
 }
 
 template<typename T>
-void mat3<T>::inverseTranspose() {
+void mat3<T>::inverseTranspose() noexcept {
     inverse();
     transpose();
 }
 
 template<typename T>
-mat3<T> mat3<T>::getInverse() const {
+mat3<T> mat3<T>::getInverse() const noexcept {
     mat3<T> ret(mat);
     ret.inverse();
     return ret;
 }
 
 template<typename T>
-void mat3<T>::getInverse(mat3<T> &ret) const {
+void mat3<T>::getInverse(mat3<T> &ret) const noexcept {
     ret.set(mat);
     ret.inverse();
 }
@@ -1300,14 +1303,14 @@ void mat3<T>::getTranspose(mat3<T> &ret) const noexcept {
 }
 
 template<typename T>
-mat3<T> mat3<T>::getInverseTranspose() const {
+mat3<T> mat3<T>::getInverseTranspose() const noexcept {
     mat3<T> ret(getInverse());
     ret.transpose();
     return ret;
 }
 
 template<typename T>
-void mat3<T>::getInverseTranspose(mat3<T> &ret) const {
+void mat3<T>::getInverseTranspose(mat3<T> &ret) const noexcept {
     ret.set(this);
     ret.inverseTranspose();
 }
@@ -2011,12 +2014,12 @@ void mat4<T>::orthoNormalize() {
 }
 
 template<typename T>
-void mat4<T>::inverse() {
+void mat4<T>::inverse() noexcept {
     Inverse(mat, mat);
 }
 
 template<>
-inline void mat4<F32>::inverse() {
+inline void mat4<F32>::inverse() noexcept {
     *this = GetInverse(*this);
 }
 
@@ -2029,7 +2032,7 @@ void mat4<T>::transpose() noexcept {
 }
 
 template<typename T>
-void mat4<T>::inverseTranspose() {
+void mat4<T>::inverseTranspose() noexcept {
     mat4<F32> r;
     GetInverse(*this, r);
     r.getTranspose(*this);
@@ -2044,26 +2047,26 @@ mat4<T> mat4<T>::transposeRotation() const noexcept {
 }
 
 template<typename T>
-mat4<T> mat4<T>::getInverse() const {
+mat4<T> mat4<T>::getInverse() const noexcept {
     mat4 ret;
     Inverse(mat, ret.mat);
     return ret;
 }
 
 template<>
-inline mat4<F32> mat4<F32>::getInverse() const {
+inline mat4<F32> mat4<F32>::getInverse() const noexcept {
     mat4<F32> ret;
     GetInverse(*this, ret);
     return ret;
 }
 
 template<typename T>
-void mat4<T>::getInverse(mat4 &ret) const {
+void mat4<T>::getInverse(mat4 &ret) const noexcept {
     Inverse(mat, ret.mat);
 }
 
 template<>
-inline void mat4<F32>::getInverse(mat4<F32> &ret) const {
+inline void mat4<F32>::getInverse(mat4<F32> &ret) const noexcept {
     GetInverse(*this, ret);
 }
 
@@ -2084,7 +2087,7 @@ void mat4<T>::getTranspose(mat4 &out) const noexcept {
 }
 
 template<typename T>
-mat4<T> mat4<T>::getInverseTranspose() const {
+mat4<T> mat4<T>::getInverseTranspose() const noexcept {
     mat4 ret;
     Inverse(mat, ret.mat);
     ret.transpose();
@@ -2092,7 +2095,7 @@ mat4<T> mat4<T>::getInverseTranspose() const {
 }
 
 template<>
-inline mat4<F32> mat4<F32>::getInverseTranspose() const {
+inline mat4<F32> mat4<F32>::getInverseTranspose() const noexcept {
     mat4<F32> ret;
     GetInverse(*this, ret);
     ret.transpose();
@@ -2100,13 +2103,13 @@ inline mat4<F32> mat4<F32>::getInverseTranspose() const {
 }
 
 template<typename T>
-void mat4<T>::getInverseTranspose(mat4 &ret) const {
+void mat4<T>::getInverseTranspose(mat4 &ret) const noexcept {
     Inverse(mat, ret.mat);
     ret.transpose();
 }
 
 template<>
-inline void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const {
+inline void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const noexcept {
     GetInverse(*this, ret);
     ret.transpose();
 }
@@ -2451,24 +2454,24 @@ inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matri
 
 // Copyright 2011 The Closure Library Authors. All Rights Reserved.
 template<typename T>
-void mat4<T>::Inverse(const T* in, T* out) {
-    T m00 = in[0], m10 = in[1], m20 = in[2], m30 = in[3];
-    T m01 = in[4], m11 = in[5], m21 = in[6], m31 = in[7];
-    T m02 = in[8], m12 = in[9], m22 = in[10], m32 = in[11];
-    T m03 = in[12], m13 = in[13], m23 = in[14], m33 = in[15];
+void mat4<T>::Inverse(const T* in, T* out) noexcept {
+    const T m00 = in[0], m10 = in[1], m20 = in[2], m30 = in[3];
+    const T m01 = in[4], m11 = in[5], m21 = in[6], m31 = in[7];
+    const T m02 = in[8], m12 = in[9], m22 = in[10], m32 = in[11];
+    const T m03 = in[12], m13 = in[13], m23 = in[14], m33 = in[15];
 
-    T a0 = m00 * m11 - m10 * m01;
-    T a1 = m00 * m21 - m20 * m01;
-    T a2 = m00 * m31 - m30 * m01;
-    T a3 = m10 * m21 - m20 * m11;
-    T a4 = m10 * m31 - m30 * m11;
-    T a5 = m20 * m31 - m30 * m21;
-    T b0 = m02 * m13 - m12 * m03;
-    T b1 = m02 * m23 - m22 * m03;
-    T b2 = m02 * m33 - m32 * m03;
-    T b3 = m12 * m23 - m22 * m13;
-    T b4 = m12 * m33 - m32 * m13;
-    T b5 = m22 * m33 - m32 * m23;
+    const T a0 = m00 * m11 - m10 * m01;
+    const T a1 = m00 * m21 - m20 * m01;
+    const T a2 = m00 * m31 - m30 * m01;
+    const T a3 = m10 * m21 - m20 * m11;
+    const T a4 = m10 * m31 - m30 * m11;
+    const T a5 = m20 * m31 - m30 * m21;
+    const T b0 = m02 * m13 - m12 * m03;
+    const T b1 = m02 * m23 - m22 * m03;
+    const T b2 = m02 * m33 - m32 * m03;
+    const T b3 = m12 * m23 - m22 * m13;
+    const T b4 = m12 * m33 - m32 * m13;
+    const T b5 = m22 * m33 - m32 * m23;
 
     // should be accurate enough
     F32 idet = to_F32(a0) * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;

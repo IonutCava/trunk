@@ -53,8 +53,6 @@ class PropertyDescriptor : public Hashable {
     {
     }
 
-    virtual ~PropertyDescriptor() = default;
-
     virtual size_t getHash() const noexcept override;
 
 protected:

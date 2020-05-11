@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
-inline void DELETE_CMD(GFX::CommandBase*& cmd) {
+inline void DELETE_CMD(GFX::CommandBase*& cmd) noexcept {
     assert(cmd != nullptr);
     const GFX::Deleter& deleter = cmd->getDeleter();
     deleter.operate(cmd);

@@ -43,14 +43,14 @@ constexpr U8 MAX_RT_COLOUR_ATTACHMENTS = 4;
 
 class RTDrawMask {
   public:
-    RTDrawMask();
+    RTDrawMask() noexcept;
 
-    bool isEnabled(RTAttachmentType type) const;
-    bool isEnabled(RTAttachmentType type, U8 index) const;
-    void setEnabled(RTAttachmentType type, U8 index, const bool state);
+    bool isEnabled(RTAttachmentType type) const noexcept;
+    bool isEnabled(RTAttachmentType type, U8 index) const noexcept;
+    void setEnabled(RTAttachmentType type, U8 index, const bool state) noexcept;
 
-    void enableAll();
-    void disableAll();
+    void enableAll() noexcept;
+    void disableAll() noexcept;
 
     inline bool operator==(const RTDrawMask& other) const;
     inline bool operator!=(const RTDrawMask& other) const;
@@ -65,13 +65,13 @@ struct RTBlendState {
     UColour4 _blendColour = {0u, 0u, 0u, 0u};
     BlendingProperties _blendProperties;
 
-    inline bool operator==(const RTBlendState& other) const;
-    inline bool operator!=(const RTBlendState& other) const;
+    inline bool operator==(const RTBlendState& other) const noexcept;
+    inline bool operator!=(const RTBlendState& other) const noexcept;
 };
 
 class RTClearDescriptor {
 public:
-    RTClearDescriptor();
+    RTClearDescriptor() noexcept;
 
     inline void clearColour(U8 index, const bool state) noexcept { _clearColourAttachment[index] = state; }
     inline bool clearColour(U8 index) const noexcept { return _clearColourAttachment[index]; }
@@ -88,7 +88,7 @@ protected:
 
 class RTDrawDescriptor {
   public:
-    RTDrawDescriptor();
+    RTDrawDescriptor() noexcept;
 
     inline RTDrawMask& drawMask() noexcept { return _drawMask; }
     inline const RTDrawMask& drawMask() const noexcept { return _drawMask; }

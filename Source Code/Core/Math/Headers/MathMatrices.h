@@ -242,18 +242,18 @@ public:
 
     T det() const noexcept;
     T elementSum() const noexcept;
-    void inverse();
+    void inverse() noexcept;
     void transpose() noexcept;
-    void inverseTranspose();
+    void inverseTranspose() noexcept;
 
-    mat2 getInverse() const;
-    void getInverse(mat2 &ret) const;
+    mat2 getInverse() const noexcept;
+    void getInverse(mat2 &ret) const noexcept;
 
     mat2 getTranspose() const noexcept;
     void getTranspose(mat2 &ret) const noexcept;
 
-    mat2 getInverseTranspose() const;
-    void getInverseTranspose(mat2 &ret) const;
+    mat2 getInverseTranspose() const noexcept;
+    void getInverseTranspose(mat2 &ret) const noexcept;
 
     union {
         struct {
@@ -401,18 +401,18 @@ class mat3 {
 
     T det() const noexcept;
     T elementSum() const noexcept;
-    void inverse();
+    void inverse() noexcept;
     void transpose() noexcept;
-    void inverseTranspose();
+    void inverseTranspose() noexcept;
 
-    mat3 getInverse() const;
-    void getInverse(mat3 &ret) const;
+    mat3 getInverse() const noexcept;
+    void getInverse(mat3 &ret) const noexcept;
 
     mat3 getTranspose() const noexcept;
     void getTranspose(mat3 &ret) const noexcept;
 
-    mat3 getInverseTranspose() const;
-    void getInverseTranspose(mat3 &ret) const;
+    mat3 getInverseTranspose() const noexcept;
+    void getInverseTranspose(mat3 &ret) const noexcept;
 
     template<typename U>
     void fromRotation(const vec3<U> &v, Angle::RADIANS<U> angle);
@@ -598,19 +598,19 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     T det() const noexcept;
     T elementSum() const noexcept;
     void orthoNormalize();
-    void inverse();
+    void inverse() noexcept;
     void transpose() noexcept;
-    void inverseTranspose();
+    void inverseTranspose() noexcept;
     mat4 transposeRotation() const noexcept;
 
-    mat4 getInverse() const;
-    void getInverse(mat4 &ret) const;
+    mat4 getInverse() const noexcept;
+    void getInverse(mat4 &ret) const noexcept;
 
     mat4 getTranspose() const noexcept;
     void getTranspose(mat4 &out) const noexcept;
 
-    mat4 getInverseTranspose() const;
-    void getInverseTranspose(mat4 &ret) const;
+    mat4 getInverseTranspose() const noexcept;
+    void getInverseTranspose(mat4 &ret) const noexcept;
 
     mat4 getTransposeRotation() const noexcept;
     void getTransposeRotation(mat4 &ret) const noexcept;
@@ -677,7 +677,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     static void Multiply(const mat4<T>& matrixA, const mat4<T>& matrixB, mat4<T>& ret) noexcept;
 
     // Copyright 2011 The Closure Library Authors. All Rights Reserved.
-    static void Inverse(const T* in, T* out);
+    static void Inverse(const T* in, T* out) noexcept;
 
     union {
         struct {

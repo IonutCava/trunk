@@ -74,9 +74,9 @@ union P32 {
     U8  b[4];
 
     P32() = default;
-    P32(U32 val) : i(val) {}
-    P32(U8 b1, U8 b2, U8 b3, U8 b4) : b{ b1, b2, b3, b4 } {}
-    P32(U8* bytes) : b{ bytes[0], bytes[1], bytes[2], bytes[3] } {}
+    P32(U32 val) noexcept : i(val) {}
+    P32(U8 b1, U8 b2, U8 b3, U8 b4) noexcept : b{ b1, b2, b3, b4 } {}
+    P32(U8* bytes) noexcept : b{ bytes[0], bytes[1], bytes[2], bytes[3] } {}
 };
 
 static const P32 P32_FLAGS_TRUE = { 1u, 1u, 1u, 1u };
@@ -87,9 +87,9 @@ union P64 {
     U8  b[8];
 
     P64() = default;
-    P64(U64 val) : i(val) {}
-    P64(U8 b1, U8 b2, U8 b3, U8 b4, U8 b5, U8 b6, U8 b7, U8 b8) : b{ b1, b2, b3, b4, b5, b6, b7, b8 } {}
-    P64(U8* bytes) { std::memcpy(b, bytes, 8 * sizeof(U8)); }
+    P64(U64 val) noexcept : i(val) {}
+    P64(U8 b1, U8 b2, U8 b3, U8 b4, U8 b5, U8 b6, U8 b7, U8 b8) noexcept : b{ b1, b2, b3, b4, b5, b6, b7, b8 } {}
+    P64(U8* bytes) noexcept { std::memcpy(b, bytes, 8 * sizeof(U8)); }
 };
 
 static const P64 P64_FLAGS_TRUE = { 1u, 1u, 1u, 1u, 1u, 1u, 1u, 1u };
@@ -110,7 +110,7 @@ inline bool operator!=(const P64& lhs, const P64& rhs) noexcept {
 
 //Ref: https://stackoverflow.com/questions/7416699/how-to-define-24bit-data-type-in-c
 constexpr I32 INT24_MAX = 8388607;
-constexpr U32 UINT24_MAX = U32(INT24_MAX * 2);
+constexpr U32 UINT24_MAX = static_cast<U32>(INT24_MAX * 2);
 
 #pragma pack(push, 1)
 struct I24
@@ -223,7 +223,7 @@ struct U24
 {
     U8 value[3] = { 0u, 0u, 0u };
 
-    U24() : U24(0u)
+    U24() noexcept : U24(0u)
     {
     }
 

@@ -149,8 +149,6 @@ template<typename T, CommandType EnumVal>
 struct Command : public CommandBase {
     static DeleterImpl<T> s_deleter;
 
-    virtual ~Command() = default;
-
     inline void addToBuffer(CommandBuffer* buffer) const final {
         buffer->add(reinterpret_cast<const T&>(*this));
     }
@@ -319,7 +317,7 @@ END_COMMAND(SetCameraCommand);
 
 BEGIN_COMMAND(PushCameraCommand, CommandType::PUSH_CAMERA);
     PushCameraCommand() = default;
-    PushCameraCommand(const CameraSnapshot & snapshot) : _cameraSnapshot(snapshot) {}
+    PushCameraCommand(const CameraSnapshot & snapshot) noexcept : _cameraSnapshot(snapshot) {}
 
     CameraSnapshot _cameraSnapshot;
 END_COMMAND(PushCameraCommand);
@@ -329,7 +327,7 @@ END_COMMAND(PopCameraCommand);
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
     SetClipPlanesCommand() = default;
-    SetClipPlanesCommand(const FrustumClipPlanes& clippingPlanes) : _clippingPlanes(clippingPlanes) {}
+    SetClipPlanesCommand(const FrustumClipPlanes& clippingPlanes) noexcept : _clippingPlanes(clippingPlanes) {}
 
     FrustumClipPlanes _clippingPlanes;
 

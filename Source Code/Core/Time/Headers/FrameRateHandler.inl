@@ -35,32 +35,32 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace Time {
 
-inline F32 FrameRateHandler::minFrameRate() const {
+inline F32 FrameRateHandler::minFrameRate() const noexcept {
     return _minFPS;
 }
 
-inline F32 FrameRateHandler::maxFrameRate() const {
+inline F32 FrameRateHandler::maxFrameRate() const noexcept {
     return _maxFPS;
 }
 
-inline F32 FrameRateHandler::frameRate() const {
+inline F32 FrameRateHandler::frameRate() const noexcept {
     return _framerate;
 }
 
-inline F32 FrameRateHandler::frameTime() const {
+inline F32 FrameRateHandler::frameTime() const noexcept {
     return 1000.0f / frameRate();
 }
 
-inline void FrameRateHandler::frameRateAndTime(F32& fpsOut, F32& frameTimeOut) const {
+inline void FrameRateHandler::frameRateAndTime(F32& fpsOut, F32& frameTimeOut) const noexcept {
     fpsOut = frameRate();
     frameTimeOut = frameTime();
 }
 
-inline F32 FrameRateHandler::averageFrameRate() const {
+inline F32 FrameRateHandler::averageFrameRate() const noexcept {
     return _averageFPS / _frameCount;
 }
 
-inline void FrameRateHandler::frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const {
+inline void FrameRateHandler::frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const noexcept {
     avgFPSOut = averageFrameRate();
     minFPSOut = _minFPS;
     maxFPSOut = _maxFPS;

@@ -360,7 +360,7 @@ bool WindowManager::onSDLEvent(SDL_Event event) noexcept {
     return false;
 }
 
-bool WindowManager::anyWindowFocus() const {
+bool WindowManager::anyWindowFocus() const noexcept {
     return getFocusedWindow() != nullptr;
 }
 

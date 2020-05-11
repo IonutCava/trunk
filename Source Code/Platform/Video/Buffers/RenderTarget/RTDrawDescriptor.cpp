@@ -4,14 +4,14 @@
 
 namespace Divide {
 
-RTDrawMask::RTDrawMask()
+RTDrawMask::RTDrawMask() noexcept
     : _disabledDepth(false),
       _disabledStencil(false)
 {
     _disabledColours.fill(false);
 }
 
-bool RTDrawMask::isEnabled(RTAttachmentType type) const {
+bool RTDrawMask::isEnabled(RTAttachmentType type) const noexcept {
     switch (type) {
         case RTAttachmentType::Depth: return !_disabledDepth;
         case RTAttachmentType::Stencil: return !_disabledStencil;
@@ -29,7 +29,7 @@ bool RTDrawMask::isEnabled(RTAttachmentType type) const {
     return true;
 }
 
-bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const {
+bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const noexcept {
     assert(index < MAX_RT_COLOUR_ATTACHMENTS);
 
     if (type == RTAttachmentType::Colour) {
@@ -39,7 +39,7 @@ bool RTDrawMask::isEnabled(RTAttachmentType type, U8 index) const {
     return isEnabled(type);
 }
 
-void RTDrawMask::setEnabled(RTAttachmentType type, U8 index, const bool state) {
+void RTDrawMask::setEnabled(RTAttachmentType type, U8 index, const bool state) noexcept {
     assert(index < MAX_RT_COLOUR_ATTACHMENTS);
 
     switch (type) {
@@ -50,17 +50,17 @@ void RTDrawMask::setEnabled(RTAttachmentType type, U8 index, const bool state) {
     }
 }
 
-void RTDrawMask::enableAll() {
+void RTDrawMask::enableAll() noexcept {
     _disabledDepth = _disabledStencil = false;
     _disabledColours.fill(false);
 }
 
-void RTDrawMask::disableAll() {
+void RTDrawMask::disableAll() noexcept {
     _disabledDepth = _disabledStencil = true;
     _disabledColours.fill(true);
 }
 
-RTClearDescriptor::RTClearDescriptor()
+RTClearDescriptor::RTClearDescriptor() noexcept
     : _clearDepth(true),
       _clearColours(true)
 {
@@ -69,7 +69,7 @@ RTClearDescriptor::RTClearDescriptor()
     _clearExternalDepth = false;
 }
 
-RTDrawDescriptor::RTDrawDescriptor()
+RTDrawDescriptor::RTDrawDescriptor() noexcept
     : _setViewport(true)
 {
     _drawMask.enableAll();

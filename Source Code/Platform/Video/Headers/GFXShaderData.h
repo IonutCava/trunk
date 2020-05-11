@@ -62,7 +62,7 @@ class GFXShaderData {
           vec4<F32> _clipPlanes[to_base(Frustum::FrustPlane::COUNT)];
 
           inline F32 aspectRatio() const noexcept;
-          inline vec2<F32> cameraZPlanes() const;
+          inline vec2<F32> cameraZPlanes() const noexcept;
           inline F32 FoV() const noexcept;
       };
 #pragma pack(pop)

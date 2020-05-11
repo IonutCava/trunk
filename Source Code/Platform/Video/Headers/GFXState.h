@@ -50,7 +50,7 @@ struct GPUState : private NonCopyable {
         // Max supported
         U8 _refreshRate = 0u;
 
-        bool operator==(const GPUVideoMode& other) const {
+        bool operator==(const GPUVideoMode& other) const noexcept {
             return _resolution == other._resolution &&
                    _bitDepth == other._bitDepth &&
                    _refreshRate == other._refreshRate &&

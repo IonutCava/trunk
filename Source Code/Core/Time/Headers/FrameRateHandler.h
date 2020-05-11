@@ -45,13 +45,13 @@ class FrameRateHandler {
 public:
     void tick(const U64 deltaTimeUS) noexcept;
 
-    inline F32 minFrameRate() const;
-    inline F32 maxFrameRate() const;
-    inline F32 frameRate() const;
-    inline F32 frameTime() const;
-    inline F32 averageFrameRate() const;
-    inline void frameRateAndTime(F32& fpsOut, F32& frameTimeOut) const;
-    inline void frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const;
+    inline F32 minFrameRate() const noexcept;
+    inline F32 maxFrameRate() const noexcept;
+    inline F32 frameRate() const noexcept;
+    inline F32 frameTime() const noexcept;
+    inline F32 averageFrameRate() const noexcept;
+    inline void frameRateAndTime(F32& fpsOut, F32& frameTimeOut) const noexcept;
+    inline void frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const noexcept;
 
 private:
     std::array<F32, FRAME_ARRAY_SIZE> _framerateSecPerFrame = {};

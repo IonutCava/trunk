@@ -47,12 +47,12 @@ inline bool RTDrawMask::operator!=(const RTDrawMask& other) const {
            _disabledColours != other._disabledColours;
 }
 
-inline bool RTBlendState::operator==(const RTBlendState& other) const {
+inline bool RTBlendState::operator==(const RTBlendState& other) const noexcept {
     return _blendProperties == other._blendProperties &&
            _blendColour == other._blendColour;
 }
 
-inline bool RTBlendState::operator!=(const RTBlendState& other) const {
+inline bool RTBlendState::operator!=(const RTBlendState& other) const noexcept {
     return _blendProperties != other._blendProperties ||
            _blendColour != other._blendColour;
 }

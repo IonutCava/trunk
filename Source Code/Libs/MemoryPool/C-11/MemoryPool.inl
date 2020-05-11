@@ -30,7 +30,7 @@ inline typename MemoryPool<T, BlockSize>::size_type
 MemoryPool<T, BlockSize>::padPointer(data_pointer_ p, size_type align)
 const noexcept
 {
-  uintptr_t result = reinterpret_cast<uintptr_t>(p);
+  const uintptr_t result = reinterpret_cast<uintptr_t>(p);
   return ((align - result) % align);
 }
 

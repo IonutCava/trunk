@@ -40,7 +40,7 @@ namespace Divide {
 
 namespace GFX {
 
-void DELETE_CMD(GFX::CommandBase*& cmd);
+void DELETE_CMD(GFX::CommandBase*& cmd) noexcept;
 size_t RESERVE_CMD(U8 typeIndex) noexcept;
 
 class CommandBuffer : private GUIDWrapper, private NonCopyable {
