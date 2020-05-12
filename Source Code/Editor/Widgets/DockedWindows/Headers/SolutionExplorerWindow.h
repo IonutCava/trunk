@@ -41,6 +41,8 @@ namespace Divide {
 class Camera;
 class SceneManager;
 class SceneGraphNode;
+FWD_DECLARE_MANAGED_CLASS(SceneNode);
+
 class SolutionExplorerWindow final : public DockedWindow, public PlatformContextComponent {
     public:
         SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
@@ -49,11 +51,20 @@ class SolutionExplorerWindow final : public DockedWindow, public PlatformContext
         void drawInternal() final;
   protected:
       void drawTransformSettings();
+      void drawRemoveNodeDialog();
+      void drawAddNodeDialog();
+      void drawNodeParametersChildWindow();
+
       void printCameraNode(SceneManager& sceneManager, Camera* camera);
       void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open);
 
+      void goToNode(const SceneGraphNode& sgn) const;
+
+      SceneNode_ptr createNode();
   private:
       ImGuiTextFilter _filter;
+      I64 _nodeToRemove = -1;
+      SceneGraphNode* _parentNode = nullptr;
 };
 }; //namespace Divide
 

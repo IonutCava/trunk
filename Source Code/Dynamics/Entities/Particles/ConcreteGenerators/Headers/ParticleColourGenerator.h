@@ -36,15 +36,11 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleColourGenerator final : public ParticleGenerator {
-   public:
-    UColour4 _minStartCol;
-    UColour4 _maxStartCol;
-    UColour4 _minEndCol;
-    UColour4 _maxEndCol;
-
-   public:
-    ParticleColourGenerator() {}
+struct ParticleColourGenerator final : public ParticleGenerator {
+    FColour4 _minStartCol = DefaultColours::BLACK;
+    FColour4 _maxStartCol = DefaultColours::BLACK;
+    FColour4 _minEndCol = DefaultColours::WHITE;
+    FColour4 _maxEndCol = DefaultColours::WHITE;
 
     void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,

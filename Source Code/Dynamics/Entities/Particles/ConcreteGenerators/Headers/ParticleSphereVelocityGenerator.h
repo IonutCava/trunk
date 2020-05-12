@@ -36,13 +36,9 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleSphereVelocityGenerator final : public ParticleGenerator {
-   public:
-    F32 _minVel;
-    F32 _maxVel;
-
-   public:
-    ParticleSphereVelocityGenerator() : _minVel(0.0f), _maxVel(0.0f) {}
+struct ParticleSphereVelocityGenerator final : public ParticleGenerator {
+    F32 _minVel = 0.f;
+    F32 _maxVel = 0.f;
 
     void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,

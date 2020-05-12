@@ -8,7 +8,7 @@
 
 namespace Divide {
 
-ParticleData::ParticleData(GFXDevice& context, U32 particleCount, U8 optionsMask)
+ParticleData::ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask)
     : _context(context)
 {
     _isBillboarded = true;
@@ -28,7 +28,7 @@ ParticleData::~ParticleData()
     generateParticles(0, _optionsMask);
 }
 
-void ParticleData::generateParticles(U32 particleCount, U8 optionsMask) {
+void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
     _totalCount = particleCount;
     _aliveCount = 0;
     _optionsMask = optionsMask;
@@ -43,24 +43,19 @@ void ParticleData::generateParticles(U32 particleCount, U8 optionsMask) {
     _endColour.clear();
 
     if (_totalCount > 0) {
-        if (BitCompare(_optionsMask,
-                       to_base(Properties::PROPERTIES_POS))) {
+        if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_POS))) {
             _position.resize(_totalCount, vec4<F32>(0.0f));
         }
-        if (BitCompare(_optionsMask,
-                       to_base(Properties::PROPERTIES_VEL))) {
+        if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_VEL))) {
             _velocity.resize(_totalCount, vec4<F32>(0.0f));
         }
-        if (BitCompare(_optionsMask,
-                       to_base(Properties::PROPERTIES_ACC))) {
+        if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_ACC))) {
             _acceleration.resize(_totalCount, vec4<F32>(0.0f));
         }
-        if (BitCompare(_optionsMask,
-                       to_base(Properties::PROPERTIES_COLOR))) {
+        if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_COLOR))) {
             _colour.resize(_totalCount, FColour4(0.0f));
         }
-        if (BitCompare(_optionsMask,
-                       to_base(Properties::PROPERTIES_COLOR_TRANS))) {
+        if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_COLOR_TRANS))) {
             _startColour.resize(_totalCount, FColour4(0.0f));
             _endColour.resize(_totalCount, FColour4(0.0f));
         }
@@ -122,19 +117,19 @@ void ParticleData::sort(bool invalidateCache) {
 }
 
 void ParticleData::swapData(U32 indexA, U32 indexB) {
-    if (BitCompare(_optionsMask, to_base(Properties::PROPERTIES_POS))) {
+    if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_POS))) {
         _position[indexA].set(_position[indexB]);
     }
-    if (BitCompare(_optionsMask, to_base(Properties::PROPERTIES_VEL))) {
+    if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_VEL))) {
         _velocity[indexA].set(_velocity[indexB]);
     }
-    if (BitCompare(_optionsMask, to_base(Properties::PROPERTIES_ACC))) {
+    if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_ACC))) {
         _acceleration[indexA].set(_acceleration[indexB]);
     }
-    if (BitCompare(_optionsMask, to_base(Properties::PROPERTIES_COLOR))) {
+    if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_COLOR))) {
         _colour[indexA].set(_colour[indexB]);
     }
-    if (BitCompare(_optionsMask, to_base(Properties::PROPERTIES_COLOR_TRANS))) {
+    if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_COLOR_TRANS))) {
         _startColour[indexA].set(_startColour[indexB]);
         _endColour[indexA].set(_endColour[indexB]);
     }

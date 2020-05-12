@@ -47,6 +47,7 @@ public:
 enum class RenderStage : U8;
 namespace Attorney {
     class SceneManagerScene;
+    class SceneManagerEditor;
     class SceneManagerKernel;
     class SceneManagerScenePool;
     class SceneManagerRenderPass;
@@ -72,6 +73,7 @@ class SceneManager : public FrameListener,
                      public KernelComponent {
 
     friend class Attorney::SceneManagerScene;
+    friend class Attorney::SceneManagerEditor;
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerScenePool;
     friend class Attorney::SceneManagerRenderPass;
@@ -106,7 +108,7 @@ public:
     }
     void resetSelection(PlayerIndex idx);
     void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive);
-
+    void onNodeDestroy(SceneGraphNode& node);
     // cull the scenegraph against the current view frustum
     const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount);
     // get the full list of reflective nodes
@@ -239,7 +241,9 @@ protected:
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
-    void moveCameraToNode(SceneGraphNode* targetNode) const;
+    void moveCameraToNode(const SceneGraphNode& targetNode) const;
+    SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
+
 private:
     bool _init = false;
     bool _processInput = false;
@@ -315,6 +319,14 @@ class SceneManagerKernel {
     friend class Divide::Kernel;
 };
 
+class SceneManagerEditor {
+  private:
+   static SceneNode_ptr createNode(Divide::SceneManager& manager, SceneNodeType type, const ResourceDescriptor& descriptor) {
+     return manager.createNode(type, descriptor);
+   }
+
+   friend class Divide::Editor;
+};
 class SceneManagerScenePool {
   private:
    static bool unloadScene(Divide::SceneManager& mgr, Scene* scene) {
@@ -334,7 +346,7 @@ class SceneManagerCameraAccessor {
         return mgr.playerCamera(idx);
     }
 
-    static void moveCameraToNode(Divide::SceneManager& mgr, SceneGraphNode* targetNode) {
+    static void moveCameraToNode(Divide::SceneManager& mgr, const SceneGraphNode& targetNode) {
         mgr.moveCameraToNode(targetNode);
     }
 

@@ -9,8 +9,8 @@ void ParticleVelocityGenerator::generate(Task& packagedTasksParent,
                                          ParticleData& p,
                                          U32 startIndex,
                                          U32 endIndex) {
-    vec3<F32> min = _sourceOrientation * _minStartVel.xyz();
-    vec3<F32> max = _sourceOrientation * _maxStartVel.xyz();
+    vec3<F32> min = _sourceOrientation * _minStartVel;
+    vec3<F32> max = _sourceOrientation * _maxStartVel;
     
     TaskPool& tp = *packagedTasksParent._parentPool;
 

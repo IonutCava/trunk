@@ -39,13 +39,11 @@ namespace Divide {
 
 class ParticleBasicTimeUpdater final : public ParticleUpdater {
    public:
-    ParticleBasicTimeUpdater(GFXDevice& context) : ParticleUpdater(context)
+    ParticleBasicTimeUpdater(PlatformContext& context) : ParticleUpdater(context)
     {
     }
 
-    ~ParticleBasicTimeUpdater()
-    {
-    }
+    ~ParticleBasicTimeUpdater() = default;
 
     void update(const U64 deltaTimeUS, ParticleData& p) override;
 };

@@ -125,7 +125,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void setParent(SceneGraphNode& parent);
 
         /// Checks if we have a parent matching the typeMask. We check recursively until we hit the top node (if ignoreRoot is false, top node is Root)
-        bool isChildOfType(U16 typeMask, bool ignoreRoot) const;
+        bool isChildOfType(U16 typeMask) const;
 
         /// Returns true if the current node is related somehow to the specified target node (see RelationshipType enum for more details)
         bool isRelated(const SceneGraphNode& target) const;

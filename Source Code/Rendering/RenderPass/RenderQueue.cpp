@@ -78,7 +78,7 @@ RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinTyp
 
 RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
     switch (node.getNode().type()) {
-        case SceneNodeType::TYPE_EMPTY:
+        case SceneNodeType::TYPE_TRANSFORM:
         {
             if (BitCompare(node.componentMask(), ComponentType::SPOT_LIGHT) ||
                 BitCompare(node.componentMask(), ComponentType::POINT_LIGHT) ||

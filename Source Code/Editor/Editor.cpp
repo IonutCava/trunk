@@ -1503,10 +1503,13 @@ LightPool& Editor::getActiveLightPool() {
     return activeScene.lightPool();
 }
 
-void Editor::teleportToNode(SceneGraphNode* sgn) const {
-    if (sgn != nullptr) {
-        Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn);
-    }
+void Editor::teleportToNode(const SceneGraphNode& sgn) const {
+    Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn);
+}
+
+void Editor::queueRemoveNode(I64 nodeGUID) {
+    Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
+    activeScene.sceneGraph().removeNode(nodeGUID);
 }
 
 void Editor::scenePreviewFocused(bool state) {
@@ -1566,6 +1569,10 @@ bool Editor::removeComponent(const Selections& selections, ComponentType newComp
     }
 
     return ret;
+}
+
+SceneNode_ptr Editor::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
+    return Attorney::SceneManagerEditor::createNode(*context().kernel().sceneManager(), type, descriptor);
 }
 
 bool Editor::saveToXML() const {

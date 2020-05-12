@@ -43,19 +43,9 @@ namespace {
     }
 
     inline bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
-        return nodeType == SceneNodeType::TYPE_EMPTY ||
-               nodeType == SceneNodeType::TYPE_TRANSFORM ||
+        return nodeType == SceneNodeType::TYPE_TRANSFORM || 
+               nodeType == SceneNodeType::TYPE_TRIGGER || 
                objType._value == ObjectType::MESH;
-    }
-
-    // Return true if the node type is capable of generating draw commands
-    inline bool generatesDrawCommands(SceneNodeType nodeType, ObjectType objType, bool &isTransformNodeOut) {
-        if (nodeType == SceneNodeType::TYPE_ROOT || nodeType == SceneNodeType::TYPE_TRIGGER) {
-            isTransformNodeOut = false;
-            return false;
-        }
-        isTransformNodeOut = isTransformNode(nodeType, objType);
-        return !isTransformNodeOut;
     }
 
     // Return true if this node should be removed from a shadow pass
@@ -86,7 +76,8 @@ namespace {
             return false;
         }
 
-        if (generatesDrawCommands(snType, objectType, isTransformNodeOut)) {
+        isTransformNodeOut = isTransformNode(snType, objectType);
+        if (!isTransformNodeOut) {
             // only checks nodes and can return true for a shadow stage
             return stage == RenderStage::SHADOW && doesNotCastShadows(stage, node, snType, objectType);
         }

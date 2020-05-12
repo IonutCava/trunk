@@ -35,16 +35,6 @@
 
 #include "Environment/Terrain/Headers/Terrain.h"
 
-#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
-#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColourUpdater.h"
-#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h"
-#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleFloorUpdater.h"
-
-#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleBoxGenerator.h"
-#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleColourGenerator.h"
-#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityGenerator.h"
-#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleTimeGenerator.h"
-
 namespace Divide {
 
 namespace {
@@ -70,7 +60,7 @@ WarScene::WarScene(PlatformContext& context, ResourceCache* cache, SceneManager&
 
     _resetUnits = false;
 
-    addSelectionCallback([&](PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node) {
+    parent.addSelectionCallback([&](PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node) {
         stringImpl selectionText = "";
         for (SceneGraphNode* it : node) {
             selectionText.append("\n");
@@ -587,64 +577,6 @@ bool WarScene::load(const Str128& name) {
         printMessage(eventID, unitName);
     });
 #endif
-    constexpr bool disableParticles = true;
-
-    if (!disableParticles) {
-        const U32 particleCount = Config::Build::IS_DEBUG_BUILD ? 4000 : 20000;
-        const F32 emitRate = particleCount / 4;
-
-        U8 options =
-            to_base(ParticleData::Properties::PROPERTIES_POS) |
-            to_base(ParticleData::Properties::PROPERTIES_VEL) |
-            to_base(ParticleData::Properties::PROPERTIES_ACC) |
-            to_base(ParticleData::Properties::PROPERTIES_COLOR) |
-            to_base(ParticleData::Properties::PROPERTIES_COLOR_TRANS);
-
-        std::shared_ptr<ParticleData> particles = std::make_shared<ParticleData>(context().gfx(), particleCount, options);
-        particles->_textureFileName = "particle.DDS";
-
-        std::shared_ptr<ParticleSource> particleSource = std::make_shared<ParticleSource>(context().gfx(), emitRate);
-
-        std::shared_ptr<ParticleBoxGenerator> boxGenerator(new ParticleBoxGenerator());
-        boxGenerator->maxStartPosOffset(vec4<F32>(0.3f, 0.0f, 0.3f, 1.0f));
-        particleSource->addGenerator(boxGenerator);
-
-        std::shared_ptr<ParticleColourGenerator> colGenerator(new ParticleColourGenerator());
-        colGenerator->_minStartCol.set(Util::ToByteColour(FColour4(0.7f, 0.4f, 0.4f, 1.0f)));
-        colGenerator->_maxStartCol.set(Util::ToByteColour(FColour4(1.0f, 0.8f, 0.8f, 1.0f)));
-        colGenerator->_minEndCol.set(Util::ToByteColour(FColour4(0.5f, 0.2f, 0.2f, 0.5f)));
-        colGenerator->_maxEndCol.set(Util::ToByteColour(FColour4(0.7f, 0.5f, 0.5f, 0.75f)));
-        particleSource->addGenerator(colGenerator);
-
-        std::shared_ptr<ParticleVelocityGenerator> velGenerator(new ParticleVelocityGenerator());
-        velGenerator->_minStartVel.set(-1.0f, 0.22f, -1.0f, 0.0f);
-        velGenerator->_maxStartVel.set(1.0f, 3.45f, 1.0f, 0.0f);
-        particleSource->addGenerator(velGenerator);
-
-        std::shared_ptr<ParticleTimeGenerator> timeGenerator(new ParticleTimeGenerator());
-        timeGenerator->_minTime = 8.5f;
-        timeGenerator->_maxTime = 20.5f;
-        particleSource->addGenerator(timeGenerator);
-
-        /*_particleEmitter = addParticleEmitter("TESTPARTICLES", particles, _sceneGraph->getRoot());
-        SceneGraphNode* testSGN = _particleEmitter;
-        std::shared_ptr<ParticleEmitter> test = testSGN->getNode<ParticleEmitter>();
-        testSGN->get<TransformComponent>()->translateY(10);
-        test->setDrawImpostor(true);
-        test->enableEmitter(true);
-        test->addSource(particleSource);
-        boxGenerator->pos(vec4<F32>(testSGN->get<TransformComponent>()->getPosition()));
-
-        std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(platformContext().gfx());
-        eulerUpdater->_globalAcceleration.set(0.0f, -20.0f, 0.0f);
-        test->addUpdater(eulerUpdater);
-        std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(platformContext().gfx());
-        floorUpdater->_bounceFactor = 0.65f;
-        test->addUpdater(floorUpdater);
-        test->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(platformContext().gfx()));
-        test->addUpdater(std::make_shared<ParticleBasicColourUpdater>(platformContext().gfx()));
-        */
-    }
 
     //state().renderState().generalVisibility(state().renderState().generalVisibility() * 2);
 

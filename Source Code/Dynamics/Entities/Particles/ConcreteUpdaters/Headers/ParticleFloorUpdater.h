@@ -39,17 +39,15 @@ namespace Divide {
 
 class ParticleFloorUpdater final : public ParticleUpdater {
    public:
-    F32 _floorY;
-    F32 _bounceFactor;
+    F32 _floorY = 0.f;
+    F32 _bounceFactor = 0.5f;
 
    public:
-    ParticleFloorUpdater(GFXDevice& context) : ParticleUpdater(context), _floorY(0.0f), _bounceFactor(0.5f)
+    ParticleFloorUpdater(PlatformContext& context) : ParticleUpdater(context)
     {
     }
 
-    ~ParticleFloorUpdater()
-    {
-    }
+    ~ParticleFloorUpdater() = default;
 
     void update(const U64 deltaTimeUS, ParticleData& p) override;
 };

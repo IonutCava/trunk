@@ -72,11 +72,11 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
                                               "EMPTY",
                                               "EMPTY",
                                               "",
-                                              SceneNodeType::TYPE_EMPTY,
+                                              SceneNodeType::TYPE_TRANSFORM,
                                               to_base(ComponentType::TRANSFORM));
     }
 
-    if (_node->type() == SceneNodeType::TYPE_EMPTY || _node->type() == SceneNodeType::TYPE_ROOT) {
+    if (_node->type() == SceneNodeType::TYPE_TRANSFORM) {
         _node->load();
     }
 
@@ -118,10 +118,10 @@ ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
 void SceneGraphNode::AddComponents(U32 componentMask, bool allowDuplicates) {
 
     for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
-        const U16 componentBit = 1 << i;
+        const U32 componentBit = 1 << i;
 
         // Only add new components;
-        if (BitCompare(componentMask, to_U32(componentBit)) && (allowDuplicates || !BitCompare(_componentMask, to_U32(componentBit)))) {
+        if (BitCompare(componentMask, componentBit) && (allowDuplicates || !BitCompare(_componentMask, componentBit))) {
             _componentMask |= componentBit;
             SGNComponent::construct(ComponentType::_from_integral(componentBit), *this);
         }
@@ -130,8 +130,8 @@ void SceneGraphNode::AddComponents(U32 componentMask, bool allowDuplicates) {
 
 void SceneGraphNode::RemoveComponents(U32 componentMask) {
     for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
-        const U16 componentBit = 1 << i;
-        if (BitCompare(componentMask, to_U32(componentBit)) && BitCompare(_componentMask, to_U32(componentBit))) {
+        const U32 componentBit = 1 << i;
+        if (BitCompare(componentMask, componentBit) && BitCompare(_componentMask, componentBit)) {
             SGNComponent::destruct(ComponentType::_from_integral(componentBit), *this);
         }
     }
@@ -294,10 +294,7 @@ void SceneGraphNode::postLoad() {
     });
 }
 
-bool SceneGraphNode::isChildOfType(U16 typeMask, bool ignoreRoot) const {
-    if (ignoreRoot) {
-        ClearBit(typeMask, to_base(SceneNodeType::TYPE_ROOT));
-    }
+bool SceneGraphNode::isChildOfType(U16 typeMask) const {
     SceneGraphNode* parentNode = parent();
     while (parentNode != nullptr) {
         if (BitCompare(typeMask, to_base(parentNode->getNode<>().type()))) {
@@ -349,18 +346,19 @@ SceneGraphNode* SceneGraphNode::findChild(const U64 nameHash, bool sceneNodeName
 }
 
 SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool sceneNodeGuid, bool recursive) const {
-    SharedLock<SharedMutex> r_lock(_childLock);
-    for (auto& child : _children) {
-        if (sceneNodeGuid ? (child->getNode().getGUID() == GUID) : (child->getGUID() == GUID)) {
-            return child;
-        } else if (recursive) {
-            SceneGraphNode* recChild = child->findChild(GUID, sceneNodeGuid, true);
-            if (recChild != nullptr) {
-                return recChild;
+    if (GUID != -1) {
+        SharedLock<SharedMutex> r_lock(_childLock);
+        for (auto& child : _children) {
+            if (sceneNodeGuid ? (child->getNode().getGUID() == GUID) : (child->getGUID() == GUID)) {
+                return child;
+            } else if (recursive) {
+                SceneGraphNode* recChild = child->findChild(GUID, sceneNodeGuid, true);
+                if (recChild != nullptr) {
+                    return recChild;
+                }
             }
         }
     }
-
     // no children's name matches or there are no more children
     // so return nullptr, indicating that the node was not found yet
     return nullptr;
@@ -404,7 +402,7 @@ void SceneGraphNode::processDeleteQueue(vectorEASTL<size_t>& childList) {
     // See if we have any children to delete
     if (!childList.empty()) {
         UniqueLock<SharedMutex> w_lock(_childLock);
-        for (size_t childIdx : childList) {
+        for (const size_t childIdx : childList) {
             _sceneGraph.destroySceneGraphNode(_children[childIdx]);
         }
         EraseIndices(_children, childList);

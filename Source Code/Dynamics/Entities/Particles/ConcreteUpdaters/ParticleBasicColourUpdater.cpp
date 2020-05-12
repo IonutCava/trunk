@@ -23,6 +23,6 @@ void ParticleBasicColourUpdater::update(const U64 deltaTimeUS, ParticleData& p) 
     descriptor._iterCount = p.aliveCount();
     descriptor._partitionSize = g_partitionSize;
 
-    parallel_for(_context.context(), parseRange, descriptor);
+    parallel_for(context(), parseRange, descriptor);
 }
 };

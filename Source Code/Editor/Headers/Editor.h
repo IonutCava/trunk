@@ -203,7 +203,8 @@ class Editor : public PlatformContextComponent,
   protected:
     inline bool isInit() const noexcept;
     bool render(const U64 deltaTime);
-    void teleportToNode(SceneGraphNode* sgn) const;
+    void teleportToNode(const SceneGraphNode& sgn) const;
+    void queueRemoveNode(I64 nodeGUID);
 
     void scenePreviewFocused(bool state);
     ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
@@ -233,6 +234,7 @@ class Editor : public PlatformContextComponent,
     bool addComponent(const Selections& selections, ComponentType newComponentType) const;
     bool removeComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
     bool removeComponent(const Selections& selections, ComponentType newComponentType) const;
+    SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
 
   private:
     Time::ProfileTimer& _editorUpdateTimer;
@@ -343,9 +345,18 @@ namespace Attorney {
             editor._gizmo->enable(state);
         }
 
-        static void teleportToNode(const Editor& editor, SceneGraphNode* targetNode) {
+        static void teleportToNode(const Editor& editor, const SceneGraphNode& targetNode) {
             editor.teleportToNode(targetNode);
         }
+
+        static void queueRemoveNode(Editor& editor, I64 nodeGUID) {
+            editor.queueRemoveNode(nodeGUID);
+        }
+
+        static SceneNode_ptr createNode(Editor& editor, SceneNodeType type, const ResourceDescriptor& descriptor) {
+            return editor.createNode(type, descriptor);
+        }
+
         friend class Divide::SolutionExplorerWindow;
     };
 

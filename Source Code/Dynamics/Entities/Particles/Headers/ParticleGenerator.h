@@ -41,7 +41,7 @@ namespace Divide {
 class NOINITVTABLE ParticleGenerator {
    public:
     ParticleGenerator() noexcept {}
-    virtual ~ParticleGenerator() {}
+    virtual ~ParticleGenerator() = default;
 
     virtual void generate(Task& packagedTasksParent,
                           const U64 deltaTimeUS,

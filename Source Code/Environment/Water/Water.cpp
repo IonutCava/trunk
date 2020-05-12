@@ -14,6 +14,8 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/NavigationComponent.h"
 
 namespace Divide {
 
@@ -163,6 +165,15 @@ bool WaterPlane::load() {
 }
 
 void WaterPlane::postLoad(SceneGraphNode& sgn) {
+    NavigationComponent* nComp = sgn.get<NavigationComponent>();
+    if (nComp != nullptr) {
+        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
+    }
+
+    RigidBodyComponent* rComp = sgn.get<RigidBodyComponent>();
+    if (rComp != nullptr) {
+        rComp->physicsGroup(PhysicsGroup::GROUP_STATIC);
+    }
 
     const F32 halfWidth = _dimensions.width * 0.5f;
     const F32 halfLength = _dimensions.height * 0.5f;

@@ -772,7 +772,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
 }
 
 Str128 NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
-    return (sgn.getNode().type() != SceneNodeType::TYPE_ROOT)
+    return sgn.parent() != nullptr
                ? Str128{"_node_[_" + sgn.name() + "_]"}
                : Str128{ "_root_node" };
 }

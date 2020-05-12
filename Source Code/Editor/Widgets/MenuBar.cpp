@@ -87,7 +87,7 @@ void MenuBar::draw() {
         drawProjectMenu();
         drawObjectMenu();
         drawToolsMenu();
-        drawWindowsMenu();
+        //drawWindowsMenu();
         drawPostFXMenu();
         drawDebugMenu();
         drawHelpMenu();
@@ -671,6 +671,12 @@ void MenuBar::drawDebugMenu() {
 void MenuBar::drawHelpMenu() {
     if (ImGui::BeginMenu("Help"))
     {
+        bool& sampleWindowEnabled = Attorney::EditorMenuBar::sampleWindowEnabled(_context.editor());
+        if (ImGui::MenuItem("Sample Window", NULL, &sampleWindowEnabled)) {
+
+        }
+        ImGui::Separator();
+
         ImGui::Text("Copyright(c) 2018 DIVIDE - Studio");
         ImGui::Text("Copyright(c) 2009 Ionut Cava");
         ImGui::EndMenu();

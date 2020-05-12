@@ -160,19 +160,21 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                 }
             }
 
-            for (const GLuint shader : shaders) {
-                glAttachShader(_programHandle, shader);
-            }
+            if (!shaders.empty()) {
+                for (const GLuint shader : shaders) {
+                    glAttachShader(_programHandle, shader);
+                }
 
-            glProgramParameteri(_programHandle, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
-            glProgramParameteri(_programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
-            glLinkProgram(_programHandle);
+                glProgramParameteri(_programHandle, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+                glProgramParameteri(_programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
+                glLinkProgram(_programHandle);
 
-            for (const GLuint shader : shaders) {
-                glDetachShader(_programHandle, shader);
-                glDeleteShader(shader);
+                for (const GLuint shader : shaders) {
+                    glDetachShader(_programHandle, shader);
+                    glDeleteShader(shader);
+                }
+                shaders.clear();
             }
-            shaders.clear();
         }
 
         // And check the result

@@ -616,24 +616,22 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     playerCamera()->updateLookAt();
 }
 
-void SceneManager::moveCameraToNode(SceneGraphNode* targetNode) const {
-    if (targetNode != nullptr) {
-        vec3<F32> targetPos = playerCamera()->getEye();
-        BoundsComponent* bComp = targetNode->get<BoundsComponent>();
-        if (bComp != nullptr) {
-            const BoundingSphere& bSphere = bComp->getBoundingSphere();
-            targetPos = bSphere.getCenter();
-            targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
-        } else {
-            TransformComponent* tComp = targetNode->get<TransformComponent>();
-            if (tComp != nullptr) {
-                targetPos = tComp->getPosition();
-                targetPos -= playerCamera()->getForwardDir() * 3.0f;
-            }
+void SceneManager::moveCameraToNode(const SceneGraphNode& targetNode) const {
+    vec3<F32> targetPos = playerCamera()->getEye();
+    BoundsComponent* bComp = targetNode.get<BoundsComponent>();
+    if (bComp != nullptr) {
+        const BoundingSphere& bSphere = bComp->getBoundingSphere();
+        targetPos = bSphere.getCenter();
+        targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
+    } else {
+        TransformComponent* tComp = targetNode.get<TransformComponent>();
+        if (tComp != nullptr) {
+            targetPos = tComp->getPosition();
+            targetPos -= playerCamera()->getForwardDir() * 3.0f;
         }
-
-        playerCamera()->setEye(targetPos);
     }
+
+    playerCamera()->setEye(targetPos);
 }
 
 VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
@@ -748,9 +746,20 @@ void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode
     }
 }
 
+void SceneManager::onNodeDestroy(SceneGraphNode& node) {
+    for (PlayerIndex p = 0; p < _activePlayerCount; ++p) {
+        resetSelection(p);
+    }
+}
+
 void SceneManager::mouseMovedExternally(const Input::MouseMoveEvent& arg) {
     Attorney::SceneManager::clearHoverTarget(getActiveScene(), arg);
 }
+
+SceneNode_ptr SceneManager::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
+    return Attorney::SceneManager::createNode(getActiveScene(), type, descriptor);
+}
+
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {

@@ -36,13 +36,9 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleTimeGenerator final : public ParticleGenerator {
-   public:
-    F32 _minTime;
-    F32 _maxTime;
-
-   public:
-    ParticleTimeGenerator() : _minTime(0.0), _maxTime(0.0) {}
+struct ParticleTimeGenerator final : public ParticleGenerator {
+    F32 _minTime = 0.0f;
+    F32 _maxTime = 0.0f;
 
     void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,

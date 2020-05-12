@@ -10,11 +10,6 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
                                        U32 startIndex,
                                        U32 endIndex) {
 
-    const FColour4 minStartCol(Util::ToFloatColour(_minStartCol));
-    const FColour4 maxStartCol(Util::ToFloatColour(_maxStartCol));
-    const FColour4 minEndCol(Util::ToFloatColour(_minEndCol));
-    const FColour4 maxEndCol(Util::ToFloatColour(_maxEndCol));
-
     TaskPool& tp = *packagedTasksParent._parentPool;
 
     using iter_t_start = decltype(std::begin(p._startColour));
@@ -25,10 +20,10 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
     {
         Start(*CreateTask(tp,
                    &packagedTasksParent,
-                   [from, to, minStartCol, maxStartCol](const Task& parentTask) {
+                   [this, from, to](const Task& parentTask) {
                        std::for_each(from, to, [&](FColour4& colour)
                        {
-                           colour.set(Random(minStartCol, maxStartCol));
+                           colour.set(Random(_minStartCol, _maxStartCol));
                        });
                    }));
     });
@@ -41,10 +36,10 @@ void ParticleColourGenerator::generate(Task& packagedTasksParent,
     {
         Start(*CreateTask(tp,
                    &packagedTasksParent,
-                   [from, to, minEndCol, maxEndCol](const Task& parentTask) {
+                   [this, from, to](const Task& parentTask) {
                        std::for_each(from, to, [&](FColour4& colour)
                        {
-                           colour.set(Random(minEndCol, maxEndCol));
+                           colour.set(Random(_minEndCol, _maxEndCol));
                        });
                    }));
     });

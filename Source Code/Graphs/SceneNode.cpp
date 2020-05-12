@@ -51,19 +51,7 @@ SceneNode::~SceneNode()
 }
 
 const char* SceneNode::getTypeName() const {
-    switch (_type) {
-        case SceneNodeType::TYPE_ROOT: return "ROOT";
-        case SceneNodeType::TYPE_OBJECT3D: return "OBJECT3D";
-        case SceneNodeType::TYPE_TRANSFORM: return "TRANSFORM";
-        case SceneNodeType::TYPE_WATER: return "WATER";
-        case SceneNodeType::TYPE_TRIGGER: return "TRIGGER";
-        case SceneNodeType::TYPE_PARTICLE_EMITTER: return "PARTICLE_EMITTER";
-        case SceneNodeType::TYPE_SKY: return "SKY";
-        case SceneNodeType::TYPE_INFINITEPLANE: return "INFINITE_PLANE";
-        case SceneNodeType::TYPE_VEGETATION: return "VEGETATION_GRASS";
-    }
-
-    return "";
+    return Names::sceneNodeType[to_base(_type)];
 }
 
 void SceneNode::sceneUpdate(const U64 deltaTimeUS,

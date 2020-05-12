@@ -39,17 +39,15 @@ namespace Divide {
 
 class ParticlePositionColourUpdater final : public ParticleUpdater {
    public:
-    vec4<F32> _minPos;
-    vec4<F32> _maxPos;
+    vec4<F32> _minPos = VECTOR4_ZERO;
+    vec4<F32> _maxPos = VECTOR4_UNIT;
 
    public:
-    ParticlePositionColourUpdater(GFXDevice& context) : ParticleUpdater(context), _maxPos(1.0f)
+    ParticlePositionColourUpdater(PlatformContext& context) : ParticleUpdater(context)
     {
     }
 
-    ~ParticlePositionColourUpdater()
-    {
-    }
+    ~ParticlePositionColourUpdater() = default;
 
     void update(const U64 deltaTimeUS, ParticleData& p) override;
 };

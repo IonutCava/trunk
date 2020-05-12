@@ -30,7 +30,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
 
     SceneGraphNodeDescriptor rootDescriptor = {};
     rootDescriptor._name = "ROOT";
-    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", "ROOT", "", SceneNodeType::TYPE_ROOT, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
+    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", "ROOT", "", SceneNodeType::TYPE_TRANSFORM, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
@@ -40,7 +40,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
     //Attorney::SceneNodeSceneGraph::postLoad(*rootSGN.getNode(), rootSGN);
     onNodeAdd(*_root);
 
-    constexpr U16 octreeNodeMask = to_base(SceneNodeType::TYPE_ROOT) |
+    constexpr U16 octreeNodeMask = to_base(SceneNodeType::TYPE_TRANSFORM) |
                                    to_base(SceneNodeType::TYPE_SKY) |
                                    to_base(SceneNodeType::TYPE_INFINITEPLANE) |
                                    to_base(SceneNodeType::TYPE_VEGETATION);
@@ -468,7 +468,7 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     const auto& [name, node_pt] = graphs.front();
     readNode(node_pt, rootNode);
     // This may not be needed;
-    assert(Util::CompareIgnoreCase(rootNode.type, "ROOT"));
+    assert(Util::CompareIgnoreCase(rootNode.type, "TRANSFORM"));
     parentScene().addSceneGraphToLoad(rootNode);
 }
 };

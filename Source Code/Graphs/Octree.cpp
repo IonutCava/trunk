@@ -138,7 +138,7 @@ void Octree::update(const U64 deltaTimeUS) {
 bool Octree::addNode(SceneGraphNode* node) {
     if (node && // check for valid node
         !BitCompare(_nodeMask, to_U16(node->getNode<>().type())) &&  // check for valid type
-        !node->isChildOfType(_nodeMask, true)) // parent is valid type as well
+        !node->isChildOfType(_nodeMask)) // parent is valid type as well
     {
         UniqueLock<Mutex> w_lock(s_pendingInsertLock);
         s_pendingInsertion.push(node);

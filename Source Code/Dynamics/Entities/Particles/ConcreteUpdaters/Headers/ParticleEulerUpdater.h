@@ -39,16 +39,14 @@ namespace Divide {
 
 class ParticleEulerUpdater final : public ParticleUpdater {
    public:
-    vec3<F32> _globalAcceleration;
+    vec3<F32> _globalAcceleration = VECTOR3_ZERO;
 
    public:
-    ParticleEulerUpdater(GFXDevice& context) : ParticleUpdater(context)
+    ParticleEulerUpdater(PlatformContext& context) : ParticleUpdater(context)
     {
     }
 
-    ~ParticleEulerUpdater()
-    {
-    }
+    ~ParticleEulerUpdater() = default;
 
     void update(const U64 deltaTimeUS, ParticleData& p) override;
 };

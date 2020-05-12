@@ -39,17 +39,15 @@ namespace Divide {
 
 class ParticleVelocityColourUpdater final : public ParticleUpdater {
    public:
-    vec4<F32> _minVel;
-    vec4<F32> _maxVel;
+    vec4<F32> _minVel = VECTOR4_ZERO;
+    vec4<F32> _maxVel = VECTOR4_UNIT;
 
    public:
-    ParticleVelocityColourUpdater(GFXDevice& context) : ParticleUpdater(context), _maxVel(1.0f)
+    ParticleVelocityColourUpdater(PlatformContext& context) : ParticleUpdater(context)
     {
     }
 
-    ~ParticleVelocityColourUpdater()
-    {
-    }
+    ~ParticleVelocityColourUpdater() = default;
 
     void update(const U64 deltaTimeUS, ParticleData& p) override;
 };

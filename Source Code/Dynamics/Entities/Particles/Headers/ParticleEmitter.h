@@ -58,9 +58,9 @@ class ParticleEmitter : public SceneNode {
                            GFX::CommandBuffer& bufferInOut) override;
 
     /// toggle the particle emitter on or off
-    inline void enableEmitter(bool state) { _enabled = state; }
+    inline void enableEmitter(bool state) noexcept { _enabled = state; }
 
-    inline void setDrawImpostor(const bool state) { _drawImpostor = state; }
+    inline void setDrawImpostor(const bool state) noexcept { _drawImpostor = state; }
 
     bool updateData(const std::shared_ptr<ParticleData>& particleData);
     bool initData(const std::shared_ptr<ParticleData>& particleData);

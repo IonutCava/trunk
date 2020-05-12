@@ -82,9 +82,7 @@ enum class NodeUsageContext : U8 {
 };
 
 enum class SceneNodeType : U16 {
-    TYPE_ROOT = 0,
-    TYPE_EMPTY,              //< empty node
-    TYPE_OBJECT3D,           //< 3d objects in the scene
+    TYPE_OBJECT3D = 0,       //< 3d objects in the scene
     TYPE_TRANSFORM,          //< dummy node to stack multiple transforms
     TYPE_WATER,              //< water node
     TYPE_TRIGGER,            //< a scene trigger (perform action on contact)
@@ -93,6 +91,13 @@ enum class SceneNodeType : U16 {
     TYPE_INFINITEPLANE,      //< the infinite plane that sits beneath everything in the world
     TYPE_VEGETATION,         //< grass node
     COUNT
+};
+
+namespace Names {
+    static const char* sceneNodeType[] = {
+          "OBJECT3D", "TRANSFORM", "WATER", "TRIGGER", "PARTICLE_EMITTER", "SKY",
+          "INFINITE_PLANE", "VEGETATION_GRASS", "UNKNOWN"
+    };
 };
 
 enum class EditorDataState : U8

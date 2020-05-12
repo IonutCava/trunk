@@ -43,20 +43,16 @@ class ParticleAttractorUpdater final : public ParticleUpdater {
     vectorEASTL<vec4<F32>> _attractors;
 
    public:
-    ParticleAttractorUpdater(GFXDevice& context) : ParticleUpdater(context)
+    ParticleAttractorUpdater(PlatformContext& context) : ParticleUpdater(context)
     {
     }
 
-    ~ParticleAttractorUpdater()
-    {
-    }
+    ~ParticleAttractorUpdater() = default;
 
     void update(const U64 deltaTimeUS, ParticleData& p) override;
 
     inline size_t collectionSize() const { return _attractors.size(); }
-    inline void add(const vec4<F32>& attractor) {
-        _attractors.push_back(attractor);
-    }
+    inline void add(const vec4<F32>& attractor) { _attractors.push_back(attractor); }
     inline vec4<F32>& get(U32 id) { return _attractors[id]; }
 };
 };

@@ -37,19 +37,27 @@
 
 namespace Divide {
 
+enum class ParticleDataProperties : U8
+{
+    PROPERTIES_POS = toBit(1),
+    PROPERTIES_VEL = toBit(2),
+    PROPERTIES_ACC = toBit(3),
+    PROPERTIES_COLOR = toBit(4),
+    PROPERTIES_COLOR_TRANS = toBit(5),
+    COUNT = 5
+};
+
+namespace Names {
+    static const char* particleDataProperties[] = {
+          "Position", "Velocity", "Acceleration", "Colour", "Colour transform", "UNKNOWN"
+    };
+};
+
 /// Container to store data for a given set of particles
 class ParticleData {
    public:
     static constexpr U32 g_threadPartitionSize = 256;
 
-    enum class Properties : U8 {
-        PROPERTIES_POS = toBit(1),
-        PROPERTIES_VEL = toBit(2),
-        PROPERTIES_ACC = toBit(3),
-        PROPERTIES_COLOR = toBit(4),
-        PROPERTIES_COLOR_TRANS = toBit(5),
-        COUNT
-    };
     /// helper array used for sorting
     vectorEASTLFast<std::pair<U32, F32>> _indices;
     vectorEASTL<vec4<F32>> _renderingPositions;
@@ -78,32 +86,34 @@ class ParticleData {
 
     void setBillboarded(const bool state);
 
-    inline PrimitiveType particleGeometryType() const {
+    inline PrimitiveType particleGeometryType() const noexcept {
         return _particleGeometryType;
     }
 
-    inline const vectorEASTL<vec3<F32>>& particleGeometryVertices() const {
+    inline const vectorEASTL<vec3<F32>>& particleGeometryVertices() const noexcept {
         return _particleGeometryVertices;
     }
 
-    inline const vectorEASTL<U32>& particleGeometryIndices() const {
+    inline const vectorEASTL<U32>& particleGeometryIndices() const noexcept {
         return _particleGeometryIndices;
     }
 
-    inline bool isBillboarded() const {
+    inline bool isBillboarded() const noexcept {
         return _isBillboarded;
     }
+
+    PROPERTY_RW(U32, optionsMask, 0u);
    public:
-    explicit ParticleData(GFXDevice& context, U32 particleCount, U8 optionsMask);
+    explicit ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask);
     ~ParticleData();
 
-    void generateParticles(U32 particleCount, U8 optionsMask);
+    void generateParticles(U32 particleCount, U32 optionsMask);
     void kill(U32 index);
     void wake(U32 index);
     void swapData(U32 indexA, U32 indexB);
 
-    inline U32 aliveCount() const { return _aliveCount; }
-    inline U32 totalCount() const { return _totalCount; }
+    inline U32 aliveCount() const noexcept { return _aliveCount; }
+    inline U32 totalCount() const noexcept { return _totalCount; }
     
     /// Sort ALIVE particles only
     void sort(bool invalidateCache);
@@ -111,7 +121,6 @@ class ParticleData {
    protected:
     U32 _totalCount;
     U32 _aliveCount;
-    U8  _optionsMask;
 
     bool _isBillboarded;
     vectorEASTL<vec3<F32>> _particleGeometryVertices;

@@ -1,5 +1,7 @@
 -- Vertex
 
+#include "vertexDefault.vert"
+
 layout(location = 13) in vec4 particleNormalData;
 // Output data will be interpolated for each fragment.
 layout(location = 0) out vec4 particleColour;
@@ -10,9 +12,9 @@ void main()
     vec3 camUpW = dvd_ViewMatrix[1].xyz;
 
     float spriteSize = particleNormalData.w;
-    vec3 vertexPositionWV = dvd_ViewMatrix * vec4( particleNormalData.xyz + 
-                                                  (camRighW * inVertexData.x * spriteSize) +
-                                                  (camUpW * inVertexData.y * spriteSize), 1.0f);
+    vec3 vertexPositionWV = (dvd_ViewMatrix * vec4( particleNormalData.xyz + 
+                                                   (camRighW * inVertexData.x * spriteSize) +
+                                                   (camUpW * inVertexData.y * spriteSize), 1.0f)).xyz;
     // Output position of the vertex
     // Even though the variable ends with WV, we'll store WVP to skip adding a new varying variable
 
@@ -49,9 +51,10 @@ out vec2 _colourOut;
 #endif
 
 layout(location = 0) in vec4 particleColour;
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main() {
-    colour = particleColour * texture(texDiffuse0, VAR._texCoord);
+    vec4 colour = particleColour * texture(texDiffuse0, VAR._texCoord);
     if (colour.a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
@@ -78,9 +81,9 @@ layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 void main(){
    
 #ifdef HAS_TEXTURE
-    colour = particleColour * texture(texDiffuse0, VAR._texCoord);
+    vec4 colour = particleColour * texture(texDiffuse0, VAR._texCoord);
 #else
-    colour = particleColour;
+    vec4 colour = particleColour;
 #endif
 
     float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw)).r - gl_FragCoord.z;

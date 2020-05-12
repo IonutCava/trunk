@@ -164,13 +164,9 @@ class Scene : public Resource, public PlatformContextComponent {
     void beginDragSelection(PlayerIndex idx, vec2<I32> mousePos);
     void endDragSelection(PlayerIndex idx, bool clearSelection);
 
-    inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
-        _selectionChangeCallbacks.push_back(selectionCallback);
-    }
-
     SceneGraphNode* addParticleEmitter(const Str64& name,
-                                          std::shared_ptr<ParticleData> data,
-                                          SceneGraphNode& parentNode);
+                                       std::shared_ptr<ParticleData> data,
+                                       SceneGraphNode& parentNode);
 
     inline AI::AIManager& aiManager() noexcept { return *_aiManager; }
     inline const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
@@ -229,15 +225,15 @@ class Scene : public Resource, public PlatformContextComponent {
     bool checkCameraUnderwater(const Camera& camera) const;
     void toggleFlashlight(PlayerIndex idx);
 
+    SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
+
     virtual bool save(ByteBuffer& outputBuffer) const;
     virtual bool load(ByteBuffer& inputBuffer);
 
     virtual bool frameStarted();
     virtual bool frameEnded();
 
-
     virtual void loadDefaultCamera();
-
 
     virtual bool loadXML(const Str128& name);
 
@@ -337,7 +333,6 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<Task*> _tasks;
        /// Contains all game related info for the scene (wind speed, visibility ranges, etc)
        SceneState* _sceneState = nullptr;
-       vectorEASTL<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
        vectorEASTL<SGNRayResult> _sceneSelectionCandidates;
 
    protected:
@@ -438,6 +433,10 @@ class SceneManager {
 
     static void clearHoverTarget(Scene& scene, const Input::MouseMoveEvent& arg) {
         scene.clearHoverTarget(scene.input().getPlayerIndexForDevice(arg._deviceIndex));
+    }
+
+    static SceneNode_ptr createNode(Scene& scene, SceneNodeType type, const ResourceDescriptor& descriptor) {
+        return scene.createNode(type, descriptor);
     }
 
     friend class Divide::SceneManager;

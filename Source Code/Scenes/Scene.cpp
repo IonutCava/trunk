@@ -31,7 +31,6 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
 
-
 #include "ECS/Components/Headers/UnitComponent.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/SelectionComponent.h"
@@ -43,6 +42,7 @@
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #include "Dynamics/Entities/Units/Headers/Player.h"
+#include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
@@ -236,6 +236,11 @@ bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool
         pt.put("shadowing.<xmlattr>.shadowFadeDistance", state().shadowFadeDistance());
         pt.put("shadowing.<xmlattr>.shadowDistance", state().shadowDistance());
 
+        pt.put("dayNight.<xmlattr>.enabled", dayNightCycleEnabled());
+        pt.put("dayNight.timeOfDay.<xmlattr>.hour", _dayNightData._time._hour);
+        pt.put("dayNight.timeOfDay.<xmlattr>.minute", _dayNightData._time._minutes);
+        pt.put("dayNight.timeOfDay.<xmlattr>.timeFactor", _dayNightData._speedFactor);
+
         copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true);
         write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
     }
@@ -304,6 +309,11 @@ bool Scene::loadXML(const Str128& name) {
     state().minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", 0.001f));
     state().shadowFadeDistance(pt.get("shadowing.<xmlattr>.shadowFadeDistance", to_U16(900u)));
     state().shadowDistance(pt.get("shadowing.<xmlattr>.shadowDistance", to_U16(1000u)));
+
+    dayNightCycleEnabled(pt.get("dayNight.<xmlattr>.enabled", false));
+    _dayNightData._time._hour = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.hour", 14u);
+    _dayNightData._time._minutes = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.minute", 30u);
+    _dayNightData._speedFactor = pt.get("dayNight.timeOfDay.<xmlattr>.timeFactor", 1.0f);
 
     if (boost::optional<boost::property_tree::ptree&> waterOverride = pt.get_child_optional("water")) {
         WaterDetails waterDetails = {};
@@ -381,6 +391,32 @@ namespace {
     }
 };
 
+SceneNode_ptr Scene::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
+    switch (type) {
+        case SceneNodeType::TYPE_TRANSFORM: 
+        {
+            return nullptr;
+        }break;
+        case SceneNodeType::TYPE_WATER:
+        {
+            return CreateResource<WaterPlane>(_resCache, descriptor);
+        }break;
+        case SceneNodeType::TYPE_TRIGGER:
+        {
+            return CreateResource<Trigger>(_resCache, descriptor);
+        }break;
+        case SceneNodeType::TYPE_PARTICLE_EMITTER:
+        {
+            return CreateResource<ParticleEmitter>(_resCache, descriptor);
+        }break;
+        case SceneNodeType::TYPE_INFINITEPLANE:
+        {
+            return CreateResource<InfinitePlane>(_resCache, descriptor);
+        }break;
+    }
+    // Warning?
+    return nullptr;
+}
 
 void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
@@ -681,21 +717,15 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
         waterNodeDescriptor._node = std::static_pointer_cast<WaterPlane>(res->shared_from_this());
         waterNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         waterNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
-                                            to_base(ComponentType::TRANSFORM) |
-                                            to_base(ComponentType::RIGID_BODY) |
-                                            to_base(ComponentType::BOUNDS) |
-                                            to_base(ComponentType::RENDERING) |
-                                            to_base(ComponentType::NETWORKING);
+                                             to_base(ComponentType::TRANSFORM) |
+                                             to_base(ComponentType::RIGID_BODY) |
+                                             to_base(ComponentType::BOUNDS) |
+                                             to_base(ComponentType::RENDERING) |
+                                             to_base(ComponentType::NETWORKING);
 
         waterNodeDescriptor._node->loadFromXML(pt);
 
         SceneGraphNode* waterNode = parentNode.addChildNode(waterNodeDescriptor);
-
-
-        NavigationComponent* nComp = waterNode->get<NavigationComponent>();
-        nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
-
-        waterNode->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
         waterNode->loadFromXML(pt);
         _loadingTasks.fetch_sub(1);
     };
@@ -707,11 +737,6 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
 }
 
 SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
-    auto registerPlane = [this](CachedResource* res) noexcept {
-        ACKNOWLEDGE_UNUSED(res);
-        _loadingTasks.fetch_sub(1);
-    };
-
     ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
 
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
@@ -720,7 +745,10 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
 
     auto planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
-    planeItem->addStateCallback(ResourceState::RES_LOADED, registerPlane);
+    planeItem->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) noexcept {
+        ACKNOWLEDGE_UNUSED(res);
+        _loadingTasks.fetch_sub(1);
+    });
     planeItem->loadFromXML(pt);
 
     SceneGraphNodeDescriptor planeNodeDescriptor;
@@ -1162,7 +1190,7 @@ void Scene::addPlayerInternal(bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, playerName, "", SceneNodeType::TYPE_EMPTY, 0u);
+        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, playerName, "", SceneNodeType::TYPE_TRANSFORM, 0u);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
@@ -1527,10 +1555,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
                     sType = SceneNodeType::COUNT;
                 } else if (sgn->parent() != nullptr) {
                     sType = sgn->parent()->getNode().type();
-                    if (sType == SceneNodeType::TYPE_ROOT ||
-                        sType == SceneNodeType::TYPE_EMPTY ||
-                        sType == SceneNodeType::TYPE_TRANSFORM)
-                    {
+                    if (sType == SceneNodeType::TYPE_TRANSFORM) {
                         sType = SceneNodeType::TYPE_OBJECT3D;
                     }
                 }
@@ -1594,12 +1619,15 @@ void Scene::onNodeDestroy(SceneGraphNode& node) {
 
     for (auto& [playerIdx, playerSelections] : _currentSelection) {
         for (I8 i = playerSelections._selectionCount; i > 0; --i) {
-            I64 crtGUID = playerSelections._selections[i];
+            I64 crtGUID = playerSelections._selections[i - 1];
             if (crtGUID == guid) {
-                std::swap(playerSelections._selections[i], playerSelections._selections[playerSelections._selectionCount--]);
+                playerSelections._selections[i - 1] = -1;
+                std::swap(playerSelections._selections[i - 1], playerSelections._selections[playerSelections._selectionCount--]);
             }
         }
     }
+
+    _parent.onNodeDestroy(node);
 }
 
 void Scene::resetSelection(PlayerIndex idx) {
@@ -1613,10 +1641,6 @@ void Scene::resetSelection(PlayerIndex idx) {
     }
     playerSelections._selections.fill(-1);
     playerSelections._selectionCount = 0u;
-
-    for (auto& cbk : _selectionChangeCallbacks) {
-        cbk(idx, {});
-    }
 }
 
 void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
@@ -1627,9 +1651,6 @@ void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgn
             playerSelections._selections[playerSelections._selectionCount++] = sgn->getGUID();
             sgn->setFlag(SceneGraphNode::Flags::SELECTED, recursive);
         }
-    }
-    for (auto& cbk : _selectionChangeCallbacks) {
-        cbk(idx, sgns);
     }
 }
 

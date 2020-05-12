@@ -36,17 +36,10 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleRoundGenerator final : public ParticleGenerator {
-   public:
-    vec3<F32> _center;
-    F32 _radX;
-    F32 _radY;
-
-   public:
-    ParticleRoundGenerator() : _radX(0.0f), _radY(0.0f) {}
-
-    ParticleRoundGenerator(const vec3<F32> &center, F32 radX, F32 radY)
-        : _center(center), _radX(radX), _radY(radY) {}
+struct ParticleRoundGenerator final : public ParticleGenerator {
+    vec3<F32> _center = VECTOR3_ZERO;
+    F32 _radX = 0.f;
+    F32 _radY = 0.f;
 
     void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,

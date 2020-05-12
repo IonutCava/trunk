@@ -36,18 +36,10 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-class ParticleVelocityFromPositionGenerator final : public ParticleGenerator {
-   public:
-    vec3<F32> _offset;
-    F32 _minScale;
-    F32 _maxScale;
-
-   public:
-    ParticleVelocityFromPositionGenerator() : _minScale(0.0), _maxScale(0.0) {}
-
-    ParticleVelocityFromPositionGenerator(const vec3<F32>& offset, F32 minScale,
-                                          F32 maxScale)
-        : _offset(offset), _minScale(minScale), _maxScale(maxScale) {}
+struct ParticleVelocityFromPositionGenerator final : public ParticleGenerator {
+    vec3<F32> _offset = VECTOR3_ZERO;
+    F32 _minScale = 0.f;
+    F32 _maxScale = 0.f;
 
     void generate(Task& packagedTasksParent,
                   const U64 deltaTimeUS,

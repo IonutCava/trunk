@@ -34,24 +34,20 @@
 #define _PARTICLE_UPDATER_H_
 
 #include "ParticleData.h"
+#include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
 
-class NOINITVTABLE ParticleUpdater {
+class ParticleUpdater : public PlatformContextComponent{
    public:
-    ParticleUpdater(GFXDevice& context)
-        : _context(context)
+    explicit ParticleUpdater(PlatformContext& context)
+           : PlatformContextComponent(context)
     {
     }
-    
-    virtual ~ParticleUpdater()
-    {
-    }
+
+    virtual ~ParticleUpdater() = default;
 
     virtual void update(const U64 deltaTimeUS, ParticleData& p) = 0;
-
-protected:
-    GFXDevice& _context;
 };
 };
 #endif
