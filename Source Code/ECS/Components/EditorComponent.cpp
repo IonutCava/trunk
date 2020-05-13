@@ -44,7 +44,6 @@ namespace Divide {
         }
     }
 
-
     // May be wrong endpoint
     bool EditorComponent::saveCache(ByteBuffer& outputBuffer) const {
         ACKNOWLEDGE_UNUSED(outputBuffer);

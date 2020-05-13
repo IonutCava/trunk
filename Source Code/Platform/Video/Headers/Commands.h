@@ -38,6 +38,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Rendering/Camera/Headers/CameraSnapshot.h"
 
+#ifndef TO_STR
+#define TO_STR(arg) #arg
+#endif
+
 struct ImDrawData;
 
 namespace Divide {
@@ -59,20 +63,6 @@ struct CmdAllocator {
         s_Pool.deleteElement(s_PoolMutex, ptr);
     }
 };
-
-#define TO_STR(arg) #arg
-
-#define DEFINE_POOL(Command) \
-decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
-decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool; \
-decltype(Command::s_deleter) Command::s_deleter;
-
-#define BEGIN_COMMAND(Name, Enum) struct Name final : Command<Name, Enum> { \
-using Base = Command<Name, Enum>; \
-inline const char* commandName() const noexcept final { return TO_STR(Enum); }
-
-#define END_COMMAND(Name) \
-}
 
 enum class CommandType : U8 {
     BEGIN_RENDER_PASS,
@@ -119,16 +109,12 @@ class CommandBuffer;
 struct CommandBase;
 
 struct Deleter {
-    virtual ~Deleter() = default;
-
-    virtual void operate(CommandBase*& cmd) const noexcept {
-        ACKNOWLEDGE_UNUSED(cmd);
-    }
+    virtual void del(CommandBase*& cmd) const { ACKNOWLEDGE_UNUSED(cmd); }
 };
 
 template<typename T>
 struct DeleterImpl final : Deleter {
-    void operate(CommandBase*& cmd) const noexcept final {
+    void del(CommandBase*& cmd) const final {
         CmdAllocator<T>::deallocate((T*&)(cmd));
         cmd = nullptr;
     }
@@ -136,60 +122,61 @@ struct DeleterImpl final : Deleter {
 
 struct CommandBase
 {
+    explicit CommandBase(CommandType type) noexcept : EType(type) {}
     virtual ~CommandBase() = default;
 
     virtual void addToBuffer(CommandBuffer* buffer) const = 0;
-    virtual stringImpl toString(U16 indent) const = 0;
-    virtual const char* commandName() const noexcept = 0;
-
     virtual Deleter& getDeleter() const noexcept = 0;
+
+    inline const char* Name() const noexcept { return TO_STR(EType); }
+    inline CommandType Type() const noexcept { return EType; }
+
+protected:
+    CommandType EType = CommandType::COUNT;
 };
+
+stringImpl ToString(const CommandBase& cmd, U16 indent);
 
 template<typename T, CommandType EnumVal>
 struct Command : public CommandBase {
-    static DeleterImpl<T> s_deleter;
+    static constexpr CommandType EType = EnumVal;
+
+    Command() noexcept : CommandBase(EnumVal) {}
 
     inline void addToBuffer(CommandBuffer* buffer) const final {
-        buffer->add(reinterpret_cast<const T&>(*this));
+        buffer->add(static_cast<const T&>(*this));
     }
 
-    stringImpl toString(U16 indent) const override {
-        ACKNOWLEDGE_UNUSED(indent);
-        return stringImpl(commandName());
-    }
+protected:
+    void DELETE_CMD(GFX::CommandBase*& cmd) noexcept;
 
-    Deleter& getDeleter() const noexcept final {
-        return s_deleter;
+    inline Deleter& getDeleter() const noexcept final {
+        static DeleterImpl<T> s_deleter;
+        return s_deleter; 
     }
-
-    static constexpr CommandType EType = EnumVal;
 };
 
-BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
-    BindPipelineCommand(const Pipeline* pipeline) noexcept
-        : _pipeline(pipeline)
-    {
-    }
+#define IMPLEMENT_COMMAND(Command) \
+decltype(CmdAllocator<Command>::s_PoolMutex) CmdAllocator<Command>::s_PoolMutex; \
+decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool;
 
-    BindPipelineCommand() = default;
+#define BEGIN_COMMAND(Name, Enum) struct Name final : public Command<Name, Enum> { \
+using Base = Command<Name, Enum>; \
+Name() = default; \
+
+#define END_COMMAND(Name) }
+
+BEGIN_COMMAND(BindPipelineCommand, CommandType::BIND_PIPELINE);
+    BindPipelineCommand(const Pipeline* pipeline) noexcept : _pipeline(pipeline) {}
 
     const Pipeline* _pipeline = nullptr;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(BindPipelineCommand);
 
 
 BEGIN_COMMAND(SendPushConstantsCommand, CommandType::SEND_PUSH_CONSTANTS);
-    SendPushConstantsCommand(const PushConstants& constants)
-        : _constants(constants)
-    {
-    }
-
-    SendPushConstantsCommand() = default;
+    SendPushConstantsCommand(const PushConstants& constants) noexcept : _constants(constants) {}
 
     PushConstants _constants;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(SendPushConstantsCommand);
 
 
@@ -198,33 +185,22 @@ BEGIN_COMMAND(DrawCommand, CommandType::DRAW_COMMANDS);
 
     static_assert(sizeof(GenericDrawCommand) == 32, "Wrong command size! May cause performance issues. Disable assert to continue anyway.");
 
-    DrawCommand() = default;
-    DrawCommand(size_t reserveSize) { _drawCommands.reserve(reserveSize); }
-    DrawCommand(const GenericDrawCommand& cmd) : _drawCommands({ cmd }) {}
-    DrawCommand(const CommandContainer& cmds) : _drawCommands(cmds) {}
+    DrawCommand(const GenericDrawCommand& cmd) noexcept : _drawCommands{ { cmd } } {}
 
     CommandContainer _drawCommands;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(DrawCommand);
 
 
 BEGIN_COMMAND(SetViewportCommand, CommandType::SET_VIEWPORT);
-    SetViewportCommand() = default;
     SetViewportCommand(const Rect<I32>& viewport) noexcept : _viewport(viewport) {}
 
     Rect<I32> _viewport;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetViewportCommand);
 
 BEGIN_COMMAND(PushViewportCommand, CommandType::PUSH_VIEWPORT);
-    PushViewportCommand() = default;
-    PushViewportCommand(const Rect<I32> & viewport) noexcept : _viewport(viewport) {}
+    PushViewportCommand(const Rect<I32>& viewport) noexcept : _viewport(viewport) {}
 
     Rect<I32> _viewport;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(PushViewportCommand);
 
 BEGIN_COMMAND(PopViewportCommand, CommandType::POP_VIEWPORT);
@@ -234,8 +210,6 @@ BEGIN_COMMAND(BeginRenderPassCommand, CommandType::BEGIN_RENDER_PASS);
     RenderTargetID _target;
     RTDrawDescriptor _descriptor;
     Str64 _name = "";
-
-    stringImpl toString(U16 indent) const final;
  END_COMMAND(BeginRenderPassCommand);
 
 BEGIN_COMMAND(EndRenderPassCommand, CommandType::END_RENDER_PASS);
@@ -298,8 +272,6 @@ END_COMMAND(ComputeMipMapsCommand);
 
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR);
     Rect<I32> _rect;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetScissorCommand);
 
 BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND);
@@ -307,17 +279,13 @@ BEGIN_COMMAND(SetBlendCommand, CommandType::SET_BLEND);
 END_COMMAND(SetBlendCommand);
 
 BEGIN_COMMAND(SetCameraCommand, CommandType::SET_CAMERA);
-    SetCameraCommand() = default;
-    SetCameraCommand(const CameraSnapshot& snapshot) noexcept : _cameraSnapshot(snapshot) {}
+    SetCameraCommand(const CameraSnapshot& cameraSnapshot) noexcept : _cameraSnapshot(cameraSnapshot) {}
 
     CameraSnapshot _cameraSnapshot;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetCameraCommand);
 
 BEGIN_COMMAND(PushCameraCommand, CommandType::PUSH_CAMERA);
-    PushCameraCommand() = default;
-    PushCameraCommand(const CameraSnapshot & snapshot) noexcept : _cameraSnapshot(snapshot) {}
+    PushCameraCommand(const CameraSnapshot& cameraSnapshot) noexcept : _cameraSnapshot(cameraSnapshot) {}
 
     CameraSnapshot _cameraSnapshot;
 END_COMMAND(PushCameraCommand);
@@ -326,47 +294,33 @@ BEGIN_COMMAND(PopCameraCommand, CommandType::POP_CAMERA);
 END_COMMAND(PopCameraCommand);
 
 BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
-    SetClipPlanesCommand() = default;
     SetClipPlanesCommand(const FrustumClipPlanes& clippingPlanes) noexcept : _clippingPlanes(clippingPlanes) {}
 
     FrustumClipPlanes _clippingPlanes;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetClipPlanesCommand);
 
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
     DescriptorSet _set;
-
-    stringImpl toString(U16 indent) const final;
-
 END_COMMAND(BindDescriptorSetsCommand);
 
 BEGIN_COMMAND(SetTextureMipLevelsCommand, CommandType::SET_MIP_LEVELS);
     Texture* _texture = nullptr;
     U16 _baseLevel = 0;
     U16 _maxLevel = 1000;
-
-    stringImpl toString(U16 indent) const final;
-
 END_COMMAND(SetTextureMipLevelsCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
     Str64 _scopeName;
     I32 _scopeID = -1;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(BeginDebugScopeCommand);
 
 BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);
 END_COMMAND(EndDebugScopeCommand);
 
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
-    DrawTextCommand() = default;
-    DrawTextCommand(const TextElementBatch& batch) : _batch(batch) {}
+    DrawTextCommand(const TextElementBatch& batch) noexcept : _batch(batch) {}
 
     TextElementBatch _batch;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(DrawTextCommand);
 
 BEGIN_COMMAND(DrawIMGUICommand, CommandType::DRAW_IMGUI);
@@ -376,14 +330,10 @@ END_COMMAND(DrawIMGUICommand);
 
 BEGIN_COMMAND(DispatchComputeCommand, CommandType::DISPATCH_COMPUTE);
     vec3<U32> _computeGroupSize;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(DispatchComputeCommand);
 
 BEGIN_COMMAND(MemoryBarrierCommand, CommandType::MEMORY_BARRIER);
     U32 _barrierMask = 0;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(MemoryBarrierCommand);
 
 BEGIN_COMMAND(ReadBufferDataCommand, CommandType::READ_BUFFER_DATA);
@@ -403,8 +353,6 @@ END_COMMAND(ClearBufferDataCommand);
 BEGIN_COMMAND(SetClippingStateCommand, CommandType::SET_CLIPING_STATE)
     bool _lowerLeftOrigin = true;
     bool _negativeOneToOneDepth = true;
-
-    stringImpl toString(U16 indent) const final;
 END_COMMAND(SetClippingStateCommand);
 
 BEGIN_COMMAND(ExternalCommand, CommandType::EXTERNAL);

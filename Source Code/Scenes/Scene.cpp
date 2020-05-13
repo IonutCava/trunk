@@ -171,7 +171,7 @@ void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
 }
 
 
-bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) const {
+bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const {
     using boost::property_tree::ptree;
     const char* assetsFile = "assets.xml";
 
@@ -217,8 +217,8 @@ bool Scene::saveXML(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool
         }
 
         pt.put("options.visibility", state().renderState().generalVisibility());
-        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.move").c_str())));
-        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.turn").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str())));
+        pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
         pt.put("fog.fogDensity", state().renderState().fogDescriptor().density());
@@ -323,28 +323,28 @@ bool Scene::loadXML(const Str128& name) {
     }
 
     if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")) {
-        par.setParam(_ID_32((name + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
-        par.setParam(_ID_32((name + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
-        par.setParam(_ID_32((name + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
-        par.setParam(_ID_32((name + ".options.cameraStartOrientation.xOffsetDegrees").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees", 0.0f));
-        par.setParam(_ID_32((name + ".options.cameraStartOrientation.yOffsetDegrees").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees", 0.0f));
-        par.setParam(_ID_32((name + ".options.cameraStartPositionOverride").c_str()), true);
+        par.setParam(_ID((name + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
+        par.setParam(_ID((name + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
+        par.setParam(_ID((name + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
+        par.setParam(_ID((name + ".options.cameraStartOrientation.xOffsetDegrees").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.xOffsetDegrees", 0.0f));
+        par.setParam(_ID((name + ".options.cameraStartOrientation.yOffsetDegrees").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.yOffsetDegrees", 0.0f));
+        par.setParam(_ID((name + ".options.cameraStartPositionOverride").c_str()), true);
     } else {
-        par.setParam(_ID_32((name + ".options.cameraStartPositionOverride").c_str()), false);
+        par.setParam(_ID((name + ".options.cameraStartPositionOverride").c_str()), false);
     }
 
     if (boost::optional<boost::property_tree::ptree&> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")) {
-        par.setParam(_ID_32((name + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
+        par.setParam(_ID((name + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
     } else {
-        par.setParam(_ID_32((name + ".options.autoCookPhysicsAssets").c_str()), false);
+        par.setParam(_ID((name + ".options.autoCookPhysicsAssets").c_str()), false);
     }
 
     if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")) {
-        par.setParam(_ID_32((name + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
-        par.setParam(_ID_32((name + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
+        par.setParam(_ID((name + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
+        par.setParam(_ID((name + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
     } else {
-        par.setParam(_ID_32((name + ".options.cameraSpeed.move").c_str()), 35.0f);
-        par.setParam(_ID_32((name + ".options.cameraSpeed.turn").c_str()), 35.0f);
+        par.setParam(_ID((name + ".options.cameraSpeed.move").c_str()), 35.0f);
+        par.setParam(_ID((name + ".options.cameraSpeed.turn").c_str()), 35.0f);
     }
 
     vec3<F32> fogColour(config.rendering.fogColour);
@@ -814,7 +814,7 @@ U16 Scene::registerInputActions() {
     const auto turnDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
     const auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
     const auto togglePauseState = [this](InputParams param){
-        _context.paramHandler().setParam(_ID_32("freezeLoopTime"), !_context.paramHandler().getParam(_ID_32("freezeLoopTime"), false));
+        _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false));
     };
     const auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
     const auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
@@ -988,24 +988,24 @@ void Scene::loadDefaultCamera() {
     
     
     // Camera position is overridden in the scene's XML configuration file
-    if (!_context.paramHandler().isParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!_context.paramHandler().isParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         return;
     }
 
-    if (_context.paramHandler().getParam<bool>(_ID_32((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (_context.paramHandler().getParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         baseCamera->setEye(vec3<F32>(
-            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.x").c_str())),
-            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.y").c_str())),
-            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
+            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.x").c_str())),
+            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.y").c_str())),
+            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.z").c_str()))));
+        vec2<F32> camOrientation(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
+            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
         baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
     } else {
         baseCamera->setEye(vec3<F32>(0, 50, 0));
     }
 
-    baseCamera->setMoveSpeedFactor(_context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_context.paramHandler().getParam<F32>(_ID_32((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setMoveSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
     baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
                               _context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
@@ -1097,7 +1097,7 @@ void Scene::postLoad() {
     }
 
     // Cook geometry
-    if (_context.paramHandler().getParam<bool>(_ID_32((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
+    if (_context.paramHandler().getParam<bool>(_ID((resourceName() + ".options.autoCookPhysicsAssets").c_str()), true)) {
         _cookCollisionMeshesScheduled = true;
     }
 }
@@ -1332,7 +1332,7 @@ void Scene::onLostFocus() {
         endDragSelection(player->index(), false);
     }
     _parent.wantsMouse(false);
-    //_paramHandler.setParam(_ID_32("freezeLoopTime"), true);
+    //_paramHandler.setParam(_ID("freezeLoopTime"), true);
 }
 
 void Scene::onGainFocus() {

@@ -64,7 +64,7 @@ public:
     template<typename T = void>
     T eval();
 
-    static void onScriptModify(const char* script, FileUpdateEvent& evt);
+    static void onScriptModify(std::string_view script, FileUpdateEvent& evt);
 
 protected:
     void compile();

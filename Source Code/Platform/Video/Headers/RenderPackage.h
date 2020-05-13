@@ -108,6 +108,9 @@ public:
 
     void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer);
     void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
+    inline void setTexture(I32 descriptorSetIndex, const TextureData& data, TextureUsage binding) {
+        setTexture(descriptorSetIndex, data, to_U8(binding));
+    }
 
     void setDrawOption(CmdRenderOptions option, bool state);
     void enableOptions(U16 optionMask);

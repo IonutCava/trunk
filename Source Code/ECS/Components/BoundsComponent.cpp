@@ -63,16 +63,15 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     recomputeBoundsField._readOnly = false; //disabled/enabled
     _editorComponent.registerField(std::move(recomputeBoundsField));
 
-    _editorComponent.onChangedCbk([this](const char* field) {
-        if (strcmp(field, "Show AABB") == 0 ||
-            strcmp(field, "Show Bounding Sphere") == 0) 
+    _editorComponent.onChangedCbk([this](std::string_view field) {
+        if (field == "Show AABB" || field == "Show Bounding Sphere") 
         {
             RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
             if (rComp != nullptr) {
                 rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, _showAABB);
                 rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_SPHERE, _showBS);
             }
-        } else if (strcmp(field, "Recompute Bounds") == 0) {
+        } else if (field == "Recompute Bounds") {
             flagBoundingBoxDirty(true);
         }
     });

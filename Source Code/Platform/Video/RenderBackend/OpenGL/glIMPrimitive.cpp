@@ -111,7 +111,9 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
         }
 
         if (_viewport != Rect<I32>(-1)) {
-            GFX::EnqueueCommand(*_cmdBuffer, GFX::SetViewportCommand{ _viewport });
+            GFX::SetViewportCommand viewportCmd = {};
+            viewportCmd._viewport = _viewport;
+            GFX::EnqueueCommand(*_cmdBuffer, viewportCmd);
         }
 
         GFX::DrawCommand drawCommand = { cmd };

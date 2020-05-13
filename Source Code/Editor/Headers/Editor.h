@@ -215,7 +215,7 @@ class Editor : public PlatformContextComponent,
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut);
 
-    bool saveSceneChanges(DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
+    bool saveSceneChanges(DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
     void updateCameraSnapshot();
     // Returns true if the window was closed
     bool modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal);
@@ -452,7 +452,7 @@ namespace Attorney {
             editor.unsavedSceneChanges(true);
         }
 
-        static bool saveSceneChanges(Editor& editor, DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {}) {
+        static bool saveSceneChanges(Editor& editor, DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {}) {
             return editor.saveSceneChanges(msgCallback, finishCallback);
         }
 

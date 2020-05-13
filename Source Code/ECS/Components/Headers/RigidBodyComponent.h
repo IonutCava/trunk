@@ -55,22 +55,15 @@ namespace Divide {
         ~RigidBodyComponent();
 
 
-        inline void physicsGroup(PhysicsGroup physicsGroup) {
-            _physicsCollisionGroup = physicsGroup;
-        }
+        inline void physicsGroup(PhysicsGroup physicsGroup) noexcept { _physicsCollisionGroup = physicsGroup; }
 
-        inline const PhysicsGroup& physicsGroup() const {
-            return _physicsCollisionGroup;
-        }
+        inline const PhysicsGroup& physicsGroup() const noexcept { return _physicsCollisionGroup; }
 
         void cookCollisionMesh(const char* sceneName);
 
         void onCollision(const RigidBodyComponent& collider);
 
-        inline void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) {
-            _collisionCbk = cbk;
-        }
-
+        inline void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) { _collisionCbk = cbk; }
 
       private:
         bool filterCollission(const RigidBodyComponent& collider);

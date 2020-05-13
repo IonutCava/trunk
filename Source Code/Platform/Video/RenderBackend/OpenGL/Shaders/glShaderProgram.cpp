@@ -86,7 +86,7 @@ namespace {
         return ret.c_str();
     }
     size_t g_validationBufferMaxSize = 4096 * 16;
-    UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
+    UpdateListener s_fileWatcherListener([](std::string_view atomName, FileUpdateEvent evt) {
         glShaderProgram::onAtomChange(atomName, evt);
     });
 };
@@ -732,13 +732,13 @@ void glShaderProgram::shaderFileWrite(const Str256& filePath, const Str128& file
     writeFile(filePath.c_str(), decorateFileName(fileName).c_str(), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
 }
 
-void glShaderProgram::onAtomChange(const char* atomName, FileUpdateEvent evt) {
+void glShaderProgram::onAtomChange(std::string_view atomName, FileUpdateEvent evt) {
     // Do nothing if the specified file is "deleted". We do not want to break running programs
     if (evt == FileUpdateEvent::DELETE) {
         return;
     }
 
-    const U64 atomNameHash = _ID(atomName);
+    const U64 atomNameHash = _ID_VIEW(atomName.data(), atomName.length());
 
     // ADD and MODIFY events should get processed as usual
     {

@@ -27,7 +27,9 @@ AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContex
     vskelField._readOnly = false;
     _editorComponent.registerField(std::move(vskelField));
 
-    _editorComponent.onChangedCbk([this](const char* field) {
+    _editorComponent.onChangedCbk([this](std::string_view field) {
+        ACKNOWLEDGE_UNUSED(field);
+
         RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
         if (rComp != nullptr) {
             rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, _showSkeleton);

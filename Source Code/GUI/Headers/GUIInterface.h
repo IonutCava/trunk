@@ -55,7 +55,7 @@ public:
     explicit GUIInterface(GUI& context);
     virtual ~GUIInterface();
 
-    void onLanguageChange(const char* newLanguage);
+    void onLanguageChange(std::string_view newLanguage);
 
     inline GUI& getParentContext() { return *_context; }
     inline const GUI& getParentContext() const { return *_context; }

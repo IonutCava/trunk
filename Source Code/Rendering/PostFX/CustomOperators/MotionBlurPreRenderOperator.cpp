@@ -83,8 +83,8 @@ bool MotionBlurPreRenderOperator::execute(const Camera& camera, const RenderTarg
     const TextureData velocityTex = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(velocityTex, to_U8(TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(velocityTex, TextureUsage::UNIT1);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};

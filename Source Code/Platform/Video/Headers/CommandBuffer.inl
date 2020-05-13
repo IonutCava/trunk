@@ -39,7 +39,7 @@ namespace GFX {
 inline void DELETE_CMD(GFX::CommandBase*& cmd) noexcept {
     assert(cmd != nullptr);
     const GFX::Deleter& deleter = cmd->getDeleter();
-    deleter.operate(cmd);
+    deleter.del(cmd);
     assert(cmd == nullptr);
 }
 
@@ -71,7 +71,7 @@ CommandBuffer::add(const T& command) {
         *mem = command;
     } else {
         mem = CmdAllocator<T>::allocate(command);
-        _commands.insert<T>(to_base(T::EType), mem);
+        _commands.insert<T>(to_base(command.Type()), mem);
     }
 
     _batched = false;

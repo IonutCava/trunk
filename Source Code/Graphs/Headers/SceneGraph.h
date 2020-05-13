@@ -108,7 +108,7 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
-    void saveToXML(const char* assetsFile, DELEGATE<void, const char*> msgCallback) const;
+    void saveToXML(const char* assetsFile, DELEGATE<void, std::string_view> msgCallback) const;
     void loadFromXML(const char* assetsFile);
 
     ECSManager& GetECSManager() noexcept { return *_ecsManager; }

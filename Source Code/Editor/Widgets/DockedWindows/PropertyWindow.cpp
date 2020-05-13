@@ -68,8 +68,8 @@ namespace ImGui {
 namespace Divide {
     namespace {
         // Separate activate is used for stuff that do continous value changes, e.g. colour selectors, but you only want to register the old val once
-        template<typename T, bool SeparateActivate>
-        void RegisterUndo(Editor& editor, GFX::PushConstantType Type, const T& oldVal, const T& newVal, const char* name, std::function<void(const T&)> dataSetter) {
+        template<typename T, bool SeparateActivate, typename Pred>
+        void RegisterUndo(Editor& editor, GFX::PushConstantType Type, const T& oldVal, const T& newVal, const char* name, Pred&& dataSetter) {
             static hashMap<U64, UndoEntry<T>> _undoEntries;
             UndoEntry<T>& undo = _undoEntries[_ID(name)];
             if (!SeparateActivate || ImGui::IsItemActivated()) {
@@ -100,7 +100,8 @@ namespace Divide {
             return input;
         }
 
-        bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, std::function<void(const FColour4&)> dataSetter) {
+        template<typename Pred>
+        bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, Pred&& dataSetter) {
             FColour4 oldVal = col;
             const bool ret = ImGui::ColorEdit4(readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
             if (!readOnly) {
@@ -112,7 +113,8 @@ namespace Divide {
             return ret;
         }
 
-        bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, std::function<void(const FColour3&)> dataSetter) {
+        template<typename Pred>
+        bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, Pred&& dataSetter) {
             FColour3 oldVal = col;
             const bool ret =  ImGui::ColorEdit3( readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
             if (!readOnly) {

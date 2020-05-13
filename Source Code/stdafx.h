@@ -123,7 +123,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <array>
 #include <stack>
 #include <deque>
-#include <regex>
 #include <array>
 #include <queue>
 #include <list>

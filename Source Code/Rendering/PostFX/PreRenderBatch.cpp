@@ -429,7 +429,9 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
             bindDescriptorSetsCmd._set._images.push_back(screenImage);
             GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ pipelineLumCalcHistogram });
+            GFX::BindPipelineCommand pipelineCmd = {};
+            pipelineCmd._pipeline = pipelineLumCalcHistogram;
+            GFX::EnqueueCommand(bufferInOut, pipelineCmd);
 
             GFX::SendPushConstantsCommand pushConstantsCommand = {};
             pushConstantsCommand._constants.set(_ID("u_params"), GFX::PushConstantType::VEC4, histogramParams);
@@ -503,9 +505,9 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
         const TextureData screenTex = getInput(true)._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
-        descriptorSetCmd._set._textureData.setTexture(luminanceTex->data(), to_U8(TextureUsage::UNIT1));
-        descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), to_U8(TextureUsage::DEPTH));
+        descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+        descriptorSetCmd._set._textureData.setTexture(luminanceTex->data(), TextureUsage::UNIT1);
+        descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), TextureUsage::DEPTH);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
@@ -531,7 +533,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
         const TextureData screenTex = getInput(false)._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         RTClearDescriptor clearTarget = {};

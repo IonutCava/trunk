@@ -47,6 +47,8 @@ enum class TaskPriority : U8 {
     COUNT
 };
 
+constexpr auto TASK_NOP = [](Task&) {};
+
 struct alignas(64) Task {
     DELEGATE<void, Task&> _callback;
     TaskPool* _parentPool = nullptr;

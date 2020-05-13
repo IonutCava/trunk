@@ -6,47 +6,65 @@
 namespace Divide {
 namespace GFX {
 
-namespace {
-    const char* primitiveTypeToString(PrimitiveType type) noexcept {
-        switch (type) {
-            case PrimitiveType::API_POINTS: return "POINTS";
-            case PrimitiveType::LINES: return "LINES";
-            case PrimitiveType::LINE_LOOP: return "LINE_LOOP";
-            case PrimitiveType::LINE_STRIP: return "LINE_STRIP";
-            case PrimitiveType::PATCH: return "PATCH";
-            case PrimitiveType::POLYGON: return "POLYGON";
-            case PrimitiveType::QUAD_STRIP: return "QUAD_STRIP";
-            case PrimitiveType::TRIANGLES: return "TRIANGLES";
-            case PrimitiveType::TRIANGLE_FAN: return "TRIANGLE_FAN";
-            case PrimitiveType::TRIANGLE_STRIP: return "TRIANGLE_STRIP";
-        };
+IMPLEMENT_COMMAND(BindPipelineCommand);
+IMPLEMENT_COMMAND(SendPushConstantsCommand);
+IMPLEMENT_COMMAND(DrawCommand);
+IMPLEMENT_COMMAND(SetViewportCommand);
+IMPLEMENT_COMMAND(PushViewportCommand);
+IMPLEMENT_COMMAND(PopViewportCommand);
+IMPLEMENT_COMMAND(BeginRenderPassCommand);
+IMPLEMENT_COMMAND(EndRenderPassCommand);
+IMPLEMENT_COMMAND(BeginPixelBufferCommand);
+IMPLEMENT_COMMAND(EndPixelBufferCommand);
+IMPLEMENT_COMMAND(BeginRenderSubPassCommand);
+IMPLEMENT_COMMAND(EndRenderSubPassCommand);
+IMPLEMENT_COMMAND(BlitRenderTargetCommand);
+IMPLEMENT_COMMAND(ClearRenderTargetCommand);
+IMPLEMENT_COMMAND(ResetRenderTargetCommand);
+IMPLEMENT_COMMAND(ResetAndClearRenderTargetCommand);
+IMPLEMENT_COMMAND(CopyTextureCommand);
+IMPLEMENT_COMMAND(ComputeMipMapsCommand);
+IMPLEMENT_COMMAND(SetScissorCommand);
+IMPLEMENT_COMMAND(SetBlendCommand);
+IMPLEMENT_COMMAND(SetCameraCommand);
+IMPLEMENT_COMMAND(PushCameraCommand);
+IMPLEMENT_COMMAND(PopCameraCommand);
+IMPLEMENT_COMMAND(SetClipPlanesCommand);
+IMPLEMENT_COMMAND(BindDescriptorSetsCommand);
+IMPLEMENT_COMMAND(SetTextureMipLevelsCommand);
+IMPLEMENT_COMMAND(BeginDebugScopeCommand);
+IMPLEMENT_COMMAND(EndDebugScopeCommand);
+IMPLEMENT_COMMAND(DrawTextCommand);
+IMPLEMENT_COMMAND(DrawIMGUICommand);
+IMPLEMENT_COMMAND(DispatchComputeCommand);
+IMPLEMENT_COMMAND(MemoryBarrierCommand);
+IMPLEMENT_COMMAND(ReadBufferDataCommand);
+IMPLEMENT_COMMAND(ClearBufferDataCommand);
+IMPLEMENT_COMMAND(SetClippingStateCommand);
+IMPLEMENT_COMMAND(ExternalCommand);
 
-        return "ERROR";
-    }
-};
+stringImpl ToString(const BindPipelineCommand& cmd, U16 indent) {
+    assert(cmd._pipeline != nullptr);
 
-stringImpl BindPipelineCommand::toString(U16 indent) const {
-    assert(_pipeline != nullptr);
-
-    stringImpl ret = Base::toString(indent) + "\n";
+    stringImpl ret = "\n";
     ret.append("    ");
     for (U16 j = 0; j < indent; ++j) {
         ret.append("    ");
     }
-    ret.append(Util::StringFormat("Shader handle : %d\n",_pipeline->shaderProgramHandle()));
+    ret.append(Util::StringFormat("Shader handle : %d\n", cmd._pipeline->shaderProgramHandle()));
     ret.append("    ");
     for (U16 j = 0; j < indent; ++j) {
         ret.append("    ");
     }
-    ret.append(Util::StringFormat("State hash : %zu\n", _pipeline->stateHash()));
+    ret.append(Util::StringFormat("State hash : %zu\n", cmd._pipeline->stateHash()));
 
     return ret;
 }
 
-stringImpl SendPushConstantsCommand::toString(U16 indent) const {
-    stringImpl ret = Base::toString(indent) + "\n";
+stringImpl ToString(const SendPushConstantsCommand& cmd, U16 indent) {
+    stringImpl ret = "\n";
 
-    for (auto it : _constants.data()) {
+    for (auto it : cmd._constants.data()) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -57,45 +75,44 @@ stringImpl SendPushConstantsCommand::toString(U16 indent) const {
     return ret;
 }
 
-stringImpl DrawCommand::toString(U16 indent) const {
-    stringImpl ret = Base::toString(indent);
-    ret.append("\n");
+stringImpl ToString(const DrawCommand& cmd, U16 indent)  {
+    stringImpl ret = "\n";
     size_t i = 0;
-    for (const GenericDrawCommand& cmd : _drawCommands) {
+    for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("%d: Draw count: %d Type: %s Base instance: %d Instance count: %d Index count: %d\n", i++, cmd._drawCount, primitiveTypeToString(cmd._primitiveType), cmd._cmd.baseInstance, cmd._cmd.primCount, cmd._cmd.indexCount));
+        ret.append(Util::StringFormat("%d: Draw count: %d Type: %s Base instance: %d Instance count: %d Index count: %d\n", i++, drawCmd._drawCount, Names::primitiveType[to_base(drawCmd._primitiveType)], drawCmd._cmd.baseInstance, drawCmd._cmd.primCount, drawCmd._cmd.indexCount));
     }
 
     return ret;
 }
 
-stringImpl SetViewportCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
+stringImpl ToString(const SetViewportCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [%d, %d, %d, %d]", cmd._viewport.x, cmd._viewport.y, cmd._viewport.z, cmd._viewport.w);
 }
 
-stringImpl PushViewportCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _viewport.x, _viewport.y, _viewport.z, _viewport.w);
+stringImpl ToString(const PushViewportCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [%d, %d, %d, %d]", cmd._viewport.x, cmd._viewport.y, cmd._viewport.z, cmd._viewport.w);
 }
 
-stringImpl BeginRenderPassCommand::toString(U16 indent) const {
-    return Base::toString(indent) + " [ " + stringImpl(_name.c_str()) + " ]";
+stringImpl ToString(const BeginRenderPassCommand& cmd, U16 indent) {
+    return " [ " + stringImpl(cmd._name.c_str()) + " ]";
 }
-stringImpl SetScissorCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [%d, %d, %d, %d]", _rect.x, _rect.y, _rect.z, _rect.w);
+stringImpl ToString(const SetScissorCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [%d, %d, %d, %d]", cmd._rect.x, cmd._rect.y, cmd._rect.z, cmd._rect.w);
 }
 
-stringImpl SetClipPlanesCommand::toString(U16 indent) const {
-    stringImpl ret = Base::toString(indent) + "\n";
-    for (U8 i = 0; i < _clippingPlanes._planes.size(); ++i) {
+stringImpl ToString(const SetClipPlanesCommand& cmd, U16 indent) {
+    stringImpl ret = "\n";
+    for (U8 i = 0; i < cmd._clippingPlanes._planes.size(); ++i) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
 
-        const vec4<F32>& eq = _clippingPlanes._planes[i]._equation;
+        const vec4<F32>& eq = cmd._clippingPlanes._planes[i]._equation;
 
         ret.append(Util::StringFormat("Plane [%d] [ %5.2f %5.2f %5.2f - %5.2f ]\n", i, eq.x, eq.y, eq.z, eq.w));
     }
@@ -103,25 +120,23 @@ stringImpl SetClipPlanesCommand::toString(U16 indent) const {
     return ret;
 }
 
-stringImpl SetCameraCommand::toString(U16 indent) const {
-    stringImpl ret = Base::toString(indent);
-    ret.append("    ");
-    ret.append(Util::StringFormat("[ Camera position (eye): [ %5.2f %5.2f %5.2f]\n", _cameraSnapshot._eye.x, _cameraSnapshot._eye.y, _cameraSnapshot._eye.z));
+stringImpl ToString(const SetCameraCommand& cmd, U16 indent) {
+    stringImpl ret = "    ";
+    ret.append(Util::StringFormat("[ Camera position (eye): [ %5.2f %5.2f %5.2f]\n", cmd._cameraSnapshot._eye.x, cmd._cameraSnapshot._eye.y, cmd._cameraSnapshot._eye.z));
     return ret;
 }
 
-stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
-    stringImpl ret = Base::toString(indent);
+stringImpl ToString(const BindDescriptorSetsCommand& cmd, U16 indent) {
+    stringImpl ret = Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", cmd._set._shaderBuffers.size(), cmd._set._textureData.count());
 
-    ret.append(Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", _set._shaderBuffers.size(), _set._textureData.count()));
-    for (auto it : _set._shaderBuffers) {
+    for (auto it : cmd._set._shaderBuffers) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
         ret.append(Util::StringFormat("Buffer [ %d - %d ] Range [%d - %d] ]\n", to_base(it._binding), it._buffer->getGUID(), it._elementRange.x, it._elementRange.y));
     }
-    for (const auto&[binding, data] : _set._textureData.textures()) {
+    for (const auto&[binding, data] : cmd._set._textureData.textures()) {
         if (binding == TextureDataContainer<>::INVALID_BINDING) {
             continue;
         }
@@ -133,7 +148,7 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         ret.append(Util::StringFormat("Texture [ %d - %d ]\n", binding, data._textureHandle));
     }
 
-    for (auto it : _set._textureViews) {
+    for (auto it : cmd._set._textureViews) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -141,7 +156,7 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
         ret.append(Util::StringFormat("Texture layers [ %d - [%d - %d ]]\n", it._binding, it._view._layerRange.min, it._view._layerRange.max));
     }
 
-    for (auto it : _set._images) {
+    for (auto it : cmd._set._images) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -151,19 +166,18 @@ stringImpl BindDescriptorSetsCommand::toString(U16 indent) const {
     return ret;
 }
 
-stringImpl SetTextureMipLevelsCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [ %d - %d ]" , _baseLevel, _maxLevel);
+stringImpl ToString(const SetTextureMipLevelsCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [ %d - %d ]" , cmd._baseLevel, cmd._maxLevel);
 }
 
-stringImpl BeginDebugScopeCommand::toString(U16 indent) const {
-    return Base::toString(indent) + " [ " + stringImpl(_scopeName.c_str()) + " ]";
+stringImpl ToString(const BeginDebugScopeCommand& cmd, U16 indent) {
+    return " [ " + stringImpl(cmd._scopeName.c_str()) + " ]";
 }
 
-stringImpl DrawTextCommand::toString(U16 indent) const {
-    stringImpl ret = Base::toString(indent);
-    ret.append("\n");
+stringImpl ToString(const DrawTextCommand& cmd, U16 indent) {
+    stringImpl ret = "\n";
     size_t i = 0;
-    for (const TextElement& element : _batch()) {
+    for (const TextElement& element : cmd._batch()) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -178,16 +192,88 @@ stringImpl DrawTextCommand::toString(U16 indent) const {
     return ret;
 }
 
-stringImpl DispatchComputeCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [ Group sizes: %d %d %d]", _computeGroupSize.x, _computeGroupSize.y, _computeGroupSize.z);
+stringImpl ToString(const DispatchComputeCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [ Group sizes: %d %d %d]", cmd._computeGroupSize.x, cmd._computeGroupSize.y, cmd._computeGroupSize.z);
 }
 
-stringImpl MemoryBarrierCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [ Mask: %d ]", _barrierMask);
+stringImpl ToString(const MemoryBarrierCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [ Mask: %d ]", cmd._barrierMask);
 }
 
-stringImpl SetClippingStateCommand::toString(U16 indent) const {
-    return Base::toString(indent) + Util::StringFormat(" [ Origin: %s ] [ Depth: %s ]", _lowerLeftOrigin ? "LOWER_LEFT" : "UPPER_LEFT", _negativeOneToOneDepth ? "-1 to 1 " : "0 to 1");
+stringImpl ToString(const SetClippingStateCommand& cmd, U16 indent) {
+    return Util::StringFormat(" [ Origin: %s ] [ Depth: %s ]", cmd._lowerLeftOrigin ? "LOWER_LEFT" : "UPPER_LEFT", cmd._negativeOneToOneDepth ? "-1 to 1 " : "0 to 1");
+}
+
+stringImpl ToString(const CommandBase& cmd, U16 indent) {
+    stringImpl ret(indent, ' ');
+    ret.append(cmd.Name());
+
+    switch (cmd.Type()) {
+        case CommandType::BIND_PIPELINE: {
+            ret.append(ToString(static_cast<const BindPipelineCommand&>(cmd), indent));
+        }break;
+        case CommandType::SEND_PUSH_CONSTANTS:
+        {
+            ret.append(ToString(static_cast<const SendPushConstantsCommand&>(cmd), indent));
+        }break;
+        case CommandType::DRAW_COMMANDS:
+        {
+            ret.append(ToString(static_cast<const DrawCommand&>(cmd), indent));
+        }break;
+        case CommandType::SET_VIEWPORT:
+        {
+            ret.append(ToString(static_cast<const SetViewportCommand&>(cmd), indent));
+        }break;
+        case CommandType::PUSH_VIEWPORT:
+        {
+            ret.append(ToString(static_cast<const PushViewportCommand&>(cmd), indent));
+        }break;
+        case CommandType::BEGIN_RENDER_PASS:
+        {
+            ret.append(ToString(static_cast<const BeginRenderPassCommand&>(cmd), indent));
+        }break;
+        case CommandType::SET_SCISSOR:
+        {
+            ret.append(ToString(static_cast<const SetScissorCommand&>(cmd), indent));
+        }break;
+        case CommandType::SET_CLIP_PLANES:
+        {
+            ret.append(ToString(static_cast<const SetClipPlanesCommand&>(cmd), indent));
+        }break;
+        case CommandType::SET_CAMERA:
+        {
+            ret.append(ToString(static_cast<const SetCameraCommand&>(cmd), indent));
+        }break;
+        case CommandType::BIND_DESCRIPTOR_SETS:
+        {
+            ret.append(ToString(static_cast<const BindDescriptorSetsCommand&>(cmd), indent));
+        }break;
+        case CommandType::SET_MIP_LEVELS:
+        {
+            ret.append(ToString(static_cast<const SetTextureMipLevelsCommand&>(cmd), indent));
+        }break;
+        case CommandType::BEGIN_DEBUG_SCOPE:
+        {
+            ret.append(ToString(static_cast<const BeginDebugScopeCommand&>(cmd), indent));
+        }break;
+        case CommandType::DRAW_TEXT:
+        {
+            ret.append(ToString(static_cast<const DrawTextCommand&>(cmd), indent));
+        }break;
+        case CommandType::DISPATCH_COMPUTE:
+        {
+            ret.append(ToString(static_cast<const DispatchComputeCommand&>(cmd), indent));
+        }break;
+        case CommandType::MEMORY_BARRIER:
+        {
+            ret.append(ToString(static_cast<const MemoryBarrierCommand&>(cmd), indent));
+        }break;
+        case CommandType::SET_CLIPING_STATE:
+        {
+            ret.append(ToString(static_cast<const SetClippingStateCommand&>(cmd), indent));
+        }break;
+    }
+    return ret;
 }
 
 }; //namespace GFX

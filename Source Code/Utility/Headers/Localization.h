@@ -46,24 +46,22 @@ constexpr const char* const g_languageFileExtension = ".ini";
 
 class LanguageData {
 public:
-    using LangCallbacks = vectorEASTL<DELEGATE<void, const char* /*new language*/>>;
+    using LangCallback = DELEGATE<void, std::string_view/*new language*/>;
 public:
-    LanguageData() noexcept;
-    ~LanguageData();
+    LanguageData() = default;
+    ~LanguageData() = default;
 
-    void changeLanguage(const char* newLanguage);
+    ErrorCode changeLanguage(std::string_view newLanguage);
 
     const char* get(U64 key, const char* defaultValue);
-    void add(U64 key, const char* value);
-
-    void addLanguageChangeCallback(const DELEGATE<void, const char* /*new language*/>& cbk);
+    void setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk);
 
 private:
     /// Each string key in the map matches a key in the language ini file
     /// each string value in the map matches the value in the ini file for the given key
     /// Basically, the hashMap is a direct copy of the [language] section of the give ini file
     hashMap<U64, stringImpl> _languageTable;
-    LangCallbacks _languageChangeCallbacks;
+    LangCallback _languageChangeCallback;
 };
 
 /// Reset everything and load the specified language file.
@@ -74,9 +72,9 @@ void clear() noexcept;
 void idle();
 /// Although the language can be set at compile time, in-game options may support
 /// language changes
-void changeLanguage(const char* newLanguage);
-/// Add a function to be called on each language change
-void addChangeLanguageCallback(const DELEGATE<void, const char* /*new language*/>& cbk);
+ErrorCode changeLanguage(const char* newLanguage);
+/// Set a function to be called on each language change
+void setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk);
 /// Query the current language code to detect changes
 const Str64& currentLanguage() noexcept;
 /// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want

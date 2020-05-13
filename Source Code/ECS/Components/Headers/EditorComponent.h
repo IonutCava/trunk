@@ -196,9 +196,8 @@ namespace Divide {
         inline vectorEASTL<EditorComponentField>& fields() noexcept { return _fields; }
         inline const vectorEASTL<EditorComponentField>& fields() const noexcept { return _fields; }
 
-        inline void onChangedCbk(const DELEGATE<void, const char*> cbk) {
-            _onChangedCbk = cbk;
-        }
+        inline void onChangedCbk(const DELEGATE<void, std::string_view>& cbk) { _onChangedCbk = cbk; }
+        inline void onChangedCbk(DELEGATE<void, std::string_view>&& cbk) { _onChangedCbk = std::move(cbk); }
 
         bool saveCache(ByteBuffer& outputBuffer) const;
         bool loadCache(ByteBuffer& inputBuffer);
@@ -215,7 +214,7 @@ namespace Divide {
         void loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt);
 
       protected:
-        DELEGATE<void, const char*> _onChangedCbk;
+        DELEGATE<void, std::string_view> _onChangedCbk;
         vectorEASTL<EditorComponentField> _fields;
     };
 

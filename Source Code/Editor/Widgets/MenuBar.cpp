@@ -208,7 +208,7 @@ void MenuBar::drawFileMenu() {
             g_saveSceneParams._saveProgress = 0u;
             g_saveSceneParams._saveElementCount = Attorney::EditorGeneralWidget::saveItemCount(_context.editor());
 
-            const auto messageCbk = [](const char* msg) {
+            const auto messageCbk = [](std::string_view msg) {
                 g_saveSceneParams._saveMessage = msg;
                 ++g_saveSceneParams._saveProgress;
             };

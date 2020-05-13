@@ -149,7 +149,7 @@ void Renderer::preRender(RenderStagePass stagePass,
 
         bindDescriptorSetsCmd._set._images.push_back(depthImage);
     } else {
-        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), to_U8(TextureUsage::DEPTH));
+        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), TextureUsage::DEPTH);
     }
 
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);

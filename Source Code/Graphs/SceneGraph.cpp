@@ -395,7 +395,7 @@ namespace {
     }
 };
 
-void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, const char*> msgCallback) const {
+void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, std::string_view> msgCallback) const {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
@@ -421,42 +421,41 @@ namespace {
 }
 
 void SceneGraph::loadFromXML(const char* assetsFile) {
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+    using boost::property_tree::ptree;
+    static const auto& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    static const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
+    const stringImpl file = (scenePath + "/" + parentScene().resourceName()) + "/" + assetsFile;
 
-    stringImpl file = sceneLocation + "/" + assetsFile;
     if (!fileExists(file.c_str())) {
         return;
     }
 
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
-    boost::property_tree::ptree pt;
+
+    ptree pt = {};
     read_xml(file.c_str(), pt);
     if (pt.get("version", g_sceneGraphVersion) != g_sceneGraphVersion) {
-        // Scene graph version mismatch
+        // ToDo: Scene graph version mismatch. Handle condition - Ionut
         NOP();
     }
 
-    std::function<void(const boost::property_tree::ptree& rootNode, XML::SceneNode& graphOut)> readNode;
-
-    readNode = [&readNode](const boost::property_tree::ptree& rootNode, XML::SceneNode& graphOut) {
-        const boost::property_tree::ptree& attributes = rootNode.get_child("<xmlattr>", g_emptyPtree);
-        for (const boost::property_tree::ptree::value_type& attribute : attributes) {
-            if (attribute.first == "name") {
-                graphOut.name = attribute.second.data();
-            }
-            else if (attribute.first == "type") {
-                graphOut.type = attribute.second.data();
+    const auto readNode = [](const ptree& rootNode, XML::SceneNode& graphOut, auto& readNodeRef) -> void {
+        for (const auto&[name, value] : rootNode.get_child("<xmlattr>", g_emptyPtree)) {
+            if (name == "name") {
+                graphOut.name = value.data();
+            } else if (name == "type") {
+                graphOut.type = value.data();
+            } else {
+                //ToDo: Error handling -Ionut
+                NOP();
             }
         }
 
-        const boost::property_tree::ptree& children = rootNode.get_child("");
-        for (const boost::property_tree::ptree::value_type& child : children) {
-            if (child.first == "node") {
+        for (const auto&[name, ptree] : rootNode.get_child("")) {
+            if (name == "node") {
                 graphOut.children.emplace_back();
-                readNode(child.second, graphOut.children.back());
+                readNodeRef(ptree, graphOut.children.back(), readNodeRef);
             }
         }
     };
@@ -464,9 +463,10 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
 
 
     XML::SceneNode rootNode = {};
-    const auto& graphs = pt.get_child("entities", g_emptyPtree);
-    const auto& [name, node_pt] = graphs.front();
-    readNode(node_pt, rootNode);
+    const auto& [name, node_pt] = pt.get_child("entities", g_emptyPtree).front();
+    // This is way faster than pre-declaring a std::function and capturing that or by using 2 separate
+    // lambdas and capturing one.
+    readNode(node_pt, rootNode, readNode);
     // This may not be needed;
     assert(Util::CompareIgnoreCase(rootNode.type, "TRANSFORM"));
     parentScene().addSceneGraphToLoad(rootNode);

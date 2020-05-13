@@ -58,7 +58,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
 
     static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
     if (!_initialSetupDone) {
-        _editorComponent.onChangedCbk([this](const char* field) {onEditorChange(field); });
+        _editorComponent.onChangedCbk([this](std::string_view field) {onEditorChange(field); });
 
         EditorComponentField tessTriangleWidthField = {};
         tessTriangleWidthField._name = "Tessellated Triangle Width";
@@ -185,10 +185,10 @@ F32 Terrain::getTriangleWidth(const RenderStagePass& renderStagePass)  const noe
     return triangleWidth;
 }
 
-void Terrain::onEditorChange(const char* field) {
+void Terrain::onEditorChange(std::string_view field) {
     ACKNOWLEDGE_UNUSED(field);
 
-    if (strcmp(field, "Toggle Quadtree Bounds") == 0) {
+    if (field == "Toggle Quadtree Bounds") {
         toggleBoundingBoxes();
     } else {
         _editorDataDirtyState = EditorDataState::QUEUED;

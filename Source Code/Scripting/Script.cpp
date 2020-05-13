@@ -12,7 +12,7 @@
 namespace Divide {
 
 namespace {
-    UpdateListener s_fileWatcherListener([](const char* atomName, FileUpdateEvent evt) {
+    UpdateListener s_fileWatcherListener([](std::string_view atomName, FileUpdateEvent evt) {
         Script::onScriptModify(atomName, evt);
     });
 };
@@ -154,7 +154,7 @@ void Script::handleOutput(const std::string &msg) {
     Console::printfn(Locale::get(_ID("SCRIPT_CONSOLE_OUTPUT")), msg.c_str());
 }
 
-void Script::onScriptModify(const char* script, FileUpdateEvent& evt) {
+void Script::onScriptModify(std::string_view script, FileUpdateEvent& evt) {
     vectorEASTL<Script*> scriptsToReload;
 
     for (ScriptMap::value_type it : s_scripts) {

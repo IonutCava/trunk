@@ -188,8 +188,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void rebuildMaterial();
 
     inline void setReflectionAndRefractionType(ReflectorType reflectType, RefractorType refractType) noexcept { _reflectorType = reflectType;  _refractorType = refractType; }
-    inline void setReflectionCallback(RenderCallback cbk) { _reflectionCallback = cbk; }
-    inline void setRefractionCallback(RenderCallback cbk) { _refractionCallback = cbk; }
+    inline void setReflectionCallback(const RenderCallback& cbk) { _reflectionCallback = cbk; }
+    inline void setRefractionCallback(const RenderCallback& cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis(GFX::CommandBuffer& bufferInOut);
     void drawSelectionGizmo(GFX::CommandBuffer& bufferInOut);

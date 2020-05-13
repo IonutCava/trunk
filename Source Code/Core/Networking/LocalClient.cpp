@@ -32,7 +32,7 @@ void LocalClient::handlePacket(WorldPacket& p) {
         HandleGeometryAppendOpCode(p);
         break;
     default:
-        _parent.platformContext().paramHandler().setParam(_ID_32("serverResponse"), "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
+        _parent.platformContext().paramHandler().setParam(_ID("serverResponse"), "Unknown OpCode: [ 0x" + to_stringImpl(p.opcode()) + " ]");
         break;
     };
 }
@@ -42,7 +42,7 @@ void LocalClient::HandlePongOpCode(WorldPacket& p) {
     p >> time;
     D64 result = Time::App::ElapsedMilliseconds() - time;
     _parent.platformContext().paramHandler().setParam(
-        _ID_32("serverResponse"),
+        _ID("serverResponse"),
         "Server says: Pinged with : " +
         to_stringImpl(floor(result + 0.5f)) +
         " ms latency");

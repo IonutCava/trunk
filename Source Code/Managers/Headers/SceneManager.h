@@ -41,7 +41,7 @@ namespace Divide {
 class LoadSave {
 public:
     static bool loadScene(Scene& activeScene);
-    static bool saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback);
+    static bool saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback);
 };
 
 enum class RenderStage : U8;
@@ -101,7 +101,7 @@ public:
     bool init(PlatformContext& platformContext, ResourceCache* cache);
     void destroy();
 
-    inline U8 getActivePlayerCount() const { return _activePlayerCount; }
+    inline U8 getActivePlayerCount() const noexcept { return _activePlayerCount; }
 
     inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -159,7 +159,7 @@ public:
         return factory.register_creator(id, new_ptr<T>());
     }
 
-    bool saveActiveScene(bool toCache, bool deferred, DELEGATE<void, const char*> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
+    bool saveActiveScene(bool toCache, bool deferred, DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
 
     AI::Navigation::DivideRecast* recast() const noexcept { return _recast.get(); }
 

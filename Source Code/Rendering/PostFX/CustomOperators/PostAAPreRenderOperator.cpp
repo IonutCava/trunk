@@ -194,8 +194,8 @@ bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHa
             const TextureData searchTex = _searchTexture->data();
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(edgesTex, to_U8(TextureUsage::UNIT0));
-            descriptorSetCmd._set._textureData.setTexture(areaTex, to_U8(TextureUsage::UNIT1));
+            descriptorSetCmd._set._textureData.setTexture(edgesTex, TextureUsage::UNIT0);
+            descriptorSetCmd._set._textureData.setTexture(areaTex, TextureUsage::UNIT1);
             descriptorSetCmd._set._textureData.setTexture(searchTex, to_U8(TextureUsage::UNIT1) + 1);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -216,8 +216,8 @@ bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHa
             const TextureData blendTex = _smaaWeights._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
-            descriptorSetCmd._set._textureData.setTexture(blendTex, to_U8(TextureUsage::UNIT1));
+            descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+            descriptorSetCmd._set._textureData.setTexture(blendTex, TextureUsage::UNIT1);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaBlendPipeline });
@@ -239,7 +239,7 @@ bool PostAAPreRenderOperator::execute(const Camera& camera, const RenderTargetHa
         GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);

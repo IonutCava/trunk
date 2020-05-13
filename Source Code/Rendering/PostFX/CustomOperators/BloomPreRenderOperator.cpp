@@ -142,7 +142,7 @@ bool BloomPreRenderOperator::execute(const Camera& camera, const RenderTargetHan
 
     
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
+    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
@@ -179,8 +179,8 @@ bool BloomPreRenderOperator::execute(const Camera& camera, const RenderTargetHan
     // Step 3: apply bloom
     const TextureData bloomTex = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
 
-    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(bloomTex, to_U8(TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(bloomTex, TextureUsage::UNIT1);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });

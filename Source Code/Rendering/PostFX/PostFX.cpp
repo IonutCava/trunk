@@ -38,7 +38,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
 {
     std::atomic_uint loadTasks = 0u;
 
-    context.paramHandler().setParam<bool>(_ID_32("postProcessing.enableVignette"), false);
+    context.paramHandler().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
@@ -215,7 +215,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthData, to_U8(TextureUsage::DEPTH));
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthData, TextureUsage::DEPTH);
     bindDescriptorSetsCmd._set._textureData.setTexture(output, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
     bindDescriptorSetsCmd._set._textureData.setTexture(data0, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     bindDescriptorSetsCmd._set._textureData.setTexture(data1, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));

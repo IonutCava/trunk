@@ -21,33 +21,53 @@ namespace detail {
     std::unique_ptr<FW::FileWatcher> g_LanguageFileWatcher = nullptr;
 
     /// Callback for external file changes. 
-    UpdateListener g_fileWatcherListener([](const char* languageFile, FileUpdateEvent evt) {
+    UpdateListener g_fileWatcherListener([](std::string_view languageFile, FileUpdateEvent evt) {
         if (evt == FileUpdateEvent::DELETE) {
             return;
         }
 
         // If we modify our currently active language, reinit the Locale system
-        if (strcmp((g_localeFile + g_languageFileExtension).c_str(), languageFile) == 0) {
+        if ((g_localeFile + g_languageFileExtension).c_str() == languageFile) {
             changeLanguage(g_localeFile.c_str());
         }
     });
 
 }; //detail
 
-LanguageData::LanguageData() noexcept
-{
+void LanguageData::setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk) {
+    _languageChangeCallback = cbk;
 }
 
-LanguageData::~LanguageData()
-{
-}
+ErrorCode LanguageData::changeLanguage(std::string_view newLanguage) {
+    // Use SimpleIni library for cross-platform INI parsing
+    CSimpleIni languageFile(true, false, true);
 
-void LanguageData::changeLanguage(const char* newLanguage) {
+    detail::g_localeFile = { newLanguage.data(), newLanguage.length() };
+    assert(!detail::g_localeFile.empty());
+
+    const Str256 file = (Paths::g_localisationPath + detail::g_localeFile.c_str()) + g_languageFileExtension;
+
+    if (languageFile.LoadFile(file.c_str()) != SI_OK) {
+        return ErrorCode::NO_LANGUAGE_INI;
+    }
+
     _languageTable.clear();
 
-    for (const DELEGATE<void, const char* /*new language*/>& languageChangeCbk : _languageChangeCallbacks) {
-        languageChangeCbk(newLanguage);
+    // Load all key-value pairs for the "language" section
+    const CSimpleIni::TKeyVal* keyValue = languageFile.GetSection("language");
+
+    assert(keyValue != nullptr && "Locale::init error: No 'language' section found");
+    // And add all pairs to the language table
+    CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
+    for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
+        hashAlg::emplace(_languageTable, _ID(keyValuePairIt->first.pItem), keyValuePairIt->second);
     }
+
+    if (_languageChangeCallback) {
+        _languageChangeCallback(newLanguage);
+    }
+
+    return ErrorCode::NO_ERR;
 }
 
 const char* LanguageData::get(U64 key, const char* defaultValue) {
@@ -57,17 +77,10 @@ const char* LanguageData::get(U64 key, const char* defaultValue) {
         // Usually, the entire language table is loaded.
         return entry->second.c_str();
     }
+
     DIVIDE_UNEXPECTED_CALL("Locale error: INVALID STRING KEY!");
 
     return defaultValue;
-}
-
-void LanguageData::add(U64 key, const char* value) {
-    hashAlg::emplace(_languageTable, key, value);
-}
-
-void LanguageData::addLanguageChangeCallback(const DELEGATE<void, const char* /*new language*/>& cbk) {
-    _languageChangeCallbacks.push_back(cbk);
 }
 
 ErrorCode init(const char* newLanguage) {
@@ -84,32 +97,7 @@ ErrorCode init(const char* newLanguage) {
         detail::g_data = std::make_unique<LanguageData>();
     }
 
-    // Override old data
-    detail::g_data->changeLanguage(newLanguage);
-
-    // Use SimpleIni library for cross-platform INI parsing
-    CSimpleIni languageFile(true, false, true);
-
-    detail::g_localeFile = newLanguage;
-    assert(!detail::g_localeFile.empty());
-
-    const Str256 file = (Paths::g_localisationPath + detail::g_localeFile.c_str()) + g_languageFileExtension;
-
-    if (languageFile.LoadFile(file.c_str()) != SI_OK) {
-        return ErrorCode::NO_LANGUAGE_INI;
-    }
-
-    // Load all key-value pairs for the "language" section
-    const CSimpleIni::TKeyVal* keyValue = languageFile.GetSection("language");
-
-    assert(keyValue != nullptr && "Locale::init error: No 'language' section found");
-    // And add all pairs to the language table
-    CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
-    for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
-        detail::g_data->add(_ID(keyValuePairIt->first.pItem), keyValuePairIt->second);
-    }
-
-    return ErrorCode::NO_ERR;
+    return changeLanguage(newLanguage);
 }
 
 void clear() noexcept {
@@ -122,11 +110,12 @@ void idle() {
     }
 }
 
-/// Although the language can be set at compile time, in-game options may support
-/// language changes
-void changeLanguage(const char* newLanguage) {
-    /// Set the new language code
-    init(newLanguage);
+/// Although the language can be set at compile time, in-game options may support language changes
+ErrorCode changeLanguage(const char* newLanguage) {
+    assert(detail::g_data != nullptr);
+
+    /// Set the new language code (override old data)
+    return detail::g_data->changeLanguage(newLanguage);
 }
 
 const char* get(U64 key, const char* defaultValue) {
@@ -141,10 +130,10 @@ const char* get(U64 key) {
     return get(key, "key not found");
 }
 
-void addChangeLanguageCallback(const DELEGATE<void, const char* /*new language*/>& cbk) {
+void setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk) {
     assert(detail::g_data);
 
-    detail::g_data->addLanguageChangeCallback(cbk);
+    detail::g_data->setChangeLanguageCallback(cbk);
 }
 
 const Str64& currentLanguage() noexcept {

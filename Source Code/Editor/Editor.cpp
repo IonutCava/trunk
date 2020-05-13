@@ -832,7 +832,9 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
     pushConstantsCommand._constants = pushConstants;
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ targetViewport });
+    GFX::SetViewportCommand viewportCmd = {};
+    viewportCmd._viewport = targetViewport;
+    GFX::EnqueueCommand(bufferInOut, viewportCmd);
 
     const F32 L = pDrawData->DisplayPos.x;
     const F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
@@ -846,9 +848,8 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
         { (R + L) / (L - R), (T + B) / (B - T),  0.0f,   1.0f },
     };
 
-    GFX::SetCameraCommand cameraCmd = {
-        Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot()
-    };
+    GFX::SetCameraCommand cameraCmd = {};
+    cameraCmd._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot();
     memcpy(cameraCmd._cameraSnapshot._projectionMatrix.m, ortho_projection, sizeof(F32) * 16);
     GFX::EnqueueCommand(bufferInOut, cameraCmd);
 
@@ -1272,7 +1273,7 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-bool Editor::saveSceneChanges(DELEGATE<void, const char*> msgCallback, DELEGATE<void, bool> finishCallback) {
+bool Editor::saveSceneChanges(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
     if (_context.kernel().sceneManager()->saveActiveScene(false, true, msgCallback, finishCallback)) {
         if (saveToXML()) {
             _context.config().save();

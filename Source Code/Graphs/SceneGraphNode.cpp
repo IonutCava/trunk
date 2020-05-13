@@ -659,7 +659,7 @@ bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
     return true;
 }
 
-void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, const char*> msgCallback) const {
+void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, std::string_view> msgCallback) const {
     if (!serialize()) {
         return;
     }

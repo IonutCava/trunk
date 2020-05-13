@@ -179,7 +179,7 @@ class SceneNode : public CachedResource {
     PROPERTY_RW(bool, rebuildDrawCommands, false);
 
    protected:
-     virtual void editorFieldChanged(const char* field);
+     virtual void editorFieldChanged(std::string_view field);
      virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;
      virtual void onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const;
 

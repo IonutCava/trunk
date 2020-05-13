@@ -40,7 +40,7 @@ SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const St
     _boundingBox.setMax(1.0f);
 
     getEditorComponent().name(getTypeName());
-    getEditorComponent().onChangedCbk([this](const char* field) {
+    getEditorComponent().onChangedCbk([this](std::string_view field) {
         editorFieldChanged(field);
     });
 
@@ -116,7 +116,7 @@ bool SceneNode::unload() {
     return true;
 }
 
-void SceneNode::editorFieldChanged(const char* field) {
+void SceneNode::editorFieldChanged(std::string_view field) {
     ACKNOWLEDGE_UNUSED(field);
 }
 

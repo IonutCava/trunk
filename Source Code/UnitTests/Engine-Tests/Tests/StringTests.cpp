@@ -268,18 +268,27 @@ TEST(TestCharRemove) {
 TEST(HashIsConstantExpr)
 {
     constexpr const char* const str = "TEST test TEST";
-    constexpr U64 value = _ID(str);
+    constexpr std::string_view str2 = str;
 
+    constexpr U64 value = _ID(str);
     CHECK_EQUAL(value, _ID(str));
+
+    constexpr U64 value2 = _ID_VIEW(str2.data(), str2.length());
+    CHECK_EQUAL(value2, value);
 }
 
 TEST(TestRuntimeID)
 {
     const char* str = "TEST String garbagegarbagegarbage";
+    std::string_view str2 = str;
+
     U64 input1 = _ID(str);
+    U64 input2 = _ID_VIEW(str2.data(), str2.length());
+
     CHECK_EQUAL(input1, _ID(str));
     CHECK_EQUAL(_ID(str), _ID(stringImpl(str).c_str()));
     CHECK_EQUAL(input1, _ID(stringImpl(str).c_str()));
+    CHECK_EQUAL(input1, input2);
 }
 
 TEST(TestStringAllocator)

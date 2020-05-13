@@ -205,6 +205,16 @@ inline bool CompareIgnoreCase(const char* a, const char* b) noexcept {
     return strcasecmp(a, b) == 0;
 }
 
+inline bool CompareIgnoreCase(const char* a, std::string_view b) noexcept {
+    if (a != nullptr && !b.empty()) {
+        return strncasecmp(a, b.data(), b.length()) == 0;
+    } else if (b.empty()) {
+        return Util::IsEmptyOrNull(a);
+    }
+
+    return false;
+}
+
 template<typename T_strA>
 inline bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
     if (b != nullptr && !a.empty()) {
@@ -213,6 +223,11 @@ inline bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
         return Util::IsEmptyOrNull(b);
     }
     return false;
+}
+
+template<typename T_strA>
+inline bool CompareIgnoreCase(const T_strA& a, std::string_view b) noexcept {
+    return CompareIgnoreCase(a.c_str(), b);
 }
 
 template<>

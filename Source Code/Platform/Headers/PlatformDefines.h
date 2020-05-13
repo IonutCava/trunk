@@ -87,6 +87,36 @@ inline auto highLevelF(Args&&... args) -> decltype(lowLevelF(std::forward<Args>(
     return lowLevelF(std::forward<Args>(args)...); \
 }
 
+//ref: https://vittorioromeo.info/index/blog/passing_functions_to_functions.html
+template <typename TSignature>
+class function_view;
+
+template <typename TReturn, typename... TArgs>
+class function_view<TReturn(TArgs...)> final
+{
+private:
+    using signature_type = TReturn(void*, TArgs...);
+
+    void* _ptr;
+    TReturn(*_erased_fn)(void*, TArgs...);
+
+public:
+    template <typename T, typename = std::enable_if_t <
+        std::is_callable<T&(TArgs...)>{} &&
+        !std::is_same<std::decay_t<T>, function_view>{} >>
+        function_view(T&& x) noexcept : _ptr{ (void*)std::addressof(x) } {
+        _erased_fn = [](void* ptr, TArgs... xs) -> TReturn {
+            return (*reinterpret_cast<std::add_pointer_t<T>>(ptr))(
+                std::forward<TArgs>(xs)...);
+        };
+    }
+
+    decltype(auto) operator()(TArgs... xs) const
+        noexcept(noexcept(_erased_fn(_ptr, std::forward<TArgs>(xs)...))) {
+        return _erased_fn(_ptr, std::forward<TArgs>(xs)...);
+    }
+};
+
 namespace Divide {
 
 using PlayerIndex = U8;
@@ -102,12 +132,12 @@ constexpr U32 prime_32_const = 0x1000193;
 constexpr U64 val_64_const = 0xcbf29ce484222325;
 constexpr U64 prime_64_const = 0x100000001b3;
 
-constexpr U32 _ID_32(const char* const str, const U32 value = val_32_const) noexcept {
-    return (str[0] == '\0') ? value : _ID_32(&str[1], (value ^ U32(str[0])) * prime_32_const);
-}
-
 constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcept {
     return (str[0] == '\0') ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
+}
+
+constexpr U64 _ID_VIEW(const char* const str, size_t len, const U64 value = val_64_const) noexcept {
+    return (len == 0) ? value : _ID_VIEW(&str[1], len - 1, (value ^ U64(str[0])) * prime_64_const);
 }
 
 struct SysInfo {
@@ -179,8 +209,8 @@ constexpr size_t realign_offset(size_t offset, size_t align) noexcept {
 }
 
 //ref: http://stackoverflow.com/questions/14226952/partitioning-batch-chunk-a-container-into-equal-sized-pieces-using-std-algorithm
-template<typename Iterator>
-void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size, std::function<void(Iterator, Iterator)> operation) 
+template<typename Iterator, typename Pred>
+void for_each_interval(Iterator from, Iterator to, std::ptrdiff_t partition_size, Pred&& operation) 
 {
     if (partition_size > 0) {
         Iterator partition_end = from;

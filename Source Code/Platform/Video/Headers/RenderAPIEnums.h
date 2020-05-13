@@ -176,7 +176,11 @@ enum class PrimitiveType : U8 {
     PATCH = 0x0009,
     COUNT
 };
-
+namespace Names {
+    static const char* primitiveType[] = {
+        "POINTS", "LINES", "LINE_LOOP", "LINE_STRIP", "TRIANGLES", "TRIANGLE_STRIP", "TRIANGLE_FAN", "QUAD_STRIP", "POLYGON", "PATCH", "NONE"
+    };
+};
 /// Specifies how the red, green, blue, and alpha source blending factors are computed.
 enum class BlendProperty : U8 {
     ZERO = 0,

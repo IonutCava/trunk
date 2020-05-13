@@ -43,7 +43,7 @@ namespace Divide {
 class ParamHandler  {
 
 public:
-    using HashType = U32;
+    using HashType = U64;
 
     using ParamMap = hashMap<HashType, std::any>;
 

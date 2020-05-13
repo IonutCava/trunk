@@ -55,6 +55,11 @@ namespace Divide {
     }
 
     template<size_t Size>
+    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, TextureUsage binding) {
+        return setTexture(data, to_U8(binding));
+    }
+
+    template<size_t Size>
     TextureUpdateState TextureDataContainer<Size>::setTextures(const TextureDataContainer& textureEntries) {
         return setTextures(textureEntries._textures);
     }

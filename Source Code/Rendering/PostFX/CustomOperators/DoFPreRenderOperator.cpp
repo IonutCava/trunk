@@ -77,8 +77,8 @@ bool DoFPreRenderOperator::execute(const Camera& camera, const RenderTargetHandl
     const TextureData depthTex = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex, to_U8(TextureUsage::UNIT0));
-    descriptorSetCmd._set._textureData.setTexture(depthTex, to_U8(TextureUsage::UNIT1));
+    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(depthTex, TextureUsage::UNIT1);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};

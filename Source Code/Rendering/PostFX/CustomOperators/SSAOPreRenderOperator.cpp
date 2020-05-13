@@ -181,13 +181,13 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
 
             TextureData data = _noiseTexture->data();
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
+            descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::UNIT0);
 
             data = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
-            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::DEPTH));
+            descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::DEPTH);
 
             data = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
-            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::NORMALMAP));
+            descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::NORMALMAP);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
 
@@ -211,7 +211,7 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
 
             const TextureData data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // AO texture
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::UNIT0));
+            descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::UNIT0);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });

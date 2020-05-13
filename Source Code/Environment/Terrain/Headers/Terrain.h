@@ -149,7 +149,7 @@ class Terrain final : public Object3D {
 
     void postLoad(SceneGraphNode& sgn);
 
-    void onEditorChange(const char* field);
+    void onEditorChange(std::string_view field);
 
     const char* getResourceTypeName() const noexcept override { return "Terrain"; }
 

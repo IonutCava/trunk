@@ -49,8 +49,8 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     _skyboxRenderStateReflectedHashPrePass = skyboxRenderStateReflection.getHash();
 
 
-    getEditorComponent().onChangedCbk([this](const char* field) {
-        if (strcmp(field, "Reset To Default") == 0) {
+    getEditorComponent().onChangedCbk([this](std::string_view field) {
+        if (field == "Reset To Default") {
             _atmosphere = defaultAtmosphere();
         }
 
@@ -412,8 +412,8 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.add(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[0]->data(), to_U8(TextureUsage::UNIT0));
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[1]->data(), to_U8(TextureUsage::UNIT1));
+    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[0]->data(), TextureUsage::UNIT0);
+    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[1]->data(), TextureUsage::UNIT1);
     pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};

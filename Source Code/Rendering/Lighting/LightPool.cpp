@@ -22,10 +22,10 @@
 
 namespace Divide {
 
-std::array<U8, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
-    to_U8(TextureUsage::SHADOW_SINGLE),
-    to_U8(TextureUsage::SHADOW_LAYERED),
-    to_U8(TextureUsage::SHADOW_CUBE)
+std::array<TextureUsage, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
+    TextureUsage::SHADOW_SINGLE,
+    TextureUsage::SHADOW_LAYERED,
+    TextureUsage::SHADOW_CUBE
 }};
 
 namespace {
@@ -45,7 +45,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     }
 
     _lightTypeState.fill(true);
-    context.paramHandler().setParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo"), false);
+    context.paramHandler().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 
     init();
 }
@@ -235,8 +235,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 void LightPool::debugLight(Light* light) {
     _debugLight = light;
     ShadowMap::setDebugViewLight(context().gfx(), _debugLight);
-    const bool showDebugInfo = context().paramHandler().getParam<bool>(_ID_32("rendering.debug.displayShadowDebugInfo"));
-    context().paramHandler().setParam(_ID_32("rendering.debug.displayShadowDebugInfo"), _debugLight != nullptr || showDebugInfo);
+    const bool showDebugInfo = context().paramHandler().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"));
+    context().paramHandler().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _debugLight != nullptr || showDebugInfo);
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {
@@ -428,7 +428,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         GFX::EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), to_U8(TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand = { pointsCmd };

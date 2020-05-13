@@ -671,10 +671,11 @@ void Vegetation::onRefreshNodeData(const SceneGraphNode& sgn, const RenderStageP
         const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), to_U8(TextureUsage::UNIT0));
+        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-        GFX::SendPushConstantsCommand cullConstants(_cullPushConstants);
+        GFX::SendPushConstantsCommand cullConstants = {};
+        cullConstants._constants = _cullPushConstants;
         cullConstants._constants.countHint(5 + _cullPushConstants.data().size());
         cullConstants._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
         cullConstants._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, crtCamera.getProjectionMatrix());
@@ -684,11 +685,13 @@ void Vegetation::onRefreshNodeData(const SceneGraphNode& sgn, const RenderStageP
         cullConstants._constants.set(_ID("dvd_nearPlaneDistance"), GFX::PushConstantType::FLOAT, crtCamera.getZPlanes().x);
         GFX::DispatchComputeCommand computeCmd = {};
 
+        GFX::BindPipelineCommand bindPipelineCmd = {};
         if (_instanceCountGrass > 0) {
             computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
 
             //Cull grass
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _cullPipelineGrass });
+            bindPipelineCmd._pipeline = _cullPipelineGrass;
+            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
             GFX::EnqueueCommand(bufferInOut, cullConstants);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
@@ -697,7 +700,8 @@ void Vegetation::onRefreshNodeData(const SceneGraphNode& sgn, const RenderStageP
             computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
 
             // Cull trees
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _cullPipelineTrees });
+            bindPipelineCmd._pipeline = _cullPipelineTrees;
+            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
             GFX::EnqueueCommand(bufferInOut, cullConstants);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }

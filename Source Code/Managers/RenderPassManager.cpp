@@ -725,7 +725,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             if (hasNormalsTarget) {
                 const TextureData& data = nonMSTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY))->texture()->data();
-                descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::NORMALMAP));
+                descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::NORMALMAP);
             }
 
             if (prePassExecuted) {
@@ -733,12 +733,12 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
                 drawPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
                 const TextureData& depthData = hasHiZ ? hizTex->data() : depthTex->data();
-                descriptorSetCmd._set._textureData.setTexture(depthData, to_base(TextureUsage::DEPTH));
+                descriptorSetCmd._set._textureData.setTexture(depthData, TextureUsage::DEPTH);
             }
 
             if (hasLightingTarget) {
                 const TextureData& data = nonMSTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
-                descriptorSetCmd._set._textureData.setTexture(data, to_U8(TextureUsage::GBUFFER_EXTRA));
+                descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::GBUFFER_EXTRA);
             }
 
             GFX::BeginRenderPassCommand beginRenderPassCommand = {};

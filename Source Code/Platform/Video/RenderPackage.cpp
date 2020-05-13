@@ -85,9 +85,9 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
 
     if (_isInstanced && !wasInstanced) {
         if (!_commands->exists<GFX::SendPushConstantsCommand>(0)) {
-            PushConstants constants = {};
-            constants.set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, 0u);
-            add(GFX::SendPushConstantsCommand{ constants });
+            GFX::SendPushConstantsCommand constantsCmd = {};
+            constantsCmd._constants.set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, 0u);
+            add(constantsCmd);
         }
     }
 

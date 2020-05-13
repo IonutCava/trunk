@@ -134,7 +134,7 @@ class LightPool : public SceneComponent,
 
     /// Get the appropriate shadow bind slot for every light's shadow
     static U8 getShadowBindSlotOffset(ShadowType type) noexcept {
-        return _shadowLocation[to_U32(type)];
+        return to_U8(_shadowLocation[to_U32(type)]);
     }
 
     /// Get the appropriate shadow bind slot offset for every light's shadow
@@ -200,7 +200,7 @@ class LightPool : public SceneComponent,
     Time::ProfileTimer& _shadowPassTimer;
     bool _init = false;
 
-    static std::array<U8, to_base(ShadowType::COUNT)> _shadowLocation;
+    static std::array<TextureUsage, to_base(ShadowType::COUNT)> _shadowLocation;
 };
 
 };  // namespace Divide

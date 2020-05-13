@@ -158,7 +158,7 @@ void Kernel::idle(bool fast) {
     }
     frameListenerMgr().idle();
 
-    constexpr ParamHandler::HashType paramName = _ID_32("freezeLoopTime");
+    constexpr ParamHandler::HashType paramName = _ID("freezeLoopTime");
     bool freezeLoopTime = _platformContext.paramHandler().getParam(paramName, false);
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
@@ -556,9 +556,9 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 void Kernel::warmup() {
     Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
 
-    _platformContext.paramHandler().setParam(_ID_32("freezeLoopTime"), true);
+    _platformContext.paramHandler().setParam(_ID("freezeLoopTime"), true);
     onLoop();
-    _platformContext.paramHandler().setParam(_ID_32("freezeLoopTime"), false);
+    _platformContext.paramHandler().setParam(_ID("freezeLoopTime"), false);
 
     Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
 
@@ -608,8 +608,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext.pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
     _platformContext.sfx().setAPI(SFXDevice::AudioAPI::SDL);
 
-    ASIO::SET_LOG_FUNCTION([](const char* msg, bool is_error) {
-        is_error ? Console::errorfn(msg) : Console::printfn(msg);
+    ASIO::SET_LOG_FUNCTION([](std::string_view msg, bool is_error) {
+        is_error ? Console::errorfn(stringImpl(msg).c_str()) : Console::printfn(stringImpl(msg).c_str());
     });
 
     _platformContext.server().init(((Divide::U16)443), "127.0.0.1", true);

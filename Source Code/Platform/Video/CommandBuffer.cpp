@@ -8,43 +8,6 @@ namespace Divide {
 
 namespace GFX {
 
-DEFINE_POOL(BindPipelineCommand);
-DEFINE_POOL(SendPushConstantsCommand);
-DEFINE_POOL(DrawCommand);
-DEFINE_POOL(SetViewportCommand);
-DEFINE_POOL(PushViewportCommand);
-DEFINE_POOL(PopViewportCommand);
-DEFINE_POOL(BeginRenderPassCommand);
-DEFINE_POOL(EndRenderPassCommand);
-DEFINE_POOL(BeginPixelBufferCommand);
-DEFINE_POOL(EndPixelBufferCommand);
-DEFINE_POOL(BeginRenderSubPassCommand);
-DEFINE_POOL(EndRenderSubPassCommand);
-DEFINE_POOL(BlitRenderTargetCommand);
-DEFINE_POOL(ClearRenderTargetCommand);
-DEFINE_POOL(ResetRenderTargetCommand);
-DEFINE_POOL(ResetAndClearRenderTargetCommand);
-DEFINE_POOL(CopyTextureCommand);
-DEFINE_POOL(ComputeMipMapsCommand);
-DEFINE_POOL(SetScissorCommand);
-DEFINE_POOL(SetBlendCommand);
-DEFINE_POOL(SetCameraCommand);
-DEFINE_POOL(PushCameraCommand);
-DEFINE_POOL(PopCameraCommand);
-DEFINE_POOL(SetClipPlanesCommand);
-DEFINE_POOL(BindDescriptorSetsCommand);
-DEFINE_POOL(SetTextureMipLevelsCommand);
-DEFINE_POOL(BeginDebugScopeCommand);
-DEFINE_POOL(EndDebugScopeCommand);
-DEFINE_POOL(DrawTextCommand);
-DEFINE_POOL(DrawIMGUICommand);
-DEFINE_POOL(DispatchComputeCommand);
-DEFINE_POOL(MemoryBarrierCommand);
-DEFINE_POOL(ReadBufferDataCommand);
-DEFINE_POOL(ClearBufferDataCommand);
-DEFINE_POOL(SetClippingStateCommand);
-DEFINE_POOL(ExternalCommand);
-
 namespace {
     inline bool ShouldSkipType(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
@@ -516,7 +479,7 @@ void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType type,
         case GFX::CommandType::BEGIN_PIXEL_BUFFER:
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: 
         case GFX::CommandType::BEGIN_DEBUG_SCOPE : {
-            append(out, cmd.toString(to_U16(crtIndent)), crtIndent);
+            append(out, GFX::ToString(cmd, to_U16(crtIndent)), crtIndent);
             ++crtIndent;
         }break;
         case GFX::CommandType::END_RENDER_PASS:
@@ -524,10 +487,10 @@ void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType type,
         case GFX::CommandType::END_RENDER_SUB_PASS:
         case GFX::CommandType::END_DEBUG_SCOPE: {
             --crtIndent;
-            append(out, cmd.toString(to_U16(crtIndent)), crtIndent);
+            append(out, GFX::ToString(cmd, to_U16(crtIndent)), crtIndent);
         }break;
         default: {
-            append(out, cmd.toString(to_U16(crtIndent)), crtIndent);
+            append(out, GFX::ToString(cmd, to_U16(crtIndent)), crtIndent);
         }break;
     }
 }

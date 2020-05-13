@@ -50,12 +50,12 @@ namespace Divide {
         recomputeMatrixField._readOnly = false; //disabled/enabled
         _editorComponent.registerField(std::move(recomputeMatrixField));
 
-        _editorComponent.onChangedCbk([this](const char* field) {
-            if (strcmp(field, "Transform") == 0) {
+        _editorComponent.onChangedCbk([this](std::string_view field) {
+            if (field == "Transform") {
                 setTransformDirty(to_base(TransformType::ALL));
-            } else if (strcmp(field, "Position Offset") == 0) {
+            } else if (field == "Position Offset") {
                 // view offset stuff
-            } else if (strcmp(field, "Recompute WorldMatrix") == 0) {
+            } else if (field == "Recompute WorldMatrix") {
                 _transformUpdatedMask.store(to_base(TransformType::ALL));
             }
 

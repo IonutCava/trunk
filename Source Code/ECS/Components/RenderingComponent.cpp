@@ -75,8 +75,8 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     vaxisField._readOnly = false;
     _editorComponent.registerField(std::move(vaxisField));
 
-    _editorComponent.onChangedCbk([this](const char* field) {
-        if (strcmp(field, "Show Axis") == 0) {
+    _editorComponent.onChangedCbk([this](std::string_view field) {
+        if (field == "Show Axis") {
             toggleRenderOption(RenderingComponent::RenderOptions::RENDER_AXIS, _showAxis);
         }
     });
@@ -316,7 +316,7 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
             for (U8 i = 0; i < _externalTextures.size(); ++i) {
                 const Texture_ptr& crtTexture = _externalTextures[i];
                 if (crtTexture != nullptr) {
-                    textures.setTexture(crtTexture->data(), to_base(g_texUsage[i].second));
+                    textures.setTexture(crtTexture->data(), g_texUsage[i].second);
                 }
             }
         }

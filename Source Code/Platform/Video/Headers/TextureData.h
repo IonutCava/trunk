@@ -94,6 +94,7 @@ struct TextureDataContainer {
     TextureUpdateState setTextures(const TextureDataContainer& textureEntries);
     TextureUpdateState setTextures(const DataEntries& textureEntries);
     TextureUpdateState setTexture(const TextureData& data, U8 binding);
+    TextureUpdateState setTexture(const TextureData& data, TextureUsage binding);
 
     bool removeTexture(U8 binding);
     bool removeTexture(const TextureData& data);
