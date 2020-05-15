@@ -90,6 +90,12 @@ namespace Divide {
             if (ImGui::SliderFloat("Power", &power, 1.0f, 5.0f)) {
                 ssaoOp.power(power);
             }
+
+            U8 minIndex = 0u, maxIndex = 0u;
+            U8 index = ssaoOp.kernelIndex(minIndex, maxIndex);
+            if (ImGui::SliderScalar("Kernel Size Index", ImGuiDataType_U8, &index, &minIndex, &maxIndex)) {
+                ssaoOp.kernelIndex(index);
+            }
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);

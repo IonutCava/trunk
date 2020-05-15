@@ -95,6 +95,8 @@ protected:
 bool loadFromXML(IXMLSerializable& object, const char* file);
 bool saveToXML(const IXMLSerializable& object, const char* file);
 
+void writeXML(const stringImpl& path, const boost::property_tree::ptree& tree);
+void readXML(const stringImpl& path, boost::property_tree::ptree& tree);
 /// Child Functions
 void loadDefaultKeyBindings(const stringImpl &file, Scene* scene);
 

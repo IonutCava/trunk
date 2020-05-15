@@ -12,7 +12,8 @@ namespace Divide {
 Server::Server()
     : thread_(),
      _debugOutput(false),
-      acceptor_(nullptr)
+      acceptor_(nullptr),
+     _channel(std::make_shared<channel>())
 {
 }
 
@@ -46,13 +47,13 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
             port);
         acceptor_ = new tcp::acceptor(io_service_, listen_endpoint);
         subscriber_ptr bc(new udp_broadcaster(io_service_, broadcast_endpoint));
-        _channel.join(bc);
-        tcp_session_ptr new_session(new Session(io_service_, _channel));
+        _channel->join(bc);
+        tcp_session_ptr new_session(new Session(io_service_, *_channel));
 
         acceptor_->async_accept(
             new_session->getSocket(),
             std::bind(&Server::handle_accept, this, new_session, std::placeholders::_1));
-        std::unique_ptr<boost::asio::io_service::work> work(
+        eastl::unique_ptr<boost::asio::io_service::work> work(
             new boost::asio::io_service::work(io_service_));
         
         thread_.reset(new std::thread([this]() {
@@ -71,7 +72,7 @@ void Server::handle_accept(tcp_session_ptr session, const boost::system::error_c
         }
         session->start();
 
-        tcp_session_ptr new_session(new Session(io_service_, _channel));
+        tcp_session_ptr new_session(new Session(io_service_, *_channel));
 
         acceptor_->async_accept(
             new_session->getSocket(),

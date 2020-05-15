@@ -31,8 +31,6 @@
 namespace Divide {
 
 namespace {
-    constexpr U32 s_maxShaderUploadsPerFrame = 3;
-
     //ref: https://stackoverflow.com/questions/14858017/using-boost-wave
     class custom_directives_hooks : public boost::wave::context_policies::default_preprocessing_hooks
     {
@@ -94,7 +92,6 @@ namespace {
 SharedMutex glShaderProgram::s_atomLock;
 ShaderProgram::AtomMap glShaderProgram::s_atoms;
 I64 glShaderProgram::s_shaderFileWatcherID = -1;
-GLuint glShaderProgram::s_shadersUploadedThisFrame = 0;
 std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 Str256 glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
 U64 glShaderProgram::shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
@@ -208,10 +205,6 @@ bool glShaderProgram::rebindStages() {
 }
 
 void glShaderProgram::validatePreBind() {
-    if (!_highPriority && s_shadersUploadedThisFrame++ > s_maxShaderUploadsPerFrame) {
-        //return;
-    }
-
     if (!isValid()) {
         assert(getState() == ResourceState::RES_LOADED);
         glCreateProgramPipelines(1, &_handle);
@@ -315,7 +308,7 @@ vectorEASTL<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
 
     stringImpl fileName = stageName.c_str();
     if (!header.empty()) {
-        fileName.append("." + to_stringImpl(_ID(header.c_str())));
+        fileName.append("." + Util::to_string(_ID(header.c_str())));
     }
     fileName.append(".");
     fileName.append(extension);
@@ -454,7 +447,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             }
             rebindStages();
             for (glShader* shader : _shaderStage) {
-                shader->reuploadUniforms(true);
+                shader->reuploadUniforms();
             }
             _validated = false;
         } else {
@@ -475,48 +468,34 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
 }
 
 bool glShaderProgram::shouldRecompile() const {
-    for (glShader* shader : _shaderStage) {
-        assert(shader != nullptr);
-        if (shader->shouldRecompile()) {
-            return true;
-        }
-    }
-
-    return false;
+    return eastl::any_of(_shaderStage.begin(),
+                         _shaderStage.end(),
+                         [](glShader* shader) {
+                            return shader->shouldRecompile();
+                         });
 }
 
-void glShaderProgram::update(const U64 deltaTimeUS) {
-    ACKNOWLEDGE_UNUSED(deltaTimeUS);
-
-    if (s_shadersUploadedThisFrame > 0u) {
-        s_shadersUploadedThisFrame = 0u;
-    }
-}
-
-bool glShaderProgram::recompileInternal(bool force) {
+bool glShaderProgram::recompile(bool force) {
     // Invalid or not loaded yet
-    if (_handle != GLUtil::k_invalidObjectID) {
-        if (force || shouldRecompile()) {
+    if (ShaderProgram::recompile(force) &&
+        _handle != GLUtil::k_invalidObjectID && 
+        (force || shouldRecompile()))
+    {
+        if (resourceName().compare("NULL") == 0) {
+            _validationQueued = false;
+            _handle = 0;
+        } else {
             // Remember bind state
-            bool wasBound = isBound();
+            const bool wasBound = isBound();
             if (wasBound) {
                 GL_API::getStateTracker().setActiveShaderPipeline(0u);
             }
-
-            if (resourceName().compare("NULL") == 0) {
-                _validationQueued = false;
-                _handle = 0;
-                return true;
-            }
-
             threadedLoad(true);
             // Restore bind state
             if (wasBound) {
-                bind(wasBound);
+                bind();
             }
         }
-
-        return getState() == ResourceState::RES_LOADED;
     }
 
     return true;
@@ -533,78 +512,18 @@ bool glShaderProgram::isBound() const noexcept {
 }
 
 /// Bind this shader program
-bool glShaderProgram::bind(bool& wasBound) {
+std::pair<bool/*success*/, bool/*was bound*/>  glShaderProgram::bind() {
     validatePreBind();
     // If the shader isn't ready or failed to link, stop here
     if (_validated || _validationQueued) {
         // Set this program as the currently active one
-        wasBound = GL_API::getStateTracker().setActiveShaderPipeline(_handle);
+        bool wasBound = GL_API::getStateTracker().setActiveShaderPipeline(_handle);
         validatePostBind();
-        return true;
+        return { true, wasBound };
     }
 
-    return false;
+    return { false, false };
 }
-
-/// This is used to set all of the subroutine indices for the specified shader stage for this program
-void glShaderProgram::SetSubroutines(ShaderType type, const vectorEASTL<U32>& indices) const {
-    if (indices.empty()) {
-        return;
-    }
-
-    // The shader must be bound before calling this!
-    DIVIDE_ASSERT(isBound() && isValid(),
-                  "glShaderProgram error: tried to set subroutines on an "
-                  "unbound or unlinked program!");
-    // Validate data and send to GPU
-    if (indices[0] != GLUtil::k_invalidObjectID) {
-        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], (GLsizei)indices.size(), indices.data());
-    }
-}
-
-/// This works exactly like SetSubroutines, but for a single index.
-/// If the shader has multiple subroutine uniforms, this will reset the rest!!!
-void glShaderProgram::SetSubroutine(ShaderType type, U32 index) const {
-    DIVIDE_ASSERT(isBound() && isValid(),
-                  "glShaderProgram error: tried to set subroutines on an "
-                  "unbound or unlinked program!");
-
-    if (index != GLUtil::k_invalidObjectID) {
-        const U32 value[] = {index};
-        glUniformSubroutinesuiv(GLUtil::glShaderStageTable[to_U32(type)], 1, value);
-    }
-}
-
-/// Returns the number of subroutine uniforms for the specified shader stage
-U32 glShaderProgram::GetSubroutineUniformCount(ShaderType type) {
-    I32 subroutineCount = 0;
-
-    validatePreBind();
-    for (const glShader* shader : _shaderStage) {
-        assert(shader != nullptr);
-        if (shader->valid() && shader->embedsType(type)) {
-            glGetProgramStageiv(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], GL_ACTIVE_SUBROUTINE_UNIFORMS, &subroutineCount);
-            break;
-        }
-    }
-
-    return std::max(subroutineCount, 0);
-}
-
-/// Get the index of the specified subroutine name for the specified stage. Not cached!
-U32 glShaderProgram::GetSubroutineIndex(ShaderType type, const char* name) {
-
-    validatePreBind();
-    for (glShader* shader : _shaderStage) {
-        assert(shader != nullptr);
-        if (shader->valid() && shader->embedsType(type)) {
-            return glGetSubroutineIndex(shader->getProgramHandle(), GLUtil::glShaderStageTable[to_U32(type)], name);
-        }
-    }
-
-    return 0u;
-}
-
 
 void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
     assert(isValid());
@@ -612,7 +531,7 @@ void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
     for (glShader* shader : _shaderStage) {
         assert(shader != nullptr);
         if (shader->valid()) {
-            shader->UploadPushConstant(constant, false);
+            shader->UploadPushConstant(constant);
         }
     }
 }

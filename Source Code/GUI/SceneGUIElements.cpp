@@ -21,26 +21,22 @@ SceneGUIElements::SceneGUIElements(Scene& parentScene, GUI& context)
 {
 }
 
-SceneGUIElements::~SceneGUIElements()
-{
-}
 
 void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut) {
-    GFX::DrawTextCommand drawTextCommand;
-    drawTextCommand._batch;
-
     const GUIMap& map = _guiElements[to_base(GUIType::GUI_TEXT)];
-    drawTextCommand._batch._data.reserve(map.size());
+    _drawTextCommand._batch._data.resize(map.size());
 
-    for (const GUIMap::value_type& guiStackIterator : _guiElements[to_base(GUIType::GUI_TEXT)]) {
+    U32 idx = 0;
+    for (const GUIMap::value_type& guiStackIterator : map) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textElement.visible() && !textElement.text().empty()) {
-            drawTextCommand._batch._data.emplace_back(textElement);
+            _drawTextCommand._batch._data[idx++] = textElement;
         }
     }
 
-    if (!drawTextCommand._batch().empty()) {
-        Attorney::GFXDeviceGUI::drawText(context, drawTextCommand, bufferInOut);
+    if (idx > 0) {
+        _drawTextCommand._batch._data.resize(idx);
+        Attorney::GFXDeviceGUI::drawText(context, _drawTextCommand, bufferInOut);
     }
 }
 

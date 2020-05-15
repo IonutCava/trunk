@@ -66,13 +66,8 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         _blurDepthMapShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             PipelineDescriptor pipelineDescriptor = {};
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
-
-            pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].push_back(_blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsH"));
             pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();
-            _horzBlurPipeline = _context.newPipeline(pipelineDescriptor);
-
-            pipelineDescriptor._shaderFunctions[to_base(ShaderType::GEOMETRY)].front() = _blurDepthMapShader->GetSubroutineIndex(ShaderType::GEOMETRY, "computeCoordsV");
-            _vertBlurPipeline = _context.newPipeline(pipelineDescriptor);
+            _blurPipeline = _context.newPipeline(pipelineDescriptor);
         });
     }
 
@@ -215,7 +210,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         _blurBuffer = _context.renderTargetPool().allocateRT(desc);
     }
 
-    WAIT_FOR_CONDITION(_vertBlurPipeline != nullptr);
+    WAIT_FOR_CONDITION(_blurPipeline != nullptr);
 }
 
 CascadedShadowMapsGenerator::~CascadedShadowMapsGenerator()
@@ -277,7 +272,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
 
     F32 appliedDiff = 0.0f;
     for (U8 cascadeIterator = 0; cascadeIterator < numSplits; ++cascadeIterator) {
-        Camera* lightCam = light.shadowCameras()[cascadeIterator];
+        Camera* lightCam = ShadowMap::shadowCameras(ShadowType::LAYERED)[cascadeIterator];
 
         const F32 prevSplitDistance = cascadeIterator == 0 ? 0.0f : splitDepths[cascadeIterator - 1];
         const F32 splitDistance = splitDepths[cascadeIterator];
@@ -473,7 +468,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
         params._stagePass._indexA = to_U16(lightIndex);
         params._stagePass._indexB = i;
-        params._camera = light.shadowCameras()[i];
+        params._camera = ShadowMap::shadowCameras(ShadowType::LAYERED)[i];
         params._minExtents.set(minExtentsFactors[i]);
 
         rpm->doCustomPass(params, bufferInOut);
@@ -565,12 +560,14 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _horzBlurPipeline });
+        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
 
         TextureData texData = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
+        _shaderConstants.set(_ID("layered"), GFX::PushConstantType::BOOL, true);
+        _shaderConstants.set(_ID("verticalBlur"), GFX::PushConstantType::BOOL, false);
         _shaderConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, layerOffset);
         _shaderConstants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);
 
@@ -591,7 +588,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
         GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _vertBlurPipeline });
+        pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::BOOL, true);
         pushConstantsCommand._constants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
         pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, layerOffset);
 

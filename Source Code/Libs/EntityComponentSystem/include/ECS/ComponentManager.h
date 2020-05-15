@@ -340,6 +340,10 @@ namespace ECS
 			return GetComponentContainer<T>()->end();
 		}
 
+		template<class T>
+		inline size_t size() const noexcept {
+			return GetComponentContainer<T>()->size();
+		}
 	}; // ComponentManager
 
 

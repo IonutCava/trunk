@@ -668,8 +668,6 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, std::
         msgCallback(Util::StringFormat("Saving node [ %s ] ...", name().c_str()).c_str());
     }
 
-    static boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
-
     boost::property_tree::ptree pt;
     pt.put("static", usageContext() == NodeUsageContext::NODE_STATIC);
 
@@ -684,7 +682,7 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, std::
     targetFile.append("_");
     targetFile.append(name());
     targetFile.append(".xml");
-    write_xml(targetFile.c_str(), pt, std::locale(), settings);
+    XML::writeXML(targetFile.c_str(), pt);
 
     forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/){
         child->saveToXML(sceneLocation, msgCallback);

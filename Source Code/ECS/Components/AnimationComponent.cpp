@@ -11,13 +11,7 @@
 namespace Divide {
 
 AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context)
-    : BaseComponentType<AnimationComponent, ComponentType::ANIMATION>(parentSGN, context),
-      _playAnimations(true),
-      _currentTimeStamp(0UL),
-      _parentTimeStamp(0UL),
-      _currentAnimIndex(-1),
-      _previousFrameIndex(0),
-      _previousAnimationIndex(-1)
+    : BaseComponentType<AnimationComponent, ComponentType::ANIMATION>(parentSGN, context)
 {
     EditorComponentField vskelField = {};
     vskelField._name = "Show Skeleton";
@@ -32,13 +26,9 @@ AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContex
 
         RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
         if (rComp != nullptr) {
-            rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, _showSkeleton);
+            rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, showSkeleton());
         }
     });
-}
-
-AnimationComponent::~AnimationComponent()
-{
 }
 
 void AnimationComponent::setParentTimeStamp(const U64 timestamp) {
@@ -56,12 +46,12 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
 
     _currentTimeStamp = _parentTimeStamp;
 
-    if (_playAnimations && _currentAnimIndex == -1) {
-        playAnimation(0);
-    }
+    if (playAnimations()) {
+        if (_currentAnimIndex == -1) {
+            playAnimation(0);
+        }
 
-    // Update Animations
-    if (_playAnimations) {
+        // Update Animations
         _previousFrameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
@@ -167,10 +157,10 @@ const vectorEASTL<Line>& AnimationComponent::skeletonLines() const {
 std::pair<vec2<U32>, ShaderBuffer*> AnimationComponent::getAnimationData() const {
     std::pair<vec2<U32>, ShaderBuffer*> ret(vec2<U32>(), nullptr);
 
-    if (_playAnimations) {
+    if (playAnimations()) {
         if (_previousAnimationIndex != -1) {
             ret.first.set(_previousFrameIndex, 1);
-            ret.second = &getAnimationByIndex(_previousAnimationIndex).getBoneBuffer();
+            ret.second = getAnimationByIndex(_previousAnimationIndex).boneBuffer();
         }
     }
 
@@ -184,7 +174,7 @@ U32 AnimationComponent::boneCount() const {
     return _animator != nullptr ? to_U32(_animator->boneCount()) : 0;
 }
 
-const vectorEASTL<mat4<F32>>& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
+const BoneTransform& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
     assert(_animator != nullptr);
 
     return _animator->transforms(animationID, index);
@@ -210,7 +200,7 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
         return cacheIdentity;
     }
 
-    return _animator->transforms(animationID, frameIndex).at(_animator->boneIndex(name));
+    return _animator->transforms(animationID, frameIndex).matrices().at(_animator->boneIndex(name));
 }
 
 Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {

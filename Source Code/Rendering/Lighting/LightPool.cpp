@@ -20,6 +20,8 @@
 
 #include "ECS/Components/Headers/TransformComponent.h"
 
+#include <execution>
+
 namespace Divide {
 
 std::array<TextureUsage, to_base(ShadowType::COUNT)> LightPool::_shadowLocation = { {
@@ -248,61 +250,32 @@ Light* LightPool::getLight(I64 lightGUID, LightType type) {
     return *it;
 }
 
-// This should be called in a separate thread for each RenderStage
-void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
-    U8 stageIndex = to_U8(stage);
-
-    LightList& sortedLights = _sortedLights[stageIndex];
-    sortedLights.resize(0);
-    {
-        SharedLock<SharedMutex> r_lock(_lightLock);
-        size_t totalLightCount = 0;
-        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            totalLightCount += _lights[i].size();
-        }
-        sortedLights.reserve(totalLightCount);
-
-        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
-        }
-    }
-    {
-        OPTICK_EVENT("LightPool::SortLights");
-
-        eastl::sort(eastl::begin(sortedLights),
-                    eastl::end(sortedLights),
-                    [&eyePos](Light* a, Light* b) noexcept {
-                        // directional lights first
-                        if (a->getLightType() != b->getLightType()) {
-                            return to_base(a->getLightType()) < to_base(b->getLightType());
-                        }
-                        return a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
-                    });
-    }
-    U32 totalLightCount = 0;
-    vec3<F32> tempColour;
+U32 LightPool::uploadLightList(RenderStage stage, const LightList& lights, const mat4<F32>& viewMatrix) {
+    const U8 stageIndex = to_U8(stage);
+    U32 ret = 0u;
 
     auto& lightCount = _activeLightCount[stageIndex];
-    lightCount.fill(0);
-        
     BufferData& crtData = _sortedLightProperties[stageIndex];
-    for (Light* light : sortedLights) {
+
+    lightCount.fill(0);
+    vec3<F32> tempColour;
+    for (Light* light : lights) {
         const LightType type = static_cast<LightType>(light->getLightType());
-        const bool isDirectional = type == LightType::DIRECTIONAL;
-        const bool isOmni = type == LightType::POINT;
+        const bool isDir = type == LightType::DIRECTIONAL;
+        const bool isOmni = !isDir && type == LightType::POINT;
 
         const I32 typeIndex = to_I32(type);
 
         if (_lightTypeState[typeIndex] && light->enabled()) {
-            if (totalLightCount++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+            if (ret++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
 
-            LightProperties& temp = crtData._lightProperties[totalLightCount - 1];
+            LightProperties& temp = crtData._lightProperties[ret - 1];
             light->getDiffuseColour(tempColour);
             temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
             // Omni and spot lights have a position. Directional lights have this set to (0,0,0)
-            if (isDirectional) {
+            if (isDir) {
                 temp._position.set(VECTOR3_ZERO, light->getRange());
             } else {
                 temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), 1.0f)).xyz(), light->getRange());
@@ -318,15 +291,56 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
             ++lightCount[typeIndex];
         }
     }
-        
+
+    return ret;
+}
+
+// This should be called in a separate thread for each RenderStage
+void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+    const U8 stageIndex = to_U8(stage);
+
+    LightList& sortedLights = _sortedLights[stageIndex];
+    sortedLights.resize(0);
+    {
+        SharedLock<SharedMutex> r_lock(_lightLock);
+        size_t totalLightCount = 0;
+        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+            totalLightCount += _lights[i].size();
+        }
+        sortedLights.reserve(totalLightCount);
+
+        for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
+            sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
+        }
+    }
+    {
+        OPTICK_EVENT("LightPool::SortLights");
+        eastl::sort(eastl::begin(sortedLights),
+                    eastl::end(sortedLights),
+                    [&eyePos](Light* a, Light* b) noexcept {
+                        return a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
+                    });
+    }
+    {
+        SharedLock<SharedMutex> r_lock(_lightLock);
+        const LightList& dirLights = _lights[to_base(LightType::DIRECTIONAL)];
+        sortedLights.insert(eastl::begin(sortedLights), eastl::cbegin(dirLights), eastl::cend(dirLights));
+    }
+
+    const U32 totalLightCount = uploadLightList(stage, sortedLights, viewMatrix);
+
+    BufferData& crtData = _sortedLightProperties[stageIndex];
     crtData._globalData.set(
         _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
         _activeLightCount[stageIndex][to_base(LightType::POINT)],
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
-        to_U32(_sortedShadowLights.size())
-    );
+        to_U32(_sortedShadowLights.size()));
 
-    crtData._ambientColour = DefaultColours::BLACK;
+    if (!sortedLights.empty()) {
+        crtData._ambientColour.rgb(0.05f * sortedLights.front()->getDiffuseColour());
+    } else {
+        crtData._ambientColour = DefaultColours::BLACK;
+    }
 
     {
         OPTICK_EVENT("LightPool::UploadLightDataToGPU");
@@ -350,6 +364,8 @@ void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInO
 }
 
 void LightPool::preRenderAllPasses(const Camera& playerCamera) {
+    constexpr bool USE_PARALLEL_SORT = false;
+
     OPTICK_EVENT();
 
     const vec3<F32>& eyePos = playerCamera.getEye();
@@ -360,26 +376,32 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     g_sortedLightsContainer.resize(0);
     {
         SharedLock<SharedMutex> r_lock(_lightLock);
-        size_t totalLightCount = 0;
-        for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            totalLightCount += _lights[i].size();
-        }
-        g_sortedLightsContainer.reserve(totalLightCount);
+        g_sortedLightsContainer.reserve([&]() {
+            size_t ret = 0;
+            for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+                ret += _lights[i].size();
+            }
+            return ret;
+        }());
 
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
             g_sortedLightsContainer.insert(eastl::cend(g_sortedLightsContainer), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
         }
     }
 
-    eastl::sort(eastl::begin(g_sortedLightsContainer),
-                eastl::end(g_sortedLightsContainer),
-                [&eyePos](Light* a, Light* b) noexcept {
-                    // directional lights first
-                    if (a->getLightType() != b->getLightType()) {
-                        return to_base(a->getLightType()) < to_base(b->getLightType());
-                    }
-                    return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
-                });
+    const auto sortPredicate = [&eyePos](Light* a, Light* b) noexcept {
+        // directional lights first
+        if (a->getLightType() != b->getLightType()) {
+            return to_base(a->getLightType()) < to_base(b->getLightType());
+        }
+        return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
+    };
+
+    if_constexpr(USE_PARALLEL_SORT) {
+        std::sort(std::execution::par, eastl::begin(g_sortedLightsContainer), eastl::end(g_sortedLightsContainer), sortPredicate);
+    } else {
+        eastl::sort(eastl::begin(g_sortedLightsContainer), eastl::end(g_sortedLightsContainer), sortPredicate);
+    }
 
     for (Light* light : g_sortedLightsContainer) {
         light->shadowIndex(-1);

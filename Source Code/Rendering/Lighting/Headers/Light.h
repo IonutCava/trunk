@@ -40,8 +40,6 @@
 
 namespace Divide {
 
-using ShadowCameraPool = std::array<Camera*, 6>;
-
 /// The different types of lights supported
 enum class LightType : U8 {
     DIRECTIONAL = 0,
@@ -176,9 +174,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         _shadowProperties._lightDetails.y = to_F32(offset);
     }
 
-    inline ShadowCameraPool& shadowCameras() noexcept { return _shadowCameras; }
-    inline const ShadowCameraPool& shadowCameras() const noexcept { return _shadowCameras; }
-
     inline       SceneGraphNode& getSGN()       noexcept { return _sgn; }
     inline const SceneGraphNode& getSGN() const noexcept { return _sgn; }
 
@@ -195,7 +190,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
    protected:
     SceneGraphNode& _sgn;
-    ShadowCameraPool _shadowCameras = {};
     LightPool& _parentPool;
     /// x - range, y = iner cone, z - cos outer cone
     vec3<F32> _rangeAndCones;
@@ -205,7 +199,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     ShadowProperties _shadowProperties;
 
     LightType _type;
-
 };
 
 };  // namespace Divide

@@ -2219,7 +2219,7 @@ bool FieldInfo::render(int nodeWidth)   {
     ImGui::PushID((const void*) &f);
     static const int precisionStrSize = 16;
     static char precisionStr[precisionStrSize];
-    int precisionLastCharIndex;
+    int precisionLastCharIndex = 0;
     const char* label = (/*f.label &&*/ f.label[0]!='\0') ? &f.label[0] : "##DummyLabel";
     if (f.type!=FT_UNSIGNED && f.type!=FT_INT)  {
         if (f.precision>0) {

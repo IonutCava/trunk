@@ -11,7 +11,7 @@ bool Octree::s_treeReady = false;
 bool Octree::s_treeBuilt = false;
 
 Mutex Octree::s_pendingInsertLock;
-std::queue<SceneGraphNode*> Octree::s_pendingInsertion;
+eastl::queue<SceneGraphNode*> Octree::s_pendingInsertion;
 vectorEASTL<SceneGraphNode*> Octree::s_intersectionsObjectCache;
 
 Octree::Octree(U16 nodeMask)

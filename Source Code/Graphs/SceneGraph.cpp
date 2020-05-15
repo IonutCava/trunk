@@ -26,7 +26,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
      _octreeChanged(false),
      _nodeListChanged(false)
 {
-    _ecsManager = std::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
+    _ecsManager = eastl::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 
     SceneGraphNodeDescriptor rootDescriptor = {};
     rootDescriptor._name = "ROOT";
@@ -397,8 +397,6 @@ namespace {
 
 void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, std::string_view> msgCallback) const {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
-
     Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
 
     {
@@ -407,7 +405,7 @@ void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, std::string_vi
         pt.add_child("entities.node", dumpSGNtoAssets(&getRoot()));
 
         copyFile((sceneLocation + "/").c_str(), assetsFile, (sceneLocation + "/").c_str(), "assets.xml.bak", true);
-        write_xml((sceneLocation + "/" + assetsFile).c_str(), pt, std::locale(), settings);
+        XML::writeXML((sceneLocation + "/" + assetsFile).c_str(), pt);
     }
 
     getRoot().forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/) {
@@ -423,7 +421,6 @@ namespace {
 void SceneGraph::loadFromXML(const char* assetsFile) {
     using boost::property_tree::ptree;
     static const auto& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    static const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     const stringImpl file = (scenePath + "/" + parentScene().resourceName()) + "/" + assetsFile;
 
@@ -434,7 +431,7 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
 
     ptree pt = {};
-    read_xml(file.c_str(), pt);
+    XML::readXML(file.c_str(), pt);
     if (pt.get("version", g_sceneGraphVersion) != g_sceneGraphVersion) {
         // ToDo: Scene graph version mismatch. Handle condition - Ionut
         NOP();

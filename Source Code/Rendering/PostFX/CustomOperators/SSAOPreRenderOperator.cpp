@@ -14,14 +14,19 @@
 
 namespace Divide {
 
+namespace {
+    constexpr U8 SSAO_NOISE_SIZE = 4;
+    constexpr U8 MAX_KERNEL_SIZE = 64;
+    constexpr U8 KERNEL_SIZE_COUNT = 4;
+    std::array<vectorEASTL<vec3<F32>>, KERNEL_SIZE_COUNT> g_kernels;
+};
+
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
 SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_AMBIENT_OCCLUSION),
       _enabled(true)
 {
-    U16 ssaoNoiseSize = 4;
-    U16 noiseDataSize = ssaoNoiseSize * ssaoNoiseSize;
-    vectorEASTL<vec3<F32>> noiseData(noiseDataSize);
+    vectorEASTL<vec3<F32>> noiseData(SSAO_NOISE_SIZE * SSAO_NOISE_SIZE);
 
     for (vec3<F32>& noise : noiseData) {
         noise.set(Random(-1.0f, 1.0f),
@@ -29,18 +34,24 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
                   0.0f);
     }
 
-    U16 kernelSize = 64;
-    vectorEASTL<vec3<F32>> kernel(kernelSize);
-    for (U16 i = 0; i < kernelSize; ++i) {
-        vec3<F32>& k = kernel[i];
-        k.set(Random(-1.0f, 1.0f),
-              Random(-1.0f, 1.0f),
-              Random( 0.0f, 1.0f));
-        k.normalize();
-        F32 scaleSq = SQUARED(to_F32(i) / to_F32(kernelSize));
-        k *= Lerp(0.1f, 1.0f, scaleSq);
+    U16 kernelSize = MAX_KERNEL_SIZE;
+    for (U8 s = 0; s < KERNEL_SIZE_COUNT; ++s) {
+        auto& kernel = g_kernels[s];
+        kernel.resize(kernelSize);
+
+        for (U16 i = 0; i < kernelSize; ++i) {
+            vec3<F32>& k = kernel[i];
+            k.set(Random(-1.0f, 1.0f),
+                  Random(-1.0f, 1.0f),
+                  Random( 0.0f, 1.0f));
+            k.normalize();
+            const F32 scaleSq = SQUARED(to_F32(i) / to_F32(kernelSize));
+            k *= Lerp(0.1f, 1.0f, scaleSq);
+        }
+
+        kernelSize /= 2;
     }
-    
+
     SamplerDescriptor noiseSampler = {};
     noiseSampler.wrapU(TextureWrap::REPEAT);
     noiseSampler.wrapV(TextureWrap::REPEAT);
@@ -59,8 +70,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
    
-    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(FColour3) },
-                            vec2<U16>(ssaoNoiseSize));
+    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(FColour3) }, vec2<U16>(SSAO_NOISE_SIZE));
 
     SamplerDescriptor screenSampler = {};
     screenSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
@@ -97,7 +107,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "SSAOPass.glsl";
     fragModule._variant = "SSAOCalc";
-    fragModule._defines.emplace_back(Util::StringFormat("KERNEL_SIZE %d", kernelSize).c_str(), true);
+    fragModule._defines.emplace_back(Util::StringFormat("MAX_KERNEL_SIZE %d", MAX_KERNEL_SIZE).c_str(), true);
 
     ShaderProgramDescriptor ssaoShaderDescriptor = {};
     ssaoShaderDescriptor._modules.push_back(vertModule);
@@ -110,7 +120,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     fragModule._variant = "SSAOBlur";
     fragModule._defines.resize(0);
-    fragModule._defines.emplace_back(Util::StringFormat("BLUR_SIZE %d", ssaoNoiseSize).c_str(), true);
+    fragModule._defines.emplace_back(Util::StringFormat("BLUR_SIZE %d", SSAO_NOISE_SIZE).c_str(), true);
 
     ssaoShaderDescriptor = {};
     ssaoShaderDescriptor._modules.push_back(vertModule);
@@ -120,8 +130,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoBlur.propertyDescriptor(ssaoShaderDescriptor);
     ssaoBlur.waitForReady(false);
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
-    
-    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, kernel);
+    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, g_kernels[_kernelIndex]);
+    _ssaoGenerateConstants.set(_ID("kernelSize"), GFX::PushConstantType::UINT, to_U32(g_kernels[_kernelIndex].size()));
+
     _ssaoBlurConstants.set(_ID("passThrough"), GFX::PushConstantType::BOOL, false);
     
     radius(context.context().config().rendering.postFX.ssaoRadius);
@@ -159,6 +170,12 @@ void SSAOPreRenderOperator::power(const F32 val) {
     _power = val;
     _ssaoGenerateConstants.set(_ID("power"), GFX::PushConstantType::FLOAT, _power);
     _context.context().config().rendering.postFX.ssaoPower = val;
+}
+
+void SSAOPreRenderOperator::kernelIndex(const U8 val) {
+    _kernelIndex = CLAMPED(val, 0, 3);
+    _ssaoGenerateConstants.set(_ID("kernelSize"), GFX::PushConstantType::UINT, to_U32(g_kernels[_kernelIndex].size()));
+    _context.context().config().rendering.postFX.ssaoKernelSizeIndex = val;
 }
 
 void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {

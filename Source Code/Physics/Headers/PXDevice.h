@@ -75,7 +75,7 @@ public:
 private:
     F32 _simulationSpeed;
     PhysicsAPI _API_ID;
-    std::unique_ptr<PhysicsAPIWrapper> _api;
+    eastl::unique_ptr<PhysicsAPIWrapper> _api;
 
 };
 

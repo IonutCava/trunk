@@ -58,7 +58,9 @@ void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
     updateLookAt();
 }
 
-void Camera::updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept {
+void Camera::update(const F32 deltaTimeMS) noexcept {
+    ACKNOWLEDGE_UNUSED(deltaTimeMS);
+
     NOP();
 }
 

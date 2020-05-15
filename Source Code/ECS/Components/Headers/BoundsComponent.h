@@ -42,7 +42,7 @@ namespace Divide {
     class BoundsComponent final : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
     public:
         BoundsComponent(SceneGraphNode& sgn, PlatformContext& context);
-        ~BoundsComponent();
+        ~BoundsComponent() = default;
 
         inline const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
         inline const BoundingSphere& getBoundingSphere() const noexcept { return _boundingSphere; }
@@ -70,7 +70,7 @@ namespace Divide {
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(bool recursive);
-        void onBoundsChanged(SceneGraphNode& sgn) const;
+        void onBoundsChanged(const SceneGraphNode& sgn) const;
 
     private:
         std::atomic_bool _boundingBoxDirty;

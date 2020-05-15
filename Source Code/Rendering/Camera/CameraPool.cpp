@@ -23,11 +23,11 @@ Camera::CameraPool Camera::s_cameraPool;
 void Camera::update(const U64 deltaTimeUS) {
     OPTICK_EVENT();
 
-    const F32 deltaTimeS = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
+    const F32 deltaTimeMS = Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
 
     SharedLock<SharedMutex> r_lock(s_cameraPoolLock);
     for (Camera* cam : s_cameraPool) {
-        cam->updateInternal(deltaTimeUS, deltaTimeS);
+        cam->update(deltaTimeMS);
     }
 }
 
@@ -51,14 +51,14 @@ void Camera::destroyPool() {
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
     Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
 
+    _utilityCameras.fill(nullptr);
+
     UniqueLock<SharedMutex> w_lock(s_cameraPoolLock);
     for (Camera* cam : s_cameraPool) {
         cam->unload();
         MemoryManager::DELETE(cam);
     }
     s_cameraPool.clear();
-
-    _utilityCameras.fill(nullptr);
 }
 
 Camera* Camera::createCameraInternal(const Str128& cameraName, CameraType type) {

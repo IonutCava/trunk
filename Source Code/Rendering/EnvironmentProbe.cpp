@@ -120,13 +120,16 @@ U16 EnvironmentProbe::allocateSlice() {
 }
 
 void EnvironmentProbe::refresh(GFX::CommandBuffer& bufferInOut) {
+    static std::array<Camera*, 6> cameras = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+
     if (++_currentUpdateCall % _updateRate == 0) {
         _context.generateCubeMap(s_reflection._targetID,
                                  _currentArrayIndex,
                                  _aabb.getCenter(),
                                  vec2<F32>(0.1f, (_aabb.getMax() - _aabb.getCenter()).length()),
                                  {RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(ReflectorType::ENVIRONMENT), getRTIndex()},
-                                 bufferInOut);
+                                 bufferInOut,
+                                 cameras);
         _currentUpdateCall = 0;
     }
 }

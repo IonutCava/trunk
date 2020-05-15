@@ -23,8 +23,6 @@ DebugInterface::~DebugInterface()
 }
 
 void DebugInterface::idle() {
-    OPTICK_EVENT();
-
     if (!Config::Profile::BENCHMARK_PERFORMANCE && !Config::Profile::ENABLE_FUNCTION_PROFILING) {
         return;
     }
@@ -33,6 +31,7 @@ void DebugInterface::idle() {
         return;
     }
 
+    OPTICK_EVENT();
     const LoopTimingData& timingData = Attorney::KernelDebugInterface::timingData(_parent);
     const GFXDevice& gfx = _parent.platformContext().gfx();
     const Application& app = _parent.platformContext().app();

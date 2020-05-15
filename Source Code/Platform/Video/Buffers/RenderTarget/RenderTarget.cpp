@@ -34,7 +34,7 @@ bool RenderTarget::create() {
     if (_attachmentPool != nullptr) {
         return false;
     }
-    _attachmentPool = std::make_unique<RTAttachmentPool>(*this, _colourAttachmentCount);
+    _attachmentPool = eastl::make_unique<RTAttachmentPool>(*this, _colourAttachmentCount);
 
     for (U8 i = 0; i < _descriptor._attachmentCount; ++i) {
         _attachmentPool->update(_descriptor._attachments[i]);

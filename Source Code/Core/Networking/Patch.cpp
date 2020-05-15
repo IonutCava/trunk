@@ -48,7 +48,7 @@ namespace Patch {
     }
 
     void clearModelData() noexcept {
-        s_ModelData.reset_lose_memory();
+        s_ModelData.resize(0);
     }
 };
 

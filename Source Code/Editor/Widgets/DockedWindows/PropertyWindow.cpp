@@ -535,17 +535,30 @@ namespace Divide {
                                             case LightType::POINT: {
                                                 PointLightComponent* pointLight = static_cast<PointLightComponent*>(light);
                                                 ACKNOWLEDGE_UNUSED(pointLight);
+
+                                                for (U8 face = 0; face < 6; ++face) {
+                                                    Camera* shadowCamera = ShadowMap::shadowCameras(ShadowType::CUBEMAP)[face];
+                                                    if (drawCamera(shadowCamera)) {
+                                                        sceneChanged = true;
+                                                    }
+                                                }
+                                                
                                             } break;
 
                                             case LightType::SPOT: {
                                                 SpotLightComponent* spotLight = static_cast<SpotLightComponent*>(light);
                                                 ACKNOWLEDGE_UNUSED(spotLight);
+
+                                                Camera* shadowCamera = ShadowMap::shadowCameras(ShadowType::SINGLE).front();
+                                                if (drawCamera(shadowCamera)) {
+                                                    sceneChanged = true;
+                                                }
                                             } break;
 
                                             case LightType::DIRECTIONAL: {
                                                 DirectionalLightComponent* dirLight = static_cast<DirectionalLightComponent*>(light);
                                                 for (U8 split = 0; split < dirLight->csmSplitCount(); ++split) {
-                                                    Camera* shadowCamera = dirLight->shadowCameras()[split];
+                                                    Camera* shadowCamera = ShadowMap::shadowCameras(ShadowType::LAYERED)[split];
                                                     if (drawCamera(shadowCamera)) {
                                                         sceneChanged = true;
                                                     }

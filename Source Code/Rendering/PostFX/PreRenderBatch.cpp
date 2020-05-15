@@ -105,22 +105,22 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         if (getOperatorSpace(fType) == FilterSpace::FILTER_SPACE_HDR) {
             switch (fType) {
                 case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
-                    hdrBatch.emplace_back(std::make_unique<SSAOPreRenderOperator>(_context, *this, _resCache));
+                    hdrBatch.emplace_back(eastl::make_unique<SSAOPreRenderOperator>(_context, *this, _resCache));
                     break;
 
                 case FilterType::FILTER_SS_REFLECTIONS:
                     break;
 
                 case FilterType::FILTER_DEPTH_OF_FIELD:
-                    hdrBatch.emplace_back(std::make_unique<DoFPreRenderOperator>(_context, *this, _resCache));
+                    hdrBatch.emplace_back(eastl::make_unique<DoFPreRenderOperator>(_context, *this, _resCache));
                     break;
 
                 case FilterType::FILTER_MOTION_BLUR:
-                    hdrBatch.emplace_back(std::make_unique<MotionBlurPreRenderOperator>(_context, *this, _resCache));
+                    hdrBatch.emplace_back(eastl::make_unique<MotionBlurPreRenderOperator>(_context, *this, _resCache));
                     break;
 
                 case FilterType::FILTER_BLOOM:
-                    hdrBatch.emplace_back(std::make_unique<BloomPreRenderOperator>(_context, *this, _resCache));
+                    hdrBatch.emplace_back(eastl::make_unique<BloomPreRenderOperator>(_context, *this, _resCache));
                     break;
 
                 default:
@@ -137,7 +137,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         if (getOperatorSpace(fType) == FilterSpace::FILTER_SPACE_LDR) {
             switch (fType) {
                 case FilterType::FILTER_SS_ANTIALIASING:
-                    ldrBatch.push_back(std::make_unique<PostAAPreRenderOperator>(_context, *this, _resCache));
+                    ldrBatch.push_back(eastl::make_unique<PostAAPreRenderOperator>(_context, *this, _resCache));
                     break;
                 default:
                     DIVIDE_UNEXPECTED_CALL();
@@ -420,9 +420,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
             screenImage._layer = 0u;
             screenImage._level = 0u;
 
-            GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-            beginDebugScopeCmd._scopeName = "CreateLuminanceHistogram";
-            GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "CreateLuminanceHistogram" });
 
             GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
             bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
@@ -465,9 +463,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
             luminanceImage._layer = 0u;
             luminanceImage._level = 0u;
 
-            GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-            beginDebugScopeCmd._scopeName = "AverageLuminanceHistogram";
-            GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "AverageLuminanceHistogram" });
 
             GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
             bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);

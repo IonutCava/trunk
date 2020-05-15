@@ -38,10 +38,10 @@ bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void,
 
     switch (poolType) {
         case TaskPoolType::TYPE_LOCKFREE: {
-            std::get<1>(_poolImpl._poolImpl) = std::make_unique<ThreadPool<false>>(*this, _workerThreadCount);
+            std::get<1>(_poolImpl._poolImpl) = MemoryManager_NEW ThreadPool<false>(*this, _workerThreadCount);
         } break;
         case TaskPoolType::TYPE_BLOCKING: {
-            std::get<0>(_poolImpl._poolImpl) = std::make_unique<ThreadPool<true>>(*this, _workerThreadCount);
+            std::get<0>(_poolImpl._poolImpl) = MemoryManager_NEW ThreadPool<true>(*this, _workerThreadCount);
         } break;
     }
 
@@ -50,10 +50,12 @@ bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void,
 
 void TaskPool::shutdown() {
     waitForAllTasks(true, true);
+    MemoryManager::SAFE_DELETE(std::get<0>(_poolImpl._poolImpl));
+    MemoryManager::SAFE_DELETE(std::get<1>(_poolImpl._poolImpl));
 }
 
 void TaskPool::onThreadCreate(const std::thread::id& threadID) {
-    const stringImpl threadName = _threadNamePrefix + to_stringImpl(_threadCount.fetch_add(1));
+    const stringImpl threadName = _threadNamePrefix + Util::to_string(_threadCount.fetch_add(1));
     if (USE_OPTICK_PROFILER) {
         OPTICK_START_THREAD(threadName.c_str());
     }

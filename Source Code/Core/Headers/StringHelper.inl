@@ -310,6 +310,11 @@ inline T_str Trim(const T_str& s) {
     return Trim(temp);
 }
 
+template<typename T>
+inline stringImpl to_string(T value) {
+    return fmt::format("{}", value);
+}
+
 }; //namespace Util
 }; //namespace Divide
 #endif //_CORE_STRING_HELPER_INL_

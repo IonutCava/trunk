@@ -113,6 +113,7 @@ struct Configuration final : public XML::IXMLSerializable {
             bool enableSSAO = false;
             F32 ssaoRadius = 0.5f;
             F32 ssaoPower = 2.0f;
+            U8 ssaoKernelSizeIndex = 0u;
         } postFX = {};
         struct ShadowMapping {
             bool enabled = true;

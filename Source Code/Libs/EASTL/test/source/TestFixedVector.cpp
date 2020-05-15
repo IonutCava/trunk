@@ -9,7 +9,7 @@
 #include <EAStdC/EAMemory.h>
 #include <new>
 
-#if defined(EA_COMPILER_CPP17_ENABLED) 
+#if defined(EA_COMPILER_CPP17_ENABLED) && __has_include(<variant>)
 #include <variant> //Variant not present in older standards
 #endif
 
@@ -143,7 +143,8 @@ int TestFixedVector()
 		EATEST_VERIFY(fv88.capacity() >= (capacity * 2));
 
 		// void swap(this_type& x);
-		FixedVectorInt8 fv7(5, 3);
+		// FixedVectorInt8 fv7(5, 3);  // MSVC-ARM64 generated an internal compiler error on this line.
+		FixedVectorInt8 fv7 = {3, 3, 3, 3, 3};
 		FixedVectorInt8 fv8(intArray, intArray + 8);
 
 		swap(fv7, fv8);
@@ -536,7 +537,30 @@ int TestFixedVector()
 		EATEST_VERIFY(fv.validate());
 	}
 
-	#if defined(EA_COMPILER_CPP17_ENABLED) 
+	{ // Test that ensures that move ctor that triggers realloc (e.g. > capacity) does so via move code path
+		eastl::fixed_vector<TestObject, 1, true> fv1;
+		fv1.push_back(TestObject(0));
+		fv1.push_back(TestObject(0));
+		int64_t copyCtorCount0 = TestObject::sTOCopyCtorCount, moveCtorCount0 = TestObject::sTOMoveCtorCount;
+		decltype(fv1) fv2 = eastl::move(fv1);
+		EATEST_VERIFY(TestObject::sTOCopyCtorCount == copyCtorCount0 && TestObject::sTOMoveCtorCount == (moveCtorCount0 + 2));
+	}
+	{ // Same as above but with custom statefull allocator
+		struct MyAlloc : public eastl::allocator
+		{
+			MyAlloc()=default;
+			MyAlloc(int i) : dummy(i) {}
+			int dummy;
+		};
+		eastl::fixed_vector<TestObject, 1, true, MyAlloc> fv1;
+		fv1.push_back(TestObject(0));
+		fv1.push_back(TestObject(0));
+		int64_t copyCtorCount0 = TestObject::sTOCopyCtorCount, moveCtorCount0 = TestObject::sTOMoveCtorCount;
+		decltype(fv1) fv2(eastl::move(fv1), MyAlloc(123));
+		EATEST_VERIFY(TestObject::sTOCopyCtorCount == copyCtorCount0 && TestObject::sTOMoveCtorCount == (moveCtorCount0 + 2));
+	}
+
+	#if defined(EA_COMPILER_CPP17_ENABLED) && __has_include(<variant>)
 	//Test pairing of std::variant with fixed_vector
 	{
 		eastl::fixed_vector<std::variant<int>, 4> v;

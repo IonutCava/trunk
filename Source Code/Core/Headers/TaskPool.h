@@ -122,8 +122,8 @@ public:
   private:
       struct PoolHolder {
           template<bool IsBlocking>
-          using PoolImpl = std::unique_ptr<ThreadPool<IsBlocking>>;
-          std::pair<PoolImpl<true>, PoolImpl<false>> _poolImpl = {nullptr, nullptr};
+          using PoolImpl = ThreadPool<IsBlocking>;
+          std::pair<PoolImpl<true>*, PoolImpl<false>*> _poolImpl = {nullptr, nullptr};
 
           bool addTask(PoolTask&& job);
           bool init() const noexcept;

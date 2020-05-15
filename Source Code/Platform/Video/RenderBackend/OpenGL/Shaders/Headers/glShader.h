@@ -71,16 +71,13 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     bool load(const ShaderLoadData& data);
 
-    inline U32 getProgramHandle() const { return _programHandle; }
+    inline U32 getProgramHandle() const noexcept { return _programHandle; }
 
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
-    inline const Str256& name() const { return _name; }
+    inline const Str256& name() const noexcept { return _name; }
 
     bool embedsType(ShaderType type) const;
-
-    /// Slow and memory intensive, but it works
-    inline UniformsByNameHash getUniformsCopy() const { return _uniformsByNameHash; }
 
    public:
     // ======================= static data ========================= //
@@ -99,22 +96,15 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
                                 bool isNew,
                                 const ShaderLoadData& data);
    private:
-     bool loadFromBinary();
-     void cacheActiveUniforms();
-
-   private:
-    friend class glShaderProgram;
-    void dumpBinary();
-
-    inline const eastl::unordered_set<U64>& usedAtoms() const noexcept {
-        return _usedAtoms;
-    }
-
-    void reuploadUniforms(bool force);
-    void UploadPushConstant(const GFX::PushConstant& constant, bool force);
-    I32 cachedValueUpdate(const GFX::PushConstant& constant, bool force);
+    void UploadPushConstant(const GFX::PushConstant& constant, bool force = false);
     void Uniform(I32 binding, GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, bool flag) const;
 
+    friend class glShaderProgram;
+    void dumpBinary();
+    bool loadFromBinary();
+    void cacheActiveUniforms();
+    void reuploadUniforms();
+    I32  cachedValueUpdate(const GFX::PushConstant& constant, bool force = false);
     bool uploadToGPU(bool& previouslyUploaded);
 
     /// Add a define to the shader. The defined must not have been added previously
@@ -122,10 +112,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// Remove a define from the shader. The defined must have been added previously
     void removeShaderDefine(const stringImpl& define);
 
-    inline UseProgramStageMask stageMask() const { return _stageMask;  }
+    inline UseProgramStageMask stageMask() const noexcept { return _stageMask;  }
+    inline const eastl::unordered_set<U64>& usedAtoms() const noexcept { return _usedAtoms; }
 
-    PROPERTY_R(bool, valid);
-    PROPERTY_R(bool, shouldRecompile);
+    PROPERTY_R(bool, valid, false);
+    PROPERTY_R_IW(bool, shouldRecompile, false);
 
    private:
     using ShaderVarMap = hashMap<U64, I32>;
@@ -153,12 +144,6 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     /// Shader cache
     static ShaderMap _shaderNameMap;
     static SharedMutex _shaderNameLock;
-
-    template<typename T_out, size_t T_out_count, typename T_in>
-    const T_out* castData(const Byte* const values) const {
-        static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
-        return reinterpret_cast<const T_out*>(values);
-    }
 };
 
 };  // namespace Divide

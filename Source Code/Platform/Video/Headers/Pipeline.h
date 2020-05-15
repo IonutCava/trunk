@@ -41,8 +41,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-using ShaderFunctions = std::array<vectorEASTL<U32>, to_base(ShaderType::COUNT)>;
-
 enum class MemoryBarrierType : U32 {
     BUFFER_UPDATE = toBit(1),
     SHADER_STORAGE = toBit(2),
@@ -69,7 +67,6 @@ struct PipelineDescriptor : public Hashable {
     bool operator==(const PipelineDescriptor& other) const;
     bool operator!=(const PipelineDescriptor& other) const;
 
-    ShaderFunctions _shaderFunctions;
     size_t _stateHash = 0;
     I64 _shaderProgramHandle = 0;
     U8 _multiSampleCount = 0u;
@@ -93,10 +90,6 @@ public:
 
     inline U8 multiSampleCount() const noexcept {
         return _descriptor._multiSampleCount;
-    }
-
-    inline const ShaderFunctions& shaderFunctions() const noexcept {
-        return _descriptor._shaderFunctions;
     }
 
     inline size_t getHash() const noexcept {

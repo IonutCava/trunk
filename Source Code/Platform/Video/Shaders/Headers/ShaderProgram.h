@@ -94,7 +94,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
     using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
     using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
-    using ShaderQueue = std::stack<ShaderProgram*, vectorEASTLFast<ShaderProgram*> >;
+    using ShaderQueue = eastl::stack<ShaderProgram*, vectorEASTLFast<ShaderProgram*> >;
 
 
    public:
@@ -112,15 +112,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool load() override;
     virtual bool unload() override;
 
-    /// Subroutine
-    virtual U32 GetSubroutineIndex(ShaderType type, const char* name) = 0;
-    virtual U32 GetSubroutineUniformCount(ShaderType type) = 0;
-
-    ///  Calling recompile will re-create the marked shaders from source files
-    ///  and update them in the ShaderManager if needed
-    bool recompile(bool force);
-
-    virtual void update(const U64 deltaTimeUS) = 0;
+    virtual bool recompile(bool force);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
     inline size_t getFunctionCount(ShaderType shader) noexcept {
@@ -195,9 +187,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     const char* getResourceTypeName() const noexcept override { return "ShaderProgram"; }
 
-   protected:
-     virtual bool recompileInternal(bool force) = 0;
+    PROPERTY_RW(bool, highPriority, true);
 
+   protected:
      static void useShaderTextCache(bool state) noexcept { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
      static void useShaderBinaryCache(bool state) noexcept { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
 
@@ -224,9 +216,6 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
         const ShaderProgramDescriptor _descriptor;
 
-        PROPERTY_RW(bool, highPriority, true);
-
-        bool _shouldRecompile;
         bool _asyncLoad;
 
         static bool s_useShaderTextCache;

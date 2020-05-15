@@ -107,10 +107,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
         return;
     }
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 123456;
-    beginDebugScopeCmd._scopeName = "Render GUI";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render GUI" });
 
     //Set a 2D camera for rendering
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });

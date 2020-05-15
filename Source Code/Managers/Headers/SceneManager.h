@@ -268,9 +268,9 @@ private:
     U8 _activePlayerCount = 0u;
 
     bool _playerQueueDirty = false;
-    std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
-    std::queue<std::pair<Scene*, SceneGraphNode*>>  _playerRemoveQueue;
-    std::unique_ptr<AI::Navigation::DivideRecast> _recast = nullptr;
+    eastl::queue<std::pair<Scene*, SceneGraphNode*>>  _playerAddQueue;
+    eastl::queue<std::pair<Scene*, SceneGraphNode*>>  _playerRemoveQueue;
+    eastl::unique_ptr<AI::Navigation::DivideRecast> _recast = nullptr;
 
     vectorEASTL<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 

@@ -7,10 +7,9 @@ uniform vec2 size;
 uniform int kernelSize;
 uniform int layer;
 
-subroutine vec3 BlurRoutineType();
-subroutine uniform BlurRoutineType BlurRoutine;
+uniform bool layered = false;
+uniform bool verticalBlur = false;
 
-subroutine(BlurRoutineType)
 vec3 blurHorizontal(){
     vec2 pass = 1.0 / size;
     vec3 colour = vec3(0.0);
@@ -26,7 +25,6 @@ vec3 blurHorizontal(){
     return colour / sum;
 }
 
-subroutine(BlurRoutineType)
 vec3 blurVertical(){
     vec2 pass = 1.0 / size;
     vec3 colour = vec3(0.0);
@@ -42,7 +40,6 @@ vec3 blurVertical(){
     return colour / sum;
 }
 
-subroutine(BlurRoutineType)
 vec3 blurHorizontalLayered(){
     vec2 pass = 1.0 / size;
     vec3 colour = vec3(0.0);
@@ -58,7 +55,6 @@ vec3 blurHorizontalLayered(){
     return colour / sum;
 }
 
-subroutine(BlurRoutineType)
 vec3 blurVerticalLayered(){
     vec2 pass = 1.0 / size;
     vec3 colour = vec3(0.0);
@@ -75,8 +71,19 @@ vec3 blurVerticalLayered(){
 }
 
 void main() {
-
-    _colourOut = vec4(BlurRoutine(), 1.0);
+    if (layered) {
+        if (verticalBlur) {
+            _colourOut = vec4(blurVerticalLayered(), 1.0);
+        } else {
+            _colourOut = vec4(blurHorizontalLayered(), 1.0);
+        }
+    } else {
+        if (verticalBlur) {
+            _colourOut = vec4(blurVertical(), 1.0);
+        } else {
+            _colourOut = vec4(blurHorizontal(), 1.0);
+        }
+    }
 }
 
 -- Vertex.GaussBlur
@@ -95,13 +102,11 @@ uniform int layerCount;
 uniform int layerOffsetRead;
 uniform int layerOffsetWrite;
 
+uniform bool verticalBlur = false;
+
 layout(location = 0) out flat int _blurred;
 layout(location = 1) out vec3 _blurCoords[7];
 
-subroutine void BlurRoutineType(in float texCoordX, in float texCoordY, in int layer);
-subroutine uniform BlurRoutineType BlurRoutine;
-
-subroutine(BlurRoutineType)
 void computeCoordsH(in float texCoordX, in float texCoordY, in int layer){
     vec2 blurSize = blurSizes[layer];
     _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize.y, layer);
@@ -114,7 +119,6 @@ void computeCoordsH(in float texCoordX, in float texCoordY, in int layer){
     _blurred = 1;
 }
 
-subroutine(BlurRoutineType)
 void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
     vec2 blurSize = blurSizes[layer];
     _blurCoords[0] = vec3(texCoordX - 3.0 * blurSize.x, texCoordY, layer);
@@ -136,6 +140,14 @@ void passThrough(in float texCoordX, in float texCoordY, in int layer) {
     _blurCoords[5] = vec3(1.0, 1.0, layer);
     _blurCoords[6] = vec3(1.0, 1.0, layer);
     _blurred = 0;
+}
+
+void BlurRoutine(in float texCoordX, in float texCoordY, in int layer) {
+    if (verticalBlur) {
+        computeCoordsV(texCoordX, texCoordY, layer);
+    } else {
+        computeCoordsH(texCoordX, texCoordY, layer);
+    }
 }
 
 void main() {

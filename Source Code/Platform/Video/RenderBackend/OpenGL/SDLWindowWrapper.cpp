@@ -209,8 +209,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Maximum number of colour attachments per framebuffer
     GLUtil::getGLValue(GL_MAX_COLOR_ATTACHMENTS, s_maxFBOAttachments);
 
-    s_stateTracker = {};
-    s_stateTracker.init(nullptr);
+    s_stateTracker.init();
 
     if (s_stateTracker._opengl46Supported) {
         glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
@@ -358,7 +357,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
                  DefaultColours::DIVIDE_BLUE.b,
                  DefaultColours::DIVIDE_BLUE.a);
 
-    _elapsedTimeQuery = std::make_unique<glHardwareQueryRing>(_context, GL_TIME_ELAPSED, 6);
+    _elapsedTimeQuery = eastl::make_unique<glHardwareQueryRing>(_context, GL_TIME_ELAPSED, 6);
 
     // Prepare shader headers and various shader related states
     glShaderProgram::initStaticData();

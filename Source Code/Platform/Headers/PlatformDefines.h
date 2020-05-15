@@ -140,6 +140,11 @@ constexpr U64 _ID_VIEW(const char* const str, size_t len, const U64 value = val_
     return (len == 0) ? value : _ID_VIEW(&str[1], len - 1, (value ^ U64(str[0])) * prime_64_const);
 }
 
+constexpr U64 operator ""_id(const char* str, size_t len) {
+    return _ID_VIEW(str, len);
+}
+
+const
 struct SysInfo {
     SysInfo();
 

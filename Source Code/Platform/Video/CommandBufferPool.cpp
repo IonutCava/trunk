@@ -8,34 +8,26 @@ namespace GFX {
 static CommandBufferPool s_commandBufferPool;
 
 void initPools() {
-    s_commandBufferPool.init();
+    s_commandBufferPool.reset();
 }
 
 void destroyPools() {
-    s_commandBufferPool.clear();
+    s_commandBufferPool.reset();
+}
+
+void CommandBufferPool::reset() {
+    _pool = {};
 }
 
 CommandBuffer* CommandBufferPool::allocateBuffer() {
-    assert(_pool != nullptr);
-    
-    return _pool->newElement(_mutex);
+    return _pool.newElement(_mutex);
 }
 
 void CommandBufferPool::deallocateBuffer(CommandBuffer*& buffer) {
-    assert(_pool != nullptr);
-
     if (buffer != nullptr) {
-        _pool->deleteElement(_mutex, buffer);
+        _pool.deleteElement(_mutex, buffer);
         buffer = nullptr;
     }
-}
-
-void CommandBufferPool::init() {
-    _pool = std::make_unique<MemoryPool<CommandBuffer, 8192 * 2>>();
-}
-
-void CommandBufferPool::clear() noexcept {
-    _pool.reset();
 }
 
 ScopedCommandBuffer::ScopedCommandBuffer()

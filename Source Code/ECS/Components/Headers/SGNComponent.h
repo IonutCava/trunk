@@ -35,8 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "EditorComponent.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
-#include <ECS.h>
-
 namespace Divide {
 
 /// A generic component for the SceneGraphNode class

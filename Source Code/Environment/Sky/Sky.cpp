@@ -20,7 +20,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
       _context(context),
       _diameter(diameter)
 {
-    _sun = std::make_unique<Sun>();
+    _sun = eastl::make_unique<Sun>();
 
     time_t t = time(NULL);
     // Bristol :D

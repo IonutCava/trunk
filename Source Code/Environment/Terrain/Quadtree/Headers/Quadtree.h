@@ -69,7 +69,7 @@ class Quadtree {
     POINTER_R(Pipeline, bbPipeline, nullptr);
 
    private:
-    std::unique_ptr<QuadtreeNode> _root = nullptr;
+    eastl::unique_ptr<QuadtreeNode> _root = nullptr;
     GFXDevice&    _context;
     VertexBuffer* _parentVB = nullptr;
     IMPrimitive*  _bbPrimitive = nullptr;

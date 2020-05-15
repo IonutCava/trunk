@@ -68,7 +68,7 @@ class Renderer : public PlatformContextComponent {
     ShaderProgram_ptr _lightCullComputeShader = nullptr;
     ShaderBuffer*     _perTileLightIndexBuffer = nullptr;
     Pipeline*         _lightCullPipeline = nullptr;
-    std::unique_ptr<PostFX> _postFX = nullptr;
+    eastl::unique_ptr<PostFX> _postFX = nullptr;
 };
 
 };  // namespace Divide

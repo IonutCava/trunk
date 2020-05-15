@@ -74,40 +74,45 @@ RenderStateBlock::RenderStateBlock() noexcept
 }
 
 RenderStateBlock::RenderStateBlock(const RenderStateBlock& other) noexcept
-    : GUIDWrapper(other),
-     _dirty(true),
-     _colourWrite(other._colourWrite),
-     _cullMode(other._cullMode),
-     _frontFaceCCW(other._frontFaceCCW),
-     _depthTestEnabled(other._depthTestEnabled),
-     _zFunc(other._zFunc),
-     _zBias(other._zBias),
-     _zUnits(other._zUnits),
-     _scissorTestEnabled(other._scissorTestEnabled),
-     _stencilEnable(other._stencilEnable),
-     _stencilRef(other._stencilRef),
-     _stencilMask(other._stencilMask),
-     _stencilWriteMask(other._stencilWriteMask),
-     _stencilFailOp(other._stencilFailOp),
-     _stencilZFailOp(other._stencilZFailOp),
-     _stencilPassOp(other._stencilPassOp),
-     _stencilFunc(other._stencilFunc),
-     _fillMode(other._fillMode),
-     _tessControlPoints(other._tessControlPoints)
+    : GUIDWrapper(other)
 {
+    // We pay the cost of double init of variables and hope the compiler can optimise it, 
+    // but we do need a single point where we copy values across to make it more maintainable
+    from(other);
+}
 
-    _hash = other._hash;
+void RenderStateBlock::from(const RenderStateBlock& other) noexcept {
+    _colourWrite = other._colourWrite;
+    _zBias = other._zBias;
+    _zUnits = other._zUnits;
+    _tessControlPoints = other._tessControlPoints;
+    _stencilRef = other._stencilRef;
+    _stencilMask = other._stencilMask;
+    _stencilWriteMask = other._stencilWriteMask;
+    _zFunc = other._zFunc;
+    _stencilFailOp = other._stencilFailOp;
+    _stencilZFailOp = other._stencilZFailOp;
+    _stencilPassOp = other._stencilPassOp;
+    _stencilFunc = other._stencilFunc;
+    _cullMode = other._cullMode;
+    _fillMode = other._fillMode;
+    _frontFaceCCW = other._frontFaceCCW;
+    _scissorTestEnabled = other._scissorTestEnabled;
+    _depthTestEnabled = other._depthTestEnabled;
+    _stencilEnable = other._stencilEnable;
+
+    {
+        _hash = other._hash;
+        _dirty = false;
+    }
 }
 
 void RenderStateBlock::flipCullMode()  noexcept {
-    if (cullMode() == CullMode::NONE) {
-        _cullMode = CullMode::ALL;
-    } else if (cullMode() == CullMode::ALL) {
-        _cullMode = CullMode::NONE;
-    } else if (cullMode() == CullMode::CW) {
-        _cullMode = CullMode::CCW;
-    } else if (cullMode() == CullMode::CCW) {
-        _cullMode = CullMode::CW;
+    switch (cullMode()) {
+        case CullMode::NONE: _cullMode = CullMode::ALL;  break;
+        case CullMode::ALL:  _cullMode = CullMode::NONE; break;
+        case CullMode::CW:   _cullMode = CullMode::CCW;  break;
+        case CullMode::CCW:  _cullMode = CullMode::CW;   break;
     }
     _dirty = true;
 }

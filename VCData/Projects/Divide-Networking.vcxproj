@@ -18,6 +18,8 @@
     <ClCompile Include="../../Source Code/Networking\ASIO.cpp" />
     <ClCompile Include="../../Source Code/Networking\Client.cpp" />
     <ClCompile Include="../../Source Code/Networking\tcp_session_tpl.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Networking\Session.cpp" />
+    <ClCompile Include="..\..\Source Code\Networking\Strand.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Networking\Headers\ASIO.h" />
@@ -25,6 +27,8 @@
     <ClInclude Include="../../Source Code/Networking\Headers\OPCodesTpl.h" />
     <ClInclude Include="../../Source Code/Networking\Headers\tcp_session_tpl.h" />
     <ClInclude Include="../../Source Code/Networking\Headers\WorldPacket.h" />
+    <ClInclude Include="..\..\Source Code\Core\Networking\Headers\Session.h" />
+    <ClInclude Include="..\..\Source Code\Networking\Headers\Strand.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9D7BBBC8-E5CF-475D-8531-4520B605833C}</ProjectGuid>
@@ -37,6 +41,7 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v142</PlatformToolset>
+	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
@@ -44,12 +49,14 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v142</PlatformToolset>
+	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
+	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

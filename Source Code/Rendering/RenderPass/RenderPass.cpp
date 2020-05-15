@@ -194,10 +194,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         } break;
         case RenderStage::SHADOW: {
             OPTICK_EVENT("RenderPass - Shadow");
-            GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-            beginDebugScopeCmd._scopeID = 20;
-            beginDebugScopeCmd._scopeName = "Shadow Render Stage";
-            GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
 
             GFX::SetClippingStateCommand clipStateCmd = {};
             clipStateCmd._negativeOneToOneDepth = true;

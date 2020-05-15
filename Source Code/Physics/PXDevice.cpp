@@ -32,7 +32,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
                 "PXDevice error: initPhysicsAPI called twice!");
     switch (_API_ID) {
         case PhysicsAPI::PhysX: {
-            _api = std::make_unique<PhysX>();
+            _api = eastl::make_unique<PhysX>();
         } break;
         case PhysicsAPI::ODE: 
         case PhysicsAPI::Bullet: 

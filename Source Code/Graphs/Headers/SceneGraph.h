@@ -137,7 +137,7 @@ class SceneGraph : private NonCopyable,
 
    private:
     ECS::ECSEngine _ecsEngine;
-    std::unique_ptr<ECSManager> _ecsManager;
+    eastl::unique_ptr<ECSManager> _ecsManager;
 
     bool _loadComplete;
     bool _octreeChanged;

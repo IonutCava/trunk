@@ -260,8 +260,8 @@ public:  // GPU interface
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
         GFX::CommandBuffer& commandsInOut,
-        SceneGraphNode* sourceNode = nullptr,
-        Camera* camera = nullptr);
+        std::array<Camera*, 6>& cameras,
+        SceneGraphNode* sourceNode = nullptr);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
         const U16 arrayOffset,
@@ -269,8 +269,8 @@ public:  // GPU interface
         const vec2<F32>& zPlanes,
         RenderStagePass stagePass,
         GFX::CommandBuffer& commandsInOut,
-        SceneGraphNode* sourceNode = nullptr,
-        Camera* camera = nullptr);
+        std::array<Camera*, 2>& cameras,
+        SceneGraphNode* sourceNode = nullptr);
 
     /// Access (Read Only) rendering data used by the GFX
     inline const GFXShaderData::GPUData& renderingData() const noexcept;
@@ -443,8 +443,8 @@ private:
     ErrorCode createAPIInstance(RenderAPI api);
 
 private:
-    std::unique_ptr<RenderAPIWrapper> _api = nullptr;
-    std::unique_ptr<Renderer> _renderer = nullptr;
+    eastl::unique_ptr<RenderAPIWrapper> _api = nullptr;
+    eastl::unique_ptr<Renderer> _renderer = nullptr;
 
     ShaderComputeQueue* _shaderComputeQueue = nullptr;
 
@@ -496,11 +496,7 @@ private:
     Pipeline* _DrawFSTexturePipeline = nullptr;
     Pipeline* _DrawFSDepthPipeline = nullptr;
     Pipeline* _AxisGizmoPipeline = nullptr;
-    Pipeline* _BlurVPipeline = nullptr;
-    Pipeline* _BlurHPipeline = nullptr;
-
-    U32 _horizBlur = 0u;
-    U32 _vertBlur = 0u;
+    Pipeline* _BlurPipeline = nullptr;
 
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;

@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ECS_SYSTEM_H_
 #define _ECS_SYSTEM_H_
 
-#include <ECS.h>
-
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -47,7 +45,7 @@ namespace Divide {
         using Super = ECSSystem<T, U>;
 
         explicit ECSSystem(ECS::ECSEngine& engine);
-        virtual ~ECSSystem();
+        virtual ~ECSSystem() = default;
 
         virtual bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer);
         virtual bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
@@ -58,10 +56,10 @@ namespace Divide {
 
     protected:
         ECS::ECSEngine& _engine;
-        ECS::ComponentManager* _compManager;
-        ECS::ComponentManager::ComponentContainer<U>* _container;
+        ECS::ComponentManager* _compManager = nullptr;
+        ECS::ComponentManager::ComponentContainer<U>* _container = nullptr;
 
-        vectorEASTL<U*> _componentCache;
+        vectorEASTLFast<U*> _componentCache;
     };
 };
 

@@ -67,9 +67,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
 
-    _shaderFunctionList.fill(0);
-    _shaderFunctionSelection.fill(0u);
-
     SamplerDescriptor defaultSampler = {};
     defaultSampler.wrapU(TextureWrap::REPEAT);
     defaultSampler.wrapV(TextureWrap::REPEAT);
@@ -99,7 +96,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     borderTexture.waitForReady(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture), loadTasks;
 
-    _preRenderBatch = std::make_unique<PreRenderBatch>(context.gfx(), *this, cache);
+    _preRenderBatch = eastl::make_unique<PreRenderBatch>(context.gfx(), *this, cache);
 
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
@@ -120,13 +117,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     });
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0);
-
-    _shaderFunctionList[to_base(FXDisplayFunction::Vignette)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Vignette");
-    _shaderFunctionList[to_base(FXDisplayFunction::Noise)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Noise");
-    _shaderFunctionList[to_base(FXDisplayFunction::Underwater)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Underwater");
-    _shaderFunctionList[to_base(FXDisplayFunction::Normal)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "Normal");
-    _shaderFunctionList[to_base(FXDisplayFunction::PassThrough)] = _postProcessingShader->GetSubroutineIndex(ShaderType::FRAGMENT, "ColourPassThrough");
-
 }
 
 PostFX::~PostFX()
@@ -150,36 +140,13 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     if (_filtersDirty) {
-        _shaderFunctionSelection[to_base(FXRoutines::Vignette)] =
-            _shaderFunctionList[to_base(getFilterState(FilterType::FILTER_VIGNETTE)
-                                                    ? FXDisplayFunction::Vignette
-                                                    : FXDisplayFunction::PassThrough)];
-
-        _shaderFunctionSelection[to_base(FXRoutines::Noise)] =
-            _shaderFunctionList[to_base(getFilterState(FilterType::FILTER_NOISE)
-                                                    ? FXDisplayFunction::Noise
-                                                    : FXDisplayFunction::PassThrough)];
-
-        _shaderFunctionSelection[to_base(FXRoutines::Screen)] =
-            _shaderFunctionList[to_base(getFilterState(FilterType::FILTER_UNDERWATER)
-                                                    ? FXDisplayFunction::Underwater
-                                                    : FXDisplayFunction::Normal)];
-
-        PipelineDescriptor desc = _drawPipeline->descriptor();
-        auto& functions = desc._shaderFunctions[to_base(ShaderType::FRAGMENT)];
-
-        functions.resize(to_base(FXRoutines::COUNT));
-        for (U8 i = 0; i < to_U8(FXRoutines::COUNT); ++i) {
-            functions[i] = _shaderFunctionSelection[i];
-            _drawPipeline = context().gfx().newPipeline(desc);
-        }
+        _drawConstants.set(_ID("vignetteEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_VIGNETTE));
+        _drawConstants.set(_ID("noiseEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_NOISE));
+        _drawConstants.set(_ID("underwaterEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_UNDERWATER));
         _filtersDirty = false;
     };
     
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = "PostFX: Prepare";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Prepare" });
 
     GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
     _preRenderBatch->prepare(camera, _filterStack | _overrideFilterStack, bufferInOut);

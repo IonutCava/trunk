@@ -369,9 +369,9 @@ void CommandBuffer::clean() {
 
 // New use cases that emerge from production work should be checked here.
 bool CommandBuffer::validate() const {
-    OPTICK_EVENT();
-
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
+        OPTICK_EVENT();
+
         bool pushedPass = false, pushedSubPass = false, pushedPixelBuffer = false;
         bool hasPipeline = false, hasDescriptorSets = false;
         I32 pushedDebugScope = 0, pushedCamera = 0, pushedViewport = 0;
@@ -461,9 +461,9 @@ bool CommandBuffer::validate() const {
         }
 
         return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0 && pushedCamera == 0 && pushedViewport == 0;
+    } else/*_constexpr*/ { 
+        return true;
     }
-
-    return true;
 }
 
 void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const {

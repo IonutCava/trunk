@@ -47,6 +47,12 @@ enum class ShadowType : U8 {
     COUNT
 };
 
+namespace Names {
+    static const char* shadowType[] = {
+          "SINGLE", "LAYERED", "CUBEMAP", "UNKNOWN"
+    };
+};
+
 class Light;
 class Camera;
 class ShadowMapInfo;
@@ -65,8 +71,8 @@ class ShadowMapGenerator {
 protected:
     SET_DELETE_FRIEND
 
-    explicit ShadowMapGenerator(GFXDevice& context, ShadowType type);
-    virtual ~ShadowMapGenerator();
+    explicit ShadowMapGenerator(GFXDevice& context, ShadowType type) noexcept;
+    virtual ~ShadowMapGenerator() = default;
 
     friend class ShadowMap;
     virtual void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) = 0;
@@ -109,6 +115,8 @@ class NOINITVTABLE ShadowMap {
 
     static void setMSAASampleCount(U8 sampleCount);
 
+    static vectorEASTL<Camera*>& shadowCameras(ShadowType type) noexcept { return s_shadowCameras[to_base(type)]; }
+
   protected:
     using LayerUsageMask = vectorEASTL<bool>;
     static Mutex s_depthMapUsageLock;
@@ -119,6 +127,8 @@ class NOINITVTABLE ShadowMap {
     static vectorEASTL<DebugView_ptr> s_debugViews;
 
     static Light* s_shadowPreviewLight;
+    using ShadowCameraPool = vectorEASTL<Camera*>;
+    static std::array<ShadowCameraPool, to_base(ShadowType::COUNT)> s_shadowCameras;
 };
 
 };  // namespace Divide

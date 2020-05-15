@@ -70,9 +70,8 @@ namespace Divide {
 
       private:
         PhysicsGroup _physicsCollisionGroup;
-        std::unique_ptr<PhysicsAsset> _rigidBody;
+        eastl::unique_ptr<PhysicsAsset> _rigidBody;
         DELEGATE<void, const RigidBodyComponent&> _collisionCbk;
-        
     };
 
     INIT_COMPONENT(RigidBodyComponent);

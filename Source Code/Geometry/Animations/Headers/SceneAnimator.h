@@ -55,6 +55,9 @@ void calculateBoneToWorldTransform(Bone* pInternalNode);
 class ByteBuffer;
 class MeshImporter;
 class PlatformContext;
+
+FWD_DECLARE_MANAGED_CLASS(AnimEvaluator);
+
 class SceneAnimator {
     friend class Attorney::SceneAnimatorMeshImporter;
    public:
@@ -108,7 +111,7 @@ class SceneAnimator {
         return _animations[animationIndex]->frameIndexAt(dt);
     }
 
-    inline const vectorEASTL<mat4<F32>>& transforms(I32 animationIndex, U32 index) const {
+    inline const BoneTransform& transforms(I32 animationIndex, U32 index) const {
         return _animations[animationIndex]->transforms(index);
     }
 
@@ -165,7 +168,7 @@ class SceneAnimator {
     inline const mat4<F32>& boneTransform(I32 animationIndex, const D64 dt,
                                           I32 bindex) {
         if (bindex != -1) {
-            return _animations[animationIndex]->transforms(dt).at(bindex);
+            return _animations[animationIndex]->transforms(dt).matrices().at(bindex);
         }
 
         _boneTransformCache.identity();
@@ -217,7 +220,7 @@ class SceneAnimator {
     I32   _skeletonDepthCache;
     vectorEASTL<Bone*> _bones;
     /// A vector that holds each animation
-    vectorEASTL<std::shared_ptr<AnimEvaluator>> _animations;
+    vectorEASTL<AnimEvaluator_ptr> _animations;
     /// find animations quickly
     hashMap<U64, U32> _animationNameToID;
     /// temp array of transforms

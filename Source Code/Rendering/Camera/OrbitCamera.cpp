@@ -44,8 +44,8 @@ bool OrbitCamera::updateViewMatrix() {
     return FreeFlyCamera::updateViewMatrix();
 }
 
-void OrbitCamera::update(const U64 deltaTimeUS) {
-    FreeFlyCamera::update(deltaTimeUS);
+void OrbitCamera::update(const F32 deltaTimeMS) noexcept {
+    FreeFlyCamera::update(deltaTimeMS);
 
     if (!_targetNode) {
         return;

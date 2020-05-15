@@ -78,7 +78,7 @@ protected:
 
 protected:
     //ToDo: Move this somewhere else to avoid having the include in this file -Ionut
-    std::unique_ptr<chaiscript::ChaiScript> _script;
+    eastl::unique_ptr<chaiscript::ChaiScript> _script;
     stringImpl _scriptSource;
     FileWithPath _scriptFile;
     FileType     _scriptFileType;

@@ -6,11 +6,14 @@
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
+
+
+
+
 
 namespace TypeUtil {
     const char* LightTypeToString(LightType lightType) noexcept {
@@ -38,10 +41,6 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
 {
     _rangeAndCones.set(1.0f, 45.0f, 0.0f);
 
-    for (U32 i = 0; i < _shadowCameras.size(); ++i) {
-        _shadowCameras[i] = Camera::createCamera<FreeFlyCamera>(sgn.name() + "_shadowCamera_" + to_stringImpl(i));
-        _shadowCameras[i]->updateFrustum();
-    }
     if (!_parentPool.addLight(*this)) {
         //assert?
     }
@@ -69,9 +68,6 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
 Light::~Light()
 {
     UnregisterAllEventCallbacks();
-    for (U32 i = 0; i < 6; ++i) {
-        Camera::destroyCamera(_shadowCameras[i]);
-    }
     _parentPool.removeLight(*this);
 }
 

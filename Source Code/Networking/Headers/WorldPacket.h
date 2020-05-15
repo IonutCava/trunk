@@ -5,6 +5,9 @@
 #include "OPCodesTpl.h"
 
 #include <boost/serialization/vector.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ip/udp.hpp>
 
 namespace Divide {
 

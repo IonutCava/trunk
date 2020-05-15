@@ -55,7 +55,7 @@ private:
 
 private:
     int _errorCode;
-    std::unique_ptr<Application> _app;
+    eastl::unique_ptr<Application> _app;
     StreamBuffer* _outputStreams[2];
 };
 

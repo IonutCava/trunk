@@ -152,7 +152,7 @@ public:
     static void queueComputeMipMap(GLuint textureHandle);
     static void dequeueComputeMipMap(GLuint textureHandle);
 
-    static void pushDebugMessage(const char* message, I32 id);
+    static void pushDebugMessage(const char* message);
     static void popDebugMessage();
 
     static bool deleteShaderPipelines(GLuint count, GLuint* programsPipelines);
@@ -208,7 +208,7 @@ private:
     hashAlg::pair<Str64, I32> _fontCache = {"", -1};
 
     /// Hardware query objects used for performance measurements
-    std::unique_ptr<glHardwareQueryRing> _elapsedTimeQuery = nullptr;
+    eastl::unique_ptr<glHardwareQueryRing> _elapsedTimeQuery = nullptr;
     /// Duration in milliseconds to render a frame
     F32 FRAME_DURATION_GPU = 0.f;
     /// FontStash's context

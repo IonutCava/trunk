@@ -26,6 +26,7 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v142</PlatformToolset>
+	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
@@ -33,12 +34,14 @@
     <CharacterSet>MultiByte</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <PlatformToolset>v142</PlatformToolset>
+	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
+	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <UseOfMfc>false</UseOfMfc>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
@@ -310,7 +313,6 @@
     <ClCompile Include="../../Source Code/Core\Networking\LocalClient.cpp" />
     <ClCompile Include="../../Source Code/Core\Networking\Patch.cpp" />
     <ClCompile Include="../../Source Code/Core\Networking\Server.cpp" />
-    <ClCompile Include="../../Source Code/Core\Networking\Session.cpp" />
     <ClCompile Include="../../Source Code/Core\PlatformContext.cpp" />
     <ClCompile Include="../../Source Code/Core\XMLEntryData.cpp" />
     <ClCompile Include="../../Source Code/Geometry\Animations\SceneAnimator.cpp" />
@@ -448,7 +450,6 @@
     <ClInclude Include="../../Source Code/Core\Networking\Headers\OPCodesImpl.h" />
     <ClInclude Include="../../Source Code/Core\Networking\Headers\Patch.h" />
     <ClInclude Include="../../Source Code/Core\Networking\Headers\Server.h" />
-    <ClInclude Include="../../Source Code/Core\Networking\Headers\Session.h" />
     <ClInclude Include="../../Source Code/engineMain.h" />
     <ClInclude Include="../../Source Code/Geometry\Animations\Headers\SceneAnimator.h" />
     <ClInclude Include="../../Source Code/Geometry\Animations\Headers\AnimationEvaluator.h" />

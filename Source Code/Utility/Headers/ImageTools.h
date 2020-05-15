@@ -77,7 +77,7 @@ struct ImageLayer {
     inline T* allocateMip(T* data, size_t len, U16 width, U16 height, U16 depth) {
         assert(_mips.size() < std::numeric_limits<U8>::max() - 1);
 
-        _mips.emplace_back(std::make_unique<ImageMip<T>>(data, len, width, height, depth));
+        _mips.emplace_back(eastl::make_unique<ImageMip<T>>(data, len, width, height, depth));
         return (T*)_mips.back()->data();
     }
 
@@ -107,7 +107,7 @@ struct ImageLayer {
     }
 
 private:
-    vectorEASTL<std::unique_ptr<LayerData>> _mips;
+    vectorEASTL<eastl::unique_ptr<LayerData>> _mips;
 };
 
 class ImageData : private NonCopyable {

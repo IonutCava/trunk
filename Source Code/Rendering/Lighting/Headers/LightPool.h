@@ -173,6 +173,9 @@ class LightPool : public SceneComponent,
 
   private:
       void init();
+      U32 uploadLightList(RenderStage stage,
+                          const LightList& lights,
+                          const mat4<F32>& viewMatrix);
 
   private:
      struct BufferData {

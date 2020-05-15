@@ -79,7 +79,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
     MemoryManager::DELETE_ARRAY(bufferData);
 
-    _postFX = std::make_unique<PostFX>(context, cache);
+    _postFX = eastl::make_unique<PostFX>(context, cache);
     if (config.rendering.postFX.PostAAQualityLevel > 0) {
         _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
@@ -129,10 +129,7 @@ void Renderer::preRender(RenderStagePass stagePass,
     const vec2<U16> renderTargetRes(hizColourTexture->width(), hizColourTexture->height());
     const Rect<I32> viewport(0u, 0u, renderTargetRes.x, renderTargetRes.y);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = to_I32(stagePass.baseIndex());
-    beginDebugScopeCmd._scopeName = "Renderer PrePass";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer PrePass" });
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
     bindPipelineCmd._pipeline = _lightCullPipeline;

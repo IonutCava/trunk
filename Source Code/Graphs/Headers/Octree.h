@@ -104,7 +104,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         mutable I8 _frustPlaneCache = -1;
 
         static vectorEASTL<SceneGraphNode*> s_intersectionsObjectCache;
-        static std::queue<SceneGraphNode*> s_pendingInsertion;
+        static eastl::queue<SceneGraphNode*> s_pendingInsertion;
         static Mutex s_pendingInsertLock;
         static bool s_treeReady;
         static bool s_treeBuilt;

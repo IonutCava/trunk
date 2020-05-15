@@ -225,7 +225,6 @@ BEGIN_COMMAND(EndPixelBufferCommand, CommandType::END_PIXEL_BUFFER);
 END_COMMAND(EndPixelBufferCommand);
 
 BEGIN_COMMAND(BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS);
-    bool _validateWriteLevel = false;
     U16 _mipWriteLevel = std::numeric_limits<U16>::max();
     vectorEASTL<RenderTarget::DrawLayerParams> _writeLayers;
 END_COMMAND(BeginRenderSubPassCommand);
@@ -310,8 +309,9 @@ BEGIN_COMMAND(SetTextureMipLevelsCommand, CommandType::SET_MIP_LEVELS);
 END_COMMAND(SetTextureMipLevelsCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
+    BeginDebugScopeCommand(const char* scopeName) noexcept : _scopeName(scopeName) {}
+
     Str64 _scopeName;
-    I32 _scopeID = -1;
 END_COMMAND(BeginDebugScopeCommand);
 
 BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);

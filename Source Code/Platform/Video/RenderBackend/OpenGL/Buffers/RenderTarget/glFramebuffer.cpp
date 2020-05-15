@@ -402,14 +402,16 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     setBlendState(drawPolicy, colourAttachments);
 
     /// Check that everything is valid
-    checkStatus();
+    if (Config::Build::IS_DEBUG_BUILD) {
+        checkStatus();
+    }
 }
 
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     OPTICK_EVENT();
 
     // Push debug state
-    GL_API::pushDebugMessage(_debugMessage.c_str(), _framebufferHandle);
+    GL_API::pushDebugMessage(_debugMessage.c_str());
 
     // Activate FBO
     GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);
@@ -545,14 +547,14 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
         }
     }
 
-    if (params._validateLayer) {
+    if (Config::Build::IS_DEBUG_BUILD) {
         checkStatus();
     } else {
         _statusCheckQueued = false;
     }
 }
 
-void glFramebuffer::setMipLevel(U16 writeLevel, bool validate) {
+void glFramebuffer::setMipLevel(U16 writeLevel) {
     OPTICK_EVENT();
 
     if (writeLevel == std::numeric_limits<U16>::max()) {
@@ -579,7 +581,8 @@ void glFramebuffer::setMipLevel(U16 writeLevel, bool validate) {
             }
         }
     }
-    if (validate) {
+
+    if (Config::Build::IS_DEBUG_BUILD) {
         checkStatus();
     } else {
         _statusCheckQueued = false;

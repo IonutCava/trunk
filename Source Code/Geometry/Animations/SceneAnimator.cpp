@@ -60,7 +60,9 @@ bool SceneAnimator::init(PlatformContext& context) {
     _transforms.resize(_skeletonDepthCache);
 
     const D64 timestep = 1.0 / ANIMATION_TICKS_PER_SECOND;
-    vectorEASTL<mat4<F32>> vec;
+    BoneTransform::Container transforms = {};
+    
+
     const size_t animationCount = _animations.size();
     _skeletonLines.resize(animationCount);
 
@@ -73,13 +75,13 @@ bool SceneAnimator::init(PlatformContext& context) {
         for (D64 ticks = 0; ticks < duration; ticks += tickStep) {
             dt += timestep;
             calculate((I32)i, dt);
-            vec.resize(_skeletonDepthCache, MAT4_IDENTITY);
+            transforms.resize(_skeletonDepthCache, MAT4_IDENTITY);
             for (I32 a = 0; a < _skeletonDepthCache; ++a) {
                 Bone* bone = _bones[a];
-                vec[a] = bone->_offsetMatrix * bone->_globalTransform;
+                transforms[a] = bone->_offsetMatrix * bone->_globalTransform;
                 bone->_boneID = a;
             }
-            crtAnimation->transforms().push_back(vec);
+            crtAnimation->transforms().emplace_back().matrices(transforms);
         }
 
         _maximumAnimationFrames = std::max(crtAnimation->frameCount(), _maximumAnimationFrames);

@@ -48,7 +48,7 @@ void QuadtreeNode::build(U8 depth,
     vec2<U16> newsize = nodesize / 2;
 
     if (std::max(newsize.x, newsize.y) < _targetChunkDimension) {
-        _terrainChunk = std::make_unique<TerrainChunk>(_context, terrain, *this);
+        _terrainChunk = eastl::make_unique<TerrainChunk>(_context, terrain, *this);
         _terrainChunk->load(depth, pos, _targetChunkDimension, HMsize, _boundingBox);
         chunkCount++;
     } else {

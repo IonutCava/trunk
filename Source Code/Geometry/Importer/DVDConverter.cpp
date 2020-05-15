@@ -221,7 +221,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
             subMeshTemp.name(Util::StringFormat("%s-submesh-%d", fileName.c_str(), n).c_str());
         }
         if (subMeshTemp.name() == prevName) {
-            subMeshTemp.name(prevName + "_" + to_stringImpl(n).c_str());
+            subMeshTemp.name(prevName + "_" + Util::to_string(n).c_str());
         }
 
         prevName = subMeshTemp.name();

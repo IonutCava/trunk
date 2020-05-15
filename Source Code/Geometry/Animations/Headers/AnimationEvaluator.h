@@ -38,113 +38,82 @@
 #define ANIMATION_EVALUATOR_H_
 
 #include "Bone.h"
-#include <assimp/anim.h>
 
 struct aiAnimation;
+struct aiVectorKey;
+struct aiQuatKey;
+struct aiVectorKey;
 
 namespace Divide {
 class ByteBuffer;
 class ShaderBuffer;
 
-class AnimationChannel {
-   public:
-    AnimationChannel() noexcept
-        : _nameKey(0ULL),
-          _numPositionKeys(0U),
-          _numRotationKeys(0U),
-          _numScalingKeys(0U)
-    {
-    }
-
-    U64 _nameKey;
-    stringImpl _name;
+struct AnimationChannel {
     vectorEASTL<aiVectorKey> _positionKeys;
-    vectorEASTL<aiQuatKey> _rotationKeys;
+    vectorEASTL<aiQuatKey>   _rotationKeys;
     vectorEASTL<aiVectorKey> _scalingKeys;
+    U64 _nameKey = 0ULL;
+    stringImpl _name = "";
     /** The number of position keys */
-    U32 _numPositionKeys;
-    U32 _numRotationKeys;
-    U32 _numScalingKeys;
+    U32 _numPositionKeys = 0u;
+    U32 _numRotationKeys = 0u;
+    U32 _numScalingKeys = 0u;
+};
+
+struct BoneTransform
+{
+    using Container = vectorEASTL<mat4<F32>>;
+    PROPERTY_RW(Container, matrices);
+
+    inline size_t count() const noexcept { return matrices().size(); }
 };
 
 class GFXDevice;
 class AnimEvaluator {
    public:
-    AnimEvaluator();
-    AnimEvaluator(const aiAnimation* pAnim, U32 idx);
-    ~AnimEvaluator();
+    AnimEvaluator() = default;
+    ~AnimEvaluator() = default;
+
+    explicit AnimEvaluator(const aiAnimation* pAnim, U32 idx) noexcept;
 
     void evaluate(const D64 dt, Bone* skeleton);
 
-    I32 frameIndexAt(const D64 elapsedTime) const;
+    I32 frameIndexAt(const D64 elapsedTime) const noexcept;
 
+    inline U32 frameCount() const noexcept { return to_U32(_transforms.size()); }
+
+    inline vectorEASTL<BoneTransform>& transforms() noexcept { return _transforms; }
     
-    inline U32 frameCount() const noexcept {
-        return to_U32(_transforms.size());
-    }
+    inline const vectorEASTL<BoneTransform>& transforms() const noexcept { return _transforms; }
 
-    inline vectorEASTL<vectorEASTL<mat4<F32>>>& transforms() noexcept {
-        return _transforms;
-    }
-    
-    inline const vectorEASTL<vectorEASTL<mat4<F32>>>& transforms() const noexcept {
-        return _transforms;
-    }
-
-    inline vectorEASTL<mat4<F32>>& transforms(const U32 frameIndex) {
+    inline BoneTransform& transforms(const U32 frameIndex) {
         assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    inline const vectorEASTL<mat4<F32>>& transforms(const U32 frameIndex) const {
+    inline const BoneTransform& transforms(const U32 frameIndex) const {
         assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    inline vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime,
-                                                    I32& resultingFrameIndex) {
+    inline BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_U32(resultingFrameIndex));
     }
 
-    inline vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime) {
+    inline BoneTransform& transforms(const D64 elapsedTime) {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }
 
-    inline const vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime,
-                                                          I32& resultingFrameIndex) const {
+    inline const BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime);
         return transforms(to_U32(resultingFrameIndex));
     }
 
-    inline const vectorEASTL<mat4<F32>>& transforms(const D64 elapsedTime) const {
+    inline const BoneTransform& transforms(const D64 elapsedTime) const {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
-    }
-
-    inline void playAnimationForward(bool state) noexcept {
-        _playAnimationForward = state;
-    }
-
-    inline bool playAnimationForward() const noexcept {
-        return _playAnimationForward;
-    }
-
-    inline void ticksPerSecond(D64 tickCount) noexcept {
-        _ticksPerSecond = tickCount;
-    }
-
-    inline D64 ticksPerSecond() const noexcept {
-        return _ticksPerSecond;
-    }
-
-    inline const stringImpl& name() const noexcept {
-        return _name;
-    }
-
-    inline D64 duration() const noexcept {
-        return _duration;
     }
 
     bool initBuffers(GFXDevice& context);
@@ -152,26 +121,21 @@ class AnimEvaluator {
     static void save(const AnimEvaluator& evaluator, ByteBuffer& dataOut);
     static void load(AnimEvaluator& evaluator, ByteBuffer& dataIn);
 
-    ShaderBuffer& getBoneBuffer() const noexcept {
-        return *_boneTransformBuffer;
-    }
+    PROPERTY_RW(D64, ticksPerSecond, 0.0);
+    PROPERTY_RW(bool, playAnimationForward, true);
+    PROPERTY_R_IW(D64, duration, 0.0);
+    PROPERTY_R_IW(stringImpl, name, "");
+
+    /// GPU buffer to hold bone transforms
+    POINTER_R_IW(ShaderBuffer, boneBuffer, nullptr);
 
    protected:
-    stringImpl _name;
     /// Array to return transformations results inside.
-    vectorEASTL<vectorEASTL<mat4<F32>>> _transforms;
-    /// play forward == true, play backward == false
-    bool _playAnimationForward;
-    D64 _lastTime;
-    D64 _duration;
-    D64 _ticksPerSecond;
-
-   private:
+    vectorEASTL<BoneTransform> _transforms;
     vectorEASTL<vec3<U32>> _lastPositions;
     /// vector that holds all bone channels
     vectorEASTL<AnimationChannel> _channels;
-    /// GPU buffer to hold bone transforms
-    ShaderBuffer* _boneTransformBuffer;
+    D64 _lastTime = 0.0;
 };
 
 };  // namespace Divide

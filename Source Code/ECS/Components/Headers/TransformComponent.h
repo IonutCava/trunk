@@ -64,9 +64,7 @@ namespace Divide {
 
          void getPreviousWorldMatrix(mat4<F32>& matOut) const;
          void getWorldMatrix(mat4<F32>& matOut) const;
-
-         mat4<F32> getWorldMatrix(D64 interpolationFactor) const;
-         void      getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const;
+         void getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const;
 
          /// Component <-> Transform interface
          void setPosition(const vec3<F32>& position) override;

@@ -37,11 +37,9 @@ namespace Divide {
     ECSSystem<T, U>::ECSSystem(ECS::ECSEngine& engine)
         : _engine(engine)
         , _compManager(engine.GetComponentManager())
-        , _container(_compManager->GetComponentContainer<U>()) {
-    }
-
-    template<class T, class U>
-    ECSSystem<T,U>::~ECSSystem() {
+        , _container(_compManager->GetComponentContainer<U>())
+    {
+        _componentCache.reserve(Config::MAX_VISIBLE_NODES);
     }
 
     template<class T, class U>
@@ -62,17 +60,22 @@ namespace Divide {
     void ECSSystem<T, U>::PreUpdate(F32 dt) {
         OPTICK_EVENT();
 
-        U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        const size_t compCount = _container->size();
 
         // Keep memory in order to avoid mid-frame allocs
-        _componentCache.reset_lose_memory();
-        _componentCache.reserve(_container->size());
+        if (_componentCache.size() < compCount) {
+            _componentCache.resize(compCount);
+        }
 
-        auto begin = _container->begin();
-        auto end = _container->end();
-        for (; begin != end; ++begin) {
-            _componentCache.push_back(begin.ptr());
-            begin->PreUpdate(microSec);
+        auto iterBegin = _container->begin();
+        auto iterEnd = _container->end();
+        for (size_t idx = 0; iterBegin != iterEnd; ++iterBegin, ++idx) {
+            _componentCache[idx] = &(*iterBegin);
+        }
+
+        for (U* comp : _componentCache) {
+            comp->PreUpdate(microSec);
         }
     }
 

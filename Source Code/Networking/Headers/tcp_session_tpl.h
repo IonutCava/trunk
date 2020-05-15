@@ -4,11 +4,10 @@
 
 #include "WorldPacket.h"
 
-#include <boost/asio/io_service.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ip/udp.hpp>
 
 namespace Divide {
+
+struct Strand;
 //----------------------------------------------------------------------
 
 //This is game specific but core functionality
@@ -99,12 +98,13 @@ class tcp_session_tpl : public subscriber,
     boost::asio::ip::tcp::socket _socket;
     boost::asio::streambuf _inputBuffer;
     boost::asio::deadline_timer _inputDeadline;
-    std::deque<WorldPacket> _outputQueue;
-    std::deque<stringImpl> _outputFileQueue;
+    eastl::deque<WorldPacket> _outputQueue;
+    eastl::deque<stringImpl> _outputFileQueue;
     boost::asio::deadline_timer _nonEmptyOutputQueue;
     boost::asio::deadline_timer _outputDeadline;
-    boost::asio::io_context::strand _strand;
     time_t _startTime;
+
+    eastl::unique_ptr<Strand> _strand;
 };
 
 using tcp_session_ptr = std::shared_ptr<tcp_session_tpl>;

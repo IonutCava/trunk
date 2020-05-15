@@ -8,6 +8,8 @@
 #include "Headers/ASIO.h"
 #include "Headers/Client.h"
 
+#include "Core/Headers/StringHelper.h"
+
 #include <boost/asio/ip/tcp.hpp>
 
 namespace Divide {
@@ -45,7 +47,7 @@ bool ASIO::init(const stringImpl& address, U16 port) {
         _localClient = new Client(this, io_service_, _debugOutput);
         _work.reset(new boost::asio::io_service::work(io_service_));
         _localClient->start(
-            res.resolve(boost::asio::ip::tcp::resolver::query(address.c_str(), to_stringImpl(port).c_str())));
+            res.resolve(boost::asio::ip::tcp::resolver::query(address.c_str(), Util::to_string(port).c_str())));
         _thread = new std::thread([&] { io_service_.run(); });
         setThreadName(_thread, "ASIO_THREAD");
 
@@ -85,7 +87,7 @@ bool ASIO::sendPacket(WorldPacket& p) const {
     if (_localClient->sendPacket(p)) {
 
         if (_debugOutput) {
-            LOG_PRINT(("ASIO: sent opcode [ 0x" + to_stringImpl(p.opcode()) + "]").c_str());
+            LOG_PRINT(("ASIO: sent opcode [ 0x" + Util::to_string(p.opcode()) + "]").c_str());
         }
         return true;
     }

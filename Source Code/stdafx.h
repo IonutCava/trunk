@@ -85,74 +85,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define TINYXML_STATIC
 #endif
 
-#ifndef _USE_MATH_DEFINES
-#define _USE_MATH_DEFINES
-#endif //_USE_MATH_DEFINES
-#include <cmath>
-#include <math.h>
-
-#include <condition_variable>
-#include <unordered_set>
-#include <type_traits>
-#include <functional>
-#include <stdexcept>
-#include <algorithm>
-#include <assert.h>
-#include <iostream>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <fstream>
 #include <iomanip>
-#include <cstdarg>
-#include <numeric>
-#include <cstring>
-#include <sstream>
-#include <float.h>
-#include <cstdint>
-#include <string>
-#include <memory>
-#include <bitset>
-#include <limits>
-#include <atomic>
-#include <cstdio>
-#include <cctype>
 #include <random>
-#include <thread>
-#include <chrono>
-#include <array>
 #include <stack>
-#include <deque>
-#include <array>
-#include <queue>
-#include <list>
-#include <set>
-#include <new>
-//#include <gsl/gsl>
-
-#if defined(CPP_17_SUPPORT)
 #include <any>
-#include <variant>
-#include <execution>
-#include <string_view>
-#else
-#include <boost/any.hpp>
-#include <boost/variant.hpp>
-#include <boost/utility/string_view.hpp>
-#endif
 
 #include <boost/intrusive/slist.hpp>
 #include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
-#include <boost/functional/factory.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/deadline_timer.hpp>
-#include <boost/asio/strand.hpp>
 #include <boost/regex.hpp>
+
 #include <simplefilewatcher/includes/FileWatcher.h>
-
 #include <BetterEnums/include/enum.h>
-
 #include <Optick/optick.h>
 
 #define HAVE_M_PI
@@ -163,7 +108,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <EASTL/set.h>
 #include <EASTL/list.h>
 #include <EASTL/array.h>
-#include <eastl/stack.h>
+#include <EASTL/stack.h>
+#include <EASTL/queue.h>
+#include <EASTL/deque.h>
 #include <EASTL/vector_map.h>
 #include <EASTL/fixed_vector.h>
 #include <EASTL/shared_ptr.h>
@@ -215,6 +162,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 #include <imgui.h>
 
-//#include <ECS.h>
+#include <ECS.h>
 
 #endif //_DIVIDE_PCH_

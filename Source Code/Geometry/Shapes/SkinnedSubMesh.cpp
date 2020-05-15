@@ -60,7 +60,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
         return;
     }
 
-    const vectorEASTL<vectorEASTL<mat4<F32>>>& currentAnimation = animComp->getAnimationByIndex(animationIndex).transforms();
+    const vectorEASTL<BoneTransform>& currentAnimation = animComp->getAnimationByIndex(animationIndex).transforms();
 
     VertexBuffer* parentVB = _parentMesh->getGeometryVB();
     const size_t partitionOffset = parentVB->getPartitionOffset(_geometryPartitionIDs[0]);
@@ -69,7 +69,8 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     UniqueLock<Mutex> w_lock(_bbLock);
     BoundingBox& currentBB = _boundingBoxes.at(animationIndex);
     currentBB.reset();
-    for (const vectorEASTL<mat4<F32> >& transforms : currentAnimation) {
+    for (const BoneTransform& transforms : currentAnimation) {
+        const auto& matrices = transforms.matrices();
         // loop through all vertex weights of all bones
         for (U32 j = 0; j < partitionCount; ++j) {
             const U32 idx = parentVB->getIndex(j + partitionOffset);
@@ -77,10 +78,10 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);
             const vec3<F32>& curentVert = parentVB->getPosition(idx);
 
-            currentBB.add((wgh.x * (transforms[ind.b[0]] * curentVert)) +
-                          (wgh.y * (transforms[ind.b[1]] * curentVert)) +
-                          (wgh.z * (transforms[ind.b[2]] * curentVert)) +
-                          (wgh.w * (transforms[ind.b[3]] * curentVert)));
+            currentBB.add((wgh.x * (matrices[ind.b[0]] * curentVert)) +
+                          (wgh.y * (matrices[ind.b[1]] * curentVert)) +
+                          (wgh.z * (matrices[ind.b[2]] * curentVert)) +
+                          (wgh.w * (matrices[ind.b[3]] * curentVert)));
         }
     }
 }

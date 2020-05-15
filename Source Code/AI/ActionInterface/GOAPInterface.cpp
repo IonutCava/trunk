@@ -1,12 +1,13 @@
 #include "stdafx.h"
 
 #include "Headers/GOAPInterface.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 namespace AI {
 
 const char* GOAPFactName(GOAPFact fact) {
-    return to_stringImpl(fact).c_str();
+    return Util::to_string(fact).c_str();
 }
 
 GOAPGoal::GOAPGoal(const stringImpl& name, U32 ID)

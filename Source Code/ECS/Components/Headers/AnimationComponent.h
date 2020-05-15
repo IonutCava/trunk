@@ -36,23 +36,19 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 #include "Core/Math/Headers/Line.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
+#include "Geometry/Animations/Headers/AnimationEvaluator.h"
 
 namespace Divide {
 
-class Bone;
 class ShaderBuffer;
 class AnimEvaluator;
-class SceneAnimator;
 class SceneGraphNode;
 
+FWD_DECLARE_MANAGED_CLASS(SceneAnimator);
 class AnimationComponent final : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
    public:
-    AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
-    ~AnimationComponent();
-
-    inline void updateAnimator(const std::shared_ptr<SceneAnimator>& animator) noexcept {
-        _animator = animator;
-    }
+    explicit AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+    ~AnimationComponent() = default;
 
     /// Select an animation by name
     bool playAnimation(const stringImpl& name);
@@ -63,43 +59,31 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     /// Select previous available animation
     bool playPreviousAnimation();
 
-    inline U64 animationTimeStamp() const { return _currentTimeStamp;  }
-    inline U32 frameIndex() const { return _previousFrameIndex; }
-    inline I32 frameCount() const { return frameCount(_currentAnimIndex); }
     I32 frameCount(U32 animationID) const;
-
-    inline const vectorEASTL<mat4<F32> >& transformsByIndex(U32 index) const {
-        return transformsByIndex(_currentAnimIndex, index);
-    }
-
-    const vectorEASTL<mat4<F32> >& transformsByIndex(U32 animationID, U32 index) const;
 
     U32 boneCount() const;
     Bone* getBoneByName(const stringImpl& bname) const;
-
     mat4<F32> getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name);
-
-    inline bool playAnimations() const { return _playAnimations; }
-    inline void playAnimations(bool state) { _playAnimations = state; }
-
-    inline I32 animationIndex() const { return _currentAnimIndex; }
-
+    const vectorEASTL<Line>& skeletonLines() const;
+    std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;
     AnimEvaluator& getAnimationByIndex(I32 animationID) const;
-
-    inline AnimEvaluator& getCurrentAnimation() const {
-        return getAnimationByIndex(animationIndex());
-    }
+    const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
 
     void resetTimers();
     void incParentTimeStamp(const U64 timestamp);
     void setParentTimeStamp(const U64 timestamp);
 
-    const vectorEASTL<Line>& skeletonLines() const;
+    inline U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
+    inline U32 frameIndex() const noexcept { return _previousFrameIndex; }
+    inline I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
 
-
-    std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;
+    inline const BoneTransform& transformsByIndex(U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
+    inline AnimEvaluator& getCurrentAnimation() const { return getAnimationByIndex(animationIndex()); }
+    inline void updateAnimator(const SceneAnimator_ptr& animator) noexcept { _animator = animator; }
+    inline I32 animationIndex() const noexcept { return _currentAnimIndex; }
 
     PROPERTY_R(bool, showSkeleton, false);
+    PROPERTY_RW(bool, playAnimations, true);
 
    protected:
     friend class AnimationSystem;
@@ -109,20 +93,18 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
-    std::shared_ptr<SceneAnimator> _animator;
+    std::shared_ptr<SceneAnimator> _animator = nullptr;
     /// Current animation index for the current SGN
-    I32 _currentAnimIndex;
+    I32 _currentAnimIndex = -1;
     /// Current animation timestamp for the current SGN
-    U64 _currentTimeStamp;
+    U64 _currentTimeStamp = 0UL;
     /// Previous frame index. Gets reset to -1 when animation changes
-    U32 _previousFrameIndex;
+    U32 _previousFrameIndex = 0;
     /// Previous animation index
-    I32 _previousAnimationIndex;
+    I32 _previousAnimationIndex = -1;
     /// Parent time stamp (e.g. Mesh). 
     /// Should be identical for all nodes of the same level with the same parent
-    U64 _parentTimeStamp;
-    /// Animation playback toggle
-    bool _playAnimations;
+    U64 _parentTimeStamp = 0ul;
 };
 
 INIT_COMPONENT(AnimationComponent);

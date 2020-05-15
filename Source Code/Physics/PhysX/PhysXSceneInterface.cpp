@@ -185,7 +185,7 @@ void PhysXSceneInterface::addToScene(PhysXActor& actor) {
             ResourceDescriptor boxDescriptor("BoxActor");
             sceneNode = CreateResource<Box3D>(boxDescriptor);
 
-            sgnName = "BoxActor_" + to_stringImpl(nbActors);
+            sgnName = "BoxActor_" + Util::to_string(nbActors);
 
             if (sceneNode->GetRef() == 1) {
                 Material* boxMaterial = CreateResource<Material>(

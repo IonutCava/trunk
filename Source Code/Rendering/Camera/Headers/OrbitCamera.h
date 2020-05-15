@@ -66,7 +66,7 @@ class OrbitCamera : public FreeFlyCamera {
     inline F32 minRadius() const noexcept { return _minRadius; }
     inline F32 curRadius() const noexcept { return _curRadius; }
 
-    virtual void update(const U64 deltaTimeUS);
+    void update(const F32 deltaTimeMS) noexcept override;
     bool zoom(I32 zoomFactor) noexcept override;
 
     static constexpr CameraType Type() noexcept { return CameraType::ORBIT; }

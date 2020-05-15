@@ -12,7 +12,7 @@ namespace Divide {
 
 Quadtree::Quadtree(GFXDevice& context)
     : _context(context),
-      _root(std::make_unique<QuadtreeNode>(context, this))
+      _root(eastl::make_unique<QuadtreeNode>(context, this))
 {
     RenderStateBlock primitiveRenderState;
     PipelineDescriptor pipeDesc;

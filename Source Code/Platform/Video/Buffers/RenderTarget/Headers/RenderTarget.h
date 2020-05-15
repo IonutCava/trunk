@@ -128,7 +128,6 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
         U8 _index = 0;
         U16 _layer = 0;
         bool _includeDepth = true;
-        bool _validateLayer = false;
     };
 
     struct RTBlitParams {
@@ -176,7 +175,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
    protected:
     U8 _colourAttachmentCount = 0;
     RenderTargetDescriptor _descriptor;
-    std::unique_ptr<RTAttachmentPool> _attachmentPool;
+    eastl::unique_ptr<RTAttachmentPool> _attachmentPool;
 };
 
 };  // namespace Divide

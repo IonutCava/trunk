@@ -69,8 +69,6 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker._activeRenderTarget = nullptr;
     stateTracker.setActiveProgram(0u);
     stateTracker.setActiveShaderPipeline(0u);
-
-    stateTracker._previousStateBlockHash = 0;
     stateTracker.setStateBlock(RenderStateBlock::defaultHash());
 }
 

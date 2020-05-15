@@ -240,16 +240,16 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
-    std::unique_ptr<MenuBar> _menuBar = nullptr;
-    std::unique_ptr<StatusBar> _statusBar = nullptr;
-    std::unique_ptr<EditorOptionsWindow> _optionsWindow = nullptr;
-    std::unique_ptr<Gizmo> _gizmo = nullptr;
+    eastl::unique_ptr<MenuBar> _menuBar = nullptr;
+    eastl::unique_ptr<StatusBar> _statusBar = nullptr;
+    eastl::unique_ptr<EditorOptionsWindow> _optionsWindow = nullptr;
+    eastl::unique_ptr<Gizmo> _gizmo = nullptr;
 
     Camera*           _selectedCamera = nullptr;
     DisplayWindow*    _mainWindow = nullptr;
     Texture_ptr       _fontTexture = nullptr;
     ShaderProgram_ptr _imguiProgram = nullptr;
-    std::unique_ptr<UndoManager>  _undoManager = nullptr;
+    eastl::unique_ptr<UndoManager>  _undoManager = nullptr;
 
     std::pair<bufferPtr, size_t> _memoryEditorData = { nullptr, 0 };
 

@@ -1,4 +1,4 @@
--- Fragment.SSAOCalc
+--Fragment.SSAOCalc
 
 /*******************************************************************************
 Copyright (C) 2013 John Chapman
@@ -15,9 +15,12 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 // This constant avoids the influence of fragments, which are too far away.
 #define CAP_MAX_DISTANCE 0.005
 
-uniform vec3 sampleKernel[KERNEL_SIZE];
-uniform float radius = 1.5;
-uniform float power = 2.0;
+uniform vec3 sampleKernel[MAX_KERNEL_SIZE];
+uniform uint kernelSize = MAX_KERNEL_SIZE;
+
+uniform float radius = 1.5f;
+uniform float power = 2.0f;
+
 uniform mat4 projectionMatrix;
 uniform mat4 invProjectionMatrix;
 
@@ -34,8 +37,7 @@ float ssao(in mat3 kernelBasis, in vec4 posView) {
     const float bias = 0.025f;
 
     float occlusion = 0.0;
-
-    for (int i = 0; i < KERNEL_SIZE; ++i) {
+    for (int i = 0; i < kernelSize; ++i) {
         // Reorient sample vector in view space ...
         const vec3 sampleVectorView = kernelBasis * sampleKernel[i];
 
@@ -59,23 +61,22 @@ float ssao(in mat3 kernelBasis, in vec4 posView) {
         occlusion += (zSceneNDC >= samplePointView.z + bias ? 1.0f : 0.0f) * rangeCheck;
     }
 
-    occlusion = 1.0 - (occlusion / (float(KERNEL_SIZE)));
+    occlusion = 1.0f - (occlusion / (float(kernelSize)));
     return pow(occlusion, power);
 }
 
 void main(void) {
     // Calculate out of the current fragment in screen space the view space position.
-    float originDepth = texture(texDepthMap, VAR._texCoord).r;
-    vec4 originPos = viewPositionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
+    const float originDepth = texture(texDepthMap, VAR._texCoord).r;
+    const vec4 originPos = viewPositionFromDepth(originDepth, invProjectionMatrix, VAR._texCoord);
+    // get view space normal:
+    const vec3 normal = normalize(unpackNormal(texture(texNormal, VAR._texCoord).rg));
 
-    //	get view space normal:
-    vec3 normal = normalize(unpackNormal(texture(texNormal, VAR._texCoord).rg));
-
-    //	construct kernel basis matrix:
-    vec3 rvec = normalize(2.0 * texture(texNoise, noiseScale * VAR._texCoord).rgb - 1.0);
-    vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
-    vec3 bitangent = cross(tangent, normal);
-    mat3 kernelBasis = mat3(tangent, bitangent, normal);
+    // construct kernel basis matrix:
+    const vec3 rvec = normalize(2.0f * texture(texNoise, noiseScale * VAR._texCoord).rgb - 1.0f);
+    const vec3 tangent = normalize(rvec - normal * dot(rvec, normal));
+    const vec3 bitangent = cross(tangent, normal);
+    const mat3 kernelBasis = mat3(tangent, bitangent, normal);
     
     _ssaoOut = ssao(kernelBasis, originPos);
 }

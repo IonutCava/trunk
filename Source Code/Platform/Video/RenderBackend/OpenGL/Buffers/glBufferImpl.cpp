@@ -169,6 +169,8 @@ bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rang
 
 void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data)
 {
+    constexpr bool USE_BUFFER_ORPHANING = false;
+
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", bool(_mappedBuffer != nullptr));
     OPTICK_TAG("Offset", to_U32(offsetInBytes));
@@ -192,7 +194,7 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const By
             DIVIDE_UNEXPECTED_CALL();
         }
     } else {
-        if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
+        if (USE_BUFFER_ORPHANING && offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, data, _usage);
         } else {
             glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);

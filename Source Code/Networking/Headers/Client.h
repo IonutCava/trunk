@@ -103,7 +103,7 @@ class Client {
     boost::asio::streambuf _inputBuffer;
     boost::asio::deadline_timer _deadline;
     boost::asio::deadline_timer _heartbeatTimer;
-    std::deque<WorldPacket> _packetQueue;
+    eastl::deque<WorldPacket> _packetQueue;
 
     // File Data
     std::ofstream _outputFile;

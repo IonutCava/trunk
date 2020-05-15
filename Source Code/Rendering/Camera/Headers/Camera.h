@@ -150,9 +150,9 @@ class Camera : public Resource {
     inline const mat4<F32>& getProjectionMatrix() { updateProjection(); return _data._projectionMatrix; }
 
     inline mat4<F32> getWorldMatrix() { return getViewMatrix().getInverse(); }
-    inline mat4<F32> getWorldMatrix() const { return getViewMatrix().getInverse(); }
+    inline mat4<F32> getWorldMatrix() const noexcept { return getViewMatrix().getInverse(); }
     inline void getWorldMatrix(mat4<F32>& worldMatOut) { getViewMatrix().getInverse(worldMatOut); }
-    inline void getWorldMatrix(mat4<F32>& worldMatOut) const { getViewMatrix().getInverse(worldMatOut); }
+    inline void getWorldMatrix(mat4<F32>& worldMatOut) const noexcept { getViewMatrix().getInverse(worldMatOut); }
 
     /// Nothing really to unload
     virtual bool unload() noexcept { return true; }
@@ -180,8 +180,7 @@ class Camera : public Resource {
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
-    /// Inject mouse events
-    virtual void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept;
+    virtual void update(const F32 deltaTimeMS) noexcept;
 
     const char* getResourceTypeName() const noexcept override { return "Camera"; }
 

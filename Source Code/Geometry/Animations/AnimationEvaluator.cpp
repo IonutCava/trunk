@@ -10,29 +10,23 @@
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
-namespace Divide {
+#include <assimp/anim.h>
 
-AnimEvaluator::AnimEvaluator() : _lastTime(0.0),
-                                 _ticksPerSecond(0.0),
-                                 _duration(0.0),
-                                 _playAnimationForward(true),
-                                 _boneTransformBuffer(nullptr)
-{
-}
+namespace Divide {
 
 // ------------------------------------------------------------------------------------------------
 // Constructor on a given animation.
-AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator() {
+AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) noexcept 
+{
     _lastTime = 0.0;
-    _ticksPerSecond = !IS_ZERO(pAnim->mTicksPerSecond)
+    ticksPerSecond(!IS_ZERO(pAnim->mTicksPerSecond)
                           ? pAnim->mTicksPerSecond
-                          : ANIMATION_TICKS_PER_SECOND;
-    _duration = pAnim->mDuration;
-    _name = pAnim->mName.data;
-    if (pAnim->mName.length == 0) {
-        _name = Util::StringFormat("unnamed_anim_%d", idx);
-    }
-    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), _name.c_str());
+                          : ANIMATION_TICKS_PER_SECOND);
+
+    duration(pAnim->mDuration);
+    name(pAnim->mName.length > 0 ? pAnim->mName.data : Util::StringFormat("unnamed_anim_%d", idx));
+
+    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), name().c_str());
 
     _channels.resize(pAnim->mNumChannels);
     for (U32 a = 0; a < pAnim->mNumChannels; a++) {
@@ -61,19 +55,15 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) : AnimEvaluator(
     Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_END")), _name.c_str());
 }
 
-AnimEvaluator::~AnimEvaluator()
-{
-}
-
 bool AnimEvaluator::initBuffers(GFXDevice& context) {
-    DIVIDE_ASSERT(_boneTransformBuffer == nullptr && !_transforms.empty(),
+    DIVIDE_ASSERT(boneBuffer() == nullptr && !_transforms.empty(),
                   "AnimEvaluator error: can't create bone buffer at current stage!");
 
     DIVIDE_ASSERT(_transforms.size() <= Config::MAX_BONE_COUNT_PER_NODE,
         "AnimEvaluator error: Too many bones for current node! "
         "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    size_t boneCount = _transforms.front().size();
+    size_t boneCount = _transforms.front().count();
     U32 numberOfFrames = frameCount();
 
     vectorEASTL<std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>> animationData;
@@ -81,10 +71,10 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
 
     for (U32 i = 0; i < numberOfFrames; ++i) {
         std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>& anim = animationData[i];
-        const vectorEASTL<mat4<F32>>& frameTransforms = _transforms[i];
-        size_t numberOfTransforms = frameTransforms.size();
+        const BoneTransform& frameTransforms = _transforms[i];
+        size_t numberOfTransforms = frameTransforms.count();
         for (U32 j = 0; j < numberOfTransforms; ++j) {
-            anim[j].set(frameTransforms[j]);
+            anim[j].set(frameTransforms.matrices()[j]);
         }
     }
 
@@ -99,37 +89,33 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._name = Util::StringFormat("BONE_BUFFER_%d_BONES", boneCount);
 
-    _boneTransformBuffer = context.newSB(bufferDescriptor);
+    boneBuffer(context.newSB(bufferDescriptor));
 
     return numberOfFrames > 0;
 }
 
-I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const {
-    D64 time = 0.0f;
-    if (_duration > 0.0) {
+I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const noexcept {
+    D64 time = 0.0;
+    if (duration() > 0.0) {
         // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
-        time = fmod(elapsedTime * _ticksPerSecond, _duration);
+        time = std::fmod(elapsedTime * ticksPerSecond(), duration());
     }
 
-    D64 percent = time / _duration;
+    const D64 percent = time / duration();
 
     // this will invert the percent so the animation plays backwards
-    if (!_playAnimationForward) {
-        percent = (percent - 1.0) * -1.0;
-    }
-
-    return std::min(to_I32(_transforms.size() * percent),
+    return std::min(to_I32(_transforms.size() * (playAnimationForward() ? percent : (percent - 1.0) * -1.0)),
                     to_I32(_transforms.size() - 1));
 }
 
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
 void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
-    D64 pTime = dt * _ticksPerSecond;
+    D64 pTime = dt * ticksPerSecond();
 
     D64 time = 0.0f;
-    if (_duration > 0.0) {
-        time = fmod(pTime, _duration);
+    if (duration() > 0.0) {
+        time = std::fmod(pTime, duration());
     }
 
     frameIndexAt(pTime);
@@ -145,8 +131,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
         Bone* bonenode = skeleton->find(channel->_nameKey);
 
         if (bonenode == nullptr) {
-            Console::d_errorfn(Locale::get(_ID("ERROR_BONE_FIND")),
-                               channel->_name.c_str());
+            Console::d_errorfn(Locale::get(_ID("ERROR_BONE_FIND")), channel->_name.c_str());
             continue;
         }
 
@@ -170,7 +155,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             const aiVectorKey& key = channel->_positionKeys[frame];
             const aiVectorKey& nextKey = channel->_positionKeys[nextFrame];
             D64 diffTime = nextKey.mTime - key.mTime;
-            if (diffTime < 0.0) diffTime += _duration;
+            if (diffTime < 0.0) diffTime += duration();
             if (diffTime > 0) {
                 F32 factor = F32((time - key.mTime) / diffTime);
                 presentPosition =
@@ -197,7 +182,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             const aiQuatKey& key = channel->_rotationKeys[frame];
             const aiQuatKey& nextKey = channel->_rotationKeys[nextFrame];
             D64 diffTime = nextKey.mTime - key.mTime;
-            if (diffTime < 0.0) diffTime += _duration;
+            if (diffTime < 0.0) diffTime += duration();
             if (diffTime > 0) {
                 F32 factor = F32((time - key.mTime) / diffTime);
                 presentRotation = presentRotationDefault;

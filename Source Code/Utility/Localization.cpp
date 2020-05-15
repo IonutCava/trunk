@@ -15,10 +15,10 @@ namespace detail {
     /// Default language can be set at compile time
     Str64 g_localeFile = {};
 
-    std::unique_ptr<LanguageData> g_data = nullptr;
+    eastl::unique_ptr<LanguageData> g_data = nullptr;
 
     /// External modification monitoring system
-    std::unique_ptr<FW::FileWatcher> g_LanguageFileWatcher = nullptr;
+    eastl::unique_ptr<FW::FileWatcher> g_LanguageFileWatcher = nullptr;
 
     /// Callback for external file changes. 
     UpdateListener g_fileWatcherListener([](std::string_view languageFile, FileUpdateEvent evt) {
@@ -94,7 +94,7 @@ ErrorCode init(const char* newLanguage) {
     }
 
     if (!detail::g_data) {
-        detail::g_data = std::make_unique<LanguageData>();
+        detail::g_data = eastl::make_unique<LanguageData>();
     }
 
     return changeLanguage(newLanguage);

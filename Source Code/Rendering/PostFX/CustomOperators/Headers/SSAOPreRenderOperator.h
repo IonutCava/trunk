@@ -52,6 +52,9 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     inline F32 power() const noexcept { return _power; }
     void power(const F32 val);
 
+    inline U8 kernelIndex(U8& minOut, U8& maxOut) const noexcept { minOut = 0u; maxOut = 3u; return _kernelIndex; }
+    void kernelIndex(const U8 val);
+
     bool ready() const final;
 
    private:
@@ -66,6 +69,8 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     RenderTargetHandle _ssaoOutput;
     F32 _radius = 1.0f;
     F32 _power = 1.0f;
+    U8 _kernelIndex = 0u;
+
     bool _enabled = true;
 };
 

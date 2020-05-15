@@ -113,7 +113,7 @@ class Sky : public SceneNode {
     const std::array<vec4<F32>, 3> atmoTooShaderData() const noexcept;
   
     GFXDevice& _context;
-    std::unique_ptr<Sun> _sun = nullptr;
+    eastl::unique_ptr<Sun> _sun = nullptr;
     vec4<F32> _sunDirectionAndIntensity;
     Texture_ptr  _skybox[2] = { nullptr, nullptr };
     Sphere3D_ptr _sky = nullptr;

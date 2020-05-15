@@ -41,15 +41,16 @@ namespace GFX {
 
 class CommandBufferPool {
  public:
+    static constexpr size_t BuferSize = 8192 * 2;
+
     CommandBuffer* allocateBuffer();
     void deallocateBuffer(CommandBuffer*& buffer);
 
-    void init();
-    void clear() noexcept;
+    void reset();
 
  private:
     Mutex _mutex;
-    std::unique_ptr<MemoryPool<CommandBuffer, 8192 * 2>> _pool = nullptr;
+    MemoryPool<CommandBuffer, BuferSize> _pool;
 };
 
 class ScopedCommandBuffer {

@@ -59,7 +59,6 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
        static const RenderStateBlock& get(size_t renderStateBlockHash);
        /// Returns false if the specified hash is not found in the map
        static const RenderStateBlock& get(size_t renderStateBlockHash, bool& blockFound);
-
        static void saveToXML(const RenderStateBlock& block, const stringImpl& entryName, boost::property_tree::ptree& pt);
 
        //Returns true if we needed a full XML parse (block wasn't in cache)
@@ -75,7 +74,11 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
     public:
         RenderStateBlock() noexcept;
-        RenderStateBlock(const RenderStateBlock& b) noexcept;
+        RenderStateBlock(const RenderStateBlock& other) noexcept;
+        /// Can't assing due to the GUID restrictions
+        RenderStateBlock& operator=(const RenderStateBlock& b) noexcept = delete;
+        /// Use "from" instead of "operator=" to bypass the GUID restrictions
+        void from(const RenderStateBlock& other) noexcept;
 
         inline bool operator==(const RenderStateBlock& rhs) const noexcept {
             return getHash() == rhs.getHash();
@@ -137,7 +140,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         mutable bool _dirty = true;
 
     private:
-        void operator=(const RenderStateBlock& b) = delete;
+      
 };
 
 };  // namespace Divide

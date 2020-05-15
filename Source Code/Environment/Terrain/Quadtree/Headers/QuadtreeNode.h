@@ -92,7 +92,7 @@ class QuadtreeNode {
     BoundingSphere _boundingSphere;              //< Node BoundingSphere
     Quadtree* _parent = nullptr;
     std::array<QuadtreeNode*, 4> _children = {}; //< Node children
-    std::unique_ptr<TerrainChunk> _terrainChunk = nullptr; //< Terrain Chunk contained in node
+    eastl::unique_ptr<TerrainChunk> _terrainChunk = nullptr; //< Terrain Chunk contained in node
     GFXDevice&    _context;
     IMPrimitive*  _bbPrimitive = nullptr;
     U32 _targetChunkDimension = 0u;

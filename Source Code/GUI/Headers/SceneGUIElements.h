@@ -34,6 +34,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "GUIInterface.h"
 #include "Scenes/Headers/SceneComponent.h"
+#include "Platform/Video/Headers/Commands.h"
+
 
 namespace Divide {
 
@@ -43,13 +45,15 @@ class SceneGUIElements : public GUIInterface,
 
 public:
     SceneGUIElements(Scene& parentScene, GUI& context);
-    ~SceneGUIElements();
+    ~SceneGUIElements() = default;
 
     void draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut);
 
     void onEnable();
     void onDisable();
 
+private:
+    GFX::DrawTextCommand _drawTextCommand = {};
 };
 }; //namespace Divide;
 

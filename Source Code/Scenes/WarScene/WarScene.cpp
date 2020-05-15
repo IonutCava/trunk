@@ -151,15 +151,8 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
 
 namespace {
     F32 phiLight = 0.0f;
-    vec3<F32> initPosLight[16];
-    vec3<F32> initPosLight2[80];
-    
     bool initPosSetLight = false;
-    vec2<F32> rotatePoint(vec2<F32> center, F32 angle, vec2<F32> point) {
-
-        return vec2<F32>(std::cos(angle) * (point.x - center.x) - std::sin(angle) * (point.y - center.y) + center.x,
-                         std::sin(angle) * (point.x - center.x) + std::cos(angle) * (point.y - center.y) + center.y);
-    }
+    vectorEASTL<vec3<F32>> initPosLight;
 };
 
 void WarScene::toggleTerrainMode() {
@@ -188,66 +181,51 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
     constexpr D64 AnimationTimer2 = Time::SecondsToMilliseconds(10);
     constexpr D64 updateLights = Time::Milliseconds(32);
 
-    /*if (_taskTimers[1] >= AnimationTimer1) {
-        for (SceneGraphNode* npc : _armyNPCs[0]) {
+    if (_taskTimers[1] >= AnimationTimer1) {
+        /*for (SceneGraphNode* npc : _armyNPCs[0]) {
             assert(npc);
             npc->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
-        }
+        }*/
         _taskTimers[1] = 0.0;
     }
 
     if (_taskTimers[2] >= AnimationTimer2) {
-        for (SceneGraphNode* npc : _armyNPCs[1]) {
+        /*for (SceneGraphNode* npc : _armyNPCs[1]) {
             assert(npc);
             npc->get<UnitComponent>()->getUnit<NPC>()->playNextAnimation();
-        }
+        }*/
         _taskTimers[2] = 0.0;
-    }*/
+    }
 
+    const size_t lightCount = _lightNodeTransforms.size();
     if (!initPosSetLight) {
-        for (U8 i = 0; i < _lightNodeTransforms.size(); ++i) {
+        initPosLight.resize(lightCount);
+        for (U8 i = 0; i < lightCount; ++i) {
             initPosLight[i].set(_lightNodeTransforms[i]->getPosition());
         }
-        /*for (U8 i = 0; i < 80; ++i) {
-            initPosLight2[i].set(_lightNodes2[i].first->get<TransformComponent>()->getPosition());
-        }*/
         initPosSetLight = true;
     }
 
     if (_taskTimers[3] >= updateLights) {
+        constexpr F32 radius = 20;
+        constexpr F32 halfRadius = radius * 0.5f;
 
         phiLight += 0.01f;
         if (phiLight > 360.0f) {
             phiLight = 0.0f;
         }
-        F32 s1 = std::sin(phiLight);
-        F32 c1 = std::cos(phiLight);
-        F32 s2 = std::sin(-phiLight);
-        F32 c2 = std::cos(-phiLight);
-        const F32 radius = 20;
-        for (size_t i = 0; i < _lightNodeTransforms.size(); ++i) {
-            F32 c = i % 2 == 0 ? c1 : c2;
-            F32 s = i % 2 == 0 ? s1 : s2;
-            _lightNodeTransforms[i]->setPosition(
-                radius * c + initPosLight[i].x,
-               (radius * 0.5f) * s + initPosLight[i].y,
-                radius * s + initPosLight[i].z);
-        }
 
-        /*for (U8 i = 0; i < 80; ++i) {
-            SceneGraphNode* light = _lightNodes2[i].first;
-            TransformComponent* tComp = light->get<TransformComponent>();
-            F32 angle = _lightNodes2[i].second ? std::fmod(phiLight + 45.0f, 360.0f) : phiLight;
-            vec2<F32> position(rotatePoint(vec2<F32>(0.0f), angle, initPosLight2[i].xz()));
-            tComp->setPositionX(position.x);
-            tComp->setPositionZ(position.y);
-        }
+        const F32 s1 = std::sin(phiLight);
+        const F32 c1 = std::cos(phiLight);
+        const F32 s2 = std::sin(-phiLight);
+        const F32 c2 = std::cos(-phiLight);
+        
+        for (size_t i = 0; i < lightCount; ++i) {
+            const F32 c = i % 2 == 0 ? c1 : c2;
+            const F32 s = i % 2 == 0 ? s1 : s2;
 
-        for (U8 i = 0; i < 40; ++i) {
-            SceneGraphNode* light = _lightNodes3[i];
-            TransformComponent* tComp = light->get<TransformComponent>();
-            tComp->rotateY(phiLight);
-        }*/
+            _lightNodeTransforms[i]->setPosition(vec3<F32>{ radius * c, halfRadius * s, radius * s } + initPosLight[i]);
+        }
         _taskTimers[3] = 0.0;
     }
 
@@ -414,27 +392,27 @@ bool WarScene::load(const Str128& name) {
         if (i < 10) {
             baseNode = cylinder[1];
             currentMesh = cylinderMeshNW;
-            currentName = "Cylinder_NW_" + to_stringImpl((I32)i);
+            currentName = "Cylinder_NW_" + Util::to_string((I32)i);
             currentPos.first = -200 + 40 * i + 50;
             currentPos.second = -200 + 40 * i + 50;
         } else if (i >= 10 && i < 20) {
             baseNode = cylinder[2];
             currentMesh = cylinderMeshNE;
-            currentName = "Cylinder_NE_" + to_stringImpl((I32)i);
+            currentName = "Cylinder_NE_" + Util::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 10) - 50;
             currentPos.second = -200 + 40 * (i % 10) + 50;
             locationFlag = 1;
         } else if (i >= 20 && i < 30) {
             baseNode = cylinder[3];
             currentMesh = cylinderMeshSW;
-            currentName = "Cylinder_SW_" + to_stringImpl((I32)i);
+            currentName = "Cylinder_SW_" + Util::to_string((I32)i);
             currentPos.first = -200 + 40 * (i % 20) + 50;
             currentPos.second = 200 - 40 * (i % 20) - 50;
             locationFlag = 2;
         } else {
             baseNode = cylinder[4];
             currentMesh = cylinderMeshSE;
-            currentName = "Cylinder_SE_" + to_stringImpl((I32)i);
+            currentName = "Cylinder_SE_" + Util::to_string((I32)i);
             currentPos.first = 200 - 40 * (i % 30) - 50;
             currentPos.second = 200 - 40 * (i % 30) - 50;
             locationFlag = 3;

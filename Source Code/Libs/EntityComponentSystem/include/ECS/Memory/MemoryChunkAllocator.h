@@ -87,7 +87,7 @@ namespace ECS { namespace Memory {
 
 			public:
 
-				iterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) :
+				iterator(typename MemoryChunks::iterator begin, typename MemoryChunks::iterator end) noexcept :
 					m_CurrentChunk(begin),
 					m_End(end)
 				{				
@@ -124,11 +124,9 @@ namespace ECS { namespace Memory {
 					return *this;
 				}
 
-				inline OBJECT_TYPE& operator*() const noexcept { return *m_CurrentObject; }
+				inline OBJECT_TYPE* operator()() const noexcept { return *m_CurrentObject; }
+				inline OBJECT_TYPE& operator*()  const noexcept { return *(*m_CurrentObject); }
 				inline OBJECT_TYPE* operator->() const noexcept { return *m_CurrentObject; }
-
-                // ugh
-                inline OBJECT_TYPE* ptr() const noexcept { return *m_CurrentObject; }
 
 				inline bool operator==(iterator& other) noexcept 
 				{
@@ -273,9 +271,9 @@ namespace ECS { namespace Memory {
 		}
 
 
-		inline size_t   size() const noexcept { return this->m_Chunks.size(); }
-		inline iterator begin() { return iterator(this->m_Chunks.begin(), this->m_Chunks.end()); }
-		inline iterator end() { return iterator(this->m_Chunks.end(), this->m_Chunks.end()); }
+		inline iterator begin() noexcept { return iterator(this->m_Chunks.begin(), this->m_Chunks.end()); }
+		inline iterator end()   noexcept { return iterator(this->m_Chunks.end(), this->m_Chunks.end()); }
+		inline size_t   size()  noexcept { return eastl::distance(begin(), end()); }
 
 	}; // MemoryChunkAllocator 
 

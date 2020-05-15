@@ -101,7 +101,7 @@ inline vec2<T> Normalized(const vec2<T> &vector) {
 /// multiply a vector by a value
 template <typename T>
 inline vec2<T> operator*(T fl, const vec2<T> &v) noexcept {
-    return vec2<T>(v.x * fl, v.y * fl);
+    return v * fl;
 }
 
 /// general vec2 dot product
@@ -130,7 +130,7 @@ inline vec3<T> Normalized(const vec3<T> &vector) {
 /// multiply a vector by a value
 template <typename T>
 inline vec3<T> operator*(T fl, const vec3<T> &v) noexcept {
-    return vec3<T>(v.x * fl, v.y * fl, v.z * fl);
+    return v * fl;
 }
 
 /// general vec3 dot product

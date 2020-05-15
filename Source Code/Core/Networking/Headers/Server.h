@@ -33,10 +33,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SERVER_H_
 #define _SERVER_H_
 
-#include "Networking/Headers/tcp_session_tpl.h"
+#include "Networking/Headers/WorldPacket.h"
 
 //----------------------------------------------------------------------
 namespace Divide {
+
+FWD_DECLARE_MANAGED_CLASS(tcp_session_tpl);
+FWD_DECLARE_MANAGED_CLASS(channel);
 
 class Server {
   public:
@@ -50,14 +53,14 @@ class Server {
     void close();
 
   private:
-    void handle_accept(tcp_session_ptr session,
+    void handle_accept(tcp_session_tpl_ptr session,
                        const boost::system::error_code& ec);
 
   private:
     boost::asio::io_service io_service_;
     boost::scoped_ptr<std::thread> thread_;
     boost::asio::ip::tcp::acceptor* acceptor_;
-    channel _channel;
+    channel_ptr _channel;
     bool _debugOutput = false;
 
 };

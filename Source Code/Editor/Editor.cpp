@@ -111,11 +111,11 @@ Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme)
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
       _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
 {
-    _menuBar = std::make_unique<MenuBar>(context, true);
-    _statusBar = std::make_unique<StatusBar>(context);
-    _optionsWindow = std::make_unique<EditorOptionsWindow>(context);
+    _menuBar = eastl::make_unique<MenuBar>(context, true);
+    _statusBar = eastl::make_unique<StatusBar>(context);
+    _optionsWindow = eastl::make_unique<EditorOptionsWindow>(context);
 
-    _undoManager = std::make_unique<UndoManager>(25);
+    _undoManager = eastl::make_unique<UndoManager>(25);
     g_windowManager = &context.app().windowManager();
     _memoryEditorData = std::make_pair(nullptr, 0);
 }
@@ -422,7 +422,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     gizmoContext = ImGui::CreateContext(io.Fonts);
     InitBasicImGUIState(gizmoContext->IO);
     gizmoContext->Viewports[0]->PlatformHandle = _mainWindow;
-    _gizmo = std::make_unique<Gizmo>(*this, gizmoContext);
+    _gizmo = eastl::make_unique<Gizmo>(*this, gizmoContext);
 
     SDL_SetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, "1");
 
@@ -805,10 +805,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
     pipelineDesc._stateHash = state.getHash();
     pipelineDesc._shaderProgramHandle = _imguiProgram->getGUID();
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = std::numeric_limits<U16>::max();
-    beginDebugScopeCmd._scopeName = "Render IMGUI";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render IMGUI" });
 
     GFX::SetBlendCommand blendCmd = {};
     blendCmd._blendProperties = BlendingProperties{
@@ -1579,7 +1576,6 @@ SceneNode_ptr Editor::createNode(SceneNodeType type, const ResourceDescriptor& d
 bool Editor::saveToXML() const {
     boost::property_tree::ptree pt;
     const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
-    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     pt.put("showMemEditor", _showMemoryEditor);
     pt.put("showSampleWindow", _showSampleWindow);
@@ -1590,7 +1586,7 @@ bool Editor::saveToXML() const {
 
     if (createDirectory(editorPath.c_str())) {
         if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true)) {
-            boost::property_tree::write_xml(editorPath + g_editorSaveFile, pt, std::locale(), settings);
+            XML::writeXML(editorPath + g_editorSaveFile, pt);
             return true;
         }
     }
@@ -1610,7 +1606,7 @@ bool Editor::loadFromXML() {
     }
 
     if (fileExists((editorPath + g_editorSaveFile).c_str())) {
-        boost::property_tree::read_xml(editorPath + g_editorSaveFile, pt);
+        XML::readXML(editorPath + g_editorSaveFile, pt);
         _showMemoryEditor = pt.get("showMemEditor", false);
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);

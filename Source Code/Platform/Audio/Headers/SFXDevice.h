@@ -89,7 +89,7 @@ protected:
 
 private:
     AudioAPI _API_ID;
-    std::unique_ptr<AudioAPIWrapper> _api;
+    eastl::unique_ptr<AudioAPIWrapper> _api;
     std::atomic_bool _playNextInPlaylist;
 };
 

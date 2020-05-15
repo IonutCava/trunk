@@ -105,7 +105,7 @@ bool SceneManager::init(PlatformContext& platformContext, ResourceCache* cache) 
         _resourceCache = cache;
         platformContext.kernel().frameListenerMgr().registerFrameListener(this, 1);
 
-        _recast = std::make_unique<AI::Navigation::DivideRecast>();
+        _recast = eastl::make_unique<AI::Navigation::DivideRecast>();
 
         _scenePool = MemoryManager_NEW ScenePool(*this);
 
@@ -377,7 +377,9 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         const Ray cameraRay(point, point.direction(eye));
         const F32 distanceToPoint = eye.distance(point);
 
-        resultsOut.reset_lose_memory();
+        resultsOut.resize(0);
+        resultsOut.reserve(16);
+
         sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, resultsOut);
         for (SGNRayResult& result : resultsOut) {
             if (result.sgnGUID == nodeGUID || result.sgnGUID == parentNodeGUID) {

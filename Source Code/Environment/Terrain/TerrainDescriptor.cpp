@@ -39,7 +39,7 @@ namespace Divide {
         stringImpl alphaMapDescriptor = "";
         {
             boost::property_tree::ptree descTree = {};
-            read_xml((Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/descriptor.xml").c_str(), descTree);
+            XML::readXML((Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/descriptor.xml").c_str(), descTree);
 
             addVariable("heightfield", descTree.get<stringImpl>("heightfield", ""));
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
@@ -72,7 +72,7 @@ namespace Divide {
         }
         {
             boost::property_tree::ptree alphaTree = {};
-            read_xml(Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/" + alphaMapDescriptor, alphaTree);
+            XML::readXML(Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/" + alphaMapDescriptor, alphaTree);
 
             const U8 numLayers = alphaTree.get<U8>("AlphaData.nImages");
             const U8 numImages = alphaTree.get<U8>("AlphaData.nLayers");
@@ -98,7 +98,7 @@ namespace Divide {
                     continue;
                 }
 
-                layerOffsetStr = to_stringImpl(i);
+                layerOffsetStr = Util::to_string(i);
                 addVariable("blendMap" + layerOffsetStr, stripQuotes(itImage->second.get<std::string>("FileName", "").c_str()));
 
                 for (boost::property_tree::ptree::iterator itLayer = std::begin(itImage->second.get_child("LayerList"));

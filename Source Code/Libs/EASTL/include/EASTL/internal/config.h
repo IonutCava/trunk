@@ -89,8 +89,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef EASTL_VERSION
-	#define EASTL_VERSION   "3.16.01"
-	#define EASTL_VERSION_N  31601
+	#define EASTL_VERSION   "3.16.05"
+	#define EASTL_VERSION_N  31605
 #endif
 
 
@@ -939,11 +939,11 @@ namespace eastl
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef EASTL_LIST_SIZE_CACHE
-	#define EASTL_LIST_SIZE_CACHE 1
+	#define EASTL_LIST_SIZE_CACHE 0
 #endif
 
 #ifndef EASTL_SLIST_SIZE_CACHE
-	#define EASTL_SLIST_SIZE_CACHE 1
+	#define EASTL_SLIST_SIZE_CACHE 0
 #endif
 
 

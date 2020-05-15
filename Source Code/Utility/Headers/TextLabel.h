@@ -109,18 +109,20 @@ class TextLabelStyle : public Hashable {
 struct TextElement {
     using TextType = vectorEASTL<eastl::string>;
 
-    TextElement(const TextLabelStyle& textLabelStyle,
-                const RelativePosition2D& position)
+    TextElement() = default;
+
+    TextElement(const TextLabelStyle& textLabelStyle, const RelativePosition2D& position)
         : TextElement(textLabelStyle.getHash(), position)
     {
     }
 
-    TextElement(size_t textLabelStyleHash,
-                const RelativePosition2D& position)
+    TextElement(size_t textLabelStyleHash, const RelativePosition2D& position)
         : _textLabelStyleHash(textLabelStyleHash),
           _position(position)
     {
     }
+
+    ~TextElement() = default;
 
     inline void text(const char* text, bool multiLine) {
         if (multiLine) {
@@ -132,8 +134,8 @@ struct TextElement {
 
     inline const TextType& text() const noexcept { return _text; }
 
-    size_t _textLabelStyleHash;
-    RelativePosition2D _position;
+    size_t _textLabelStyleHash = 0;
+    RelativePosition2D _position ;
 
   private:
     TextType _text;

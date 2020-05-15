@@ -33,8 +33,8 @@ namespace {
 
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
 
-    I32 getUsageIndex(RenderTargetUsage usage) noexcept {
-        for (I32 i = 0; i < (sizeof(g_texUsage) / sizeof(g_texUsage[0])); ++i) {
+    inline I32 getUsageIndex(RenderTargetUsage usage) noexcept {
+        for (I32 i = 0; i < g_texUsage.size(); ++i) {
             if (g_texUsage[i].first == usage) {
                 return i;
             }
@@ -237,17 +237,13 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         onMaterialChanged();
     }
 
-    const SceneNode& node = _parentSGN.getNode();
-    if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
-        const Object3D& node3D = static_cast<const Object3D&>(node);
-        if (_parentSGN.parent() != nullptr && node3D.getObjectType()._value == ObjectType::SUBMESH) {
-            _parentSGN.parent()->clearFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
-        }
+    SceneGraphNode* parent = _parentSGN.parent();
+    if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
+        parent->clearFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
     }
 
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
-
 
 void RenderingComponent::onMaterialChanged() {
     OPTICK_EVENT();
@@ -424,13 +420,12 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         drawSkeleton(bufferInOut);
     }
 
-    if (_parentSGN.parent() != nullptr) {
-        if (!_parentSGN.parent()->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
-            _parentSGN.parent()->setFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
-            RenderingComponent* rComp = _parentSGN.parent()->get<RenderingComponent>();
-            if (rComp != nullptr) {
-                rComp->postRender(sceneRenderState, renderStagePass, bufferInOut);
-            }
+    SceneGraphNode* parent = _parentSGN.parent();
+    if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
+        parent->setFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
+        RenderingComponent* rComp = parent->get<RenderingComponent>();
+        if (rComp != nullptr) {
+            rComp->postRender(sceneRenderState, renderStagePass, bufferInOut);
         }
     }
 }
@@ -593,13 +588,16 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
         _reflectionCallback(params, bufferInOut);
     } else {
         if (_reflectorType == ReflectorType::CUBE) {
+            static std::array<Camera*, 6> cameras = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+
             const vec2<F32>& zPlanes = camera->getZPlanes();
             _context.generateCubeMap(reflectRTID,
                                      0,
                                      camera->getEye(),
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
                                      RenderStagePass{RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(_reflectorType), reflectionIndex},
-                                     bufferInOut);
+                                     bufferInOut,
+                                     cameras);
         }
     }
 

@@ -6,6 +6,8 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Scenes/DefaultScene/Headers/DefaultScene.h"
 
+#include <boost/functional/factory.hpp>
+
 namespace Divide {
 
 INIT_SCENE_FACTORY

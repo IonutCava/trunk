@@ -43,7 +43,7 @@ class FreeFlyCamera : public Camera {
     friend class Camera;
     explicit FreeFlyCamera(const Str128& name, CameraType type = Type(), const vec3<F32>& eye = VECTOR3_ZERO);
 
-    void updateInternal(const U64 deltaTimeUS, const F32 deltaTimeS) noexcept override;
+    void update(const F32 deltaTimeMS) noexcept override;
 
   public:
     void fromCamera(const Camera& camera, bool flag = false) override;

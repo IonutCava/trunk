@@ -69,6 +69,7 @@ using FColour4 = vec4<F32>;
 
 #if !defined(M_PI)
     constexpr D64 M_PI = 3.14159265358979323846;
+    constexpr D64 M_PI_2 = 3.14159265358979323846 / 2; 
 #endif
 
     constexpr D64 M_2PI = 6.28318530717958647692;

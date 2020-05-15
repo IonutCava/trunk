@@ -174,10 +174,7 @@ namespace Divide {
                GFX::EnqueueCommand(buf, beginRenderPassCmd);
            }
 
-           GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-           beginDebugScopeCmd._scopeID = 12345;
-           beginDebugScopeCmd._scopeName = "Flush Display";
-           GFX::EnqueueCommand(buf, beginDebugScopeCmd);
+           GFX::EnqueueCommand(buf, GFX::BeginDebugScopeCommand{ "Flush Display" });
 
            const TextureData texData = resolvedScreenTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
            const Rect<I32>& targetViewport = params._targetViewport;
@@ -584,10 +581,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
                            target.getAttachment(RTAttachmentType::Depth, 0).used();
 
     if (doPrePass) {
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-        beginDebugScopeCmd._scopeID = 0;
-        beginDebugScopeCmd._scopeName = " - PrePass";
-        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ " - PrePass" });
 
         prepareRenderQueues(params, nodes, true, bufferInOut);
         buildDrawCommands(params, true, bufferInOut);
@@ -683,10 +677,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
     const RenderStagePass& stagePass = params._stagePass;
     assert(stagePass._passType == RenderPassType::MAIN_PASS);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 1;
-    beginDebugScopeCmd._scopeName = " - MainPass";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ " - MainPass" });
 
     prepareRenderQueues(params, nodes, !prePassExecuted, bufferInOut);
     buildDrawCommands(params, !prePassExecuted, bufferInOut);
@@ -777,10 +768,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
     prepareRenderQueues(params, nodes, false, bufferInOut);
     buildDrawCommands(params, false, bufferInOut);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 2;
-    beginDebugScopeCmd._scopeName = " - W-OIT Pass";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ " - W-OIT Pass" });
 
     if (renderQueueSize(stagePass._stage) > 0) {
         GFX::ClearRenderTargetCommand clearRTCmd = {};
@@ -902,10 +890,7 @@ void RenderPassManager::transparencyPass(const VisibleNodeList& nodes, const Pas
         prepareRenderQueues(params, nodes, false, bufferInOut, RenderingOrder::BACK_TO_FRONT);
         buildDrawCommands(params, false, bufferInOut);
 
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-        beginDebugScopeCmd._scopeID = 2;
-        beginDebugScopeCmd._scopeName = " - Transparency Pass";
-        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ " - Transparency Pass" });
 
         if (renderQueueSize(tempStagePass._stage) > 0) {
             GFX::BeginRenderPassCommand beginRenderPassTransparentCmd = {};
@@ -938,10 +923,9 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     params._camera->updateLookAt();
     const CameraSnapshot& camSnapshot = params._camera->snapshot();
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = Util::StringFormat("Custom pass ( %s - %s )", TypeUtil::RenderStageToString(stage), params._passName.empty() ? "N/A" : params._passName.c_str()).c_str();
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{
+         Util::StringFormat("Custom pass ( %s - %s )", TypeUtil::RenderStageToString(stage), params._passName.empty() ? "N/A" : params._passName.c_str()).c_str()
+     });
 
     Attorney::SceneManagerRenderPass::prepareLightData(*parent().sceneManager(), stage, camSnapshot._eye, camSnapshot._viewMatrix);
 

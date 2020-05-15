@@ -81,7 +81,7 @@ class ASIO {
 
    protected:
     Client* _localClient;
-    std::unique_ptr<boost::asio::io_service::work> _work;
+    eastl::unique_ptr<boost::asio::io_service::work> _work;
     std::thread* _thread;
     bool _connected;
     bool _debugOutput;

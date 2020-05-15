@@ -46,8 +46,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
       GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
       _descriptor(descriptor),
-      _asyncLoad(asyncLoad),
-      _shouldRecompile(false)
+      _asyncLoad(asyncLoad)
 {
     if (shaderFileName.empty()) {
         assetName(resourceName());
@@ -73,15 +72,7 @@ bool ShaderProgram::unload() {
 
 /// Rebuild the specified shader stages from source code
 bool ShaderProgram::recompile(bool force) {
-    if (getState() != ResourceState::RES_LOADED) {
-        return true;
-    }
-    if (recompileInternal(force)) {
-        _shouldRecompile = false;
-        return true;
-    }
-
-    return false;
+    return getState() == ResourceState::RES_LOADED;
 }
 
 //================================ static methods ========================================
@@ -175,13 +166,11 @@ bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
     static bool onOddFrame = false;
 
     onOddFrame = !onOddFrame;
-    SharedLock<SharedMutex> r_lock(s_programLock);
-    // Pass the update call to all registered programs
-    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        if (!Config::Build::IS_RELEASE_BUILD && onOddFrame) {
+    if (!Config::Build::IS_RELEASE_BUILD && onOddFrame) {
+        SharedLock<SharedMutex> r_lock(s_programLock);
+        for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
             it.second.first->recompile(false);
         }
-        it.second.first->update(deltaTimeUS);
     }
 
     return true;

@@ -77,6 +77,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.velocityScale);
         GET_PARAM(rendering.postFX.enableSSAO);
         GET_PARAM(rendering.postFX.ssaoRadius);
+        GET_PARAM(rendering.postFX.ssaoKernelSizeIndex);
         GET_PARAM(rendering.postFX.ssaoPower);
         GET_PARAM(rendering.shadowMapping.enabled);
         GET_PARAM(rendering.shadowMapping.shadowMapResolution);
@@ -163,7 +164,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.enableSSAO);
         PUT_PARAM(rendering.postFX.ssaoRadius);
         PUT_PARAM(rendering.postFX.ssaoPower);
-
+        PUT_PARAM(rendering.postFX.ssaoKernelSizeIndex);
         PUT_PARAM(rendering.shadowMapping.enabled);
         PUT_PARAM(rendering.shadowMapping.shadowMapResolution);
         PUT_PARAM(rendering.shadowMapping.MSAAsamples);

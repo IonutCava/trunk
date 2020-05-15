@@ -158,11 +158,10 @@ void Kernel::idle(bool fast) {
     }
     frameListenerMgr().idle();
 
-    constexpr ParamHandler::HashType paramName = _ID("freezeLoopTime");
-    bool freezeLoopTime = _platformContext.paramHandler().getParam(paramName, false);
+    bool freezeLoopTime = _platformContext.paramHandler().getParam(_ID("freezeLoopTime"), false);
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
-        freezeLoopTime |= _platformContext.editor().simulationPauseRequested();
+        freezeLoopTime = _platformContext.editor().simulationPauseRequested() || freezeLoopTime;
     }
 
     if (_timingData.freezeTime(freezeLoopTime)) {
@@ -194,14 +193,15 @@ void Kernel::onLoop() {
             // Launch the FRAME_STARTED event
             _timingData.keepAlive(frameListenerMgr().createAndProcessEvent(Time::Game::ElapsedMicroseconds(), FrameEventType::FRAME_EVENT_STARTED, evt));
 
-            U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS();
-            U64 deltaTimeUSReal = _timingData.timeDeltaUS();
-            U64 deltaTimeUS = 0ULL;
-            if (!_timingData.freezeLoopTime()) {
-                deltaTimeUS = _platformContext.config().runtime.useFixedTimestep
-                                    ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
-                                    : deltaTimeUSReal;
-            }
+            const U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS();
+            const U64 deltaTimeUSReal = _timingData.timeDeltaUS();
+
+            U64 deltaTimeUS = _timingData.freezeLoopTime() 
+                                    ? 0ULL
+                                    : _platformContext.config().runtime.useFixedTimestep
+                                                        ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
+                                                         : deltaTimeUSReal;
+
             // Process the current frame
             _timingData.keepAlive(_timingData.keepAlive() && mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp));
 
@@ -277,6 +277,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
 
     if (_platformContext.mainWindow().minimized()) {
         idle(false);
+        SDLEventManager::pollEvents();
         return true;
     }
 
@@ -286,11 +287,11 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         _platformContext.pfx().process(realDeltaTimeUS);
     }
 
-    bool fixedTimestep = _platformContext.config().runtime.useFixedTimestep;
+    const bool fixedTimestep = _platformContext.config().runtime.useFixedTimestep;
     {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
 
-        U8 playerCount = _sceneManager->getActivePlayerCount();
+        const U8 playerCount = _sceneManager->getActivePlayerCount();
 
         U8 loopCount = 0;
         while (_timingData.runUpdateLoop()) {

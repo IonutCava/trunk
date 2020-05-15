@@ -108,6 +108,9 @@ namespace Divide {
 
         ALIAS_TEMPLATE_FUNCTION(StringFormat, fmt::sprintf)
 
+        template<typename T>
+        stringImpl to_string(T value);
+
         template<typename T_str = stringImpl>
         U32 LineCount(const T_str& str);
 

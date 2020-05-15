@@ -133,7 +133,7 @@ public:
     static const char* FilterName(FilterType filter) noexcept;
 private:
 
-    std::unique_ptr<PreRenderBatch> _preRenderBatch = nullptr;
+    eastl::unique_ptr<PreRenderBatch> _preRenderBatch = nullptr;
     /// Screen Border
     Texture_ptr _screenBorder = nullptr;
     /// Noise
@@ -145,9 +145,6 @@ private:
     ShaderProgram_ptr _postProcessingShader = nullptr;
     Texture_ptr _underwaterTexture = nullptr;
     vec2<U16> _resolutionCache;
-
-    std::array<U32, to_base(FXRoutines::COUNT)> _shaderFunctionSelection;
-    std::array<I32, to_base(FXDisplayFunction::COUNT)> _shaderFunctionList;
 
     RTDrawDescriptor _postFXTarget;
 

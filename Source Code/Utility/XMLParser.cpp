@@ -17,6 +17,8 @@
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
+#include <boost/property_tree/xml_parser.hpp>
+
 namespace Divide {
 namespace XML {
 
@@ -58,9 +60,9 @@ void populatePressRelease(const ptree & attributes, PressReleaseActions::Entry& 
     static vectorEASTL<std::string> modifiersOut, actionsUpOut, actionsDownOut;
 
     entryOut.clear();
-    modifiersOut.reset_lose_memory();
-    actionsUpOut.reset_lose_memory();
-    actionsDownOut.reset_lose_memory();
+    modifiersOut.resize(0);
+    actionsUpOut.resize(0);
+    actionsDownOut.resize(0);
 
     U16 id = 0;
 
@@ -187,6 +189,22 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
     }
 }
 
+void writeXML(const stringImpl& path, const boost::property_tree::ptree& tree) {
+    static boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
+
+    boost::property_tree::write_xml(path, tree, std::locale(), settings);
+}
+
+void readXML(const stringImpl& path, boost::property_tree::ptree& tree) {
+    try {
+        boost::property_tree::read_xml(path, tree);
+    } catch (const boost::property_tree::xml_parser_error& e) {
+        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_FILE")), path.c_str());
+        stringImpl error(e.what());
+        error += " [check error log!]";
+        throw error.c_str();
+    }
+}
 };  // namespace XML
 };  // namespace Divide
 

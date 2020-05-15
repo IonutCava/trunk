@@ -61,7 +61,7 @@ class PreRenderBatch {
         }
 
         const OperatorBatch& batch = _operators[to_U32(fSpace)];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) noexcept {
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
 
@@ -76,7 +76,7 @@ class PreRenderBatch {
         }
 
         const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const std::unique_ptr<PreRenderOperator>& op) noexcept {
+        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
         assert(it != std::cend(batch));
@@ -115,7 +115,7 @@ class PreRenderBatch {
 
     bool operatorsReady() const;
   private:
-    using OperatorBatch = vectorEASTL<std::unique_ptr<PreRenderOperator>>;
+    using OperatorBatch = vectorEASTL<eastl::unique_ptr<PreRenderOperator>>;
     std::array<OperatorBatch, to_base(FilterSpace::COUNT)> _operators;
 
     GFXDevice& _context;

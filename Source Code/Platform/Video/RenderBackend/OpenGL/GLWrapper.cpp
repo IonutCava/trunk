@@ -36,7 +36,7 @@
 
 namespace Divide {
 
-GLStateTracker GL_API::s_stateTracker = {};
+GLStateTracker GL_API::s_stateTracker;
 bool GL_API::s_enabledDebugMSGGroups = false;
 bool GL_API::s_glFlushQueued = false;
 GLUtil::glTexturePool GL_API::s_texturePool = {};
@@ -306,260 +306,260 @@ bool GL_API::initGLSW(Configuration& config) {
     if_constexpr(Config::USE_COLOURED_WOIT) {
         appendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
     }
-    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + to_stringImpl(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + to_stringImpl(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + to_stringImpl(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
     
-    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + to_stringImpl(Config::MAX_VISIBLE_NODES), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.0001f", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#define DEPTH_EXP_WARP 32;", lineOffsets);
-    appendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + to_stringImpl(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
+    appendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
     static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + 
-        to_stringImpl(to_base(Frustum::FrustPlane::COUNT)),
+        Util::to_string(to_base(Frustum::FrustPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CULL_DISTANCES " + 
-         to_stringImpl(maxClipCull - to_base(Frustum::FrustPlane::COUNT)),
+         Util::to_string(maxClipCull - to_base(Frustum::FrustPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TARGET_ACCUMULATION " +
-        to_stringImpl(to_base(GFXDevice::ScreenTargets::ACCUMULATION)),
+        Util::to_string(to_base(GFXDevice::ScreenTargets::ACCUMULATION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TARGET_ALBEDO " +
-        to_stringImpl(to_base(GFXDevice::ScreenTargets::ALBEDO)),
+        Util::to_string(to_base(GFXDevice::ScreenTargets::ALBEDO)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TARGET_EXTRA " +
-        to_stringImpl(to_base(GFXDevice::ScreenTargets::EXTRA)),
+        Util::to_string(to_base(GFXDevice::ScreenTargets::EXTRA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TARGET_NORMALS_AND_VELOCITY " +
-        to_stringImpl(to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)),
+        Util::to_string(to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TARGET_REVEALAGE " +
-        to_stringImpl(to_base(GFXDevice::ScreenTargets::REVEALAGE)),
+        Util::to_string(to_base(GFXDevice::ScreenTargets::REVEALAGE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TARGET_MODULATE " +
-        to_stringImpl(to_base(GFXDevice::ScreenTargets::MODULATE)),
+        Util::to_string(to_base(GFXDevice::ScreenTargets::MODULATE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GPU_BLOCK " +
-        to_stringImpl(to_base(ShaderBufferLocation::GPU_BLOCK)),
+        Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_ATOMIC_COUNTER " +
-        to_stringImpl(to_base(ShaderBufferLocation::ATOMIC_COUNTER)),
+        Util::to_string(to_base(ShaderBufferLocation::ATOMIC_COUNTER)),
         lineOffsets);
     
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GPU_COMMANDS " +
-        to_stringImpl(to_base(ShaderBufferLocation::GPU_COMMANDS)),
+        Util::to_string(to_base(ShaderBufferLocation::GPU_COMMANDS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_NORMAL " +
-        to_stringImpl(to_base(ShaderBufferLocation::LIGHT_NORMAL)),
+        Util::to_string(to_base(ShaderBufferLocation::LIGHT_NORMAL)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_SHADOW " +
-        to_stringImpl(to_base(ShaderBufferLocation::LIGHT_SHADOW)),
+        Util::to_string(to_base(ShaderBufferLocation::LIGHT_SHADOW)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_LIGHT_INDICES " +
-        to_stringImpl(to_base(ShaderBufferLocation::LIGHT_INDICES)),
+        Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDICES)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_NODE_INFO " +
-        to_stringImpl(to_base(ShaderBufferLocation::NODE_INFO)),
+        Util::to_string(to_base(ShaderBufferLocation::NODE_INFO)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_SCENE_DATA " +
-        to_stringImpl(to_base(ShaderBufferLocation::SCENE_DATA)),
+        Util::to_string(to_base(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_COMMANDS " +
-        to_stringImpl(to_base(ShaderBufferLocation::CMD_BUFFER)),
+        Util::to_string(to_base(ShaderBufferLocation::CMD_BUFFER)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_GRASS_DATA " +
-        to_stringImpl(to_base(ShaderBufferLocation::GRASS_DATA)),
+        Util::to_string(to_base(ShaderBufferLocation::GRASS_DATA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_TREE_DATA " +
-        to_stringImpl(to_base(ShaderBufferLocation::TREE_DATA)),
+        Util::to_string(to_base(ShaderBufferLocation::TREE_DATA)),
         lineOffsets);
     
     appendToShaderHeader(
         ShaderType::COMPUTE,
         "#define BUFFER_LUMINANCE_HISTOGRAM " +
-        to_stringImpl(to_base(ShaderBufferLocation::LUMINANCE_HISTOGRAM)),
+        Util::to_string(to_base(ShaderBufferLocation::LUMINANCE_HISTOGRAM)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define FORWARD_PLUS_TILE_RES " + 
-        to_stringImpl(tileSize),
+        Util::to_string(tileSize),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_LIGHTS_PER_TILE " + 
-        to_stringImpl(numLightsPerTile),
+        Util::to_string(numLightsPerTile),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_UNIT0 " +
-        to_stringImpl(to_base(TextureUsage::UNIT0)),
+        Util::to_string(to_base(TextureUsage::UNIT0)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_HEIGHT " +
-        to_stringImpl(to_base(TextureUsage::HEIGHTMAP)),
+        Util::to_string(to_base(TextureUsage::HEIGHTMAP)),
         lineOffsets);
     
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_UNIT1 " +
-        to_stringImpl(to_base(TextureUsage::UNIT1)),
+        Util::to_string(to_base(TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COMPUTE,
         "#define TEXTURE_UNIT1 " +
-        to_stringImpl(to_base(TextureUsage::UNIT1)),
+        Util::to_string(to_base(TextureUsage::UNIT1)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_NORMALMAP " +
-        to_stringImpl(to_base(TextureUsage::NORMALMAP)),
+        Util::to_string(to_base(TextureUsage::NORMALMAP)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_OPACITY " +
-        to_stringImpl(to_base(TextureUsage::OPACITY)),
+        Util::to_string(to_base(TextureUsage::OPACITY)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_SPECULAR " +
-        to_stringImpl(to_base(TextureUsage::SPECULAR)),
+        Util::to_string(to_base(TextureUsage::SPECULAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_GLOSS " +
-        to_stringImpl(to_base(TextureUsage::GLOSS)),
+        Util::to_string(to_base(TextureUsage::GLOSS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_ROUGHNESS " +
-        to_stringImpl(to_base(TextureUsage::ROUGHNESS)),
+        Util::to_string(to_base(TextureUsage::ROUGHNESS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_PROJECTION " +
-        to_stringImpl(to_base(TextureUsage::PROJECTION)),
+        Util::to_string(to_base(TextureUsage::PROJECTION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define TEXTURE_DEPTH_MAP " +
-        to_stringImpl(to_base(TextureUsage::DEPTH)),
+        Util::to_string(to_base(TextureUsage::DEPTH)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFLECTION_PLANAR " +
-        to_stringImpl(to_base(TextureUsage::REFLECTION_PLANAR)),
+        Util::to_string(to_base(TextureUsage::REFLECTION_PLANAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFRACTION_PLANAR " +
-        to_stringImpl(to_base(TextureUsage::REFRACTION_PLANAR)),
+        Util::to_string(to_base(TextureUsage::REFRACTION_PLANAR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_REFLECTION_CUBE " +
-        to_stringImpl(to_base(TextureUsage::REFLECTION_CUBE)),
+        Util::to_string(to_base(TextureUsage::REFLECTION_CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_GBUFFER_EXTRA " +
-        to_stringImpl(to_base(TextureUsage::GBUFFER_EXTRA)),
+        Util::to_string(to_base(TextureUsage::GBUFFER_EXTRA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
-        to_stringImpl(to_base(TextureUsage::SHADOW_CUBE)),
+        Util::to_string(to_base(TextureUsage::SHADOW_CUBE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_LAYERED_MAP_ARRAY " +
-        to_stringImpl(to_U32(TextureUsage::SHADOW_LAYERED)),
+        Util::to_string(to_U32(TextureUsage::SHADOW_LAYERED)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define SHADOW_SINGLE_MAP_ARRAY " +
-        to_stringImpl(to_U32(TextureUsage::SHADOW_SINGLE)),
+        Util::to_string(to_U32(TextureUsage::SHADOW_SINGLE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_COUNT " +
-        to_stringImpl(to_U32(TextureUsage::COUNT)),
+        Util::to_string(to_U32(TextureUsage::COUNT)),
         lineOffsets);
 
     if_constexpr(Config::Lighting::USE_SEPARATE_VSM_PASS) {
@@ -572,68 +572,68 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_TERRAIN_DATA " +
-        to_stringImpl(to_base(ShaderBufferLocation::TERRAIN_DATA)),
+        Util::to_string(to_base(ShaderBufferLocation::TERRAIN_DATA)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define BUFFER_BONE_TRANSFORMS " +
-        to_stringImpl(to_base(ShaderBufferLocation::BONE_TRANSFORMS)),
+        Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS)),
         lineOffsets);
 
     // Vertex data has a fixed format
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_POSITION " +
-        to_stringImpl(to_base(AttribLocation::POSITION)),
+        Util::to_string(to_base(AttribLocation::POSITION)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_TEXCOORD " +
-        to_stringImpl(to_base(AttribLocation::TEXCOORD)),
+        Util::to_string(to_base(AttribLocation::TEXCOORD)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_NORMAL " +
-        to_stringImpl(to_base(AttribLocation::NORMAL)),
+        Util::to_string(to_base(AttribLocation::NORMAL)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_TANGENT " +
-        to_stringImpl(to_base(AttribLocation::TANGENT)),
+        Util::to_string(to_base(AttribLocation::TANGENT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_COLOR " +
-        to_stringImpl(to_base(AttribLocation::COLOR)),
+        Util::to_string(to_base(AttribLocation::COLOR)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_BONE_WEIGHT " +
-        to_stringImpl(to_base(AttribLocation::BONE_WEIGHT)),
+        Util::to_string(to_base(AttribLocation::BONE_WEIGHT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_BONE_INDICE " +
-        to_stringImpl(to_base(AttribLocation::BONE_INDICE)),
+        Util::to_string(to_base(AttribLocation::BONE_INDICE)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_WIDTH " +
-        to_stringImpl(to_base(AttribLocation::WIDTH)),
+        Util::to_string(to_base(AttribLocation::WIDTH)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::VERTEX,
         "#define ATTRIB_GENERIC " +
-        to_stringImpl(to_base(AttribLocation::GENERIC)),
+        Util::to_string(to_base(AttribLocation::GENERIC)),
         lineOffsets);
 
     const auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
@@ -814,7 +814,7 @@ I32 GL_API::getFont(const Str64& fontName) {
 void GL_API::drawText(const TextElementBatch& batch) {
     OPTICK_EVENT();
 
-    pushDebugMessage("OpenGL render text start!", 2);
+    pushDebugMessage("OpenGL render text start!");
 
     getStateTracker().setBlending(0,
         BlendingProperties{
@@ -970,13 +970,9 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
     // We need a valid shader as no fixed function pipeline is available
 
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
-    bool wasBound = false;
-    shaderWasReady = Attorney::GLAPIShaderProgram::bind(glProgram, wasBound);
-    if (shaderWasReady) {
-        const ShaderFunctions& functions = pipeline.shaderFunctions();
-        for (U8 type = 0; type < to_U8(ShaderType::COUNT); ++type) {
-            Attorney::GLAPIShaderProgram::SetSubroutines(glProgram, static_cast<ShaderType>(type), functions[type]);
-        }
+    const auto[state, wasBound] = Attorney::GLAPIShaderProgram::bind(glProgram);
+    shaderWasReady = state;
+    if (state) {
         if (!wasBound) {
             Attorney::GLAPIShaderProgram::queueValidation(glProgram);
         }
@@ -1028,9 +1024,9 @@ bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
     return true;
 }
 
-void GL_API::pushDebugMessage(const char* message, I32 id) {
+void GL_API::pushDebugMessage(const char* message) {
     if (Config::ENABLE_GPU_VALIDATION && s_enabledDebugMSGGroups) {
-        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, -1, message);
+        glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, static_cast<GLuint>(_ID(message)), -1, message);
     }
 }
 
@@ -1053,7 +1049,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd->_target));
             Attorney::GLAPIRenderTarget::begin(rt, crtCmd->_descriptor);
             GL_API::getStateTracker()._activeRenderTarget = &rt;
-            GL_API::pushDebugMessage(crtCmd->_name.c_str(), std::numeric_limits<I32>::max());
+            GL_API::pushDebugMessage(crtCmd->_name.c_str());
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
             GFX::EndRenderPassCommand* crtCmd = commandBuffer.get<GFX::EndRenderPassCommand>(entry);
@@ -1083,7 +1079,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 GL_API::getStateTracker()._activeRenderTarget->drawToLayer(params);
             }
 
-            GL_API::getStateTracker()._activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel, crtCmd->_validateWriteLevel);
+            GL_API::getStateTracker()._activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
@@ -1131,10 +1127,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
              GFX::BeginDebugScopeCommand* crtCmd = commandBuffer.get<GFX::BeginDebugScopeCommand>(entry);
-             pushDebugMessage(crtCmd->_scopeName.c_str(), crtCmd->_scopeID);
+             pushDebugMessage(crtCmd->_scopeName.c_str());
         } break;
         case GFX::CommandType::END_DEBUG_SCOPE: {
-            popDebugMessage();
+             popDebugMessage();
         } break;
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             OPTICK_EVENT("GL: Compute MipMaps");

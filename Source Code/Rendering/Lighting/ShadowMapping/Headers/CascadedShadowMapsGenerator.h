@@ -76,8 +76,7 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
     bool useMSAA() const noexcept;
 
   protected:
-    Pipeline* _vertBlurPipeline = nullptr;
-    Pipeline* _horzBlurPipeline = nullptr;
+    Pipeline* _blurPipeline = nullptr;
     Pipeline* _computeVSMPipeline[2] = { nullptr, nullptr };
 
     ShaderProgram_ptr _blurDepthMapShader = nullptr;

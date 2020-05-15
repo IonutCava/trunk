@@ -9,6 +9,7 @@
 
 #define M_PI 3.14159265358979323846
 #define M_EPSILON 0.0000001
+#define MIN_SPEC_REFLECTION 0.33f
 
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #include "pbr.frag"
@@ -159,6 +160,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 #else //USE_SHADING_FLAT
     const vec4 data = getExtraData(colourMatrix, uv);
 
+    albedo.rgb += dvd_AmbientColour.rgb;
     albedo.rgb *= getSSAO();
 
     // Apply all lighting contributions (.a = reflectionCoeff)
@@ -170,7 +172,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     
     lightColour.rgb += getEmissive(colourMatrix);
     // Specular reflections
-    if (lightColour.a > 0.0f) {
+    if (lightColour.a > MIN_SPEC_REFLECTION) {
         /*if (dvd_lodLevel < 1 && getReflectivity(colourMatrix) > 100) {
             vec3 reflectDirection = reflect(VAR._viewDirectionWV, normalWV);
             reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0f));
@@ -178,8 +180,6 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
             //                  lightColour.rgb,
             //                  vec3(saturate(lightColour.a)));
         }*/
-    } else {
-        albedo.rgb += dvd_AmbientColour.rgb;
     }
     
     return lightColour.rgb;

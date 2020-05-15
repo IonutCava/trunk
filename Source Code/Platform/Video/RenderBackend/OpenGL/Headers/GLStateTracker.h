@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GL_STATE_TRACKER_H_
 
 #include "glResources.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
     constexpr U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
@@ -46,7 +47,8 @@ namespace Divide {
 
     struct GLStateTracker {
       public:
-        void init(GLStateTracker* base);
+        GLStateTracker() = default;
+        void init() noexcept;
 
         /// Enable or disable primitive restart and ensure that the correct index size is used
         void togglePrimitiveRestart(bool state);
@@ -88,7 +90,7 @@ namespace Divide {
         bool setActiveShaderPipeline(GLuint ppipelineHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
         /// Some may be redundant, so we check each one individually
-        void activateStateBlock(const RenderStateBlock& newBlock, const RenderStateBlock& oldBlock);
+        void activateStateBlock(const RenderStateBlock& newBlock);
         /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
         bool setPixelPackUnpackAlignment(GLint packAlignment = 4, GLint unpackAlignment = 4) {
             return (setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment));
@@ -106,7 +108,7 @@ namespace Divide {
         /// Bind multiple textures specified by an array of handles and an offset unit
         bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType* textureTypes, GLuint* textureHandles, GLuint* samplerHandles);
 
-        size_t setStateBlock(size_t stateBlockHash);
+        void setStateBlock(size_t stateBlockHash);
 
         /// Bind multiple samplers described by the array of hash values to the
         /// consecutive texture units starting from the specified offset
@@ -148,6 +150,7 @@ namespace Divide {
         void getActiveViewport(GLint* vp);
 
       public:
+        RenderStateBlock _activeState = {};
         Pipeline const* _activePipeline = nullptr;
         glFramebuffer*  _activeRenderTarget = nullptr;
         glPixelBuffer*  _activePixelBuffer = nullptr;
@@ -196,9 +199,6 @@ namespace Divide {
         bool _primitiveRestartEnabled = false;
         bool _rasterizationEnabled = true;
 
-        size_t _currentStateBlockHash = 0;
-        size_t _previousStateBlockHash = 0;
-
         /// /*hash: texture slot  - array /*texture handle - texture type*/ hash
         using TextureBoundMapDef = std::array<std::array<U32, to_base(TextureType::COUNT)>, MAX_ACTIVE_TEXTURE_SLOTS>;
         TextureBoundMapDef _textureBoundMap;
@@ -212,9 +212,6 @@ namespace Divide {
 
         VAOBindings _vaoBufferData;
         bool _opengl46Supported = false;
-
-      private:
-        bool _init = false;
     }; //class GLStateTracker
 }; //namespace Divide
 

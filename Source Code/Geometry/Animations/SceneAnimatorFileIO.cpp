@@ -6,6 +6,8 @@
 
 #include "Utility/Headers/Localization.h"
 
+#include <assimp/anim.h>
+
 namespace Divide {
 
 void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
@@ -172,7 +174,7 @@ void SceneAnimator::load(PlatformContext& context, ByteBuffer& dataIn) {
     
     uint32_t idx = 0;
     for (std::shared_ptr<AnimEvaluator>& anim : _animations) {
-        anim = std::make_unique<AnimEvaluator>();
+        anim = std::make_shared<AnimEvaluator>();
         AnimEvaluator::load(*anim, dataIn);
         // get all the animation names so I can reference them by name and get the correct id
         hashAlg::insert(_animationNameToID, _ID(anim->name().c_str()), idx++);

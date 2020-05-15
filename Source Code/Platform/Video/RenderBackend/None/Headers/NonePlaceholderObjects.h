@@ -173,15 +173,7 @@ namespace Divide {
         {}
 
         bool isValid() const final { return true; }
-
-        U32 GetSubroutineIndex(ShaderType type, const char* name) final { return 0; }
-        U32 GetSubroutineUniformCount(ShaderType type) final { return 0;  }
-
-        void update(const U64 deltaTimeUS) final { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
-    protected:
-        bool recompileInternal(bool force) final { ACKNOWLEDGE_UNUSED(force);  return true; }
     };
-
 
     class noUniformBuffer final : public ShaderBuffer {
     public:

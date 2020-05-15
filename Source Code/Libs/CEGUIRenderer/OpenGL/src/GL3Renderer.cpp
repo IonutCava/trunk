@@ -213,7 +213,7 @@ void OpenGL3Renderer::beginRendering()
     // this information may be relevant for people combining deprecated and modern
     // functions. In that case disable client states like this: glDisableClientState(GL_VERTEX_ARRAY);
 
-    Divide::GL_API::pushDebugMessage("CEGUI Begin", 98765);
+    Divide::GL_API::pushDebugMessage("CEGUI Begin");
 
     d_openGLStateChanger->reset();
 

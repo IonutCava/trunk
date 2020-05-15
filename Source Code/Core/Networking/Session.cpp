@@ -5,9 +5,12 @@
 #include "Headers/OPCodesImpl.h"
 #include "Headers/Patch.h"
 
+#include "Networking/Headers/Strand.h"
 #include "Networking/Headers/ASIO.h"
 
+#include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/Resource.h"
+
 #include <iostream>
 
 namespace Divide {
@@ -35,7 +38,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
     PatchData dataIn;
     p >> dataIn.sceneName;
     p >> dataIn.size;
-    ASIO::LOG_PRINT(("Received [ CMSG_GEOMERTY_LIST ] with : " + to_stringImpl(dataIn.size) + " models").c_str());
+    ASIO::LOG_PRINT(("Received [ CMSG_GEOMERTY_LIST ] with : " + Util::to_string(dataIn.size) + " models").c_str());
     for (U32 i = 0; i < dataIn.size; i++) {
         stringImpl name, modelname;
         p >> name;
@@ -62,7 +65,7 @@ void Session::HandleGeometryListOpCode(WorldPacket& p) {
             r << dataOut.Scale.y;
             r << dataOut.Scale.z;
         }
-        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + to_stringImpl(patchData.size()) + " models to update").c_str());
+        ASIO::LOG_PRINT(("Sending [SMSG_GEOMETRY_APPEND] with : " + Util::to_string(patchData.size()) + " models to update").c_str());
         sendPacket(r);
         Patch::clearModelData();
     }

@@ -146,13 +146,13 @@ ErrorCode GFXDevice::createAPIInstance(RenderAPI API) {
     switch (API) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            _api = std::make_unique<GL_API>(*this, API == RenderAPI::OpenGLES);
+            _api = eastl::make_unique<GL_API>(*this, API == RenderAPI::OpenGLES);
         } break;
         case RenderAPI::Vulkan: {
-            _api = std::make_unique<VK_API>(*this);
+            _api = eastl::make_unique<VK_API>(*this);
         } break;
         case RenderAPI::None: {
-            _api = std::make_unique<NONE_API>(*this);
+            _api = eastl::make_unique<NONE_API>(*this);
         } break;
         default:
             err = ErrorCode::GFX_NON_SPECIFIED;
@@ -682,18 +682,10 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         _blurShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
         _blurShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
-            _horizBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurHorizontal");
-            _vertBlur = blurShader->GetSubroutineIndex(ShaderType::FRAGMENT, "blurVertical");
-
-            {
-                PipelineDescriptor pipelineDescriptor;
-                pipelineDescriptor._stateHash = get2DStateBlock();
-                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
-                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].push_back(_horizBlur);
-                _BlurHPipeline = newPipeline(pipelineDescriptor);
-                pipelineDescriptor._shaderFunctions[to_base(ShaderType::FRAGMENT)].front() = _vertBlur;
-                _BlurVPipeline = newPipeline(pipelineDescriptor);
-            }
+            PipelineDescriptor pipelineDescriptor;
+            pipelineDescriptor._stateHash = get2DStateBlock();
+            pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+            _BlurPipeline = newPipeline(pipelineDescriptor);
         });
     }
     {
@@ -741,7 +733,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
         _AxisGizmoPipeline = newPipeline(pipelineDesc);
     }
-    _renderer = std::make_unique<Renderer>(context(), cache);
+    _renderer = eastl::make_unique<Renderer>(context(), cache);
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0);
     DisplayWindow* mainWindow = context().app().windowManager().mainWindow();
@@ -813,9 +805,9 @@ void GFXDevice::closeRenderingAPI() {
         for (const std::tuple<GraphicsResource::Type, I64, U64>& res : _graphicResources) {
             list.append(TypeUtil::GraphicResourceTypeToName(std::get<0>(res)));
             list.append(" _ ");
-            list.append(to_stringImpl(std::get<1>(res)));
+            list.append(Util::to_string(std::get<1>(res)));
             list.append(" _ ");
-            list.append(to_stringImpl(std::get<2>(res)));
+            list.append(Util::to_string(std::get<2>(res)));
             list.append(" ");
         }
         list += " ]";
@@ -898,12 +890,9 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 const vec2<F32>& zPlanes,
                                 RenderStagePass stagePass,
                                 GFX::CommandBuffer& bufferInOut,
-                                SceneGraphNode* sourceNode,
-                                Camera* camera) {
+                                std::array<Camera*, 6>& cameras,
+                                SceneGraphNode* sourceNode) {
 
-    if (!camera) {
-        camera = Camera::utilityCamera(Camera::UtilityCamera::CUBE);
-    }
 
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
@@ -941,9 +930,6 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                               vec3<F32>( 0.0f,  0.0f,  1.0f),
                               vec3<F32>( 0.0f,  0.0f, -1.0f)};
 
-    // Set a 90 degree vertical FoV perspective projection
-    camera->setProjection(1.0f, 90.0f, zPlanes);
-
     // Enable our render target
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = cubeMap;
@@ -955,7 +941,6 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     RenderPassManager* passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
-    params._camera = camera;
     params._target = cubeMap;
     params._stagePass = stagePass;
     params._stagePass._indexA = to_U16(stagePass._passIndex);
@@ -975,10 +960,17 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
+        Camera* camera = cameras[i];
+        if (!camera) {
+            camera = Camera::utilityCamera(Camera::UtilityCamera::CUBE);
+        }
+        // Set a 90 degree vertical FoV perspective projection
+        camera->setProjection(1.0f, 90.0f, zPlanes);
         // Point our camera to the correct face
         camera->lookAt(pos, TabCenter[i], TabUp[i]);
-        // Pass our render function to the renderer
+        params._camera = camera;
         params._stagePass._indexB = i;
+        // Pass our render function to the renderer
         passMgr->doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
     }
@@ -994,13 +986,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           const vec2<F32>& zPlanes,
                                           RenderStagePass stagePass,
                                           GFX::CommandBuffer& bufferInOut,
-                                          SceneGraphNode* sourceNode,
-                                          Camera* camera)
+                                          std::array<Camera*, 2>& cameras,
+                                          SceneGraphNode* sourceNode)
 {
-    if (!camera) {
-        camera = Camera::utilityCamera(Camera::UtilityCamera::DUAL_PARABOLOID);
-    }
-
     RenderTarget& paraboloidTarget = _rtPool->renderTarget(targetBuffer);
     const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
     const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
@@ -1023,13 +1011,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         return;
     }
 
-    // Set a 90 degree vertical FoV perspective projection
-    camera->setProjection(1.0f, 180.0f, zPlanes);
-
     RenderPassManager* passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
-    params._camera = camera;
+
     params._stagePass = stagePass;
     params._stagePass._indexA = to_U16(stagePass._passIndex);
     params._target = targetBuffer;
@@ -1051,14 +1036,22 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     drawParams._index = 0;
 
     for (U8 i = 0; i < 2; ++i) {
+        Camera* camera = cameras[i];
+        if (!camera) {
+            camera = Camera::utilityCamera(Camera::UtilityCamera::DUAL_PARABOLOID);
+        }
+
         drawParams._layer = i + arrayOffset;
         beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
         // Point our camera to the correct face
         camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
+        // Set a 90 degree vertical FoV perspective projection
+        camera->setProjection(1.0f, 180.0f, zPlanes);
         // And generated required matrices
         // Pass our render function to the renderer
+        params._camera = camera;
         params._stagePass._indexB = i;
         passMgr->doCustomPass(params, bufferInOut);
         GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
@@ -1091,10 +1084,12 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurHPipeline });
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurPipeline });
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants.countHint(2);
+    pushConstantsCommand._constants.countHint(4);
+    pushConstantsCommand._constants.set(_ID("layered"), GFX::PushConstantType::BOOL, false);
+    pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, false);
     pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
     pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
@@ -1110,8 +1105,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurVPipeline });
-
+    pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, true);
     pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
@@ -1533,10 +1527,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     // Store the current width and height of each mip
     const Rect<I32> previousViewport(_viewport);
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = to_I32(depthBuffer._index);
-    beginDebugScopeCmd._scopeName = "Construct Hi-Z";
-    GFX::EnqueueCommand(cmdBufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(cmdBufferInOut, GFX::BeginDebugScopeCommand{ "Construct Hi-Z" });
 
     RTClearDescriptor clearTarget = {};
     clearTarget.clearDepth(true);
@@ -1583,15 +1574,13 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
             GFX::SetViewportCommand viewportCommand = {};
             GFX::SendPushConstantsCommand pushConstantsCommand = {};
-            GFX::EndRenderSubPassCommand endRenderSubPassCmd = {};
             GFX::SetTextureMipLevelsCommand mipCommand = {};
-
             GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-            beginRenderSubPassCmd._validateWriteLevel = Config::ENABLE_GPU_VALIDATION;
 
             GenericDrawCommand triangleCmd = {};
             triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
             triangleCmd._drawCount = 1;
+            GFX::DrawCommand drawCmd = { triangleCmd };
 
             mipCommand._texture = hizDepthTex.get();
 
@@ -1634,10 +1623,9 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
                     GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
                     // Dummy draw command as the full screen quad is generated completely in the vertex shader
-                    GFX::DrawCommand drawCmd = { triangleCmd };
                     GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
 
-                    GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
+                    GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
                 }
 
                 // Calculate next viewport size
@@ -1660,7 +1648,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
                 GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
             }
 
-            GFX::EnqueueCommand(cmdBufferInOut, endRenderSubPassCmd);
+            GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
 
             viewportCommand._viewport.set(previousViewport);
             GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
@@ -1684,10 +1672,7 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     constexpr U32 GROUP_SIZE_AABB = 64;
     const U32 cmdCount = *bufferData._lastCommandCount;
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 0;
-    beginDebugScopeCmd._scopeName = "Occlusion Cull";
-    GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Occlusion Cull" });
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _HIZCullPipeline });
 
@@ -1779,16 +1764,15 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
+    static GFX::BeginDebugScopeCommand beginDebugScopeCmd{ "Draw Texture In Viewport" };
+    static GFX::PushCameraCommand push2DCameraCmd{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
+
     GenericDrawCommand triangleCmd = {};
     triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
     triangleCmd._drawCount = 1;
 
-    GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-    beginDebugScopeCmd._scopeID = 123456332;
-    beginDebugScopeCmd._scopeName = "Draw Texture In Viewport";
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
-
-    GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    GFX::EnqueueCommand(bufferInOut, push2DCameraCmd);
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ (drawToDepthOnly ? _DrawFSDepthPipeline : _DrawFSTexturePipeline) });
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
@@ -1798,14 +1782,12 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, GFX::PushViewportCommand{ viewport });
 
     if (!drawToDepthOnly) {
-
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         pushConstantsCommand._constants.set(_ID("convertToSRGB"), GFX::PushConstantType::UINT, convertToSrgb ? 1u : 0u);
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
     }
 
     GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
-
     GFX::EnqueueCommand(bufferInOut, GFX::PopViewportCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -1819,10 +1801,7 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
     // Early out if we didn't request the preview
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
 
-        GFX::BeginDebugScopeCommand beginDebugScopeCmd = {};
-        beginDebugScopeCmd._scopeID = 1234567;
-        beginDebugScopeCmd._scopeName = "Render Debug Views";
-        GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render Debug Views" });
 
         renderDebugViews(
             Rect<I32>(targetViewport.x + padding,

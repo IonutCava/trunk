@@ -77,10 +77,6 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     });
 }
 
-BoundsComponent::~BoundsComponent()
-{
-}
-
 void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
     OPTICK_EVENT();
 
@@ -127,7 +123,9 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
         return true;
     });
 
-    mat4<F32> mat = MAT4_IDENTITY;
+    assert(_tCompCache != nullptr);
+
+    mat4<F32> mat;
     _tCompCache->getWorldMatrix(mat);
     _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), mat);
     _boundingSphere.fromBoundingBox(_boundingBox);
@@ -138,7 +136,6 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
         this,
         0u
     });
-    
 
     return _boundingBox;
 }
@@ -153,7 +150,6 @@ void BoundsComponent::PreUpdate(const U64 deltaTimeUS) {
         flagBoundingBoxDirty(false);
         onBoundsChanged(getSGN());
     }
-
 }
 
 void BoundsComponent::Update(const U64 deltaTimeUS) {
@@ -170,15 +166,13 @@ void BoundsComponent::PostUpdate(const U64 deltaTimeUS) {
     OPTICK_EVENT();
 
     Attorney::SceneNodeBoundsComponent::clearBoundsChanged(getSGN().getNode());
-
-    assert(_tCompCache != nullptr);
     updateAndGetBoundingBox();
 
     BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::PostUpdate(deltaTimeUS);
 }
 
 // Recures all the way up to the root
-void BoundsComponent::onBoundsChanged(SceneGraphNode& sgn) const {
+void BoundsComponent::onBoundsChanged(const SceneGraphNode& sgn) const {
     SceneGraphNode* parent = sgn.parent();
     if (parent != nullptr) {
         Attorney::SceneNodeBoundsComponent::setBoundsChanged(parent->getNode());

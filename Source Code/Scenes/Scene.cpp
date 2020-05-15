@@ -178,7 +178,6 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
 
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    const boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
     const Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
     const Str256 sceneDataFile(sceneLocation + ".xml");
@@ -242,7 +241,7 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
         pt.put("dayNight.timeOfDay.<xmlattr>.timeFactor", _dayNightData._speedFactor);
 
         copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true);
-        write_xml(sceneDataFile.c_str(), pt, std::locale(), settings);
+        XML::writeXML(sceneDataFile.c_str(), pt);
     }
 
     if (msgCallback) {
@@ -257,7 +256,7 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
         }
         ptree pt;
         copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true);
-        write_xml((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt, std::locale(), settings);
+        XML::writeXML((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt);
     }
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
@@ -288,14 +287,7 @@ bool Scene::loadXML(const Str128& name) {
         return true;
     }
 
-    try {
-        read_xml(sceneDataFile.c_str(), pt);
-    } catch (const boost::property_tree::xml_parser_error& e) {
-        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_SCENE")), name.c_str());
-        stringImpl error(e.what());
-        error += " [check error log!]";
-        throw error.c_str();
-    }
+    XML::readXML(sceneDataFile.c_str(), pt);
 
     state().renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
     state().renderState().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
@@ -434,7 +426,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
 
 
         boost::property_tree::ptree nodeTree = {};
-        read_xml(nodePath, nodeTree);
+        XML::readXML(nodePath, nodeTree);
 
         const auto loadModelComplete = [this, &nodeTree](CachedResource* res) {
             static_cast<SceneNode*>(res)->loadFromXML(nodeTree);
@@ -1520,7 +1512,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
     const vec3<F32> endRay = crtCamera.unProject(to_F32(aimPos.x), aimY, 1.0f, viewport);
 
     // see if we select another one
-    _sceneSelectionCandidates.reset_lose_memory();
+    _sceneSelectionCandidates.resize(0);
     // Cast the picking ray and find items between the nearPlane and far Plane
     sceneGraph().intersect(
         {

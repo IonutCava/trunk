@@ -73,15 +73,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     }
 
     /// Make sure this program is ready for deletion
-    bool unload() override;
-    /// Check every possible combination of flags to make sure this program can
-    /// be used for rendering
-    bool isValid() const override;
-
-    /// Get the index of the specified subroutine name for the specified stage.
-    /// Not cached!
-    U32 GetSubroutineIndex(ShaderType type, const char* name) override;
-    U32 GetSubroutineUniformCount(ShaderType type) override;
+    bool unload() final;
+    /// Check every possible combination of flags to make sure this program can be used for rendering
+    bool isValid() const final;
 
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
@@ -97,8 +91,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                                          GLint level,
                                          vectorEASTL<Str64>& foundAtoms,
                                          bool lock);
-
-    void update(const U64 deltaTimeUS) override;
    protected:
 
     /// return a list of atom names
@@ -115,10 +107,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void validatePostBind();
 
     bool shouldRecompile() const;
-    bool recompileInternal(bool force) override;
+    bool recompile(bool force) final;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool load() override;
+    bool load() final;
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
     void threadedLoad(bool reloadExisting);
@@ -126,13 +118,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Returns true if at least one shader linked succesfully
     bool reloadShaders(bool reloadExisting);
 
-    /// This is used to set all of the subroutine indices for the specified
-    /// shader stage for this program
-    void SetSubroutines(ShaderType type, const vectorEASTL<U32>& indices) const;
-    /// This works exactly like SetSubroutines, but for a single index.
-    void SetSubroutine(ShaderType type, U32 index) const;
     /// Bind this shader program (returns false if the program was ready/failed validation)
-    bool bind(bool& wasBound);
+    std::pair<bool/*success*/, bool/*was bound*/> bind();
     /// Returns true if the shader is currently active
     bool isBound() const noexcept;
 
@@ -151,7 +138,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static SharedMutex s_atomLock;
     static AtomMap s_atoms;
 
-    static GLuint s_shadersUploadedThisFrame;
     //extra entry for "common" location
     static Str256 shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
     static Str8 shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
@@ -167,8 +153,8 @@ namespace Attorney {
         static void addLineOffset(ShaderType stage, U32 offset) noexcept {
             glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
-        static bool bind(glShaderProgram& program, bool& wasBound) {
-            return program.bind(wasBound);
+        static std::pair<bool, bool> bind(glShaderProgram& program) {
+            return program.bind();
         }
         static void queueValidation(glShaderProgram& program) noexcept {
             // After using the shader at least once, validate the shader if needed
@@ -177,12 +163,6 @@ namespace Attorney {
             }
         }
 
-        static void SetSubroutines(glShaderProgram& program, ShaderType type, const vectorEASTL<U32>& indices) {
-            program.SetSubroutines(type, indices);
-        }
-        static void SetSubroutine(glShaderProgram& program, ShaderType type, U32 index) {
-            program.SetSubroutine(type, index);
-        }
         friend class Divide::GL_API;
     };
 };  // namespace Attorney

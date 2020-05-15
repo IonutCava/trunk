@@ -99,11 +99,6 @@ namespace std {
     }; //ci_string
 }; //namespace std
 
-template<typename T>
-inline stringImpl to_stringImpl(T value) {
-    return stringImpl(std::to_string(value).c_str());
-}
-
 using stringImpl_IgnoreCase = stringAlg::basic_string<char, stringAlg::ci_char_traits>;
 
 #endif //_STL_STRING_H_

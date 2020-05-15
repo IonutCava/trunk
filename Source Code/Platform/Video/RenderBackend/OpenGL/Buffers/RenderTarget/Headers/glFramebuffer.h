@@ -84,7 +84,7 @@ class glFramebuffer : public RenderTarget,
 
     void drawToLayer(const DrawLayerParams& params);
 
-    void setMipLevel(U16 writeLevel, bool validate = true);
+    void setMipLevel(U16 writeLevel);
 
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,

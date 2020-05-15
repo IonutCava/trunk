@@ -4,6 +4,9 @@
 #include "Headers/OPCodesTpl.h"
 
 #include "Networking/Headers/ASIO.h"
+#include "Networking/Headers/Strand.h"
+
+#include "Core/Headers/StringHelper.h"
 
 #include <boost/asio.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -22,7 +25,7 @@ tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& c
       _inputDeadline(io_service),
       _nonEmptyOutputQueue(io_service),
       _outputDeadline(io_service),
-      _strand(io_service),
+      _strand(eastl::make_unique<Strand>(io_service)),
       _header(0)
 {
     _inputDeadline.expires_at(boost::posix_time::pos_infin);
@@ -35,11 +38,11 @@ void tcp_session_tpl::start() {
 
     start_read();
 
-    _inputDeadline.async_wait(_strand.wrap(std::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_inputDeadline)));
+    _inputDeadline.async_wait(_strand->get().wrap(std::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_inputDeadline)));
 
     await_output();
 
-    _outputDeadline.async_wait(_strand.wrap(std::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_outputDeadline)));
+    _outputDeadline.async_wait(_strand->get().wrap(std::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_outputDeadline)));
 }
 
 void tcp_session_tpl::stop() {
@@ -71,7 +74,7 @@ void tcp_session_tpl::start_read() {
     boost::asio::async_read(
         _socket, 
         boost::asio::buffer(&_header, sizeof(_header)),
-        _strand.wrap(
+        _strand->get().wrap(
             [&](boost::system::error_code ec, std::size_t N) {
                 handle_read_body(ec, N);
             }));
@@ -88,7 +91,7 @@ void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec, size
         _inputDeadline.expires_from_now(boost::posix_time::seconds(30));
         boost::asio::async_read(
             _socket, _inputBuffer.prepare(_header),
-            _strand.wrap(
+            _strand->get().wrap(
                 [&](boost::system::error_code ec, std::size_t N) {
                     handle_read_packet(ec, N);
                 }));
@@ -107,7 +110,7 @@ void tcp_session_tpl::handle_read_packet(const boost::system::error_code& ec,
 
     if (!ec) {
         _inputBuffer.commit(_header);
-        ASIO::LOG_PRINT(("Buffer size: " + to_stringImpl(_header)).c_str());
+        ASIO::LOG_PRINT(("Buffer size: " + Util::to_string(_header)).c_str());
         std::istream is(&_inputBuffer);
         WorldPacket packet;
         try {
@@ -145,12 +148,12 @@ void tcp_session_tpl::start_write() {
     if (p.opcode() == OPCodes::SMSG_SEND_FILE) {
         boost::asio::async_write(
             _socket, buffers,
-            _strand.wrap(std::bind(&tcp_session_tpl::handle_write_file,
+            _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write_file,
                                      shared_from_this(), std::placeholders::_1)));
     } else {
         boost::asio::async_write(
             _socket, buffers,
-            _strand.wrap(std::bind(&tcp_session_tpl::handle_write,
+            _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write,
                                      shared_from_this(), std::placeholders::_1)));
     }
 }
@@ -171,14 +174,14 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     // first send file name and file size to server
     std::ostream request_stream(&request_);
     request_stream << filePath << "\n" << file_size << "\n\n";
-    ASIO::LOG_PRINT(("request size:" + to_stringImpl(request_.size())).c_str());
+    ASIO::LOG_PRINT(("request size:" + Util::to_string(request_.size())).c_str());
 
     // Start an asynchronous resolve to translate the server and service names
     // into a list of endpoints.
     _outputFileQueue.pop_front();
     boost::asio::async_write(
         _socket, request_,
-        _strand.wrap(std::bind(&tcp_session_tpl::handle_write,
+        _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write,
                                  shared_from_this(), std::placeholders::_1)));
 }
 
@@ -283,7 +286,7 @@ void tcp_session_tpl::HandleHeartBeatOpCode(WorldPacket& p) {
 void tcp_session_tpl::HandlePingOpCode(WorldPacket& p) {
     F32 time = 0;
     p >> time;
-    ASIO::LOG_PRINT(("Sending  [ SMSG_PONG ] with data: " + to_stringImpl(time)).c_str());
+    ASIO::LOG_PRINT(("Sending  [ SMSG_PONG ] with data: " + Util::to_string(time)).c_str());
     WorldPacket r(OPCodes::SMSG_PONG);
     r << time;
     sendPacket(r);

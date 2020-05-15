@@ -112,7 +112,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     U16 idx = 0;
     for (U8 i = 0; i < layerCount; ++i) {
-        layerOffsetStr = to_stringImpl(i);
+        layerOffsetStr = Util::to_string(i);
         splatTextures.push_back(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         U8 j = 0;
         for (auto it : channels) {
@@ -390,13 +390,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
         shaderModule._defines.emplace_back("COMPUTE_TBN", true);
         shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
-        shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + to_stringImpl(tileMapSize), true);
-        shaderModule._defines.emplace_back("ALBEDO_TILING " + to_stringImpl(albedoTilingFactor), true);
-        shaderModule._defines.emplace_back("MAX_RENDER_NODES " + to_stringImpl(Terrain::MAX_RENDER_NODES), true);
-        shaderModule._defines.emplace_back("TERRAIN_WIDTH " + to_stringImpl(terrainDimensions.width), true);
-        shaderModule._defines.emplace_back("TERRAIN_LENGTH " + to_stringImpl(terrainDimensions.height), true);
-        shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + to_stringImpl(altitudeRange.x) + "f", true);
-        shaderModule._defines.emplace_back("TERRAIN_HEIGHT_RANGE " + to_stringImpl(altitudeRange.y - altitudeRange.x) + "f", true);
+        shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
+        shaderModule._defines.emplace_back("ALBEDO_TILING " + Util::to_string(albedoTilingFactor), true);
+        shaderModule._defines.emplace_back("MAX_RENDER_NODES " + Util::to_string(Terrain::MAX_RENDER_NODES), true);
+        shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(terrainDimensions.width), true);
+        shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(terrainDimensions.height), true);
+        shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + Util::to_string(altitudeRange.x) + "f", true);
+        shaderModule._defines.emplace_back("TERRAIN_HEIGHT_RANGE " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
         shaderModule._defines.emplace_back("NODE_STATIC", true);
 
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {

@@ -111,10 +111,10 @@ struct RenderCbkParams {
 
 using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
 
-constexpr std::pair<RenderTargetUsage, TextureUsage> g_texUsage[] = {
-    { RenderTargetUsage::REFLECTION_PLANAR, TextureUsage::REFLECTION_PLANAR},
-    { RenderTargetUsage::REFRACTION_PLANAR, TextureUsage::REFRACTION_PLANAR},
-    { RenderTargetUsage::REFLECTION_CUBE, TextureUsage::REFLECTION_CUBE }
+constexpr std::array<std::pair<RenderTargetUsage, TextureUsage>, 3> g_texUsage = {
+    std::pair{ RenderTargetUsage::REFLECTION_PLANAR, TextureUsage::REFLECTION_PLANAR},
+    std::pair{ RenderTargetUsage::REFRACTION_PLANAR, TextureUsage::REFRACTION_PLANAR},
+    std::pair{ RenderTargetUsage::REFLECTION_CUBE, TextureUsage::REFLECTION_CUBE }
 };
 
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
@@ -258,7 +258,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
-    std::array<Texture_ptr, (sizeof(g_texUsage) / sizeof(g_texUsage[0]))> _externalTextures;
+    std::array<Texture_ptr, g_texUsage.size()> _externalTextures;
 
     EnvironmentProbeList _envProbes;
     ShaderBufferList _externalBufferBindings;
