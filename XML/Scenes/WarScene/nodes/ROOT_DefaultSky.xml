@@ -3,7 +3,7 @@
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
-        <orientation x="0" y="-0" z="0"/>
+        <orientation x="0" y="0.649835169" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
 </TRANSFORM>
@@ -16,4 +16,16 @@
 </RENDERING>
 <NETWORKING/>
 <SCRIPT/>
-<SKY/>
+<SKY>
+    <Sun__Intensity>11.1999998</Sun__Intensity>
+    <Distance__Multplier__x10>1000</Distance__Multplier__x10>
+    <Ray__Offset:____-10__10__m>1.25</Ray__Offset:____-10__10__m>
+    <Planet__Radius____0__1__100__x>0.5</Planet__Radius____0__1__100__x>
+    <Atmosphere__Offset____1m__-__1000m__>100</Atmosphere__Offset____1m__-__1000m__>
+    <Rayleigh__Scale__Field>8</Rayleigh__Scale__Field>
+    <Rayleigh__Coefficients x="22.3999996" y="13"/>
+    <Mie__Scale__Height>1.20000005</Mie__Scale__Height>
+    <Use__Day__Skybox>true</Use__Day__Skybox>
+    <Use__Night__Skybox>true</Use__Night__Skybox>
+    <Night__Colour r="0" g="0" b="0" a="1"/>
+</SKY>

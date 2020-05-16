@@ -24,7 +24,7 @@
 <RENDERING>
     <Material>
         <version>1</version>
-        <shadingMode>NONE</shadingMode>
+        <shadingMode>COOK_TORRANCE</shadingMode>
         <colour r="0.5" g="0.5" b="0.5" a="1"/>
         <emissive r="0" g="0" b="0"/>
         <metallic>0.200000003</metallic>
@@ -37,43 +37,63 @@
         <SHADOW>
             <PRE_PASS>
                 <0>
-                    <hash>6502400411315185995</hash>
+                    <hash>11982279051139428369</hash>
                 </0>
                 <1>
-                    <hash>4805250985420232288</hash>
+                    <hash>11982279051139428369</hash>
                 </1>
                 <2>
-                    <hash>4805250985420232288</hash>
+                    <hash>11982279051139428369</hash>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>6502400411315185995</hash>
+                    <hash>6708633907915889619</hash>
                 </0>
                 <1>
-                    <hash>4805250985420232288</hash>
+                    <hash>11887568622851589717</hash>
                 </1>
                 <2>
-                    <hash>4805250985420232288</hash>
+                    <hash>11887568622851589717</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>6502400411315185995</hash>
+                    <hash>18446744073709551615</hash>
                 </0>
                 <1>
-                    <hash>4805250985420232288</hash>
+                    <hash>18446744073709551615</hash>
                 </1>
                 <2>
-                    <hash>4805250985420232288</hash>
+                    <hash>18446744073709551615</hash>
                 </2>
             </OIT_PASS>
         </SHADOW>
         <RenderStates>
-            <6502400411315185995>
+            <11982279051139428369>
+                <colourWrite r="true" g="true" b="true" a="true"/>
+                <zBias>0</zBias>
+                <zUnits>0</zUnits>
+                <zFunc>LEQUAL</zFunc>
+                <tessControlPoints>4</tessControlPoints>
+                <cullMode>CW/BACK</cullMode>
+                <fillMode>Solid</fillMode>
+                <frontFaceCCW>true</frontFaceCCW>
+                <scissorTestEnabled>false</scissorTestEnabled>
+                <depthTestEnabled>true</depthTestEnabled>
+                <stencilEnable>false</stencilEnable>
+                <stencilFailOp>KEEP</stencilFailOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
+                <stencilPassOp>KEEP</stencilPassOp>
+                <stencilFunc>NEVER</stencilFunc>
+                <stencilRef>0</stencilRef>
+                <stencilMask>4294967295</stencilMask>
+                <stencilWriteMask>4294967295</stencilWriteMask>
+            </11982279051139428369>
+            <6708633907915889619>
                 <colourWrite r="true" g="true" b="false" a="false"/>
-                <zBias>1</zBias>
-                <zUnits>1</zUnits>
+                <zBias>4</zBias>
+                <zUnits>20</zUnits>
                 <zFunc>LEQUAL</zFunc>
                 <tessControlPoints>4</tessControlPoints>
                 <cullMode>CW/BACK</cullMode>
@@ -89,11 +109,11 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </6502400411315185995>
-            <4805250985420232288>
+            </6708633907915889619>
+            <11887568622851589717>
                 <colourWrite r="false" g="false" b="false" a="false"/>
-                <zBias>1</zBias>
-                <zUnits>1</zUnits>
+                <zBias>4</zBias>
+                <zUnits>20</zUnits>
                 <zFunc>LEQUAL</zFunc>
                 <tessControlPoints>4</tessControlPoints>
                 <cullMode>CW/BACK</cullMode>
@@ -109,7 +129,7 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </4805250985420232288>
+            </11887568622851589717>
             <9071389042233026226>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
@@ -170,26 +190,6 @@
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
             </11982279051139428370>
-            <11982279051139428369>
-                <colourWrite r="true" g="true" b="true" a="true"/>
-                <zBias>0</zBias>
-                <zUnits>0</zUnits>
-                <zFunc>LEQUAL</zFunc>
-                <tessControlPoints>4</tessControlPoints>
-                <cullMode>CW/BACK</cullMode>
-                <fillMode>Solid</fillMode>
-                <frontFaceCCW>true</frontFaceCCW>
-                <scissorTestEnabled>false</scissorTestEnabled>
-                <depthTestEnabled>true</depthTestEnabled>
-                <stencilEnable>false</stencilEnable>
-                <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
-                <stencilPassOp>KEEP</stencilPassOp>
-                <stencilFunc>NEVER</stencilFunc>
-                <stencilRef>0</stencilRef>
-                <stencilMask>4294967295</stencilMask>
-                <stencilWriteMask>4294967295</stencilWriteMask>
-            </11982279051139428369>
             <7601331381234247372>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>

@@ -156,6 +156,10 @@ bool Texture::loadFile(const stringImpl& name, ImageTools::ImageData& fileData) 
 }
 
 bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& fileData) {
+    constexpr std::array<std::string_view, 2> searchPattern = {
+        "//", "\\"
+    };
+
     const U32 layer = to_U32(fileData.layerCount() - 1);
 
     // Extract width, height and bitdepth
@@ -164,7 +168,6 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
     // If we have an alpha channel, we must check for translucency/transparency
 
     FileWithPath fwp = splitPathToNameAndLocation(name.c_str());
-    const std::array<stringImpl, 2> searchPattern = { "//", "\\" };
     Util::ReplaceStringInPlace(fwp._path, searchPattern, "/");
     Util::ReplaceStringInPlace(fwp._path, "/", "_");
     if (fwp._path.back() == '_') {

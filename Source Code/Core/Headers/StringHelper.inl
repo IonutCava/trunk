@@ -107,22 +107,22 @@ bool IsNumber(const T_str& s) {
 }
 
 template<typename T_str>
-void GetPermutations(const T_str& inputString, vectorEASTL<T_str>& permutationContainer) {
+void GetPermutations(std::string_view subject, vectorEASTL<T_str>& permutationContainer) {
     permutationContainer.clear();
-    T_str tempCpy(inputString);
+    T_str tempCpy(subject);
     std::sort(std::begin(tempCpy), std::end(tempCpy));
     do {
-        permutationContainer.push_back(inputString);
+        permutationContainer.push_back(tempCpy);
     } while (std::next_permutation(std::begin(tempCpy), std::end(tempCpy)));
 }
 
 template<size_t N, typename T_str>
-bool ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
+bool ReplaceStringInPlace(T_str& subject, const std::array<std::string_view, N>& search, std::string_view replace, bool recursive) {
     bool ret = true;
     bool changed = true;
     while (changed) {
         changed = false;
-        for (const stringImpl& s : search) {
+        for (std::string_view s : search) {
             changed = ReplaceStringInPlace(subject, s, replace, recursive);
             ret = changed || ret;
             
@@ -133,12 +133,12 @@ bool ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& searc
 }
 
 template<size_t N, typename T_str>
-T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive) {
-    T_str ret = subject;
+T_str ReplaceString(std::string_view subject, const std::array<std::string_view, N>& search, std::string_view replace, bool recursive) {
+    T_str ret{ subject };
     bool changed = true;
     while (changed) {
         changed = false;
-        for (const stringImpl& s : search) {
+        for (std::string_view s : search) {
             changed = ReplaceStringInPlace(ret, s, replace, recursive) || changed;
         }
     }
@@ -148,8 +148,8 @@ T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& searc
 
 template<typename T_str>
 inline bool ReplaceStringInPlace(T_str& subject,
-                                 const stringImpl& search,
-                                 const stringImpl& replace,
+                                 std::string_view search,
+                                 std::string_view replace,
                                  bool recursive) {
     bool ret = false;
     bool changed = true;
@@ -157,8 +157,8 @@ inline bool ReplaceStringInPlace(T_str& subject,
         changed = false;
 
         size_t pos = 0;
-        while ((pos = subject.find(search.c_str(), pos)) != T_str::npos) {
-            subject.replace(pos, search.length(), replace.c_str());
+        while ((pos = subject.find(search.data(), pos)) != T_str::npos) {
+            subject.replace(pos, search.length(), replace.data());
             pos += replace.length();
             changed = true;
             ret = true;
@@ -173,12 +173,12 @@ inline bool ReplaceStringInPlace(T_str& subject,
 }
 
 template<typename T_str>
-inline T_str ReplaceString(const T_str& subject,
-                           const stringImpl& search,
-                           const stringImpl& replace,
+inline T_str ReplaceString(std::string_view subject,
+                           std::string_view search,
+                           std::string_view replace,
                            bool recursive)
 {
-    T_str ret = subject;
+    T_str ret{ subject };
     ReplaceStringInPlace(ret, search, replace, recursive);
     return ret;
 }

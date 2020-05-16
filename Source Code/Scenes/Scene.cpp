@@ -366,15 +366,15 @@ bool Scene::loadXML(const Str128& name) {
 }
 
 namespace {
-    bool IsPrimitive(const char* modelName) {
-        constexpr std::array<const char*, 3> pritimiveNames = {
-            "BOX_3D",
-            "QUAD_3D",
-            "SPHERE_3D"
+    inline bool IsPrimitive(U64 nameHash) {
+        constexpr std::array<U64, 3> pritimiveNames = {
+            _ID("BOX_3D"),
+            _ID("QUAD_3D"),
+            _ID("SPHERE_3D")
         };
 
-        for (const char* it : pritimiveNames) {
-            if (Util::CompareIgnoreCase(modelName, it)) {
+        for (U64 it : pritimiveNames) {
+            if (nameHash ==  it) {
                 return true;
             }
         }
@@ -438,9 +438,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         SceneNode_ptr ret = nullptr;
 
         bool skipAdd = true;
-        if (sceneNode.type == "ROOT") {
-            // Nothing to do with the root. It's good that it exists
-        } else if (IsPrimitive(sceneNode.type.c_str())) {// Primitive types (only top level)
+        if (IsPrimitive(sceneNode.typeHash)) {// Primitive types (only top level)
             normalMask |= to_base(ComponentType::RENDERING);
 
             if (!modelName.empty()) {
@@ -473,67 +471,71 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
                 ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
             }
             skipAdd = false;
-        }
-        // Terrain types
-        else if (sceneNode.type == "TERRAIN") {
-            _loadingTasks.fetch_add(1);
-            normalMask |= to_base(ComponentType::RENDERING);
-            addTerrain(*parent, nodeTree, sceneNode.name);
-        }
-        else if (sceneNode.type == "VEGETATION_GRASS") {
-            normalMask |= to_base(ComponentType::RENDERING);
-            NOP(); //we rebuild grass everytime
-        }
-        else if (sceneNode.type == "INFINITE_PLANE") {
-            _loadingTasks.fetch_add(1);
-            normalMask |= to_base(ComponentType::RENDERING);
-            addInfPlane(*parent, nodeTree, sceneNode.name);
-        } 
-        else if (sceneNode.type == "WATER") {
-            _loadingTasks.fetch_add(1);
-            normalMask |= to_base(ComponentType::RENDERING);
-            addWater(*parent, nodeTree, sceneNode.name);
-        }
-        // Mesh types
-        else if (Util::CompareIgnoreCase(sceneNode.type, "MESH")) {
-            // No rendering component for meshes. Only for submeshes
-            //normalMask |= to_base(ComponentType::RENDERING);
-            if (!modelName.empty()) {
-                _loadingTasks.fetch_add(1);
-                ResourceDescriptor model(modelName);
-                model.assetLocation(Paths::g_assetsLocation + "models");
-                model.assetName(modelName);
-                model.flag(true);
-                model.threaded(false);
-                model.waitForReady(false);
-                ret = CreateResource<Mesh>(_resCache, model);
-                ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
-            }
+        } else {
+            switch (sceneNode.typeHash) {
+                case _ID("ROOT"): {
+                    // Nothing to do with the root. This hasn't been used for a while
+                } break;
+                case _ID("TERRAIN"): {
+                    _loadingTasks.fetch_add(1);
+                    normalMask |= to_base(ComponentType::RENDERING);
+                    addTerrain(*parent, nodeTree, sceneNode.name);
+                } break;
+                case _ID("VEGETATION_GRASS"): {
+                    normalMask |= to_base(ComponentType::RENDERING);
+                    NOP(); //we rebuild grass everytime
+                } break;
+                case _ID("INFINITE_PLANE"): {
+                    _loadingTasks.fetch_add(1);
+                    normalMask |= to_base(ComponentType::RENDERING);
+                    addInfPlane(*parent, nodeTree, sceneNode.name);
+                }  break;
+                case _ID("WATER"): {
+                    _loadingTasks.fetch_add(1);
+                    normalMask |= to_base(ComponentType::RENDERING);
+                    addWater(*parent, nodeTree, sceneNode.name);
+                } break;
+                case _ID("MESH"): {
+                    // No rendering component for meshes. Only for submeshes
+                    //normalMask |= to_base(ComponentType::RENDERING);
+                    if (!modelName.empty()) {
+                        _loadingTasks.fetch_add(1);
+                        ResourceDescriptor model(modelName);
+                        model.assetLocation(Paths::g_assetsLocation + "models");
+                        model.assetName(modelName);
+                        model.flag(true);
+                        model.threaded(false);
+                        model.waitForReady(false);
+                        ret = CreateResource<Mesh>(_resCache, model);
+                        ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
+                    }
 
-            skipAdd = false;
-        }
-        // Submesh (change component properties, as the meshes should already be loaded)
-        else if (Util::CompareIgnoreCase(sceneNode.type, "SUBMESH")) {
-            while (parent->getNode().getState() != ResourceState::RES_LOADED) {
-                if (parentTask != nullptr) {
-                    parentTask->_parentPool->threadWaiting();
-                }
+                    skipAdd = false;
+                } break;
+                // Submesh (change component properties, as the meshes should already be loaded)
+                case _ID("SUBMESH"): {
+                    while (parent->getNode().getState() != ResourceState::RES_LOADED) {
+                        if (parentTask != nullptr) {
+                            parentTask->_parentPool->threadWaiting();
+                        }
+                    }
+                    normalMask |= to_base(ComponentType::RENDERING);
+                    SceneGraphNode* subMesh = parent->findChild(_ID(sceneNode.name.c_str()), false, false);
+                    if (subMesh != nullptr) {
+                        subMesh->loadFromXML(nodeTree);
+                    }
+                } break;
+                case _ID("SKY"): {
+                    //ToDo: Change this - Currently, just load the default sky.
+                    normalMask |= to_base(ComponentType::RENDERING);
+                    addSky(*parent, nodeTree, sceneNode.name);
+                } break;
+                // Everything else
+                default:
+                case _ID("TRANSFORM"): {
+                    skipAdd = false;
+                } break;
             }
-            normalMask |= to_base(ComponentType::RENDERING);
-            SceneGraphNode* subMesh = parent->findChild(_ID(sceneNode.name.c_str()), false, false);
-            if (subMesh != nullptr) {
-                subMesh->loadFromXML(nodeTree);
-            }
-        }
-        // Sky
-        else if (Util::CompareIgnoreCase(sceneNode.type, "SKY")) {
-            //ToDo: Change this - Currently, just load the default sky.
-            normalMask |= to_base(ComponentType::RENDERING);
-            addSky(*parent, nodeTree, sceneNode.name);
-        }
-        // Everything else
-        else if (Util::CompareIgnoreCase(sceneNode.type, "")) {
-            skipAdd = false;
         }
 
         if (!skipAdd) {

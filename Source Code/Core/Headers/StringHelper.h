@@ -40,19 +40,19 @@ namespace Divide {
         bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
 
         template<size_t N, typename T_str = stringImpl>
-        bool ReplaceStringInPlace(T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
+        bool ReplaceStringInPlace(T_str& subject, const std::array<std::string_view, N>& search, std::string_view replace, bool recursive = false);
 
         template<size_t N, typename T_str = stringImpl>
-        T_str ReplaceString(const T_str& subject, const std::array<stringImpl, N>& search, const stringImpl& replace, bool recursive = false);
+        T_str ReplaceString(std::string_view subject, const std::array<std::string_view, N>& search, std::string_view replace, bool recursive = false);
 
         template<typename T_str = stringImpl>
-        bool ReplaceStringInPlace(T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
+        bool ReplaceStringInPlace(T_str& subject, std::string_view search, std::string_view replace, bool recursive = false);
         
         template<typename T_str = stringImpl>
-        T_str ReplaceString(const T_str& subject, const stringImpl& search, const stringImpl& replace, bool recursive = false);
+        T_str ReplaceString(std::string_view subject, std::string_view search, std::string_view replace, bool recursive = false);
 
         template<typename T_str = stringImpl>
-        void GetPermutations(const T_str& inputString, vectorEASTL<T_str>& permutationContainer);
+        void GetPermutations(std::string_view subject, vectorEASTL<T_str>& permutationContainer);
 
         template<typename T_str = stringImpl>
         bool IsNumber(const T_str& s);

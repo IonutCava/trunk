@@ -103,7 +103,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene);
 
 struct SceneNode {
     Str64 name;
-    Str32 type;
+    U64 typeHash;
 
     vectorEASTL<SceneNode> children;
 };

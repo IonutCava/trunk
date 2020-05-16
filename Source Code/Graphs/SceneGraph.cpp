@@ -442,7 +442,7 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
             if (name == "name") {
                 graphOut.name = value.data();
             } else if (name == "type") {
-                graphOut.type = value.data();
+                graphOut.typeHash = _ID(value.data().c_str());
             } else {
                 //ToDo: Error handling -Ionut
                 NOP();
@@ -465,7 +465,7 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     // lambdas and capturing one.
     readNode(node_pt, rootNode, readNode);
     // This may not be needed;
-    assert(Util::CompareIgnoreCase(rootNode.type, "TRANSFORM"));
+    assert(rootNode.typeHash == _ID("TRANSFORM"));
     parentScene().addSceneGraphToLoad(rootNode);
 }
 };

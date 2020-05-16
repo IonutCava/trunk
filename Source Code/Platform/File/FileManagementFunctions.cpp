@@ -96,7 +96,10 @@ bool openFile(const char* cmd, const char* filePath, const char* fileName) {
         return false;
     }
 
-    const std::array<stringImpl, 2> searchPattern = { "//", "\\" };
+    constexpr std::array<std::string_view, 2> searchPattern = {
+        "//", "\\"
+    };
+
     const stringImpl file = "\"" + Util::ReplaceString({ const_sysInfo()._pathAndFilename._path + "/" + filePath + fileName }, searchPattern, "/", true) + "\"";
 
     if (strlen(cmd) == 0) {

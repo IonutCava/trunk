@@ -102,7 +102,7 @@ void RenderStateBlock::from(const RenderStateBlock& other) noexcept {
     _stencilEnable = other._stencilEnable;
 
     {
-        _hash = other._hash;
+        _hash = other.getHash();
         _dirty = false;
     }
 }

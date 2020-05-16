@@ -8,8 +8,12 @@
 namespace Divide {
     namespace {
         inline stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
-            Util::ReplaceStringInPlace(fieldName, " ", "__");
-            return Util::StringFormat("%s.%s", componentName, fieldName.c_str());
+            constexpr std::array<std::string_view, 6> InvalidXMLStrings = {
+                " ", "[", "]", "...", "..", "."
+            };
+
+            const stringImpl temp = Util::ReplaceString(fieldName.c_str(), InvalidXMLStrings, "__");
+            return Util::StringFormat("%s.%s", componentName, temp.c_str());
         }
     };
 
