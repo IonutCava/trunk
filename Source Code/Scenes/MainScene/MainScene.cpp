@@ -47,7 +47,7 @@ void MainScene::updateLights() {
 
 void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     if (state().playerState(idx).cameraUpdated()) {
-        Camera& cam = getPlayerForIndex(idx)->getCamera();
+        Camera& cam = *getPlayerForIndex(idx)->camera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
         if (!_freeflyCamera) {
@@ -215,8 +215,8 @@ U16 MainScene::registerInputActions() {
         actionEntry.releaseIDs().insert(actionID);
         _input->actionList().registerInputAction(actionID, [this](InputParams param) {
             _freeflyCamera = !_freeflyCamera;
-            FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
-            cam.setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
+            FreeFlyCamera* cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->camera();
+            cam->setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
         });
         _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
         actionID++;

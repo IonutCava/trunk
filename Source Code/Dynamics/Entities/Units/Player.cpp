@@ -12,22 +12,13 @@ Player::Player(U8 index, FrameListenerManager& parent, U32 callOrder)
     : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER, parent, callOrder),
       _index(index)
 {
-     _lockedControls = false;
-
-     _playerCam = Camera::createCamera<FreeFlyCamera>(Util::StringFormat("Player_Cam_%d", getGUID()));
+     const stringImpl& cameraName = Util::StringFormat("Player_Cam_%d", getGUID());
+     _camera = Camera::createCamera<FreeFlyCamera>(cameraName);
 }
 
 Player::~Player()
 {
-    Camera::destroyCamera(_playerCam);
-}
-
-FreeFlyCamera& Player::getCamera() {
-    return *_playerCam;
-}
-
-const FreeFlyCamera& Player::getCamera() const {
-    return *_playerCam;
+    Camera::destroyCamera(_camera);
 }
 
 void Player::setParentNode(SceneGraphNode* node) {

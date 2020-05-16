@@ -294,7 +294,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
 
         for (UnitComponent* player : _players) {
             if (player != nullptr) {
-                player->getUnit<Player>()->getCamera().setProjection(aspectRatio, fov, zPlanes);
+                player->getUnit<Player>()->camera()->setProjection(aspectRatio, fov, zPlanes);
             }
         }
 
@@ -328,8 +328,8 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
 
     if (i < Config::MAX_LOCAL_PLAYER_COUNT) {
         Player_ptr player = std::make_shared<Player>(to_U8(i), parent().frameListenerMgr(), 666 + i);
-        player->getCamera().fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
-        player->getCamera().setFixedYawAxis(true);
+        player->camera()->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
+        player->camera()->setFixedYawAxis(true);
         _players[i] = playerNode->get<UnitComponent>();
         _players[i]->setUnit(player);
 
@@ -600,7 +600,7 @@ Camera* SceneManager::playerCamera(PlayerIndex idx) const {
 
     Camera* overrideCamera = getActiveScene().state().playerState(idx).overrideCamera();
     if (overrideCamera == nullptr) {
-        overrideCamera = &_players[idx]->getUnit<Player>()->getCamera();
+        overrideCamera = _players[idx]->getUnit<Player>()->camera();
     }
 
     return overrideCamera;

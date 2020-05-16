@@ -93,7 +93,6 @@ inline vec2<T> Normalize(vec2<T> &vector) {
 }
 
 template <typename T>
-//[[nodiscard]]
 inline vec2<T> Normalized(const vec2<T> &vector) {
     return vec2<T>(vector).normalize();
 }
@@ -122,7 +121,6 @@ inline vec3<T> Normalize(vec3<T> &vector) {
 }
 
 template <typename T>
-//[[nodiscard]]
 inline vec3<T> Normalized(const vec3<T> &vector) {
     return vec3<T>(vector).normalize();
 }
@@ -194,7 +192,6 @@ inline vec4<T> Normalize(vec4<T> &vector) {
 }
 
 template <typename T>
-//[[nodiscard]]
 inline vec4<T> Normalized(const vec4<T> &vector) {
     return vec4<T>(vector).normalize();
 }

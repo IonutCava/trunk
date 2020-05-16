@@ -96,17 +96,17 @@ using DefaultDistribution = typename std::conditional<std::is_integral<T>::value
 template <typename T, 
           typename Engine = std::mt19937_64,
           typename Distribution = DefaultDistribution<T>>
-T Random(T min, T max) noexcept;
+[[nodiscard]] T Random(T min, T max) noexcept;
 
 template <typename T,
           typename Engine = std::mt19937_64,
           typename Distribution = DefaultDistribution<T>>
-T Random(T max) noexcept;
+[[nodiscard]] T Random(T max) noexcept;
 
 template <typename T,
           typename Engine = std::mt19937_64,
           typename Distribution = DefaultDistribution<T>>
-T Random() noexcept;
+[[nodiscard]] T Random() noexcept;
 
 template<typename Engine = std::mt19937_64>
 void SeedRandom();
@@ -116,7 +116,7 @@ void SeedRandom(U32 seed);
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const Mask bitMask, const Type bit) noexcept;
+[[nodiscard]] BitCompare(const Mask bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
@@ -135,11 +135,11 @@ constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ToggleBit(Mask& bitMask, const Type bit, bool state) noexcept;
 
 template<typename Mask>
-constexpr bool AnyCompare(const Mask bitMask, const Mask checkMask) noexcept;
+[[nodiscard]] constexpr bool AnyCompare(const Mask bitMask, const Mask checkMask) noexcept;
 template<typename Mask>
-constexpr bool AllCompare(const Mask bitMask, const Mask checkMask) noexcept;
+[[nodiscard]] constexpr bool AllCompare(const Mask bitMask, const Mask checkMask) noexcept;
 template<typename Mask>
-constexpr bool BitCompare(const Mask bitMask, const Mask bit) noexcept;
+[[nodiscard]] constexpr bool BitCompare(const Mask bitMask, const Mask bit) noexcept;
 template<typename Mask>
 constexpr void SetBit(Mask& bitMask, const Mask bit) noexcept;
 template<typename Mask>
@@ -151,7 +151,7 @@ constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept;
+[[nodiscard]] BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
@@ -162,7 +162,7 @@ constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
 ClearBit(std::atomic<Mask>& bitMask, const Type bit) noexcept;
 
 template<typename Mask>
-constexpr bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept;
+[[nodiscard]] constexpr bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 template<typename Mask>
 constexpr void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept;
 template<typename Mask>
@@ -175,28 +175,28 @@ template <typename T, typename U = T>
 void CLAMP(T& n, const U min, const U max) noexcept;
 
 template <typename T, typename U>
-T CLAMPED(const T& n, const U min, const U max) noexcept;
+[[nodiscard]] T CLAMPED(const T& n, const U min, const U max) noexcept;
 
 template <typename T>
-T CLAMPED_01(const T& n) noexcept;
+[[nodiscard]] T CLAMPED_01(const T& n) noexcept;
 
 template <typename T>
-T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) noexcept;
+[[nodiscard]] T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) noexcept;
 
 template <typename T>
-T SQUARED(T input) noexcept;
+[[nodiscard]] T SQUARED(T input) noexcept;
 
 template <typename T>
-T SIGNED_SQUARED(T input) noexcept;
+[[nodiscard]] T SIGNED_SQUARED(T input) noexcept;
 
 template <typename T>
-T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) noexcept {
+[[nodiscard]] T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) noexcept {
     D64 slope = 0.0;
     return MAP(input, in_min, in_max, out_min, out_max, slope);
 }
 
 template <typename T>
-vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
+[[nodiscard]] vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
     return vec2<T> {
         MAP(input.x, in_rect.x, in_rect.z, out_rect.x, out_rect.z),
         MAP(input.y, in_rect.y, in_rect.w, out_rect.y, out_rect.w)
@@ -204,12 +204,12 @@ vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_re
 }
 
 template <typename T>
-vec3<T> COORD_REMAP(vec3<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
+[[nodiscard]] vec3<T> COORD_REMAP(vec3<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
     return vec3<T>(COORD_REMAP(input.xy(), in_rect, out_rect), input.z);
 }
 
 template <typename T>
-T NORMALIZE(T input, const T range_min, const T range_max) noexcept {
+[[nodiscard]] T NORMALIZE(T input, const T range_min, const T range_max) noexcept {
     return MAP<T>(input, range_min, range_max, T(0), T(1));
 }
 
@@ -223,46 +223,46 @@ template<typename T>
 void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect) noexcept;
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept;
+[[nodiscard]] bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept;
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect) noexcept;
+[[nodiscard]] bool COORDS_IN_RECT(T input_x, T input_y, const Rect<T>& rect) noexcept;
 
 template<typename T>
-bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) noexcept;
+[[nodiscard]] bool COORDS_IN_RECT(T input_x, T input_y, const vec4<T>& rect) noexcept;
 
-constexpr U32 nextPOW2(U32 n) noexcept;
-constexpr U32 prevPOW2(U32 n) noexcept;
+[[nodiscard]] constexpr U32 nextPOW2(U32 n) noexcept;
+[[nodiscard]] constexpr U32 prevPOW2(U32 n) noexcept;
 
 // Calculate the smalles NxN matrix that can hold the specified
 // number of elements. Returns N
-constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept;
+[[nodiscard]] constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept;
 
 template <typename T, typename U>
-T Lerp(const T v1, const T v2, const U t);
+[[nodiscard]] T Lerp(const T v1, const T v2, const U t);
 
 template <typename T>
-T Sqrt(T input) noexcept;
+[[nodiscard]] T Sqrt(T input) noexcept;
 
 template <typename T, typename U>
-T Sqrt(U input) noexcept;
+[[nodiscard]] T Sqrt(U input) noexcept;
 
 ///Helper methods to go from a float to packed char and back
-constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept;
-constexpr U8 FLOAT_TO_CHAR_SNORM(const F32 value) noexcept;
-constexpr F32 CHAR_TO_FLOAT(const U8 value) noexcept;
-constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value) noexcept;
+[[nodiscard]] constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept;
+[[nodiscard]] constexpr U8 FLOAT_TO_CHAR_SNORM(const F32 value) noexcept;
+[[nodiscard]] constexpr F32 CHAR_TO_FLOAT(const U8 value) noexcept;
+[[nodiscard]] constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value) noexcept;
 
 /// Helper method to emulate GLSL
-F32 FRACT(const F32 floatValue) noexcept;
+[[nodiscard]] F32 FRACT(const F32 floatValue) noexcept;
 
 // Pack 3 values into 1 float
-F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept;
+[[nodiscard]] F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept;
 
 // UnPack 3 values from 1 float
 void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) noexcept;
 
-U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) noexcept;
+[[nodiscard]] U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) noexcept;
 void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept;
 
 // bit manipulation
@@ -288,114 +288,114 @@ template<typename T>
 using DEGREES = T;
 
 template <typename T>
-constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept;
+[[nodiscard]] constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept;
 template <typename T>
-constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) noexcept;
+[[nodiscard]] constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) noexcept;
 template <typename T>
-constexpr vec2<DEGREES<T>> to_DEGREES(const vec2<RADIANS<T>>& angle) noexcept;
+[[nodiscard]] constexpr vec2<DEGREES<T>> to_DEGREES(const vec2<RADIANS<T>>& angle) noexcept;
 template <typename T>
-constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) noexcept;
+[[nodiscard]] constexpr vec3<RADIANS<T>> to_RADIANS(const vec3<DEGREES<T>>& angle) noexcept;
 template <typename T>
-constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) noexcept;
+[[nodiscard]] constexpr vec3<DEGREES<T>> to_DEGREES(const vec3<RADIANS<T>>& angle) noexcept;
 template <typename T>
-constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) noexcept;
+[[nodiscard]] constexpr vec4<RADIANS<T>> to_RADIANS(const vec4<DEGREES<T>>& angle) noexcept;
 template <typename T>
-constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) noexcept;
+[[nodiscard]] constexpr vec4<DEGREES<T>> to_DEGREES(const vec4<RADIANS<T>>& angle) noexcept;
 
 /// Return the radian equivalent of the given degree value
 template <typename T>
-constexpr T DegreesToRadians(const T angleDegrees) noexcept;
+[[nodiscard]] constexpr T DegreesToRadians(const T angleDegrees) noexcept;
 /// Return the degree equivalent of the given radian value
 template <typename T>
-constexpr T RadiansToDegrees(const T angleRadians) noexcept;
+[[nodiscard]] constexpr T RadiansToDegrees(const T angleRadians) noexcept;
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-constexpr T Degrees(const T degrees) noexcept;
+[[nodiscard]] constexpr T Degrees(const T degrees) noexcept;
 /// Returns the specified value. Used only for emphasis
 template <typename T>
-constexpr T Radians(const T radians) noexcept;
+[[nodiscard]] constexpr T Radians(const T radians) noexcept;
 };
 
 namespace Metric {
 /// Base value * 1000000000000
 template <typename T>
-constexpr T Tera(const T a);
+[[nodiscard]] constexpr T Tera(const T a);
 /// Base value * 1000000000
 template <typename T>
-constexpr T Giga(const T a);
+[[nodiscard]] constexpr T Giga(const T a);
 /// Base value * 1000000
 template <typename T>
-constexpr T Mega(const T a);
+[[nodiscard]] constexpr T Mega(const T a);
 /// Base value * 1000
 template <typename T>
-constexpr T Kilo(const T a);
+[[nodiscard]] constexpr T Kilo(const T a);
 /// Base value * 100
 template <typename T>
-constexpr T Hecto(const T a);
+[[nodiscard]] constexpr T Hecto(const T a);
 /// Base value * 10
 template <typename T>
-constexpr T Deca(const T a);
+[[nodiscard]] constexpr T Deca(const T a);
 /// Base value
 template <typename T>
-constexpr T Base(const T a);
+[[nodiscard]] constexpr T Base(const T a);
 /// Base value * 0.1
 template <typename T>
-constexpr T Deci(const T a);
+[[nodiscard]] constexpr T Deci(const T a);
 /// Base value * 0.01
 template <typename T>
-constexpr T Centi(const T a);
+[[nodiscard]] constexpr T Centi(const T a);
 /// Base value * 0.001
 template <typename T>
-constexpr T Milli(const T a);
+[[nodiscard]] constexpr T Milli(const T a);
 /// Base value * 0.000001
 template <typename T>
-constexpr T Micro(const T a);
+[[nodiscard]] constexpr T Micro(const T a);
 /// Base value * 0.000000001
 template <typename T>
-constexpr T Nano(const T a);
+[[nodiscard]] constexpr T Nano(const T a);
 /// Base value * 0.000000000001
 template <typename T>
-constexpr T Pico(const T a);
+[[nodiscard]] constexpr T Pico(const T a);
 
 /// Base value * 1000000000000
 template <typename T, typename U>
-constexpr T Tera(const U a);
+[[nodiscard]] constexpr T Tera(const U a);
 /// Base value * 1000000000
 template <typename T, typename U>
-constexpr T Giga(const U a);
+[[nodiscard]] constexpr T Giga(const U a);
 /// Base value * 1000000
 template <typename T, typename U>
-constexpr T Mega(const U a);
+[[nodiscard]] constexpr T Mega(const U a);
 /// Base value * 1000
 template <typename T, typename U>
-constexpr T Kilo(const U a);
+[[nodiscard]] constexpr T Kilo(const U a);
 /// Base value * 100
 template <typename T, typename U>
-constexpr T Hecto(const U a);
+[[nodiscard]] constexpr T Hecto(const U a);
 /// Base value * 10
 template <typename T, typename U>
-constexpr T Deca(const U a);
+[[nodiscard]] constexpr T Deca(const U a);
 /// Base value
 template <typename T, typename U>
-constexpr T Base(const U a);
+[[nodiscard]] constexpr T Base(const U a);
 /// Base value * 0.1
 template <typename T, typename U>
-constexpr T Deci(const U a);
+[[nodiscard]] constexpr T Deci(const U a);
 /// Base value * 0.01
 template <typename T, typename U>
-constexpr T Centi(const U a);
+[[nodiscard]] constexpr T Centi(const U a);
 /// Base value * 0.001
 template <typename T, typename U>
-constexpr T Milli(const U a);
+[[nodiscard]] constexpr T Milli(const U a);
 /// Base value * 0.000001
 template <typename T, typename U>
-constexpr T Micro(const U a);
+[[nodiscard]] constexpr T Micro(const U a);
 /// Base value * 0.000000001
 template <typename T, typename U>
-constexpr T Nano(const U a);
+[[nodiscard]] constexpr T Nano(const U a);
 /// Base value * 0.000000000001
 template <typename T, typename U>
-constexpr T Pico(const U a);
+[[nodiscard]] constexpr T Pico(const U a);
 };
 
 struct SimpleTime {
@@ -407,50 +407,50 @@ namespace Time {
 /// Return the passed param without any modification
 /// Used only for emphasis
 template <typename T>
-constexpr T Seconds(const T a);
+[[nodiscard]] constexpr T Seconds(const T a);
 template <typename T>
-constexpr T Milliseconds(const T a);
+[[nodiscard]] constexpr T Milliseconds(const T a);
 template <typename T>
-constexpr T Microseconds(const T a);
+[[nodiscard]] constexpr T Microseconds(const T a);
 template <typename T>
-constexpr T Nanoseconds(const T a);
+[[nodiscard]] constexpr T Nanoseconds(const T a);
 
 template <typename T, typename U>
-constexpr T Seconds(const U a);
+[[nodiscard]] constexpr T Seconds(const U a);
 template <typename T, typename U>
-constexpr T Milliseconds(const U a);
+[[nodiscard]] constexpr T Milliseconds(const U a);
 template <typename T, typename U>
-constexpr T Microseconds(const U a);
+[[nodiscard]] constexpr T Microseconds(const U a);
 template <typename T, typename U>
-constexpr T Nanoseconds(const U a);
+[[nodiscard]] constexpr T Nanoseconds(const U a);
 
 template <typename T = D64, typename U>
-constexpr T NanosecondsToSeconds(const U a) noexcept;
+[[nodiscard]] constexpr T NanosecondsToSeconds(const U a) noexcept;
 template <typename T = D64, typename U>
-constexpr T NanosecondsToMilliseconds(const U a) noexcept;
+[[nodiscard]] constexpr T NanosecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T NanosecondsToMicroseconds(const U a) noexcept;
+[[nodiscard]] constexpr T NanosecondsToMicroseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-constexpr T MicrosecondsToSeconds(const U a) noexcept;
+[[nodiscard]] constexpr T MicrosecondsToSeconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T MicrosecondsToMilliseconds(const U a) noexcept;
+[[nodiscard]] constexpr T MicrosecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T MicrosecondsToNanoseconds(const U a) noexcept;
+[[nodiscard]] constexpr T MicrosecondsToNanoseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-constexpr T MillisecondsToSeconds(const U a) noexcept;
+[[nodiscard]] constexpr T MillisecondsToSeconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T MillisecondsToMicroseconds(const U a) noexcept;
+[[nodiscard]] constexpr T MillisecondsToMicroseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T MillisecondsToNanoseconds(const U a) noexcept;
+[[nodiscard]] constexpr T MillisecondsToNanoseconds(const U a) noexcept;
 
 template <typename T = D64, typename U>
-constexpr T SecondsToMilliseconds(const U a) noexcept;
+[[nodiscard]] constexpr T SecondsToMilliseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T SecondsToMicroseconds(const U a) noexcept;
+[[nodiscard]] constexpr T SecondsToMicroseconds(const U a) noexcept;
 template <typename T = U64, typename U>
-constexpr T SecondsToNanoseconds(const U a) noexcept;
+[[nodiscard]] constexpr T SecondsToNanoseconds(const U a) noexcept;
 
 };  // namespace Time
 
@@ -461,7 +461,7 @@ struct Circle {
     F32 radius = 1.f;
 };
 
-bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) noexcept;
+[[nodiscard]] bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) noexcept;
 
 /// a la Boost
 template <typename T>
@@ -469,7 +469,7 @@ void Hash_combine(size_t& seed, const T& v) noexcept;
 
 // U = to data type, T = from data type
 template <typename U, typename T>
-U ConvertData(const T& data);
+[[nodiscard]] U ConvertData(const T& data);
 
 
 /** Ogre3D
@@ -481,20 +481,21 @@ becomes 170.
 @param normPitch If false, the pitch isn't normalized.
 @param normRoll If false, the roll isn't normalized.
 */
+[[nodiscard]] 
 void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
                bool normRoll = true) noexcept;
 
-UColour4  ToByteColour(const FColour4& floatColour) noexcept;
-UColour3  ToByteColour(const FColour3& floatColour) noexcept;
-vec4<I32> ToIntColour(const FColour4& floatColour) noexcept;
-vec3<I32> ToIntColour(const FColour3& floatColour) noexcept;
-vec4<U32> ToUIntColour(const FColour4& floatColour) noexcept;
-vec3<U32> ToUIntColour(const FColour3& floatColour) noexcept;
-FColour4 ToFloatColour(const UColour4& byteColour) noexcept;
-FColour3 ToFloatColour(const UColour3& byteColour) noexcept;
-FColour4 ToFloatColour(const vec4<U32>& uintColour) noexcept;
-FColour3 ToFloatColour(const vec3<U32>& uintColour) noexcept;
+[[nodiscard]] UColour4  ToByteColour(const FColour4& floatColour) noexcept;
+[[nodiscard]] UColour3  ToByteColour(const FColour3& floatColour) noexcept;
+[[nodiscard]] vec4<I32> ToIntColour(const FColour4& floatColour) noexcept;
+[[nodiscard]] vec3<I32> ToIntColour(const FColour3& floatColour) noexcept;
+[[nodiscard]] vec4<U32> ToUIntColour(const FColour4& floatColour) noexcept;
+[[nodiscard]] vec3<U32> ToUIntColour(const FColour3& floatColour) noexcept;
+[[nodiscard]] FColour4 ToFloatColour(const UColour4& byteColour) noexcept;
+[[nodiscard]] FColour3 ToFloatColour(const UColour3& byteColour) noexcept;
+[[nodiscard]] FColour4 ToFloatColour(const vec4<U32>& uintColour) noexcept;
+[[nodiscard]] FColour3 ToFloatColour(const vec3<U32>& uintColour) noexcept;
 
 void ToByteColour(const FColour4& floatColour, UColour4& colourOut) noexcept;
 void ToByteColour(const FColour3& floatColour, UColour3& colourOut) noexcept;
@@ -508,32 +509,35 @@ void ToFloatColour(const vec4<U32>& uintColour, FColour4& colourOut) noexcept;
 void ToFloatColour(const vec3<U32>& uintColour, FColour3& colourOut) noexcept;
 
 
+[[nodiscard]] 
 inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) noexcept {
     return PACK_FLOAT(FLOAT_TO_CHAR_SNORM(x),
                       FLOAT_TO_CHAR_SNORM(y),
                       FLOAT_TO_CHAR_SNORM(z));
 }
 
+[[nodiscard]]
 inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) noexcept {
     return PACK_FLOAT(FLOAT_TO_CHAR(x),
                       FLOAT_TO_CHAR(y),
                       FLOAT_TO_CHAR(z));
 }
 
+[[nodiscard]]
 inline U32 PACK_VEC2(F32 x, F32 y) noexcept {
     const U32 xScaled = to_U32(x * 0xFFFF);
     const U32 yScaled = to_U32(y * 0xFFFF);
     return (xScaled << 16) | (yScaled & 0xFFFF);
 }
 
-F32 PACK_VEC3(const vec3<F32>& value) noexcept;
+[[nodiscard]] F32 PACK_VEC3(const vec3<F32>& value) noexcept;
 
-U32 PACK_VEC2(const vec2<F32>& value) noexcept;
+[[nodiscard]] U32 PACK_VEC2(const vec2<F32>& value) noexcept;
 
-U32 PACK_HALF2x16(const vec2<F32>& value);
+[[nodiscard]] U32 PACK_HALF2x16(const vec2<F32>& value);
 void UNPACK_HALF2x16(const U32 src, vec2<F32>& value);
 
-U32 PACK_UNORM4x8(const vec4<U8>& value);
+[[nodiscard]] U32 PACK_UNORM4x8(const vec4<U8>& value);
 void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value);
 
 inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) noexcept {
@@ -542,12 +546,12 @@ inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) noexcept {
 
 void UNPACK_VEC3(const F32 src, vec3<F32>& res) noexcept;
 
-vec3<F32> UNPACK_VEC3(const F32 src) noexcept;
+[[nodiscard]] vec3<F32> UNPACK_VEC3(const F32 src) noexcept;
 
 void UNPACK_VEC2(const U32 src, F32& x, F32& y) noexcept;
 void UNPACK_VEC2(const U32 src, vec2<F32>& res) noexcept;
 
-U32 PACK_11_11_10(const vec3<F32>& value) noexcept;
+[[nodiscard]] U32 PACK_11_11_10(const vec3<F32>& value) noexcept;
 
 void UNPACK_11_11_10(const U32 src, vec3<F32>& res) noexcept;
 

@@ -196,11 +196,11 @@ void Kernel::onLoop() {
             const U64 deltaTimeUSApp = _timingData.currentTimeDeltaUS();
             const U64 deltaTimeUSReal = _timingData.timeDeltaUS();
 
-            U64 deltaTimeUS = _timingData.freezeLoopTime() 
-                                    ? 0ULL
-                                    : _platformContext.config().runtime.useFixedTimestep
-                                                        ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
-                                                         : deltaTimeUSReal;
+            const U64 deltaTimeUS = _timingData.freezeLoopTime() 
+                                               ? 0ULL
+                                               : _platformContext.config().runtime.useFixedTimestep
+                                                                   ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
+                                                                   : deltaTimeUSReal;
 
             // Process the current frame
             _timingData.keepAlive(_timingData.keepAlive() && mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp));
@@ -263,7 +263,7 @@ void Kernel::onLoop() {
 bool Kernel::mainLoopScene(FrameEvent& evt,
                            const U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
                            const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
-                           const U64 appDeltaTimeUS) //Real app delta time between frames. Can't be paused (e.g. used by editor)
+                           const U64 appDeltaTimeUS)  //Real app delta time between frames. Can't be paused (e.g. used by editor)
 {
     OPTICK_EVENT();
 

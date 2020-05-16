@@ -45,21 +45,13 @@ class Player final : public Character {
     ~Player();
 
     /// Do not allow or allow the user again to control this player
-    inline bool lockControlls(bool state) { _lockedControls = state; }
-
-    FreeFlyCamera& getCamera();
-    const FreeFlyCamera& getCamera() const;
-
-    inline const U8 index() const { return _index; }
+    PROPERTY_R(bool, lockedControls, false);
+    PROPERTY_R(U8, index, 0u);
+    PROPERTY_R(vec3<F32>, extents, VECTOR3_UNIT);
+    POINTER_R(FreeFlyCamera, camera, nullptr);
 
    protected:
-       void setParentNode(SceneGraphNode* node) override;
-
-   private:
-    U8 _index;
-    vec3<F32> _extents;
-    bool _lockedControls;
-    FreeFlyCamera* _playerCam;
+    void setParentNode(SceneGraphNode* node) override;
 };
 
 };  // namespace Divide

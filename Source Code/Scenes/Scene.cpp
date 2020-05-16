@@ -665,14 +665,13 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
 
         _cameraUpdateListeners[idx] = playerCamera(idx)->addUpdateListener([this, idx](const Camera& cam) {
             if (idx < _scenePlayers.size() && idx < _flashLight.size() && _flashLight[idx]) {
-                if (cam.getGUID() == _scenePlayers[getSceneIndexForPlayer(idx)]->getCamera().getGUID()) {
+                if (cam.getGUID() == _scenePlayers[getSceneIndexForPlayer(idx)]->camera()->getGUID()) {
                     TransformComponent* tComp = _flashLight[idx]->get<TransformComponent>();
                     tComp->setPosition(cam.getEye());
                     tComp->setRotationEuler(cam.getEuler());
                 }
             }
         });
-                     
     }
 
     flashLight->get<SpotLightComponent>()->toggleEnabled();
@@ -771,23 +770,25 @@ U16 Scene::registerInputActions() {
     };
 
     const auto increaseCameraSpeed = [this](InputParams param){
-        FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
+        FreeFlyCamera* cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->camera();
 
-        F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+        F32 currentCamMoveSpeedFactor = cam->getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
-            cam.setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
-            cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() + 1.0f);
+            cam->setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
+            cam->setTurnSpeedFactor(cam->getTurnSpeedFactor() + 1.0f);
         }
     };
-    const auto decreaseCameraSpeed = [this](InputParams param) {
-        FreeFlyCamera& cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->getCamera();
 
-        F32 currentCamMoveSpeedFactor = cam.getMoveSpeedFactor();
+    const auto decreaseCameraSpeed = [this](InputParams param) {
+        FreeFlyCamera* cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->camera();
+
+        F32 currentCamMoveSpeedFactor = cam->getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
-            cam.setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
-            cam.setTurnSpeedFactor(cam.getTurnSpeedFactor() - 1.0f);
+            cam->setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
+            cam->setTurnSpeedFactor(cam->getTurnSpeedFactor() - 1.0f);
         }
     };
+
     const auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
     const auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
     const auto moveForward = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
@@ -1275,26 +1276,26 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
 }
 
 bool Scene::updateCameraControls(PlayerIndex idx) {
-    FreeFlyCamera& cam = getPlayerForIndex(idx)->getCamera();
+    FreeFlyCamera* cam = getPlayerForIndex(idx)->camera();
     
     SceneStatePerPlayer& playerState = state().playerState(idx);
 
-    playerState.previousViewMatrix(cam.getViewMatrix());
-    playerState.previousProjectionMatrix(cam.getProjectionMatrix());
+    playerState.previousViewMatrix(cam->getViewMatrix());
+    playerState.previousProjectionMatrix(cam->getProjectionMatrix());
 
     bool updated = false;
-    updated = cam.moveRelative(vec3<I32>(to_I32(playerState.moveFB()),
-                                         to_I32(playerState.moveLR()),
-                                         to_I32(playerState.moveUD()))) || updated;
+    updated = cam->moveRelative(vec3<I32>(to_I32(playerState.moveFB()),
+                                          to_I32(playerState.moveLR()),
+                                          to_I32(playerState.moveUD()))) || updated;
 
-    updated = cam.rotateRelative(vec3<I32>(to_I32(playerState.angleUD()), //pitch
-                                           to_I32(playerState.angleLR()), //yaw
-                                           to_I32(playerState.roll()))) || updated; //roll
-    updated = cam.zoom(to_I32(playerState.zoom())) || updated;
+    updated = cam->rotateRelative(vec3<I32>(to_I32(playerState.angleUD()), //pitch
+                                            to_I32(playerState.angleLR()), //yaw
+                                            to_I32(playerState.roll()))) || updated; //roll
+    updated = cam->zoom(to_I32(playerState.zoom())) || updated;
 
     playerState.cameraUpdated(updated);
     if (updated) {
-        playerState.cameraUnderwater(checkCameraUnderwater(cam));
+        playerState.cameraUnderwater(checkCameraUnderwater(*cam));
         return true;
     }
 
@@ -1375,8 +1376,11 @@ void Scene::processGUI(const U64 deltaTimeUS) {
 void Scene::processTasks(const U64 deltaTimeUS) {
     const D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
-    eastl::transform(eastl::begin(_taskTimers), eastl::end(_taskTimers), eastl::begin(_taskTimers),
-                   [delta](D64 timer) { return timer + delta; });
+    eastl::for_each(eastl::begin(_taskTimers),
+                    eastl::end(_taskTimers),
+                    [delta](D64& timer) {
+                        timer += delta;
+                    });
 
     if (_dayNightData._skyInstance != nullptr) {
         static struct tm timeOfDay = { 0 };
@@ -1501,15 +1505,16 @@ bool Scene::checkCameraUnderwater(const Camera& camera) const {
 }
 
 void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
-    const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
+    const Camera* crtCamera = getPlayerForIndex(idx)->camera();
 
-    const vec2<F32>& zPlanes = crtCamera.getZPlanes();
+    const vec2<F32>& zPlanes = crtCamera->getZPlanes();
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
 
+    const F32 aimX = to_F32(aimPos.x);
     const F32 aimY = viewport.w - to_F32(aimPos.y) - 1;
 
-    const vec3<F32> startRay = crtCamera.unProject(to_F32(aimPos.x), aimY, 0.0f, viewport);
-    const vec3<F32> endRay = crtCamera.unProject(to_F32(aimPos.x), aimY, 1.0f, viewport);
+    const vec3<F32> startRay = crtCamera->unProject(aimX, aimY, 0.0f, viewport);
+    const vec3<F32> endRay = crtCamera->unProject(aimX, aimY, 1.0f, viewport);
 
     // see if we select another one
     _sceneSelectionCandidates.resize(0);
@@ -1611,7 +1616,7 @@ void Scene::onNodeDestroy(SceneGraphNode& node) {
 
     for (auto& [playerIdx, playerSelections] : _currentSelection) {
         for (I8 i = playerSelections._selectionCount; i > 0; --i) {
-            I64 crtGUID = playerSelections._selections[i - 1];
+            const I64 crtGUID = playerSelections._selections[i - 1];
             if (crtGUID == guid) {
                 playerSelections._selections[i - 1] = -1;
                 std::swap(playerSelections._selections[i - 1], playerSelections._selections[playerSelections._selectionCount--]);
@@ -1631,8 +1636,8 @@ void Scene::resetSelection(PlayerIndex idx) {
             node->clearFlag(SceneGraphNode::Flags::SELECTED, true);
         }
     }
-    playerSelections._selections.fill(-1);
-    playerSelections._selectionCount = 0u;
+
+    playerSelections.reset();
 }
 
 void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
@@ -1652,7 +1657,7 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
         _parent.resetSelection(idx);
     }
 
-    I64 hoverGUID = _currentHoverTarget[idx];
+    const I64 hoverGUID = _currentHoverTarget[idx];
     // No hover target
     if (hoverGUID == -1) {
         return false;
@@ -1695,11 +1700,11 @@ void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos) {
 }
 
 void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remaped) {
-    static Line s_lines[4] = {
-        {VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
-        {VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
-        {VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
-        {VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f}
+    static std::array<Line, 4> s_lines = {
+        Line{VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
+        Line{VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
+        Line{VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
+        Line{VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f}
     };
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
@@ -1750,34 +1755,38 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
     s_lines[3].positionStart(s_lines[2].positionEnd());
     s_lines[3].positionEnd(s_lines[0].positionStart());
 
-    _linesPrimitive->fromLines(s_lines, 4);
+    _linesPrimitive->fromLines(s_lines.data(), s_lines.size());
 
     if (_context.gfx().getFrameCount() % 2 == 0) {
         clearHoverTarget(idx);
 
         _parent.resetSelection(idx);
-        const Camera& crtCamera = getPlayerForIndex(idx)->getCamera();
-        vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, crtCamera, data._targetViewport);
+        Camera* crtCamera = getPlayerForIndex(idx)->camera();
+        vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, *crtCamera, data._targetViewport);
         _parent.setSelected(idx, nodes, false);
     }
 }
 
 void Scene::endDragSelection(PlayerIndex idx, bool clearSelection) {
-    _dragSelectData[idx]._isDragging = false;
+    constexpr F32 DRAG_SELECTION_THRESHOLD_PX_SQ = 9.f;
+
+    auto& data = _dragSelectData[idx];
+
     _linesPrimitive->clearBatch();
     _parent.wantsMouse(false);
-    if (_dragSelectData[idx]._startDragPos.distanceSquared(_dragSelectData[idx]._endDragPos) < 4.0f) {
+    data._isDragging = false;
+    if (data._startDragPos.distanceSquared(data._endDragPos) < DRAG_SELECTION_THRESHOLD_PX_SQ) {
         findSelection(idx, clearSelection);
     }
 }
 
-void Scene::initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) {
+void Scene::initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) noexcept {
     _dayNightData._skyInstance = &skyInstance;
     _dayNightData._dirLight = &sunLight;
     _dayNightData._timeAccumulator = Time::Seconds(1.1f);
 }
 
-void Scene::setDayNightCycleTimeFactor(F32 factor) {
+void Scene::setDayNightCycleTimeFactor(F32 factor) noexcept {
     _dayNightData._speedFactor = factor;
 }
 
@@ -1820,8 +1829,8 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
     const U8 playerCount = to_U8(_scenePlayers.size());
     outputBuffer << playerCount;
     for (U8 i = 0; i < playerCount; ++i) {
-        const Camera& cam = _scenePlayers[i]->getCamera();
-        outputBuffer << _scenePlayers[i]->index() << cam.getEye() << cam.getOrientation();
+        const Camera* cam = _scenePlayers[i]->camera();
+        outputBuffer << _scenePlayers[i]->index() << cam->getEye() << cam->getOrientation();
     }
 
     return _sceneGraph->saveCache(outputBuffer);
@@ -1830,20 +1839,20 @@ bool Scene::save(ByteBuffer& outputBuffer) const {
 bool Scene::load(ByteBuffer& inputBuffer) {
 
     if (!inputBuffer.empty()) {
+        const U8 currentPlayerCount = to_U8(_scenePlayers.size());
+
         vec3<F32> camPos;
         Quaternion<F32> camOrientation;
 
         U8 currentPlayerIndex = 0;
-        U8 currentPlayerCount = to_U8(_scenePlayers.size());
-
         U8 previousPlayerCount = 0;
         inputBuffer >> previousPlayerCount;
         for (U8 i = 0; i < previousPlayerCount; ++i) {
             inputBuffer >> currentPlayerIndex >> camPos >> camOrientation;
             if (currentPlayerIndex < currentPlayerCount) {
-                Camera& cam = _scenePlayers[currentPlayerIndex]->getCamera();
-                cam.setEye(camPos);
-                cam.setRotation(camOrientation);
+                Camera* cam = _scenePlayers[currentPlayerIndex]->camera();
+                cam->setEye(camPos);
+                cam->setRotation(camOrientation);
             }
         }
     }

@@ -902,7 +902,7 @@ struct AtomicWrapper : private NonMovable
 #define GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
 #define GET_5TH_ARG(arg1, arg2, arg3, arg4, arg5, ...) arg5
 #define GET_6TH_ARG(arg1, arg2, arg3, arg4, arg5, arg6, ...) arg6
-#endif
+#endif //EXP
 
 #pragma region PROPERTY_SETTERS_GETTERS
 
@@ -1224,5 +1224,6 @@ protected: \
 #define REFERENCE_INTERNAL(...) EXP(___DETAIL_REFERENCE_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
 #pragma endregion
 
-#endif
 };  // namespace Divide
+
+#endif //_PLATFORM_DEFINES_H_

@@ -67,7 +67,8 @@ enum class TaskPoolType : U8 {
 
 class PlatformContext {
     friend class Attorney::PlatformContextKernel;
-public:
+
+ public:
     enum class SystemComponentType : U32 {
         Application = 1 << 1,
         GFXDevice = 1 << 2,
@@ -84,7 +85,8 @@ public:
         ALL = Application | GFXDevice | SFXDevice | PXDevice | GUI | XMLData |
               Configuration | LocalClient | DebugInterface | Editor | InputHandler
     };
-public:
+
+ public:
     explicit PlatformContext(Application& app, Kernel& kernel);
     ~PlatformContext();
 
@@ -98,58 +100,58 @@ public:
 
     void terminate();
 
-    inline Application& app()  noexcept { return _app; }
-    inline const Application& app() const noexcept { return _app; }
+    inline [[nodiscard]] Application& app()  noexcept { return _app; }
+    inline [[nodiscard]] const Application& app() const noexcept { return _app; }
 
-    inline GFXDevice& gfx() noexcept { return *_gfx; }
-    inline const GFXDevice& gfx() const noexcept { return *_gfx; }
+    inline [[nodiscard]] GFXDevice& gfx() noexcept { return *_gfx; }
+    inline [[nodiscard]] const GFXDevice& gfx() const noexcept { return *_gfx; }
 
-    inline GUI& gui() noexcept { return *_gui; }
-    inline const GUI& gui() const noexcept { return *_gui; }
+    inline [[nodiscard]] GUI& gui() noexcept { return *_gui; }
+    inline [[nodiscard]] const GUI& gui() const noexcept { return *_gui; }
 
-    inline SFXDevice& sfx() noexcept { return *_sfx; }
-    inline const SFXDevice& sfx() const noexcept { return *_sfx; }
+    inline [[nodiscard]] SFXDevice& sfx() noexcept { return *_sfx; }
+    inline [[nodiscard]] const SFXDevice& sfx() const noexcept { return *_sfx; }
 
-    inline PXDevice& pfx() noexcept { return *_pfx; }
-    inline const PXDevice& pfx() const noexcept { return *_pfx; }
+    inline [[nodiscard]] PXDevice& pfx() noexcept { return *_pfx; }
+    inline [[nodiscard]] const PXDevice& pfx() const noexcept { return *_pfx; }
 
-    inline XMLEntryData& entryData() noexcept { return *_entryData; }
-    inline const XMLEntryData& entryData() const noexcept { return *_entryData; }
+    inline [[nodiscard]] XMLEntryData& entryData() noexcept { return *_entryData; }
+    inline [[nodiscard]] const XMLEntryData& entryData() const noexcept { return *_entryData; }
 
-    inline Configuration& config() noexcept { return *_config; }
-    inline const Configuration& config() const noexcept { return *_config; }
+    inline [[nodiscard]] Configuration& config() noexcept { return *_config; }
+    inline [[nodiscard]] const Configuration& config() const noexcept { return *_config; }
 
-    inline LocalClient& client() noexcept { return *_client; }
-    inline const LocalClient& client() const noexcept { return *_client; }
+    inline [[nodiscard]] LocalClient& client() noexcept { return *_client; }
+    inline [[nodiscard]] const LocalClient& client() const noexcept { return *_client; }
 
-    inline Server& server() noexcept { return *_server; }
-    inline const Server& server() const noexcept { return *_server; }
+    inline [[nodiscard]] Server& server() noexcept { return *_server; }
+    inline [[nodiscard]] const Server& server() const noexcept { return *_server; }
 
-    inline DebugInterface& debug() noexcept { return *_debug; }
-    inline const DebugInterface& debug() const noexcept { return *_debug; }
+    inline [[nodiscard]] DebugInterface& debug() noexcept { return *_debug; }
+    inline [[nodiscard]] const DebugInterface& debug() const noexcept { return *_debug; }
 
-    inline Editor& editor() noexcept { return *_editor; }
-    inline const Editor& editor() const noexcept { return *_editor; }
+    inline [[nodiscard]] Editor& editor() noexcept { return *_editor; }
+    inline [[nodiscard]] const Editor& editor() const noexcept { return *_editor; }
 
-    inline TaskPool& taskPool(TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
-    inline const TaskPool& taskPool(TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
+    inline [[nodiscard]] TaskPool& taskPool(TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
+    inline [[nodiscard]] const TaskPool& taskPool(TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
 
-    inline Input::InputHandler& input() noexcept { return *_inputHandler; }
-    inline const Input::InputHandler& input() const noexcept { return *_inputHandler; }
+    inline [[nodiscard]] Input::InputHandler& input() noexcept { return *_inputHandler; }
+    inline [[nodiscard]] const Input::InputHandler& input() const noexcept { return *_inputHandler; }
 
-    inline ParamHandler& paramHandler() noexcept { return *_paramHandler; }
-    inline const ParamHandler& paramHandler() const noexcept { return *_paramHandler; }
+    inline [[nodiscard]] ParamHandler& paramHandler() noexcept { return *_paramHandler; }
+    inline [[nodiscard]] const ParamHandler& paramHandler() const noexcept { return *_paramHandler; }
 
-    Kernel& kernel();
-    const Kernel& kernel() const;
+    [[nodiscard]] Kernel& kernel();
+    [[nodiscard]] const Kernel& kernel() const;
 
-    DisplayWindow& mainWindow();
-    const DisplayWindow& mainWindow() const;
+    [[nodiscard]] DisplayWindow& mainWindow();
+    [[nodiscard]] const DisplayWindow& mainWindow() const;
 
-    protected:
+  protected:
     void onThreadCreated(const std::thread::id& threadID);
 
-    private:
+  private:
     /// Main application instance
     Application& _app;
     /// Main app's kernel

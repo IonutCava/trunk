@@ -80,8 +80,14 @@ namespace Attorney {
 
 struct Selections {
     static constexpr U8 MaxSelections = 254u;
+
     std::array<I64, MaxSelections> _selections;
     U8 _selectionCount = 0u;
+
+    inline void reset() noexcept {
+        _selections.fill(-1);
+        _selectionCount = 0u;
+    }
 };
 
 struct DragSelectData {
@@ -184,10 +190,10 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const;
 
 
-    void initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight);
+    void initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) noexcept;
 
     // negative values should work
-    void setDayNightCycleTimeFactor(F32 factor);
+    void setDayNightCycleTimeFactor(F32 factor) noexcept;
     F32 getDayNightCycleTimeFactor() const noexcept;
 
     void setTimeOfDay(const SimpleTime& time) noexcept;

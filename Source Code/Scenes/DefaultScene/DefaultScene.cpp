@@ -158,11 +158,11 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 
     Angle::DEGREES<F32>& angle = _camAngle[getSceneIndexForPlayer(idx)];
     if (idx % 3 == 1) {
-        getPlayerForIndex(idx)->getCamera().rotatePitch(angle);
+        getPlayerForIndex(idx)->camera()->rotatePitch(angle);
     } else if (idx % 3 == 2) {
-        getPlayerForIndex(idx)->getCamera().rotateRoll(angle);
+        getPlayerForIndex(idx)->camera()->rotateRoll(angle);
     } else {
-        getPlayerForIndex(idx)->getCamera().rotateYaw(angle);
+        getPlayerForIndex(idx)->camera()->rotateYaw(angle);
     }
     angle = 0.0f;
 
