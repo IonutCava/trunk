@@ -496,6 +496,7 @@ private:
     Pipeline* _DrawFSTexturePipeline = nullptr;
     Pipeline* _DrawFSDepthPipeline = nullptr;
     Pipeline* _AxisGizmoPipeline = nullptr;
+    Pipeline* _DebugGizmoPipeline = nullptr;
     Pipeline* _BlurPipeline = nullptr;
 
     PushConstants _textRenderConstants;

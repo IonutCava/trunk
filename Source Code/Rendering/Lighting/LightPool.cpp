@@ -19,6 +19,7 @@
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/SpotLightComponent.h"
 
 #include <execution>
 
@@ -257,36 +258,33 @@ U32 LightPool::uploadLightList(RenderStage stage, const LightList& lights, const
     auto& lightCount = _activeLightCount[stageIndex];
     BufferData& crtData = _sortedLightProperties[stageIndex];
 
+    SpotLightComponent* spot = nullptr;
+
     lightCount.fill(0);
     vec3<F32> tempColour;
     for (Light* light : lights) {
-        const LightType type = static_cast<LightType>(light->getLightType());
-        const bool isDir = type == LightType::DIRECTIONAL;
-        const bool isOmni = !isDir && type == LightType::POINT;
-
-        const I32 typeIndex = to_I32(type);
+        const LightType type = light->getLightType();
+        const U32 typeIndex = to_U32(type);
 
         if (_lightTypeState[typeIndex] && light->enabled()) {
             if (ret++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
 
-            LightProperties& temp = crtData._lightProperties[ret - 1];
-            light->getDiffuseColour(tempColour);
-            temp._diffuse.set(tempColour, light->getSpotCosOuterConeAngle());
-            // Omni and spot lights have a position. Directional lights have this set to (0,0,0)
-            if (isDir) {
-                temp._position.set(VECTOR3_ZERO, light->getRange());
-            } else {
-                temp._position.set((viewMatrix * vec4<F32>(light->positionCache(), 1.0f)).xyz(), light->getRange());
+            const bool isDir = type == LightType::DIRECTIONAL;
+            const bool isOmni = type == LightType::POINT;
+            const bool isSpot = type == LightType::SPOT;
+            if (isSpot) {
+                spot = static_cast<SpotLightComponent*>(light);
             }
 
-            if (isOmni) {
-                temp._direction.set(VECTOR3_ZERO, light->getConeAngle());
-            } else {
-                temp._direction.set((viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), light->getConeAngle());
-            }
-            temp._options.xy(typeIndex, light->shadowIndex());
+            LightProperties& temp = crtData._lightProperties[ret - 1];
+            light->getDiffuseColour(tempColour);
+            temp._diffuse.set(tempColour, isSpot ? std::cos(Angle::DegreesToRadians(spot->outerConeCutoffAngle())) : 0.f);
+            // Omni and spot lights have a position. Directional lights have this set to (0,0,0)
+            temp._position.set( isDir  ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->positionCache(),  1.0f)).xyz(), light->range());
+            temp._direction.set(isOmni ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), isSpot ? std::cos(Angle::DegreesToRadians(spot->coneCutoffAngle())) : 0.f);
+            temp._options.xyz(typeIndex, light->shadowIndex(), isSpot ? to_I32(spot->coneSlantHeight()) : 0);
 
             ++lightCount[typeIndex];
         }

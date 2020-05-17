@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>true</static>
+<TRANSFORM>
+    <Transform>
+        <position x="144.770386" y="17.2522449" z="12.6698227"/>
+        <orientation x="0" y="-0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </Transform>
+</TRANSFORM>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
+<NETWORKING/>
+<POINT_LIGHT>
+    <Range>10</Range>
+    <Colour r="0.03125" g="0.03125" b="0.99609375"/>
+</POINT_LIGHT>

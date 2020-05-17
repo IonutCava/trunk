@@ -242,7 +242,6 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\BRDF.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\bumpMapping.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\Fxaa3_11.frag" />
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\lightData.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\materialData.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\output.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\pbr.frag" />
@@ -279,7 +278,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
-	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -288,7 +287,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
-	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'" Label="Configuration">
@@ -297,7 +296,7 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
-	<PreferredToolArchitecture>x64</PreferredToolArchitecture>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
     <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />

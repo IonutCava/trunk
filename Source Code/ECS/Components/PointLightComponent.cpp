@@ -29,23 +29,7 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
 
     _shadowProperties._lightDetails.z = 0.05f;
 
-
-    EditorComponentField colourField = {};
-    colourField._name = "Colour";
-    colourField._dataGetter = [this](void* dataOut) { static_cast<FColour3*>(dataOut)->set(getDiffuseColour()); };
-    colourField._dataSetter = [this](const void* data) { setDiffuseColour(*static_cast<const FColour3*>(data)); };
-    colourField._type = EditorComponentFieldType::PUSH_TYPE;
-    colourField._readOnly = false;
-    colourField._basicType = GFX::PushConstantType::FCOLOUR3;
-
-    EditorComponentField rangeAndConeField = {};
-    rangeAndConeField._name = "Range and Cone";
-    rangeAndConeField._data = &_rangeAndCones;
-    rangeAndConeField._type = EditorComponentFieldType::PUSH_TYPE;
-    rangeAndConeField._readOnly = false;
-    rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
-
-    getEditorComponent().registerField(std::move(rangeAndConeField));
+    registerFields(getEditorComponent());
 
     BoundingBox bb = {};
     bb.setMin(-10.0f);
@@ -60,7 +44,7 @@ void PointLightComponent::PreUpdate(const U64 deltaTime) {
 
     if (_drawImpostor) {
         _parentPool.context().gfx().debugDrawSphere(positionCache(), 0.5f, getDiffuseColour());
-        _parentPool.context().gfx().debugDrawSphere(positionCache(), getRange(), DefaultColours::GREEN);
+        _parentPool.context().gfx().debugDrawSphere(positionCache(), range(), DefaultColours::GREEN);
     }
 
     Parent::PreUpdate(deltaTime);

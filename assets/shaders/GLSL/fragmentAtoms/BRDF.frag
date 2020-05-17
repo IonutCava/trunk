@@ -1,9 +1,9 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
+#include "utility.cmn"
 #include "lightInput.cmn"
 
-#include "lightData.frag"
 #include "materialData.frag"
 #include "shadowMapping.frag"
 
@@ -40,31 +40,56 @@ uint GetTileIndex() {
     return uint(tileID.y * dvd_numTilesX + tileID.x);
 }
 
-void getDirectionalLightContribution(in vec3 albedo, in vec4 data, in vec3 normalWV, inout vec4 lightColour) {
-    const uint dirLightCount = dvd_LightData.x;
-
+vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 data, in vec3 normalWV) {
+    vec4 ret = vec4(0.0);
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
 
         const vec3 lightDirectionWV = -light._directionWV.xyz;
-        const float ndl = clamp((dot(normalWV, normalize(lightDirectionWV))), M_EPSILON, 1.0f);
-        vec4 ret = getBRDFFactors(
-            lightDirectionWV,
-            vec4(light._colour.rgb, 1.0f),
-            data,
-            vec4(albedo, getShadowFactorDirectional(light._options.y, tan(acos(ndl)))), 
-            normalWV,
-            ndl);
+        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
+        const float shadowFactor = getShadowFactorDirectional(light._options.y, tan(acos(ndl)));
 
-        lightColour.rgb += ret.rgb;
-        lightColour.a = max(ret.a, lightColour.a);
+        vec4 temp = getBRDFFactors(lightDirectionWV,
+                                   vec4(light._colour.rgb, 1.0f),
+                                   data,
+                                   vec4(albedo, shadowFactor), 
+                                   normalWV,
+                                   ndl);
+
+        ret.rgb += temp.rgb;
+        ret.a = max(ret.a, temp.a);
     }
+
+    return ret;
 }
 
-void getOtherLightContribution(in vec3 albedo, in vec4 data, in vec3 normalWV, inout vec4 lightColour) {
-    const uint dirLightCount = dvd_LightData.x;
+float getPointAttenuation(in Light light, in vec3 lightDirectionWV) {
+    const float radius = light._positionWV.w;
+    const float dist = length(lightDirectionWV); 
+    const float att = saturate(1.0f - ((dist * dist) / (radius * radius)));
+    return att * att;
+}
+
+float getSpotAttenuation(in Light light, in vec3 lightDirectionWV) {
+    const vec3 spotDirectionWV = normalize(light._directionWV.xyz);
+    const float cosOuterConeAngle = light._colour.w;
+    const float cosInnerConeAngle = light._directionWV.w;
+
+    const float theta = dot(normalize(lightDirectionWV), normalize(-spotDirectionWV));
+    const float intensity = saturate((theta - cosOuterConeAngle) / (cosInnerConeAngle - cosOuterConeAngle));
+
+    const float radiusSpot = mix(float(light._options.z), light._positionWV.w, 1.0f - intensity);
+
+    const float dist = length(lightDirectionWV);
+    const float att = saturate(1.0f - ((dist * dist) / (radiusSpot * radiusSpot)));
+    return att * intensity;
+}
+
+vec4 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 data, in vec3 normalWV) {
     const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
 
+    float shadowFactor = 1.0f;
+    vec4 ret = vec4(0.0);
     for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
         const int lightIdx = perTileLightIndices[offset + i];
         if (lightIdx == -1) {
@@ -72,26 +97,25 @@ void getOtherLightContribution(in vec3 albedo, in vec4 data, in vec3 normalWV, i
         }
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
-        
-        const vec3 lightDirection = VAR._vertexWV.xyz - light._positionWV.xyz;
-        float att = getLightAttenuationPoint(light._positionWV.w, lightDirection);
-        const float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0f);
+        const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
 
-        float shadowFactor = 1.0f;
-
-        if (light._options.x == 2) {
-            att = getLightAttenuationSpot(light, lightDirection, att);
-            shadowFactor = getShadowFactorSpot(light._options.y, tan(acos(ndl)));
-        } else {
+        float att = 0.0f;
+        if (light._options.x == 1) {
+            att = getPointAttenuation(light, lightDirectionWV);
             shadowFactor = getShadowFactorPoint(light._options.y, tan(acos(ndl)));
+        } else {
+            att = getSpotAttenuation(light, lightDirectionWV);
+            shadowFactor = getShadowFactorSpot(light._options.y, tan(acos(ndl)));
         }
 
         const vec4 colourAndAtt = vec4(light._colour.rgb, att);
-        
-        vec4 ret = getBRDFFactors(lightDirection, colourAndAtt, data, vec4(albedo, shadowFactor), normalWV, ndl);
-        lightColour.rgb += ret.rgb;
-        lightColour.a = max(ret.a, lightColour.a);
+        vec4 temp = getBRDFFactors(lightDirectionWV, colourAndAtt, data, vec4(albedo, shadowFactor), normalWV, ndl);
+        ret.rgb += temp.rgb;
+        ret.a = max(ret.a, temp.a);
     }
+
+    return ret;
 }
 
 float getShadowFactor(in vec3 normalWV) {
@@ -100,27 +124,29 @@ float getShadowFactor(in vec3 normalWV) {
 
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-        const float ndl = clamp((dot(normalWV, normalize(-light._directionWV.xyz))), M_EPSILON, 1.0f);
+
+        const vec3 lightDirectionWV = -light._directionWV.xyz;
+        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
         ret *= getShadowFactorDirectional(dvd_LightSource[lightIdx]._options.y, tan(acos(ndl)));
     }
-    //if (dvd_lodLevel < 2)
-    {
-        const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
-        for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
-            const int lightIdx = perTileLightIndices[offset + i];
-            if (lightIdx == -1) {
-                break;
-            }
-            const Light light = dvd_LightSource[lightIdx + dirLightCount];
-            const vec3 lightDirection = VAR._vertexWV.xyz - light._positionWV.xyz;
-            const float ndl = clamp((dot(normalWV, normalize(lightDirection))), M_EPSILON, 1.0f);
-            if (light._options.x == 2) {
-                ret *= getShadowFactorSpot(light._options.y, tan(acos(ndl)));
-            } else {
-                ret *= getShadowFactorPoint(light._options.y, tan(acos(ndl)));
-            }
+
+    const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
+    for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
+        const int lightIdx = perTileLightIndices[offset + i];
+        if (lightIdx == -1) {
+            break;
+        }
+        const Light light = dvd_LightSource[lightIdx + dirLightCount];
+             
+        const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
+        if (light._options.x == 2) {
+            ret *= getShadowFactorSpot(light._options.y, tan(acos(ndl)));
+        } else {
+            ret *= getShadowFactorPoint(light._options.y, tan(acos(ndl)));
         }
     }
+    
 
     return ret;
 }
@@ -160,19 +186,19 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 #else //USE_SHADING_FLAT
     const vec4 data = getExtraData(colourMatrix, uv);
 
-    albedo.rgb += dvd_AmbientColour.rgb;
+    //albedo.rgb += dvd_AmbientColour.rgb;
     albedo.rgb *= getSSAO();
 
     // Apply all lighting contributions (.a = reflectionCoeff)
-    vec4 lightColour = vec4(0.0f);//vec4(0.3f * albedo.rgb * getSSAO(), 1.0f);
-    getDirectionalLightContribution(albedo, data, normalWV, lightColour);
-    if (dvd_lodLevel < 2) {
-        getOtherLightContribution(albedo, data, normalWV, lightColour);
-    }
+    const uint dirLightCount = dvd_LightData.x;
+    vec4 lightColour1 = getDirectionalLightContribution(dirLightCount, albedo, data, normalWV);
+    vec4 lightColour2 = getOtherLightContribution(dirLightCount, albedo, data, normalWV);
     
-    lightColour.rgb += getEmissive(colourMatrix);
+    vec3 lightColour = getEmissive(colourMatrix) + lightColour1.rgb + lightColour2.rgb;
+    const float reflectivity = saturate(max(lightColour1.a, lightColour2.a));
+
     // Specular reflections
-    if (lightColour.a > MIN_SPEC_REFLECTION) {
+    if (reflectivity > MIN_SPEC_REFLECTION) {
         /*if (dvd_lodLevel < 1 && getReflectivity(colourMatrix) > 100) {
             vec3 reflectDirection = reflect(VAR._viewDirectionWV, normalWV);
             reflectDirection = vec3(inverse(dvd_ViewMatrix) * vec4(reflectDirection, 0.0f));
@@ -182,7 +208,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         }*/
     }
     
-    return lightColour.rgb;
+    return lightColour;
 #endif //USE_SHADING_FLAT
 }
 

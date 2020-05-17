@@ -27,7 +27,7 @@ vec4 Phong(in vec3 lightDirectionWV,
 #else
         const float kEnergyConservation = (2.0 + kShininess) / (2.0 * kPi);
 
-        const vec3 reflectDir = reflect(-lightDirectionWV, normalWV);
+        const vec3 reflectDir = reflect(-normalize(lightDirectionWV), normalWV);
         specularCoefficient = kEnergyConservation * pow(max(dot(reflectDir, viewDir), 0.0), kShininess);
 #endif
     }

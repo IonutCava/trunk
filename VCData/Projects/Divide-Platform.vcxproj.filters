@@ -849,9 +849,6 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\Fxaa3_11.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\lightData.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\materialData.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>

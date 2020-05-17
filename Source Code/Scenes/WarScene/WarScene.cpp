@@ -584,7 +584,7 @@ bool WarScene::load(const Str128& name) {
             SceneGraphNode* lightSGN = pointLightNode->addChildNode(lightNodeDescriptor);
             PointLightComponent* pointLight = lightSGN->get<PointLightComponent>();
             pointLight->castsShadows(false);
-            pointLight->setRange(50.0f);
+            pointLight->range(50.0f);
             pointLight->setDiffuseColour(DefaultColours::RANDOM().rgb());
             TransformComponent* tComp = lightSGN->get<TransformComponent>();
             tComp->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));

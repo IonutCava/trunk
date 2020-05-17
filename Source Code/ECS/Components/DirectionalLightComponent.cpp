@@ -19,29 +19,11 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     : BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>(sgn, context), 
       Light(sgn, -1, LightType::DIRECTIONAL, sgn.sceneGraph().parentScene().lightPool())
 {
-    setRange(g_defaultLightDistance);
+    Light::range(g_defaultLightDistance);
+
     _shadowProperties._lightDetails.y = to_F32(_csmSplitCount);
     _shadowProperties._lightDetails.z = 0.0f;
     csmSplitCount(context.config().rendering.shadowMapping.defaultCSMSplitCount);
-
-    EditorComponentField colourField = {};
-    colourField._name = "Colour";
-    colourField._dataGetter = [this](void* dataOut) { static_cast<FColour3*>(dataOut)->set(getDiffuseColour()); };
-    colourField._dataSetter = [this](const void* data) { setDiffuseColour(*static_cast<const FColour3*>(data)); };
-    colourField._type = EditorComponentFieldType::PUSH_TYPE;
-    colourField._readOnly = false;
-    colourField._basicType = GFX::PushConstantType::FCOLOUR3;
-
-    getEditorComponent().registerField(std::move(colourField));
-
-    EditorComponentField rangeAndConeField = {};
-    rangeAndConeField._name = "Range and Cone";
-    rangeAndConeField._data = &_rangeAndCones;
-    rangeAndConeField._type = EditorComponentFieldType::PUSH_TYPE;
-    rangeAndConeField._readOnly = false;
-    rangeAndConeField._basicType = GFX::PushConstantType::VEC3;
-
-    getEditorComponent().registerField(std::move(rangeAndConeField));
 
     EditorComponentField directionField = {};
     directionField._name = "Direction";
@@ -81,6 +63,8 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
 
     getEditorComponent().registerField(std::move(showConeField));
 
+    registerFields(getEditorComponent());
+
     BoundingBox bb = {};
     bb.setMin(-g_defaultLightDistance * 0.5f);
     bb.setMax(-g_defaultLightDistance * 0.5f);
@@ -95,7 +79,7 @@ void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
 
     if (drawImpostor() || showDirectionCone()) {
         const F32 coneDist = 11.f;
-        Camera* playerCam = getSGN().sceneGraph().parentScene().playerCamera();
+        const Camera* playerCam = getSGN().sceneGraph().parentScene().playerCamera();
         // Try and place the cone in such a way that it's always in view, because directional lights have no "source"
         const vec3<F32> min = (-coneDist * directionCache()) + 
                               playerCam->getEye() + 

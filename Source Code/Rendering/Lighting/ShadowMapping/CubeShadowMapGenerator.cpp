@@ -30,7 +30,7 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U3
     _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP)),
                              light.getShadowOffset(),
                              light.getSGN().get<TransformComponent>()->getPosition(),
-                             vec2<F32>(0.1f, light.getRange()),
+                             vec2<F32>(0.1f, light.range()),
                              {RenderStage::SHADOW, RenderPassType::PRE_PASS, to_U8(light.getLightType()), lightIndex},
                              bufferInOut,
                              cameras,

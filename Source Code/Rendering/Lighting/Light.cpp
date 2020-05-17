@@ -12,9 +12,6 @@
 namespace Divide {
 
 
-
-
-
 namespace TypeUtil {
     const char* LightTypeToString(LightType lightType) noexcept {
         return Names::lightType[to_base(lightType)];
@@ -39,8 +36,6 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
       _castsShadows(false),
       _shadowIndex(-1)
 {
-    _rangeAndCones.set(1.0f, 45.0f, 0.0f);
-
     if (!_parentPool.addLight(*this)) {
         //assert?
     }
@@ -52,7 +47,6 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
     
     _shadowProperties._lightDetails.x = to_F32(type);
     setDiffuseColour(FColour3(DefaultColours::WHITE));
-    setRange(1.0f);
 
     const ECS::CustomEvent evt = {
         ECS::CustomEvent::Type::TransformUpdated,
@@ -69,6 +63,27 @@ Light::~Light()
 {
     UnregisterAllEventCallbacks();
     _parentPool.removeLight(*this);
+}
+
+void Light::registerFields(EditorComponent& comp) {
+    EditorComponentField rangeField = {};
+    rangeField._name = "Range";
+    rangeField._data = &_range;
+    rangeField._type = EditorComponentFieldType::PUSH_TYPE;
+    rangeField._readOnly = false;
+    rangeField._range = { std::numeric_limits<F32>::epsilon(), 10000.f };
+    rangeField._basicType = GFX::PushConstantType::FLOAT;
+    comp.registerField(std::move(rangeField));
+
+
+    EditorComponentField colourField = {};
+    colourField._name = "Colour";
+    colourField._dataGetter = [this](void* dataOut) { static_cast<FColour3*>(dataOut)->set(getDiffuseColour()); };
+    colourField._dataSetter = [this](const void* data) { setDiffuseColour(*static_cast<const FColour3*>(data)); };
+    colourField._type = EditorComponentFieldType::PUSH_TYPE;
+    colourField._readOnly = false;
+    colourField._basicType = GFX::PushConstantType::FCOLOUR3;
+    comp.registerField(std::move(colourField));
 }
 
 void Light::updateCache(const ECS::CustomEvent& data) {

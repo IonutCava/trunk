@@ -732,6 +732,8 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         pipelineDesc._stateHash = getDefaultStateBlock(true);
         pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
         _AxisGizmoPipeline = newPipeline(pipelineDesc);
+        pipelineDesc._stateHash = getDefaultStateBlock(false);
+        _DebugGizmoPipeline = newPipeline(pipelineDesc);
     }
     _renderer = eastl::make_unique<Renderer>(context(), cache);
 
@@ -2123,7 +2125,7 @@ void GFXDevice::debugDrawBoxes(GFX::CommandBuffer& bufferInOut) {
         if (boxPrimitive == nullptr) {
             boxPrimitive = newIMP();
             boxPrimitive->name(Util::StringFormat("DebugBox_%d", f));
-            boxPrimitive->pipeline(*_AxisGizmoPipeline);
+            boxPrimitive->pipeline(*_DebugGizmoPipeline);
             boxPrimitive->skipPostFX(true);
         }
 
@@ -2147,7 +2149,7 @@ void GFXDevice::debugDrawSpheres(GFX::CommandBuffer& bufferInOut) {
         if (spherePrimitive == nullptr) {
             spherePrimitive = newIMP();
             spherePrimitive->name(Util::StringFormat("DebugSphere_%d", f));
-            spherePrimitive->pipeline(*_AxisGizmoPipeline);
+            spherePrimitive->pipeline(*_DebugGizmoPipeline);
             spherePrimitive->skipPostFX(true);
         }
 
@@ -2171,7 +2173,7 @@ void GFXDevice::debugDrawCones(GFX::CommandBuffer& bufferInOut) {
         if (conePrimitive == nullptr) {
             conePrimitive = newIMP();
             conePrimitive->name(Util::StringFormat("DebugCone_%d", f));
-            conePrimitive->pipeline(*_AxisGizmoPipeline);
+            conePrimitive->pipeline(*_DebugGizmoPipeline);
             conePrimitive->skipPostFX(true);
         }
 
@@ -2199,7 +2201,7 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
         if (frustumPrimitive == nullptr) {
             frustumPrimitive = newIMP();
             frustumPrimitive->name(Util::StringFormat("DebugFrustum_%d", f));
-            frustumPrimitive->pipeline(*_AxisGizmoPipeline);
+            frustumPrimitive->pipeline(*_DebugGizmoPipeline);
             frustumPrimitive->skipPostFX(true);
         }
 

@@ -103,14 +103,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         setDiffuseColour(Util::ToByteColour(newDiffuseColour));
     }
 
-    inline F32 getRange() const noexcept { return _rangeAndCones.x; }
-    inline F32 getConeAngle() const noexcept { return _rangeAndCones.y; }
-    inline F32 getSpotCosOuterConeAngle() const noexcept { return _rangeAndCones.z; }
-
-    inline void setRange(F32 range) noexcept { _rangeAndCones.x = range;  }
-    inline void setConeAngle(F32 newAngle) noexcept { _rangeAndCones.y = newAngle; }
-    inline void setSpotCosOuterConeAngle(F32 newCosAngle) noexcept { _rangeAndCones.z = newCosAngle; }
-
     /// Light state (on/off)
     inline void toggleEnabled() noexcept { enabled(!enabled()); }
 
@@ -183,16 +175,19 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     PROPERTY_RW(bool, castsShadows);
     /// Turn the light on/off
     PROPERTY_RW(bool, enabled);
+    /// Light range used for attenuation computation
+    PROPERTY_RW(F32, range, 10.0f);
+    /// Index used to look up shadow properties in shaders
     PROPERTY_R_IW(I32, shadowIndex, -1);
+
    protected:
      friend class LightPool;
      void updateCache(const ECS::CustomEvent& event);
 
+     void registerFields(EditorComponent& comp);
    protected:
     SceneGraphNode& _sgn;
     LightPool& _parentPool;
-    /// x - range, y = iner cone, z - cos outer cone
-    vec3<F32> _rangeAndCones;
     /// rgb - diffuse, a - reserved
     UColour4  _colour;
     // Shadow mapping properties

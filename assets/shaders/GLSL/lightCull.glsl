@@ -164,16 +164,14 @@ void main(void)
     {
         Light source = dvd_LightSource[i + DIRECTIONAL_LIGHT_COUNT];
         vec4 vs_light_pos = source._positionWV;
-        float radius = vs_light_pos.w;
-        vs_light_pos.w = 1.0f;
-        //spot lights are a bit different. Create a bounding sphere by offseting the center by half the range in the spot direction
+        float range = vs_light_pos.w;
         if (source._options.x == 2) {
-            float spotLightConeHalfAngleCos = source._colour.w * 0.5f;
-            radius = radius * 0.5f / (spotLightConeHalfAngleCos * spotLightConeHalfAngleCos);
-            vs_light_pos.xyz += source._directionWV.xyz * radius;
+            //spot lights are a bit different. Create a bounding sphere by offsetting the center by half the range in the spot direction
+            range = source._options.z * 0.5f; //range to radius conversion
+            vs_light_pos.xyz += source._directionWV.xyz * range;
         }
 
-        if (IsCollided(vs_light_pos.xyz, radius, frustum)) {
+        if (IsCollided(vs_light_pos.xyz, range, frustum)) {
             uint slot = atomicAdd(light_count_for_tile, 1);
             if (slot >= MAX_LIGHTS_PER_TILE) {
                 break; 
