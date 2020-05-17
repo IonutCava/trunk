@@ -76,7 +76,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
     //Note: 6 - cube faces. CSM splits must always be less than 6!
     struct ShadowProperties {
-        // x = light type, y = arrayOffset, z - bias
+        // x = light type, y = arrayOffset, z - bias, w - strength
         vec4<F32> _lightDetails;
         /// light's position in world space. w - csm split distances (or whatever else might be needed)
         vec4<F32> _lightPosition[ShadowMap::MAX_PASSES_PER_LIGHT];

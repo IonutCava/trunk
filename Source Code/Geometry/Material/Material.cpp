@@ -120,13 +120,14 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
-    //shadowDescriptor.setCullMode(CullMode::FRONT); //Do I need this?
+    //shadowDescriptor.setCullMode(CullMode::FRONT);
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     /// set a polygon offset
     shadowDescriptor.setZBias(1.0f, 1.0f);
     shadowDescriptor.setColourWrites(false, false, false, false);
 
     RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
+    //shadowDescriptorCSM.setCullMode(CullMode::BACK);
     shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
     target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
@@ -899,10 +900,7 @@ size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass) con
     if (ret != g_invalidStateHash) {
         // We don't need to update cull params for shadow mapping unless this is a directional light
         // since CSM splits cause all sorts of errors
-        if (_properties._doubleSided &&
-            (renderStagePass._stage != RenderStage::SHADOW ||
-                renderStagePass._variant == to_base(LightType::DIRECTIONAL)))
-        {
+        if (_properties._doubleSided) {
             RenderStateBlock tempBlock = RenderStateBlock::get(ret);
             tempBlock.setCullMode(CullMode::NONE);
             ret = tempBlock.getHash();

@@ -26,9 +26,14 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
 void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
+    const vec3<F32> lightPos = light.getSGN().get<TransformComponent>()->getPosition();
+
     auto& shadowCameras = ShadowMap::shadowCameras(ShadowType::SINGLE);
-    shadowCameras[0]->lookAt(light.getSGN().get<TransformComponent>()->getPosition(), light.getSGN().get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
-    shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(1.0, light.range()));
+    mat4<F32> viewMatrix = shadowCameras[0]->lookAt(lightPos, light.getSGN().get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
+    mat4<F32> projectionMatrix = shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(0.01f, light.range() * 1.25f));
+    
+    light.setShadowLightPos(0, lightPos);
+    light.setShadowVPMatrix(0, mat4<F32>::Multiply(mat4<F32>::Multiply(viewMatrix, projectionMatrix), MAT4_BIAS));
 
     RenderPassManager* passMgr = _context.parent().renderPassManager();
 

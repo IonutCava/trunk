@@ -3,20 +3,21 @@
 <TRANSFORM>
     <Transform>
         <position x="155.090408" y="15.9615316" z="-13.3278456"/>
-        <orientation x="-172.331375" y="-57.7016449" z="12.8755445"/>
+        <orientation x="-172.331375" y="-57.635334" z="12.8755474"/>
         <scale x="0.999992788" y="0.999994338" z="0.999990344"/>
     </Transform>
 </TRANSFORM>
 <BOUNDS>
-    <Show__AABB>true</Show__AABB>
+    <Show__AABB>false</Show__AABB>
     <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
 </BOUNDS>
 <NETWORKING/>
 <SPOT_LIGHT>
     <Cutoff__Angle>25</Cutoff__Angle>
     <Outer__Cutoff__Angle>35</Outer__Cutoff__Angle>
-    <Direction x="0.529049754" y="-0.316846818"/>
+    <Direction x="0.530020177" y="-0.316710204"/>
     <Show__direction__cone>false</Show__direction__cone>
     <Range>10</Range>
     <Colour r="0.99609375" g="0" b="0"/>
+    <Is__Shadow__Caster>true</Is__Shadow__Caster>
 </SPOT_LIGHT>

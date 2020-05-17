@@ -3,7 +3,7 @@
 
 layout(binding = BUFFER_LIGHT_SHADOW, std140) uniform dvd_ShadowBlock
 {
-    // x = light type, y =  arrayOffset, z - bias
+    // x = light type, y =  arrayOffset, z - bias, w - strength
     vec4  dvd_shadowLightDetails[MAX_SHADOW_CASTING_LIGHTS];
     vec4  dvd_shadowLightPosition[MAX_SHADOW_CASTING_LIGHTS * 6];
     mat4  dvd_shadowLightVP[MAX_SHADOW_CASTING_LIGHTS * 6];

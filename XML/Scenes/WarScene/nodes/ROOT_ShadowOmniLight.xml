@@ -8,11 +8,12 @@
     </Transform>
 </TRANSFORM>
 <BOUNDS>
-    <Show__AABB>false</Show__AABB>
+    <Show__AABB>true</Show__AABB>
     <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
 </BOUNDS>
 <NETWORKING/>
 <POINT_LIGHT>
     <Range>10</Range>
     <Colour r="0.03125" g="0.03125" b="0.99609375"/>
+    <Is__Shadow__Caster>true</Is__Shadow__Caster>
 </POINT_LIGHT>

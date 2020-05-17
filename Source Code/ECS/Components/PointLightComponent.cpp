@@ -27,8 +27,6 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     // -y
     _direction[5].set(WORLD_Y_NEG_AXIS);
 
-    _shadowProperties._lightDetails.z = 0.05f;
-
     registerFields(getEditorComponent());
 
     BoundingBox bb = {};

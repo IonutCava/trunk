@@ -899,19 +899,18 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
     RenderTarget& cubeMapTarget = _rtPool->renderTarget(cubeMap);
-    const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
-    const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
-    const bool hasColour = colourAttachment.used();
-    const bool hasDepth = depthAttachment.used();
+    const bool hasColour = cubeMapTarget.hasAttachment(RTAttachmentType::Colour, 0);
+    const bool hasDepth = cubeMapTarget.hasAttachment(RTAttachmentType::Depth, 0);
     // Everyone's innocent until proven guilty
     bool isValidFB = true;
     if (hasColour) {
+        const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
         // We only need the colour attachment
         isValidFB = (colourAttachment.texture()->descriptor().isCubeTexture());
     } else {
-        // We don't have a colour attachment, so we require a cube map depth
-        // attachment
+        const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Depth, 0);
+        // We don't have a colour attachment, so we require a cube map depth attachment
         isValidFB = hasDepth && depthAttachment.texture()->descriptor().isCubeTexture();
     }
     // Make sure we have a proper render target to draw to
@@ -920,20 +919,25 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP")));
         return;
     }
+
     // No dual-paraboloid rendering here. Just draw once for each face.
-    static vec3<F32> TabUp[6] = {WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS,
-                                 WORLD_Z_AXIS,     WORLD_Z_NEG_AXIS,
-                                 WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS};
+    static const std::array<vec3<F32>, 6> TabUp =
+        { WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS,
+          WORLD_Z_AXIS,     WORLD_Z_NEG_AXIS,
+          WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS };
+
     // Get the center and up vectors for each cube face
-    vec3<F32> TabCenter[6] = {vec3<F32>( 1.0f,  0.0f,  0.0f),
-                              vec3<F32>(-1.0f,  0.0f,  0.0f),
-                              vec3<F32>( 0.0f,  1.0f,  0.0f),
-                              vec3<F32>( 0.0f, -1.0f,  0.0f),
-                              vec3<F32>( 0.0f,  0.0f,  1.0f),
-                              vec3<F32>( 0.0f,  0.0f, -1.0f)};
+    static const std::array<vec3<F32>,6> TabCenter = {
+        vec3<F32>( 1.0f,  0.0f,  0.0f),
+        vec3<F32>(-1.0f,  0.0f,  0.0f),
+        vec3<F32>( 0.0f,  1.0f,  0.0f),
+        vec3<F32>( 0.0f, -1.0f,  0.0f),
+        vec3<F32>( 0.0f,  0.0f,  1.0f),
+        vec3<F32>( 0.0f,  0.0f, -1.0f)
+    };
 
     // Enable our render target
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = cubeMap;
     beginRenderPassCmd._name = "GENERATE_CUBE_MAP";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
@@ -951,7 +955,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._passName = "CubeMap";
 
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-    GFX::EndRenderSubPassCommand endRenderSubPassCommand = {};
+    
     RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
@@ -959,6 +963,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
         drawParams._layer = i + arrayOffset;
+
         beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
@@ -969,17 +974,17 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         // Set a 90 degree vertical FoV perspective projection
         camera->setProjection(1.0f, 90.0f, zPlanes);
         // Point our camera to the correct face
-        camera->lookAt(pos, TabCenter[i], TabUp[i]);
+        camera->lookAt(pos, pos + TabCenter[i] * zPlanes.y, TabUp[i]);
         params._camera = camera;
         params._stagePass._indexB = i;
         // Pass our render function to the renderer
         passMgr->doCustomPass(params, bufferInOut);
-        GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
+
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
     }
 
     // Resolve our render target
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
@@ -992,17 +997,17 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           SceneGraphNode* sourceNode)
 {
     RenderTarget& paraboloidTarget = _rtPool->renderTarget(targetBuffer);
-    const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
-    const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
     // Colour attachment takes precedent over depth attachment
-    const bool hasColour = colourAttachment.used();
-    const bool hasDepth = depthAttachment.used();
+    const bool hasColour = paraboloidTarget.hasAttachment(RTAttachmentType::Colour, 0);
+    const bool hasDepth = paraboloidTarget.hasAttachment(RTAttachmentType::Depth, 0);
 
     bool isValidFB = true;
     if (hasColour) {
+        const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
         // We only need the colour attachment
         isValidFB = colourAttachment.texture()->descriptor().isArrayTexture();
     } else {
+        const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
         // We don't have a colour attachment, so we require a cube map depth attachment
         isValidFB = hasDepth && depthAttachment.texture()->descriptor().isArrayTexture();
     }
@@ -1031,7 +1036,6 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-    GFX::EndRenderSubPassCommand endRenderSubPassCommand = {};
 
     RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
@@ -1048,7 +1052,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
         // Point our camera to the correct face
-        camera->lookAt(pos, (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS));
+        camera->lookAt(pos, pos + (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) * zPlanes.y);
         // Set a 90 degree vertical FoV perspective projection
         camera->setProjection(1.0f, 180.0f, zPlanes);
         // And generated required matrices
@@ -1056,10 +1060,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         params._camera = camera;
         params._stagePass._indexB = i;
         passMgr->doCustomPass(params, bufferInOut);
-        GFX::EnqueueCommand(bufferInOut, endRenderSubPassCommand);
+        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
     }
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
 void GFXDevice::blurTarget(RenderTargetHandle& blurSource,

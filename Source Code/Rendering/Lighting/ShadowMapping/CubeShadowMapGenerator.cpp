@@ -22,19 +22,32 @@ CubeShadowMapGenerator::CubeShadowMapGenerator(GFXDevice& context)
 void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
-    auto& shadowCameras = ShadowMap::shadowCameras(ShadowType::SINGLE);
+    const vec3<F32> lightPos = light.getSGN().get<TransformComponent>()->getPosition();
+
+    auto& shadowCameras = ShadowMap::shadowCameras(ShadowType::CUBEMAP);
 
     std::array<Camera*, 6> cameras;
+#if 1
+    for (U8 i = 0; i < 6; ++i) {
+        cameras[i] = shadowCameras[i];
+    }
+#else
     std::copy_n(std::begin(shadowCameras), 6, std::begin(cameras));
-
+#endif
     _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP)),
                              light.getShadowOffset(),
                              light.getSGN().get<TransformComponent>()->getPosition(),
-                             vec2<F32>(0.1f, light.range()),
-                             {RenderStage::SHADOW, RenderPassType::PRE_PASS, to_U8(light.getLightType()), lightIndex},
+                             vec2<F32>(0.01f, light.range() * 1.25f),
+                             {RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex},
                              bufferInOut,
                              cameras,
                              &light.getSGN());
+
+    for (U8 i = 0; i < 6; ++i) {
+        light.setShadowLightPos(i, lightPos);
+        const mat4<F32> matVP = mat4<F32>::Multiply(shadowCameras[i]->getViewMatrix(), shadowCameras[i]->getProjectionMatrix());
+        light.setShadowVPMatrix(i, mat4<F32>::Multiply(matVP, MAT4_BIAS));
+    }
 }
 
 };

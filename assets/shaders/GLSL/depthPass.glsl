@@ -9,16 +9,21 @@ void main() {
 -- Fragment.Shadow
 
 #if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
+#   define HAS_TRANSPARENCY
+#endif
+
+#if defined(HAS_TRANSPARENCY)
 #include "materialData.frag"
+#endif
 
 void main() {
+#if defined(HAS_TRANSPARENCY)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     if (getAlbedo(colourMatrix, TexCoords).a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
-}
 #endif
-
+}
 
 --Fragment.Shadow.VSM
 

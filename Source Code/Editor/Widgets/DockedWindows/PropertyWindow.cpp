@@ -518,16 +518,7 @@ namespace Divide {
                                 light = sgnNode->get<DirectionalLightComponent>();
                             }
                             if (light != nullptr) {
-                                bool isShadowCaster = light->castsShadows();
-                                if (ImGui::Checkbox("Is Shadow Caster", &isShadowCaster)) {
-                                    RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !isShadowCaster, isShadowCaster, "Is Shadow Caster", [light](const bool& oldVal) {
-                                        light->castsShadows(oldVal);
-                                    });
-                                    light->castsShadows(isShadowCaster);
-                                    sceneChanged = true;
-                                }
-
-                                if (isShadowCaster) {
+                                if (light->castsShadows()) {
                                     if (ImGui::CollapsingHeader("Light Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
                                         ImGui::Text("Shadow Offset: %d", to_U32(light->getShadowOffset()));
 

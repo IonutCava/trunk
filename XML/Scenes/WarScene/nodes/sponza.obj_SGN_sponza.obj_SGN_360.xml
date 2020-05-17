@@ -42,10 +42,10 @@
                     <hash>8850225743091374524</hash>
                 </0>
                 <1>
-                    <hash>9694592583348699482</hash>
+                    <hash>7543658175537710434</hash>
                 </1>
                 <2>
-                    <hash>9694592583348699482</hash>
+                    <hash>7543658175537710434</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
@@ -81,13 +81,13 @@
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
             </8850225743091374524>
-            <9694592583348699482>
+            <7543658175537710434>
                 <colourWrite r="false" g="false" b="false" a="false"/>
                 <zBias>1</zBias>
                 <zUnits>1</zUnits>
                 <zFunc>LESS</zFunc>
                 <tessControlPoints>3</tessControlPoints>
-                <cullMode>CW/BACK</cullMode>
+                <cullMode>None</cullMode>
                 <fillMode>Solid</fillMode>
                 <frontFaceCCW>true</frontFaceCCW>
                 <scissorTestEnabled>false</scissorTestEnabled>
@@ -100,7 +100,7 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </9694592583348699482>
+            </7543658175537710434>
             <11231556529154741291>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>

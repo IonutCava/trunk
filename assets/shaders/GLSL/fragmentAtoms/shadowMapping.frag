@@ -76,7 +76,7 @@ float getShadowFactorPoint(in int idx, in int arrayIndex, in float NdotL) {
     vec3 abs_position = abs(position_ls);
     float fs_z = -max(abs_position.x, max(abs_position.y, abs_position.z));
     vec4 clip = (dvd_shadowLightVP[idx * 6] * VAR._vertexW) * vec4(0.0, 0.0, fs_z, 1.0);
-    float depth = (clip.z / clip.w) * 0.5 + 0.5;
+    float depth = (clip.z / clip.w);
     float ret = texture(texDepthMapFromLightCube, vec4(position_ls.xyz, arrayIndex), depth).r;
     //float bias = clamp(biasIn * TanAcosNdotL, 0, 0.01f);
 
@@ -92,43 +92,41 @@ float getShadowFactorPoint(int idx, in float TanAcosNdotL) {
 }
 
 float filterFinalShadow(in sampler2DArrayShadow shadowMap, in vec3 projCoords, in int shadowIndex, in float bias, float offset) {
-    float visiblity = 1.0f;
     if (projCoords.x >= 1.0f || projCoords.x <= 0.0f ||
         projCoords.y >= 1.0f || projCoords.y <= 0.0f ||
         projCoords.z >= 1.0f || projCoords.z <= 0.0f) {
-        visiblity = 1.0f;
+        return 1.0f;
     }
-    else {
-        vec2 offsetArray1[4] = vec2[](vec2(-offset, -offset), vec2(-offset, offset), vec2(offset, offset), vec2(offset, -offset));
-        visiblity = texture(shadowMap, vec4(projCoords.xy, shadowIndex, projCoords.z - bias));
+
+    float visiblity = 1.0f;
+    vec2 offsetArray1[4] = vec2[](vec2(-offset, -offset), vec2(-offset, offset), vec2(offset, offset), vec2(offset, -offset));
+    visiblity = texture(shadowMap, vec4(projCoords.xy, shadowIndex, projCoords.z - bias));
+    for (int i = 0; i < 4; i++) {
+        visiblity += texture(shadowMap, vec4(projCoords.xy + offsetArray1[i], shadowIndex, projCoords.z - bias));
+    }
+    if (visiblity < 5.0f) {
+        vec2 offsetArray2[4] = vec2[](vec2(0, offset), vec2(offset, 0), vec2(0, -offset), vec2(-offset, 0));
         for (int i = 0; i < 4; i++) {
-            visiblity += texture(shadowMap, vec4(projCoords.xy + offsetArray1[i], shadowIndex, projCoords.z - bias));
+            visiblity += texture(shadowMap, vec4(projCoords.xy + offsetArray2[i], shadowIndex, projCoords.z - bias));
         }
-        if (visiblity < 5.0f) {
-            vec2 offsetArray2[4] = vec2[](vec2(0, offset), vec2(offset, 0), vec2(0, -offset), vec2(-offset, 0));
-            for (int i = 0; i < 4; i++) {
-                visiblity += texture(shadowMap, vec4(projCoords.xy + offsetArray2[i], shadowIndex, projCoords.z - bias));
-            }
-            visiblity /= 9.0f;
-        }
-        else {
-            visiblity /= 5.0f;
-        }
+        visiblity /= 9.0f;
+    } else {
+        visiblity /= 5.0f;
     }
     return visiblity;
-}
-
-float getShadowFactorSpot(in int idx, in int arrayOffset, in float bias, in float TanAcosNdotL) {
-    const vec4 temp_coord = dvd_shadowLightVP[idx * 6] * VAR._vertexW;
-    const vec3 shadow_coord = 0.5f + (temp_coord.xyz / temp_coord.w) * 0.5f;
-    const float ret = filterFinalShadow(texDepthMapFromLight, shadow_coord, arrayOffset, clamp(bias * TanAcosNdotL, 0, 0.01f), 0.001f);
-    return saturate(ret / SHADOW_INTENSITY_FACTOR);
 }
 
 float getShadowFactorSpot(int idx, in float TanAcosNdotL) {
     if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
         const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        return getShadowFactorSpot(idx, int(crtDetails.y), crtDetails.z, TanAcosNdotL);
+        vec4 shadow_coord = dvd_shadowLightVP[idx * 6] * VAR._vertexW;
+        shadow_coord /= shadow_coord.w;
+
+        const int arrayOffset = int(crtDetails.y);
+        const float bias = clamp(crtDetails.z - TanAcosNdotL, 0, 0.01f);
+
+        const float ret = filterFinalShadow(texDepthMapFromLight, shadow_coord.xyz, arrayOffset, bias, 0.0001f);
+        return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
     }
     return 1.0f;
 }
