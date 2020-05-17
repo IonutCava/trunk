@@ -2,7 +2,7 @@
 <static>true</static>
 <TRANSFORM>
     <Transform>
-        <position x="803.963623" y="-50" z="80.291687"/>
+        <position x="142.30069" y="-50" z="-23.4580841"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -271,7 +271,6 @@
             </7302334917774055625>
         </SamplerDescriptors>
     </Material>
-    <Rendered__LOD__Level>2</Rendered__LOD__Level>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
     <Show__Axis>false</Show__Axis>

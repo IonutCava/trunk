@@ -3,7 +3,7 @@
 <TRANSFORM>
     <Transform>
         <position x="155.090408" y="15.9615316" z="-13.3278456"/>
-        <orientation x="-172.331375" y="-57.7237778" z="12.8755455"/>
+        <orientation x="-172.331375" y="-57.7016449" z="12.8755445"/>
         <scale x="0.999992788" y="0.999994338" z="0.999990344"/>
     </Transform>
 </TRANSFORM>
@@ -15,7 +15,7 @@
 <SPOT_LIGHT>
     <Cutoff__Angle>25</Cutoff__Angle>
     <Outer__Cutoff__Angle>35</Outer__Cutoff__Angle>
-    <Direction x="0.528725564" y="-0.316892356"/>
+    <Direction x="0.529049754" y="-0.316846818"/>
     <Show__direction__cone>false</Show__direction__cone>
     <Range>10</Range>
     <Colour r="0.99609375" g="0" b="0"/>

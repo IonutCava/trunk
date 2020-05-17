@@ -16,7 +16,7 @@
 </RENDERING>
 <NETWORKING/>
 <DIRECTIONAL_LIGHT>
-    <Direction x="0.38943693" y="-0.737729073"/>
+    <Direction x="0.389436901" y="-0.737729013"/>
     <Fit__CSM__To__AABB>true</Fit__CSM__To__AABB>
     <CSM__Near__Clip__Offset>0</CSM__Near__Clip__Offset>
     <Show__direction__cone>false</Show__direction__cone>

@@ -164,6 +164,7 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         lockLodField._basicType = GFX::PushConstantType::UINT;
         lockLodField._data = &_lodLevels[to_base(RenderStage::DISPLAY)];
         lockLodField._readOnly = true;
+        lockLodField._serialise = false;
         _editorComponent.registerField(std::move(lockLodField));
 
         EditorComponentField renderLodField = {};
