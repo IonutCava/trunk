@@ -149,6 +149,8 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
     ACKNOWLEDGE_UNUSED(evt);
 
+    Attorney::SceneGraphNodeSceneGraph::frameStarted(getRoot(), evt);
+
     UniqueLock<SharedMutex> lock(_pendingDeletionLock);
     if (!_pendingDeletion.empty()) {
         for (auto entry : _pendingDeletion) {

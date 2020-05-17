@@ -164,42 +164,60 @@ void SceneGraphNode::changeUsageContext(const NodeUsageContext& newContext) {
 }
 
 /// Change current SceneGraphNode's parent
-void SceneGraphNode::setParent(SceneGraphNode& parent) {
-    assert(parent.getGUID() != getGUID());
+void SceneGraphNode::setParent(SceneGraphNode& parent, bool defer) {
+    _queuedNewParent = parent.getGUID();
+    if (!defer) {
+        setParentInternal();
+    }
+}
+
+void SceneGraphNode::setParentInternal() {
+    if (_queuedNewParent == -1) {
+        return;
+    }
+    SceneGraphNode* newParent = sceneGraph().findNode(_queuedNewParent);
+    _queuedNewParent = -1;
+
+    if (newParent == nullptr) {
+        return;
+    }
+
+    assert(newParent->getGUID() != getGUID());
     
     { //Clear old parent
-        if (_parent) {
-            if (*_parent == parent) {
+        if (_parent != nullptr) {
+            if (_parent->getGUID() == newParent->getGUID()) {
                 return;
             }
+
             // Remove us from the old parent's children map
-            _parent->removeChildNode(*this, false);
+            _parent->removeChildNode(*this, false, false);
         }
     }
     // Set the parent pointer to the new parent
-    _parent = &parent;
+    _parent = newParent;
 
     {// Add ourselves in the new parent's children map
         {
-            parent._childCount.fetch_add(1);
-            UniqueLock<SharedMutex> w_lock(parent._childLock);
-            parent._children.push_back(this);
+            _parent->_childCount.fetch_add(1);
+            UniqueLock<SharedMutex> w_lock(_parent->_childLock);
+            _parent->_children.push_back(this);
         }
         Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *this);
         // That's it. Parent Transforms will be updated in the next render pass;
-        parent.invalidateRelationshipCache();
+        _parent->invalidateRelationshipCache();
     }
     {// Carry over new parent's flags and settings
         constexpr Flags flags[] = { Flags::SELECTED, Flags::HOVERED, Flags::ACTIVE, Flags::VISIBILITY_LOCKED };
         for (Flags flag : flags) {
-            if (parent.hasFlag(flag)) {
+            if (_parent->hasFlag(flag)) {
                 setFlag(flag);
             } else {
                 clearFlag(flag);
             }
         }
 
-        changeUsageContext(parent.usageContext());
+        changeUsageContext(_parent->usageContext());
     }
 }
 
@@ -263,15 +281,20 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
     return childRemovalCount > 0;
 }
 
-bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive) {
+bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive, bool deleteNode) {
 
-    I64 targetGUID = node.getGUID();
+    const I64 targetGUID = node.getGUID();
     {
         SharedLock<SharedMutex> r_lock(_childLock);
         const U32 count = to_U32(_children.size());
         for (U32 i = 0; i < count; ++i) {
             if (_children[i]->getGUID() == targetGUID) {
-                _sceneGraph.addToDeleteQueue(this, i);
+                if (deleteNode) {
+                    _sceneGraph.addToDeleteQueue(this, i);
+                } else {
+                    _children.erase(_children.begin() + i);
+                    _childCount.fetch_sub(1);
+                }
                 return true;
             }
         }
@@ -279,8 +302,8 @@ bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive)
 
     // If this didn't finish, it means that we found our node
     return !recursive || 
-           !forEachChild([&node](SceneGraphNode* child, I32 /*childIdx*/) {
-                if (child->removeChildNode(node, true)) {
+           !forEachChild([&node, deleteNode](SceneGraphNode* child, I32 /*childIdx*/) {
+                if (child->removeChildNode(node, true, deleteNode)) {
                     return false;
                 }
                 return true;
@@ -410,9 +433,20 @@ void SceneGraphNode::processDeleteQueue(vectorEASTL<size_t>& childList) {
     }
 }
 
+void SceneGraphNode::frameStarted(const FrameEvent& evt) {
+    NOP();
+
+    forEachChild([&evt](SceneGraphNode* child, I32 /*childIdx*/) {
+        child->frameStarted(evt);
+        return true;
+    });
+}
+
 /// Please call in MAIN THREAD! Nothing is thread safe here (for now) -Ionut
 void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     OPTICK_EVENT();
+
+    setParentInternal();
 
     // update local time
     _elapsedTimeUS += deltaTimeUS;

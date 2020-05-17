@@ -71,15 +71,70 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open) {
+    void SolutionExplorerWindow::drawContextMenu(SceneGraphNode& sgn) {
+        if (ImGui::BeginPopupContextItem("Context menu")) {
+            const SceneNode& node = sgn.getNode();
+            const bool isSubMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
+            const bool isRoot = sgn.parent() == nullptr;
+
+            static F32 value = 0.0f;
+            ImGui::Text(sgn.name().c_str());
+            ImGui::Separator();
+            if (isSubMesh) {
+                PushReadOnly();
+            }
+            if (ImGui::Selectable("Change Parent")) {
+                _childNode = &sgn;
+                _reparentSelectRequested = true;
+            }
+            if (isSubMesh) {
+                PopReadOnly();
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Can't re-parent sub-meshes!");
+                }
+            }
+            if (ImGui::Selectable("Add Child")) {
+                g_particleEmitterData.reset();
+                g_particleSource.reset();
+
+                g_nodeDescriptor = {};
+                g_nodeDescriptor._name = Util::StringFormat("New_Child_Node_%d", sgn.getGUID());
+                g_nodeDescriptor._componentMask = to_U32(ComponentType::TRANSFORM) | to_U32(ComponentType::BOUNDS);
+                g_currentNodeType = SceneNodeType::TYPE_TRANSFORM;
+                _parentNode = &sgn;
+            }
+            ImGui::Separator();
+            if (isRoot) {
+                PushReadOnly();
+            }
+            if (ImGui::Selectable("Remove")) {
+                _nodeToRemove = sgn.getGUID();
+            }
+            if (isRoot) {
+                PopReadOnly();
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Can't remove the root node!");
+                }
+            }
+            ImGui::Separator();
+
+            if (ImGui::Selectable("Go To")) {
+                goToNode(sgn);
+            }
+            ImGui::EndPopup();
+        }
+    }
+
+    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open, bool secondaryView) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
                                         //Conflicts with "Teleport to node on double click"
                                         // | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+        const bool wasSelected = secondaryView ? (_tempParent != nullptr && _tempParent->getGUID() == sgn.getGUID()) : sgn.hasFlag(SceneGraphNode::Flags::SELECTED);
 
         if (open) {
             node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
         }
-        if (sgn.hasFlag(SceneGraphNode::Flags::SELECTED)) {
+        if (wasSelected) {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
@@ -87,47 +142,28 @@ namespace Divide {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
         }
 
-        const auto printNode = [this, &sceneManager, &sgn, node_flags, nodeIDX, open]() {
+        const auto printNode = [&]() {
             const bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
-            const bool wasSelected = sgn.hasFlag(SceneGraphNode::Flags::SELECTED);
             const bool isRoot = sgn.parent() == nullptr;
-
-            if (wasSelected && ImGui::BeginPopupContextItem("Context menu")) {
-                static F32 value = 0.0f;
-                ImGui::Text(sgn.name().c_str());
-                ImGui::Separator();
-                if (ImGui::Selectable("Add Child")) {
-                    g_particleEmitterData.reset();
-                    g_particleSource.reset();
-
-                    g_nodeDescriptor = {};
-                    g_nodeDescriptor._name = Util::StringFormat("New_Child_Node_%d", sgn.getGUID());
-                    g_nodeDescriptor._componentMask = to_U32(ComponentType::TRANSFORM) | to_U32(ComponentType::BOUNDS);
-                    g_currentNodeType = SceneNodeType::TYPE_TRANSFORM;
-                    _parentNode = &sgn;
-                }
-                ImGui::Separator();
-                if (!isRoot && ImGui::Selectable("Remove")) {
-                    _nodeToRemove = sgn.getGUID();
-                }
-                ImGui::Separator();
-                if (!isRoot && ImGui::Selectable("Go To")) {
-                    goToNode(sgn);
-                }
-                ImGui::EndPopup();
+            if (!secondaryView && wasSelected) {
+                drawContextMenu(sgn);
             }
 
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-                const bool parentSelected = (!isRoot && sgn.parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
-                const bool childrenSelected = sgn.getChildCount() > 0 && sgn.getChild(0u).hasFlag(SceneGraphNode::Flags::SELECTED);
+                if (secondaryView) {
+                    _tempParent = &sgn;
+                } else {
+                    const bool parentSelected = (!isRoot && sgn.parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
+                    const bool childrenSelected = sgn.getChildCount() > 0 && sgn.getChild(0u).hasFlag(SceneGraphNode::Flags::SELECTED);
 
-                sceneManager.resetSelection(0);
-                if (!wasSelected || parentSelected || childrenSelected) {
-                    sceneManager.setSelected(0, { &sgn }, !wasSelected);
+                    sceneManager.resetSelection(0);
+                    if (!wasSelected || parentSelected || childrenSelected) {
+                        sceneManager.setSelected(0, { &sgn }, !wasSelected);
+                    }
+                    Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
                 }
-                Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
             }
-            if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {
+            if (!secondaryView && ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered(ImGuiHoveredFlags_None)) {
                 goToNode(sgn);
             }
             return nodeOpen;
@@ -135,8 +171,8 @@ namespace Divide {
 
         if (_filter.Filters.empty()) {
             if (printNode()) {
-                sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
-                    printSceneGraphNode(sceneManager, *child, childIdx, false);
+                sgn.forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
+                    printSceneGraphNode(sceneManager, *child, childIdx, false, secondaryView);
                     return true;
                 });
                 ImGui::TreePop();
@@ -146,8 +182,8 @@ namespace Divide {
             if (_filter.PassFilter(sgn.name().c_str())) {
                 nodeOpen = printNode();
             }
-            sgn.forEachChild([this, &sceneManager](SceneGraphNode* child, I32 childIdx) {
-                printSceneGraphNode(sceneManager, *child, childIdx, false);
+            sgn.forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
+                printSceneGraphNode(sceneManager, *child, childIdx, false, secondaryView);
                 return true;
             });
             if (nodeOpen) {
@@ -176,7 +212,7 @@ namespace Divide {
             for (PlayerIndex i = 0; i < static_cast<PlayerIndex>(Config::MAX_LOCAL_PLAYER_COUNT); ++i) {
                 printCameraNode(sceneManager, Attorney::SceneManagerCameraAccessor::playerCamera(sceneManager, i));
             }
-            printSceneGraphNode(sceneManager, root, 0, true);
+            printSceneGraphNode(sceneManager, root, 0, true, false);
             ImGui::PopStyleVar();
             ImGui::TreePop();
         }
@@ -289,6 +325,8 @@ namespace Divide {
 
         drawRemoveNodeDialog();
         drawAddNodeDialog();
+        drawChangeParentWindow();
+        drawReparentNodeDialog();
     }
 
     void SolutionExplorerWindow::drawRemoveNodeDialog() {
@@ -318,10 +356,41 @@ namespace Divide {
         }
     }
 
+    void SolutionExplorerWindow::drawReparentNodeDialog() {
+        if (!_reparentConfirmRequested) {
+            return;
+        }
+
+        ImGui::OpenPopup("Confirm Re-parent");
+
+        if (ImGui::BeginPopupModal("Confirm Re-parent", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want change the selected node's [ %s ] parent?", _childNode->name().c_str());
+            ImGui::Text("Old Parent [ %s ] | New Parent [ %s ]", _childNode->parent()->name().c_str(), _tempParent->name().c_str());
+            ImGui::Separator();
+
+            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+                _reparentConfirmRequested = false;
+            }
+            ImGui::SetItemDefaultFocus();
+            ImGui::SameLine();
+            if (ImGui::Button("Yes", ImVec2(120, 0))) {
+                _childNode->setParent(*_tempParent, true);
+                _childNode = nullptr;
+                _tempParent = nullptr;
+
+                ImGui::CloseCurrentPopup();
+                _reparentConfirmRequested = false;
+            }
+            ImGui::EndPopup();
+        }
+    }
+
     void SolutionExplorerWindow::drawAddNodeDialog() {
         if (_parentNode == nullptr) {
             return;
         }
+
         ImGui::OpenPopup("Create New Node");
 
         if (ImGui::BeginPopupModal("Create New Node", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
@@ -543,5 +612,44 @@ namespace Divide {
             g_particleSource.reset();
         }
         return ptr;
+    }
+
+    void SolutionExplorerWindow::drawChangeParentWindow() {
+        if (_reparentSelectRequested) {
+            ImGui::OpenPopup("Select New Parent");
+
+            if (ImGui::BeginPopupModal("Select New Parent", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+                SceneManager& sceneManager = *context().kernel().sceneManager();
+                Scene& activeScene = sceneManager.getActiveScene();
+                SceneGraphNode& root = activeScene.sceneGraph().getRoot();
+
+                ImGui::Text("Selecting a new parent for SGN [ %d ][ %s ]?", _childNode->getGUID(), _childNode->name().c_str());
+
+                if (ImGui::BeginChild("SceneGraph", ImVec2(0, 400), true, 0)) {
+                    ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, ImGui::GetFontSize() * 3); // Increase spacing to differentiate leaves from expanded contents.
+                    printSceneGraphNode(sceneManager, root, 0, true, true);
+                    ImGui::PopStyleVar();
+
+                    ImGui::EndChild();
+                }
+
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                    _childNode = nullptr;
+                    _tempParent = nullptr;
+
+                    ImGui::CloseCurrentPopup();
+                    _reparentSelectRequested = false;
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Done", ImVec2(120, 0))) {
+                    _reparentConfirmRequested = true;
+
+                    ImGui::CloseCurrentPopup();
+                    _reparentSelectRequested = false;
+                }
+                ImGui::EndPopup();
+            }
+        }
     }
 };

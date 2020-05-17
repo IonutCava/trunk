@@ -619,19 +619,26 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
 }
 
 void SceneManager::moveCameraToNode(const SceneGraphNode& targetNode) const {
-    vec3<F32> targetPos = playerCamera()->getEye();
-    BoundsComponent* bComp = targetNode.get<BoundsComponent>();
-    if (bComp != nullptr) {
-        const BoundingSphere& bSphere = bComp->getBoundingSphere();
-        targetPos = bSphere.getCenter();
-        targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
-    } else {
-        TransformComponent* tComp = targetNode.get<TransformComponent>();
-        if (tComp != nullptr) {
-            targetPos = tComp->getPosition();
-            targetPos -= playerCamera()->getForwardDir() * 3.0f;
+    vec3<F32> targetPos = VECTOR3_ZERO;
+
+    /// Root node just means a teleport to (0,0,0)
+    if (targetNode.parent() != nullptr) {
+        targetPos = playerCamera()->getEye();
+        BoundsComponent* bComp = targetNode.get<BoundsComponent>();
+        if (bComp != nullptr) {
+            const BoundingSphere& bSphere = bComp->getBoundingSphere();
+            targetPos = bSphere.getCenter();
+            targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
+        } else {
+            TransformComponent* tComp = targetNode.get<TransformComponent>();
+            if (tComp != nullptr) {
+                targetPos = tComp->getPosition();
+                targetPos -= playerCamera()->getForwardDir() * 3.0f;
+            }
         }
     }
+    
+
 
     playerCamera()->setEye(targetPos);
 }

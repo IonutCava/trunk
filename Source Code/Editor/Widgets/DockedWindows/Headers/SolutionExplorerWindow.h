@@ -44,19 +44,22 @@ class SceneGraphNode;
 FWD_DECLARE_MANAGED_CLASS(SceneNode);
 
 class SolutionExplorerWindow final : public DockedWindow, public PlatformContextComponent {
-    public:
-        SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
-        ~SolutionExplorerWindow();
+  public:
+      SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
+      ~SolutionExplorerWindow();
 
-        void drawInternal() final;
+      void drawInternal() final;
   protected:
       void drawTransformSettings();
       void drawRemoveNodeDialog();
+      void drawReparentNodeDialog();
       void drawAddNodeDialog();
       void drawNodeParametersChildWindow();
+      void drawChangeParentWindow();
+      void drawContextMenu(SceneGraphNode& sgn);
 
       void printCameraNode(SceneManager& sceneManager, Camera* camera);
-      void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open);
+      void printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open, bool secondaryView);
 
       void goToNode(const SceneGraphNode& sgn) const;
 
@@ -64,7 +67,13 @@ class SolutionExplorerWindow final : public DockedWindow, public PlatformContext
   private:
       ImGuiTextFilter _filter;
       I64 _nodeToRemove = -1;
+      /// Used for adding child nodes
       SceneGraphNode* _parentNode = nullptr;
+      /// Used when changing parents
+      bool _reparentSelectRequested = false;
+      bool _reparentConfirmRequested = false;
+      SceneGraphNode* _childNode = nullptr;
+      SceneGraphNode* _tempParent = nullptr;
 };
 }; //namespace Divide
 

@@ -49,6 +49,7 @@ class RenderPassCuller;
 class RenderingComponent;
 class TransformComponent;
 
+struct FrameEvent;
 struct NodeCullParams;
 
 struct SceneGraphNodeDescriptor {
@@ -110,7 +111,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 
         /// If this function returns true, the node will no longer be part of the scene hierarchy.
         /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
-        bool removeChildNode(const SceneGraphNode& node, bool recursive = true);
+        bool removeChildNode(const SceneGraphNode& node, bool recursive = true, bool deleteNode = true);
 
         /// Find a child Node using the given name (either SGN name or SceneNode name)
         SceneGraphNode* findChild(const U64 nameHash, bool sceneNodeName = false, bool recursive = false) const;
@@ -121,8 +122,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// If this function returns true, at least one node of the specified type was removed.
         bool removeNodesByType(SceneNodeType nodeType);
 
-        /// Changing a node's parent means removing this node from the current parent's child list and appending it to the new parent's list
-        void setParent(SceneGraphNode& parent);
+        /// Changing a node's parent means removing this node from the current parent's child list and appending it to the new parent's list (happens after a full frame)
+        void setParent(SceneGraphNode& parent, bool defer = false);
 
         /// Checks if we have a parent matching the typeMask. We check recursively until we hit the top node (if ignoreRoot is false, top node is Root)
         bool isChildOfType(U16 typeMask) const;
@@ -194,7 +195,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         inline T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
 
         template <>
-       inline TransformComponent* get() const noexcept { return Hacks._transformComponentCache; }
+        inline TransformComponent* get() const noexcept { return Hacks._transformComponentCache; }
 
         template <>
         inline BoundsComponent* get() const noexcept { return Hacks._boundsComponentCache; }
@@ -286,6 +287,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
         /// Destructs all of the nodes specified in the list and removes them from the _children container.
         void processDeleteQueue(vectorEASTL<size_t>& childList);
+        /// Called on every new frame
+        void frameStarted(const FrameEvent& evt);
         /// Similar to the saveToXML call but is geared towards temporary state (e.g. save game)
         bool saveCache(ByteBuffer& outputBuffer) const;
         /// Similar to the loadFromXML call but is geared towards temporary state (e.g. save game)
@@ -298,6 +301,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         ECS::ECSEngine& GetECSEngine();
         /// Only called from withing "setParent()" (which is also called from "addChildNode()"). Used to mark the existing relationship cache as invalid.
         void invalidateRelationshipCache(SceneGraphNode *source = nullptr);
+        /// Changes this node's parent
+        void setParentInternal();
 
     private:
         SGNRelationshipCache _relationshipCache;
@@ -320,6 +325,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         POINTER_R(ECS::ComponentManager, compManager, nullptr);
         POINTER_R(SceneGraphNode, parent, nullptr);
         PROPERTY_R(Str64, name, "");
+        PROPERTY_R(I64, queuedNewParent, -1);
         PROPERTY_RW(U64, lockToCamera, 0u);
         PROPERTY_R(U64, elapsedTimeUS, 0u);
         PROPERTY_R(U64, lastDeltaTimeUS, 0u);
@@ -360,7 +366,11 @@ namespace Attorney {
             node.getOrderedNodeList(nodeList);
         }
 
-        static void processDeleteQueue(SceneGraphNode& node, vectorEASTL<size_t>& childList) {
+        static void frameStarted(SceneGraphNode& node, const FrameEvent& evt) {
+            node.frameStarted(evt);
+        }
+
+;        static void processDeleteQueue(SceneGraphNode& node, vectorEASTL<size_t>& childList) {
             node.processDeleteQueue(childList);
         }
 
