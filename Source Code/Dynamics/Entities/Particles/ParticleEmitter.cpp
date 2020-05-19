@@ -49,7 +49,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache,
       _enabled(false),
       _particleTexture(nullptr),
       _particleShader(nullptr),
-      _particleDepthShader{nullptr, nullptr}
+      _particleDepthShader(nullptr)
 {
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
@@ -143,33 +143,21 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     particleShader.propertyDescriptor(shaderDescriptor);
     _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
 
-    fragModule._variant = "Shadow";
-
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor particleDepthShaderDescriptor("particles_Shadow");
-    particleDepthShaderDescriptor.propertyDescriptor(shaderDescriptor);
-    _particleDepthShader[0] = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
-
-
     fragModule._variant = "Shadow.VSM";
-
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
     ResourceDescriptor particleDepthVSMShaderDescriptor("particles_ShadowVSM");
     particleDepthVSMShaderDescriptor.propertyDescriptor(shaderDescriptor);
-    _particleDepthShader[1] = CreateResource<ShaderProgram>(_parentCache, particleDepthVSMShaderDescriptor);
+    _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthVSMShaderDescriptor);
 
     if (_particleShader != nullptr) {
         Material_ptr mat = CreateResource<Material>(_parentCache, ResourceDescriptor("Material_particles"));
 
         mat->setShaderProgram(_particleShader, RenderStage::COUNT, RenderPassType::COUNT, 0u);
-        mat->setShaderProgram(_particleDepthShader[0], RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
-        mat->setShaderProgram(_particleDepthShader[0], RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
-        mat->setShaderProgram(_particleDepthShader[1], RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
+        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
 
         mat->setRenderStateBlock(_particleStateBlockHash, RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
         mat->setRenderStateBlock(_particleStateBlockHash, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);

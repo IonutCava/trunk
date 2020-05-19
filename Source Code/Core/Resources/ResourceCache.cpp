@@ -14,34 +14,44 @@ namespace {
 };
 
 ResourceLoadLock::ResourceLoadLock(size_t hash, PlatformContext& context)
-    : _loadingHash(hash)
+    : _loadingHash(hash),
+      _threaded(!Runtime::isMainThread())
 {
-    const bool threaded = !Runtime::isMainThread();
-    do {
-        {
-            SharedLock<SharedMutex> r_lock(g_hashLock);
-            if (g_loadingHashes.find(_loadingHash) == std::cend(g_loadingHashes)) {
-                r_lock.unlock();
-                UniqueLock<SharedMutex> w_lock(g_hashLock);
-                //Check again
-                if (g_loadingHashes.find(_loadingHash) == std::cend(g_loadingHashes)) {
-                    g_loadingHashes.insert(_loadingHash);
-                    break;
-                }
-            }
-        }
-        if (threaded) {
+    while (!setLoading(_loadingHash)) {
+        if (_threaded) {
             notifyTaskPool(context);
         }
-    } while (true);
+    };
 }
 
 ResourceLoadLock::~ResourceLoadLock()
 {
+    const bool ret = setLoadingFinished(_loadingHash);
+    DIVIDE_ASSERT(ret, "ResourceLoadLock failed to remove a resource lock!");
+}
+
+bool ResourceLoadLock::isLoading(size_t hash) const {
+    SharedLock<SharedMutex> r_lock(g_hashLock);
+    return g_loadingHashes.find(hash) != std::cend(g_loadingHashes);
+}
+
+bool ResourceLoadLock::setLoading(size_t hash) {
+    if (!isLoading(hash)) {
+        UniqueLock<SharedMutex> w_lock(g_hashLock);
+        //Check again
+        if (g_loadingHashes.find(hash) == std::cend(g_loadingHashes)) {
+            g_loadingHashes.insert(hash);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool ResourceLoadLock::setLoadingFinished(size_t hash) {
     UniqueLock<SharedMutex> w_lock(g_hashLock);
     const size_t prevSize = g_loadingHashes.size();
-    g_loadingHashes.erase(_loadingHash);
-    DIVIDE_ASSERT(prevSize > g_loadingHashes.size(), "ResourceLoadLock failed to remove a resource lock!");
+    g_loadingHashes.erase(hash);
+    return prevSize > g_loadingHashes.size();
 }
 
 void ResourceLoadLock::notifyTaskPool(PlatformContext& context) {

@@ -83,6 +83,8 @@ struct SizeChangeParams;
 struct SizeChangeParams;
 struct ShaderBufferDescriptor;
 
+enum class ShadowType : U8;
+
 FWD_DECLARE_MANAGED_CLASS(Texture);
 
 namespace Time {
@@ -291,7 +293,7 @@ public:  // GPU interface
     void decreaseResolution();
 
     void setScreenMSAASampleCount(U8 sampleCount);
-    void setShadowMSAASampleCount(U8 sampleCount);
+    void setShadowMSAASampleCount(ShadowType type, U8 sampleCount);
 
     /// Save a screenshot in TGA format
     void Screenshot(const stringImpl& filename);

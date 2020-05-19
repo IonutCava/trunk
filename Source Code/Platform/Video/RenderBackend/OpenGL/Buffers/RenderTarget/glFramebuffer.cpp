@@ -117,7 +117,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentS
     OPTICK_EVENT();
 
     const Texture_ptr& tex = attachment.texture(false);
-    if (layeredRendering && tex->numLayers() == 1) {
+    if (layeredRendering && tex->numLayers() == 1 && !tex->descriptor().isCubeTexture()) {
         layeredRendering = false;
     }
 

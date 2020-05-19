@@ -1,6 +1,8 @@
 #ifndef _VSM_FRAG_
 #define _VSM_FRAG_
 
+#include "utility.frag"
+
 vec2 computeMoments(const float depth) {
     // Adjusting moments (this is sort of bias per pixel) using partial derivative
     // Compute second moment over the pixel extents.  
@@ -8,7 +10,15 @@ vec2 computeMoments(const float depth) {
 }
 
 vec2 computeMoments() {
-    return computeMoments(gl_FragCoord.z / gl_FragCoord.w);
+    if (SHADOW_PASS_TYPE == SHADOW_PASS_ORTHO) {
+        return computeMoments(gl_FragCoord.z);
+    } else if (SHADOW_PASS_TYPE == SHADOW_PASS_NORMAL) {
+        const float depth = VAR._vertexWVP.z / VAR._vertexWVP.w;
+        return computeMoments(depth * 0.5f + 0.5f);
+    } else /*(SHADOW_PASS_TYPE == SHADOW_PASS_CUBE)*/ {
+        const float depth = length(VAR._vertexW.xyz - dvd_cameraPosition.xyz) / dvd_zPlanes.y;
+        return computeMoments(depth);
+    }
 }
 
 #endif //_VSM_FRAG_

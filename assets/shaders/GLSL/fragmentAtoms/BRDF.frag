@@ -40,6 +40,14 @@ uint GetTileIndex() {
     return uint(tileID.y * dvd_numTilesX + tileID.x);
 }
 
+float TanAcosNdL(in float ndl) {
+#if 0
+    return tan(acos(ndl));
+#else
+    // Same as above but maybe faster?
+    return sqrt(1.f - ndl * ndl) / ndl;
+#endif
+}
 vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 data, in vec3 normalWV) {
     vec4 ret = vec4(0.0);
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
@@ -47,7 +55,7 @@ vec4 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in v
 
         const vec3 lightDirectionWV = -light._directionWV.xyz;
         const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-        const float shadowFactor = getShadowFactorDirectional(light._options.y, tan(acos(ndl)));
+        const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl));
 
         vec4 temp = getBRDFFactors(lightDirectionWV,
                                    vec4(light._colour.rgb, 1.0f),
@@ -88,7 +96,6 @@ float getSpotAttenuation(in Light light, in vec3 lightDirectionWV) {
 vec4 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 data, in vec3 normalWV) {
     const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
 
-    float shadowFactor = 1.0f;
     vec4 ret = vec4(0.0);
     for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
         const int lightIdx = perTileLightIndices[offset + i];
@@ -100,13 +107,13 @@ vec4 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 da
         const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
         const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
 
+        const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl));
+
         float att = 0.0f;
         if (light._options.x == 1) {
             att = getPointAttenuation(light, lightDirectionWV);
-            shadowFactor = getShadowFactorPoint(light._options.y, tan(acos(ndl)));
         } else {
             att = getSpotAttenuation(light, lightDirectionWV);
-            shadowFactor = getShadowFactorSpot(light._options.y, tan(acos(ndl)));
         }
 
         const vec4 colourAndAtt = vec4(light._colour.rgb, att);
@@ -120,33 +127,30 @@ vec4 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec4 da
 
 float getShadowFactor(in vec3 normalWV) {
     float ret = 1.0f;
-    const uint dirLightCount = dvd_LightData.x;
+    if (dvd_receivesShadow) {
+        const uint dirLightCount = dvd_LightData.x;
 
-    for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
-        const Light light = dvd_LightSource[lightIdx];
+        for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
+            const Light light = dvd_LightSource[lightIdx];
 
-        const vec3 lightDirectionWV = -light._directionWV.xyz;
-        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-        ret *= getShadowFactorDirectional(dvd_LightSource[lightIdx]._options.y, tan(acos(ndl)));
-    }
-
-    const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
-    for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
-        const int lightIdx = perTileLightIndices[offset + i];
-        if (lightIdx == -1) {
-            break;
+            const vec3 lightDirectionWV = -light._directionWV.xyz;
+            const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
+            ret *= getShadowFactor(dvd_LightSource[lightIdx]._options, TanAcosNdL(ndl));
         }
-        const Light light = dvd_LightSource[lightIdx + dirLightCount];
-             
-        const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
-        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-        if (light._options.x == 2) {
-            ret *= getShadowFactorSpot(light._options.y, tan(acos(ndl)));
-        } else {
-            ret *= getShadowFactorPoint(light._options.y, tan(acos(ndl)));
+
+        const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
+        for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
+            const int lightIdx = perTileLightIndices[offset + i];
+            if (lightIdx == -1) {
+                break;
+            }
+            const Light light = dvd_LightSource[lightIdx + dirLightCount];
+
+            const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
+            const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
+            ret *= getShadowFactor(light._options, TanAcosNdL(ndl));
         }
     }
-    
 
     return ret;
 }
@@ -193,7 +197,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     const uint dirLightCount = dvd_LightData.x;
     vec4 lightColour1 = getDirectionalLightContribution(dirLightCount, albedo, data, normalWV);
     vec4 lightColour2 = getOtherLightContribution(dirLightCount, albedo, data, normalWV);
-    
+
     vec3 lightColour = getEmissive(colourMatrix) + lightColour1.rgb + lightColour2.rgb;
     const float reflectivity = saturate(max(lightColour1.a, lightColour2.a));
 
@@ -219,7 +223,7 @@ vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normalWV, in v
 #if !defined(DISABLE_SHADOW_MAPPING)
         // CSM Info
         if (dvd_CSMSplitsViewIndex > -1) {
-            switch (getCSMSlice(dvd_CSMSplitsViewIndex)) {
+            switch (getCSMSlice(dvd_CSMShadowTransforms[dvd_CSMSplitsViewIndex])) {
                 case  0: colour.r += 0.15f; break;
                 case  1: colour.g += 0.25f; break;
                 case  2: colour.b += 0.40f; break;

@@ -75,15 +75,13 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
 
     bool useMSAA() const noexcept;
 
+    void updateMSAASampleCount(U8 sampleCount) final;
+
   protected:
     Pipeline* _blurPipeline = nullptr;
-    Pipeline* _computeVSMPipeline[2] = { nullptr, nullptr };
-
     ShaderProgram_ptr _blurDepthMapShader = nullptr;
-    ShaderProgram_ptr _computeVSMShader[2] = { nullptr, nullptr };
     PushConstants     _shaderConstants;
     RenderTargetHandle _drawBufferDepth;
-    RenderTargetHandle _drawBufferResolve;
     RenderTargetHandle _blurBuffer;
 };
 

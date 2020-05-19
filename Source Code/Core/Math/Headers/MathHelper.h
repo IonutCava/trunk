@@ -288,6 +288,10 @@ template<typename T>
 using DEGREES = T;
 
 template <typename T>
+[[nodiscard]] constexpr DEGREES<T> to_VerticalFoV(const DEGREES<T> horizontalFoV, D64 aspectRatio) noexcept;
+template <typename T>
+[[nodiscard]] constexpr DEGREES<T> to_HorizontalFoV(const DEGREES<T> verticalFoV, D64 aspectRatio) noexcept;
+template <typename T>
 [[nodiscard]] constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept;
 template <typename T>
 [[nodiscard]] constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) noexcept;

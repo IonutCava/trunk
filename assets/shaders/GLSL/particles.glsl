@@ -18,9 +18,10 @@ void main()
     // Output position of the vertex
     // Even though the variable ends with WV, we'll store WVP to skip adding a new varying variable
 
-    //VAR._vertexWV is actually VAR._vertexWVP
-    VAR._vertexWV = dvd_ProjectionMatrix * vec4(vertexPositionWV, 1.0f);
-    gl_Position = VAR._vertexWV;
+    VAR._vertexWV = vec4(vertexPositionWV, 1.0f);
+    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
+
+    gl_Position = VAR._vertexWVP;
     
     // UV of the vertex. No special space for this one.
     VAR._texCoord = inVertexData.xy + vec2(0.5, 0.5);
@@ -45,10 +46,8 @@ void main(){
 --Fragment.Shadow.VSM
 
 #ifdef HAS_TEXTURE
-#if !defined(USE_SEPARATE_VSM_PASS)
 #include "vsm.frag"
 out vec2 _colourOut;
-#endif
 
 layout(location = 0) in vec4 particleColour;
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
@@ -58,9 +57,8 @@ void main() {
     if (colour.a < 1.0f - Z_TEST_SIGMA) {
         discard;
     }
-#if !defined(USE_SEPARATE_VSM_PASS)
+
     _colourOut = computeMoments();
-#endif
 }
 #endif
 

@@ -121,7 +121,7 @@ class ParticleEmitter : public SceneNode {
     Task* _bufferUpdate = nullptr;
     Task* _bbUpdate = nullptr;
     ShaderProgram_ptr _particleShader = nullptr;
-    ShaderProgram_ptr _particleDepthShader[2] = {nullptr, nullptr};
+    ShaderProgram_ptr _particleDepthShader = nullptr;
     Texture_ptr _particleTexture = nullptr;
 };
 

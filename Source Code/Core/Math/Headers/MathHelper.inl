@@ -593,7 +593,21 @@ inline void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept {
 
 namespace Angle {
 
-    template <typename T>
+template <typename T>
+constexpr DEGREES<T> to_VerticalFoV(const DEGREES<T> horizontalFoV, D64 aspectRatio) noexcept {
+    return static_cast<DEGREES<T>>(
+        to_DEGREES(2 * std::atan(std::tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / aspectRatio))
+    );
+}
+
+template <typename T>
+constexpr DEGREES<T> to_HorizontalFoV(const DEGREES<T> verticalFoV, D64 aspectRatio) noexcept {
+    return static_cast<DEGREES<T>>(
+        to_DEGREES(2 * std::atan(std::tan(Angle::to_RADIANS(verticalFoV) * 0.5f)) * aspectRatio)
+    );
+}
+
+template <typename T>
 constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept {
     return static_cast<RADIANS<T>>(angle * M_PIDIV180);
 }

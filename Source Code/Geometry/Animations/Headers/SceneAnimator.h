@@ -107,7 +107,7 @@ class SceneAnimator {
     /// Get the transforms needed to pass to the vertex shader.
     /// This will wrap the dt value passed, so it is safe to pass 50000000 as a
     /// valid number
-    inline I32 frameIndexForTimeStamp(I32 animationIndex, const D64 dt) const {
+    inline AnimEvaluator::FrameIndex frameIndexForTimeStamp(I32 animationIndex, const D64 dt) const {
         return _animations[animationIndex]->frameIndexAt(dt);
     }
 

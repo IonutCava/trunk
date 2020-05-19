@@ -427,7 +427,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     }
 
     // SHADOW
-
     ShaderProgramDescriptor shadowDescriptorVSM = {}; ;
     for (const ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
         shadowDescriptorVSM._modules.push_back(shaderModule);
@@ -439,28 +438,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         tempModule._defines.emplace_back("SHADOW_PASS", true);
         tempModule._defines.emplace_back("MAX_TESS_SCALE 32", true);
         tempModule._defines.emplace_back("MIN_TESS_SCALE 32", true);
-
     }
 
     ResourceDescriptor terrainShaderShadowVSM("Terrain_ShadowVSM-" + name);
     terrainShaderShadowVSM.propertyDescriptor(shadowDescriptorVSM);
 
     ShaderProgram_ptr terrainShadowShaderVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadowVSM);
-
-    ShaderProgramDescriptor shadowDescriptor = {};
-    for (ShaderModuleDescriptor& shaderModule : shadowDescriptorVSM._modules) {
-        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            continue;
-        } 
-        shadowDescriptor._modules.push_back(shaderModule);
-    }
-
-    ResourceDescriptor terrainShaderShadow("Terrain_Shadow-" + name);
-    terrainShaderShadow.propertyDescriptor(shadowDescriptor);
-
-    ShaderProgram_ptr terrainShadowShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadow);
-
-
 
     // MAIN PASS
     ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
@@ -533,8 +516,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setShaderProgram(terrainColourShaderLQ, RenderStage::REFRACTION, RenderPassType::MAIN_PASS, 0u);
     terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStage::REFRACTION, RenderPassType::PRE_PASS, 0u);
     
-    terrainMaterial->setShaderProgram(terrainShadowShader,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
-    terrainMaterial->setShaderProgram(terrainShadowShader,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+    terrainMaterial->setShaderProgram(terrainShadowShaderVSM,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+    terrainMaterial->setShaderProgram(terrainShadowShaderVSM,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
     terrainMaterial->setShaderProgram(terrainShadowShaderVSM,  RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
 
     { //Normal rendering
@@ -564,17 +547,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     { //Shadow rendering
         RenderStateBlock terrainRenderStateShadow = {};
         terrainRenderStateShadow.setTessControlPoints(4);
-        terrainRenderStateShadow.setZBias(4.0f, 20.0f);
+        //terrainRenderStateShadow.setZBias(4.0f, 20.0f);
         terrainRenderStateShadow.setCullMode(CullMode::BACK);
-        terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
-        terrainRenderStateShadow.setColourWrites(false, false, false, false);
+        //terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
+        terrainRenderStateShadow.setColourWrites(true, true, false, false);
 
-        RenderStateBlock terrainRenderStateShadowVSM = terrainRenderStateShadow;
-        if_constexpr(!Config::Lighting::USE_SEPARATE_VSM_PASS) {
-            terrainRenderStateShadowVSM.setColourWrites(true, true, false, false);
-        }
-
-        terrainMaterial->setRenderStateBlock(terrainRenderStateShadowVSM.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
+        terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
         terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::SPOT));
         terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::POINT));
     }

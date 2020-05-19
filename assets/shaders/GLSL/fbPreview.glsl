@@ -7,6 +7,7 @@ uniform float lodLevel = 0;
 uniform bool unpack2Channel = false;
 uniform bool unpack1Channel = false;
 uniform bool startOnBlue = false;
+uniform float multiplier = 1.0f;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -24,7 +25,7 @@ void main()
             _colourOut.b = 0.0;
         }
     }
-
+    _colourOut.rgb *= multiplier;
     _colourOut.a = 1.0;
 }
 
@@ -76,7 +77,7 @@ void main()
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
---Fragment.Layered.LinearDepth.ESM
+--Fragment.Layered.LinearDepth
 
 #include "utility.frag"
 
@@ -90,44 +91,46 @@ uniform vec2 zPlanes;
 void main()
 {
     float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
-    //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
     float linearDepth = 0.5f * ToLinearPreviewDepth(depth, zPlanes) + 0.5f;
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
---Fragment.Cube.LinearDepth
+--Fragment.Cube.Shadow
 
 #include "utility.frag"
 
 out vec4 _colourOut;
 
-layout(binding = TEXTURE_UNIT0) uniform samplerCubeArrayShadow texDiffuse0;
+layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texDiffuse0;
 uniform int layer;
 uniform int face;
 uniform vec2 zPlanes;
 
 void main()
 {
+    vec2 uv_cube = 2.0f * VAR._texCoord - 1.0f;
+    vec3 vertex = vec3(0);
+    switch (face) {
+        case 0:
+            vertex.xyz = vec3(1.0, uv_cube.y, uv_cube.x);
+            break;
+        case 1:
+            vertex.xyz = vec3(-1.0, uv_cube.y, -uv_cube.x);
+            break;
+        case 2:
+            vertex.xyz = vec3(uv_cube.x, 1.0, uv_cube.y);
+            break;
+        case 3:
+            vertex.xyz = vec3(uv_cube.x, -1.0, -uv_cube.y);
+            break;
+        case 4:
+            vertex.xyz = vec3(-uv_cube.x, uv_cube.y, 1.0);
+            break;
+        case 5:
+            vertex.xyz = vec3(uv_cube.x, uv_cube.y, -1.0);
+            break;
+    };
 
-    float depth = texture(texDiffuse0, vec4(VAR._texCoord, face, layer), 1.0);
-    //depth = 1.0 - (log(depth) / DEPTH_EXP_WARP);
-    float linearDepth = ToLinearPreviewDepth(depth, zPlanes);
-    _colourOut = vec4(vec3(linearDepth), 1.0);
-}
-
---Fragment.Single.LinearDepth
-
-#include "utility.frag"
-
-out vec4 _colourOut;
-
-layout(binding = TEXTURE_UNIT0) uniform sampler2DArrayShadow texDiffuse0;
-uniform int layer;
-uniform vec2 zPlanes;
-
-void main()
-{
-    float depth = texture(texDiffuse0, vec4(VAR._texCoord, layer, 1.0)).r;
-    float linearDepth = ToLinearPreviewDepth(depth, zPlanes);
-    _colourOut = vec4(vec3(linearDepth), 1.0);
+    float depth = texture(texDiffuse0, vec4(vertex, layer)).r;
+    _colourOut = vec4(vec3(depth), 1.0);
 }

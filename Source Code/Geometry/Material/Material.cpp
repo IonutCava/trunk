@@ -120,15 +120,11 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
-    //shadowDescriptor.setCullMode(CullMode::FRONT);
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
+    shadowDescriptor.setColourWrites(true, true, false, false);
     /// set a polygon offset
-    shadowDescriptor.setZBias(1.0f, 1.0f);
-    shadowDescriptor.setColourWrites(false, false, false, false);
+    //shadowDescriptor.setZBias(1.0f, 1.0f);
 
-    RenderStateBlock shadowDescriptorCSM(shadowDescriptor);
-    //shadowDescriptorCSM.setCullMode(CullMode::BACK);
-    shadowDescriptorCSM.setColourWrites(true, true, false, false);
 
     target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
     target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::MAIN_PASS, 0u);
@@ -136,7 +132,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
     target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::POINT));
     target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::SPOT));
-    target.setRenderStateBlock(shadowDescriptorCSM.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::DIRECTIONAL));
+    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::DIRECTIONAL));
 
     target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::OIT_PASS, 0u);
     target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::OIT_PASS, 0u);
@@ -474,10 +470,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         if (renderStagePass._stage == RenderStage::SHADOW) {
             shaderName += ".SHDW";
             vertVariant += "Shadow";
-            fragVariant += "Shadow";
-            if (renderStagePass._variant == to_U8(LightType::DIRECTIONAL)) {
-                fragVariant += ".VSM";
-            }
+            fragVariant += "Shadow.VSM";
             globalDefines.emplace_back("SHADOW_PASS", true);
         } else {
             shaderName += ".PP";
@@ -635,12 +628,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
-
-    if(!Config::Lighting::USE_SEPARATE_VSM_PASS ||
-        (renderStagePass._stage != RenderStage::SHADOW || hasTransparency()))
-    {
-        shaderDescriptor._modules.push_back(fragModule);
-    }
+    shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor shaderResDescriptor(shaderName);
     shaderResDescriptor.propertyDescriptor(shaderDescriptor);
@@ -987,7 +975,7 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     if (ignoreXMLData()) {
         return;
     }
-
+    
     const size_t detectedVersion = pt.get<size_t>(entryName + ".version", 0);
     if (detectedVersion != g_materialXMLVersion) {
         Console::printfn(Locale::get(_ID("MATERIAL_WRONG_VERSION")), assetName().c_str(), detectedVersion, g_materialXMLVersion);
@@ -1068,6 +1056,17 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
 }
 
 void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    // Use this to modify render states loaded from XML
+    const auto modify = [](size_t hashIn) {
+#if 0
+        RenderStateBlock block = RenderStateBlock::get(hashIn);
+        block.setZBias(0.0f, 0.0f);
+        return block.getHash();
+#else
+        return hashIn;
+#endif
+    };
+
     stringImpl perStagePath = "", perPassPath = "", perVariantPath = "", fullPath = "", hashPath = entryName + ".RenderStates.";
 
     RenderStateBlock block = {};
@@ -1094,7 +1093,7 @@ void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost:
                         loadedHashes.insert(stateHash);
                     }
 
-                    passStates[v] = stateHash;
+                    passStates[v] = modify(stateHash);
                 }
             }
         }

@@ -169,6 +169,7 @@ bool GL_API::initGLSW(Configuration& config) {
     {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
+        { "vec4"       , "_vertexWVP"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
         { "flat uvec3" , "_drawParams"},
@@ -307,12 +308,15 @@ bool GL_API::initGLSW(Configuration& config) {
         appendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
     }
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_PASSES_PER_LIGHT " + Util::to_string(ShadowMap::MAX_PASSES_PER_LIGHT), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIR_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_POINT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_SPOT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
     
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.0001f", lineOffsets);
-    appendToShaderHeader(ShaderType::FRAGMENT, "#define DEPTH_EXP_WARP 32;", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
     static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
 
@@ -562,13 +566,6 @@ bool GL_API::initGLSW(Configuration& config) {
         Util::to_string(to_U32(TextureUsage::COUNT)),
         lineOffsets);
 
-    if_constexpr(Config::Lighting::USE_SEPARATE_VSM_PASS) {
-        appendToShaderHeader(
-            ShaderType::FRAGMENT,
-            "#define USE_SEPARATE_VSM_PASS",
-            lineOffsets);
-    }
-
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_TERRAIN_DATA " +
@@ -579,6 +576,12 @@ bool GL_API::initGLSW(Configuration& config) {
         ShaderType::VERTEX,
         "#define BUFFER_BONE_TRANSFORMS " +
         Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::VERTEX,
+        "#define BUFFER_BONE_TRANSFORMS_PREV " +
+        Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS_PREV)),
         lineOffsets);
 
     // Vertex data has a fixed format

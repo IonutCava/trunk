@@ -48,13 +48,13 @@
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>6708633907915889619</hash>
+                    <hash>10792318322046291732</hash>
                 </0>
                 <1>
-                    <hash>11887568622851589717</hash>
+                    <hash>10792318322046291732</hash>
                 </1>
                 <2>
-                    <hash>11887568622851589717</hash>
+                    <hash>10792318322046291732</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
@@ -90,10 +90,10 @@
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
             </11982279051139428369>
-            <6708633907915889619>
+            <10792318322046291732>
                 <colourWrite r="true" g="true" b="false" a="false"/>
-                <zBias>4</zBias>
-                <zUnits>20</zUnits>
+                <zBias>0</zBias>
+                <zUnits>0</zUnits>
                 <zFunc>LEQUAL</zFunc>
                 <tessControlPoints>4</tessControlPoints>
                 <cullMode>CW/BACK</cullMode>
@@ -109,27 +109,7 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </6708633907915889619>
-            <11887568622851589717>
-                <colourWrite r="false" g="false" b="false" a="false"/>
-                <zBias>4</zBias>
-                <zUnits>20</zUnits>
-                <zFunc>LEQUAL</zFunc>
-                <tessControlPoints>4</tessControlPoints>
-                <cullMode>CW/BACK</cullMode>
-                <fillMode>Solid</fillMode>
-                <frontFaceCCW>true</frontFaceCCW>
-                <scissorTestEnabled>false</scissorTestEnabled>
-                <depthTestEnabled>true</depthTestEnabled>
-                <stencilEnable>false</stencilEnable>
-                <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
-                <stencilPassOp>KEEP</stencilPassOp>
-                <stencilFunc>NEVER</stencilFunc>
-                <stencilRef>0</stencilRef>
-                <stencilMask>4294967295</stencilMask>
-                <stencilWriteMask>4294967295</stencilWriteMask>
-            </11887568622851589717>
+            </10792318322046291732>
             <9071389042233026226>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>

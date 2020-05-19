@@ -460,10 +460,9 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
                   "non-arithmetic matrix type");
    public:
     mat4() noexcept;
+    mat4(std::initializer_list<T> matrix) noexcept;
     template<typename U>
     mat4(U m) noexcept;
-    template<typename U>
-    mat4(std::initializer_list<U> matrix) noexcept;
     template<typename U>
     mat4(const U *values) noexcept;
     template<typename U>
@@ -559,10 +558,10 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     [[nodiscard]] T &element(I8 row, I8 column) noexcept;
     [[nodiscard]] const T &element(I8 row, I8 column) const noexcept;
 
+    void set(std::initializer_list<T> matrix) noexcept;
+
     template<typename U>
     void set(U const *matrix) noexcept;
-    template<typename U>
-    void set(std::initializer_list<U> matrix) noexcept;
     template<typename U>
     void set(const mat2<U> &matrix) noexcept;
     template<typename U>

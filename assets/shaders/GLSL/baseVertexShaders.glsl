@@ -24,7 +24,7 @@ void main(void)
 void main(void)
 {
     computeData();
-    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
+    gl_Position = VAR._vertexWVP;
 }
 
 --Vertex.BasicLightData
@@ -37,5 +37,5 @@ void main() {
     computeData();
     computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
 
-    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
+    gl_Position = VAR._vertexWVP;
 }

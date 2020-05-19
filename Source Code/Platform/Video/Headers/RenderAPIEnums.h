@@ -119,6 +119,7 @@ enum class ShaderBufferLocation : U8 {
     LIGHT_INDICES,
     NODE_INFO,
     BONE_TRANSFORMS,
+    BONE_TRANSFORMS_PREV,
     SCENE_DATA,
     TERRAIN_DATA,
     GRASS_DATA,

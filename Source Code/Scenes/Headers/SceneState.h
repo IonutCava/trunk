@@ -244,7 +244,7 @@ class SceneState : public SceneComponent {
     PROPERTY_RW(F32, windDirX, 0.1f);
     PROPERTY_RW(F32, windDirZ, 0.7f);
     PROPERTY_RW(F32, lightBleedBias, 0.2f);
-    PROPERTY_RW(F32, minShadowVariance, 0.001f);
+    PROPERTY_RW(F32, minShadowVariance, 0.00001f);
     PROPERTY_RW(U16, shadowFadeDistance, 900u);
     PROPERTY_RW(U16, shadowDistance, 1000u);
 

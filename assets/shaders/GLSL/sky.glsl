@@ -7,7 +7,8 @@ void main(void){
 
     VAR._vertexW += vec4(dvd_cameraPosition.xyz, 0.0f);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
+    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
+    gl_Position = VAR._vertexWVP;
     gl_Position.z = gl_Position.w - 0.000001f;
 }
 

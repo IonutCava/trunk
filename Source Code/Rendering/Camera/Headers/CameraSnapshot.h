@@ -42,11 +42,14 @@ namespace Divide {
         vec2<F32> _zPlanes;
         Angle::DEGREES<F32> _FoV = 0.0f;
         F32 _aspectRatio = 0.0f;
-        F32 _padding_ = 0.0f;
+        U8   _flag = 0u;
+        bool _isOrthoCamera = false;
     };
 
     inline bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
-        return lhs._FoV == rhs._FoV &&
+        return lhs._isOrthoCamera == rhs._isOrthoCamera &&
+               lhs._flag == rhs._flag &&
+               lhs._FoV == rhs._FoV &&
                lhs._aspectRatio == rhs._aspectRatio &&
                lhs._zPlanes == rhs._zPlanes &&
                lhs._eye == rhs._eye &&
@@ -56,7 +59,9 @@ namespace Divide {
     }
 
     inline bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
-        return lhs._FoV != rhs._FoV ||
+        return lhs._isOrthoCamera != rhs._isOrthoCamera ||
+               lhs._flag != rhs._flag ||
+               lhs._FoV != rhs._FoV ||
                lhs._aspectRatio != rhs._aspectRatio ||
                lhs._zPlanes != rhs._zPlanes ||
                lhs._eye != rhs._eye ||

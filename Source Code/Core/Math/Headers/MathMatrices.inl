@@ -1423,10 +1423,10 @@ void mat3<T>::orthoNormalize(void) {
 
 template<typename T>
 mat4<T>::mat4() noexcept
-    : mat4({ 1, 0, 0, 0,
-             0, 1, 0, 0,
-             0, 0, 1, 0,
-             0, 0, 0, 1 })
+    : mat{ 1, 0, 0, 0,
+           0, 1, 0, 0,
+           0, 0, 1, 0,
+           0, 0, 0, 1 }
 {
 }
 
@@ -1441,8 +1441,7 @@ mat4<T>::mat4(U value) noexcept
 }
 
 template<typename T>
-template<typename U>
-mat4<T>::mat4(std::initializer_list<U> matrix) noexcept
+mat4<T>::mat4(std::initializer_list<T> matrix) noexcept
     : mat4(matrix.begin())
 {
 }
@@ -1844,8 +1843,7 @@ const T& mat4<T>::element(I8 row, I8 column) const noexcept {
 }
 
 template<typename T>
-template<typename U>
-void mat4<T>::set(std::initializer_list<U> matrix) noexcept {
+void mat4<T>::set(std::initializer_list<T> matrix) noexcept {
     set(matrix.begin());
 }
 

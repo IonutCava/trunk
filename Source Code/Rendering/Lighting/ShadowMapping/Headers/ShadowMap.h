@@ -67,6 +67,7 @@ namespace GFX {
 };
 
 class SceneState;
+class PlatformContext;
 class ShadowMapGenerator {
 protected:
     SET_DELETE_FRIEND
@@ -76,6 +77,8 @@ protected:
 
     friend class ShadowMap;
     virtual void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) = 0;
+
+    virtual void updateMSAASampleCount(U8 sampleCount) { ACKNOWLEDGE_UNUSED(sampleCount); }
 
 protected:
     GFXDevice& _context;
@@ -104,16 +107,16 @@ class NOINITVTABLE ShadowMap {
     static void commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static bool freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
-    static void generateShadowMaps(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut);
+    static void generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut);
 
-    static ShadowType getShadowTypeForLightType(LightType type);
-    static LightType getLightTypeForShadowType(ShadowType type);
+    static ShadowType getShadowTypeForLightType(LightType type) noexcept;
+    static LightType getLightTypeForShadowType(ShadowType type) noexcept;
 
     static const RenderTargetHandle& getDepthMap(LightType type);
 
     static void setDebugViewLight(GFXDevice& context, Light* light);
 
-    static void setMSAASampleCount(U8 sampleCount);
+    static void setMSAASampleCount(ShadowType type, U8 sampleCount);
 
     static vectorEASTL<Camera*>& shadowCameras(ShadowType type) noexcept { return s_shadowCameras[to_base(type)]; }
 

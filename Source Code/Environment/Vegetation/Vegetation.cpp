@@ -355,7 +355,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     grassPrePassShader.waitForReady(false);
     ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader, loadTasks);
 
-    fragModule._variant = "Shadow";
+    fragModule._variant = "Shadow.VSM";
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
@@ -363,9 +363,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ResourceDescriptor grassShadowShader("grassShadow");
     grassShadowShader.propertyDescriptor(shaderDescriptor);
     grassShadowShader.waitForReady(false);
-    ShaderProgram_ptr grassShadow = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader, loadTasks);
-
-    fragModule._variant = "Shadow.VSM";
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
@@ -412,8 +409,8 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vegMaterial->setShaderProgram(grassColour, RenderStage::COUNT, RenderPassType::COUNT, 0u);
     vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
     vegMaterial->setShaderProgram(grassPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
-    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
-    vegMaterial->setShaderProgram(grassShadow, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
+    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
+    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
     vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
 
     vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray);

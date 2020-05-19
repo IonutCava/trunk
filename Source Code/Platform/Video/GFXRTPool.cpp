@@ -129,7 +129,7 @@ RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const Re
 }
 
 const RenderTargetID GFXRTPool::screenTargetID() const noexcept {
-    const RenderTargetUsage screenRT = _parent.context().config().rendering.MSAAsamples > 0 ? RenderTargetUsage::SCREEN_MS : RenderTargetUsage::SCREEN;
+    const RenderTargetUsage screenRT = _parent.context().config().rendering.MSAASamples > 0 ? RenderTargetUsage::SCREEN_MS : RenderTargetUsage::SCREEN;
     return RenderTargetID(screenRT);
 }
 

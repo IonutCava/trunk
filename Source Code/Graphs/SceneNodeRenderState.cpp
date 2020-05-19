@@ -13,9 +13,20 @@ bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 
         return false;
     }
 
+    const auto checkIndex = [&stagePass](const RenderStagePass& exclusion) noexcept {
+        const bool mainIndexMatch = exclusion._passIndex == g_AllPassIndexesID || //All Passes
+                                    exclusion._passIndex == stagePass._passIndex;//Same pass
+
+        const bool subIndexMatch = (exclusion._indexA == stagePass._indexA && //Sub pass index 1 match
+                                         (exclusion._indexB == g_AllPassSubIndexID ||
+                                          exclusion._indexB == stagePass._indexB)); //Sub pass index 2 match or all index 2 sub pass indices
+
+        return mainIndexMatch || subIndexMatch;
+    };
+
     for (const RenderStagePass& exclussionStagePass : _exclusionStagePasses) {
-        if ((exclussionStagePass._variant == stagePass._variant) &&
-            (exclussionStagePass._passIndex == g_AllPassIndexesID || exclussionStagePass._passIndex == stagePass._passIndex) &&
+        if (checkIndex(exclussionStagePass) && 
+            (exclussionStagePass._variant == stagePass._variant) &&
             (exclussionStagePass._stage == RenderStage::COUNT || exclussionStagePass._stage == stagePass._stage) &&
             (exclussionStagePass._passType == RenderPassType::COUNT || exclussionStagePass._passType == stagePass._passType))
         {
@@ -24,6 +35,24 @@ bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 
     }
 
     return true;
+}
+
+void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage, RenderPassType passType, I16 variant, U16 indexA, U16 indexB) {
+    if (variant <= -1) {
+        for (U8 i = 0; i < Material::g_maxVariantsPerPass; ++i) {
+            addToDrawExclusionMask(stage, passType, to_I16(i), indexA, indexB);
+        }
+    } else {
+        assert(variant < Material::g_maxVariantsPerPass);
+
+        RenderStagePass stagePass{ stage, passType, to_U8(variant) };
+        stagePass._indexA = indexA;
+        stagePass._indexA = indexB;
+
+        if (eastl::find(eastl::cbegin(_exclusionStagePasses), eastl::cend(_exclusionStagePasses), stagePass) == eastl::cend(_exclusionStagePasses)) {
+            _exclusionStagePasses.emplace_back(stagePass);
+        }
+    }
 }
 
 void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage, RenderPassType passType, I16 variant, U32 passIndex) {
@@ -39,7 +68,6 @@ void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage, RenderPassT
             _exclusionStagePasses.emplace_back(stagePass);
         }
     }
-    
 }
 
 void SceneNodeRenderState::removeFromDrawExclusionMask(RenderStage stage, RenderPassType passType, I64 variant, U32 passIndex) {

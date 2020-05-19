@@ -2,13 +2,13 @@
 <static>true</static>
 <TRANSFORM>
     <Transform>
-        <position x="144.770386" y="17.2522449" z="12.6698227"/>
+        <position x="153.156082" y="16.3086472" z="0.418743253"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
 </TRANSFORM>
 <BOUNDS>
-    <Show__AABB>true</Show__AABB>
+    <Show__AABB>false</Show__AABB>
     <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
 </BOUNDS>
 <NETWORKING/>

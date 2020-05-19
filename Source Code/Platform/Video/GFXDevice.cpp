@@ -272,7 +272,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     // Normal and MSAA
     for (U8 i = 0; i < 2; ++i) {
-        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
+        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAASamples;
 
         screenDescriptor.samplerDescriptor(defaultSampler);
         screenDescriptor.msaaSamples(sampleCount);
@@ -439,7 +439,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     for (U8 i = 0; i < 2; ++i) 
     {
-        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAAsamples;
+        const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAASamples;
 
         oitAttachments[0]._texDescriptor.msaaSamples(sampleCount);
         oitAttachments[1]._texDescriptor.msaaSamples(sampleCount);
@@ -902,6 +902,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     // Colour attachment takes precedent over depth attachment
     const bool hasColour = cubeMapTarget.hasAttachment(RTAttachmentType::Colour, 0);
     const bool hasDepth = cubeMapTarget.hasAttachment(RTAttachmentType::Depth, 0);
+    const vec2<U16> targetResolution = cubeMapTarget.getResolution();
+
     // Everyone's innocent until proven guilty
     bool isValidFB = true;
     if (hasColour) {
@@ -921,19 +923,23 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     }
 
     // No dual-paraboloid rendering here. Just draw once for each face.
-    static const std::array<vec3<F32>, 6> TabUp =
-        { WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS,
-          WORLD_Z_AXIS,     WORLD_Z_NEG_AXIS,
-          WORLD_Y_NEG_AXIS, WORLD_Y_NEG_AXIS };
+    static const std::array<vec3<F32>, 6> TabUp ={
+          WORLD_Y_NEG_AXIS,
+          WORLD_Y_NEG_AXIS,
+          WORLD_Z_AXIS,
+          WORLD_Z_NEG_AXIS,
+          WORLD_Y_NEG_AXIS,
+          WORLD_Y_NEG_AXIS
+    };
 
     // Get the center and up vectors for each cube face
     static const std::array<vec3<F32>,6> TabCenter = {
-        vec3<F32>( 1.0f,  0.0f,  0.0f),
-        vec3<F32>(-1.0f,  0.0f,  0.0f),
-        vec3<F32>( 0.0f,  1.0f,  0.0f),
-        vec3<F32>( 0.0f, -1.0f,  0.0f),
-        vec3<F32>( 0.0f,  0.0f,  1.0f),
-        vec3<F32>( 0.0f,  0.0f, -1.0f)
+        vec3<F32>( 1.0f,  0.0f,  0.0f), //Pos X
+        vec3<F32>(-1.0f,  0.0f,  0.0f), //Neg X
+        vec3<F32>( 0.0f,  1.0f,  0.0f), //Pos Y
+        vec3<F32>( 0.0f, -1.0f,  0.0f), //Neg Y
+        vec3<F32>( 0.0f,  0.0f,  1.0f), //Pos Z
+        vec3<F32>( 0.0f,  0.0f, -1.0f)  //Neg Z
     };
 
     // Enable our render target
@@ -955,24 +961,26 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._passName = "CubeMap";
 
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-    
+    beginRenderSubPassCmd._writeLayers.resize(1);
+
     RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
 
+    const D64 aspect = to_D64(targetResolution.width) / targetResolution.height;
+
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
         drawParams._layer = i + arrayOffset;
-
-        beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+        beginRenderSubPassCmd._writeLayers[0] = drawParams;
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
         Camera* camera = cameras[i];
-        if (!camera) {
+        if (camera == nullptr) {
             camera = Camera::utilityCamera(Camera::UtilityCamera::CUBE);
         }
-        // Set a 90 degree vertical FoV perspective projection
-        camera->setProjection(1.0f, 90.0f, zPlanes);
+        // Set a 90 degree horizontal FoV perspective projection
+        camera->setProjection(to_F32(aspect), Angle::to_VerticalFoV(Angle::DEGREES<F32>(90.0f), aspect), zPlanes);
         // Point our camera to the correct face
         camera->lookAt(pos, pos + TabCenter[i] * zPlanes.y, TabUp[i]);
         params._camera = camera;
@@ -1000,6 +1008,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     // Colour attachment takes precedent over depth attachment
     const bool hasColour = paraboloidTarget.hasAttachment(RTAttachmentType::Colour, 0);
     const bool hasDepth = paraboloidTarget.hasAttachment(RTAttachmentType::Depth, 0);
+    const vec2<U16> targetResolution = paraboloidTarget.getResolution();
 
     bool isValidFB = true;
     if (hasColour) {
@@ -1036,11 +1045,13 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
+    beginRenderSubPassCmd._writeLayers.resize(1);
 
     RenderTarget::DrawLayerParams drawParams = {};
     drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     drawParams._index = 0;
 
+    const D64 aspect = to_D64(targetResolution.width) / targetResolution.height;
     for (U8 i = 0; i < 2; ++i) {
         Camera* camera = cameras[i];
         if (!camera) {
@@ -1048,13 +1059,13 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         }
 
         drawParams._layer = i + arrayOffset;
-        beginRenderSubPassCmd._writeLayers.resize(1, drawParams);
+        beginRenderSubPassCmd._writeLayers[0] = drawParams;
         GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
 
         // Point our camera to the correct face
         camera->lookAt(pos, pos + (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) * zPlanes.y);
-        // Set a 90 degree vertical FoV perspective projection
-        camera->setProjection(1.0f, 180.0f, zPlanes);
+        // Set a 180 degree vertical FoV perspective projection
+        camera->setProjection(to_F32(aspect), Angle::to_VerticalFoV(Angle::DEGREES<F32>(180.0f), aspect), zPlanes);
         // And generated required matrices
         // Pass our render function to the renderer
         params._camera = camera;
@@ -1189,19 +1200,16 @@ void GFXDevice::toggleFullScreen() {
 
 void GFXDevice::setScreenMSAASampleCount(U8 sampleCount) {
     CLAMP(sampleCount, to_U8(0u), gpuState().maxMSAASampleCount());
-    if (_context.config().rendering.MSAAsamples != sampleCount) {
-        _context.config().rendering.MSAAsamples = sampleCount;
+    if (_context.config().rendering.MSAASamples != sampleCount) {
+        _context.config().rendering.MSAASamples = sampleCount;
         _rtPool->updateSampleCount(RenderTargetUsage::SCREEN_MS, sampleCount);
         _rtPool->updateSampleCount(RenderTargetUsage::OIT_MS, sampleCount);
     }
 }
 
-void GFXDevice::setShadowMSAASampleCount(U8 sampleCount) {
+void GFXDevice::setShadowMSAASampleCount(ShadowType type, U8 sampleCount) {
     CLAMP(sampleCount, to_U8(0u), gpuState().maxMSAASampleCount());
-    if (_context.config().rendering.shadowMapping.MSAAsamples != sampleCount) {
-        _context.config().rendering.shadowMapping.MSAAsamples = sampleCount;
-        ShadowMap::setMSAASampleCount(sampleCount);
-    }
+    ShadowMap::setMSAASampleCount(type, sampleCount);
 }
 
 /// The main entry point for any resolution change request
@@ -1319,6 +1327,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     bool needsUpdate = false, projectionDirty = false, viewDirty = false;
     if (cameraSnapshot._projectionMatrix != data._ProjectionMatrix) {
         data._ProjectionMatrix.set(cameraSnapshot._projectionMatrix);
+        data._ProjectionMatrix.getInverse(data._InvProjectionMatrix);
         projectionDirty = true;
     }
 
@@ -1347,8 +1356,8 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     const vec4<F32> otherProperties(
         to_F32(materialDebugFlag()),
         to_F32(csmPreviewIndex()),
-        0.0f,
-        0.0f);
+        to_F32(cameraSnapshot._flag),
+        to_F32(cameraSnapshot._isOrthoCamera ? 1 : 0));
 
     if (data._otherProperties != otherProperties) {
         data._otherProperties.set(otherProperties);
@@ -1870,6 +1879,7 @@ void GFXDevice::initDebugViews() {
         NormalPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         NormalPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
         NormalPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
         VelocityPreview->_shader = _renderTargetDraw;
@@ -1879,6 +1889,7 @@ void GFXDevice::initDebugViews() {
         VelocityPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
+        VelocityPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 5.0f);
 
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
@@ -1888,6 +1899,7 @@ void GFXDevice::initDebugViews() {
         SSAOPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         SSAOPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         SSAOPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
+        SSAOPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
@@ -1897,6 +1909,7 @@ void GFXDevice::initDebugViews() {
         AlphaAccumulationHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         AlphaAccumulationHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         AlphaAccumulationHigh->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
         AlphaRevealageHigh->_shader = _renderTargetDraw;
@@ -1906,6 +1919,7 @@ void GFXDevice::initDebugViews() {
         AlphaRevealageHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         AlphaRevealageHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         AlphaRevealageHigh->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
         //AlphaAccumulationLow->_shader = _renderTargetDraw;
@@ -1915,6 +1929,7 @@ void GFXDevice::initDebugViews() {
         //AlphaAccumulationLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         //AlphaAccumulationLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         //AlphaAccumulationLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
         //AlphaRevealageLow->_shader = _renderTargetDraw;
@@ -1924,6 +1939,7 @@ void GFXDevice::initDebugViews() {
         //AlphaRevealageLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         //AlphaRevealageLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         //AlphaRevealageLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        //AlphaRevealageLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr Luminance = std::make_shared<DebugView>();
         Luminance->_shader = _renderTargetDraw;
@@ -1933,6 +1949,7 @@ void GFXDevice::initDebugViews() {
         Luminance->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         Luminance->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         Luminance->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        Luminance->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr Edges = std::make_shared<DebugView>();
         Edges->_shader = _renderTargetDraw;
@@ -1942,6 +1959,7 @@ void GFXDevice::initDebugViews() {
         Edges->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         Edges->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
         Edges->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        Edges->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         HiZView = addDebugView(HiZ);
         addDebugView(DepthPreview);

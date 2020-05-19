@@ -377,6 +377,7 @@ void main()
 
     _out._vertexW = vec4(pos, 1.0f);
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
+    _out._vertexWVP = dvd_ProjectionMatrix * _out._vertexWV;
     _out._viewDirectionWV = normalize(-_out._vertexWV.xyz);
 
 #if !defined(SHADOW_PASS)
@@ -398,7 +399,8 @@ void main()
     tes_tileScale = tcs_tileScale[0];
     gl_Position = _out._vertexW;
 #else
-    gl_Position = dvd_ProjectionMatrix * _out._vertexWV;
+
+    gl_Position = _out._vertexWVP;
     setClipPlanes(_out._vertexW);
 #endif //TOGGLE_WIREFRAME
 
@@ -706,13 +708,9 @@ void main(void)
 
 --Fragment.Shadow.VSM
 
-#if !defined(USE_SEPARATE_VSM_PASS)
-
 #include "vsm.frag"
 out vec2 _colourOut;
 
 void main() {
     _colourOut = computeMoments();
 }
-
-#endif

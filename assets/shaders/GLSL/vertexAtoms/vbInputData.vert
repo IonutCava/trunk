@@ -6,55 +6,75 @@
 
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
-#endif
+#endif //USE_GPU_SKINNING
 
 vec4   dvd_Vertex;
+
 #if !defined(SHADOW_PASS)
 vec3   dvd_Normal;
-#endif
+#endif //SHADOW_PASS
+
 #if defined(COMPUTE_TBN)
 vec3   dvd_Tangent;
-#endif
+#endif //COMPUTE_TBN
+
 #if !defined(DEPTH_PASS)
 vec4   dvd_Colour;
-#endif
+#endif //DEPTH_PASS
 
 vec3 UNPACK_FLOAT(in float value) {
     return (fract(vec3(1.0, 256.0, 65536.0) * value) * 2.0) - 1.0;
 }
 
+void applyBoneTransforms() {
+    if (dvd_boneCount == 0) {
+        return;
+    }
+
+#if defined(USE_GPU_SKINNING)
+#if !defined(SHADOW_PASS)
+
+#if defined(COMPUTE_TBN) 
+    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
+#else //COMPUTE_TBN
+    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
+#endif //COMUTE_TBN
+
+#else //SHADOW_PASS
+    applyBoneTransforms(dvd_Vertex);
+#endif //SHADOW_PASS
+
+#endif // USE_GPU_SKINNING
+}
+
 void computeDataMinimal() {
     dvd_Vertex = vec4(inVertexData, 1.0);
+
 #if !defined(SHADOW_PASS)
     dvd_Normal = UNPACK_FLOAT(inNormalData);
-#endif
+#endif //SHADOW_PASS
+
 #if !defined(DEPTH_PASS)
     dvd_Colour = inColourData;
-#endif
-    #if defined(COMPUTE_TBN)
+#endif //DEPTH_PASS
+
+#if defined(COMPUTE_TBN)
     dvd_Tangent = UNPACK_FLOAT(inTangentData);
-#endif
+#endif //COMPUTE_TBN
+
     VAR._texCoord = inTexCoordData;
+
 #if defined(OPENGL_46)
     VAR.dvd_baseInstance = gl_BaseInstance;
     VAR.dvd_drawID = gl_DrawID;
-#else
+#else //OPENGL_46
     VAR.dvd_baseInstance = gl_BaseInstanceARB;
     VAR.dvd_drawID = gl_DrawIDARB;
-#endif
+#endif //OPENGL_46
+
     VAR.dvd_instanceID = gl_InstanceID;
 
-#if defined(USE_GPU_SKINNING)
-#   if !defined(SHADOW_PASS)
-#       if defined(COMPUTE_TBN) 
-            applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
-#       else
-            applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
-#       endif
-#   else //SHADOW_PASS
-        applyBoneTransforms(dvd_Vertex, dvd_lodLevel);
-#   endif //SHADOW_PASS
-#endif // USE_GPU_SKINNING
+    applyBoneTransforms();
 }
 
 void computeDataNoClip() {
@@ -62,17 +82,28 @@ void computeDataNoClip() {
 
     VAR._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
+    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if defined(HAS_VELOCITY)
 #define USE_CAMERA_BLUR
-
+#if defined(USE_GPU_SKINNING)
+#if 1
+    vec4 dvd_PrevVertex = vec4(inVertexData, 1.0);
+    applyPrevBoneTransforms(dvd_PrevVertex);
+    const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_PrevVertex, 1.0f);
+#else
     const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_Vertex, 1.0f);
+#endif
+
+#else
+    const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_Vertex, 1.0f);
+#endif
+    
 #if defined(USE_CAMERA_BLUR)
     VAR._prevVertexWVP = dvd_PreviousViewProjectionMatrix * worldPos;
 #else
     VAR._prevVertexWVP = dvd_ViewProjectionMatrix * worldPos;
 #endif
-    
 #endif
 }
 

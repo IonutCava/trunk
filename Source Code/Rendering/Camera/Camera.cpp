@@ -30,7 +30,7 @@ void Camera::fromCamera(const Camera& camera, bool flag) {
     _accumPitchDegrees = camera._accumPitchDegrees;
 
     lockFrustum(camera._frustumLocked);
-    if (camera._isOrthoCamera) {
+    if (camera._data._isOrthoCamera) {
         setAspectRatio(camera.getAspectRatio());
         setVerticalFoV(camera.getVerticalFoV());
 
@@ -50,7 +50,7 @@ void Camera::fromSnapshot(const CameraSnapshot& snapshot) {
     setEye(snapshot._eye);
     setRotation(snapshot._orientation);
     setAspectRatio(snapshot._aspectRatio);
-    if (_isOrthoCamera) {
+    if (_data._isOrthoCamera) {
         setProjection(_orthoRect, snapshot._zPlanes);
     } else {
         setProjection(snapshot._aspectRatio, snapshot._FoV, snapshot._zPlanes);
@@ -175,7 +175,7 @@ void Camera::clearReflection() noexcept {
 
 bool Camera::updateProjection() {
     if (_projectionDirty) {
-        if (_isOrthoCamera) {
+        if (_data._isOrthoCamera) {
             _data._projectionMatrix.ortho(_orthoRect.left,
                                           _orthoRect.right,
                                           _orthoRect.bottom,
@@ -197,12 +197,20 @@ bool Camera::updateProjection() {
     return false;
 }
 
+const mat4<F32>& Camera::setProjection(const vec2<F32>& zPlanes) {
+    return setProjection(_data._FoV, zPlanes);
+}
+
+const mat4<F32>& Camera::setProjection(F32 verticalFoV, const vec2<F32>& zPlanes) {
+    return setProjection(_data._aspectRatio, verticalFoV, zPlanes);
+}
+
 const mat4<F32>& Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes) {
-    setAspectRatio(_data._aspectRatio);
+    setAspectRatio(aspectRatio);
     setVerticalFoV(verticalFoV);
 
     _data._zPlanes = zPlanes;
-    _isOrthoCamera = false;
+    _data._isOrthoCamera = false;
     _projectionDirty = true;
     updateProjection();
 
@@ -212,7 +220,7 @@ const mat4<F32>& Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const v
 const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes) {
     _data._zPlanes = zPlanes;
     _orthoRect = rect;
-    _isOrthoCamera = true;
+    _data._isOrthoCamera = true;
     _projectionDirty = true;
     updateProjection();
 
@@ -224,7 +232,7 @@ const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F
     _data._zPlanes = zPlanes;
     _projectionDirty = false;
     _frustumDirty = true;
-    _isOrthoCamera = isOrtho;
+    _data._isOrthoCamera = isOrtho;
 
     return _data._projectionMatrix;
 }
@@ -240,7 +248,7 @@ void Camera::setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept {
 }
 
 void Camera::setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept {
-    _data._FoV = Angle::to_DEGREES(2.0f * std::atan(tan(Angle::to_RADIANS(horizontalFoV) * 0.5f) / _data._aspectRatio));
+    _data._FoV = Angle::to_VerticalFoV(horizontalFoV, to_D64(_data._aspectRatio));
     _projectionDirty = true;
 }
 

@@ -15,6 +15,7 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& con
      : Light(sgn, 30.0f, LightType::SPOT, sgn.sceneGraph().parentScene().lightPool()),
        BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>(sgn, context)
 {
+    _shadowProperties._lightDetails.z = 0.0001f;
 
     EditorComponentField cutoffAngle = {};
     cutoffAngle._name = "Cutoff Angle";

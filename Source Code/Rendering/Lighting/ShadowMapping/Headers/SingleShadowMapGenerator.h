@@ -34,15 +34,31 @@
 #define _SINGLE_SHADOW_MAP_GENERATOR_H_
 
 #include "ShadowMap.h"
+#include "Platform/Video/Headers/PushConstants.h"
 
 namespace Divide {
 
+class Pipeline;
+class SpotLightComponent;
 /// A single shadow map system. Used, for example, by spot lights.
 class SingleShadowMapGenerator : public ShadowMapGenerator {
    public:
     explicit SingleShadowMapGenerator(GFXDevice& context);
+    ~SingleShadowMapGenerator();
 
-    void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) override;
+    void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) final;
+
+    void updateMSAASampleCount(U8 sampleCount) final;
+
+  protected:
+    void postRender(const SpotLightComponent& light, GFX::CommandBuffer& bufferInOut);
+
+  protected:
+    Pipeline* _blurPipeline = nullptr;
+    ShaderProgram_ptr _blurDepthMapShader = nullptr;
+    RenderTargetHandle _drawBufferDepth;
+    RenderTargetHandle _blurBuffer;
+    PushConstants     _shaderConstants;
 };
 
 };  // namespace Divide

@@ -50,7 +50,13 @@ public:
     static void notifyTaskPool(PlatformContext& context);
 
 private:
+    bool isLoading(size_t hash) const;
+    bool setLoading(size_t hash);
+    bool setLoadingFinished(size_t hash);
+
+private:
     const size_t _loadingHash;
+    const bool _threaded;
 };
 /// Resource Cache responsibilities:
 /// - keep track of already loaded resources
@@ -71,11 +77,12 @@ public:
 
         std::shared_ptr<T> ptr;
         {
-            // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
-            const size_t loadingHash = descriptor.getHash();
             if_constexpr(UseAtomicCounter) {
                 taskCounter.fetch_add(1u);
             }
+
+            // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
+            const size_t loadingHash = descriptor.getHash();
 
             // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
             // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done

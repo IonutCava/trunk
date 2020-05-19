@@ -90,8 +90,15 @@ struct Configuration final : public XML::IXMLSerializable {
         stringImpl consoleLayoutFile = "console.layout";
     } gui = {};
 
+    struct ShadowSettings {
+        U32 shadowMapResolution = 512u;
+        U8 MSAASamples = 0u;
+        U8 anisotropicFilteringLevel = 0u;
+        bool enableBlurring = false;
+    };
+
     struct Rendering {
-        U8 MSAAsamples = 0;
+        U8 MSAASamples = 0u;
         U8 anisotropicFilteringLevel = 16;
         U8 reflectionResolutionFactor = 1;
         I32 terrainDetailLevel = 0;
@@ -117,13 +124,14 @@ struct Configuration final : public XML::IXMLSerializable {
         } postFX = {};
         struct ShadowMapping {
             bool enabled = true;
-            U32 shadowMapResolution = 512;
-            U8 MSAAsamples = 0;
-            U8 anisotropicFilteringLevel = 0;
-            bool enableBlurring = true;
-            U8 defaultCSMSplitCount = 3;
             F32 softness = 0.f;
-            F32 splitLambda = 0.95f;
+            struct CSMSettings : public ShadowSettings
+            {
+                F32 splitLambda = 0.95f;
+                U8  splitCount = 3u;
+            } csm;
+            ShadowSettings spot = {};
+            ShadowSettings point = {};
         } shadowMapping = {};
     } rendering = {};
 

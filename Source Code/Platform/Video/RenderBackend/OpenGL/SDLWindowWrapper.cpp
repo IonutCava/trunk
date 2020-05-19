@@ -229,8 +229,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Number of sample buffers associated with the framebuffer & MSAA sample count
     const U8 maxGLSamples = to_U8(std::min(254, GLUtil::getGLValue(GL_MAX_SAMPLES)));
     // If we do not support MSAA on a hardware level for whatever reason, override user set MSAA levels
-    config.rendering.MSAAsamples = std::min(config.rendering.MSAAsamples, maxGLSamples);
-    config.rendering.shadowMapping.MSAAsamples = std::min(config.rendering.shadowMapping.MSAAsamples, maxGLSamples);
+    config.rendering.MSAASamples = std::min(config.rendering.MSAASamples, maxGLSamples);
+
+    config.rendering.shadowMapping.csm.MSAASamples = std::min(config.rendering.shadowMapping.csm.MSAASamples, maxGLSamples);
+    config.rendering.shadowMapping.spot.MSAASamples = std::min(config.rendering.shadowMapping.spot.MSAASamples, maxGLSamples);
+    config.rendering.shadowMapping.point.MSAASamples = std::min(config.rendering.shadowMapping.point.MSAASamples, maxGLSamples);
     _context.gpuState().maxMSAASampleCount(maxGLSamples);
 
     if (s_stateTracker._opengl46Supported) {

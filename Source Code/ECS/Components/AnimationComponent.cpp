@@ -52,7 +52,7 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
         }
 
         // Update Animations
-        _previousFrameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
+        _frameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
             _previousAnimationIndex = _currentAnimIndex;
@@ -75,7 +75,7 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
 
 void AnimationComponent::resetTimers() {
     _currentTimeStamp = _parentTimeStamp = 0UL;
-    _previousFrameIndex = 0;
+    _frameIndex = {};
 }
 
 /// Select an animation by name
@@ -154,18 +154,24 @@ const vectorEASTL<Line>& AnimationComponent::skeletonLines() const {
     return  _animator->skeletonLines(_currentAnimIndex, animTimeStamp);
 }
 
-std::pair<vec2<U32>, ShaderBuffer*> AnimationComponent::getAnimationData() const {
-    std::pair<vec2<U32>, ShaderBuffer*> ret(vec2<U32>(), nullptr);
+AnimationComponent::AnimData AnimationComponent::getAnimationData() const {
+    AnimData ret = {};
 
     if (playAnimations()) {
         if (_previousAnimationIndex != -1) {
-            ret.first.set(_previousFrameIndex, 1);
-            ret.second = getAnimationByIndex(_previousAnimationIndex).boneBuffer();
+            const AnimEvaluator& anim = getAnimationByIndex(_previousAnimationIndex);
+
+            ret._boneBufferRange.set(_frameIndex._curr, 1);
+            ret._boneBuffer = anim.boneBuffer();
+
+            ret._prevBoneBufferRange.set(_frameIndex._prev, 1);
+            ret._prevBoneBuffer = anim.boneBuffer();
         }
     }
 
     return ret;
 }
+
 I32 AnimationComponent::frameCount(U32 animationID) const {
     return _animator != nullptr ? _animator->frameCount(animationID) : -1;
 }
@@ -193,7 +199,7 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
         return mat;
     }
 
-    I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp);
+    I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp)._curr;
 
     if (frameIndex == -1) {
         static mat4<F32> cacheIdentity;

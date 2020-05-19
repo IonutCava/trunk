@@ -566,7 +566,7 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
             viewPtr->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
-
+            viewPtr->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
             viewPtr->_name = Util::StringFormat("REFLECTION_%d_%s", reflectRTID._index, _parentSGN.name().c_str());
             debugView = _context.addDebugView(viewPtr);
             s_debugViews[0][reflectionIndex] = debugView;
@@ -646,6 +646,7 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
             viewPtr->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
             viewPtr->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+            viewPtr->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
             viewPtr->_name = Util::StringFormat("REFRACTION_%d_%s", refractRTID._index, _parentSGN.name().c_str());
             debugView = _context.addDebugView(viewPtr);

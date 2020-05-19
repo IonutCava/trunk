@@ -148,7 +148,7 @@ I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
 
 /// Renders the current skeleton pose at time index dt
 const vectorEASTL<Line>& SceneAnimator::skeletonLines(I32 animationIndex, const D64 dt) {
-    const I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt) - 1, 0);
+    const I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt)._curr - 1, 0);
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 
     if (vecIndex == -1) {

@@ -39,7 +39,7 @@ ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, ShadowType type) noex
 {
 }
 
-ShadowType ShadowMap::getShadowTypeForLightType(LightType type) {
+ShadowType ShadowMap::getShadowTypeForLightType(LightType type) noexcept {
     switch (type) {
         case LightType::DIRECTIONAL: return ShadowType::LAYERED;
         case LightType::POINT: return ShadowType::CUBEMAP;
@@ -49,7 +49,7 @@ ShadowType ShadowMap::getShadowTypeForLightType(LightType type) {
     return ShadowType::COUNT;
 }
 
-LightType ShadowMap::getLightTypeForShadowType(ShadowType type) {
+LightType ShadowMap::getLightTypeForShadowType(ShadowType type) noexcept {
     switch (type) {
         case ShadowType::LAYERED: return LightType::DIRECTIONAL;
         case ShadowType::CUBEMAP: return LightType::POINT;
@@ -65,107 +65,84 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
         const U8 cameraCount = type == ShadowType::SINGLE ? 1 : type == ShadowType::CUBEMAP ? 6 : Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT;
 
         for (U32 i = 0; i < cameraCount; ++i) {
-            s_shadowCameras[t].emplace_back(Camera::createCamera<FreeFlyCamera>(Util::StringFormat("ShadowCamera_%s_%d", Names::shadowType[t], i)))->updateFrustum();
+            Camera* cam = s_shadowCameras[t].emplace_back(Camera::createCamera<FreeFlyCamera>(Util::StringFormat("ShadowCamera_%s_%d", Names::shadowType[t], i)));
+            cam->flag(t);
         }
     }
 
     Configuration::Rendering::ShadowMapping& settings = context.context().config().rendering.shadowMapping;
     
-    if (!isPowerOfTwo(settings.shadowMapResolution)) {
-        settings.shadowMapResolution = nextPOW2(settings.shadowMapResolution);
+    if (!isPowerOfTwo(settings.csm.shadowMapResolution)) {
+        settings.csm.shadowMapResolution = nextPOW2(settings.csm.shadowMapResolution);
     }
-    
-    std::array<U16, to_base(ShadowType::COUNT)> resolutions;
-    resolutions.fill(to_U16(settings.shadowMapResolution));
-    resolutions[to_base(ShadowType::CUBEMAP)] = to_U16(settings.shadowMapResolution / 2);
+    if (!isPowerOfTwo(settings.spot.shadowMapResolution)) {
+        settings.spot.shadowMapResolution = nextPOW2(settings.spot.shadowMapResolution);
+    }
+    if (!isPowerOfTwo(settings.point.shadowMapResolution)) {
+        settings.point.shadowMapResolution = nextPOW2(settings.point.shadowMapResolution);
+    }
+
+    SamplerDescriptor depthMapSampler = {};
+    depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    depthMapSampler.magFilter(TextureFilter::LINEAR);
+    depthMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
 
     RenderTargetHandle crtTarget;
-    for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
+    for (U8 i = 0; i < to_U8(ShadowType::COUNT); ++i) {
         switch (static_cast<ShadowType>(i)) {
+            case ShadowType::LAYERED:
             case ShadowType::SINGLE: {
-                SamplerDescriptor depthMapSampler = {};
-                depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.minFilter(TextureFilter::LINEAR);
-                depthMapSampler.magFilter(TextureFilter::LINEAR);
-                depthMapSampler.anisotropyLevel(0);
-                depthMapSampler.useRefCompare(true);
-                depthMapSampler.cmpFunc(ComparisonFunction::LEQUAL);
+                const bool isCSM = i == to_U8(ShadowType::LAYERED);
+                depthMapSampler.anisotropyLevel(isCSM ? settings.csm.anisotropicFilteringLevel : settings.spot.anisotropicFilteringLevel);
 
                 // Default filters, LINEAR is OK for this
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-                depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-                depthMapDescriptor.samplerDescriptor(depthMapSampler);
-
-                vectorEASTL<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachmentType::Depth },
-                };
-
-                RenderTargetDescriptor desc = {};
-                desc._name = "Single_ShadowMap";
-                desc._resolution = resolutions[i];
-                desc._attachmentCount = to_U8(att.size());
-                desc._attachments = att.data();
-
-                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc, to_base(ShadowType::SINGLE));
-
-                s_shadowMapGenerators[i] = MemoryManager_NEW SingleShadowMapGenerator(context);
-            } break;
-
-            case ShadowType::LAYERED: {
-
-                SamplerDescriptor depthMapSampler = {};
-                depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-                depthMapSampler.magFilter(TextureFilter::LINEAR);
-                depthMapSampler.anisotropyLevel(settings.anisotropicFilteringLevel);
-
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-                depthMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT * Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS);
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, isCSM ? GFXDataFormat::FLOAT_32 : GFXDataFormat::FLOAT_32/*FLOAT_16*/);
+                depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * (isCSM ? Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS : 1));
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.autoMipMaps(false);
 
                 vectorEASTL<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachmentType::Colour }
+                    { depthMapDescriptor, RTAttachmentType::Colour },
                 };
 
                 RenderTargetDescriptor desc = {};
-                desc._name = "CSM_ShadowMap";
-                desc._resolution = resolutions[i];
+                desc._name = isCSM ? "CSM_ShadowMap" : "Single_ShadowMap";
+                desc._resolution.set(to_U16(isCSM ? settings.csm.shadowMapResolution : settings.spot.shadowMapResolution));
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
-                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc, to_base(ShadowType::LAYERED));
+                crtTarget = context.renderTargetPool().allocateRT(RenderTargetUsage::SHADOW, desc, isCSM ? to_base(ShadowType::LAYERED) : to_base(ShadowType::SINGLE));
 
-                s_shadowMapGenerators[i] = MemoryManager_NEW CascadedShadowMapsGenerator(context);
+                if (isCSM) {
+                    s_shadowMapGenerators[i] = MemoryManager_NEW CascadedShadowMapsGenerator(context);
+                } else {
+                    s_shadowMapGenerators[i] = MemoryManager_NEW SingleShadowMapGenerator(context);
+                }
             } break;
-
             case ShadowType::CUBEMAP: {
-                // Default filters, LINEAR is OK for this
-                SamplerDescriptor depthMapSampler = {};
-                depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-                depthMapSampler.minFilter(TextureFilter::LINEAR);
-                depthMapSampler.magFilter(TextureFilter::LINEAR);
-                depthMapSampler.anisotropyLevel(0);
-                depthMapSampler.useRefCompare(true);
-                depthMapSampler.cmpFunc(ComparisonFunction::LEQUAL);
+                depthMapSampler.anisotropyLevel(settings.point.anisotropicFilteringLevel);
 
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-                depthMapDescriptor.samplerDescriptor(depthMapSampler);
-                depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                TextureDescriptor colourMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
+                colourMapDescriptor.samplerDescriptor(depthMapSampler);
+                colourMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                colourMapDescriptor.autoMipMaps(false);
+
+                depthMapSampler.minFilter(TextureFilter::LINEAR);
+                depthMapSampler.anisotropyLevel(0u);
+                TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+                depthDescriptor.samplerDescriptor(depthMapSampler);
+                depthDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
 
                 vectorEASTL<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachmentType::Depth },
+                    { colourMapDescriptor, RTAttachmentType::Colour },
+                    { depthDescriptor, RTAttachmentType::Depth },
                 };
 
                 RenderTargetDescriptor desc = {};
                 desc._name = "Cube_ShadowMap";
-                desc._resolution = resolutions[i];
+                desc._resolution.set(to_U16(settings.point.shadowMapResolution));
                 desc._attachmentCount = to_U8(att.size());
                 desc._attachments = att.data();
 
@@ -216,15 +193,9 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         const LightType lightType = getLightTypeForShadowType(shadowType);
 
         const U16 useCount = lastUsedDepthMapOffset(shadowType);
-   
-        const RTAttachmentType attachment = shadowType == ShadowType::LAYERED
-                                                        ? RTAttachmentType::Colour
-                                                        : RTAttachmentType::Depth;
 
         const U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
-        const RTAttachment& shadowTexture = getDepthMap(lightType)._rt->getAttachment(attachment, 0);
-
-        const TextureData& data = shadowTexture.texture()->data();
+        const RTAttachment& shadowTexture = getDepthMap(lightType)._rt->getAttachment(RTAttachmentType::Colour, 0);
         const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
 
         if (IS_IN_RANGE_EXCLUSIVE(useCount, to_U16(0u), texDescriptor.layerCount())) {
@@ -235,7 +206,7 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
             entry._view._layerRange.set(0, useCount);
             descriptorSetCmd._set._textureViews.push_back(entry);
         } else {
-            descriptorSetCmd._set._textureData.setTexture(data, bindSlot);
+            descriptorSetCmd._set._textureData.setTexture(shadowTexture.texture()->data(), bindSlot);
         }
     }
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -320,7 +291,7 @@ U32 ShadowMap::getLigthLayerRequirements(const Light& light) {
     return 0u;
 }
 
-void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
+void ShadowMap::generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
     const U32 layerRequirement = getLigthLayerRequirements(light);
     if (layerRequirement == 0u) {
         return;
@@ -331,46 +302,16 @@ void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, U32
     const U16 offset = findFreeDepthMapOffset(sType, layerRequirement);
     light.setShadowOffset(offset);
     commitDepthMapOffset(sType, offset, layerRequirement);
-    
     s_shadowMapGenerators[to_base(sType)]->render(playerCamera, light, lightIndex, bufferInOut);
-
-    // Update debug views
-    if (s_shadowPreviewLight != nullptr) {
-        U8 i = 0;
-
-        U16 shadowOffset = light.getShadowOffset();
-        for (DebugView_ptr& view : s_debugViews) {
-            switch (s_shadowPreviewLight->getLightType()) {
-                case LightType::DIRECTIONAL: {
-                    view->_name = Util::StringFormat("CSM_%d", i + shadowOffset);
-                    view->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, i + shadowOffset);
-                    view->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::LAYERED)[i]->getZPlanes());
-                }break;
-                case LightType::SPOT: {
-                    view->_name = Util::StringFormat("SM_%d", shadowOffset);
-                    view->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, shadowOffset);
-                    view->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::SINGLE)[0]->getZPlanes());
-                }break;
-                case LightType::POINT: {
-                    view->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, shadowOffset);
-                    view->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
-                    view->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::CUBEMAP)[0]->getZPlanes());
-                }break;
-            };
-            ++i;
-        }
-    }
-
     bindShadowMaps(bufferInOut);
 }
-
 
 const RenderTargetHandle& ShadowMap::getDepthMap(LightType type) {
     return s_shadowMaps[to_base(getShadowTypeForLightType(type))];
 }
 
-void ShadowMap::setMSAASampleCount(U8 sampleCount) {
-    getDepthMap(LightType::DIRECTIONAL)._rt->updateSampleCount(sampleCount);
+void ShadowMap::setMSAASampleCount(ShadowType type, U8 sampleCount) {
+    s_shadowMapGenerators[to_base(type)]->updateMSAASampleCount(sampleCount);
 }
 
 void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
@@ -402,21 +343,21 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
         switch (light->getLightType()) {
             case LightType::DIRECTIONAL: {
 
-                fragModule._variant = "Layered.LinearDepth.ESM.ScenePlanes";
+                fragModule._variant = "Layered.LinearDepth";
 
                 ShaderProgramDescriptor shaderDescriptor = {};
                 shaderDescriptor._modules.push_back(vertModule);
                 shaderDescriptor._modules.push_back(fragModule);
                  
-                ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth.ESM.ScenePlanes");
+                ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth");
                 shadowPreviewShader.propertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.threaded(false);
-
+                ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                 U8 splitCount = static_cast<DirectionalLightComponent&>(*light).csmSplitCount();
                 for (U8 i = 0; i < splitCount; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
-                    shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
+                    shadow->_shader = previewShader;
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, i + light->getShadowOffset());
                     shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::LAYERED)[i]->getZPlanes());
                     shadow->_name = Util::StringFormat("CSM_%d", i + light->getShadowOffset());
@@ -424,18 +365,18 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 }
             } break;
             case LightType::SPOT: {
-                fragModule._variant = "Single.LinearDepth";
+                fragModule._variant = "Layered.LinearDepth";
 
                 ShaderProgramDescriptor shaderDescriptor = {};
                 shaderDescriptor._modules.push_back(vertModule);
                 shaderDescriptor._modules.push_back(fragModule);
 
-                ResourceDescriptor shadowPreviewShader("fbPreview.Single.LinearDepth");
+                ResourceDescriptor shadowPreviewShader("fbPreview.Layered.LinearDepth");
                 shadowPreviewShader.propertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.threaded(false);
 
                 DebugView_ptr shadow = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1));
-                shadow->_texture = ShadowMap::getDepthMap(LightType::SPOT)._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
+                shadow->_texture = ShadowMap::getDepthMap(LightType::SPOT)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
                 shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                 shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light->getShadowOffset());
                 shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::SINGLE)[0]->getZPlanes());
@@ -443,23 +384,25 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 s_debugViews.push_back(shadow);
             }break;
             case LightType::POINT: {
-                fragModule._variant = "Cube.LinearDepth.ScenePlanes";
+                fragModule._variant = "Cube.Shadow";
 
                 ShaderProgramDescriptor shaderDescriptor = {};
                 shaderDescriptor._modules.push_back(vertModule);
                 shaderDescriptor._modules.push_back(fragModule);
 
-                ResourceDescriptor shadowPreviewShader("fbPreview.Cube.LinearDepth.ScenePlanes");
+                ResourceDescriptor shadowPreviewShader("fbPreview.Cube.Shadow");
                 shadowPreviewShader.propertyDescriptor(shaderDescriptor);
                 shadowPreviewShader.threaded(false);
+                ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
+                vec2<F32> zPlanes = ShadowMap::shadowCameras(ShadowType::CUBEMAP)[0]->getZPlanes();
                 for (U32 i = 0; i < 6; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
-                    shadow->_texture = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Depth, 0).texture();
-                    shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
+                    shadow->_texture = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+                    shadow->_shader = previewShader;
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light->getShadowOffset());
                     shadow->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
-                    shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::CUBEMAP)[0]->getZPlanes());
+                    shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, zPlanes);
 
                     shadow->_name = Util::StringFormat("CubeSM_%d_face_%d", light->getShadowOffset(), i);
                     s_debugViews.push_back(shadow);

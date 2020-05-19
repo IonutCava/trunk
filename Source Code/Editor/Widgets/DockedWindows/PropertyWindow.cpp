@@ -499,7 +499,6 @@ namespace Divide {
 
                             vectorEASTL<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
-                                ImGui::Text(field._name.c_str());
                                 if (processField(field) && !field._readOnly) {
                                     Attorney::EditorComponentEditor::onChanged(*comp, field);
                                     sceneChanged = true;
@@ -571,9 +570,10 @@ namespace Divide {
                                         EditorComponentField tempField = {};
                                         tempField._name = "Light bleed bias";
                                         tempField._basicType = GFX::PushConstantType::FLOAT;
-                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._type = EditorComponentFieldType::PUSH_TYPE;
                                         tempField._readOnly = false;
                                         tempField._data = &bleedBias;
+                                        tempField._format = "%.6f";
                                         tempField._range = { 0.0f, 1.0f };
                                         tempField._dataSetter = [&activeSceneState](const void* bias) {
                                             activeSceneState.lightBleedBias(*static_cast<const F32*>(bias));
@@ -585,12 +585,13 @@ namespace Divide {
                                         EditorComponentField tempField = {};
                                         tempField._name = "Min shadow variance";
                                         tempField._basicType = GFX::PushConstantType::FLOAT;
-                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._type = EditorComponentFieldType::PUSH_TYPE;
                                         tempField._readOnly = false;
                                         tempField._data = &shadowVariance;
-                                        tempField._range = { 0.0f, 1.0f };
-                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
-                                            activeSceneState.minShadowVariance(*static_cast<const F32*>(bias));
+                                        tempField._range = { 0.00001f, 0.99999f };
+                                        tempField._format = "%.6f";
+                                        tempField._dataSetter = [&activeSceneState](const void* variance) {
+                                            activeSceneState.minShadowVariance(*static_cast<const F32*>(variance));
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
@@ -601,7 +602,7 @@ namespace Divide {
                                         tempField._name = "Shadow fade distance";
                                         tempField._basicType = GFX::PushConstantType::UINT;
                                         tempField._basicTypeSize = GFX::PushConstantSize::WORD;
-                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._type = EditorComponentFieldType::PUSH_TYPE;
                                         tempField._readOnly = false;
                                         tempField._data = &shadowFadeDistance;
                                         tempField._range = { min, max };
@@ -616,7 +617,7 @@ namespace Divide {
                                         tempField._name = "Shadow max distance";
                                         tempField._basicType = GFX::PushConstantType::UINT;
                                         tempField._basicTypeSize = GFX::PushConstantSize::WORD;
-                                        tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                                        tempField._type = EditorComponentFieldType::PUSH_TYPE;
                                         tempField._readOnly = false;
                                         tempField._data = &shadowMaxDistance;
                                         tempField._range = { min, max };
@@ -732,6 +733,8 @@ namespace Divide {
 
     bool PropertyWindow::processField(EditorComponentField& field) {
         const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+
+        ImGui::Text(field._name.c_str());
 
         if (field._readOnly) {
             PushReadOnly();
@@ -1043,7 +1046,7 @@ namespace Divide {
                     block.setZBias(*(static_cast<const F32*>(data)), zUnits);
                     material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 };
-                changed = processBasicField(tempField) || changed;
+                changed = processField(tempField) || changed;
             }
             {
                 EditorComponentField tempField = {};
@@ -1059,7 +1062,7 @@ namespace Divide {
                     block.setZBias(zBias, *(static_cast<const F32*>(data)));
                     material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 };
-                changed = processBasicField(tempField) || changed;
+                changed = processField(tempField) || changed;
             }
 
             ImGui::Text("Tessellation control points: %d", block.tessControlPoints());

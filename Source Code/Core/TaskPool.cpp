@@ -195,9 +195,9 @@ void TaskPool::PoolHolder::waitAndJoin() {
 void TaskPool::PoolHolder::threadWaiting() {
     if (_poolImpl.first != nullptr) {
         _poolImpl.first->executeOneTask(false);
-        return;
+    } else {
+        _poolImpl.second->executeOneTask(false);
     }
-    _poolImpl.second->executeOneTask(false);
 }
 
 bool TaskPool::PoolHolder::addTask(PoolTask&& job) {

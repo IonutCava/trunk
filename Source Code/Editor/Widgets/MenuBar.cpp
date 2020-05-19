@@ -229,14 +229,14 @@ void MenuBar::drawFileMenu() {
         {
             GFXDevice& gfx = _context.gfx();
             const Configuration& config = _context.config();
+            const U8 maxMSAASamples = gfx.gpuState().maxMSAASampleCount();
 
             if (ImGui::BeginMenu("MSAA"))
             {
-                const U8 maxMSAASamples = gfx.gpuState().maxMSAASampleCount();
                 for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
                     const U8 sampleCount = i == 0u ? 0u : 1 << i;
                     if (sampleCount % 2 == 0) {
-                        bool msaaEntryEnabled = config.rendering.MSAAsamples == sampleCount;
+                        bool msaaEntryEnabled = config.rendering.MSAASamples == sampleCount;
                         if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled))
                         {
                             gfx.setScreenMSAASampleCount(sampleCount);
@@ -246,20 +246,27 @@ void MenuBar::drawFileMenu() {
                 ImGui::EndMenu();
             }
 
-            if (ImGui::BeginMenu("CSM MSAA"))
-            {
-                const U8 maxMSAASamples = gfx.gpuState().maxMSAASampleCount();
-                for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
-                    const U8 sampleCount = i == 0u ? 0u : 1 << i;
-                    if (sampleCount % 2 == 0) {
-                        bool msaaEntryEnabled = config.rendering.shadowMapping.MSAAsamples == sampleCount;
-                        if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled))
-                        {
-                            gfx.setShadowMSAASampleCount(sampleCount);
+            for (U8 type = 0; type < to_U8(ShadowType::COUNT); ++type) {
+                if (ImGui::BeginMenu(Util::StringFormat("%s ShadowMap MSAA", Names::shadowType[type]).c_str())) {
+                    const ShadowType sType = static_cast<ShadowType>(type);
+
+                    const U8 currentCount = sType == ShadowType::LAYERED
+                                                        ? config.rendering.shadowMapping.csm.MSAASamples
+                                                        : sType == ShadowType::CUBEMAP
+                                                                ? config.rendering.shadowMapping.point.MSAASamples
+                                                                : config.rendering.shadowMapping.spot.MSAASamples;
+
+                    for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
+                        const U8 sampleCount = i == 0u ? 0u : 1 << i;
+                        if (sampleCount % 2 == 0) {
+                            bool msaaEntryEnabled = currentCount == sampleCount;
+                            if (ImGui::MenuItem(Util::StringFormat("%dx", to_U32(sampleCount)).c_str(), "", &msaaEntryEnabled)) {
+                                gfx.setShadowMSAASampleCount(sType, sampleCount);
+                            }
                         }
                     }
+                    ImGui::EndMenu();
                 }
-                ImGui::EndMenu();
             }
 
             ImGui::EndMenu();

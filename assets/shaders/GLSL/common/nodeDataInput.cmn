@@ -51,6 +51,7 @@ out gl_PerVertex
 layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 {
     mat4  dvd_ProjectionMatrix;
+    mat4  dvd_InverseProjectionMatrix;
     mat4  dvd_ViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
     mat4  dvd_PreviousViewProjectionMatrix;
@@ -59,7 +60,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_ViewPort;
     //x - nearPlane, y - farPlane, z - FoV, w - lightTilesX
     vec4  dvd_renderProperties;
-    //x - material debug flag, y - CSM splits view index
+    //x - material debug flag, y - CSM splits view index, z - camera flag, w - is ortho projection
     vec4  dvd_otherProperties;
     vec4  dvd_clip_plane[MAX_CLIP_PLANES];
 };
@@ -74,6 +75,13 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define DEBUG_LIGHT_TILES 7
 #define DEBUG_NONE 8
 
+#define SHADOW_PASS_NORMAL 0
+#define SHADOW_PASS_ORTHO 1
+#define SHADOW_PASS_CUBE 2
+
+#define SHADOW_PASS_TYPE int(dvd_otherProperties.z)
+#define CAMERA_FLAG SHADOW_PASS_TYPE
+
 #define dvd_numTilesX uint(dvd_renderProperties.w)
 #define dvd_cameraForward vec3(dvd_ViewMatrix[3].xyz)
 #define windowWidth int(dvd_ViewPort.z)
@@ -85,8 +93,8 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define dvd_fieldOfView dvd_renderProperties.z
 
 #define dvd_materialDebugFlag int(dvd_otherProperties.x)
-
 #define dvd_CSMSplitsViewIndex int(dvd_otherProperties.y)
+#define dvd_IsOrthoProjection (int(dvd_otherProperties.w) == 1)
 
 struct WaterBodyData {
     vec4 positionW;
@@ -106,6 +114,8 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     WaterBodyData dvd_waterEntities[];
 };
 
+#define dvd_LightBleedBias dvd_shadowingSettings.x
+#define dvd_MinVariance dvd_shadowingSettings.y
 #define dvd_fogColour dvd_fogDetails.rgb
 #define dvd_fogDensity dvd_fogDetails.w
 #define dvd_time int(dvd_otherData.x)

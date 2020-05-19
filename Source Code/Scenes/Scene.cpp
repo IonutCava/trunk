@@ -562,7 +562,7 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
     } else if (childCount > 1u) {
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = childCount;
-        descriptor._partitionSize = 1u;
+        descriptor._partitionSize = 3u;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
 
@@ -1001,8 +1001,7 @@ void Scene::loadDefaultCamera() {
 
     baseCamera->setMoveSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     baseCamera->setTurnSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-    baseCamera->setProjection(_context.gfx().renderingData().aspectRatio(),
-                              _context.config().runtime.verticalFOV,
+    baseCamera->setProjection(_context.config().runtime.verticalFOV,
                               vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
 
 }
@@ -1020,7 +1019,7 @@ bool Scene::load(const Str128& name) {
     vectorEASTL<XML::SceneNode>& rootChildren = _xmlSceneGraphRootNode.children;
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(rootChildren.size());
-    descriptor._partitionSize = 1u;
+    descriptor._partitionSize = 3u;
     descriptor._priority = TaskPriority::DONT_CARE;
     descriptor._useCurrentThread = true;
     descriptor._allowPoolIdle = true;

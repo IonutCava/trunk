@@ -33,6 +33,14 @@ std::array<TextureUsage, to_base(ShadowType::COUNT)> LightPool::_shadowLocation 
 
 namespace {
     LightPool::LightList g_sortedLightsContainer = {};
+    const auto MaxLights = [](LightType type) noexcept -> U32 {
+        switch (type) {
+            case LightType::DIRECTIONAL: return Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS;
+            case LightType::POINT: return Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS;
+            case LightType::SPOT: return Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS;
+        };
+        return 0u;
+    };
 };
 
 LightPool::LightPool(Scene& parentScene, PlatformContext& context)
@@ -69,28 +77,31 @@ void LightPool::init() {
     }
 
     ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
-    bufferDescriptor._elementSize = sizeof(BufferData);
-    bufferDescriptor._ringBufferLength = 6;
-    bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
-                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+    {
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._ringBufferLength = 6;
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+                                  to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
 
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._name = "LIGHT_BUFFER";
-    // NORMAL holds general info about the currently active lights: position, colour, etc.
-    _lightShaderBuffer = _context.gfx().newSB(bufferDescriptor);
-
-    // SHADOWS holds info about the currently active shadow casting lights:
-    // ViewProjection Matrices, View Space Position, etc
-    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-    bufferDescriptor._elementCount = 1;
-    bufferDescriptor._elementSize = sizeof(ShadowProperties);
-    bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
-    
-    _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    }
+    {
+        bufferDescriptor._name = "LIGHT_BUFFER";
+        bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
+        bufferDescriptor._elementSize = sizeof(BufferData);
+        // Holds general info about the currently active lights: position, colour, etc.
+        _lightShaderBuffer = _context.gfx().newSB(bufferDescriptor);
+    }
+    {
+        // Holds info about the currently active shadow casting lights:
+        // ViewProjection Matrices, View Space Position, etc
+        bufferDescriptor._name = "LIGHT_SHADOW_BUFFER";
+        bufferDescriptor._elementCount = 1;
+        bufferDescriptor._elementSize = sizeof(ShadowProperties);
+        _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
+    }
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -190,47 +201,44 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     ShadowMap::clearShadowMapBuffers(bufferInOut);
     ShadowMap::resetShadowMaps();
 
-    for (vec4<F32>& details : _shadowBufferData._lightDetails) {
-        details.x = to_F32(LightType::COUNT);
-    }
+    std::array<U32, to_base(LightType::COUNT)> indexCounter;
+    indexCounter.fill(0u);
 
     if (!_sortedShadowLights.empty()) {
-
-        U32 shadowLightCount = 0u;
-        U32 directionalLightCount = 0u;
+        U32 lightIndex = 0u;
         for (Light* light : _sortedShadowLights) {
-            if (shadowLightCount >= Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-                break;
+            const LightType lType = light->getLightType();
+            const U32 lTypeIndex = to_U32(lType);
+            if (indexCounter[lTypeIndex] == MaxLights(lType)) {
+                continue;
             }
 
-            const bool isDirLight = light->getLightType() == LightType::DIRECTIONAL;
+            ShadowMap::generateShadowMaps(_context, playerCamera, *light, lightIndex++, bufferInOut);
+            const Light::ShadowProperties& propsSource = light->getShadowProperties();
 
-            if (!isDirLight || directionalLightCount < Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS) {
-                ShadowMap::generateShadowMaps(playerCamera, *light, shadowLightCount, bufferInOut);
-
-                const Light::ShadowProperties& shadowProp = light->getShadowProperties();
-
-                _shadowBufferData._lightDetails[shadowLightCount].set(shadowProp._lightDetails);
-
-                std::memcpy(&_shadowBufferData._lightPosition[shadowLightCount * 6]._v, &shadowProp._lightPosition[0]._v, ShadowMap::MAX_PASSES_PER_LIGHT * sizeof(vec4<F32>));
-                std::memcpy(&_shadowBufferData._lightVP[shadowLightCount * 6].mat,      &shadowProp._lightVP[0].mat,      ShadowMap::MAX_PASSES_PER_LIGHT * sizeof(mat4<F32>));
-
-                shadowLightCount += 1u;
-                directionalLightCount += (isDirLight ? 1u : 0u);
-            }
+            const U32 shadowIndex = indexCounter[lTypeIndex]++;
+            switch (lType) {
+                case LightType::DIRECTIONAL: {
+                    CSMShadowProperties& propsTarget = _shadowBufferData._dirLights[shadowIndex];
+                    propsTarget._details = propsSource._lightDetails;
+                    std::memcpy(propsTarget._position.data(), propsSource._lightPosition[0]._v, sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+                    std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP[0].mat, sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+                }break;
+                case LightType::POINT: {
+                    PointShadowProperties& propsTarget = _shadowBufferData._pointLights[shadowIndex];
+                    propsTarget._details = propsSource._lightDetails;
+                    propsTarget._position = propsSource._lightPosition[0];
+                }break;
+                case LightType::SPOT: {
+                    SpotShadowProperties& propsTarget = _shadowBufferData._spotLights[shadowIndex];
+                    propsTarget._details = propsSource._lightDetails;
+                    propsTarget._vpMatrix = propsSource._lightVP[0];
+                }break;
+            };
         }
 
         _shadowBuffer->writeData(_shadowBufferData.data());
     }
-
-    ShaderBufferBinding buffer = {};
-    buffer._binding = ShaderBufferLocation::LIGHT_SHADOW;
-    buffer._buffer = _shadowBuffer;
-    buffer._elementRange = { 0u, _shadowBuffer->getPrimitiveCount() };
-
-    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set.addShaderBuffer(buffer);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     ShadowMap::bindShadowMaps(bufferInOut);
 }
@@ -351,13 +359,19 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
 
 void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInOut) {
 
-    ShaderBufferBinding buffer = {};
-    buffer._binding = ShaderBufferLocation::LIGHT_NORMAL;
-    buffer._buffer = _lightShaderBuffer;
-    buffer._elementRange = { to_base(stage) - 1, 1 };
+    ShaderBufferBinding bufferLight = {};
+    bufferLight._binding = ShaderBufferLocation::LIGHT_NORMAL;
+    bufferLight._buffer = _lightShaderBuffer;
+    bufferLight._elementRange = { to_base(stage) - 1, 1 };
 
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set.addShaderBuffer(buffer);
+    ShaderBufferBinding bufferShadow = {};
+    bufferShadow._binding = ShaderBufferLocation::LIGHT_SHADOW;
+    bufferShadow._buffer = _shadowBuffer;
+    bufferShadow._elementRange = { 0u, ShadowMap::MAX_SHADOW_PASSES };
+
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+    descriptorSetCmd._set.addShaderBuffer(bufferLight);
+    descriptorSetCmd._set.addShaderBuffer(bufferShadow);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
@@ -401,11 +415,19 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
         eastl::sort(eastl::begin(g_sortedLightsContainer), eastl::end(g_sortedLightsContainer), sortPredicate);
     }
 
+
+    std::array<U32, to_base(LightType::COUNT)> indexCounter;
+    indexCounter.fill(0u);
     for (Light* light : g_sortedLightsContainer) {
         light->shadowIndex(-1);
         if (light->enabled() && light->castsShadows() && _lightTypeState[to_base(light->getLightType())]) {
             if (_sortedShadowLights.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
-                light->shadowIndex(to_I32(_sortedShadowLights.size()));
+                const LightType lType = light->getLightType();
+                const U32 lTypeIndex = to_U32(lType);
+                if (indexCounter[lTypeIndex] == MaxLights(lType)) {
+                    continue;
+                }
+                light->shadowIndex(to_I32(indexCounter[lTypeIndex]++));
                 _sortedShadowLights.push_back(light);
             }
         }

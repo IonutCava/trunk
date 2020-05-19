@@ -23,7 +23,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
 
     _shadowProperties._lightDetails.y = to_F32(_csmSplitCount);
     _shadowProperties._lightDetails.z = 0.0f;
-    csmSplitCount(context.config().rendering.shadowMapping.defaultCSMSplitCount);
+    csmSplitCount(context.config().rendering.shadowMapping.csm.splitCount);
 
     EditorComponentField directionField = {};
     directionField._name = "Direction";

@@ -47,6 +47,14 @@ class SceneGraphNode;
 FWD_DECLARE_MANAGED_CLASS(SceneAnimator);
 class AnimationComponent final : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
    public:
+      struct AnimData {
+          vec2<U32> _boneBufferRange;
+          vec2<U32> _prevBoneBufferRange;
+          ShaderBuffer* _boneBuffer = nullptr;
+          ShaderBuffer* _prevBoneBuffer = nullptr;
+      };
+
+   public:
     explicit AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
     ~AnimationComponent() = default;
 
@@ -65,7 +73,8 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     Bone* getBoneByName(const stringImpl& bname) const;
     mat4<F32> getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name);
     const vectorEASTL<Line>& skeletonLines() const;
-    std::pair<vec2<U32>, ShaderBuffer*> getAnimationData() const;
+    AnimData getAnimationData() const;
+    
     AnimEvaluator& getAnimationByIndex(I32 animationID) const;
     const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
 
@@ -74,7 +83,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     void setParentTimeStamp(const U64 timestamp);
 
     inline U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
-    inline U32 frameIndex() const noexcept { return _previousFrameIndex; }
+    inline AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
     inline I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
 
     inline const BoneTransform& transformsByIndex(U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
@@ -96,10 +105,9 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     std::shared_ptr<SceneAnimator> _animator = nullptr;
     /// Current animation index for the current SGN
     I32 _currentAnimIndex = -1;
+    AnimEvaluator::FrameIndex _frameIndex = {};
     /// Current animation timestamp for the current SGN
     U64 _currentTimeStamp = 0UL;
-    /// Previous frame index. Gets reset to -1 when animation changes
-    U32 _previousFrameIndex = 0;
     /// Previous animation index
     I32 _previousAnimationIndex = -1;
     /// Parent time stamp (e.g. Mesh). 

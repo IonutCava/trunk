@@ -38,6 +38,7 @@ void main(void){
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
+    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if !defined(SHADOW_PASS)
     computeLightVectors(mat3(dvd_ViewMatrix));
@@ -45,5 +46,5 @@ void main(void){
 #endif
 
     //Compute the final vert position
-    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
+    gl_Position = VAR._vertexWVP;
 }

@@ -48,7 +48,6 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
     void OnData(const ECS::CustomEvent& data) final;
 
    private:
-    vec3<F32> _direction[6];
     bool _drawImpostor = false;
 };
 

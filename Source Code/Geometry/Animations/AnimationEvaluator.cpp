@@ -66,11 +66,15 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     size_t boneCount = _transforms.front().count();
     U32 numberOfFrames = frameCount();
 
-    vectorEASTL<std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>> animationData;
+    using FrameData = std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>;
+    using TempContainer = vectorEASTL<FrameData>;
+
+    TempContainer animationData;
+
     animationData.resize(numberOfFrames, {MAT4_IDENTITY});
 
     for (U32 i = 0; i < numberOfFrames; ++i) {
-        std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>& anim = animationData[i];
+        FrameData& anim = animationData[i];
         const BoneTransform& frameTransforms = _transforms[i];
         size_t numberOfTransforms = frameTransforms.count();
         for (U32 j = 0; j < numberOfTransforms; ++j) {
@@ -84,17 +88,17 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._elementSize = sizeof(mat4<F32>) * Config::MAX_BONE_COUNT_PER_NODE;
     bufferDescriptor._ringBufferLength = 1;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-    bufferDescriptor._initialData = animationData.data();
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._name = Util::StringFormat("BONE_BUFFER_%d_BONES", boneCount);
+    bufferDescriptor._name = Util::StringFormat("BONE_%d_BONES", boneCount);
+    bufferDescriptor._initialData = animationData.data();
 
     boneBuffer(context.newSB(bufferDescriptor));
 
     return numberOfFrames > 0;
 }
 
-I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const noexcept {
+AnimEvaluator::FrameIndex AnimEvaluator::frameIndexAt(const D64 elapsedTime) const noexcept {
     D64 time = 0.0;
     if (duration() > 0.0) {
         // get a [0.f ... 1.f) value by allowing the percent to wrap around 1
@@ -103,9 +107,20 @@ I32 AnimEvaluator::frameIndexAt(const D64 elapsedTime) const noexcept {
 
     const D64 percent = time / duration();
 
-    // this will invert the percent so the animation plays backwards
-    return std::min(to_I32(_transforms.size() * (playAnimationForward() ? percent : (percent - 1.0) * -1.0)),
-                    to_I32(_transforms.size() - 1));
+    FrameIndex ret = {};
+    if (!_transforms.empty()) {
+        // this will invert the percent so the animation plays backwards
+        if (playAnimationForward()) {
+            ret._curr = std::min(to_I32(_transforms.size() * percent), to_I32(_transforms.size() - 1));
+            ret._prev = ret._curr > 0 ? ret._curr - 1 : to_I32(_transforms.size()) - 1;
+            ret._next = (ret._curr + 1) % _transforms.size();
+        } else {
+            ret._curr = std::min(to_I32(_transforms.size() * ((percent - 1.0f) * -1.0f)), to_I32(_transforms.size() - 1));
+            ret._prev = (ret._curr + 1) % _transforms.size();
+            ret._next = ret._curr > 0 ? ret._curr - 1 : to_I32(_transforms.size()) - 1;
+        }
+    }
+    return ret;
 }
 
 // ------------------------------------------------------------------------------------------------

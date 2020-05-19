@@ -137,6 +137,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Shaders loaded from files are kept as atoms
     static SharedMutex s_atomLock;
     static AtomMap s_atoms;
+    static AtomInclusionMap s_atomIncludes;
 
     //extra entry for "common" location
     static Str256 shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];

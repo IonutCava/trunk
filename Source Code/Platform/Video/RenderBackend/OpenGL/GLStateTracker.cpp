@@ -206,7 +206,7 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
         bindSamplers(unitOffset, textureCount, samplerHandles);
 
         if (textureCount == 1) {
-            GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
+            const GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
             const TextureType type = textureTypes ? textureTypes[0] : TextureType::TEXTURE_2D;
 
             GLuint& crtHandle = _textureBoundMap[unitOffset][to_base(type)];

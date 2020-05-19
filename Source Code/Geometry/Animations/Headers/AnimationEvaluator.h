@@ -71,6 +71,13 @@ struct BoneTransform
 class GFXDevice;
 class AnimEvaluator {
    public:
+    struct FrameIndex {
+        I32 _curr = 0;
+        I32 _prev = 0;
+        I32 _next = 0;
+    };
+
+   public:
     AnimEvaluator() = default;
     ~AnimEvaluator() = default;
 
@@ -78,7 +85,7 @@ class AnimEvaluator {
 
     void evaluate(const D64 dt, Bone* skeleton);
 
-    I32 frameIndexAt(const D64 elapsedTime) const noexcept;
+    FrameIndex frameIndexAt(const D64 elapsedTime) const noexcept;
 
     inline U32 frameCount() const noexcept { return to_U32(_transforms.size()); }
 
@@ -97,7 +104,7 @@ class AnimEvaluator {
     }
 
     inline BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) {
-        resultingFrameIndex = frameIndexAt(elapsedTime);
+        resultingFrameIndex = frameIndexAt(elapsedTime)._curr;
         return transforms(to_U32(resultingFrameIndex));
     }
 
@@ -107,7 +114,7 @@ class AnimEvaluator {
     }
 
     inline const BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) const {
-        resultingFrameIndex = frameIndexAt(elapsedTime);
+        resultingFrameIndex = frameIndexAt(elapsedTime)._curr;
         return transforms(to_U32(resultingFrameIndex));
     }
 

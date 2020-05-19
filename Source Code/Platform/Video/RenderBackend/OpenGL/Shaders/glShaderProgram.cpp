@@ -91,6 +91,7 @@ namespace {
 
 SharedMutex glShaderProgram::s_atomLock;
 ShaderProgram::AtomMap glShaderProgram::s_atoms;
+ShaderProgram::AtomInclusionMap glShaderProgram::s_atomIncludes;
 I64 glShaderProgram::s_shaderFileWatcherID = -1;
 std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
 Str256 glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
@@ -614,11 +615,14 @@ const stringImpl& glShaderProgram::shaderFileRead(const Str256& filePath, const 
 
 /// Open the file found at 'filePath' matching 'atomName' and return it's source code
 const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
-    U64 atomNameHash = _ID(atomName.c_str());
+    const U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
     const AtomMap::iterator it = s_atoms.find(atomNameHash);
+    
     // If that's the case, return the code from cache
     if (it != std::cend(s_atoms)) {
+        const auto& atoms = s_atomIncludes[atomNameHash];
+        foundAtoms.insert(eastl::end(foundAtoms), eastl::begin(atoms), eastl::end(atoms));
         wasParsed = true;
         return it->second;
     }
@@ -631,13 +635,15 @@ const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, 
     stringImpl output;
     readFile(filePath.c_str(), atomName.c_str(), output, FileType::TEXT);
 
+    vectorEASTL<Str64> atoms = {};
     if (recurse) {
-        output = preprocessIncludes(atomName, output, 0, foundAtoms, false);
+        output = preprocessIncludes(atomName, output, 0, atoms, false);
     }
 
+    foundAtoms.insert(eastl::end(foundAtoms), eastl::begin(atoms), eastl::end(atoms));
     const auto result = s_atoms.insert({ atomNameHash, output });
     assert(result.second);
-
+    s_atomIncludes.insert({atomNameHash, atoms});
     // Return the source code
     return result.first->second;
 }

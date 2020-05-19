@@ -145,13 +145,13 @@ constexpr bool CONTINUE_ON_ASSERT = false;
 
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
-constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = 4;
+
 constexpr unsigned short MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS = 2;
-static_assert(MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS <= MAX_SHADOW_CASTING_LIGHTS, "Too many directional shadow casting lights configured!");
+constexpr unsigned short MAX_SHADOW_CASTING_POINT_LIGHTS = 4;
+constexpr unsigned short MAX_SHADOW_CASTING_SPOT_LIGHTS = 6;
+constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS + MAX_SHADOW_CASTING_POINT_LIGHTS + MAX_SHADOW_CASTING_SPOT_LIGHTS;
 /// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
 constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
-static_assert(MAX_CSM_SPLITS_PER_LIGHT <= 6, "Too many CSM splits. Max = 6 (number of cube faces))");
-constexpr bool USE_SEPARATE_VSM_PASS = false;
 /// Used mainly for caching/memory efficiency reasons
 constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
 

@@ -235,19 +235,22 @@ uniform int dvd_maxSamples;
 out vec4 _outColour;
 
 void main(void) {
-    vec2 texelSize = 1.0 / vec2(textureSize(texScreen, 0));
-    vec2 screenTexCoords = gl_FragCoord.xy * texelSize;
+    const vec2 texelSize = 1.0f / vec2(textureSize(texScreen, 0));
+    const vec2 screenTexCoords = gl_FragCoord.xy * texelSize;
+    vec2 velocity = texture(texVelocity, screenTexCoords).ba * dvd_velocityScale;
+    velocity.x = pow(velocity.x, 1.0f / 3.0f);
+    velocity.y = pow(velocity.y, 1.0f / 3.0f);
+    velocity * 2.0f - 1.0f;
 
-    vec2 velocity = texture(texVelocity, screenTexCoords).ba;
-    velocity *= dvd_velocityScale;
-
-    float speed = length(velocity / texelSize);
-    int nSamples = clamp(int(speed), 1, dvd_maxSamples);
+    const int speed = int(length(velocity / texelSize));
+    const int nSamples = clamp(speed, 1, dvd_maxSamples);
 
     _outColour = texture(texScreen, screenTexCoords);
+
     for (int i = 1; i < nSamples; ++i) {
-        vec2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5);
+        const vec2 offset = velocity * (float(i) / float(nSamples - 1) - 0.5f);
         _outColour += texture(texScreen, screenTexCoords + offset);
     }
+
     _outColour /= float(nSamples);
 }

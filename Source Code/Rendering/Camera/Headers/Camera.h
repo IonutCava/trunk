@@ -126,7 +126,7 @@ class Camera : public Resource {
     inline const Quaternion<F32>& getOrientation() const noexcept { return _data._orientation; }
     inline const vec2<F32>& getZPlanes() const noexcept { return _data._zPlanes; }
     inline const vec4<F32>& orthoRect() const noexcept { return _orthoRect; }
-    inline bool isOrthoProjected() const noexcept { return _isOrthoCamera; }
+    inline bool isOrthoProjected() const noexcept { return _data._isOrthoCamera; }
 
     inline vec3<F32> getUpDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
@@ -157,6 +157,8 @@ class Camera : public Resource {
     /// Nothing really to unload
     virtual bool unload() noexcept { return true; }
 
+    const mat4<F32>& setProjection(const vec2<F32>& zPlanes);
+    const mat4<F32>& setProjection(F32 verticalFoV, const vec2<F32>& zPlanes);
     const mat4<F32>& setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes);
     const mat4<F32>& setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes);
     const mat4<F32>& setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) noexcept;
@@ -176,6 +178,9 @@ class Camera : public Resource {
 
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
+
+                  inline void flag(U8 flag)       noexcept { _data._flag = flag; }
+    [[nodiscard]] inline U8   flag()        const noexcept { return _data._flag; }
 
    protected:
     virtual bool updateViewMatrix();
@@ -210,7 +215,6 @@ class Camera : public Resource {
     bool _projectionDirty = true;
     bool _viewMatrixDirty = false;
     bool _frustumLocked = false;
-    bool _isOrthoCamera = false;
     bool _frustumDirty = true;
 
    // Camera pool

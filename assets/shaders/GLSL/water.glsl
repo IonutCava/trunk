@@ -4,7 +4,6 @@
 #include "lightingDefaults.vert"
 
 layout(location = 0) out flat int _underwater;
-layout(location = 1) out vec4 _vertexWVP;
 
 void main(void)
 {
@@ -12,10 +11,9 @@ void main(void)
     
     computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
 
-    _vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
-    gl_Position = _vertexWVP;
+    gl_Position = VAR._vertexWVP;
 }
 
 -- Fragment
@@ -23,7 +21,6 @@ void main(void)
 #define SHADOW_INTENSITY_FACTOR 0.5f
 
 layout(location = 0) in flat int _underwater;
-layout(location = 1) in vec4 _vertexWVP;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
@@ -67,7 +64,7 @@ void main()
 #else
 
     vec3 normalWV = getNormal(VAR._texCoord);
-    vec3 uvReflection = clamp(((_vertexWVP.xyz / _vertexWVP.w) + 1.0f) * 0.5f, vec3(0.001f), vec3(0.999f));
+    vec3 uvReflection = clamp(((VAR._vertexWVP.xyz / VAR._vertexWVP.w) + 1.0f) * 0.5f, vec3(0.001f), vec3(0.999f));
     vec3 incident = VAR._viewDirectionWV;
 
     vec2 uvFinalReflect = uvReflection.xy;

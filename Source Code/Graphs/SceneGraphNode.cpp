@@ -519,16 +519,23 @@ bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStageP
 
     AnimationComponent* aComp = get<AnimationComponent>();
     if (aComp) {
-        std::pair<vec2<U32>, ShaderBuffer*> data = aComp->getAnimationData();
-        if (data.second != nullptr) {
-            RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
-
-            ShaderBufferBinding buffer = {};
-            buffer._binding = ShaderBufferLocation::BONE_TRANSFORMS;
-            buffer._buffer = data.second;
-            buffer._elementRange = data.first;
-
-            pkg.addShaderBuffer(0, buffer);
+        RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
+        {
+            AnimationComponent::AnimData data = aComp->getAnimationData();
+            if (data._boneBuffer != nullptr) {
+                ShaderBufferBinding bufferBinding = {};
+                bufferBinding._binding = ShaderBufferLocation::BONE_TRANSFORMS;
+                bufferBinding._buffer = data._boneBuffer;
+                bufferBinding._elementRange = data._boneBufferRange;
+                pkg.addShaderBuffer(0, bufferBinding);
+            }
+            if (data._prevBoneBuffer != nullptr) {
+                ShaderBufferBinding bufferBinding = {};
+                bufferBinding._binding = ShaderBufferLocation::BONE_TRANSFORMS_PREV;
+                bufferBinding._buffer = data._prevBoneBuffer;
+                bufferBinding._elementRange = data._prevBoneBufferRange;
+                pkg.addShaderBuffer(0, bufferBinding);
+            }
         }
     }
 

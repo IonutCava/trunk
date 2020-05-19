@@ -7,139 +7,108 @@
 
 #if !defined(DISABLE_SHADOW_MAPPING)
 
-layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArrayShadow    texDepthMapFromLight;
-layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArrayShadow  texDepthMapFromLightCube;
-layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray          texDepthMapFromLightArray;
+layout(binding = SHADOW_SINGLE_MAP_ARRAY)  uniform sampler2DArray    singleDepthMaps;
+layout(binding = SHADOW_LAYERED_MAP_ARRAY) uniform sampler2DArray    layeredDepthMaps;
+layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArray  cubeDepthMaps;
 
 #include "shadowUtils.frag"
 
 #define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
 
-//Chebyshev Upper Bound
-float VSM(vec2 moments, float distance) {
-    const float E_x2 = moments.y;
-    const float Ex_2 = moments.x * moments.x;
-    const float variance = max(E_x2 - Ex_2, -(dvd_shadowingSettings.y));
-    const float mD = (moments.x - distance);
-    const float mD_2 = mD * mD;
-
-    const float p = linstep(dvd_shadowingSettings.x, 1.0f, variance / (variance + mD_2));
-
-    return saturate(max(p, distance <= moments.x ? 1.0f : 0.0f));
-}
-
-float getShadowFactorDirectional(in int idx, in int arrayOffset, in float bias, in float TanAcosNdotL) {
-    const int Split = getCSMSlice(idx);
-
-    const vec4 sc = dvd_shadowLightVP[Split + (idx * 6)] * VAR._vertexW;
-    const vec3 shadowCoord = sc.xyz / sc.w;
-
-    const bool inFrustum = shadowCoord.z <= 1.0f &&
+bool detail_isInFrustum(in vec3 shadowCoord) {
+    return shadowCoord.z <= 1.0f &&
         all(bvec4(shadowCoord.x >= 0.0f,
             shadowCoord.x <= 1.0f,
             shadowCoord.y >= 0.0f,
             shadowCoord.y <= 1.0f));
-
-    float ret = 1.0f;
-    if (inFrustum)
-    {
-        const float layer = float(Split + arrayOffset);
-
-        vec2 moments = texture(texDepthMapFromLightArray, vec3(shadowCoord.xy, layer)).rg;
-
-        //float shadowBias = DEPTH_EXP_WARP * exp(DEPTH_EXP_WARP * dvd_shadowingSettings.y);
-        //float shadowWarpedz1 = exp(shadowCoord.z * DEPTH_EXP_WARP);
-        //return mix(VSM(moments, shadowWarpedz1), 
-        //             1.0, 
-        //             clamp(((gl_FragCoord.z + dvd_shadowingSettings.z) - dvd_shadowingSettings.w) / dvd_shadowingSettings.z, 0.0, 1.0));
-
-        //float bias = max(angleBias * (1.0 - dot(normal, lightDirection)), 0.0008);
-        ret = max(VSM(moments, shadowCoord.z - clamp(bias * TanAcosNdotL, 0, 0.01f)), 0.2f);
-    }
-
-    return saturate(ret / SHADOW_INTENSITY_FACTOR);
 }
 
-float getShadowFactorDirectional(int idx, in float TanAcosNdotL) {
-    if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
-        const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        return getShadowFactorDirectional(idx, int(crtDetails.y), crtDetails.z, TanAcosNdotL);
-    }
+//Chebyshev Upper Bound
+float detail_VSM(vec2 moments, float distance) {
+    const float E_x2 = moments.y;
+    const float Ex_2 = moments.x * moments.x;
+    const float variance = max(E_x2 - Ex_2, dvd_MinVariance);
+    const float mD = moments.x - distance;
+    const float mD_2 = mD * mD;
 
-    return 1.0f;
+    const float p = linstep(dvd_LightBleedBias, 1.0f, variance / (variance + mD_2));
+    return saturate(max(p, distance <= moments.x ? 1.0f : 0.0f));
 }
 
-
-float getShadowFactorPoint(in int idx, in int arrayIndex, in float NdotL) {
-    // SHADOW MAPS
-    vec3 position_ls = dvd_shadowLightPosition[idx * 6].xyz;
-    vec3 abs_position = abs(position_ls);
-    float fs_z = -max(abs_position.x, max(abs_position.y, abs_position.z));
-    vec4 clip = (dvd_shadowLightVP[idx * 6] * VAR._vertexW) * vec4(0.0, 0.0, fs_z, 1.0);
-    float depth = (clip.z / clip.w);
-    float ret = texture(texDepthMapFromLightCube, vec4(position_ls.xyz, arrayIndex), depth).r;
-    //float bias = clamp(biasIn * TanAcosNdotL, 0, 0.01f);
-
-    return saturate(ret / SHADOW_INTENSITY_FACTOR);
-}
-
-float getShadowFactorPoint(int idx, in float TanAcosNdotL) {
-    if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
-        const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        return getShadowFactorPoint(idx, int(crtDetails.y), TanAcosNdotL);
-    }
-    return 1.0f;
-}
-
-float filterFinalShadow(in sampler2DArrayShadow shadowMap, in vec3 projCoords, in int shadowIndex, in float bias, float offset) {
-    if (projCoords.x >= 1.0f || projCoords.x <= 0.0f ||
-        projCoords.y >= 1.0f || projCoords.y <= 0.0f ||
-        projCoords.z >= 1.0f || projCoords.z <= 0.0f) {
-        return 1.0f;
-    }
-
-    float visiblity = 1.0f;
-    vec2 offsetArray1[4] = vec2[](vec2(-offset, -offset), vec2(-offset, offset), vec2(offset, offset), vec2(offset, -offset));
-    visiblity = texture(shadowMap, vec4(projCoords.xy, shadowIndex, projCoords.z - bias));
-    for (int i = 0; i < 4; i++) {
-        visiblity += texture(shadowMap, vec4(projCoords.xy + offsetArray1[i], shadowIndex, projCoords.z - bias));
-    }
-    if (visiblity < 5.0f) {
-        vec2 offsetArray2[4] = vec2[](vec2(0, offset), vec2(offset, 0), vec2(0, -offset), vec2(-offset, 0));
-        for (int i = 0; i < 4; i++) {
-            visiblity += texture(shadowMap, vec4(projCoords.xy + offsetArray2[i], shadowIndex, projCoords.z - bias));
-        }
-        visiblity /= 9.0f;
-    } else {
-        visiblity /= 5.0f;
-    }
-    return visiblity;
-}
-
-float getShadowFactorSpot(int idx, in float TanAcosNdotL) {
-    if (dvd_receivesShadow && idx >= 0 && idx < MAX_SHADOW_CASTING_LIGHTS) {
-        const vec4 crtDetails = dvd_shadowLightDetails[idx];
-        vec4 shadow_coord = dvd_shadowLightVP[idx * 6] * VAR._vertexW;
-        shadow_coord /= shadow_coord.w;
-
-        const int arrayOffset = int(crtDetails.y);
-        const float bias = clamp(crtDetails.z - TanAcosNdotL, 0, 0.01f);
-
-        const float ret = filterFinalShadow(texDepthMapFromLight, shadow_coord.xyz, arrayOffset, bias, 0.0001f);
-        return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
-    }
-    return 1.0f;
-}
-#else
-float getShadowFactorDirectional(in uint idx, in vec4 details, in float TanAcosNdotL) {
-    return 1.0f;
-}
-float getShadowFactorPoint(in uint idx, in int arrayOffset, in float TanAcosNdotL) {
-    return 1.0f;
-}
-float getShadowFactorSpot(in uint idx, in int arrayOffset, in float bias, in float TanAcosNdotL) {
-    return 1.0f;
-}
 #endif
 
+float detail_getShadowFactorDirectional(in uint shadowIndex, in float TanAcosNdotL) {
+    const CSMShadowProperties properties = dvd_CSMShadowTransforms[shadowIndex];
+
+    const vec4 crtDetails = properties.dvd_shadowLightDetails;
+    const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
+
+    const int Split = getCSMSlice(properties);
+    const vec4 sc = properties.dvd_shadowLightVP[Split] * VAR._vertexW;
+    const vec3 shadowCoord = sc.xyz / sc.w;
+    if (detail_isInFrustum(shadowCoord)) {
+        const vec2 moments = texture(layeredDepthMaps, vec3(shadowCoord.xy, float(Split + int(crtDetails.y)))).rg;
+        const float ret = max(detail_VSM(moments, shadowCoord.z - bias), 0.2f);
+        return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
+    }
+
+    return 1.0f;
+}
+
+float detail_getShadowFactorSpot(in uint shadowIndex, in float TanAcosNdotL) {
+    const SpotShadowProperties properties = dvd_SpotShadowTransforms[shadowIndex];
+
+    const vec4 crtDetails = properties.dvd_shadowLightDetails;
+    const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
+
+    const vec4 sc = properties.dvd_shadowLightVP * VAR._vertexW;
+    const vec3 shadowCoord = sc.xyz / sc.w;
+    if (detail_isInFrustum(shadowCoord)) {
+        const vec2 moments = texture(singleDepthMaps, vec3(shadowCoord.xy, crtDetails.y)).rg;
+        const float ret = (moments.x > shadowCoord.z - bias) ? 1.0f : 0.0f;
+        return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
+    }
+
+    return 1.0f;
+}
+
+float detail_getShadowFactorPoint(in uint shadowIndex, in float TanAcosNdotL) {
+    const PointShadowProperties properties = dvd_PointShadowTransforms[shadowIndex];
+
+    const vec4 crtDetails = properties.dvd_shadowLightDetails;
+    const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
+
+    const float farPlane = properties.dvd_shadowLightPosition.w;
+    // get vector between fragment position and light position
+    const vec3 fragToLight = VAR._vertexW.xyz - properties.dvd_shadowLightPosition.xyz;
+    // use the light to fragment vector to sample from the depth map 
+    // it is currently in linear range between [0,1]. Re-transform back to original value
+    const vec2 moments = texture(cubeDepthMaps, vec4(fragToLight, crtDetails.y)).rg * farPlane;
+    // now get current linear depth as the length between the fragment and light position
+    const float currentDepth = length(fragToLight) - bias;
+    // now test for shadows
+    return max(detail_VSM(moments, currentDepth), 0.2f);
+}
+
+float getShadowFactor(in ivec4 lightOptions, in float TanAcosNdotL) {
+    float ret = 1.0f;
+#if !defined(DISABLE_SHADOW_MAPPING)
+    const int shadowIndex = lightOptions.y;
+    if (dvd_receivesShadow && shadowIndex >= 0 && shadowIndex < MAX_SHADOW_CASTING_LIGHTS) {
+        switch (lightOptions.x) {
+            case 0:  {
+                ret = detail_getShadowFactorDirectional(shadowIndex, TanAcosNdotL);
+            } break;
+            case 1: {
+                ret = detail_getShadowFactorPoint(shadowIndex, TanAcosNdotL);
+            } break;
+            case 2 : {
+                ret = detail_getShadowFactorSpot(shadowIndex, TanAcosNdotL);
+            } break;
+        }
+    }
+#endif
+    return ret;
+
+}
 #endif //_SHADOW_MAPPING_FRAG_

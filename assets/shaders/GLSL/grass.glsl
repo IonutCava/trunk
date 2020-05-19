@@ -46,13 +46,13 @@ void main()
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
+    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * -dvd_Normal);//rotate_vertex_position(-dvd_Normal, data.orientationQuad));
 
 #if !defined(SHADOW_PASS)
     setClipPlanes(VAR._vertexW);
 #endif
-
-    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
+    gl_Position = VAR._vertexWVP;
 }
 
 -- Fragment.Colour
@@ -129,10 +129,8 @@ layout(location = 1) flat in float _alphaFactor;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
-#if !defined(USE_SEPARATE_VSM_PASS)
 #include "vsm.frag"
 out vec2 _colourOut;
-#endif
 
 void main(void) {
     vec4 colour = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag));
@@ -140,8 +138,6 @@ void main(void) {
     if (alpha <= 1.0f - Z_TEST_SIGMA) {
         discard;
     }
-#if !defined(USE_SEPARATE_VSM_PASS)
-    _colourOut = computeMoments();
-#endif
 
+    _colourOut = computeMoments();
 }

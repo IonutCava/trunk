@@ -12,6 +12,7 @@ GFXShaderData::GFXShaderData() noexcept
 GFXShaderData::GPUData::GPUData() noexcept
 {
     _ProjectionMatrix.identity();
+    _InvProjectionMatrix.identity();
     _ViewMatrix.identity();
     _ViewProjectionMatrix.identity();
     _PreviousViewProjectionMatrix.identity();
