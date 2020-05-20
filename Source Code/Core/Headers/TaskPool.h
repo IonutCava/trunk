@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct ParallelForDescriptor {
+    DELEGATE<void, const Task*/*parent*/, U32/*start*/, U32/*end*/> _cbk;
     /// For loop iteration count
     U32 _iterCount = 0u;
     /// How many elements should we process per async task
@@ -102,8 +103,7 @@ public:
 
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE<void>&& onCompletionFunction);
 
-    template<class Predicate>
-    friend void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor);
+    friend void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor);
 
     void taskCompleted(U32 taskIndex, bool hasOnCompletionFunction);
     
@@ -147,8 +147,7 @@ Task* CreateTask(TaskPool& pool, Predicate&& threadedFunction, bool allowedInIdl
 template<class Predicate>
 Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
 
-template<class Predicate>
-void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor);
+void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks);
 

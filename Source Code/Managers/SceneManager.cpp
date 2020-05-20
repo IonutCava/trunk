@@ -451,8 +451,9 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
 
     vectorEASTL<SceneGraphNode*> ret = {};
     const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
-    for (const VisibleNode& it : visNodes) {
-        auto [parsedNode, bb] = IsNodeInRect(it._node);
+    for (size_t i = 0; i < visNodes.size(); ++i) {
+        const VisibleNode& node = visNodes.node(i);
+        auto [parsedNode, bb] = IsNodeInRect(node._node);
         if (parsedNode != nullptr) {
             parsedNode = HasLoSToCamera(parsedNode, bb, rayResults);
             if (parsedNode != nullptr) {
@@ -643,7 +644,7 @@ void SceneManager::moveCameraToNode(const SceneGraphNode& targetNode) const {
     playerCamera()->setEye(targetPos);
 }
 
-VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+void SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
@@ -662,13 +663,13 @@ VisibleNodeList SceneManager::getSortedReflectiveNodes(const Camera& camera, Ren
         cullParams._currentCamera = &camera;
         cullParams._cullMaxDistanceSq = SQUARED(camera.getZPlanes().y);
 
-        return _renderPassCuller->frustumCull(cullParams, allNodes);
+        _renderPassCuller->frustumCull(cullParams, allNodes, nodesOut);
+    } else {
+        _renderPassCuller->toVisibleNodes(camera, allNodes, nodesOut);
     }
-
-    return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
-VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView) const {
+void SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
@@ -686,10 +687,10 @@ VisibleNodeList SceneManager::getSortedRefractiveNodes(const Camera& camera, Ren
         cullParams._currentCamera = &camera;
         cullParams._cullMaxDistanceSq = SQUARED(camera.getZPlanes().y);
 
-        return _renderPassCuller->frustumCull(cullParams, allNodes);
+        _renderPassCuller->frustumCull(cullParams, allNodes, nodesOut);
+    } else {
+        _renderPassCuller->toVisibleNodes(camera, allNodes, nodesOut);
     }
-
-    return _renderPassCuller->toVisibleNodes(camera, allNodes);
 }
 
 const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {

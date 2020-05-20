@@ -78,9 +78,9 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     AnimEvaluator& getAnimationByIndex(I32 animationID) const;
     const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
 
-    void resetTimers();
-    void incParentTimeStamp(const U64 timestamp);
-    void setParentTimeStamp(const U64 timestamp);
+    void resetTimers() noexcept;
+    void incParentTimeStamp(const U64 timestamp) noexcept;
+    void setParentTimeStamp(const U64 timestamp) noexcept;
 
     inline U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
     inline AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
@@ -106,6 +106,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     /// Current animation index for the current SGN
     I32 _currentAnimIndex = -1;
     AnimEvaluator::FrameIndex _frameIndex = {};
+    AnimEvaluator::FrameIndex _prevFameIndex = {};
     /// Current animation timestamp for the current SGN
     U64 _currentTimeStamp = 0UL;
     /// Previous animation index

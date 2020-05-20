@@ -244,7 +244,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual bool loadXML(const Str128& name);
 
     virtual bool load(const Str128& name);
-    void loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent);
+    void loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent);
     virtual bool unload();
     virtual void postLoad();
     // gets called on the main thread when the scene finishes loading (e.g. used by the GUI system)

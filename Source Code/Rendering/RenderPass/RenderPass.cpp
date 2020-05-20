@@ -209,6 +209,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
         } break;
         case RenderStage::REFLECTION: {
+            static VisibleNodeList s_Nodes;
+
             OPTICK_EVENT("RenderPass - Reflection");
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
@@ -230,11 +232,12 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             {
                 //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
-                const VisibleNodeList& nodes = mgr->getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true);
+                mgr->getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true, s_Nodes);
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
-                for (const VisibleNode& node : nodes) {
+                for (size_t i = 0; i < s_Nodes.size(); ++i) {
+                    const VisibleNode& node = s_Nodes.node(i);
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                     if (ReflectionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
@@ -252,15 +255,18 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             }
         } break;
         case RenderStage::REFRACTION: {
+            static VisibleNodeList s_Nodes;
+
             OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
             {
-                const VisibleNodeList& nodes = mgr->getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true);
+                mgr->getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true, s_Nodes);
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
-                for (const VisibleNode& node : nodes) {
+                for (size_t i = 0; i < s_Nodes.size(); ++i) {
+                     const VisibleNode& node = s_Nodes.node(i);
                      RenderingComponent* const rComp = node._node->get<RenderingComponent>();
                      if (RefractionUtil::isInBudget()) {
                         if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,

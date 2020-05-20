@@ -204,7 +204,6 @@ class Kernel : public Input::InputAggregatorInterface,
                        const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
                        const U64 appDeltaTimeUS); //Real app delta time between frames. Can't be paused (e.g. used by editor)
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
-    bool setCursorPosition(I32 x, I32 y);
     /// Update all engine components that depend on the current screen size. Returns true if the rendering viewport and the window viewport have differnt aspect ratios
     bool onSizeChange(const SizeChangeParams& params);
     vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remapedOut) const noexcept;
@@ -263,15 +262,6 @@ namespace Attorney {
 
         friend class Divide::Application;
         friend class Divide::Attorney::ApplicationTask;
-    };
-
-    class KernelWindowManager {
-      protected:
-        static bool setCursorPosition(Kernel& kernel, I32 x, I32 y) {
-            return kernel.setCursorPosition(x, y);
-        }
-
-        friend class Divide::WindowManager;
     };
 
     class KernelDebugInterface {

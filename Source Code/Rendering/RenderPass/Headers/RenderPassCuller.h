@@ -64,8 +64,26 @@ struct VisibleNode {
     F32 _distanceToCameraSq = 0.0f;
 };
 
-using VisibleNodeList = eastl::fixed_vector<VisibleNode, Config::MAX_VISIBLE_NODES>;
-using NodeListContainer = vectorEASTL<VisibleNodeList>;
+struct VisibleNodeList
+{
+    using Container = std::array<VisibleNode, Config::MAX_VISIBLE_NODES>;
+
+    void append(const VisibleNode& node);
+    void append(const VisibleNodeList& other);
+
+                  inline void      reset()       noexcept { _index.store(0); }
+    [[nodiscard]] inline size_t    size()  const noexcept { return _index.load(); }
+    [[nodiscard]] inline bufferPtr data()  const noexcept { return (bufferPtr)_nodes.data(); }
+
+    [[nodiscard]] inline const VisibleNode& node(size_t idx) const noexcept { 
+        assert(idx < _index.load());
+        return _nodes[idx]; 
+    }
+
+private:
+    Container _nodes;
+    std::atomic_size_t _index = 0;
+};
 
 class RenderPassCuller {
     public:
@@ -79,8 +97,8 @@ class RenderPassCuller {
 
         VisibleNodeList& frustumCull(const NodeCullParams& params, const SceneGraph& sceneGraph, const SceneState& sceneState, PlatformContext& context);
 
-        VisibleNodeList frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const;
-        VisibleNodeList toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const;
+        void frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const;
+        void toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const;
 
         inline VisibleNodeList& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
         inline const VisibleNodeList& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }

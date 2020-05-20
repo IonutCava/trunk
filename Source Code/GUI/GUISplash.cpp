@@ -61,6 +61,8 @@ GUISplash::~GUISplash()
 }
 
 void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
+    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = context.get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _splashShader->getGUID();
@@ -81,10 +83,6 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     descriptorSetCmd._set._textureData.setTexture(_splashImage->data(), TextureUsage::UNIT0);
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
-    GenericDrawCommand triangleCmd;
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-
-    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(buffer, drawCmd);
 
     context.flushCommandBuffer(buffer);

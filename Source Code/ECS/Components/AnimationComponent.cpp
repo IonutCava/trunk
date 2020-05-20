@@ -13,6 +13,8 @@ namespace Divide {
 AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context)
     : BaseComponentType<AnimationComponent, ComponentType::ANIMATION>(parentSGN, context)
 {
+    _prevFameIndex = { -1, -1, -1 };
+
     EditorComponentField vskelField = {};
     vskelField._name = "Show Skeleton";
     vskelField._data = &_showSkeleton;
@@ -31,11 +33,11 @@ AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContex
     });
 }
 
-void AnimationComponent::setParentTimeStamp(const U64 timestamp) {
+void AnimationComponent::setParentTimeStamp(const U64 timestamp) noexcept {
     _parentTimeStamp = timestamp;
 }
 
-void AnimationComponent::incParentTimeStamp(const U64 timestamp) {
+void AnimationComponent::incParentTimeStamp(const U64 timestamp) noexcept {
     _parentTimeStamp += timestamp;
 }
 
@@ -52,6 +54,7 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
         }
 
         // Update Animations
+        _prevFameIndex = _frameIndex;
         _frameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
 
         if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
@@ -73,9 +76,10 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
     BaseComponentType<AnimationComponent, ComponentType::ANIMATION>::Update(deltaTimeUS);
 }
 
-void AnimationComponent::resetTimers() {
+void AnimationComponent::resetTimers() noexcept {
     _currentTimeStamp = _parentTimeStamp = 0UL;
-    _frameIndex = {};
+    _frameIndex = {0, 0, 0};
+    _prevFameIndex = { -1, -1, -1 };
 }
 
 /// Select an animation by name
@@ -97,7 +101,7 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
         return false;  // no change, or the animations data is out of bounds
     }
 
-    I32 oldIndex = _currentAnimIndex;
+    const I32 oldIndex = _currentAnimIndex;
     _currentAnimIndex = pAnimIndex;  // only set this after the checks for good
                                      // data and the object was actually
                                      // inserted
@@ -122,7 +126,7 @@ bool AnimationComponent::playNextAnimation() {
         return false;
     }
 
-    I32 oldIndex = _currentAnimIndex;
+    const I32 oldIndex = _currentAnimIndex;
     _currentAnimIndex = (_currentAnimIndex + 1 ) % _animator->animations().size();
 
     resetTimers();
@@ -135,7 +139,7 @@ bool AnimationComponent::playPreviousAnimation() {
         return false;
     }
 
-    I32 oldIndex = _currentAnimIndex;
+    const I32 oldIndex = _currentAnimIndex;
     if (_currentAnimIndex == 0) {
         _currentAnimIndex = to_I32(_animator->animations().size());
     }
@@ -149,7 +153,7 @@ bool AnimationComponent::playPreviousAnimation() {
 const vectorEASTL<Line>& AnimationComponent::skeletonLines() const {
     assert(_animator != nullptr);
 
-    D64 animTimeStamp = Time::MicrosecondsToSeconds<D64>(_currentTimeStamp);
+    const D64 animTimeStamp = Time::MicrosecondsToSeconds<D64>(_currentTimeStamp);
     // update possible animation
     return  _animator->skeletonLines(_currentAnimIndex, animTimeStamp);
 }
@@ -164,7 +168,12 @@ AnimationComponent::AnimData AnimationComponent::getAnimationData() const {
             ret._boneBufferRange.set(_frameIndex._curr, 1);
             ret._boneBuffer = anim.boneBuffer();
 
-            ret._prevBoneBufferRange.set(_frameIndex._prev, 1);
+            I32 prevIndex = _frameIndex._prev;
+            if (_prevFameIndex._curr == _frameIndex._curr) {
+                // We did not tick our animation, so previous buffer == current buffer
+                prevIndex = _frameIndex._curr;
+            }
+            ret._prevBoneBufferRange.set(prevIndex, 1);
             ret._prevBoneBuffer = anim.boneBuffer();
         }
     }
@@ -194,16 +203,15 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
         (node.getObjectType()._value == ObjectType::SUBMESH &&
          !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))
     {
-        mat4<F32> mat = MAT4_IDENTITY;
+        mat4<F32> mat;
         _parentSGN.get<TransformComponent>()->getWorldMatrix(mat);
         return mat;
     }
 
-    I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp)._curr;
+    const I32 frameIndex = _animator->frameIndexForTimeStamp(animationID, timeStamp)._curr;
 
     if (frameIndex == -1) {
-        static mat4<F32> cacheIdentity;
-        return cacheIdentity;
+        return MAT4_IDENTITY;
     }
 
     return _animator->transforms(animationID, frameIndex).matrices().at(_animator->boneIndex(name));

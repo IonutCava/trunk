@@ -410,7 +410,7 @@ SceneNode_ptr Scene::createNode(SceneNodeType type, const ResourceDescriptor& de
     return nullptr;
 }
 
-void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
+void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
 
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
@@ -565,14 +565,12 @@ void Scene::loadAsset(Task* parentTask, const XML::SceneNode& sceneNode, SceneGr
         descriptor._partitionSize = 3u;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
-
-        parallel_for(_context,
-            [this, &sceneNode, &crtNode](Task* parentTask, U32 start, U32 end) {
-                for (U32 i = start; i < end; ++i) {
-                    loadAsset(parentTask, sceneNode.children[i], crtNode);
-                }
-            },
-            descriptor);
+        descriptor._cbk = [this, &sceneNode, &crtNode](const Task* parentTask, U32 start, U32 end) {
+                                for (U32 i = start; i < end; ++i) {
+                                    loadAsset(parentTask, sceneNode.children[i], crtNode);
+                                }
+                            };
+        parallel_for(_context, descriptor);
     }
 }
 
@@ -964,16 +962,16 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
         if (window != nullptr) {
             hadWindowGrab = window->grabState();
         }
-        lastMousePosition = WindowManager::GetCursorPosition(true);
+        lastMousePosition = WindowManager::GetGlobalCursorPosition();
+        WindowManager::ToggleRelativeMouseMode(true);
     } else {
+        WindowManager::ToggleRelativeMouseMode(false);
         state().playerState(index).resetMovement();
         if (window != nullptr) {
             window->grabState(hadWindowGrab);
         }
-        _context.app().windowManager().setCursorPosition(lastMousePosition.x, lastMousePosition.y);
+        WindowManager::SetGlobalCursorPosition(lastMousePosition.x, lastMousePosition.y);
     }
-
-    WindowManager::ToggleRelativeMouseMode(lockState);
 
     return true;
 }
@@ -1024,14 +1022,12 @@ bool Scene::load(const Str128& name) {
     descriptor._useCurrentThread = true;
     descriptor._allowPoolIdle = true;
     descriptor._waitForFinish = true;
-
-    parallel_for(_context,
-        [this, &rootNode, &rootChildren](Task* parentTask, U32 start, U32 end) {
-            for (U32 i = start; i < end; ++i) {
-                loadAsset(parentTask, rootChildren[i], &rootNode);
-            }
-        },
-        descriptor);
+    descriptor._cbk = [this, &rootNode, &rootChildren](const Task* parentTask, U32 start, U32 end) {
+                            for (U32 i = start; i < end; ++i) {
+                                loadAsset(parentTask, rootChildren[i], &rootNode);
+                            }
+                        };
+    parallel_for(_context, descriptor);
 
     WAIT_FOR_CONDITION(_loadingTasks.load() == 0u);
 

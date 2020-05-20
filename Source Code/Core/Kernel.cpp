@@ -507,7 +507,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
     }
 
     if (editorRunning) {
-        computeViewports(_platformContext.editor().getTargetViewport(), _editorViewports, playerCount);
+        computeViewports(_platformContext.editor().targetViewport(), _editorViewports, playerCount);
     }
 
     RenderPassManager::RenderParams renderParams = {};
@@ -809,11 +809,6 @@ bool Kernel::onSizeChange(const SizeChangeParams& params) {
 }
 
 ///--------------------------Input Management-------------------------------------///
-bool Kernel::setCursorPosition(I32 x, I32 y) {
-    _platformContext.gui().setCursorPosition(x, y);
-    return true;
-}
-
 bool Kernel::onKeyDown(const Input::KeyEvent& key) {
     if_constexpr (Config::Build::ENABLE_EDITOR) {
 
@@ -851,8 +846,8 @@ vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remaped
         if (editor.running() && editor.scenePreviewFocused()) {
             const Rect<I32>& sceneRect = editor.scenePreviewRect(false);
             if (sceneRect.contains(absPositionIn)) {
-                const Rect<I32>& viewport = _platformContext.gfx().getCurrentViewport();
                 remapedOut = true;
+                const Rect<I32>& viewport = _platformContext.gfx().getCurrentViewport();
                 return COORD_REMAP(absPositionIn, sceneRect, viewport);
             }
         }

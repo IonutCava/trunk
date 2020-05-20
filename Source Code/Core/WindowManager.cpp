@@ -47,6 +47,7 @@ namespace {
 
         return true;
     };
+
 }; // namespace 
 
 hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
@@ -490,21 +491,19 @@ bool WindowManager::setCursorPosition(I32 x, I32 y) {
         y = SDL_WINDOWPOS_CENTERED_DISPLAY(focusedWindow->currentDisplayIndex());
     }
 
-    if (focusedWindow->setCursorPosition(x, y)) {
-        Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
-        return true;
-    }
-
-    return false;
+    SDL_WarpMouseInWindow(focusedWindow->getRawWindow(), x, y);
+    return true;
 }
 
-bool WindowManager::setGlobalCursorPosition(I32 x, I32 y) {
-    if (SDL_WarpMouseGlobal(x, y) == 0) {
-        Attorney::KernelWindowManager::setCursorPosition(_context->app().kernel(), x, y);
-        return true;
+bool WindowManager::SetGlobalCursorPosition(I32 x, I32 y) {
+    if (x == -1) {
+        x = SDL_WINDOWPOS_CENTERED;
+    }
+    if (y == -1) {
+        y = SDL_WINDOWPOS_CENTERED;
     }
 
-    return false;
+    return SDL_WarpMouseGlobal(x, y) == 0;
 }
 
 void WindowManager::SetCursorStyle(CursorStyle style) {
@@ -517,9 +516,19 @@ void WindowManager::ToggleRelativeMouseMode(bool state) noexcept {
     ACKNOWLEDGE_UNUSED(result);
 }
 
-vec2<I32> WindowManager::GetCursorPosition(bool global) noexcept {
+bool WindowManager::IsRelativeMouseMode() noexcept {
+    return SDL_GetRelativeMouseMode() == SDL_TRUE;
+}
+
+vec2<I32> WindowManager::GetGlobalCursorPosition() noexcept {
     vec2<I32> ret(-1);
-    GetMouseState(ret, global);
+    SDL_GetGlobalMouseState(&ret.x, &ret.y);
+    return ret;
+}
+
+vec2<I32> WindowManager::GetCursorPosition() noexcept {
+    vec2<I32> ret(-1);
+    SDL_GetMouseState(&ret.x, &ret.y);
     return ret;
 }
 

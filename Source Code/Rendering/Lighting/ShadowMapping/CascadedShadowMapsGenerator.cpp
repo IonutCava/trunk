@@ -419,12 +419,10 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
     blitRenderTargetCommand._source = _drawBufferDepth._targetID;
     blitRenderTargetCommand._destination = g_depthMapID;
 
-    ColourBlitEntry blitEntry = {};
     for (U8 i = 0; i < light.csmSplitCount(); ++i) {
-        blitEntry._inputLayer = i;
-        blitEntry._outputLayer = to_U16(layerOffset + i);
-        blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
+        blitRenderTargetCommand._blitColours[i].set(0u, 0u, i, to_U16(layerOffset + i));
     }
+
     GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
 
     // Now we can either blur our target or just skip to mipmap computation

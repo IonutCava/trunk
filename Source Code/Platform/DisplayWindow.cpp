@@ -308,12 +308,6 @@ void DisplayWindow::centerWindowPosition() {
     setPosition(-1, -1);
 }
 
-/// Mouse positioning is handled by SDL
-bool DisplayWindow::setCursorPosition(I32 x, I32 y) noexcept {
-    SDL_WarpMouseInWindow(_sdlWindow, x, y);
-    return true;
-}
-
 void DisplayWindow::decorated(const bool state) noexcept {
     // documentation states that this is a no-op on redundant state, so no need to bother checking
     SDL_SetWindowBordered(_sdlWindow, (state ? SDL_TRUE : SDL_FALSE));

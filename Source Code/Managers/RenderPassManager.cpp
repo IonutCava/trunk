@@ -198,7 +198,7 @@ namespace Divide {
             eastl::fill(eastl::begin(_completedPasses), eastl::end(_completedPasses), false);
             {
                 OPTICK_EVENT("FLUSH_PASSES_WHEN_READY");
-                bool slowIdle = false;
+                U8 idleCount = 0u;
                 while (!eastl::all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), [](bool v) { return v; })) {
 
                     // For every render pass
@@ -243,10 +243,10 @@ namespace Divide {
 
                     if (!finished) {
                         OPTICK_EVENT("IDLING");
-
-                        parent().idle(!slowIdle);
+                        if (idleCount++ < 2) {
+                            parent().idle(idleCount == 1);
+                        }
                         std::this_thread::yield();
-                        slowIdle = !slowIdle;
                     }
                 }
             }
@@ -538,20 +538,20 @@ void RenderPassManager::prepareRenderQueues(const PassParams& params, const Visi
     descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
     descriptor._priority = TaskPriority::DONT_CARE;
     descriptor._useCurrentThread = true;
+    descriptor._cbk = [&nodes, &cam, &sceneRenderState, &stagePass, refreshNodeData](const Task* parentTask, U32 start, U32 end) {
+                        for (U32 i = start; i < end; ++i) {
+                            RenderingComponent * rComp = nodes.node(i)._node->get<RenderingComponent>();
+                            Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, refreshNodeData);
+                        }
+                    };
 
-    parallel_for(_parent.platformContext(),
-                [&nodes, &cam, &sceneRenderState, &stagePass, refreshNodeData](const Task* parentTask, U32 start, U32 end) {
-                for (U32 i = start; i < end; ++i) {
-                    RenderingComponent * rComp = nodes[i]._node->get<RenderingComponent>();
-                    Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, refreshNodeData);
-                }
-            },
-        descriptor);
+    parallel_for(_parent.platformContext(), descriptor);
 
     RenderQueue& queue = getQueue();
 
     queue.refresh(stagePass._stage, targetBin);
-    for (const VisibleNode& node : nodes) {
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        const VisibleNode& node = nodes.node(i);
         queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq, targetBin);
     }
     // Sort all bins
@@ -822,11 +822,10 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
             blitOITCmd._source = params._targetOIT;
             blitOITCmd._destination = RenderTargetID{ RenderTargetUsage::OIT, params._targetOIT._index };
 
-            ColourBlitEntry colourBlitEntry = {};
             for (U8 i = 0; i < 2; ++i) {
-                colourBlitEntry._inputIndex = colourBlitEntry._outputIndex = i;
-                blitOITCmd._blitColours.push_back(colourBlitEntry);
+                blitOITCmd._blitColours[i].set(i, i, 0u, 0u);
             }
+
             GFX::EnqueueCommand(bufferInOut, blitOITCmd);
         }
 
@@ -958,10 +957,8 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;
-        assert(container.empty());
-
-        container.reserve(visibleNodes.size());
-        container.insert(container.cend(), visibleNodes.cbegin(), visibleNodes.cend());
+        container.resize(visibleNodes.size());
+        std::memcpy(container.data(), visibleNodes.data(), visibleNodes.size() * sizeof(VisibleNode));
     }
 
 #   pragma region PRE_PASS
@@ -977,10 +974,9 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
         GFX::BlitRenderTargetCommand blitScreenDepthCmd = {};
         blitScreenDepthCmd._source = sourceID;
         blitScreenDepthCmd._destination = targetID;
-        ColourBlitEntry colourBlitEntry = {};
+        
         for (U8 i = 1; i < to_base(GFXDevice::ScreenTargets::COUNT); ++i) {
-            colourBlitEntry._inputIndex = colourBlitEntry._outputIndex = i;
-            blitScreenDepthCmd._blitColours.push_back(colourBlitEntry);
+            blitScreenDepthCmd._blitColours[i - 1].set(i, i, 0u, 0u);
         }
 
         DepthBlitEntry entry = {};
@@ -1025,9 +1021,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
         blitScreenDepthCmd._source = sourceID;
         blitScreenDepthCmd._destination = targetID;
 
-        ColourBlitEntry colourBlitEntry = {};
-        colourBlitEntry._inputIndex = colourBlitEntry._outputIndex = to_U16(GFXDevice::ScreenTargets::ALBEDO);
-        blitScreenDepthCmd._blitColours.push_back(colourBlitEntry);
+        blitScreenDepthCmd._blitColours[0].set(to_U16(GFXDevice::ScreenTargets::ALBEDO), to_U16(GFXDevice::ScreenTargets::ALBEDO), 0u, 0u);
 
         GFX::EnqueueCommand(bufferInOut, blitScreenDepthCmd);
     }

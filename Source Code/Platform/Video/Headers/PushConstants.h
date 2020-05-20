@@ -37,6 +37,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 struct PushConstants {
+    PushConstants() = default;
+    PushConstants(const GFX::PushConstant& constant) : _data{ constant } {}
+    PushConstants(GFX::PushConstant&& constant) : _data{ std::move(constant) } {}
+    ~PushConstants() = default;
+
     vectorEASTL<GFX::PushConstant> _data;
 
     void set(const GFX::PushConstant& constant);

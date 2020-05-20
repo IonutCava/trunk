@@ -149,13 +149,16 @@ inline const vec3<F32>& BoundingBox::getMin() const noexcept {
 }
 
 inline const vec3<F32>& BoundingBox::getMax() const noexcept {
-    /*SharedLock<SharedMutex> r_lock(_lock);*/
     return _max;
 }
 
 inline vec3<F32> BoundingBox::getCenter() const noexcept {
-    /*SharedLock<SharedMutex> r_lock(_lock);*/
-    return (_max + _min) * 0.5f;
+    // Doesn't seem to inline all that great in Debug builds
+    return {
+        (_max.x + _min.x) * 0.5f,
+        (_max.y + _min.y) * 0.5f,
+        (_max.z + _min.z) * 0.5f
+    };
 }
 
 inline vec3<F32> BoundingBox::getExtent() const noexcept {
@@ -164,8 +167,12 @@ inline vec3<F32> BoundingBox::getExtent() const noexcept {
 }
 
 inline vec3<F32> BoundingBox::getHalfExtent() const noexcept {
-    /*SharedLock<SharedMutex> r_lock(_lock);*/
-    return (_max - _min) * 0.5f;
+    // Doesn't seem to inline all that great in Debug builds
+    return {
+        (_max.x - _min.x) * 0.5f,
+        (_max.y - _min.y) * 0.5f,
+        (_max.z - _min.z) * 0.5f
+    };
 }
 
 inline F32 BoundingBox::getWidth() const noexcept {

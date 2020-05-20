@@ -44,10 +44,6 @@ namespace Divide {
         return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, std::move(threadedFunction), allowedInIdle);
     }
 
-    template<class Predicate>
-    void parallel_for(PlatformContext& context, Predicate&& cbk, const ParallelForDescriptor& descriptor) {
-        parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), std::move(cbk), descriptor);
-    }
 }; //namespace Divide
 
 #endif //_ENGINE_TASK_POOL_INL_

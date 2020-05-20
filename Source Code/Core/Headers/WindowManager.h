@@ -110,11 +110,12 @@ public:
     DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex);
     bool destroyWindow(DisplayWindow*& window);
 
-    bool setGlobalCursorPosition(I32 x, I32 y);
     bool setCursorPosition(I32 x, I32 y);
     void snapCursorToCenter();
 
-    static vec2<I32> GetCursorPosition(bool global) noexcept;
+    static bool SetGlobalCursorPosition(I32 x, I32 y);
+    static vec2<I32> GetCursorPosition() noexcept;
+    static vec2<I32> GetGlobalCursorPosition() noexcept;
     static U32 GetMouseState(vec2<I32>& pos, bool global) noexcept;
     static void SetCaptureMouse(bool state) noexcept;
 
@@ -146,6 +147,7 @@ public:
     static void SetCursorStyle(CursorStyle style);
 
     static void ToggleRelativeMouseMode(bool state) noexcept;
+    static bool IsRelativeMouseMode() noexcept;
 
     POINTER_R(DisplayWindow, mainWindow, nullptr);
 

@@ -38,10 +38,6 @@ inline bool Editor::isInit() const noexcept {
     return _mainWindow != nullptr;
 }
 
-inline bool Editor::running() const noexcept {
-    return _running;
-}
-
 inline bool Editor::inEditMode() const noexcept {
     return running() && simulationPauseRequested();
 }
@@ -52,18 +48,6 @@ inline void Editor::setTransformSettings(const TransformSettings& settings) noex
 
 inline const TransformSettings& Editor::getTransformSettings() const noexcept {
     return Attorney::GizmoEditor::getTransformSettings(*_gizmo);
-}
-
-inline const Rect<I32>& Editor::getTargetViewport() const noexcept {
-    return _targetViewport;
-}
-
-inline void Editor::setSelectedCamera(Camera* camera) noexcept {
-    _selectedCamera = camera;
-}
-
-inline Camera* Editor::getSelectedCamera() const noexcept {
-    return _selectedCamera;
 }
 
 inline bool Editor::simulationPauseRequested() const noexcept {
@@ -85,14 +69,6 @@ inline size_t Editor::RedoStackSize() const noexcept {
 
 inline void Editor::toggleMemoryEditor(bool state) noexcept {
     _showMemoryEditor = state;
-}
-
-inline bool Editor::scenePreviewFocused() const noexcept {
-    return _scenePreviewFocused;
-}
-
-inline bool Editor::scenePreviewHovered() const noexcept {
-    return _sceneHovered;
 }
 
 }; //namespace Divide

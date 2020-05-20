@@ -11,4 +11,8 @@ void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks) 
     WaitForAllTasks(context.taskPool(TaskPoolType::HIGH_PRIORITY), yield, flushCallbacks);
 }
 
+
+void parallel_for(PlatformContext& context, const ParallelForDescriptor& descriptor) {
+    parallel_for(context.taskPool(TaskPoolType::HIGH_PRIORITY), descriptor);
+}
 }; //namespace Divide

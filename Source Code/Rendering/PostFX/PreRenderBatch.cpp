@@ -359,6 +359,8 @@ void PreRenderBatch::prepare(const Camera& camera, U32 filterStack, GFX::Command
 
 void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipelineLumCalcHistogram = nullptr, * pipelineLumCalcAverage = nullptr, * pipelineToneMap = nullptr, * pipelineToneMapAdaptive = nullptr;
+    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+
     if (pipelineLumCalcHistogram == nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
@@ -383,10 +385,6 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
 
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
 
     _toneMapParams.width = screenRT()._rt->getWidth();
     _toneMapParams.height = screenRT()._rt->getHeight();
@@ -517,7 +515,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
         _toneMapConstants.set(_ID("whitePoint"), GFX::PushConstantType::FLOAT, _toneMapParams.manualWhitePoint);
         GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
 
-        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         // We need input to be LDR after this step
@@ -551,7 +549,7 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
         pushConstantsCommand._constants.set(_ID("dvd_edgeThreshold"), GFX::PushConstantType::FLOAT, edgeDetectionThreshold());
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
     

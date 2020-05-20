@@ -286,17 +286,17 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
     vectorEASTL<vec4<F32>>& misc = _particles->_misc;
     vectorEASTL<vec4<F32>>& pos = _particles->_position;
 
-    auto updateDistToCamera = [&eyePos, &misc, &pos](const Task* parent, U32 start, U32 end) {
+
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = aliveCount;
+    descriptor._partitionSize = 1000u;
+    descriptor._cbk = [&eyePos, &misc, &pos](const Task* parent, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {
             misc[i].w = pos[i].xyz().distanceSquared(eyePos);
         }
     };
 
-    ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = aliveCount;
-    descriptor._partitionSize = 1000u;
-
-    parallel_for(_context.context(), updateDistToCamera, descriptor);
+    parallel_for(_context.context(), descriptor);
 
     _bufferUpdate = CreateTask(_context.context(),
         [this, aliveCount, &renderStagePass](const Task& parentTask) {
@@ -368,18 +368,18 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
 
         aliveCount = getAliveParticleCount();
 
-        const auto updateSize = [this](const Task* parentTask, U32 start, U32 end) {
+
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = aliveCount;
+        descriptor._partitionSize = s_particlesPerThread;
+        descriptor._cbk = [this](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 _particles->_position[i].w = _particles->_misc[i].z;
                 _particles->_acceleration[i].set(0.0f);
             }
         };
 
-        ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = aliveCount;
-        descriptor._partitionSize = s_particlesPerThread;
-
-        parallel_for(_context.context(), updateSize, descriptor);
+        parallel_for(_context.context(), descriptor);
 
         ParticleData& data = *_particles;
         for (std::shared_ptr<ParticleUpdater>& up : _updaters) {

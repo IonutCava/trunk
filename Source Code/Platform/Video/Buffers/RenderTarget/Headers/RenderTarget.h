@@ -38,8 +38,6 @@
 #include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
-    constexpr U32 RT_MAX_ATTACHMENTS = 32;
-
 class GFXRTPool;
 
 struct RenderTargetID {
@@ -71,12 +69,34 @@ struct RenderTargetID {
     }
 };
 
+constexpr I16 INVALID_COLOUR_LAYER = std::numeric_limits<I16>::min();
+
+struct BlitIndex {
+    I16 _layer = INVALID_COLOUR_LAYER;
+    I16 _index = INVALID_COLOUR_LAYER;
+};
 
 struct ColourBlitEntry {
-    U16 _inputIndex = 0;
-    U16 _inputLayer = 0;
-    U16 _outputIndex = 0;
-    U16 _outputLayer = 0;
+    inline void set(U16 indexIn, U16 indexOut, U16 layerIn = 0u, U16 layerOut = 0u) {
+        input(indexIn, layerIn);
+        output(indexOut, layerOut);
+    }
+
+    inline void input(U16 index, U16 layer = 0u) noexcept {
+        _input = { to_I16(layer), to_I16(index) };
+    }
+
+    inline void output(U16 index, U16 layer = 0u) noexcept {
+        _output = { to_I16(layer), to_I16(index) };
+    }
+
+    [[nodiscard]] inline BlitIndex input()  const noexcept { return _input; }
+    [[nodiscard]] inline BlitIndex output() const noexcept { return _output; }
+    [[nodiscard]] inline bool      valid()  const noexcept { return _input._index != INVALID_COLOUR_LAYER || _input._layer != INVALID_COLOUR_LAYER; }
+
+protected:
+    BlitIndex _input;
+    BlitIndex _output;
 };
 
 constexpr U16 INVALID_DEPTH_LAYER = std::numeric_limits<U16>::max();
@@ -133,7 +153,15 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     struct RTBlitParams {
         RenderTarget* _inputFB = nullptr;
         DepthBlitEntry _blitDepth;
-        vectorEASTL<ColourBlitEntry> _blitColours;
+        std::array<ColourBlitEntry, RT_MAX_COLOUR_ATTACHMENTS> _blitColours;
+
+        [[nodiscard]] inline bool hasBlitColours() const noexcept {
+            return std::any_of(std::cbegin(_blitColours),
+                               std::cend(_blitColours),
+                               [](const auto& entry) {
+                                    return entry.valid();
+                               });
+        }
     };
 
    protected:

@@ -86,6 +86,12 @@ namespace GFX {
 
     struct PushConstant {
         template<typename T>
+        PushConstant(U64 bindingHash, PushConstantType type, const T& data, bool flag = false)
+            : PushConstant(bindingHash, type, &data, 1, flag)
+        {
+        }
+
+        template<typename T>
         PushConstant(U64 bindingHash, PushConstantType type, const T* data, const size_t count, bool flag = false)
             : _bindingHash(bindingHash),
               _type(type)

@@ -307,6 +307,7 @@ bool GL_API::initGLSW(Configuration& config) {
     if_constexpr(Config::USE_COLOURED_WOIT) {
         appendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
     }
+
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_PASSES_PER_LIGHT " + Util::to_string(ShadowMap::MAX_PASSES_PER_LIGHT), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
@@ -314,7 +315,11 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_POINT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_SPOT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
-    
+
+    if (config.rendering.postFX.enableCameraBlur) {
+        appendToShaderHeader(ShaderType::COUNT, "#define USE_CAMERA_BLUR", lineOffsets);
+    }
+
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.0001f", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);

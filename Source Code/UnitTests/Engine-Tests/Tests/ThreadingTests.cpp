@@ -41,18 +41,18 @@ TEST(ParallelForTest)
 
     std::atomic_uint loopCounter = 0;
     std::atomic_uint totalCounter = 0;
-    auto loop = [&totalCounter, &loopCounter](const Task* parentTask, U32 start, U32 end) {
+
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = loopCount;
+    descriptor._partitionSize = partitionSize;
+    descriptor._cbk = [&totalCounter, &loopCounter](const Task* parentTask, U32 start, U32 end) {
         ++loopCounter;
         for (U32 i = start; i < end; ++i) {
             ++totalCounter;
         }
     };
 
-    ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = loopCount;
-    descriptor._partitionSize = partitionSize;
-
-    parallel_for(test, loop, descriptor);
+    parallel_for(test, descriptor);
 
     CHECK_EQUAL(loopCounter, 5u);
     CHECK_EQUAL(totalCounter, 18u);
@@ -210,12 +210,11 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = false;
+        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+            NOP();
+        };
 
-        parallel_for(test,
-                     [](const Task* parentTask, U32 start, U32 end) {
-                        NOP();
-                     },
-                     descriptor);
+        parallel_for(test, descriptor);
         timer.stop();
         const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - blocking): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
@@ -235,12 +234,11 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = true;
+        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+            NOP();
+        };
 
-        parallel_for(test,
-            [](const Task* parentTask, U32 start, U32 end) {
-                NOP();
-            },
-            descriptor);
+        parallel_for(test, descriptor);
 
         timer.stop();
         const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
@@ -258,14 +256,13 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = false;
+        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+            NOP();
+        };
 
         Time::ProfileTimer timer;
         timer.start();
-        parallel_for(test,
-                    [](const Task* parentTask, U32 start, U32 end) {
-                        NOP();
-                    },
-                    descriptor);
+        parallel_for(test, descriptor);
         timer.stop();
         const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());
         std::cout << "Threading speed test (parallel_for - lockfree): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
@@ -285,12 +282,11 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = true;
+        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+            NOP();
+        };
 
-        parallel_for(test,
-            [](const Task* parentTask, U32 start, U32 end) {
-                NOP();
-            },
-            descriptor);
+        parallel_for(test, descriptor);
 
         timer.stop();
         const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - Time::ProfileTimer::overhead());

@@ -151,6 +151,7 @@ class Editor : public PlatformContextComponent,
     bool wantsMouse() const;
     bool wantsKeyboard() const;
     bool wantsGamepad() const;
+    bool usingGizmo() const;
 
     template<typename T>
     inline void registerUndoEntry(const UndoEntry<T>& entry);
@@ -158,11 +159,7 @@ class Editor : public PlatformContextComponent,
     inline bool simulationPauseRequested() const noexcept;
     inline void setTransformSettings(const TransformSettings& settings) noexcept;
     inline const TransformSettings& getTransformSettings() const noexcept;
-    inline const Rect<I32>& getTargetViewport() const noexcept;
-    inline bool running() const noexcept;
     inline bool inEditMode() const noexcept;
-    inline bool scenePreviewFocused() const noexcept;
-    inline bool scenePreviewHovered() const noexcept;
 
     void showStatusMessage(const stringImpl& message, F32 durationMS);
 
@@ -205,12 +202,18 @@ class Editor : public PlatformContextComponent,
     bool render(const U64 deltaTime);
     void teleportToNode(const SceneGraphNode& sgn) const;
     void queueRemoveNode(I64 nodeGUID);
+    void onPreviewFocus(const bool state);
 
-    void scenePreviewFocused(bool state);
     ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
 
     U32 saveItemCount() const  noexcept;
+
+    PROPERTY_R_IW(bool, running, false);
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
+    PROPERTY_R_IW(bool, scenePreviewFocused, false);
+    PROPERTY_R_IW(bool, scenePreviewHovered, false);
+    POINTER_R_IW(Camera, selectedCamera, nullptr);
+    PROPERTY_R(Rect<I32>, targetViewport, Rect<I32>(0, 0, 1, 1));
 
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut);
@@ -227,8 +230,6 @@ class Editor : public PlatformContextComponent,
     LightPool& getActiveLightPool();
 
     inline void toggleMemoryEditor(bool state) noexcept;
-    inline void setSelectedCamera(Camera* camera) noexcept;
-    inline Camera* getSelectedCamera() const noexcept;
 
     bool addComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
     bool addComponent(const Selections& selections, ComponentType newComponentType) const;
@@ -240,40 +241,31 @@ class Editor : public PlatformContextComponent,
     Time::ProfileTimer& _editorUpdateTimer;
     Time::ProfileTimer& _editorRenderTimer;
 
-    eastl::unique_ptr<MenuBar> _menuBar = nullptr;
-    eastl::unique_ptr<StatusBar> _statusBar = nullptr;
+    eastl::unique_ptr<MenuBar>             _menuBar = nullptr;
+    eastl::unique_ptr<StatusBar>           _statusBar = nullptr;
     eastl::unique_ptr<EditorOptionsWindow> _optionsWindow = nullptr;
-    eastl::unique_ptr<Gizmo> _gizmo = nullptr;
+    eastl::unique_ptr<UndoManager>         _undoManager = nullptr;
+    eastl::unique_ptr<Gizmo>               _gizmo = nullptr;
 
-    Camera*           _selectedCamera = nullptr;
     DisplayWindow*    _mainWindow = nullptr;
     Texture_ptr       _fontTexture = nullptr;
     ShaderProgram_ptr _imguiProgram = nullptr;
-    eastl::unique_ptr<UndoManager>  _undoManager = nullptr;
 
     std::pair<bufferPtr, size_t> _memoryEditorData = { nullptr, 0 };
-
     std::array<ImGuiContext*, to_base(ImGuiContextType::COUNT)> _imguiContexts = {};
     std::array<DockedWindow*, to_base(WindowType::COUNT)> _dockedWindows = {};
 
     hashMap<I64, CameraSnapshot> _cameraSnapshots;
+    stringImpl                   _externalTextEditorPath = "";
 
-    Rect<I32>         _targetViewport = {0, 0, 1, 1};
-    U32               _stepQueue = 1u;
-
+    U32            _stepQueue = 1u;
     ImGuiStyleEnum _currentTheme = ImGuiStyle_Count;
-
-    stringImpl        _externalTextEditorPath = "";
-    bool              _autoSaveCamera = false;
-    bool              _autoFocusEditor = true;
-    bool              _showSampleWindow = false;
-    bool              _showOptionsWindow = false;
-    bool              _showMemoryEditor = false;
-    bool              _running = false;
-    bool              _isScenePaused = false;
-    bool              _sceneHovered = false;
-    bool              _scenePreviewFocused = false;
-
+    bool           _autoSaveCamera = false;
+    bool           _autoFocusEditor = true;
+    bool           _showSampleWindow = false;
+    bool           _showOptionsWindow = false;
+    bool           _showMemoryEditor = false;
+    bool           _isScenePaused = false;
 }; //Editor
 
 namespace Attorney {
@@ -330,11 +322,11 @@ namespace Attorney {
     class EditorSolutionExplorerWindow {
     private :
         static void setSelectedCamera(Editor& editor, Camera* camera)  noexcept {
-            editor.setSelectedCamera(camera);
+            editor.selectedCamera(camera);
         }
 
         static Camera* getSelectedCamera(const Editor& editor)  noexcept {
-            return editor.getSelectedCamera();
+            return editor.selectedCamera();
         }
 
         static bool editorEnableGizmo(const Editor& editor) noexcept {
@@ -364,11 +356,11 @@ namespace Attorney {
     private :
 
         static void setSelectedCamera(Editor& editor, Camera* camera)  noexcept {
-            editor.setSelectedCamera(camera);
+            editor.selectedCamera(camera);
         }
 
         static Camera* getSelectedCamera(const Editor& editor)  noexcept {
-            return editor.getSelectedCamera();
+            return editor.selectedCamera();
         }
 
         friend class Divide::PropertyWindow;

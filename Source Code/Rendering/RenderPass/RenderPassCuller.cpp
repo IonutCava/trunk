@@ -18,38 +18,14 @@ namespace {
     constexpr size_t g_maxParallelCullingRequests = 32u;
     constexpr U32 g_nodesPerCullingPartition = 32u;
 
-    //Worst case scenario: one per each node
-    std::array<NodeListContainer, g_maxParallelCullingRequests> g_tempContainers = {};
-    std::array<std::atomic_bool, g_maxParallelCullingRequests> g_freeList;
-
-    // This would be messy to return as a pair (std::reference_wrapper and the like)
-    NodeListContainer& GetAvailableContainer(U32& idxOut) {
-        idxOut = 0;
-        while(true) {
-            bool expected = true;
-            if (g_freeList[idxOut].compare_exchange_strong(expected, false)) {
-                return g_tempContainers[idxOut];
-            }
-            (++idxOut) %= g_maxParallelCullingRequests;
-            DIVIDE_ASSERT(idxOut != 0, "RenderPassCuller::GetAvailableContainer looped! Please resize container array");
-        }
-    };
-
-    void FreeContainer(NodeListContainer& container, const U32 idx) {
-        DIVIDE_ASSERT(!g_freeList[idx].load(), "RenderPassCuller::FreeContainer received an invalid idx!");
-        // Don't use clear(). Keep memory allocated
-        g_tempContainers[idx].resize(0); 
-        g_freeList[idx].store(true);
-    }
-
-    inline bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
+    [[nodiscard]] inline bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
         return nodeType == SceneNodeType::TYPE_TRANSFORM || 
                nodeType == SceneNodeType::TYPE_TRIGGER || 
                objType._value == ObjectType::MESH;
     }
 
     // Return true if this node should be removed from a shadow pass
-    bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node, SceneNodeType sceneNodeType, ObjectType objType) {
+    [[nodiscard]] bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node, SceneNodeType sceneNodeType, ObjectType objType) {
         if (sceneNodeType == SceneNodeType::TYPE_SKY ||
             sceneNodeType == SceneNodeType::TYPE_WATER ||
             sceneNodeType == SceneNodeType::TYPE_INFINITEPLANE ||
@@ -63,7 +39,7 @@ namespace {
         return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
     }
 
-    inline bool shouldCullNode(RenderStage stage, const SceneGraphNode& node, bool& isTransformNodeOut) {
+    [[nodiscard]] inline bool shouldCullNode(RenderStage stage, const SceneGraphNode& node, bool& isTransformNodeOut) {
         const SceneNode& sceneNode = node.getNode();
         const SceneNodeType snType = sceneNode.type();
 
@@ -86,10 +62,19 @@ namespace {
     }
 };
 
+void VisibleNodeList::append(const VisibleNodeList& other) {
+    assert(_index + other._index < _nodes.size());
+
+    std::memcpy(_nodes.data() + _index, other._nodes.data(), other._index * sizeof(VisibleNode));
+    _index += other._index;
+}
+
+void VisibleNodeList::append(const VisibleNode& node) {
+    _nodes[_index.fetch_add(1)] = node;
+}
+
 bool RenderPassCuller::onStartup() {
-    for (auto& x : g_freeList) {
-        std::atomic_init(&x, true);
-    }
+  
     return true;
 }
 
@@ -99,7 +84,7 @@ bool RenderPassCuller::onShutdown() {
 
 void RenderPassCuller::clear() noexcept {
     for (VisibleNodeList& cache : _visibleNodes) {
-        cache.clear();
+        cache.reset();
     }
 }
 
@@ -109,39 +94,25 @@ VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, con
 
     const RenderStage stage = params._stage;
     VisibleNodeList& nodeCache = getNodeCache(stage);
-    nodeCache.resize(0);
+    nodeCache.reset();
 
     if (sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
         sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
     {
         // Snapshot current child list. We shouldn't be modifying child list mid-frame anyway, but it's worth it to be careful!
         vectorEASTL<SceneGraphNode*> rootChildren = sceneGraph.getRoot().getChildrenLocked();
-        nodeCache.reserve(rootChildren.size());
-            
-        U32 containerIdx = 0;
-        NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
-        tempContainer.resize(rootChildren.size());
 
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = to_U32(rootChildren.size());
         descriptor._partitionSize = g_nodesPerCullingPartition;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
-        
-        parallel_for(context,
-                     [this, &rootChildren, &params, &tempContainer](const Task* parentTask, U32 start, U32 end) {
-                        for (U32 i = start; i < end; ++i) {
-                            auto& temp = tempContainer[i];
-                            temp.resize(0);
-                            frustumCullNode(parentTask, *rootChildren[i], params, 0u, temp);
-                        }
-                     },
-                     descriptor);
-
-        for (const VisibleNodeList& nodeListEntry : tempContainer) {
-            nodeCache.insert(eastl::end(nodeCache), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
-        }
-        FreeContainer(tempContainer, containerIdx);
+        descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
+                            for (U32 i = start; i < end; ++i) {
+                                frustumCullNode(parentTask, *rootChildren[i], params, 0u, nodeCache);
+                            }
+                        };
+        parallel_for(context, descriptor);
     }
 
     return nodeCache;
@@ -179,8 +150,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
                 VisibleNode node = {};
                 node._node = &currentNode;
                 node._distanceToCameraSq = distanceSqToCamera;
-
-                nodes.push_back(node);
+                nodes.append(node);
             }
             // Parent node intersects the view, so check children
             if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
@@ -188,28 +158,17 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
                 // A very good use-case for ranges :-<
                 vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
 
-                U32 containerIdx = 0;
-                NodeListContainer& tempContainer = GetAvailableContainer(containerIdx);
-                tempContainer.resize(children.size());
-
-
                 ParallelForDescriptor descriptor = {};
                 descriptor._iterCount = to_U32(children.size());
                 descriptor._partitionSize = g_nodesPerCullingPartition;
                 descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
-
-                parallel_for(currentNode.context(),
-                             [this, &children, &params, recursionLevel, &tempContainer](const Task* parentTask, U32 start, U32 end) {
-                                 for (U32 i = start; i < end; ++i) {
-                                    frustumCullNode(parentTask, *children[i], params, recursionLevel + 1, tempContainer[i]);
-                                 }
-                             },
-                             descriptor);
-                for (const VisibleNodeList& nodeListEntry : tempContainer) {
-                    nodes.insert(eastl::end(nodes), eastl::cbegin(nodeListEntry), eastl::cend(nodeListEntry));
-                }
-                FreeContainer(tempContainer, containerIdx);
+                descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
+                                        for (U32 i = start; i < end; ++i) {
+                                            frustumCullNode(parentTask, *children[i], params, recursionLevel + 1, nodes);
+                                        }
+                                    };
+                parallel_for(currentNode.context(), descriptor);
             } else {
                 // All nodes are in view entirely
                 addAllChildren(currentNode, params, nodes);
@@ -234,8 +193,8 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
                 VisibleNode node = {};
                 node._node = child;
                 node._distanceToCameraSq = distanceSqToCamera;
+                nodes.append(node);
 
-                nodes.push_back(node);
                 addAllChildren(*child, params, nodes);
             }
         } else if (isTransformNode) {
@@ -244,28 +203,25 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
     }
 }
 
-VisibleNodeList RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes) const {
+void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
-    VisibleNodeList ret = {};
-    ret.reserve(nodes.size());
+    nodesOut.reset();
 
     F32 distanceSqToCamera = std::numeric_limits<F32>::max();
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     for (SceneGraphNode* node : nodes) {
         // Internal node cull (check against camera frustum and all that ...)
         if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(*node, params, collisionResult, distanceSqToCamera)) {
-            ret.push_back({ node, distanceSqToCamera });
+            nodesOut.append({ node, distanceSqToCamera });
         }
     }
-    return ret;
 }
 
-VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes) const {
+void RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
-    VisibleNodeList ret = {};
-    ret.reserve(nodes.size());
+    nodesOut.reset();
 
     const vec3<F32> cameraEye = camera.getEye();
     for (SceneGraphNode* node : nodes) {
@@ -274,8 +230,7 @@ VisibleNodeList RenderPassCuller::toVisibleNodes(const Camera& camera, const vec
         if (bComp != nullptr) {
             distanceSqToCamera = bComp->getBoundingSphere().getCenter().distanceSquared(cameraEye);
         }
-        ret.push_back({ node, distanceSqToCamera });
+        nodesOut.append({ node, distanceSqToCamera });
     }
-    return ret;
 }
 };

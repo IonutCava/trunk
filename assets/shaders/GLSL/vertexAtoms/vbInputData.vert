@@ -85,16 +85,11 @@ void computeDataNoClip() {
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if defined(HAS_VELOCITY)
-#define USE_CAMERA_BLUR
+
 #if defined(USE_GPU_SKINNING)
-#if 1
     vec4 dvd_PrevVertex = vec4(inVertexData, 1.0);
     applyPrevBoneTransforms(dvd_PrevVertex);
     const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_PrevVertex, 1.0f);
-#else
-    const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_Vertex, 1.0f);
-#endif
-
 #else
     const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_Vertex, 1.0f);
 #endif

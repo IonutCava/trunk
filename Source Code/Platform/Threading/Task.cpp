@@ -12,6 +12,7 @@ namespace Divide {
 
 void finish(Task& task) {
     if (task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed) == 1) {
+        task._callback = {};
         if (task._parent != nullptr) {
             finish(*task._parent);
         }

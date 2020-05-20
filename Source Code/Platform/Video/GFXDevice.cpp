@@ -1085,10 +1085,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            I32 kernelSize,
                            GFX::CommandBuffer& bufferInOut)
 {
-
-    GenericDrawCommand triangleCmd;
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
+    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
 
     // Blur horizontally
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -1111,7 +1108,6 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::DrawCommand drawCmd = { triangleCmd };
     GFX::EnqueueCommand(bufferInOut, drawCmd);
 
     GFX::EndRenderPassCommand endRenderPassCmd;
@@ -1523,6 +1519,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) {
     assert(depthBuffer != HiZTarget);
+    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
 
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
@@ -1591,11 +1588,6 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
             GFX::SendPushConstantsCommand pushConstantsCommand = {};
             GFX::SetTextureMipLevelsCommand mipCommand = {};
             GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-
-            GenericDrawCommand triangleCmd = {};
-            triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-            triangleCmd._drawCount = 1;
-            GFX::DrawCommand drawCmd = { triangleCmd };
 
             mipCommand._texture = hizDepthTex.get();
 
@@ -1779,12 +1771,11 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 }
 
 void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
-    static GFX::BeginDebugScopeCommand beginDebugScopeCmd{ "Draw Texture In Viewport" };
-    static GFX::PushCameraCommand push2DCameraCmd{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
-
-    GenericDrawCommand triangleCmd = {};
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
+    static GFX::DrawCommand drawCmd = {{ PrimitiveType::TRIANGLES }};
+    static GFX::BeginDebugScopeCommand beginDebugScopeCmd = { "Draw Texture In Viewport" };
+    static GFX::PushCameraCommand push2DCameraCmd = { Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
+    static GFX::SendPushConstantsCommand pushConstantsSRGBTrue = {{{_ID("convertToSRGB"), GFX::PushConstantType::UINT, 1u}}};
+    static GFX::SendPushConstantsCommand pushConstantsSRGBFalse = {{{_ID("convertToSRGB"), GFX::PushConstantType::UINT, 0u}}};
 
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
     GFX::EnqueueCommand(bufferInOut, push2DCameraCmd);
@@ -1797,12 +1788,10 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, GFX::PushViewportCommand{ viewport });
 
     if (!drawToDepthOnly) {
-        GFX::SendPushConstantsCommand pushConstantsCommand = {};
-        pushConstantsCommand._constants.set(_ID("convertToSRGB"), GFX::PushConstantType::UINT, convertToSrgb ? 1u : 0u);
-        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        GFX::EnqueueCommand(bufferInOut, convertToSrgb ? pushConstantsSRGBTrue : pushConstantsSRGBFalse);
     }
 
-    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+    GFX::EnqueueCommand(bufferInOut, drawCmd);
     GFX::EnqueueCommand(bufferInOut, GFX::PopViewportCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -1978,6 +1967,7 @@ void GFXDevice::initDebugViews() {
 
 void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut) {
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
+    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
 
     initDebugViews();
 
@@ -2018,16 +2008,11 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
     PipelineDescriptor pipelineDesc = {};
     pipelineDesc._stateHash = _state2DRenderingHash;
 
-    GenericDrawCommand triangleCmd = {};
-    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
-    triangleCmd._drawCount = 1;
-
     vectorEASTLFast <std::pair<stringImpl, Rect<I32>>> labelStack;
 
     GFX::SetViewportCommand setViewport = {};
     GFX::SendPushConstantsCommand pushConstants = {};
     GFX::BindPipelineCommand bindPipeline = {};
-    GFX::DrawCommand drawCommand = { triangleCmd };
 
     const Rect<I32> previousViewport(_viewport);
 
@@ -2054,7 +2039,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         bindDescriptorSets._set._textureData.setTexture(view._texture->data(), view._textureBindSlot);
         GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
-        GFX::EnqueueCommand(bufferInOut, drawCommand);
+        GFX::EnqueueCommand(bufferInOut, drawCmd);
 
         if (!view._name.empty()) {
             labelStack.emplace_back(view._name, viewport);

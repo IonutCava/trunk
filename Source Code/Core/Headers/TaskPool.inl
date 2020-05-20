@@ -50,67 +50,6 @@ namespace Divide {
     Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle) {
         return pool.createTask(parentTask, std::move(threadedFunction), allowedInIdle);
     }
-
-    template<class Predicate>
-    void parallel_for(TaskPool& pool, Predicate&& cbk, const ParallelForDescriptor& descriptor) {
-        if (descriptor._iterCount > 0) {
-            const U32 crtPartitionSize = std::min(descriptor._partitionSize, descriptor._iterCount);
-            const U32 partitionCount = descriptor._iterCount / crtPartitionSize;
-            const U32 remainder = descriptor._iterCount % crtPartitionSize;
-            const U32 adjustedCount = descriptor._useCurrentThread ? partitionCount - 1 : partitionCount;
-
-            std::atomic_uint jobCount = adjustedCount + (remainder > 0 ? 1 : 0);
-
-            for (U32 i = 0; i < adjustedCount; ++i) {
-                const U32 start = i * crtPartitionSize;
-                const U32 end = start + crtPartitionSize;
-                Task* parallel_job = CreateTask(pool,
-                                                nullptr,
-                                                [cbk, &jobCount, start, end](Task& parentTask) {
-                                                    if (TaskPool::USE_OPTICK_PROFILER) {
-                                                        OPTICK_EVENT();
-                                                    }
-                                                    cbk(&parentTask, start, end);
-                                                    jobCount.fetch_sub(1);
-                                                }, descriptor._allowRunInIdle);
-  
-                Start(*parallel_job, descriptor._priority);
-            }
-            if (remainder > 0) {
-                const U32 count = descriptor._iterCount;
-                Task* parallel_job = CreateTask(pool,
-                                                nullptr,
-                                                [cbk, &jobCount, count, remainder](Task& parentTask) {
-                                                    if (TaskPool::USE_OPTICK_PROFILER) {
-                                                        OPTICK_EVENT();
-                                                    }
-                                                    cbk(&parentTask, count - remainder, count);
-                                                    jobCount.fetch_sub(1);
-                                                });
-
-                Start(*parallel_job, descriptor._priority);
-            }
-
-            if (descriptor._useCurrentThread) {
-                const U32 start = adjustedCount * crtPartitionSize;
-                const U32 end = start + crtPartitionSize;
-                if (TaskPool::USE_OPTICK_PROFILER) {
-                    OPTICK_EVENT();
-                }
-                cbk(nullptr, start, end);
-            }
-
-            if (descriptor._waitForFinish) {
-                if (descriptor._allowPoolIdle) {
-                    while (jobCount.load() > 0) {
-                        pool.threadWaiting();
-                    }
-                } else {
-                    WAIT_FOR_CONDITION(jobCount.load() == 0u);
-                }
-            }
-        }
-    }
 }; //namespace Divide
 
 #endif //_TASK_POOL_INL_

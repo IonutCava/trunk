@@ -183,7 +183,12 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
     } else {
         STUBBED("ToDo: Add support for 16bit and HDR image alpha! -Ionut");
         if (fileData.alpha()) {
-            const auto findAlpha = [this, &fileData, height, layer](const Task* parent, U32 start, U32 end) {
+
+            ParallelForDescriptor descriptor = {};
+            descriptor._iterCount = width;
+            descriptor._partitionSize = std::max(16u, to_U32(width / 10));
+            descriptor._useCurrentThread = true;
+            descriptor._cbk =  [this, &fileData, height, layer](const Task* parent, U32 start, U32 end) {
                 U8 tempA = 0u;
                 for (U32 i = start; i < end; ++i) {
                     for (I32 j = 0; j < height; ++j) {
@@ -202,12 +207,7 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
                 }
             };
 
-            ParallelForDescriptor descriptor = {};
-            descriptor._iterCount = width;
-            descriptor._partitionSize = std::max(16u, to_U32(width / 10));
-            descriptor._useCurrentThread = true;
-
-            parallel_for(_context.context(), findAlpha, descriptor);
+            parallel_for(_context.context(), descriptor);
 
             metadataCache << _hasTransparency;
             metadataCache << _hasTranslucency;

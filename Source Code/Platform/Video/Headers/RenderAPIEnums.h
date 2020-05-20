@@ -35,6 +35,8 @@
 
 namespace Divide {
 
+constexpr U32 RT_MAX_COLOUR_ATTACHMENTS = 4;
+
 enum class RenderAPI : U8 {
     None,      ///< not supported yet
     OpenGL,    ///< 4.x+

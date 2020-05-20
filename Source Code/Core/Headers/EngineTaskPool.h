@@ -56,8 +56,7 @@ Task* CreateTask(PlatformContext& context, Predicate&& threadedFunction, bool al
 template<class Predicate>
 Task* CreateTask(PlatformContext& context, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
 
-template<class Predicate>
-void parallel_for(PlatformContext& context, Predicate&& cbk, const ParallelForDescriptor& descriptor);
+void parallel_for(PlatformContext& context, const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks);
 

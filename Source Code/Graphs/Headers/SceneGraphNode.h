@@ -316,7 +316,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
             BoundsComponent* _boundsComponentCache = nullptr;
         } Hacks;
 
-        moodycamel::ConcurrentQueue<ECS::CustomEvent> _events;
+        Mutex _eventsLock;
+        eastl::queue<ECS::CustomEvent, eastl::deque<ECS::CustomEvent, eastl::dvd_eastl_allocator>> _events;
 
         mutable SharedMutex _childLock;
 

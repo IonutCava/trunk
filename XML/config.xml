@@ -88,6 +88,8 @@
 		<PostAAQualityLevel>2</PostAAQualityLevel>
 		<enableDepthOfField>false</enableDepthOfField>
 		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
+		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->
+		<enableCameraBlur>true</enableCameraBlur>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>
 		<velocityScale>1</velocityScale>

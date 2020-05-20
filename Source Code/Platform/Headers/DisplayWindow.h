@@ -198,9 +198,6 @@ public:
 
     WindowHandle handle() const noexcept;
 
-    /// Mouse positioning is handled by SDL. Returns true on success
-    bool setCursorPosition(I32 x, I32 y) noexcept;
-
     inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void clearEventlisteners(WindowEvent windowEvent);
 

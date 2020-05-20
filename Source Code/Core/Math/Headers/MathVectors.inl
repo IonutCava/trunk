@@ -173,6 +173,11 @@ inline void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
     u.set(Cross(Normalized((Cross(n, u))), n));
 }
 
+template <typename T>
+inline vec4<T> Abs(const vec4<T> &vector) noexcept {
+    return { std::abs(vector.x), std::abs(vector.y), std::abs(vector.z), std::abs(vector.z) };
+}
+
 /// min/max functions
 template <typename T>
 inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) noexcept {
@@ -561,6 +566,21 @@ inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) noexcept {
 template <typename T>
 inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) noexcept {
     return { Lerp(u.x, v.x, factor.x), Lerp(u.y, v.y, factor.y), Lerp(u.z, v.z, factor.z) };
+}
+
+template <typename T>
+inline vec3<T> Abs(const vec3<T> &vector) noexcept {
+    return { std::abs(vector.x), std::abs(vector.y), std::abs(vector.z) };
+}
+
+template <typename T>
+inline vec3<T> Min(const vec3<T> &v1, const vec3<T> &v2) noexcept {
+    return vec3<T>(std::min(v1.x, v2.x), std::min(v1.y, v2.y), std::min(v1.z, v2.z));
+}
+
+template <typename T>
+inline vec3<T> Max(const vec3<T> &v1, const vec3<T> &v2) noexcept {
+    return vec3<T>(std::max(v1.x, v2.x), std::max(v1.y, v2.y), std::max(v1.z, v2.z));
 }
 /*
 *  vec4 inline definitions

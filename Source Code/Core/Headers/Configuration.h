@@ -114,6 +114,7 @@ struct Configuration final : public XML::IXMLSerializable {
             U8 PostAAQualityLevel = 2;
             bool enableDepthOfField = false;
             bool enablePerObjectMotionBlur = true;
+            bool enableCameraBlur = true;
             bool enableBloom = false;
             F32 bloomFactor = 0.f;
             F32 velocityScale = 1.f;

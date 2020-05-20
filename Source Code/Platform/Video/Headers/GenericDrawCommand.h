@@ -73,6 +73,10 @@ enum class CmdRenderOptions : U16 {
 
 #pragma pack(push, 1)
 struct GenericDrawCommand {
+    GenericDrawCommand() = default;
+    ~GenericDrawCommand() = default;
+    GenericDrawCommand(PrimitiveType type) : _primitiveType(type) {}
+
     IndirectDrawCommand _cmd = {};                                   // 32 bytes
     PoolHandle _sourceBuffer = {};                                   // 12 bytes
     U24 _commandOffset = 0u;                                         // 9  bytes

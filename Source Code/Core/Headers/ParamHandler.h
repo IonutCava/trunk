@@ -80,7 +80,6 @@ public:
     ParamFloatMap _paramsFloat;
     mutable SharedMutex _mutex;
     std::atomic_bool _logState;
-
 };
 
 };  // namespace Divide

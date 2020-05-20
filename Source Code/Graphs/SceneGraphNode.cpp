@@ -482,7 +482,16 @@ void SceneGraphNode::processEvents() {
     const ECS::EntityId id = GetEntityID();
     
     ECS::CustomEvent evt = {};
-    while (_events.try_dequeue(evt)) {
+    while(true) {
+        {
+            UniqueLock<Mutex> w_lock(_eventsLock);
+            if (_events.empty()) {
+                return;
+            }
+            evt = _events.front();
+            _events.pop();
+        }
+
         switch (evt._type) {
             case ECS::CustomEvent::Type::RelationshipCacheInvalidated: {
                 if (!_relationshipCache.isValid()) {
@@ -794,15 +803,12 @@ bool SceneGraphNode::hasFlag(Flags flag) const noexcept {
 }
 
 void SceneGraphNode::SendEvent(ECS::CustomEvent&& event) {
-    if (_events.enqueue(std::move(event))) {
-        //?
-    }
+    UniqueLock<Mutex> w_lock(_eventsLock);
+    _events.push(std::move(event));
 }
 
 void SceneGraphNode::SendEvent(const ECS::CustomEvent& event) {
-    if (_events.enqueue(event)) {
-        //Yay
-    }
-    //Nay
+    UniqueLock<Mutex> w_lock(_eventsLock);
+    _events.push(event);
 }
 };

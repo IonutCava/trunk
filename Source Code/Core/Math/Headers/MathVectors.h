@@ -535,6 +535,12 @@ template <typename T, typename U>
 template <typename T>
 [[nodiscard]] inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) noexcept;
 template <typename T>
+[[nodiscard]] inline vec3<T> Abs(const vec3<T> &vector) noexcept;
+template <typename T>
+[[nodiscard]] inline vec3<T> Min(const vec3<T> &v1, const vec3<T> &v2) noexcept;
+template <typename T>
+[[nodiscard]] inline vec3<T> Max(const vec3<T> &v1, const vec3<T> &v2) noexcept;
+template <typename T>
 [[nodiscard]] inline vec3<T> Normalize(vec3<T> &vector);
 template <typename T>
 [[nodiscard]] inline vec3<T> Normalized(const vec3<T> &vector);
@@ -793,6 +799,8 @@ template <typename T>
 /// lerp between the 2 specified vectors by the specified amount for each component
 template <typename T>
 [[nodiscard]] inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) noexcept;
+template <typename T>
+[[nodiscard]] inline vec4<T> Abs(const vec4<T> &vector) noexcept;
 /// min/max functions
 template <typename T>
 [[nodiscard]] inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) noexcept;

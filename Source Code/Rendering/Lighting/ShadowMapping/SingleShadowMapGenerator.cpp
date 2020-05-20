@@ -203,10 +203,7 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
     GFX::BlitRenderTargetCommand blitRenderTargetCommand = {};
     blitRenderTargetCommand._source = _drawBufferDepth._targetID;
     blitRenderTargetCommand._destination = g_depthMapID;
-    ColourBlitEntry blitEntry = {};
-    blitEntry._inputLayer = 0;
-    blitEntry._outputLayer = layerOffset;
-    blitRenderTargetCommand._blitColours.emplace_back(blitEntry);
+    blitRenderTargetCommand._blitColours[0].set(0u, 0u, 0u, layerOffset);
     GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
 
     // Now we can either blur our target or just skip to mipmap computation

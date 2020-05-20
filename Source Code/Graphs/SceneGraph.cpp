@@ -194,14 +194,13 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(_orderedNodeList.size());
     descriptor._partitionSize = g_nodesPerPartition;
+    descriptor._cbk = [this](const Task* parentTask, U32 start, U32 end) {
+        for (U32 i = start; i < end; ++i) {
+            Attorney::SceneGraphNodeSceneGraph::processEvents(*_orderedNodeList[i]);
+        }
+    };
 
-    parallel_for(context,
-                    [this](const Task* parentTask, U32 start, U32 end) {
-                        for (U32 i = start; i < end; ++i) {
-                            Attorney::SceneGraphNodeSceneGraph::processEvents(*_orderedNodeList[i]);
-                        }
-                    },
-                    descriptor);
+    parallel_for(context, descriptor);
 
     for (SceneGraphNode* node : _orderedNodeList) {
         node->sceneUpdate(deltaTimeUS, sceneState);

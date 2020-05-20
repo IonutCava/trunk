@@ -13,16 +13,15 @@ namespace {
 };
 
 void ParticleBasicColourUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
-   auto parseRange = [&p](Task* parentTask, U32 start, U32 end) -> void {
+    ParallelForDescriptor descriptor = {};
+    descriptor._iterCount = p.aliveCount();
+    descriptor._partitionSize = g_partitionSize;
+    descriptor._cbk = [&p](const Task* parentTask, U32 start, U32 end) -> void {
         for (U32 i = start; i < end; ++i) {
             p._colour[i].set(Lerp(p._startColour[i], p._endColour[i], p._misc[i].y));
         }
     };
 
-    ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = p.aliveCount();
-    descriptor._partitionSize = g_partitionSize;
-
-    parallel_for(context(), parseRange, descriptor);
+    parallel_for(context(), descriptor);
 }
 };

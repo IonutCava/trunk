@@ -236,7 +236,7 @@ BEGIN_COMMAND(BlitRenderTargetCommand, CommandType::BLIT_RT);
     // Depth layer to blit
     DepthBlitEntry _blitDepth;
     // List of colours + colour layer to blit
-    vectorEASTL<ColourBlitEntry> _blitColours;
+    std::array<ColourBlitEntry, RT_MAX_COLOUR_ATTACHMENTS> _blitColours;
     RenderTargetID _source;
     RenderTargetID _destination;
 END_COMMAND(BlitRenderTargetCommand);

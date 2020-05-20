@@ -172,7 +172,7 @@ namespace BlitHelpers {
     };
 
     inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const ColourBlitEntry& entry, bool isInput) {
-        return prepareAttachments(fbo, att, isInput ? entry._inputLayer : entry._outputLayer);
+        return prepareAttachments(fbo, att, isInput ? entry.input()._layer : entry.output()._layer);
     };
 
     inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const DepthBlitEntry& entry, bool isInput) {
@@ -180,7 +180,7 @@ namespace BlitHelpers {
     };
 
     inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const ColourBlitEntry& entry, bool isInput) {
-        RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Colour, to_U8(entry._inputIndex)).get();
+        RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Colour, to_U8(entry.input()._index)).get();
         return prepareAttachments(fbo, att, entry, isInput);
     };
 
@@ -193,7 +193,7 @@ namespace BlitHelpers {
 void glFramebuffer::blitFrom(const RTBlitParams& params) {
     OPTICK_EVENT();
 
-    if (!params._inputFB || (params._blitColours.empty() && !IsValid(params._blitDepth))) {
+    if (!params._inputFB || (!params.hasBlitColours() && !IsValid(params._blitDepth))) {
         return;
     }
 
@@ -204,7 +204,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
 
     bool blittedDepth = false;
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
-    if (!params._blitColours.empty() && hasColour()) {
+    if (params.hasBlitColours() && hasColour()) {
 
         const RTAttachmentPool::PoolEntry& inputAttachments = input->_attachmentPool->get(RTAttachmentType::Colour);
         const RTAttachmentPool::PoolEntry& outputAttachments = output->_attachmentPool->get(RTAttachmentType::Colour);
@@ -213,8 +213,17 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
         GLuint prevWriteAtt = 0;
 
         for (const ColourBlitEntry& entry : params._blitColours) {
-            const RTAttachment_ptr& inAtt = inputAttachments[entry._inputIndex];
-            const RTAttachment_ptr& outAtt = outputAttachments[entry._outputIndex];
+            if (entry.input()._layer == INVALID_COLOUR_LAYER && entry.input()._index == INVALID_COLOUR_LAYER) {
+                continue;
+            }
+            const I32 inputLayer = std::max(entry.input()._layer, to_I16(0));
+            const I32 inputIndex = std::max(entry.input()._index, to_I16(0));
+
+            const I32 outputLayer = entry.output()._layer == INVALID_COLOUR_LAYER ? inputLayer : entry.output()._layer;
+            const I32 outputIndex = entry.output()._index == INVALID_COLOUR_LAYER ? inputIndex : entry.output()._index;
+
+            const RTAttachment_ptr& inAtt = inputAttachments[inputIndex];
+            const RTAttachment_ptr& outAtt = outputAttachments[outputIndex];
 
             const GLuint crtReadAtt = inAtt->binding();
             const GLenum readBuffer = static_cast<GLenum>(crtReadAtt);
@@ -261,8 +270,8 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
             }
 
             blittedDepth = (!blittedDepth &&
-                            params._blitDepth._inputLayer == entry._inputLayer &&
-                            params._blitDepth._outputLayer == entry._outputLayer);
+                            params._blitDepth._inputLayer == inputLayer &&
+                            params._blitDepth._outputLayer == outputLayer);
             
             glBlitNamedFramebuffer(input->_framebufferHandle,
                                    output->_framebufferHandle,
@@ -274,7 +283,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
                                                 : GL_COLOR_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
-            queueMipMapRecomputation(*outAtt, 0u, entry._outputLayer);
+            queueMipMapRecomputation(*outAtt, 0u, to_U16(outputLayer));
         }
     }
 

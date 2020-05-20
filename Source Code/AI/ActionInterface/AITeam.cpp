@@ -92,18 +92,18 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        const auto updateIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = entityCount;
+        descriptor._partitionSize = g_entityThreadedThreashold;
+        descriptor._cbk = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::update(*entities[i], deltaTimeUS)) {
                     //print error;
                 }
             }
         };
-        ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = entityCount;
-        descriptor._partitionSize = g_entityThreadedThreashold;
 
-        parallel_for(parentPool, updateIterFunction, descriptor);
+        parallel_for(parentPool, descriptor);
     }
     return true;
 }
@@ -119,18 +119,18 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        const auto inputIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = entityCount;
+        descriptor._partitionSize = g_entityThreadedThreashold;
+        descriptor._cbk = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processInput(*entities[i], deltaTimeUS)) {
                     //print error;
                 }
             }
         };
-        ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = entityCount;
-        descriptor._partitionSize = g_entityThreadedThreashold;
 
-        parallel_for(parentPool, inputIterFunction, descriptor);
+        parallel_for(parentPool, descriptor);
     }
 
     return true;
@@ -147,7 +147,10 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         }
     } else {
-        const auto dataIterFunction = [this, deltaTimeUS, &entities](Task* parentTask, U32 start, U32 end) {
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = entityCount;
+        descriptor._partitionSize = g_entityThreadedThreashold;
+        descriptor._cbk = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processData(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -155,11 +158,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
             }
         };
 
-        ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = entityCount;
-        descriptor._partitionSize = g_entityThreadedThreashold;
-
-        parallel_for(parentPool, dataIterFunction, descriptor);
+        parallel_for(parentPool, descriptor);
     }
 
     return true;
