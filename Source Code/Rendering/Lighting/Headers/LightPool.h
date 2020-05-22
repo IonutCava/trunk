@@ -85,6 +85,7 @@ class LightPool : public SceneComponent,
       struct SpotShadowProperties
       {
           vec4<F32> _details;
+          vec4<F32> _position;
           mat4<F32> _vpMatrix;
       };
       struct ShadowProperties {

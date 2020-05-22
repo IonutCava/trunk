@@ -214,23 +214,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             OPTICK_EVENT("RenderPass - Reflection");
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
-
             {
-                //Part 1 - update envirnoment maps:
-                /*SceneEnvironmentProbePool* envProbPool =  Attorney::SceneRenderPass::getEnvProbes(renderState.parentScene());
-                const EnvironmentProbeList& probes = envProbPool->getNearestSorted(params.camera->getEye());
-                for (EnvironmentProbe_ptr& probe : probes) {
-                    probe->refresh(bufferInOut);
-                }
-                RenderPassCuller::VisibleNodeList& mainNodeCache = mgr.getVisibleNodesCache(RenderStage::DISPLAY);
-                for (const RenderPassCuller::VisibleNode& node : mainNodeCache) {
-                    SceneGraphNode* nodePtr = node.second;
-                    RenderingComponent* const rComp = nodePtr->get<RenderingComponent>();
-                    Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
-                }*/
-            }
-            {
-                //Part 2 - update classic reflectors (e.g. mirrors, water, etc)
+                //Update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
                 mgr->getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true, s_Nodes);
 

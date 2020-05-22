@@ -284,7 +284,7 @@ namespace Divide {
             ImGui::EndChild();
         }
 
-        if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture, vec2<F32>(512, 512), true, true)) {
+        if (Attorney::EditorGeneralWidget::modalTextureView(_parent, "Image Preview", previewTexture.get(), vec2<F32>(512, 512), true, true)) {
             previewTexture = nullptr;
         }
         if (Attorney::EditorGeneralWidget::modalModelSpawn(_parent, "Spawn Entity", spawnMesh)) {

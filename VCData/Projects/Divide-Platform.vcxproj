@@ -245,7 +245,7 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\materialData.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\output.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\pbr.frag" />
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\phong_lighting.frag" />
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\IBL.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\prePass.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadowMapping.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\shadowUtils.frag" />

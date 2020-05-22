@@ -103,7 +103,7 @@ namespace Divide {
         template<typename Pred>
         bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, Pred&& dataSetter) {
             FColour4 oldVal = col;
-            const bool ret = ImGui::ColorEdit4(readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
+            const bool ret = ImGui::ColorEdit4(name, col._v, ImGuiColorEditFlags__OptionsDefault);
             if (!readOnly) {
                 RegisterUndo<FColour4, true>(parent, GFX::PushConstantType::FCOLOUR4, oldVal, col, name, [dataSetter](const FColour4& oldColour) {
                     dataSetter(oldColour._v);
@@ -116,7 +116,7 @@ namespace Divide {
         template<typename Pred>
         bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, Pred&& dataSetter) {
             FColour3 oldVal = col;
-            const bool ret =  ImGui::ColorEdit3( readOnly ? "" : name, col._v, ImGuiColorEditFlags__OptionsDefault);
+            const bool ret =  ImGui::ColorEdit3(name, col._v, ImGuiColorEditFlags__OptionsDefault);
             if (!readOnly) {
                 RegisterUndo<FColour3, true>(parent, GFX::PushConstantType::FCOLOUR3, oldVal, col, name, [dataSetter](const FColour4& oldColour) {
                     dataSetter(oldColour._v);
@@ -267,6 +267,45 @@ namespace Divide {
             }
 
             return false;
+        }
+
+        template<typename Pred>
+        void ApplyAllButton(I32 &id, Material * material, bool readOnly, Pred&& predicate) {
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40);
+            ImGui::PushID(4321234 + id++);
+            if (readOnly) {
+                PushReadOnly();
+            }
+            if (ImGui::SmallButton("A")) {
+                predicate();
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Apply to all instances");
+            }
+            if (readOnly) {
+                PopReadOnly();
+            }
+            ImGui::PopID();
+        }
+
+        bool PreviewTextureButton(I32 &id, Texture* tex, bool readOnly) {
+            bool ret = false;
+            ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 15);
+            ImGui::PushID(4321234 + id++);
+            if (readOnly) {
+                PushReadOnly();
+            }
+            if (ImGui::SmallButton("T")) {
+                ret = true;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip(Util::StringFormat("Preview texture : %s", tex->assetName().c_str()).c_str());
+            }
+            if (readOnly) {
+                PopReadOnly();
+            }
+            ImGui::PopID();
+            return ret;
         }
     };
 
@@ -709,6 +748,12 @@ namespace Divide {
             ImGui::Separator();
             ImGui::Text("Please select a scene node \n to inspect its properties");
             ImGui::Separator();
+        }
+
+        if (_previewTexture != nullptr) {
+            if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", _previewTexture->resourceName().c_str()).c_str(), _previewTexture, vec2<F32>(512, 512), true, false)) {
+                _previewTexture = nullptr;
+            }
         }
 
         if (sceneChanged) {
@@ -1400,112 +1445,228 @@ namespace Divide {
             }
         }
 
-        if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", TypeUtil::ShadingModeToString(material->getShadingMode())).c_str())) {
+        const ShadingMode crtMode = material->shadingMode();
+        const char* crtModeName = TypeUtil::ShadingModeToString(crtMode);
+        if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", crtModeName).c_str())) {
             const auto diffuseSetter = [material](const void* data) {
-                material->getColourData().baseColour(*(FColour4*)data);
+                material->baseColour(*(FColour4*)data);
             };
+            {
+                static UndoEntry<I32> modeUndo = {};
+                ImGui::PushItemWidth(250);
+                if (ImGui::BeginCombo("[Shading Mode]", crtModeName, ImGuiComboFlags_PopupAlignLeft)) {
+                    for (U8 n = 0; n < to_U8(ShadingMode::COUNT); ++n) {
+                        const ShadingMode mode = static_cast<ShadingMode>(n);
+                        const bool isSelected = crtMode == mode;
 
-            FColour4 diffuse = material->getColourData().baseColour();
-            if (colourInput4(_parent, " - BaseColour", diffuse, readOnly, diffuseSetter)) {
-                diffuseSetter(diffuse._v);
-                ret = true;
+                        if (ImGui::Selectable(TypeUtil::ShadingModeToString(mode), isSelected)) {
+
+                            modeUndo._type = GFX::PushConstantType::INT;
+                            modeUndo._name = "Shading Mode";
+                            modeUndo._oldVal = to_I32(crtMode);
+                            modeUndo._newVal = to_I32(mode);
+                            modeUndo._dataSetter = [material, mode](const I32& data) {
+                                material->shadingMode(mode);
+                            };
+                            _context.editor().registerUndoEntry(modeUndo);
+
+                            material->shadingMode(mode);
+                        }
+                        if (isSelected) {
+                            ImGui::SetItemDefaultFocus();
+                        }
+                    }
+                    ImGui::EndCombo();
+                }
+                ImGui::PopItemWidth();
             }
+            I32 id = 0;
+            ApplyAllButton(id, material, false, [&material]() {
+                if (material->baseMaterial() != nullptr) {
+                    material->baseMaterial()->shadingMode(material->shadingMode(), true);
+                }
+            });
 
-            const auto emissiveSetter = [material](const void* data) {
-                material->getColourData().emissive(*(FColour3*)data);
-            };
-            FColour3 emissive = material->getColourData().emissive();
-            if (colourInput3(_parent, " - Emissive", emissive, readOnly, emissiveSetter)) {
-                emissiveSetter(emissive._v);
-                ret = true;
-            }
-
-            if (material->isPBRMaterial()) {
-                {
-                    F32 reflectivity = material->getColourData().reflectivity();
-                    EditorComponentField tempField = {};
-                    tempField._name = " - Reflectivity";
-                    tempField._basicType = GFX::PushConstantType::FLOAT;
-                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
-                    tempField._readOnly = readOnly;
-                    tempField._data = &reflectivity;
-                    tempField._range = { 0.0f, 1.0f };
-                    tempField._dataSetter = [material](const void* reflectivity) {
-                        material->getColourData().reflectivity(*static_cast<const F32*>(reflectivity));
-                    };
-                    ret = processField(tempField) || ret;
-                }
-                {
-                    F32 metallic = material->getColourData().metallic();
-                    EditorComponentField tempField = {};
-                    tempField._name = " - Metallic";
-                    tempField._basicType = GFX::PushConstantType::FLOAT;
-                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
-                    tempField._readOnly = readOnly;
-                    tempField._data = &metallic;
-                    tempField._range = { 0.0f, 1.0f };
-                    tempField._dataSetter = [material](const void* metallic) {
-                        material->getColourData().metallic(*static_cast<const F32*>(metallic));
-                    };
-                    ret = processField(tempField) || ret;
-                }
-                {
-                    F32 roughness = material->getColourData().roughness();
-                    EditorComponentField tempField = {};
-                    tempField._name = " - Roughness";
-                    tempField._basicType = GFX::PushConstantType::FLOAT;
-                    tempField._type = EditorComponentFieldType::SLIDER_TYPE;
-                    tempField._readOnly = readOnly;
-                    tempField._data = &roughness;
-                    tempField._range = { 0.0f, 1.0f };
-                    tempField._dataSetter = [material](const void* roughness) {
-                        material->getColourData().roughness(*static_cast<const F32*>(roughness));
-                    };
-                    ret = processField(tempField) || ret;
-                }
-            } else {
-                const auto specularSetter = [material](const void* data) {
-                    material->getColourData().specular(*(FColour3*)data);
-                };
-                FColour3 specular = material->getColourData().specular();
-                if (colourInput3(_parent, " - Specular", specular, readOnly, specularSetter)) {
-                    specularSetter(specular._v);
+            bool fromTexture = false;
+            Texture* texture = nullptr;
+            { //Base colour
+                ImGui::Separator();
+                ImGui::PushItemWidth(250);
+                FColour4 diffuse = material->getBaseColour(fromTexture, texture);
+                if (colourInput4(_parent, "[Albedo]", diffuse, readOnly, diffuseSetter)) {
+                    diffuseSetter(diffuse._v);
                     ret = true;
                 }
-
-                F32 shininess = material->getColourData().shininess();
+                ImGui::PopItemWidth();
+                if (fromTexture && ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Albedo is sampled from a texture. Base colour possibly unused!");
+                }
+                ApplyAllButton(id, material, fromTexture || readOnly, [&material]() {
+                    if (material->baseMaterial() != nullptr) {
+                        material->baseMaterial()->baseColour(material->baseColour(), true);
+                    }
+                });
+                if (PreviewTextureButton(id, texture, !fromTexture)) {
+                    _previewTexture = texture;
+                }
+                ImGui::Separator();
+            }
+            { //Emissive
+                ImGui::Separator();
+                const auto emissiveSetter = [material](const void* data) {
+                    material->emissiveColour(*(FColour3*)data);
+                };
+                ImGui::PushItemWidth(250);
+                FColour3 emissive = material->getEmissive(fromTexture, texture);
+                if (colourInput3(_parent, "[Emissive]", emissive, fromTexture || readOnly, emissiveSetter)) {
+                    emissiveSetter(emissive._v);
+                    ret = true;
+                }
+                ImGui::PopItemWidth();
+                if (fromTexture && ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("Control managed by application (e.g. is overriden by a texture)");
+                }
+                ApplyAllButton(id, material, fromTexture || readOnly, [&material]() {
+                    if (material->baseMaterial() != nullptr) {
+                        material->baseMaterial()->emissiveColour(material->emissive(), true);
+                    }
+                });
+                if (PreviewTextureButton(id, texture, !fromTexture)) {
+                    _previewTexture = texture;
+                }
+                ImGui::Separator();
+            }
+            { // Metallic
+                ImGui::Separator();
+                F32 metallic = material->getMetallic(fromTexture, texture);
                 EditorComponentField tempField = {};
-                tempField._name = " - Shininess";
+                tempField._name = "[Metallic]";
+                tempField._basicType = GFX::PushConstantType::FLOAT;
+                tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                tempField._readOnly = fromTexture || readOnly;
+                if (fromTexture) {
+                    tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+                }
+                tempField._data = &metallic;
+                tempField._range = { 0.0f, 1.0f };
+                tempField._dataSetter = [material](const void* metallic) {
+                    material->metallic(*static_cast<const F32*>(metallic));
+                };
+                
+                ImGui::PushItemWidth(175);
+                ret = processBasicField(tempField) || ret;
+                ImGui::PopItemWidth();
+
+                ImGui::SameLine();
+                ImGui::Text(tempField._name.c_str());
+                ApplyAllButton(id, material, tempField._readOnly, [&material]() {
+                    if (material->baseMaterial() != nullptr) {
+                        material->baseMaterial()->metallic(material->metallic(), true);
+                    }
+                });
+                if (PreviewTextureButton(id, texture, !fromTexture)) {
+                    _previewTexture = texture;
+                }
+                ImGui::Separator();
+            }
+            { // Roughness
+                ImGui::Separator();
+                F32 roughness = material->getRoughness(fromTexture, texture);
+                EditorComponentField tempField = {};
+                tempField._name = "[Roughness]";
+                tempField._basicType = GFX::PushConstantType::FLOAT;
+                tempField._type = EditorComponentFieldType::SLIDER_TYPE;
+                tempField._readOnly = fromTexture || readOnly;
+                if (fromTexture) {
+                    tempField._tooltip = "Control managed by application (e.g. is overriden by a texture)";
+                }
+                tempField._data = &roughness;
+                tempField._range = { 0.0f, 1.0f };
+                tempField._dataSetter = [material](const void* roughness) {
+                    material->roughness(*static_cast<const F32*>(roughness));
+                };
+                ImGui::PushItemWidth(175);
+                ret = processBasicField(tempField) || ret;
+                ImGui::PopItemWidth();
+                ImGui::SameLine();
+                ImGui::Text(tempField._name.c_str());
+                ApplyAllButton(id, material, tempField._readOnly, [&material]() {
+                    if (material->baseMaterial() != nullptr) {
+                        material->baseMaterial()->roughness(material->roughness(), true);
+                    }
+                });
+                if (PreviewTextureButton(id, texture, !fromTexture)) {
+                    _previewTexture = texture;
+                }
+                ImGui::Separator();
+            }
+            { // Parallax
+                ImGui::Separator();
+                F32 parallax = material->parallaxFactor();
+                EditorComponentField tempField = {};
+                tempField._name = "[Parallax]";
                 tempField._basicType = GFX::PushConstantType::FLOAT;
                 tempField._type = EditorComponentFieldType::SLIDER_TYPE;
                 tempField._readOnly = readOnly;
-                tempField._data = &shininess;
+                tempField._data = &parallax;
                 tempField._range = { 0.0f, 1.0f };
-                tempField._dataSetter = [material](const void* shininess) {
-                    material->getColourData().shininess(*static_cast<const F32*>(shininess));
+                tempField._dataSetter = [material](const void* parallax) {
+                    material->parallaxFactor(*static_cast<const F32*>(parallax));
                 };
-                ret = processField(tempField) || ret;
+                ImGui::PushItemWidth(175);
+                ret = processBasicField(tempField) || ret;
+                ImGui::PopItemWidth();
+                ImGui::SameLine();
+                ImGui::Text(tempField._name.c_str());
+                ApplyAllButton(id, material, tempField._readOnly, [&material]() {
+                    if (material->baseMaterial() != nullptr) {
+                        material->baseMaterial()->parallaxFactor(material->parallaxFactor(), true);
+                    }
+                });
+                ImGui::Separator();
             }
-
-            bool doubleSided = material->isDoubleSided();
+            bool doubleSided = material->doubleSided();
             bool receivesShadows = material->receivesShadows();
+            bool refractive = material->refractive();
 
-            if (ImGui::Checkbox("DoubleSided", &doubleSided) && !readOnly) {
+            if (ImGui::Checkbox("[Double Sided]", &doubleSided) && !readOnly) {
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !doubleSided, doubleSided, "DoubleSided", [material](const bool& oldVal) {
-                    material->setDoubleSided(oldVal);
+                    material->doubleSided(oldVal);
                 });
-                material->setDoubleSided(doubleSided);
+                material->doubleSided(doubleSided);
                 ret = true;
             }
-
-            if (ImGui::Checkbox("ReceivesShadows", &receivesShadows) && !readOnly) {
+            ApplyAllButton(id, material, false, [&material]() {
+                if (material->baseMaterial() != nullptr) {
+                    material->baseMaterial()->doubleSided(material->doubleSided(), true);
+                }
+            });
+            if (ImGui::Checkbox("[Receives Shadows]", &receivesShadows) && !readOnly) {
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !receivesShadows, receivesShadows, "ReceivesShadows", [material](const bool& oldVal) {
-                    material->setReceivesShadows(oldVal);
+                    material->receivesShadows(oldVal);
                 });
-                material->setReceivesShadows(receivesShadows);
+                material->receivesShadows(receivesShadows);
                 ret = true;
             }
+            ApplyAllButton(id, material, false, [&material]() {
+                if (material->baseMaterial() != nullptr) {
+                    material->baseMaterial()->receivesShadows(material->receivesShadows(), true);
+                }
+            });
+            if (ImGui::Checkbox("[Refractive]", &refractive) && !readOnly) {
+                RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !refractive, refractive, "Refractive", [material](const bool& oldVal) {
+                    material->refractive(oldVal);
+                });
+                material->refractive(refractive);
+                ret = true;
+            }
+            ApplyAllButton(id, material, false, [&material]() {
+                if (material->baseMaterial() != nullptr) {
+                    material->baseMaterial()->refractive(material->refractive(), true);
+                }
+            });
         }
+        ImGui::Separator();
 
         if (readOnly) {
             PopReadOnly();
@@ -1723,7 +1884,6 @@ namespace Divide {
                 }break;
             }
 
-            ImGui::Spacing();
             ImGui::PopID();
 
             return ret;

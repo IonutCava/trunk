@@ -240,21 +240,21 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
     const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
-    terrainMaterial->setShadingMode(ShadingMode::COOK_TORRANCE);
+    terrainMaterial->shadingMode(ShadingMode::COOK_TORRANCE);
 
     if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
-        terrainMaterial->setBumpMethod(BumpMethod::PARALLAX);
+        terrainMaterial->bumpMethod(BumpMethod::PARALLAX);
     } else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
-        terrainMaterial->setBumpMethod(BumpMethod::PARALLAX_OCCLUSION);
+        terrainMaterial->bumpMethod(BumpMethod::PARALLAX_OCCLUSION);
     } else {
-        terrainMaterial->setBumpMethod(BumpMethod::NONE);
+        terrainMaterial->bumpMethod(BumpMethod::NONE);
     }
 
-    terrainMaterial->getColourData().baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
-    terrainMaterial->getColourData().metallic(0.2f);
-    terrainMaterial->getColourData().roughness(0.8f);
-    terrainMaterial->setParallaxFactor(terrainDescriptor->parallaxHeightScale());
-    terrainMaterial->disableTranslucency();
+    terrainMaterial->baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
+    terrainMaterial->metallic(0.0f);
+    terrainMaterial->roughness(0.8f);
+    terrainMaterial->parallaxFactor(terrainDescriptor->parallaxHeightScale());
+    terrainMaterial->toggleTransparency(false);
 
     U8 totalLayerCount = 0;
     stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
@@ -318,10 +318,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setTexture(TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
     terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
 
-    terrainMaterial->setTextureUseForDepth(TextureUsage::TERRAIN_SPLAT, true);
-    terrainMaterial->setTextureUseForDepth(TextureUsage::TERRAIN_NORMAL_TILE, true);
-    terrainMaterial->setTextureUseForDepth(TextureUsage::TERRAIN_HELPER_TEXTURES, true);
-    terrainMaterial->setTextureUseForDepth(TextureUsage::HEIGHTMAP, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_SPLAT, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_NORMAL_TILE, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_HELPER_TEXTURES, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -406,7 +406,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                 shaderModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
             }
 
-            shaderModule._defines.emplace_back("SKIP_TEXTURES", true);
+            shaderModule._defines.emplace_back("SKIP_TEX0", true);
             shaderModule._defines.emplace_back("USE_SHADING_COOK_TORRANCE", true);
             shaderModule._defines.emplace_back(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true);
             shaderModule._defines.emplace_back(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true);

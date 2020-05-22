@@ -41,7 +41,7 @@ void main(void){
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if !defined(SHADOW_PASS)
-    computeLightVectors(mat3(dvd_ViewMatrix));
+    computeLightVectors(mat3(1.0f), mat3(dvd_ViewMatrix));
     setClipPlanes(VAR._vertexW);
 #endif
 

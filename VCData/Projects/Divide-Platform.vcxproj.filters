@@ -858,9 +858,6 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\pbr.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
-    <None Include="../../assets/shaders\GLSL\fragmentAtoms\phong_lighting.frag">
-      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
-    </None>
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\prePass.frag">
       <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
@@ -902,6 +899,9 @@
     </None>
     <None Include="..\..\Source Code\Platform\Threading\Headers\ThreadPool.inl">
       <Filter>Threading\Headers</Filter>
+    </None>
+    <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\IBL.frag">
+      <Filter>Video\ShaderSource\GLSL\fragmentAtoms</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

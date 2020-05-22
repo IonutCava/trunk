@@ -35,7 +35,7 @@ void main(void)
 void main() {
 
     computeData();
-    computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
+    computeLightVectors(dvd_NormalMatrixW(DATA_IDX), dvd_NormalMatrixWV(DATA_IDX));
 
     gl_Position = VAR._vertexWVP;
 }

@@ -9,7 +9,7 @@ void main(void)
 {
     computeData();
     
-    computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
+    computeLightVectors(dvd_NormalMatrixW(DATA_IDX), dvd_NormalMatrixWV(DATA_IDX));
 
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
@@ -25,6 +25,7 @@ layout(location = 0) in flat int _underwater;
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 
+#define CUSTOM_IBL
 #define USE_SHADING_BLINN_PHONG
 #define USE_DEFERRED_NORMALS
 #define USE_PLANAR_REFLECTION
@@ -32,7 +33,7 @@ uniform vec2 _noiseFactor;
 
 #if defined(PRE_PASS)
 #include "prePass.frag"
-#else
+#else // PRE_PASS
 #include "BRDF.frag"
 #include "output.frag"
 
@@ -41,7 +42,14 @@ const float Eta = 0.15f; //water
 float Fresnel(in vec3 viewDir, in vec3 normal) {
     return Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
 }
-#endif
+
+vec3 _private_reflect = vec3(0.f);
+
+vec3 ImageBasedLighting(in vec3 colour, in float metallic, in float roughness, in int textureSize) {
+    // This will actually return the fresnel'ed mixed between reflection and refraction as that's more useful for debugging
+    return _private_reflect;
+}
+#endif // PRE_PASS
 
 void main()
 {
@@ -82,15 +90,12 @@ void main()
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
 
-    vec4 texColour = mix(mix(refractionColour, texture(texReflectPlanar, uvFinalRefract), saturate(Fresnel(incident, VAR._normalWV))),
-                         refractionColour,
-                         _underwater);
-
-
-    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
     
-    //writeOutput(vec4(texture(texReflectPlanar, uvFinalReflect).rgb, 1.0f));
-    //writeOutput(vec4(VAR._normalWV, 1.0f));
-    //writeOutput(texColour);
+    vec4 texColour = mix(mix(refractionColour, texture(texReflectPlanar, uvFinalRefract), saturate(Fresnel(incident, VAR._normalWV))),
+                             refractionColour,
+                             _underwater);
+
+    _private_reflect = texColour.rgb;
+    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
 #endif
 }

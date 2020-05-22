@@ -3,13 +3,15 @@
 // Following BRDF methods are based upon research Frostbite EA
 //[Lagrade et al. 2014, "Moving Frostbite to Physically Based Rendering"]
 
-//Schlick Fresnel
-//specular  = the rgb specular color value of the pixel
-//VdotH     = the dot product of the camera view direction and the half vector 
-vec3 SchlickFresnel(in vec3 f0, float VdotH)
-{
-    return mix(f0, vec3(1.0f), pow(1.01f - VdotH, 5.0f));
-}
+#ifndef M_EPSILON
+#define M_EPSILON 0.0000001
+#endif //M_EPSILON
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif //M_PI
+
+#include "IBL.frag"
 
 //Schlick Gaussian Fresnel
 //specular  = the rgb specular color value of the pixel
@@ -109,72 +111,90 @@ vec3 BurleyDiffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL,
     return diffuseColor * lightScatter * viewScatter * energyFactor;
 }
 
+//Get Fresnel
+//specular  = the rgb specular color value of the pixel
+//VdotH     = the dot product of the camera view direction and the half vector 
+vec3 Fresnel(vec3 f0, float VdotH) {
+    //Schlick Fresnel
+    return mix(f0, vec3(1.0f), pow(1.01f - VdotH, 5.0f));
+}
 
 // Get Distribution
 // NdotH        = the dot product of the normal and the half vector
 // roughness    = the roughness of the pixel
-float Distribution(float NdotH, float roughness)
-{
-    return BlinnPhongDistribution(NdotH, roughness);
-    //return GGXDistribution(NdotH, roughness);
-    //return BeckmannDistribution(NdotH, roughness);
-}
-
-//Get Fresnel
-//specular  = the rgb specular color value of the pixel
-//VdotH     = the dot product of the camera view direction and the half vector 
-vec3 Fresnel(vec3 f0, float VdotH)
-{
-    return SchlickFresnel(f0, VdotH);
-}
+// BlinnPhongDistribution(...);
+// GGXDistribution(...);
+// BeckmannDistribution(...);
 
 // Get Visibility
 // NdotL        = the dot product of the normal and direction to the light
 // NdotV        = the dot product of the normal and the camera view direction
 // roughness    = the roughness of the pixel
-float Visibility(float NdotL, float NdotV, float roughness)
-{
-    //return SmithGGXSchlickVisibility(NdotL, NdotV, roughness);
-    return SchlickVisibility(NdotL, NdotV, roughness);
-}
+// SmithGGXSchlickVisibility(...);
+// SchlickVisibility(...);
 
-//Get Diffuse
+// Get Diffuse
 // diffuseColor = the rgb color value of the pixel
 // roughness    = the roughness of the pixel
 // NdotV        = the normal dot with the camera view direction
 // NdotL        = the normal dot with the light direction
 // VdotH        = the camera view direction dot with the half vector
-vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float VdotH)
-{
-    //return LambertianDiffuse(diffuseColor, NdotL);
-    return BurleyDiffuse(diffuseColor, roughness, NdotV, NdotL, VdotH);
-}
+
+// BurleyDiffuse(...) => PBR
+// LambertianDiffuse(...) => diffuse * NdotL
 
 vec4 PBR(in vec3 lightDirectionWV,
          in vec4 lightColourAndAtt,
-         in vec4 metallicRoughness, //r - metallic, g - roughness, b - rim lighting
+         in vec3 occlusionMetallicRoughness,
          in vec4 albedoAndShadow,
          in vec3 normalWV,
          in float ndl)
 {
-    float metallic = metallicRoughness.r;
-    float roughness = metallicRoughness.g;
-    vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, metallic);
+    const float metallic = occlusionMetallicRoughness.g;
+    const float roughness = occlusionMetallicRoughness.b;
+    const vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, metallic);
+    
+    const vec3 Hn = normalize(VAR._viewDirectionWV + lightDirectionWV);
+    const float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0);
+    const float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
+    const float ndv = clamp((dot(normalWV, VAR._viewDirectionWV)), M_EPSILON, 1.0);
 
-    mat3 tnrm = transpose(dvd_NormalMatrixWV(DATA_IDX));
-    //vec3 envdiff = textureCubeLod(texEnvironmentCube, vec4(tnrm * N, 0), 10).xyz;
+    const vec3 diffuseFactor = BurleyDiffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
 
-    // direction is NOT normalized
-    vec3 Hn = normalize(VAR._viewDirectionWV + lightDirectionWV);
-    float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0);
-    float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
-    float ndv = clamp((dot(normalWV, VAR._viewDirectionWV)), M_EPSILON, 1.0);
-    vec3 diffuseFactor = Diffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
+    const vec3 fresnelTerm = Fresnel(specular, vdh);
 
-    vec3 fresnelTerm = Fresnel(specular, vdh);
-    float distTerm = Distribution(ndh, roughness);
-    float visTerm = Visibility(ndl, ndv, roughness);
-    vec3 specularFactor = ((fresnelTerm * distTerm * visTerm) / M_PI) *albedoAndShadow.a;
+    const float distTerm = GGXDistribution(ndh, roughness);
+    const float visTerm = SchlickVisibility(ndl, ndv, roughness);
+
+    const vec3 specularFactor = ((fresnelTerm * distTerm * visTerm) / M_PI) *albedoAndShadow.a;
+
+    return vec4((lightColourAndAtt.rgb * (diffuseFactor + specularFactor) * lightColourAndAtt.a) / M_PI, length(specularFactor));
+}
+
+
+vec4 Phong(in vec3 lightDirectionWV,
+           in vec4 lightColourAndAtt,
+           in vec3 occlusionMetallicRoughness,
+           in vec4 albedoAndShadow,
+           in vec3 normalWV,
+           in float ndl)
+{
+    const float metallic = occlusionMetallicRoughness.g;
+    const float roughness = occlusionMetallicRoughness.b;
+    const vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, metallic);
+
+    const vec3 Hn = normalize(VAR._viewDirectionWV + lightDirectionWV);
+    const float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0);
+    const float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0);
+    const float ndv = clamp((dot(normalWV, VAR._viewDirectionWV)), M_EPSILON, 1.0);
+
+    const vec3 diffuseFactor = LambertianDiffuse(albedoAndShadow.rgb, ndl) * albedoAndShadow.a;
+
+    const vec3 fresnelTerm = Fresnel(specular, vdh);
+    const float distTerm = BlinnPhongDistribution(ndh, roughness);
+    const float visTerm = SchlickVisibility(ndl, ndv, roughness);
+
+    const vec3 specularFactor = ((fresnelTerm * distTerm * visTerm) / M_PI) * albedoAndShadow.a;
 
     return vec4((lightColourAndAtt.rgb * (diffuseFactor + specularFactor) * lightColourAndAtt.a) / M_PI, length(specularFactor));
 }

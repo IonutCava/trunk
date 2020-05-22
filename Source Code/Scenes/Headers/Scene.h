@@ -455,6 +455,7 @@ class SceneRenderPass {
     }
 
     friend class Divide::RenderPass;
+    friend class Divide::RenderPassManager;
 };
 
 class SceneLoadSave {

@@ -53,6 +53,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     mat4  dvd_ProjectionMatrix;
     mat4  dvd_InverseProjectionMatrix;
     mat4  dvd_ViewMatrix;
+    mat4  dvd_InverseViewMatrix;
     mat4  dvd_ViewProjectionMatrix;
     mat4  dvd_PreviousViewProjectionMatrix;
     ///xyz - position, w - aspect ratio
@@ -66,13 +67,13 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 };
 
 #define DEBUG_ALBEDO 0
-#define DEBUG_SPECULAR 1
-#define DEBUG_EMISSIVE 2
-#define DEBUG_ROUGHNESS 3
-#define DEBUG_METALLIC 4
-#define DEBUG_NORMALS 5
-#define DEBUG_SHADOW_MAPS 6
-#define DEBUG_LIGHT_TILES 7
+#define DEBUG_EMISSIVE 1
+#define DEBUG_ROUGHNESS 2
+#define DEBUG_METALLIC 3
+#define DEBUG_NORMALS 4
+#define DEBUG_SHADOW_MAPS 5
+#define DEBUG_LIGHT_TILES 6
+#define DEBUG_REFLECTIONS 7
 #define DEBUG_NONE 8
 
 #define SHADOW_PASS_NORMAL 0

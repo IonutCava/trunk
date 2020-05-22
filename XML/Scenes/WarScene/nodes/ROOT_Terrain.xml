@@ -27,13 +27,14 @@
         <shadingMode>COOK_TORRANCE</shadingMode>
         <colour r="0.5" g="0.5" b="0.5" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <metallic>0.200000003</metallic>
-        <reflectivity>0</reflectivity>
+        <metallic>0</metallic>
         <roughness>0.800000012</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>PARALLAX</bumpMethod>
-        <parallaxFactor>0.00999999978</parallaxFactor>
+        <parallaxFactor>0.300000012</parallaxFactor>
+        <transparencyEnabled>false</transparencyEnabled>
+        <isRefractive>false</isRefractive>
         <SHADOW>
             <PRE_PASS>
                 <0>
@@ -322,14 +323,14 @@
                     <hash>11123079089783220254</hash>
                 </Sampler>
             </OPACITY>
-            <SPECULAR>
+            <OCCLUSION_METALLIC_ROUGHNESS>
                 <name>terrain_water_caustics.jpg,sandfloor009a.jpg,terrain_detail_NM.png,bruit_gaussien_2.jpg</name>
                 <path>assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/</path>
                 <flipped>true</flipped>
                 <Sampler>
                     <hash>11123079089783220254</hash>
                 </Sampler>
-            </SPECULAR>
+            </OCCLUSION_METALLIC_ROUGHNESS>
         </texture>
         <SamplerDescriptors>
             <10222214137048750614>

@@ -381,9 +381,11 @@ void main()
     _out._viewDirectionWV = normalize(-_out._vertexWV.xyz);
 
 #if !defined(SHADOW_PASS)
+    const mat3 normalMatrixW = dvd_NormalMatrixW(DATA_IDX);
     const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
 
     const vec3 N = getNormal(pos.y, heightOffsets);
+    _out._normalW = normalize(normalMatrixW * N);
     _out._normalWV = normalize(normalMatrixWV * N);
 
 #if defined(PRE_PASS)
@@ -614,8 +616,8 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 
 
 #if !defined(PRE_PASS)
-vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
-    return vec2(0.2f, 0.8f);
+vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+    return vec3(0.0f, 0.0f, 0.8f);
 }
 #endif
 
@@ -676,8 +678,8 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 #if !defined(PRE_PASS)
 float _private_roughness = 0.0f;
 
-vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
-    return vec2(0.2f, _private_roughness);
+vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+    return vec3(0.0f, 0.0f, _private_roughness);
 }
 #endif
 

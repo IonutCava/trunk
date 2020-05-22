@@ -370,7 +370,7 @@ bool WarScene::load(const Str128& name) {
 
     // Make the center cylinder reflective
     const Material_ptr& matInstance = cylinder[0]->getChild(0).get<RenderingComponent>()->getMaterialInstance();
-    matInstance->getColourData().shininess(200);
+    matInstance->shininess(200);
     */
     stringImpl currentName;
 #if 0

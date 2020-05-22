@@ -19,12 +19,14 @@
         <shadingMode>BLINN_PHONG</shadingMode>
         <colour r="0.639999986" g="0.639999986" b="0.639999986" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <specular r="0.5" g="0.5" b="0.5"/>
-        <shininess>96.0784302</shininess>
+        <metallic>0</metallic>
+        <roughness>0.5</roughness>
         <doubleSided>true</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NORMAL</bumpMethod>
         <parallaxFactor>0.00999999978</parallaxFactor>
+        <transparencyEnabled>true</transparencyEnabled>
+        <isRefractive>true</isRefractive>
         <SHADOW>
             <PRE_PASS>
                 <0>

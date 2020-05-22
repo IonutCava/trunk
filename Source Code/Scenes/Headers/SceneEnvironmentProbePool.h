@@ -42,20 +42,24 @@ class SceneRenderState;
 class SceneEnvironmentProbePool : public SceneComponent {
 public:
     SceneEnvironmentProbePool(Scene& parentScene);
-    ~SceneEnvironmentProbePool();
+    ~SceneEnvironmentProbePool() = default;
 
-    const EnvironmentProbeList& getNearestSorted(const vec3<F32>& position);
+    const EnvironmentProbeList& sortAndGetLocked(const vec3<F32>& position);
+    const EnvironmentProbeList& getLocked();
 
-    EnvironmentProbe_wptr addInfiniteProbe(const vec3<F32>& position);
-    EnvironmentProbe_wptr addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
-    void removeProbe(EnvironmentProbe_wptr probe);
+    EnvironmentProbe* addInfiniteProbe(const vec3<F32>& position);
+    EnvironmentProbe* addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
+    void removeProbe(EnvironmentProbe*& probe);
 
     void debugDraw(GFX::CommandBuffer& bufferInOut);
 
+    void lockProbeList();
+    void unlockProbeList();
+
 protected:
-    bool _isSorted;
+
+    SharedMutex _probeLock;
     EnvironmentProbeList _envProbes;
-    EnvironmentProbeList _sortedProbes;
 };
 
 }; //namespace Divide

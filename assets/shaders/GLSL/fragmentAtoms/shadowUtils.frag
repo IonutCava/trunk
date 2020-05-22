@@ -1,9 +1,10 @@
 #ifndef _SHADOW_UTILS_FRAG_
 #define _SHADOW_UTILS_FRAG_
 
+//dvd_shadowLightDetails:  x = light type, y =  arrayOffset, z - bias, w - strength
+
 struct CSMShadowProperties
 {
-    // x = light type, y =  arrayOffset, z - bias, w - strength
     vec4  dvd_shadowLightDetails;
     vec4  dvd_shadowLightPosition[MAX_CSM_SPLITS_PER_LIGHT];
     mat4  dvd_shadowLightVP[MAX_CSM_SPLITS_PER_LIGHT];
@@ -11,15 +12,14 @@ struct CSMShadowProperties
 
 struct PointShadowProperties
 {
-    // x = light type, y =  arrayOffset, z - bias, w - strength
     vec4  dvd_shadowLightDetails;
     vec4  dvd_shadowLightPosition;
 };
 
 struct SpotShadowProperties
 {
-    // x = light type, y =  arrayOffset, z - bias, w - strength
     vec4  dvd_shadowLightDetails;
+    vec4  dvd_shadowLightPosition;
     mat4  dvd_shadowLightVP;
 };
 
@@ -31,15 +31,14 @@ layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent readonly buffer dvd_Shado
 };
 
 // find the appropriate depth map to look up in based on the depth of this fragment
-int getCSMSlice(in CSMShadowProperties props) {
+int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
 
-    int Split = 0;
     const float fragDepth = (VAR._vertexWV.z / VAR._vertexWV.w);
-    // Figure out which cascade to sample from
 
-    for (; Split < MAX_CSM_SPLITS_PER_LIGHT; Split++) {
-        const float dist = -props.dvd_shadowLightPosition[Split].w;
-        if (fragDepth > dist) {
+    // Figure out which cascade to sample from
+    int Split = 0;
+    for (; Split < MAX_CSM_SPLITS_PER_LIGHT; ++Split) {
+        if (fragDepth > -props[Split].w) {
             break;
         }
     }

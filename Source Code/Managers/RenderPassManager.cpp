@@ -43,6 +43,7 @@ namespace Divide {
           _context(context),
           _OITCompositionPipeline(nullptr),
           _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
+          _environmentProbeTimer(&Time::ADD_TIMER("Environment Probes Timer")),
           _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
           _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
           _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer")),
@@ -60,6 +61,9 @@ namespace Divide {
 
         if (_postFXCommandBuffer != nullptr) {
             GFX::deallocateCommandBuffer(_postFXCommandBuffer);
+        }  
+        if (_environmentProbeCommandBuffer != nullptr) {
+            GFX::deallocateCommandBuffer(_environmentProbeCommandBuffer);
         }
         if (_postRenderBuffer != nullptr) {
             GFX::deallocateCommandBuffer(_postRenderBuffer);
@@ -92,6 +96,7 @@ namespace Divide {
 
         _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
         _postFXCommandBuffer = GFX::allocateCommandBuffer();
+        _environmentProbeCommandBuffer = GFX::allocateCommandBuffer();
         _postRenderBuffer = GFX::allocateCommandBuffer();
     }
 
@@ -100,6 +105,7 @@ namespace Divide {
 
         if (params._parentTimer != nullptr && !params._parentTimer->hasChildTimer(*_renderPassTimer)) {
             params._parentTimer->addChildTimer(*_renderPassTimer);
+            params._parentTimer->addChildTimer(*_environmentProbeTimer);
             params._parentTimer->addChildTimer(*_postFxRenderTimer);
             params._parentTimer->addChildTimer(*_flushCommandBufferTimer);
         }
@@ -112,6 +118,7 @@ namespace Divide {
         gfx.setPreviousViewProjection(playerState.previousViewMatrix(), playerState.previousProjectionMatrix());
 
         Attorney::SceneManagerRenderPass::preRenderAllPasses(*parent().sceneManager(), cam);
+        SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(parent().sceneManager()->getActiveScene());
 
         TaskPool& pool = context.taskPool(TaskPoolType::HIGH_PRIORITY);
         RenderTarget& resolvedScreenTarget = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
@@ -119,6 +126,7 @@ namespace Divide {
         const U8 renderPassCount = to_U8(_renderPasses.size());
 
         Task* postFXTask = nullptr;
+        Task* environmentProbeTask = nullptr;
 
         {
             OPTICK_EVENT("RenderPassManager::BuildCommandBuffers");
@@ -142,6 +150,26 @@ namespace Divide {
                                                  },
                                                  false);
                     Start(*_renderTasks[i], TaskPriority::DONT_CARE);
+                }
+                {// Enviroment probes might take a while
+                    GFX::CommandBuffer* buf = _environmentProbeCommandBuffer;
+                    Time::ProfileTimer& timer = *_environmentProbeTimer;
+                    environmentProbeTask = CreateTask(pool,
+                                            nullptr,
+                                            [buf, envProbPool, &cam, &timer](const Task & parentTask) {
+                                                static bool update = false;
+                                                OPTICK_EVENT("Environment Probes: BuildCommandBuffer");
+                                                Time::ScopedTimer time(timer);
+                                                envProbPool->lockProbeList();
+                                                const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(cam.getEye());
+                                                for (const auto& probe : probes) {
+                                                    probe->refresh(*buf);
+                                                }
+                                                envProbPool->unlockProbeList();
+                                                buf->batch();
+                                            },
+                                            false);
+                    Start(*environmentProbeTask, TaskPriority::DONT_CARE);
                 }
                 { //PostFX should be pretty fast
                     GFX::CommandBuffer* buf = _postFXCommandBuffer;
@@ -255,6 +283,8 @@ namespace Divide {
         // Flush the postFX stack
         Wait(*postFXTask);
         _context.flushCommandBuffer(*_postFXCommandBuffer, false);
+        Wait(*environmentProbeTask);
+        _context.flushCommandBuffer(*_environmentProbeCommandBuffer, false);
 
         for (U8 i = 0; i < renderPassCount; ++i) {
             _renderPasses[i]->postRender();
@@ -373,7 +403,7 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp, cons
     const F32 sphereRadius = bounds->getBoundingSphere().getRadius();
 
     dataOut._normalMatrixW.setRow(3, vec4<F32>(aabb.getCenter(), sphereRadius));
-    // Get the colour matrix (diffuse, specular, etc.)
+    // Get the colour matrix (base colour, metallic, etc)
     rComp.getMaterialColourMatrix(dataOut._colourMatrix);
 
     RenderingComponent::NodeRenderingProperties properties = {};
@@ -954,6 +984,17 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     // Cull the scene and grab the visible nodes
     I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
+
+    SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(parent().sceneManager()->getActiveScene());
+    envProbPool->lockProbeList();
+    const auto& probes = envProbPool->getLocked();
+    for (size_t i = 0; i < visibleNodes.size(); ++i) {
+        const VisibleNode& node = visibleNodes.node(i);
+        RenderingComponent* const rComp = node._node->get<RenderingComponent>();
+        assert(rComp != nullptr);
+        Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
+    }
+    envProbPool->unlockProbeList();
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;

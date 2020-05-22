@@ -3,8 +3,8 @@
 <model>QUAD_3D</model>
 <TRANSFORM>
     <Transform>
-        <position x="100" y="14.5" z="-50"/>
-        <orientation x="-89.8057175" y="4.83016134e-15" z="2.16757055e-18"/>
+        <position x="100" y="14.75" z="-50"/>
+        <orientation x="-89.8056564" y="4.81651013e-15" z="2.16870854e-18"/>
         <scale x="102.562851" y="102.06208" z="102.613083"/>
     </Transform>
 </TRANSFORM>
@@ -16,14 +16,16 @@
     <Material>
         <version>1</version>
         <shadingMode>BLINN_PHONG</shadingMode>
-        <colour r="0" g="0.100000001" b="0" a="1"/>
-        <emissive r="0.100000001" g="0.200000003" b="0.100000001"/>
-        <specular r="0.699999988" g="0.699999988" b="0.699999988"/>
-        <shininess>0.330000013</shininess>
+        <colour r="0.231965527" g="0.351648331" b="0.218331099" a="1"/>
+        <emissive r="0" g="0" b="0"/>
+        <metallic>0.0920000002</metallic>
+        <roughness>0.569000006</roughness>
         <doubleSided>true</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.00999999978</parallaxFactor>
+        <transparencyEnabled>true</transparencyEnabled>
+        <isRefractive>true</isRefractive>
         <SHADOW>
             <PRE_PASS>
                 <0>

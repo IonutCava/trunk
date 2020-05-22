@@ -95,7 +95,7 @@ void MenuBar::draw() {
         ImGui::EndMenuBar();
 
        for (vectorEASTL<Texture_ptr>::iterator it = std::begin(_previewTextures); it != std::end(_previewTextures); ) {
-            if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", (*it)->resourceName().c_str()).c_str(), *it, vec2<F32>(512, 512), true, false)) {
+            if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", (*it)->resourceName().c_str()).c_str(), (*it).get(), vec2<F32>(512, 512), true, false)) {
                 it = _previewTextures.erase(it);
             } else {
                 ++it;
@@ -479,6 +479,10 @@ void MenuBar::drawDebugMenu() {
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_TILES;
             if (ImGui::MenuItem("Debug Fwd+ Tiles", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_TILES : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS;
+            if (ImGui::MenuItem("Debug Reflections", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS : GFXDevice::MaterialDebugFlag::COUNT);
             }
             ImGui::EndMenu();
         }

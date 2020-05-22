@@ -170,6 +170,7 @@ bool GL_API::initGLSW(Configuration& config) {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
         { "vec4"       , "_vertexWVP"},
+        { "vec3"       , "_normalW"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
         { "flat uvec3" , "_drawParams"},
@@ -495,20 +496,14 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define TEXTURE_SPECULAR " +
-        Util::to_string(to_base(TextureUsage::SPECULAR)),
+        "#define TEXTURE_OCCLUSION_METALLIC_ROUGHNESS " +
+        Util::to_string(to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
         "#define TEXTURE_GLOSS " +
         Util::to_string(to_base(TextureUsage::GLOSS)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_ROUGHNESS " +
-        Util::to_string(to_base(TextureUsage::ROUGHNESS)),
         lineOffsets);
 
     appendToShaderHeader(

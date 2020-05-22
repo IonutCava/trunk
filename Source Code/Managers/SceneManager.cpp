@@ -653,7 +653,7 @@ void SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage st
     eastl::erase_if(allNodes,
                    [](SceneGraphNode* node) noexcept ->  bool {
                         const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
-                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->isReflective());
+                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->reflective());
                    });
 
     if (inView) {
@@ -678,7 +678,7 @@ void SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage st
     eastl::erase_if(allNodes,
                    [](SceneGraphNode* node) noexcept ->  bool {
                         const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
-                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->isRefractive());
+                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->refractive());
                    });
     if (inView) {
         NodeCullParams cullParams = {};

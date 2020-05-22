@@ -1329,6 +1329,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
     if (cameraSnapshot._viewMatrix != data._ViewMatrix) {
         data._ViewMatrix.set(cameraSnapshot._viewMatrix);
+        data._ViewMatrix.getInverse(data._InvViewMatrix);
         viewDirty = true;
     }
 

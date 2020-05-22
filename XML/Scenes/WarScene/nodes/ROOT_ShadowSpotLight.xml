@@ -2,9 +2,9 @@
 <static>true</static>
 <TRANSFORM>
     <Transform>
-        <position x="155.090408" y="17.2321358" z="-13.3278456"/>
-        <orientation x="-172.331436" y="-57.5080833" z="12.8757181"/>
-        <scale x="0.999992788" y="0.999994338" z="0.999990344"/>
+        <position x="139.611786" y="17.2321358" z="6.01869011"/>
+        <orientation x="17.1855354" y="11.3874493" z="172.981766"/>
+        <scale x="0.999991775" y="0.999994338" z="0.99998945"/>
     </Transform>
 </TRANSFORM>
 <BOUNDS>
@@ -15,7 +15,7 @@
 <SPOT_LIGHT>
     <Cutoff__Angle>25</Cutoff__Angle>
     <Outer__Cutoff__Angle>35</Outer__Cutoff__Angle>
-    <Direction x="0.531880677" y="-0.31644845"/>
+    <Direction x="-0.936546385" y="-0.316300511"/>
     <Show__direction__cone>false</Show__direction__cone>
     <Range>10</Range>
     <Colour r="0.99609375" g="0" b="0"/>

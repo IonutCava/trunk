@@ -51,6 +51,7 @@ class GFXShaderData {
           mat4<F32> _ProjectionMatrix;
           mat4<F32> _InvProjectionMatrix;
           mat4<F32> _ViewMatrix;
+          mat4<F32> _InvViewMatrix;
           mat4<F32> _ViewProjectionMatrix;
           mat4<F32> _PreviousViewProjectionMatrix;
           // xyz - position, w - aspect ratio

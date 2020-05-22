@@ -14,6 +14,7 @@ GFXShaderData::GPUData::GPUData() noexcept
     _ProjectionMatrix.identity();
     _InvProjectionMatrix.identity();
     _ViewMatrix.identity();
+    _InvViewMatrix.identity();
     _ViewProjectionMatrix.identity();
     _PreviousViewProjectionMatrix.identity();
     _cameraPosition.set(0.0f);

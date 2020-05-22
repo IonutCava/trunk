@@ -62,7 +62,6 @@ constexpr F32 Specular_Ice = 0.224f;
 constexpr F32 Specular_Water = 0.255f;
 constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
-constexpr F32 PHONG_REFLECTIVITY_THRESHOLD = 100.0f;
 
 namespace TypeUtil {
     const char* ShadingModeToString(ShadingMode shadingMode) noexcept;
@@ -82,42 +81,6 @@ class Material : public CachedResource {
    public:
     /// Since most variants come from different light sources, this seems like a good idea (famous last words ...)
     static const size_t g_maxVariantsPerPass = 3;
-
-    /// ShaderData stores information needed by the shader code to properly shade objects
-    struct ColourData {
-        ColourData() noexcept
-        {
-            baseColour(FColour4(VECTOR3_UNIT / 1.5f, 1.0f));
-            emissive(DefaultColours::BLACK.rgb());
-            specular(DefaultColours::BLACK.rgb());
-            shininess(0.0f);
-        }
-
-        inline void     baseColour(const FColour4& colour) noexcept { _data[0].set(colour); }
-        inline FColour4 baseColour() const                 noexcept { return _data[0]; }
-
-        inline void     emissive(const FColour3& colour)   noexcept { _data[2].rgb(colour); }
-        inline FColour3 emissive() const                   noexcept { return _data[2].rgb(); }
-
-        //Phong:
-        inline void     specular(const FColour3& emissive) noexcept { _data[1].rgb(emissive); }
-        inline FColour3 specular() const                   noexcept { return _data[1].rgb(); }
-
-        inline void shininess(F32 value)                noexcept { _data[1].a = value; }
-        inline F32  shininess() const                   noexcept { return _data[1].a; }
-
-        //Pbr:
-        inline void metallic(F32 value) noexcept { _data[1].r = CLAMPED_01(value); }
-        inline F32  metallic()    const noexcept { return _data[1].r; }
-
-        inline void reflectivity(F32 value) noexcept { _data[1].g = CLAMPED_01(value); } //specular
-        inline F32  reflectivity() const    noexcept { return _data[1].g; }  //specular
-
-        inline void roughness(F32 value) noexcept { _data[1].b = CLAMPED_01(value); }
-        inline F32  roughness() const    noexcept { return _data[1].b; }
-
-        vec4<F32> _data[3];
-    };
 
     struct ShaderData {
         Str64 _depthShaderVertSource = "baseVertexShaders";
@@ -147,69 +110,54 @@ class Material : public CachedResource {
     bool unload() override;
     /// Returns true if the material changed between update calls
     bool update(const U64 deltaTimeUS);
-
-    void setColourData(const ColourData& other);
-    void setHardwareSkinning(const bool state);
-    void setShadingMode(const ShadingMode& mode);
-
-    void setDoubleSided(const bool state);
-    void setReceivesShadows(const bool state);
-    void setReflective(const bool state);
-    void setRefractive(const bool state);
-    void setStatic(const bool state);
-
-    void setTextureUseForDepth(TextureUsage slot, bool state);
-
     bool setTexture(TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
-                    const TextureOperation& op = TextureOperation::NONE);
+                    const TextureOperation& op = TextureOperation::NONE,
+                    bool applyToInstances = false);
 
-    /// Set the desired bump mapping method.
-    void setBumpMethod(const BumpMethod& newBumpMethod);
+    void textureUseForDepth(TextureUsage slot, bool state, bool applyToInstances = false);
+    void hardwareSkinning(const bool state, bool applyToInstances = false);
+    void shadingMode(ShadingMode mode, bool applyToInstances = false);
+    void doubleSided(const bool state, bool applyToInstances = false);
+    void receivesShadows(const bool state, bool applyToInstances = false);
+    void refractive(const bool state, bool applyToInstances = false);
+    void isStatic(const bool state, bool applyToInstances = false);
+    void parallaxFactor(F32 factor, bool applyToInstances = false);
+    void bumpMethod(BumpMethod newBumpMethod, bool applyToInstances = false);
+    void toggleTransparency(const bool state, bool applyToInstances = false);
+    void baseColour(const FColour4& colour, bool applyToInstances = false);
+    void emissiveColour(const FColour3& colour, bool applyToInstances = false);
+    void metallic(F32 value, bool applyToInstances = false);
+    void roughness(F32 value, bool applyToInstances = false);
+
+    FColour4 getBaseColour(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    FColour3 getEmissive(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    F32 getMetallic(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
+    F32 getRoughness(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
 
     /// Add the specified shader to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
     /// e.g. a RenderPassType::COUNT will use the shader in the specified stage+variant combo but for all of the passes
     void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant);
-
     /// Add the specified renderStateBlockHash to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
     /// e.g. a RenderPassType::COUNT will use the block in the specified stage+variant combo but for all of the passes
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant);
 
-    void setParallaxFactor(F32 factor);
-
-    void disableTranslucency();
-
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
-
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
 
-    F32 getParallaxFactor() const;
-
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
+    Texture_wptr getTexture(TextureUsage textureUsage) const;
 
+    bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
     I64 computeAndGetProgramGUID(const RenderStagePass& renderStagePass);
 
-    Texture_wptr getTexture(TextureUsage textureUsage) const;
-
-    const TextureOperation& getTextureOperation() const;
-
-          ColourData&  getColourData();
-    const ColourData&  getColourData()  const;
-    const ShadingMode& getShadingMode() const;
-    const BumpMethod&  getBumpMethod()  const;
-
-    bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
-
     void rebuild();
     bool hasTransparency() const;
-    bool hasTranslucency() const;
 
     bool isPBRMaterial() const;
-    bool isDoubleSided() const;
-    bool receivesShadows() const;
-    bool isReflective() const;
-    bool isRefractive() const;
+    bool reflective() const;
+    bool refractive() const;
 
     bool canDraw(const RenderStagePass& renderStagePass);
 
@@ -227,7 +175,7 @@ class Material : public CachedResource {
 
     void addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix);
 
-    void updateTranslucency();
+    void updateTransparency();
 
     bool getTextureDataFast(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
     bool getTextureData(TextureUsage slot, TextureDataContainer<>& container);
@@ -256,30 +204,31 @@ class Material : public CachedResource {
 
     PROPERTY_RW(bool, ignoreXMLData, false);
     PROPERTY_RW(ShaderData, baseShaderData);
+    POINTER_R_IW(Material, baseMaterial, nullptr);
 
+   private:
+    PROPERTY_R(FColour4, baseColour, DefaultColours::WHITE);
+    PROPERTY_R(FColour3, emissive, DefaultColours::BLACK);
+    PROPERTY_R(F32, metallic, 0.0f);
+    PROPERTY_R(F32, roughness, 0.5f);
+    /// parallax/relief factor (higher value > more pronounced effect)
+    PROPERTY_R(F32, parallaxFactor, 1.0f);
+    PROPERTY_R(ShadingMode, shadingMode, ShadingMode::COUNT);
+    PROPERTY_R(TranslucencySource, translucencySource, TranslucencySource::COUNT);
+    /// use the below map to define texture operation
+    PROPERTY_R(TextureOperation, textureOperation, TextureOperation::NONE);
+    PROPERTY_R(BumpMethod, bumpMethod, BumpMethod::NONE);
+    PROPERTY_R(bool, doubleSided, false);
+    PROPERTY_R(bool, transparencyEnabled, true);
+    PROPERTY_R(bool, receivesShadows, true);
+    PROPERTY_R(bool, isStatic, false);
+    /// Use shaders that have bone transforms implemented
+    PROPERTY_R(bool, hardwareSkinning, false);
+
+    bool _isRefractive = false;
    private:
     GFXDevice& _context;
     ResourceCache* _parentCache = nullptr;
-
-    struct Properties {
-        ColourData _colourData;
-        /// parallax/relief factor (higher value > more pronounced effect)
-        F32  _parallaxFactor = 1.0f;
-        ShadingMode _shadingMode = ShadingMode::COUNT;
-        TranslucencySource _translucencySource = TranslucencySource::COUNT;
-        /// use the below map to define texture operation
-        TextureOperation _operation = TextureOperation::NONE;
-        BumpMethod _bumpMethod = BumpMethod::NONE;
-        bool _doubleSided = false;
-        bool _translucent = false;
-        bool _translucencyDisabled = false;
-        bool _receivesShadows = true;
-        bool _isReflective = false;
-        bool _isRefractive = false;
-        bool _isStatic = false;
-        /// Use shaders that have bone transforms implemented
-        bool _hardwareSkinning = false;
-    } _properties;
 
     bool _needsNewShader = true;
 
@@ -300,6 +249,8 @@ class Material : public CachedResource {
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;
+
+    vectorEASTL<Material*> _instances;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);

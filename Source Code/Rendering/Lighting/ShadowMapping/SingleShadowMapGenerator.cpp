@@ -151,16 +151,18 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     ACKNOWLEDGE_UNUSED(playerCamera);
     SpotLightComponent& spotLight = static_cast<SpotLightComponent&>(light);
 
-    const vec3<F32> lightPos = light.getSGN().get<TransformComponent>()->getPosition();
+    const vec3<F32> lightPos = light.positionCache();
+    const F32 farPlane = light.range() * 1.2f;
 
     auto& shadowCameras = ShadowMap::shadowCameras(ShadowType::SINGLE);
-    const mat4<F32> viewMatrix = shadowCameras[0]->lookAt(lightPos, light.getSGN().get<TransformComponent>()->getOrientation() * WORLD_Z_NEG_AXIS);
-    const mat4<F32> projectionMatrix = shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(0.01f, light.range() * 1.25f));
+    const mat4<F32> viewMatrix = shadowCameras[0]->lookAt(lightPos, lightPos + light.directionCache() * farPlane);
+    const mat4<F32> projectionMatrix = shadowCameras[0]->setProjection(1.0f, 90.0f, vec2<F32>(0.01f, farPlane));
     shadowCameras[0]->updateLookAt();
 
     mat4<F32>& lightVP = light.getShadowVPMatrix(0);
     mat4<F32>::Multiply(viewMatrix, projectionMatrix, lightVP);
     light.setShadowLightPos(0, lightPos);
+    light.setShadowFloatValue(0, shadowCameras[0]->getZPlanes().y);
     light.setShadowVPMatrix(0, mat4<F32>::Multiply(lightVP, MAT4_BIAS));
 
     RenderPassManager::PassParams params = {};

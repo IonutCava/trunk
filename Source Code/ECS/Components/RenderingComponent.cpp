@@ -14,6 +14,8 @@
 
 #include "Editor/Headers/Editor.h"
 
+#include "Managers/Headers/SceneManager.h"
+
 #include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -57,7 +59,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     _renderRange.min = -g_renderRangeLimit;
     _renderRange.max =  g_renderRangeLimit;
 
-    setMaterialTpl(parentSGN.getNode().getMaterialTpl());
+    instantiateMaterial(parentSGN.getNode().getMaterialTpl());
 
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
@@ -144,8 +146,12 @@ RenderingComponent::~RenderingComponent()
     }
 }
 
-void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
-    _materialInstance = material;
+void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
+    if (material == nullptr) {
+        return;
+    }
+
+    _materialInstance = material->clone(_parentSGN.name() + "_i");
     if (_materialInstance != nullptr) {
         assert(!_materialInstance->resourceName().empty());
 
@@ -185,22 +191,7 @@ void RenderingComponent::setMaterialTpl(const Material_ptr& material) {
         lockLodLevelField._readOnly = false;
         _editorComponent.registerField(std::move(lockLodLevelField));
 
-        _materialInstanceCache = _materialInstance.get();
-        if (_materialInstanceCache != nullptr) {
-            _materialInstanceCache->setStatic(_parentSGN.usageContext() == NodeUsageContext::NODE_STATIC);
-        }
-    }
-}
-
-void RenderingComponent::useUniqueMaterialInstance() {
-    if (_materialInstance == nullptr) {
-        return;
-    }
-
-    _materialInstance = _materialInstance->clone("_instance_" + _parentSGN.name());
-    _materialInstanceCache = _materialInstance.get();
-    if (_materialInstanceCache != nullptr) {
-        _materialInstanceCache->setStatic(_parentSGN.usageContext() == NodeUsageContext::NODE_STATIC);
+        _materialInstance->isStatic(_parentSGN.usageContext() == NodeUsageContext::NODE_STATIC);
     }
 }
 
@@ -218,10 +209,10 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
 
     // The following commands are needed for material rendering
     // In the absence of a material, use the SceneNode buildDrawCommands to add all of the needed commands
-    if (_materialInstanceCache != nullptr) {
+    if (_materialInstance != nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
-        pipelineDescriptor._stateHash = _materialInstanceCache->getRenderStateBlock(stagePass);
-        pipelineDescriptor._shaderProgramHandle = _materialInstanceCache->getProgramGUID(stagePass);
+        pipelineDescriptor._stateHash = _materialInstance->getRenderStateBlock(stagePass);
+        pipelineDescriptor._shaderProgramHandle = _materialInstance->getProgramGUID(stagePass);
 
         pkg.add(GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
@@ -234,7 +225,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
-    if (_materialInstanceCache != nullptr && _materialInstanceCache->update(deltaTimeUS)) {
+    if (_materialInstance != nullptr && _materialInstance->update(deltaTimeUS)) {
         onMaterialChanged();
     }
 
@@ -269,7 +260,7 @@ bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD,
 
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
         // Can we render without a material? Maybe. IDK.
-        if (_materialInstanceCache == nullptr || _materialInstanceCache->canDraw(renderStagePass)) {
+        if (_materialInstance == nullptr || _materialInstance->canDraw(renderStagePass)) {
             return renderOptionEnabled(RenderOptions::IS_VISIBLE);
         }
     }
@@ -278,14 +269,14 @@ bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD,
 }
 
 void RenderingComponent::onParentUsageChanged(NodeUsageContext context) {
-    if (_materialInstanceCache != nullptr) {
-        _materialInstanceCache->setStatic(context == NodeUsageContext::NODE_STATIC);
+    if (_materialInstance != nullptr) {
+        _materialInstance->isStatic(context == NodeUsageContext::NODE_STATIC);
     }
 }
 
 void RenderingComponent::rebuildMaterial() {
-    if (_materialInstanceCache != nullptr) {
-        _materialInstanceCache->rebuild();
+    if (_materialInstance != nullptr) {
+        _materialInstance->rebuild();
         onMaterialChanged();
     }
 
@@ -305,8 +296,8 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     if (pkg.textureDataDirty()) {
         TextureDataContainer<>& textures = pkg.descriptorSet(0)._textureData;
 
-        if (_materialInstanceCache != nullptr) {
-            _materialInstanceCache->getTextureData(renderStagePass, textures);
+        if (_materialInstance != nullptr) {
+            _materialInstance->getTextureData(renderStagePass, textures);
         }
 
         if (!renderStagePass.isDepthPass()) {
@@ -373,8 +364,12 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
 void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
-    if (_materialInstanceCache != nullptr) {
-        _materialInstanceCache->getMaterialMatrix(matOut);
+    if (_materialInstance != nullptr) {
+        _materialInstance->getMaterialMatrix(matOut);
+        Texture* refTexture = reflectionTexture();
+        if (refTexture != nullptr) {
+            matOut.element(1, 3) = to_F32(refTexture->width());
+        }
     }
 }
 
@@ -385,10 +380,10 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._cullFlagValue = cullFlag();
     propertiesOut._reflectionIndex = defaultReflectionTextureIndex();
-    propertiesOut._reflectionIndex = defaultRefractionTextureIndex();
-    if (_materialInstanceCache != nullptr) {
-        propertiesOut._texOperation = _materialInstanceCache->getTextureOperation();
-        propertiesOut._bumpMethod = _materialInstanceCache->getBumpMethod();
+    propertiesOut._refractionIndex = defaultRefractionTextureIndex();
+    if (_materialInstance != nullptr) {
+        propertiesOut._texOperation = _materialInstance->textureOperation();
+        propertiesOut._bumpMethod = _materialInstance->bumpMethod();
     }
 }
 
@@ -517,6 +512,11 @@ const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& r
 size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
     const RenderPackage& pkg = getDrawPackage(renderStagePass);
     return (pkg.empty() ? 0 : pkg.getSortKeyHash());
+}
+
+Texture* RenderingComponent::reflectionTexture() const {
+    return _externalTextures[getUsageIndex(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                                   : RenderTargetUsage::REFLECTION_CUBE)].get();
 }
 
 void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {
@@ -692,26 +692,45 @@ void RenderingComponent::defaultRefractionTexture(const Texture_ptr& refractionP
     _defaultRefraction.second = arrayIndex;
 }
 
+namespace Hack {
+    Sky* g_skyPtr = nullptr;
+};
+
 void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) {
-    _envProbes.resize(0);
     if (probes.empty()) {
-        return;
+        // Need a way better way of handling this ...
+        if (Hack::g_skyPtr == nullptr) {
+            const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
+            if (!skies.empty()) {
+                Hack::g_skyPtr = &skies.front()->getNode<Sky>();
+            }
+        }
+        defaultReflectionTexture(Hack::g_skyPtr->activeSkyBox(), 0);
+
+    } else {
+        _envProbes.resize(0);
+        _envProbes.reserve(probes.size());
+        for (const auto& probe : probes) {
+            _envProbes.push_back(probe.get());
+        }
+
+        TransformComponent* const transform = _parentSGN.get<TransformComponent>();
+        if (transform) {
+            const vec3<F32>& nodePos = transform->getPosition();
+            eastl::sort(eastl::begin(_envProbes),
+                eastl::end(_envProbes),
+                [&nodePos](const auto& a, const auto& b) -> bool {
+                return a->distanceSqTo(nodePos) < b->distanceSqTo(nodePos);
+            });
+        }
+
+        RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
+        defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->getRTIndex());
     }
 
-    _envProbes.insert(eastl::cend(_envProbes), eastl::cbegin(probes), eastl::cend(probes));
-
-    TransformComponent* const transform = _parentSGN.get<TransformComponent>();
-    if (transform) {
-        const vec3<F32>& nodePos = transform->getPosition();
-        auto sortFunc = [&nodePos](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
-            return a->distanceSqTo(nodePos) < b->distanceSqTo(nodePos);
-        };
-
-        eastl::sort(eastl::begin(_envProbes), eastl::end(_envProbes), sortFunc);
+    if (_reflectionIndex == -1) {
+        _externalTextures[getUsageIndex(RenderTargetUsage::REFLECTION_CUBE)] = _defaultReflection.first;
     }
-
-    RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
-    defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->getRTIndex());
 }
 
 /// Draw some kind of selection doodad. May differ if editor is running or not

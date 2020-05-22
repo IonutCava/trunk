@@ -6,67 +6,61 @@
 namespace Divide {
 
 SceneEnvironmentProbePool::SceneEnvironmentProbePool(Scene& parentScene)
-    : SceneComponent(parentScene),
-      _isSorted(false)
+    : SceneComponent(parentScene)
 {
 }
 
-SceneEnvironmentProbePool::~SceneEnvironmentProbePool()
-{
+const EnvironmentProbeList& SceneEnvironmentProbePool::sortAndGetLocked(const vec3<F32>& position) {
+    eastl::sort(eastl::begin(_envProbes),
+                eastl::end(_envProbes),
+                [&position](const auto& a, const auto& b) -> bool {
+                    return a->distanceSqTo(position) < b->distanceSqTo(position);
+                });
+
+    return _envProbes;
 }
 
-const EnvironmentProbeList& SceneEnvironmentProbePool::getNearestSorted(const vec3<F32>& position) {
-    if (!_isSorted) {
-        _sortedProbes.resize(0);
-
-        _sortedProbes.insert(eastl::cend(_sortedProbes), eastl::cbegin(_envProbes), eastl::cend(_envProbes));
-
-        auto sortFunc = [&position](const EnvironmentProbe_ptr& a, const EnvironmentProbe_ptr& b) -> bool {
-            return a->distanceSqTo(position) < b->distanceSqTo(position);
-        };
-
-        eastl::sort(eastl::begin(_sortedProbes), eastl::end(_sortedProbes), sortFunc);
-        U32 lowerLimit = std::min(Config::MAX_REFLECTIVE_PROBES_PER_PASS, to_U32(_sortedProbes.size()));
-        _sortedProbes.erase(eastl::begin(_sortedProbes) + lowerLimit, eastl::end(_sortedProbes));
-        _isSorted = true;
-    }
-
-    return _sortedProbes;
+void SceneEnvironmentProbePool::lockProbeList() {
+    _probeLock.lock();
 }
 
+void SceneEnvironmentProbePool::unlockProbeList() {
+    _probeLock.unlock();
+}
 
-EnvironmentProbe_wptr SceneEnvironmentProbePool::addInfiniteProbe(const vec3<F32>& position) {
-    EnvironmentProbe_ptr probe = std::make_shared<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_INFINITE);
+const EnvironmentProbeList& SceneEnvironmentProbePool::getLocked() {
+    return _envProbes;
+}
+
+EnvironmentProbe* SceneEnvironmentProbePool::addInfiniteProbe(const vec3<F32>& position) {
+    UniqueLock<SharedMutex> w_lock(_probeLock);
+    auto& probe = _envProbes.emplace_back(std::make_unique<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_INFINITE));
     probe->setBounds(position, 1000.0f);
-    _envProbes.push_back(probe);
-    _isSorted = false;
-    return probe;
+    return probe.get();
 }
 
-EnvironmentProbe_wptr SceneEnvironmentProbePool::addLocalProbe(const vec3<F32>& bbMin,
-                                                               const vec3<F32>& bbMax) {
-    EnvironmentProbe_ptr probe = std::make_shared<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_LOCAL);
+EnvironmentProbe* SceneEnvironmentProbePool::addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax) {
+    UniqueLock<SharedMutex> w_lock(_probeLock);
+    auto& probe = _envProbes.emplace_back(std::make_unique<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_LOCAL));
     probe->setBounds(bbMin, bbMax);
-    _envProbes.push_back(probe);
-    _isSorted = false;
-    return probe;
+    return probe.get();
 }
 
-void SceneEnvironmentProbePool::removeProbe(EnvironmentProbe_wptr probe) {
-    if (!probe.expired()) {
-        EnvironmentProbe_ptr probePtr = probe.lock();
-        I64 probeGUID = probePtr->getGUID();
+void SceneEnvironmentProbePool::removeProbe(EnvironmentProbe*& probe) {
+    if (probe != nullptr) {
+        UniqueLock<SharedMutex> w_lock(_probeLock);
+        I64 probeGUID = probe->getGUID();
         _envProbes.erase(eastl::remove_if(eastl::begin(_envProbes), eastl::end(_envProbes),
-                                       [&probeGUID](const EnvironmentProbe_ptr& probe)
+                                       [&probeGUID](const auto& probe)
                                             -> bool { return probe->getGUID() == probeGUID; }),
                          eastl::end(_envProbes));
-        probePtr.reset();
-        _isSorted = false;
+        probe = nullptr;
     }
 }
 
 void SceneEnvironmentProbePool::debugDraw(GFX::CommandBuffer& bufferInOut) {
-    for (const EnvironmentProbe_ptr& probe : _envProbes) {
+    SharedLock<SharedMutex> w_lock(_probeLock);
+    for (const auto& probe : _envProbes) {
         probe->debugDraw(bufferInOut);
     }
 }

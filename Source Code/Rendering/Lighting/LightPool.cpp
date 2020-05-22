@@ -233,6 +233,7 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                     SpotShadowProperties& propsTarget = _shadowBufferData._spotLights[shadowIndex];
                     propsTarget._details = propsSource._lightDetails;
                     propsTarget._vpMatrix = propsSource._lightVP[0];
+                    propsTarget._position = propsSource._lightPosition[0];
                 }break;
             };
         }

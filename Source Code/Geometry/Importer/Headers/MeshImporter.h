@@ -70,7 +70,12 @@ namespace Divide {
             PROPERTY_RW(ShadingMode, shadingMode, ShadingMode::FLAT);
             PROPERTY_RW(BumpMethod,  bumpMethod, BumpMethod::NONE);
 
-            Material::ColourData _colourData;
+            PROPERTY_RW(FColour4, baseColour, DefaultColours::WHITE);
+            PROPERTY_RW(FColour3, emissive, DefaultColours::BLACK);
+            PROPERTY_RW(F32, metallic, 0.0f);
+            PROPERTY_RW(F32, roughness, 0.5f);
+            PROPERTY_RW(F32, parallaxFactor, 1.0f);
+
             std::array<TextureEntry, to_base(TextureUsage::COUNT)> _textures;
         };
 

@@ -19,12 +19,14 @@
         <shadingMode>BLINN_PHONG</shadingMode>
         <colour r="0.588" g="0.588" b="0.588" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <specular r="0" g="0" b="0"/>
-        <shininess>10</shininess>
+        <metallic>0</metallic>
+        <roughness>0.5</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.00999999978</parallaxFactor>
+        <transparencyEnabled>true</transparencyEnabled>
+        <isRefractive>true</isRefractive>
         <SHADOW>
             <PRE_PASS>
                 <0>
@@ -236,14 +238,14 @@
                     <hash>10222214166118427337</hash>
                 </Sampler>
             </UNIT0>
-            <SPECULAR>
+            <OCCLUSION_METALLIC_ROUGHNESS>
                 <name>sponza_details_spec.png</name>
                 <path>assets/textures/sponza/</path>
                 <flipped>true</flipped>
                 <Sampler>
                     <hash>10222214166118427337</hash>
                 </Sampler>
-            </SPECULAR>
+            </OCCLUSION_METALLIC_ROUGHNESS>
         </texture>
         <SamplerDescriptors>
             <10222214166118427337>

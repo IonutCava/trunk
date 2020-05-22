@@ -288,9 +288,10 @@ bool PingPongScene::load(const Str128& name) {
     _ball = CreateResource<Sphere3D>(_resCache, minge);
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
-    _ball->getMaterialTpl()->getColourData().baseColour(FColour4(0.4f, 0.4f, 0.4f, 1.0f));
-    _ball->getMaterialTpl()->getColourData().shininess(36.8f);
-    _ball->getMaterialTpl()->getColourData().specular(FColour3(0.774597f, 0.774597f, 0.774597f));
+    _ball->getMaterialTpl()->shadingMode(ShadingMode::COOK_TORRANCE);
+    _ball->getMaterialTpl()->baseColour(FColour4(0.4f, 0.4f, 0.4f, 1.0f));
+    _ball->getMaterialTpl()->roughness(0.6f);
+    _ball->getMaterialTpl()->metallic(0.8f);
 
     SceneGraphNodeDescriptor ballNodeDescriptor;
     ballNodeDescriptor._node = _ball;

@@ -111,7 +111,7 @@ private:
     static RenderTargetHandle s_reflection;
 };
 
-using EnvironmentProbeList = vectorEASTL<EnvironmentProbe_ptr>;
+using EnvironmentProbeList = vectorEASTL<std::unique_ptr<EnvironmentProbe>>;
 
 }; //namespace Divide
 

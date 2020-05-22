@@ -680,9 +680,6 @@
     <Xml Include="..\..\XML\config.xml">
       <Filter>XML</Filter>
     </Xml>
-    <Xml Include="..\..\XML\defaultMaterial.xml">
-      <Filter>XML</Filter>
-    </Xml>
     <Xml Include="..\..\XML\keyBindings.xml">
       <Filter>XML</Filter>
     </Xml>

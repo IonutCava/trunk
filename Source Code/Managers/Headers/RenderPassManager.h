@@ -159,6 +159,7 @@ private:
     vectorEASTL<bool> _completedPasses;
     vectorEASTL<RenderPass*> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
+    GFX::CommandBuffer* _environmentProbeCommandBuffer = nullptr;
     GFX::CommandBuffer* _postFXCommandBuffer = nullptr;
     GFX::CommandBuffer* _postRenderBuffer = nullptr;
 
@@ -168,6 +169,7 @@ private:
     Time::ProfileTimer* _renderPassTimer = nullptr;
     Time::ProfileTimer* _buildCommandBufferTimer = nullptr;
     Time::ProfileTimer* _flushCommandBufferTimer = nullptr;
+    Time::ProfileTimer* _environmentProbeTimer = nullptr;
     Time::ProfileTimer* _postFxRenderTimer = nullptr;
     Time::ProfileTimer* _blitToDisplayTimer = nullptr;
 

@@ -199,8 +199,8 @@ public:
         // [2][3] = refraction index
         // [3][0] ... [3][3] = bounding sphere
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
-        // [0][0] ... [0][3] = base colour (PBR) / albedo (Phong)
-        // [1][0] ... [1][3] = metallic, specular, roughness, unused (PBR) / specular, shininess (Phong)
+        // [0][0] ... [0][3] = base colour
+        // [1][0] ... [1][3] = metallic, roughness, unused, unused
         // [2][0] ... [2][2] = emissive
         // [2][3] = receives shadows;
         // [3][0] = texture operation
@@ -218,13 +218,13 @@ public:
 
     enum class MaterialDebugFlag : U8 {
         DEBUG_ALBEDO = 0,
-        DEBUG_SPECULAR,
         DEBUG_EMISSIVE,
         DEBUG_ROUGHNESS,
         DEBUG_METALLIC,
         DEBUG_NORMALS,
         DEBUG_SHADOW_MAPS,
         DEBUG_LIGHT_TILES,
+        DEBUG_REFLECTIONS,
         COUNT
     };
 

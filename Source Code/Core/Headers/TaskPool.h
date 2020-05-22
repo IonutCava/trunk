@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct ParallelForDescriptor {
-    DELEGATE<void, const Task*/*parent*/, U32/*start*/, U32/*end*/> _cbk;
+    DELEGATE<void, const Task*, U32/*start*/, U32/*end*/> _cbk;
     /// For loop iteration count
     U32 _iterCount = 0u;
     /// How many elements should we process per async task

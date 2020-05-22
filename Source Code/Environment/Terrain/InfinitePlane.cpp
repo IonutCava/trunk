@@ -41,10 +41,9 @@ bool InfinitePlane::load() {
 
     ResourceDescriptor planeMaterialDescriptor("infinitePlaneMaterial");
     Material_ptr planeMaterial = CreateResource<Material>(_parentCache, planeMaterialDescriptor);
-    planeMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
-    planeMaterial->getColourData().baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
-    planeMaterial->getColourData().specular(FColour3(0.1f, 0.1f, 0.1f));
-    planeMaterial->getColourData().shininess(20.0f);
+    planeMaterial->shadingMode(ShadingMode::BLINN_PHONG);
+    planeMaterial->baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
+    planeMaterial->roughness(1.0f);
 
     SamplerDescriptor albedoSampler = {};
     albedoSampler.wrapU(TextureWrap::REPEAT);

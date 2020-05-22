@@ -16,19 +16,14 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
 
 #if !defined(PRE_PASS)
 
-#if defined(USE_PLANAR_REFLECTION)
-layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
-#endif //USE_PLANAR_REFLECTION
-
 #if defined(USE_PLANAR_REFRACTION)
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 #endif //USE_PLANAR_REFRACTION
 
-layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
 
-#if defined(USE_SPECULAR_MAP)
-layout(binding = TEXTURE_SPECULAR) uniform sampler2D texSpecularMap;
-#endif //USE_SPECULAR_MAP
+#if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
+layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOcclusionMetallicRoughness;
+#endif //USE_METALLIC_ROUGHNESS_MAP
 
 #if defined(USE_SSAO)
 layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
@@ -101,16 +96,12 @@ float Gloss(in vec3 bump, in vec2 uv)
         float baked_power = 100.0;
         // Fetch pre-computed "Toksvig Factor"
         // and adjust for specified power
-        float gloss = texture2D(texSpecularMap, uv).r;
+        float gloss = texture2D(texOcclusionMetallicRoughness, uv).a;
         gloss /= mix(power/baked_power, 1.0, gloss);
         return gloss;
     #else
         return 1.0;
     #endif
-}
-
-float getRimLighting(in mat4 colourMatrix, in vec2 uv) {
-    return 0.0f;
 }
 
 float getSSAO() {
@@ -121,45 +112,32 @@ float getSSAO() {
 #endif
 }
 
-#if defined(USE_CUSTOM_SHININESS)
-float getShininess(in mat4 colourMatrix);
-#else
-float getShininess(in mat4 colourMatrix) {
-    return colourMatrix[1].w;
-}
-#endif
-
 #if defined(USE_CUSTOM_ROUGHNESS)
-vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv);
+vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv);
+#else //USE_CUSTOM_ROUGHNESS
+vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+#if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
+    vec3 omr = texture(texOcclusionMetallicRoughness, uv).rgb;
+#if defined(PBR_SHADING)
+    return omr;
 #else
-vec2 getMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
-#if defined(USE_METALLIC_ROUGHNESS_MAP)
-    return texture(texSpecularMap, uv).rg;
+    // Convert specular to roughness ... roughly? really wrong, but should work I guess. -Ionutsssssssss
+    return vec3(Occlusion(colourMatrix), Metallic(colourMatrix), 1.0f - omr.r);
+#endif
 #else
-    return colourMatrix[1].rb;
+    return vec3(Occlusion(colourMatrix), Metallic(colourMatrix), Roughness(colourMatrix));
 #endif
 }
-#endif
+#endif //USE_CUSTOM_ROUGHNESS
 
 vec3 getEmissive(in mat4 colourMatrix) {
-    return colourMatrix[2].rgb;
+    return EmissiveColour(colourMatrix);
 }
 
 void setEmissive(in mat4 colourMatrix, in vec3 value) {
-    colourMatrix[2].rgb = value;
+    EmissiveColour(colourMatrix) = value;
 }
 
-vec3 getSpecular(in mat4 colourMatrix, in vec2 uv) {
-#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-    return vec3(colourMatrix[1].g);
-#else
-#if defined(USE_SPECULAR_MAP)
-    return texture(texSpecularMap, uv).rgb;
-#else
-    return colourMatrix[1].rgb;
-#endif
-#endif
-}
 #endif //PRE_PASS
 float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
 #if defined(HAS_TRANSPARENCY)
@@ -178,7 +156,7 @@ float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
 }
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
-vec4 getTextureColour(in vec2 uv) {
+vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
 #define TEX_NONE 0
 #define TEX_MODULATE 1
 #define TEX_ADD  2
@@ -194,7 +172,7 @@ vec4 getTextureColour(in vec2 uv) {
         return texture(texDiffuse1, uv);
     }
         
-    return vec4(0.0f, 0.0f, 0.0f, 1.0f); 
+    return albedo;
 #else
     vec4 colour = texture(texDiffuse0, uv);
     // Read from the second texture (if any)
@@ -241,13 +219,7 @@ vec4 getTextureColour(in vec2 uv) {
 }
 
 vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
-
-    vec4 albedo = colourMatrix[0];
-
-#if !defined(SKIP_TEXTURES)
-    albedo = getTextureColour(uv);
-#endif
-
+    vec4 albedo = getTextureColour(BaseColour(colourMatrix), uv);
     albedo.a = getOpacity(colourMatrix, albedo.a, uv);
 
     return albedo;

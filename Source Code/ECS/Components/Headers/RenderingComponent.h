@@ -170,9 +170,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline void lockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { true, level }; }
     inline void unlockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { false, to_U8(0u) }; }
     inline bool lodLocked(RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
-
-    void useUniqueMaterialInstance();
-    void setMaterialTpl(const Material_ptr& material);
+    void instantiateMaterial(const Material_ptr& material);
 
     void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
@@ -250,6 +248,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void onMaterialChanged();
     void onParentUsageChanged(NodeUsageContext context);
 
+    Texture* reflectionTexture() const;
+
    protected:
     using PackagesPerIndex = vectorEASTLFast<RenderPackage>;
     using PackagesPerPassType = std::array<PackagesPerIndex, to_base(RenderPassType::COUNT)>;
@@ -260,13 +260,12 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderCallback _refractionCallback;
     std::array<Texture_ptr, g_texUsage.size()> _externalTextures;
 
-    EnvironmentProbeList _envProbes;
+    vectorEASTL<EnvironmentProbe*> _envProbes;
     ShaderBufferList _externalBufferBindings;
 
     std::pair<Texture_ptr, U32> _defaultReflection = {nullptr, 0u};
     std::pair<Texture_ptr, U32> _defaultRefraction = {nullptr, 0u};
     Material_ptr _materialInstance = nullptr;
-    Material* _materialInstanceCache = nullptr;
     GFXDevice& _context;
     const Configuration& _config;
 

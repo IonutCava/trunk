@@ -1051,10 +1051,6 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
         vec2<I32> gizmoMousePos(gizmoContext->IO.MousePos.x, gizmoContext->IO.MousePos.y);
         const Rect<I32>& sceneRect = scenePreviewRect(true);
         gizmoMousePos = COORD_REMAP(gizmoMousePos, sceneRect, Rect<I32>(0, 0, viewportSize.z, viewportSize.w));
-        if (!scenePreviewHovered()) {
-            //gizmoMousePos = COORD_REMAP(gizmoMousePos, viewportSize, sceneRect);
-        }
-        showStatusMessage(Util::StringFormat("Before: [%d - %d] After: [%d - %d]", to_I32(gizmoContext->IO.MousePos.x), to_I32(gizmoContext->IO.MousePos.y), gizmoMousePos.x, gizmoMousePos.y), 400);
         gizmoContext->IO.MousePos = ImVec2(to_F32(gizmoMousePos.x), to_F32(gizmoMousePos.y));
         if (_gizmo->hovered()) {
             return true;
@@ -1311,7 +1307,7 @@ U32 Editor::saveItemCount() const noexcept {
     return ret;
 }
 
-bool Editor::modalTextureView(const char* modalName, const Texture_ptr& tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
+bool Editor::modalTextureView(const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
 
     if (tex == nullptr) {
         return false;

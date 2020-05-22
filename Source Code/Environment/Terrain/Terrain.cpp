@@ -325,7 +325,7 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
 
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
-        rComp.getMaterialInstance()->setParallaxFactor(_descriptor->parallaxHeightScale());
+        rComp.getMaterialInstance()->parallaxFactor(_descriptor->parallaxHeightScale());
         if (!pkg.empty()) {
             PushConstants constants = pkg.pushConstants(0);
             constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, getTriangleWidth(renderStagePass));

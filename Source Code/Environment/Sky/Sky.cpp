@@ -349,6 +349,13 @@ void Sky::setAtmosphere(const Atmosphere& atmosphere) noexcept {
     _atmosphereChanged = EditorDataState::QUEUED;
 }
 
+const Texture_ptr& Sky::activeSkyBox() const noexcept {
+    if (_sun->GetDetails()._intensity <= 0.0f) {
+        return _skybox[1];
+    }
+    return _skybox[0];
+}
+
 void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     if (_atmosphereChanged == EditorDataState::QUEUED) {
         _atmosphereChanged = EditorDataState::CHANGED;

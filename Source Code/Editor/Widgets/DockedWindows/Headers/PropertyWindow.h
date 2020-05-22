@@ -39,6 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Camera;
+class Texture;
 class Material;
 class SceneGraphNode;
 class TransformComponent;
@@ -67,7 +68,11 @@ class PropertyWindow final : public DockedWindow, public PlatformContextComponen
      bool processBasicField(EditorComponentField& field);
      bool processTransform(TransformComponent* transform, bool readOnly);
      bool processMaterial(Material* material, bool readOnly);
+
+private:
+    Texture* _previewTexture = nullptr;
 };
+void NewFunction(Divide::I32 &id, Divide::Material * material, bool fromTexture, bool readOnly);
 }; //namespace Divide
 
 #endif //_EDITOR_PROPERTY_WINDOW_H_

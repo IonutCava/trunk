@@ -267,7 +267,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor matDesc("Tree_material");
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
-    s_treeMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
+    s_treeMaterial->shadingMode(ShadingMode::BLINN_PHONG);
     s_treeMaterial->baseShaderData(treeShaderData);
     s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, "OVERRIDE_DATA_IDX", true);
@@ -294,12 +294,12 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor vegetationMaterial("grassMaterial");
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
-    vegMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
-    vegMaterial->getColourData().baseColour(DefaultColours::WHITE);
-    vegMaterial->getColourData().specular(FColour3(0.1f, 0.1f, 0.1f));
-    vegMaterial->getColourData().shininess(5.0f);
-    vegMaterial->setDoubleSided(false);
-    vegMaterial->setStatic(false);
+    vegMaterial->shadingMode(ShadingMode::COOK_TORRANCE);
+    vegMaterial->baseColour(DefaultColours::WHITE);
+    vegMaterial->roughness(0.7f);
+    vegMaterial->metallic(0.02f);
+    vegMaterial->doubleSided(false);
+    vegMaterial->isStatic(false);
 
     Material::ApplyDefaultStateBlocks(*vegMaterial);
 
@@ -316,7 +316,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "grass.glsl";
-    fragModule._defines.emplace_back("SKIP_TEXTURES", true);
+    fragModule._defines.emplace_back("SKIP_TEX0", true);
     fragModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
     fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
     fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
@@ -481,7 +481,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     }
 
     if (hasVegetation) {
-        sgn.get<RenderingComponent>()->setMaterialTpl(s_vegetationMaterial);
+        sgn.get<RenderingComponent>()->instantiateMaterial(s_vegetationMaterial);
         sgn.get<RenderingComponent>()->lockLoD(0u);
         WAIT_FOR_CONDITION(s_cullShaderGrass->getState() == ResourceState::RES_LOADED &&
                            s_cullShaderTrees->getState() == ResourceState::RES_LOADED);

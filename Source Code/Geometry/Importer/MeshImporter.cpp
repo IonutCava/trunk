@@ -110,9 +110,11 @@ namespace Import {
         dataOut << _ignoreAlpha;
         dataOut << _doubleSided;
         dataOut << _name;
-        dataOut << _colourData._data[0];
-        dataOut << _colourData._data[1];
-        dataOut << _colourData._data[2];
+        dataOut << baseColour();
+        dataOut << emissive();
+        dataOut << CLAMPED_01(metallic());
+        dataOut << CLAMPED_01(roughness());
+        dataOut << CLAMPED_01(parallaxFactor());
         dataOut << to_U32(_shadingMode);
         dataOut << to_U32(_bumpMethod);
         for (const TextureEntry& texture : _textures) {
@@ -126,17 +128,27 @@ namespace Import {
     }
 
     bool MaterialData::deserialize(ByteBuffer& dataIn) {
-        U32 temp = 0;
         dataIn >> _ignoreAlpha;
         dataIn >> _doubleSided;
         dataIn >> _name;
-        dataIn >> _colourData._data[0];
-        dataIn >> _colourData._data[1];
-        dataIn >> _colourData._data[2];
+        FColour4 tempBase = {};
+        dataIn >> tempBase;
+        baseColour(tempBase);
+        FColour3 tempEmissive = {};
+        dataIn >> tempEmissive;
+        emissive(tempEmissive);
+        F32 temp = {};
         dataIn >> temp;
-        _shadingMode = static_cast<ShadingMode>(temp);
+        metallic(temp);
         dataIn >> temp;
-        _bumpMethod = static_cast<BumpMethod>(temp);
+        roughness(temp);
+        dataIn >> temp;
+        parallaxFactor(temp);
+        U32 temp2 = {};
+        dataIn >> temp2;
+        _shadingMode = static_cast<ShadingMode>(temp2);
+        dataIn >> temp2;
+        _bumpMethod = static_cast<BumpMethod>(temp2);
         for (TextureEntry& texture : _textures) {
             if (!texture.deserialize(dataIn)) {
                 //handle error
@@ -297,10 +309,15 @@ namespace Import {
         if (wasInCache) {
             return tempMaterial;
         }
-        tempMaterial->setColourData(importData._colourData);
-        tempMaterial->setShadingMode(importData.shadingMode());
-        tempMaterial->setBumpMethod(importData.bumpMethod());
-        tempMaterial->setDoubleSided(importData.doubleSided());
+        tempMaterial->baseColour(importData.baseColour());
+        tempMaterial->emissiveColour(importData.emissive());
+        tempMaterial->metallic(importData.metallic());
+        tempMaterial->roughness(importData.roughness());
+        tempMaterial->parallaxFactor(importData.parallaxFactor());
+
+        tempMaterial->shadingMode(importData.shadingMode());
+        tempMaterial->bumpMethod(importData.bumpMethod());
+        tempMaterial->doubleSided(importData.doubleSided());
 
         SamplerDescriptor textureSampler = {};
 

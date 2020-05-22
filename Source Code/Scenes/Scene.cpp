@@ -466,7 +466,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
             if (ret != nullptr) {
                 ResourceDescriptor materialDescriptor(sceneNode.name + "_material");
                 Material_ptr tempMaterial = CreateResource<Material>(_resCache, materialDescriptor);
-                tempMaterial->setShadingMode(ShadingMode::BLINN_PHONG);
+                tempMaterial->shadingMode(ShadingMode::BLINN_PHONG);
                 ret->setMaterialTpl(tempMaterial);
                 ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
             }
@@ -1543,8 +1543,9 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             if (sType == SceneNodeType::TYPE_OBJECT3D) {
                 const ObjectType oType = sgn->getNode<Object3D>().getObjectType();
 
-                if (oType._value == ObjectType::TERRAIN || 
-                    oType._value == ObjectType::SUBMESH)
+                if (!inEditMode &&
+                    (oType._value == ObjectType::TERRAIN || 
+                     oType._value == ObjectType::SUBMESH))
                 {
                     sType = SceneNodeType::COUNT;
                 } else if (sgn->parent() != nullptr) {

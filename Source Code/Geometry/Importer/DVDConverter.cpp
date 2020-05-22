@@ -506,7 +506,6 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     const aiMaterial* mat = source->mMaterials[materialIndex];
 
     material.name(materialName);
-    Material::ColourData& data = material._colourData;
 
     // default shading model
     I32 shadingModel = to_base(ShadingMode::PHONG);
@@ -522,23 +521,22 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &alpha);
 
     // default diffuse colour
-    data.baseColour(FColour4(0.8f, 0.8f, 0.8f, 1.0f));
+    material.baseColour(FColour4(0.8f, 0.8f, 0.8f, 1.0f));
     // Load diffuse colour
     aiColor4D diffuse;
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
-        data.baseColour(FColour4(diffuse.r, diffuse.g, diffuse.b, alpha));
+        material.baseColour(FColour4(diffuse.r, diffuse.g, diffuse.b, alpha));
     } else {
         Console::d_printfn(Locale::get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
     }
 
     // default emissive colour
-    data.emissive(FColour3(0.0f, 0.0f, 0.0f));
+    material.emissive(FColour3(0.0f, 0.0f, 0.0f));
     // Load emissive colour
     aiColor4D emissive;
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_EMISSIVE, &emissive)) {
-        data.emissive(FColour3(emissive.r, emissive.g, emissive.b));
+        material.emissive(FColour3(emissive.r, emissive.g, emissive.b));
     }
-
 
     // Ignore ambient colour
     vec4<F32> ambientTemp(0.0f, 0.0f, 0.0f, 1.0f);
@@ -549,36 +547,41 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         // no ambient
     }
 
-    if (isPBRMaterial) {
-        // Default shininess values
-        F32 roughness = 0.0f, metallic = 0.0f;
-        // Load shininess
-        aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, &metallic);
-        aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, &roughness);
-        data.roughness(roughness);
-        data.metallic(metallic);
+    // Default shininess values
+    F32 roughness = 0.0f, metallic = 0.0f;
+    // Load shininess
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLIC_FACTOR, &metallic)) {
+        material.metallic(metallic);
     } else {
-        // default specular colour
-        data.specular(FColour3(1.0f, 1.0f, 1.0f));
-        // Load specular colour
-        aiColor4D specular;
-        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &specular)) {
-            data.specular(FColour3(specular.r, specular.g, specular.b));
-        } else {
-            Console::d_printfn(Locale::get(_ID("MATERIAL_NO_SPECULAR")), materialName.c_str());
-        }
-
-        // Default shininess values
-        F32 shininess = 15, strength = 1;
-        // Load shininess
-        aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shininess);
-        // Load shininess strength
-        aiGetMaterialFloat(mat, AI_MATKEY_SHININESS_STRENGTH, &strength);
-        F32 finalValue = shininess * strength;
-        CLAMP<F32>(finalValue, 0.0f, 255.0f);
-        data.shininess(finalValue);
     }
 
+    F32 bumpScalling = 0.0f;
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_BUMPSCALING, &bumpScalling)) {
+        material.parallaxFactor(bumpScalling);
+    }
+    
+    if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_ROUGHNESS_FACTOR, &roughness)) {
+        material.roughness(roughness);
+    } else {
+        // Load specular colour as a hack :/
+        aiColor4D specular;
+        if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_SPECULAR, &specular)) {
+            material.roughness(1.0f - CLAMPED_01(FColour3(specular.r, specular.g, specular.b).maxComponent()));
+        } else {
+            F32 shininess = 0.f, strength = 1.f;
+            if (AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_SHININESS_STRENGTH, &strength) &&
+                AI_SUCCESS == aiGetMaterialFloat(mat, AI_MATKEY_SHININESS, &shininess)) {
+                F32 temp = CLAMPED(shininess * strength, 0.f, 128.f);
+                if (temp > 1.f) {
+                    temp /= 128.0f;
+                }
+
+                material.roughness(1.0f - CLAMPED_01(temp));
+            }
+        }
+    }
+
+       
     // check if material is two sided
     I32 two_sided = 0;
     aiGetMaterialInteger(mat, AI_MATKEY_TWOSIDED, &two_sided);
@@ -758,12 +761,22 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         } 
     }
 
-    if (isPBRMaterial) {
-        result = mat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &tName, &mapping, &uvInd, &blend, &op, mode);
-    } else {
-        result = mat->GetTexture(aiTextureType_SPECULAR, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
-    }
+    constexpr aiTextureType specularSource[] = {
+        aiTextureType_METALNESS,
+        aiTextureType_DIFFUSE_ROUGHNESS,
+        aiTextureType_AMBIENT_OCCLUSION,
+        aiTextureType_SPECULAR
+    };
 
+    result = mat->GetTexture(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_METALLICROUGHNESS_TEXTURE, &tName, &mapping, &uvInd, &blend, &op, mode);
+    if (result != AI_SUCCESS) {
+        for (aiTextureType t : specularSource) {
+            result = mat->GetTexture(t, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
+            if (result == AI_SUCCESS) {
+                break;
+            }
+        }
+    }
     if (result == AI_SUCCESS) {
         const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
@@ -771,12 +784,11 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         const Str64& img_name = fileResult._fileName.c_str();
         const Str256& img_path = fileResult._path.c_str();
 
-        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::SPECULAR)];
+        Import::TextureEntry& texture = material._textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
         if (img_name.rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
-                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
-            {
+                IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {
                 texture.wrapU(aiTextureMapModeTable[mode[0]]);
                 texture.wrapV(aiTextureMapModeTable[mode[1]]);
                 texture.wrapW(aiTextureMapModeTable[mode[2]]);
@@ -786,8 +798,9 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
             texture.operation(aiTextureOperationTable[op]);
             texture.srgb(false);
 
-            material._textures[to_base(TextureUsage::SPECULAR)] = texture;
+            material._textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] = texture;
         }
     }
 }
+
 };
