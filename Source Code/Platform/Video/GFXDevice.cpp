@@ -22,6 +22,8 @@
 
 #include "Geometry/Material/Headers/ShaderComputeQueue.h"
 
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
+
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
@@ -213,7 +215,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     // Initialize the shader manager
     ShaderProgram::onStartup(*this, cache);
-    EnvironmentProbe::onStartup(*this);
+    EnvironmentProbeComponent::onStartup(*this);
     GFX::initPools();
 
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
@@ -777,7 +779,7 @@ void GFXDevice::closeRenderingAPI() {
 
     RenderStateBlock::clear();
 
-    EnvironmentProbe::onShutdown(*this);
+    EnvironmentProbeComponent::onShutdown(*this);
     GFX::destroyPools();
     MemoryManager::SAFE_DELETE(_rtPool);
 

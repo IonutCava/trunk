@@ -289,7 +289,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
     params._camera = _reflectionCam;
     params._minExtents.set(1.25f);
-    params._stagePass = { RenderStage::REFLECTION, RenderPassType::COUNT, 0u, renderParams._passIndex };
+    params._stagePass = { RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::PLANAR), renderParams._passIndex };
     params._target = renderParams._renderTarget;
     params._clearDescriptor = &clearDescriptor;
     params._clippingPlanes._planes[0] = reflectionPlane;

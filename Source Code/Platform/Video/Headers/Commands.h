@@ -105,6 +105,17 @@ enum class CommandType : U8 {
     COUNT
 };
 
+namespace Names {
+    static const char* commandType[] = {
+        "BEGIN_RENDER_PASS", "END_RENDER_PASS", "BEGIN_PIXEL_BUFFER", "END_PIXEL_BUFFER", "BEGIN_RENDER_SUB_PASS",
+        "END_RENDER_SUB_PASS", "SET_VIEWPORT", "PUSH_VIEWPORT","POP_VIEWPORT", "SET_SCISSOR", "SET_BLEND", "CLEAR_RT",
+        "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "SET_MIP_LEVELS", "COMPUTE_MIPMAPS", "SET_CAMERA",
+        "PUSH_CAMERA", "POP_CAMERA", "SET_CLIP_PLANES", "BIND_PIPELINE", "BIND_DESCRIPTOR_SETS", "SEND_PUSH_CONSTANTS",
+        "DRAW_COMMANDS", "DRAW_TEXT", "DRAW_IMGUI", "DISPATCH_COMPUTE", "MEMORY_BARRIER", "READ_BUFFER_DATA", "CLEAR_BUFFER_DATA",
+        "BEGIN_DEBUG_SCOPE","END_DEBUG_SCOPE", "SWITCH_WINDOW", "SET_CLIPING_STATE", "EXTERNAL", "UNKNOWN"
+    };
+};
+
 class CommandBuffer;
 struct CommandBase;
 
@@ -128,7 +139,7 @@ struct CommandBase
     virtual void addToBuffer(CommandBuffer* buffer) const = 0;
     virtual Deleter& getDeleter() const noexcept = 0;
 
-    inline const char* Name() const noexcept { return TO_STR(EType); }
+    inline const char* Name() const noexcept { return Names::commandType[to_base(EType)]; }
     inline CommandType Type() const noexcept { return EType; }
 
 protected:

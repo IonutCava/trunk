@@ -594,22 +594,26 @@ namespace Divide {
     SceneNode_ptr SolutionExplorerWindow::createNode() {
         ResourceDescriptor descriptor(Util::StringFormat("%s_node", g_nodeDescriptor._name.c_str()));
         SceneNode_ptr ptr =  Attorney::EditorSolutionExplorerWindow::createNode(_parent, g_currentNodeType, descriptor);
-        if (ptr && g_currentNodeType == SceneNodeType::TYPE_PARTICLE_EMITTER) {
-            ParticleEmitter* emitter = static_cast<ParticleEmitter*>(ptr.get());
-            emitter->initData(g_particleEmitterData);
-            emitter->addSource(g_particleSource);
+        if (ptr) {
+            if (g_currentNodeType == SceneNodeType::TYPE_PARTICLE_EMITTER) {
+                ParticleEmitter* emitter = static_cast<ParticleEmitter*>(ptr.get());
+                emitter->initData(g_particleEmitterData);
+                emitter->addSource(g_particleSource);
 
-            std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(context());
-            eulerUpdater->_globalAcceleration.set(g_particleAcceleration);
-            emitter->addUpdater(eulerUpdater);
-            std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(context());
-            floorUpdater->_bounceFactor = g_particleBounceFactor;
-            emitter->addUpdater(floorUpdater);
-            emitter->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(context()));
-            emitter->addUpdater(std::make_shared<ParticleBasicColourUpdater>(context()));
+                std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(context());
+                eulerUpdater->_globalAcceleration.set(g_particleAcceleration);
+                emitter->addUpdater(eulerUpdater);
+                std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(context());
+                floorUpdater->_bounceFactor = g_particleBounceFactor;
+                emitter->addUpdater(floorUpdater);
+                emitter->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(context()));
+                emitter->addUpdater(std::make_shared<ParticleBasicColourUpdater>(context()));
 
-            g_particleEmitterData.reset();
-            g_particleSource.reset();
+                g_particleEmitterData.reset();
+                g_particleSource.reset();
+            } else if (false) {
+
+            }
         }
         return ptr;
     }

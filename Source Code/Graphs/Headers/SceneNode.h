@@ -81,6 +81,7 @@ enum class NodeUsageContext : U8 {
     NODE_STATIC
 };
 
+/// ToDo: Move particle emitter and triggers to components (it will make them way more dynamic) - Ionut
 enum class SceneNodeType : U16 {
     TYPE_OBJECT3D = 0,       //< 3d objects in the scene
     TYPE_TRANSFORM,          //< dummy node to stack multiple transforms

@@ -15,6 +15,7 @@
 #include "Geometry/Material/Headers/Material.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
@@ -210,10 +211,20 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         } break;
         case RenderStage::REFLECTION: {
             static VisibleNodeList s_Nodes;
-
-            OPTICK_EVENT("RenderPass - Reflection");
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
+
+            {
+                SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
+                OPTICK_EVENT("RenderPass - Probes");
+                envProbPool->lockProbeList();
+                const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(camera->getEye());
+                for (const auto& probe : probes) {
+                    probe->refresh(bufferInOut);
+                }
+                envProbPool->unlockProbeList();
+            }
+            OPTICK_EVENT("RenderPass - Reflection");
             {
                 //Update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager

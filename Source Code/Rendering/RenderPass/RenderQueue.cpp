@@ -82,7 +82,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
         {
             if (BitCompare(node.componentMask(), ComponentType::SPOT_LIGHT) ||
                 BitCompare(node.componentMask(), ComponentType::POINT_LIGHT) ||
-                BitCompare(node.componentMask(), ComponentType::DIRECTIONAL_LIGHT))
+                BitCompare(node.componentMask(), ComponentType::DIRECTIONAL_LIGHT) ||
+                BitCompare(node.componentMask(), ComponentType::ENVIRONMENT_PROBE))
             {
                 return _renderBins[RenderBinType::RBT_IMPOSTOR];
             }

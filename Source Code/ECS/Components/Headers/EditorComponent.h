@@ -62,7 +62,8 @@ namespace Divide {
         POINT_LIGHT = toBit(13),
         SPOT_LIGHT = toBit(14),
         SCRIPT = toBit(15),
-        COUNT = 15
+        ENVIRONMENT_PROBE = toBit(16),
+        COUNT = 16
     );
 
     enum class EditorComponentFieldType : U8 {

@@ -30,8 +30,8 @@ void PointLightComponent::PreUpdate(const U64 deltaTime) {
     using Parent = BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>;
 
     if (_drawImpostor) {
-        _parentPool.context().gfx().debugDrawSphere(positionCache(), 0.5f, getDiffuseColour());
-        _parentPool.context().gfx().debugDrawSphere(positionCache(), range(), DefaultColours::GREEN);
+        context().gfx().debugDrawSphere(positionCache(), 0.5f, getDiffuseColour());
+        context().gfx().debugDrawSphere(positionCache(), range(), DefaultColours::GREEN);
     }
 
     Parent::PreUpdate(deltaTime);

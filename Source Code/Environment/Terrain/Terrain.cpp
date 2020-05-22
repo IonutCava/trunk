@@ -149,7 +149,10 @@ U32 Terrain::getBufferOffset(const RenderStagePass& renderStagePass) const noexc
 TerrainTessellator& Terrain::getTessellator(const RenderStagePass& renderStagePass) {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) : renderStagePass._passIndex;
+    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) 
+                                                                : renderStagePass._stage == RenderStage::REFLECTION 
+                                                                                          ? renderStagePass._variant
+                                                                                          : renderStagePass._passIndex;
 
     return _terrainTessellators[s][p][i];
 }
@@ -157,7 +160,10 @@ TerrainTessellator& Terrain::getTessellator(const RenderStagePass& renderStagePa
 U32& Terrain::getUpdateCounter(const RenderStagePass& renderStagePass) {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) : renderStagePass._passIndex;
+    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) 
+                                                                : renderStagePass._stage == RenderStage::REFLECTION 
+                                                                                          ? renderStagePass._variant
+                                                                                          : renderStagePass._passIndex;
 
     return _bufferUpdateCounter[s][p][i];
 }
@@ -219,10 +225,12 @@ void Terrain::postBuild() {
             UpdateCounterPerPassType& perPassCounter = _bufferUpdateCounter[s];
             TessellatorsPerPassType& perPassTess = _terrainTessellators[s];
             for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
-                perPassTess[p].resize(1);
-                perPassTess[p].back().overrideConfig(config);
+                perPassTess[p].resize(s == to_U8(RenderStage::REFLECTION) ? to_U8(ReflectorType::COUNT) : 1);
+                for (auto& tess : perPassTess[p]) {
+                    tess.overrideConfig(config);
+                }
 
-                perPassCounter[p].resize(1, g_bufferFrameDelay);
+                perPassCounter[p].resize(s == to_U8(RenderStage::REFLECTION) ? to_U8(ReflectorType::COUNT) : 1, g_bufferFrameDelay);
             }
         }
     }

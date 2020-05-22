@@ -446,9 +446,6 @@
     <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Rendering\EnvironmentProbe.cpp">
-      <Filter>Rendering\Lighting</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
@@ -586,6 +583,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\MotionBlurPreRenderOperator.cpp">
       <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\ECS\Components\EnvironmentProbeComponent.cpp">
+      <Filter>ECS\Components</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -769,9 +769,6 @@
     </ClInclude>
     <ClInclude Include="../../Source Code/GUI\Headers\GUIInterface.h">
       <Filter>GUI\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Rendering\Headers\EnvironmentProbe.h">
-      <Filter>Rendering\Lighting\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Geometry\Material\Headers\ShaderComputeQueue.h">
       <Filter>Geometry\Material\Headers</Filter>
@@ -1034,6 +1031,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\MotionBlurPreRenderOperator.h">
       <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EnvironmentProbeComponent.h">
+      <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

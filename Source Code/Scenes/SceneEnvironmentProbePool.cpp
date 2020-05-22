@@ -3,6 +3,8 @@
 #include "Headers/SceneEnvironmentProbePool.h"
 #include "Scenes/Headers/Scene.h"
 
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
+
 namespace Divide {
 
 SceneEnvironmentProbePool::SceneEnvironmentProbePool(Scene& parentScene)
@@ -32,21 +34,13 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::getLocked() {
     return _envProbes;
 }
 
-EnvironmentProbe* SceneEnvironmentProbePool::addInfiniteProbe(const vec3<F32>& position) {
+EnvironmentProbeComponent* SceneEnvironmentProbePool::registerProbe(EnvironmentProbeComponent* probe) {
     UniqueLock<SharedMutex> w_lock(_probeLock);
-    auto& probe = _envProbes.emplace_back(std::make_unique<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_INFINITE));
-    probe->setBounds(position, 1000.0f);
-    return probe.get();
+    _envProbes.emplace_back(probe);
+    return probe;
 }
 
-EnvironmentProbe* SceneEnvironmentProbePool::addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax) {
-    UniqueLock<SharedMutex> w_lock(_probeLock);
-    auto& probe = _envProbes.emplace_back(std::make_unique<EnvironmentProbe>(parentScene(), EnvironmentProbe::ProbeType::TYPE_LOCAL));
-    probe->setBounds(bbMin, bbMax);
-    return probe.get();
-}
-
-void SceneEnvironmentProbePool::removeProbe(EnvironmentProbe*& probe) {
+void SceneEnvironmentProbePool::unregisterProbe(EnvironmentProbeComponent* probe) {
     if (probe != nullptr) {
         UniqueLock<SharedMutex> w_lock(_probeLock);
         I64 probeGUID = probe->getGUID();
@@ -54,14 +48,6 @@ void SceneEnvironmentProbePool::removeProbe(EnvironmentProbe*& probe) {
                                        [&probeGUID](const auto& probe)
                                             -> bool { return probe->getGUID() == probeGUID; }),
                          eastl::end(_envProbes));
-        probe = nullptr;
-    }
-}
-
-void SceneEnvironmentProbePool::debugDraw(GFX::CommandBuffer& bufferInOut) {
-    SharedLock<SharedMutex> w_lock(_probeLock);
-    for (const auto& probe : _envProbes) {
-        probe->debugDraw(bufferInOut);
     }
 }
 

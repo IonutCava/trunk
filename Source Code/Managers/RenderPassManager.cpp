@@ -21,6 +21,7 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 namespace Divide {
 
@@ -160,12 +161,7 @@ namespace Divide {
                                                 static bool update = false;
                                                 OPTICK_EVENT("Environment Probes: BuildCommandBuffer");
                                                 Time::ScopedTimer time(timer);
-                                                envProbPool->lockProbeList();
-                                                const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(cam.getEye());
-                                                for (const auto& probe : probes) {
-                                                    probe->refresh(*buf);
-                                                }
-                                                envProbPool->unlockProbeList();
+                                          
                                                 buf->batch();
                                             },
                                             false);
@@ -985,16 +981,18 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
     I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
     const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
 
-    SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(parent().sceneManager()->getActiveScene());
-    envProbPool->lockProbeList();
-    const auto& probes = envProbPool->getLocked();
-    for (size_t i = 0; i < visibleNodes.size(); ++i) {
-        const VisibleNode& node = visibleNodes.node(i);
-        RenderingComponent* const rComp = node._node->get<RenderingComponent>();
-        assert(rComp != nullptr);
-        Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
+    if (stage == RenderStage::DISPLAY) {
+        SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(parent().sceneManager()->getActiveScene());
+        envProbPool->lockProbeList();
+        const auto& probes = envProbPool->getLocked();
+        for (size_t i = 0; i < visibleNodes.size(); ++i) {
+            const VisibleNode& node = visibleNodes.node(i);
+            RenderingComponent* const rComp = node._node->get<RenderingComponent>();
+            assert(rComp != nullptr);
+            Attorney::RenderingCompRenderPass::updateEnvProbeList(*rComp, probes);
+        }
+        envProbPool->unlockProbeList();
     }
-    envProbPool->unlockProbeList();
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;

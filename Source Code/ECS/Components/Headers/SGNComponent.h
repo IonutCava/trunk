@@ -144,7 +144,7 @@ bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args.
 
 struct EntityOnUpdate;
 
-class SGNComponent : private PlatformContextComponent,
+class SGNComponent : protected PlatformContextComponent,
                      public Factory<SGNComponent>
 {
     public:

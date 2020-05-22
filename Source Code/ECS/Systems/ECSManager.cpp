@@ -19,6 +19,7 @@
 #include "ECS/Components/Headers/PointLightComponent.h"
 #include "ECS/Components/Headers/SpotLightComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 namespace Divide {
 
@@ -66,6 +67,10 @@ namespace {
     {
         UnitSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
+    struct EnvProbeSystem : public ECSSystem<EnvProbeSystem, EnvironmentProbeComponent>
+    {
+        EnvProbeSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+    };
 };
 
 ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
@@ -88,6 +93,7 @@ ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     auto ScpSys = _ecsEngine.GetSystemManager()->AddSystem<ScriptSystem>(_ecsEngine);
     auto SelSys = _ecsEngine.GetSystemManager()->AddSystem<SelectionSystem>(_ecsEngine);
     auto UnitSys = _ecsEngine.GetSystemManager()->AddSystem<UnitSystem>(_ecsEngine);
+    auto ProbeSys = _ecsEngine.GetSystemManager()->AddSystem<EnvProbeSystem>(_ecsEngine);
     
     ASys->AddDependencies(TSys);
     BSys->AddDependencies(ASys);
@@ -104,6 +110,7 @@ ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     NetSys->AddDependencies(RBSys);
     ScpSys->AddDependencies(UnitSys);
     SelSys->AddDependencies(UnitSys);
+    ProbeSys->AddDependencies(UnitSys);
 
     _ecsEngine.GetSystemManager()->UpdateSystemWorkOrder();
 }

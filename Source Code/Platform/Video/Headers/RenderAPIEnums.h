@@ -97,6 +97,20 @@ namespace Names {
     };
 };
 
+enum class RefractorType : U8
+{
+    PLANAR = 0,
+    COUNT
+};
+
+enum class ReflectorType : U8
+{
+    PLANAR = 0,
+    CUBE,
+    ENVIRONMENT,
+    COUNT
+};
+
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U8 {
     POSITION = 0,
@@ -178,11 +192,13 @@ enum class PrimitiveType : U8 {
     PATCH = 0x0009,
     COUNT
 };
+
 namespace Names {
     static const char* primitiveType[] = {
         "POINTS", "LINES", "LINE_LOOP", "LINE_STRIP", "TRIANGLES", "TRIANGLE_STRIP", "TRIANGLE_FAN", "QUAD_STRIP", "POLYGON", "PATCH", "NONE"
     };
 };
+
 /// Specifies how the red, green, blue, and alpha source blending factors are computed.
 enum class BlendProperty : U8 {
     ZERO = 0,

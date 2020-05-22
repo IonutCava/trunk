@@ -83,7 +83,7 @@ stringImpl ToString(const DrawCommand& cmd, U16 indent)  {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("%d: Draw count: %d Type: %s Base instance: %d Instance count: %d Index count: %d\n", i++, drawCmd._drawCount, Names::primitiveType[to_base(drawCmd._primitiveType)], drawCmd._cmd.baseInstance, drawCmd._cmd.primCount, drawCmd._cmd.indexCount));
+        ret.append(Util::StringFormat("%d: Draw count: %d Type: %s Base instance: %d Instance count: %d Index count: %d\n", i++, drawCmd._drawCount, Divide::Names::primitiveType[to_base(drawCmd._primitiveType)], drawCmd._cmd.baseInstance, drawCmd._cmd.primCount, drawCmd._cmd.indexCount));
     }
 
     return ret;

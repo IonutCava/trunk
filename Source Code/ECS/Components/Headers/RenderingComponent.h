@@ -34,10 +34,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _RENDERING_COMPONENT_H_
 
 #include "SGNComponent.h"
+
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Geometry/Material/Headers/MaterialEnums.h"
-#include "Rendering/Headers/EnvironmentProbe.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
@@ -51,6 +51,9 @@ class WaterPlane;
 class ImpostorBox;
 class SceneGraphNode;
 class ParticleEmitter;
+class EnvironmentProbeComponent;
+
+using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
 
@@ -260,7 +263,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderCallback _refractionCallback;
     std::array<Texture_ptr, g_texUsage.size()> _externalTextures;
 
-    vectorEASTL<EnvironmentProbe*> _envProbes;
+    vectorEASTL<EnvironmentProbeComponent*> _envProbes;
     ShaderBufferList _externalBufferBindings;
 
     std::pair<Texture_ptr, U32> _defaultReflection = {nullptr, 0u};

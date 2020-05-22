@@ -6,6 +6,7 @@
 #include "Headers/BoundsComponent.h"
 #include "Headers/AnimationComponent.h"
 #include "Headers/TransformComponent.h"
+#include "Headers/EnvironmentProbeComponent.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
@@ -117,7 +118,8 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
         } else {
             PackagesPerPassType & perPassPkgs = _renderPackages[s];
             for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
-                perPassPkgs[p].resize(1);
+                STUBBED("ToDo: FActor out all of this repetition with 'if reflection this, if shadow that ...' - Ionut");
+                perPassPkgs[p].resize(s == to_U8(RenderStage::REFLECTION) ? to_U8(ReflectorType::COUNT) : 1);
             }
         }
     }
@@ -496,7 +498,10 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) : renderStagePass._passIndex;
+    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) 
+                                                                : renderStagePass._stage == RenderStage::REFLECTION 
+                                                                                          ? renderStagePass._variant
+                                                                                          : renderStagePass._passIndex;
 
     return _renderPackages[s][p][i];
 }
@@ -504,8 +509,10 @@ RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderS
 const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) : renderStagePass._passIndex;
-
+    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) 
+                                                                : renderStagePass._stage == RenderStage::REFLECTION 
+                                                                                          ? renderStagePass._variant
+                                                                                          : renderStagePass._passIndex;
     return _renderPackages[s][p][i];
 }
 
@@ -711,7 +718,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
         _envProbes.resize(0);
         _envProbes.reserve(probes.size());
         for (const auto& probe : probes) {
-            _envProbes.push_back(probe.get());
+            _envProbes.push_back(probe);
         }
 
         TransformComponent* const transform = _parentSGN.get<TransformComponent>();
@@ -724,7 +731,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
             });
         }
 
-        RenderTarget* rt = EnvironmentProbe::reflectionTarget()._rt;
+        RenderTarget* rt = EnvironmentProbeComponent::reflectionTarget()._rt;
         defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->getRTIndex());
     }
 

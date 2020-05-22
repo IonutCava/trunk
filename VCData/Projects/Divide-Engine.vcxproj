@@ -357,7 +357,6 @@
     <ClCompile Include="../../Source Code/Rendering\Camera\OrbitCamera.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Camera\ScriptedCamera.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Camera\ThirdPersonCamera.cpp" />
-    <ClCompile Include="../../Source Code/Rendering\EnvironmentProbe.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Renderer.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Camera\Camera.cpp" />
     <ClCompile Include="../../Source Code/Rendering\Lighting\LightPool.cpp" />
@@ -395,6 +394,7 @@
     <ClCompile Include="..\..\Source Code\ECS\Components\BoundsComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\DirectionalLightComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\EditorComponent.cpp" />
+    <ClCompile Include="..\..\Source Code\ECS\Components\EnvironmentProbeComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\IKComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\NavigationComponent.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Components\NetworkingComponent.cpp" />
@@ -499,7 +499,6 @@
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\ScriptedCamera.h" />
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\ThirdPersonCamera.h" />
     <ClInclude Include="../../Source Code/Rendering\Headers\ClipRegion.h" />
-    <ClInclude Include="../../Source Code/Rendering\Headers\EnvironmentProbe.h" />
     <ClInclude Include="../../Source Code/Rendering\Headers\FrameListener.h" />
     <ClInclude Include="../../Source Code/Rendering\Headers\Renderer.h" />
     <ClInclude Include="../../Source Code/Rendering\Lighting\Headers\LightPool.h" />
@@ -535,6 +534,7 @@
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\BoundsComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\DirectionalLightComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EditorComponent.h" />
+    <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EnvironmentProbeComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\IKComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NavigationComponent.h" />
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\NetworkingComponent.h" />

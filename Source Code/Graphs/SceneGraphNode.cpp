@@ -748,7 +748,7 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     changeUsageContext(pt.get("static", false) ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC);
 
     U32 componentsToLoad = 0;
-    for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
+    for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
         ComponentType type = ComponentType::_from_integral(1 << i);
         if (pt.count(type._to_string()) > 0) {
             componentsToLoad |= type._to_integral();

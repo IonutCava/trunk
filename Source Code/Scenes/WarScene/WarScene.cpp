@@ -594,15 +594,6 @@ bool WarScene::load(const Str128& name) {
     
     Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setHorizontalFoV(110);
 
-    constexpr bool disableEnvProbes = true;
-    if (!disableEnvProbes) {
-        auto ret = _envProbePool->addInfiniteProbe(vec3<F32>(0.0f, 0.0f, 0.0f));
-        ACKNOWLEDGE_UNUSED(ret);
-
-        ret = _envProbePool->addLocalProbe(vec3<F32>(-5.0f), vec3<F32>(-1.0f));
-        ACKNOWLEDGE_UNUSED(ret);
-    }
-
     _sceneReady = true;
     if (loadState) {
         return initializeAI(true);

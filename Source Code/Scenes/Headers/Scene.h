@@ -65,6 +65,7 @@ class ParamHandler;
 class TerrainDescriptor;
 class ParticleEmitter;
 class PhysicsSceneInterface;
+class EnvironmentProbeComponent;
 
 FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Player);
@@ -76,6 +77,7 @@ namespace Attorney {
     class SceneLoadSave;
     class SceneGUI;
     class SceneInput;
+    class SceneEnvironmentProbeComponent;
 };
 
 struct Selections {
@@ -107,6 +109,7 @@ class Scene : public Resource, public PlatformContextComponent {
     friend class Attorney::SceneLoadSave;
     friend class Attorney::SceneGUI;
     friend class Attorney::SceneInput;
+    friend class Attorney::SceneEnvironmentProbeComponent;
 
    protected:
     static bool onStartup();
@@ -456,6 +459,19 @@ class SceneRenderPass {
 
     friend class Divide::RenderPass;
     friend class Divide::RenderPassManager;
+};
+
+class SceneEnvironmentProbeComponent
+{
+private:
+    static void registerProbe(Scene& scene, EnvironmentProbeComponent& probe) noexcept {
+        scene._envProbePool->registerProbe(&probe);
+    }
+
+    static void unregisterProbe(Scene& scene, EnvironmentProbeComponent& probe) noexcept {
+        scene._envProbePool->unregisterProbe(&probe);
+    }
+    friend class Divide::EnvironmentProbeComponent;
 };
 
 class SceneLoadSave {

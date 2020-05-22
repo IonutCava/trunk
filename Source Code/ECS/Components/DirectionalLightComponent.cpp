@@ -86,7 +86,7 @@ void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
                              (playerCam->getForwardDir() * 10.0f) + 
                              (playerCam->getRightDir() * 2.0f);
 
-        _parentPool.context().gfx().debugDrawCone(min, directionCache(), coneDist, 1.f, getDiffuseColour());
+        context().gfx().debugDrawCone(min, directionCache(), coneDist, 1.f, getDiffuseColour());
     }
 
     Parent::PreUpdate(deltaTime);

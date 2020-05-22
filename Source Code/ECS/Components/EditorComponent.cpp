@@ -101,10 +101,28 @@ namespace Divide {
                     field.getPtr<Material>()->saveToXML(entryName, pt);
                 }break;
                 default:
-                case EditorComponentFieldType::BUTTON:
-                case EditorComponentFieldType::BOUNDING_BOX:
-                case EditorComponentFieldType::BOUNDING_SPHERE: {
+                case EditorComponentFieldType::BUTTON: {
                     //Skip
+                } break;
+                case EditorComponentFieldType::BOUNDING_BOX: {
+                    BoundingBox bb = {};
+                    field.get<BoundingBox>(bb);
+
+                    pt.put(entryName + ".aabb.min.<xmlattr>.x", bb.getMin().x);
+                    pt.put(entryName + ".aabb.min.<xmlattr>.y", bb.getMin().y);
+                    pt.put(entryName + ".aabb.min.<xmlattr>.z", bb.getMin().z);
+                    pt.put(entryName + ".aabb.max.<xmlattr>.x", bb.getMax().x);
+                    pt.put(entryName + ".aabb.max.<xmlattr>.y", bb.getMax().y);
+                    pt.put(entryName + ".aabb.max.<xmlattr>.z", bb.getMax().z);
+                } break;
+                case EditorComponentFieldType::BOUNDING_SPHERE: {
+                    BoundingSphere bs = {};
+                    field.get<BoundingSphere>(bs);
+
+                    pt.put(entryName + ".aabb.center.<xmlattr>.x", bs.getCenter().x);
+                    pt.put(entryName + ".aabb.center.<xmlattr>.y", bs.getCenter().y);
+                    pt.put(entryName + ".aabb.center.<xmlattr>.z", bs.getCenter().z);
+                    pt.put(entryName + ".aabb.radius", bs.getRadius());
                 }break;
             }
         }
@@ -152,12 +170,39 @@ namespace Divide {
                         mat->loadFromXML(entryName, pt);
                     }break;
                     default:
-                    case EditorComponentFieldType::DROPDOWN_TYPE:
-                    case EditorComponentFieldType::BUTTON:
-                    case EditorComponentFieldType::BOUNDING_BOX:
-                    case EditorComponentFieldType::BOUNDING_SPHERE: {
-                        //Skip
+                    case EditorComponentFieldType::DROPDOWN_TYPE: {
+
                     }break;
+                    case EditorComponentFieldType::BUTTON: {
+                        // Skip
+                    }  break;
+                    case EditorComponentFieldType::BOUNDING_BOX: {
+                        BoundingBox bb = {};
+                        bb.setMin(
+                        {
+                            pt.get<F32>(entryName + ".aabb.min.<xmlattr>.x", -1.0f),
+                            pt.get<F32>(entryName + ".aabb.min.<xmlattr>.y", -1.0f),
+                            pt.get<F32>(entryName + ".aabb.min.<xmlattr>.z", -1.0f)
+                        });
+                        bb.setMax(
+                        {
+                            pt.get<F32>(entryName + ".aabb.max.<xmlattr>.x", 1.0f),
+                            pt.get<F32>(entryName + ".aabb.max.<xmlattr>.y", 1.0f),
+                            pt.get<F32>(entryName + ".aabb.max.<xmlattr>.z", 1.0f)
+                        });
+                        field.set<BoundingBox>(bb);
+                    } break;
+                    case EditorComponentFieldType::BOUNDING_SPHERE: {
+                        BoundingSphere bs = {};
+                        bs.setCenter(
+                        {
+                            pt.get<F32>(entryName + ".aabb.center.<xmlattr>.x", 0.f),
+                            pt.get<F32>(entryName + ".aabb.center.<xmlattr>.y", 0.f),
+                            pt.get<F32>(entryName + ".aabb.center.<xmlattr>.z", 0.f)
+                        });
+                        bs.setRadius(pt.get<F32>(entryName + ".aabb.radius", 1.0f));
+                        field.set<BoundingSphere>(bs);
+                    } break;
                 };
             }
         }

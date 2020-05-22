@@ -33,10 +33,16 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_ENVIRONMENT_PROBE_POOL_H_
 #define _SCENE_ENVIRONMENT_PROBE_POOL_H_
 
-#include "Rendering/Headers/EnvironmentProbe.h"
 #include "Scenes/Headers/SceneComponent.h"
 
 namespace Divide {
+
+namespace GFX {
+    class CommandBuffer;
+};
+
+class EnvironmentProbeComponent;
+using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
 
 class SceneRenderState;
 class SceneEnvironmentProbePool : public SceneComponent {
@@ -47,11 +53,8 @@ public:
     const EnvironmentProbeList& sortAndGetLocked(const vec3<F32>& position);
     const EnvironmentProbeList& getLocked();
 
-    EnvironmentProbe* addInfiniteProbe(const vec3<F32>& position);
-    EnvironmentProbe* addLocalProbe(const vec3<F32>& bbMin, const vec3<F32>& bbMax);
-    void removeProbe(EnvironmentProbe*& probe);
-
-    void debugDraw(GFX::CommandBuffer& bufferInOut);
+    EnvironmentProbeComponent* registerProbe(EnvironmentProbeComponent* probe);
+    void unregisterProbe(EnvironmentProbeComponent* probe);
 
     void lockProbeList();
     void unlockProbeList();
