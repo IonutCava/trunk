@@ -431,7 +431,9 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         _context.setViewport(0, 0, to_I32(getWidth()), to_I32(getHeight()));
     }
 
-    setDefaultState(drawPolicy);
+    if (drawPolicy.setDefaultState()) {
+        setDefaultState(drawPolicy);
+    }
 
     // Memorize the current draw policy to speed up later calls
     _previousPolicy = drawPolicy;

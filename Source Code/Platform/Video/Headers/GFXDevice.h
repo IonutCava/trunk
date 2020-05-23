@@ -263,6 +263,7 @@ public:  // GPU interface
         RenderStagePass stagePass,
         GFX::CommandBuffer& commandsInOut,
         std::array<Camera*, 6>& cameras,
+        bool disableShadowMaps = true,
         SceneGraphNode* sourceNode = nullptr);
 
     void generateDualParaboloidMap(RenderTargetID targetBuffer,
@@ -272,6 +273,7 @@ public:  // GPU interface
         RenderStagePass stagePass,
         GFX::CommandBuffer& commandsInOut,
         std::array<Camera*, 2>& cameras,
+        bool disableShadowMaps = true,
         SceneGraphNode* sourceNode = nullptr);
 
     /// Access (Read Only) rendering data used by the GFX

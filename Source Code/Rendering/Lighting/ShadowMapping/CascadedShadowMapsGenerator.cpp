@@ -337,7 +337,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
     }
 }
 
-void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
+void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) {
 
     DirectionalLightComponent& dirLight = static_cast<DirectionalLightComponent&>(light);
 
@@ -350,17 +350,11 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     
     RenderPassManager::PassParams params = {};
     params._sourceNode = &light.getSGN();
-    params._stagePass = { RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()) };
+    params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;
-    params._bindTargets = false;
     params._minLoD = -1;
-    params._stagePass._indexA = to_U16(lightIndex);
-
-    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-    beginRenderPassCmd._target = params._target;
-    beginRenderPassCmd._name = "DO_CSM_PASS_DEPTH";
-    beginRenderPassCmd._descriptor = {};
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+    params._layerParams._type = RTAttachmentType::Colour;
+    params._layerParams._index = 0;
 
     RTClearDescriptor clearDescriptor = {}; 
     clearDescriptor.clearDepth(true);
@@ -372,39 +366,24 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     clearMainTarget._descriptor = clearDescriptor;
     GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
-    RenderTarget::DrawLayerParams drawParams = {};
-    drawParams._type = RTAttachmentType::Colour;
-    drawParams._index = 0;
-
     RenderPassManager* rpm = _context.parent().renderPassManager();
 
     constexpr F32 minExtentsFactors[] = { 0.025f, 1.25f, 2.75f, 5.5f };
 
     I16 i = to_I16(numSplits) - 1;
     for (i; i >= 0; i--) {
-        drawParams._layer = i;
-
+        params._layerParams._layer = i;
+        params._passName = Util::StringFormat("CSM_PASS_%d", i).c_str();
+        params._stagePass._pass = i;
+        params._camera = ShadowMap::shadowCameras(ShadowType::LAYERED)[i];
+        params._minExtents.set(minExtentsFactors[i]);
         if (dirLight.csmUseSceneAABBFit()) {
             params._feedBackContainer = &dirLight.feedBackContainers()[i];
             params._feedBackContainer->_visibleNodes.resize(0);
         }
 
-        params._passName = Util::StringFormat("CSM_PASS_%d", i).c_str();
-
-        GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-        beginRenderSubPassCmd._writeLayers.push_back(drawParams);
-        GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
-
-        params._stagePass._indexB = i;
-        params._camera = ShadowMap::shadowCameras(ShadowType::LAYERED)[i];
-        params._minExtents.set(minExtentsFactors[i]);
-
         rpm->doCustomPass(params, bufferInOut);
-
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
     }
-
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     postRender(dirLight, bufferInOut);
 }

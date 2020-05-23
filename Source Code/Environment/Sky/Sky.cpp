@@ -23,11 +23,10 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     _sun = eastl::make_unique<Sun>();
 
     time_t t = time(NULL);
-    // Bristol :D
-    _sun->SetLocation(-2.589910f, 51.45414);
+    _sun->SetLocation(-2.589910f, 51.45414); // Bristol :D
     _sun->SetDate(localtime(&t));
-    _renderState.addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
-    _renderState.addToDrawExclusionMask(RenderStage::REFRACTION, RenderPassType::COUNT, -1);
+
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
     // Generate a render state
     RenderStateBlock skyboxRenderState = {};
@@ -402,13 +401,13 @@ void Sky::buildDrawCommands(SceneGraphNode& sgn,
     PipelineDescriptor pipelineDescriptor = {};
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {
         WAIT_FOR_CONDITION(_skyShaderPrePass->getState() == ResourceState::RES_LOADED);
-        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION 
+        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHashPrePass
                                             : _skyboxRenderStateHashPrePass);
         pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
     } else {
         WAIT_FOR_CONDITION(_skyShader->getState() == ResourceState::RES_LOADED);
-        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION
+        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                                       ? _skyboxRenderStateReflectedHash
                                                       : _skyboxRenderStateHash);
         pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();

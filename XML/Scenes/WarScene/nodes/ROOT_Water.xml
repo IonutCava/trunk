@@ -21,7 +21,7 @@
         <shadingMode>BLINN_PHONG</shadingMode>
         <colour r="1" g="1" b="1" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <metallic>0</metallic>
+        <metallic>0.100000001</metallic>
         <roughness>0.00999999978</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
@@ -286,4 +286,6 @@
 <RIGID_BODY/>
 <WATER>
     <Blur__reflections>true</Blur__reflections>
+    <Reflection__Plane__Offset>0</Reflection__Plane__Offset>
+    <Refraction__Plane__Offset>1.5</Refraction__Plane__Offset>
 </WATER>

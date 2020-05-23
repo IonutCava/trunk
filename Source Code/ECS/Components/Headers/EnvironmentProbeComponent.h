@@ -45,7 +45,6 @@ class Pipeline;
 class GFXDevice;
 class IMPrimitive;
 FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
-FWD_DECLARE_MANAGED_CLASS(ImpostorSphere);
 
 namespace GFX {
     class CommandBuffer;
@@ -65,6 +64,7 @@ public:
     explicit EnvironmentProbeComponent(SceneGraphNode& sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
 
+    static void prepare(GFX::CommandBuffer& bufferInOut);
     static void onStartup(GFXDevice& context);
     static void onShutdown(GFXDevice& context);
 
@@ -78,13 +78,11 @@ public:
     static RenderTargetHandle reflectionTarget();
 
     F32 distanceSqTo(const vec3<F32>& pos) const;
-    U32 getRTIndex() const;
-
+    
+    PROPERTY_R_IW(U16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
 
 protected:
-    void updateInternal();
-
     static U16 allocateSlice();
 
 protected:
@@ -92,14 +90,9 @@ protected:
 
 protected:
     BoundingBox _aabb, _refaabb;
-    ImpostorSphere_ptr _impostor = nullptr;
-    ShaderProgram_ptr _impostorShader = nullptr;
-    Pipeline*    _bbPipeline = nullptr;
-    IMPrimitive* _boundingBoxPrimitive = nullptr;
-    U16 _currentArrayIndex = 0u;
-    ProbeType _type = ProbeType::TYPE_LOCAL;
     U8 _updateRate = 1u;
     U8 _currentUpdateCall = 0u;
+    ProbeType _type = ProbeType::TYPE_LOCAL;
 
 private:
     bool _drawImpostor = false;

@@ -48,7 +48,6 @@ class Material;
 class GFXDevice;
 class RenderBin;
 class WaterPlane;
-class ImpostorBox;
 class SceneGraphNode;
 class ParticleEmitter;
 class EnvironmentProbeComponent;
@@ -90,7 +89,7 @@ struct RenderCbkParams {
                              const SceneGraphNode& sgn,
                              const SceneRenderState& sceneRenderState,
                              const RenderTargetID& renderTarget,
-                             U32 passIndex,
+                             U16 passIndex,
                              U8 passVariant,
                              Camera* camera) noexcept
         : _context(context),
@@ -107,9 +106,9 @@ struct RenderCbkParams {
     const SceneGraphNode& _sgn;
     const SceneRenderState& _sceneRenderState;
     const RenderTargetID& _renderTarget;
-    U32 _passIndex;
-    U8  _passVariant;
     Camera* _camera;
+    U16 _passIndex;
+    U8  _passVariant;
 };
 
 using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
@@ -117,7 +116,7 @@ using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
 constexpr std::array<std::pair<RenderTargetUsage, TextureUsage>, 3> g_texUsage = {
     std::pair{ RenderTargetUsage::REFLECTION_PLANAR, TextureUsage::REFLECTION_PLANAR},
     std::pair{ RenderTargetUsage::REFRACTION_PLANAR, TextureUsage::REFRACTION_PLANAR},
-    std::pair{ RenderTargetUsage::REFLECTION_CUBE, TextureUsage::REFLECTION_CUBE }
+    std::pair{ RenderTargetUsage::REFLECTION_CUBE,   TextureUsage::REFLECTION_CUBE  }
 };
 
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
@@ -231,6 +230,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool clearReflection();
     bool clearRefraction();
 
+    void clearEnvProbeList();
     void updateEnvProbeList(const EnvironmentProbeList& probes);
 
     void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
@@ -329,6 +329,10 @@ class RenderingCompRenderPass {
 
         static void updateEnvProbeList(RenderingComponent& renderable, const EnvironmentProbeList& probes) {
             renderable.updateEnvProbeList(probes);
+        }
+
+        static void clearEnvProbeList(RenderingComponent& renderable) {
+            renderable.clearEnvProbeList();
         }
 
         static bool prepareDrawPackage(RenderingComponent& renderable,

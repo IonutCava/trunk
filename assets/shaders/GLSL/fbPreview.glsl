@@ -95,6 +95,43 @@ void main()
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 
+--Fragment.Cube
+
+#include "utility.frag"
+
+out vec4 _colourOut;
+
+layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texDiffuse0;
+uniform int layer;
+uniform int face;
+
+void main() {
+    vec2 uv_cube = 2.0f * VAR._texCoord - 1.0f;
+    vec3 vertex = vec3(0);
+    switch (face) {
+    case 0:
+        vertex.xyz = vec3(1.0, uv_cube.y, uv_cube.x);
+        break;
+    case 1:
+        vertex.xyz = vec3(-1.0, uv_cube.y, -uv_cube.x);
+        break;
+    case 2:
+        vertex.xyz = vec3(uv_cube.x, 1.0, uv_cube.y);
+        break;
+    case 3:
+        vertex.xyz = vec3(uv_cube.x, -1.0, -uv_cube.y);
+        break;
+    case 4:
+        vertex.xyz = vec3(-uv_cube.x, uv_cube.y, 1.0);
+        break;
+    case 5:
+        vertex.xyz = vec3(uv_cube.x, uv_cube.y, -1.0);
+        break;
+    };
+
+    _colourOut = texture(texDiffuse0, vec4(vertex, layer));
+}
+
 --Fragment.Cube.Shadow
 
 #include "utility.frag"

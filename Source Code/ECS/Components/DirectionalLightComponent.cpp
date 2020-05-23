@@ -44,15 +44,15 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
 
     getEditorComponent().registerField(std::move(sceneFitField));
 
-    EditorComponentField csmNearClip = {};
-    csmNearClip._name = "CSM Near Clip Offset";
-    csmNearClip._data = &_csmNearClipOffset;
-    csmNearClip._range = { -g_defaultLightDistance, g_defaultLightDistance };
-    csmNearClip._type = EditorComponentFieldType::PUSH_TYPE;
-    csmNearClip._readOnly = false;
-    csmNearClip._basicType = GFX::PushConstantType::FLOAT;
+    EditorComponentField csmNearClipField = {};
+    csmNearClipField._name = "CSM Near Clip Offset";
+    csmNearClipField._data = &_csmNearClipOffset;
+    csmNearClipField._range = { -g_defaultLightDistance, g_defaultLightDistance };
+    csmNearClipField._type = EditorComponentFieldType::PUSH_TYPE;
+    csmNearClipField._readOnly = false;
+    csmNearClipField._basicType = GFX::PushConstantType::FLOAT;
 
-    getEditorComponent().registerField(std::move(csmNearClip));
+    getEditorComponent().registerField(std::move(csmNearClipField));
 
     EditorComponentField showConeField = {};
     showConeField._name = "Show direction cone";

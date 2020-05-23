@@ -108,6 +108,9 @@ class SceneGraph : private NonCopyable,
 
     void postLoad();
 
+    bool saveNodeToXML(const SceneGraphNode& node) const;
+    bool loadNodeFromXML(const char* assetsFile, SceneGraphNode& node) const;
+
     void saveToXML(const char* assetsFile, DELEGATE<void, std::string_view> msgCallback) const;
     void loadFromXML(const char* assetsFile);
 

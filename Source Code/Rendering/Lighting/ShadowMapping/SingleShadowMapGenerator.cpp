@@ -147,7 +147,7 @@ SingleShadowMapGenerator::~SingleShadowMapGenerator()
     _context.renderTargetPool().deallocateRT(_drawBufferDepth);
 }
 
-void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
+void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
     SpotLightComponent& spotLight = static_cast<SpotLightComponent&>(light);
 
@@ -168,17 +168,10 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     RenderPassManager::PassParams params = {};
     params._sourceNode = &light.getSGN();
     params._camera = shadowCameras[0];
-    params._stagePass = { RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex };
+    params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;
     params._passName = "SingleShadowMap";
-    params._bindTargets = false;
     params._minLoD = -1;
-
-    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-    beginRenderPassCmd._target = params._target;
-    beginRenderPassCmd._name = "DO_SINGLE_SHADOW_MAP";
-    beginRenderPassCmd._descriptor = {};
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     RTClearDescriptor clearDescriptor = {};
     clearDescriptor.clearDepth(true);
@@ -191,8 +184,6 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
     _context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
-
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     postRender(spotLight, bufferInOut);
 }

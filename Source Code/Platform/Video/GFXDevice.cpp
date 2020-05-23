@@ -895,6 +895,7 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
                                 RenderStagePass stagePass,
                                 GFX::CommandBuffer& bufferInOut,
                                 std::array<Camera*, 6>& cameras,
+                                bool disableShadowMaps,
                                 SceneGraphNode* sourceNode) {
 
 
@@ -944,38 +945,22 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         vec3<F32>( 0.0f,  0.0f, -1.0f)  //Neg Z
     };
 
-    // Enable our render target
-    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-    beginRenderPassCmd._target = cubeMap;
-    beginRenderPassCmd._name = "GENERATE_CUBE_MAP";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
-
     RenderPassManager* passMgr = parent().renderPassManager();
     RenderPassManager::PassParams params;
     params._sourceNode = sourceNode;
     params._target = cubeMap;
     params._stagePass = stagePass;
-    params._stagePass._indexA = to_U16(stagePass._passIndex);
-    // We do our own binding
-    params._bindTargets = false;
     params._passName = "CubeMap";
-
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-    beginRenderSubPassCmd._writeLayers.resize(1);
-
-    RenderTarget::DrawLayerParams drawParams = {};
-    drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
-    drawParams._index = 0;
+    params._layerParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
+    params._layerParams._index = 0;
+    params._shadowMappingEnabled = !disableShadowMaps;
 
     const D64 aspect = to_D64(targetResolution.width) / targetResolution.height;
 
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        drawParams._layer = i + arrayOffset;
-        beginRenderSubPassCmd._writeLayers[0] = drawParams;
-        GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+        params._layerParams._layer = i + arrayOffset;
 
         Camera* camera = cameras[i];
         if (camera == nullptr) {
@@ -986,15 +971,10 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         // Point our camera to the correct face
         camera->lookAt(pos, pos + TabCenter[i] * zPlanes.y, TabUp[i]);
         params._camera = camera;
-        params._stagePass._indexB = i;
+        params._stagePass._pass = i;
         // Pass our render function to the renderer
         passMgr->doCustomPass(params, bufferInOut);
-
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
     }
-
-    // Resolve our render target
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
@@ -1004,6 +984,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
                                           RenderStagePass stagePass,
                                           GFX::CommandBuffer& bufferInOut,
                                           std::array<Camera*, 2>& cameras,
+                                          bool disableShadowMaps,
                                           SceneGraphNode* sourceNode)
 {
     RenderTarget& paraboloidTarget = _rtPool->renderTarget(targetBuffer);
@@ -1034,24 +1015,11 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     params._sourceNode = sourceNode;
 
     params._stagePass = stagePass;
-    params._stagePass._indexA = to_U16(stagePass._passIndex);
     params._target = targetBuffer;
-    params._bindTargets = false;
     params._passName = "DualParaboloid";
-
-    // Enable our render target
-
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = targetBuffer;
-    beginRenderPassCmd._name = "GENERATE_DUAL_PARABOLOID_MAP";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
-    beginRenderSubPassCmd._writeLayers.resize(1);
-
-    RenderTarget::DrawLayerParams drawParams = {};
-    drawParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
-    drawParams._index = 0;
+    params._layerParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
+    params._layerParams._index = 0;
+    params._shadowMappingEnabled = !disableShadowMaps;
 
     const D64 aspect = to_D64(targetResolution.width) / targetResolution.height;
     for (U8 i = 0; i < 2; ++i) {
@@ -1060,9 +1028,7 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
             camera = Camera::utilityCamera(Camera::UtilityCamera::DUAL_PARABOLOID);
         }
 
-        drawParams._layer = i + arrayOffset;
-        beginRenderSubPassCmd._writeLayers[0] = drawParams;
-        GFX::EnqueueCommand(bufferInOut, beginRenderSubPassCmd);
+        params._layerParams._layer = i + arrayOffset;
 
         // Point our camera to the correct face
         camera->lookAt(pos, pos + (i == 0 ? WORLD_Z_NEG_AXIS : WORLD_Z_AXIS) * zPlanes.y);
@@ -1071,12 +1037,10 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
         // And generated required matrices
         // Pass our render function to the renderer
         params._camera = camera;
-        params._stagePass._indexB = i;
-        passMgr->doCustomPass(params, bufferInOut);
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
-    }
+        params._stagePass._pass = i;
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        passMgr->doCustomPass(params, bufferInOut);
+    }
 }
 
 void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
@@ -1400,6 +1364,7 @@ void GFXDevice::setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>
 #pragma region Command buffers, occlusion culling, etc
 void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch) {
     OPTICK_EVENT();
+
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
 
@@ -1413,9 +1378,10 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
         commandBuffer.batch();
     }
 
-    if (!commandBuffer.validate()) {
+    const GFX::ErrorType error = commandBuffer.validate();
+    if (error != GFX::ErrorType::NONE) {
         Console::errorfn(Locale::get(_ID("ERROR_GFX_INVALID_COMMAND_BUFFER")), commandBuffer.toString().c_str());
-        DIVIDE_ASSERT(false, "GFXDevice::flushCommandBuffer error: Invalid command buffer. Check error log!");
+        DIVIDE_ASSERT(false, Util::StringFormat("GFXDevice::flushCommandBuffer error [ %s ]: Invalid command buffer. Check error log!", GFX::Names::errorType[to_base(error)]).c_str());
         return;
     }
 

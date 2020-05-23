@@ -42,6 +42,9 @@ class LoadSave {
 public:
     static bool loadScene(Scene& activeScene);
     static bool saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback);
+
+    static bool saveNodeToXML(const Scene& activeScene, const SceneGraphNode& node);
+    static bool loadNodeFromXML(const Scene& activeScene, SceneGraphNode& node);
 };
 
 enum class RenderStage : U8;
@@ -242,7 +245,10 @@ protected:
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
     void moveCameraToNode(const SceneGraphNode& targetNode) const;
+    bool saveNode(const SceneGraphNode& targetNode) const;
+    bool loadNode(SceneGraphNode& targetNode) const;
     SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
+    SceneEnvironmentProbePool* getEnvProbes() const;
 
 private:
     bool _init = false;
@@ -325,6 +331,18 @@ class SceneManagerEditor {
      return manager.createNode(type, descriptor);
    }
 
+   static SceneEnvironmentProbePool* getEnvProbes(const Divide::SceneManager& manager) {
+       return manager.getEnvProbes();
+   }
+
+   static bool saveNode(Divide::SceneManager& mgr, const SceneGraphNode& targetNode) {
+       return mgr.saveNode(targetNode);
+   }
+
+   static bool loadNode(Divide::SceneManager& mgr, SceneGraphNode& targetNode) {
+       return mgr.loadNode(targetNode);
+   }
+
    friend class Divide::Editor;
 };
 class SceneManagerScenePool {
@@ -349,6 +367,7 @@ class SceneManagerCameraAccessor {
     static void moveCameraToNode(Divide::SceneManager& mgr, const SceneGraphNode& targetNode) {
         mgr.moveCameraToNode(targetNode);
     }
+
 
     friend class Divide::Scene;
     friend class Divide::Editor;

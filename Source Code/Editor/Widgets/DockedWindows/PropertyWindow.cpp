@@ -875,7 +875,7 @@ namespace Divide {
                 {
                     EditorComponentField bbField = {};
                     bbField._name = "- Radius ";
-                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._basicType = GFX::PushConstantType::FLOAT;
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = &radius;
@@ -984,9 +984,8 @@ namespace Divide {
 
             constexpr U8 min = 0u, max = Material::g_maxVariantsPerPass;
             ImGui::SliderScalar("Variant", ImGuiDataType_U8, &currentStagePass._variant, &min, &max);
-            ImGui::InputScalar("Pass Index", ImGuiDataType_U32, &currentStagePass._passIndex);
-            ImGui::InputScalar("Index A", ImGuiDataType_U16, &currentStagePass._indexA);
-            ImGui::InputScalar("Index B", ImGuiDataType_U16, &currentStagePass._indexA);
+            ImGui::InputScalar("Index", ImGuiDataType_U16, &currentStagePass._index);
+            ImGui::InputScalar("Pass", ImGuiDataType_U32, &currentStagePass._pass);
         }
 
         size_t stateHash = 0;

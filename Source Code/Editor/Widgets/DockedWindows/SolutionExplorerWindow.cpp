@@ -8,6 +8,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleBoxGenerator.h"
@@ -120,6 +121,12 @@ namespace Divide {
 
             if (ImGui::Selectable("Go To")) {
                 goToNode(sgn);
+            }
+            if (ImGui::Selectable("Save Changes")) {
+                saveNode(sgn);
+            }
+            if (ImGui::Selectable("Load from file")) {
+                loadNode(sgn);
             }
             ImGui::EndPopup();
         }
@@ -589,6 +596,14 @@ namespace Divide {
 
     void SolutionExplorerWindow::goToNode(const SceneGraphNode& sgn) const {
         Attorney::EditorSolutionExplorerWindow::teleportToNode(_parent, sgn);
+    }
+
+    void SolutionExplorerWindow::saveNode(const SceneGraphNode& sgn) const {
+        Attorney::EditorSolutionExplorerWindow::saveNode(_parent, sgn);
+    }
+
+    void SolutionExplorerWindow::loadNode(SceneGraphNode& sgn) const {
+        Attorney::EditorSolutionExplorerWindow::loadNode(_parent, sgn);
     }
 
     SceneNode_ptr SolutionExplorerWindow::createNode() {

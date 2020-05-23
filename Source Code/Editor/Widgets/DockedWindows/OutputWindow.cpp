@@ -8,7 +8,7 @@
 namespace Divide {
     constexpr U16 g_maxLogEntries = 512;
 
-    size_t g_writeIndex = 0;
+    std::atomic_size_t g_writeIndex = 0;
     std::array<Console::OutputEntry, g_maxLogEntries> g_log;
 
     OutputWindow::OutputWindow(Editor& parent, const Descriptor& descriptor)
@@ -17,6 +17,7 @@ namespace Divide {
     {
         memset(_inputBuf, 0, sizeof(_inputBuf));
 
+        std::atomic_init(&g_writeIndex, 0);
         _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
             printText(entry);
         });
@@ -31,7 +32,7 @@ namespace Divide {
 
     void OutputWindow::clearLog() {
         g_log.fill({ "", Console::EntryType::Info });
-        g_writeIndex = 0;
+        g_writeIndex.store(0);
         _scrollToBottom = true;
     }
 
@@ -76,8 +77,9 @@ namespace Divide {
             ImVec4(0.0f, 0.0f, 1.0f, 1.0f)
         };
 
+        const size_t start = g_writeIndex.load();
         for (U16 i = 0; i < g_maxLogEntries;  ++i) {
-            const size_t index = (g_writeIndex + 1 + i) % g_maxLogEntries;
+            const size_t index = (start + 1 + i) % g_maxLogEntries;
             const Console::OutputEntry& message = g_log[index];
             if (!_filter.PassFilter(message._text.c_str())) {
                 continue;
@@ -129,8 +131,7 @@ namespace Divide {
     }
 
     void OutputWindow::printText(const Console::OutputEntry& entry) {
-        g_log[g_writeIndex] = entry;
-        g_writeIndex = ++g_writeIndex % g_maxLogEntries;
+        g_log[g_writeIndex.fetch_add(1) % g_maxLogEntries] = entry;
     }
 
     void OutputWindow::executeCommand(const char* command_line) {

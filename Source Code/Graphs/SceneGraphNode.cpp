@@ -740,6 +740,18 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, std::
     });
 }
 
+void SceneGraphNode::loadFromXML(const Str256& sceneLocation) {
+    boost::property_tree::ptree pt;
+    stringImpl targetFile = sceneLocation + "/nodes/";
+    targetFile.append(parent()->name());
+    targetFile.append("_");
+    targetFile.append(name());
+    targetFile.append(".xml");
+    XML::readXML(targetFile.c_str(), pt);
+
+    loadFromXML(pt);
+}
+
 void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
     if (!serialize()) {
         return;

@@ -249,9 +249,6 @@
     <ClCompile Include="../../Source Code/AI\PathFinding\NavMeshes\NavMeshLoader.cpp">
       <Filter>AI\PathFinding\NavMeshes</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Dynamics\Entities\Impostor.cpp">
-      <Filter>Dynamics\Entities</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Dynamics\Entities\Particles\ParticleData.cpp">
       <Filter>Dynamics\Entities\Particles</Filter>
     </ClCompile>
@@ -493,9 +490,6 @@
     </ClInclude>
     <ClInclude Include="../../Source Code/AI\PathFinding\Headers\DivideRecast.h">
       <Filter>AI\PathFinding\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Dynamics\Entities\Headers\Impostor.h">
-      <Filter>Dynamics\Entities\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code/Dynamics\Entities\Particles\Headers\ParticleData.h">
       <Filter>Dynamics\Entities\Particles\Headers</Filter>

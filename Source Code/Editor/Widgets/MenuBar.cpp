@@ -17,6 +17,8 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
+
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
 namespace Divide {
@@ -487,6 +489,7 @@ void MenuBar::drawDebugMenu() {
             ImGui::EndMenu();
         }
 
+        SceneEnvironmentProbePool* envProbPool = Attorney::EditorGeneralWidget::getActiveEnvProbePool(_context.editor());
         LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
         if (ImGui::BeginMenu("Toggle Light Types")) {
             for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
@@ -497,6 +500,40 @@ void MenuBar::drawDebugMenu() {
                     pool.toggleLightType(type, state);
                 }
             }
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Select Env Probe")) {
+            constexpr U8 MaxProbesPerPage = 32;
+            const auto PrintProbeEntry = [&envProbPool](const EnvironmentProbeList& probes, size_t j) {
+                EnvironmentProbeComponent* crtProbe = probes[j];
+                bool selected = envProbPool->debugProbe() == crtProbe;
+                if (ImGui::MenuItem(crtProbe->getSGN().name().c_str(), "", &selected)) {
+                    envProbPool->debugProbe(crtProbe);
+                }
+            };
+            envProbPool->lockProbeList();
+            const EnvironmentProbeList& probes = envProbPool->getLocked();
+            const size_t probeCount = probes.size();
+            if (probeCount > MaxProbesPerPage) {
+                const size_t pageCount = probeCount > MaxProbesPerPage ? probeCount / MaxProbesPerPage : 1;
+                const size_t remainder = probeCount > MaxProbesPerPage ? probeCount - pageCount * MaxProbesPerPage : 0;
+                for (U8 p = 0; p < pageCount + 1; ++p) {
+                    const size_t start = p * MaxProbesPerPage;
+                    const size_t end = start + (p < pageCount ? MaxProbesPerPage : remainder);
+                    if (ImGui::BeginMenu(Util::StringFormat("%d - %d", start, end).c_str())) {
+                        for (size_t j = start; j < end; ++j) {
+                            PrintProbeEntry(probes, j);
+                        }
+                        ImGui::EndMenu();
+                    }
+                }
+            } else {
+                for (size_t j = 0; j < probeCount; ++j) {
+                    PrintProbeEntry(probes, j);
+                }
+            }
+            envProbPool->unlockProbeList();
             ImGui::EndMenu();
         }
 
@@ -532,7 +569,7 @@ void MenuBar::drawDebugMenu() {
                                 }
                             }
                         } else {
-                            for (size_t j = 0; j < lights.size(); ++j) {
+                            for (size_t j = 0; j < lightCount; ++j) {
                                 PrintLightEntry(lights, j);
                             }
                         }

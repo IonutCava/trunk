@@ -199,13 +199,11 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     Time::ScopedTimer timer(_shadowPassTimer);
 
     ShadowMap::clearShadowMapBuffers(bufferInOut);
-    ShadowMap::resetShadowMaps();
 
     std::array<U32, to_base(LightType::COUNT)> indexCounter;
     indexCounter.fill(0u);
 
     if (!_sortedShadowLights.empty()) {
-        U32 lightIndex = 0u;
         for (Light* light : _sortedShadowLights) {
             const LightType lType = light->getLightType();
             const U32 lTypeIndex = to_U32(lType);
@@ -213,7 +211,7 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                 continue;
             }
 
-            ShadowMap::generateShadowMaps(_context, playerCamera, *light, lightIndex++, bufferInOut);
+            ShadowMap::generateShadowMaps(_context, playerCamera, *light, bufferInOut);
             const Light::ShadowProperties& propsSource = light->getShadowProperties();
 
             const U32 shadowIndex = indexCounter[lTypeIndex]++;
@@ -368,7 +366,7 @@ void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInO
     ShaderBufferBinding bufferShadow = {};
     bufferShadow._binding = ShaderBufferLocation::LIGHT_SHADOW;
     bufferShadow._buffer = _shadowBuffer;
-    bufferShadow._elementRange = { 0u, ShadowMap::MAX_SHADOW_PASSES };
+    bufferShadow._elementRange = { 0u, Config::Lighting::MAX_SHADOW_PASSES };
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set.addShaderBuffer(bufferLight);

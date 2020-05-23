@@ -43,6 +43,35 @@ namespace GFX {
 void DELETE_CMD(GFX::CommandBase*& cmd) noexcept;
 size_t RESERVE_CMD(U8 typeIndex) noexcept;
 
+enum class ErrorType : U8
+{
+    NONE = 0,
+    MISSING_BEGIN_RENDER_PASS,
+    MISSING_END_RENDER_PASS,
+    MISSING_BEGIN_RENDER_SUB_PASS,
+    MISSING_END_RENDER_SUB_PASS,
+    MISSING_BEGIN_PIXEL_BUFFER,
+    MISSING_END_PIXEL_BUFFER,
+    MISSING_POP_DEBUG_SCOPE,
+    MISSING_POP_CAMERA,
+    MISSING_POP_VIEWPORT,
+    MISSING_VALID_PIPELINE,
+    MISSING_BLIT_DESCRIPTOR_SET,
+    COUNT
+};
+
+namespace Names {
+    static const char* errorType[] = {
+        "NONE",
+        "MISSING_BEGIN_RENDER_PASS", "MISSING_END_RENDER_PASS", 
+        "MISSING_BEGIN_RENDER_SUB_PASS", "MISSING_END_RENDER_SUB_PASS",
+        "MISSING_BEGIN_PIXEL_BUFFER", "MISSING_END_PIXEL_BUFFER",
+        "MISSING_POP_DEBUG_SCOPE", "MISSING_POP_CAMERA",
+        "MISSING_POP_VIEWPORT", "MISSING_VALID_PIPELINE", 
+        "MISSING_BLIT_DESCRIPTOR_SET", "UNKNOW"
+    };
+};
+
 class CommandBuffer : private GUIDWrapper, private NonCopyable {
     friend class CommandBufferPool;
   public:
@@ -67,7 +96,7 @@ class CommandBuffer : private GUIDWrapper, private NonCopyable {
     inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     add(const T&& command);
 
-    bool validate() const;
+    ErrorType validate() const;
 
     void add(const CommandBuffer& other);
     void add(CommandBuffer** buffers, size_t count);

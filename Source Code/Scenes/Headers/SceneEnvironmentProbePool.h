@@ -41,6 +41,8 @@ namespace GFX {
     class CommandBuffer;
 };
 
+FWD_DECLARE_MANAGED_STRUCT(DebugView);
+
 class EnvironmentProbeComponent;
 using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
 
@@ -56,13 +58,19 @@ public:
     EnvironmentProbeComponent* registerProbe(EnvironmentProbeComponent* probe);
     void unregisterProbe(EnvironmentProbeComponent* probe);
 
+    void prepare(GFX::CommandBuffer& bufferInOut);
+
     void lockProbeList();
     void unlockProbeList();
 
-protected:
+    void debugProbe(EnvironmentProbeComponent* probe);
+    POINTER_R(EnvironmentProbeComponent, debugProbe, nullptr);
 
+protected:
     SharedMutex _probeLock;
     EnvironmentProbeList _envProbes;
+
+    static vectorEASTL<DebugView_ptr> s_debugViews;
 };
 
 }; //namespace Divide

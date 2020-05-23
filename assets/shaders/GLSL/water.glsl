@@ -4,6 +4,7 @@
 #include "lightingDefaults.vert"
 
 layout(location = 0) out flat int _underwater;
+layout(location = 1) out      vec3 _incident;
 
 void main(void)
 {
@@ -13,6 +14,8 @@ void main(void)
 
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
+    _incident = (dvd_InverseViewMatrix * VAR._vertexWV).xyz;
+
     gl_Position = VAR._vertexWVP;
 }
 
@@ -21,7 +24,7 @@ void main(void)
 #define SHADOW_INTENSITY_FACTOR 0.5f
 
 layout(location = 0) in flat int _underwater;
-
+layout(location = 1) in      vec3 _incident;
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 
@@ -39,8 +42,10 @@ uniform vec2 _noiseFactor;
 
 const float Eta = 0.15f; //water
 
-float Fresnel(in vec3 viewDir, in vec3 normal) {
-    return Eta + (1.0 - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
+// Use metalness as a bias towards extra reflectivity (for artistic purposes)
+float Fresnel(in vec3 viewDir, in vec3 normal, in float metalness) {
+    const float fresnel = Eta + (1.0f - Eta) * pow(max(0.0f, 1.0f - dot(-viewDir, normal)), 5.0f);
+    return saturate(fresnel + metalness);
 }
 
 vec3 _private_reflect = vec3(0.f);
@@ -71,9 +76,9 @@ void main()
     writeOutput(VAR._texCoord, normalize(VAR._tbn * normalize(normal0 + normal1)));
 #else
 
-    vec3 normalWV = getNormal(VAR._texCoord);
-    vec3 uvReflection = clamp(((VAR._vertexWVP.xyz / VAR._vertexWVP.w) + 1.0f) * 0.5f, vec3(0.001f), vec3(0.999f));
-    vec3 incident = VAR._viewDirectionWV;
+    const vec3 normalWV = getNormal(VAR._texCoord);
+    vec3 uvReflection = ((VAR._vertexWVP.xyz / VAR._vertexWVP.w) + 1.0f) * 0.5f;
+    uvReflection = clamp(uvReflection, vec3(0.001f), vec3(0.999f));
 
     vec2 uvFinalReflect = uvReflection.xy;
     vec2 uvFinalRefract = uvReflection.xy;
@@ -87,13 +92,16 @@ void main()
 
     //normalWV = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
 
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
+    const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
+    const float metalness = Metallic(colourMatrix);
+
+    const vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
+    const vec4 reflectionColour = texture(texReflectPlanar, uvFinalReflect);
 
     
-    vec4 texColour = mix(mix(refractionColour, texture(texReflectPlanar, uvFinalRefract), saturate(Fresnel(incident, VAR._normalWV))),
-                             refractionColour,
-                             _underwater);
+    const vec4 texColour = mix(mix(refractionColour, reflectionColour, Fresnel(_incident, VAR._normalW, metalness)),
+                                   refractionColour,
+                                   _underwater);
 
     _private_reflect = texColour.rgb;
     writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));

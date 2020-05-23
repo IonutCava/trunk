@@ -2,6 +2,7 @@
 
 #include "Headers/SceneGraph.h"
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/ByteBuffer.h"
 #include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
@@ -469,4 +470,21 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     assert(rootNode.typeHash == _ID("TRANSFORM"));
     parentScene().addSceneGraphToLoad(rootNode);
 }
+
+bool SceneGraph::saveNodeToXML(const SceneGraphNode& node) const {
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
+    node.saveToXML(sceneLocation);
+    return true;
+}
+
+bool SceneGraph::loadNodeFromXML(const char* assetsFile, SceneGraphNode& node) const {
+    ACKNOWLEDGE_UNUSED(assetsFile);
+
+    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
+    node.loadFromXML(sceneLocation);
+    return true;
+}
+
 };

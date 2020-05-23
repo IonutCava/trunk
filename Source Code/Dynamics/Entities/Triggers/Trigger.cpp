@@ -2,9 +2,10 @@
 
 #include "Headers/Trigger.h"
 
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Threading/Headers/Task.h"
-#include "Dynamics/Entities/Headers/Impostor.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
@@ -13,7 +14,6 @@ namespace Divide {
 Trigger::Trigger(ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
     : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_TRIGGER, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
       _drawImpostor(false),
-      _triggerImpostor(nullptr),
       _enabled(true),
       _radius(1.0f)
 {
@@ -27,30 +27,10 @@ Trigger::~Trigger()
 void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn,
                           SceneState& sceneState) {
     if (_drawImpostor) {
-        if (!_triggerImpostor) {
-            ResourceDescriptor impostorDesc(resourceName() + "_impostor");
-            _triggerImpostor = CreateResource<ImpostorSphere>(_parentCache, impostorDesc);
-
-            SceneGraphNodeDescriptor triggerImpostorDescriptor;
-            triggerImpostorDescriptor._serialize = false;
-            triggerImpostorDescriptor._node = _triggerImpostor;
-            triggerImpostorDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
-                                                       to_base(ComponentType::BOUNDS) |
-                                                       to_base(ComponentType::RENDERING) |
-                                                       to_base(ComponentType::NETWORKING);
-            triggerImpostorDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
-
-            sgn.addChildNode(triggerImpostorDescriptor);
-        }
         /// update dummy position if it is so
         sgn.getChild(0).get<TransformComponent>()->setPosition(_triggerPosition);
-        _triggerImpostor->setRadius(_radius);
-        _triggerImpostor->renderState().drawState(true);
+        sgn.context().gfx().debugDrawSphere(_triggerPosition, _radius, DefaultColours::RED);
         sgn.getChild(0).setFlag(SceneGraphNode::Flags::ACTIVE);
-    } else {
-        if (_triggerImpostor) {
-            _triggerImpostor->renderState().drawState(false);
-        }
     }
 }
 
@@ -64,10 +44,6 @@ void Trigger::setParams(Task& triggeredTask,
     /// Check if radius has changed
     if (!COMPARE(_radius, radius)) {
         _radius = radius;
-        if (_triggerImpostor) {
-            /// update dummy radius if so
-            _triggerImpostor->setRadius(radius);
-        }
     }
     _triggeredTask = &triggeredTask;
 }

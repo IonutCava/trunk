@@ -152,8 +152,16 @@ constexpr unsigned short MAX_SHADOW_CASTING_SPOT_LIGHTS = 6;
 constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS + MAX_SHADOW_CASTING_POINT_LIGHTS + MAX_SHADOW_CASTING_SPOT_LIGHTS;
 /// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
 constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
+
+static constexpr U32 MAX_SHADOW_PASSES =
+    Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT +
+    Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS * 6 +
+    Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS;
+
 /// Used mainly for caching/memory efficiency reasons
 constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
+
+static_assert(MAX_CSM_SPLITS_PER_LIGHT < 6, "Maximum splits per light can't be more than 6 (cube shadows). Consider moving to a different system for CSM!");
 
 namespace ForwardPlus {
     constexpr unsigned short MAX_LIGHTS_PER_TILE = 512u;

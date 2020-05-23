@@ -39,7 +39,6 @@
 namespace Divide {
 
 class Unit;
-class ImpostorSphere;
 /// When a unit touches the circle described by
 class Trigger : public SceneNode {
    public:
@@ -81,8 +80,6 @@ class Trigger : public SceneNode {
     F32 _radius;
     /// Draw the impostor?
     bool _drawImpostor;
-    /// used for debug rendering / editing - Ionut
-    std::shared_ptr<ImpostorSphere> _triggerImpostor;
     bool _enabled;
 };
 

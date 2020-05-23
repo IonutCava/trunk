@@ -38,17 +38,22 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct RenderStagePass {
+    RenderStagePass() = default;
+    ~RenderStagePass() = default;
+
+    explicit RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant = 0u, U16 index = 0u, U16 pass = 0u)
+        : _stage(stage),
+          _passType(passType),
+          _variant(variant),
+          _index(index),
+          _pass(pass)
+    {}
+
+    U16 _index = 0u; //usually some kind of type info (reflector/refractor index, light type, etc)
+    U16 _pass = 0u; //usually some kind of actual pass index (eg. cube face we are rendering into)
+    U8 _variant = 0;
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
-    U8 _variant = 0;
-
-    union {
-        U32 _passIndex = 0;
-        struct {
-            U16 _indexA; //usually some kind of type info (reflector/refractor index, light type, etc)
-            U16 _indexB; //usually some kind of actual pass index (eg. cube face we are rendering into)
-        };
-    };
 
     inline bool isDepthPass() const noexcept {
         return _stage == RenderStage::SHADOW || _passType == RenderPassType::PRE_PASS;
@@ -63,22 +68,61 @@ struct RenderStagePass {
         return static_cast<U8>(to_base(stage) + to_base(passType) * to_base(RenderStage::COUNT));
     }
 
-    static constexpr RenderStagePass fromBaseIndex(U8 baseIndex) noexcept {
+    static RenderStagePass fromBaseIndex(U8 baseIndex) noexcept {
         const RenderStage stage = static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT));
         const RenderPassType pass = static_cast<RenderPassType>(baseIndex / to_base(RenderStage::COUNT));
-        return { stage, pass };
+        return RenderStagePass(stage, pass);
+    }
+
+    static U16 indexForStage(const RenderStagePass& renderStagePass) noexcept {
+        if (renderStagePass._stage == RenderStage::SHADOW) {
+            constexpr U16 offsetDir = 0u;
+            constexpr U16 offsetPoint = offsetDir + Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT;
+            constexpr U16 offsetSpot = offsetPoint + Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS * 6;
+            
+            if (renderStagePass._variant == to_base(LightType::DIRECTIONAL)) {
+                return offsetDir + renderStagePass._index * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT + renderStagePass._pass;
+            } else if (renderStagePass._variant == to_base(LightType::POINT)) {
+                return offsetPoint + renderStagePass._index * 6 + renderStagePass._pass;
+            } else /*if (renderStagePass._variant == to_base(LightType::SPOT)*/{
+                return offsetSpot + renderStagePass._index;
+            }
+        } else if (renderStagePass._stage == RenderStage::REFLECTION) {
+            if (renderStagePass._variant == to_base(ReflectorType::PLANAR)) {
+                return renderStagePass._index;
+            } else {
+                return renderStagePass._index * 6 + renderStagePass._pass;
+
+            }
+        } else {
+            assert(renderStagePass._pass == 0u);
+            return renderStagePass._index;
+        }
+    }
+
+    static U8 passCountForStage(const RenderStagePass& renderStagePass) noexcept {
+        if (renderStagePass._stage == RenderStage::REFLECTION) {
+            return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
+                   Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;
+        } else if (renderStagePass._stage == RenderStage::SHADOW) {
+            return Config::Lighting::MAX_SHADOW_PASSES;
+        }
+
+        return to_U8(1u);
     }
 
     inline bool operator==(const RenderStagePass& other) const noexcept {
         return _variant == other._variant &&
-               _passIndex == other._passIndex &&
+               _pass == other._pass &&
+               _index == other._index &&
                _stage == other._stage &&
                _passType == other._passType;
     }
 
     inline bool operator!=(const RenderStagePass& other) const noexcept {
         return _variant != other._variant ||
-               _passIndex != other._passIndex ||
+               _pass != other._pass ||
+               _index != other._index ||
                _stage != other._stage ||
                _passType != other._passType;
     }

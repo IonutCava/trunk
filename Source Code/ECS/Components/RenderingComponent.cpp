@@ -25,7 +25,6 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Dynamics/Entities/Headers/Impostor.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 
@@ -114,12 +113,25 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
 
     for (U8 s = 0; s < to_U8(RenderStage::COUNT); ++s) {
         if (s == to_U8(RenderStage::SHADOW)) {
-            _renderPackages[s][to_base(RenderPassType::MAIN_PASS)].resize(ShadowMap::MAX_SHADOW_PASSES);
+            _renderPackages[s][to_base(RenderPassType::MAIN_PASS)].resize(
+                RenderStagePass::passCountForStage(
+                    RenderStagePass {
+                        static_cast<RenderStage>(s),
+                        RenderPassType::MAIN_PASS
+                    }
+                )
+            );
         } else {
             PackagesPerPassType & perPassPkgs = _renderPackages[s];
             for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
-                STUBBED("ToDo: FActor out all of this repetition with 'if reflection this, if shadow that ...' - Ionut");
-                perPassPkgs[p].resize(s == to_U8(RenderStage::REFLECTION) ? to_U8(ReflectorType::COUNT) : 1);
+                perPassPkgs[p].resize(
+                    RenderStagePass::passCountForStage(
+                        RenderStagePass {
+                            static_cast<RenderStage>(s),
+                            static_cast<RenderPassType>(p)
+                        }
+                    )
+                );
             }
         }
     }
@@ -378,7 +390,8 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
 void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {
     propertiesOut._isHovered = _parentSGN.hasFlag(SceneGraphNode::Flags::HOVERED);
     propertiesOut._isSelected = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
-    propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled && renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
+    propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled &&
+                                     renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._cullFlagValue = cullFlag();
     propertiesOut._reflectionIndex = defaultReflectionTextureIndex();
@@ -498,10 +511,7 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) 
-                                                                : renderStagePass._stage == RenderStage::REFLECTION 
-                                                                                          ? renderStagePass._variant
-                                                                                          : renderStagePass._passIndex;
+    const U16 i = RenderStagePass::indexForStage(renderStagePass);
 
     return _renderPackages[s][p][i];
 }
@@ -509,10 +519,8 @@ RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderS
 const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) const {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? (renderStagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + renderStagePass._indexB) 
-                                                                : renderStagePass._stage == RenderStage::REFLECTION 
-                                                                                          ? renderStagePass._variant
-                                                                                          : renderStagePass._passIndex;
+    const U16 i = RenderStagePass::indexForStage(renderStagePass);
+
     return _renderPackages[s][p][i];
 }
 
@@ -605,7 +613,8 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
                                      vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
                                      RenderStagePass{RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(_reflectorType), reflectionIndex},
                                      bufferInOut,
-                                     cameras);
+                                     cameras,
+                                     true);
         }
     }
 
@@ -703,8 +712,14 @@ namespace Hack {
     Sky* g_skyPtr = nullptr;
 };
 
+void RenderingComponent::clearEnvProbeList() {
+    updateEnvProbeList({});
+}
+
 void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) {
-    if (probes.empty()) {
+    STUBBED("ToDo: Fix Env probe rendering! and fix this -Ionut");
+
+    if (probes.empty() || true) {
         // Need a way better way of handling this ...
         if (Hack::g_skyPtr == nullptr) {
             const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
@@ -732,7 +747,7 @@ void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) 
         }
 
         RenderTarget* rt = EnvironmentProbeComponent::reflectionTarget()._rt;
-        defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->getRTIndex());
+        defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->rtLayerIndex());
     }
 
     if (_reflectionIndex == -1) {

@@ -57,7 +57,7 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
     explicit CascadedShadowMapsGenerator(GFXDevice& context);
     ~CascadedShadowMapsGenerator();
 
-    void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) override;
+    void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) override;
 
    protected:
     using SplitDepths = std::array<F32, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT>;

@@ -100,6 +100,7 @@ class RTDrawDescriptor {
     inline bool operator!=(const RTDrawDescriptor& other) const;
 
     PROPERTY_RW(bool, setViewport, true);
+    PROPERTY_RW(bool, setDefaultState, true);
 
   protected:
     RTDrawMask _drawMask;

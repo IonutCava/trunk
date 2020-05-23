@@ -35,7 +35,6 @@
     <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\TerrainLoaderImpl.cpp" />
     <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\TriggerLoaderImpl.cpp" />
     <ClCompile Include="../../Source Code/Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp" />
-    <ClCompile Include="../../Source Code/Dynamics\Entities\Impostor.cpp" />
     <ClCompile Include="../../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleBoxGenerator.cpp" />
     <ClCompile Include="../../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleColourGenerator.cpp" />
     <ClCompile Include="../../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\ParticleRoundGenerator.cpp" />
@@ -113,7 +112,6 @@
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\AudioSensor.h" />
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\Sensor.h" />
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\VisualSensor.h" />
-    <ClInclude Include="../../Source Code/Dynamics\Entities\Headers\Impostor.h" />
     <ClInclude Include="../../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleBoxGenerator.h" />
     <ClInclude Include="../../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleColourGenerator.h" />
     <ClInclude Include="../../Source Code/Dynamics\Entities\Particles\ConcreteGenerators\Headers\ParticleRoundGenerator.h" />

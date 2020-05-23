@@ -56,13 +56,17 @@ class WaterPlane : public SceneNode {
 
     void updatePlaneEquation(const SceneGraphNode& sgn,
                              Plane<F32>& plane,
-                             bool reflection);
+                             bool reflection,
+                             F32 offset);
 
     // width, length, depth
     const vec3<U16>& getDimensions() const;
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
+
+    PROPERTY_R(F32, reflPlaneOffset, 0.0f);
+    PROPERTY_R(F32, refrPlaneOffset, 0.0f);
 
    protected:
     void buildDrawCommands(SceneGraphNode& sgn,

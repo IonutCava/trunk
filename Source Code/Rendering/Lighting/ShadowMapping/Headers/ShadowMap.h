@@ -58,8 +58,6 @@ class Camera;
 class ShadowMapInfo;
 class SceneRenderState;
 
-struct DebugView;
-
 enum class LightType : U8;
 
 namespace GFX {
@@ -76,7 +74,7 @@ protected:
     virtual ~ShadowMapGenerator() = default;
 
     friend class ShadowMap;
-    virtual void render(const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) = 0;
+    virtual void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) = 0;
 
     virtual void updateMSAASampleCount(U8 sampleCount) { ACKNOWLEDGE_UNUSED(sampleCount); }
 
@@ -88,10 +86,6 @@ protected:
 FWD_DECLARE_MANAGED_STRUCT(DebugView);
 /// All the information needed for a single light's shadowmap
 class NOINITVTABLE ShadowMap {
-  public:
-      static constexpr U32 MAX_PASSES_PER_LIGHT = 6;
-      static constexpr U32 MAX_SHADOW_PASSES = Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * MAX_PASSES_PER_LIGHT;
-
   public:
     // Init and destroy buffers, shaders, etc
     static void initShadowMaps(GFXDevice& context);
@@ -107,7 +101,7 @@ class NOINITVTABLE ShadowMap {
     static void commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static bool freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
-    static void generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut);
+    static void generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut);
 
     static ShadowType getShadowTypeForLightType(LightType type) noexcept;
     static LightType getLightTypeForShadowType(ShadowType type) noexcept;
@@ -131,6 +125,7 @@ class NOINITVTABLE ShadowMap {
 
     static Light* s_shadowPreviewLight;
     using ShadowCameraPool = vectorEASTL<Camera*>;
+    static std::array<U16, to_base(ShadowType::COUNT)> s_shadowPassIndex;
     static std::array<ShadowCameraPool, to_base(ShadowType::COUNT)> s_shadowCameras;
 };
 

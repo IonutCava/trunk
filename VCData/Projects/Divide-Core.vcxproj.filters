@@ -171,9 +171,6 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\Box3DLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\ImpostorLoaderImpl.cpp">
-      <Filter>Resources\ConcreteLoaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\InfinitePlaneLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>

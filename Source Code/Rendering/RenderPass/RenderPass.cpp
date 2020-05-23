@@ -49,7 +49,7 @@ namespace {
         switch (stage) {
             // PrePass, MainPass and OitPass should share buffers
             case RenderStage::DISPLAY:    return 1u;
-            case RenderStage::SHADOW:     return ShadowMap::MAX_SHADOW_PASSES;
+            case RenderStage::SHADOW:     return Config::Lighting::MAX_SHADOW_PASSES;
             case RenderStage::REFRACTION: return Config::MAX_REFRACTIVE_NODES_IN_VIEW; // planar
             case RenderStage::REFLECTION: return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + // could be planar
                                                  Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6; // environment
@@ -133,20 +133,22 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
 
     U32 cmdBufferIdx = 0u;
     switch (_stageFlag) {
-        case RenderStage::DISPLAY:    cmdBufferIdx = 0u; break;
-        case RenderStage::SHADOW:     cmdBufferIdx = stagePass._indexA * ShadowMap::MAX_PASSES_PER_LIGHT + stagePass._indexB; break;
-        case RenderStage::REFRACTION: {
-            assert(stagePass._variant == to_base(RefractorType::PLANAR));
-            cmdBufferIdx = stagePass._indexA * Config::MAX_REFRACTIVE_NODES_IN_VIEW + stagePass._indexB;
+        case RenderStage::DISPLAY:    
+        case RenderStage::SHADOW: cmdBufferIdx = RenderStagePass::indexForStage(stagePass); break;
+        case RenderStage::REFRACTION: { 
+            switch (static_cast<RefractorType>(stagePass._variant)) {
+                case RefractorType::PLANAR:
+                    cmdBufferIdx = stagePass._index;
+                    break;
+                default: DIVIDE_UNEXPECTED_CALL();
+                    break;
+            };
         } break;
         case RenderStage::REFLECTION: {
             switch (static_cast<ReflectorType>(stagePass._variant)) {
-                case ReflectorType::PLANAR: 
+                case ReflectorType::PLANAR:  //We buffer for worst case scenario anyway (6 passes)
                 case ReflectorType::CUBE:
-                    cmdBufferIdx = stagePass._indexA * 6 + stagePass._indexB;
-                    break;
-                case ReflectorType::ENVIRONMENT:
-                    cmdBufferIdx = Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + stagePass._indexA * 6 + stagePass._indexB;
+                    cmdBufferIdx = stagePass._index * 6 + stagePass._pass;
                     break;
                 default: DIVIDE_UNEXPECTED_CALL(); 
                     break;
@@ -183,14 +185,33 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
             clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
 
+            RTDrawDescriptor normalsAndDepthPolicy = {};
+            normalsAndDepthPolicy.drawMask().disableAll();
+            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
+            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+
             RenderPassManager::PassParams params = {};
-            params._stagePass = { _stageFlag, RenderPassType::COUNT };
+            params._stagePass = RenderStagePass{ _stageFlag, RenderPassType::COUNT };
             params._target = _context.renderTargetPool().screenTargetID();
+            params._targetDescriptorPrePass = normalsAndDepthPolicy;
+
+            RTDrawDescriptor mainPassPolicy = {};
+            mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+            mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
+            mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
+            params._targetDescriptorMainPass = mainPassPolicy;
+
             params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
             params._targetOIT = params._target._usage == RenderTargetUsage::SCREEN_MS ? RenderTargetID(RenderTargetUsage::OIT_MS) : RenderTargetID(RenderTargetUsage::OIT);
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(*_parent.parent().sceneManager());
-            params._clearDescriptor = &clearDescriptor;
             params._passName = "MainRenderPass";
+
+            GFX::ClearRenderTargetCommand clearMainTarget = {};
+            clearMainTarget._target = params._target;
+            clearMainTarget._descriptor = clearDescriptor;
+            GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+
             _parent.doCustomPass(params, bufferInOut);
         } break;
         case RenderStage::SHADOW: {
@@ -213,14 +234,18 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             static VisibleNodeList s_Nodes;
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
-
             {
                 SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
+                envProbPool->prepare(bufferInOut);
                 OPTICK_EVENT("RenderPass - Probes");
                 envProbPool->lockProbeList();
                 const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(camera->getEye());
+                U32 idx = 0u;
                 for (const auto& probe : probes) {
                     probe->refresh(bufferInOut);
+                    if (++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
+                        break;
+                    }
                 }
                 envProbPool->unlockProbeList();
             }

@@ -95,23 +95,17 @@ namespace TypeUtil {
 
         return TextureOperation::COUNT;
     }
-
 };
 
 void Material::ApplyDefaultStateBlocks(Material& target) {
     /// Normal state for final rendering
-    RenderStateBlock stateDescriptor;
+    RenderStateBlock stateDescriptor = {};
     stateDescriptor.setCullMode(CullMode::BACK);
     stateDescriptor.setZFunc(ComparisonFunction::EQUAL);
 
     RenderStateBlock oitDescriptor(stateDescriptor);
     oitDescriptor.setZFunc(ComparisonFunction::LEQUAL);
     oitDescriptor.depthTestEnabled(true);
-
-    /// the reflection descriptor is the same as the normal descriptor
-    RenderStateBlock reflectorDescriptor(stateDescriptor);
-    RenderStateBlock reflectorOitDescriptor(oitDescriptor);
-    //reflectorOitDescriptor.depthTestEnabled(false);
 
     /// the z-pre-pass descriptor does not process colours
     RenderStateBlock zPrePassDescriptor(stateDescriptor);
@@ -120,27 +114,13 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
     /// A descriptor used for rendering to depth map
     RenderStateBlock shadowDescriptor(stateDescriptor);
-    shadowDescriptor.setZFunc(ComparisonFunction::LESS);
     shadowDescriptor.setColourWrites(true, true, false, false);
-    /// set a polygon offset
-    //shadowDescriptor.setZBias(1.0f, 1.0f);
+    shadowDescriptor.setZFunc(ComparisonFunction::LESS);
 
-
-    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::MAIN_PASS, 0u);
-    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::MAIN_PASS, 0u);
-    target.setRenderStateBlock(reflectorDescriptor.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
-
-    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::POINT));
-    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::SPOT));
-    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_base(LightType::DIRECTIONAL));
-
-    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::OIT_PASS, 0u);
-    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::OIT_PASS, 0u);
-    target.setRenderStateBlock(reflectorOitDescriptor.getHash(), RenderStage::REFLECTION, RenderPassType::OIT_PASS, 0u);
-
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u);
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::REFRACTION, RenderPassType::PRE_PASS, 0u);
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
+    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
+    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, 0u);
 }
 
 Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
@@ -565,7 +545,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         fragDefines.emplace_back("USE_DOUBLE_SIDED", true);
     }
 
-    if (!receivesShadows() || !_context.context().config().rendering.shadowMapping.enabled) {
+    if (!receivesShadows()) {
         shaderName += ".NSHDW";
         fragDefines.emplace_back("DISABLE_SHADOW_MAPPING", true);
     }
@@ -1228,7 +1208,7 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
             for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
                 // we could just use _defaultRenderStates[s][p][v] for a direct lookup, but this handles the odd double-sided / no cull case
                 const size_t stateHash = getRenderStateBlock(
-                    {
+                    RenderStagePass{
                         static_cast<RenderStage>(s),
                         static_cast<RenderPassType>(p),
                         v

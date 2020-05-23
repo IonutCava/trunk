@@ -4,7 +4,6 @@
 #include "Headers/TransformComponent.h"
 
 #include "Scenes/Headers/Scene.h"
-#include "Dynamics/Entities/Headers/Impostor.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -31,36 +30,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, Platfo
     Scene& parentScene = sgn.sceneGraph().parentScene();
     assert(!s_availableSlices.empty());
         
-    _currentArrayIndex = allocateSlice();
-
-    RenderStateBlock primitiveStateBlock;
-
-    PipelineDescriptor pipelineDescriptor;
-    pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
-    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
-    _bbPipeline = context.gfx().newPipeline(pipelineDescriptor);
-
-    _impostor = CreateResource<ImpostorSphere>(parentScene.resourceCache(), ResourceDescriptor(Util::StringFormat("EnvironmentProbeImpostor_%d", getGUID()).c_str()));
-    _impostor->setRadius(1.0f);
-
-    ShaderModuleDescriptor vertModule = {};
-    vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "ImmediateModeEmulation.glsl";
-    vertModule._variant = "EnvironmentProbe";
-
-    ShaderModuleDescriptor fragModule = {};
-    fragModule._moduleType = ShaderType::FRAGMENT;
-    fragModule._sourceFile = "ImmediateModeEmulation.glsl";
-    fragModule._variant = "EnvironmentProbe";
-
-    ShaderProgramDescriptor shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-
-    ResourceDescriptor shaderResDesc("ImmediateModeEmulation.EnvironmentProbe");
-    shaderResDesc.propertyDescriptor(shaderDescriptor);
-
-    _impostorShader = CreateResource<ShaderProgram>(parentScene.resourceCache(), shaderResDesc);
+    rtLayerIndex(allocateSlice());
 
     EditorComponentField typeField = {};
     typeField._name = "Is Local";
@@ -108,6 +78,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, Platfo
         _aabb.set(_refaabb.getMin(), _refaabb.getMax());
         _aabb.translate(_parentSGN.get<TransformComponent>()->getPosition());
     });
+
     Attorney::SceneEnvironmentProbeComponent::registerProbe(parentScene, *this);
 }
 
@@ -115,11 +86,19 @@ EnvironmentProbeComponent::~EnvironmentProbeComponent()
 {
     Attorney::SceneEnvironmentProbeComponent::unregisterProbe(_parentSGN.sceneGraph().parentScene(), *this);
 
-    s_availableSlices[_currentArrayIndex] = false;
-    if (_boundingBoxPrimitive) {
-        context().gfx().destroyIMP(_boundingBoxPrimitive);
-    }
+    s_availableSlices[rtLayerIndex()] = false;
+}
 
+void EnvironmentProbeComponent::prepare(GFX::CommandBuffer& bufferInOut) {
+    RTClearDescriptor clearDescriptor = {};
+    clearDescriptor.clearDepth(true);
+    clearDescriptor.clearColours(true);
+    clearDescriptor.resetToDefault(true);
+
+    GFX::ClearRenderTargetCommand clearMainTarget = {};
+    clearMainTarget._target = s_reflection._targetID;
+    clearMainTarget._descriptor = clearDescriptor;
+    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 }
 
 void EnvironmentProbeComponent::onStartup(GFXDevice& context) {
@@ -176,25 +155,24 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
     static std::array<Camera*, 6> cameras = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
     if (++_currentUpdateCall % _updateRate == 0) {
-        /*_context.gfx().generateCubeMap(s_reflection._targetID,
-                                       _currentArrayIndex,
+        _context.gfx().generateCubeMap(s_reflection._targetID,
+                                       rtLayerIndex(),
                                        _aabb.getCenter(),
                                        vec2<F32>(0.1f, _aabb.getHalfExtent().length()),
-                                       {RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::ENVIRONMENT), getRTIndex()},
+                                       RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), rtLayerIndex()),
                                        bufferInOut,
-                                       cameras);*/
+                                       cameras,
+                                       true);
         _currentUpdateCall = 0;
     }
 }
 
 void EnvironmentProbeComponent::setBounds(const vec3<F32>& min, const vec3<F32>& max) {
     _aabb.set(min, max);
-    updateInternal();
 }
 
 void EnvironmentProbeComponent::setBounds(const vec3<F32>& center, F32 radius) {
     _aabb.createFromSphere(center, radius);
-    updateInternal();
 }
 
 void EnvironmentProbeComponent::setUpdateRate(U8 rate) {
@@ -207,16 +185,6 @@ RenderTargetHandle EnvironmentProbeComponent::reflectionTarget() {
 
 F32 EnvironmentProbeComponent::distanceSqTo(const vec3<F32>& pos) const {
     return _aabb.getCenter().distanceSquared(pos);
-}
-
-U32 EnvironmentProbeComponent::getRTIndex() const {
-    return _currentArrayIndex;
-}
-
-void EnvironmentProbeComponent::updateInternal() {
-    if (_boundingBoxPrimitive) {
-        _boundingBoxPrimitive->fromBox(_aabb.getMin(), _aabb.getMax(), UColour4(255, 255, 255, 255));
-    }
 }
 
 void EnvironmentProbeComponent::PreUpdate(const U64 deltaTime) {

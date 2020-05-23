@@ -52,7 +52,6 @@ enum class RenderStage : U8;
 
 class RenderPassManager : public KernelComponent {
 public:
-    using ExtraTargetFlags = std::pair<bool, bool>;
 
     struct FeedBackContainer {
         vectorEASTL<VisibleNode> _visibleNodes;
@@ -66,16 +65,22 @@ public:
         // safe to be set to null
         FeedBackContainer* _feedBackContainer = nullptr;
         const SceneGraphNode* _sourceNode = nullptr;
-        const RTDrawDescriptor* _drawPolicy = nullptr;
-        const RTClearDescriptor* _clearDescriptor = nullptr;
         Camera* _camera = nullptr;
         Str64 _passName = "";
         I32 _minLoD = -1; //-1 = all
         RenderTargetID _target = {};
+
+        RTDrawDescriptor _targetDescriptorPrePass = {};
+        RTDrawDescriptor _targetDescriptorMainPass = {};
+
         RenderTargetID _targetHIZ = {};
         RenderTargetID _targetOIT = {};
         RenderStagePass _stagePass = {};
-        bool _bindTargets = true;
+
+        RenderTarget::DrawLayerParams _layerParams = {};
+
+        //Ughhhh
+        bool _shadowMappingEnabled = true;
     };
 
 public:
@@ -122,7 +127,6 @@ private:
                        GFX::CommandBuffer& bufferInOut);
     void mainPass(const VisibleNodeList& nodes,
                   const PassParams& params,
-                  ExtraTargetFlags extraTargets,
                   RenderTarget& target,
                   bool prePassExecuted,
                   bool hasHiZ,
@@ -144,7 +148,7 @@ private:
     void prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void buildDrawCommands(const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const PassParams& params, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
+    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, bool shadowMap, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
 
 private: //TEMP
     friend class RenderBin;
@@ -159,7 +163,6 @@ private:
     vectorEASTL<bool> _completedPasses;
     vectorEASTL<RenderPass*> _renderPasses;
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
-    GFX::CommandBuffer* _environmentProbeCommandBuffer = nullptr;
     GFX::CommandBuffer* _postFXCommandBuffer = nullptr;
     GFX::CommandBuffer* _postRenderBuffer = nullptr;
 
@@ -169,8 +172,7 @@ private:
     Time::ProfileTimer* _renderPassTimer = nullptr;
     Time::ProfileTimer* _buildCommandBufferTimer = nullptr;
     Time::ProfileTimer* _flushCommandBufferTimer = nullptr;
-    Time::ProfileTimer* _environmentProbeTimer = nullptr;
-    Time::ProfileTimer* _postFxRenderTimer = nullptr;
+        Time::ProfileTimer* _postFxRenderTimer = nullptr;
     Time::ProfileTimer* _blitToDisplayTimer = nullptr;
 
     std::array<RenderQueuePackages, to_base(RenderStage::COUNT)> _renderQueues;

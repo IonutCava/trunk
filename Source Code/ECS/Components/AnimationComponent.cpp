@@ -3,6 +3,7 @@
 #include "Headers/AnimationComponent.h"
 
 #include "Managers/Headers/SceneManager.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"

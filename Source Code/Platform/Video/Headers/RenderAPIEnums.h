@@ -107,8 +107,21 @@ enum class ReflectorType : U8
 {
     PLANAR = 0,
     CUBE,
-    ENVIRONMENT,
     COUNT
+};
+
+/// The different types of lights supported
+enum class LightType : U8
+{
+    DIRECTIONAL = 0,
+    POINT = 1,
+    SPOT = 2,
+    COUNT
+};
+namespace Names {
+    static const char* lightType[] = {
+          "DIRECTIONAL", "POINT", "SPOT", "UNKNOWN"
+    };
 };
 
 /// State the various attribute locations to use in shaders with VAO/VB's

@@ -36,7 +36,6 @@
 #include "ParticleSource.h"
 #include "ParticleUpdater.h"
 #include "Graphs/Headers/SceneNode.h"
-#include "Dynamics/Entities/Headers/Impostor.h"
 
 /// original source code:
 /// https://github.com/fenbf/particles/blob/public/particlesCode

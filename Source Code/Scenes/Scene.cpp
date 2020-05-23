@@ -170,6 +170,14 @@ void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
+bool Scene::saveNodeToXML(const SceneGraphNode& node) const {
+    return sceneGraph().saveNodeToXML(node);
+}
+
+bool Scene::loadNodeFromXML(SceneGraphNode& node) const {
+    const char* assetsFile = "assets.xml";
+    return sceneGraph().loadNodeFromXML(assetsFile, node);
+}
 
 bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const {
     using boost::property_tree::ptree;

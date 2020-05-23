@@ -28,7 +28,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
 {
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
-    renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
+    renderState().addToDrawExclusionMask(RenderStage::SHADOW);
 
     EditorComponentField blurReflectionField = {};
     blurReflectionField._name = "Blur reflections";
@@ -37,7 +37,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     blurReflectionField._readOnly = false;
     blurReflectionField._basicType = GFX::PushConstantType::BOOL;
 
-    _editorComponent.registerField(std::move(blurReflectionField));
+    getEditorComponent().registerField(std::move(blurReflectionField));
     
     EditorComponentField blurKernelSizeField = {};
     blurKernelSizeField._name = "Blur reflections";
@@ -49,7 +49,27 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     blurKernelSizeField._range = { 2.f, 20.f };
     blurKernelSizeField._step = 1.f;
 
-    _editorComponent.registerField(std::move(blurKernelSizeField));
+    getEditorComponent().registerField(std::move(blurKernelSizeField));
+
+    EditorComponentField reflPlaneOffsetField = {};
+    reflPlaneOffsetField._name = "Reflection Plane Offset";
+    reflPlaneOffsetField._data = &_reflPlaneOffset;
+    reflPlaneOffsetField._range = { -5.0f, 5.0f };
+    reflPlaneOffsetField._type = EditorComponentFieldType::PUSH_TYPE;
+    reflPlaneOffsetField._readOnly = false;
+    reflPlaneOffsetField._basicType = GFX::PushConstantType::FLOAT;
+
+    getEditorComponent().registerField(std::move(reflPlaneOffsetField));
+
+    EditorComponentField refrPlaneOffsetField = {};
+    refrPlaneOffsetField._name = "Refraction Plane Offset";
+    refrPlaneOffsetField._data = &_refrPlaneOffset;
+    refrPlaneOffsetField._range = { -5.0f, 5.0f };
+    refrPlaneOffsetField._type = EditorComponentFieldType::PUSH_TYPE;
+    refrPlaneOffsetField._readOnly = false;
+    refrPlaneOffsetField._basicType = GFX::PushConstantType::FLOAT;
+
+    getEditorComponent().registerField(std::move(refrPlaneOffsetField));
 }
 
 WaterPlane::~WaterPlane()
@@ -238,12 +258,14 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     // If we are below, we render the scene normally
     const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
-    updatePlaneEquation(renderParams._sgn, refractionPlane, underwater);
+    updatePlaneEquation(renderParams._sgn, refractionPlane, underwater, refrPlaneOffset());
 
-    //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
-    // This may not hold true forever (e.g. may run into fillrate issues) so this needs checking if rendering changes somehow
     RTClearDescriptor clearDescriptor = {};
-    clearDescriptor.clearColour(0, false);
+    if (!underwater) {
+        //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
+        // This may not hold true forever (e.g. may run into fillrate issues) so this needs checking if rendering changes somehow
+        clearDescriptor.clearColour(0, false);
+    }
 
     refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
@@ -253,12 +275,19 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetOIT = {}; // We don't need to draw refracted transparents using woit 
     params._camera = renderParams._camera;
     params._minExtents.set(0.75f);
-    params._stagePass = { RenderStage::REFRACTION, RenderPassType::COUNT, 0u, renderParams._passIndex };
-    params._clearDescriptor = &clearDescriptor;
+    params._stagePass = RenderStagePass(RenderStage::REFRACTION, RenderPassType::COUNT, to_U8(RefractorType::PLANAR), renderParams._passIndex);
     params._target = renderParams._renderTarget;
     params._clippingPlanes._planes[0] = refractionPlane;
     params._passName = "Refraction";
+    params._shadowMappingEnabled = underwater;
 
+    GFX::ClearRenderTargetCommand clearMainTarget = {};
+    clearMainTarget._target = params._target;
+    clearMainTarget._descriptor = clearDescriptor;
+    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+
+    Configuration& config = renderParams._context.context().config();
+    const bool shadowMappingEnabled = config.rendering.shadowMapping.enabled;
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 }
 
@@ -267,9 +296,12 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
     const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+    if (underwater) {
+        return;
+    }
 
     Plane<F32> reflectionPlane;
-    updatePlaneEquation(renderParams._sgn, reflectionPlane, !underwater);
+    updatePlaneEquation(renderParams._sgn, reflectionPlane, !underwater, reflPlaneOffset());
 
     // Reset reflection cam
     renderParams._camera->updateLookAt();
@@ -289,11 +321,15 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
     params._camera = _reflectionCam;
     params._minExtents.set(1.25f);
-    params._stagePass = { RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::PLANAR), renderParams._passIndex };
+    params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::PLANAR), renderParams._passIndex);
     params._target = renderParams._renderTarget;
-    params._clearDescriptor = &clearDescriptor;
     params._clippingPlanes._planes[0] = reflectionPlane;
     params._passName = "Reflection";
+
+    GFX::ClearRenderTargetCommand clearMainTarget = {};
+    clearMainTarget._target = params._target;
+    clearMainTarget._descriptor = clearDescriptor;
+    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 
@@ -314,13 +350,12 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     }
 }
 
-void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection) {
+void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection, F32 offset) {
     const F32 waterLevel = sgn.get<TransformComponent>()->getPosition().y;
     const Quaternion<F32>& orientation = sgn.get<TransformComponent>()->getOrientation();
 
-    vec3<F32> normal(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS));
-    normal.normalize();
-    plane.set(normal, -waterLevel);
+    plane.set(Normalized(vec3<F32>(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS))), 
+              offset - waterLevel);
 }
 
 const vec3<U16>& WaterPlane::getDimensions() const {

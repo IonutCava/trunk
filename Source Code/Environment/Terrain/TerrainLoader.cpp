@@ -531,6 +531,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
         terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
         terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+
+        terrainMaterial->setRenderStateBlock(terrainRenderState.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(ReflectorType::CUBE));
+        terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, to_U8(ReflectorType::CUBE));
     }
     { //Reflected rendering
         RenderStateBlock terrainRenderStateReflection = {};
@@ -541,8 +544,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         RenderStateBlock terrainRenderStateReflectionPrePass = terrainRenderStateReflection;
         terrainRenderStateReflectionPrePass.setZFunc(ComparisonFunction::LEQUAL);
 
-        terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, 0u);
-        terrainMaterial->setRenderStateBlock(terrainRenderStateReflectionPrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, 0u);
+        terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(), RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(ReflectorType::PLANAR));
+        terrainMaterial->setRenderStateBlock(terrainRenderStateReflectionPrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS, to_U8(ReflectorType::PLANAR));
+
     }
     { //Shadow rendering
         RenderStateBlock terrainRenderStateShadow = {};

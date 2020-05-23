@@ -31,6 +31,7 @@ vectorEASTL<DebugView_ptr> ShadowMap::s_debugViews;
 vectorEASTL<RenderTargetHandle> ShadowMap::s_shadowMaps;
 Light* ShadowMap::s_shadowPreviewLight = nullptr;
 
+std::array<U16, to_base(ShadowType::COUNT)> ShadowMap::s_shadowPassIndex;
 std::array<ShadowMap::ShadowCameraPool, to_base(ShadowType::COUNT)> ShadowMap::s_shadowCameras;
 
 ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, ShadowType type) noexcept
@@ -183,6 +184,7 @@ void ShadowMap::resetShadowMaps() {
     UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
     for (U32 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         s_depthMapUsage[i].resize(0);
+        s_shadowPassIndex[i] = 0u;
     }
 }
 
@@ -225,6 +227,8 @@ void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
 
         GFX::EnqueueCommand(bufferInOut, resetRenderTargetCommand);
     }
+
+    resetShadowMaps();
 }
 
 U16 ShadowMap::lastUsedDepthMapOffset(ShadowType shadowType) {
@@ -291,7 +295,7 @@ U32 ShadowMap::getLigthLayerRequirements(const Light& light) {
     return 0u;
 }
 
-void ShadowMap::generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, U32 lightIndex, GFX::CommandBuffer& bufferInOut) {
+void ShadowMap::generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut) {
     const U32 layerRequirement = getLigthLayerRequirements(light);
     if (layerRequirement == 0u) {
         return;
@@ -302,7 +306,7 @@ void ShadowMap::generateShadowMaps(PlatformContext& context, const Camera& playe
     const U16 offset = findFreeDepthMapOffset(sType, layerRequirement);
     light.setShadowOffset(offset);
     commitDepthMapOffset(sType, offset, layerRequirement);
-    s_shadowMapGenerators[to_base(sType)]->render(playerCamera, light, lightIndex, bufferInOut);
+    s_shadowMapGenerators[to_base(sType)]->render(playerCamera, light, s_shadowPassIndex[to_base(sType)]++, bufferInOut);
     bindShadowMaps(bufferInOut);
 }
 

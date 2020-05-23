@@ -1482,7 +1482,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
     return closed;
 }
 
-void Editor::showStatusMessage(const stringImpl& message, F32 durationMS) {
+void Editor::showStatusMessage(const stringImpl& message, F32 durationMS) const {
     _statusBar->showMessage(message, durationMS);
 }
 
@@ -1518,8 +1518,25 @@ LightPool& Editor::getActiveLightPool() {
     return activeScene.lightPool();
 }
 
+SceneEnvironmentProbePool* Editor::getActiveEnvProbePool() const {
+    return Attorney::SceneManagerEditor::getEnvProbes(*_context.kernel().sceneManager());
+    
+}
+
 void Editor::teleportToNode(const SceneGraphNode& sgn) const {
     Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn);
+}
+
+void Editor::saveNode(const SceneGraphNode& sgn) const {
+    if (Attorney::SceneManagerEditor::saveNode(*_context.kernel().sceneManager(), sgn)) {
+        showStatusMessage(Util::StringFormat("Saved node [ %s ] to file!", sgn.name().c_str()), Time::SecondsToMilliseconds<F32>(3));
+    }
+}
+
+void Editor::loadNode(SceneGraphNode& sgn) const {
+    if (Attorney::SceneManagerEditor::loadNode(*_context.kernel().sceneManager(), sgn)) {
+        showStatusMessage(Util::StringFormat("Reloaded node [ %s ] from file!", sgn.name().c_str()), Time::SecondsToMilliseconds<F32>(3));
+    }
 }
 
 void Editor::queueRemoveNode(I64 nodeGUID) {

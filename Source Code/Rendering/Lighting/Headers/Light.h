@@ -40,19 +40,6 @@
 
 namespace Divide {
 
-/// The different types of lights supported
-enum class LightType : U8 {
-    DIRECTIONAL = 0,
-    POINT = 1,
-    SPOT = 2,
-    COUNT
-};
-namespace Names {
-    static const char* lightType[] = {
-          "DIRECTIONAL", "POINT", "SPOT", "UNKNOWN"
-    };
-};
-
 namespace TypeUtil {
     const char* LightTypeToString(LightType lightType) noexcept;
     LightType StringToLightType(const stringImpl& name);
@@ -74,14 +61,14 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
     }
 
-    //Note: 6 - cube faces. CSM splits must always be less than 6!
+    // Worst case scenario: cube shadows = 6 passes
     struct ShadowProperties {
         // x = light type, y = arrayOffset, z - bias, w - strength
         vec4<F32> _lightDetails;
         /// light's position in world space. w - csm split distances (or whatever else might be needed)
-        vec4<F32> _lightPosition[ShadowMap::MAX_PASSES_PER_LIGHT];
+        std::array<vec4<F32>, 6> _lightPosition;
         /// light viewProjection matrices
-        mat4<F32> _lightVP[ShadowMap::MAX_PASSES_PER_LIGHT];
+        std::array<mat4<F32>, 6> _lightVP;
     };
 
     /// Create a new light assigned to the specified slot with the specified range

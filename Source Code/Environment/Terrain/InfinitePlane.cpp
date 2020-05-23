@@ -22,9 +22,9 @@ InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, siz
       _dimensions(dimensions),
       _plane(nullptr)
 {
-    _renderState.addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, -1);
-    _renderState.addToDrawExclusionMask(RenderStage::REFLECTION, RenderPassType::COUNT, -1);
-    _renderState.addToDrawExclusionMask(RenderStage::REFRACTION, RenderPassType::COUNT, -1);
+    _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
+    _renderState.addToDrawExclusionMask(RenderStage::REFLECTION);
+    _renderState.addToDrawExclusionMask(RenderStage::REFRACTION);
 }
 
 InfinitePlane::~InfinitePlane() 

@@ -80,6 +80,7 @@ class ApplicationOutput;
 class EditorOptionsWindow;
 class ContentExplorerWindow;
 class SolutionExplorerWindow;
+class SceneEnvironmentProbePool;
 
 FWD_DECLARE_MANAGED_CLASS(Mesh);
 FWD_DECLARE_MANAGED_CLASS(Texture);
@@ -161,7 +162,7 @@ class Editor : public PlatformContextComponent,
     inline const TransformSettings& getTransformSettings() const noexcept;
     inline bool inEditMode() const noexcept;
 
-    void showStatusMessage(const stringImpl& message, F32 durationMS);
+    void showStatusMessage(const stringImpl& message, F32 durationMS) const;
 
   protected: //frame listener
     bool frameStarted(const FrameEvent& evt) override;
@@ -201,6 +202,8 @@ class Editor : public PlatformContextComponent,
     inline bool isInit() const noexcept;
     bool render(const U64 deltaTime);
     void teleportToNode(const SceneGraphNode& sgn) const;
+    void saveNode(const SceneGraphNode& sgn) const;
+    void loadNode(SceneGraphNode& sgn) const;
     void queueRemoveNode(I64 nodeGUID);
     void onPreviewFocus(const bool state);
 
@@ -228,6 +231,7 @@ class Editor : public PlatformContextComponent,
     bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
 
     LightPool& getActiveLightPool();
+    SceneEnvironmentProbePool* getActiveEnvProbePool() const;
 
     inline void toggleMemoryEditor(bool state) noexcept;
 
@@ -341,6 +345,14 @@ namespace Attorney {
             editor.teleportToNode(targetNode);
         }
 
+        static void saveNode(const Editor& editor, const SceneGraphNode& targetNode) {
+            editor.saveNode(targetNode);
+        }
+
+        static void loadNode(const Editor& editor, SceneGraphNode& targetNode) {
+            editor.loadNode(targetNode);
+        }
+
         static void queueRemoveNode(Editor& editor, I64 nodeGUID) {
             editor.queueRemoveNode(nodeGUID);
         }
@@ -422,6 +434,10 @@ namespace Attorney {
 
         static LightPool& getActiveLightPool(Editor& editor) {
             return editor.getActiveLightPool();
+        }
+
+        static SceneEnvironmentProbePool* getActiveEnvProbePool(const Editor& editor) {
+            return editor.getActiveEnvProbePool();
         }
 
         static void enableGizmo(const Editor& editor, bool state) {

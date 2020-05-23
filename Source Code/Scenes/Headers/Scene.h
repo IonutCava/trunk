@@ -192,6 +192,8 @@ class Scene : public Resource, public PlatformContextComponent {
     // can save at any time, I guess?
     virtual bool saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const;
 
+    bool saveNodeToXML(const SceneGraphNode& node) const;
+    bool loadNodeFromXML(SceneGraphNode& node) const;
 
     void initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) noexcept;
 
@@ -448,12 +450,16 @@ class SceneManager {
         return scene.createNode(type, descriptor);
     }
 
+    static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
+        return scene._envProbePool;
+    }
+
     friend class Divide::SceneManager;
 };
 
 class SceneRenderPass {
  private:
-    static SceneEnvironmentProbePool* getEnvProbes(Scene& scene) noexcept {
+    static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
         return scene._envProbePool;
     }
 

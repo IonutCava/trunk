@@ -368,7 +368,7 @@ void CommandBuffer::clean() {
 }
 
 // New use cases that emerge from production work should be checked here.
-bool CommandBuffer::validate() const {
+ErrorType CommandBuffer::validate() const {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         OPTICK_EVENT();
 
@@ -380,25 +380,25 @@ bool CommandBuffer::validate() const {
             switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
                 case GFX::CommandType::BEGIN_RENDER_PASS: {
                     if (pushedPass) {
-                        return false;
+                        return ErrorType::MISSING_END_RENDER_PASS;
                     }
                     pushedPass = true;
                 } break;
                 case GFX::CommandType::END_RENDER_PASS: {
                     if (!pushedPass) {
-                        return false;
+                        return ErrorType::MISSING_BEGIN_RENDER_PASS;
                     }
                     pushedPass = false;
                 } break;
                 case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
                     if (pushedSubPass) {
-                        return false;
+                        return ErrorType::MISSING_END_RENDER_SUB_PASS;
                     }
                     pushedSubPass = true;
                 } break;
                 case GFX::CommandType::END_RENDER_SUB_PASS: {
                     if (!pushedSubPass) {
-                        return false;
+                        return ErrorType::MISSING_BEGIN_RENDER_SUB_PASS;
                     }
                     pushedSubPass = false;
                 } break;
@@ -407,19 +407,19 @@ bool CommandBuffer::validate() const {
                 } break;
                 case GFX::CommandType::END_DEBUG_SCOPE: {
                     if (pushedDebugScope == 0) {
-                        return false;
+                        return ErrorType::MISSING_POP_DEBUG_SCOPE;
                     }
                     --pushedDebugScope;
                 } break;
                 case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
                     if (pushedPixelBuffer) {
-                        return false;
+                        return ErrorType::MISSING_END_PIXEL_BUFFER;
                     }
                     pushedPixelBuffer = true;
                 }break;
                 case GFX::CommandType::END_PIXEL_BUFFER: {
                     if (!pushedPixelBuffer) {
-                        return false;
+                        return ErrorType::MISSING_BEGIN_PIXEL_BUFFER;
                     }
                     pushedPixelBuffer = false;
                 }break;
@@ -443,7 +443,7 @@ bool CommandBuffer::validate() const {
                 case GFX::CommandType::DRAW_IMGUI:
                 case GFX::CommandType::DRAW_COMMANDS: {
                     if (!hasPipeline) {
-                        return false;
+                        return ErrorType::MISSING_VALID_PIPELINE;
                     }
                 }break;
                 case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
@@ -451,7 +451,7 @@ bool CommandBuffer::validate() const {
                 }break;
                 case GFX::CommandType::BLIT_RT: {
                     if (!hasDescriptorSets) {
-                        return false;
+                        return ErrorType::MISSING_BLIT_DESCRIPTOR_SET;
                     }
                 }break;
                 default: {
@@ -460,9 +460,29 @@ bool CommandBuffer::validate() const {
             };
         }
 
-        return !pushedPass && !pushedSubPass && !pushedPixelBuffer && pushedDebugScope == 0 && pushedCamera == 0 && pushedViewport == 0;
+        if (pushedPass) {
+            return ErrorType::MISSING_END_RENDER_PASS;
+        }
+        if (pushedSubPass) {
+            return ErrorType::MISSING_END_RENDER_SUB_PASS;
+        }
+        if (pushedPixelBuffer) {
+            return ErrorType::MISSING_END_PIXEL_BUFFER;
+        }
+        if (pushedDebugScope != 0) {
+            return ErrorType::MISSING_POP_DEBUG_SCOPE;
+        }
+        if (pushedCamera != 0) {
+            return ErrorType::MISSING_POP_CAMERA;
+        }
+        if (pushedViewport != 0) {
+            return ErrorType::MISSING_POP_VIEWPORT;
+        }
+
+        return ErrorType::NONE;
+
     } else/*_constexpr*/ { 
-        return true;
+        return ErrorType::NONE;
     }
 }
 

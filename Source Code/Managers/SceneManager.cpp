@@ -197,8 +197,6 @@ void SceneManager::setActiveScene(Scene* const scene) {
         //corrupt save
     }
 
-    ShadowMap::resetShadowMaps();
-
     _platformContext->gui().onChangeScene(scene);
     _platformContext->paramHandler().setParam(_ID("activeScene"), scene->resourceName());
 }
@@ -535,6 +533,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                                  body->getNode<WaterPlane>().getDimensions());
     }
 
+
     activeScene.updateSceneState(deltaTimeUS);
 
     _saveTimer += deltaTimeUS;
@@ -642,6 +641,14 @@ void SceneManager::moveCameraToNode(const SceneGraphNode& targetNode) const {
 
 
     playerCamera()->setEye(targetPos);
+}
+
+bool SceneManager::saveNode(const SceneGraphNode& targetNode) const {
+    return LoadSave::saveNodeToXML(getActiveScene(), targetNode);
+}
+
+bool SceneManager::loadNode(SceneGraphNode& targetNode) const {
+    return LoadSave::loadNodeFromXML(getActiveScene(), targetNode);
 }
 
 void SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
@@ -770,6 +777,9 @@ SceneNode_ptr SceneManager::createNode(SceneNodeType type, const ResourceDescrip
     return Attorney::SceneManager::createNode(getActiveScene(), type, descriptor);
 }
 
+SceneEnvironmentProbePool* SceneManager::getEnvProbes() const {
+    return Attorney::SceneManager::getEnvProbes(getActiveScene());
+}
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
@@ -908,6 +918,15 @@ bool LoadSave::loadScene(Scene& activeScene) {
         }
     }
     return false;
+}
+
+
+bool LoadSave::saveNodeToXML(const Scene& activeScene, const SceneGraphNode& node) {
+    return activeScene.saveNodeToXML(node);
+}
+
+bool LoadSave::loadNodeFromXML(const Scene& activeScene, SceneGraphNode& node) {
+    return activeScene.loadNodeFromXML(node);
 }
 
 bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
