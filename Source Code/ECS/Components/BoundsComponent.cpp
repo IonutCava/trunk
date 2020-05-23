@@ -23,6 +23,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     bbField._data = &_boundingBox;
     bbField._type = EditorComponentFieldType::BOUNDING_BOX;
     bbField._readOnly = true;
+    bbField._serialise = false;
     _editorComponent.registerField(std::move(bbField));
 
     EditorComponentField rbbField = {};
@@ -30,6 +31,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     rbbField._data = &_refBoundingBox;
     rbbField._type = EditorComponentFieldType::BOUNDING_BOX;
     rbbField._readOnly = true;
+    rbbField._serialise = false;
     _editorComponent.registerField(std::move(rbbField));
 
     EditorComponentField bsField = {};
@@ -37,6 +39,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     bsField._data = &_boundingSphere;
     bsField._type = EditorComponentFieldType::BOUNDING_SPHERE;
     bsField._readOnly = true;
+    bsField._serialise = false;
     _editorComponent.registerField(std::move(bsField));
 
     EditorComponentField vbbField = {};
