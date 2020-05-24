@@ -61,7 +61,7 @@ class Object3D : public SceneNode {
         OBJECT_FLAG_NO_VB = toBit(2)
     };
 
-    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
+    explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
 
     virtual ~Object3D();
 

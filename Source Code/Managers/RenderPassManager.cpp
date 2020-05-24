@@ -246,7 +246,6 @@ namespace Divide {
                         if (idleCount++ < 2) {
                             parent().idle(idleCount == 1);
                         }
-                        std::this_thread::yield();
                     }
                 }
             }

@@ -2042,13 +2042,22 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
     UniqueLock<Mutex> lock(_debugViewLock);
 
     _debugViews.push_back(view);
+    
     if (_debugViews.back()->_sortIndex == -1) {
         _debugViews.back()->_sortIndex = to_I16(_debugViews.size());
     }
+
     eastl::sort(eastl::begin(_debugViews),
                 eastl::end(_debugViews),
                 [](const std::shared_ptr<DebugView>& a, const std::shared_ptr<DebugView>& b) noexcept -> bool {
-                    return a->_sortIndex < b->_sortIndex;
+                    if (a->_groupID == b->_groupID) {
+                        return a->_sortIndex < b->_sortIndex;
+                    }  
+                    if (a->_sortIndex == b->_sortIndex) {
+                        return a->_groupID < b->_groupID;
+                    }
+
+                    return a->_groupID < b->_groupID && a->_sortIndex < b->_sortIndex;
                 });
 
     return view.get();
@@ -2081,12 +2090,34 @@ void GFXDevice::toggleDebugView(I16 index, const bool state) {
     }
 }
 
-void GFXDevice::getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>& namesOut) {
+void GFXDevice::toggleDebugGroup(I16 group, const bool state) {
+    UniqueLock<Mutex> lock(_debugViewLock);
+    for (auto& view : _debugViews) {
+        if (view->_groupID == group) {
+            view->_enabled = state;
+        }
+    }
+}
+
+bool GFXDevice::getDebugGroupState(I16 group) const {
+    UniqueLock<Mutex> lock(_debugViewLock);
+    for (auto& view : _debugViews) {
+        if (view->_groupID == group) {
+            if (!view->_enabled) {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+void GFXDevice::getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, I16, bool>>& namesOut) {
     namesOut.resize(0);
 
     UniqueLock<Mutex> lock(_debugViewLock);
     for (auto& view : _debugViews) {
-        namesOut.emplace_back(view->_name, view->_sortIndex, view->_enabled);
+        namesOut.emplace_back(view->_name, view->_groupID, view->_sortIndex, view->_enabled);
     }
 }
 
@@ -2481,7 +2512,7 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
 }
 
 Texture* GFXDevice::newTexture(size_t descriptorHash,
-                               const Str128& resourceName,
+                               const Str256& resourceName,
                                const stringImpl& assetNames,
                                const stringImpl& assetLocations,
                                bool isFlipped,
@@ -2531,8 +2562,8 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) {
 }
 
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
-                                           const Str128& resourceName,
-                                           const Str128& assetName,
+                                           const Str256& resourceName,
+                                           const Str256& assetName,
                                            const stringImpl& assetLocation,
                                            const ShaderProgramDescriptor& descriptor,
                                            bool asyncLoad) {

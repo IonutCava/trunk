@@ -128,6 +128,7 @@ struct DebugView : public GUIDWrapper {
     stringImpl _name;
     ShaderProgram_ptr _shader = nullptr;
     Texture_ptr _texture = nullptr;
+    I16 _groupID = -1;
     I16 _sortIndex = -1;
     U8 _textureBindSlot = 0u;
     bool _enabled = false;
@@ -325,7 +326,9 @@ public:  // Accessors and Mutators
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
     void toggleDebugView(I16 index, const bool state);
-    void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, bool>>& namesOut);
+    void toggleDebugGroup(I16 groupID, const bool state);
+    bool getDebugGroupState(I16 groupID) const;
+    void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, I16, bool>>& namesOut);
 
     /// In milliseconds
     inline F32 getFrameDurationGPU() const noexcept;
@@ -356,7 +359,7 @@ public:
     GenericVertexData* newGVD(const U32 ringBufferLength, const char* name = nullptr);
     /// Create and return a new texture.
     Texture*           newTexture(size_t descriptorHash,
-                                  const Str128& resourceName,
+                                  const Str256& resourceName,
                                   const stringImpl& assetNames,
                                   const stringImpl& assetLocations,
                                   bool isFlipped,
@@ -365,8 +368,8 @@ public:
 
     /// Create and return a new shader program.
     ShaderProgram*     newShaderProgram(size_t descriptorHash,
-                                        const Str128& resourceName,
-                                        const Str128& assetName,
+                                        const Str256& resourceName,
+                                        const Str256& assetName,
                                         const stringImpl& assetLocation,
                                         const ShaderProgramDescriptor& descriptor,
                                         bool asyncLoad);
@@ -514,7 +517,7 @@ private:
 
     GFXShaderData _gpuBlock;
 
-    Mutex _debugViewLock;
+    mutable Mutex _debugViewLock;
     vectorEASTL<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;

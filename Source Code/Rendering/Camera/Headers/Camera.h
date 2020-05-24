@@ -193,7 +193,7 @@ class Camera : public Resource {
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
-    explicit Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit Camera(const Str256& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
 
    protected:
      using ListenerMap = hashMap<U32, DELEGATE<void, const Camera&>>;
@@ -241,7 +241,7 @@ class Camera : public Resource {
     }
 
     template <typename T>
-    static T* createCamera(const Str128& cameraName) {
+    static T* createCamera(const Str256& cameraName) {
         return static_cast<T*>(createCameraInternal(cameraName, T::Type()));
     }
 
@@ -257,7 +257,7 @@ class Camera : public Resource {
    private:
      static bool    destroyCameraInternal(Camera* camera);
      static Camera* utilityCameraInternal(UtilityCamera type);
-     static Camera* createCameraInternal(const Str128& cameraName, CameraType type);
+     static Camera* createCameraInternal(const Str256& cameraName, CameraType type);
      static Camera* findCameraInternal(U64 nameHash);
 
    private:
@@ -278,7 +278,7 @@ TYPEDEF_SMART_POINTERS_FOR_TYPE(Camera);
 class StaticCamera final : public Camera {
 protected:
     friend class Camera;
-    explicit StaticCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO)
+    explicit StaticCamera(const Str256& name, const vec3<F32>& eye = VECTOR3_ZERO)
         : Camera(name, Type(), eye)
     {
     }

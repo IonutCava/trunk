@@ -116,7 +116,7 @@ class Scene : public Resource, public PlatformContextComponent {
     static bool onShutdown();
 
    public:
-    explicit Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
+    explicit Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
     virtual ~Scene();
 
     /**Begin scene logic loop*/
@@ -246,9 +246,9 @@ class Scene : public Resource, public PlatformContextComponent {
 
     virtual void loadDefaultCamera();
 
-    virtual bool loadXML(const Str128& name);
+    virtual bool loadXML(const Str256& name);
 
-    virtual bool load(const Str128& name);
+    virtual bool load(const Str256& name);
     void loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent);
     virtual bool unload();
     virtual void postLoad();
@@ -282,7 +282,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void onPlayerRemove(const Player_ptr& player);
 
     /// simple function to load the scene elements.
-    inline bool SCENE_LOAD(const Str128& name) {
+    inline bool SCENE_LOAD(const Str256& name) {
         if (!Scene::load(name)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
@@ -395,10 +395,10 @@ class SceneManager {
     static bool frameStarted(Scene& scene) { return scene.frameStarted(); }
     static bool frameEnded(Scene& scene) { return scene.frameEnded(); }
 
-    static bool loadXML(Scene& scene, const Str128& name) {
+    static bool loadXML(Scene& scene, const Str256& name) {
         return scene.loadXML(name);
     }
-    static bool load(Scene& scene, const Str128& name) {
+    static bool load(Scene& scene, const Str256& name) {
         return scene.load(name);
     }
 

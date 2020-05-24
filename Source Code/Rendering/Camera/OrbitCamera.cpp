@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-OrbitCamera::OrbitCamera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
+OrbitCamera::OrbitCamera(const Str256& name, const CameraType& type, const vec3<F32>& eye)
     : FreeFlyCamera(name, type, eye)
 {
     setMouseSensitivity(0.5f);

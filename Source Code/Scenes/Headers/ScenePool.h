@@ -48,7 +48,7 @@ protected:
     ScenePool(SceneManager& parentMgr);
     ~ScenePool();
 
-    Scene* getOrCreateScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name, bool& foundInCache);
+    Scene* getOrCreateScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name, bool& foundInCache);
     bool   deleteScene(Scene*& scene);
 
     bool   defaultSceneActive() const;
@@ -61,7 +61,7 @@ protected:
 
     void init();
 
-    vectorEASTL<Str128> sceneNameList(bool sorted) const;
+    vectorEASTL<Str256> sceneNameList(bool sorted) const;
 
 private:
     /// Pointer to the currently active scene

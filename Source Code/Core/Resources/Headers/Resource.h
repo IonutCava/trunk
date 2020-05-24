@@ -70,12 +70,11 @@ FWD_DECLARE_MANAGED_CLASS(CachedResource);
 class Resource : public GUIDWrapper
 {
    public:
-    explicit Resource(ResourceType type,
-                      const Str128& resourceName);
+    explicit Resource(ResourceType type, const Str256& resourceName);
 
     ResourceState getState() const noexcept;
 
-    PROPERTY_R(Str128, resourceName);
+    PROPERTY_R(Str256, resourceName);
     PROPERTY_R(ResourceType, resourceType, ResourceType::COUNT);
 
    protected:
@@ -97,14 +96,14 @@ class CachedResource : public Resource,
 public:
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const Str128& resourceName);
+                            const Str256& resourceName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const Str128& resourceName,
+                            const Str256& resourceName,
                             const stringImpl& assetName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
-                            const Str128& resourceName,
+                            const Str256& resourceName,
                             const stringImpl& assetName,
                             const stringImpl& assetLocation);
 

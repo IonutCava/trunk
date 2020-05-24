@@ -37,6 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
+static constexpr U8  g_AllVariantsID = std::numeric_limits<U8>::max();
+static constexpr U16 g_AllPassID = std::numeric_limits<U16>::max();
+static constexpr U16 g_AllIndiciesID = g_AllPassID;
+
 struct RenderStagePass {
     RenderStagePass() = default;
     ~RenderStagePass() = default;

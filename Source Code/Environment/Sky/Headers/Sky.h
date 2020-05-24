@@ -70,7 +70,7 @@ class Sky : public SceneNode {
        };
 
    public:
-    explicit Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, U32 diameter);
+    explicit Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, U32 diameter);
     ~Sky();
 
     // Returns the sun position and intensity details for the specified date-time

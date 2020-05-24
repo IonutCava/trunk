@@ -356,6 +356,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     params._layerParams._type = RTAttachmentType::Colour;
     params._layerParams._index = 0;
 
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand({ Util::StringFormat("Cascaded Shadow Pass Light: [ %d ]", lightIndex).c_str() }));
+
     RTClearDescriptor clearDescriptor = {}; 
     clearDescriptor.clearDepth(true);
     clearDescriptor.clearColours(true);
@@ -368,7 +370,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
 
     RenderPassManager* rpm = _context.parent().renderPassManager();
 
-    constexpr F32 minExtentsFactors[] = { 0.025f, 1.25f, 2.75f, 5.5f };
+    constexpr F32 minExtentsFactors[] = { 0.025f, 2.0f, 10.5f, 50.5f };
 
     I16 i = to_I16(numSplits) - 1;
     for (i; i >= 0; i--) {
@@ -386,6 +388,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     }
 
     postRender(dirLight, bufferInOut);
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& light, GFX::CommandBuffer& bufferInOut) {

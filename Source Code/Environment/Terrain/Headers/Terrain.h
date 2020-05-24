@@ -92,7 +92,7 @@ class Terrain final : public Object3D {
        };
 
    public:
-    explicit Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
+    explicit Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~Terrain() = default;
 
     void toggleBoundingBoxes();

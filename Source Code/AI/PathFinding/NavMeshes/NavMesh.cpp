@@ -296,7 +296,7 @@ bool NavigationMesh::generateMesh() {
                      nodeName.c_str());
 
     NavModelData data;
-    Str128 geometrySaveFile(_fileName);
+    Str256 geometrySaveFile(_fileName);
     Util::ReplaceStringInPlace(geometrySaveFile, ".nm", ".ig");
 
     data.clear(false);
@@ -643,7 +643,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     }
 
     dtNavMesh* temp = nullptr;
-    Str128 file = _fileName;
+    Str256 file = _fileName;
 
     Str128 nodeName(generateMeshName(sgn));
     
@@ -716,7 +716,7 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
         return false;
     }
 
-    Str128 file = _fileName;
+    Str256 file = _fileName;
     // Parse objects from level into RC-compatible format
     file.append(generateMeshName(sgn));
     file.append(".nm");

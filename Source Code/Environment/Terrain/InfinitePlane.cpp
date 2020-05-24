@@ -14,7 +14,7 @@
 
 namespace Divide {
 
-InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const vec2<U16>& dimensions)
+InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const vec2<U16>& dimensions)
     : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_INFINITEPLANE, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
       _planeRenderStateHash(0),
       _planeRenderStateHashPrePass(0),
@@ -85,7 +85,7 @@ bool InfinitePlane::load() {
     terrainShader.propertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(_parentCache, terrainShader);
 
-    planeMaterial->setShaderProgram(terrainColourShader, RenderStage::DISPLAY, RenderPassType::COUNT, 0u);
+    planeMaterial->setShaderProgram(terrainColourShader, RenderStage::COUNT, RenderPassType::COUNT);
 
     vertModule._variant = "PrePass";
     fragModule._variant = "PrePass";
@@ -97,7 +97,7 @@ bool InfinitePlane::load() {
     ResourceDescriptor terrainShaderPrePass("terrainPlane_PrePass");
     terrainShaderPrePass.propertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(_parentCache, terrainShaderPrePass);
-    planeMaterial->setShaderProgram(terrainPrePassShader, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+    planeMaterial->setShaderProgram(terrainPrePassShader, RenderStage::COUNT, RenderPassType::PRE_PASS);
 
     setMaterialTpl(planeMaterial);
 

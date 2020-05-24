@@ -42,10 +42,10 @@ FWD_DECLARE_MANAGED_CLASS(WaterPlane);
 
 class MainScene : public Scene {
    public:
-    explicit MainScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
+    explicit MainScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
 
     /*General Scene Requirement*/
-    bool load(const Str128& name);
+    bool load(const Str256& name);
     bool unload();
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
 

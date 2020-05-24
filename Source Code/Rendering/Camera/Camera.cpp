@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-Camera::Camera(const Str128& name, const CameraType& type, const vec3<F32>& eye)
+Camera::Camera(const Str256& name, const CameraType& type, const vec3<F32>& eye)
     : Resource(ResourceType::DEFAULT, name),
       _type(type)
 {

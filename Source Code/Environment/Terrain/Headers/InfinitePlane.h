@@ -40,7 +40,7 @@ namespace Divide {
 FWD_DECLARE_MANAGED_CLASS(Quad3D);
 class InfinitePlane : public SceneNode {
 public:
-    explicit InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const vec2<U16>& dimensions);
+    explicit InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const vec2<U16>& dimensions);
     ~InfinitePlane();
 
 protected:

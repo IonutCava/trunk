@@ -146,7 +146,7 @@ namespace Divide {
     public:
         noTexture(GFXDevice& context,
                   size_t descriptorHash,
-                  const Str128& name,
+                  const Str256& name,
                   const stringImpl& assetNames,
                   const stringImpl& assetLocations,
                   bool isFlipped,
@@ -164,8 +164,8 @@ namespace Divide {
     class noShaderProgram final : public ShaderProgram {
     public:
         noShaderProgram(GFXDevice& context, size_t descriptorHash,
-                        const Str128& name,
-                        const Str128& assetName,
+                        const Str256& name,
+                        const Str256& assetName,
                         const stringImpl& assetLocation,
                         const ShaderProgramDescriptor& descriptor,
                         bool asyncLoad)

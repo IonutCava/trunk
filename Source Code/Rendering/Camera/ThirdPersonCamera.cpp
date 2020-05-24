@@ -5,7 +5,7 @@
 
 namespace Divide {
 
-ThirdPersonCamera::ThirdPersonCamera(const Str128& name, const vec3<F32>& eye)
+ThirdPersonCamera::ThirdPersonCamera(const Str256& name, const vec3<F32>& eye)
     : OrbitCamera(name, CameraType::THIRD_PERSON, eye)
 {
 }

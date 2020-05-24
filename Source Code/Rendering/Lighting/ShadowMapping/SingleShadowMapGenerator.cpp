@@ -178,6 +178,8 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     clearDescriptor.clearColours(true);
     clearDescriptor.resetToDefault(true);
 
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand({ Util::StringFormat("Single Shadow Pass Light: [ %d ]", lightIndex).c_str() }));
+
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
     clearMainTarget._descriptor = clearDescriptor;
@@ -186,6 +188,8 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     _context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 
     postRender(spotLight, bufferInOut);
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::CommandBuffer& bufferInOut) {

@@ -41,7 +41,7 @@ namespace Divide {
 
 class AudioDescriptor : public CachedResource {
    public:
-    AudioDescriptor(size_t descriptorHash, const Str128& name, const Str128& audioFileName, const stringImpl& audioFilePath)
+    AudioDescriptor(size_t descriptorHash, const Str256& name, const Str128& audioFileName, const stringImpl& audioFilePath)
         : CachedResource(ResourceType::DEFAULT, descriptorHash, name, audioFileName, audioFilePath),
           _isLooping(false),
           _dirty(true),

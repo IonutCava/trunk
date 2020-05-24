@@ -117,13 +117,13 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     shadowDescriptor.setColourWrites(true, true, false, false);
     shadowDescriptor.setZFunc(ComparisonFunction::LESS);
 
-    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
-    target.setRenderStateBlock(stateDescriptor.getHash(), RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
-    target.setRenderStateBlock(oitDescriptor.getHash(), RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
-    target.setRenderStateBlock(shadowDescriptor.getHash(), RenderStage::SHADOW, RenderPassType::COUNT, 0u);
+    target.setRenderStateBlock(zPrePassDescriptor.getHash(), RenderStage::COUNT,  RenderPassType::PRE_PASS);
+    target.setRenderStateBlock(stateDescriptor.getHash(),    RenderStage::COUNT,  RenderPassType::MAIN_PASS);
+    target.setRenderStateBlock(oitDescriptor.getHash(),      RenderStage::COUNT,  RenderPassType::OIT_PASS);
+    target.setRenderStateBlock(shadowDescriptor.getHash(),   RenderStage::SHADOW, RenderPassType::COUNT);
 }
 
-Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
+Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
       _parentCache(parentCache)
@@ -143,7 +143,7 @@ Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descri
     ApplyDefaultStateBlocks(*this);
 }
 
-Material_ptr Material::clone(const Str128& nameSuffix) {
+Material_ptr Material::clone(const Str256& nameSuffix) {
     DIVIDE_ASSERT(!nameSuffix.empty(),
                   "Material error: clone called without a valid name suffix!");
 
@@ -292,12 +292,11 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                         ShaderProgramInfo& shaderInfo,
                                         RenderStage stage,
-                                        RenderPassType pass)
+                                        RenderPassType pass,
+                                        U8 variant)
 {
-    shaderInfo._shaderRef = shader;
-    // if we already have a different shader assigned ...
     if (shader != nullptr) {
-        ShaderProgram* oldShader = shader.get();
+        ShaderProgram* oldShader = shaderInfo._shaderRef.get();
         if (oldShader != nullptr) {
             const char* newShaderName = shader == nullptr ? nullptr : shader->resourceName().c_str();
 
@@ -308,11 +307,13 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
                         oldShader->resourceName().c_str(),
                         newShaderName != nullptr ? newShaderName : "NULL",
                         TypeUtil::RenderStageToString(stage),
-                        TypeUtil::RenderPassTypeToString(pass));
+                        TypeUtil::RenderPassTypeToString(pass),
+                        variant);
             }
         }
     }
 
+    shaderInfo._shaderRef = shader;
     shaderInfo._shaderCompStage = (shader == nullptr || shader->getState() == ResourceState::RES_LOADED)
                                                      ? ShaderBuildStage::READY
                                                      : ShaderBuildStage::COMPUTED;
@@ -333,7 +334,8 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
             info._shaderRef->resourceName().c_str(),
             shaderDescriptor.resourceName().c_str(),
             TypeUtil::RenderStageToString(stagePass._stage),
-            TypeUtil::RenderPassTypeToString(stagePass._passType));
+            TypeUtil::RenderPassTypeToString(stagePass._passType),
+            stagePass._variant);
     }
 
     ShaderComputeQueue::ShaderQueueElement shaderElement{ info._shaderRef, shaderDescriptor };
@@ -473,7 +475,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
                                 : baseShaderData()._depthShaderVertVariant
                             : baseShaderData()._colourShaderVertVariant;
     Str32 fragVariant = isDepthPass ? baseShaderData()._depthShaderFragVariant : baseShaderData()._colourShaderFragVariant;
-    Str128 shaderName = vertSource + "_" + fragSource;
+    Str256 shaderName = vertSource + "_" + fragSource;
 
 
     if (isDepthPass) {
@@ -555,6 +557,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         vertDefines.emplace_back("NODE_DYNAMIC", true);
         fragDefines.emplace_back("NODE_DYNAMIC", true);
     } else {
+        shaderName += ".S";
         vertDefines.emplace_back("NODE_STATIC", true);
         fragDefines.emplace_back("NODE_STATIC", true);
     }
@@ -569,7 +572,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
             case ShadingMode::PHONG:
             case ShadingMode::BLINN_PHONG: {
                 fragDefines.emplace_back("USE_SHADING_BLINN_PHONG", true);
-                shaderName += ".Blinn";
+                shaderName += ".Phong";
             } break;
             case ShadingMode::TOON: {
                 fragDefines.emplace_back("USE_SHADING_TOON", true);
@@ -595,7 +598,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     if (renderStagePass._stage == RenderStage::DISPLAY) {
         if (!isDepthPass) {
             fragDefines.emplace_back("USE_SSAO", true);
-            shaderName += "SSAO";
+            shaderName += ".SSAO";
         }
         fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
         shaderName += ".DNrmls";
@@ -611,13 +614,11 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     vertDefines.insert(std::cend(vertDefines), std::cbegin(globalDefines), std::cend(globalDefines));
     fragDefines.insert(std::cend(fragDefines), std::cbegin(globalDefines), std::cend(globalDefines));
 
-    if (!vertDefines.empty()) {
-        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(vertDefines)).c_str());
-    }
-
-    if (!fragDefines.empty()) {
-        shaderName.append(Util::StringFormat("_%zu", ShaderProgram::definesHash(fragDefines)).c_str());
-    }
+    shaderName.append(
+        Util::StringFormat("_%zu_%zu",
+                           ShaderProgram::definesHash(vertDefines),
+                           ShaderProgram::definesHash(fragDefines))
+    );
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._variant = vertVariant;
@@ -864,31 +865,44 @@ void Material::textureUseForDepth(TextureUsage slot, bool state, bool applyToIns
 }
 
 void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant) {
-    assert(variant < g_maxVariantsPerPass);
+    assert(variant == g_AllVariantsID || variant < g_maxVariantsPerPass);
 
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
             const RenderStage crtStage = static_cast<RenderStage>(s);
             const RenderPassType crtPass = static_cast<RenderPassType>(p);
             if ((stage == RenderStage::COUNT || stage == crtStage) && (pass == RenderPassType::COUNT || pass == crtPass)) {
-                ShaderProgramInfo& shaderInfo = _shaderInfo[s][p][variant];
-                shaderInfo._customShader = true;
-                shaderInfo._shaderCompStage = ShaderBuildStage::COUNT;
-                setShaderProgramInternal(shader, shaderInfo, crtStage, crtPass);
+                if (variant == g_AllVariantsID) {
+                    for (U8 i = 0u; i < g_maxVariantsPerPass; ++i) {
+                        ShaderProgramInfo& shaderInfo = _shaderInfo[s][p][i];
+                        shaderInfo._customShader = true;
+                        shaderInfo._shaderCompStage = ShaderBuildStage::COUNT;
+                        setShaderProgramInternal(shader, shaderInfo, crtStage, crtPass, variant);
+                    }
+                } else {
+                    ShaderProgramInfo& shaderInfo = _shaderInfo[s][p][variant];
+                    shaderInfo._customShader = true;
+                    shaderInfo._shaderCompStage = ShaderBuildStage::COUNT;
+                    setShaderProgramInternal(shader, shaderInfo, crtStage, crtPass, variant);
+                }
             }
         }
     }
 }
 
 void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant) {
-    assert(variant < g_maxVariantsPerPass);
+    assert(variant == g_AllVariantsID || variant < g_maxVariantsPerPass);
 
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
             const RenderStage crtStage = static_cast<RenderStage>(s);
             const RenderPassType crtPass = static_cast<RenderPassType>(p);
             if ((stage == RenderStage::COUNT || stage == crtStage) && (pass == RenderPassType::COUNT || pass == crtPass)) {
-                _defaultRenderStates[s][p][variant] = renderStateBlockHash;
+                if (variant == g_AllVariantsID) {
+                    _defaultRenderStates[s][p].fill(renderStateBlockHash);
+                } else {
+                    _defaultRenderStates[s][p][variant] = renderStateBlockHash;
+                }
             }
         }
     }
@@ -1236,26 +1250,11 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
 }
 
 void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
-    // Use this to modify render states loaded from XML
-    const auto modify = [](size_t hashIn) {
-#if 0
-        RenderStateBlock block = RenderStateBlock::get(hashIn);
-        block.setZBias(0.0f, 0.0f);
-        return block.getHash();
-#else
-        return hashIn;
-#endif
-    };
-
     RenderStateBlock block = {};
 
     std::set<size_t> loadedHashes = {};
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
-        StateVariantsPerPass& stageStates = _defaultRenderStates[s];
-
         for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
-            StatesPerVariant& passStates = stageStates[p];
-
             for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
                 const size_t stateHash = pt.get<size_t>(
                     Util::StringFormat("%s.%s.%s.%d.hash", 
@@ -1280,8 +1279,6 @@ void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost:
                         }
                         loadedHashes.insert(stateHash);
                     }
-
-                    passStates[v] = modify(stateHash);
                 }
             }
         }

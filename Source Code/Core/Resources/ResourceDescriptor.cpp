@@ -13,7 +13,7 @@ size_t PropertyDescriptor::getHash() const noexcept {
     return _hash;
 }
 
-ResourceDescriptor::ResourceDescriptor(const Str128& resourceName)
+ResourceDescriptor::ResourceDescriptor(const Str256& resourceName)
     : _resourceName(resourceName),
       _assetName(resourceName)
 {

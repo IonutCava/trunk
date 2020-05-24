@@ -16,6 +16,7 @@
 #include "ECS/Components/Headers/SpotLightComponent.h"
 #include "ECS/Components/Headers/PointLightComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
+#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 #undef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -544,9 +545,22 @@ namespace Divide {
                                 }
                                 ImGui::Spacing();
                             }
-
-                            // Show light/shadow specific options (if any)
                             const U32 componentMask = sgnNode->componentMask();
+                            // Environment probes
+                            if (BitCompare(componentMask, ComponentType::ENVIRONMENT_PROBE)) {
+                                EnvironmentProbeComponent* probe = sgnNode->get<EnvironmentProbeComponent>();
+                                if (probe != nullptr) {
+                                    const auto& cameras = probe->probeCameras();
+
+                                    for (U8 face = 0; face < 6; ++face) {
+                                        Camera* probeCameras = cameras[face];
+                                        if (drawCamera(probeCameras)) {
+                                            sceneChanged = true;
+                                        }
+                                    }
+                                }
+                            }
+                            // Show light/shadow specific options (if any)
                             Light* light = nullptr;
                             if (BitCompare(componentMask, ComponentType::SPOT_LIGHT)) {
                                 light = sgnNode->get<SpotLightComponent>();
@@ -985,7 +999,7 @@ namespace Divide {
             constexpr U8 min = 0u, max = Material::g_maxVariantsPerPass;
             ImGui::SliderScalar("Variant", ImGuiDataType_U8, &currentStagePass._variant, &min, &max);
             ImGui::InputScalar("Index", ImGuiDataType_U16, &currentStagePass._index);
-            ImGui::InputScalar("Pass", ImGuiDataType_U32, &currentStagePass._pass);
+            ImGui::InputScalar("Pass", ImGuiDataType_U16, &currentStagePass._pass);
         }
 
         size_t stateHash = 0;

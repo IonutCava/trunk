@@ -33,7 +33,7 @@ namespace {
     constexpr U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
 };
 
-ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
+ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
     : SceneNode(parentCache,
                 descriptorHash,
                 name,
@@ -154,14 +154,12 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     if (_particleShader != nullptr) {
         Material_ptr mat = CreateResource<Material>(_parentCache, ResourceDescriptor("Material_particles"));
 
-        mat->setShaderProgram(_particleShader, RenderStage::COUNT, RenderPassType::COUNT, 0u);
-        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
-        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
-        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL));
+        mat->setShaderProgram(_particleShader,      RenderStage::COUNT,  RenderPassType::COUNT);
+        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT);
 
-        mat->setRenderStateBlock(_particleStateBlockHash, RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
-        mat->setRenderStateBlock(_particleStateBlockHash, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
-        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+        mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderStage::COUNT, RenderPassType::PRE_PASS);
+        mat->setRenderStateBlock(_particleStateBlockHash,      RenderStage::COUNT, RenderPassType::MAIN_PASS);
+        mat->setRenderStateBlock(_particleStateBlockHash,      RenderStage::COUNT, RenderPassType::OIT_PASS);
 
         setMaterialTpl(mat);
 

@@ -8,7 +8,7 @@
     </Transform>
 </TRANSFORM>
 <BOUNDS>
-    <Show__AABB>true</Show__AABB>
+    <Show__AABB>false</Show__AABB>
     <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
 </BOUNDS>
 <NETWORKING/>

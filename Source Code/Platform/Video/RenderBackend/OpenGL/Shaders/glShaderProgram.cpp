@@ -147,8 +147,8 @@ void glShaderProgram::onShutdown() {
 
 glShaderProgram::glShaderProgram(GFXDevice& context,
                                  size_t descriptorHash,
-                                 const Str128& name,
-                                 const Str128& assetName,
+                                 const Str256& name,
+                                 const Str256& assetName,
                                  const stringImpl& assetLocation,
                                  const ShaderProgramDescriptor& descriptor,
                                  bool asyncLoad)
@@ -295,25 +295,22 @@ void glShaderProgram::threadedLoad(bool reloadExisting) {
 }
 
 vectorEASTL<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
-                                                   const Str64& stageName,
+                                                   const Str128& stageName,
                                                    const Str8& extension,
                                                    const stringImpl& header,
+                                                   size_t definesHash,
                                                    U32 lineOffset,
                                                    bool reloadExisting,
                                                    std::pair<bool, stringImpl>& sourceCodeOut) {
                                              
     vectorEASTL<Str64> atoms = {};
+    const stringImpl fileName = (definesHash != 0
+                                        ? Util::StringFormat("%s.%zu.%s", stageName.c_str(), definesHash, extension.c_str())
+                                        : Util::StringFormat("%s.%s", stageName.c_str(), extension.c_str()));
+
 
     sourceCodeOut.first = false;
     sourceCodeOut.second.resize(0);
-
-    stringImpl fileName = stageName.c_str();
-    if (!header.empty()) {
-        fileName.append("." + Util::to_string(_ID(header.c_str())));
-    }
-    fileName.append(".");
-    fileName.append(extension);
-
     if (s_useShaderTextCache && !reloadExisting) {
         shaderFileRead((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str(),
                        fileName.c_str(),
@@ -389,6 +386,8 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             const ShaderType type = shaderDescriptor._moduleType;
             assert(type != ShaderType::COUNT);
 
+            const size_t definesHash = ShaderProgram::definesHash(shaderDescriptor._defines);
+
             const U8 shaderIdx = to_U8(type);
             stringImpl header = "";
             for (auto define : shaderDescriptor._defines) {
@@ -406,13 +405,14 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             if (!shaderDescriptor._variant.empty()) {
                 programName.append("." + shaderDescriptor._variant);
             }
+            
             if (!shaderDescriptor._defines.empty()) {
-                programName.append(Util::StringFormat(".%zu", ShaderProgram::definesHash(shaderDescriptor._defines)));
+                programName.append(Util::StringFormat(".%zu", definesHash));
             }
 
             glShader::LoadData& stageData = loadData[shaderIdx];
             stageData._type = shaderDescriptor._moduleType;
-            stageData._name = Str64(stringImpl(shaderDescriptor._sourceFile.data()).substr(0, shaderDescriptor._sourceFile.find_first_of(".,")));
+            stageData._name = Str128(stringImpl(shaderDescriptor._sourceFile.data()).substr(0, shaderDescriptor._sourceFile.find_first_of(".,")));
             stageData._name.append(".");
             stageData._name.append(Names::shaderTypes[shaderIdx]);
 
@@ -421,7 +421,15 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             }
 
             std::pair<bool, stringImpl> sourceCode;
-            vectorEASTL<Str64> atomsTemp = loadSourceCode(type, stageData._name, shaderAtomExtensionName[shaderIdx], header, _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u, reloadExisting, sourceCode);
+            vectorEASTL<Str64> atomsTemp = loadSourceCode(type, 
+                                                          stageData._name,
+                                                          shaderAtomExtensionName[shaderIdx],
+                                                          header,
+                                                          definesHash,
+                                                          _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u,
+                                                          reloadExisting,
+                                                          sourceCode);
+
             if (!sourceCode.first) {
                 continue;
             }
@@ -545,7 +553,7 @@ void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
     }
 }
 
-stringImpl glShaderProgram::preprocessIncludes(const Str128& name,
+stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
                                                const stringImpl& source,
                                                GLint level,
                                                vectorEASTL<Str64>& foundAtoms,

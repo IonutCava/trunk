@@ -3,16 +3,29 @@
 #include "Headers/SceneEnvironmentProbePool.h"
 #include "Scenes/Headers/Scene.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 namespace Divide {
 
 vectorEASTL<DebugView_ptr> SceneEnvironmentProbePool::s_debugViews;
+vectorEASTL<Camera*> SceneEnvironmentProbePool::s_probeCameras;
 
 SceneEnvironmentProbePool::SceneEnvironmentProbePool(Scene& parentScene)
     : SceneComponent(parentScene)
 {
+    for (U32 i = 0; i < 6; ++i) {
+        s_probeCameras.emplace_back(Camera::createCamera<FreeFlyCamera>(Util::StringFormat("ProbeCamera_%d", i)));
+    }
+}
+
+SceneEnvironmentProbePool::~SceneEnvironmentProbePool() 
+{
+    for (U32 i = 0; i < 6; ++i) {
+        Camera::destroyCamera(s_probeCameras[i]);
+    }
+    s_probeCameras.clear();
 }
 
 const EnvironmentProbeList& SceneEnvironmentProbePool::sortAndGetLocked(const vec3<F32>& position) {
@@ -91,14 +104,17 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
         shadowPreviewShader.propertyDescriptor(shaderDescriptor);
         shadowPreviewShader.threaded(false);
         ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(parentScene().resourceCache(), shadowPreviewShader);
+
+        constexpr I32 Base = 10;
         for (U32 i = 0; i < 6; ++i) {
-            DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
-            shadow->_texture = probe->reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
-            shadow->_shader = previewShader;
-            shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, probe->rtLayerIndex());
-            shadow->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
-            shadow->_name = Util::StringFormat("CubeProbe_%d_face_%d", probe->rtLayerIndex(), i);
-            s_debugViews.push_back(shadow);
+            DebugView_ptr probeView = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
+            probeView->_texture = probe->reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+            probeView->_shader = previewShader;
+            probeView->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, probe->rtLayerIndex());
+            probeView->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
+            probeView->_name = Util::StringFormat("CubeProbe_%d_face_%d", probe->rtLayerIndex(), i);
+            probeView->_groupID = Base + probe->rtLayerIndex();
+            s_debugViews.push_back(probeView);
         }
     };
     for (const DebugView_ptr& view : s_debugViews) {

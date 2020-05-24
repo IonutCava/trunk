@@ -72,7 +72,7 @@ void ScenePool::init() {
 }
 
 
-Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name, bool& foundInCache) {
+Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name, bool& foundInCache) {
     assert(!name.empty());
 
     foundInCache = false;
@@ -137,14 +137,14 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vectorEASTL<Str128> ScenePool::sceneNameList(bool sorted) const {
-    vectorEASTL<Str128> scenes;
+vectorEASTL<Str256> ScenePool::sceneNameList(bool sorted) const {
+    vectorEASTL<Str256> scenes;
     for (SceneNameMap::value_type it : g_sceneNameMap) {
         scenes.push_back(it.second);
     }
 
     if (sorted) {
-        eastl::sort(eastl::begin(scenes), eastl::end(scenes), [](const Str128& a, const Str128& b)-> bool {
+        eastl::sort(eastl::begin(scenes), eastl::end(scenes), [](const Str256& a, const Str256& b)-> bool {
             return a < b;
         });
     }

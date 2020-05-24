@@ -49,8 +49,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
    public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
-                             const Str128& name,
-                             const Str128& assetName,
+                             const Str256& name,
+                             const Str256& assetName,
                              const stringImpl& assetLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad);
@@ -86,21 +86,21 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     static void shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut);
     static void shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode);
-    static stringImpl preprocessIncludes(const Str128& name,
+    static stringImpl preprocessIncludes(const Str256& name,
                                          const stringImpl& source,
                                          GLint level,
                                          vectorEASTL<Str64>& foundAtoms,
                                          bool lock);
    protected:
-
     /// return a list of atom names
-       vectorEASTL<Str64> loadSourceCode(ShaderType stage,
-                                         const Str64& stageName,
-                                         const Str8& extension,
-                                         const stringImpl& header,
-                                         U32 lineOffset,
-                                         bool reloadExisting,
-                                         std::pair<bool, stringImpl>& sourceCodeOut);
+    vectorEASTL<Str64> loadSourceCode(ShaderType stage,
+                                      const Str128& stageName,
+                                      const Str8& extension,
+                                      const stringImpl& header,
+                                      size_t definesHash,
+                                      U32 lineOffset,
+                                      bool reloadExisting,
+                                      std::pair<bool, stringImpl>& sourceCodeOut);
 
     bool rebindStages();
     void validatePreBind();

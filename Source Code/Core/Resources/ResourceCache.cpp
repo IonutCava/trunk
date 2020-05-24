@@ -140,7 +140,7 @@ void ResourceCache::remove(CachedResource* resource) {
     resource->setState(ResourceState::RES_UNLOADING);
 
     const size_t resourceHash = resource->descriptorHash();
-    const Str128& name = resource->resourceName();
+    const Str256& name = resource->resourceName();
     const I64 guid = resource->getGUID();
 
     DIVIDE_ASSERT(resourceHash != 0, Locale::get(_ID("ERROR_RESOURCE_CACHE_INVALID_NAME")));

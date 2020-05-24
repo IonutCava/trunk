@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-FreeFlyCamera::FreeFlyCamera(const Str128& name, CameraType type, const vec3<F32>& eye)
+FreeFlyCamera::FreeFlyCamera(const Str256& name, CameraType type, const vec3<F32>& eye)
     : Camera(name, type, eye)
 {
     _speedFactor.set(35.0f);

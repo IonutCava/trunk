@@ -27,7 +27,7 @@ namespace {
     }
 };
 
-SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str128& name, const Str128& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask)
+SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
      _parentCache(parentCache),
      _type(type),

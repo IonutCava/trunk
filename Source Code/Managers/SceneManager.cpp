@@ -141,7 +141,7 @@ void SceneManager::destroy() {
     }
 }
 
-Scene* SceneManager::load(const Str128& sceneName) {
+Scene* SceneManager::load(const Str256& sceneName) {
     bool foundInCache = false;
     Scene* loadingScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, sceneName, foundInCache);
 
@@ -201,7 +201,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     _platformContext->paramHandler().setParam(_ID("activeScene"), scene->resourceName());
 }
 
-bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
+bool SceneManager::switchScene(const Str256& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
     assert(!name.empty());
 
     Scene* sceneToUnload = nullptr;
@@ -268,7 +268,7 @@ bool SceneManager::switchScene(const Str128& name, bool unloadPrevious, const Re
     return true;
 }
 
-vectorEASTL<Str128> SceneManager::sceneNameList(bool sorted) const {
+vectorEASTL<Str256> SceneManager::sceneNameList(bool sorted) const {
     return _scenePool->sceneNameList(sorted);
 }
 
@@ -890,7 +890,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
         return true;
     }
 
-    const Str128& sceneName = activeScene.resourceName();
+    const Str256& sceneName = activeScene.resourceName();
 
     const Str256 path = Paths::g_saveLocation +  sceneName + "/";
     const char* saveFile = "current_save.sav";
@@ -938,7 +938,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, 
     if (activeScene.state().saveLoadDisabled()) {
         ret = true;
     } else {
-        const Str128& sceneName = activeScene.resourceName();
+        const Str256& sceneName = activeScene.resourceName();
         const Str256 path = Paths::g_saveLocation + sceneName + "/";
         const char* saveFile = "current_save.sav";
         const char* bakSaveFile = "save.bak";

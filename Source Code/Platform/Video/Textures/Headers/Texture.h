@@ -63,7 +63,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     explicit Texture(GFXDevice& context,
                      size_t descriptorHash,
-                     const Str128& name,
+                     const Str256& name,
                      const stringImpl& assetNames,
                      const stringImpl& assetLocations,
                      bool isFlipped,

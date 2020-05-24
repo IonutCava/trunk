@@ -120,7 +120,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
    public:
     using CreationCallback = DELEGATE<void, NavigationMesh*>;
 
-    inline void setFileName(const Str128& fileName) {
+    inline void setFileName(const Str256& fileName) {
         _fileName.append(fileName);
     }
     /// Initiates the NavigationMesh build process, which includes notifying the
@@ -212,7 +212,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// A callback function to call after building is complete
     CreationCallback _loadCompleteClbk;
     /// Data file to store this nav mesh in.
-    Str128 _fileName;
+    Str256 _fileName;
     Str256 _filePath;
     /// Configuration file
     stringImpl _configFile;

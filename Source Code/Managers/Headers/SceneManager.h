@@ -94,7 +94,7 @@ public:
 
     void idle();
 
-    vectorEASTL<Str128> sceneNameList(bool sorted = true) const;
+    vectorEASTL<Str256> sceneNameList(bool sorted = true) const;
 
     Scene& getActiveScene();
     const Scene& getActiveScene() const;
@@ -192,7 +192,7 @@ public:  /// Input
 
     bool onUTF8(const Input::UTF8Event& arg) override;
 
-    bool switchScene(const Str128& name,
+    bool switchScene(const Str256& name,
                      bool unloadPrevious,
                      const Rect<U16>& targetRenderViewport,
                      bool threaded = true);
@@ -211,7 +211,7 @@ protected:
 
 protected:
     void initPostLoadState();
-    Scene* load(const Str128& name);
+    Scene* load(const Str256& name);
     bool   unloadScene(Scene* scene);
 
     // Add a new player to the simulation
@@ -281,7 +281,7 @@ private:
     vectorEASTL<DELEGATE<void, U8 /*player index*/, const vectorEASTL<SceneGraphNode*>& /*nodes*/> > _selectionChangeCallbacks;
 
     struct SwitchSceneTarget {
-        Str128 _targetSceneName = "";
+        Str256 _targetSceneName = "";
         Rect<U16> _targetViewRect = { 0, 0, 1, 1 };
         bool _unloadPreviousScene = true;
         bool _loadInSeparateThread = true;

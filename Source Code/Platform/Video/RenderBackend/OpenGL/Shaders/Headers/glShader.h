@@ -48,7 +48,7 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     // one per shader type!
     struct LoadData {
         ShaderType _type = ShaderType::COUNT;
-        Str64 _name = "";
+        Str128 _name = "";
         eastl::unordered_set<U64> atoms;
         vectorEASTL<stringImpl> sourceCode;
     };

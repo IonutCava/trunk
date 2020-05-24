@@ -47,7 +47,7 @@ FWD_DECLARE_MANAGED_CLASS(Texture);
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
 class ParticleEmitter : public SceneNode {
    public:
-    explicit ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
+    explicit ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~ParticleEmitter();
 
     void onRefreshNodeData(const SceneGraphNode& sgn,

@@ -152,9 +152,15 @@ U16 EnvironmentProbeComponent::allocateSlice() {
 }
 
 void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
-    static std::array<Camera*, 6> cameras = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
-
     if (++_currentUpdateCall % _updateRate == 0) {
+
+        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand({Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()}));
+
+        vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::probeCameras();
+
+        std::array<Camera*, 6> cameras = {};
+        std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
+
         _context.gfx().generateCubeMap(s_reflection._targetID,
                                        rtLayerIndex(),
                                        _aabb.getCenter(),
@@ -163,6 +169,8 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
                                        bufferInOut,
                                        cameras,
                                        true);
+        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+
         _currentUpdateCall = 0;
     }
 }
@@ -208,5 +216,46 @@ void EnvironmentProbeComponent::OnData(const ECS::CustomEvent& data) {
             _drawImpostor = state;
         }
     }
+}
+
+std::array<Camera*, 6> EnvironmentProbeComponent::probeCameras() const noexcept {
+    // Because we pool probe cameras, the current look at and projection settings may not  match
+    // this probe specifically. Because we update the cameras per refresh call, changing camera settings
+    // should be safe.
+
+    static const std::array<vec3<F32>, 6> TabUp ={
+          WORLD_Y_NEG_AXIS,
+          WORLD_Y_NEG_AXIS,
+          WORLD_Z_AXIS,
+          WORLD_Z_NEG_AXIS,
+          WORLD_Y_NEG_AXIS,
+          WORLD_Y_NEG_AXIS
+    };
+
+    // Get the center and up vectors for each cube face
+    static const std::array<vec3<F32>,6> TabCenter = {
+        vec3<F32>( 1.0f,  0.0f,  0.0f), //Pos X
+        vec3<F32>(-1.0f,  0.0f,  0.0f), //Neg X
+        vec3<F32>( 0.0f,  1.0f,  0.0f), //Pos Y
+        vec3<F32>( 0.0f, -1.0f,  0.0f), //Neg Y
+        vec3<F32>( 0.0f,  0.0f,  1.0f), //Pos Z
+        vec3<F32>( 0.0f,  0.0f, -1.0f)  //Neg Z
+    };
+
+    vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::probeCameras();
+
+    std::array<Camera*, 6> cameras = {};
+    std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
+
+    for (U8 i = 0; i < 6; ++i) {
+        Camera* camera = cameras[i];
+        // Set a 90 degree horizontal FoV perspective projection
+        camera->setProjection(1.0f, Angle::to_VerticalFoV(Angle::DEGREES<F32>(90.0f), 1.0f), vec2<F32>(0.1f, _aabb.getHalfExtent().length()));
+        // Point our camera to the correct face
+        camera->lookAt(_aabb.getCenter(), _aabb.getCenter() + TabCenter[i] * _aabb.getHalfExtent().length(), TabUp[i]);
+        camera->updateLookAt();
+    }
+
+    return cameras;
 }
 }; //namespace Divide

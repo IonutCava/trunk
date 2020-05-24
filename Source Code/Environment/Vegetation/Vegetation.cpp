@@ -88,7 +88,7 @@ Vegetation::Vegetation(GFXDevice& context,
     renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
     renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
     for (U16 i = 1; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
-        renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), SceneNodeRenderState::g_AllIndiciesID, i);
+        renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), g_AllIndiciesID, i);
     }
 
     renderState().minLodLevel(2u);
@@ -407,12 +407,10 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0u);
 
-    vegMaterial->setShaderProgram(grassColour, RenderStage::COUNT, RenderPassType::COUNT, 0u);
-    vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT, RenderPassType::OIT_PASS, 0u);
-    vegMaterial->setShaderProgram(grassPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
-    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
-    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
-    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL));
+    vegMaterial->setShaderProgram(grassColour,    RenderStage::COUNT,  RenderPassType::COUNT);
+    vegMaterial->setShaderProgram(grassPrePass,   RenderStage::COUNT,  RenderPassType::PRE_PASS);
+    vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT,  RenderPassType::OIT_PASS);
+    vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::COUNT);
 
     vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray);
     s_vegetationMaterial = vegMaterial;

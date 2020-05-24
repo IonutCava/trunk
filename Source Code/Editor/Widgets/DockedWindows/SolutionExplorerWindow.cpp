@@ -230,8 +230,8 @@ namespace Divide {
         ImGui::Text("All scenes");
         ImGui::Separator();
 
-        const vectorEASTL<Str128>& scenes = sceneManager.sceneNameList();
-        for (const Str128& scene : scenes) {
+        const vectorEASTL<Str256>& scenes = sceneManager.sceneNameList();
+        for (const Str256& scene : scenes) {
             if (scene != activeScene.resourceName()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {
                     ImGui::TreePop();

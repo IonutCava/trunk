@@ -98,7 +98,7 @@ class Material : public CachedResource {
     };
 
    public:
-    explicit Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name);
+    explicit Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~Material() = default;
 
     static void ApplyDefaultStateBlocks(Material& target);
@@ -106,7 +106,7 @@ class Material : public CachedResource {
     /// Return a new instance of this material with the name composed of the
     /// base material's name and the give name suffix.
     /// clone calls CreateResource internally!)
-    Material_ptr clone(const Str128& nameSuffix);
+    Material_ptr clone(const Str256& nameSuffix);
     bool unload() override;
     /// Returns true if the material changed between update calls
     bool update(const U64 deltaTimeUS);
@@ -135,12 +135,12 @@ class Material : public CachedResource {
     F32 getMetallic(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
     F32 getRoughness(bool& hasTextureOverride, Texture*& textureOut) const noexcept;
 
-    /// Add the specified shader to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
+    /// Add the specified shader to specific RenderStagePass parameters. Use "COUNT" and/or g_AllVariantsID for global options
     /// e.g. a RenderPassType::COUNT will use the shader in the specified stage+variant combo but for all of the passes
-    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant);
+    void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
     /// Add the specified renderStateBlockHash to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
     /// e.g. a RenderPassType::COUNT will use the block in the specified stage+variant combo but for all of the passes
-    void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant);
+    void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
 
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
     void getMaterialMatrix(mat4<F32>& retMatrix) const;
@@ -188,7 +188,8 @@ class Material : public CachedResource {
     void setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                   ShaderProgramInfo& shaderInfo,
                                   RenderStage stage,
-                                  RenderPassType pass);
+                                  RenderPassType pass,
+                                  U8 variant);
 
     ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass);
 

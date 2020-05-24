@@ -38,8 +38,8 @@ size_t ShaderProgramDescriptor::getHash() const noexcept {
 
 ShaderProgram::ShaderProgram(GFXDevice& context, 
                              size_t descriptorHash,
-                             const Str128& shaderName,
-                             const Str128& shaderFileName,
+                             const Str256& shaderName,
+                             const Str256& shaderFileName,
                              const stringImpl& shaderFileLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad)
@@ -93,7 +93,7 @@ void ShaderProgram::idle() {
 
 /// Calling this will force a recompilation of all shader stages for the program
 /// that matches the name specified
-bool ShaderProgram::recompileShaderProgram(const Str128& name) {
+bool ShaderProgram::recompileShaderProgram(const Str256& name) {
     bool state = false;
     SharedLock<SharedMutex> r_lock(s_programLock);
 
@@ -102,9 +102,9 @@ bool ShaderProgram::recompileShaderProgram(const Str128& name) {
         const ShaderProgramMapEntry& shader = it.second;
         
         ShaderProgram* program = shader.first;
-        const Str128& shaderName = program->resourceName();
+        const Str256& shaderName = program->resourceName();
         // Check if the name matches any of the program's name components    
-        if (shaderName.find(name) != Str128::npos || shaderName.compare(name) == 0) {
+        if (shaderName.find(name) != Str256::npos || shaderName.compare(name) == 0) {
             // We process every partial match. So add it to the recompilation queue
             s_recompileQueue.push(program);
             // Mark as found
@@ -302,7 +302,11 @@ vectorEASTL<Str256> ShaderProgram::getAllAtomLocations() {
 }
 
 size_t ShaderProgram::definesHash(const ModuleDefines& defines) {
-    size_t hash = 499;
+    if (defines.empty()) {
+        return 0;
+    }
+
+    size_t hash = 7919;
     for (const auto& entry : defines) {
         Util::Hash_combine(hash, _ID(entry.first.c_str()));
         Util::Hash_combine(hash, entry.second);

@@ -39,9 +39,9 @@ namespace Divide {
 
 class DefaultScene : public Scene {
 public:
-    DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
+    DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
 
-    bool load(const Str128& name) override;
+    bool load(const Str256& name) override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
     void processTasks(const U64 deltaTimeUS) override;
@@ -53,8 +53,8 @@ private:
 
 private:
     hashMap<U8, Angle::DEGREES<F32>> _camAngle;
-    hashMap<I64, Str128> _buttonToSceneMap;
-    Str128 _sceneToLoad;
+    hashMap<I64, Str256> _buttonToSceneMap;
+    Str256 _sceneToLoad;
 };
 };
 

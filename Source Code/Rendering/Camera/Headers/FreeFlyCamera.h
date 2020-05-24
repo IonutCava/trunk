@@ -41,7 +41,7 @@ namespace Divide {
 class FreeFlyCamera : public Camera {
    protected:
     friend class Camera;
-    explicit FreeFlyCamera(const Str128& name, CameraType type = Type(), const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit FreeFlyCamera(const Str256& name, CameraType type = Type(), const vec3<F32>& eye = VECTOR3_ZERO);
 
     void update(const F32 deltaTimeMS) noexcept override;
 

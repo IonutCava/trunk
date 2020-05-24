@@ -18,12 +18,12 @@
 #include <CEGUI/CEGUI.h>
 
 namespace Divide {
-DefaultScene::DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
+DefaultScene::DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name)
     : Scene(context, cache, parent, name)
 {
 }
 
-bool DefaultScene::load(const Str128& name) {
+bool DefaultScene::load(const Str256& name) {
     bool loadState = SCENE_LOAD(name);
     state().saveLoadDisabled(true);
 
@@ -38,7 +38,7 @@ void DefaultScene::processGUI(const U64 deltaTimeUS) {
 
 void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     // Replace buttons with nice, animated elements? images?
-    const vectorEASTL<Str128>& scenes = _parent.sceneNameList();
+    const vectorEASTL<Str256>& scenes = _parent.sceneNameList();
 
     const vec2<U16>& resolution = _context.gfx().renderingResolution();
 
@@ -63,7 +63,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                                RelativeValue(0.0f, to_F32(btnHeight)));
 
     size_t i = 0, j = 0;
-    for (const Str128& scene : scenes) {
+    for (const Str256& scene : scenes) {
         if (scene != resourceName()) {
             size_t localOffsetX = btnWidth * (i % numColumns) + spacingX * (i % numColumns);
             size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
@@ -189,7 +189,7 @@ void DefaultScene::loadScene(I64 btnGUID) {
 
     GUIButton* selection = _GUI->getGUIElement<GUIButton>(btnGUID);
     selection->setText(_sceneToLoad + "\nLoading ...");
-    for (hashMap<I64, Str128>::value_type it : _buttonToSceneMap) {
+    for (hashMap<I64, Str256>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         btn->active(false);
         if (it.first != btnGUID) {
@@ -199,7 +199,7 @@ void DefaultScene::loadScene(I64 btnGUID) {
 }
 
 void DefaultScene::onSetActive() {
-    for (hashMap<I64, Str128>::value_type it : _buttonToSceneMap) {
+    for (hashMap<I64, Str256>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         
         btn->setText(it.second);

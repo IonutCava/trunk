@@ -42,7 +42,7 @@ namespace Divide {
 class ThirdPersonCamera final : public OrbitCamera {
   protected:
     friend class Camera;
-    explicit ThirdPersonCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit ThirdPersonCamera(const Str256& name, const vec3<F32>& eye = VECTOR3_ZERO);
 
     static constexpr CameraType Type() noexcept { return CameraType::THIRD_PERSON; }
 

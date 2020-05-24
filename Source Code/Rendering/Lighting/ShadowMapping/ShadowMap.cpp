@@ -358,6 +358,8 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 shadowPreviewShader.threaded(false);
                 ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                 U8 splitCount = static_cast<DirectionalLightComponent&>(*light).csmSplitCount();
+
+                constexpr I16 Base = 2;
                 for (U8 i = 0; i < splitCount; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -365,6 +367,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, i + light->getShadowOffset());
                     shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::LAYERED)[i]->getZPlanes());
                     shadow->_name = Util::StringFormat("CSM_%d", i + light->getShadowOffset());
+                    shadow->_groupID = Base + to_I16(light->shadowIndex());
                     s_debugViews.push_back(shadow);
                 }
             } break;
@@ -400,6 +403,8 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
 
                 vec2<F32> zPlanes = ShadowMap::shadowCameras(ShadowType::CUBEMAP)[0]->getZPlanes();
+
+                constexpr I16 Base = 5;
                 for (U32 i = 0; i < 6; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
@@ -407,7 +412,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light->getShadowOffset());
                     shadow->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
                     shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, zPlanes);
-
+                    shadow->_groupID = Base + to_I16(light->shadowIndex());
                     shadow->_name = Util::StringFormat("CubeSM_%d_face_%d", light->getShadowOffset(), i);
                     s_debugViews.push_back(shadow);
                 }

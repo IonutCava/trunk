@@ -24,7 +24,7 @@ namespace {
     constexpr F32 g_reflectionPlaneCorrectionHeight = -1.0f;
 };
 
-WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str128& name)
+WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
     : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
 {
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
@@ -87,7 +87,7 @@ bool WaterPlane::load() {
 
     _reflectionCam = Camera::createCamera<StaticCamera>(resourceName() + "_reflectionCam");
 
-    const Str128& name = resourceName();
+    const Str256& name = resourceName();
 
     SamplerDescriptor defaultSampler = {};
     defaultSampler.wrapU(TextureWrap::REPEAT);
@@ -164,8 +164,8 @@ bool WaterPlane::load() {
 
     waterMat->setTexture(TextureUsage::UNIT0, waterDUDV);
     waterMat->setTexture(TextureUsage::NORMALMAP, waterNM);
-    waterMat->setShaderProgram(waterColour, RenderStage::COUNT, RenderPassType::MAIN_PASS, 0u);
-    waterMat->setShaderProgram(waterPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS, 0u);
+    waterMat->setShaderProgram(waterPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS);
+    waterMat->setShaderProgram(waterColour,  RenderStage::COUNT, RenderPassType::MAIN_PASS);
     waterMat->roughness(0.01f);
 
     setMaterialTpl(waterMat);

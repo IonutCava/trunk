@@ -42,11 +42,11 @@ class Sphere3D;
 class FreeFlyCamera;
 class PingPongScene : public Scene {
    public:
-    explicit PingPongScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name);
+    explicit PingPongScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
 
     ~PingPongScene() {}
 
-    bool load(const Str128& name) override;
+    bool load(const Str256& name) override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
     void processTasks(const U64 deltaTimeUS) override;

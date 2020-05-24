@@ -43,7 +43,7 @@ class glTexture final : public Texture,
    public:
     explicit glTexture(GFXDevice& context,
                        size_t descriptorHash,
-                       const Str128& name,
+                       const Str256& name,
                        const stringImpl& resourceName,
                        const stringImpl& resourceLocation,
                        bool isFlipped,

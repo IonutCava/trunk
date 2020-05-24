@@ -16,7 +16,7 @@ namespace Divide {
 
 glTexture::glTexture(GFXDevice& context,
                      size_t descriptorHash,
-                     const Str128& name,
+                     const Str256& name,
                      const stringImpl& assetNames,
                      const stringImpl& assetLocations,
                      bool isFlipped,

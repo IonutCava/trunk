@@ -696,12 +696,27 @@ void MenuBar::drawDebugMenu() {
 
         if (ImGui::BeginMenu("Debug Views"))
         {
-            vectorEASTL<std::tuple<stringImpl, I16, bool>> viewNames = {};
+            vectorEASTL<std::tuple<stringImpl, I16, I16, bool>> viewNames = {};
             _context.gfx().getDebugViewNames(viewNames);
 
-            for (auto[name, index, enabled] : viewNames) {
-                if (ImGui::MenuItem(name.c_str(), "", &enabled)) {
+            eastl::set<I16> groups = {};
+            for (auto[name, groupID, index, enabled] : viewNames) {
+                if (groupID != -1) {
+                    groups.insert(groupID);
+                }
+
+                const stringImpl label = (groupID == -1 ? name : Util::StringFormat("(%d) %s", groupID, name.c_str()));
+                if (ImGui::MenuItem(label.c_str(), "", &enabled)) {
                     _context.gfx().toggleDebugView(index, enabled);
+                }
+            }
+            if (!groups.empty()) {
+                ImGui::Separator();
+                for (const I16 group : groups) {
+                    bool groupEnabled = _context.gfx().getDebugGroupState(group);
+                    if (ImGui::MenuItem(Util::StringFormat("Enable Group [ %d ]", group).c_str(), "", &groupEnabled)) {
+                        _context.gfx().toggleDebugGroup(group, groupEnabled);
+                    }
                 }
             }
             ImGui::EndMenu();

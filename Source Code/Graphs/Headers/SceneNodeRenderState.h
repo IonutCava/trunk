@@ -11,10 +11,6 @@ struct RenderStagePass;
 
 struct SceneNodeRenderState {
 
-    static constexpr U8  g_AllVariantsID = std::numeric_limits<U8>::max();
-    static constexpr U16 g_AllPassID = std::numeric_limits<U16>::max();
-    static constexpr U16 g_AllIndiciesID = g_AllPassID;
-
     bool drawState(const RenderStagePass& stagePass, const U8 LoD) const;
     /// variant = -1 => all variants
     void addToDrawExclusionMask(RenderStage stage, RenderPassType passType = RenderPassType::COUNT, U8 variant = g_AllVariantsID, U16 index = g_AllIndiciesID, U16 pass = g_AllPassID);

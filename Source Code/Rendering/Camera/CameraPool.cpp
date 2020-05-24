@@ -61,7 +61,7 @@ void Camera::destroyPool() {
     s_cameraPool.clear();
 }
 
-Camera* Camera::createCameraInternal(const Str128& cameraName, CameraType type) {
+Camera* Camera::createCameraInternal(const Str256& cameraName, CameraType type) {
     Camera* camera = nullptr;
     switch (type) {
         case Camera::CameraType::FIRST_PERSON:

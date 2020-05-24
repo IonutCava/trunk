@@ -42,7 +42,7 @@ namespace Divide {
 class FirstPersonCamera final : public FreeFlyCamera {
   protected:
     friend class Camera;
-    explicit FirstPersonCamera(const Str128& name, const vec3<F32>& eye = VECTOR3_ZERO);
+    explicit FirstPersonCamera(const Str256& name, const vec3<F32>& eye = VECTOR3_ZERO);
 
     static constexpr CameraType Type() noexcept { return CameraType::FIRST_PERSON; }
 

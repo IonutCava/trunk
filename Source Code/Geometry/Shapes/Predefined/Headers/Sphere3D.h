@@ -40,7 +40,7 @@ namespace Divide {
 class Sphere3D : public Object3D {
    public:
     /// Change resolution to affect the spacing between vertices
-    explicit Sphere3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str128& name, F32 radius, U32 resolution);
+    explicit Sphere3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, F32 radius, U32 resolution);
 
     inline F32 getRadius() { return _radius; }
     inline U32 getResolution() { return _resolution; }

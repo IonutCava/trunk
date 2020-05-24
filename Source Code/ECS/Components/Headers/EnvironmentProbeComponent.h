@@ -59,7 +59,6 @@ public:
         TYPE_LOCAL,
         COUNT
     };
-
 public:
     explicit EnvironmentProbeComponent(SceneGraphNode& sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
@@ -79,6 +78,8 @@ public:
 
     F32 distanceSqTo(const vec3<F32>& pos) const;
     
+    std::array<Camera*, 6> probeCameras() const noexcept;
+
     PROPERTY_R_IW(U16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
 

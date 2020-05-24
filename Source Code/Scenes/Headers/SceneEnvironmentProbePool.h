@@ -43,14 +43,15 @@ namespace GFX {
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);
 
+class Camera;
 class EnvironmentProbeComponent;
 using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
 
 class SceneRenderState;
-class SceneEnvironmentProbePool : public SceneComponent {
+class SceneEnvironmentProbePool final : public SceneComponent {
 public:
     SceneEnvironmentProbePool(Scene& parentScene);
-    ~SceneEnvironmentProbePool() = default;
+    ~SceneEnvironmentProbePool();
 
     const EnvironmentProbeList& sortAndGetLocked(const vec3<F32>& position);
     const EnvironmentProbeList& getLocked();
@@ -66,11 +67,14 @@ public:
     void debugProbe(EnvironmentProbeComponent* probe);
     POINTER_R(EnvironmentProbeComponent, debugProbe, nullptr);
 
+    static vectorEASTL<Camera*>& probeCameras() noexcept { return s_probeCameras; }
+
 protected:
     SharedMutex _probeLock;
     EnvironmentProbeList _envProbes;
 
     static vectorEASTL<DebugView_ptr> s_debugViews;
+    static vectorEASTL<Camera*> s_probeCameras;
 };
 
 }; //namespace Divide

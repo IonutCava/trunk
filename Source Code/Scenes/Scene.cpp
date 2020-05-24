@@ -58,7 +58,7 @@ namespace {
     constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
-Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str128& name)
+Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name)
     : Resource(ResourceType::DEFAULT, name),
       PlatformContextComponent(context),
       _parent(parent),
@@ -275,7 +275,7 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
     return true;
 }
 
-bool Scene::loadXML(const Str128& name) {
+bool Scene::loadXML(const Str256& name) {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     Configuration& config = _context.config();
 
@@ -1012,7 +1012,7 @@ void Scene::loadDefaultCamera() {
 
 }
 
-bool Scene::load(const Str128& name) {
+bool Scene::load(const Str256& name) {
     setState(ResourceState::RES_LOADING);
     std::atomic_init(&_loadingTasks, 0u);
 
