@@ -221,7 +221,6 @@ void main(void)
 {
     const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); // assume square & uniform
 
-#if !defined(SHADOW_PASS)
     const vec3  centre = 0.25 * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
     const float diagLen = sqrt(2 * sideLen * sideLen);
     if (!inFrustum(centre, dvd_cameraPosition.xyz, dvd_cameraForward, diagLen))
@@ -231,7 +230,6 @@ void main(void)
           gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = -1;
     }
     else
-#endif
     {
         PassData(id);
 
@@ -241,7 +239,6 @@ void main(void)
         gl_TessLevelOuter[2] = getTessLevel(2, 3, sideLen);
         gl_TessLevelOuter[3] = getTessLevel(1, 2, sideLen);
 
-#if !defined(SHADOW_PASS)
         // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
         // scalars, in *conjunction* with a patch ID that puts them on the edge of a tile.
         const int PatchID = gl_PrimitiveID % 4;
@@ -284,7 +281,6 @@ void main(void)
                 gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
             }
         }
-#endif
        // Inner tessellation level
        gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
        gl_TessLevelInner[1] = 0.5f * (gl_TessLevelOuter[2] + gl_TessLevelOuter[1]);
