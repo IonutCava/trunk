@@ -48,6 +48,8 @@ class Camera;
 class SceneGraph;
 class RenderTarget;
 class RTDrawDescriptor;
+class SceneEnvironmentProbePool;
+
 enum class RenderStage : U8;
 
 class RenderPassManager : public KernelComponent {
@@ -145,7 +147,7 @@ private:
 
     RenderPass& getPassForStage(RenderStage renderStage);
     const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, RenderingOrder renderOrder = RenderingOrder::COUNT);
+    void prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void buildDrawCommands(const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const PassParams& params, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
     void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, bool shadowMap, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;

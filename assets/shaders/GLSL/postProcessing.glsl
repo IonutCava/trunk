@@ -29,7 +29,7 @@ uniform vec4 _fadeColour;
 uniform vec2 _zPlanes;
 
 vec4 LevelOfGrey(in vec4 colourIn) {
-    return vec4(colourIn.r * 0.299, colourIn.g * 0.587, colourIn.b * 0.114, colourIn.a);
+    return vec4(colourIn.r * 0.299f, colourIn.g * 0.587f, colourIn.b * 0.114f, colourIn.a);
 }
 
 vec4 Vignette(in vec4 colourIn){
@@ -39,7 +39,7 @@ vec4 Vignette(in vec4 colourIn){
 
 vec4 Noise(in vec4 colourIn){
     return mix(texture(texNoise, VAR._texCoord + vec2(randomCoeffNoise, randomCoeffNoise)),
-               vec4(1.0), randomCoeffFlash) / 3.0 + 2.0 * LevelOfGrey(colourIn) / 3.0;
+               vec4(1.0), randomCoeffFlash) / 3.0f + 2.0f * LevelOfGrey(colourIn) / 3.0f;
 }
 
 vec4 Underwater() {
@@ -51,8 +51,8 @@ vec4 Underwater() {
     uvNormal1.s -= time2;
     uvNormal1.t += time2;
 
-    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0 - 1.0;
-    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0 - 1.0;
+    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0f - 1.0f;
+    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0f - 1.0f;
     vec3 normal = normalize(normal0 + normal1);
 
     vec2 coords = VAR._texCoord + (normal.xy * _noiseFactor);

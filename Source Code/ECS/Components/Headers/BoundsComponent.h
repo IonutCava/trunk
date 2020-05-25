@@ -51,9 +51,11 @@ namespace Divide {
 
         F32 distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept;
 
-        PROPERTY_RW(bool, showAABB, false);
-        PROPERTY_RW(bool, showBS, false);
+        PROPERTY_R(bool, showAABB, false);
+        PROPERTY_R(bool, showBS, false);
 
+        void showAABB(const bool state);
+        void showBS(const bool state);
     protected:
         friend class SceneGraph;
         friend class BoundsSystem;

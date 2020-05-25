@@ -1,7 +1,9 @@
 #include "stdafx.h"
 
 #include "Headers/SceneEnvironmentProbePool.h"
+
 #include "Scenes/Headers/Scene.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
@@ -11,6 +13,9 @@ namespace Divide {
 
 vectorEASTL<DebugView_ptr> SceneEnvironmentProbePool::s_debugViews;
 vectorEASTL<Camera*> SceneEnvironmentProbePool::s_probeCameras;
+
+std::array<std::pair<bool, bool>, Config::MAX_REFLECTIVE_PROBES_PER_PASS> SceneEnvironmentProbePool::s_availableSlices;
+RenderTargetHandle SceneEnvironmentProbePool::s_reflection;
 
 SceneEnvironmentProbePool::SceneEnvironmentProbePool(Scene& parentScene)
     : SceneComponent(parentScene)
@@ -28,6 +33,67 @@ SceneEnvironmentProbePool::~SceneEnvironmentProbePool()
     s_probeCameras.clear();
 }
 
+U16 SceneEnvironmentProbePool::allocateSlice(bool lock) {
+    for (U16 i = 0; i < Config::MAX_REFLECTIVE_PROBES_PER_PASS; ++i) {
+        if (s_availableSlices[i].first) {
+            s_availableSlices[i] = { false, lock };
+            return i;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL();
+    return 0u;
+}
+
+void SceneEnvironmentProbePool::unlockSlice(U16 slice) {
+    s_availableSlices[slice] = { true, false };
+}
+
+void SceneEnvironmentProbePool::onStartup(GFXDevice& context) {
+    s_availableSlices.fill({ true, false });
+
+    // Reflection Targets
+    SamplerDescriptor reflectionSampler = {};
+    reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.magFilter(TextureFilter::LINEAR);
+    reflectionSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    reflectionSampler.anisotropyLevel(context.context().config().rendering.anisotropicFilteringLevel);
+
+    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
+    environmentDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
+    environmentDescriptor.samplerDescriptor(reflectionSampler);
+
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+    depthDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
+
+    reflectionSampler.minFilter(TextureFilter::LINEAR);
+    reflectionSampler.anisotropyLevel(0u);
+    depthDescriptor.samplerDescriptor(reflectionSampler);
+
+    vectorEASTL<RTAttachmentDescriptor> att = {
+        { environmentDescriptor, RTAttachmentType::Colour },
+        { depthDescriptor, RTAttachmentType::Depth },
+    };
+
+    RenderTargetDescriptor desc = {};
+    desc._name = "EnvironmentProbe";
+    desc._resolution = vec2<U16>(Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE);
+    desc._attachmentCount = to_U8(att.size());
+    desc._attachments = att.data();
+
+    s_reflection = context.renderTargetPool().allocateRT(RenderTargetUsage::ENVIRONMENT, desc);
+}
+
+void SceneEnvironmentProbePool::onShutdown(GFXDevice& context) {
+    context.renderTargetPool().deallocateRT(s_reflection);
+}
+
+RenderTargetHandle SceneEnvironmentProbePool::reflectionTarget() {
+    return s_reflection;
+}
+
 const EnvironmentProbeList& SceneEnvironmentProbePool::sortAndGetLocked(const vec3<F32>& position) {
     eastl::sort(eastl::begin(_envProbes),
                 eastl::end(_envProbes),
@@ -39,18 +105,33 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::sortAndGetLocked(const ve
 }
 
 void SceneEnvironmentProbePool::prepare(GFX::CommandBuffer& bufferInOut) {
-    EnvironmentProbeComponent::prepare(bufferInOut);
+    for (U16 i = 0; i < Config::MAX_REFLECTIVE_PROBES_PER_PASS; ++i) {
+        if (!s_availableSlices[i].second) {
+            s_availableSlices[i].first = true;
+        }
+    }
+
+    RTClearDescriptor clearDescriptor = {};
+    clearDescriptor.clearDepth(true);
+    // Do not reset already rendererd probes
+    clearDescriptor.clearColours(false);
+    clearDescriptor.resetToDefault(true);
+
+    GFX::ClearRenderTargetCommand clearMainTarget = {};
+    clearMainTarget._target = s_reflection._targetID;
+    clearMainTarget._descriptor = clearDescriptor;
+    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 }
 
-void SceneEnvironmentProbePool::lockProbeList() {
+void SceneEnvironmentProbePool::lockProbeList() const {
     _probeLock.lock();
 }
 
-void SceneEnvironmentProbePool::unlockProbeList() {
+void SceneEnvironmentProbePool::unlockProbeList() const {
     _probeLock.unlock();
 }
 
-const EnvironmentProbeList& SceneEnvironmentProbePool::getLocked() {
+const EnvironmentProbeList& SceneEnvironmentProbePool::getLocked() const {
     return _envProbes;
 }
 
@@ -69,6 +150,7 @@ void SceneEnvironmentProbePool::unregisterProbe(EnvironmentProbeComponent* probe
                                             -> bool { return probe->getGUID() == probeGUID; }),
                          eastl::end(_envProbes));
     }
+
     if (probe == _debugProbe) {
         debugProbe(nullptr);
     }
@@ -108,7 +190,7 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
         constexpr I32 Base = 10;
         for (U32 i = 0; i < 6; ++i) {
             DebugView_ptr probeView = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
-            probeView->_texture = probe->reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+            probeView->_texture = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
             probeView->_shader = previewShader;
             probeView->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, probe->rtLayerIndex());
             probeView->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
@@ -117,9 +199,10 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
             s_debugViews.push_back(probeView);
         }
     };
+
     for (const DebugView_ptr& view : s_debugViews) {
         parentScene().context().gfx().addDebugView(view);
     }
-
 }
+
 }; //namespace Divide

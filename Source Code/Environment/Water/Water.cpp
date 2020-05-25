@@ -30,6 +30,8 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
 
+    renderState().addToDrawExclusionMask(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE));
+
     EditorComponentField blurReflectionField = {};
     blurReflectionField._name = "Blur reflections";
     blurReflectionField._data = &_blurReflections;

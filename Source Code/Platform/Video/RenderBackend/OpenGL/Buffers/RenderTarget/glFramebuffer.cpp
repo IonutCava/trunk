@@ -304,21 +304,21 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
     }
 }
 
-void glFramebuffer::setBlendState(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) {
+void glFramebuffer::setBlendState(const RTBlendStates& blendStates) {
+    const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
+    setBlendState(blendStates, colourAttachments);
+}
+
+void glFramebuffer::setBlendState(const RTBlendStates& blendStates, const RTAttachmentPool::PoolEntry& activeAttachments) {
     OPTICK_EVENT();
 
-    const RTDrawMask& mask = drawPolicy.drawMask();
-
     for (U8 i = 0; i < activeAttachments.size(); ++i) {
-        if (mask.isEnabled(RTAttachmentType::Colour, i)) {
-            const RTAttachment_ptr& colourAtt = activeAttachments[i];
+        const RTAttachment_ptr& colourAtt = activeAttachments[i];
+        const RTBlendState& blend = blendStates[i];
 
-            const RTBlendState& blend = drawPolicy.blendState(i);
-
-            // Set blending per attachment if specified. Overrides general blend state
-            GL_API::getStateTracker().setBlending(static_cast<GLuint>(colourAtt->binding() - to_U32(GL_COLOR_ATTACHMENT0)), blend._blendProperties);
-            GL_API::getStateTracker().setBlendColour(blend._blendColour);
-        }
+        // Set blending per attachment if specified. Overrides general blend state
+        GL_API::getStateTracker().setBlending(static_cast<GLuint>(colourAtt->binding() - to_U32(GL_COLOR_ATTACHMENT0)), blend._blendProperties);
+        GL_API::getStateTracker().setBlendColour(blend._blendColour);
     }
 }
 
@@ -406,9 +406,6 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
 
     /// Set the depth range
     GL_API::getStateTracker().setDepthRange(_descriptor._depthRange.min, _descriptor._depthRange.max);
-
-    /// Set the blend states
-    setBlendState(drawPolicy, colourAttachments);
 
     /// Check that everything is valid
     if (Config::Build::IS_DEBUG_BUILD) {

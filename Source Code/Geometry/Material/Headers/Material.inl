@@ -49,7 +49,7 @@ inline bool Material::isPBRMaterial() const {
 }
 
 inline bool Material::reflective() const {
-    return roughness() < 0.8f;
+    return metallic() > 0.05f;
 }
 
 inline bool Material::refractive() const {

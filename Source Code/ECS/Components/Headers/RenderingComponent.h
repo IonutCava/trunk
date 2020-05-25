@@ -50,6 +50,7 @@ class RenderBin;
 class WaterPlane;
 class SceneGraphNode;
 class ParticleEmitter;
+class SceneEnvironmentProbePool;
 class EnvironmentProbeComponent;
 
 using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
@@ -113,11 +114,7 @@ struct RenderCbkParams {
 
 using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
 
-constexpr std::array<std::pair<RenderTargetUsage, TextureUsage>, 3> g_texUsage = {
-    std::pair{ RenderTargetUsage::REFLECTION_PLANAR, TextureUsage::REFLECTION_PLANAR},
-    std::pair{ RenderTargetUsage::REFRACTION_PLANAR, TextureUsage::REFRACTION_PLANAR},
-    std::pair{ RenderTargetUsage::REFLECTION_CUBE,   TextureUsage::REFLECTION_CUBE  }
-};
+constexpr U16 g_invalidRefIndex = std::numeric_limits<U16>::max();
 
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
     friend class Attorney::RenderingCompRenderPass;
@@ -129,14 +126,12 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
        enum class RenderOptions : U16 {
            RENDER_GEOMETRY = toBit(1),
            RENDER_WIREFRAME = toBit(2),
-           RENDER_BOUNDS_AABB = toBit(3),
-           RENDER_BOUNDS_SPHERE = toBit(4),
-           RENDER_SKELETON = toBit(5),
-           RENDER_SELECTION = toBit(6),
-           RENDER_AXIS = toBit(7),
-           CAST_SHADOWS = toBit(8),
-           RECEIVE_SHADOWS = toBit(9),
-           IS_VISIBLE = toBit(10)
+           RENDER_SKELETON = toBit(3),
+           RENDER_SELECTION = toBit(4),
+           RENDER_AXIS = toBit(5),
+           CAST_SHADOWS = toBit(6),
+           RECEIVE_SHADOWS = toBit(7),
+           IS_VISIBLE = toBit(8)
        };
 
        struct NodeRenderingProperties {
@@ -174,7 +169,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     inline bool lodLocked(RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
     void instantiateMaterial(const Material_ptr& material);
 
-    void getMaterialColourMatrix(mat4<F32>& matOut) const;
+    void getMaterialColourMatrix(const RenderStagePass& stagePass, mat4<F32>& matOut) const;
 
     void getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const;
 
@@ -198,12 +193,14 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     
     void prepareRender(const RenderStagePass& renderStagePass);
 
-    U8 getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
+    U8 getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     inline const ShaderBufferList& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
+    void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
+
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick);
 
     bool canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData);
@@ -220,38 +217,29 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
     bool updateReflection(U16 reflectionIndex, 
+                          bool inBudget,
                           Camera* camera,
                           const SceneRenderState& renderState,
                           GFX::CommandBuffer& bufferInOut);
+
     bool updateRefraction(U16 refractionIndex,
+                          bool inBudget,
                           Camera* camera,
                           const SceneRenderState& renderState,
                           GFX::CommandBuffer& bufferInOut);
-    bool clearReflection();
-    bool clearRefraction();
 
-    void clearEnvProbeList();
-    void updateEnvProbeList(const EnvironmentProbeList& probes);
-
-    void defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
-    void defaultRefractionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex);
-
-    U32 defaultReflectionTextureIndex() const;
-    U32 defaultRefractionTextureIndex() const;
+    void updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position);
 
     PROPERTY_R(bool, showAxis, false);
-
     // If the new value is negative, this disables occlusion culling!
     PROPERTY_RW(F32, cullFlag, 1.0f);
 
    protected:
-    void updateReflectionIndex(ReflectorType type, I32 index);
-    void updateRefractionIndex(ReflectorType type, I32 index);
 
     void onMaterialChanged();
     void onParentUsageChanged(NodeUsageContext context);
 
-    Texture* reflectionTexture() const;
+    void OnData(const ECS::CustomEvent& data) final;
 
    protected:
     using PackagesPerIndex = vectorEASTLFast<RenderPackage>;
@@ -261,17 +249,19 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
-    std::array<Texture_ptr, g_texUsage.size()> _externalTextures;
+    Texture* _reflectionTexture = nullptr;
+    Texture* _refractionTexture = nullptr;
 
     vectorEASTL<EnvironmentProbeComponent*> _envProbes;
     ShaderBufferList _externalBufferBindings;
 
-    std::pair<Texture_ptr, U32> _defaultReflection = {nullptr, 0u};
-    std::pair<Texture_ptr, U32> _defaultRefraction = {nullptr, 0u};
     Material_ptr _materialInstance = nullptr;
     GFXDevice& _context;
     const Configuration& _config;
 
+    mat4<F32> _worldMatrixCache;
+    mat4<F32> _worldOffsetMatrixCache;
+    vec3<F32> _boundsCenterCache;
     vec2<F32> _renderRange;
 
     Pipeline*    _primitivePipeline[3] = {nullptr, nullptr, nullptr};
@@ -282,11 +272,15 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     IMPrimitive* _selectionGizmo = nullptr;
 
     /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
-    I32 _reflectionIndex = -1;
-    I32 _refractionIndex = -1;
+    U16 _reflectionIndex = 0u;
+    U16 _refractionIndex = 0u;
     U32 _renderMask = 0u;
+
+    bool _drawAABB = false;
+    bool _drawBS = false;
+
     std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
-    ReflectorType _reflectorType = ReflectorType::COUNT;
+    ReflectorType _reflectorType = ReflectorType::CUBE;
     RefractorType _refractorType = RefractorType::COUNT;
 
     std::array<std::pair<bool, U8>, to_base(RenderStage::COUNT)> _lodLockLevels;
@@ -299,40 +293,30 @@ INIT_COMPONENT(RenderingComponent);
 namespace Attorney {
 class RenderingCompRenderPass {
     private:
+        /// Returning true or false controls our reflection/refraction budget only. 
+
+        /// Return true if we executed an external render pass (e.g. water planar reflection)
+        /// Return false for no or non-expensive updates (e.g. selected the nearest probe)
         static bool updateReflection(RenderingComponent& renderable,
                                      U16 reflectionIndex,
+                                     bool inBudget,
                                      Camera* camera,
                                      const SceneRenderState& renderState,
                                      GFX::CommandBuffer& bufferInOut)
         {
-            return renderable.updateReflection(reflectionIndex, camera, renderState, bufferInOut);
+            return renderable.updateReflection(reflectionIndex, inBudget, camera, renderState, bufferInOut);
         }
 
+        /// Return true if we executed an external render pass (e.g. water planar refraction)
+        /// Return false for no or non-expensive updates (e.g. selected the nearest probe)
         static bool updateRefraction(RenderingComponent& renderable,
                                      U16 refractionIndex,
+                                     bool inBudget,
                                      Camera* camera,
                                      const SceneRenderState& renderState,
                                      GFX::CommandBuffer& bufferInOut)
         {
-            return renderable.updateRefraction(refractionIndex, camera, renderState, bufferInOut);
-        }
-
-        static bool clearReflection(RenderingComponent& renderable)
-        {
-            return renderable.clearReflection();
-        }
-
-        static bool clearRefraction(RenderingComponent& renderable)
-        {
-            return renderable.clearRefraction();
-        }
-
-        static void updateEnvProbeList(RenderingComponent& renderable, const EnvironmentProbeList& probes) {
-            renderable.updateEnvProbeList(probes);
-        }
-
-        static void clearEnvProbeList(RenderingComponent& renderable) {
-            renderable.clearEnvProbeList();
+            return renderable.updateRefraction(refractionIndex, inBudget, camera, renderState, bufferInOut);
         }
 
         static bool prepareDrawPackage(RenderingComponent& renderable,

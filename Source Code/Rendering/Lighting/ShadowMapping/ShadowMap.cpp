@@ -99,7 +99,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapSampler.anisotropyLevel(isCSM ? settings.csm.anisotropicFilteringLevel : settings.spot.anisotropicFilteringLevel);
 
                 // Default filters, LINEAR is OK for this
-                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, isCSM ? GFXDataFormat::FLOAT_32 : GFXDataFormat::FLOAT_32/*FLOAT_16*/);
+                TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, isCSM ? GFXDataFormat::FLOAT_32 : GFXDataFormat::FLOAT_16);
                 depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * (isCSM ? Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS : 1));
                 depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.autoMipMaps(false);
@@ -125,16 +125,15 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             case ShadowType::CUBEMAP: {
                 depthMapSampler.anisotropyLevel(settings.point.anisotropicFilteringLevel);
 
-                TextureDescriptor colourMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_32);
-                colourMapDescriptor.samplerDescriptor(depthMapSampler);
+                TextureDescriptor colourMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
                 colourMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-                colourMapDescriptor.autoMipMaps(false);
-
                 depthMapSampler.minFilter(TextureFilter::LINEAR);
                 depthMapSampler.anisotropyLevel(0u);
+                colourMapDescriptor.samplerDescriptor(depthMapSampler);
+
                 TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-                depthDescriptor.samplerDescriptor(depthMapSampler);
                 depthDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthDescriptor.samplerDescriptor(depthMapSampler);
 
                 vectorEASTL<RTAttachmentDescriptor> att = {
                     { colourMapDescriptor, RTAttachmentType::Colour },

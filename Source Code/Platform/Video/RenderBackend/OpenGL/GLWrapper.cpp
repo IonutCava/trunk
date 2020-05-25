@@ -1085,6 +1085,11 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
+        case GFX::CommandType::SET_BLEND_STATE: {
+            assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
+            GFX::SetBlendStateCommand* crtCmd = commandBuffer.get<GFX::SetBlendStateCommand>(entry);
+            GL_API::getStateTracker()._activeRenderTarget->setBlendState(crtCmd->_blendStates);
+        }break;
         case GFX::CommandType::COPY_TEXTURE: {
             GFX::CopyTextureCommand* crtCmd = commandBuffer.get<GFX::CopyTextureCommand>(entry);
             glTexture::copy(crtCmd->_source, crtCmd->_destination, crtCmd->_params);

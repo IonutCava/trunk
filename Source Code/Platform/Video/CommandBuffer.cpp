@@ -402,6 +402,12 @@ ErrorType CommandBuffer::validate() const {
                     }
                     pushedSubPass = false;
                 } break;
+                case GFX::CommandType::SET_BLEND_STATE: {
+                    if (!pushedPass) {
+                        return ErrorType::MISSING_BEGIN_RENDER_PASS_FOR_BLEND;
+                    }
+
+                }break;
                 case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
                     ++pushedDebugScope;
                 } break;

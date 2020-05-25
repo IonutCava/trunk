@@ -215,7 +215,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     // Initialize the shader manager
     ShaderProgram::onStartup(*this, cache);
-    EnvironmentProbeComponent::onStartup(*this);
+    SceneEnvironmentProbePool::onStartup(*this);
     GFX::initPools();
 
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
@@ -779,7 +779,7 @@ void GFXDevice::closeRenderingAPI() {
 
     RenderStateBlock::clear();
 
-    EnvironmentProbeComponent::onShutdown(*this);
+    SceneEnvironmentProbePool::onShutdown(*this);
     GFX::destroyPools();
     MemoryManager::SAFE_DELETE(_rtPool);
 
@@ -953,6 +953,8 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
     params._stagePass = stagePass;
     params._passName = "CubeMap";
     params._layerParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
+    params._layerParams._includeDepth = hasColour && hasDepth;
+
     params._layerParams._index = 0;
     params._shadowMappingEnabled = !disableShadowMaps;
 
@@ -960,12 +962,13 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     for (U8 i = 0; i < 6; ++i) {
         // Draw to the current cubemap face
-        params._layerParams._layer = i + arrayOffset;
+        params._layerParams._layer = i + (arrayOffset * 6);
 
         Camera* camera = cameras[i];
         if (camera == nullptr) {
             camera = Camera::utilityCamera(Camera::UtilityCamera::CUBE);
         }
+
         // Set a 90 degree horizontal FoV perspective projection
         camera->setProjection(to_F32(aspect), Angle::to_VerticalFoV(Angle::DEGREES<F32>(90.0f), aspect), zPlanes);
         // Point our camera to the correct face

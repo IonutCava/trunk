@@ -18,6 +18,7 @@ IMPLEMENT_COMMAND(BeginPixelBufferCommand);
 IMPLEMENT_COMMAND(EndPixelBufferCommand);
 IMPLEMENT_COMMAND(BeginRenderSubPassCommand);
 IMPLEMENT_COMMAND(EndRenderSubPassCommand);
+IMPLEMENT_COMMAND(SetBlendStateCommand);
 IMPLEMENT_COMMAND(BlitRenderTargetCommand);
 IMPLEMENT_COMMAND(ClearRenderTargetCommand);
 IMPLEMENT_COMMAND(ResetRenderTargetCommand);

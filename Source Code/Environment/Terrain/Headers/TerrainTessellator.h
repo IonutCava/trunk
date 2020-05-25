@@ -76,8 +76,6 @@ public:
         vec2<U16> _terrainDimensions = { 128, 128 };
         // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
         F32 _minPatchSize = 100.0f;
-        bool _useCameraDistance = true;
-        bool _useFrustumCulling = true;
     };
 
     using TreeVector = vectorEASTL<TessellatedTerrainNode>;

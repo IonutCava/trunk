@@ -35,4 +35,17 @@ bool RenderingComponent::renderOptionsEnabled(U32 mask) const{
     return BitCompare(_renderMask, mask);
 }
 
+void RenderingComponent::toggleBoundsDraw(bool drawAABB, bool drawBS, bool recursive) {
+    if (recursive) {
+        _parentSGN.forEachChild([drawAABB, drawBS, recursive](const SceneGraphNode* child, I32 /*childIdx*/) {
+            RenderingComponent* const renderable = child->get<RenderingComponent>();
+            if (renderable) {
+                renderable->toggleBoundsDraw(drawAABB, drawBS, recursive);
+            }
+            return true;
+        });
+    }
+    _drawAABB = drawAABB;
+    _drawBS = drawBS;
+}
 }; //namespace Divide

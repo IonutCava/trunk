@@ -51,6 +51,7 @@ namespace ECS {
             TransformUpdated = 0,
             RelationshipCacheInvalidated,
             BoundsUpdated,
+            DrawBoundsChanged,
             EntityPostLoad,
             EntityFlagChanged,
             COUNT

@@ -44,7 +44,8 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
 
     EditorComponentField vbbField = {};
     vbbField._name = "Show AABB";
-    vbbField._data = &_showAABB;
+    vbbField._dataGetter = [this](void* dataOut) { *static_cast<bool*>(dataOut) = _showAABB; };
+    vbbField._dataSetter = [this](const void* data) { showAABB(*static_cast<const bool*>(data)); };
     vbbField._type = EditorComponentFieldType::PUSH_TYPE;
     vbbField._basicType = GFX::PushConstantType::BOOL;
     vbbField._readOnly = false;
@@ -53,7 +54,8 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
 
     EditorComponentField vbsField = {};
     vbsField._name = "Show Bounding Sphere";
-    vbsField._data = &_showBS;
+    vbsField._dataGetter = [this](void* dataOut) { *static_cast<bool*>(dataOut) = _showBS; };
+    vbsField._dataSetter = [this](const void* data) { showBS(*static_cast<const bool*>(data)); };
     vbsField._type = EditorComponentFieldType::PUSH_TYPE;
     vbsField._basicType = GFX::PushConstantType::BOOL;
     vbsField._readOnly = false;
@@ -67,17 +69,36 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     _editorComponent.registerField(std::move(recomputeBoundsField));
 
     _editorComponent.onChangedCbk([this](std::string_view field) {
-        if (field == "Show AABB" || field == "Show Bounding Sphere") 
-        {
-            RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
-            if (rComp != nullptr) {
-                rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_AABB, _showAABB);
-                rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_BOUNDS_SPHERE, _showBS);
-            }
-        } else if (field == "Recompute Bounds") {
+        if (field == "Recompute Bounds") {
             flagBoundingBoxDirty(true);
         }
     });
+}
+
+void BoundsComponent::showAABB(const bool state) {
+    if (_showAABB != state) {
+        _showAABB = state;
+
+        _parentSGN.SendEvent(
+            {
+                ECS::CustomEvent::Type::DrawBoundsChanged,
+                this,
+                0u
+            });
+    }
+}
+
+void BoundsComponent::showBS(const bool state) {
+    if (_showBS != state) {
+        _showBS = state;
+
+        _parentSGN.SendEvent(
+            {
+                ECS::CustomEvent::Type::DrawBoundsChanged,
+                this,
+                0u
+            });
+    }
 }
 
 void BoundsComponent::flagBoundingBoxDirty(bool recursive) {

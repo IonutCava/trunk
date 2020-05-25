@@ -69,6 +69,8 @@ struct RTBlendState {
     inline bool operator!=(const RTBlendState& other) const noexcept;
 };
 
+using RTBlendStates = std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS>;
+
 class RTClearDescriptor {
 public:
     RTClearDescriptor() noexcept;
@@ -93,9 +95,6 @@ class RTDrawDescriptor {
     inline RTDrawMask& drawMask() noexcept { return _drawMask; }
     inline const RTDrawMask& drawMask() const noexcept { return _drawMask; }
 
-    inline RTBlendState& blendState(U8 index) noexcept { return _blendStates[index]; }
-    inline const RTBlendState& blendState(U8 index) const noexcept { return _blendStates[index]; }
-
     inline bool operator==(const RTDrawDescriptor& other) const;
     inline bool operator!=(const RTDrawDescriptor& other) const;
 
@@ -104,7 +103,6 @@ class RTDrawDescriptor {
 
   protected:
     RTDrawMask _drawMask;
-    std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS> _blendStates;
 };
 
 }; //namespace Divide

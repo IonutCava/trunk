@@ -34,19 +34,7 @@ namespace {
     constexpr U8 MAX_LOD_LEVEL = 4u;
 
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
-
-    inline I32 getUsageIndex(RenderTargetUsage usage) noexcept {
-        for (I32 i = 0; i < g_texUsage.size(); ++i) {
-            if (g_texUsage[i].first == usage) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
 };
-
-hashMap<U32, DebugView*> RenderingComponent::s_debugViews[2];
 
 RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContext& context) 
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
@@ -65,9 +53,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
-
-    defaultReflectionTexture(nullptr, 0u);
-    defaultRefractionTexture(nullptr, 0u);
 
     EditorComponentField vaxisField = {};
     vaxisField._name = "Show Axis";
@@ -307,23 +292,27 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
-    if (pkg.textureDataDirty()) {
-        TextureDataContainer<>& textures = pkg.descriptorSet(0)._textureData;
+    TextureDataContainer<>& textures = pkg.descriptorSet(0)._textureData;
 
+    if (pkg.textureDataDirty()) {
         if (_materialInstance != nullptr) {
             _materialInstance->getTextureData(renderStagePass, textures);
         }
+        pkg.textureDataDirty(false);
+    }
 
-        if (!renderStagePass.isDepthPass()) {
-            for (U8 i = 0; i < _externalTextures.size(); ++i) {
-                const Texture_ptr& crtTexture = _externalTextures[i];
-                if (crtTexture != nullptr) {
-                    textures.setTexture(crtTexture->data(), g_texUsage[i].second);
-                }
-            }
+    if (!renderStagePass.isDepthPass()) {
+        if (_reflectionTexture != nullptr && renderStagePass._stage != RenderStage::REFLECTION) {
+            textures.setTexture(_reflectionTexture->data(), _reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
+        } else {
+            _reflectionIndex = g_invalidRefIndex;
         }
 
-        pkg.textureDataDirty(false);
+        if (_refractionTexture != nullptr && renderStagePass._stage != RenderStage::REFRACTION) {
+            textures.setTexture(_refractionTexture->data(), TextureUsage::REFRACTION_PLANAR);
+        } else {
+            _refractionIndex = g_invalidRefIndex;
+        }
     }
 }
 
@@ -375,15 +364,12 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     return true;
 }
 
-void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
+void RenderingComponent::getMaterialColourMatrix(const RenderStagePass& stagePass, mat4<F32>& matOut) const {
     matOut.zero();
 
     if (_materialInstance != nullptr) {
         _materialInstance->getMaterialMatrix(matOut);
-        Texture* refTexture = reflectionTexture();
-        if (refTexture != nullptr) {
-            matOut.element(1, 3) = to_F32(refTexture->width());
-        }
+        matOut.element(1, 3) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
     }
 }
 
@@ -394,8 +380,9 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
                                      renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._cullFlagValue = cullFlag();
-    propertiesOut._reflectionIndex = defaultReflectionTextureIndex();
-    propertiesOut._refractionIndex = defaultRefractionTextureIndex();
+    propertiesOut._reflectionIndex = _reflectionIndex == g_invalidRefIndex ? 0 : _reflectionIndex;
+    propertiesOut._refractionIndex = _refractionIndex == g_invalidRefIndex ? 0 : _refractionIndex;
+
     if (_materialInstance != nullptr) {
         propertiesOut._texOperation = _materialInstance->textureOperation();
         propertiesOut._bumpMethod = _materialInstance->bumpMethod();
@@ -409,8 +396,8 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     }
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
-    const bool renderBBox = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
-    const bool renderBSphere = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
+    const bool renderBBox = _drawAABB || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+    const bool renderBSphere = _drawBS || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
     const bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
     const bool renderSelection = renderOptionEnabled(RenderOptions::RENDER_SELECTION);
     const bool renderselectionGizmo = renderOptionEnabled(RenderOptions::RENDER_AXIS) || (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
@@ -441,7 +428,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     }
 }
 
-U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
+U8 RenderingComponent::getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
     OPTICK_EVENT();
 
     const auto[state, level] = _lodLockLevels[to_base(renderStage)];
@@ -450,7 +437,7 @@ U8 RenderingComponent::getLoDLevel(const BoundsComponent& bComp, const vec3<F32>
         return CLAMPED(level, to_U8(0u), MAX_LOD_LEVEL);
     }
 
-    const F32 distSQtoCenter = std::max(bComp.getBoundingSphere().getCenter().distanceSquared(cameraEye), EPSILON_F32);
+    const F32 distSQtoCenter = std::max(center.distanceSquared(cameraEye), EPSILON_F32);
 
     if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.x))) {
         return 0u;
@@ -470,19 +457,7 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
     if (refreshData) {
-        BoundsComponent* bComp = _parentSGN.get<BoundsComponent>();
-        if (bComp != nullptr) {
-            lod = getLoDLevel(*bComp, camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
-            const bool renderBS = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_AABB);
-            const bool renderAABB = renderOptionEnabled(RenderOptions::RENDER_BOUNDS_SPHERE);
-
-            if (renderAABB != bComp->showAABB()) {
-                bComp->showAABB(renderAABB);
-            }
-            if (renderBS != bComp->showBS()) {
-                bComp->showAABB(renderBS);
-            }
-        }
+        lod = getLoDLevel(_boundsCenterCache, camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
     }
 
     if (canDraw(renderStagePass, lod, refreshData)) {
@@ -496,10 +471,13 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
             prepareRender(renderStagePass);
 
-            pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY,  (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
-                                                                    sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
-            pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
-                                                                    sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
+            pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, 
+                             (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
+                              sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
+
+            pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME,
+                              (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
+                               sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
         }
 
         return true;
@@ -529,230 +507,106 @@ size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass
     return (pkg.empty() ? 0 : pkg.getSortKeyHash());
 }
 
-Texture* RenderingComponent::reflectionTexture() const {
-    return _externalTextures[getUsageIndex(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                                   : RenderTargetUsage::REFLECTION_CUBE)].get();
-}
 
-void RenderingComponent::updateReflectionIndex(ReflectorType type, I32 index) {
-    _reflectionIndex = index;
-    if (_reflectionIndex > -1) {
-        RenderTarget& reflectionTarget = _context.renderTargetPool().renderTarget(RenderTargetID(type == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                                                                               : RenderTargetUsage::REFLECTION_CUBE,
-                                                     to_U16(index)));
-        const Texture_ptr& refTex = reflectionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                      : RenderTargetUsage::REFLECTION_CUBE)] = refTex;
-    } else {
-        _externalTextures[getUsageIndex(type == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                      : RenderTargetUsage::REFLECTION_CUBE)] = _defaultReflection.first;
-    }
-}
-
-bool RenderingComponent::clearReflection() {
-    updateReflectionIndex(_reflectorType, -1);
-    return true;
-}
+namespace Hack {
+    Sky* g_skyPtr = nullptr;
+};
 
 bool RenderingComponent::updateReflection(U16 reflectionIndex,
+                                          bool inBudget,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
 {
+    _reflectionTexture = nullptr;
+    _reflectionIndex = g_invalidRefIndex;
+
     if (_reflectorType == ReflectorType::COUNT) {
         return false;
     }
 
-    updateReflectionIndex(_reflectorType, reflectionIndex);
-
-    RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                       : RenderTargetUsage::REFLECTION_CUBE, 
-                               reflectionIndex);
-
-    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-        const RenderTarget& target = _context.renderTargetPool().renderTarget(reflectRTID);
-
-        DebugView* debugView = s_debugViews[0][reflectionIndex];
-        if (debugView == nullptr) {
-            DebugView_ptr viewPtr = std::make_shared<DebugView>();
-            viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-            viewPtr->_shader = _context.getRTPreviewShader(false);
-            viewPtr->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
-            viewPtr->_name = Util::StringFormat("REFLECTION_%d_%s", reflectRTID._index, _parentSGN.name().c_str());
-            debugView = _context.addDebugView(viewPtr);
-            s_debugViews[0][reflectionIndex] = debugView;
-        } else {
-            /*if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
-                if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
-                    debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-                    debugView->_shader = _context.getRTPreviewShader(true);
-                    debugView->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, camera->getZPlanes());
-                } else {
-                    debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-                    debugView->_shader = _context.getRTPreviewShader(false);
-                }
-            }*/
-        }
-    }
-
-    if (_reflectionCallback) {
+    if (_reflectionCallback && inBudget) {
+        const RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                                                                                 : RenderTargetUsage::REFLECTION_CUBE,
+                                         reflectionIndex);
         RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
         _reflectionCallback(params, bufferInOut);
-    } else {
-        if (_reflectorType == ReflectorType::CUBE) {
-            static std::array<Camera*, 6> cameras = { nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
 
-            const vec2<F32>& zPlanes = camera->getZPlanes();
-            _context.generateCubeMap(reflectRTID,
-                                     0,
-                                     camera->getEye(),
-                                     vec2<F32>(zPlanes.x, zPlanes.y * 0.25f),
-                                     RenderStagePass{RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(_reflectorType), reflectionIndex},
-                                     bufferInOut,
-                                     cameras,
-                                     true);
+        _reflectionIndex = reflectionIndex;
+        _reflectionTexture = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u).texture().get();
+        return true;
+
+    } else if (_reflectorType == ReflectorType::CUBE) {
+        if (!_envProbes.empty()) {
+            _reflectionIndex = _envProbes.front()->rtLayerIndex();
+            _reflectionTexture = SceneEnvironmentProbePool::reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
+        } else {
+            // Need a way better way of handling this ...
+            if (Hack::g_skyPtr == nullptr) {
+                const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
+                if (!skies.empty()) {
+                    Hack::g_skyPtr = &skies.front()->getNode<Sky>();
+                }
+            }
+
+            if (Hack::g_skyPtr != nullptr) {
+                _refractionIndex = 0;
+                _reflectionTexture = Hack::g_skyPtr->activeSkyBox().get();
+            }
         }
     }
 
-    return true;
-}
-
-void RenderingComponent::updateRefractionIndex(ReflectorType type, I32 index) {
-    _refractionIndex = index;
-    if (_refractionIndex > -1) {
-        RenderTarget& refractionTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::REFRACTION_PLANAR, to_U16(index)));
-        const Texture_ptr& refTex = refractionTarget.getAttachment(RTAttachmentType::Colour, 0).texture();
-        _externalTextures[getUsageIndex(RenderTargetUsage::REFRACTION_PLANAR)] = refTex;
-    } else {
-        _externalTextures[getUsageIndex(RenderTargetUsage::REFRACTION_PLANAR)] = _defaultRefraction.first;
-    }
-}
-
-bool RenderingComponent::clearRefraction() {
-    updateRefractionIndex(_reflectorType, -1);
-    return true;
+    return false;
 }
 
 bool RenderingComponent::updateRefraction(U16 refractionIndex,
+                                          bool inBudget,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut) {
+    _refractionTexture = nullptr;
+    _refractionIndex = g_invalidRefIndex;
+
     // no default refraction system!
     if (_refractorType == RefractorType::COUNT) {
         return false;
     }
 
-    updateRefractionIndex(_reflectorType, refractionIndex);
-
-    RenderTargetID refractRTID(RenderTargetUsage::REFRACTION_PLANAR, refractionIndex);
-
-    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-        const RenderTarget& target = _context.renderTargetPool().renderTarget(refractRTID);
-
-        DebugView* debugView = s_debugViews[1][refractionIndex];
-        if (debugView == nullptr) {
-            DebugView_ptr viewPtr = std::make_shared<DebugView>();
-            viewPtr->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-            viewPtr->_shader = _context.getRTPreviewShader(false);
-            viewPtr->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-            viewPtr->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
-            viewPtr->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
-
-            viewPtr->_name = Util::StringFormat("REFRACTION_%d_%s", refractRTID._index, _parentSGN.name().c_str());
-            debugView = _context.addDebugView(viewPtr);
-            s_debugViews[1][refractionIndex] = debugView;
-        } else {
-            /*if (_context.getFrameCount() % (Config::TARGET_FRAME_RATE * 15) == 0) {
-                if (debugView->_shader->getGUID() == _previewRenderTargetColour->getGUID()) {
-                    debugView->_texture = target.getAttachment(RTAttachmentType::Depth, 0).texture();
-                    debugView->_shader = _context.getRTPreviewShader(true);
-                    debugView->_shaderData.set("zPlanes", GFX::PushConstantType::VEC2, camera->getZPlanes());
-                } else {
-                    debugView->_texture = target.getAttachment(RTAttachmentType::Colour, 0).texture();
-                    debugView->_shader = _context.getRTPreviewShader(false);
-                }
-            } */
-        }
-    }
-
-    if (_refractionCallback) {
+    if (_refractionCallback && inBudget) {
+        const RenderTargetID refractRTID(RenderTargetUsage::REFRACTION_PLANAR, refractionIndex);
         RenderCbkParams params{ _context, _parentSGN, renderState, refractRTID, refractionIndex, to_U8(_refractorType), camera };
         _refractionCallback(params, bufferInOut);
+
+        _refractionIndex = refractionIndex; 
+        _refractionTexture = _context.renderTargetPool().renderTarget(refractRTID).getAttachment(RTAttachmentType::Colour, 0u).texture().get();
         return true;
     }
 
     return false;
 }
 
-U32 RenderingComponent::defaultReflectionTextureIndex() const {
-    return _reflectionIndex > -1 ? to_U32(_reflectionIndex) : _defaultReflection.second;
-}
+void RenderingComponent::updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position) {
 
-U32 RenderingComponent::defaultRefractionTextureIndex() const {
-    return _refractionIndex > -1 ? to_U32(_refractionIndex) : _defaultRefraction.second;
-}
+    _envProbes.resize(0);
 
-void RenderingComponent::defaultReflectionTexture(const Texture_ptr& reflectionPtr, U32 arrayIndex) {
-    _defaultReflection.first = reflectionPtr;
-    _defaultReflection.second = arrayIndex;
-}
+    probePool.lockProbeList();
+    const auto& probes = probePool.getLocked();
+    _envProbes.reserve(probes.size());
 
-void RenderingComponent::defaultRefractionTexture(const Texture_ptr& refractionPtr, U32 arrayIndex) {
-    _defaultRefraction.first = refractionPtr;
-    _defaultRefraction.second = arrayIndex;
-}
-
-namespace Hack {
-    Sky* g_skyPtr = nullptr;
-};
-
-void RenderingComponent::clearEnvProbeList() {
-    updateEnvProbeList({});
-}
-
-void RenderingComponent::updateEnvProbeList(const EnvironmentProbeList& probes) {
-    STUBBED("ToDo: Fix Env probe rendering! and fix this -Ionut");
-
-    if (probes.empty() || true) {
-        // Need a way better way of handling this ...
-        if (Hack::g_skyPtr == nullptr) {
-            const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
-            if (!skies.empty()) {
-                Hack::g_skyPtr = &skies.front()->getNode<Sky>();
-            }
+    U8 idx = 0u;
+    for (const auto& probe : probes) {
+        if (++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
+            break;
         }
-        defaultReflectionTexture(Hack::g_skyPtr->activeSkyBox(), 0);
+        _envProbes.push_back(probe);
+    }
+    probePool.unlockProbeList();
 
-    } else {
-        _envProbes.resize(0);
-        _envProbes.reserve(probes.size());
-        for (const auto& probe : probes) {
-            _envProbes.push_back(probe);
-        }
-
-        TransformComponent* const transform = _parentSGN.get<TransformComponent>();
-        if (transform) {
-            const vec3<F32>& nodePos = transform->getPosition();
-            eastl::sort(eastl::begin(_envProbes),
+    eastl::sort(eastl::begin(_envProbes),
                 eastl::end(_envProbes),
-                [&nodePos](const auto& a, const auto& b) -> bool {
-                return a->distanceSqTo(nodePos) < b->distanceSqTo(nodePos);
-            });
-        }
-
-        RenderTarget* rt = EnvironmentProbeComponent::reflectionTarget()._rt;
-        defaultReflectionTexture(rt->getAttachment(RTAttachmentType::Colour, 0).texture(), _envProbes.front()->rtLayerIndex());
-    }
-
-    if (_reflectionIndex == -1) {
-        _externalTextures[getUsageIndex(RenderTargetUsage::REFLECTION_CUBE)] = _defaultReflection.first;
-    }
+                [&position](const auto& a, const auto& b) -> bool {
+                    return a->distanceSqTo(position) < b->distanceSqTo(position);
+                });
 }
 
 /// Draw some kind of selection doodad. May differ if editor is running or not
@@ -828,14 +682,8 @@ void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
         _axisGizmo->endBatch();
     }
 
-    TransformComponent* const transform = _parentSGN.get<TransformComponent>();
-    if (transform) {
-        mat4<F32> tempOffset(GetMatrix(transform->getOrientation()), false);
-        tempOffset.setTranslation(transform->getPosition());
-        _axisGizmo->worldMatrix(tempOffset);
-    } else {
-        _axisGizmo->resetWorldMatrix();
-    }
+    _axisGizmo->worldMatrix(_worldOffsetMatrixCache);
+
     bufferInOut.add(_axisGizmo->toCommandBuffer());
 }
 
@@ -864,10 +712,7 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
                 const vectorEASTL<Line>& skeletonLines = animComp->skeletonLines();
                 // Submit the skeleton lines to the GPU for rendering
                 _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
-
-                mat4<F32> mat = MAT4_IDENTITY;
-                _parentSGN.get<TransformComponent>()->getWorldMatrix(mat);
-                _skeletonPrimitive->worldMatrix(mat);
+                _skeletonPrimitive->worldMatrix(_worldMatrixCache);
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
                 return;
             }
@@ -917,4 +762,30 @@ void RenderingComponent::drawBounds(const bool AABB, const bool Sphere, GFX::Com
     }
 }
 
+void RenderingComponent::OnData(const ECS::CustomEvent& data) {
+    switch (data._type) {
+        case  ECS::CustomEvent::Type::TransformUpdated:
+        {
+            TransformComponent* tComp = std::any_cast<TransformComponent*>(data._userData);
+            assert(tComp != nullptr);
+            SceneEnvironmentProbePool* probes = _context.context().kernel().sceneManager()->getEnvProbes();
+            updateNearestProbes(*probes, tComp->getPosition());
+
+            tComp->getWorldMatrix(_worldMatrixCache);
+
+            _worldOffsetMatrixCache = mat4<F32>(GetMatrix(tComp->getOrientation()), false);
+            _worldOffsetMatrixCache.setTranslation(tComp->getPosition());
+        } break;
+        case ECS::CustomEvent::Type::DrawBoundsChanged:
+        {
+            BoundsComponent* bComp = std::any_cast<BoundsComponent*>(data._userData);
+            toggleBoundsDraw(bComp->showAABB(), bComp->showBS(), true);
+        } break;
+        case ECS::CustomEvent::Type::BoundsUpdated:
+        {
+            BoundsComponent* bComp = std::any_cast<BoundsComponent*>(data._userData);
+            _boundsCenterCache = bComp->getBoundingSphere().getCenter();
+        } break;
+    }
+}
 };

@@ -234,8 +234,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             static VisibleNodeList s_Nodes;
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
+            SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
             {
-                SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
                 envProbPool->prepare(bufferInOut);
                 OPTICK_EVENT("RenderPass - Probes");
                 envProbPool->lockProbeList();
@@ -260,17 +260,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 for (size_t i = 0; i < s_Nodes.size(); ++i) {
                     const VisibleNode& node = s_Nodes.node(i);
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
-                    if (ReflectionUtil::isInBudget()) {
-                        if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
-                                                                                 ReflectionUtil::currentEntry(),
-                                                                                 camera,
-                                                                                 renderState,
-                                                                                 bufferInOut)) {
+                    if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
+                                                                            ReflectionUtil::currentEntry(),
+                                                                            ReflectionUtil::isInBudget(),
+                                                                            camera,
+                                                                            renderState,
+                                                                            bufferInOut)) {
 
-                            ReflectionUtil::updateBudget();
-                        }
-                    } else {
-                        Attorney::RenderingCompRenderPass::clearReflection(*rComp);
+                        ReflectionUtil::updateBudget();
                     }
                 }
             }
@@ -289,17 +286,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 for (size_t i = 0; i < s_Nodes.size(); ++i) {
                      const VisibleNode& node = s_Nodes.node(i);
                      RenderingComponent* const rComp = node._node->get<RenderingComponent>();
-                     if (RefractionUtil::isInBudget()) {
-                        if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
-                                                                                RefractionUtil::currentEntry(),
-                                                                                camera,
-                                                                                renderState,
-                                                                                bufferInOut))
-                        {
-                            RefractionUtil::updateBudget();
-                        }
-                    }  else {
-                        Attorney::RenderingCompRenderPass::clearRefraction(*rComp);
+                     if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
+                                                                            RefractionUtil::currentEntry(),
+                                                                            RefractionUtil::isInBudget(),
+                                                                            camera,
+                                                                            renderState,
+                                                                            bufferInOut))
+                    {
+                        RefractionUtil::updateBudget();
                     }
                 }
             }

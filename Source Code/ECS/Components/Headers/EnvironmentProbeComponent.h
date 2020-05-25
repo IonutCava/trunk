@@ -36,7 +36,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "SGNComponent.h"
 
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
@@ -63,18 +62,12 @@ public:
     explicit EnvironmentProbeComponent(SceneGraphNode& sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
 
-    static void prepare(GFX::CommandBuffer& bufferInOut);
-    static void onStartup(GFXDevice& context);
-    static void onShutdown(GFXDevice& context);
-
     void PreUpdate(const U64 deltaTime) final;
 
     void refresh(GFX::CommandBuffer& bufferInOut);
     void setUpdateRate(U8 rate);
     void setBounds(const vec3<F32>& min, const vec3<F32>& max);
     void setBounds(const vec3<F32>& center, F32 radius);
-
-    static RenderTargetHandle reflectionTarget();
 
     F32 distanceSqTo(const vec3<F32>& pos) const;
     
@@ -84,10 +77,9 @@ public:
     PROPERTY_RW(bool, showParallaxAABB, false);
 
 protected:
-    static U16 allocateSlice();
-
-protected:
     void OnData(const ECS::CustomEvent& data) final;
+
+    SceneGraphNode* findNodeToIgnore() const noexcept;
 
 protected:
     BoundingBox _aabb, _refaabb;
@@ -97,10 +89,6 @@ protected:
 
 private:
     bool _drawImpostor = false;
-
-private:
-    static vectorEASTL<bool> s_availableSlices;
-    static RenderTargetHandle s_reflection;
 };
 
 INIT_COMPONENT(EnvironmentProbeComponent);

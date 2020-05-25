@@ -53,11 +53,11 @@ struct RenderStagePass {
           _pass(pass)
     {}
 
-    U16 _index = 0u; //usually some kind of type info (reflector/refractor index, light type, etc)
-    U16 _pass = 0u; //usually some kind of actual pass index (eg. cube face we are rendering into)
-    U8 _variant = 0;
     RenderStage _stage = RenderStage::COUNT;
     RenderPassType _passType = RenderPassType::COUNT;
+    U8 _variant = 0;
+    U16 _index = 0u; //usually some kind of type info (reflector/refractor index, light type, etc)
+    U16 _pass = 0u; //usually some kind of actual pass index (eg. cube face we are rendering into)
 
     inline bool isDepthPass() const noexcept {
         return _stage == RenderStage::SHADOW || _passType == RenderPassType::PRE_PASS;
@@ -95,7 +95,7 @@ struct RenderStagePass {
             if (renderStagePass._variant == to_base(ReflectorType::PLANAR)) {
                 return renderStagePass._index;
             } else {
-                return renderStagePass._index * 6 + renderStagePass._pass;
+                return (Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6) + (renderStagePass._index * 6 + renderStagePass._pass);
 
             }
         } else {

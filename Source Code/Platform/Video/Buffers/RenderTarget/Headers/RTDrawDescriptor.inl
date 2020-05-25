@@ -59,12 +59,14 @@ inline bool RTBlendState::operator!=(const RTBlendState& other) const noexcept {
 
 inline bool RTDrawDescriptor::operator==(const RTDrawDescriptor& other) const {
     return _drawMask == other._drawMask &&
-           _blendStates == other._blendStates;
+           _setViewport == other._setViewport &&
+           _setDefaultState == other._setDefaultState;
 }
 
 inline bool RTDrawDescriptor::operator!=(const RTDrawDescriptor& other) const {
     return _drawMask != other._drawMask ||
-           _blendStates != other._blendStates;
+           _setViewport != other._setViewport ||
+           _setDefaultState != other._setDefaultState;
 }
 }; //namespace Divide
 #endif// _RENDER_TARGET_DRAW_DESCRIPTOR_INL_

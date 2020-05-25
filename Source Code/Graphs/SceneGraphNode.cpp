@@ -506,13 +506,6 @@ void SceneGraphNode::processEvents() {
                     RenderingComponent* rComp = get<RenderingComponent>();
                     if (rComp != nullptr) {
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SELECTION, state, recursive);
-                    } else {
-                        BoundsComponent* bComp = get<BoundsComponent>();
-                        if (bComp != nullptr) {
-                            bComp->showAABB(state);
-                        } else {
-                            DIVIDE_UNEXPECTED_CALL();
-                        }
                     }
                 }
             } break;
@@ -594,7 +587,7 @@ bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullPa
             const vec2<F32>& renderRange = rComp->renderRange();
             if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
                 if (params._minLoD > -1) {
-                    if (rComp->getLoDLevel(bounds, eye, params._stage, params._lodThresholds) > params._minLoD) {
+                    if (rComp->getLoDLevel(bounds.getBoundingSphere().getCenter(), eye, params._stage, params._lodThresholds) > params._minLoD) {
                         return true;
                     }
                 }
@@ -777,7 +770,11 @@ void SceneGraphNode::loadFromXML(const boost::property_tree::ptree& pt) {
 }
 
 void SceneGraphNode::setFlag(Flags flag, bool recursive) noexcept {
-    SetBit(_nodeFlags, to_U32(flag));
+    const bool hadFlag = hasFlag(flag);
+    if (!hadFlag) {
+        SetBit(_nodeFlags, to_U32(flag));
+    }
+
     if (recursive && PropagateFlagToChildren(flag)) {
         forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
             child->setFlag(flag, recursive);
@@ -785,16 +782,22 @@ void SceneGraphNode::setFlag(Flags flag, bool recursive) noexcept {
         });
     }
 
-    SendEvent(
-    {
-        ECS::CustomEvent::Type::EntityFlagChanged,
-        std::make_pair(true, recursive),
-        to_U32(flag)
-    });
+    if (!hadFlag) {
+        SendEvent(
+            {
+                ECS::CustomEvent::Type::EntityFlagChanged,
+                std::make_pair(true, recursive),
+                to_U32(flag)
+            });
+    }
 }
 
 void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
-    ClearBit(_nodeFlags, to_U32(flag));
+    const bool hadFlag = hasFlag(flag);
+    if (hadFlag) {
+        ClearBit(_nodeFlags, to_U32(flag));
+    }
+
     if (recursive && PropagateFlagToChildren(flag)) {
         forEachChild([flag, recursive](SceneGraphNode* child, I32 /*childIdx*/) {
             child->clearFlag(flag, recursive);
@@ -802,12 +805,14 @@ void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
         });
     }
     
-    SendEvent(
-    {
-        ECS::CustomEvent::Type::EntityFlagChanged,
-        std::make_pair(false, recursive),
-        to_U32(flag)
-    });
+    if (hadFlag) {
+        SendEvent(
+            {
+                ECS::CustomEvent::Type::EntityFlagChanged,
+                std::make_pair(false, recursive),
+                to_U32(flag)
+            });
+    }
 }
 
 bool SceneGraphNode::hasFlag(Flags flag) const noexcept {

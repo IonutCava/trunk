@@ -54,12 +54,10 @@ bool TerrainTessellator::checkDivide(TessellatedTerrainNode* node) {
     // from current origin to corner of current square.
     // OR
     // Max recursion level has been hit
-    if (_config._useCameraDistance) {
-        // Distance from current origin to camera
-        const F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache.x - node->origin.x) + SQUARED(_cameraEyeCache.z - node->origin.z)));
-        if (d > 2.5f * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height))) {
-            return false;
-        }
+    // Distance from current origin to camera
+    const F32 d = std::abs(Sqrt(SQUARED(_cameraEyeCache.x - node->origin.x) + SQUARED(_cameraEyeCache.z - node->origin.z)));
+    if (d > 2.5f * Sqrt(SQUARED(0.5f * node->dim.width) + SQUARED(0.5f * node->dim.height))) {
+        return false;
     }
 
     return node->dim.width >= _config._minPatchSize;
@@ -162,23 +160,17 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
 
     // If all children are null, render this node
     if (!hasChildren(*node)) {
+
         // We used a N x sized buffer, so we should allow for some margin in frustum culling
-        constexpr F32 radiusAdjustmentFactor = 1.55f;
+        constexpr F32 radiusAdjustmentFactor = 1.5f;
 
         assert(renderDepth < MAX_TERRAIN_RENDER_NODES);
 
-        bool inFrustum = true;
-        if (_config._useFrustumCulling) {
-            // half of the diagonal of the rectangle
-            const F32 radius = Sqrt(SQUARED(node->dim.width * 0.5f) + SQUARED(node->dim.height * 0.5f));
-            if (_cameraEyeCache.distanceSquared(node->origin) > _maxDistanceSQ) {
-                inFrustum = false;
-            } else {
-                inFrustum = _frustumCache.ContainsSphere(node->origin, radius * radiusAdjustmentFactor, _lastFrustumPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT;
-            }
-        }
-
-        if (inFrustum) {
+        // half of the diagonal of the rectangle
+        const F32 radius = Sqrt(SQUARED(node->dim.width * 0.5f) + SQUARED(node->dim.height * 0.5f));
+        if (_cameraEyeCache.distanceSquared(node->origin) <= _maxDistanceSQ &&  // Distance to camera
+            _frustumCache.ContainsSphere(node->origin, radius * radiusAdjustmentFactor, _lastFrustumPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT)  //Frustum culling
+        {
             TessellatedNodeData& data = _renderData[renderDepth++];
             data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
             data._tScale.set(calcTessScale(node));

@@ -71,6 +71,7 @@ enum class CommandType : U8 {
     END_PIXEL_BUFFER,
     BEGIN_RENDER_SUB_PASS,
     END_RENDER_SUB_PASS,
+    SET_BLEND_STATE,
     SET_VIEWPORT,
     PUSH_VIEWPORT,
     POP_VIEWPORT,
@@ -108,7 +109,7 @@ enum class CommandType : U8 {
 namespace Names {
     static const char* commandType[] = {
         "BEGIN_RENDER_PASS", "END_RENDER_PASS", "BEGIN_PIXEL_BUFFER", "END_PIXEL_BUFFER", "BEGIN_RENDER_SUB_PASS",
-        "END_RENDER_SUB_PASS", "SET_VIEWPORT", "PUSH_VIEWPORT","POP_VIEWPORT", "SET_SCISSOR", "SET_BLEND", "CLEAR_RT",
+        "END_RENDER_SUB_PASS", "SET_BLEND_STATE", "SET_VIEWPORT", "PUSH_VIEWPORT","POP_VIEWPORT", "SET_SCISSOR", "SET_BLEND", "CLEAR_RT",
         "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "SET_MIP_LEVELS", "COMPUTE_MIPMAPS", "SET_CAMERA",
         "PUSH_CAMERA", "POP_CAMERA", "SET_CLIP_PLANES", "BIND_PIPELINE", "BIND_DESCRIPTOR_SETS", "SEND_PUSH_CONSTANTS",
         "DRAW_COMMANDS", "DRAW_TEXT", "DRAW_IMGUI", "DISPATCH_COMPUTE", "MEMORY_BARRIER", "READ_BUFFER_DATA", "CLEAR_BUFFER_DATA",
@@ -239,6 +240,10 @@ BEGIN_COMMAND(BeginRenderSubPassCommand, CommandType::BEGIN_RENDER_SUB_PASS);
     U16 _mipWriteLevel = std::numeric_limits<U16>::max();
     vectorEASTL<RenderTarget::DrawLayerParams> _writeLayers;
 END_COMMAND(BeginRenderSubPassCommand);
+
+BEGIN_COMMAND(SetBlendStateCommand, CommandType::SET_BLEND_STATE);
+    RTBlendStates _blendStates;
+END_COMMAND(SetBlendStateCommand);
 
 BEGIN_COMMAND(EndRenderSubPassCommand, CommandType::END_RENDER_SUB_PASS);
 END_COMMAND(EndRenderSubPassCommand);

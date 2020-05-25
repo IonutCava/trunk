@@ -166,6 +166,8 @@ public:
 
     AI::Navigation::DivideRecast* recast() const noexcept { return _recast.get(); }
 
+    SceneEnvironmentProbePool* getEnvProbes() const;
+
 public:  /// Input
   /// Key pressed: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent& key) override;
@@ -248,7 +250,6 @@ protected:
     bool saveNode(const SceneGraphNode& targetNode) const;
     bool loadNode(SceneGraphNode& targetNode) const;
     SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
-    SceneEnvironmentProbePool* getEnvProbes() const;
 
 private:
     bool _init = false;

@@ -14,12 +14,6 @@
 
 namespace Divide {
 
-namespace {
-    U16 g_maxEnvironmentProbes = 32;
-};
-
-vectorEASTL<bool> EnvironmentProbeComponent::s_availableSlices;
-RenderTargetHandle EnvironmentProbeComponent::s_reflection;
 
 EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, PlatformContext& context) 
     : BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>(sgn, context),
@@ -28,9 +22,17 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, Platfo
       _refaabb(vec3<F32>(-1), vec3<F32>(1))
 {
     Scene& parentScene = sgn.sceneGraph().parentScene();
-    assert(!s_availableSlices.empty());
-        
-    rtLayerIndex(allocateSlice());
+
+    EditorComponentField layerField = {};
+    layerField._name = "RT Layer index";
+    layerField._data = &_rtLayerIndex;
+    layerField._type = EditorComponentFieldType::PUSH_TYPE;
+    layerField._readOnly = true;
+    layerField._serialise = false;
+    layerField._basicType = GFX::PushConstantType::UINT;
+    layerField._basicTypeSize = GFX::PushConstantSize::WORD;
+
+    getEditorComponent().registerField(std::move(layerField));
 
     EditorComponentField typeField = {};
     typeField._name = "Is Local";
@@ -85,74 +87,32 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, Platfo
 EnvironmentProbeComponent::~EnvironmentProbeComponent()
 {
     Attorney::SceneEnvironmentProbeComponent::unregisterProbe(_parentSGN.sceneGraph().parentScene(), *this);
-
-    s_availableSlices[rtLayerIndex()] = false;
 }
 
-void EnvironmentProbeComponent::prepare(GFX::CommandBuffer& bufferInOut) {
-    RTClearDescriptor clearDescriptor = {};
-    clearDescriptor.clearDepth(true);
-    clearDescriptor.clearColours(true);
-    clearDescriptor.resetToDefault(true);
+SceneGraphNode* EnvironmentProbeComponent::findNodeToIgnore() const noexcept {
+    //If we are not a root-level probe. Avoid rendering our parent and children into the reflection
+    if (getSGN().parent() != nullptr) {
+        SceneGraphNode* parent = getSGN().parent();
+        while (parent != nullptr) {
+            const SceneNodeType type = parent->getNode().type();
 
-    GFX::ClearRenderTargetCommand clearMainTarget = {};
-    clearMainTarget._target = s_reflection._targetID;
-    clearMainTarget._descriptor = clearDescriptor;
-    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
-}
+            if (type != SceneNodeType::TYPE_TRANSFORM || type != SceneNodeType::TYPE_TRIGGER) {
+                return parent;
+            }
 
-void EnvironmentProbeComponent::onStartup(GFXDevice& context) {
-    s_availableSlices.resize(g_maxEnvironmentProbes, false);
-    // Reflection Targets
-    SamplerDescriptor reflectionSampler = {};
-    reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.minFilter(TextureFilter::NEAREST);
-    reflectionSampler.magFilter(TextureFilter::NEAREST);
-
-    TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-    environmentDescriptor.samplerDescriptor(reflectionSampler);
-    environmentDescriptor.layerCount(g_maxEnvironmentProbes);
-
-
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_MAP, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-
-    depthDescriptor.samplerDescriptor(reflectionSampler);
-
-    vectorEASTL<RTAttachmentDescriptor> att = {
-        { environmentDescriptor, RTAttachmentType::Colour, 0, DefaultColours::WHITE },
-        { depthDescriptor, RTAttachmentType::Depth },
-    };
-
-    RenderTargetDescriptor desc = {};
-    desc._name = "EnvironmentProbe";
-    desc._resolution = vec2<U16>(Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE);
-    desc._attachmentCount = to_U8(att.size());
-    desc._attachments = att.data();
-
-    s_reflection = context.renderTargetPool().allocateRT(RenderTargetUsage::ENVIRONMENT, desc);
-}
-
-void EnvironmentProbeComponent::onShutdown(GFXDevice& context)
-{
-    context.renderTargetPool().deallocateRT(s_reflection);
-}
-
-U16 EnvironmentProbeComponent::allocateSlice() {
-    U16 i = 0;
-    for (; i < g_maxEnvironmentProbes; ++i) {
-        if (!s_availableSlices[i]) {
-            s_availableSlices[i] = true;
-            break;
+            // Keep walking up
+            parent = parent->parent();
         }
     }
 
-    return i;
+    return nullptr;
 }
 
 void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
     if (++_currentUpdateCall % _updateRate == 0) {
+        if (_updateRate != 0) {
+            rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(false));
+        }
 
         GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand({Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()}));
 
@@ -161,14 +121,16 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
         std::array<Camera*, 6> cameras = {};
         std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
 
-        _context.gfx().generateCubeMap(s_reflection._targetID,
+        _context.gfx().generateCubeMap(SceneEnvironmentProbePool::reflectionTarget()._targetID,
                                        rtLayerIndex(),
                                        _aabb.getCenter(),
                                        vec2<F32>(0.1f, _aabb.getHalfExtent().length()),
                                        RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), rtLayerIndex()),
                                        bufferInOut,
                                        cameras,
-                                       true);
+                                       true,
+                                       findNodeToIgnore());
+
         GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         _currentUpdateCall = 0;
@@ -184,11 +146,14 @@ void EnvironmentProbeComponent::setBounds(const vec3<F32>& center, F32 radius) {
 }
 
 void EnvironmentProbeComponent::setUpdateRate(U8 rate) {
-    _updateRate = rate;
-}
-
-RenderTargetHandle EnvironmentProbeComponent::reflectionTarget() {
-    return s_reflection;
+    if (_updateRate != rate) {
+        if (_updateRate == 0) {
+            SceneEnvironmentProbePool::unlockSlice(rtLayerIndex());
+        } else if (rate == 0) {
+            rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(true));
+        }
+        _updateRate = rate;
+    }
 }
 
 F32 EnvironmentProbeComponent::distanceSqTo(const vec3<F32>& pos) const {
@@ -198,7 +163,7 @@ F32 EnvironmentProbeComponent::distanceSqTo(const vec3<F32>& pos) const {
 void EnvironmentProbeComponent::PreUpdate(const U64 deltaTime) {
     using Parent = BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>;
     if (_drawImpostor || showParallaxAABB()) {
-        context().gfx().debugDrawSphere(_parentSGN.get<TransformComponent>()->getPosition(), 0.5f, DefaultColours::BLUE);
+        context().gfx().debugDrawSphere(_aabb.getCenter(), 0.5f, DefaultColours::BLUE);
         context().gfx().debugDrawBox(_aabb.getMin(), _aabb.getMax(), DefaultColours::BLUE);
     }
 

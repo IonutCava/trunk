@@ -91,7 +91,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         _editorComponent.registerField(std::move(toggleBoundsField));
 
         ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1) + Config::Lighting::MAX_SHADOW_PASSES);
+        bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1));
         bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
         bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
         bufferDescriptor._separateReadWrite = false;
@@ -134,53 +134,45 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 U32 Terrain::getBufferOffset(const RenderStagePass& renderStagePass) const noexcept {
-    // Shadows go first
+    // Shadows use the exact same settings as the forward pass
     if (renderStagePass._stage == RenderStage::SHADOW) {
-        return Terrain::MAX_RENDER_NODES * RenderStagePass::indexForStage(renderStagePass);
+        return getBufferOffset(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u));
     } 
-    
-    // Move past shadows
-    constexpr U32 offset = Config::Lighting::MAX_SHADOW_PASSES * Terrain::MAX_RENDER_NODES;
+  
     // Each stage gets MAX_RENDER_NODES worth of space
-    return offset + (to_U32((to_U8(renderStagePass._stage) - 1) * Terrain::MAX_RENDER_NODES));
+    return to_U32((to_U8(renderStagePass._stage) - 1) * Terrain::MAX_RENDER_NODES);
 }
 
 TerrainTessellator& Terrain::getTessellator(const RenderStagePass& renderStagePass) {
-    const U8 s = to_U8(renderStagePass._stage);
-    const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        return getTessellator(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u));
+    } 
+
+    const U8 s = to_U8(renderStagePass._stage) - 1;
+    const U8 p = to_U8(renderStagePass._passType);
     const U32 i = RenderStagePass::indexForStage(renderStagePass);
 
     return _terrainTessellators[s][p][i];
 }
 
 U32& Terrain::getUpdateCounter(const RenderStagePass& renderStagePass) {
-    const U8 s = to_U8(renderStagePass._stage);
-    const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
+    if (renderStagePass._stage == RenderStage::SHADOW) {
+        return getUpdateCounter(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u));
+    }
+
+    const U8 s = to_U8(renderStagePass._stage) - 1;
+    const U8 p = to_U8(renderStagePass._passType);
     const U32 i = RenderStagePass::indexForStage(renderStagePass);
 
     return _bufferUpdateCounter[s][p][i];
 }
 
-F32 Terrain::getDrawDistance(const RenderStagePass& renderStagePass) const noexcept {
-    F32 drawDistance = _drawDistance;
-    // Lower detail for reflections and refraction
-    if (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) {
-        drawDistance *= 0.5f;
-        // Higher detail for shadow maps
-    } else if (renderStagePass._stage == RenderStage::SHADOW) {
-        drawDistance *= 2.0f;
-    }
-    return drawDistance;
-}
 
 F32 Terrain::getTriangleWidth(const RenderStagePass& renderStagePass)  const noexcept {
-    F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
+    const F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
     // Lower detail for reflections and refraction
     if (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) {
-        triangleWidth *= 1.25f;
-    // Higher detail for shadow maps
-    } else if (renderStagePass._stage == RenderStage::SHADOW) {
-        triangleWidth *= 0.75f;
+        return triangleWidth * 1.5f;
     }
 
     return triangleWidth;
@@ -202,42 +194,25 @@ void Terrain::postBuild() {
     config._terrainDimensions = _descriptor->dimensions();
 
     for (U8 s = 0; s < to_U8(RenderStage::COUNT); ++s) {
-         if (s == to_U8(RenderStage::SHADOW)) {
-             TerrainTessellator::Configuration shadowConfig = config;
-             shadowConfig._useCameraDistance = false;
-             shadowConfig._minPatchSize *= 4;
+        if (s == to_U8(RenderStage::SHADOW)) {
+            continue;
+        }
 
-             const U8 count = RenderStagePass::passCountForStage(
-                 RenderStagePass{
+        UpdateCounterPerPassType& perPassCounter = _bufferUpdateCounter[s - 1];
+        TessellatorsPerPassType& perPassTess = _terrainTessellators[s - 1];
+
+        for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
+            const U8 count = RenderStagePass::passCountForStage(
+                RenderStagePass{
                     static_cast<RenderStage>(s),
-                    RenderPassType::MAIN_PASS
+                    static_cast<RenderPassType>(p)
                 }
-             );
+            );
 
-             _terrainTessellators[s][to_base(RenderPassType::MAIN_PASS)].resize(count);
-             _bufferUpdateCounter[s][to_base(RenderPassType::MAIN_PASS)].resize(count, g_bufferFrameDelay);
-
-             auto& shadowTess = _terrainTessellators[s][to_base(RenderPassType::MAIN_PASS)];
-             for (TerrainTessellator& tess : shadowTess) {
-                 tess.overrideConfig(config);
-             }
-        } else {
-            UpdateCounterPerPassType& perPassCounter = _bufferUpdateCounter[s];
-            TessellatorsPerPassType& perPassTess = _terrainTessellators[s];
-            for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
-                const U8 count = RenderStagePass::passCountForStage(
-                    RenderStagePass{
-                        static_cast<RenderStage>(s),
-                        static_cast<RenderPassType>(p)
-                    }
-                );
-
-                perPassCounter[p].resize(count, g_bufferFrameDelay);
-
-                perPassTess[p].resize(count);
-                for (auto& tess : perPassTess[p]) {
-                    tess.overrideConfig(config);
-                }
+            perPassCounter[p].resize(count, g_bufferFrameDelay);
+            perPassTess[p].resize(count);
+            for (auto& tess : perPassTess[p]) {
+                tess.overrideConfig(config);
             }
         }
     }
@@ -335,9 +310,6 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
                             const RenderStagePass& renderStagePass,
                             const Camera& camera,
                             bool refreshData) {
-    const U32 offset = getBufferOffset(renderStagePass);
-    TerrainTessellator& tessellator = getTessellator(renderStagePass);
-
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED) {
         rComp.getMaterialInstance()->parallaxFactor(_descriptor->parallaxHeightScale());
@@ -348,8 +320,10 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
         }
     }
 
+    TerrainTessellator& tessellator = getTessellator(renderStagePass);
+
     U16 depth = tessellator.getRenderDepth();
-    if (refreshData) {
+    if (refreshData && renderStagePass._stage != RenderStage::SHADOW) {
         const Frustum& frustum = camera.getFrustum();
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
@@ -366,10 +340,10 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
         }
 
         if (update) {
-            const TerrainTessellator::RenderData& data = cameraMoved ? tessellator.createTree(frustum, camera.getEye(), crtPos, getDrawDistance(renderStagePass), depth)
+            const TerrainTessellator::RenderData& data = cameraMoved ? tessellator.createTree(frustum, camera.getEye(), crtPos, _drawDistance, depth)
                                                                      : tessellator.renderData();
 
-            _shaderData->writeData(offset, depth, (bufferPtr)data.data());
+            _shaderData->writeData(getBufferOffset(renderStagePass), depth, (bufferPtr)data.data());
             _shaderDataDirty = true;
         }
     }
@@ -388,12 +362,10 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
-    const U32 offset = getBufferOffset(renderStagePass);
-
     ShaderBufferBinding buffer = {};
     buffer._binding = ShaderBufferLocation::TERRAIN_DATA;
     buffer._buffer = _shaderData;
-    buffer._elementRange = { offset, MAX_RENDER_NODES };
+    buffer._elementRange = { getBufferOffset(renderStagePass), MAX_RENDER_NODES };
 
     pkgInOut.addShaderBuffer(0, buffer);
 

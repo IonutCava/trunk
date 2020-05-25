@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SCENE_ENVIRONMENT_PROBE_POOL_H_
 
 #include "Scenes/Headers/SceneComponent.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
 
@@ -47,34 +48,44 @@ class Camera;
 class EnvironmentProbeComponent;
 using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
 
+class GFXDevice;
 class SceneRenderState;
 class SceneEnvironmentProbePool final : public SceneComponent {
 public:
     SceneEnvironmentProbePool(Scene& parentScene);
     ~SceneEnvironmentProbePool();
 
+    static void prepare(GFX::CommandBuffer& bufferInOut);
+    static void onStartup(GFXDevice& context);
+    static void onShutdown(GFXDevice& context);
+    static RenderTargetHandle reflectionTarget();
+
     const EnvironmentProbeList& sortAndGetLocked(const vec3<F32>& position);
-    const EnvironmentProbeList& getLocked();
+    const EnvironmentProbeList& getLocked() const;
 
     EnvironmentProbeComponent* registerProbe(EnvironmentProbeComponent* probe);
     void unregisterProbe(EnvironmentProbeComponent* probe);
 
-    void prepare(GFX::CommandBuffer& bufferInOut);
-
-    void lockProbeList();
-    void unlockProbeList();
+    void lockProbeList() const;
+    void unlockProbeList() const;
 
     void debugProbe(EnvironmentProbeComponent* probe);
     POINTER_R(EnvironmentProbeComponent, debugProbe, nullptr);
 
     static vectorEASTL<Camera*>& probeCameras() noexcept { return s_probeCameras; }
+    static U16 allocateSlice(bool lock);
+    static void unlockSlice(U16 slice);
 
 protected:
-    SharedMutex _probeLock;
+    mutable SharedMutex _probeLock;
     EnvironmentProbeList _envProbes;
 
     static vectorEASTL<DebugView_ptr> s_debugViews;
     static vectorEASTL<Camera*> s_probeCameras;
+
+private:
+    static std::array<std::pair<bool/*available*/, bool/*locked*/>, Config::MAX_REFLECTIVE_PROBES_PER_PASS> s_availableSlices;
+    static RenderTargetHandle s_reflection;
 };
 
 }; //namespace Divide
