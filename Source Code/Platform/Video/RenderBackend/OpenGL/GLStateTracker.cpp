@@ -151,8 +151,8 @@ void GLStateTracker::toggleRasterization(bool state) {
 }
 
 bool GLStateTracker::bindSamplers(GLushort unitOffset,
-                          GLuint samplerCount,
-                          GLuint* samplerHandles) {
+                                  GLuint samplerCount,
+                                  GLuint* samplerHandles) {
     if (samplerCount > 0 &&
         unitOffset + samplerCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
@@ -169,7 +169,7 @@ bool GLStateTracker::bindSamplers(GLushort unitOffset,
             if (samplerHandles != nullptr) {
                 memcpy(&_samplerBoundMap[unitOffset], samplerHandles, sizeof(GLuint) * samplerCount);
             } else {
-                memset(&_samplerBoundMap[unitOffset], 0, sizeof(GLuint) * samplerCount);
+                memset(_samplerBoundMap.data(), 0u, sizeof(GLuint) * samplerCount);
             }
             return true;
         } 
@@ -217,11 +217,16 @@ bool GLStateTracker::bindTextures(GLushort unitOffset,
                 bound = true;
             }
         } else {
+            const TextureType type = textureTypes ? textureTypes[0] : TextureType::COUNT;
+
             glBindTextures(unitOffset, textureCount, textureHandles);
             if (textureHandles != nullptr) {
-                memcpy(&_textureBoundMap[unitOffset], textureHandles, sizeof(GLuint) * textureCount);
+                assert(type != TextureType::COUNT);
+                memcpy(_textureBoundMap[unitOffset].data(), textureHandles, sizeof(GLuint) * textureCount);
             } else {
-                memset(&_textureBoundMap[unitOffset], 0, sizeof(GLuint) * textureCount);
+                for (auto& map : _textureBoundMap) {
+                    memset(map.data(), 0u, sizeof(GLuint) * textureCount);
+                }
             }
 
             bound = true;

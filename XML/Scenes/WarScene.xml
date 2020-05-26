@@ -2,7 +2,7 @@
 <assets>assets.xml</assets>
 <musicPlaylist>musicPlaylist.xml</musicPlaylist>
 <vegetation>
-    <grassVisibility>70</grassVisibility>
+    <grassVisibility>150</grassVisibility>
     <treeVisibility>500</treeVisibility>
 </vegetation>
 <wind>

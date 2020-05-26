@@ -117,11 +117,10 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) final;
 
-    void onRefreshNodeData(const SceneGraphNode& sgn,
-                           const RenderStagePass& renderStagePass,
-                           const Camera& crtCamera,
-                           bool refreshData,
-                           GFX::CommandBuffer& bufferInOut) final;
+    void occlusionCull(const Texture_ptr& depthBuffer,
+                       const Camera& camera,
+                       GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
+                       GFX::CommandBuffer& bufferInOut) const final;
    private:
     void uploadVegetationData(SceneGraphNode& sgn);
     void computeVegetationTransforms(const Task& parentTask, bool treeData);

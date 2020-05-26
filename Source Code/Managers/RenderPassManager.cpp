@@ -633,14 +633,14 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
 {
     OPTICK_EVENT();
 
-    ACKNOWLEDGE_UNUSED(nodes);
-
     assert(stagePass._passType == RenderPassType::PRE_PASS);
 
     //No HiZ
     if (targetDepthBuffer._usage == RenderTargetUsage::COUNT) {
         return false;
     }
+
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "HiZ Construct & Cull" });
 
     // Update HiZ Target
     const Texture_ptr& HiZTex = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
@@ -655,7 +655,15 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
 
     // Run occlusion culling CS
     const RenderPass::BufferData& bufferData = getBufferData(stagePass);
-    _context.occlusionCull(bufferData, HiZTex, camera, bufferInOut);
+    GFX::SendPushConstantsCommand HIZPushConstantsCMDInOut = {};
+    _context.occlusionCull(bufferData, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
+
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Per-node HiZ Cull" });
+    for (size_t i = 0; i < nodes.size(); ++i) {
+        const VisibleNode& node = nodes.node(i);
+        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(*node._node, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    }
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
     // Occlusion culling barrier
     memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
@@ -677,6 +685,8 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
     } else {
         GFX::EnqueueCommand(bufferInOut, memCmd);
     }
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
     return true;
 }
@@ -867,6 +877,8 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const PassParams&
                 state0._blendProperties._blendDest = BlendProperty::INV_SRC_ALPHA;
             }
         }
+        GFX::EnqueueCommand(bufferInOut, setBlendStateCmd);
+
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _OITCompositionPipeline });
 
         RenderTarget& oitRT = _context.renderTargetPool().renderTarget(isMSAATarget ? RenderTargetID{ RenderTargetUsage::OIT, params._targetOIT._index } : params._targetOIT);

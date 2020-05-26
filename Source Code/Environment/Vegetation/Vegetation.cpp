@@ -141,8 +141,6 @@ void Vegetation::destroyStaticData() {
 void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
-        constexpr bool useDoubleSided = true;
-
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
         const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
         const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
@@ -155,8 +153,8 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
 
         const size_t billboardsPlaneCount = sizeof(vertices) / (sizeof(vec3<F32>) * 4);
 
-        const U16 indices[] = { 0, 1, 2, 0, 2, 3,
-                                2, 1, 0, 3, 2, 0 };
+        const U16 indices[] = { 0, 1, 2, 
+                                0, 2, 3 };
 
         const vec2<F32> texcoords[] = {
             vec2<F32>(0.0f, 0.0f),
@@ -177,7 +175,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
             if (i > 0) {
                 s_buffer->addRestartIndex();
             }
-            for (U8 j = 0; j < (useDoubleSided ? 12 : 6); ++j) {
+            for (U8 j = 0; j < 6; ++j) {
                 s_buffer->addIndex(indices[j] + (i * 4));
             }
 
@@ -190,9 +188,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     }
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
+    constexpr F32 ArBase = 1.0f; // Starting radius of circle A
+    constexpr F32 BrBase = 1.0f; // Starting radius of circle B
+
     F32 PointRadius = 0.95f;
-    const F32 ArBase = 1.0f; // Starting radius of circle A
-    const F32 BrBase = 1.0f; // Starting radius of circle B
     F32 dR = 2.5f * PointRadius; // Distance between concentric rings
 
     s_grassPositions.reserve(to_size(chunkSize) * chunkSize);
@@ -207,9 +206,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     circleB.center[1] = posOffset;
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
-        const F32 Ar = ArBase + dR * (F32)RadiusStepA;
+        const F32 Ar = ArBase + dR * to_F32(RadiusStepA);
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
-            const F32 Br = BrBase + dR * (F32)RadiusStepB;
+            const F32 Br = BrBase + dR * to_F32(RadiusStepB);
             circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
             circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
@@ -230,9 +229,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     dR = 2.5f * PointRadius; // Distance between concentric rings
 
     for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
-        const F32 Ar = ArBase + dR * (F32)RadiusStepA;
+        const F32 Ar = ArBase + dR * to_F32(RadiusStepA);
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
-            const F32 Br = BrBase + dR * (F32)RadiusStepB;
+            const F32 Br = BrBase + dR * to_F32(RadiusStepB);
             circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
             circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
@@ -299,7 +298,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vegMaterial->baseColour(DefaultColours::WHITE);
     vegMaterial->roughness(0.7f);
     vegMaterial->metallic(0.02f);
-    vegMaterial->doubleSided(false);
+    vegMaterial->doubleSided(true);
     vegMaterial->isStatic(false);
 
     Material::ApplyDefaultStateBlocks(*vegMaterial);
@@ -581,6 +580,53 @@ void Vegetation::getStats(U32& maxGrassInstances, U32& maxTreeInstances) const {
     maxTreeInstances = _instanceCountTrees;
 }
 
+void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
+                               const Camera& camera,
+                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
+                               GFX::CommandBuffer& bufferInOut) const {
+    if (!s_buffersBound || !renderState().drawState()) {
+        return;
+    }
+    // Culling lags one full frame
+    if (_instanceCountGrass > 0 || _instanceCountTrees > 0) {
+        // This will always lag one frame
+
+        GFX::SendPushConstantsCommand cullConstants = {};
+        cullConstants._constants = _cullPushConstants;
+        GFX::DispatchComputeCommand computeCmd = {};
+        GFX::BindPipelineCommand bindPipelineCmd = {};
+
+        if (_instanceCountGrass > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
+
+            //Cull grass
+            bindPipelineCmd._pipeline = _cullPipelineGrass;
+            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+            GFX::EnqueueCommand(bufferInOut, cullConstants);
+            GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+            GFX::EnqueueCommand(bufferInOut, computeCmd);
+        }
+
+        if (_instanceCountTrees > 0) {
+            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
+
+            // Cull trees
+            bindPipelineCmd._pipeline = _cullPipelineTrees;
+            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+            GFX::EnqueueCommand(bufferInOut, cullConstants);
+            GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+            GFX::EnqueueCommand(bufferInOut, computeCmd);
+        }
+
+        GFX::MemoryBarrierCommand memCmd = {};
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_STORAGE);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
+    }
+
+
+    SceneNode::occlusionCull(depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+}
+
 void Vegetation::sceneUpdate(const U64 deltaTimeUS,
                              SceneGraphNode& sgn,
                              SceneState& sceneState) {
@@ -657,57 +703,6 @@ void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
     pkgInOut.add(GFX::DrawCommand{ cmd });
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
-}
-
-void Vegetation::onRefreshNodeData(const SceneGraphNode& sgn, const RenderStagePass& renderStagePass, const Camera& crtCamera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
-    // Culling lags one full frame
-    if (renderStagePass._stage == RenderStage::DISPLAY && refreshData && _instanceCountGrass > 0 || _instanceCountTrees > 0)
-    {
-        // This will always lag one frame
-        const Texture_ptr& depthTex = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
-
-        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(depthTex->data(), TextureUsage::UNIT0);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-        GFX::SendPushConstantsCommand cullConstants = {};
-        cullConstants._constants = _cullPushConstants;
-        cullConstants._constants.countHint(5 + _cullPushConstants.data().size());
-        cullConstants._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthTex->width(), depthTex->height()));
-        cullConstants._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, crtCamera.getProjectionMatrix());
-        cullConstants._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(crtCamera.getViewMatrix(), crtCamera.getViewMatrix()));
-        cullConstants._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(crtCamera.getViewMatrix(), crtCamera.getProjectionMatrix()));
-        cullConstants._constants.set(_ID("cameraPosition"), GFX::PushConstantType::VEC3, crtCamera.getEye());
-        cullConstants._constants.set(_ID("dvd_nearPlaneDistance"), GFX::PushConstantType::FLOAT, crtCamera.getZPlanes().x);
-        GFX::DispatchComputeCommand computeCmd = {};
-
-        GFX::BindPipelineCommand bindPipelineCmd = {};
-        if (_instanceCountGrass > 0) {
-            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
-
-            //Cull grass
-            bindPipelineCmd._pipeline = _cullPipelineGrass;
-            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-            GFX::EnqueueCommand(bufferInOut, cullConstants);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
-        }
-
-        if (_instanceCountTrees > 0) {
-            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
-
-            // Cull trees
-            bindPipelineCmd._pipeline = _cullPipelineTrees;
-            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-            GFX::EnqueueCommand(bufferInOut, cullConstants);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
-        }
-
-        GFX::MemoryBarrierCommand memCmd = {};
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_STORAGE) | to_base(MemoryBarrierType::BUFFER_UPDATE);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
-    }
-
-    return SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
 }
 
 namespace {

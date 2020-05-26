@@ -100,7 +100,7 @@ namespace TypeUtil {
 void Material::ApplyDefaultStateBlocks(Material& target) {
     /// Normal state for final rendering
     RenderStateBlock stateDescriptor = {};
-    stateDescriptor.setCullMode(CullMode::BACK);
+    stateDescriptor.setCullMode(target.doubleSided() ? CullMode::NONE : CullMode::BACK);
     stateDescriptor.setZFunc(ComparisonFunction::EQUAL);
 
     RenderStateBlock oitDescriptor(stateDescriptor);
@@ -170,7 +170,7 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
     cloneMat->_isStatic = base._isStatic;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_isRefractive = base._isRefractive;
-
+    cloneMat->_textureUseForDepth = _textureUseForDepth;
     cloneMat->_extraShaderDefines = base._extraShaderDefines;
 
     cloneMat->baseShaderData(base.baseShaderData());

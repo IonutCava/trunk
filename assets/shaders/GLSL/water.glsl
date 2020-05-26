@@ -10,7 +10,7 @@ void main(void)
 {
     computeData();
     
-    computeLightVectors(dvd_NormalMatrixW(DATA_IDX), dvd_NormalMatrixWV(DATA_IDX));
+    computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
 
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
@@ -50,7 +50,7 @@ float Fresnel(in vec3 viewDir, in vec3 normal, in float metalness) {
 
 vec3 _private_reflect = vec3(0.f);
 
-vec3 ImageBasedLighting(in vec3 colour, in float metallic, in float roughness, in int textureSize) {
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
     // This will actually return the fresnel'ed mixed between reflection and refraction as that's more useful for debugging
     return _private_reflect;
 }
@@ -97,9 +97,9 @@ void main()
 
     const vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
     const vec4 reflectionColour = texture(texReflectPlanar, uvFinalReflect);
-
     
-    const vec4 texColour = mix(mix(refractionColour, reflectionColour, Fresnel(_incident, VAR._normalW, metalness)),
+    const vec3 normalW = (dvd_InverseViewMatrix * vec4(VAR._normalWV, 0.0f)).xyz;
+    const vec4 texColour = mix(mix(refractionColour, reflectionColour, Fresnel(_incident, normalW, metalness)),
                                    refractionColour,
                                    _underwater);
 

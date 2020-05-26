@@ -76,6 +76,17 @@ bool SceneNode::prepareRender(SceneGraphNode& sgn,
     return getState() == ResourceState::RES_LOADED;
 }
 
+
+void SceneNode::occlusionCull(const Texture_ptr& depthBuffer,
+                              const Camera& camera,
+                              GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
+                              GFX::CommandBuffer& bufferInOut) const {
+    ACKNOWLEDGE_UNUSED(depthBuffer);
+    ACKNOWLEDGE_UNUSED(camera);
+    ACKNOWLEDGE_UNUSED(HIZPushConstantsCMDInOut);
+    ACKNOWLEDGE_UNUSED(bufferInOut);
+}
+
 void SceneNode::postLoad(SceneGraphNode& sgn) {
     sgn.postLoad();
 }

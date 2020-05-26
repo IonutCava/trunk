@@ -193,6 +193,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         albedoSampler.wrapU(TextureWrap::MIRROR_REPEAT);
         albedoSampler.wrapV(TextureWrap::MIRROR_REPEAT);
         albedoSampler.wrapW(TextureWrap::MIRROR_REPEAT);
+    } else {
+        albedoSampler.wrapU(TextureWrap::REPEAT);
+        albedoSampler.wrapV(TextureWrap::REPEAT);
+        albedoSampler.wrapW(TextureWrap::REPEAT);
     }
     albedoSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     albedoSampler.magFilter(TextureFilter::LINEAR);

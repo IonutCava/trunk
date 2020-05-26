@@ -90,6 +90,43 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         toggleBoundsField._readOnly = false; //disabled/enabled
         _editorComponent.registerField(std::move(toggleBoundsField));
 
+        PlatformContext pContext = sgn.context();
+        SceneManager* sMgr = pContext.kernel().sceneManager();
+
+        EditorComponentField grassVisibilityDistanceField = {};
+        grassVisibilityDistanceField._name = "Grass visibility distance";
+        grassVisibilityDistanceField._range = { 0.01f, 10000.0f };
+        grassVisibilityDistanceField._serialise = false;
+        grassVisibilityDistanceField._dataGetter = [sMgr](void* dataOut) {
+            const SceneRenderState& rState = sMgr->getActiveScene().renderState();
+            *static_cast<F32*>(dataOut) = rState.grassVisibility();
+        };
+        grassVisibilityDistanceField._dataSetter = [sMgr](const void* data) {
+            SceneRenderState& rState = sMgr->getActiveScene().renderState();
+            rState.grassVisibility(*static_cast<const F32*>(data)); 
+        };
+        grassVisibilityDistanceField._type = EditorComponentFieldType::PUSH_TYPE;
+        grassVisibilityDistanceField._basicType = GFX::PushConstantType::FLOAT;
+        grassVisibilityDistanceField._readOnly = false;
+        _editorComponent.registerField(std::move(grassVisibilityDistanceField));
+
+        EditorComponentField treeVisibilityDistanceField = {};
+        treeVisibilityDistanceField._name = "Tree visibility distance";
+        treeVisibilityDistanceField._range = { 0.01f, 10000.0f };
+        treeVisibilityDistanceField._serialise = false;
+        treeVisibilityDistanceField._dataGetter = [sMgr](void* dataOut) {
+            const SceneRenderState& rState = sMgr->getActiveScene().renderState();
+            *static_cast<F32*>(dataOut) = rState.treeVisibility();
+        };
+        treeVisibilityDistanceField._dataSetter = [sMgr](const void* data) {
+            SceneRenderState& rState = sMgr->getActiveScene().renderState();
+            rState.treeVisibility(*static_cast<const F32*>(data));
+        };
+        treeVisibilityDistanceField._type = EditorComponentFieldType::PUSH_TYPE;
+        treeVisibilityDistanceField._basicType = GFX::PushConstantType::FLOAT;
+        treeVisibilityDistanceField._readOnly = false;
+        _editorComponent.registerField(std::move(treeVisibilityDistanceField));
+
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1));
         bufferDescriptor._elementSize = sizeof(TessellatedNodeData);

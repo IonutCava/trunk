@@ -46,6 +46,7 @@ class SceneState;
 class PropertyWindow;
 class BoundsComponent;
 class RenderPassCuller;
+class RenderPassManager;
 class RenderingComponent;
 class TransformComponent;
 
@@ -66,6 +67,7 @@ namespace Attorney {
     class SceneGraphNodeComponent;
     class SceneGraphNodeSceneGraph;
     class SceneGraphNodeRenderPassCuller;
+    class SceneGraphNodeRenderPassManager;
     class SceneGraphNodeRelationshipCache;
 };
 
@@ -83,6 +85,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
     friend class Attorney::SceneGraphNodeComponent;
     friend class Attorney::SceneGraphNodeSceneGraph;
     friend class Attorney::SceneGraphNodeRenderPassCuller;
+    friend class Attorney::SceneGraphNodeRenderPassManager;
     friend class Attorney::SceneGraphNodeRelationshipCache;
 
     public:
@@ -180,15 +183,15 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SkinnedSubMesh> for animation transforms
         template <typename T = SceneNode>
         typename std::enable_if<std::is_base_of<SceneNode, T>::value, T&>::type
-        getNode() { return static_cast<T&>(*_node); }
+        getNode() noexcept { return static_cast<T&>(*_node); }
 
         /// Always use the level of redirection needed to reduce virtual function overhead.
         /// Use getNode<SceneNode> if you need material properties for ex. or getNode<SkinnedSubMesh> for animation transforms
         template <typename T = SceneNode>
         typename std::enable_if<std::is_base_of<SceneNode, T>::value, const T&>::type
-        getNode() const { return static_cast<const T&>(*_node); }
+        getNode() const noexcept { return static_cast<const T&>(*_node); }
 
-        const SceneNode_ptr& getNodePtr() const { return _node; }
+        const SceneNode_ptr& getNodePtr() const noexcept { return _node; }
 
         /// Returns a pointer to a specific component. Returns null if the SGN doesn't have the component requested
         template <typename T>
@@ -305,6 +308,10 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Changes this node's parent
         void setParentInternal();
 
+        void occlusionCull(const Texture_ptr& depthBuffer,
+                           const Camera& camera,
+                           GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
+                           GFX::CommandBuffer& bufferInOut) const;
     private:
         SGNRelationshipCache _relationshipCache;
         vectorEASTL<SceneGraphNode*> _children;
@@ -423,6 +430,18 @@ namespace Attorney {
 
         friend class Divide::RenderPassCuller;
     };
+
+    class SceneGraphNodeRenderPassManager
+    {
+    private:
+
+        static void occlusionCullNode(const SceneGraphNode& node, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
+            node.occlusionCull(depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+        }
+
+        friend class Divide::RenderPassManager;
+    };
+
 
     class SceneGraphNodeRelationshipCache {
     private:

@@ -156,6 +156,8 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
 }
 
 void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Apply" });
+
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
     _preRenderBatch->execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
@@ -193,6 +195,8 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, drawCommand);
 
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void PostFX::idle(const Configuration& config) {

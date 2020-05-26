@@ -431,6 +431,7 @@ protected:
     void occlusionCull(const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
                        const Camera& camera,
+                       GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                        GFX::CommandBuffer& bufferInOut);
 
     // Returns the HiZ texture that can be sent directly to occlusionCull

@@ -144,6 +144,7 @@ class SceneNode : public CachedResource {
     const Material_ptr& getMaterialTpl() const;
 
     inline SceneNodeRenderState& renderState() noexcept { return _renderState; }
+    inline const SceneNodeRenderState& renderState() const noexcept { return _renderState; }
 
     virtual const char* getTypeName() const;
 
@@ -175,6 +176,11 @@ class SceneNode : public CachedResource {
     virtual size_t maxReferenceCount() const noexcept { return 1; }
 
     virtual const char* getResourceTypeName() const noexcept override { return "SceneNode"; }
+
+    virtual void occlusionCull(const Texture_ptr& depthBuffer,
+                               const Camera& camera,
+                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
+                               GFX::CommandBuffer& bufferInOut) const;
 
     PROPERTY_RW(SceneNodeType, type, SceneNodeType::COUNT);
     PROPERTY_RW(bool, rebuildDrawCommands, false);
@@ -240,6 +246,10 @@ class SceneNodeSceneGraph {
 
     static EditorComponent& getEditorComponent(SceneNode& node) noexcept {
         return node._editorComponent;
+    }
+
+    static void occlusionCullNode(const SceneNode& node, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
+        node.occlusionCull(depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
     }
 
     friend class Divide::SceneGraph;

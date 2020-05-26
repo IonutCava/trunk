@@ -177,6 +177,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
             OPTICK_EVENT("RenderPass - Main");
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Main Display Pass" });
 
             RTClearDescriptor clearDescriptor = {};
             clearDescriptor.clearColours(true);
@@ -213,6 +214,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
             _parent.doCustomPass(params, bufferInOut);
+
+            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
         } break;
         case RenderStage::SHADOW: {
             OPTICK_EVENT("RenderPass - Shadow");
@@ -232,6 +235,9 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         } break;
         case RenderStage::REFLECTION: {
             static VisibleNodeList s_Nodes;
+
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Reflection Pass" });
+
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
             SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
@@ -271,9 +277,13 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                     }
                 }
             }
+            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+
         } break;
         case RenderStage::REFRACTION: {
             static VisibleNodeList s_Nodes;
+
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Refraction Pass" });
 
             OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
@@ -297,6 +307,9 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                     }
                 }
             }
+
+            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+
         } break;
     };
 }

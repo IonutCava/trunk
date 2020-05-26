@@ -170,7 +170,6 @@ bool GL_API::initGLSW(Configuration& config) {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
         { "vec4"       , "_vertexWVP"},
-        { "vec3"       , "_normalW"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
         { "flat uvec3" , "_drawParams"},

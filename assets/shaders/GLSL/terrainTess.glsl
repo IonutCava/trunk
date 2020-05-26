@@ -36,22 +36,21 @@ void main(void)
 
     const float iv = floor(gl_VertexID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
     const float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
+    const float u = (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f));
+    const float v = (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f));
 
-    dvd_Vertex.x = (2 * (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
+    dvd_Vertex.x = 2 * u - 1.0f;
     dvd_Vertex.y = 0.0f;
-    dvd_Vertex.z = (2 * (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f))) - 1.0f;
+    dvd_Vertex.z = 2 * v - 1.0f;
     dvd_Vertex.w = 1.0f;
-
     dvd_Vertex.xyz *= vtx_tileScale;
     dvd_Vertex.xyz += tData._positionAndTileScale.xyz;
-    
 
     _out._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
     _out._vertexW.y = vtx_height;
 
-    _out._texCoord = vec2(abs(_out._vertexW.x - TerrainOrigin.x) / TERRAIN_WIDTH, 
+    _out._texCoord = vec2(abs(_out._vertexW.x - TerrainOrigin.x) / TERRAIN_WIDTH,
                           abs(_out._vertexW.z - TerrainOrigin.y) / TERRAIN_LENGTH);
-
     vtx_height = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, _out._texCoord).r) + TERRAIN_MIN_HEIGHT;
 
     // Send vertex position along
@@ -309,11 +308,16 @@ layout(location = 11) in flat int tcs_tileScale[];
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 10) out int tes_tessLevel;
 layout(location = 11) out int tes_tileScale;
+layout(location = 12) out vec3 tes_tangentViewPos;
+layout(location = 13) out vec3 tes_tangentViewPos;
 #else
 layout(location = 10) out flat int LoD;
 // x = distance, y = depth
 layout(location = 11) smooth out vec2 _waterDetails;
+layout(location = 12) out vec3 _tangentViewPos;
+layout(location = 13) out vec3 _tangentFragPos;
 #endif
+
 
 // Templates please!!!
 vec2 Bilerp(vec2 v0, vec2 v1, vec2 v2, vec2 v3, vec2 i)
@@ -367,10 +371,11 @@ void main()
 {
     PassData(0);
 
-    // Terrain heightmap coords
-    _out._texCoord = Bilerp(_in[0]._texCoord, _in[1]._texCoord, _in[2]._texCoord, _in[3]._texCoord, gl_TessCoord.xy);
     // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
     vec3 pos = Bilerp(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz, gl_in[3].gl_Position.xyz, gl_TessCoord.xy);
+
+    // Terrain heightmap coords
+    _out._texCoord = Bilerp(_in[0]._texCoord, _in[1]._texCoord, _in[2]._texCoord, _in[3]._texCoord, gl_TessCoord.xy);
 
     // Sample the heightmap and offset y position of vertex
     const vec4 heightOffsets = getHeightOffsets(_out._texCoord);
@@ -379,21 +384,33 @@ void main()
     _out._vertexW = vec4(pos, 1.0f);
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
     _out._vertexWVP = dvd_ProjectionMatrix * _out._vertexWV;
-    _out._viewDirectionWV = normalize(-_out._vertexWV.xyz);
 
 #if !defined(SHADOW_PASS)
-    const mat3 normalMatrixWV = dvd_NormalMatrixWV(DATA_IDX);
+    const mat3 normalMatrix = dvd_NormalMatrixW(DATA_IDX);
 
     const vec3 N = getNormal(pos.y, heightOffsets);
-    _out._normalW = normalize(dvd_NormalMatrixW(DATA_IDX) * N);
-    _out._normalWV = normalize(normalMatrixWV * N);
-
-#if defined(PRE_PASS)
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);
+    const mat3 TBN =  mat3(normalMatrix * T,
+                           normalMatrix * B,
+                           normalMatrix * N);
+#if defined(PRE_PASS)
+    _out._tbn = mat3(dvd_ViewMatrix) * TBN;
+    _out._normalWV = _out._tbn[0];
+#else
+    _out._normalWV = normalize(mat3(dvd_ViewMatrix) * TBN[0]);
+    _out._viewDirectionWV = normalize(-_out._vertexWV.xyz);
+#endif
 
-    _out._tbn = normalMatrixWV * mat3(T, B, N);
-#endif //PRE_PASS
+    const mat3 tTBN = transpose(TBN);
+#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
+    tes_tangentViewPos = tTBN * dvd_cameraPosition.xyz;
+    tes_tangentFragPos = tTBN * _out._vertexW.xyz;
+#else
+    _tangentViewPos = tTBN * dvd_cameraPosition.xyz;
+    _tangentFragPos = tTBN * _out._vertexW.xyz;
+#endif
+
 #endif //SHADOW_PASS
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
@@ -427,6 +444,8 @@ layout(triangles) in;
 
 layout(location = 10) in int tes_tessLevel[];
 layout(location = 11) in int tes_tileScale[];
+layout(location = 12) in vec3 tes_tangentViewPos[];
+layout(location = 13) in vec3 tes_tangentFragPos[];
 
 #define SHOW_TILE_SCALE
 
@@ -442,6 +461,8 @@ layout(location = 11) smooth out vec2 _waterDetails;
 
 layout(location = 12) out vec3 gs_wireColor;
 layout(location = 13) noperspective out vec3 gs_edgeDist;
+layout(location = 14) out vec3 _tangentViewPos;
+layout(location = 15) out vec3 _tangentFragPos;
 
 vec4 getWVPPositon(in int i) {
     return dvd_ViewProjectionMatrix * gl_in[i].gl_Position;
@@ -450,6 +471,9 @@ vec4 getWVPPositon(in int i) {
 void PerVertex(in int i, in vec3 edge_dist) {
     PassData(i);
     gl_Position = getWVPPositon(i);
+    _tangentViewPos = tes_tangentViewPos[i];
+    _tangentFragPos = tes_tangentFragPos[i];
+
 #if !defined(SHADOW_PASS)
     LoD = int(log2(max(tes_tileScale[i], 16)) - 4);
 
@@ -599,11 +623,18 @@ layout(location = 11) smooth in vec2 _waterDetails;
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
+layout(location = 14) in vec3 _tangentViewPos;
+layout(location = 15) in vec3 _tangentFragPos;
+#else
+layout(location = 12) in vec3 _tangentViewPos;
+layout(location = 13) in vec3 _tangentFragPos;
 #endif
 
 #include "nodeBufferedInput.cmn"
 
 #define USE_CUSTOM_ROUGHNESS
+#define USE_SCALED_COORDS
+
 #include "BRDF.frag"
 #include "output.frag"
 
@@ -661,9 +692,15 @@ layout(location = 11) smooth in vec2 _waterDetails;
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
+layout(location = 14) in vec3 _tangentViewPos;
+layout(location = 15) in vec3 _tangentFragPos;
+#else
+layout(location = 12) in vec3 _tangentViewPos;
+layout(location = 13) in vec3 _tangentFragPos;
 #endif
 
 #define SHADOW_INTENSITY_FACTOR 0.75f
+#define USE_SCALED_COORDS
 
 #if defined(PRE_PASS)
 #include "prePass.frag"

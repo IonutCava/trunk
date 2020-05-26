@@ -163,11 +163,11 @@ vec3 lightTileColour() {
 }
 
 #ifdef CUSTOM_IBL
-vec3 ImageBasedLighting(in vec3 colour, in float metallic, in float roughness, in int textureSize);
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize);
 #else
-vec3 ImageBasedLighting(in vec3 colour, in float metallic, in float roughness, in int textureSize) {
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
 
-    const vec3 normal = VAR._normalW;
+    const vec3 normal = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
     const vec3 cubeColor = vec3(0.0f);
     const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
     const vec3 reflection = normalize(reflect(toCamera, normal));
@@ -184,10 +184,10 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         case DEBUG_EMISSIVE: return getEmissive(colourMatrix);
         case DEBUG_ROUGHNESS: return vec3(OMR.b);
         case DEBUG_METALLIC: return vec3(OMR.g);
-        case DEBUG_NORMALS: return (inverse(dvd_ViewMatrix) * vec4(normalWV, 0)).xyz;
+        case DEBUG_NORMALS: return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
         case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV));
         case DEBUG_LIGHT_TILES: return lightTileColour();
-        case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), OMR.g, OMR.b, IBLSize(colourMatrix));
+        case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
     }
 
     //albedo.rgb += dvd_AmbientColour.rgb;
@@ -207,7 +207,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         getOtherLightContribution(dirLightCount, albedo, OMR, normalWV);
 
 #if !defined(USE_PLANAR_REFLECTION)
-    lightColour.rgb = ImageBasedLighting(lightColour.rgb, OMR.g, OMR.b, IBLSize(colourMatrix));
+    lightColour.rgb = ImageBasedLighting(lightColour.rgb, normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
 #endif //USE_PLANAR_REFLECTION
 
     return lightColour;

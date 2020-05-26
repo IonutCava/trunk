@@ -46,17 +46,14 @@ void VertexBuffer::setAttribMask(size_t index, const AttribFlags& flagMask) {
     _attribMasks[index] = flagMask;
 }
 
+//ref: https://www.iquilezles.org/www/articles/normals/normals.htm
 void VertexBuffer::computeNormals() {
-    vec3<F32> U, V, normal;
-    // Code from
-    // http://devmaster.net/forums/topic/1065-calculating-normals-of-a-mesh/
-
     const size_t vertCount = getVertexCount();
     const size_t indexCount = getIndexCount();
 
     using normalVector = vectorEASTL<vec3<F32>>;
 
-    vectorEASTL<normalVector> normalBuffer(vertCount);
+    normalVector normalBuffer(vertCount, 0.0f);
     for (U32 i = 0; i < indexCount; i += 3) {
 
         const U32 idx0 = getIndex(i + 0);
@@ -70,34 +67,21 @@ void VertexBuffer::computeNormals() {
         const U32 idx1 = getIndex(i + 1);
         const U32 idx2 = getIndex(i + 2);
         // get the three vertices that make the faces
-        const vec3<F32>& p1 = getPosition(idx0);
-        const vec3<F32>& p2 = getPosition(idx1);
-        const vec3<F32>& p3 = getPosition(idx2);
+        const vec3<F32>& ia = getPosition(idx0);
+        const vec3<F32>& ib = getPosition(idx1);
+        const vec3<F32>& ic = getPosition(idx2);
 
-        U.set(p2 - p1);
-        V.set(p3 - p1);
-        normal.cross(U, V);
-        normal.normalize();
+        const vec3<F32> no = Cross(ia - ib, ic - ib);
 
         // Store the face's normal for each of the vertices that make up the face.
-        normalBuffer[idx0].push_back(normal);
-        normalBuffer[idx1].push_back(normal);
-        normalBuffer[idx2].push_back(normal);
+        normalBuffer[idx0] += no;
+        normalBuffer[idx1] += no;
+        normalBuffer[idx2] += no;
     }
 
-    // Now loop through each vertex vector, and average out all the normals stored.
-    vec3<F32> currentNormal;
     for (U32 i = 0; i < vertCount; ++i) {
-        currentNormal.reset();
-        for (U32 j = 0; j < normalBuffer[i].size(); ++j) {
-            currentNormal += normalBuffer[i][j];
-        }
-        currentNormal /= to_F32(normalBuffer[i].size());
-
-        modifyNormalValue(i, currentNormal);
+        modifyNormalValue(i, Normalized(normalBuffer[i]));
     }
-
-    normalBuffer.clear();
 }
 
 void VertexBuffer::computeTangents() {
