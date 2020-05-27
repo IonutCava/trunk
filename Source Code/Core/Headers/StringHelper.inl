@@ -43,21 +43,23 @@ template<typename T_vec, typename T_str>
 typename std::enable_if<std::is_same<T_vec, typename vectorEASTL<T_str>>::value ||
                         std::is_same<T_vec, typename vectorEASTLFast<T_str>>::value, T_vec&>::type
 Split(const char* input, char delimiter, T_vec& elems) {
-    elems.resize(0);
     if (input != nullptr) {
         {
             size_t i = 0;
             const char* o = input;
             for (i = 0; input[i]; input[i] == delimiter ? i++ : *(input++));
-            elems.reserve(i);
+            elems.resize(i + 1);
             input = o;
         }
 
         stringImpl item;
         istringstreamImpl ss(input);
+        size_t idx = 0;
         while (std::getline(ss, item, delimiter)) {
-            elems.push_back(std::move(item));
+            elems[idx++] = std::move(item);
         }
+    } else {
+        elems.clear();
     }
 
     return elems;
@@ -67,27 +69,28 @@ template<typename T_str>
 vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>& elems) {
     assert(input != nullptr);
 
-    elems.resize(0);
-
     const T_str original(input);
     if (!original.empty()) {
         {
             size_t i = 0;
             const char* o = input;
             for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++);
-            elems.reserve(i);
+            elems.resize(i + 1);
             input = o;
         }
 
+        size_t idx = 0;
         T_str::const_iterator start = eastl::begin(original);
         T_str::const_iterator end = eastl::end(original);
         T_str::const_iterator next = eastl::find(start, end, delimiter);
         while (next != end) {
-            elems.emplace_back(start, next);
+            elems[idx++] = { start, next };
             start = next + 1;
             next = eastl::find(start, end, delimiter);
         }
-        elems.emplace_back(start, next);
+        elems[idx++] = { start, next };
+    } else {
+        elems.clear();
     }
 
     return elems;

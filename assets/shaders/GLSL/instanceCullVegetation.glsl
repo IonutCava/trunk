@@ -47,6 +47,7 @@ void main(void) {
     vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
 
     const float dist = distance(positionW.xz, cameraPosition.xz);
+    Data[idx].data.z = 1.0f;
 
     // Too far away // ToDo: underwater check:
     if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
@@ -55,12 +56,14 @@ void main(void) {
     }
 
     const float scale = instance.positionAndScale.w;
-    const vec3 extents = Extents.xyz * scale * 1.2f;
+    const vec3 extents = Extents.xyz * scale;
     const float radius = max(max(extents.x, extents.y), extents.z);
 
     Data[idx].data.w = extents.y;
 
-    if (HiZCull(positionW.xyz, extents, radius)) {
+    positionW.y += (Extents.y * 0.5f);
+
+    if (HiZCull(positionW.xyz, Extents.xyz, radius)) {
         Data[idx].data.z = 3.0f;
     } else {
 #       if defined(CULL_TREES)

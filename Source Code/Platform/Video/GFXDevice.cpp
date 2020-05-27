@@ -1678,7 +1678,8 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
     const mat4<F32>& projectionMatrix = camera.getProjectionMatrix();
 
-    HIZPushConstantsCMDInOut._constants.countHint(GetHiZMethod() == HiZMethod::ARM ? 5 : 6);
+    HIZPushConstantsCMDInOut._constants.clear();
+    HIZPushConstantsCMDInOut._constants.countHint(GetHiZMethod() == HiZMethod::ARM ? 7 : 8);
     HIZPushConstantsCMDInOut._constants.set(_ID("countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
     HIZPushConstantsCMDInOut._constants.set(_ID("dvd_numEntities"), GFX::PushConstantType::UINT, cmdCount);
     HIZPushConstantsCMDInOut._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, viewMatrix);
@@ -1686,9 +1687,8 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
     HIZPushConstantsCMDInOut._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(viewMatrix, projectionMatrix));
     HIZPushConstantsCMDInOut._constants.set(_ID("dvd_nearPlaneDistance"), GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
     HIZPushConstantsCMDInOut._constants.set(_ID("cameraPosition"), GFX::PushConstantType::VEC3, camera.getEye());
-    if (GetHiZMethod() != HiZMethod::ARM) {
-        HIZPushConstantsCMDInOut._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
-    }
+    HIZPushConstantsCMDInOut._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
+
     GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
 
     GFX::DispatchComputeCommand computeCmd = {};

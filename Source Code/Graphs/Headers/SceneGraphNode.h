@@ -149,6 +149,14 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Return the current number of children that the current node has
         inline U32 getChildCount() const noexcept { return _childCount.load(); }
 
+        inline void lockChildrenForWrite() const { _childLock.lock(); }
+
+        inline void unlockChildrenForWrite() const { _childLock.unlock(); }
+
+        inline void lockChildrenForRead() const { _childLock.lock_shared(); }
+
+        inline void unlockChildrenForRead() const { _childLock.unlock_shared(); }
+
         /// Return a specific child by indes. Does not recurse.
         inline SceneGraphNode& getChild(U32 idx) {
             SharedLock<SharedMutex> r_lock(_childLock);

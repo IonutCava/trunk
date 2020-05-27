@@ -221,6 +221,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             OPTICK_EVENT("RenderPass - Shadow");
             GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
 
+            //ToDo: remove this and change lookup code
             GFX::SetClippingStateCommand clipStateCmd = {};
             clipStateCmd._negativeOneToOneDepth = true;
             GFX::EnqueueCommand(bufferInOut, clipStateCmd);

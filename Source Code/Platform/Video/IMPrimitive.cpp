@@ -36,33 +36,33 @@ void IMPrimitive::reset() {
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour4& colour) {
     // Create the object
     beginBatch(true, 16, 1);
-    // Set it's colour
-    attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
-    // Draw the bottom loop
-    begin(PrimitiveType::LINE_LOOP);
-    vertex(min.x, min.y, min.z);
-    vertex(max.x, min.y, min.z);
-    vertex(max.x, min.y, max.z);
-    vertex(min.x, min.y, max.z);
-    end();
-    // Draw the top loop
-    begin(PrimitiveType::LINE_LOOP);
-    vertex(min.x, max.y, min.z);
-    vertex(max.x, max.y, min.z);
-    vertex(max.x, max.y, max.z);
-    vertex(min.x, max.y, max.z);
-    end();
-    // Connect the top to the bottom
-    begin(PrimitiveType::LINES);
-    vertex(min.x, min.y, min.z);
-    vertex(min.x, max.y, min.z);
-    vertex(max.x, min.y, min.z);
-    vertex(max.x, max.y, min.z);
-    vertex(max.x, min.y, max.z);
-    vertex(max.x, max.y, max.z);
-    vertex(min.x, min.y, max.z);
-    vertex(min.x, max.y, max.z);
-    end();
+        // Set it's colour
+        attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
+        // Draw the bottom loop
+        begin(PrimitiveType::LINE_LOOP);
+            vertex(min.x, min.y, min.z);
+            vertex(max.x, min.y, min.z);
+            vertex(max.x, min.y, max.z);
+            vertex(min.x, min.y, max.z);
+        end();
+        // Draw the top loop
+        begin(PrimitiveType::LINE_LOOP);
+            vertex(min.x, max.y, min.z);
+            vertex(max.x, max.y, min.z);
+            vertex(max.x, max.y, max.z);
+            vertex(min.x, max.y, max.z);
+        end();
+        // Connect the top to the bottom
+        begin(PrimitiveType::LINES);
+            vertex(min.x, min.y, min.z);
+            vertex(min.x, max.y, min.z);
+            vertex(max.x, min.y, min.z);
+            vertex(max.x, max.y, min.z);
+            vertex(max.x, min.y, max.z);
+            vertex(max.x, max.y, max.z);
+            vertex(min.x, min.y, max.z);
+            vertex(min.x, max.y, max.z);
+        end();
     // Finish our object
     endBatch();
 }
@@ -81,38 +81,38 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     U32 i, j;  // Looping variables
     // Create the object
     beginBatch(true, stacks * ((slices + 1) * 2), 1);
-    attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
-    begin(PrimitiveType::LINE_LOOP);
-    for (i = 0; i < stacks; i++) {
-        const F32 rho = i * drho;
-        const F32 srho = std::sin(rho);
-        const F32 crho = std::cos(rho);
-        const F32 srhodrho = std::sin(rho + drho);
-        const F32 crhodrho = std::cos(rho + drho);
+        attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
+        begin(PrimitiveType::LINE_LOOP);
+            for (i = 0; i < stacks; i++) {
+                const F32 rho = i * drho;
+                const F32 srho = std::sin(rho);
+                const F32 crho = std::cos(rho);
+                const F32 srhodrho = std::sin(rho + drho);
+                const F32 crhodrho = std::cos(rho + drho);
 
-        s = 0.0f;
-        for (j = 0; j <= slices; j++) {
-            const F32 theta = (j == slices) ? 0.0f : j * dtheta;
-            const F32 stheta = -std::sin(theta);
-            const F32 ctheta = std::cos(theta);
+                s = 0.0f;
+                for (j = 0; j <= slices; j++) {
+                    const F32 theta = (j == slices) ? 0.0f : j * dtheta;
+                    const F32 stheta = -std::sin(theta);
+                    const F32 ctheta = std::cos(theta);
 
-            F32 x = stheta * srho;
-            F32 y = ctheta * srho;
-            F32 z = crho;
-            vertex((x * radius) + center.x,
-                (y * radius) + center.y,
-                (z * radius) + center.z);
-            x = stheta * srhodrho;
-            y = ctheta * srhodrho;
-            z = crhodrho;
-            s += ds;
-            vertex((x * radius) + center.x,
-                (y * radius) + center.y,
-                (z * radius) + center.z);
-        }
-        t -= dt;
-    }
-    end();
+                    F32 x = stheta * srho;
+                    F32 y = ctheta * srho;
+                    F32 z = crho;
+                    vertex((x * radius) + center.x,
+                        (y * radius) + center.y,
+                        (z * radius) + center.z);
+                    x = stheta * srhodrho;
+                    y = ctheta * srhodrho;
+                    z = crhodrho;
+                    s += ds;
+                    vertex((x * radius) + center.x,
+                        (y * radius) + center.y,
+                        (z * radius) + center.z);
+                }
+                t -= dt;
+            }
+        end();
     endBatch();
 }
 
@@ -137,22 +137,22 @@ void IMPrimitive::fromCone(const vec3<F32>& root,
 
     // draw cone top
     beginBatch(true, slices + 1, 1);
-    attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
-    // Top
-    begin(PrimitiveType::TRIANGLE_FAN);
-        vertex(root);
-        for (U8 i = 0; i < slices; ++i) {
-            vertex(pts[i]);
-        }
-    end();
+        attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
+        // Top
+        begin(PrimitiveType::TRIANGLE_FAN);
+            vertex(root);
+            for (U8 i = 0; i < slices; ++i) {
+                vertex(pts[i]);
+            }
+        end();
 
-    // Bottom
-    begin(PrimitiveType::TRIANGLE_FAN);
-        vertex(c);
-        for (I8 i = slices - 1; i >= 0; --i) {
-            vertex(pts[i]);
-        }
-    end();
+        // Bottom
+        begin(PrimitiveType::TRIANGLE_FAN);
+            vertex(c);
+            for (I8 i = slices - 1; i >= 0; --i) {
+                vertex(pts[i]);
+            }
+        end();
     endBatch();
 }
 
@@ -180,35 +180,35 @@ void IMPrimitive::fromLines(const Line* lines, const size_t count) {
     if (count > 0) {
         // Create the object containing all of the lines
         beginBatch(true, to_U32(count) * 2 * 14, 1);
-        attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(lines[0].colourStart()));
-        // Set the mode to line rendering
-        //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
-        begin(PrimitiveType::LINES);
-        //vec3<F32> tempVertex;
-        // Add every line in the list to the batch
-        for (size_t i = 0; i < count; ++i) {
-            const Line& line = lines[i];
-            attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
-            /*for (U16 idx : indices) {
-            tempVertex.set(line._startPoint * vertices[idx]);
-            tempVertex *= line._widthStart;
+            attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(lines[0].colourStart()));
+            // Set the mode to line rendering
+            //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
+            begin(PrimitiveType::LINES);
+                //vec3<F32> tempVertex;
+                // Add every line in the list to the batch
+                for (size_t i = 0; i < count; ++i) {
+                    const Line& line = lines[i];
+                    attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
+                    /*for (U16 idx : indices) {
+                    tempVertex.set(line._startPoint * vertices[idx]);
+                    tempVertex *= line._widthStart;
 
-            vertex(tempVertex);
-            }*/
-            vertex(line.positionStart());
+                    vertex(tempVertex);
+                    }*/
+                    vertex(line.positionStart());
 
-            attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourEnd()));
-            /*for (U16 idx : indices) {
-            tempVertex.set(line._endPoint * vertices[idx]);
-            tempVertex *= line._widthEnd;
+                    attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourEnd()));
+                    /*for (U16 idx : indices) {
+                    tempVertex.set(line._endPoint * vertices[idx]);
+                    tempVertex *= line._widthEnd;
 
-            vertex(tempVertex);
-            }*/
+                    vertex(tempVertex);
+                    }*/
 
-            vertex(line.positionEnd());
+                    vertex(line.positionEnd());
 
-        }
-        end();
+                }
+            end();
         // Finish our object
         endBatch();
     }

@@ -23,7 +23,6 @@ void GlimArrayData::Reset(void) {
     m_uiBufferStride = 0;
     m_DataType = GLIM_ENUM::GLIM_NODATA;
     m_ArrayData.clear();
-    m_ArrayData.reserve(256);
 
     m_CurrentValue[0].Int = 0;
     m_CurrentValue[1].Int = 0;
@@ -210,6 +209,7 @@ unsigned int glimBatchData::AddVertex(float x, float y, float z) {
     it = std::begin(m_Attributes);
     itend = std::cend(m_Attributes);
 
+    it->second.m_ArrayData.reserve(m_Attributes.size());
     for (; it != itend; ++it) {
         it->second.PushElement();
     }

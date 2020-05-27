@@ -99,11 +99,11 @@ VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, con
     if (sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
         sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
     {
-        // Snapshot current child list. We shouldn't be modifying child list mid-frame anyway, but it's worth it to be careful!
-        vectorEASTL<SceneGraphNode*> rootChildren = sceneGraph.getRoot().getChildrenLocked();
+        sceneGraph.getRoot().lockChildrenForRead();
+        const vectorEASTL<SceneGraphNode*>& rootChildren = sceneGraph.getRoot().getChildrenLocked();
 
         ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = to_U32(rootChildren.size());
+        descriptor._iterCount = sceneGraph.getRoot().getChildCount();
         descriptor._partitionSize = g_nodesPerCullingPartition;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
@@ -113,6 +113,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, con
                             }
                         };
         parallel_for(context, descriptor);
+        sceneGraph.getRoot().unlockChildrenForRead();
     }
 
     return nodeCache;
@@ -155,11 +156,11 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
             // Parent node intersects the view, so check children
             if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
 
-                // A very good use-case for ranges :-<
-                vectorEASTL<SceneGraphNode*> children = currentNode.getChildrenLocked();
+                currentNode.lockChildrenForRead();
+                const vectorEASTL<SceneGraphNode*>& children = currentNode.getChildrenLocked();
 
                 ParallelForDescriptor descriptor = {};
-                descriptor._iterCount = to_U32(children.size());
+                descriptor._iterCount = currentNode.getChildCount();
                 descriptor._partitionSize = g_nodesPerCullingPartition;
                 descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
@@ -169,6 +170,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
                                         }
                                     };
                 parallel_for(currentNode.context(), descriptor);
+                currentNode.unlockChildrenForRead();
             } else {
                 // All nodes are in view entirely
                 addAllChildren(currentNode, params, nodes);
@@ -180,6 +182,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
 void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     OPTICK_EVENT();
 
+    currentNode.lockChildrenForRead();
     const vectorEASTL<SceneGraphNode*>& children = currentNode.getChildrenLocked();
     for (SceneGraphNode* child : children) {
         if (!child->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
@@ -201,6 +204,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const N
             addAllChildren(*child, params, nodes);
         }
     }
+    currentNode.unlockChildrenForRead();
 }
 
 void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {

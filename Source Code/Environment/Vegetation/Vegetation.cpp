@@ -591,8 +591,7 @@ void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
     if (_instanceCountGrass > 0 || _instanceCountTrees > 0) {
         // This will always lag one frame
 
-        GFX::SendPushConstantsCommand cullConstants = {};
-        cullConstants._constants = _cullPushConstants;
+        GFX::SendPushConstantsCommand cullConstants = { _cullPushConstants };
         GFX::DispatchComputeCommand computeCmd = {};
         GFX::BindPipelineCommand bindPipelineCmd = {};
 
@@ -602,8 +601,8 @@ void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
             //Cull grass
             bindPipelineCmd._pipeline = _cullPipelineGrass;
             GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-            GFX::EnqueueCommand(bufferInOut, cullConstants);
             GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+            GFX::EnqueueCommand(bufferInOut, cullConstants);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
 
@@ -613,8 +612,8 @@ void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
             // Cull trees
             bindPipelineCmd._pipeline = _cullPipelineTrees;
             GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-            GFX::EnqueueCommand(bufferInOut, cullConstants);
             GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+            GFX::EnqueueCommand(bufferInOut, cullConstants);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
         }
 

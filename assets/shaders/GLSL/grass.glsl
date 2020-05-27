@@ -43,11 +43,12 @@ void main() {
         computeFoliageMovementGrass(dvd_Vertex, data.data.w * 0.5f);
     }
 
+    dvd_Normal = vec3(0.0f, 1.0f, 0.0f);
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
-    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * dvd_Normal);// rotate_vertex_position(-dvd_Normal, data.orientationQuad));
+    VAR._normalWV = normalize(dvd_NormalMatrixWV(DATA_IDX) * rotate_vertex_position(dvd_Normal, data.orientationQuad));
 
 #if !defined(SHADOW_PASS)
     setClipPlanes(VAR._vertexW);
@@ -58,9 +59,8 @@ void main() {
 
 -- Fragment.Colour
 
-//layout(early_fragment_tests) in;
+layout(early_fragment_tests) in;
 
-#define USE_DEFERRED_NORMALS
 #define USE_SHADING_BLINN_PHONG
 
 #include "BRDF.frag"
@@ -82,11 +82,11 @@ void main (void){
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
     //writeOutput(albedo);
+    //writeOutput(vec4(getNormal(uv), 1.0f));
 }
 
 --Fragment.PrePass
 
-#define USE_DEFERRED_NORMALS
 // This is needed so that the inner "output" discards don't take place
 // We still manually alpha-discard in main
 #if defined(USE_ALPHA_DISCARD)
