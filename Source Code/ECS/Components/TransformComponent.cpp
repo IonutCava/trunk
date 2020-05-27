@@ -109,9 +109,10 @@ namespace Divide {
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
         // Cleanup our dirty transforms
-        const U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
+        U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
         if (previousMask != to_U32(TransformType::NONE)) {
             updateWorldMatrix(previousMask);
+            ClearBit(previousMask, TransformType::PREVIOUS_MAT);
 
             _parentSGN.SendEvent(
             {
