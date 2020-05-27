@@ -14,7 +14,6 @@ layout(binding = SHADOW_CUBE_MAP_ARRAY)    uniform samplerCubeArray  cubeDepthMa
 #include "shadowUtils.frag"
 
 #define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
-#endif
 
 bool detail_isInFrustum(in vec3 shadowCoord) {
     return shadowCoord.z <= 1.0f &&
@@ -94,6 +93,11 @@ bool CanReceiveShadows(in int shadowIndex) {
            shadowIndex < MAX_SHADOW_CASTING_LIGHTS &&
            dvd_lodLevel <= 2;
 }
+#else //DISABLE_SHADOW_MAPPING
+int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
+    return 0;
+}
+#endif //DISABLE_SHADOW_MAPPING
 
 float getShadowFactor(in ivec4 lightOptions, in float TanAcosNdotL) {
     float ret = 1.0f;
