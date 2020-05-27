@@ -7,7 +7,7 @@
 
 #include "materialData.frag"
 #include "velocityCalc.frag"
-#include "shadowUtils.frag"
+//#include "shadowUtils.frag"
 
 #if defined(USE_DEFERRED_NORMALS)
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;

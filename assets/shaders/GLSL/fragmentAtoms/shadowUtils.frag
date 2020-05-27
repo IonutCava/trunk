@@ -1,6 +1,8 @@
 #ifndef _SHADOW_UTILS_FRAG_
 #define _SHADOW_UTILS_FRAG_
 
+#if !defined(DISABLE_SHADOW_MAPPING)
+
 //dvd_shadowLightDetails:  x = light type, y =  arrayOffset, z - bias, w - strength
 
 struct CSMShadowProperties
@@ -67,4 +69,7 @@ int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
 
     return SplitMax > 0 ? SplitPowLookup[SplitMax - 1] : Split;
 }
+
+#endif //DISABLE_SHADOW_MAPPING
+
 #endif //_SHADOW_UTILS_FRAG_
