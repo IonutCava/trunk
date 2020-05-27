@@ -1,17 +1,21 @@
 -- Compute
 
 #define dvd_dataFlag 0
+#define INVS_SQRT_3 0.57735026919f
+#if defined(CULL_TREES)
+uniform float dvd_treeVisibilityDistance;
+uniform vec4 treeExtents;
+#else
+uniform float dvd_grassVisibilityDistance;
+uniform vec4 grassExtents;
+#endif
+
+uniform uint  dvd_terrainChunkOffset;
 
 #include "HiZCullingAlgorithm.cmn";
 #include "vegetationData.cmn"
 #include "waterData.cmn"
 
-uniform float dvd_treeVisibilityDistance;
-uniform float dvd_grassVisibilityDistance;
-uniform uint dvd_terrainChunkOffset;
-uniform vec3 cameraPosition;
-
-layout(local_size_x = WORK_GROUP_SIZE) in;
 
 float saturate(float v) { return clamp(v, 0.0, 1.0); }
 
@@ -20,8 +24,6 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
     return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
-uniform vec4 treeExtents;
-uniform vec4 grassExtents;
 #if defined(CULL_TREES)
 #   define MAX_INSTANCES MAX_TREE_INSTANCES
 #   define Data treeData
@@ -34,43 +36,46 @@ uniform vec4 grassExtents;
 #   define dvd_visibilityDistance dvd_grassVisibilityDistance
 #endif //CULL_TREES
 
+void CullItem(in uint idx) {
+    Data[idx].data.z = 3.0f;
+}
+
+layout(local_size_x = WORK_GROUP_SIZE) in;
 void main(void) {
 
-    if (gl_GlobalInvocationID.x >= MAX_INSTANCES) {
+    const uint ident = gl_GlobalInvocationID.x;
+    const uint nodeIndex = (dvd_terrainChunkOffset * MAX_INSTANCES) + ident;
+    if (ident >= MAX_INSTANCES) {
+        CullItem(nodeIndex);
         return;
     }
 
-    uint idx = dvd_terrainChunkOffset * MAX_INSTANCES + gl_GlobalInvocationID.x;
+    VegetationData instance = Data[nodeIndex];
 
-    VegetationData instance = Data[idx];
+    const float scale    = instance.positionAndScale.w;
+    const vec4 extents   = Extents * scale;
 
-    vec4 positionW = vec4(instance.positionAndScale.xyz, 1.0f);
+    vec3 vert = vec3(0.0f, extents.y * 0.5f, 0.0f);
+    vert = rotate_vertex_position(vert * scale, instance.orientationQuad);
+    const vec3 positionW = vert + instance.positionAndScale.xyz;
 
     const float dist = distance(positionW.xz, cameraPosition.xz);
-    Data[idx].data.z = 1.0f;
-
-    // Too far away // ToDo: underwater check:
-    if (dist > dvd_visibilityDistance || IsUnderWater(positionW.xyz)) {
-        Data[idx].data.z = 3.0f;
+    Data[nodeIndex].data.z = 1.0f;
+    // Too far away
+    if (dist > dvd_visibilityDistance) {
+        CullItem(nodeIndex);
         return;
     }
 
-    const float scale = instance.positionAndScale.w;
-    const vec3 extents = Extents.xyz * scale;
-    const float radius = max(max(extents.x, extents.y), extents.z);
+    Data[nodeIndex].data.w = extents.y;
 
-    Data[idx].data.w = extents.y;
-
-    positionW.y += (Extents.y * 0.5f);
-
-    if (HiZCull(positionW.xyz, Extents.xyz, radius)) {
-        Data[idx].data.z = 3.0f;
+    if (HiZCull(positionW, extents.xyz, extents.w) || IsUnderWater(positionW.xyz)) {
+        CullItem(nodeIndex);
     } else {
 #       if defined(CULL_TREES)
-            Data[idx].data.z = dist > (dvd_visibilityDistance * 0.33f) ? 2.0f : 1.0f;
+            Data[nodeIndex].data.z = dist > (dvd_visibilityDistance * 0.33f) ? 2.0f : 1.0f;
 #       else //CULL_TREES
-            const float minDistance = dvd_visibilityDistance * 0.33f;
-            Data[idx].data.z = max(1.0f - smoothstep(dvd_visibilityDistance * 0.25f, dvd_visibilityDistance * 0.99f, dist), 0.05f);
+            Data[nodeIndex].data.z = max(1.0f - smoothstep(dvd_visibilityDistance * 0.85f, dvd_visibilityDistance * 0.995f, dist), 0.05f);
 #       endif //CULL_TREES
     }
 }

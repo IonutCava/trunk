@@ -90,7 +90,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         toggleBoundsField._readOnly = false; //disabled/enabled
         _editorComponent.registerField(std::move(toggleBoundsField));
 
-        PlatformContext pContext = sgn.context();
+        PlatformContext& pContext = sgn.context();
         SceneManager* sMgr = pContext.kernel().sceneManager();
 
         EditorComponentField grassVisibilityDistanceField = {};
@@ -132,9 +132,9 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
         bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
         bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-                              
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+                                  to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
         //Should be once per frame
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
@@ -340,6 +340,13 @@ void Terrain::onRefreshNodeData(const SceneGraphNode& sgn,
         rebuildDrawCommands(true);
         _drawCommandsDirty = false;
     }
+
+    if (_shaderDataDirty) {
+        GFX::MemoryBarrierCommand memCmd = {};
+        memCmd._barrierMask = to_U32(MemoryBarrierType::SHADER_STORAGE);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
+    }
+
 }
 
 bool Terrain::prepareRender(SceneGraphNode& sgn,

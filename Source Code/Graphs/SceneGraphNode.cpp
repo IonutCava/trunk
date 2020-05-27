@@ -646,11 +646,12 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     return collisionTypeOut == Frustum::FrustCollision::FRUSTUM_OUT;
 }
 
-void SceneGraphNode::occlusionCull(const Texture_ptr& depthBuffer,
+void SceneGraphNode::occlusionCull(const RenderStagePass& stagePass,
+                                   const Texture_ptr& depthBuffer,
                                    const Camera& camera,
                                    GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                                    GFX::CommandBuffer& bufferInOut) const {
-    Attorney::SceneNodeSceneGraph::occlusionCullNode(*_node, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    Attorney::SceneNodeSceneGraph::occlusionCullNode(*_node, stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
 }
 
 void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {

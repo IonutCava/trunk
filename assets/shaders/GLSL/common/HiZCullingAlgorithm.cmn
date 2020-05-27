@@ -5,10 +5,10 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
 #endif
 
 uniform float dvd_nearPlaneDistance;
-#if !defined(USE_ARM)
 uniform vec2 viewportDimensions;
-#endif
+uniform vec3 cameraPosition;
 uniform mat4 viewMatrix;
+uniform mat4 projectionMatrix;
 uniform mat4 viewProjectionMatrix;
 
 #if defined(USE_RASTERGRID) || defined(USE_ARM)
@@ -53,7 +53,6 @@ bool InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
 #endif
 
 #if defined(USE_ARM)
-uniform mat4 projectionMatrix;
 
 bool zBufferCullARM(const in vec3 view_center, const in float radius, in float nearest_z) {
     float az_plane_horiz_length = length(view_center.xz);
@@ -98,8 +97,7 @@ bool zBufferCullARM(const in vec3 view_center, const in float radius, in float n
 #if defined(USE_NVIDIA)
 vec4 bboxMin;
 vec4 bboxMax;
-vec4 getBoxCorner(int n)
-{
+vec4 getBoxCorner(int n) {
     switch (n) {
         case 0: return vec4(bboxMin.x, bboxMin.y, bboxMin.z, 1);
         case 1: return vec4(bboxMax.x, bboxMin.y, bboxMin.z, 1);
@@ -112,8 +110,7 @@ vec4 getBoxCorner(int n)
     }
 }
 
-uint getCullBits(vec4 hPos)
-{
+uint getCullBits(vec4 hPos) {
     uint cullBits = 0;
     cullBits |= hPos.x < -hPos.w ? 1 : 0;
     cullBits |= hPos.x >  hPos.w ? 2 : 0;
@@ -129,8 +126,7 @@ vec3 projected(vec4 pos) {
     return pos.xyz / pos.w;
 }
 
-bool pixelCull(vec3 clipmin, vec3 clipmax)
-{
+bool pixelCull(vec3 clipmin, vec3 clipmax) {
     vec2 dim = (clipmax.xy - clipmin.xy) * 0.5 * viewportDimensions;
     return  max(dim.x, dim.y) < 0.01f;
 }

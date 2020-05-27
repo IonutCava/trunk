@@ -316,7 +316,8 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Changes this node's parent
         void setParentInternal();
 
-        void occlusionCull(const Texture_ptr& depthBuffer,
+        void occlusionCull(const RenderStagePass& stagePass,
+                           const Texture_ptr& depthBuffer,
                            const Camera& camera,
                            GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                            GFX::CommandBuffer& bufferInOut) const;
@@ -443,8 +444,8 @@ namespace Attorney {
     {
     private:
 
-        static void occlusionCullNode(const SceneGraphNode& node, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
-            node.occlusionCull(depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+        static void occlusionCullNode(const SceneGraphNode& node, const RenderStagePass& stagePass, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
+            node.occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
         }
 
         friend class Divide::RenderPassManager;

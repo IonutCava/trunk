@@ -59,7 +59,6 @@ struct Configuration final : public XML::IXMLSerializable {
     struct Runtime {
         U8 targetDisplay = 0;
         U8 targetRenderingAPI = 0;
-        bool useFixedTimestep = true;
         I16 maxWorkerThreads = -1;
         U8   windowedMode = 0;
         bool windowResizable = false;

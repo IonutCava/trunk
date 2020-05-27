@@ -85,6 +85,10 @@ namespace TypeUtil {
     }
 };
 
+namespace {
+    constexpr U32 GROUP_SIZE_AABB = 64;
+};
+
 D64 GFXDevice::s_interpolationFactor = 1.0;
 GPUVendor GFXDevice::s_GPUVendor = GPUVendor::COUNT;
 GPURenderer GFXDevice::s_GPURenderer = GPURenderer::COUNT;
@@ -595,6 +599,8 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     {
         ShaderModuleDescriptor compModule = {};
         compModule._moduleType = ShaderType::COMPUTE;
+        compModule._defines.emplace_back(Util::StringFormat("WORK_GROUP_SIZE %d", GROUP_SIZE_AABB), true);
+
         switch (GetHiZMethod()) {
             case HiZMethod::ARM:
                 compModule._defines.emplace_back("USE_ARM", true);
@@ -1641,7 +1647,8 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
     return hizDepthTex;
 }
 
-void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
+void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
+                              const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
                               const Camera& camera,
                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
@@ -1649,7 +1656,8 @@ void GFXDevice::occlusionCull(const RenderPass::BufferData& bufferData,
 
     OPTICK_EVENT();
 
-    constexpr U32 GROUP_SIZE_AABB = 64;
+    ACKNOWLEDGE_UNUSED(stagePass);
+
     const U32 cmdCount = *bufferData._lastCommandCount;
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Occlusion Cull" });

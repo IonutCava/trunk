@@ -13,9 +13,9 @@ struct TerrainNodeData {
     vec4 _tScale;
 };
 
-layout(binding = BUFFER_TERRAIN_DATA, std140) uniform dvd_TerrainBlock
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[MAX_RENDER_NODES];
+    TerrainNodeData dvd_TerrainData[];
 };
 
 void main(void)

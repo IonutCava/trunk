@@ -27,7 +27,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(language);
         GET_PARAM(runtime.targetDisplay);
         GET_PARAM(runtime.targetRenderingAPI);
-        GET_PARAM(runtime.useFixedTimestep);
         GET_PARAM(runtime.maxWorkerThreads);
         GET_PARAM(runtime.windowedMode);
         GET_PARAM(runtime.windowResizable);
@@ -122,7 +121,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(language);
         PUT_PARAM(runtime.targetDisplay);
         PUT_PARAM(runtime.targetRenderingAPI);
-        PUT_PARAM(runtime.useFixedTimestep);
         PUT_PARAM(runtime.maxWorkerThreads);
         PUT_PARAM(runtime.windowedMode);
         PUT_PARAM(runtime.windowResizable);

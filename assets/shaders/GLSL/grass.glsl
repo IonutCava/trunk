@@ -43,7 +43,6 @@ void main() {
         computeFoliageMovementGrass(dvd_Vertex, data.data.w * 0.5f);
     }
 
-    dvd_Normal = vec3(0.0f, 1.0f, 0.0f);
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
@@ -62,6 +61,7 @@ void main() {
 layout(early_fragment_tests) in;
 
 #define USE_SHADING_BLINN_PHONG
+#define USE_DEFERRED_NORMALS
 
 #include "BRDF.frag"
 
@@ -81,8 +81,6 @@ void main (void){
 
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
-    //writeOutput(albedo);
-    //writeOutput(vec4(getNormal(uv), 1.0f));
 }
 
 --Fragment.PrePass
@@ -92,6 +90,7 @@ void main (void){
 #if defined(USE_ALPHA_DISCARD)
 #undef USE_ALPHA_DISCARD
 #endif
+#define USE_DEFERRED_NORMALS
 
 #include "prePass.frag"
 
@@ -106,7 +105,7 @@ void main() {
         discard;
     }
 
-    writeOutput(VAR._texCoord, _alphaFactor);
+    writeOutput(VAR._texCoord, VAR._normalWV, _alphaFactor);
 }
 
 --Fragment.Shadow.VSM

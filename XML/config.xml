@@ -23,8 +23,6 @@
 	<targetDisplay>1</targetDisplay>
 	<!-- 0 = NULL, 1 - OpenGL4, 2 - GLES3, 3 - Vulkan-->
 	<targetRenderingAPI>1</targetRenderingAPI>
-	<!-- Fixed time step on/off as described here: https://gafferongames.com/post/fix_your_timestep/ -->
-	<useFixedTimestep>true</useFixedTimestep>
 	<!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
 	<maxWorkerThreads>16</maxWorkerThreads>
 	<!-- 0 = windowed, 1 = borderless window, 2 = fullscreen (has some issues)-->

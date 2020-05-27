@@ -198,9 +198,7 @@ void Kernel::onLoop() {
 
             const U64 deltaTimeUS = _timingData.freezeLoopTime() 
                                                ? 0ULL
-                                               : _platformContext.config().runtime.useFixedTimestep
-                                                                   ? Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND
-                                                                   : deltaTimeUSReal;
+                                               : Time::SecondsToMicroseconds(1) / TICKS_PER_SECOND;
 
             // Process the current frame
             _timingData.keepAlive(_timingData.keepAlive() && mainLoopScene(evt, deltaTimeUS, deltaTimeUSReal, deltaTimeUSApp));
@@ -286,8 +284,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         // Process physics
         _platformContext.pfx().process(realDeltaTimeUS);
     }
-
-    const bool fixedTimestep = _platformContext.config().runtime.useFixedTimestep;
     {
         Time::ScopedTimer timer2(_sceneUpdateTimer);
 
@@ -323,7 +319,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
                 _sceneUpdateLoopTimer.stop();
             }
 
-            _timingData.endUpdateLoop(deltaTimeUS, fixedTimestep);
+            _timingData.endUpdateLoop(deltaTimeUS, true);
             ++loopCount;
         }  // while
     }
@@ -340,7 +336,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
     }
 
     D64 interpolationFactor = 1.0;
-    if (fixedTimestep && !_timingData.freezeLoopTime()) {
+    if (!_timingData.freezeLoopTime()) {
         interpolationFactor = static_cast<D64>(_timingData.currentTimeUS() + deltaTimeUS - _timingData.nextGameTickUS()) / deltaTimeUS;
         CLAMP_01(interpolationFactor);
     }

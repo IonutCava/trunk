@@ -77,10 +77,12 @@ bool SceneNode::prepareRender(SceneGraphNode& sgn,
 }
 
 
-void SceneNode::occlusionCull(const Texture_ptr& depthBuffer,
+void SceneNode::occlusionCull(const RenderStagePass& stagePass,
+                              const Texture_ptr& depthBuffer,
                               const Camera& camera,
                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                               GFX::CommandBuffer& bufferInOut) const {
+    ACKNOWLEDGE_UNUSED(stagePass);
     ACKNOWLEDGE_UNUSED(depthBuffer);
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(HIZPushConstantsCMDInOut);

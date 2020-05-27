@@ -168,6 +168,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         s_buffer->setVertexCount(billboardsPlaneCount * 4);
         for (U8 i = 0; i < billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
+            s_buffer->modifyNormalValue(i, WORLD_Y_AXIS);
             s_buffer->modifyTexCoordValue(i, texcoords[i % 4].s, texcoords[i % 4].t);
         }
 
@@ -181,7 +182,6 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
 
         }
 
-        s_buffer->computeNormals();
         s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
@@ -562,11 +562,16 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
             return true;
         });
 
-        const vec3<F32>& extents = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox().getExtent();
-        _treeExtents.set(extents, 0);
+        BoundingBox aabb = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox();
+        BoundingSphere bs; bs.fromBoundingBox(aabb);
+
+        const vec3<F32>& extents = aabb.getExtent();
+        _treeExtents.set(extents, bs.getRadius());
+        _grassExtents.w = _grassExtents.xyz().length();
         _cullPushConstants.set(_ID("treeExtents"), GFX::PushConstantType::VEC4, _treeExtents);
     }
 
+    _grassExtents.w = _grassExtents.xyz().length();
     _cullPushConstants.set(_ID("dvd_terrainChunkOffset"), GFX::PushConstantType::UINT, ID);
     _cullPushConstants.set(_ID("grassExtents"), GFX::PushConstantType::VEC4, _grassExtents);
 
@@ -580,11 +585,12 @@ void Vegetation::getStats(U32& maxGrassInstances, U32& maxTreeInstances) const {
     maxTreeInstances = _instanceCountTrees;
 }
 
-void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
+void Vegetation::occlusionCull(const RenderStagePass& stagePass,
+                               const Texture_ptr& depthBuffer,
                                const Camera& camera,
                                GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                                GFX::CommandBuffer& bufferInOut) const {
-    if (!s_buffersBound || !renderState().drawState()) {
+    if (!s_buffersBound || !renderState().drawState(stagePass, 0u)) {
         return;
     }
     // Culling lags one full frame
@@ -596,7 +602,7 @@ void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
         GFX::BindPipelineCommand bindPipelineCmd = {};
 
         if (_instanceCountGrass > 0) {
-            computeCmd._computeGroupSize.set(std::max(_instanceCountGrass, _instanceCountGrass / WORK_GROUP_SIZE), 1, 1);
+            computeCmd._computeGroupSize.set((_instanceCountGrass + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE, 1, 1);
 
             //Cull grass
             bindPipelineCmd._pipeline = _cullPipelineGrass;
@@ -607,7 +613,7 @@ void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
         }
 
         if (_instanceCountTrees > 0) {
-            computeCmd._computeGroupSize.set(std::max(_instanceCountTrees, _instanceCountTrees / WORK_GROUP_SIZE), 1, 1);
+            computeCmd._computeGroupSize.set((_instanceCountTrees + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE, 1, 1);
 
             // Cull trees
             bindPipelineCmd._pipeline = _cullPipelineTrees;
@@ -623,7 +629,7 @@ void Vegetation::occlusionCull(const Texture_ptr& depthBuffer,
     }
 
 
-    SceneNode::occlusionCull(depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    SceneNode::occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
 }
 
 void Vegetation::sceneUpdate(const U64 deltaTimeUS,

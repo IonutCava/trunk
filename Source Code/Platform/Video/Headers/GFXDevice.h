@@ -428,7 +428,8 @@ protected:
     friend class RenderPass;
     friend class RenderPassManager;
 
-    void occlusionCull(const RenderPass::BufferData& bufferData,
+    void occlusionCull(const RenderStagePass& stagePass,
+                       const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
                        const Camera& camera,
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,

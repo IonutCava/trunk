@@ -656,12 +656,12 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
     // Run occlusion culling CS
     const RenderPass::BufferData& bufferData = getBufferData(stagePass);
     GFX::SendPushConstantsCommand HIZPushConstantsCMDInOut = {};
-    _context.occlusionCull(bufferData, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    _context.occlusionCull(stagePass, bufferData, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Per-node HiZ Cull" });
     for (size_t i = 0; i < nodes.size(); ++i) {
         const VisibleNode& node = nodes.node(i);
-        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(*node._node, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
+        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(*node._node, stagePass, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
     }
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 

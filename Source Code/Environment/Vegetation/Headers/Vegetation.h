@@ -117,7 +117,8 @@ class Vegetation : public SceneNode {
                      SceneGraphNode& sgn,
                      SceneState& sceneState) final;
 
-    void occlusionCull(const Texture_ptr& depthBuffer,
+    void occlusionCull(const RenderStagePass& stagePass,
+                       const Texture_ptr& depthBuffer,
                        const Camera& camera,
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                        GFX::CommandBuffer& bufferInOut) const final;
