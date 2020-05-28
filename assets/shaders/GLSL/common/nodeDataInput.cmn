@@ -5,45 +5,45 @@
 #define DEPTH_PASS
 #endif
 
+#if defined(GEOM_SHADER)
+#define InBlock gl_in[];
+#else
+#define InBlock gl_in[gl_MaxPatchVertices];
+#endif
+
+#if defined(TESS_CTRL_SHADER)
+#define OutBlock gl_out[];
+#else
+#define OutBlock ;
+#endif
+
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
+
+#if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
+in gl_PerVertex
+{
+  vec4  gl_Position;
+  float gl_PointSize;
+#if defined(HAS_CLIPPING)
+  float gl_ClipDistance[MAX_CLIP_PLANES];
+#endif
+#if defined(HAS_CULLING)
+  float gl_CullDistance[MAX_CULL_DISTANCES];
+#endif
+} InBlock
+#endif
+
 out gl_PerVertex
 {
   invariant vec4 gl_Position;
-#if defined(USE_POINT_SIZE)
   float gl_PointSize;
-#endif
-#if defined(USE_CUSTOM_CLIP_PLANES)
+#if defined(HAS_CLIPPING)
   float gl_ClipDistance[MAX_CLIP_PLANES];
 #endif
-#if defined(USE_CULL_DISTANCE)
+#if defined(HAS_CULLING)
   float gl_CullDistance[MAX_CULL_DISTANCES];
 #endif
-#if defined(TESS_CTRL_SHADER)
-} gl_out[];
-#else //defined(TESS_CTRL_SHADER)
-};
-#endif //defined(TESS_CTRL_SHADER)
-
-#if defined(GEOM_SHADER) || defined(TESS_CTRL_SHADER) || defined(TESS_EVAL_SHADER)
-    in gl_PerVertex
-    {
-      vec4  gl_Position;
-#if defined(USE_POINT_SIZE)
-      float gl_PointSize;
-#endif
-#if defined(USE_CUSTOM_CLIP_PLANES)
-      float gl_ClipDistance[MAX_CLIP_PLANES];
-#endif
-#if defined(USE_CULL_DISTANCE)
-      float gl_CullDistance[MAX_CULL_DISTANCES];
-#endif
-    }
-    #if defined(GEOM_SHADER)
-    gl_in[];
-    #else //defined(GEOM_SHADER)
-    gl_in[gl_MaxPatchVertices];
-    #endif //defined(GEOM_SHADER)
-#endif
+} OutBlock
 
 #endif //!defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 
@@ -123,20 +123,34 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
 #define dvd_deltaTime (int(dvd_otherData.y))
 #define dvd_showDebugInfo (uint(dvd_otherData.z) == 1)
 
-#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
-#if defined(USE_CUSTOM_CLIP_PLANES)
-void setClipPlanes(in vec4 worldSpaceVertex) {
-    for (int i = 0; i < MAX_CLIP_PLANES; ++i) {
-#   if defined(TESS_CTRL_SHADER)
-        gl_out[gl_InvocationID].gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
-#   else
-        gl_ClipDistance[i] = dot(worldSpaceVertex, dvd_clip_plane[i]);
-#   endif
-    }
-}
+#if defined(TESS_CTRL_SHADER)
+#define CLIP_INDEX(X) gl_out[gl_InvocationID].gl_ClipDistance[X] = dot(worldSpaceVertex, dvd_clip_plane[X]);
 #else
-#define setClipPlanes(X)
-#endif //USE_CUSTOM_CLIP_PLANES
+#define CLIP_INDEX(X) gl_ClipDistance[X] = dot(worldSpaceVertex, dvd_clip_plane[X]);
+#endif
+
+#if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
+void setClipPlanes(in vec4 worldSpaceVertex) {
+
+#if defined(HAS_CLIPPING) && MAX_CLIP_PLANES > 0
+    CLIP_INDEX(0);
+#   if MAX_CLIP_PLANES > 1
+        CLIP_INDEX(1);
+#       if MAX_CLIP_PLANES > 2
+            CLIP_INDEX(2);
+#           if MAX_CLIP_PLANES > 3
+                CLIP_INDEX(3);
+#               if MAX_CLIP_PLANES > 4
+                    CLIP_INDEX(4);
+#                   if MAX_CLIP_PLANES > 5
+                        CLIP_INDEX(5);
+#                   endif
+#               endif
+#           endif
+#       endif
+#   endif
+#endif
+}
 #endif
 
 #if 0

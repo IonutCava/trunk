@@ -457,8 +457,6 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     fragDefines.insert(std::cend(fragDefines),
                        std::cbegin(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]),
                        std::cend(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]));
-    
-    vertDefines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
 
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
@@ -608,6 +606,8 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
             shaderName += ".Vel";
         }
     }
+
+    vertDefines.emplace_back("HAS_CLIPPING", true);
 
     globalDefines.emplace_back("DEFINE_PLACEHOLDER", false);
 

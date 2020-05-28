@@ -269,7 +269,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     s_treeMaterial = CreateResource<Material>(gfxDevice.parent().resourceCache(), matDesc);
     s_treeMaterial->shadingMode(ShadingMode::BLINN_PHONG);
     s_treeMaterial->baseShaderData(treeShaderData);
-    s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "USE_CULL_DISTANCE", true);
+    s_treeMaterial->addShaderDefine(ShaderType::VERTEX, "HAS_CULLING", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, "OVERRIDE_DATA_IDX", true);
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true);
 
@@ -308,10 +308,11 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "grass.glsl";
 
-    vertModule._defines.emplace_back("USE_CULL_DISTANCE", true);
     vertModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
     vertModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
     vertModule._defines.emplace_back("NODE_DYNAMIC", true);
+    vertModule._defines.emplace_back("HAS_CLIPPING", true);
+    vertModule._defines.emplace_back("HAS_CULLING", true);
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;

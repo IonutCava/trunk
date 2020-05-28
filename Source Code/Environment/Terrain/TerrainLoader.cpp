@@ -361,15 +361,14 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     WAIT_FOR_CONDITION(albedoTile->getState() == ResourceState::RES_LOADED);
 
     const U16 tileMapSize = albedoTile->width();
+    bool hasGeometryPass = false;
     for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
         if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::EDGES) {
             shaderModule._defines.emplace_back("TOGGLE_WIREFRAME", true);
+            hasGeometryPass = true;
         } else if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::NORMALS) {
             shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
-        }
-
-        if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? ShaderType::GEOMETRY : ShaderType::TESSELLATION_EVAL)) {
-            shaderModule._defines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
+            hasGeometryPass = true;
         }
 
         shaderModule._defines.emplace_back(Util::StringFormat("MAX_NODES_PER_STAGE %d", terrainDescriptor->maxNodesPerStage()), true);
@@ -423,6 +422,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(TextureUsage::TERRAIN_EXTRA_TILE)), true);
             shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
 
+        } else if ((hasGeometryPass && shaderModule._moduleType == ShaderType::GEOMETRY) ||
+                   (!hasGeometryPass && shaderModule._moduleType == ShaderType::TESSELLATION_EVAL)) {
+            shaderModule._defines.emplace_back("HAS_CLIPPING", true);
         }
     }
 
