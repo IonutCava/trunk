@@ -71,11 +71,11 @@ namespace Divide {
         void setRefBoundingBox(const BoundingBox& nodeBounds) noexcept;
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
-        void flagBoundingBoxDirty(bool recursive);
+        void flagBoundingBoxDirty(U32 transformMask, bool recursive);
         void onBoundsChanged(const SceneGraphNode& sgn) const;
 
     private:
-        std::atomic_bool _boundingBoxDirty;
+        std::atomic_uint _transformUpdatedMask;
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;

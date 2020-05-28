@@ -16,7 +16,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
     _boundingBox.set(_refBoundingBox);
     _boundingSphere.fromBoundingBox(_boundingBox);
 
-    _boundingBoxDirty.store(true);
+    _transformUpdatedMask.store(to_base(TransformType::ALL));
 
     EditorComponentField bbField = {};
     bbField._name = "Bounding Box";
@@ -70,7 +70,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
 
     _editorComponent.onChangedCbk([this](std::string_view field) {
         if (field == "Recompute Bounds") {
-            flagBoundingBoxDirty(true);
+            flagBoundingBoxDirty(to_base(TransformType::ALL), true);
         }
     });
 }
@@ -101,10 +101,10 @@ void BoundsComponent::showBS(const bool state) {
     }
 }
 
-void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
+void BoundsComponent::flagBoundingBoxDirty(U32 transformMask, bool recursive) {
     OPTICK_EVENT();
 
-    if (_boundingBoxDirty.exchange(true)) {
+    if (_transformUpdatedMask.exchange(transformMask) != 0u) {
         // already dirty
         return;
     }
@@ -115,7 +115,7 @@ void BoundsComponent::flagBoundingBoxDirty(bool recursive) {
             BoundsComponent* bounds = parent->get<BoundsComponent>();
             // We stop if the parent sgn doesn't have a bounds component.
             if (bounds != nullptr) {
-                bounds->flagBoundingBoxDirty(true);
+                bounds->flagBoundingBoxDirty(transformMask, true);
             }
         }
     }
@@ -125,23 +125,24 @@ void BoundsComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         _tCompCache = std::any_cast<TransformComponent*>(data._userData);
 
-        flagBoundingBoxDirty(true);
+        flagBoundingBoxDirty(data._flag, true);
     }
 }
 
 void BoundsComponent::setRefBoundingBox(const BoundingBox& nodeBounds) noexcept {
     // All the parents should already be dirty thanks to the bounds system
     _refBoundingBox.set(nodeBounds);
-    _boundingBoxDirty.store(true);
+    _transformUpdatedMask.store(to_base(TransformType::ALL));
 }
 
 const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     OPTICK_EVENT();
-    if (!_boundingBoxDirty.exchange(false)) {
+
+    const U32 mask = _transformUpdatedMask.exchange(0u);
+    if (mask == 0u) {
         // already clean
         return _boundingBox;
     }
-
     _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
         child->get<BoundsComponent>()->updateAndGetBoundingBox();
         return true;
@@ -149,9 +150,15 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 
     assert(_tCompCache != nullptr);
 
-    mat4<F32> mat;
-    _tCompCache->getWorldMatrix(mat);
-    _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), mat);
+    if (mask == to_U32(TransformType::TRANSLATION)) {
+        const vec3<F32>& pos = _tCompCache->getPosition();
+        _boundingBox.set(_refBoundingBox.getMin() + pos, _refBoundingBox.getMax() + pos);
+    } else {
+        mat4<F32> mat;
+        _tCompCache->getWorldMatrix(mat);
+        _boundingBox.transform(_refBoundingBox.getMin(), _refBoundingBox.getMax(), mat);
+    }
+
     _boundingSphere.fromBoundingBox(_boundingBox);
 
     _parentSGN.SendEvent(
@@ -171,7 +178,7 @@ F32 BoundsComponent::distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept {
 
 void BoundsComponent::PreUpdate(const U64 deltaTimeUS) {
     if (Attorney::SceneNodeBoundsComponent::boundsChanged(getSGN().getNode())) {
-        flagBoundingBoxDirty(false);
+        flagBoundingBoxDirty(to_U32(TransformType::ALL), false);
         onBoundsChanged(getSGN());
     }
 }
