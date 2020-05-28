@@ -249,7 +249,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(camera->getEye());
                 U32 idx = 0u;
                 for (const auto& probe : probes) {
-                    probe->refresh(bufferInOut);
+                    //probe->refresh(bufferInOut);
                     if (++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
                         break;
                     }
@@ -267,7 +267,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 for (size_t i = 0; i < s_Nodes.size(); ++i) {
                     const VisibleNode& node = s_Nodes.node(i);
                     RenderingComponent* const rComp = node._node->get<RenderingComponent>();
-                    if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
+                    /*if (Attorney::RenderingCompRenderPass::updateReflection(*rComp,
                                                                             ReflectionUtil::currentEntry(),
                                                                             ReflectionUtil::isInBudget(),
                                                                             camera,
@@ -275,7 +275,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                                                                             bufferInOut)) {
 
                         ReflectionUtil::updateBudget();
-                    }
+                    }*/
                 }
             }
             GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -297,7 +297,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 for (size_t i = 0; i < s_Nodes.size(); ++i) {
                      const VisibleNode& node = s_Nodes.node(i);
                      RenderingComponent* const rComp = node._node->get<RenderingComponent>();
-                     if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
+                     /*if (Attorney::RenderingCompRenderPass::updateRefraction(*rComp,
                                                                             RefractionUtil::currentEntry(),
                                                                             RefractionUtil::isInBudget(),
                                                                             camera,
@@ -305,7 +305,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                                                                             bufferInOut))
                     {
                         RefractionUtil::updateBudget();
-                    }
+                    }*/
                 }
             }
 

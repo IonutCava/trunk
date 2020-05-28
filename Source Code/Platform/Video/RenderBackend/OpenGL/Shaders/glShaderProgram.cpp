@@ -379,7 +379,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
         glShader::ShaderLoadData loadData;
 
         Str256 programName = modules.front()._sourceFile.data();
-        programName = Str256(programName.substr(0, programName.find_first_of(".,")));
+        programName = Str256(programName.substr(0, programName.find_first_of(".")));
 
         bool hasData = false;
         for (const ShaderModuleDescriptor& shaderDescriptor : modules) {
@@ -412,7 +412,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
 
             glShader::LoadData& stageData = loadData[shaderIdx];
             stageData._type = shaderDescriptor._moduleType;
-            stageData._name = Str128(stringImpl(shaderDescriptor._sourceFile.data()).substr(0, shaderDescriptor._sourceFile.find_first_of(".,")));
+            stageData._name = Str128(stringImpl(shaderDescriptor._sourceFile.data()).substr(0, shaderDescriptor._sourceFile.find_first_of(".")));
             stageData._name.append(".");
             stageData._name.append(Names::shaderTypes[shaderIdx]);
 

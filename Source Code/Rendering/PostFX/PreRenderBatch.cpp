@@ -352,7 +352,9 @@ void PreRenderBatch::onFilterToggle(FilterType filter, const bool state) {
 void PreRenderBatch::prepare(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     for (OperatorBatch& batch : _operators) {
         for (auto& op : batch) {
-            op->prepare(camera, bufferInOut);
+            if (BitCompare(filterStack, to_U32(op->operatorType()))) {
+                op->prepare(camera, bufferInOut);
+            }
         }
     }
 }

@@ -592,7 +592,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
         vertDefines.emplace_back("USE_GPU_SKINNING", true);
-        shaderName += ".Sknd";  //<Use "," instead of "." will add a Vertex only property
+        shaderName += ".Sknd";
     }
 
     if (renderStagePass._stage == RenderStage::DISPLAY) {

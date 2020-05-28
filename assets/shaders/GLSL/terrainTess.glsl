@@ -99,18 +99,14 @@ float ClipToScreenSpaceTessellation(in vec4 clip0, in vec4 clip1)
 {
     clip0 /= clip0.w;
     clip1 /= clip1.w;
-#if 1
-    clip0.xy *= dvd_ViewPort.zw;
-    clip1.xy *= dvd_ViewPort.zw;
-    const float d = distance(clip0, clip1);
-#else
-    vec2 halfViewport = (dvd_ViewPort.zw * 0.5f);
-    vec2 screen0 = (clamp(clip0.xy, -1.3f, 1.3f) + 1.0f) * halfViewport;
-    vec2 screen1 = (clamp(clip1.xy, -1.3f, 1.3f) + 1.0f) * halfViewport;
-    const float d = distance(screen0, screen1);
-#endif
+
+    clip0.xy = ((clip0.xy * 0.5f) + 0.5f) * dvd_ViewPort.zw;
+    clip1.xy = ((clip1.xy * 0.5f) + 0.5f) * dvd_ViewPort.zw;
+    float d = distance(clip0, clip1);
+
     // tessTriangleWidth is desired pixels per tri edge
-    return clamp(d / tessTriangleWidth, 0, 64);
+    // OpenGL will always clamp tess level according to spec.
+    return d / tessTriangleWidth;
 }
 
 float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
@@ -218,9 +214,10 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
 
 void main(void)
 {
-    const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); // assume square & uniform
-
-    const vec3  centre = 0.25 * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
+    //const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); 
+    // assume square & uniform
+    const float sideLen = gl_in[1].gl_Position.x - gl_in[0].gl_Position.x;
+    const vec3  centre = 0.25f * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
     const float diagLen = sqrt(2 * sideLen * sideLen);
     if (!inFrustum(centre, dvd_cameraPosition.xyz, dvd_cameraForward, diagLen))
     {
