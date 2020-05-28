@@ -138,7 +138,7 @@ class Material : public CachedResource {
     /// Add the specified shader to specific RenderStagePass parameters. Use "COUNT" and/or g_AllVariantsID for global options
     /// e.g. a RenderPassType::COUNT will use the shader in the specified stage+variant combo but for all of the passes
     void setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
-    /// Add the specified renderStateBlockHash to specific RenderStagePass parameters. Use "COUNT" or "0" for global options
+    /// Add the specified renderStateBlockHash to specific RenderStagePass parameters. Use "COUNT" and/or "g_AllVariantsID" for global options
     /// e.g. a RenderPassType::COUNT will use the block in the specified stage+variant combo but for all of the passes
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
 

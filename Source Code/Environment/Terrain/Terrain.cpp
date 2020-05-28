@@ -277,7 +277,7 @@ void Terrain::postBuild() {
     }
 
     // Approximate bounding box
-    F32 halfWidth = terrainWidth * 0.5f;
+    const F32 halfWidth = terrainWidth * 0.5f;
     _boundingBox.setMin(-halfWidth, _descriptor->altitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->altitudeRange().max, halfWidth);
 
@@ -372,7 +372,7 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
         const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
 
         bool update = false;
-        bool cameraMoved = tessellator.getOrigin() != crtPos || tessellator.getFrustum() != frustum;
+        const bool cameraMoved = tessellator.getOrigin() != crtPos || tessellator.getFrustum() != frustum;
 
         U32& updateCounter = getUpdateCounter(renderStagePass);
         if (cameraMoved || _drawDistanceChanged) {

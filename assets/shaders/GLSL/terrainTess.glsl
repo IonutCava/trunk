@@ -630,7 +630,6 @@ layout(location = 13) in vec3 _tangentFragPos;
 #include "nodeBufferedInput.cmn"
 
 #define USE_CUSTOM_ROUGHNESS
-#define USE_SCALED_COORDS
 
 #include "BRDF.frag"
 #include "output.frag"
@@ -697,8 +696,6 @@ layout(location = 13) in vec3 _tangentFragPos;
 #endif
 
 #define SHADOW_INTENSITY_FACTOR 0.75f
-#define USE_SCALED_COORDS
-
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
@@ -740,13 +737,4 @@ void main(void)
     writeOutput(colourOut);
 
 #endif //PRE_PASS
-}
-
---Fragment.Shadow.VSM
-
-#include "vsm.frag"
-out vec2 _colourOut;
-
-void main() {
-    _colourOut = computeMoments();
 }
