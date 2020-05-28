@@ -1107,7 +1107,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 OPTICK_EVENT("Bind Shader Buffers");
                 for (const ShaderBufferBinding& shaderBufCmd : set._shaderBuffers) {
                     glUniformBuffer* buffer = static_cast<glUniformBuffer*>(shaderBufCmd._buffer);
-                    buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.x, shaderBufCmd._elementRange.y);
+                    buffer->bindRange(to_U8(shaderBufCmd._binding), shaderBufCmd._elementRange.min, shaderBufCmd._elementRange.max);
                 }
             }
         }break;

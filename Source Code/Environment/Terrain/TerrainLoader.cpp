@@ -368,14 +368,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
         }
 
-        if (GFXDevice::getGPUVendor() == GPUVendor::AMD) {
-            if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? ShaderType::GEOMETRY : ShaderType::TESSELLATION_EVAL)) {
-                shaderModule._defines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
-            }
-        } else {
+        if (shaderModule._moduleType == (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE ? ShaderType::GEOMETRY : ShaderType::TESSELLATION_EVAL)) {
             shaderModule._defines.emplace_back("USE_CUSTOM_CLIP_PLANES", true);
         }
 
+        shaderModule._defines.emplace_back(Util::StringFormat("MAX_NODES_PER_STAGE %d", terrainDescriptor->maxNodesPerStage()), true);
         shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true);
         shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true);
 
@@ -396,7 +393,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
         shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
         shaderModule._defines.emplace_back("ALBEDO_TILING " + Util::to_string(albedoTilingFactor), true);
-        shaderModule._defines.emplace_back("MAX_RENDER_NODES " + Util::to_string(Terrain::MAX_RENDER_NODES), true);
         shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(terrainDimensions.width), true);
         shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(terrainDimensions.height), true);
         shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + Util::to_string(altitudeRange.x) + "f", true);
@@ -512,13 +508,13 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     RenderStateBlock terrainRenderState = {};
     terrainRenderState.setTessControlPoints(4);
+    terrainRenderState.setCullMode(CullMode::BACK);
+    terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
+
+    RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
+    terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
+
     { //Normal rendering
-        terrainRenderState.setCullMode(CullMode::BACK);
-        terrainRenderState.setZFunc(ComparisonFunction::EQUAL);
-
-        RenderStateBlock terrainRenderStatePrePass = terrainRenderState;
-        terrainRenderStatePrePass.setZFunc(ComparisonFunction::LEQUAL);
-
         terrainMaterial->setRenderStateBlock(terrainRenderStatePrePass.getHash(), RenderStage::COUNT, RenderPassType::PRE_PASS);
         terrainMaterial->setRenderStateBlock(terrainRenderState.getHash()       , RenderStage::COUNT, RenderPassType::MAIN_PASS);
     }
@@ -526,18 +522,17 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         RenderStateBlock terrainRenderStateReflection = terrainRenderState;
         terrainRenderStateReflection.setCullMode(CullMode::FRONT);
 
-        RenderStateBlock terrainRenderStateReflectionPrePass = terrainRenderStateReflection;
-        terrainRenderStateReflectionPrePass.setZFunc(ComparisonFunction::LEQUAL);
+        RenderStateBlock terrainRenderStateReflectionPrePass = terrainRenderStatePrePass;
+        terrainRenderStateReflectionPrePass.setCullMode(CullMode::FRONT);
 
         terrainMaterial->setRenderStateBlock(terrainRenderStateReflectionPrePass.getHash(), RenderStage::REFLECTION, RenderPassType::PRE_PASS,  to_U8(ReflectorType::PLANAR));
         terrainMaterial->setRenderStateBlock(terrainRenderStateReflection.getHash(),        RenderStage::REFLECTION, RenderPassType::MAIN_PASS, to_U8(ReflectorType::PLANAR));
 
     }
     { //Shadow rendering
-        RenderStateBlock terrainRenderStateShadow = terrainRenderState;
-        //terrainRenderStateShadow.setZBias(4.0f, 20.0f);
-        terrainRenderStateShadow.setZFunc(ComparisonFunction::LEQUAL);
+        RenderStateBlock terrainRenderStateShadow = terrainRenderStatePrePass;
         terrainRenderStateShadow.setColourWrites(true, true, false, false);
+        //terrainRenderStateShadow.setZBias(4.0f, 20.0f);
 
         terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT);
     }

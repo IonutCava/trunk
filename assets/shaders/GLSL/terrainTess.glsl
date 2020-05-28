@@ -15,7 +15,7 @@ struct TerrainNodeData {
 
 layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[];
+    TerrainNodeData dvd_TerrainData[MAX_NODES_PER_STAGE];
 };
 
 void main(void)
@@ -39,9 +39,9 @@ void main(void)
     const float u = (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f));
     const float v = (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f));
 
-    dvd_Vertex.x = 2 * u - 1.0f;
+    dvd_Vertex.x = 2.f * u - 1.0f;
     dvd_Vertex.y = 0.0f;
-    dvd_Vertex.z = 2 * v - 1.0f;
+    dvd_Vertex.z = 2.f * v - 1.0f;
     dvd_Vertex.w = 1.0f;
     dvd_Vertex.xyz *= vtx_tileScale;
     dvd_Vertex.xyz += tData._positionAndTileScale.xyz;
@@ -60,21 +60,13 @@ void main(void)
 --TessellationC
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
+uniform float tessTriangleWidth = 25.0f;
 
-#define id gl_InvocationID
-
-//
 // Inputs
-//
 layout(location = 10) in vec4 vtx_adjacency[];
 layout(location = 11) in flat int vtx_tileScale[];
 layout(location = 12) in float vtx_height[];
-
-uniform float tessTriangleWidth = 25.0f;
-
-//
 // Outputs
-//
 layout(vertices = 4) out;
 layout(location = 10) out float tcs_tessLevel[];
 layout(location = 11) out int tcs_tileScale[];
@@ -95,31 +87,25 @@ bool inFrustum(in vec3 pt, in vec3 eyePos, in vec3 viewDir, in float margin)
              (patch_screenspace_center.w > 0.0f)) || (length(eyeToPt) >= 0.0f));
 }
 
-float ClipToScreenSpaceTessellation(in vec4 clip0, in vec4 clip1)
+float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
 {
+    const vec3 center = 0.5f * (p0 + p1);
+    vec4 view0 = dvd_ViewMatrix * vec4(center, 1.0f);
+    vec4 view1 = view0;
+    view1.x += diameter;
+
+    vec4 clip0 = dvd_ProjectionMatrix * view0;
+    vec4 clip1 = dvd_ProjectionMatrix * view1;
+
     clip0 /= clip0.w;
     clip1 /= clip1.w;
 
     clip0.xy = ((clip0.xy * 0.5f) + 0.5f) * dvd_ViewPort.zw;
     clip1.xy = ((clip1.xy * 0.5f) + 0.5f) * dvd_ViewPort.zw;
-    float d = distance(clip0, clip1);
+    const float d = distance(clip0, clip1);
 
     // tessTriangleWidth is desired pixels per tri edge
-    // OpenGL will always clamp tess level according to spec.
-    return d / tessTriangleWidth;
-}
-
-float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
-{
-    const vec3 center = 0.5f * (p0 + p1);
-    const vec4 view0 = dvd_ViewMatrix * vec4(center, 1.0f);
-    vec4 view1 = view0;
-    view1.x += diameter;
-
-    const vec4 clip0 = dvd_ProjectionMatrix * view0;
-    const vec4 clip1 = dvd_ProjectionMatrix * view1;
-
-    return ClipToScreenSpaceTessellation(clip0, clip1);
+    return clamp(d / tessTriangleWidth, 0.f, 64.f);
 }
 
 
@@ -214,10 +200,8 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
 
 void main(void)
 {
-    //const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x)); 
-    // assume square & uniform
-    const float sideLen = gl_in[1].gl_Position.x - gl_in[0].gl_Position.x;
     const vec3  centre = 0.25f * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
+    const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x));     // assume square & uniform
     const float diagLen = sqrt(2 * sideLen * sideLen);
     if (!inFrustum(centre, dvd_cameraPosition.xyz, dvd_cameraForward, diagLen))
     {
@@ -227,7 +211,7 @@ void main(void)
     }
     else
     {
-        PassData(id);
+        PassData(gl_InvocationID);
 
         // Outer tessellation level
         gl_TessLevelOuter[0] = getTessLevel(0, 1, sideLen);
@@ -242,7 +226,7 @@ void main(void)
         patchXY.y = PatchID / PATCHES_PER_TILE_EDGE;
         patchXY.x = PatchID - patchXY.y * PATCHES_PER_TILE_EDGE;
  
-        const vec4 adj = vtx_adjacency[id];
+        const vec4 adj = vtx_adjacency[gl_InvocationID];
         // Identify patch edges that are adjacent to a patch of a different size.  The size difference
         // is encoded in _in[n].adjacency, either 0.5, 1.0 or 2.0.
         // neighbourMinusX refers to our adjacent neighbour in the direction of -ve x.  The value 
@@ -283,10 +267,10 @@ void main(void)
     }
 
     // Pass the patch verts along
-    gl_out[id].gl_Position = gl_in[id].gl_Position;
+    gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     // Output tessellation level (used for wireframe coloring)
-    tcs_tessLevel[id] = gl_TessLevelOuter[0];
-    tcs_tileScale[id] = vtx_tileScale[id];
+    tcs_tessLevel[gl_InvocationID] = gl_TessLevelOuter[0];
+    tcs_tileScale[gl_InvocationID] = vtx_tileScale[gl_InvocationID];
 
 }
 

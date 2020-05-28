@@ -77,6 +77,11 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return 0.0f;
     }
 
+    inline U32 maxNodesPerStage() const noexcept {
+        // Quadtree, so assume worst case scenario
+        return dimensions().maxComponent() / 4;
+    }
+
     inline size_t getHash() const noexcept final {
         _hash = PropertyDescriptor::getHash();
         for (hashMap<U64, stringImpl>::value_type it : _variables) {

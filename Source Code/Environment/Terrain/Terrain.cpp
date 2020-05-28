@@ -58,7 +58,6 @@ Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descript
 
 void Terrain::postLoad(SceneGraphNode& sgn) {
 
-    static_assert(MAX_RENDER_NODES * sizeof(TessellatedNodeData) < 64 * 1024 * 1024, "Too many terrain nodes to fit in an UBO!");
     if (!_initialSetupDone) {
         _editorComponent.onChangedCbk([this](std::string_view field) {onEditorChange(field); });
 
@@ -128,7 +127,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         _editorComponent.registerField(std::move(treeVisibilityDistanceField));
 
         ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._elementCount = Terrain::MAX_RENDER_NODES * ((to_base(RenderStage::COUNT) - 1));
+        bufferDescriptor._elementCount = descriptor()->maxNodesPerStage() * ((to_base(RenderStage::COUNT) - 1));
         bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
         bufferDescriptor._ringBufferLength = g_bufferFrameDelay;
         bufferDescriptor._separateReadWrite = false;
@@ -176,8 +175,7 @@ U32 Terrain::getBufferOffset(const RenderStagePass& renderStagePass) const noexc
         return getBufferOffset(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u));
     } 
   
-    // Each stage gets MAX_RENDER_NODES worth of space
-    return to_U32((to_U8(renderStagePass._stage) - 1) * Terrain::MAX_RENDER_NODES);
+    return (to_U32(renderStagePass._stage) - 1u)  * descriptor()->maxNodesPerStage();
 }
 
 TerrainTessellator& Terrain::getTessellator(const RenderStagePass& renderStagePass) {
@@ -409,8 +407,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     ShaderBufferBinding buffer = {};
     buffer._binding = ShaderBufferLocation::TERRAIN_DATA;
     buffer._buffer = _shaderData;
-    buffer._elementRange = { getBufferOffset(renderStagePass), MAX_RENDER_NODES };
-
+    buffer._elementRange = { getBufferOffset(renderStagePass), descriptor()->maxNodesPerStage() };
     pkgInOut.addShaderBuffer(0, buffer);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
@@ -423,7 +420,7 @@ void Terrain::buildDrawCommands(SceneGraphNode& sgn,
     cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
 
     cmd._sourceBuffer = getGeometryVB()->handle();
-    cmd._cmd.primCount = Terrain::MAX_RENDER_NODES;
+    cmd._cmd.primCount = buffer._elementRange.max;
 
     pkgInOut.add(pushConstantsCommand);    
     pkgInOut.add(GFX::DrawCommand{ cmd });

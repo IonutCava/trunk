@@ -78,7 +78,7 @@ namespace Divide {
     };
 
     struct ShaderBufferBinding {
-        vec2<U32>     _elementRange;
+        vec2<U32>     _elementRange = {0u, 0u};
         ShaderBuffer* _buffer = nullptr;
         ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
 

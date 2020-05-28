@@ -81,9 +81,6 @@ class Terrain final : public Object3D {
      static constexpr I32 PATCHES_PER_TILE_EDGE = VTX_PER_TILE_EDGE - 1;
      static constexpr I32 QUAD_LIST_INDEX_COUNT = (VTX_PER_TILE_EDGE - 1) * (VTX_PER_TILE_EDGE - 1) * 4;
 
-     static constexpr U32 MAX_RENDER_NODES = 1024;
-     static constexpr size_t NODE_DATA_SIZE = sizeof(TessellatedNodeData) * Terrain::MAX_RENDER_NODES * to_base(RenderStage::COUNT);
-
    public:
        struct Vert {
            vec3<F32> _position;
