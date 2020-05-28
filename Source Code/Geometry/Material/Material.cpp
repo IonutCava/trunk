@@ -607,7 +607,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         }
     }
 
-    vertDefines.emplace_back("HAS_CLIPPING", true);
+    vertDefines.emplace_back("HAS_CLIPPING_OUT", true);
 
     globalDefines.emplace_back("DEFINE_PLACEHOLDER", false);
 

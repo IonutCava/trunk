@@ -23,7 +23,7 @@ void main(void){
     float scale = data.positionAndScale.w;
 
     const float LoDValue = data.data.z;
-#if defined(HAS_CULLING)
+#if defined(HAS_CULLING_OUT)
     gl_CullDistance[0] = -0.01f * when_gt(LoDValue, 2.1f);
 #else
     scale -= scale * when_gt(LoDValue, 2.1f);

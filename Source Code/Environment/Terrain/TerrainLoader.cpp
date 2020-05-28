@@ -424,7 +424,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
         } else if ((hasGeometryPass && shaderModule._moduleType == ShaderType::GEOMETRY) ||
                    (!hasGeometryPass && shaderModule._moduleType == ShaderType::TESSELLATION_EVAL)) {
-            shaderModule._defines.emplace_back("HAS_CLIPPING", true);
+            shaderModule._defines.emplace_back("HAS_CLIPPING_OUT", true);
         }
     }
 
