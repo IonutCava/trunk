@@ -141,14 +141,17 @@ void Vegetation::destroyStaticData() {
 void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
+        constexpr F32 offsetTop = 0.075f;
+        constexpr F32 offsetBottom = 0.30f;
+
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
         const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
         const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
         const vec3<F32> vertices[] = {
-            vec3<F32>(-pos000.x, 0.0f, -pos000.y),  vec3<F32>(-pos000.x, 1.0f, -pos000.y),  vec3<F32>(pos000.x, 1.0f, pos000.y), vec3<F32>(pos000.x, 0.0f, pos000.y),
-            vec3<F32>(-pos120.x, 0.0f, -pos120.y),  vec3<F32>(-pos120.x, 1.0f, -pos120.y),  vec3<F32>(pos120.x, 1.0f, pos120.y), vec3<F32>(pos120.x, 0.0f, pos120.y),
-            vec3<F32>(-pos240.x, 0.0f, -pos240.y),  vec3<F32>(-pos240.x, 1.0f, -pos240.y),  vec3<F32>(pos240.x, 1.0f, pos240.y), vec3<F32>(pos240.x, 0.0f, pos240.y)
+            vec3<F32>(-pos000.x,                0.0f, -pos000.y - offsetBottom),  vec3<F32>(-pos000.x,             1.0f, -pos000.y + offsetTop),  vec3<F32>(pos000.x,             1.0f, pos000.y + offsetTop), vec3<F32>(pos000.x,                0.0f, pos000.y - offsetBottom),
+            vec3<F32>(-pos120.x + offsetBottom, 0.0f, -pos120.y               ),  vec3<F32>(-pos120.x + offsetTop, 1.0f, -pos120.y            ),  vec3<F32>(pos120.x + offsetTop, 1.0f, pos120.y            ), vec3<F32>(pos120.x + offsetBottom, 0.0f, pos120.y               ),
+            vec3<F32>(-pos240.x - offsetBottom, 0.0f, -pos240.y               ),  vec3<F32>(-pos240.x - offsetTop, 1.0f, -pos240.y            ),  vec3<F32>(pos240.x - offsetTop, 1.0f, pos240.y            ), vec3<F32>(pos240.x - offsetBottom, 0.0f, pos240.y               )
         };
 
         const size_t billboardsPlaneCount = sizeof(vertices) / (sizeof(vec3<F32>) * 4);

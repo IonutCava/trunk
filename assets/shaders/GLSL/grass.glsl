@@ -8,11 +8,14 @@
 layout(location = 0) flat out int _arrayLayerFrag;
 layout(location = 1) out float _alphaFactor;
 
+#define GRASS_DISPLACEMENT_DISTANCE 10.0f
+#define GRASS_DISPLACEMENT_MAGNITUDE 2.0f
+
 void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
     float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
-    float halfScale = 0.25f * heightExtent;
+    float halfScale = 0.5f * heightExtent;
     vertex.x += (halfScale * cos(timeGrass) * cosX * sinX) *dvd_windDetails.x;
     vertex.z += (halfScale * sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
 }
@@ -38,13 +41,17 @@ void main() {
 #endif
     _arrayLayerFrag = int(data.data.x);
     
-    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
+    dvd_Vertex.xyz *= scale;
+    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz, data.orientationQuad);
     if (dvd_Vertex.y > 0.5f) {
-        computeFoliageMovementGrass(dvd_Vertex, data.data.w * 0.5f);
+        computeFoliageMovementGrass(dvd_Vertex, dvd_Vertex.y);
     }
-
+    dvd_Vertex.y += 0.25f;
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
-
+    if (dvd_Vertex.y > 0.5f && data.data.w < GRASS_DISPLACEMENT_DISTANCE) {
+        const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
+        VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
+    }
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     VAR._normalWV = normalize(dvd_NormalMatrixWV(DATA_IDX) * rotate_vertex_position(dvd_Normal, data.orientationQuad));
@@ -101,7 +108,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main() {
     const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
-    if (albedoAlpha * _alphaFactor < 1.0f - Z_TEST_SIGMA) {
+    if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }
 
@@ -120,7 +127,7 @@ out vec2 _colourOut;
 
 void main(void) {
     const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
-    if (albedoAlpha * _alphaFactor < 1.0f - Z_TEST_SIGMA) {
+    if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }
 

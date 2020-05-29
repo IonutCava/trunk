@@ -67,8 +67,6 @@ void main(void) {
         return;
     }
 
-    Data[nodeIndex].data.w = extents.y;
-
     if (HiZCull(positionW, extents.xyz, extents.w) || IsUnderWater(positionW.xyz)) {
         CullItem(nodeIndex);
     } else {
@@ -77,5 +75,6 @@ void main(void) {
 #       else //CULL_TREES
             Data[nodeIndex].data.z = max(1.0f - smoothstep(dvd_visibilityDistance * 0.85f, dvd_visibilityDistance * 0.995f, dist), 0.05f);
 #       endif //CULL_TREES
+        Data[nodeIndex].data.w = dist;
     }
 }

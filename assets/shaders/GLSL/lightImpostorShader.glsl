@@ -83,7 +83,7 @@ out vec4 colour;
 
 void main()
 {
-    if (texture(texDiffuse0, VAR._texCoord).a < 1.0 - Z_TEST_SIGMA) {
+    if (texture(texDiffuse0, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
     

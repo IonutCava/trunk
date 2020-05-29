@@ -19,7 +19,7 @@ void main() {
 void main() {
 #if defined(HAS_TRANSPARENCY)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    if (getAlbedo(colourMatrix, TexCoords).a < 1.0f - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, TexCoords).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif
@@ -42,7 +42,7 @@ out vec2 _colourOut;
 void main() {
 #if defined(HAS_TRANSPARENCY)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    if (getAlbedo(colourMatrix, TexCoords).a < 1.0f - Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, TexCoords).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif

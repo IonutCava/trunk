@@ -36,7 +36,7 @@ layout(location = 0) in vec4 particleColour;
 
 void main(){
     colour = particleColour * texture(texDiffuse0, VAR._texCoord);
-    if (colour.a < 1.0f - Z_TEST_SIGMA) {
+    if (colour.a < INV_Z_TEST_SIGMA) {
         discard;
     }
 }
@@ -54,7 +54,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main() {
     vec4 colour = particleColour * texture(texDiffuse0, VAR._texCoord);
-    if (colour.a < 1.0f - Z_TEST_SIGMA) {
+    if (colour.a < INV_Z_TEST_SIGMA) {
         discard;
     }
 

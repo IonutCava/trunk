@@ -32,7 +32,7 @@ void main(void){
 
     dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz * scale, data.orientationQuad);
     if (LoDValue < 1.1f && dvd_Vertex.y * scale > 0.85f) {
-        //computeFoliageMovementTree(dvd_Vertex, data.data.w);
+        //computeFoliageMovementTree(dvd_Vertex, dvd_Vertex.y * 0.5f);
     }
 
     VAR._vertexW = (dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f));

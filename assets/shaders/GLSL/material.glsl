@@ -15,7 +15,7 @@ void main (void) {
   
 #if !defined(OIT_PASS) && defined(USE_ALPHA_DISCARD)
     float alpha = albedo.a;
-    if (alpha < 1.0f - Z_TEST_SIGMA) {
+    if (alpha < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif

@@ -19,7 +19,7 @@ void writeOutput(in vec2 uv, in vec3 normal, in float alphaFactor) {
 #if defined(USE_ALPHA_DISCARD)
     mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
     float alpha = getAlbedo(colourMatrix, uv).a;
-    if (alpha * alphaFactor < 1.0f - Z_TEST_SIGMA) {
+    if (alpha * alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif
