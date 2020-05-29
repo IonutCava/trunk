@@ -37,10 +37,10 @@ U16 TerrainTessellator::getRenderDepth() const noexcept {
 
 
 const TerrainTessellator::RenderData& TerrainTessellator::updateAndGetRenderData(const Frustum& frust, U16& renderDepth) {
-    renderDepth = 0;
     _frustumCache.set(frust);
-    renderRecursive(_tree.data(), renderDepth);
-    _renderDepth = renderDepth;
+    _renderDepth = 0;
+    renderRecursive(_tree.data());
+    renderDepth = _renderDepth;
     return _renderData;
 }
 
@@ -155,7 +155,7 @@ TessellatedTerrainNode* TerrainTessellator::createNode(TessellatedTerrainNode* p
     return &terrainTreeTail;
 }
 
-void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& renderDepth) {
+void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node) {
     assert(node != nullptr);
 
     // If all children are null, render this node
@@ -163,22 +163,19 @@ void TerrainTessellator::renderRecursive(TessellatedTerrainNode* node, U16& rend
 
         // We used a N x sized buffer, so we should allow for some margin in frustum culling
         constexpr F32 radiusAdjustmentFactor = 1.5f;
-
-        assert(renderDepth < MAX_TERRAIN_RENDER_NODES);
-
         // half of the diagonal of the rectangle
         const F32 radius = Sqrt(SQUARED(node->dim.width * 0.5f) + SQUARED(node->dim.height * 0.5f));
         if (_cameraEyeCache.distanceSquared(node->origin) <= _maxDistanceSQ &&  // Distance to camera
             _frustumCache.ContainsSphere(node->origin, radius * radiusAdjustmentFactor, _lastFrustumPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT)  //Frustum culling
         {
-            TessellatedNodeData& data = _renderData[renderDepth++];
+            TessellatedNodeData& data = _renderData[_renderDepth++];
             data._positionAndTileScale.set(node->origin, node->dim.width * 0.5f);
             data._tScale.set(calcTessScale(node));
         }
     } else {
         // Otherwise, recurse to the children.
         for (U8 i = 0; i < 4; ++i) {
-            renderRecursive(node->c[i], renderDepth);
+            renderRecursive(node->c[i]);
         }
     }
 }

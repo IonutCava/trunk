@@ -104,11 +104,11 @@ struct RenderStagePass {
         }
     }
 
-    static U8 passCountForStage(const RenderStagePass& renderStagePass) noexcept {
-        if (renderStagePass._stage == RenderStage::REFLECTION) {
+    static U8 passCountForStage(RenderStage renderStage) noexcept {
+        if (renderStage == RenderStage::REFLECTION) {
             return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
                    Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;
-        } else if (renderStagePass._stage == RenderStage::SHADOW) {
+        } else if (renderStage == RenderStage::SHADOW) {
             return Config::Lighting::MAX_SHADOW_PASSES;
         }
 

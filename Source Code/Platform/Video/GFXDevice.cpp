@@ -418,6 +418,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             }
 
             refDesc._attachmentCount = 1; //skip depth
+            refDesc._name = "Reflection_blur";
             _rtPool->allocateRT(RenderTargetUsage::REFLECTION_PLANAR_BLUR, refDesc);
 
         }

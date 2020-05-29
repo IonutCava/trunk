@@ -68,7 +68,7 @@ struct TessellatedNodeData {
     vec4<F32> _tScale = {1.0f, 1.0f, 1.0f, 1.0f};
 };
 
-constexpr U32 MAX_TERRAIN_RENDER_NODES = 384;
+constexpr U32 MAX_TERRAIN_RENDER_NODES = 512;
 
 class TerrainTessellator {
 public:
@@ -117,7 +117,7 @@ protected:
     vec4<F32> calcTessScale(TessellatedTerrainNode* node);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode* node, U16& renderDepth);
+    void renderRecursive(TessellatedTerrainNode* node);
 
 private:
     Frustum _frustumCache;

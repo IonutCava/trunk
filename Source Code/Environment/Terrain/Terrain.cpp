@@ -183,11 +183,8 @@ TerrainTessellator& Terrain::getTessellator(const RenderStagePass& renderStagePa
         return getTessellator(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u));
     } 
 
-    const U8 s = to_U8(renderStagePass._stage) - 1;
-    const U8 p = to_U8(renderStagePass._passType);
     const U32 i = RenderStagePass::indexForStage(renderStagePass);
-
-    return _terrainTessellators[s][p][i];
+    return _terrainTessellators[to_U8(renderStagePass._stage) - 1][i];
 }
 
 U32& Terrain::getUpdateCounter(const RenderStagePass& renderStagePass) {
@@ -195,11 +192,8 @@ U32& Terrain::getUpdateCounter(const RenderStagePass& renderStagePass) {
         return getUpdateCounter(RenderStagePass(RenderStage::DISPLAY, RenderPassType::PRE_PASS, 0u));
     }
 
-    const U8 s = to_U8(renderStagePass._stage) - 1;
-    const U8 p = to_U8(renderStagePass._passType);
     const U32 i = RenderStagePass::indexForStage(renderStagePass);
-
-    return _bufferUpdateCounter[s][p][i];
+    return _bufferUpdateCounter[to_U8(renderStagePass._stage) - 1][i];
 }
 
 
@@ -233,22 +227,12 @@ void Terrain::postBuild() {
             continue;
         }
 
-        UpdateCounterPerPassType& perPassCounter = _bufferUpdateCounter[s - 1];
-        TessellatorsPerPassType& perPassTess = _terrainTessellators[s - 1];
+        const U8 count = RenderStagePass::passCountForStage(static_cast<RenderStage>(s));
 
-        for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
-            const U8 count = RenderStagePass::passCountForStage(
-                RenderStagePass{
-                    static_cast<RenderStage>(s),
-                    static_cast<RenderPassType>(p)
-                }
-            );
-
-            perPassCounter[p].resize(count, g_bufferFrameDelay);
-            perPassTess[p].resize(count);
-            for (auto& tess : perPassTess[p]) {
-                tess.overrideConfig(config);
-            }
+        _bufferUpdateCounter[s - 1].resize(count, g_bufferFrameDelay);
+        _terrainTessellators[s - 1].resize(count);
+        for (auto& tess : _terrainTessellators[s - 1]) {
+            tess.overrideConfig(config);
         }
     }
 

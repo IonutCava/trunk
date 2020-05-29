@@ -166,13 +166,11 @@ class Terrain final : public Object3D {
     vectorEASTL<TerrainChunk*> _terrainChunks;
 
     using TessellatorsPerIndex = vectorEASTL<TerrainTessellator>;
-    using TessellatorsPerPassType = std::array<TessellatorsPerIndex, to_base(RenderPassType::COUNT)>;
-    using TessellatorsPerStage = std::array<TessellatorsPerPassType, to_base(RenderStage::COUNT) - 1>;
+    using TessellatorsPerStage = std::array<TessellatorsPerIndex, to_base(RenderStage::COUNT) - 1>;
     TessellatorsPerStage _terrainTessellators;
 
     using UpdateCounterPerIndex = vectorEASTLFast<U32>;
-    using UpdateCounterPerPassType = std::array<UpdateCounterPerIndex, to_base(RenderPassType::COUNT)>;
-    using UpdateCounterPerStage = std::array<UpdateCounterPerPassType, to_base(RenderStage::COUNT) - 1>;
+    using UpdateCounterPerStage = std::array<UpdateCounterPerIndex, to_base(RenderStage::COUNT) - 1>;
     UpdateCounterPerStage _bufferUpdateCounter;
 
     EditorDataState _editorDataDirtyState = EditorDataState::IDLE;

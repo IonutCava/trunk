@@ -97,26 +97,13 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     }
 
     for (U8 s = 0; s < to_U8(RenderStage::COUNT); ++s) {
+        const U8 count = RenderStagePass::passCountForStage(static_cast<RenderStage>(s));
         if (s == to_U8(RenderStage::SHADOW)) {
-            _renderPackages[s][to_base(RenderPassType::MAIN_PASS)].resize(
-                RenderStagePass::passCountForStage(
-                    RenderStagePass {
-                        static_cast<RenderStage>(s),
-                        RenderPassType::MAIN_PASS
-                    }
-                )
-            );
+            _renderPackages[s][to_base(RenderPassType::MAIN_PASS)].resize(count);
         } else {
             PackagesPerPassType & perPassPkgs = _renderPackages[s];
             for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
-                perPassPkgs[p].resize(
-                    RenderStagePass::passCountForStage(
-                        RenderStagePass {
-                            static_cast<RenderStage>(s),
-                            static_cast<RenderPassType>(p)
-                        }
-                    )
-                );
+                perPassPkgs[p].resize(count);
             }
         }
     }
