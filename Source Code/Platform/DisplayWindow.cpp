@@ -23,7 +23,7 @@ DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
    _userData(nullptr),
    _internalMoveEvent(false),
    _internalResizeEvent(false),
-   _clearColour(DefaultColours::DIVIDE_BLUE),
+   _clearColour(DefaultColours::BLACK),
    _windowID(std::numeric_limits<Uint32>::max())
 {
     SetBit(_flags, WindowFlags::SWAP_BUFFER);

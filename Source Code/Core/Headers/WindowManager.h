@@ -62,7 +62,7 @@ struct WindowDescriptor {
     };
 
     stringImpl title = "";
-    FColour4 clearColour = DefaultColours::DIVIDE_BLUE;
+    FColour4 clearColour = DefaultColours::BLACK;
     vec2<I16> position = {};
     vec2<U16> dimensions = {};
     U32 targetDisplay = 0u;

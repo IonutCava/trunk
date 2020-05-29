@@ -355,10 +355,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     _GUIGLrenderer->enableExtraStateSettings(false);
     _context.context().gui().setRenderer(*_GUIGLrenderer);
 
-    glClearColor(DefaultColours::DIVIDE_BLUE.r,
-                 DefaultColours::DIVIDE_BLUE.g,
-                 DefaultColours::DIVIDE_BLUE.b,
-                 DefaultColours::DIVIDE_BLUE.a);
+    glClearColor(DefaultColours::BLACK.r,
+                 DefaultColours::BLACK.g,
+                 DefaultColours::BLACK.b,
+                 DefaultColours::BLACK.a);
 
     _elapsedTimeQuery = eastl::make_unique<glHardwareQueryRing>(_context, GL_TIME_ELAPSED, 6);
 

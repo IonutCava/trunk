@@ -193,7 +193,7 @@ namespace Divide {
         UColour4  _blendColour = UColour4(0, 0, 0, 0);
         Rect<I32> _activeViewport = Rect<I32>(-1);
         Rect<I32> _activeScissor = Rect<I32>(-1);
-        FColour4  _activeClearColour = DefaultColours::DIVIDE_BLUE;
+        FColour4  _activeClearColour = DefaultColours::BLACK_U8;
 
         /// Boolean value used to verify if primitive restart index is enabled or disabled
         bool _primitiveRestartEnabled = false;
