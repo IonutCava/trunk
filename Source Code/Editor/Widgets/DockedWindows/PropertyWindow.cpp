@@ -170,21 +170,18 @@ namespace Divide {
             }
 
             T val = field.get<T>();
-            const F32 min = field._range.min;
-            F32 max = field._range.max;
-
-            const T cStep = T(stepIn * 100);
+            const T cStep = static_cast<T>(stepIn * 100);
 
             const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
             const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
 
             bool ret = false;
             if_constexpr (num_comp == 1) {
+                const T min = static_cast<T>(field._range.min);
+                T max = static_cast<T>(field._range.max);
                 if_constexpr (IsSlider) {
                     ACKNOWLEDGE_UNUSED(step_fast);
-                    if (min >= max) {
-                        max = std::max(to_F32(val), 1.f);
-                    }
+                    assert(min <= max);
                     ret = ImGui::SliderScalar(label, data_type, (void*)&val, (void*)&min, (void*)&max, getFormat(data_type, format), power);
                 } else {
                     ret = ImGui::InputScalar(label, data_type, (void*)&val, step, step_fast, getFormat(data_type, format), flags);
@@ -193,17 +190,18 @@ namespace Divide {
                     }
                 }
             } else {
+                T min = T{ field._range.min };
+                T max = T{ field._range.max };
+
                 if_constexpr(IsSlider) {
                     ACKNOWLEDGE_UNUSED(step_fast);
-                    if (min >= max) {
-                        max = std::max(to_F32(val[0]), 1.f);
-                    }
+                    assert(min <= max);
                     ret = ImGui::SliderScalarN(label, data_type, (void*)&val, num_comp, (void*)&min, (void*)&max, getFormat(data_type, format), power);
                 } else {
                     ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, step, step_fast, getFormat(data_type, format), flags);
                     if (max > min) {
                         for (I32 i = 0; i < to_I32(num_comp); ++i) {
-                            val[i] = CLAMPED(val[i], min, max);
+                            val[i] = CLAMPED(val[i], min[i], max[i]);
                         }
                     }
                 }

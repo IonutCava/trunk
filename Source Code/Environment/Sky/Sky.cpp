@@ -358,7 +358,7 @@ const Texture_ptr& Sky::activeSkyBox() const noexcept {
 void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
     if (_atmosphereChanged == EditorDataState::QUEUED) {
         _atmosphereChanged = EditorDataState::CHANGED;
-    } else if (_atmosphereChanged == EditorDataState::CHANGED) {
+    } else if (_atmosphereChanged == EditorDataState::PROCESSED) {
         _atmosphereChanged = EditorDataState::IDLE;
     }
 
@@ -381,10 +381,10 @@ bool Sky::prepareRender(SceneGraphNode& sgn,
 
         constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
         constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());
-        if (_atmosphereChanged == EditorDataState::CHANGED) {
+        if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
             constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
             constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoTooShaderData());
-
+            _atmosphereChanged = EditorDataState::PROCESSED;
         }
          pkg.pushConstants(0, constants);
     }

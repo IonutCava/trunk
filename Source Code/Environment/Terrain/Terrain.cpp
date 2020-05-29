@@ -322,7 +322,7 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
         case EditorDataState::QUEUED:
             _editorDataDirtyState = EditorDataState::CHANGED;
             break;
-        case EditorDataState::CHANGED:
+        case EditorDataState::PROCESSED:
             _editorDataDirtyState = EditorDataState::IDLE;
             break;
     };
@@ -353,12 +353,13 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
                             const Camera& camera,
                             bool refreshData) {
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
-    if (_editorDataDirtyState == EditorDataState::CHANGED) {
+    if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         rComp.getMaterialInstance()->parallaxFactor(_descriptor->parallaxHeightScale());
         if (!pkg.empty()) {
             PushConstants constants = pkg.pushConstants(0);
             constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, getTriangleWidth(renderStagePass));
             pkg.pushConstants(0, constants);
+            _editorDataDirtyState = EditorDataState::PROCESSED;
         }
     }
 
