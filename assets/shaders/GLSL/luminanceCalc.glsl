@@ -1,8 +1,8 @@
 --Compute.Create
 
-#define EPSILON 0.000001
+#define EPSILON 0.000001f
 // Taken from RTR vol 4 pg. 278
-#define RGB_TO_LUM vec3(0.2125, 0.7154, 0.0721)
+#define RGB_TO_LUM vec3(0.2125f, 0.7154f, 0.0721f)
 
 // Uniforms:
 uniform vec4 u_params;
@@ -34,7 +34,7 @@ uint colorToBin(vec3 hdrColor, float minLogLum, float inverseLogLumRange) {
     float logLum = clamp((log2(lum) - minLogLum) * inverseLogLumRange, 0.0, 1.0);
 
     // Map [0, 1] to [1, 255]. The zeroth bin is handled by the epsilon check above.
-    return uint(logLum * 254.0 + 1.0);
+    return uint(logLum * 254.0f + 1.0f);
 }
 
 layout(local_size_x = THREADS_X, local_size_y = THREADS_Y, local_size_z = 1) in;
@@ -83,7 +83,7 @@ layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent buffer histogramBu
 
 shared  uint histogramShared[GROUP_SIZE];
 
-layout(local_size_x = GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
+layout(local_size_x = THREADS_X, local_size_y = THREADS_X, local_size_z = 1) in;
 void main() {
     // Get the count from the histogram buffer
     uint countForThisBin = histogram[gl_LocalInvocationIndex];
@@ -108,16 +108,18 @@ void main() {
         // Here we take our weighted sum and divide it by the number of pixels
         // that had luminance greater than zero (since the index == 0, we can
         // use countForThisBin to find the number of black pixels)
-        float weightedLogAverage = (histogramShared[0] / max(numPixels - float(countForThisBin), 1.0)) - 1.0;
+        float weightedLogAverage = (histogramShared[0] / max(numPixels - float(countForThisBin), 1.0f)) - 1.0f;
 
         // Map from our histogram space to actual luminance
-        float weightedAvgLum = exp2(weightedLogAverage / 254.0 * logLumRange + minLogLum);
+        float weightedAvgLum = exp2(weightedLogAverage / 254.0f * logLumRange + minLogLum);
 
 
         // The new stored value will be interpolated using the last frames value
         // to prevent sudden shifts in the exposure.
         float lumLastFrame = imageLoad(s_target, ivec2(0, 0)).x;
+
         float adaptedLum = lumLastFrame + (weightedAvgLum - lumLastFrame) * timeCoeff;
+
         imageStore(s_target, ivec2(0, 0), vec4(adaptedLum, 0.0, 0.0, 0.0));
     }
 }

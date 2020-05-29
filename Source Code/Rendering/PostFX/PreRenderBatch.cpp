@@ -18,7 +18,6 @@ namespace Divide {
 
 namespace {
     //ToneMap ref: https://bruop.github.io/exposure/
-    constexpr U16 GROUP_SIZE = 256u;
     constexpr U8  GROUP_X_THREADS = 16u;
     constexpr U8  GROUP_Y_THREADS = 16u;
 };
@@ -184,7 +183,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         ShaderModuleDescriptor computeModule = {};
         computeModule._moduleType = ShaderType::COMPUTE;
         computeModule._sourceFile = "luminanceCalc.glsl";
-        computeModule._defines.emplace_back(Util::StringFormat("GROUP_SIZE %d", GROUP_SIZE), true);
+        computeModule._defines.emplace_back(Util::StringFormat("GROUP_SIZE %d", GROUP_X_THREADS * GROUP_Y_THREADS), true);
         computeModule._defines.emplace_back(Util::StringFormat("THREADS_X %d", GROUP_X_THREADS), true);
         computeModule._defines.emplace_back(Util::StringFormat("THREADS_Y %d", GROUP_Y_THREADS), true);
 
@@ -477,13 +476,13 @@ void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::Command
             GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
             GFX::DispatchComputeCommand computeCmd = {};
-            computeCmd._computeGroupSize.set(1, 1, 1);
+            computeCmd._computeGroupSize.set(groupsX, groupsY, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
         }
 
-        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_IMAGE);
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_IMAGE) | to_base(MemoryBarrierType::SHADER_STORAGE);
         GFX::EnqueueCommand(bufferInOut, memCmd);
     }
 

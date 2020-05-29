@@ -131,20 +131,7 @@ float LargerNeighbourAdjacencyClamp(in float tess) {
 
 void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in int idx0, in int idx1)
 {
-    // This ought to work: if the adjacency has repositioned a vertex in XZ, we need to re-acquire its height.
-    // However, causes an internal fxc error.  Again! :-(
-    //float h0 = SampleHeightForVS(g_CoarseHeightMap, SamplerClampLinear, p0.xz, g_DetailNoiseScale, g_DetailUVScale);
-    //float h1 = SampleHeightForVS(g_CoarseHeightMap, SamplerClampLinear, p0.xz, g_DetailNoiseScale, g_DetailUVScale);
-    //p0.y = h0;
-    //p1.y = h1;
-
-    // Instead set both vertex heights to zero.  It's the only way I can think to agree with the neighbours
-    // when sampling is broken in fxc.
-#if 0
-    p0.y = p1.y = 0.0f;
-#else
     p0.y = p1.y = max(vtx_height[idx0], vtx_height[idx1]);
-#endif
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
