@@ -766,7 +766,7 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
     switch (data._type) {
         case  ECS::CustomEvent::Type::TransformUpdated:
         {
-            TransformComponent* tComp = std::any_cast<TransformComponent*>(data._userData);
+            TransformComponent* tComp = static_cast<TransformComponent*>(data._sourceCmp);
             assert(tComp != nullptr);
             SceneEnvironmentProbePool* probes = _context.context().kernel().sceneManager()->getEnvProbes();
             updateNearestProbes(*probes, tComp->getPosition());
@@ -778,12 +778,12 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
         } break;
         case ECS::CustomEvent::Type::DrawBoundsChanged:
         {
-            BoundsComponent* bComp = std::any_cast<BoundsComponent*>(data._userData);
+            BoundsComponent* bComp = static_cast<BoundsComponent*>(data._sourceCmp);
             toggleBoundsDraw(bComp->showAABB(), bComp->showBS(), true);
         } break;
         case ECS::CustomEvent::Type::BoundsUpdated:
         {
-            BoundsComponent* bComp = std::any_cast<BoundsComponent*>(data._userData);
+            BoundsComponent* bComp = static_cast<BoundsComponent*>(data._sourceCmp);
             _boundsCenterCache = bComp->getBoundingSphere().getCenter();
         } break;
     }

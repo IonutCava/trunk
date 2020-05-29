@@ -212,7 +212,6 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         inline BoundsComponent* get() const noexcept { return Hacks._boundsComponentCache; }
 
         void SendEvent(ECS::CustomEvent&& event);
-        void SendEvent(const ECS::CustomEvent& event);
 
         /// Sends a global event but dispatched is handled between update steps
         template<class E, class... ARGS>
@@ -321,6 +320,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
                            const Camera& camera,
                            GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                            GFX::CommandBuffer& bufferInOut) const;
+
     private:
         SGNRelationshipCache _relationshipCache;
         vectorEASTL<SceneGraphNode*> _children;
@@ -333,8 +333,15 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
             BoundsComponent* _boundsComponentCache = nullptr;
         } Hacks;
 
-        Mutex _eventsLock;
-        eastl::queue<ECS::CustomEvent, eastl::deque<ECS::CustomEvent, eastl::dvd_eastl_allocator>> _events;
+        struct events
+        {
+            // this should be ample storage PER FRAME for events.
+            static constexpr size_t EVENT_QUEUE_SIZE = 64;
+            Mutex _eventsLock;
+            std::array<ECS::CustomEvent, EVENT_QUEUE_SIZE> _events;
+            std::array<bool, EVENT_QUEUE_SIZE> _eventsFreeList;
+            size_t _eventsCount = 0;
+        } Events;
 
         mutable SharedMutex _childLock;
 

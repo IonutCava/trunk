@@ -40,6 +40,7 @@ namespace Divide {
 /// A generic component for the SceneGraphNode class
 enum class RenderStage : U8;
 class SceneGraphNode;
+class SGNComponent;
 class SceneRenderState;
 struct RenderStagePass;
 
@@ -58,8 +59,17 @@ namespace ECS {
         };
 
         Type _type = Type::COUNT;
-        std::any _userData;
+        Divide::SGNComponent* _sourceCmp = nullptr;
         Divide::U32 _flag = 0u;
+        union
+        {
+            Divide::U32 _data = 0u;
+            struct
+            {
+                Divide::U16 _dataFirst;
+                Divide::U16 _dataSecond;
+            };
+        };
     };
 };
 

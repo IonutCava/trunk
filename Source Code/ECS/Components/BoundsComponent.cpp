@@ -82,8 +82,7 @@ void BoundsComponent::showAABB(const bool state) {
         _parentSGN.SendEvent(
             {
                 ECS::CustomEvent::Type::DrawBoundsChanged,
-                this,
-                0u
+                this
             });
     }
 }
@@ -95,8 +94,7 @@ void BoundsComponent::showBS(const bool state) {
         _parentSGN.SendEvent(
             {
                 ECS::CustomEvent::Type::DrawBoundsChanged,
-                this,
-                0u
+                this
             });
     }
 }
@@ -123,7 +121,7 @@ void BoundsComponent::flagBoundingBoxDirty(U32 transformMask, bool recursive) {
 
 void BoundsComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
-        _tCompCache = std::any_cast<TransformComponent*>(data._userData);
+        _tCompCache = static_cast<TransformComponent*>(data._sourceCmp);
 
         flagBoundingBoxDirty(data._flag, true);
     }
@@ -165,7 +163,6 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     {
         ECS::CustomEvent::Type::BoundsUpdated,
         this,
-        0u
     });
 
     return _boundingBox;

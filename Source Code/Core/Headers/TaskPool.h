@@ -104,6 +104,7 @@ public:
     friend Task& Start(Task& task, TaskPriority prio, DELEGATE<void>&& onCompletionFunction);
 
     friend void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor);
+    friend void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction);
 
     void taskCompleted(U32 taskIndex, bool hasOnCompletionFunction);
     

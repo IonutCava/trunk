@@ -58,7 +58,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
 {
     _children.reserve(INITIAL_CHILD_COUNT);
     std::atomic_init(&_childCount, 0u);
-
+    Events._eventsFreeList.fill(true);
+    
     _name = (descriptor._name.empty() ? Util::StringFormat("%s_SGN", (_node->resourceName().empty() ? "ERROR"   
                                                                                                     : _node->resourceName().c_str())).c_str()
                                       : descriptor._name);
@@ -478,19 +479,15 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
 
 void SceneGraphNode::processEvents() {
     OPTICK_EVENT();
-
     const ECS::EntityId id = GetEntityID();
     
-    ECS::CustomEvent evt = {};
-    while(true) {
-        {
-            UniqueLock<Mutex> w_lock(_eventsLock);
-            if (_events.empty()) {
-                return;
-            }
-            evt = _events.front();
-            _events.pop();
+    UniqueLock<Mutex> w_lock(Events._eventsLock);
+    for (size_t idx = 0; idx < Events.EVENT_QUEUE_SIZE; ++idx) {
+        if (Events._eventsFreeList[idx]) {
+            break;
         }
+
+        const ECS::CustomEvent& evt = Events._events[idx];
 
         switch (evt._type) {
             case ECS::CustomEvent::Type::RelationshipCacheInvalidated: {
@@ -499,12 +496,12 @@ void SceneGraphNode::processEvents() {
                 }
             } break;
             case ECS::CustomEvent::Type::EntityFlagChanged: {
-                const Flags flag = static_cast<Flags>(std::any_cast<U32>(evt._flag));
+                const Flags flag = static_cast<Flags>(evt._flag);
                 if (flag == Flags::SELECTED) {
-                    const auto [state, recursive] = std::any_cast<std::pair<bool, bool>>(evt._userData);
-
                     RenderingComponent* rComp = get<RenderingComponent>();
                     if (rComp != nullptr) {
+                        const bool state = evt._dataFirst == 1u;
+                        const bool recursive = evt._dataSecond == 1u;
                         rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SELECTION, state, recursive);
                     }
                 }
@@ -514,6 +511,8 @@ void SceneGraphNode::processEvents() {
 
         _compManager->PassDataToAllComponents(id, evt);
     }
+
+    Events._eventsFreeList.fill(true);
 }
 
 bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData) {
@@ -791,12 +790,15 @@ void SceneGraphNode::setFlag(Flags flag, bool recursive) noexcept {
     }
 
     if (!hadFlag) {
-        SendEvent(
-            {
-                ECS::CustomEvent::Type::EntityFlagChanged,
-                std::make_pair(true, recursive),
-                to_U32(flag)
-            });
+        ECS::CustomEvent evt = {
+            ECS::CustomEvent::Type::EntityFlagChanged,
+            nullptr,
+            to_U32(flag)
+        };
+        evt._dataFirst = 1u;
+        evt._dataSecond = recursive ? 1u : 0u;
+
+        SendEvent(std::move(evt));
     }
 }
 
@@ -814,12 +816,15 @@ void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
     }
     
     if (hadFlag) {
-        SendEvent(
-            {
-                ECS::CustomEvent::Type::EntityFlagChanged,
-                std::make_pair(false, recursive),
-                to_U32(flag)
-            });
+        ECS::CustomEvent evt = {
+            ECS::CustomEvent::Type::EntityFlagChanged,
+            nullptr,
+            to_U32(flag)
+        };
+        evt._dataFirst = 0u;
+        evt._dataSecond = recursive ? 1u : 0u;
+
+        SendEvent(std::move(evt));
     }
 }
 
@@ -828,12 +833,16 @@ bool SceneGraphNode::hasFlag(Flags flag) const noexcept {
 }
 
 void SceneGraphNode::SendEvent(ECS::CustomEvent&& event) {
-    UniqueLock<Mutex> w_lock(_eventsLock);
-    _events.push(std::move(event));
+    size_t idx = 0;
+    while (true) {
+        UniqueLock<Mutex> w_lock(Events._eventsLock);
+        if (Events._eventsFreeList[idx]) {
+            Events._eventsFreeList[idx] = false;
+            Events._events[idx] = std::move(event);
+            return;
+        }
+        idx = (++idx % Events.EVENT_QUEUE_SIZE);
+    }
 }
 
-void SceneGraphNode::SendEvent(const ECS::CustomEvent& event) {
-    UniqueLock<Mutex> w_lock(_eventsLock);
-    _events.push(event);
-}
 };

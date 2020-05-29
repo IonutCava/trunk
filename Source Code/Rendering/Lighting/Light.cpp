@@ -117,7 +117,7 @@ void Light::registerFields(EditorComponent& comp) {
 void Light::updateCache(const ECS::CustomEvent& data) {
     OPTICK_EVENT();
 
-    TransformComponent* tComp = std::any_cast<TransformComponent*>(data._userData);
+    TransformComponent* tComp = static_cast<TransformComponent*>(data._sourceCmp);
     assert(tComp != nullptr);
 
     if (_type != LightType::DIRECTIONAL && BitCompare(data._flag, to_U32(TransformType::TRANSLATION))) {
