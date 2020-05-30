@@ -6,6 +6,8 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Configuration.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
@@ -28,7 +30,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
       _parent(parent)
 {
     std::atomic_uint loadTasks = 0;
-
+    _adaptiveExposureControl = context.context().config().rendering.postFX.enableAdaptiveToneMapping;
     // We only work with the resolved screen target
     _screenRTs._hdr._screenRef._targetID = RenderTargetID(RenderTargetUsage::SCREEN);
     _screenRTs._hdr._screenRef._rt = &context.renderTargetPool().renderTarget(_screenRTs._hdr._screenRef._targetID);
@@ -311,6 +313,11 @@ void PreRenderBatch::idle(const Configuration& config) {
             op->idle(config);
         }
     }
+}
+
+void PreRenderBatch::adaptiveExposureControl(const bool state) noexcept {
+    _adaptiveExposureControl = state;
+    _context.context().config().rendering.postFX.enableAdaptiveToneMapping = state;
 }
 
 void PreRenderBatch::update(const U64 deltaTimeUS) {

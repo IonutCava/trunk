@@ -101,6 +101,7 @@ struct Configuration final : public XML::IXMLSerializable {
         struct PostFX {
             stringImpl postAAType = "FXAA";
             U8 PostAAQualityLevel = 2;
+            bool enableAdaptiveToneMapping = true;
             bool enableDepthOfField = false;
             bool enablePerObjectMotionBlur = true;
             bool enableCameraBlur = true;

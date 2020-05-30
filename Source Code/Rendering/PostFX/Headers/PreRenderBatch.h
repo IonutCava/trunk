@@ -83,11 +83,12 @@ class PreRenderBatch {
         return (*it).get();
     }
 
-
+    PROPERTY_R(bool, adaptiveExposureControl, true);
     PROPERTY_RW(ToneMapParams, toneMapParams, {});
     PROPERTY_RW(F32, edgeDetectionThreshold, 0.1f);
-    PROPERTY_RW(bool,  adaptiveExposureControl, true);
     PROPERTY_RW(EdgeDetectionMethod, edgeDetectionMethod, EdgeDetectionMethod::Luma);
+
+    void adaptiveExposureControl(const bool state) noexcept;
 
    private:
 
