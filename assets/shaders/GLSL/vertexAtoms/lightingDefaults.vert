@@ -1,7 +1,9 @@
 #ifndef _LIGHTING_DEFAULTS_VERT_
 #define _LIGHTING_DEFAULTS_VERT_
 
-void computeLightVectors(in mat3 normalMatrixWV) {
+void computeLightVectors(in NodeData data) {
+    const mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(data._normalMatrixW);
+
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
     VAR._viewDirectionWV = normalize(-VAR._vertexWV.xyz);
 

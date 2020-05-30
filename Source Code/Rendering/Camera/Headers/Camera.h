@@ -43,6 +43,8 @@ namespace Divide {
 class GFXDevice;
 class Camera : public Resource {
    public:
+    static constexpr F32 s_minNearZ = 0.1f;
+
     enum class CameraType : U8 {
         FREE_FLY = 0,
         STATIC,

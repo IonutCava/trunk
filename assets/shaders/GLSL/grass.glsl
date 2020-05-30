@@ -20,8 +20,13 @@ void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
     vertex.z += (halfScale * sin(timeGrass) * cosX * sinX) *dvd_windDetails.z;
 }
 
+vec3 rotate_vertex_position(vec3 position, vec4 q) {
+    const vec3 v = position.xyz;
+    return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
 void main() {
-    computeDataNoClip();
+    const NodeData nodeData = fetchInputData();
 
     VegetationData data = GrassData(VAR.dvd_instanceID);
 
@@ -52,9 +57,12 @@ void main() {
         const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
         VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
     }
+
+    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(nodeData._normalMatrixW);
+
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
-    VAR._normalWV = normalize(dvd_NormalMatrixWV(DATA_IDX) * rotate_vertex_position(dvd_Normal, data.orientationQuad));
+    VAR._normalWV = normalize(normalMatrixWV * rotate_vertex_position(dvd_Normal, data.orientationQuad));
 
 #if !defined(SHADOW_PASS)
     setClipPlanes(VAR._vertexW);
@@ -81,13 +89,15 @@ layout(location = 1) in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main (void){
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
     const vec2 uv = TexCoords;
 
     vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a = min(albedo.a, _alphaFactor);
 
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    writeOutput(getPixelColour(albedo, colourMatrix, getNormal(uv), uv));
+    writeOutput(getPixelColour(albedo, data, getNormal(uv), uv));
 }
 
 --Fragment.PrePass
@@ -107,12 +117,15 @@ layout(location = 1) in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main() {
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
     const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
     if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }
 
-    writeOutput(VAR._texCoord, VAR._normalWV, _alphaFactor);
+    writeOutput(data, VAR._texCoord, VAR._normalWV, _alphaFactor);
 }
 
 --Fragment.Shadow.VSM

@@ -1377,11 +1377,6 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
 
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");
-
-        const I32 debugFrame = _context.config().debug.dumpCommandBuffersOnFrame;
-        if (debugFrame >= 0 && to_U32(FRAME_COUNT) == to_U32(debugFrame)) {
-            Console::errorfn(commandBuffer.toString().c_str());
-        }
     }
 
     if (batch) {
@@ -1833,14 +1828,14 @@ void GFXDevice::initDebugViews() {
         HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
         HiZ->_name = "Hierarchical-Z";
         HiZ->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
-        HiZ->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+        HiZ->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
 
         DebugView_ptr DepthPreview = std::make_shared<DebugView>();
         DepthPreview->_shader = _previewDepthMapShader;
         DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
         DepthPreview->_name = "Depth Buffer";
         DepthPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        DepthPreview->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+        DepthPreview->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
 
         DebugView_ptr NormalPreview = std::make_shared<DebugView>();
         NormalPreview->_shader = _renderTargetDraw;

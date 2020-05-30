@@ -5,6 +5,11 @@
 #include "utility.cmn"
 #include "lightingDefaults.vert"
 
+vec3 rotate_vertex_position(vec3 position, vec4 q) {
+    const vec3 v = position.xyz;
+    return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+}
+
 void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
     float time = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
     float cosX = cos(vertex.x);
@@ -16,7 +21,7 @@ void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
 
 void main(void){
 
-    computeDataMinimal();
+    const NodeData data = fetchInputData();
 
     const VegetationData data = TreeData(VAR.dvd_instanceID);
 
@@ -41,7 +46,7 @@ void main(void){
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if !defined(SHADOW_PASS)
-    computeLightVectors(mat3(dvd_ViewMatrix));
+    computeLightVectors(data);
     setClipPlanes(VAR._vertexW);
 #endif
 

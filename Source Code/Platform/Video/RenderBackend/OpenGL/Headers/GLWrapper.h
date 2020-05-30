@@ -221,7 +221,6 @@ private:
 
 private:
     static bool s_glFlushQueued;
-    static bool s_enabledDebugMSGGroups;
 
     static SharedMutex s_mipmapQueueSetLock;
     static eastl::unordered_set<GLuint> s_mipmapQueue;

@@ -1009,8 +1009,7 @@ void Scene::loadDefaultCamera() {
 
     baseCamera->setMoveSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     baseCamera->setTurnSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-    baseCamera->setProjection(_context.config().runtime.verticalFOV,
-                              vec2<F32>(_context.config().runtime.zNear, _context.config().runtime.zFar));
+    baseCamera->setProjection(_context.config().runtime.verticalFOV, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
 
 }
 

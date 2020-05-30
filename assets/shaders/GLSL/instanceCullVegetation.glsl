@@ -17,11 +17,11 @@ uniform uint  dvd_terrainChunkOffset;
 #include "waterData.cmn"
 
 
-float saturate(float v) { return clamp(v, 0.0, 1.0); }
+float saturate(float v) { return clamp(v, 0.0f, 1.0f); }
 
 vec3 rotate_vertex_position(vec3 position, vec4 q) {
     vec3 v = position.xyz;
-    return v + 2.0 * cross(q.xyz, cross(q.xyz, v) + q.w * v);
+    return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
 #if defined(CULL_TREES)

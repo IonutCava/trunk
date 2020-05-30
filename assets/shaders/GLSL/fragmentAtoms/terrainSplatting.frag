@@ -113,7 +113,6 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt, in vec3 viewDirTBN) {
     vec2 scaledCoords = scaledTextureCoords(TexCoords);
 
 #if defined(HAS_PARALLAX)
-    
     if (LoD < 2 && dvd_bumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         if (dvd_bumpMethod == BUMP_PARALLAX) {

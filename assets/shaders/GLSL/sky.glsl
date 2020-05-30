@@ -3,7 +3,8 @@
 #include "vbInputData.vert"
 
 void main(void){
-    computeDataNoClip();
+    const NodeData data = fetchInputData();
+    computeData(data);
 
     VAR._vertexW += vec4(dvd_cameraPosition.xyz, 0.0f);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
@@ -239,5 +240,8 @@ void main() {
 #include "prePass.frag"
 
 void main() {
-    writeOutput(VAR._texCoord);
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+    writeOutput(data, VAR._texCoord);
 }

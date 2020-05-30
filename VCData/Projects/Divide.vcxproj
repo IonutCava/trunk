@@ -126,7 +126,7 @@
     <EnableCppCoreCheck>true</EnableCppCoreCheck>
     <EnableExperimentalCppCoreCheck>false</EnableExperimentalCppCoreCheck>
     <LinkIncremental>false</LinkIncremental>
-    <EnableManagedIncrementalBuild>true</EnableManagedIncrementalBuild>
+    <EnableManagedIncrementalBuild>false</EnableManagedIncrementalBuild>
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -299,7 +299,7 @@
       <CompileAs>CompileAsCpp</CompileAs>
       <ConformanceMode>true</ConformanceMode>
       <EnableModules>false</EnableModules>
-      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
+      <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase- </AdditionalOptions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>

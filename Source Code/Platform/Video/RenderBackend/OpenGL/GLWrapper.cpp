@@ -37,7 +37,6 @@
 namespace Divide {
 
 GLStateTracker GL_API::s_stateTracker;
-bool GL_API::s_enabledDebugMSGGroups = false;
 bool GL_API::s_glFlushQueued = false;
 GLUtil::glTexturePool GL_API::s_texturePool = {};
 GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool = {};
@@ -1027,13 +1026,13 @@ bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
 }
 
 void GL_API::pushDebugMessage(const char* message) {
-    if (Config::ENABLE_GPU_VALIDATION && s_enabledDebugMSGGroups) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, static_cast<GLuint>(_ID(message)), -1, message);
     }
 }
 
 void GL_API::popDebugMessage() {
-    if (Config::ENABLE_GPU_VALIDATION && s_enabledDebugMSGGroups) {
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPopDebugGroup();
     }
 }

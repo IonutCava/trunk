@@ -39,14 +39,14 @@ float TanAcosNdL(in float ndl) {
     return sqrt(1.f - ndl * ndl) / ndl;
 #endif
 }
-vec3 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV) {
+vec3 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
     vec3 ret = vec3(0.0);
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
 
         const vec3 lightDirectionWV = -light._directionWV.xyz;
         const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-        const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl));
+        const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
 
         vec4 temp = getBRDFFactors(lightDirectionWV,
                                    vec4(light._colour.rgb, 1.0f),
@@ -83,7 +83,7 @@ float getSpotAttenuation(in Light light, in vec3 lightDirectionWV) {
     return att * intensity;
 }
 
-vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV) {
+vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
     const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
 
     vec3 ret = vec3(0.0);
@@ -97,7 +97,7 @@ vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 oc
         const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
         const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
 
-        const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl));
+        const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
 
         float att = 0.0f;
         if (light._options.x == 1) {
@@ -114,9 +114,9 @@ vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 oc
     return ret;
 }
 
-float getShadowFactor(in vec3 normalWV) {
+float getShadowFactor(in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
     float ret = 1.0f;
-    if (dvd_receivesShadow) {
+    if (receivesShadows) {
         const uint dirLightCount = dvd_LightData.x;
 
         for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
@@ -124,7 +124,7 @@ float getShadowFactor(in vec3 normalWV) {
 
             const vec3 lightDirectionWV = -light._directionWV.xyz;
             const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-            ret *= getShadowFactor(dvd_LightSource[lightIdx]._options, TanAcosNdL(ndl));
+            ret *= getShadowFactor(dvd_LightSource[lightIdx]._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
         }
 
         const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
@@ -137,7 +137,7 @@ float getShadowFactor(in vec3 normalWV) {
 
             const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
             const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-            ret *= getShadowFactor(light._options, TanAcosNdL(ndl));
+            ret *= getShadowFactor(light._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
         }
     }
 
@@ -177,7 +177,7 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 }
 #endif
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv, in bool receivesShadows, in int lodLevel) {
     const vec3 OMR = getOcclusionMetallicRoughness(colourMatrix, uv);
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO: return albedo;
@@ -185,7 +185,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         case DEBUG_ROUGHNESS: return vec3(OMR.b);
         case DEBUG_METALLIC: return vec3(OMR.g);
         case DEBUG_NORMALS: return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
-        case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV));
+        case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
         case DEBUG_LIGHT_TILES: return lightTileColour();
         case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
     }
@@ -203,8 +203,8 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 
     vec3 lightColour = 
         getEmissive(colourMatrix) +
-        getDirectionalLightContribution(dirLightCount, albedo, OMR, normalWV) +
-        getOtherLightContribution(dirLightCount, albedo, OMR, normalWV);
+        getDirectionalLightContribution(dirLightCount, albedo, OMR, normalWV, receivesShadows, lodLevel) +
+        getOtherLightContribution(dirLightCount, albedo, OMR, normalWV, receivesShadows, lodLevel);
 
 #if !defined(USE_PLANAR_REFLECTION)
     lightColour.rgb = ImageBasedLighting(lightColour.rgb, normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
@@ -214,8 +214,12 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 #endif //USE_SHADING_FLAT
 }
 
-vec4 getPixelColour(in vec4 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv) {
-    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv), albedo.a);
+vec4 getPixelColour(in vec4 albedo, in NodeData data, in vec3 normalWV, in vec2 uv) {
+    const mat4 colourMatrix = data._colourMatrix;
+    const int lodLevel = dvd_lodLevel(data);
+    const bool receivesShadows = dvd_receivesShadow(data);
+
+    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv, receivesShadows, lodLevel), albedo.a);
 
     if (dvd_showDebugInfo) {
 #if !defined(DISABLE_SHADOW_MAPPING)

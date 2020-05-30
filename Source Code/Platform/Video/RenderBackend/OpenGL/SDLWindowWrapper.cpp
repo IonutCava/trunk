@@ -74,8 +74,6 @@ namespace {
 
 /// Try and create a valid OpenGL context taking in account the specified resolution and command line arguments
 ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& config) {
-    s_enabledDebugMSGGroups = config.debug.enableDebugMsgGroups;
-
     // Fill our (abstract API <-> openGL) enum translation tables with proper values
     GLUtil::fillEnumTables();
 

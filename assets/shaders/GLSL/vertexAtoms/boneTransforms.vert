@@ -70,7 +70,11 @@ void applyBoneTransforms(inout vec4 position) {
 }
 
 #if defined(HAS_VELOCITY)
-void applyPrevBoneTransforms(inout vec4 position) {
+void applyPrevBoneTransforms(in uint boneCount, inout vec4 position) {
+    if (boneCount == 0) {
+        return;
+    }
+
     const mat4 transformMatrix[4] = transformMatricesPrev();
 
     position = (transformMatrix[0] * position + transformMatrix[1] * position +
@@ -78,4 +82,22 @@ void applyPrevBoneTransforms(inout vec4 position) {
 }
 #endif //HAS_VELOCITY
 
+
+void applyBoneTransforms(in uint boneCount, in int LoDLevel) {
+    if (boneCount == 0) {
+        return;
+    }
+
+#if !defined(SHADOW_PASS)
+
+#if defined(COMPUTE_TBN) 
+    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, LoDLevel);
+#else //COMPUTE_TBN
+    applyBoneTransforms(dvd_Vertex, dvd_Normal, LoDLevel);
+#endif //COMUTE_TBN
+
+#else //SHADOW_PASS
+    applyBoneTransforms(dvd_Vertex);
+#endif //SHADOW_PASS
+}
 #endif //_BONE_TRANSFORM_VERT_

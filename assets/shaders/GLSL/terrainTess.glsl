@@ -27,6 +27,8 @@ void main(void)
 #else
     _out.dvd_drawID = gl_DrawIDARB;
 #endif
+    NodeData data = dvd_Matrices[DATA_IDX];
+
     // Calculate texture coordinates (u,v) relative to entire terrain
     const vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
     const TerrainNodeData tData = dvd_TerrainData[_out.dvd_instanceID];
@@ -46,7 +48,7 @@ void main(void)
     dvd_Vertex.xyz *= vtx_tileScale;
     dvd_Vertex.xyz += tData._positionAndTileScale.xyz;
 
-    _out._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
+    _out._vertexW = data._worldMatrix * dvd_Vertex;
     _out._vertexW.y = vtx_height;
 
     _out._texCoord = vec2(abs(_out._vertexW.x - TerrainOrigin.x) / TERRAIN_WIDTH,
@@ -354,7 +356,7 @@ void main()
     _out._vertexWVP = dvd_ProjectionMatrix * _out._vertexWV;
 
 #if !defined(SHADOW_PASS)
-    const mat3 normalMatrix = dvd_NormalMatrixW(DATA_IDX);
+    const mat3 normalMatrix = mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
 
     const vec3 N = getNormal(pos.y, heightOffsets);
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
@@ -517,11 +519,12 @@ void main(void)
 
     const int count = gl_in.length();
 #if defined(TOGGLE_NORMALS)
-
+    NodeData nodeData = dvd_Matrices[DATA_IDX];
     const float sizeFactor = 0.75f;
     for (int i = 0; i < count; ++i) {
 
-        mat3 normalMatrixWVInv = inverse(dvd_NormalMatrixWV(DATA_IDX));
+        mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(nodeData._normalMatrixW);
+        mat3 normalMatrixWVInv = inverse(normalMatrixWV);
         mat3 tbn = normalMatrixWVInv * _in[i]._tbn;
 
         vec3 P = gl_in[i].gl_Position.xyz;
@@ -621,15 +624,17 @@ vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
 #if defined(PRE_PASS)
-    writeOutput(TexCoords, VAR._normalWV);
+    writeOutput(data, TexCoords, VAR._normalWV);
 #else //PRE_PASS
     vec4 albedo;
     vec3 normalWV;
     BuildTerrainData(_waterDetails, albedo, normalWV);
 
-    const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), colourMatrix, normalWV, TexCoords);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, TexCoords);
 
 #if defined(TOGGLE_NORMALS)
     colourOut = vec4(gs_WireColor, 1.0f);
@@ -687,8 +692,11 @@ vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
 #if defined(PRE_PASS)
-    writeOutput(TexCoords, getMixedNormal(1.0f - _waterDetails.x));
+    writeOutput(data, TexCoords, getMixedNormal(1.0f - _waterDetails.x));
 #else //PRE_PASS
     vec4 albedo;
     vec3 normalWV;
@@ -696,8 +704,7 @@ void main(void)
 
     _private_roughness = albedo.a;
 
-    const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), colourMatrix, normalWV, TexCoords);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, TexCoords);
 
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     const float LineWidth = 0.75f;

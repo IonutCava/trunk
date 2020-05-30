@@ -10,8 +10,10 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    vec4 albedo = getAlbedo(colourMatrix, TexCoords);
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+    vec4 albedo = getAlbedo(data._colourMatrix, TexCoords);
   
 #if !defined(OIT_PASS) && defined(USE_ALPHA_DISCARD)
     float alpha = albedo.a;
@@ -20,5 +22,5 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, colourMatrix, getNormal(TexCoords), TexCoords));
+    writeOutput(getPixelColour(albedo, data, getNormal(TexCoords), TexCoords));
 }

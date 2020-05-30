@@ -23,7 +23,9 @@ void main(void)
 
 void main(void)
 {
-    computeData();
+    const NodeData data = fetchInputData();
+    computeData(data);
+    setClipPlanes(VAR._vertexW);
     gl_Position = VAR._vertexWVP;
 }
 
@@ -33,9 +35,9 @@ void main(void)
 #include "lightingDefaults.vert"
 
 void main() {
-
-    computeData();
-    computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
-
+    const NodeData data = fetchInputData();
+    computeData(data);
+    setClipPlanes(VAR._vertexW);
+    computeLightVectors(data);
     gl_Position = VAR._vertexWVP;
 }

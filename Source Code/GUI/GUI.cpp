@@ -139,7 +139,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
 
     const Configuration::GUI& guiConfig = parent().platformContext().config().gui;
 
-    if (guiConfig.cegui.enabled && !guiConfig.cegui.skipRendering) {
+    if (guiConfig.cegui.enabled) {
         GFX::ExternalCommand ceguiDraw = {};
         ceguiDraw._cbk = [this]() {
             _ceguiRenderer->beginRendering();

@@ -14,9 +14,7 @@ namespace Divide {
 bool Configuration::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_CONFIG")), xmlFile);
     if (LoadSave.read(xmlFile)) {
-        GET_PARAM(debug.dumpCommandBuffersOnFrame);
         GET_PARAM(debug.enableRenderAPIDebugging);
-        GET_PARAM(debug.enableDebugMsgGroups);
         GET_PARAM(debug.useGeometryCache);
         GET_PARAM(debug.useVegetationCache);
         GET_PARAM(debug.enableTreeInstances);
@@ -40,15 +38,10 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM_ATTRIB(runtime.windowSize, height);
         GET_PARAM_ATTRIB(runtime.resolution, width);
         GET_PARAM_ATTRIB(runtime.resolution, height);
-        GET_PARAM(runtime.simSpeed);
-        GET_PARAM(runtime.zNear);
-        GET_PARAM(runtime.zFar);
+        GET_PARAM(runtime.cameraViewDistance);
         GET_PARAM(runtime.verticalFOV);
         GET_PARAM(gui.cegui.enabled);
-        GET_PARAM(gui.cegui.skipRendering);
         GET_PARAM(gui.cegui.defaultGUIScheme);
-        GET_PARAM(gui.imgui.multiViewportEnabled);
-        GET_PARAM(gui.imgui.windowDecorationsEnabled);
         GET_PARAM(gui.imgui.dontMergeFloatingWindows);
         GET_PARAM(gui.consoleLayoutFile);
         GET_PARAM(rendering.MSAASamples);
@@ -108,9 +101,7 @@ bool Configuration::fromXML(const char* xmlFile) {
 
 bool Configuration::toXML(const char* xmlFile) const {
     if (LoadSave.prepareSaveFile(xmlFile)) {
-        PUT_PARAM(debug.dumpCommandBuffersOnFrame);
         PUT_PARAM(debug.enableRenderAPIDebugging);
-        PUT_PARAM(debug.enableDebugMsgGroups);
         PUT_PARAM(debug.useGeometryCache);
         PUT_PARAM(debug.useVegetationCache);
         PUT_PARAM(debug.enableTreeInstances);
@@ -134,15 +125,10 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM_ATTRIB(runtime.windowSize, height);
         PUT_PARAM_ATTRIB(runtime.resolution, width);
         PUT_PARAM_ATTRIB(runtime.resolution, height);
-        PUT_PARAM(runtime.simSpeed);
-        PUT_PARAM(runtime.zNear);
-        PUT_PARAM(runtime.zFar);
+        PUT_PARAM(runtime.cameraViewDistance);
         PUT_PARAM(runtime.verticalFOV);
         PUT_PARAM(gui.cegui.enabled);
-        PUT_PARAM(gui.cegui.skipRendering);
         PUT_PARAM(gui.cegui.defaultGUIScheme);
-        PUT_PARAM(gui.imgui.multiViewportEnabled);
-        PUT_PARAM(gui.imgui.windowDecorationsEnabled);
         PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
         PUT_PARAM(gui.consoleLayoutFile);
         PUT_PARAM(rendering.MSAASamples);

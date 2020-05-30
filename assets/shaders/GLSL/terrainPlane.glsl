@@ -3,8 +3,9 @@
 #include "vbInputData.vert"
 
 void main(void) {
-
-    computeData();
+    const NodeData data = fetchInputData();
+    computeData(data);
+    setClipPlanes(VAR._vertexW);
     gl_Position = VAR._vertexWVP;
 }
 
@@ -15,8 +16,9 @@ void main(void) {
 layout(location = 0) out vec4 _scrollingUV;
 
 void main(void) {
-
-    computeData();
+    const NodeData data = fetchInputData();
+    computeData(data);
+    setClipPlanes(VAR._vertexW);
 
     float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = VAR._texCoord * UNDERWATER_TILE_SCALE;
@@ -52,5 +54,8 @@ void main(void) {
 #include "prePass.frag"
 
 void main() {
-    writeOutput(VAR._texCoord);
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+    writeOutput(data, VAR._texCoord);
 }

@@ -29,20 +29,6 @@ void main()
     particleColour = inColourData;
 }
 
--- Fragment.Shadow
-
-#ifdef HAS_TEXTURE
-layout(location = 0) in vec4 particleColour;
-
-void main(){
-    colour = particleColour * texture(texDiffuse0, VAR._texCoord);
-    if (colour.a < INV_Z_TEST_SIGMA) {
-        discard;
-    }
-}
-#endif
-
-
 --Fragment.Shadow.VSM
 
 #ifdef HAS_TEXTURE

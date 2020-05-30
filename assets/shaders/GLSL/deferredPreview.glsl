@@ -4,8 +4,9 @@
 
 void main(void)
 {
-
-    computeData();
+    const NodeData data = fetchInputData();
+    computeData(data);
+    setClipPlanes(VAR._vertexW);
 }
 
 -- Fragment

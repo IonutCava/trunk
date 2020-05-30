@@ -8,9 +8,10 @@ layout(location = 1) out      vec3 _incident;
 
 void main(void)
 {
-    computeData();
-    
-    computeLightVectors(dvd_NormalMatrixWV(DATA_IDX));
+    const NodeData data = fetchInputData();
+    computeData(data);
+    setClipPlanes(VAR._vertexW);
+    computeLightVectors(data);
 
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
@@ -58,6 +59,9 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 
 void main()
 {
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
 #if defined(PRE_PASS)
     const float kDistortion = 0.015f;
     const float kRefraction = 0.09f;
@@ -73,7 +77,7 @@ void main()
     vec3 normal0 = getBump(uvNormal0);
     vec3 normal1 = getBump(uvNormal1);
 
-    writeOutput(VAR._texCoord, normalize(VAR._tbn * normalize(normal0 + normal1)));
+    writeOutput(data, VAR._texCoord, normalize(VAR._tbn * normalize(normal0 + normal1)));
 #else
 
     const vec3 normalWV = getNormal(VAR._texCoord);
@@ -91,9 +95,7 @@ void main()
     //dudvColor = normalize(dudvColor * 2.0 - 1.0) * kRefraction;
 
     //normalWV = texture(texNormalMap, vec2(VAR._texCoord + dudvColor.xy)).rgb;
-
-    const mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
-    const float metalness = Metallic(colourMatrix);
+    const float metalness = Metallic(data._colourMatrix);
 
     const vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
     const vec4 reflectionColour = texture(texReflectPlanar, uvFinalReflect);
@@ -104,6 +106,6 @@ void main()
                                    _underwater);
 
     _private_reflect = texColour.rgb;
-    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), colourMatrix, normalWV, VAR._texCoord));
+    writeOutput(getPixelColour(vec4(texColour.rgb, 1.0f), data, normalWV, VAR._texCoord));
 #endif
 }

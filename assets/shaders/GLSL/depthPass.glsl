@@ -3,7 +3,10 @@
 #include "prePass.frag"
 
 void main() {
-    writeOutput(TexCoords);
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+    writeOutput(data, TexCoords);
 }
 
 -- Fragment.Shadow
@@ -18,7 +21,10 @@ void main() {
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+    mat4 colourMatrix = data._colourMatrix;
     if (getAlbedo(colourMatrix, TexCoords).a < INV_Z_TEST_SIGMA) {
         discard;
     }
@@ -41,7 +47,10 @@ out vec2 _colourOut;
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    mat4 colourMatrix = dvd_Matrices[DATA_IDX]._colourMatrix;
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+    mat4 colourMatrix = data._colourMatrix;
     if (getAlbedo(colourMatrix, TexCoords).a < INV_Z_TEST_SIGMA) {
         discard;
     }

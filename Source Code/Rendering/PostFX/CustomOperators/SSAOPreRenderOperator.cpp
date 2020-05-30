@@ -233,7 +233,6 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
 
             GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
 
-
             GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});

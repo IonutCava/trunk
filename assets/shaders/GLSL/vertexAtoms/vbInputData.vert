@@ -4,20 +4,13 @@
 #include "vertexDefault.vert"
 #include "nodeBufferedInput.cmn"
 
-#if defined(USE_GPU_SKINNING)
-#include "boneTransforms.vert"
-#endif //USE_GPU_SKINNING
-
 vec4   dvd_Vertex;
-
 #if !defined(SHADOW_PASS)
 vec3   dvd_Normal;
 #endif //SHADOW_PASS
-
 #if defined(COMPUTE_TBN)
 vec3   dvd_Tangent;
 #endif //COMPUTE_TBN
-
 #if !defined(DEPTH_PASS)
 vec4   dvd_Colour;
 #endif //DEPTH_PASS
@@ -26,28 +19,11 @@ vec3 UNPACK_FLOAT(in float value) {
     return (fract(vec3(1.0, 256.0, 65536.0) * value) * 2.0) - 1.0;
 }
 
-void applyBoneTransforms() {
-    if (dvd_boneCount == 0) {
-        return;
-    }
-
 #if defined(USE_GPU_SKINNING)
-#if !defined(SHADOW_PASS)
-
-#if defined(COMPUTE_TBN) 
-    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_Tangent, dvd_lodLevel);
-#else //COMPUTE_TBN
-    applyBoneTransforms(dvd_Vertex, dvd_Normal, dvd_lodLevel);
-#endif //COMUTE_TBN
-
-#else //SHADOW_PASS
-    applyBoneTransforms(dvd_Vertex);
-#endif //SHADOW_PASS
-
+#include "boneTransforms.vert"
 #endif // USE_GPU_SKINNING
-}
 
-void computeDataMinimal() {
+NodeData fetchInputData() {
     dvd_Vertex = vec4(inVertexData, 1.0);
 
 #if !defined(SHADOW_PASS)
@@ -74,42 +50,35 @@ void computeDataMinimal() {
 
     VAR.dvd_instanceID = gl_InstanceID;
 
-    applyBoneTransforms();
+    return dvd_Matrices[DATA_IDX];
 }
 
-void computeDataNoClip() {
-    computeDataMinimal();
+void computeData(in NodeData data) {
+#if defined(USE_GPU_SKINNING)
+    const uint boneCount = dvd_boneCount(data);
+    const int lodLevel = dvd_lodLevel(data);
 
-    VAR._vertexW = dvd_WorldMatrix(DATA_IDX) * dvd_Vertex;
+    applyBoneTransforms(boneCount, lodLevel);
+#endif
+
+    VAR._vertexW = data._worldMatrix * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if defined(HAS_VELOCITY)
-
+    vec4 dvd_PrevVertex = dvd_Vertex;
 #if defined(USE_GPU_SKINNING)
-    vec4 dvd_PrevVertex = vec4(inVertexData, 1.0);
-    applyPrevBoneTransforms(dvd_PrevVertex);
-    const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_PrevVertex, 1.0f);
-#else
-    const vec4 worldPos = vec4(mat4x3(dvd_PrevWorldMatrix(DATA_IDX)) * dvd_Vertex, 1.0f);
+    applyPrevBoneTransforms(boneCount, dvd_PrevVertex);
 #endif
-    
+
+    dvd_PrevVertex = vec4(mat4x3(data._prevWorldMatrix) * dvd_PrevVertex, 1.0f);
+
 #if defined(USE_CAMERA_BLUR)
-    VAR._prevVertexWVP = dvd_PreviousViewProjectionMatrix * worldPos;
+    VAR._prevVertexWVP = dvd_PreviousViewProjectionMatrix * dvd_PrevVertex;
 #else
-    VAR._prevVertexWVP = dvd_ViewProjectionMatrix * worldPos;
+    VAR._prevVertexWVP = dvd_ViewProjectionMatrix * dvd_PrevVertex;
 #endif
 #endif
-}
-
-void computeData() {
-    computeDataNoClip();
-    setClipPlanes(VAR._vertexW);
-}
-
-vec3 rotate_vertex_position(vec3 position, vec4 q) {
-    const vec3 v = position.xyz;
-    return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
 #if 0

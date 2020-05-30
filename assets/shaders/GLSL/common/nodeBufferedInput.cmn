@@ -14,35 +14,26 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
-#define dvd_WorldMatrix(index) dvd_Matrices[index]._worldMatrix
-//#define dvd_PrevWorldMatrix(index) mat4x3(dvd_Matrices[index]._prevWorldMatrix)
-#define dvd_PrevWorldMatrix(index) dvd_Matrices[index]._prevWorldMatrix
-#define dvd_NormalMatrixW(index) mat3(dvd_Matrices[index]._normalMatrixW)
-#define dvd_NormalMatrixWV(index) (mat3(dvd_ViewMatrix) * dvd_NormalMatrixW(index))
+#define dvd_boneCount(nodeData) uint(nodeData._normalMatrixW[0][3])
+#define dvd_lodLevel(nodeData) int(nodeData._colourMatrix[3].z)
 
-#define dvd_boneCount uint(dvd_Matrices[DATA_IDX]._normalMatrixW[0][3])
-#define dvd_texOperation uint(dvd_Matrices[DATA_IDX]._prevWorldMatrix[0][3])
-#define dvd_bumpMethod uint(dvd_Matrices[DATA_IDX]._prevWorldMatrix[1][3])
-#define dvd_reserved1 uint(dvd_Matrices[DATA_IDX]._prevWorldMatrix[2][3])
-#define dvd_reseverd2 uint(dvd_Matrices[DATA_IDX]._prevWorldMatrix[3][3])
-
-//buffer_matProperties:
-//  x - isSelected/isHighlighted
-//  y - isShadowMapped
-//  z - lodLevel
-//  w - occlusion cull flag
+#define dvd_reserved1(nodeData) uint(nodeData._prevWorldMatrix[2][3])
+#define dvd_reseverd2(nodeData) uint(nodeData._prevWorldMatrix[3][3])
 
 #define buffer_matProperties dvd_Matrices[DATA_IDX]._colourMatrix[3]
 
-#define dvd_selectionFlag   buffer_matProperties.x
 #define dvd_parallaxFactor  buffer_matProperties.y
-#define dvd_lodLevel int(buffer_matProperties.z)
 #define dvd_dataFlag int(buffer_matProperties.w)
 
 #if defined(FRAG_SHADER)
-#define dvd_reflectionIndex uint(dvd_Matrices[DATA_IDX]._normalMatrixW[1][3])
-#define dvd_refractionIndex uint(dvd_Matrices[DATA_IDX]._normalMatrixW[2][3])
-#define dvd_receivesShadow  (dvd_Matrices[DATA_IDX]._colourMatrix[2][3] > 0.1f)
+#define dvd_receivesShadow(nodeData) (int(nodeData._colourMatrix[2][3]) != 0)
+
+uint dvd_texOperation = 0;
+uint dvd_bumpMethod = 0;
+void prepareData(in NodeData data) {
+    dvd_texOperation = uint(data._prevWorldMatrix[0][3]);
+    dvd_bumpMethod = uint(data._prevWorldMatrix[1][3]);
+}
 #endif
 
 #endif //_NODE_BUFFERED_INPUT_CMN_

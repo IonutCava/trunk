@@ -288,7 +288,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
     if (_init) {
         
         const F32 fov = _platformContext->config().runtime.verticalFOV;;
-        const vec2<F32> zPlanes(_platformContext->config().runtime.zNear, _platformContext->config().runtime.zFar);
+        const vec2<F32> zPlanes(Camera::s_minNearZ, _platformContext->config().runtime.cameraViewDistance);
 
         for (UnitComponent* player : _players) {
             if (player != nullptr) {

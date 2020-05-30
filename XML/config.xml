@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
-	<!-- if this is not set to -1, then all command buffers used in that frame number will be dumped to the error log for inspection -->
-	<!-- requires a build with ENABLE_GPU_VALIDATION set-->
-	<dumpCommandBuffersOnFrame>-1</dumpCommandBuffersOnFrame>
 	<enableRenderAPIDebugging>false</enableRenderAPIDebugging>
-	<enableDebugMsgGroups>true</enableDebugMsgGroups>
 	<useGeometryCache>true</useGeometryCache>
 	<useVegetationCache>true</useVegetationCache>
 	<enableTreeInstances>false</enableTreeInstances>
@@ -45,19 +41,15 @@
 	<resolution width="1920" height="1080"/>
 	<!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
 	<simSpeed>0</simSpeed>
-	<zNear>0.25</zNear>
-	<zFar>500</zFar>
+	<cameraViewDistance>500</cameraViewDistance>
 	<verticalFOV>60</verticalFOV>
 </runtime>
 <GUI>
 	<CEGUI>
 		<Enabled>true</Enabled>
-		<SkipRendering>false</SkipRendering>
 		<defaultGUIScheme>GWEN</defaultGUIScheme>
 	</CEGUI>
 	<IMGUI>
-		<multiViewportEnabled>true</multiViewportEnabled>
-		<windowDecorationsEnabled>false</windowDecorationsEnabled>
 		<dontMergeFloatingWindows>true</dontMergeFloatingWindows>
 	</IMGUI>
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
@@ -65,10 +57,10 @@
 <rendering>
 	<MSAASamples>4</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
-	<!-- base reflectio resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
+	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
 	<reflectionResolutionFactor>1</reflectionResolutionFactor>
 	<!-- higher => better (less tilling, more parallax effects, etc) -->
-	<terrainDetailLevel>3</terrainDetailLevel>
+	<terrainDetailLevel>2</terrainDetailLevel>
 	<!-- 0 - low, 1 - med, 2 - high -->
 	<terrainTextureQuality>0</terrainTextureQuality>
 	<numLightsPerScreenTile>512</numLightsPerScreenTile>

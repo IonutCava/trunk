@@ -35,6 +35,7 @@
 namespace Divide {
 
 namespace {
+    constexpr F32 g_PhysicsSimSpeedFactor = 1.0f;
     constexpr U32 g_backupThreadPoolSize = 2u;
     constexpr U32 g_printTimerBase = 15u;
 
@@ -578,11 +579,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     XML::loadFromXML(entryData, entryPoint.c_str());
     XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
 
-    //override from commandline argumenst
-    if (Util::findCommandLineArgument(_argc, _argv, "enableGPUMessageGroups")) {
-        config.debug.enableDebugMsgGroups = true;
-    }
-
     if (Util::findCommandLineArgument(_argc, _argv, "disableRenderAPIDebugging")) {
         config.debug.enableRenderAPIDebugging = false;
     }
@@ -713,7 +709,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
-    initError = _platformContext.pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, config.runtime.simSpeed);
+    initError = _platformContext.pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, g_PhysicsSimSpeedFactor);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }

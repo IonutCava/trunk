@@ -39,12 +39,7 @@ namespace Divide {
 
 struct Configuration final : public XML::IXMLSerializable {
     struct Debug {
-        /// If true, load shader source code from cache files
-        /// If false, materials recompute shader source code from shader atoms
-        /// If true, clear shader cache to apply changes to shader atom source code
-        I32 dumpCommandBuffersOnFrame = -1;
         bool enableRenderAPIDebugging = false;
-        bool enableDebugMsgGroups = false;
         bool useGeometryCache = true;
         bool useVegetationCache = true;
         bool useShaderBinaryCache = true;
@@ -69,21 +64,16 @@ struct Configuration final : public XML::IXMLSerializable {
         vec2<U16> splashScreenSize = { 400, 300 };
         vec2<U16> windowSize = { 1280, 720 };
         vec2<U16> resolution = { 1024, 768 };
-        F32 simSpeed = 1.f;
-        F32 zNear = 0.1f;
-        F32 zFar = 1000.0f;
+        F32 cameraViewDistance = 1000.0f;
         U8  verticalFOV = 60u;
     } runtime = {};
 
     struct GUI {
         struct CEGUI {
             bool enabled = true;
-            bool skipRendering = false;
             stringImpl defaultGUIScheme = "GWEN";
         } cegui = {};
         struct IMGUI {
-            bool multiViewportEnabled = true;
-            bool windowDecorationsEnabled = true;
             bool dontMergeFloatingWindows = true;
         } imgui = {};
         stringImpl consoleLayoutFile = "console.layout";

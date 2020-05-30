@@ -87,11 +87,11 @@ float detail_getShadowFactorPoint(in uint shadowIndex, in float TanAcosNdotL) {
     return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
 }
 
-bool CanReceiveShadows(in int shadowIndex) {
-    return dvd_receivesShadow &&
+bool CanReceiveShadows(in int shadowIndex, in bool receivesShadows, in int lodLevel) {
+    return receivesShadows &&
            shadowIndex >= 0 &&
            shadowIndex < MAX_SHADOW_CASTING_LIGHTS &&
-           dvd_lodLevel <= 2;
+           lodLevel <= 2;
 }
 #else //DISABLE_SHADOW_MAPPING
 int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
@@ -99,11 +99,11 @@ int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
 }
 #endif //DISABLE_SHADOW_MAPPING
 
-float getShadowFactor(in ivec4 lightOptions, in float TanAcosNdotL) {
+float getShadowFactor(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
     float ret = 1.0f;
 #if !defined(DISABLE_SHADOW_MAPPING)
     const int shadowIndex = lightOptions.y;
-    if (CanReceiveShadows(shadowIndex)) {
+    if (CanReceiveShadows(shadowIndex, receivesShadows, lodLevel)) {
         switch (lightOptions.x) {
             case 0:  {
                 ret = detail_getShadowFactorDirectional(shadowIndex, TanAcosNdotL);
