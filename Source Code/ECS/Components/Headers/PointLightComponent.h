@@ -41,7 +41,7 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
                                   public Light
 {
    public:
-    explicit PointLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+    explicit PointLightComponent(SceneGraphNode* sgn, PlatformContext& context);
     void PreUpdate(const U64 deltaTime) final;
 
    protected:

@@ -10,8 +10,8 @@
 
 namespace Divide {
 
-PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& context)
-     : Light(sgn, 20.0f, LightType::POINT, sgn.sceneGraph().parentScene().lightPool()),
+PointLightComponent::PointLightComponent(SceneGraphNode* sgn, PlatformContext& context)
+     : Light(sgn, 20.0f, LightType::POINT, sgn->sceneGraph()->parentScene().lightPool()),
        BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>(sgn, context)
 {
     _shadowProperties._lightDetails.z = 0.025f;
@@ -21,7 +21,7 @@ PointLightComponent::PointLightComponent(SceneGraphNode& sgn, PlatformContext& c
     BoundingBox bb = {};
     bb.setMin(-10.0f);
     bb.setMax(10.0f);
-    Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
+    Attorney::SceneNodeLightComponent::setBounds(sgn->getNode(), bb);
 
     _directionCache.set(VECTOR3_ZERO);
 }

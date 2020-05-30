@@ -47,8 +47,8 @@ namespace Divide {
         explicit ECSSystem(ECS::ECSEngine& engine);
         virtual ~ECSSystem() = default;
 
-        virtual bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer);
-        virtual bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
+        virtual bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer);
+        virtual bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer);
 
         virtual void PreUpdate(F32 dt);
         virtual void Update(F32 dt);

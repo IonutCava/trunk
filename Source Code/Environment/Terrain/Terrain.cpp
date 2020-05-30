@@ -56,7 +56,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descript
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
 }
 
-void Terrain::postLoad(SceneGraphNode& sgn) {
+void Terrain::postLoad(SceneGraphNode* sgn) {
 
     if (!_initialSetupDone) {
         _editorComponent.onChangedCbk([this](std::string_view field) {onEditorChange(field); });
@@ -89,7 +89,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         toggleBoundsField._readOnly = false; //disabled/enabled
         _editorComponent.registerField(std::move(toggleBoundsField));
 
-        PlatformContext& pContext = sgn.context();
+        PlatformContext& pContext = sgn->context();
         SceneManager* sMgr = pContext.kernel().sceneManager();
 
         EditorComponentField grassVisibilityDistanceField = {};
@@ -148,7 +148,7 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
     vegetationParentNode._name = "Vegetation";
     vegetationParentNode._usageContext = NodeUsageContext::NODE_STATIC;
     vegetationParentNode._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
-    SceneGraphNode* vegParent = sgn.addChildNode(vegetationParentNode);
+    SceneGraphNode* vegParent = sgn->addChildNode(vegetationParentNode);
     assert(vegParent != nullptr);
 
     SceneGraphNodeDescriptor vegetationNodeDescriptor;
@@ -164,8 +164,8 @@ void Terrain::postLoad(SceneGraphNode& sgn) {
         vegParent->addChildNode(vegetationNodeDescriptor);
     }
 
-    sgn.get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
-    sgn.get<RenderingComponent>()->lockLoD(0u);
+    sgn->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_STATIC);
+    sgn->get<RenderingComponent>()->lockLoD(0u);
 
     SceneNode::postLoad(sgn);
 }
@@ -285,7 +285,7 @@ void Terrain::toggleBoundingBoxes() {
     _drawCommandsDirty = true;
 }
 
-void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
     OPTICK_EVENT();
 
     if (_drawDistanceChanged) {
@@ -313,7 +313,7 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-void Terrain::onRefreshNodeData(const SceneGraphNode& sgn,
+void Terrain::onRefreshNodeData(const SceneGraphNode* sgn,
                                 const RenderStagePass& renderStagePass,
                                 const Camera& crtCamera,
                                 bool refreshData,
@@ -331,7 +331,7 @@ void Terrain::onRefreshNodeData(const SceneGraphNode& sgn,
 
 }
 
-bool Terrain::prepareRender(SceneGraphNode& sgn,
+bool Terrain::prepareRender(SceneGraphNode* sgn,
                             RenderingComponent& rComp,
                             const RenderStagePass& renderStagePass,
                             const Camera& camera,
@@ -352,7 +352,7 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
     U16 depth = tessellator.getRenderDepth();
     if (refreshData && renderStagePass._stage != RenderStage::SHADOW) {
         const Frustum& frustum = camera.getFrustum();
-        const vec3<F32>& crtPos = sgn.get<TransformComponent>()->getPosition();
+        const vec3<F32>& crtPos = sgn->get<TransformComponent>()->getPosition();
 
         bool update = false;
         const bool cameraMoved = tessellator.getOrigin() != crtPos || tessellator.getFrustum() != frustum;
@@ -384,7 +384,7 @@ bool Terrain::prepareRender(SceneGraphNode& sgn,
     return Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
-void Terrain::buildDrawCommands(SceneGraphNode& sgn,
+void Terrain::buildDrawCommands(SceneGraphNode* sgn,
                                 const RenderStagePass& renderStagePass,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {

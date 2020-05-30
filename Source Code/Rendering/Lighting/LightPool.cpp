@@ -374,12 +374,12 @@ void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInO
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
-void LightPool::preRenderAllPasses(const Camera& playerCamera) {
+void LightPool::preRenderAllPasses(const Camera* playerCamera) {
     constexpr bool USE_PARALLEL_SORT = false;
 
     OPTICK_EVENT();
 
-    const vec3<F32>& eyePos = playerCamera.getEye();
+    const vec3<F32>& eyePos = playerCamera->getEye();
 
     _sortedShadowLights.resize(0);
     _sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
@@ -433,7 +433,7 @@ void LightPool::preRenderAllPasses(const Camera& playerCamera) {
     }
 }
 
-void LightPool::postRenderAllPasses(const Camera& playerCamera) {
+void LightPool::postRenderAllPasses(const Camera* playerCamera) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
     // Move backwards so that we don't step on our own toes with the lockmanager

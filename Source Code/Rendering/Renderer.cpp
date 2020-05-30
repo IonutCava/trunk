@@ -114,7 +114,7 @@ Renderer::~Renderer()
 void Renderer::preRender(RenderStagePass stagePass,
                          const Texture_ptr& hizColourTexture,
                          LightPool& lightPool,
-                         const Camera& camera,
+                         const Camera* camera,
                          GFX::CommandBuffer& bufferInOut) {
 
     if (stagePass._stage == RenderStage::SHADOW) {
@@ -153,9 +153,9 @@ void Renderer::preRender(RenderStagePass stagePass,
 
     GFX::SendPushConstantsCommand preRenderPushConstantsCmd;
     preRenderPushConstantsCmd._constants.countHint(4);
-    preRenderPushConstantsCmd._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, camera.getViewMatrix());
-    preRenderPushConstantsCmd._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-    preRenderPushConstantsCmd._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera.getViewMatrix(), camera.getProjectionMatrix()));
+    preRenderPushConstantsCmd._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, camera->getViewMatrix());
+    preRenderPushConstantsCmd._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera->getProjectionMatrix());
+    preRenderPushConstantsCmd._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera->getViewMatrix(), camera->getProjectionMatrix()));
     preRenderPushConstantsCmd._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
     GFX::EnqueueCommand(bufferInOut, preRenderPushConstantsCmd);
 

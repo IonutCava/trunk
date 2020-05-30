@@ -6,10 +6,10 @@
 #include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
-    TransformComponent::TransformComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+    TransformComponent::TransformComponent(SceneGraphNode* parentSGN, PlatformContext& context)
       : BaseComponentType<TransformComponent, ComponentType::TRANSFORM>(parentSGN, context),
         _uniformScaled(false),
-        _parentUsageContext(parentSGN.usageContext())
+        _parentUsageContext(parentSGN->usageContext())
     {
         _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
 
@@ -114,7 +114,7 @@ namespace Divide {
             updateWorldMatrix(previousMask);
             ClearBit(previousMask, TransformType::PREVIOUS_MAT);
 
-            _parentSGN.SendEvent(
+            _parentSGN->SendEvent(
             {
                 ECS::CustomEvent::Type::TransformUpdated,
                 this,
@@ -484,7 +484,7 @@ namespace Divide {
     void TransformComponent::getPreviousWorldMatrix(mat4<F32>& matOut) const {
         matOut.set(_prevWorldMatrix);
 
-        SceneGraphNode* grandParentPtr = _parentSGN.parent();
+        SceneGraphNode* grandParentPtr = _parentSGN->parent();
         if (grandParentPtr != nullptr) {
             mat4<F32> parentMat;
             grandParentPtr->get<TransformComponent>()->getPreviousWorldMatrix(parentMat);
@@ -498,7 +498,7 @@ namespace Divide {
             matOut.set(_worldMatrix);
         }
 
-        SceneGraphNode* grandParentPtr = _parentSGN.parent();
+        SceneGraphNode* grandParentPtr = _parentSGN->parent();
         if (grandParentPtr != nullptr) {
             mat4<F32> parentMat;
             grandParentPtr->get<TransformComponent>()->getWorldMatrix(parentMat);
@@ -514,7 +514,7 @@ namespace Divide {
         } else {
             getMatrix(interpolationFactor, matrixOut);
 
-            SceneGraphNode* grandParentPtr = _parentSGN.parent();
+            SceneGraphNode* grandParentPtr = _parentSGN->parent();
             if (grandParentPtr != nullptr) {
                 mat4<F32> parentMat;
                 grandParentPtr->get<TransformComponent>()->getWorldMatrix(interpolationFactor, parentMat);
@@ -524,7 +524,7 @@ namespace Divide {
     }
 
     vec3<F32> TransformComponent::getPosition() const {
-        SceneGraphNode* grandParent = _parentSGN.parent();
+        SceneGraphNode* grandParent = _parentSGN->parent();
         if (grandParent != nullptr) {
             return getLocalPosition() + grandParent->get<TransformComponent>()->getPosition();
         }
@@ -533,7 +533,7 @@ namespace Divide {
     }
 
     vec3<F32> TransformComponent::getPosition(D64 interpolationFactor) const {
-        SceneGraphNode* grandParent = _parentSGN.parent();
+        SceneGraphNode* grandParent = _parentSGN->parent();
         if (grandParent != nullptr) {
             return getLocalPosition(interpolationFactor) + grandParent->get<TransformComponent>()->getPosition(interpolationFactor);
         }
@@ -542,7 +542,7 @@ namespace Divide {
     }
 
     vec3<F32> TransformComponent::getScale() const {
-        SceneGraphNode* grandParent = _parentSGN.parent();
+        SceneGraphNode* grandParent = _parentSGN->parent();
         if (grandParent != nullptr) {
             return getLocalScale() * grandParent->get<TransformComponent>()->getScale();
         }
@@ -551,7 +551,7 @@ namespace Divide {
     }
 
     vec3<F32> TransformComponent::getScale(D64 interpolationFactor) const {
-        SceneGraphNode* grandParent = _parentSGN.parent();
+        SceneGraphNode* grandParent = _parentSGN->parent();
         if (grandParent != nullptr) {
             return getLocalScale(interpolationFactor) * grandParent->get<TransformComponent>()->getScale(interpolationFactor);
         }
@@ -560,7 +560,7 @@ namespace Divide {
     }
 
     Quaternion<F32> TransformComponent::getOrientation() const {
-        SceneGraphNode* grandParent = _parentSGN.parent();
+        SceneGraphNode* grandParent = _parentSGN->parent();
         if (grandParent != nullptr) {
             return grandParent->get<TransformComponent>()->getOrientation() * getLocalOrientation();
         }
@@ -569,7 +569,7 @@ namespace Divide {
     }
 
     Quaternion<F32> TransformComponent::getOrientation(D64 interpolationFactor) const {
-        SceneGraphNode* grandParent = _parentSGN.parent();
+        SceneGraphNode* grandParent = _parentSGN->parent();
         if (grandParent != nullptr) {
             return grandParent->get<TransformComponent>()->getOrientation(interpolationFactor) * getLocalOrientation(interpolationFactor);
         }

@@ -15,9 +15,9 @@ namespace {
     constexpr F32 g_defaultLightDistance = 500.0f;
 };
 
-DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, PlatformContext& context)
+DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, PlatformContext& context)
     : BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>(sgn, context), 
-      Light(sgn, -1, LightType::DIRECTIONAL, sgn.sceneGraph().parentScene().lightPool())
+      Light(sgn, -1, LightType::DIRECTIONAL, sgn->sceneGraph()->parentScene().lightPool())
 {
     Light::range(g_defaultLightDistance);
 
@@ -68,7 +68,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode& sgn, Platfo
     BoundingBox bb = {};
     bb.setMin(-g_defaultLightDistance * 0.5f);
     bb.setMax(-g_defaultLightDistance * 0.5f);
-    Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
+    Attorney::SceneNodeLightComponent::setBounds(sgn->getNode(), bb);
 
     _positionCache.set(VECTOR3_ZERO);
     _feedbackContainers.resize(csmSplitCount());
@@ -79,7 +79,7 @@ void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
 
     if (drawImpostor() || showDirectionCone()) {
         const F32 coneDist = 11.f;
-        const Camera* playerCam = getSGN().sceneGraph().parentScene().playerCamera();
+        const Camera* playerCam = getSGN()->sceneGraph()->parentScene().playerCamera();
         // Try and place the cone in such a way that it's always in view, because directional lights have no "source"
         const vec3<F32> min = (-coneDist * directionCache()) + 
                               playerCam->getEye() + 
@@ -105,7 +105,7 @@ void DirectionalLightComponent::OnData(const ECS::CustomEvent& data) {
 }
 
 void DirectionalLightComponent::setDirection(const vec3<F32>& direction) {
-    TransformComponent* tComp = _parentSGN.get<TransformComponent>();
+    TransformComponent* tComp = _parentSGN->get<TransformComponent>();
     if (tComp) {
         Quaternion<F32> rot = tComp->getOrientation();
         rot.fromRotation(directionCache(), direction, tComp->getUpVector());

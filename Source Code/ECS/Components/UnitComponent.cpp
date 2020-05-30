@@ -6,7 +6,7 @@
 #include "Dynamics/Entities/Units/Headers/Unit.h"
 
 namespace Divide {
-UnitComponent::UnitComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+UnitComponent::UnitComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<UnitComponent, ComponentType::UNIT>(parentSGN, context),
       _unit(nullptr)
 {
@@ -19,7 +19,7 @@ UnitComponent::~UnitComponent()
 bool UnitComponent::setUnit(Unit_ptr unit) {
     if (!_unit) {
         _unit = unit;
-        Attorney::UnitComponent::setParentNode(*_unit, &_parentSGN);
+        Attorney::UnitComponent::setParentNode(_unit.get(), _parentSGN);
         return true;
     }
 

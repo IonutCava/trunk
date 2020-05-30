@@ -76,7 +76,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         std::shared_ptr<Octree>
         createNode(const BoundingBox& region, SceneGraphNode* object);
 
-        bool isStatic(const SceneGraphNode& node) const;
+        bool isStatic(const SceneGraphNode* node) const;
         vectorEASTL<IntersectionRecord> getIntersection(const Frustum& frustum, U16 typeFilterMask) const;
         vectorEASTL<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U16 typeFilterMask) const;
 
@@ -84,9 +84,9 @@ class Octree : public std::enable_shared_from_this<Octree> {
         void updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U16 typeFilterMask);
         
         void handleIntersection(const IntersectionRecord& intersection) const;
-        bool getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const;
-        bool getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, IntersectionRecord& irOut) const;
-        bool getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const;
+        bool getIntersection(SceneGraphNode* node, const Frustum& frustum, IntersectionRecord& irOut) const;
+        bool getIntersection(SceneGraphNode* node1, SceneGraphNode* node2, IntersectionRecord& irOut) const;
+        bool getIntersection(SceneGraphNode* node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const;
         
 
     private:

@@ -42,8 +42,8 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~SSAOPreRenderOperator();
 
-    void prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) final;
-    bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
+    void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) final;
+    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
     inline F32 radius() const noexcept { return _radius; }

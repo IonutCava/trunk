@@ -23,7 +23,7 @@ SkinnedSubMesh::~SkinnedSubMesh()
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
-void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
+void SkinnedSubMesh::postLoad(SceneGraphNode* sgn) {
     if (_parentAnimatorPtr == nullptr) {
         _parentAnimatorPtr = _parentMesh->getAnimator();
 
@@ -32,22 +32,22 @@ void SkinnedSubMesh::postLoad(SceneGraphNode& sgn) {
         _boundingBoxes.resize(animationCount);
     }
 
-    sgn.get<AnimationComponent>()->updateAnimator(_parentAnimatorPtr);
+    sgn->get<AnimationComponent>()->updateAnimator(_parentAnimatorPtr);
     SubMesh::postLoad(sgn);
 }
 
 void SkinnedSubMesh::sceneUpdate(const U64 deltaTimeUS,
-                                 SceneGraphNode& sgn,
+                                 SceneGraphNode* sgn,
                                  SceneState& sceneState) {
     OPTICK_EVENT();
 
     // keep all animators in the same mesh in sync by using the Mesh's SGN deltatime update
-    sgn.get<AnimationComponent>()->incParentTimeStamp(sgn.parent()->lastDeltaTimeUS());
+    sgn->get<AnimationComponent>()->incParentTimeStamp(sgn->parent()->lastDeltaTimeUS());
     SubMesh::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
 /// update possible animations
-void SkinnedSubMesh::onAnimationChange(SceneGraphNode& sgn, I32 newIndex) {
+void SkinnedSubMesh::onAnimationChange(SceneGraphNode* sgn, I32 newIndex) {
     computeBBForAnimation(sgn, newIndex);
 
     Object3D::onAnimationChange(sgn, newIndex);
@@ -92,7 +92,7 @@ void SkinnedSubMesh::updateBB(I32 animIndex) {
     _parentMesh->queueRecomputeBB();
 }
 
-void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
+void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode* sgn, I32 animIndex) {
     // Attempt to get the map of BBs for the current animation
     UniqueLock<Mutex> w_lock(_bbStateLock);
     const BoundingBoxState state = _boundingBoxesState[animIndex];
@@ -105,7 +105,7 @@ void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode& sgn, I32 animIndex) {
     }
 
     _boundingBoxesState[animIndex] = BoundingBoxState::Computing;
-    AnimationComponent* animComp = sgn.get<AnimationComponent>();
+    AnimationComponent* animComp = sgn->get<AnimationComponent>();
 
     Task* computeBBTask = CreateTask(_context.context(),
                                      [this, animIndex, animComp](const Task& parentTask) {

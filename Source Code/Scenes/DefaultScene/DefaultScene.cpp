@@ -25,7 +25,7 @@ DefaultScene::DefaultScene(PlatformContext& context, ResourceCache* cache, Scene
 
 bool DefaultScene::load(const Str256& name) {
     bool loadState = SCENE_LOAD(name);
-    state().saveLoadDisabled(true);
+    state()->saveLoadDisabled(true);
 
     _taskTimers.push_back(0.0);
 

@@ -61,7 +61,7 @@ SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
 
 glShader::glShader(GFXDevice& context, const Str256& name)
-    : TrackedObject(),
+    : GUIDWrapper(),
       GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID(), _ID(name.c_str())),
       glObject(glObjectType::TYPE_SHADER, context),
       _stageMask(UseProgramStageMask::GL_NONE_BIT),
@@ -72,6 +72,7 @@ glShader::glShader(GFXDevice& context, const Str256& name)
       _programHandle(GLUtil::k_invalidObjectID),
       _name(name)
 {
+    std::atomic_init(&_refCount, 0);
 }
 
 glShader::~glShader() {

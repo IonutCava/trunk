@@ -166,7 +166,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     light.setShadowVPMatrix(0, mat4<F32>::Multiply(lightVP, MAT4_BIAS));
 
     RenderPassManager::PassParams params = {};
-    params._sourceNode = &light.getSGN();
+    params._sourceNode = light.getSGN();
     params._camera = shadowCameras[0];
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;

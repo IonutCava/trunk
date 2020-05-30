@@ -349,7 +349,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     applyFrustumSplits(dirLight, playerCamera.getViewMatrix(), projectionMatrix, nearFarPlanes, numSplits, splitDepths);
     
     RenderPassManager::PassParams params = {};
-    params._sourceNode = &light.getSGN();
+    params._sourceNode = light.getSGN();
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;
     params._minLoD = -1;

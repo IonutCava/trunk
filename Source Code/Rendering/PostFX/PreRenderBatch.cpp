@@ -348,7 +348,7 @@ void PreRenderBatch::onFilterToggle(FilterType filter, const bool state) {
     }
 }
 
-void PreRenderBatch::prepare(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
+void PreRenderBatch::prepare(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     for (OperatorBatch& batch : _operators) {
         for (auto& op : batch) {
             if (BitCompare(filterStack, to_U32(op->operatorType()))) {
@@ -358,7 +358,7 @@ void PreRenderBatch::prepare(const Camera& camera, U32 filterStack, GFX::Command
     }
 }
 
-void PreRenderBatch::execute(const Camera& camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
+void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipelineLumCalcHistogram = nullptr, * pipelineLumCalcAverage = nullptr, * pipelineToneMap = nullptr, * pipelineToneMapAdaptive = nullptr;
     static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
 

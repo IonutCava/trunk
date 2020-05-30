@@ -83,7 +83,7 @@ class SubMesh : public Object3D {
    protected:
     void setParentMesh(Mesh* const parentMesh);
 
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
@@ -91,7 +91,7 @@ class SubMesh : public Object3D {
     virtual const char* getResourceTypeName() const noexcept override { return "SubMesh"; }
 
     void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
+                     SceneGraphNode* sgn,
                      SceneState& sceneState) override;
     // SGN node + parent mesh
     size_t maxReferenceCount() const noexcept override { return 2; }

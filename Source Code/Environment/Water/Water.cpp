@@ -186,13 +186,13 @@ bool WaterPlane::load() {
     return SceneNode::load();
 }
 
-void WaterPlane::postLoad(SceneGraphNode& sgn) {
-    NavigationComponent* nComp = sgn.get<NavigationComponent>();
+void WaterPlane::postLoad(SceneGraphNode* sgn) {
+    NavigationComponent* nComp = sgn->get<NavigationComponent>();
     if (nComp != nullptr) {
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
     }
 
-    RigidBodyComponent* rComp = sgn.get<RigidBodyComponent>();
+    RigidBodyComponent* rComp = sgn->get<RigidBodyComponent>();
     if (rComp != nullptr) {
         rComp->physicsGroup(PhysicsGroup::GROUP_STATIC);
     }
@@ -207,10 +207,10 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     _plane->setNormal(Quad3D::CornerLocation::CORNER_ALL, WORLD_Y_AXIS);
     _boundingBox.set(vec3<F32>(-halfWidth, -_dimensions.depth, -halfLength), vec3<F32>(halfWidth, 0, halfLength));
 
-    RenderingComponent* renderable = sgn.get<RenderingComponent>();
+    RenderingComponent* renderable = sgn->get<RenderingComponent>();
 
     // If the reflector is reasonibly sized, we should keep LoD fixed so that we always update reflections
-    if (sgn.context().config().rendering.lodThresholds.x < std::max(halfWidth, halfLength)) {
+    if (sgn->context().config().rendering.lodThresholds.x < std::max(halfWidth, halfLength)) {
         renderable->lockLoD(0u);
     }
 
@@ -228,11 +228,11 @@ void WaterPlane::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-bool WaterPlane::pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point) {
-    return sgn.get<BoundsComponent>()->getBoundingBox().containsPoint(point);
+bool WaterPlane::pointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point) {
+    return sgn->get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
 
-void WaterPlane::buildDrawCommands(SceneGraphNode& sgn,
+void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
                                    const RenderStagePass& renderStagePass,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut) {
@@ -272,7 +272,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     RenderPassManager::PassParams params = {};
-    params._sourceNode = &renderParams._sgn;
+    params._sourceNode = renderParams._sgn;
     params._targetHIZ = {}; // We don't need to HiZ cull refractions
     params._targetOIT = {}; // We don't need to draw refracted transparents using woit 
     params._camera = renderParams._camera;
@@ -318,7 +318,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     clearDescriptor.clearColour(0, false);
 
     RenderPassManager::PassParams params = {};
-    params._sourceNode = &renderParams._sgn;
+    params._sourceNode = renderParams._sgn;
     params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
     params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
     params._camera = _reflectionCam;
@@ -352,9 +352,9 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     }
 }
 
-void WaterPlane::updatePlaneEquation(const SceneGraphNode& sgn, Plane<F32>& plane, bool reflection, F32 offset) {
-    const F32 waterLevel = sgn.get<TransformComponent>()->getPosition().y;
-    const Quaternion<F32>& orientation = sgn.get<TransformComponent>()->getOrientation();
+void WaterPlane::updatePlaneEquation(const SceneGraphNode* sgn, Plane<F32>& plane, bool reflection, F32 offset) {
+    const F32 waterLevel = sgn->get<TransformComponent>()->getPosition().y;
+    const Quaternion<F32>& orientation = sgn->get<TransformComponent>()->getOrientation();
 
     plane.set(Normalized(vec3<F32>(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS))), 
               offset - waterLevel);

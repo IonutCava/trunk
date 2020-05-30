@@ -76,19 +76,19 @@ RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinTyp
     return sortOrder;
 }
 
-RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material_ptr& matInstance) {
-    switch (node.getNode().type()) {
+RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material_ptr& matInstance) {
+    switch (node->getNode().type()) {
         case SceneNodeType::TYPE_TRANSFORM:
         {
-            if (BitCompare(node.componentMask(), ComponentType::SPOT_LIGHT) ||
-                BitCompare(node.componentMask(), ComponentType::POINT_LIGHT) ||
-                BitCompare(node.componentMask(), ComponentType::DIRECTIONAL_LIGHT) ||
-                BitCompare(node.componentMask(), ComponentType::ENVIRONMENT_PROBE))
+            if (BitCompare(node->componentMask(), ComponentType::SPOT_LIGHT) ||
+                BitCompare(node->componentMask(), ComponentType::POINT_LIGHT) ||
+                BitCompare(node->componentMask(), ComponentType::DIRECTIONAL_LIGHT) ||
+                BitCompare(node->componentMask(), ComponentType::ENVIRONMENT_PROBE))
             {
                 return _renderBins[RenderBinType::RBT_IMPOSTOR];
             }
-            /*if (BitCompare(node.componentMask(), ComponentType::PARTICLE_EMITTER_COMPONENT) ||
-                BitCompare(node.componentMask(), ComponentType::GRASS_COMPONENT))
+            /*if (BitCompare(node->componentMask(), ComponentType::PARTICLE_EMITTER_COMPONENT) ||
+                BitCompare(node->componentMask(), ComponentType::GRASS_COMPONENT))
             {
                 return _renderBins[RenderBinType::RBT_TRANSLUCENT];
             }*/
@@ -110,8 +110,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
         // We may want to break this stuff up into mesh rendering components and not care about specifics anymore (i.e. just material checks)
         //case SceneNodeType::TYPE_WATER:
         case SceneNodeType::TYPE_OBJECT3D: {
-            if (node.getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
-                switch (node.getNode<Object3D>().getObjectType()) {
+            if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
+                switch (node->getNode<Object3D>().getObjectType()) {
                     case ObjectType::TERRAIN:
                         return _renderBins[RenderBinType::RBT_TERRAIN];
 
@@ -132,8 +132,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode& node, const Material
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
-    RenderingComponent* const renderingCmp = sgn.get<RenderingComponent>();
+void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
+    RenderingComponent* const renderingCmp = sgn->get<RenderingComponent>();
     // We need a rendering component to render the node
     assert(renderingCmp != nullptr);
     if (!renderingCmp->getDrawPackage(stagePass).empty()) {

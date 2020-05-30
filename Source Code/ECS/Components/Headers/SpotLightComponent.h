@@ -41,7 +41,7 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
                                  public Light
 {
    public:
-    explicit SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+    explicit SpotLightComponent(SceneGraphNode* sgn, PlatformContext& context);
     void PreUpdate(const U64 deltaTime) final;
 
     PROPERTY_RW(F32, coneCutoffAngle, 35.0f);

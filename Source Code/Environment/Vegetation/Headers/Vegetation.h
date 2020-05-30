@@ -98,7 +98,7 @@ class Vegetation : public SceneNode {
     explicit Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const VegetationDetails& details);
     ~Vegetation();
 
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) final;
@@ -114,7 +114,7 @@ class Vegetation : public SceneNode {
     static void createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_ptr& terrain, const VegetationDetails& vegDetails);
 
     void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
+                     SceneGraphNode* sgn,
                      SceneState& sceneState) final;
 
     void occlusionCull(const RenderStagePass& stagePass,
@@ -123,7 +123,7 @@ class Vegetation : public SceneNode {
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                        GFX::CommandBuffer& bufferInOut) const final;
    private:
-    void uploadVegetationData(SceneGraphNode& sgn);
+    void uploadVegetationData(SceneGraphNode* sgn);
     void computeVegetationTransforms(const Task& parentTask, bool treeData);
 
     const char* getResourceTypeName() const noexcept final { return "Vegetation"; }

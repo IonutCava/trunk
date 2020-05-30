@@ -130,7 +130,7 @@ bool Scene::idle() {  // Called when application is idle
 
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
-            _sceneGraph->getRoot().get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
+            _sceneGraph->getRoot()->get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
             _cookCollisionMeshesScheduled = false;
         }
     }
@@ -165,18 +165,18 @@ void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
     music.assetName(musicFile);
     music.assetLocation(musicFilePath);
     music.flag(true);
-    hashAlg::insert(state().music(type),
+    hashAlg::insert(state()->music(type),
                     _ID(name.c_str()),
                     CreateResource<AudioDescriptor>(_resCache, music));
 }
 
-bool Scene::saveNodeToXML(const SceneGraphNode& node) const {
-    return sceneGraph().saveNodeToXML(node);
+bool Scene::saveNodeToXML(const SceneGraphNode* node) const {
+    return sceneGraph()->saveNodeToXML(node);
 }
 
-bool Scene::loadNodeFromXML(SceneGraphNode& node) const {
+bool Scene::loadNodeFromXML(SceneGraphNode* node) const {
     const char* assetsFile = "assets.xml";
-    return sceneGraph().loadNodeFromXML(assetsFile, node);
+    return sceneGraph()->loadNodeFromXML(assetsFile, node);
 }
 
 bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const {
@@ -211,37 +211,37 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
         pt.put("assets", assetsFile);
         pt.put("musicPlaylist", "musicPlaylist.xml");
 
-        pt.put("vegetation.grassVisibility", state().renderState().grassVisibility());
-        pt.put("vegetation.treeVisibility", state().renderState().treeVisibility());
+        pt.put("vegetation.grassVisibility", state()->renderState().grassVisibility());
+        pt.put("vegetation.treeVisibility", state()->renderState().treeVisibility());
 
-        pt.put("wind.windDirX", state().windDirX());
-        pt.put("wind.windDirZ", state().windDirZ());
-        pt.put("wind.windSpeed", state().windSpeed());
+        pt.put("wind.windDirX", state()->windDirX());
+        pt.put("wind.windDirZ", state()->windDirZ());
+        pt.put("wind.windSpeed", state()->windSpeed());
 
-        if (!state().globalWaterBodies().empty()) {
-            pt.put("water.waterLevel", state().globalWaterBodies()[0]._heightOffset);
-            pt.put("water.waterDepth", state().globalWaterBodies()[0]._depth);
+        if (!state()->globalWaterBodies().empty()) {
+            pt.put("water.waterLevel", state()->globalWaterBodies()[0]._heightOffset);
+            pt.put("water.waterDepth", state()->globalWaterBodies()[0]._depth);
         }
 
-        pt.put("options.visibility", state().renderState().generalVisibility());
+        pt.put("options.visibility", state()->renderState().generalVisibility());
         pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str())));
         pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
-        pt.put("fog.fogDensity", state().renderState().fogDescriptor().density());
-        pt.put("fog.fogColour.<xmlattr>.r", state().renderState().fogDescriptor().colour().r);
-        pt.put("fog.fogColour.<xmlattr>.g", state().renderState().fogDescriptor().colour().g);
-        pt.put("fog.fogColour.<xmlattr>.b", state().renderState().fogDescriptor().colour().b);
+        pt.put("fog.fogDensity", state()->renderState().fogDescriptor().density());
+        pt.put("fog.fogColour.<xmlattr>.r", state()->renderState().fogDescriptor().colour().r);
+        pt.put("fog.fogColour.<xmlattr>.g", state()->renderState().fogDescriptor().colour().g);
+        pt.put("fog.fogColour.<xmlattr>.b", state()->renderState().fogDescriptor().colour().b);
 
-        pt.put("lod.lodThresholds.<xmlattr>.x", state().renderState().lodThresholds().x);
-        pt.put("lod.lodThresholds.<xmlattr>.y", state().renderState().lodThresholds().y);
-        pt.put("lod.lodThresholds.<xmlattr>.z", state().renderState().lodThresholds().z);
-        pt.put("lod.lodThresholds.<xmlattr>.w", state().renderState().lodThresholds().w);
+        pt.put("lod.lodThresholds.<xmlattr>.x", state()->renderState().lodThresholds().x);
+        pt.put("lod.lodThresholds.<xmlattr>.y", state()->renderState().lodThresholds().y);
+        pt.put("lod.lodThresholds.<xmlattr>.z", state()->renderState().lodThresholds().z);
+        pt.put("lod.lodThresholds.<xmlattr>.w", state()->renderState().lodThresholds().w);
 
-        pt.put("shadowing.<xmlattr>.lightBleedBias", state().lightBleedBias());
-        pt.put("shadowing.<xmlattr>.minShadowVariance", state().minShadowVariance());
-        pt.put("shadowing.<xmlattr>.shadowFadeDistance", state().shadowFadeDistance());
-        pt.put("shadowing.<xmlattr>.shadowDistance", state().shadowDistance());
+        pt.put("shadowing.<xmlattr>.lightBleedBias", state()->lightBleedBias());
+        pt.put("shadowing.<xmlattr>.minShadowVariance", state()->minShadowVariance());
+        pt.put("shadowing.<xmlattr>.shadowFadeDistance", state()->shadowFadeDistance());
+        pt.put("shadowing.<xmlattr>.shadowDistance", state()->shadowDistance());
 
         pt.put("dayNight.<xmlattr>.enabled", dayNightCycleEnabled());
         pt.put("dayNight.timeOfDay.<xmlattr>.hour", _dayNightData._time._hour);
@@ -255,7 +255,7 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
     if (msgCallback) {
         msgCallback("Saving scene graph data ...");
     }
-    sceneGraph().saveToXML(assetsFile, msgCallback);
+    sceneGraph()->saveToXML(assetsFile, msgCallback);
 
     //save music
     {
@@ -290,25 +290,25 @@ bool Scene::loadXML(const Str256& name) {
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
-        sceneGraph().loadFromXML("assets.xml");
+        sceneGraph()->loadFromXML("assets.xml");
         XML::loadMusicPlaylist(sceneLocation, "musicPlaylist.xml", this, config);
         return true;
     }
 
     XML::readXML(sceneDataFile.c_str(), pt);
 
-    state().renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
-    state().renderState().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
-    state().renderState().generalVisibility(pt.get("options.visibility", 1000.0f));
+    state()->renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
+    state()->renderState().treeVisibility(pt.get("vegetation.treeVisibility", 1000.0f));
+    state()->renderState().generalVisibility(pt.get("options.visibility", 1000.0f));
 
-    state().windDirX(pt.get("wind.windDirX", 1.0f));
-    state().windDirZ(pt.get("wind.windDirZ", 1.0f));
-    state().windSpeed(pt.get("wind.windSpeed", 1.0f));
+    state()->windDirX(pt.get("wind.windDirX", 1.0f));
+    state()->windDirZ(pt.get("wind.windDirZ", 1.0f));
+    state()->windSpeed(pt.get("wind.windSpeed", 1.0f));
 
-    state().lightBleedBias(pt.get("shadowing.<xmlattr>.lightBleedBias", 0.2f));
-    state().minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", 0.001f));
-    state().shadowFadeDistance(pt.get("shadowing.<xmlattr>.shadowFadeDistance", to_U16(900u)));
-    state().shadowDistance(pt.get("shadowing.<xmlattr>.shadowDistance", to_U16(1000u)));
+    state()->lightBleedBias(pt.get("shadowing.<xmlattr>.lightBleedBias", 0.2f));
+    state()->minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", 0.001f));
+    state()->shadowFadeDistance(pt.get("shadowing.<xmlattr>.shadowFadeDistance", to_U16(900u)));
+    state()->shadowDistance(pt.get("shadowing.<xmlattr>.shadowDistance", to_U16(1000u)));
 
     dayNightCycleEnabled(pt.get("dayNight.<xmlattr>.enabled", false));
     _dayNightData._time._hour = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.hour", 14u);
@@ -319,7 +319,7 @@ bool Scene::loadXML(const Str256& name) {
         WaterDetails waterDetails = {};
         waterDetails._heightOffset = pt.get("water.waterLevel", 0.0f);
         waterDetails._depth = pt.get("water.waterDepth", -75.0f);
-        state().globalWaterBodies().push_back(waterDetails);
+        state()->globalWaterBodies().push_back(waterDetails);
     }
 
     if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")) {
@@ -356,7 +356,7 @@ bool Scene::loadXML(const Str256& name) {
                       pt.get<F32>("fog.fogColour.<xmlattr>.g", fogColour.g),
                       pt.get<F32>("fog.fogColour.<xmlattr>.b", fogColour.b));
     }
-    state().renderState().fogDescriptor().set(fogColour, fogDensity);
+    state()->renderState().fogDescriptor().set(fogColour, fogDensity);
 
     vec4<U16> lodThresholds(config.rendering.lodThresholds);
 
@@ -366,8 +366,8 @@ bool Scene::loadXML(const Str256& name) {
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.z", lodThresholds.z),
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.w", lodThresholds.w));
     }
-    state().renderState().lodThresholds().set(lodThresholds);
-    sceneGraph().loadFromXML(pt.get("assets", "assets.xml").c_str());
+    state()->renderState().lodThresholds().set(lodThresholds);
+    sceneGraph()->loadFromXML(pt.get("assets", "assets.xml").c_str());
     XML::loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), this, config);
 
     return true;
@@ -487,7 +487,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                 case _ID("TERRAIN"): {
                     _loadingTasks.fetch_add(1);
                     normalMask |= to_base(ComponentType::RENDERING);
-                    addTerrain(*parent, nodeTree, sceneNode.name);
+                    addTerrain(parent, nodeTree, sceneNode.name);
                 } break;
                 case _ID("VEGETATION_GRASS"): {
                     normalMask |= to_base(ComponentType::RENDERING);
@@ -496,12 +496,12 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                 case _ID("INFINITE_PLANE"): {
                     _loadingTasks.fetch_add(1);
                     normalMask |= to_base(ComponentType::RENDERING);
-                    addInfPlane(*parent, nodeTree, sceneNode.name);
+                    addInfPlane(parent, nodeTree, sceneNode.name);
                 }  break;
                 case _ID("WATER"): {
                     _loadingTasks.fetch_add(1);
                     normalMask |= to_base(ComponentType::RENDERING);
-                    addWater(*parent, nodeTree, sceneNode.name);
+                    addWater(parent, nodeTree, sceneNode.name);
                 } break;
                 case _ID("MESH"): {
                     // No rendering component for meshes. Only for submeshes
@@ -536,7 +536,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                 case _ID("SKY"): {
                     //ToDo: Change this - Currently, just load the default sky.
                     normalMask |= to_base(ComponentType::RENDERING);
-                    addSky(*parent, nodeTree, sceneNode.name);
+                    addSky(parent, nodeTree, sceneNode.name);
                 } break;
                 // Everything else
                 default:
@@ -560,6 +560,8 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
             }
 
             crtNode = parent->addChildNode(nodeDescriptor);
+            Attorney::SceneGraphNodeScene::reserveChildCount(crtNode, sceneNode.children.size());
+
             crtNode->loadFromXML(nodeTree);
         }
     }
@@ -584,7 +586,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
 
 SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                                           std::shared_ptr<ParticleData> data,
-                                          SceneGraphNode& parentNode) {
+                                          SceneGraphNode* parentNode) {
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
@@ -609,10 +611,10 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                                             to_base(ComponentType::NETWORKING) |
                                             to_base(ComponentType::SELECTION);
 
-    return parentNode.addChildNode(particleNodeDescriptor);
+    return parentNode->addChildNode(particleNodeDescriptor);
 }
 
-void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& name) {
+void Scene::addTerrain(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& name) {
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), name.c_str());
 
     // Load the rest of the terrain
@@ -634,7 +636,7 @@ void Scene::addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree p
                                                to_base(ComponentType::NETWORKING);
         terrainNodeDescriptor._node->loadFromXML(pt);
 
-        SceneGraphNode* terrainTemp = parentNode.addChildNode(terrainNodeDescriptor);
+        SceneGraphNode* terrainTemp = parentNode->addChildNode(terrainNodeDescriptor);
 
         NavigationComponent* nComp = terrainTemp->get<NavigationComponent>();
         nComp->navigationContext(NavigationComponent::NavigationContext::NODE_OBSTACLE);
@@ -664,7 +666,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
                                              to_base(ComponentType::BOUNDS) |
                                              to_base(ComponentType::NETWORKING) |
                                              to_base(ComponentType::SPOT_LIGHT);
-        flashLight = _sceneGraph->getRoot().addChildNode(lightNodeDescriptor);
+        flashLight = _sceneGraph->getRoot()->addChildNode(lightNodeDescriptor);
         SpotLightComponent* spotLight = flashLight->get<SpotLightComponent>();
         spotLight->castsShadows(true);
         spotLight->setDiffuseColour(DefaultColours::WHITE.rgb());
@@ -685,7 +687,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
     flashLight->get<SpotLightComponent>()->toggleEnabled();
 }
 
-SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
+SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
@@ -702,14 +704,14 @@ SceneGraphNode* Scene::addSky(SceneGraphNode& parentNode, boost::property_tree::
                                        to_base(ComponentType::RENDERING) |
                                        to_base(ComponentType::NETWORKING);
 
-    SceneGraphNode* skyNode = parentNode.addChildNode(skyNodeDescriptor);
+    SceneGraphNode* skyNode = parentNode->addChildNode(skyNodeDescriptor);
     skyNode->setFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED);
     skyNode->loadFromXML(pt);
 
     return skyNode;
 }
 
-void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
+void Scene::addWater(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
     auto registerWater = [this, nodeName, &parentNode, pt](CachedResource* res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
@@ -724,7 +726,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
 
         waterNodeDescriptor._node->loadFromXML(pt);
 
-        SceneGraphNode* waterNode = parentNode.addChildNode(waterNodeDescriptor);
+        SceneGraphNode* waterNode = parentNode->addChildNode(waterNodeDescriptor);
         waterNode->loadFromXML(pt);
         _loadingTasks.fetch_sub(1);
     };
@@ -735,7 +737,7 @@ void Scene::addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt,
     ret->addStateCallback(ResourceState::RES_LOADED, registerWater);
 }
 
-SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
+SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
     ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
 
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
@@ -758,7 +760,7 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode& parentNode, boost::property_t
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING);
 
-    SceneGraphNode* ret = parentNode.addChildNode(planeNodeDescriptor);
+    SceneGraphNode* ret = parentNode->addChildNode(planeNodeDescriptor);
     ret->loadFromXML(pt);
     return ret;
 }
@@ -799,21 +801,21 @@ U16 Scene::registerInputActions() {
 
     const auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
     const auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
-    const auto moveForward = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
-    const auto moveBackwards = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);};
-    const auto stopMoveFWDBCK = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);};
-    const auto strafeLeft = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);};
-    const auto strafeRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);};
-    const auto stopStrafeLeftRight = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);};
-    const auto rollCCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE);};
-    const auto rollCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE);};
-    const auto stopRollCCWCW = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE);};
-    const auto turnLeft = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);};
-    const auto turnRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);};
-    const auto stopTurnLeftRight = [this](InputParams param) { state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);};
-    const auto turnUp = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
-    const auto turnDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
-    const auto stopTurnUpDown = [this](InputParams param) {state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
+    const auto moveForward = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
+    const auto moveBackwards = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);};
+    const auto stopMoveFWDBCK = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);};
+    const auto strafeLeft = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);};
+    const auto strafeRight = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);};
+    const auto stopStrafeLeftRight = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);};
+    const auto rollCCW = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE);};
+    const auto rollCW = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE);};
+    const auto stopRollCCWCW = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE);};
+    const auto turnLeft = [this](InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);};
+    const auto turnRight = [this](InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);};
+    const auto stopTurnLeftRight = [this](InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);};
+    const auto turnUp = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
+    const auto turnDown = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
+    const auto stopTurnUpDown = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
     const auto togglePauseState = [this](InputParams param){
         _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false));
     };
@@ -827,20 +829,20 @@ U16 Scene::registerInputActions() {
         U32 povMask = param._var[0];
 
         if (povMask & to_base(Input::JoystickPovDirection::UP)) {  // Going up
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
+            state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
         }
         if (povMask & to_base(Input::JoystickPovDirection::DOWN)) {  // Going down
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
+            state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
         }
         if (povMask & to_base(Input::JoystickPovDirection::RIGHT)) {  // Going right
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
+            state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
         }
         if (povMask & to_base(Input::JoystickPovDirection::LEFT)) {  // Going left
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
+            state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
         }
         if (povMask == to_base(Input::JoystickPovDirection::CENTERED)) {  // stopped/centered out
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
-            state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
+            state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
+            state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
         }
     };
 
@@ -853,39 +855,39 @@ U16 Scene::registerInputActions() {
         switch (axis) {
             case 0: {
                 if (axisABS > deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);
                 } else if (axisABS < -deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);
                 } else {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);
                 }
             } break;
             case 1: {
                 if (axisABS > deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);
                 } else if (axisABS < -deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);
                 } else {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);
                 }
             } break;
 
             case 2: {
                 if (axisABS < -deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
                 } else if (axisABS > deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);
                 } else {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);
                 }
             } break;
             case 3: {
                 if (axisABS < -deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);
                 } else if (axisABS > deadZone) {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);
                 } else {
-                    state().playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
+                    state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
                 }
             } break;
         }
@@ -963,7 +965,7 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
     static bool hadWindowGrab = false;
     static vec2<I32> lastMousePosition;
 
-    state().playerState(index).cameraLockedToMouse(lockState);
+    state()->playerState(index).cameraLockedToMouse(lockState);
 
     DisplayWindow* window = _context.app().windowManager().getFocusedWindow();
     if (lockState) {
@@ -974,7 +976,7 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
         WindowManager::ToggleRelativeMouseMode(true);
     } else {
         WindowManager::ToggleRelativeMouseMode(false);
-        state().playerState(index).resetMovement();
+        state()->playerState(index).resetMovement();
         if (window != nullptr) {
             window->grabState(hadWindowGrab);
         }
@@ -1020,11 +1022,13 @@ bool Scene::load(const Str256& name) {
 
     loadDefaultCamera();
 
-    SceneGraphNode& rootNode = _sceneGraph->getRoot();
-
+    SceneGraphNode* rootNode = _sceneGraph->getRoot();
     vectorEASTL<XML::SceneNode>& rootChildren = _xmlSceneGraphRootNode.children;
+    const size_t childCount = rootChildren.size();
+    Attorney::SceneGraphNodeScene::reserveChildCount(rootNode, childCount);
+
     ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = to_U32(rootChildren.size());
+    descriptor._iterCount = to_U32(childCount);
     descriptor._partitionSize = 3u;
     descriptor._priority = TaskPriority::DONT_CARE;
     descriptor._useCurrentThread = true;
@@ -1032,7 +1036,7 @@ bool Scene::load(const Str256& name) {
     descriptor._waitForFinish = true;
     descriptor._cbk = [this, &rootNode, &rootChildren](const Task* parentTask, U32 start, U32 end) {
                             for (U32 i = start; i < end; ++i) {
-                                loadAsset(parentTask, rootChildren[i], &rootNode);
+                                loadAsset(parentTask, rootChildren[i], rootNode);
                             }
                         };
     parallel_for(_context, descriptor);
@@ -1040,13 +1044,13 @@ bool Scene::load(const Str256& name) {
     WAIT_FOR_CONDITION(_loadingTasks.load() == 0u);
 
     // We always add a sky
-    const auto& skies = sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
+    const auto& skies = sceneGraph()->getNodesByType(SceneNodeType::TYPE_SKY);
     assert(!skies.empty());
     Sky& currentSky = skies[0]->getNode<Sky>();
     const auto& dirLights = _lightPool->getLights(LightType::DIRECTIONAL);
     DirectionalLightComponent* sun = nullptr;
     if (!dirLights.empty()) {
-        sun = dirLights.front()->getSGN().get<DirectionalLightComponent>();
+        sun = dirLights.front()->getSGN()->get<DirectionalLightComponent>();
     }
     if (sun != nullptr) {
         sun->castsShadows(true);
@@ -1110,7 +1114,7 @@ void Scene::rebuildShaders() {
     bool rebuilt = false;
     for (auto& [playerIdx, selections] : _currentSelection) {
         for (U8 i = 0u; i < selections._selectionCount; ++i) {
-            SceneGraphNode* node = sceneGraph().findNode(selections._selections[i]);
+            SceneGraphNode* node = sceneGraph()->findNode(selections._selections[i]);
             if (node != nullptr) {
                 node->get<RenderingComponent>()->rebuildMaterial();
                 rebuilt = true;
@@ -1130,9 +1134,9 @@ stringImpl Scene::getPlayerSGNName(PlayerIndex idx) {
 void Scene::currentPlayerPass(PlayerIndex idx) {
     //ToDo: These don't necessarily need to match -Ionut
     renderState().renderPass(idx);
-    state().playerPass(idx);
+    state()->playerPass(idx);
 
-    if (state().playerState().cameraUnderwater()) {
+    if (state()->playerState().cameraUnderwater()) {
         _context.gfx().getRenderer().postFX().pushFilter(FilterType::FILTER_UNDERWATER);
     } else {
         _context.gfx().getRenderer().postFX().popFilter(FilterType::FILTER_UNDERWATER);
@@ -1143,12 +1147,12 @@ void Scene::onSetActive() {
     _context.pfx().setPhysicsScene(_pxScene);
     _aiManager->pauseUpdate(false);
 
-    input().onSetActive();
+    input()->onSetActive();
     _context.sfx().stopMusic();
     _context.sfx().dumpPlaylists();
 
     for (U32 i = 0; i < to_base(MusicType::COUNT); ++i) {
-        const SceneState::MusicPlaylist& playlist = state().music(static_cast<MusicType>(i));
+        const SceneState::MusicPlaylist& playlist = state()->music(static_cast<MusicType>(i));
         if (!playlist.empty()) {
             for (const SceneState::MusicPlaylist::value_type& song : playlist) {
                 _context.sfx().addMusic(i, song.second);
@@ -1171,7 +1175,7 @@ void Scene::onRemoveActive() {
         Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers.back()->getBoundNode(), false);
     }
 
-    input().onRemoveActive();
+    input()->onRemoveActive();
 }
 
 void Scene::addPlayerInternal(bool queue) {
@@ -1184,7 +1188,7 @@ void Scene::addPlayerInternal(bool queue) {
     
     SceneGraphNode* playerSGN(_sceneGraph->findNode(playerName));
     if (!playerSGN) {
-        SceneGraphNode& root = _sceneGraph->getRoot();
+        SceneGraphNode* root = _sceneGraph->getRoot();
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
@@ -1196,7 +1200,7 @@ void Scene::addPlayerInternal(bool queue) {
                                               to_base(ComponentType::BOUNDS) |
                                               to_base(ComponentType::NETWORKING);
 
-        playerSGN = root.addChildNode(playerNodeDescriptor);
+        playerSGN = root->addChildNode(playerNodeDescriptor);
     }
 
     Attorney::SceneManagerScene::addPlayer(_parent, *this, playerSGN, queue);
@@ -1211,24 +1215,24 @@ void Scene::removePlayerInternal(PlayerIndex idx) {
 
 void Scene::onPlayerAdd(const Player_ptr& player) {
     _scenePlayers.push_back(player.get());
-    state().onPlayerAdd(player->index());
-    input().onPlayerAdd(player->index());
+    state()->onPlayerAdd(player->index());
+    input()->onPlayerAdd(player->index());
 }
 
 void Scene::onPlayerRemove(const Player_ptr& player) {
     PlayerIndex idx = player->index();
 
-    input().onPlayerRemove(idx);
-    state().onPlayerRemove(idx);
+    input()->onPlayerRemove(idx);
+    state()->onPlayerRemove(idx);
     _cameraUpdateListeners[idx] = 0u;
     if (_flashLight.size() > idx) {
         SceneGraphNode* flashLight = _flashLight[idx];
         if (flashLight) {
-            _sceneGraph->getRoot().removeChildNode(*flashLight);
+            _sceneGraph->getRoot()->removeChildNode(flashLight);
             _flashLight[idx] = nullptr;
         }
     }
-    _sceneGraph->getRoot().removeChildNode(*player->getBoundNode());
+    _sceneGraph->getRoot()->removeChildNode(player->getBoundNode());
 
     _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(idx));
 }
@@ -1249,7 +1253,7 @@ Player* Scene::getPlayerForIndex(PlayerIndex idx) const {
 }
 
 U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
-    return input().getPlayerIndexForDevice(deviceIndex);
+    return input()->getPlayerIndexForDevice(deviceIndex);
 }
 
 void Scene::clearObjects() {
@@ -1272,7 +1276,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
                 sceneFocused = !editor.running() || editor.scenePreviewFocused();
             }
 
-            if (sceneFocused && !state().playerState(idx).cameraLockedToMouse()) {
+            if (sceneFocused && !state()->playerState(idx).cameraLockedToMouse()) {
                 findHoverTarget(idx, arg.absolutePos());
             }
         }
@@ -1283,7 +1287,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
 bool Scene::updateCameraControls(PlayerIndex idx) {
     FreeFlyCamera* cam = getPlayerForIndex(idx)->camera();
     
-    SceneStatePerPlayer& playerState = state().playerState(idx);
+    SceneStatePerPlayer& playerState = state()->playerState(idx);
 
     playerState.previousViewMatrix(cam->getViewMatrix());
     playerState.previousProjectionMatrix(cam->getProjectionMatrix());
@@ -1326,7 +1330,7 @@ void Scene::onLostFocus() {
     //Add a focus flag and ignore redundant calls
 
     for (const Player* player : _scenePlayers) {
-        state().playerState(player->index()).resetMovement();
+        state()->playerState(player->index()).resetMovement();
         endDragSelection(player->index(), false);
     }
     _parent.wantsMouse(false);
@@ -1405,7 +1409,7 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             _dayNightData._timeAccumulator = 0.f;
 
             const SunDetails details = _dayNightData._skyInstance->setDateTime(localtime(&now));
-            _dayNightData._dirLight->getSGN().get<TransformComponent>()->setRotationEuler(details._eulerDirection);
+            _dayNightData._dirLight->getSGN()->get<TransformComponent>()->setRotationEuler(details._eulerDirection);
 
             const FColour3 sunsetOrange = FColour3(99.2f, 36.9f, 32.5f) / 100.f;
             Light* light = _dayNightData._dirLight;
@@ -1445,11 +1449,11 @@ void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bu
     }
 }
 
-void Scene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+void Scene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (!Config::Build::IS_SHIPPING_BUILD) {
         if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
             _octreeBoundingBoxes.resize(0);
-            sceneGraph().getOctree().getAllRegions(_octreeBoundingBoxes);
+            sceneGraph()->getOctree().getAllRegions(_octreeBoundingBoxes);
 
             const size_t primitiveCount = _octreePrimitives.size();
             const size_t regionCount = _octreeBoundingBoxes.size();
@@ -1490,7 +1494,7 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
 bool Scene::checkCameraUnderwater(const Camera& camera) const {
     const vec3<F32>& eyePos = camera.getEye();
     {
-        const auto& waterBodies = state().globalWaterBodies();
+        const auto& waterBodies = state()->globalWaterBodies();
         for (const WaterDetails& water : waterBodies) {
             if (IS_IN_RANGE_INCLUSIVE(eyePos.y, water._heightOffset - water._depth, water._heightOffset)) {
                 return true;
@@ -1500,7 +1504,7 @@ bool Scene::checkCameraUnderwater(const Camera& camera) const {
 
     const auto& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
     for (SceneGraphNode* node : waterBodies) {
-        if (node && node->getNode<WaterPlane>().pointUnderwater(*node, eyePos)) {
+        if (node && node->getNode<WaterPlane>().pointUnderwater(node, eyePos)) {
             return true;
         }
     }
@@ -1523,7 +1527,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
     // see if we select another one
     _sceneSelectionCandidates.resize(0);
     // Cast the picking ray and find items between the nearPlane and far Plane
-    sceneGraph().intersect(
+    sceneGraph()->intersect(
         {
             startRay,
             startRay.direction(endRay)
@@ -1610,8 +1614,8 @@ void Scene::clearHoverTarget(PlayerIndex idx) {
     _currentHoverTarget[idx] = -1;
 }
 
-void Scene::onNodeDestroy(SceneGraphNode& node) {
-    const I64 guid = node.getGUID();
+void Scene::onNodeDestroy(SceneGraphNode* node) {
+    const I64 guid = node->getGUID();
     for (auto iter : _currentHoverTarget) {
         if (iter.second == guid) {
             iter.second = -1;
@@ -1634,7 +1638,7 @@ void Scene::onNodeDestroy(SceneGraphNode& node) {
 void Scene::resetSelection(PlayerIndex idx) {
     Selections& playerSelections = _currentSelection[idx];
     for (I8 i = 0; i < playerSelections._selectionCount; ++i) {
-        SceneGraphNode* node = sceneGraph().findNode(playerSelections._selections[i]);
+        SceneGraphNode* node = sceneGraph()->findNode(playerSelections._selections[i]);
         if (node != nullptr) {
             node->clearFlag(SceneGraphNode::Flags::HOVERED, true);
             node->clearFlag(SceneGraphNode::Flags::SELECTED, true);

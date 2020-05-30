@@ -73,7 +73,7 @@ class NOINITVTABLE PhysicsAPIWrapper {
 
     virtual void setPhysicsScene(PhysicsSceneInterface* const targetScene) = 0;
 
-    virtual PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) = 0;
+    virtual PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) = 0;
 };
 
 };  // namespace Divide

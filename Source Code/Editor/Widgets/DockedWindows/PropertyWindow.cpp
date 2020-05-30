@@ -505,7 +505,7 @@ namespace Divide {
                     }
                     ImGui::Separator();
 
-                    vectorEASTLFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(*sgnNode);
+                    vectorEASTLFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (comp->fields().empty()) {
                             PushReadOnly();
@@ -615,9 +615,9 @@ namespace Divide {
 
                                 if (ImGui::CollapsingHeader("Scene Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
                                     SceneManager* sceneManager = context().kernel().sceneManager();
-                                    SceneState& activeSceneState = sceneManager->getActiveScene().state();
+                                    SceneState* activeSceneState = sceneManager->getActiveScene().state();
                                     {
-                                        F32 bleedBias = activeSceneState.lightBleedBias();
+                                        F32 bleedBias = activeSceneState->lightBleedBias();
                                         EditorComponentField tempField = {};
                                         tempField._name = "Light bleed bias";
                                         tempField._basicType = GFX::PushConstantType::FLOAT;
@@ -627,12 +627,12 @@ namespace Divide {
                                         tempField._format = "%.6f";
                                         tempField._range = { 0.0f, 1.0f };
                                         tempField._dataSetter = [&activeSceneState](const void* bias) {
-                                            activeSceneState.lightBleedBias(*static_cast<const F32*>(bias));
+                                            activeSceneState->lightBleedBias(*static_cast<const F32*>(bias));
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
                                     {
-                                        F32 shadowVariance = activeSceneState.minShadowVariance();
+                                        F32 shadowVariance = activeSceneState->minShadowVariance();
                                         EditorComponentField tempField = {};
                                         tempField._name = "Min shadow variance";
                                         tempField._basicType = GFX::PushConstantType::FLOAT;
@@ -642,13 +642,13 @@ namespace Divide {
                                         tempField._range = { 0.00001f, 0.99999f };
                                         tempField._format = "%.6f";
                                         tempField._dataSetter = [&activeSceneState](const void* variance) {
-                                            activeSceneState.minShadowVariance(*static_cast<const F32*>(variance));
+                                            activeSceneState->minShadowVariance(*static_cast<const F32*>(variance));
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
                                     constexpr U16 min = 1u, max = 1000u;
                                     {
-                                        U16 shadowFadeDistance = activeSceneState.shadowFadeDistance();
+                                        U16 shadowFadeDistance = activeSceneState->shadowFadeDistance();
                                         EditorComponentField tempField = {};
                                         tempField._name = "Shadow fade distance";
                                         tempField._basicType = GFX::PushConstantType::UINT;
@@ -658,12 +658,12 @@ namespace Divide {
                                         tempField._data = &shadowFadeDistance;
                                         tempField._range = { min, max };
                                         tempField._dataSetter = [&activeSceneState](const void* bias) {
-                                            activeSceneState.shadowFadeDistance(*static_cast<const U16*>(bias));
+                                            activeSceneState->shadowFadeDistance(*static_cast<const U16*>(bias));
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
                                     {
-                                        U16 shadowMaxDistance = activeSceneState.shadowDistance();
+                                        U16 shadowMaxDistance = activeSceneState->shadowDistance();
                                         EditorComponentField tempField = {};
                                         tempField._name = "Shadow max distance";
                                         tempField._basicType = GFX::PushConstantType::UINT;
@@ -673,7 +673,7 @@ namespace Divide {
                                         tempField._data = &shadowMaxDistance;
                                         tempField._range = { min, max };
                                         tempField._dataSetter = [&activeSceneState](const void* bias) {
-                                            activeSceneState.shadowDistance(*static_cast<const U16*>(bias));
+                                            activeSceneState->shadowDistance(*static_cast<const U16*>(bias));
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
@@ -785,7 +785,7 @@ namespace Divide {
     SceneGraphNode* PropertyWindow::node(I64 guid) const {
         const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
 
-        return activeScene.sceneGraph().findNode(guid);
+        return activeScene.sceneGraph()->findNode(guid);
     }
 
     bool PropertyWindow::processField(EditorComponentField& field) {

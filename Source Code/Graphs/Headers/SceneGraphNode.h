@@ -69,6 +69,7 @@ namespace Attorney {
     class SceneGraphNodeRenderPassCuller;
     class SceneGraphNodeRenderPassManager;
     class SceneGraphNodeRelationshipCache;
+    class SceneGraphNodeScene;
 };
 
 struct SGNRayResult {
@@ -87,6 +88,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
     friend class Attorney::SceneGraphNodeRenderPassCuller;
     friend class Attorney::SceneGraphNodeRenderPassManager;
     friend class Attorney::SceneGraphNodeRelationshipCache;
+    friend class Attorney::SceneGraphNodeScene;
 
     public:
 
@@ -103,18 +105,18 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 
     public:
         /// Avoid creating SGNs directly. Use the "addChildNode" on an existing node (even root) or "addNode" on the existing SceneGraph
-        explicit SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
+        explicit SceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescriptor& descriptor);
         ~SceneGraphNode();
 
         /// Return a reference to the parent graph. Operator= should be disabled
-        inline SceneGraph& sceneGraph() noexcept { return _sceneGraph; }
+        inline SceneGraph* sceneGraph() noexcept { return _sceneGraph; }
 
         /// Add child node increments the node's ref counter if the node was already added to the scene graph
         SceneGraphNode* addChildNode(const SceneGraphNodeDescriptor& descriptor);
 
         /// If this function returns true, the node will no longer be part of the scene hierarchy.
         /// If the node is not a child of the calling node, we will recursively look in all of its children for a match
-        bool removeChildNode(const SceneGraphNode& node, bool recursive = true, bool deleteNode = true);
+        bool removeChildNode(const SceneGraphNode* node, bool recursive = true, bool deleteNode = true);
 
         /// Find a child Node using the given name (either SGN name or SceneNode name)
         SceneGraphNode* findChild(const U64 nameHash, bool sceneNodeName = false, bool recursive = false) const;
@@ -126,16 +128,16 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         bool removeNodesByType(SceneNodeType nodeType);
 
         /// Changing a node's parent means removing this node from the current parent's child list and appending it to the new parent's list (happens after a full frame)
-        void setParent(SceneGraphNode& parent, bool defer = false);
+        void setParent(SceneGraphNode* parent, bool defer = false);
 
         /// Checks if we have a parent matching the typeMask. We check recursively until we hit the top node (if ignoreRoot is false, top node is Root)
         bool isChildOfType(U16 typeMask) const;
 
         /// Returns true if the current node is related somehow to the specified target node (see RelationshipType enum for more details)
-        bool isRelated(const SceneGraphNode& target) const;
+        bool isRelated(const SceneGraphNode* target) const;
 
         /// Returns true if the specified target node is a parent or grandparent(if recursive == true) of the current node
-        bool isChild(const SceneGraphNode& target, bool recursive) const;
+        bool isChild(const SceneGraphNode* target, bool recursive) const;
 
         /// Recursively call the delegate function on all children. Returns false if the loop was interrupted. Use start and end to only affect a range (useful for parallel algorithms)
         template<class Predicate>
@@ -158,15 +160,15 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         inline void unlockChildrenForRead() const { _childLock.unlock_shared(); }
 
         /// Return a specific child by indes. Does not recurse.
-        inline SceneGraphNode& getChild(U32 idx) {
+        inline SceneGraphNode* getChild(U32 idx) {
             SharedLock<SharedMutex> r_lock(_childLock);
-            return *_children[idx];
+            return _children[idx];
         }
 
         /// Return a specific child by indes. Does not recurse.
-        inline const SceneGraphNode& getChild(U32 idx) const {
+        inline const SceneGraphNode* getChild(U32 idx) const {
             SharedLock<SharedMutex> r_lock(_childLock);
-            return *_children[idx];
+            return _children[idx];
         }
 
         /// Called from parent SceneGraph
@@ -225,7 +227,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         template<class T, class ...P>
         typename std::enable_if<std::is_base_of<SGNComponent, T>::value, T*>::type
         AddSGNComponent(P&&... param) {
-            SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(*this, this->context(), std::forward<P>(param)...));
+            SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(this, this->context(), std::forward<P>(param)...));
 
             Hacks._editorComponents.emplace_back(&comp->getEditorComponent());
 
@@ -295,7 +297,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Called whenever we send a networking packet from our NetworkingComponent (if any). FrameCount is the frame ID sent with the packet.
         void onNetworkSend(U32 frameCount);
         /// Returns a bottom-up list(leafs -> root) of all of the nodes parented under the current one.
-        void getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList);
+        void getAllNodes(vectorEASTL<SceneGraphNode*>& nodeList);
         /// Destructs all of the nodes specified in the list and removes them from the _children container.
         void processDeleteQueue(vectorEASTL<size_t>& childList);
         /// Called on every new frame
@@ -307,7 +309,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Called by the TransformComponent whenever the transform changed. Useful for Octree updates for example.
         void setTransformDirty(U32 transformMask);
         /// As opposed to "postLoad()" that's called when the SceneNode is ready for processing, this call is used as a callback for when the SceneNode finishes loading as a Resource. postLoad() is called after this always.
-        void postLoad(SceneNode& sceneNode, SceneGraphNode& sgn);
+        void postLoad(SceneNode* sceneNode, SceneGraphNode* sgn);
         /// This indirect is used to avoid including ECS headers in this file, but we still need the ECS engine for templated methods
         ECS::ECSEngine& GetECSEngine();
         /// Only called from withing "setParent()" (which is also called from "addChildNode()"). Used to mark the existing relationship cache as invalid.
@@ -345,7 +347,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 
         mutable SharedMutex _childLock;
 
-        REFERENCE_R(SceneGraph, sceneGraph);
+        POINTER_R(SceneGraph, sceneGraph, nullptr);
         PROPERTY_R(SceneNode_ptr, node, nullptr);
         POINTER_R(ECS::ComponentManager, compManager, nullptr);
         POINTER_R(SceneGraphNode, parent, nullptr);
@@ -366,12 +368,12 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 namespace Attorney {
     class SceneGraphNodeEditor {
     private:
-        static vectorEASTLFast<EditorComponent*>& editorComponents(SceneGraphNode& node) noexcept {
-            return node.Hacks._editorComponents;
+        static vectorEASTLFast<EditorComponent*>& editorComponents(SceneGraphNode* node) noexcept {
+            return node->Hacks._editorComponents;
         }
 
-        static const vectorEASTLFast<EditorComponent*>& editorComponents(const SceneGraphNode& node) noexcept {
-            return node.Hacks._editorComponents;
+        static const vectorEASTLFast<EditorComponent*>& editorComponents(const SceneGraphNode* node) noexcept {
+            return node->Hacks._editorComponents;
         }
 
         friend class Divide::PropertyWindow;
@@ -379,32 +381,32 @@ namespace Attorney {
 
     class SceneGraphNodeSceneGraph {
     private:
-        static void processEvents(SceneGraphNode& node) {
-            node.processEvents();
+        static void processEvents(SceneGraphNode* node) {
+            node->processEvents();
         }
 
-        static void onNetworkSend(SceneGraphNode& node, U32 frameCount) {
-            node.onNetworkSend(frameCount);
+        static void onNetworkSend(SceneGraphNode* node, U32 frameCount) {
+            node->onNetworkSend(frameCount);
         }
 
-        static void getOrderedNodeList(SceneGraphNode& node, vectorEASTL<SceneGraphNode*>& nodeList) {
-            node.getOrderedNodeList(nodeList);
+        static void getAllNodes(SceneGraphNode* node, vectorEASTL<SceneGraphNode*>& nodeList) {
+            node->getAllNodes(nodeList);
         }
 
-        static void frameStarted(SceneGraphNode& node, const FrameEvent& evt) {
-            node.frameStarted(evt);
+        static void frameStarted(SceneGraphNode* node, const FrameEvent& evt) {
+            node->frameStarted(evt);
         }
 
-;        static void processDeleteQueue(SceneGraphNode& node, vectorEASTL<size_t>& childList) {
-            node.processDeleteQueue(childList);
+;        static void processDeleteQueue(SceneGraphNode* node, vectorEASTL<size_t>& childList) {
+            node->processDeleteQueue(childList);
         }
 
-        static bool saveCache(const SceneGraphNode& node, ByteBuffer& outputBuffer) {
-            return node.saveCache(outputBuffer);
+        static bool saveCache(const SceneGraphNode* node, ByteBuffer& outputBuffer) {
+            return node->saveCache(outputBuffer);
         }
 
-        static bool loadCache(SceneGraphNode& node, ByteBuffer& inputBuffer) {
-            return node.loadCache(inputBuffer);
+        static bool loadCache(SceneGraphNode* node, ByteBuffer& inputBuffer) {
+            return node->loadCache(inputBuffer);
         }
 
         friend class Divide::SceneGraph;
@@ -412,19 +414,19 @@ namespace Attorney {
 
     class SceneGraphNodeComponent {
     private:
-        static void setTransformDirty(SceneGraphNode& node, U32 transformMask) {
-            node.setTransformDirty(transformMask);
+        static void setTransformDirty(SceneGraphNode* node, U32 transformMask) {
+            node->setTransformDirty(transformMask);
         }
 
-        static bool prepareRender(SceneGraphNode& node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, bool refreshData) {
-            return node.prepareRender(rComp, renderStagePass, camera, refreshData);
+        static bool prepareRender(SceneGraphNode* node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, bool refreshData) {
+            return node->prepareRender(rComp, renderStagePass, camera, refreshData);
         }
 
-        static void onRefreshNodeData(SceneGraphNode& node, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
-            node.onRefreshNodeData(renderStagePass, camera, refreshData, bufferInOut);
+        static void onRefreshNodeData(SceneGraphNode* node, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
+            node->onRefreshNodeData(renderStagePass, camera, refreshData, bufferInOut);
         }
-        static bool getDrawState(const SceneGraphNode& node, RenderStagePass stagePass, U8 LoD) {
-            return node.getDrawState(stagePass, LoD);
+        static bool getDrawState(const SceneGraphNode* node, RenderStagePass stagePass, U8 LoD) {
+            return node->getDrawState(stagePass, LoD);
         }
 
         friend class Divide::BoundsComponent;
@@ -436,12 +438,12 @@ namespace Attorney {
     private:
 
         // Returns true if the node should be culled (is not visible for the current stage)
-        static bool cullNode(const SceneGraphNode& node, const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) {
-            return node.cullNode(params, collisionTypeOut, distanceToClosestPointSQ);
+        static bool cullNode(const SceneGraphNode* node, const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) {
+            return node->cullNode(params, collisionTypeOut, distanceToClosestPointSQ);
         }
 
-        static bool preCullNode(const SceneGraphNode& node, const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) {
-            return node.preCullNode(bounds, params, distanceToClosestPointSQ);
+        static bool preCullNode(const SceneGraphNode* node, const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) {
+            return node->preCullNode(bounds, params, distanceToClosestPointSQ);
         }
 
         friend class Divide::RenderPassCuller;
@@ -451,8 +453,8 @@ namespace Attorney {
     {
     private:
 
-        static void occlusionCullNode(const SceneGraphNode& node, const RenderStagePass& stagePass, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
-            node.occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+        static void occlusionCullNode(const SceneGraphNode* node, const RenderStagePass& stagePass, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
+            node->occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
         }
 
         friend class Divide::RenderPassManager;
@@ -461,13 +463,24 @@ namespace Attorney {
 
     class SceneGraphNodeRelationshipCache {
     private:
-        static const SGNRelationshipCache& relationshipCache(const SceneGraphNode& node) noexcept {
-            return node._relationshipCache;
+        static const SGNRelationshipCache& relationshipCache(const SceneGraphNode* node) noexcept {
+            return node->_relationshipCache;
         }
 
         friend class Divide::SGNRelationshipCache;
     };
     
+    class SceneGraphNodeScene {
+    private:
+        static const void reserveChildCount(SceneGraphNode* node, size_t count) noexcept {
+            node->lockChildrenForWrite();
+            node->_children.reserve(count);
+            node->unlockChildrenForWrite();
+        }
+
+        friend class Divide::Scene;
+
+    };
 };  // namespace Attorney
 
 

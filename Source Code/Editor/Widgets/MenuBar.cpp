@@ -508,7 +508,7 @@ void MenuBar::drawDebugMenu() {
             const auto PrintProbeEntry = [&envProbPool](const EnvironmentProbeList& probes, size_t j) {
                 EnvironmentProbeComponent* crtProbe = probes[j];
                 bool selected = envProbPool->debugProbe() == crtProbe;
-                if (ImGui::MenuItem(crtProbe->getSGN().name().c_str(), "", &selected)) {
+                if (ImGui::MenuItem(crtProbe->getSGN()->name().c_str(), "", &selected)) {
                     envProbPool->debugProbe(crtProbe);
                 }
             };
@@ -543,7 +543,7 @@ void MenuBar::drawDebugMenu() {
             const auto PrintLightEntry = [&pool](const LightPool::LightList& lights, size_t j) {
                 Light* crtLight = lights[j];
                 bool selected = pool.debugLight() == crtLight;
-                if (ImGui::MenuItem(crtLight->getSGN().name().c_str(), "", &selected)) {
+                if (ImGui::MenuItem(crtLight->getSGN()->name().c_str(), "", &selected)) {
                     pool.debugLight(crtLight);
                 }
             };
@@ -588,7 +588,7 @@ void MenuBar::drawDebugMenu() {
                         Light* crtLight = lights[j];
                         if (crtLight->castsShadows()) {
                             bool selected = pool.debugLight() == crtLight;
-                            if (ImGui::MenuItem(crtLight->getSGN().name().c_str(), "", &selected)) {
+                            if (ImGui::MenuItem(crtLight->getSGN()->name().c_str(), "", &selected)) {
                                 pool.debugLight(crtLight);
                             }
                         }
@@ -621,7 +621,7 @@ void MenuBar::drawDebugMenu() {
 
         if (ImGui::BeginMenu("Debug Gizmos")) {
             SceneManager* sceneManager = context().kernel().sceneManager();
-            SceneRenderState& renderState = sceneManager->getActiveScene().state().renderState();
+            SceneRenderState& renderState = sceneManager->getActiveScene().state()->renderState();
 
             bool temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
             if (ImGui::MenuItem("Show AABBs", "", &temp)) {

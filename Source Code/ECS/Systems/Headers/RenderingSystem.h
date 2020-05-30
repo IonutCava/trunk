@@ -44,8 +44,8 @@ namespace Divide {
         RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~RenderingSystem();
 
-        bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) final;
-        bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) final;
+        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
+        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;
     };
 };
 

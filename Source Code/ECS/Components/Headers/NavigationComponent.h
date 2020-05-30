@@ -45,7 +45,7 @@ class NavigationComponent final : public BaseComponentType<NavigationComponent, 
         NODE_IGNORE
     };
 
-    NavigationComponent(SceneGraphNode& sgn, PlatformContext& context);
+    NavigationComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~NavigationComponent();
 
     inline const NavigationContext& navigationContext() const {

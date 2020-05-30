@@ -55,14 +55,14 @@ const char* SceneNode::getTypeName() const {
 }
 
 void SceneNode::sceneUpdate(const U64 deltaTimeUS,
-                            SceneGraphNode& sgn,
+                            SceneGraphNode* sgn,
                             SceneState& sceneState) {
     ACKNOWLEDGE_UNUSED(deltaTimeUS);
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(sceneState);
 }
 
-bool SceneNode::prepareRender(SceneGraphNode& sgn,
+bool SceneNode::prepareRender(SceneGraphNode* sgn,
                               RenderingComponent& rComp,
                               const RenderStagePass& renderStagePass,
                               const Camera& camera,
@@ -89,8 +89,8 @@ void SceneNode::occlusionCull(const RenderStagePass& stagePass,
     ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
-void SceneNode::postLoad(SceneGraphNode& sgn) {
-    sgn.postLoad();
+void SceneNode::postLoad(SceneGraphNode* sgn) {
+    sgn->postLoad();
 }
 
 void SceneNode::setBounds(const BoundingBox& aabb) {
@@ -133,7 +133,7 @@ void SceneNode::editorFieldChanged(std::string_view field) {
     ACKNOWLEDGE_UNUSED(field);
 }
 
-void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
+void SceneNode::buildDrawCommands(SceneGraphNode* sgn,
                                   const RenderStagePass& renderStagePass,
                                   const Camera& crtCamera,
                                   RenderPackage& pkgInOut) {
@@ -143,7 +143,7 @@ void SceneNode::buildDrawCommands(SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(pkgInOut);
 }
 
-void SceneNode::onRefreshNodeData(const SceneGraphNode& sgn,
+void SceneNode::onRefreshNodeData(const SceneGraphNode* sgn,
                                   const RenderStagePass& renderStagePass,
                                   const Camera& crtCamera,
                                   bool refreshData,
@@ -155,12 +155,12 @@ void SceneNode::onRefreshNodeData(const SceneGraphNode& sgn,
     ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
-void SceneNode::onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const {
+void SceneNode::onNetworkSend(SceneGraphNode* sgn, WorldPacket& dataOut) const {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(dataOut);
 }
 
-void SceneNode::onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const {
+void SceneNode::onNetworkReceive(SceneGraphNode* sgn, WorldPacket& dataIn) const {
     ACKNOWLEDGE_UNUSED(sgn);
     ACKNOWLEDGE_UNUSED(dataIn);
 }

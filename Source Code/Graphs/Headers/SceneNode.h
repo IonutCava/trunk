@@ -122,18 +122,18 @@ class SceneNode : public CachedResource {
 
     /// Perform any pre-draw operations POST-command build
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
-    virtual bool prepareRender(SceneGraphNode& sgn,
+    virtual bool prepareRender(SceneGraphNode* sgn,
                                RenderingComponent& rComp,
                                const RenderStagePass& renderStagePass,
                                const Camera& camera,
                                bool refreshData);
 
-    virtual void buildDrawCommands(SceneGraphNode& sgn,
+    virtual void buildDrawCommands(SceneGraphNode* sgn,
                                    const RenderStagePass& renderStage,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut);
 
-    virtual void onRefreshNodeData(const SceneGraphNode& sgn,
+    virtual void onRefreshNodeData(const SceneGraphNode* sgn,
                                    const RenderStagePass& renderStagePass,
                                    const Camera& crtCamera,
                                    bool refreshData,
@@ -164,10 +164,10 @@ class SceneNode : public CachedResource {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState);
+    virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState);
 
     // Post insertion calls (Use this to setup child objects during creation)
-    virtual void postLoad(SceneGraphNode& sgn);
+    virtual void postLoad(SceneGraphNode* sgn);
 
     virtual void setBounds(const BoundingBox& aabb);
 
@@ -189,8 +189,8 @@ class SceneNode : public CachedResource {
 
    protected:
      virtual void editorFieldChanged(std::string_view field);
-     virtual void onNetworkSend(SceneGraphNode& sgn, WorldPacket& dataOut) const;
-     virtual void onNetworkReceive(SceneGraphNode& sgn, WorldPacket& dataIn) const;
+     virtual void onNetworkSend(SceneGraphNode* sgn, WorldPacket& dataOut) const;
+     virtual void onNetworkReceive(SceneGraphNode* sgn, WorldPacket& dataIn) const;
 
    protected:
     EditorComponent _editorComponent;
@@ -216,42 +216,42 @@ TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneNode);
 namespace Attorney {
 class SceneNodeSceneGraph {
    private:
-    static void postLoad(SceneNode& node, SceneGraphNode& sgn) {
-        node.postLoad(sgn);
+    static void postLoad(SceneNode* node, SceneGraphNode* sgn) {
+        node->postLoad(sgn);
     }
 
-    static void sceneUpdate(SceneNode& node, const U64 deltaTimeUS,
-                            SceneGraphNode& sgn, SceneState& sceneState) {
+    static void sceneUpdate(SceneNode* node, const U64 deltaTimeUS,
+                            SceneGraphNode* sgn, SceneState& sceneState) {
         OPTICK_EVENT();
-        node.sceneUpdate(deltaTimeUS, sgn, sceneState);
+        node->sceneUpdate(deltaTimeUS, sgn, sceneState);
     }
 
-    static void registerSGNParent(SceneNode& node, SceneGraphNode* sgn) noexcept {
+    static void registerSGNParent(SceneNode* node, SceneGraphNode* sgn) noexcept {
         ACKNOWLEDGE_UNUSED(sgn);
 
-        node._sgnParentCount.fetch_add(1);
+        node->_sgnParentCount.fetch_add(1);
     }
 
-    static void unregisterSGNParent(SceneNode& node, SceneGraphNode* sgn) noexcept {
+    static void unregisterSGNParent(SceneNode* node, SceneGraphNode* sgn) noexcept {
         ACKNOWLEDGE_UNUSED(sgn);
 
-        node._sgnParentCount.fetch_sub(1);
+        node->_sgnParentCount.fetch_sub(1);
     }
 
-    static size_t parentCount(const SceneNode& node) noexcept {
-        return node._sgnParentCount.load();
+    static size_t parentCount(const SceneNode* node) noexcept {
+        return node->_sgnParentCount.load();
     }
 
-    static size_t maxReferenceCount(const SceneNode& node) noexcept {
-        return node.maxReferenceCount();
+    static size_t maxReferenceCount(const SceneNode* node) noexcept {
+        return node->maxReferenceCount();
     }
 
-    static EditorComponent& getEditorComponent(SceneNode& node) noexcept {
-        return node._editorComponent;
+    static EditorComponent& getEditorComponent(SceneNode* node) noexcept {
+        return node->_editorComponent;
     }
 
-    static void occlusionCullNode(const SceneNode& node, const RenderStagePass& stagePass, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
-        node.occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    static void occlusionCullNode(const SceneNode* node, const RenderStagePass& stagePass, const Texture_ptr& depthBuffer, const Camera& camera, GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut, GFX::CommandBuffer& bufferInOut) {
+        node->occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
     }
 
     friend class Divide::SceneGraph;
@@ -260,11 +260,11 @@ class SceneNodeSceneGraph {
 
 class SceneNodeNetworkComponent {
   private:
-    static void onNetworkSend(SceneGraphNode& sgn, SceneNode& node, WorldPacket& dataOut) {
+    static void onNetworkSend(SceneGraphNode* sgn, SceneNode& node, WorldPacket& dataOut) {
         node.onNetworkSend(sgn, dataOut);
     }
 
-    static void onNetworkReceive(SceneGraphNode& sgn, SceneNode& node, WorldPacket& dataIn) {
+    static void onNetworkReceive(SceneGraphNode* sgn, SceneNode& node, WorldPacket& dataIn) {
         node.onNetworkReceive(sgn, dataIn);
     }
 

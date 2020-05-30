@@ -108,11 +108,11 @@ namespace Divide {
         GFXDevice& gfx = _context;
         PlatformContext& context = parent().platformContext();
         const SceneRenderState& sceneRenderState = *params._sceneRenderState;
-        const Camera& cam = Attorney::SceneManagerRenderPass::playerCamera(*parent().sceneManager());
-        const SceneStatePerPlayer& playerState = Attorney::SceneManagerRenderPass::playerState(*parent().sceneManager());
+        const Camera* cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
+        const SceneStatePerPlayer& playerState = Attorney::SceneManagerRenderPass::playerState(parent().sceneManager());
         gfx.setPreviousViewProjection(playerState.previousViewMatrix(), playerState.previousProjectionMatrix());
 
-        Attorney::SceneManagerRenderPass::preRenderAllPasses(*parent().sceneManager(), cam);
+        Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
 
         TaskPool& pool = context.taskPool(TaskPoolType::HIGH_PRIORITY);
         RenderTarget& resolvedScreenTarget = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
@@ -179,7 +179,7 @@ namespace Divide {
            const TextureData texData = resolvedScreenTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
            const Rect<I32>& targetViewport = params._targetViewport;
            gfx.drawTextureInViewport(texData, targetViewport, true, false, buf);
-           Attorney::SceneManagerRenderPass::drawCustomUI(*_parent.sceneManager(), targetViewport, buf);
+           Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), targetViewport, buf);
            if_constexpr(Config::Build::ENABLE_EDITOR) {
                context.editor().drawScreenOverlay(cam, targetViewport, buf);
            }
@@ -259,7 +259,7 @@ namespace Divide {
             _renderPasses[i]->postRender();
         }
 
-        Attorney::SceneManagerRenderPass::postRenderAllPasses(*parent().sceneManager(), cam);
+        Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
 
         Time::ScopedTimer time(*_blitToDisplayTimer);
         gfx.flushCommandBuffer(*_postRenderBuffer);
@@ -345,8 +345,8 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
                                            GFXDevice::NodeData& dataOut) const {
     OPTICK_EVENT();
 
-    const SceneGraphNode& node = rComp.getSGN();
-    const TransformComponent* const transform = node.get<TransformComponent>();
+    const SceneGraphNode* node = rComp.getSGN();
+    const TransformComponent* const transform = node->get<TransformComponent>();
     assert(transform != nullptr);
 
     // ... get the node's world matrix properly interpolated
@@ -367,14 +367,14 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     if (playAnimations) {
-        AnimationComponent* animComp = node.get<AnimationComponent>();
+        AnimationComponent* animComp = node->get<AnimationComponent>();
         if (animComp && animComp->playAnimations()) {
             dataOut._normalMatrixW.element(0, 3) = to_F32(animComp->boneCount());
         }
     }
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    const BoundsComponent* const bounds = node.get<BoundsComponent>();
+    const BoundsComponent* const bounds = node->get<BoundsComponent>();
     const BoundingBox& aabb = bounds->getBoundingBox();
     const F32 sphereRadius = bounds->getBoundingSphere().getRadius();
 
@@ -560,7 +560,7 @@ void RenderPassManager::prepareRenderQueues(const PassParams& params, const Visi
     queue.refresh(stagePass._stage, targetBin);
     for (size_t i = 0; i < nodes.size(); ++i) {
         const VisibleNode& node = nodes.node(i);
-        queue.addNodeToQueue(*node._node, stagePass, node._distanceToCameraSq, targetBin);
+        queue.addNodeToQueue(node._node, stagePass, node._distanceToCameraSq, targetBin);
     }
     // Sort all bins
     queue.sort(stagePass, targetBin, renderOrder);
@@ -610,7 +610,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const PassParams& 
 
         renderQueueToSubPasses(params._stagePass._stage, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::postRender(*parent().sceneManager(), params._stagePass, *params._camera, bufferInOut);
+        Attorney::SceneManagerRenderPass::postRender(parent().sceneManager(), params._stagePass, params._camera, bufferInOut);
 
         if (layeredRendering) {
             GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
@@ -661,7 +661,7 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Per-node HiZ Cull" });
     for (size_t i = 0; i < nodes.size(); ++i) {
         const VisibleNode& node = nodes.node(i);
-        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(*node._node, stagePass, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
+        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(node._node, stagePass, HiZTex, camera, HIZPushConstantsCMDInOut, bufferInOut);
     }
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
@@ -713,7 +713,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
 
         const RenderTarget& nonMSTarget = _context.renderTargetPool().renderTarget(RenderTargetUsage::SCREEN);
 
-        Attorney::SceneManagerRenderPass::preRenderMainPass(*sceneManager, stagePass, *params._camera, hizTex, bufferInOut);
+        Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, params._camera, hizTex, bufferInOut);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         if (stagePass._stage == RenderStage::DISPLAY) {
@@ -754,11 +754,11 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const PassParams&
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(stagePass._stage, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::postRender(*sceneManager, stagePass, *params._camera, bufferInOut);
+        Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, params._camera, bufferInOut);
 
         if (stagePass._stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency
-            Attorney::SceneManagerRenderPass::debugDraw(*sceneManager, stagePass, *params._camera, bufferInOut);
+            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, stagePass, params._camera, bufferInOut);
         }
 
         if (layeredRendering) {
@@ -981,7 +981,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     const bool layeredRendering = (params._layerParams._layer > 0);
     if (!layeredRendering) {
-        Attorney::SceneManagerRenderPass::prepareLightData(*parent().sceneManager(), stage, camSnapshot._eye, camSnapshot._viewMatrix);
+        Attorney::SceneManagerRenderPass::prepareLightData(parent().sceneManager(), stage, camSnapshot._eye, camSnapshot._viewMatrix);
     }
 
     // Tell the Rendering API to draw from our desired PoV
@@ -992,7 +992,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     // Cull the scene and grab the visible nodes
     I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
-    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(*parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
+    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;
@@ -1033,7 +1033,7 @@ void RenderPassManager::doCustomPass(PassParams params, GFX::CommandBuffer& buff
 
     if (stage == RenderStage::DISPLAY) {
         //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
-        _context.getRenderer().postFX().prepare(*params._camera, bufferInOut);
+        _context.getRenderer().postFX().prepare(params._camera, bufferInOut);
     }
 
 #   pragma region MAIN_PASS
@@ -1095,12 +1095,12 @@ void RenderPassManager::renderQueueToSubPasses(RenderStage stage, GFX::CommandBu
 
     if (qualityRequirement == RenderPackage::MinQuality::COUNT) {
         for (RenderPackage* item : queue) {
-            buffers.push_back(Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item));
+            buffers.push_back(Attorney::RenderPackageRenderPassManager::getCommandBuffer(item));
         }
     } else {
         for (RenderPackage* item : queue) {
             if (item->qualityRequirement() == qualityRequirement) {
-                buffers.push_back(Attorney::RenderPackageRenderPassManager::getCommandBuffer(*item));
+                buffers.push_back(Attorney::RenderPackageRenderPassManager::getCommandBuffer(item));
             }
         }
     }

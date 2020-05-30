@@ -81,7 +81,7 @@ namespace Divide {
 
     protected:
         void update(const U64 deltaTimeUS);
-        void render(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+        void render(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
         void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
         void setTransformSettings(const TransformSettings& settings) noexcept;
         const TransformSettings& getTransformSettings() const noexcept;
@@ -101,24 +101,24 @@ namespace Divide {
     namespace Attorney {
         class GizmoEditor {
         private:
-            static void render(Gizmo& gizmo, const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-                gizmo.render(camera, targetViewport, bufferInOut);
+            static void render(Gizmo* gizmo, const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+                gizmo->render(camera, targetViewport, bufferInOut);
             }
 
-            static void updateSelection(Gizmo& gizmo, const vectorEASTL<SceneGraphNode*>& nodes) {
-                gizmo.updateSelections(nodes);
+            static void updateSelection(Gizmo* gizmo, const vectorEASTL<SceneGraphNode*>& nodes) {
+                gizmo->updateSelections(nodes);
             }
 
-            static void update(Gizmo& gizmo, const U64 deltaTimeUS) {
-                gizmo.update(deltaTimeUS);
+            static void update(Gizmo* gizmo, const U64 deltaTimeUS) {
+                gizmo->update(deltaTimeUS);
             }
 
-            static void setTransformSettings(Gizmo& gizmo, const TransformSettings& settings) noexcept {
-                gizmo.setTransformSettings(settings);
+            static void setTransformSettings(Gizmo* gizmo, const TransformSettings& settings) noexcept {
+                gizmo->setTransformSettings(settings);
             }
 
-            static const TransformSettings& getTransformSettings(const Gizmo& gizmo) noexcept {
-                return gizmo.getTransformSettings();
+            static const TransformSettings& getTransformSettings(const Gizmo* gizmo) noexcept {
+                return gizmo->getTransformSettings();
             }
             friend class Divide::Editor;
         };

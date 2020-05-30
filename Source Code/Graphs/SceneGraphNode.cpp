@@ -34,8 +34,6 @@
 namespace Divide {
 
 namespace {
-    constexpr size_t INITIAL_CHILD_COUNT = 16;
-
     inline bool PropagateFlagToChildren(SceneGraphNode::Flags flag) {
         return flag == SceneGraphNode::Flags::SELECTED || 
                flag == SceneGraphNode::Flags::HOVERED ||
@@ -44,19 +42,18 @@ namespace {
     }
 };
 
-SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor)
+SceneGraphNode::SceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescriptor& descriptor)
     : GUIDWrapper(),
-      PlatformContextComponent(sceneGraph.parentScene().context()),
+      PlatformContextComponent(sceneGraph->parentScene().context()),
       _sceneGraph(sceneGraph),
-      _compManager(sceneGraph.GetECSEngine().GetComponentManager()),
+      _compManager(sceneGraph->GetECSEngine().GetComponentManager()),
       _serialize(descriptor._serialize),
       _node(descriptor._node),
       _instanceCount(to_U32(descriptor._instanceCount)),
       _usageContext(descriptor._usageContext),
-      _relationshipCache(*this),
+      _relationshipCache(this),
       _children{}
 {
-    _children.reserve(INITIAL_CHILD_COUNT);
     std::atomic_init(&_childCount, 0u);
     Events._eventsFreeList.fill(true);
     
@@ -68,7 +65,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     clearFlag(Flags::VISIBILITY_LOCKED);
 
     if (_node == nullptr) {
-        _node = std::make_shared<SceneNode>(sceneGraph.parentScene().resourceCache(),
+        _node = std::make_shared<SceneNode>(sceneGraph->parentScene().resourceCache(),
                                               GUIDWrapper::generateGUID(),
                                               "EMPTY",
                                               "EMPTY",
@@ -86,7 +83,7 @@ SceneGraphNode::SceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescr
     AddComponents(descriptor._componentMask, false);
     AddComponents(_node->requiredComponentMask(), false);
 
-    Attorney::SceneNodeSceneGraph::registerSGNParent(*_node, this);
+    Attorney::SceneNodeSceneGraph::registerSGNParent(_node.get(), this);
 }
 
 /// If we are destroying the current graph node
@@ -94,17 +91,17 @@ SceneGraphNode::~SceneGraphNode()
 {
     Console::printfn(Locale::get(_ID("REMOVE_SCENEGRAPH_NODE")), name().c_str(), _node->resourceName().c_str());
 
-    Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, *this);
-    Attorney::SceneNodeSceneGraph::unregisterSGNParent(*_node, this);
-    if (Attorney::SceneNodeSceneGraph::parentCount(*_node) == 0) {
-        assert(_node.use_count() <= Attorney::SceneNodeSceneGraph::maxReferenceCount(*_node));
+    Attorney::SceneGraphSGN::onNodeDestroy(_sceneGraph, this);
+    Attorney::SceneNodeSceneGraph::unregisterSGNParent(_node.get(), this);
+    if (Attorney::SceneNodeSceneGraph::parentCount(_node.get()) == 0) {
+        assert(_node.use_count() <= Attorney::SceneNodeSceneGraph::maxReferenceCount(_node.get()));
 
         _node.reset();
     }
 
     // Bottom up
     for (U32 i = 0; i < getChildCount(); ++i) {
-        _sceneGraph.destroySceneGraphNode(_children[i]);
+        _sceneGraph->destroySceneGraphNode(_children[i]);
     }
     _children.clear();
     //_childCount.store(0u);
@@ -113,7 +110,7 @@ SceneGraphNode::~SceneGraphNode()
 }
 
 ECS::ECSEngine& SceneGraphNode::GetECSEngine() {
-    return _sceneGraph.GetECSEngine();
+    return _sceneGraph->GetECSEngine();
 }
 
 void SceneGraphNode::AddComponents(U32 componentMask, bool allowDuplicates) {
@@ -124,7 +121,7 @@ void SceneGraphNode::AddComponents(U32 componentMask, bool allowDuplicates) {
         // Only add new components;
         if (BitCompare(componentMask, componentBit) && (allowDuplicates || !BitCompare(_componentMask, componentBit))) {
             _componentMask |= componentBit;
-            SGNComponent::construct(ComponentType::_from_integral(componentBit), *this);
+            SGNComponent::construct(ComponentType::_from_integral(componentBit), this);
         }
     };
 }
@@ -133,13 +130,13 @@ void SceneGraphNode::RemoveComponents(U32 componentMask) {
     for (ComponentType::_integral i = 1; i < ComponentType::COUNT + 1; ++i) {
         const U32 componentBit = 1 << i;
         if (BitCompare(componentMask, componentBit) && BitCompare(_componentMask, componentBit)) {
-            SGNComponent::destruct(ComponentType::_from_integral(componentBit), *this);
+            SGNComponent::destruct(ComponentType::_from_integral(componentBit), this);
         }
     }
 }
 
 void SceneGraphNode::setTransformDirty(U32 transformMask) {
-    Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, *this);
+    Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, this);
 
     SharedLock<SharedMutex> r_lock(_childLock);
     for (SceneGraphNode* node : _children) {
@@ -165,8 +162,8 @@ void SceneGraphNode::changeUsageContext(const NodeUsageContext& newContext) {
 }
 
 /// Change current SceneGraphNode's parent
-void SceneGraphNode::setParent(SceneGraphNode& parent, bool defer) {
-    _queuedNewParent = parent.getGUID();
+void SceneGraphNode::setParent(SceneGraphNode* parent, bool defer) {
+    _queuedNewParent = parent->getGUID();
     if (!defer) {
         setParentInternal();
     }
@@ -176,7 +173,7 @@ void SceneGraphNode::setParentInternal() {
     if (_queuedNewParent == -1) {
         return;
     }
-    SceneGraphNode* newParent = sceneGraph().findNode(_queuedNewParent);
+    SceneGraphNode* newParent = sceneGraph()->findNode(_queuedNewParent);
     _queuedNewParent = -1;
 
     if (newParent == nullptr) {
@@ -192,7 +189,7 @@ void SceneGraphNode::setParentInternal() {
             }
 
             // Remove us from the old parent's children map
-            _parent->removeChildNode(*this, false, false);
+            _parent->removeChildNode(this, false, false);
         }
     }
     // Set the parent pointer to the new parent
@@ -204,7 +201,7 @@ void SceneGraphNode::setParentInternal() {
             UniqueLock<SharedMutex> w_lock(_parent->_childLock);
             _parent->_children.push_back(this);
         }
-        Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, *this);
+        Attorney::SceneGraphSGN::onNodeAdd(_sceneGraph, this);
         // That's it. Parent Transforms will be updated in the next render pass;
         _parent->invalidateRelationshipCache();
     }
@@ -228,19 +225,19 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
     // We need to name the new SceneGraphNode
     // If we did not supply a custom name use the SceneNode's name
 
-    SceneGraphNode* sceneGraphNode = _sceneGraph.createSceneGraphNode(_sceneGraph, descriptor);
+    SceneGraphNode* sceneGraphNode = _sceneGraph->createSceneGraphNode(_sceneGraph, descriptor);
     assert(sceneGraphNode != nullptr && sceneGraphNode->_node->getState() != ResourceState::RES_CREATED);
 
     // Set the current node as the new node's parent
-    sceneGraphNode->setParent(*this);
+    sceneGraphNode->setParent(this);
 
     if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADED) {
-        postLoad(*sceneGraphNode->_node, *sceneGraphNode);
+        postLoad(sceneGraphNode->_node.get(), sceneGraphNode);
     } else if (sceneGraphNode->_node->getState() == ResourceState::RES_LOADING) {
         setFlag(Flags::LOADING);
         sceneGraphNode->_node->addStateCallback(ResourceState::RES_LOADED,
             [this, sceneGraphNode](CachedResource* res) {
-                postLoad(*(static_cast<SceneNode*>(res)), *(sceneGraphNode));
+                postLoad((static_cast<SceneNode*>(res)), (sceneGraphNode));
                 clearFlag(Flags::LOADING);
             }
         );
@@ -249,9 +246,9 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
     return sceneGraphNode;
 }
 
-void SceneGraphNode::postLoad(SceneNode& sceneNode, SceneGraphNode& sgn) {
+void SceneGraphNode::postLoad(SceneNode* sceneNode, SceneGraphNode* sgn) {
     Attorney::SceneNodeSceneGraph::postLoad(sceneNode, sgn);
-    sgn.Hacks._editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(sceneNode));
+    sgn->Hacks._editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(sceneNode));
 }
 
 bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
@@ -269,7 +266,7 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
         const U32 count = to_U32(_children.size());
         for (U32 i = 0; i < count; ++i) {
             if (_children[i]->getNode().type() == nodeType) {
-                _sceneGraph.addToDeleteQueue(this, i);
+                _sceneGraph->addToDeleteQueue(this, i);
                 ++removalCount;
             }
         }
@@ -282,16 +279,16 @@ bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
     return childRemovalCount > 0;
 }
 
-bool SceneGraphNode::removeChildNode(const SceneGraphNode& node, bool recursive, bool deleteNode) {
+bool SceneGraphNode::removeChildNode(const SceneGraphNode* node, bool recursive, bool deleteNode) {
 
-    const I64 targetGUID = node.getGUID();
+    const I64 targetGUID = node->getGUID();
     {
         SharedLock<SharedMutex> r_lock(_childLock);
         const U32 count = to_U32(_children.size());
         for (U32 i = 0; i < count; ++i) {
             if (_children[i]->getGUID() == targetGUID) {
                 if (deleteNode) {
-                    _sceneGraph.addToDeleteQueue(this, i);
+                    _sceneGraph->addToDeleteQueue(this, i);
                 } else {
                     _children.erase(_children.begin() + i);
                     _childCount.fetch_sub(1);
@@ -330,8 +327,8 @@ bool SceneGraphNode::isChildOfType(U16 typeMask) const {
     return false;
 }
 
-bool SceneGraphNode::isRelated(const SceneGraphNode& target) const {
-    I64 targetGUID = target.getGUID();
+bool SceneGraphNode::isRelated(const SceneGraphNode* target) const {
+    const I64 targetGUID = target->getGUID();
 
     SGNRelationshipCache::RelationshipType type = _relationshipCache.clasifyNode(targetGUID);
 
@@ -339,8 +336,8 @@ bool SceneGraphNode::isRelated(const SceneGraphNode& target) const {
     return type != SGNRelationshipCache::RelationshipType::COUNT;
 }
 
-bool SceneGraphNode::isChild(const SceneGraphNode& target, bool recursive) const {
-    I64 targetGUID = target.getGUID();
+bool SceneGraphNode::isChild(const SceneGraphNode* target, bool recursive) const {
+    const I64 targetGUID = target->getGUID();
 
     SGNRelationshipCache::RelationshipType type = _relationshipCache.clasifyNode(targetGUID);
     if (type == SGNRelationshipCache::RelationshipType::GRANDCHILD && recursive) {
@@ -390,7 +387,7 @@ SceneGraphNode* SceneGraphNode::findChild(I64 GUID, bool sceneNodeGuid, bool rec
 
 bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRayResult>& intersections) const {
     // If we start from the root node, process children only
-    if (_sceneGraph.getRoot() == *this) {
+    if (_sceneGraph->getRoot()->getGUID() == this->getGUID()) {
         forEachChild([&ray, start, end, &intersections](const SceneGraphNode* child, I32 /*childIdx*/) {
             child->intersect(ray, start, end, intersections);
             return true;
@@ -410,12 +407,12 @@ bool SceneGraphNode::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<S
     return !intersections.empty();
 }
 
-void SceneGraphNode::getOrderedNodeList(vectorEASTL<SceneGraphNode*>& nodeList) {
+void SceneGraphNode::getAllNodes(vectorEASTL<SceneGraphNode*>& nodeList) {
     // Compute from leaf to root to ensure proper calculations
     {
         SharedLock<SharedMutex> r_lock(_childLock);
         for (auto& child : _children) {
-            child->getOrderedNodeList(nodeList);
+            child->getAllNodes(nodeList);
         }
     }
 
@@ -427,7 +424,7 @@ void SceneGraphNode::processDeleteQueue(vectorEASTL<size_t>& childList) {
     if (!childList.empty()) {
         UniqueLock<SharedMutex> w_lock(_childLock);
         for (const size_t childIdx : childList) {
-            _sceneGraph.destroySceneGraphNode(_children[childIdx]);
+            _sceneGraph->destroySceneGraphNode(_children[childIdx]);
         }
         EraseIndices(_children, childList);
         _childCount.store(to_U32(_children.size()));
@@ -465,7 +462,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
             }
         }
 
-        Attorney::SceneNodeSceneGraph::sceneUpdate(*_node, deltaTimeUS, *this, sceneState);
+        Attorney::SceneNodeSceneGraph::sceneUpdate(_node.get(), deltaTimeUS, this, sceneState);
     }
 
     if (get<RenderingComponent>() == nullptr) {
@@ -540,11 +537,11 @@ bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStageP
         }
     }
 
-    return _node->prepareRender(*this, rComp, renderStagePass, camera, refreshData);
+    return _node->prepareRender(this, rComp, renderStagePass, camera, refreshData);
 }
 
 void SceneGraphNode::onRefreshNodeData(const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
-    _node->onRefreshNodeData(*this, renderStagePass, camera, refreshData, bufferInOut);
+    _node->onRefreshNodeData(this, renderStagePass, camera, refreshData, bufferInOut);
 }
 
 bool SceneGraphNode::getDrawState(RenderStagePass stagePass, U8 LoD) const {
@@ -650,7 +647,7 @@ void SceneGraphNode::occlusionCull(const RenderStagePass& stagePass,
                                    const Camera& camera,
                                    GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                                    GFX::CommandBuffer& bufferInOut) const {
-    Attorney::SceneNodeSceneGraph::occlusionCullNode(*_node, stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    Attorney::SceneNodeSceneGraph::occlusionCullNode(_node.get(), stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
 }
 
 void SceneGraphNode::invalidateRelationshipCache(SceneGraphNode* source) {
@@ -686,7 +683,7 @@ bool SceneGraphNode::saveCache(ByteBuffer& outputBuffer) const {
         }
     }
 
-    if (!_sceneGraph.GetECSManager().saveCache(*this, outputBuffer)) {
+    if (!_sceneGraph->GetECSManager().saveCache(this, outputBuffer)) {
         return false;
     }
 
@@ -702,7 +699,7 @@ bool SceneGraphNode::loadCache(ByteBuffer& inputBuffer) {
         }
     }
 
-    if (!_sceneGraph.GetECSManager().loadCache(*this, inputBuffer)) {
+    if (!_sceneGraph->GetECSManager().loadCache(this, inputBuffer)) {
         return false;
     }
 

@@ -166,7 +166,7 @@ bool NavigationMesh::loadConfigFromFile() {
     return true;
 }
 
-bool NavigationMesh::build(SceneGraphNode& sgn,
+bool NavigationMesh::build(SceneGraphNode* sgn,
                            CreationCallback creationCompleteCallback,
                            bool threaded) {
     if (!loadConfigFromFile()) {
@@ -174,7 +174,7 @@ bool NavigationMesh::build(SceneGraphNode& sgn,
         return false;
     }
 
-    _sgn = &sgn;
+    _sgn = sgn;
     _loadCompleteClbk = creationCompleteCallback;
 
     if (_buildThreaded && threaded) {
@@ -287,7 +287,7 @@ bool NavigationMesh::buildProcess() {
 bool NavigationMesh::generateMesh() {
     assert(_sgn != nullptr);
 
-    Str128 nodeName(generateMeshName(*_sgn));
+    Str128 nodeName(generateMeshName(_sgn));
 
     // Parse objects from level into RC-compatible format
     _fileName.append(nodeName);
@@ -390,7 +390,7 @@ bool NavigationMesh::generateMesh() {
         dtFreeNavMesh(_navMesh);
     }
 
-    load(*_sgn);
+    load(_sgn);
     if (_navMesh == nullptr) {
         createNavigationMesh(params);
     }
@@ -401,7 +401,7 @@ bool NavigationMesh::generateMesh() {
     }
 
     data.isValid(true);
-    save(*_sgn);
+    save(_sgn);
 
     return NavigationMeshLoader::saveMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str());  // input geometry;
 }
@@ -637,7 +637,7 @@ GFX::CommandBuffer& NavigationMesh::draw(bool force) {
 }
 
 
-bool NavigationMesh::load(SceneGraphNode& sgn) {
+bool NavigationMesh::load(SceneGraphNode* sgn) {
     if (!_fileName.length()) {
         return false;
     }
@@ -711,7 +711,7 @@ bool NavigationMesh::load(SceneGraphNode& sgn) {
     return createNavigationQuery();
 }
 
-bool NavigationMesh::save(SceneGraphNode& sgn) {
+bool NavigationMesh::save(SceneGraphNode* sgn) {
     if (!_fileName.length() || !_navMesh) {
         return false;
     }
@@ -771,9 +771,9 @@ bool NavigationMesh::save(SceneGraphNode& sgn) {
     return true;
 }
 
-Str128 NavigationMesh::generateMeshName(SceneGraphNode& sgn) {
-    return sgn.parent() != nullptr
-               ? Str128{"_node_[_" + sgn.name() + "_]"}
+Str128 NavigationMesh::generateMeshName(SceneGraphNode* sgn) {
+    return sgn->parent() != nullptr
+               ? Str128{"_node_[_" + sgn->name() + "_]"}
                : Str128{ "_root_node" };
 }
 

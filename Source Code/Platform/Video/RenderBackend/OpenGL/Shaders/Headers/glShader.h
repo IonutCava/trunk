@@ -35,13 +35,12 @@
 
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
-#include "Core/MemoryManagement/Headers/TrackedObject.h"
 
 namespace Divide {
 
 /// glShader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
 /// It can be used simultaneously in multiple programs/pipelines
-class glShader : public TrackedObject, public GraphicsResource,  public glObject {
+class glShader : public GUIDWrapper, public GraphicsResource,  public glObject {
    public:
     using ShaderMap = ska::bytell_hash_map<U64, glShader*>;
 
@@ -78,6 +77,11 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
     inline const Str256& name() const noexcept { return _name; }
 
     bool embedsType(ShaderType type) const;
+
+    inline void AddRef() noexcept { _refCount.fetch_add(1); }
+    /// Returns true if ref count reached 0
+    inline bool SubRef() noexcept { return _refCount.fetch_sub(1) == 1; }
+    inline const size_t GetRef() const { return _refCount.load(); }
 
    public:
     // ======================= static data ========================= //
@@ -139,6 +143,8 @@ class glShader : public TrackedObject, public GraphicsResource,  public glObject
 
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
     vectorEASTL<std::pair<stringImpl, bool>> _definesList;
+
+    std::atomic_size_t _refCount;
 
    private:
     /// Shader cache

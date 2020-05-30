@@ -45,7 +45,7 @@ class PostAAPreRenderOperator final : public PreRenderOperator {
     PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~PostAAPreRenderOperator() = default;
 
-    bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
+    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
     PROPERTY_RW(U8, postAAQualityLevel, 2u);

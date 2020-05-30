@@ -86,7 +86,7 @@ bool Object3D::isPrimitive() const noexcept {
            _geometryType._value == ObjectType::SPHERE_3D;
 }
 
-void Object3D::postLoad(SceneGraphNode& sgn) {
+void Object3D::postLoad(SceneGraphNode* sgn) {
      computeTriangleList();
      SceneNode::postLoad(sgn);
 }
@@ -115,7 +115,7 @@ VertexBuffer* const Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-void Object3D::onRefreshNodeData(const SceneGraphNode& sgn,
+void Object3D::onRefreshNodeData(const SceneGraphNode* sgn,
                                  const RenderStagePass& renderStagePass,
                                  const Camera& crtCamera,
                                  bool refreshData,
@@ -127,7 +127,7 @@ void Object3D::onRefreshNodeData(const SceneGraphNode& sgn,
     SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
 }
 
-void Object3D::buildDrawCommands(SceneGraphNode& sgn,
+void Object3D::buildDrawCommands(SceneGraphNode* sgn,
                                  const RenderStagePass& renderStagePass,
                                  const Camera& crtCamera,
                                  RenderPackage& pkgInOut) {
@@ -139,7 +139,7 @@ void Object3D::buildDrawCommands(SceneGraphNode& sgn,
         cmd._bufferIndex = renderStagePass.baseIndex();
         cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));
         cmd._cmd.firstIndex = to_U32(vb->getPartitionOffset(partitionID));
-        cmd._cmd.primCount = sgn.instanceCount();
+        cmd._cmd.primCount = sgn->instanceCount();
         enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
         pkgInOut.add(GFX::DrawCommand{ cmd });
@@ -247,13 +247,13 @@ vectorEASTL<SceneGraphNode*> Object3D::filterByType(const vectorEASTL<SceneGraph
     return result;
 }
 
-void Object3D::playAnimations(const SceneGraphNode& sgn, const bool state) {
+void Object3D::playAnimations(const SceneGraphNode* sgn, const bool state) {
     if (getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED)) {
-        AnimationComponent* animComp = sgn.get<AnimationComponent>();
+        AnimationComponent* animComp = sgn->get<AnimationComponent>();
         if (animComp != nullptr) {
             animComp->playAnimations(state);
         }
-        sgn.forEachChild([state](const SceneGraphNode* child, I32 /*childIdx*/) {
+        sgn->forEachChild([state](const SceneGraphNode* child, I32 /*childIdx*/) {
             AnimationComponent* animComp = child->get<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
             if (animComp != nullptr) {

@@ -240,24 +240,24 @@ class Kernel : public Input::InputAggregatorInterface,
 namespace Attorney {
     class KernelApplication {
       protected:
-        static ErrorCode initialize(Kernel& kernel, const stringImpl& entryPoint) {
-            return kernel.initialize(entryPoint);
+        static ErrorCode initialize(Kernel* kernel, const stringImpl& entryPoint) {
+            return kernel->initialize(entryPoint);
         }
 
-        static void shutdown(Kernel& kernel) {
-            kernel.shutdown();
+        static void shutdown(Kernel* kernel) {
+            kernel->shutdown();
         }
 
-        static bool onSizeChange(Kernel& kernel, const SizeChangeParams& params) {
-            return kernel.onSizeChange(params);
+        static bool onSizeChange(Kernel* kernel, const SizeChangeParams& params) {
+            return kernel->onSizeChange(params);
         }
 
-        static void warmup(Kernel& kernel) {
-            kernel.warmup();
+        static void warmup(Kernel* kernel) {
+            kernel->warmup();
         }
 
-        static void onLoop(Kernel& kernel) {
-            kernel.onLoop();
+        static void onLoop(Kernel* kernel) {
+            kernel->onLoop();
         }
 
         friend class Divide::Application;

@@ -43,14 +43,14 @@ namespace Divide {
     }
 
     template<class T, class U>
-    bool ECSSystem<T, U>::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
+    bool ECSSystem<T, U>::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
         ACKNOWLEDGE_UNUSED(sgn);
         ACKNOWLEDGE_UNUSED(outputBuffer);
         return true;
     }
 
     template<class T, class U>
-    bool ECSSystem<T, U>::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+    bool ECSSystem<T, U>::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
         ACKNOWLEDGE_UNUSED(sgn);
         ACKNOWLEDGE_UNUSED(inputBuffer);
         return true;

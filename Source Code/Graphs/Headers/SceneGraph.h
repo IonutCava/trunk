@@ -62,8 +62,8 @@ class SceneGraph : private NonCopyable,
 
     void unload();
 
-    inline const SceneGraphNode& getRoot() const noexcept { return *_root; }
-    inline SceneGraphNode& getRoot() noexcept { return *_root; }
+    inline const SceneGraphNode* getRoot() const noexcept { return _root; }
+    inline SceneGraphNode* getRoot() noexcept { return _root; }
 
     SceneGraphNode* findNode(const Str128& name, bool sceneNodeName = false) const;
     SceneGraphNode* findNode(const U64 nameHash, bool sceneNodeName = false) const;
@@ -81,7 +81,7 @@ class SceneGraph : private NonCopyable,
     // Return true if intersections is not empty. Just shorthand ...
     bool intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRayResult>& intersections) const;
 
-    SceneGraphNode* createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor);
+    SceneGraphNode* createSceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 
     void destroySceneGraphNode(SceneGraphNode*& node, bool inPlace = true);
     void addToDeleteQueue(SceneGraphNode* node, size_t childIdx);
@@ -102,14 +102,14 @@ class SceneGraph : private NonCopyable,
         }
     }
 
-    inline U32 getTotalNodeCount() const noexcept { return to_U32(_allNodes.size()); }
+    size_t getTotalNodeCount() const noexcept;
 
     void onNetworkSend(U32 frameCount);
 
     void postLoad();
 
-    bool saveNodeToXML(const SceneGraphNode& node) const;
-    bool loadNodeFromXML(const char* assetsFile, SceneGraphNode& node) const;
+    bool saveNodeToXML(const SceneGraphNode* node) const;
+    bool loadNodeFromXML(const char* assetsFile, SceneGraphNode* node) const;
 
     void saveToXML(const char* assetsFile, DELEGATE<void, std::string_view> msgCallback) const;
     void loadFromXML(const char* assetsFile);
@@ -129,14 +129,14 @@ class SceneGraph : private NonCopyable,
     inline const ECS::ECSEngine& GetECSEngine() const noexcept { return _ecsEngine; }
 
    protected:
-    void onNodeDestroy(SceneGraphNode& oldNode);
-    void onNodeAdd(SceneGraphNode& newNode);
-    void onNodeTransform(SceneGraphNode& node);
+    void onNodeDestroy(SceneGraphNode* oldNode);
+    void onNodeAdd(SceneGraphNode* newNode);
+    void onNodeTransform(SceneGraphNode* node);
 
     bool frameStarted(const FrameEvent& evt) override;
 
-    bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const;
-    bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer);
+    bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) const;
+    bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer);
 
    private:
     ECS::ECSEngine _ecsEngine;
@@ -149,32 +149,29 @@ class SceneGraph : private NonCopyable,
     SceneGraphNode* _root;
     std::shared_ptr<Octree> _octree;
     std::atomic_bool _octreeUpdating;
-    vectorEASTL<SceneGraphNode*> _allNodes;
-    vectorEASTL<SceneGraphNode*> _orderedNodeList;
+    vectorEASTL<SceneGraphNode*> _nodeList;
 
     std::array<vectorEASTL<SceneGraphNode*>, to_base(SceneNodeType::COUNT)> _nodesByType;
 
+    mutable Mutex _nodeCreateMutex;
     mutable SharedMutex _pendingDeletionLock;
     hashMap<SceneGraphNode*, vectorEASTL<size_t>> _pendingDeletion;
-
-    mutable Mutex _nodeCreateMutex;
-
 };
 
 namespace Attorney {
 class SceneGraphSGN {
    private:
-    static void onNodeAdd(SceneGraph& sceneGraph, SceneGraphNode& newNode) {
-        sceneGraph.onNodeAdd(newNode);
+    static void onNodeAdd(SceneGraph* sceneGraph, SceneGraphNode* newNode) {
+        sceneGraph->onNodeAdd(newNode);
     }
 
-    static void onNodeDestroy(SceneGraph& sceneGraph, SceneGraphNode& oldNode) {
-        sceneGraph.onNodeDestroy(oldNode);
+    static void onNodeDestroy(SceneGraph* sceneGraph, SceneGraphNode* oldNode) {
+        sceneGraph->onNodeDestroy(oldNode);
     }
 
-    static void onNodeTransform(SceneGraph& sceneGraph, SceneGraphNode& node)
+    static void onNodeTransform(SceneGraph* sceneGraph, SceneGraphNode* node)
     {
-        sceneGraph.onNodeTransform(node);
+        sceneGraph->onNodeTransform(node);
     }
              
     friend class Divide::SceneGraphNode;

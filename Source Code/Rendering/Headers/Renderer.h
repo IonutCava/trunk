@@ -51,7 +51,7 @@ class Renderer : public PlatformContextComponent {
     void preRender(RenderStagePass stagePass,
                    const Texture_ptr& hizColourTexture,
                    LightPool& lightPool,
-                   const Camera& camera,
+                   const Camera* camera,
                    GFX::CommandBuffer& bufferInOut);
 
     void idle();

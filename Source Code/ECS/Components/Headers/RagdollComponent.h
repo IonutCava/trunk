@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class RagdollComponent final : public BaseComponentType<RagdollComponent, ComponentType::RAGDOLL>{
         public:
-            RagdollComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+            RagdollComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     };
 
     INIT_COMPONENT(RagdollComponent);

@@ -55,7 +55,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
       };
 
    public:
-    explicit AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+    explicit AnimationComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~AnimationComponent() = default;
 
     /// Select an animation by name

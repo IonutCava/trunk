@@ -483,7 +483,7 @@ void Editor::close() {
 }
 
 void Editor::updateCameraSnapshot() {
-    const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
+    const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
     if (playerCam != nullptr) {
         _cameraSnapshots[playerCam->getGUID()] = playerCam->snapshot();
     }
@@ -514,7 +514,7 @@ void Editor::toggle(const bool state) {
         onPreviewFocus(false);
 
         if (!_autoSaveCamera) {
-            Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
+            Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
             if (playerCam != nullptr) {
                 const auto it = _cameraSnapshots.find(playerCam->getGUID());
                 if (it != std::end(_cameraSnapshots)) {
@@ -524,20 +524,20 @@ void Editor::toggle(const bool state) {
         }
 
         _context.config().save();
-        activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
-        activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
-        activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+        activeScene.state()->renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+        activeScene.state()->renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+        activeScene.state()->renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
         _context.kernel().sceneManager()->resetSelection(0);
         _stepQueue = 2;
     } else {
         _stepQueue = 0;
-        activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
-        activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+        activeScene.state()->renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+        activeScene.state()->renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
         Selections selections = activeScene.getCurrentSelection();
         if (selections._selectionCount == 0) {
-            //SceneGraphNode& root = activeScene.sceneGraph().getRoot();
+            //SceneGraphNode* root = activeScene.sceneGraph().getRoot();
             //_context.kernel().sceneManager()->setSelected(0, { &root });
         }
     }
@@ -591,7 +591,7 @@ void Editor::update(const U64 deltaTimeUS) {
         }
     }
     
-    Attorney::GizmoEditor::update(*_gizmo, deltaTimeUS);
+    Attorney::GizmoEditor::update(_gizmo.get(), deltaTimeUS);
     if (running()) {
         _statusBar->update(deltaTimeUS);
         _optionsWindow->update(deltaTimeUS);
@@ -608,16 +608,16 @@ void Editor::update(const U64 deltaTimeUS) {
             Scene& activeScene = sMgr->getActiveScene();
             
             if (_isScenePaused) {
-                activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
-                activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+                activeScene.state()->renderState().enableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+                activeScene.state()->renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
                 if (allGizmosEnabled) {
-                    activeScene.state().renderState().enableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+                    activeScene.state()->renderState().enableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
                 }
             } else {
-                allGizmosEnabled = activeScene.state().renderState().isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
-                activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
-                activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
-                activeScene.state().renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+                allGizmosEnabled = activeScene.state()->renderState().isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+                activeScene.state()->renderState().disableOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
+                activeScene.state()->renderState().disableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
+                activeScene.state()->renderState().disableOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
             }
         }
     }
@@ -711,8 +711,8 @@ bool Editor::render(const U64 deltaTime) {
     return true;
 }
 
-void Editor::drawScreenOverlay(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-    Attorney::GizmoEditor::render(*_gizmo, camera, targetViewport, bufferInOut);
+void Editor::drawScreenOverlay(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    Attorney::GizmoEditor::render(_gizmo.get(), camera, targetViewport, bufferInOut);
 }
 
 bool Editor::frameSceneRenderEnded(const FrameEvent& evt) {
@@ -878,7 +878,7 @@ void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGra
         return;
     }
 
-    Attorney::GizmoEditor::updateSelection(*_gizmo, nodes);
+    Attorney::GizmoEditor::updateSelection(_gizmo.get(), nodes);
 }
 
 bool Editor::Undo() {
@@ -1301,8 +1301,8 @@ bool Editor::saveSceneChanges(DELEGATE<void, std::string_view> msgCallback, DELE
 U32 Editor::saveItemCount() const noexcept {
     U32 ret = 10u; // All of the scene stuff (settings, music, etc)
 
-    const SceneGraph& graph = _context.kernel().sceneManager()->getActiveScene().sceneGraph();
-    ret += graph.getTotalNodeCount();
+    const SceneGraph* graph = _context.kernel().sceneManager()->getActiveScene().sceneGraph();
+    ret += to_U32(graph->getTotalNodeCount());
 
     return ret;
 }
@@ -1498,9 +1498,9 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     nodeDescriptor._node = mesh;
 
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
-    const SceneGraphNode* node = activeScene.sceneGraph().getRoot().addChildNode(nodeDescriptor);
+    const SceneGraphNode* node = activeScene.sceneGraph()->getRoot()->addChildNode(nodeDescriptor);
     if (node != nullptr) {
-        const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(*_context.kernel().sceneManager());
+        const Camera* playerCam = Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager());
 
         TransformComponent* tComp = node->get<TransformComponent>();
         tComp->setPosition(playerCam->getEye());
@@ -1519,29 +1519,29 @@ LightPool& Editor::getActiveLightPool() {
 }
 
 SceneEnvironmentProbePool* Editor::getActiveEnvProbePool() const {
-    return Attorney::SceneManagerEditor::getEnvProbes(*_context.kernel().sceneManager());
+    return Attorney::SceneManagerEditor::getEnvProbes(_context.kernel().sceneManager());
     
 }
 
-void Editor::teleportToNode(const SceneGraphNode& sgn) const {
-    Attorney::SceneManagerCameraAccessor::moveCameraToNode(*_context.kernel().sceneManager(), sgn);
+void Editor::teleportToNode(const SceneGraphNode* sgn) const {
+    Attorney::SceneManagerCameraAccessor::moveCameraToNode(_context.kernel().sceneManager(), sgn);
 }
 
-void Editor::saveNode(const SceneGraphNode& sgn) const {
-    if (Attorney::SceneManagerEditor::saveNode(*_context.kernel().sceneManager(), sgn)) {
-        showStatusMessage(Util::StringFormat("Saved node [ %s ] to file!", sgn.name().c_str()), Time::SecondsToMilliseconds<F32>(3));
+void Editor::saveNode(const SceneGraphNode* sgn) const {
+    if (Attorney::SceneManagerEditor::saveNode(_context.kernel().sceneManager(), sgn)) {
+        showStatusMessage(Util::StringFormat("Saved node [ %s ] to file!", sgn->name().c_str()), Time::SecondsToMilliseconds<F32>(3));
     }
 }
 
-void Editor::loadNode(SceneGraphNode& sgn) const {
-    if (Attorney::SceneManagerEditor::loadNode(*_context.kernel().sceneManager(), sgn)) {
-        showStatusMessage(Util::StringFormat("Reloaded node [ %s ] from file!", sgn.name().c_str()), Time::SecondsToMilliseconds<F32>(3));
+void Editor::loadNode(SceneGraphNode* sgn) const {
+    if (Attorney::SceneManagerEditor::loadNode(_context.kernel().sceneManager(), sgn)) {
+        showStatusMessage(Util::StringFormat("Reloaded node [ %s ] from file!", sgn->name().c_str()), Time::SecondsToMilliseconds<F32>(3));
     }
 }
 
 void Editor::queueRemoveNode(I64 nodeGUID) {
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
-    activeScene.sceneGraph().removeNode(nodeGUID);
+    activeScene.sceneGraph()->removeNode(nodeGUID);
 }
 
 bool Editor::addComponent(SceneGraphNode* selection, ComponentType newComponentType) const {
@@ -1559,7 +1559,7 @@ bool Editor::addComponent(const Selections& selections, ComponentType newCompone
         const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
 
         for (U8 i = 0; i < selections._selectionCount; ++i) {
-            SceneGraphNode* sgn = activeScene.sceneGraph().findNode(selections._selections[i]);
+            SceneGraphNode* sgn = activeScene.sceneGraph()->findNode(selections._selections[i]);
             ret = addComponent(sgn, newComponentType) || ret;
         }
     }
@@ -1582,7 +1582,7 @@ bool Editor::removeComponent(const Selections& selections, ComponentType newComp
         const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
 
         for (U8 i = 0; i < selections._selectionCount; ++i) {
-            SceneGraphNode* sgn = activeScene.sceneGraph().findNode(selections._selections[i]);
+            SceneGraphNode* sgn = activeScene.sceneGraph()->findNode(selections._selections[i]);
             ret = removeComponent(sgn, newComponentType) || ret;
         }
     }
@@ -1591,7 +1591,7 @@ bool Editor::removeComponent(const Selections& selections, ComponentType newComp
 }
 
 SceneNode_ptr Editor::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
-    return Attorney::SceneManagerEditor::createNode(*context().kernel().sceneManager(), type, descriptor);
+    return Attorney::SceneManagerEditor::createNode(context().kernel().sceneManager(), type, descriptor);
 }
 
 bool Editor::saveToXML() const {

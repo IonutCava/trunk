@@ -43,7 +43,7 @@ namespace Divide {
 class LocalClient;
 class NetworkingComponent final : public BaseComponentType<NetworkingComponent, ComponentType::NETWORKING> {
 public:
-    NetworkingComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+    NetworkingComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~NetworkingComponent();
 
     void onNetworkSend(U32 frameCountIn);

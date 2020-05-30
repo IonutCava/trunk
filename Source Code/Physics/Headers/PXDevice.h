@@ -67,7 +67,7 @@ public:
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene)  final;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) final;
+    PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) final;
 
     inline PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
     inline const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }

@@ -8,11 +8,11 @@
 
 namespace Divide {
 
-BoundsComponent::BoundsComponent(SceneGraphNode& sgn, PlatformContext& context)
+BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     : BaseComponentType<BoundsComponent, ComponentType::BOUNDS>(sgn, context),
-     _tCompCache(sgn.get<TransformComponent>())
+     _tCompCache(sgn->get<TransformComponent>())
 {
-    _refBoundingBox.set(sgn.getNode().getBounds());
+    _refBoundingBox.set(sgn->getNode().getBounds());
     _boundingBox.set(_refBoundingBox);
     _boundingSphere.fromBoundingBox(_boundingBox);
 
@@ -79,7 +79,7 @@ void BoundsComponent::showAABB(const bool state) {
     if (_showAABB != state) {
         _showAABB = state;
 
-        _parentSGN.SendEvent(
+        _parentSGN->SendEvent(
             {
                 ECS::CustomEvent::Type::DrawBoundsChanged,
                 this
@@ -91,7 +91,7 @@ void BoundsComponent::showBS(const bool state) {
     if (_showBS != state) {
         _showBS = state;
 
-        _parentSGN.SendEvent(
+        _parentSGN->SendEvent(
             {
                 ECS::CustomEvent::Type::DrawBoundsChanged,
                 this
@@ -108,7 +108,7 @@ void BoundsComponent::flagBoundingBoxDirty(U32 transformMask, bool recursive) {
     }
 
     if (recursive) {
-        SceneGraphNode* parent = _parentSGN.parent();
+        SceneGraphNode* parent = _parentSGN->parent();
         if (parent != nullptr) {
             BoundsComponent* bounds = parent->get<BoundsComponent>();
             // We stop if the parent sgn doesn't have a bounds component.
@@ -141,7 +141,7 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
         // already clean
         return _boundingBox;
     }
-    _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
+    _parentSGN->forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
         child->get<BoundsComponent>()->updateAndGetBoundingBox();
         return true;
     });
@@ -159,7 +159,7 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
 
     _boundingSphere.fromBoundingBox(_boundingBox);
 
-    _parentSGN.SendEvent(
+    _parentSGN->SendEvent(
     {
         ECS::CustomEvent::Type::BoundsUpdated,
         this,
@@ -174,7 +174,7 @@ F32 BoundsComponent::distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept {
 }
 
 void BoundsComponent::PreUpdate(const U64 deltaTimeUS) {
-    if (Attorney::SceneNodeBoundsComponent::boundsChanged(getSGN().getNode())) {
+    if (Attorney::SceneNodeBoundsComponent::boundsChanged(getSGN()->getNode())) {
         flagBoundingBoxDirty(to_U32(TransformType::ALL), false);
         onBoundsChanged(getSGN());
     }
@@ -182,7 +182,7 @@ void BoundsComponent::PreUpdate(const U64 deltaTimeUS) {
 
 void BoundsComponent::Update(const U64 deltaTimeUS) {
     OPTICK_EVENT();
-    const SceneNode& sceneNode = getSGN().getNode();
+    const SceneNode& sceneNode = getSGN()->getNode();
     if (Attorney::SceneNodeBoundsComponent::boundsChanged(sceneNode)) {
         setRefBoundingBox(sceneNode.getBounds());
     }
@@ -193,18 +193,18 @@ void BoundsComponent::Update(const U64 deltaTimeUS) {
 void BoundsComponent::PostUpdate(const U64 deltaTimeUS) {
     OPTICK_EVENT();
 
-    Attorney::SceneNodeBoundsComponent::clearBoundsChanged(getSGN().getNode());
+    Attorney::SceneNodeBoundsComponent::clearBoundsChanged(getSGN()->getNode());
     updateAndGetBoundingBox();
 
     BaseComponentType<BoundsComponent, ComponentType::BOUNDS>::PostUpdate(deltaTimeUS);
 }
 
 // Recures all the way up to the root
-void BoundsComponent::onBoundsChanged(const SceneGraphNode& sgn) const {
-    SceneGraphNode* parent = sgn.parent();
+void BoundsComponent::onBoundsChanged(const SceneGraphNode* sgn) const {
+    SceneGraphNode* parent = sgn->parent();
     if (parent != nullptr) {
         Attorney::SceneNodeBoundsComponent::setBoundsChanged(parent->getNode());
-        onBoundsChanged(*parent);
+        onBoundsChanged(parent);
     }
 }
 };

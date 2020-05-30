@@ -241,7 +241,7 @@ bool ParticleEmitter::unload() {
     return SceneNode::unload();
 }
 
-void ParticleEmitter::buildDrawCommands(SceneGraphNode& sgn,
+void ParticleEmitter::buildDrawCommands(SceneGraphNode* sgn,
                                         const RenderStagePass& renderStagePass,
                                         const Camera& crtCamera,
                                         RenderPackage& pkgInOut) {
@@ -307,7 +307,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
 }
 
 /// The onRender call will emit particles
-void ParticleEmitter::onRefreshNodeData(const SceneGraphNode& sgn,
+void ParticleEmitter::onRefreshNodeData(const SceneGraphNode* sgn,
                                         const RenderStagePass& renderStagePass,
                                         const Camera& crtCamera,
                                         bool refreshData,
@@ -324,7 +324,7 @@ void ParticleEmitter::onRefreshNodeData(const SceneGraphNode& sgn,
             _buffersDirty[to_U32(renderStagePass._stage)] = false;
         }
 
-        RenderPackage& pkg = sgn.get<RenderingComponent>()->getDrawPackage(renderStagePass);
+        RenderPackage& pkg = sgn->get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
         GenericDrawCommand cmd = pkg.drawCommand(0, 0);
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
@@ -342,7 +342,7 @@ void ParticleEmitter::onRefreshNodeData(const SceneGraphNode& sgn,
 
 /// Pre-process particles
 void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
-                                  SceneGraphNode& sgn,
+                                  SceneGraphNode* sgn,
                                   SceneState& sceneState) {
 
     constexpr U32 s_particlesPerThread = 1024;
@@ -351,7 +351,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
         U32 aliveCount = getAliveParticleCount();
         renderState().drawState(aliveCount > 0);
 
-        TransformComponent* transform = sgn.get<TransformComponent>();
+        TransformComponent* transform = sgn->get<TransformComponent>();
 
         const vec3<F32>& pos = transform->getPosition();
         const Quaternion<F32>& rot = transform->getOrientation();

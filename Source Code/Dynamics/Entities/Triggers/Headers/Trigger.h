@@ -45,7 +45,7 @@ class Trigger : public SceneNode {
     explicit Trigger(ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~Trigger();
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
 
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position

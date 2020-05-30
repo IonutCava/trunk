@@ -30,7 +30,7 @@ SubMesh::~SubMesh()
 {
 }
 
-void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
+void SubMesh::buildDrawCommands(SceneGraphNode* sgn,
                                 const RenderStagePass& renderStagePass,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
@@ -43,7 +43,7 @@ void SubMesh::buildDrawCommands(SceneGraphNode& sgn,
     cmd._sourceBuffer = getGeometryVB()->handle();
     cmd._cmd.firstIndex = to_U32(getGeometryVB()->getPartitionOffset(_geometryPartitionIDs[0]));
     cmd._cmd.indexCount = to_U32(getGeometryVB()->getPartitionIndexCount(_geometryPartitionIDs[0]));
-    cmd._cmd.primCount = sgn.instanceCount();
+    cmd._cmd.primCount = sgn->instanceCount();
     cmd._bufferIndex = renderStagePass.baseIndex();
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
@@ -59,7 +59,7 @@ void SubMesh::setParentMesh(Mesh* const parentMesh) {
 
 
 void SubMesh::sceneUpdate(const U64 deltaTimeUS,
-                          SceneGraphNode& sgn,
+                          SceneGraphNode* sgn,
                           SceneState& sceneState) {
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 

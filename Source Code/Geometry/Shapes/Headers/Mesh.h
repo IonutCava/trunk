@@ -67,14 +67,14 @@ class Mesh : public Object3D {
 
     virtual ~Mesh();
 
-    void postLoad(SceneGraphNode& sgn) override;
+    void postLoad(SceneGraphNode* sgn) override;
 
     void setMaterialTpl(const Material_ptr& material) override;
 
     void addSubMesh(SubMesh_ptr subMesh);
 
     void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
+                     SceneGraphNode* sgn,
                      SceneState& sceneState) final;
 
     void setAnimator(const std::shared_ptr<SceneAnimator>& animator) {

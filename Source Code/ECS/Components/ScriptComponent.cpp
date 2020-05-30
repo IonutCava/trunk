@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-ScriptComponent::ScriptComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+ScriptComponent::ScriptComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<ScriptComponent, ComponentType::SCRIPT>(parentSGN, context)
 {
 }

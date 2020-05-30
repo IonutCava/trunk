@@ -43,8 +43,8 @@ public:
     static bool loadScene(Scene& activeScene);
     static bool saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback);
 
-    static bool saveNodeToXML(const Scene& activeScene, const SceneGraphNode& node);
-    static bool loadNodeFromXML(const Scene& activeScene, SceneGraphNode& node);
+    static bool saveNodeToXML(const Scene& activeScene, const SceneGraphNode* node);
+    static bool loadNodeFromXML(const Scene& activeScene, SceneGraphNode* node);
 };
 
 enum class RenderStage : U8;
@@ -111,13 +111,13 @@ public:
     }
     void resetSelection(PlayerIndex idx);
     void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive);
-    void onNodeDestroy(SceneGraphNode& node);
+    void onNodeDestroy(SceneGraphNode* node);
     // cull the scenegraph against the current view frustum
     const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount);
     // get the full list of reflective nodes
-    void getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const;
+    void getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const;
     // get the full list of refractive nodes
-    void getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const;
+    void getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const;
 
     void onLostFocus();
     void onGainFocus();
@@ -234,21 +234,21 @@ protected:
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
-    void preRender(const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut);
-    void postRender(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
-    void preRenderAllPasses(const Camera& playerCamera);
-    void postRenderAllPasses(const Camera& playerCamera);
+    void preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut);
+    void postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut);
+    void preRenderAllPasses(const Camera* playerCamera);
+    void postRenderAllPasses(const Camera* playerCamera);
     void drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
-    void debugDraw(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut);
+    void debugDraw(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut);
     void prepareLightData(RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
     Camera* playerCamera() const;
     Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
-    void moveCameraToNode(const SceneGraphNode& targetNode) const;
-    bool saveNode(const SceneGraphNode& targetNode) const;
-    bool loadNode(SceneGraphNode& targetNode) const;
+    void moveCameraToNode(const SceneGraphNode* targetNode) const;
+    bool saveNode(const SceneGraphNode* targetNode) const;
+    bool loadNode(SceneGraphNode* targetNode) const;
     SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
 
 private:
@@ -311,16 +311,16 @@ private:
 
 class SceneManagerKernel {
    private:
-    static void initPostLoadState(Divide::SceneManager& manager) {
-        manager.initPostLoadState();
+    static void initPostLoadState(Divide::SceneManager* manager) {
+        manager->initPostLoadState();
     }
 
-    static void currentPlayerPass(Divide::SceneManager& manager, PlayerIndex idx) {
-        manager.currentPlayerPass(idx);
+    static void currentPlayerPass(Divide::SceneManager* manager, PlayerIndex idx) {
+        manager->currentPlayerPass(idx);
     }
 
-    static bool networkUpdate(Divide::SceneManager& manager, U32 frameCount) {
-        return manager.networkUpdate(frameCount);
+    static bool networkUpdate(Divide::SceneManager* manager, U32 frameCount) {
+        return manager->networkUpdate(frameCount);
     }
 
     friend class Divide::Kernel;
@@ -328,20 +328,20 @@ class SceneManagerKernel {
 
 class SceneManagerEditor {
   private:
-   static SceneNode_ptr createNode(Divide::SceneManager& manager, SceneNodeType type, const ResourceDescriptor& descriptor) {
-     return manager.createNode(type, descriptor);
+   static SceneNode_ptr createNode(Divide::SceneManager* manager, SceneNodeType type, const ResourceDescriptor& descriptor) {
+     return manager->createNode(type, descriptor);
    }
 
-   static SceneEnvironmentProbePool* getEnvProbes(const Divide::SceneManager& manager) {
-       return manager.getEnvProbes();
+   static SceneEnvironmentProbePool* getEnvProbes(const Divide::SceneManager* manager) {
+       return manager->getEnvProbes();
    }
 
-   static bool saveNode(Divide::SceneManager& mgr, const SceneGraphNode& targetNode) {
-       return mgr.saveNode(targetNode);
+   static bool saveNode(Divide::SceneManager* mgr, const SceneGraphNode* targetNode) {
+       return mgr->saveNode(targetNode);
    }
 
-   static bool loadNode(Divide::SceneManager& mgr, SceneGraphNode& targetNode) {
-       return mgr.loadNode(targetNode);
+   static bool loadNode(Divide::SceneManager* mgr, SceneGraphNode* targetNode) {
+       return mgr->loadNode(targetNode);
    }
 
    friend class Divide::Editor;
@@ -357,16 +357,24 @@ class SceneManagerScenePool {
 
 class SceneManagerCameraAccessor {
   private:
-    static Camera* playerCamera(Divide::SceneManager& mgr) {
+    static Camera* playerCamera(const Divide::SceneManager* mgr) {
+        return mgr->playerCamera();
+    }
+
+    static Camera* playerCamera(const Divide::SceneManager& mgr) {
         return mgr.playerCamera();
     }
 
-    static Camera* playerCamera(Divide::SceneManager& mgr, PlayerIndex idx) {
+    static Camera* playerCamera(const Divide::SceneManager* mgr, PlayerIndex idx) {
+        return mgr->playerCamera(idx);
+    }
+
+    static Camera* playerCamera(const Divide::SceneManager& mgr, PlayerIndex idx) {
         return mgr.playerCamera(idx);
     }
 
-    static void moveCameraToNode(Divide::SceneManager& mgr, const SceneGraphNode& targetNode) {
-        mgr.moveCameraToNode(targetNode);
+    static void moveCameraToNode(Divide::SceneManager* mgr, const SceneGraphNode* targetNode) {
+        mgr->moveCameraToNode(targetNode);
     }
 
 
@@ -380,48 +388,48 @@ class SceneManagerCameraAccessor {
 
 class SceneManagerRenderPass {
    private:
-    static const VisibleNodeList& cullScene(Divide::SceneManager& mgr, RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
-        return mgr.cullSceneGraph(stage, camera, minLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
+    static const VisibleNodeList& cullScene(Divide::SceneManager* mgr, RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
+        return mgr->cullSceneGraph(stage, camera, minLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
     }
 
-    static void prepareLightData(Divide::SceneManager& mgr, RenderStage stage, const vec3<F32>& camPosition, const mat4<F32>& viewMatrix) {
-        mgr.prepareLightData(stage, camPosition, viewMatrix);
+    static void prepareLightData(Divide::SceneManager* mgr, RenderStage stage, const vec3<F32>& camPosition, const mat4<F32>& viewMatrix) {
+        mgr->prepareLightData(stage, camPosition, viewMatrix);
     }
 
-    static void preRenderMainPass(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
-        mgr.preRender(stagePass, camera, hizColourTexture, bufferInOut);
+    static void preRenderMainPass(Divide::SceneManager* mgr, const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+        mgr->preRender(stagePass, camera, hizColourTexture, bufferInOut);
     }
 
-    static void postRender(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-        mgr.postRender(stagePass, camera, bufferInOut);
+    static void postRender(Divide::SceneManager* mgr, const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {
+        mgr->postRender(stagePass, camera, bufferInOut);
     }
 
-    static void preRenderAllPasses(Divide::SceneManager& mgr, const Camera& playerCamera) {
-        mgr.preRenderAllPasses(playerCamera);
+    static void preRenderAllPasses(Divide::SceneManager* mgr, const Camera* playerCamera) {
+        mgr->preRenderAllPasses(playerCamera);
     }
 
-    static void postRenderAllPasses(Divide::SceneManager& mgr, const Camera& playerCamera) {
-        mgr.postRenderAllPasses(playerCamera);
+    static void postRenderAllPasses(Divide::SceneManager* mgr, const Camera* playerCamera) {
+        mgr->postRenderAllPasses(playerCamera);
     }
 
-    static void debugDraw(Divide::SceneManager& mgr, const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
-        mgr.debugDraw(stagePass, camera, bufferInOut);
+    static void debugDraw(Divide::SceneManager* mgr, const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {
+        mgr->debugDraw(stagePass, camera, bufferInOut);
     }
 
-    static void drawCustomUI(Divide::SceneManager& mgr, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
-        mgr.drawCustomUI(targetViewport, bufferInOut);
+    static void drawCustomUI(Divide::SceneManager* mgr, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+        mgr->drawCustomUI(targetViewport, bufferInOut);
     }
 
-    static void generateShadowMaps(Divide::SceneManager& mgr, GFX::CommandBuffer& bufferInOut) {
-        mgr.generateShadowMaps(bufferInOut);
+    static void generateShadowMaps(Divide::SceneManager* mgr, GFX::CommandBuffer& bufferInOut) {
+        mgr->generateShadowMaps(bufferInOut);
     }
 
-    static const Camera& playerCamera(const Divide::SceneManager& mgr) {
-        return *mgr.playerCamera();
+    static const Camera* playerCamera(const Divide::SceneManager* mgr) {
+        return mgr->playerCamera();
     }
 
-    static const SceneStatePerPlayer& playerState(const Divide::SceneManager& mgr) {
-        return mgr.getActiveScene().state().playerState();
+    static const SceneStatePerPlayer& playerState(const Divide::SceneManager* mgr) {
+        return mgr->getActiveScene().state()->playerState();
     }
 
     friend class Divide::RenderPass;

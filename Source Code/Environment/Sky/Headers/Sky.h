@@ -89,16 +89,16 @@ class Sky : public SceneNode {
     const Texture_ptr& activeSkyBox() const noexcept;
 
    protected:
-    void postLoad(SceneGraphNode& sgn) override;
+    void postLoad(SceneGraphNode* sgn) override;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) final;
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
 
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
-    bool prepareRender(SceneGraphNode& sgn,
+    bool prepareRender(SceneGraphNode* sgn,
                         RenderingComponent& rComp,
                         const RenderStagePass& renderStagePass,
                         const Camera& camera,

@@ -43,11 +43,11 @@ inline bool Editor::inEditMode() const noexcept {
 }
 
 inline void Editor::setTransformSettings(const TransformSettings& settings) noexcept {
-    Attorney::GizmoEditor::setTransformSettings(*_gizmo, settings);
+    Attorney::GizmoEditor::setTransformSettings(_gizmo.get(), settings);
 }
 
 inline const TransformSettings& Editor::getTransformSettings() const noexcept {
-    return Attorney::GizmoEditor::getTransformSettings(*_gizmo);
+    return Attorney::GizmoEditor::getTransformSettings(_gizmo.get());
 }
 
 inline bool Editor::simulationPauseRequested() const noexcept {

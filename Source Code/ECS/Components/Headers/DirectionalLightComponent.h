@@ -46,7 +46,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
 
    public:
 
-    explicit DirectionalLightComponent(SceneGraphNode& sgn, PlatformContext& context);
+    explicit DirectionalLightComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~DirectionalLightComponent() = default;
 
     void setDirection(const vec3<F32>& direction);

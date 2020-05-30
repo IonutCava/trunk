@@ -28,8 +28,8 @@ namespace TypeUtil {
     }
 };
 
-Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool)
-    : ECS::Event::IEventListener(sgn.sceneGraph().GetECSEngine()), 
+Light::Light(SceneGraphNode* sgn, const F32 range, LightType type, LightPool& parentPool)
+    : ECS::Event::IEventListener(sgn->sceneGraph()->GetECSEngine()),
       _parentPool(parentPool),
       _sgn(sgn),
       _type(type),
@@ -53,7 +53,7 @@ Light::Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& pa
 
     const ECS::CustomEvent evt = {
         ECS::CustomEvent::Type::TransformUpdated,
-        sgn.get<TransformComponent>(),
+        sgn->get<TransformComponent>(),
         to_U32(TransformType::ALL)
     };
 

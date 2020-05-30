@@ -44,13 +44,13 @@ public:
     ~InfinitePlane();
 
 protected:
-    void postLoad(SceneGraphNode& sgn) override;
+    void postLoad(SceneGraphNode* sgn) override;
 
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) override;
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
 protected:
     template <typename T>
     friend class ImplResourceLoader;

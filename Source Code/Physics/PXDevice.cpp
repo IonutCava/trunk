@@ -88,7 +88,7 @@ PhysicsSceneInterface* PXDevice::NewSceneInterface(Scene& scene) {
     return _api->NewSceneInterface(scene);
 }
 
-PhysicsAsset* PXDevice::createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) {
+PhysicsAsset* PXDevice::createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) {
     return _api->createRigidActor(node, parentComp);
 }
 

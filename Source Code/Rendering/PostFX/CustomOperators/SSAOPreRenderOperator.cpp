@@ -178,13 +178,13 @@ void SSAOPreRenderOperator::kernelIndex(const U8 val) {
     _context.context().config().rendering.postFX.ssaoKernelSizeIndex = val;
 }
 
-void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     if (_enabled) {
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
-        _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera.getProjectionMatrix());
-        _ssaoGenerateConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera.getProjectionMatrix()));
+        _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera->getProjectionMatrix());
+        _ssaoGenerateConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera->getProjectionMatrix()));
 
         // Generate AO
         {
@@ -241,7 +241,7 @@ void SSAOPreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bu
     }
 }
 
-bool SSAOPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+bool SSAOPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(input);
     ACKNOWLEDGE_UNUSED(output);

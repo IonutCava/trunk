@@ -50,7 +50,7 @@ class ParticleEmitter : public SceneNode {
     explicit ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~ParticleEmitter();
 
-    void onRefreshNodeData(const SceneGraphNode& sgn,
+    void onRefreshNodeData(const SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            bool refreshData,
@@ -81,10 +81,10 @@ class ParticleEmitter : public SceneNode {
 
     /// preprocess particles here
     void sceneUpdate(const U64 deltaTimeUS,
-                     SceneGraphNode& sgn,
+                     SceneGraphNode* sgn,
                      SceneState& sceneState) override;
 
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;

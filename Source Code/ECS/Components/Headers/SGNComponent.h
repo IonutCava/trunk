@@ -78,17 +78,17 @@ namespace Divide {
 //ref: http://www.nirfriedman.com/2018/04/29/unforgettable-factory/
 template <typename Base, typename... Args>
 struct Factory {
-    using ConstructFunc = DELEGATE<void, SceneGraphNode&, Args...>;
-    using DestructFunc = DELEGATE<void, SceneGraphNode&>;
+    using ConstructFunc = DELEGATE<void, SceneGraphNode*, Args...>;
+    using DestructFunc = DELEGATE<void, SceneGraphNode*>;
     using FactoryContainerConstruct = ska::bytell_hash_map<ComponentType::_integral, ConstructFunc>;
     using FactoryContainerDestruct = ska::bytell_hash_map<ComponentType::_integral, DestructFunc>;
 
     template <typename... ConstructArgs>
-    static void construct(ComponentType type, SceneGraphNode& node, ConstructArgs&&... args) {
+    static void construct(ComponentType type, SceneGraphNode* node, ConstructArgs&&... args) {
         constructData().at(type)(node, std::forward<ConstructArgs>(args)...);
     }
 
-    static void destruct(ComponentType type, SceneGraphNode& node) {
+    static void destruct(ComponentType type, SceneGraphNode* node) {
         destructData().at(type)(node);
     }
 
@@ -108,12 +108,12 @@ struct Factory {
         }
 
         static bool RegisterComponentType() {
-            Factory::constructData().emplace(C, [](SceneGraphNode& node, Args... args) -> void {
-                node.AddSGNComponent<T>(std::forward<Args>(args)...);
+            Factory::constructData().emplace(C, [](SceneGraphNode* node, Args... args) -> void {
+                node->AddSGNComponent<T>(std::forward<Args>(args)...);
             });
 
-            Factory::destructData().emplace(C, [](SceneGraphNode& node) -> void {
-                node.RemoveSGNComponent<T>();
+            Factory::destructData().emplace(C, [](SceneGraphNode* node) -> void {
+                node->RemoveSGNComponent<T>();
             });
 
             return true;
@@ -159,7 +159,7 @@ class SGNComponent : protected PlatformContextComponent,
                      public Factory<SGNComponent>
 {
     public:
-        explicit SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context);
+        explicit SGNComponent(Key key, ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context);
         virtual ~SGNComponent();
 
         virtual void PreUpdate(const U64 deltaTime);
@@ -168,7 +168,7 @@ class SGNComponent : protected PlatformContextComponent,
 
         virtual void OnData(const ECS::CustomEvent& data);
 
-        inline SceneGraphNode& getSGN() const noexcept { return _parentSGN; }
+        inline SceneGraphNode* getSGN() const noexcept { return _parentSGN; }
         inline ComponentType type() const noexcept { return _type; }
 
         EditorComponent& getEditorComponent() noexcept { return _editorComponent; }
@@ -184,7 +184,7 @@ class SGNComponent : protected PlatformContextComponent,
 
     protected:
         EditorComponent _editorComponent;
-        SceneGraphNode& _parentSGN;
+        SceneGraphNode* _parentSGN = nullptr;
         ComponentType _type = ComponentType::COUNT;
         std::atomic_bool _enabled;
         mutable std::atomic_bool _hasChanged;

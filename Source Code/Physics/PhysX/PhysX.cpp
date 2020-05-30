@@ -231,7 +231,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     _targetScene = targetScene;
 }
 
-/*void PhysX::createActor(SceneGraphNode& node, const stringImpl& sceneName,
+/*void PhysX::createActor(SceneGraphNode* node, const stringImpl& sceneName,
                         PhysicsActorMask mask, PhysicsCollisionGroup group) {
     assert(_targetScene != nullptr);
 
@@ -364,7 +364,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
 };
 */
 
-PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp)
+PhysicsAsset* PhysX::createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp)
 {
     PhysXActor* newActor = new PhysXActor(parentComp);
 

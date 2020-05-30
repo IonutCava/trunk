@@ -50,11 +50,11 @@ class WaterPlane : public SceneNode {
     explicit WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~WaterPlane();
 
-    bool pointUnderwater(const SceneGraphNode& sgn, const vec3<F32>& point);
+    bool pointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point);
 
     inline const std::shared_ptr<Quad3D>& getQuad() const noexcept { return _plane; }
 
-    void updatePlaneEquation(const SceneGraphNode& sgn,
+    void updatePlaneEquation(const SceneGraphNode* sgn,
                              Plane<F32>& plane,
                              bool reflection,
                              F32 offset);
@@ -69,12 +69,12 @@ class WaterPlane : public SceneNode {
     PROPERTY_R(F32, refrPlaneOffset, 0.0f);
 
    protected:
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
-    void postLoad(SceneGraphNode& sgn) override;
+    void postLoad(SceneGraphNode* sgn) override;
 
    protected:
     template <typename T>

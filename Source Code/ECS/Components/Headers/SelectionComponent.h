@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     class SelectionComponent final : public BaseComponentType<SelectionComponent, ComponentType::SELECTION> {
     public:
-        SelectionComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+        SelectionComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     };
 
     INIT_COMPONENT(SelectionComponent);

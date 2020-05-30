@@ -11,7 +11,7 @@
 
 namespace Divide {
 
-AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+AnimationComponent::AnimationComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<AnimationComponent, ComponentType::ANIMATION>(parentSGN, context)
 {
     _prevFameIndex = { -1, -1, -1 };
@@ -27,7 +27,7 @@ AnimationComponent::AnimationComponent(SceneGraphNode& parentSGN, PlatformContex
     _editorComponent.onChangedCbk([this](std::string_view field) {
         ACKNOWLEDGE_UNUSED(field);
 
-        RenderingComponent* const rComp = _parentSGN.get<RenderingComponent>();
+        RenderingComponent* const rComp = _parentSGN->get<RenderingComponent>();
         if (rComp != nullptr) {
             rComp->toggleRenderOption(RenderingComponent::RenderOptions::RENDER_SKELETON, showSkeleton());
         }
@@ -114,7 +114,7 @@ bool AnimationComponent::playAnimation(I32 pAnimIndex) {
     resetTimers();
 
     if (oldIndex != _currentAnimIndex) {
-        _parentSGN.getNode<Object3D>().onAnimationChange(_parentSGN, _currentAnimIndex);
+        _parentSGN->getNode<Object3D>().onAnimationChange(_parentSGN, _currentAnimIndex);
         return true;
     }
 
@@ -197,7 +197,7 @@ const BoneTransform& AnimationComponent::transformsByIndex(U32 animationID, U32 
 }
 
 mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name) {
-    const Object3D& node = _parentSGN.getNode<Object3D>();
+    const Object3D& node = _parentSGN->getNode<Object3D>();
     assert(_animator != nullptr);
 
     if (node.getObjectType()._value != ObjectType::SUBMESH ||
@@ -205,7 +205,7 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
          !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))
     {
         mat4<F32> mat;
-        _parentSGN.get<TransformComponent>()->getWorldMatrix(mat);
+        _parentSGN->get<TransformComponent>()->getWorldMatrix(mat);
         return mat;
     }
 

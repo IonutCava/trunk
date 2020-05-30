@@ -452,7 +452,7 @@ void Vegetation::createAndUploadGPUData(GFXDevice& gfxDevice, const Terrain_ptr&
     }
 }
 
-void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
+void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
     OPTICK_EVENT();
 
     assert(s_buffer != nullptr);
@@ -483,8 +483,8 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
     }
 
     if (hasVegetation) {
-        sgn.get<RenderingComponent>()->instantiateMaterial(s_vegetationMaterial);
-        sgn.get<RenderingComponent>()->lockLoD(0u);
+        sgn->get<RenderingComponent>()->instantiateMaterial(s_vegetationMaterial);
+        sgn->get<RenderingComponent>()->lockLoD(0u);
         WAIT_FOR_CONDITION(s_cullShaderGrass->getState() == ResourceState::RES_LOADED &&
                            s_cullShaderTrees->getState() == ResourceState::RES_LOADED);
 
@@ -550,7 +550,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode& sgn) {
         nodeDescriptor._instanceCount = _instanceCountTrees;
         nodeDescriptor._node = crtMesh;
         nodeDescriptor._name = Util::StringFormat("Trees_chunk_%d", ID);
-        _treeParentNode = sgn.addChildNode(nodeDescriptor);
+        _treeParentNode = sgn->addChildNode(nodeDescriptor);
         _treeParentNode->setFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED);
 
         TransformComponent* tComp = _treeParentNode->get<TransformComponent>();
@@ -637,14 +637,14 @@ void Vegetation::occlusionCull(const RenderStagePass& stagePass,
 }
 
 void Vegetation::sceneUpdate(const U64 deltaTimeUS,
-                             SceneGraphNode& sgn,
+                             SceneGraphNode* sgn,
                              SceneState& sceneState) {
     OPTICK_EVENT();
 
     if (!renderState().drawState()) {
         uploadVegetationData(sgn);
         // positive value to keep occlusion culling happening
-        sgn.get<RenderingComponent>()->cullFlag(1.0f * _terrainChunk.ID());
+        sgn->get<RenderingComponent>()->cullFlag(1.0f * _terrainChunk.ID());
     }
 
     if (!s_buffersBound) {
@@ -678,7 +678,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         if (sceneGrassDistance != _grassDistance) {
             _grassDistance = sceneGrassDistance;
             _cullPushConstants.set(_ID("dvd_grassVisibilityDistance"), GFX::PushConstantType::FLOAT, _grassDistance);
-            sgn.get<RenderingComponent>()->setRenderRange(-_grassDistance, _grassDistance);
+            sgn->get<RenderingComponent>()->setRenderRange(-_grassDistance, _grassDistance);
         }
         if (sceneTreeDistance != _treeDistance) {
             _treeDistance = sceneTreeDistance;
@@ -698,7 +698,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 }
 
 
-void Vegetation::buildDrawCommands(SceneGraphNode& sgn,
+void Vegetation::buildDrawCommands(SceneGraphNode* sgn,
                                    const RenderStagePass& renderStagePass,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut) {

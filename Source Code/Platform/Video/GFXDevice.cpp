@@ -2317,7 +2317,7 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
 }
 
 /// Render all of our immediate mode primitives. This isn't very optimised and most are recreated per frame!
-void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera* activeCamera, GFX::CommandBuffer& bufferInOut) {
     debugDrawFrustums(bufferInOut);
     debugDrawBoxes(bufferInOut);
     debugDrawSpheres(bufferInOut);
@@ -2345,9 +2345,9 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // We need to transform the gizmo so that it always remains axis aligned
             // Create a world matrix using a look at function with the eye position
             // backed up from the camera's view direction
-            _axisGizmo->worldMatrix(mat4<F32>(-activeCamera.getForwardDir() * 2,
+            _axisGizmo->worldMatrix(mat4<F32>(-activeCamera->getForwardDir() * 2,
                                                VECTOR3_ZERO,
-                                               activeCamera.getUpDir()) * activeCamera.getWorldMatrix());
+                                               activeCamera->getUpDir()) * activeCamera->getWorldMatrix());
             bufferInOut.add(_axisGizmo->toCommandBuffer());
         } else if (_axisGizmo) {
             destroyIMP(_axisGizmo);

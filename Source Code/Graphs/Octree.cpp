@@ -467,7 +467,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, 
 
         //test for intersection
         IntersectionRecord ir;
-        if (getIntersection(*objPtr, frustum, ir)) {
+        if (getIntersection(objPtr, frustum, ir)) {
             ret.push_back(ir);
         }
     }
@@ -508,7 +508,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay,
 
         if (objPtr->get<BoundsComponent>()->getBoundingBox().intersect(intersectRay, start, end).hit) {
             IntersectionRecord ir;
-            if (getIntersection(*objPtr, intersectRay, start, end, ir)) {
+            if (getIntersection(objPtr, intersectRay, start, end, ir)) {
                 ret.push_back(ir);
             }
         }
@@ -539,7 +539,7 @@ void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects
             //We let the two objects check for collision against each other. They can figure out how to do the coarse and granular checks.
             //all we're concerned about is whether or not a collision actually happened.
             IntersectionRecord ir;
-            if (getIntersection(*pObjPtr, *objPtr, ir)) {
+            if (getIntersection(pObjPtr, objPtr, ir)) {
                 bool found = false;
                 for (IntersectionRecord& irTemp : _intersectionsCache) {
                     if (irTemp == ir) {
@@ -562,12 +562,12 @@ void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects
                 assert(lObj2Ptr);
                 SceneGraphNode* lObj1 = tmp[tmp.size() - 1];
                 assert(lObj1);
-                if (lObj1->getGUID() == lObj2Ptr->getGUID() || (isStatic(*lObj1) && isStatic(*lObj2Ptr))) {
+                if (lObj1->getGUID() == lObj2Ptr->getGUID() || (isStatic(lObj1) && isStatic(lObj2Ptr))) {
                     continue;
                 }
 
                 IntersectionRecord ir;
-                if (getIntersection(*lObj1, *lObj2Ptr, ir)) {
+                if (getIntersection(lObj1, lObj2Ptr, ir)) {
                     _intersectionsCache.push_back(ir);
                 }
             }
@@ -579,7 +579,7 @@ void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects
 
     //now, merge our local objects list with the parent objects list, then pass it down to all children.
     for(SceneGraphNode* lObjPtr : _objects) {
-        if (lObjPtr && !isStatic(*lObjPtr)) {
+        if (lObjPtr && !isStatic(lObjPtr)) {
             parentObjects.push_back(lObjPtr);
         }
     }
@@ -651,7 +651,7 @@ void Octree::handleIntersection(const IntersectionRecord& intersection) const {
     SceneGraphNode* obj2 = intersection._intersectedObject2;
     if (obj1 != nullptr && obj2 != nullptr) {
         // Check for child / parent relation
-        if(obj1->isRelated(*obj2)) {
+        if(obj1->isRelated(obj2)) {
             return;
         }
         RigidBodyComponent* comp1 = obj1->get<RigidBodyComponent>();
@@ -664,18 +664,18 @@ void Octree::handleIntersection(const IntersectionRecord& intersection) const {
     }
 }
 
-bool Octree::isStatic(const SceneGraphNode& node) const {
-    return node.usageContext() == NodeUsageContext::NODE_STATIC;
+bool Octree::isStatic(const SceneGraphNode* node) const {
+    return node->usageContext() == NodeUsageContext::NODE_STATIC;
 }
 
-bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, IntersectionRecord& irOut) const {
-    const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
+bool Octree::getIntersection(SceneGraphNode* node, const Frustum& frustum, IntersectionRecord& irOut) const {
+    const BoundingBox& bb = node->get<BoundsComponent>()->getBoundingBox();
 
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     _frustPlaneCache = -1;
     if (frustum.ContainsBoundingBox(bb, _frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT) {
         irOut.reset();
-        irOut._intersectedObject1 = &node;
+        irOut._intersectedObject1 = node;
         irOut._treeNode = shared_from_this();
         irOut._hasHit = true;
         return true;
@@ -684,15 +684,15 @@ bool Octree::getIntersection(SceneGraphNode& node, const Frustum& frustum, Inter
     return false;
 }
 
-bool Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, IntersectionRecord& irOut) const {
-    if (node1.getGUID() != node2.getGUID()) {
-        BoundsComponent* bComp1 = node1.get<BoundsComponent>();
-        BoundsComponent* bComp2 = node2.get<BoundsComponent>();
+bool Octree::getIntersection(SceneGraphNode* node1, SceneGraphNode* node2, IntersectionRecord& irOut) const {
+    if (node1->getGUID() != node2->getGUID()) {
+        BoundsComponent* bComp1 = node1->get<BoundsComponent>();
+        BoundsComponent* bComp2 = node2->get<BoundsComponent>();
         if (bComp1->getBoundingSphere().collision(bComp2->getBoundingSphere())) {
             if (bComp1->getBoundingBox().collision(bComp2->getBoundingBox())) {
                 irOut.reset();
-                irOut._intersectedObject1 = &node1;
-                irOut._intersectedObject2 = &node2;
+                irOut._intersectedObject1 = node1;
+                irOut._intersectedObject2 = node2;
                 irOut._treeNode = shared_from_this();
                 irOut._hasHit = true;
                 return true;
@@ -703,11 +703,11 @@ bool Octree::getIntersection(SceneGraphNode& node1, SceneGraphNode& node2, Inter
     return false;
 }
 
-bool Octree::getIntersection(SceneGraphNode& node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const {
-    const BoundingBox& bb = node.get<BoundsComponent>()->getBoundingBox();
+bool Octree::getIntersection(SceneGraphNode* node, const Ray& intersectRay, F32 start, F32 end, IntersectionRecord& irOut) const {
+    const BoundingBox& bb = node->get<BoundsComponent>()->getBoundingBox();
     if (bb.intersect(intersectRay, start, end).hit) {
         irOut.reset();
-        irOut._intersectedObject1 = &node;
+        irOut._intersectedObject1 = node;
         irOut._ray = intersectRay;
         irOut._treeNode = shared_from_this();
         irOut._hasHit = true;

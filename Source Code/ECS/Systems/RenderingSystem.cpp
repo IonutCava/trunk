@@ -14,8 +14,8 @@ namespace Divide {
 
     }
 
-    bool RenderingSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
-        RenderingComponent* rComp = sgn.GetComponent<RenderingComponent>();
+    bool RenderingSystem::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
+        RenderingComponent* rComp = sgn->GetComponent<RenderingComponent>();
         if (rComp != nullptr && !rComp->saveCache(outputBuffer)) {
             return false;
         }
@@ -23,8 +23,8 @@ namespace Divide {
         return Super::saveCache(sgn, outputBuffer);
     }
 
-    bool RenderingSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
-        RenderingComponent* rComp = sgn.GetComponent<RenderingComponent>();
+    bool RenderingSystem::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
+        RenderingComponent* rComp = sgn->GetComponent<RenderingComponent>();
         if (rComp != nullptr && !rComp->loadCache(inputBuffer)) {
             return false;
         }

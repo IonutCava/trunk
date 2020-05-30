@@ -5,7 +5,7 @@
 
 namespace Divide {
 
-SGNRelationshipCache::SGNRelationshipCache(SceneGraphNode& parent)
+SGNRelationshipCache::SGNRelationshipCache(SceneGraphNode* parent)
     : _parentNode(parent)
 {
     _isValid = false;
@@ -32,7 +32,7 @@ bool SGNRelationshipCache::rebuild() {
 SGNRelationshipCache::RelationshipType SGNRelationshipCache::clasifyNode(I64 GUID) const {
     assert(isValid());
 
-    if (GUID != _parentNode.getGUID()) {
+    if (GUID != _parentNode->getGUID()) {
         SharedLock<SharedMutex> r_lock(_updateMutex);
         for (const std::pair<I64, U8>& entry : _childrenRecursiveCache) {
             if (entry.first == GUID) {
@@ -55,19 +55,19 @@ SGNRelationshipCache::RelationshipType SGNRelationshipCache::clasifyNode(I64 GUI
 
 
 void SGNRelationshipCache::updateChildren(U8 level, vectorEASTL<std::pair<I64, U8>>& cache) const {
-    _parentNode.forEachChild([level, &cache](const SceneGraphNode* child, I32 /*childIdx*/) {
+    _parentNode->forEachChild([level, &cache](const SceneGraphNode* child, I32 /*childIdx*/) {
         cache.emplace_back(child->getGUID(), level);
-        Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*child).updateChildren(level + 1, cache);
+        Attorney::SceneGraphNodeRelationshipCache::relationshipCache(child).updateChildren(level + 1, cache);
         return true;
     });
 }
 
 void SGNRelationshipCache::updateParents(U8 level, vectorEASTL<std::pair<I64, U8>>& cache) const {
-    SceneGraphNode* parent = _parentNode.parent();
+    SceneGraphNode* parent = _parentNode->parent();
     // We ignore the root note when considering grandparent status
     if (parent && parent->parent()) {
         cache.emplace_back(parent->getGUID(), level);
-        Attorney::SceneGraphNodeRelationshipCache::relationshipCache(*parent).updateParents(level + 1, cache);
+        Attorney::SceneGraphNodeRelationshipCache::relationshipCache(parent).updateParents(level + 1, cache);
     }
 }
 

@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 class ScriptComponent final : public BaseComponentType<ScriptComponent, ComponentType::SCRIPT> {
    public:
-    explicit ScriptComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+    explicit ScriptComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~ScriptComponent();
 
     void Update(const U64 deltaTimeUS) final;

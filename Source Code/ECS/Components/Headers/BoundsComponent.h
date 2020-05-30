@@ -41,7 +41,7 @@ namespace Divide {
     //struct TransformUpdated;
     class BoundsComponent final : public BaseComponentType<BoundsComponent, ComponentType::BOUNDS>{
     public:
-        BoundsComponent(SceneGraphNode& sgn, PlatformContext& context);
+        BoundsComponent(SceneGraphNode* sgn, PlatformContext& context);
         ~BoundsComponent() = default;
 
         inline const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
@@ -72,7 +72,7 @@ namespace Divide {
 
         // Flag the current BB as dirty and also flag all of the parents' bbs as dirty as well
         void flagBoundingBoxDirty(U32 transformMask, bool recursive);
-        void onBoundsChanged(const SceneGraphNode& sgn) const;
+        void onBoundsChanged(const SceneGraphNode* sgn) const;
 
     private:
         std::atomic_uint _transformUpdatedMask;

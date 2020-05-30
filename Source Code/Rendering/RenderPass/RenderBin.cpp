@@ -83,7 +83,7 @@ void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
             eastl::sort(stack.begin(),
                         stack.end(),
                         [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
-                            return a._renderable->getSGN().getNode().type() == SceneNodeType::TYPE_WATER;
+                            return a._renderable->getSGN()->getNode().type() == SceneNodeType::TYPE_WATER;
                         });
         } break;
         case RenderingOrder::NONE: {
@@ -115,8 +115,8 @@ void RenderBin::refresh(RenderStage stage) {
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode& sgn, const RenderStagePass& stagePass, const F32 minDistToCameraSq) {
-    RenderingComponent* const rComp = sgn.get<RenderingComponent>();
+void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderStagePass& stagePass, const F32 minDistToCameraSq) {
+    RenderingComponent* const rComp = sgn->get<RenderingComponent>();
 
     const U8 stageIndex = to_U8(stagePass._stage);
 
@@ -148,7 +148,7 @@ void RenderBin::populateRenderQueue(RenderStagePass stagePass, RenderQueuePackag
 
 void RenderBin::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
-        Attorney::RenderingCompRenderBin::postRender(*item._renderable, renderState, stagePass, bufferInOut);
+        Attorney::RenderingCompRenderBin::postRender(item._renderable, renderState, stagePass, bufferInOut);
     }
 }
 

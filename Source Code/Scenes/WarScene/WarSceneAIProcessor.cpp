@@ -154,7 +154,7 @@ bool WarSceneAIProcessor::DIE() {
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
     if (hadFlag == true) {
-        _globalWorkingMemory._flags[enemyTeamID].value()->setParent(_parentManager.parentScene().sceneGraph().getRoot());
+        _globalWorkingMemory._flags[enemyTeamID].value()->setParent(_parentManager.parentScene().sceneGraph()->getRoot());
         TransformComponent* tComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value()
                                   ->get<TransformComponent>();
@@ -449,7 +449,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             _localWorkingMemory._hasEnemyFlag.value(false);
 
             _globalWorkingMemory._flags[enemyTeamID].value()->setParent(
-                _parentManager.parentScene().sceneGraph().getRoot());
+                _parentManager.parentScene().sceneGraph()->getRoot());
             TransformComponent* tComp = _globalWorkingMemory._flags[enemyTeamID]
                                   .value()
                                   ->get<TransformComponent>();
@@ -471,7 +471,7 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 SceneGraphNode* flag = _globalWorkingMemory._flags[enemyTeamID].value();
                 TransformComponent* tComp = flag->get<TransformComponent>();
                 TransformComponent* parenttComp = targetNode->get<TransformComponent>();
-                flag->setParent(*targetNode);
+                flag->setParent(targetNode);
                 vec3<F32> prevScale(tComp->getLocalScale());
                 vec3<F32> parentScale(parenttComp->getLocalScale());
                 vec3<F32> parentPos(parenttComp->getPosition());
@@ -705,7 +705,7 @@ void WarSceneAIProcessor::updatePositions() {
         if (!_globalWorkingMemory._flagsAtBase[teamID].value()) {
             if (nearOwnFlag() && !atHome) {
                 _globalWorkingMemory._flags[teamID].value()->setParent(
-                    _parentManager.parentScene().sceneGraph().getRoot());
+                    _parentManager.parentScene().sceneGraph()->getRoot());
                 TransformComponent* tComp =
                     _globalWorkingMemory._flags[teamID]
                         .value()

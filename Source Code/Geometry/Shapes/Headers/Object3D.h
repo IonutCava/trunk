@@ -85,21 +85,21 @@ class Object3D : public SceneNode {
         return _geometryFlagMask;
     }
 
-    void postLoad(SceneGraphNode& sgn) override;
+    void postLoad(SceneGraphNode* sgn) override;
 
-    void onRefreshNodeData(const SceneGraphNode& sgn,
+    void onRefreshNodeData(const SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            bool refreshData,
                            GFX::CommandBuffer& bufferInOut) override;
                         
-    virtual void onAnimationChange(SceneGraphNode& sgn, I32 newIndex) { 
+    virtual void onAnimationChange(SceneGraphNode* sgn, I32 newIndex) {
         ACKNOWLEDGE_UNUSED(sgn);
         ACKNOWLEDGE_UNUSED(newIndex);
     }
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off
-    virtual void playAnimations(const SceneGraphNode& sgn, const bool state);
+    virtual void playAnimations(const SceneGraphNode* sgn, const bool state);
 
     inline void setGeometryPartitionID(U8 lodIndex, U16 ID) {
         if (lodIndex < _geometryPartitionIDs.size()) {
@@ -154,7 +154,7 @@ class Object3D : public SceneNode {
     /// Please manually delete the old VB if available before replacing!
     virtual void setGeometryVB(VertexBuffer* const vb);
 
-    virtual void buildDrawCommands(SceneGraphNode& sgn,
+    virtual void buildDrawCommands(SceneGraphNode* sgn,
                                    const RenderStagePass& renderStagePass,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut) override;

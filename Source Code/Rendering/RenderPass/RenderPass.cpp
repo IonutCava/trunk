@@ -205,7 +205,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
             params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
             params._targetOIT = params._target._usage == RenderTargetUsage::SCREEN_MS ? RenderTargetID(RenderTargetUsage::OIT_MS) : RenderTargetID(RenderTargetUsage::OIT);
-            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(*_parent.parent().sceneManager());
+            params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
             params._passName = "MainRenderPass";
 
             GFX::ClearRenderTargetCommand clearMainTarget = {};
@@ -226,7 +226,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             clipStateCmd._negativeOneToOneDepth = true;
             GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
-            Attorney::SceneManagerRenderPass::generateShadowMaps(*_parent.parent().sceneManager(), bufferInOut);
+            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
 
             clipStateCmd._negativeOneToOneDepth = false;
             GFX::EnqueueCommand(bufferInOut, clipStateCmd);
@@ -240,7 +240,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Reflection Pass" });
 
             SceneManager* mgr = _parent.parent().sceneManager();
-            Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
+            Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
             SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
             {
                 envProbPool->prepare(bufferInOut);
@@ -260,7 +260,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             {
                 //Update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
-                mgr->getSortedReflectiveNodes(*camera, RenderStage::REFLECTION, true, s_Nodes);
+                mgr->getSortedReflectiveNodes(camera, RenderStage::REFLECTION, true, s_Nodes);
 
                 // While in budget, update reflections
                 ReflectionUtil::resetBudget();
@@ -289,9 +289,9 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
             SceneManager* mgr = _parent.parent().sceneManager();
-            Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(*mgr);
+            Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
             {
-                mgr->getSortedRefractiveNodes(*camera, RenderStage::REFRACTION, true, s_Nodes);
+                mgr->getSortedRefractiveNodes(camera, RenderStage::REFRACTION, true, s_Nodes);
                 // While in budget, update refractions
                 RefractionUtil::resetBudget();
                 for (size_t i = 0; i < s_Nodes.size(); ++i) {

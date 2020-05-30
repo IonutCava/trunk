@@ -16,8 +16,8 @@ namespace Divide {
     {
     }
 
-    bool TransformSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
-        TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
+    bool TransformSystem::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
+        TransformComponent* tComp = sgn->GetComponent<TransformComponent>();
         if (tComp != nullptr && !tComp->saveCache(outputBuffer)) {
             return false;
         }
@@ -25,8 +25,8 @@ namespace Divide {
         return Super::saveCache(sgn, outputBuffer);
     }
 
-    bool TransformSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
-        TransformComponent* tComp = sgn.GetComponent<TransformComponent>();
+    bool TransformSystem::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
+        TransformComponent* tComp = sgn->GetComponent<TransformComponent>();
         if (tComp != nullptr && !tComp->loadCache(inputBuffer)) {
             return false;
         }

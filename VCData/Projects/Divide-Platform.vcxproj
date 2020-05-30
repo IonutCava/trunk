@@ -15,7 +15,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="../../Source Code/Core\MemoryManagement\Headers\TrackedObject.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\fmod\Headers\FmodWrapper.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\Headers\AudioAPIWrapper.h" />
     <ClInclude Include="../../Source Code/Platform\Audio\Headers\AudioDescriptor.h" />
@@ -109,7 +108,6 @@
     <ClInclude Include="../../Source Code\Platform\Video\RenderBackend\OpenGL\Headers\GLStateTracker.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/Core\MemoryManagement\TrackedObject.cpp" />
     <ClCompile Include="../../Source Code/Platform\Audio\openAl\ALWrapper.cpp" />
     <ClCompile Include="../../Source Code/Platform\Audio\sdl_mixer\SDLWrapper.cpp" />
     <ClCompile Include="../../Source Code/Platform\Audio\SFXDevice.cpp" />

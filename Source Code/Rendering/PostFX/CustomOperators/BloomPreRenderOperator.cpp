@@ -135,7 +135,7 @@ void BloomPreRenderOperator::luminanceThreshold(F32 val) {
 }
 
 // Order: luminance calc -> bloom -> tonemap
-bool BloomPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     assert(input._targetID != output._targetID);
 
     const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();

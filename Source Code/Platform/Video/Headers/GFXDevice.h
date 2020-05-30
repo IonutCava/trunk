@@ -246,7 +246,7 @@ public:  // GPU interface
     void beginFrame(DisplayWindow& window, bool global);
     void endFrame(DisplayWindow& window, bool global);
 
-    void debugDraw(const SceneRenderState& sceneRenderState, const Camera& activeCamera, GFX::CommandBuffer& bufferInOut);
+    void debugDraw(const SceneRenderState& sceneRenderState, const Camera* activeCamera, GFX::CommandBuffer& bufferInOut);
     void debugDrawBox(const vec3<F32>& min, const vec3<F32>& max, const FColour3& colour);
     void debugDrawSphere(const vec3<F32>& center, F32 radius, const FColour3& colour);
     void debugDrawCone(const vec3<F32>& root, const vec3<F32>& direction, F32 length, F32 radius, const FColour3& colour);

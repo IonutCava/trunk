@@ -66,7 +66,7 @@ namespace Divide {
         }
     }
 
-    void Gizmo::render(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+    void Gizmo::render(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
         if (!active() || _selectedNodes.empty()) {
             return;
         }
@@ -119,8 +119,8 @@ namespace Divide {
         const vec2<U16> size = mainWindow->getDrawableSize();
         ImGuizmo::SetRect(0.f, 0.f, to_F32(size.width), to_F32(size.height));
 
-        ImGuizmo::Manipulate(camera.getViewMatrix(),
-                             camera.getProjectionMatrix(),
+        ImGuizmo::Manipulate(camera->getViewMatrix(),
+                             camera->getProjectionMatrix(),
                              _transformSettings.currentGizmoOperation,
                              _transformSettings.currentGizmoMode,
                              matrix,

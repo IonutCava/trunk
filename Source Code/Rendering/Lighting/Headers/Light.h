@@ -72,7 +72,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     };
 
     /// Create a new light assigned to the specified slot with the specified range
-    explicit Light(SceneGraphNode& sgn, const F32 range, LightType type, LightPool& parentPool);
+    explicit Light(SceneGraphNode* sgn, const F32 range, LightType type, LightPool& parentPool);
     virtual ~Light();
 
     /// Get light diffuse colour
@@ -153,8 +153,8 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         _shadowProperties._lightDetails.y = to_F32(offset);
     }
 
-    inline       SceneGraphNode& getSGN()       noexcept { return _sgn; }
-    inline const SceneGraphNode& getSGN() const noexcept { return _sgn; }
+    inline       SceneGraphNode* getSGN()       noexcept { return _sgn; }
+    inline const SceneGraphNode* getSGN() const noexcept { return _sgn; }
 
     PROPERTY_R(vec3<F32>, positionCache);
     PROPERTY_R(vec3<F32>, directionCache);
@@ -173,7 +173,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
      void registerFields(EditorComponent& comp);
    protected:
-    SceneGraphNode& _sgn;
+    SceneGraphNode* _sgn = nullptr;
     LightPool& _parentPool;
     /// rgb - diffuse, a - reserved
     UColour4  _colour;

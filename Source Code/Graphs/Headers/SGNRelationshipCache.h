@@ -48,7 +48,7 @@ public:
         COUNT
     };
 public:
-    SGNRelationshipCache(SceneGraphNode& parent);
+    SGNRelationshipCache(SceneGraphNode* parent);
 
     bool isValid() const;
     void invalidate();
@@ -68,7 +68,7 @@ protected:
     // pair: GUID ... parent level (0 = parent, 1 = grandparent, ...)
     vectorEASTL<std::pair<I64, U8>> _parentRecursiveCache;
     std::atomic_bool _isValid;
-    SceneGraphNode& _parentNode;
+    SceneGraphNode* _parentNode = nullptr;
 
     mutable SharedMutex _updateMutex;
 };

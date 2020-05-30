@@ -149,8 +149,8 @@ class Unit : public FrameListener {
 namespace Attorney {
     class UnitComponent {
     private:
-        static void setParentNode(Unit& unit, SceneGraphNode* node) {
-            unit.setParentNode(node);
+        static void setParentNode(Unit* unit, SceneGraphNode* node) {
+            unit->setParentNode(node);
         }
         friend class Divide::UnitComponent;
     };

@@ -25,7 +25,7 @@ namespace {
     }
 
     // Return true if this node should be removed from a shadow pass
-    [[nodiscard]] bool doesNotCastShadows(RenderStage stage, const SceneGraphNode& node, SceneNodeType sceneNodeType, ObjectType objType) {
+    [[nodiscard]] bool doesNotCastShadows(RenderStage stage, const SceneGraphNode* node, SceneNodeType sceneNodeType, ObjectType objType) {
         if (sceneNodeType == SceneNodeType::TYPE_SKY ||
             sceneNodeType == SceneNodeType::TYPE_WATER ||
             sceneNodeType == SceneNodeType::TYPE_INFINITEPLANE ||
@@ -34,13 +34,13 @@ namespace {
             return true;
         }
 
-        const RenderingComponent* rComp = node.get<RenderingComponent>();
+        const RenderingComponent* rComp = node->get<RenderingComponent>();
         assert(rComp != nullptr);
         return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
     }
 
-    [[nodiscard]] inline bool shouldCullNode(RenderStage stage, const SceneGraphNode& node, bool& isTransformNodeOut) {
-        const SceneNode& sceneNode = node.getNode();
+    [[nodiscard]] inline bool shouldCullNode(RenderStage stage, const SceneGraphNode* node, bool& isTransformNodeOut) {
+        const SceneNode& sceneNode = node->getNode();
         const SceneNodeType snType = sceneNode.type();
 
         ObjectType objectType = ObjectType::COUNT;
@@ -48,7 +48,7 @@ namespace {
             objectType = static_cast<const Object3D&>(sceneNode).getObjectType();
         }
 
-        if (node.hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)) {
+        if (node->hasFlag(SceneGraphNode::Flags::VISIBILITY_LOCKED)) {
             return false;
         }
 
@@ -88,7 +88,7 @@ void RenderPassCuller::clear() noexcept {
     }
 }
 
-VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, const SceneGraph& sceneGraph, const SceneState& sceneState, PlatformContext& context)
+VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, const SceneGraph* sceneGraph, const SceneState* sceneState, PlatformContext& context)
 {
     OPTICK_EVENT();
 
@@ -96,38 +96,38 @@ VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, con
     VisibleNodeList& nodeCache = getNodeCache(stage);
     nodeCache.reset();
 
-    if (sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
-        sceneState.renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
+    if (sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
+        sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME))
     {
-        sceneGraph.getRoot().lockChildrenForRead();
-        const vectorEASTL<SceneGraphNode*>& rootChildren = sceneGraph.getRoot().getChildrenLocked();
+        sceneGraph->getRoot()->lockChildrenForRead();
+        const vectorEASTL<SceneGraphNode*>& rootChildren = sceneGraph->getRoot()->getChildrenLocked();
 
         ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = sceneGraph.getRoot().getChildCount();
+        descriptor._iterCount = sceneGraph->getRoot()->getChildCount();
         descriptor._partitionSize = g_nodesPerCullingPartition;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
         descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
                             for (U32 i = start; i < end; ++i) {
-                                frustumCullNode(parentTask, *rootChildren[i], params, 0u, nodeCache);
+                                frustumCullNode(parentTask, rootChildren[i], params, 0u, nodeCache);
                             }
                         };
         parallel_for(context, descriptor);
-        sceneGraph.getRoot().unlockChildrenForRead();
+        sceneGraph->getRoot()->unlockChildrenForRead();
     }
 
     return nodeCache;
 }
 
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList& nodes) const {
+void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList& nodes) const {
     OPTICK_EVENT();
 
     // Early out for inactive nodes
-    if (currentNode.hasFlag(SceneGraphNode::Flags::ACTIVE)) {
+    if (currentNode->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
 
         Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
-        const I64 nodeGUID = currentNode.getGUID();
+        const I64 nodeGUID = currentNode->getGUID();
         for (size_t i = 0; i < params._ignoredGUIDS.second; ++i) {
             if (nodeGUID == params._ignoredGUIDS.first[i]) {
                 return;
@@ -149,28 +149,28 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
         if (isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera)) {
             if (!isTransformNode) {
                 VisibleNode node = {};
-                node._node = &currentNode;
+                node._node = currentNode;
                 node._distanceToCameraSq = distanceSqToCamera;
                 nodes.append(node);
             }
             // Parent node intersects the view, so check children
             if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
 
-                currentNode.lockChildrenForRead();
-                const vectorEASTL<SceneGraphNode*>& children = currentNode.getChildrenLocked();
+                currentNode->lockChildrenForRead();
+                const vectorEASTL<SceneGraphNode*>& children = currentNode->getChildrenLocked();
 
                 ParallelForDescriptor descriptor = {};
-                descriptor._iterCount = currentNode.getChildCount();
+                descriptor._iterCount = currentNode->getChildCount();
                 descriptor._partitionSize = g_nodesPerCullingPartition;
                 descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
                 descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
                                         for (U32 i = start; i < end; ++i) {
-                                            frustumCullNode(parentTask, *children[i], params, recursionLevel + 1, nodes);
+                                            frustumCullNode(parentTask, children[i], params, recursionLevel + 1, nodes);
                                         }
                                     };
-                parallel_for(currentNode.context(), descriptor);
-                currentNode.unlockChildrenForRead();
+                parallel_for(currentNode->context(), descriptor);
+                currentNode->unlockChildrenForRead();
             } else {
                 // All nodes are in view entirely
                 addAllChildren(currentNode, params, nodes);
@@ -179,32 +179,32 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode& current
     }
 }
 
-void RenderPassCuller::addAllChildren(const SceneGraphNode& currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
     OPTICK_EVENT();
 
-    currentNode.lockChildrenForRead();
-    const vectorEASTL<SceneGraphNode*>& children = currentNode.getChildrenLocked();
+    currentNode->lockChildrenForRead();
+    const vectorEASTL<SceneGraphNode*>& children = currentNode->getChildrenLocked();
     for (SceneGraphNode* child : children) {
         if (!child->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
             continue;
         }
         
         bool isTransformNode = false;
-        if (!shouldCullNode(params._stage, *child, isTransformNode)) {
+        if (!shouldCullNode(params._stage, child, isTransformNode)) {
             F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-            if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(*child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
+            if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
                 VisibleNode node = {};
                 node._node = child;
                 node._distanceToCameraSq = distanceSqToCamera;
                 nodes.append(node);
 
-                addAllChildren(*child, params, nodes);
+                addAllChildren(child, params, nodes);
             }
         } else if (isTransformNode) {
-            addAllChildren(*child, params, nodes);
+            addAllChildren(child, params, nodes);
         }
     }
-    currentNode.unlockChildrenForRead();
+    currentNode->unlockChildrenForRead();
 }
 
 void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
@@ -216,18 +216,18 @@ void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEAS
     Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
     for (SceneGraphNode* node : nodes) {
         // Internal node cull (check against camera frustum and all that ...)
-        if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(*node, params, collisionResult, distanceSqToCamera)) {
+        if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(node, params, collisionResult, distanceSqToCamera)) {
             nodesOut.append({ node, distanceSqToCamera });
         }
     }
 }
 
-void RenderPassCuller::toVisibleNodes(const Camera& camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
+void RenderPassCuller::toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
     nodesOut.reset();
 
-    const vec3<F32> cameraEye = camera.getEye();
+    const vec3<F32> cameraEye = camera->getEye();
     for (SceneGraphNode* node : nodes) {
         F32 distanceSqToCamera = std::numeric_limits<F32>::max();
         BoundsComponent* bComp = node->get<BoundsComponent>();

@@ -15,13 +15,13 @@
 namespace Divide {
 
 
-EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, PlatformContext& context) 
+EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context)
     : BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>(sgn, context),
       GUIDWrapper(),
       _aabb(vec3<F32>(-1), vec3<F32>(1)),
       _refaabb(vec3<F32>(-1), vec3<F32>(1))
 {
-    Scene& parentScene = sgn.sceneGraph().parentScene();
+    Scene& parentScene = sgn->sceneGraph()->parentScene();
 
     EditorComponentField layerField = {};
     layerField._name = "RT Layer index";
@@ -78,21 +78,21 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode& sgn, Platfo
 
     getEditorComponent().onChangedCbk([this](std::string_view) {
         _aabb.set(_refaabb.getMin(), _refaabb.getMax());
-        _aabb.translate(_parentSGN.get<TransformComponent>()->getPosition());
+        _aabb.translate(_parentSGN->get<TransformComponent>()->getPosition());
     });
 
-    Attorney::SceneEnvironmentProbeComponent::registerProbe(parentScene, *this);
+    Attorney::SceneEnvironmentProbeComponent::registerProbe(parentScene, this);
 }
 
 EnvironmentProbeComponent::~EnvironmentProbeComponent()
 {
-    Attorney::SceneEnvironmentProbeComponent::unregisterProbe(_parentSGN.sceneGraph().parentScene(), *this);
+    Attorney::SceneEnvironmentProbeComponent::unregisterProbe(_parentSGN->sceneGraph()->parentScene(), this);
 }
 
 SceneGraphNode* EnvironmentProbeComponent::findNodeToIgnore() const noexcept {
     //If we are not a root-level probe. Avoid rendering our parent and children into the reflection
-    if (getSGN().parent() != nullptr) {
-        SceneGraphNode* parent = getSGN().parent();
+    if (getSGN()->parent() != nullptr) {
+        SceneGraphNode* parent = getSGN()->parent();
         while (parent != nullptr) {
             const SceneNodeType type = parent->getNode().type();
 
@@ -173,7 +173,7 @@ void EnvironmentProbeComponent::PreUpdate(const U64 deltaTime) {
 void EnvironmentProbeComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
         _aabb.set(_refaabb.getMin(), _refaabb.getMax());
-        _aabb.translate(_parentSGN.get<TransformComponent>()->getPosition());
+        _aabb.translate(_parentSGN->get<TransformComponent>()->getPosition());
     } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
         const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(data._flag);
         if (flag == SceneGraphNode::Flags::SELECTED) {

@@ -42,7 +42,7 @@ class MotionBlurPreRenderOperator : public PreRenderOperator {
     MotionBlurPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~MotionBlurPreRenderOperator();
 
-    bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
+    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
 
     inline F32 velocityScale() const noexcept { return _velocityScale; }
     void velocityScale(F32 val);

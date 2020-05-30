@@ -136,9 +136,6 @@
     <ClInclude Include="../../Source Code/Platform\Headers\ConditionalWait.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Core\MemoryManagement\Headers\TrackedObject.h">
-      <Filter>Memory\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\Headers\glBufferImpl.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\Headers</Filter>
     </ClInclude>
@@ -374,9 +371,6 @@
       <Filter>Video\Buffers\VertexBuffer</Filter>
     </ClCompile>
     <ClCompile Include="../../Source Code/Platform\DisplayWindow.cpp" />
-    <ClCompile Include="../../Source Code/Core\MemoryManagement\TrackedObject.cpp">
-      <Filter>Memory</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code/Platform\Video\Buffers\VertexBuffer\VertexDataInterface.cpp">
       <Filter>Video\Buffers\VertexBuffer</Filter>
     </ClCompile>
@@ -591,12 +585,6 @@
     </Filter>
     <Filter Include="Headers">
       <UniqueIdentifier>{70bee0bb-7a13-4d72-a546-e8738ba8e7d6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Memory">
-      <UniqueIdentifier>{84a36a9f-381f-4c54-8412-5a5079811891}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Memory\Headers">
-      <UniqueIdentifier>{0d7d6351-5944-4da7-87da-f9a5fe30b001}</UniqueIdentifier>
     </Filter>
     <Filter Include="Video\Buffers\RenderTarget">
       <UniqueIdentifier>{cb1182ce-0923-4898-9c39-10006463f05c}</UniqueIdentifier>

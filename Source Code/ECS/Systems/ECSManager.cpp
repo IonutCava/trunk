@@ -120,7 +120,7 @@ ECSManager::~ECSManager()
 
 }
 
-bool ECSManager::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const {
+bool ECSManager::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) const {
     TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
     if (tSys != nullptr) {
         if (!tSys->saveCache(sgn, outputBuffer)) {
@@ -142,7 +142,7 @@ bool ECSManager::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) 
     return true;
 }
 
-bool ECSManager::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+bool ECSManager::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
     TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
     if (tSys != nullptr) {
         if (!tSys->loadCache(sgn, inputBuffer)) {

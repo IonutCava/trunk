@@ -328,7 +328,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
 
     if (frameCount % (Config::TARGET_FRAME_RATE / Config::Networking::NETWORK_SEND_FREQUENCY_HZ) == 0) {
         U32 retryCount = 0;
-        while (!Attorney::SceneManagerKernel::networkUpdate(*_sceneManager, frameCount)) {
+        while (!Attorney::SceneManagerKernel::networkUpdate(_sceneManager, frameCount)) {
             if (retryCount++ > Config::Networking::NETWORK_SEND_RETRY_COUNT) {
                 break;
             }
@@ -517,7 +517,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
 
         renderParams._targetViewport = editorRunning ? _editorViewports[i] : _targetViewports[i];
 
-        Attorney::SceneManagerKernel::currentPlayerPass(*_sceneManager, i);
+        Attorney::SceneManagerKernel::currentPlayerPass(_sceneManager, i);
         {
             Time::ProfileTimer& timer = getTimer(_flushToScreenTimer, _renderTimer, i, "Render Timer");
             renderParams._parentTimer = &timer;
@@ -557,7 +557,7 @@ void Kernel::warmup() {
     onLoop();
     _platformContext.paramHandler().setParam(_ID("freezeLoopTime"), false);
 
-    Attorney::SceneManagerKernel::initPostLoadState(*_sceneManager);
+    Attorney::SceneManagerKernel::initPostLoadState(_sceneManager);
 
     _timingData.update(Time::App::ElapsedMicroseconds());
 

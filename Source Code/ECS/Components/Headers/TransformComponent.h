@@ -57,7 +57,7 @@ namespace Divide {
         friend class Attorney::TransformComponentSGN;
 
         public:
-         TransformComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+         TransformComponent(SceneGraphNode* parentSGN, PlatformContext& context);
          ~TransformComponent();
 
          void reset();

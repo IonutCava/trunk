@@ -123,9 +123,9 @@ class Terrain final : public Object3D {
     Vert getVert(F32 x_clampf, F32 z_clampf) const;
     Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) final;
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
 
-    void onRefreshNodeData(const SceneGraphNode& sgn,
+    void onRefreshNodeData(const SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            bool refreshData,
@@ -133,18 +133,18 @@ class Terrain final : public Object3D {
 
     void postBuild();
 
-    void buildDrawCommands(SceneGraphNode& sgn,
+    void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) final;
 
-     bool prepareRender(SceneGraphNode& sgn,
+     bool prepareRender(SceneGraphNode* sgn,
                         RenderingComponent& rComp,
                         const RenderStagePass& renderStagePass,
                         const Camera& camera,
                         bool refreshData) final;
 
-    void postLoad(SceneGraphNode& sgn);
+    void postLoad(SceneGraphNode* sgn);
 
     void onEditorChange(std::string_view field);
 

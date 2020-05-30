@@ -46,7 +46,7 @@ void MainScene::updateLights() {
 }
 
 void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
-    if (state().playerState(idx).cameraUpdated()) {
+    if (state()->playerState(idx).cameraUpdated()) {
         Camera& cam = *getPlayerForIndex(idx)->camera();
         const vec3<F32>& eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
@@ -96,8 +96,8 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
     if (_guiTimersMS[0] >= FpsDisplay) {
         _GUI->modifyText("underwater",
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
-                                             state().playerState(0).cameraUnderwater() ? "true" : "false",
-                                             state().globalWaterBodies()[0]._heightOffset), false);
+                                             state()->playerState(0).cameraUnderwater() ? "true" : "false",
+                                             state()->globalWaterBodies()[0]._heightOffset), false);
         _GUI->modifyText("RenderBinCount",
                          Util::StringFormat("Number of items in Render Bin: %d.",
                                             _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
@@ -153,10 +153,10 @@ bool MainScene::load(const Str256& name) {
                                          to_base(ComponentType::BOUNDS) |
                                          to_base(ComponentType::RENDERING) |
                                          to_base(ComponentType::NETWORKING);
-    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot().addChildNode(waterNodeDescriptor);
+    SceneGraphNode* waterGraphNode = _sceneGraph->getRoot()->addChildNode(waterNodeDescriptor);
     
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    waterGraphNode->get<TransformComponent>()->setPositionY(state().globalWaterBodies()[0]._heightOffset);
+    waterGraphNode->get<TransformComponent>()->setPositionY(state()->globalWaterBodies()[0]._heightOffset);
 
 
     if (loadState) {
@@ -199,8 +199,8 @@ U16 MainScene::registerInputActions() {
             _musicPlaying = !_musicPlaying;
             if (_musicPlaying) {
                 SceneState::MusicPlaylist::const_iterator it;
-                it = state().music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
-                if (it != std::cend(state().music(MusicType::TYPE_BACKGROUND))) {
+                it = state()->music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
+                if (it != std::cend(state()->music(MusicType::TYPE_BACKGROUND))) {
                     _context.sfx().playMusic(it->second);
                 }
             } else {

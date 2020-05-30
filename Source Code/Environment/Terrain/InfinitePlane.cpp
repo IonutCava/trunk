@@ -117,10 +117,10 @@ bool InfinitePlane::load() {
     return SceneNode::load();
 }
 
-void InfinitePlane::postLoad(SceneGraphNode& sgn) {
+void InfinitePlane::postLoad(SceneGraphNode* sgn) {
     assert(_plane != nullptr);
 
-    RenderingComponent* renderable = sgn.get<RenderingComponent>();
+    RenderingComponent* renderable = sgn->get<RenderingComponent>();
     if (renderable) {
         renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
     }
@@ -128,17 +128,17 @@ void InfinitePlane::postLoad(SceneGraphNode& sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+void InfinitePlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
     OPTICK_EVENT();
 
-    TransformComponent* tComp = sgn.get<TransformComponent>();
+    TransformComponent* tComp = sgn->get<TransformComponent>();
 
     const vec3<F32>& newEye = sceneState.parentScene().playerCamera()->getEye();
 
     tComp->setPosition(newEye.x, tComp->getPosition().y, newEye.z);
 }
 
-void InfinitePlane::buildDrawCommands(SceneGraphNode& sgn,
+void InfinitePlane::buildDrawCommands(SceneGraphNode* sgn,
                                       const RenderStagePass& renderStagePass,
                                       const Camera& crtCamera,
                                       RenderPackage& pkgInOut) {

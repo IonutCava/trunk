@@ -9,8 +9,8 @@ namespace Divide {
     {
     }
 
-    bool AnimationSystem::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) {
-        AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
+    bool AnimationSystem::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
+        AnimationComponent* aComp = sgn->GetComponent<AnimationComponent>();
         if (aComp != nullptr && !aComp->saveCache(outputBuffer)) {
             return false;
         }
@@ -18,8 +18,8 @@ namespace Divide {
         return Super::saveCache(sgn, outputBuffer);
     }
 
-    bool AnimationSystem::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
-        AnimationComponent* aComp = sgn.GetComponent<AnimationComponent>();
+    bool AnimationSystem::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
+        AnimationComponent* aComp = sgn->GetComponent<AnimationComponent>();
         if (aComp != nullptr && !aComp->loadCache(inputBuffer)) {
             return false;
         }

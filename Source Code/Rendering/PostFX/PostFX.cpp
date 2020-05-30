@@ -136,7 +136,7 @@ void PostFX::updateResolution(U16 width, U16 height) {
     _preRenderBatch->reshape(width, height);
 }
 
-void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     if (_filtersDirty) {
@@ -155,7 +155,7 @@ void PostFX::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Apply" });
 
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
@@ -180,7 +180,7 @@ void PostFX::apply(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
     bindPipelineCmd._pipeline = _drawPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, camera.getZPlanes());
+    _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;

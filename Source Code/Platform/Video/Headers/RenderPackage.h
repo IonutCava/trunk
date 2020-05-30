@@ -141,8 +141,8 @@ protected:
 namespace Attorney {
     class RenderPackageRenderPassManager {
         private:
-        static GFX::CommandBuffer* getCommandBuffer(RenderPackage& pkg) {
-            return pkg.commands();
+        static GFX::CommandBuffer* getCommandBuffer(RenderPackage* pkg) {
+            return pkg->commands();
         }
 
         friend class Divide::RenderPassManager;

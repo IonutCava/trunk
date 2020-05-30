@@ -44,8 +44,8 @@ namespace Divide {
         AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~AnimationSystem() = default;
 
-        bool saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) final;
-        bool loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) final;
+        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
+        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;
     };
 };
 

@@ -45,7 +45,7 @@ class BloomPreRenderOperator : public PreRenderOperator {
     BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~BloomPreRenderOperator();
 
-    bool execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
+    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
     inline F32 factor() const { return _bloomFactor; }

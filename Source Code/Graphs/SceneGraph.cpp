@@ -35,11 +35,9 @@ SceneGraph::SceneGraph(Scene& parentScene)
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
-    _root = createSceneGraphNode(*this, rootDescriptor);
+    _root = createSceneGraphNode(this, rootDescriptor);
     _root->postLoad();
-
-    //Attorney::SceneNodeSceneGraph::postLoad(*rootSGN.getNode(), rootSGN);
-    onNodeAdd(*_root);
+    onNodeAdd(_root);
 
     constexpr U16 octreeNodeMask = to_base(SceneNodeType::TYPE_TRANSFORM) |
                                    to_base(SceneNodeType::TYPE_SKY) |
@@ -53,7 +51,6 @@ SceneGraph::SceneGraph(Scene& parentScene)
 SceneGraph::~SceneGraph()
 { 
     _octree.reset();
-    _allNodes.clear();
     Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
     unload();
@@ -76,14 +73,14 @@ void SceneGraph::addToDeleteQueue(SceneGraphNode* node, size_t childIdx) {
     }
 }
 
-void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
-    I64 guid = oldNode.getGUID();
+void SceneGraph::onNodeDestroy(SceneGraphNode* oldNode) {
+    I64 guid = oldNode->getGUID();
 
     if (guid == _root->getGUID()) {
         return;
     }
 
-    eastl::erase_if(_nodesByType[to_base(oldNode.getNode().type())],
+    eastl::erase_if(_nodesByType[to_base(oldNode->getNode().type())],
                     [guid](SceneGraphNode* node)-> bool
                     {
                         return node && node->getGUID() == guid;
@@ -91,32 +88,23 @@ void SceneGraph::onNodeDestroy(SceneGraphNode& oldNode) {
 
     Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
-    eastl::erase_if(_allNodes,
-                    [guid](SceneGraphNode* node)-> bool 
-                    {
-                        return node && node->getGUID() == guid;
-                    });
-
     _nodeListChanged = true;
 }
 
-void SceneGraph::onNodeAdd(SceneGraphNode& newNode) {
-    SceneGraphNode* newNodePtr = &newNode;
-
-    _allNodes.push_back(newNodePtr);
-    _nodesByType[to_base(newNodePtr->getNode().type())].push_back(newNodePtr);
+void SceneGraph::onNodeAdd(SceneGraphNode* newNode) {
+    _nodesByType[to_base(newNode->getNode().type())].push_back(newNode);
 
     _nodeListChanged = true;
 
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
-        _octreeChanged = _octree->addNode(newNodePtr);
+        _octreeChanged = _octree->addNode(newNode);
     }
 }
 
-void SceneGraph::onNodeTransform(SceneGraphNode& node) {
+void SceneGraph::onNodeTransform(SceneGraphNode* node) {
     if (_loadComplete) {
-        node.setFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED);
+        node->setFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED);
     }
 }
 
@@ -125,7 +113,7 @@ void SceneGraph::idle()
 }
 
 bool SceneGraph::removeNodesByType(SceneNodeType nodeType) {
-    return _root != nullptr && getRoot().removeNodesByType(nodeType);
+    return _root != nullptr && getRoot()->removeNodesByType(nodeType);
 }
 
 bool SceneGraph::removeNode(I64 guid) {
@@ -136,7 +124,7 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
     if (node) {
         SceneGraphNode* parent = node->parent();
         if (parent) {
-            if (!parent->removeChildNode(*node, true)) {
+            if (!parent->removeChildNode(node, true)) {
                 return false;
             }
         }
@@ -148,25 +136,25 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 }
 
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
-    ACKNOWLEDGE_UNUSED(evt);
-
     Attorney::SceneGraphNodeSceneGraph::frameStarted(getRoot(), evt);
 
-    UniqueLock<SharedMutex> lock(_pendingDeletionLock);
-    if (!_pendingDeletion.empty()) {
-        for (auto entry : _pendingDeletion) {
-            if (entry.first != nullptr) {
-                Attorney::SceneGraphNodeSceneGraph::processDeleteQueue(*entry.first, entry.second);
+    {
+        UniqueLock<SharedMutex> lock(_pendingDeletionLock);
+        if (!_pendingDeletion.empty()) {
+            for (auto entry : _pendingDeletion) {
+                if (entry.first != nullptr) {
+                    Attorney::SceneGraphNodeSceneGraph::processDeleteQueue(entry.first, entry.second);
+                }
             }
+            _pendingDeletion.clear();
         }
-        _pendingDeletion.clear();
     }
 
-    // Gather all nodes in order
-    if (_nodeListChanged)
-    {
-        _orderedNodeList.resize(0);
-        Attorney::SceneGraphNodeSceneGraph::getOrderedNodeList(*_root, _orderedNodeList);
+    // Gather all nodes at the start of the frame only if we added/removed any of them
+    if (_nodeListChanged) {
+        // Very rarely called
+        _nodeList.resize(0);
+        Attorney::SceneGraphNodeSceneGraph::getAllNodes(_root, _nodeList);
         _nodeListChanged = false;
     }
 
@@ -193,17 +181,17 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     PlatformContext& context = parentScene().context();
 
     ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = to_U32(_orderedNodeList.size());
+    descriptor._iterCount = to_U32(_nodeList.size());
     descriptor._partitionSize = g_nodesPerPartition;
     descriptor._cbk = [this](const Task* parentTask, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {
-            Attorney::SceneGraphNodeSceneGraph::processEvents(*_orderedNodeList[i]);
+            Attorney::SceneGraphNodeSceneGraph::processEvents(_nodeList[i]);
         }
     };
 
     parallel_for(context, descriptor);
 
-    for (SceneGraphNode* node : _orderedNodeList) {
+    for (SceneGraphNode* node : _nodeList) {
         node->sceneUpdate(deltaTimeUS, sceneState);
     }
 
@@ -229,7 +217,7 @@ void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
 }
 
 void SceneGraph::onNetworkSend(U32 frameCount) {
-    Attorney::SceneGraphNodeSceneGraph::onNetworkSend(*_root, frameCount);
+    Attorney::SceneGraphNodeSceneGraph::onNetworkSend(_root, frameCount);
 }
 
 bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRayResult>& intersections) const {
@@ -246,12 +234,14 @@ bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRa
 }
 
 void SceneGraph::postLoad() {
-    _octree->addNodes(_allNodes);
+    for (const auto& nodes : _nodesByType) {
+        _octree->addNodes(nodes);
+    }
     _octreeChanged = true;
     _loadComplete = true;
 }
 
-SceneGraphNode* SceneGraph::createSceneGraphNode(SceneGraph& sceneGraph, const SceneGraphNodeDescriptor& descriptor) {
+SceneGraphNode* SceneGraph::createSceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescriptor& descriptor) {
     UniqueLock<Mutex> u_lock(_nodeCreateMutex);
 
     ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(sceneGraph, descriptor);
@@ -269,6 +259,14 @@ void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, bool inPlace) {
     }
 }
 
+size_t SceneGraph::getTotalNodeCount() const noexcept {
+    size_t ret = 0;
+    for (const auto& nodes : _nodesByType) {
+        ret += nodes.size();
+    }
+
+    return ret;
+}
 const vectorEASTL<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
     return _nodesByType[to_base(type)];
 }
@@ -313,7 +311,7 @@ SceneGraphNode* SceneGraph::findNode(I64 guid) const {
 }
 
 bool SceneGraph::saveCache(ByteBuffer& outputBuffer) const {
-    const bool ret = saveCache(*_root, outputBuffer);
+    const bool ret = saveCache(_root, outputBuffer);
     outputBuffer << _ID(_root->name().c_str());
     return ret;
 }
@@ -333,7 +331,7 @@ bool SceneGraph::loadCache(ByteBuffer& inputBuffer) {
 
         SceneGraphNode* node = findNode(nodeID, false);
 
-        if (node != nullptr && loadCache(*node, inputBuffer)) {
+        if (node != nullptr && loadCache(node, inputBuffer)) {
             inputBuffer >> marker1;
             inputBuffer >> marker2;
             assert(marker1 == g_cacheMarkerByteValue && marker1 == marker2);
@@ -358,10 +356,10 @@ bool SceneGraph::loadCache(ByteBuffer& inputBuffer) {
     return !missingData;
 }
 
-bool SceneGraph::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) const {
+bool SceneGraph::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) const {
     // Because loading is async, nodes will not be necessarily in the same order. We need a way to find
     // the node using some sort of ID. Name based ID is bad, but is the only system available at the time of writing -Ionut
-    outputBuffer << _ID(sgn.name().c_str());
+    outputBuffer << _ID(sgn->name().c_str());
     if (!Attorney::SceneGraphNodeSceneGraph::saveCache(sgn, outputBuffer)) {
         NOP();
     }
@@ -369,12 +367,12 @@ bool SceneGraph::saveCache(const SceneGraphNode& sgn, ByteBuffer& outputBuffer) 
     outputBuffer << g_cacheMarkerByteValue;
     outputBuffer << g_cacheMarkerByteValue;
 
-    return sgn.forEachChild([this, &outputBuffer](SceneGraphNode* child, I32 /*idx*/) {
-        return saveCache(*child, outputBuffer);
+    return sgn->forEachChild([this, &outputBuffer](SceneGraphNode* child, I32 /*idx*/) {
+        return saveCache(child, outputBuffer);
     });
 }
 
-bool SceneGraph::loadCache(SceneGraphNode& sgn, ByteBuffer& inputBuffer) {
+bool SceneGraph::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
     return Attorney::SceneGraphNodeSceneGraph::loadCache(sgn, inputBuffer);
 }
 
@@ -404,13 +402,13 @@ void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, std::string_vi
     {
         boost::property_tree::ptree pt;
         pt.put("version", g_sceneGraphVersion);
-        pt.add_child("entities.node", dumpSGNtoAssets(&getRoot()));
+        pt.add_child("entities.node", dumpSGNtoAssets(getRoot()));
 
         copyFile((sceneLocation + "/").c_str(), assetsFile, (sceneLocation + "/").c_str(), "assets.xml.bak", true);
         XML::writeXML((sceneLocation + "/" + assetsFile).c_str(), pt);
     }
 
-    getRoot().forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/) {
+    getRoot()->forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/) {
         child->saveToXML(sceneLocation, msgCallback);
         return true;
     });
@@ -471,19 +469,19 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     parentScene().addSceneGraphToLoad(rootNode);
 }
 
-bool SceneGraph::saveNodeToXML(const SceneGraphNode& node) const {
+bool SceneGraph::saveNodeToXML(const SceneGraphNode* node) const {
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
-    node.saveToXML(sceneLocation);
+    node->saveToXML(sceneLocation);
     return true;
 }
 
-bool SceneGraph::loadNodeFromXML(const char* assetsFile, SceneGraphNode& node) const {
+bool SceneGraph::loadNodeFromXML(const char* assetsFile, SceneGraphNode* node) const {
     ACKNOWLEDGE_UNUSED(assetsFile);
 
     const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
-    node.loadFromXML(sceneLocation);
+    node->loadFromXML(sceneLocation);
     return true;
 }
 

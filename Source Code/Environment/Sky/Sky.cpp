@@ -305,21 +305,21 @@ bool Sky::load() {
     return SceneNode::load();
 }
 
-void Sky::postLoad(SceneGraphNode& sgn) {
+void Sky::postLoad(SceneGraphNode* sgn) {
     assert(_sky != nullptr);
 
     SceneGraphNodeDescriptor skyNodeDescriptor;
     skyNodeDescriptor._serialize = false;
     skyNodeDescriptor._node = _sky;
-    skyNodeDescriptor._name = sgn.name() + "_geometry";
+    skyNodeDescriptor._name = sgn->name() + "_geometry";
     skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                        to_base(ComponentType::BOUNDS) |
                                        to_base(ComponentType::RENDERING) |
                                        to_base(ComponentType::NAVIGATION);
-    sgn.addChildNode(skyNodeDescriptor);
+    sgn->addChildNode(skyNodeDescriptor);
 
-    RenderingComponent* renderable = sgn.get<RenderingComponent>();
+    RenderingComponent* renderable = sgn->get<RenderingComponent>();
     if (renderable) {
         renderable->lockLoD(0u);
         renderable->toggleRenderOption(RenderingComponent::RenderOptions::CAST_SHADOWS, false);
@@ -355,20 +355,20 @@ const Texture_ptr& Sky::activeSkyBox() const noexcept {
     return _skybox[0];
 }
 
-void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode& sgn, SceneState& sceneState) {
+void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
     if (_atmosphereChanged == EditorDataState::QUEUED) {
         _atmosphereChanged = EditorDataState::CHANGED;
     } else if (_atmosphereChanged == EditorDataState::PROCESSED) {
         _atmosphereChanged = EditorDataState::IDLE;
     }
 
-    sgn.get<TransformComponent>()->rotateY(0.3f * Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
+    sgn->get<TransformComponent>()->rotateY(0.3f * Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 };
 
 
-bool Sky::prepareRender(SceneGraphNode& sgn,
+bool Sky::prepareRender(SceneGraphNode* sgn,
                 RenderingComponent& rComp,
                 const RenderStagePass& renderStagePass,
                 const Camera& camera,
@@ -392,7 +392,7 @@ bool Sky::prepareRender(SceneGraphNode& sgn,
     return SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
-void Sky::buildDrawCommands(SceneGraphNode& sgn,
+void Sky::buildDrawCommands(SceneGraphNode* sgn,
                             const RenderStagePass& renderStagePass,
                             const Camera& crtCamera,
                             RenderPackage& pkgInOut) {

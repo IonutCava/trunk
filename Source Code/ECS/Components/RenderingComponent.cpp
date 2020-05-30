@@ -36,7 +36,7 @@ namespace {
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
 };
 
-RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContext& context) 
+RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
       _context(context.gfx()),
       _config(context.config())
@@ -47,7 +47,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     _renderRange.min = -g_renderRangeLimit;
     _renderRange.max =  g_renderRangeLimit;
 
-    instantiateMaterial(parentSGN.getNode().getMaterialTpl());
+    instantiateMaterial(parentSGN->getNode().getMaterialTpl());
 
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
     toggleRenderOption(RenderOptions::CAST_SHADOWS, true);
@@ -73,7 +73,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode& parentSGN, PlatformContex
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
     pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
 
-    const SceneNode& node = _parentSGN.getNode();
+    const SceneNode& node = _parentSGN->getNode();
     if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
         // Do not cull the sky
         if (static_cast<const Object3D&>(node).type() == SceneNodeType::TYPE_SKY) {
@@ -137,7 +137,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
         return;
     }
 
-    _materialInstance = material->clone(_parentSGN.name() + "_i");
+    _materialInstance = material->clone(_parentSGN->name() + "_i");
     if (_materialInstance != nullptr) {
         assert(!_materialInstance->resourceName().empty());
 
@@ -177,7 +177,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
         lockLodLevelField._readOnly = false;
         _editorComponent.registerField(std::move(lockLodLevelField));
 
-        _materialInstance->isStatic(_parentSGN.usageContext() == NodeUsageContext::NODE_STATIC);
+        _materialInstance->isStatic(_parentSGN->usageContext() == NodeUsageContext::NODE_STATIC);
     }
 }
 
@@ -207,7 +207,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
         pkg.add(bindDescriptorSetsCommand);
     }
 
-    _parentSGN.getNode().buildDrawCommands(_parentSGN, stagePass, crtCamera, pkg);
+    _parentSGN->getNode().buildDrawCommands(_parentSGN, stagePass, crtCamera, pkg);
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
@@ -215,7 +215,7 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         onMaterialChanged();
     }
 
-    SceneGraphNode* parent = _parentSGN.parent();
+    SceneGraphNode* parent = _parentSGN->parent();
     if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
         parent->clearFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
     }
@@ -242,7 +242,7 @@ void RenderingComponent::onMaterialChanged() {
 
 bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData) {
     OPTICK_EVENT();
-    OPTICK_TAG("Node", (_parentSGN.name().c_str()));
+    OPTICK_TAG("Node", (_parentSGN->name().c_str()));
 
     if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
         // Can we render without a material? Maybe. IDK.
@@ -266,7 +266,7 @@ void RenderingComponent::rebuildMaterial() {
         onMaterialChanged();
     }
 
-    _parentSGN.forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
+    _parentSGN->forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
         RenderingComponent* const renderable = child->get<RenderingComponent>();
         if (renderable) {
             renderable->rebuildMaterial();
@@ -361,8 +361,8 @@ void RenderingComponent::getMaterialColourMatrix(const RenderStagePass& stagePas
 }
 
 void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {
-    propertiesOut._isHovered = _parentSGN.hasFlag(SceneGraphNode::Flags::HOVERED);
-    propertiesOut._isSelected = _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED);
+    propertiesOut._isHovered = _parentSGN->hasFlag(SceneGraphNode::Flags::HOVERED);
+    propertiesOut._isSelected = _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED);
     propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled &&
                                      renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
@@ -387,7 +387,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     const bool renderBSphere = _drawBS || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
     const bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
     const bool renderSelection = renderOptionEnabled(RenderOptions::RENDER_SELECTION);
-    const bool renderselectionGizmo = renderOptionEnabled(RenderOptions::RENDER_AXIS) || (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN.hasFlag(SceneGraphNode::Flags::SELECTED)) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+    const bool renderselectionGizmo = renderOptionEnabled(RenderOptions::RENDER_AXIS) || (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED)) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
 
     if (renderselectionGizmo) {
         drawDebugAxis(bufferInOut);
@@ -405,7 +405,7 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         drawSkeleton(bufferInOut);
     }
 
-    SceneGraphNode* parent = _parentSGN.parent();
+    SceneGraphNode* parent = _parentSGN->parent();
     if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
         parent->setFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
         RenderingComponent* rComp = parent->get<RenderingComponent>();
@@ -450,9 +450,9 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     if (canDraw(renderStagePass, lod, refreshData)) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
 
-        if (pkg.empty() || _parentSGN.getNode().rebuildDrawCommands()) {
+        if (pkg.empty() || _parentSGN->getNode().rebuildDrawCommands()) {
             rebuildDrawCommands(renderStagePass, camera, pkg);
-            _parentSGN.getNode().rebuildDrawCommands(false);
+            _parentSGN->getNode().rebuildDrawCommands(false);
         }
 
         if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
@@ -530,7 +530,7 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
         } else {
             // Need a way better way of handling this ...
             if (Hack::g_skyPtr == nullptr) {
-                const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph().getNodesByType(SceneNodeType::TYPE_SKY);
+                const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph()->getNodesByType(SceneNodeType::TYPE_SKY);
                 if (!skies.empty()) {
                     Hack::g_skyPtr = &skies.front()->getNode<Sky>();
                 }
@@ -600,12 +600,12 @@ void RenderingComponent::updateNearestProbes(const SceneEnvironmentProbePool& pr
 void RenderingComponent::drawSelectionGizmo(GFX::CommandBuffer& bufferInOut) {
     if (!_selectionGizmo) {
         _selectionGizmo = _context.newIMP();
-        _selectionGizmo->name("AxisGizmo_" + _parentSGN.name());
+        _selectionGizmo->name("AxisGizmo_" + _parentSGN->name());
         _selectionGizmo->skipPostFX(true);
         _selectionGizmo->pipeline(*_primitivePipeline[2]);
     }
 
-    const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
+    const BoundingBox& bb = _parentSGN->get<BoundsComponent>()->getBoundingBox();
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.parent().platformContext().editor();
         if (editor.inEditMode()) {
@@ -650,7 +650,7 @@ void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
         axisLines[2] = temp;
 
         _axisGizmo = _context.newIMP();
-        _axisGizmo->name("AxisGizmo_" + _parentSGN.name());
+        _axisGizmo->name("AxisGizmo_" + _parentSGN->name());
         _axisGizmo->skipPostFX(true);
         _axisGizmo->pipeline(*_primitivePipeline[2]);
         // Create the object containing all of the lines
@@ -675,7 +675,7 @@ void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
 }
 
 void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
-    const SceneNode& node = _parentSGN.getNode();
+    const SceneNode& node = _parentSGN->getNode();
     const bool isMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::MESH;
     if (!isMesh) {
         return;
@@ -687,13 +687,13 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
         if (_skeletonPrimitive == nullptr) {
             _skeletonPrimitive = _context.newIMP();
             _skeletonPrimitive->skipPostFX(true);
-            _skeletonPrimitive->name("Skeleton_" + _parentSGN.name());
+            _skeletonPrimitive->name("Skeleton_" + _parentSGN->name());
             _skeletonPrimitive->pipeline(*_primitivePipeline[1]);
         }
         // Get the animation component of any submesh. They should be synced anyway.
-        for (U32 i = 0; i < _parentSGN.getChildCount(); ++i) {
-            const SceneGraphNode& child = _parentSGN.getChild(i);
-            AnimationComponent* animComp = child.get<AnimationComponent>();
+        for (U32 i = 0; i < _parentSGN->getChildCount(); ++i) {
+            const SceneGraphNode* child = _parentSGN->getChild(i);
+            AnimationComponent* animComp = child->get<AnimationComponent>();
             if (animComp != nullptr) {
                 // Get the skeleton lines from the submesh's animation component
                 const vectorEASTL<Line>& skeletonLines = animComp->skeletonLines();
@@ -714,19 +714,19 @@ void RenderingComponent::drawBounds(const bool AABB, const bool Sphere, GFX::Com
         return;
     }
 
-    const SceneNode& node = _parentSGN.getNode();
+    const SceneNode& node = _parentSGN->getNode();
     const bool isSubMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
 
     if (AABB) {
         if (_boundingBoxPrimitive == nullptr) {
             _boundingBoxPrimitive = _context.newIMP();
-            _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN.name());
+            _boundingBoxPrimitive->name("BoundingBox_" + _parentSGN->name());
             _boundingBoxPrimitive->pipeline(*_primitivePipeline[0]);
             _boundingBoxPrimitive->skipPostFX(true);
         }
 
 
-        const BoundingBox& bb = _parentSGN.get<BoundsComponent>()->getBoundingBox();
+        const BoundingBox& bb = _parentSGN->get<BoundsComponent>()->getBoundingBox();
         _boundingBoxPrimitive->fromBox(bb.getMin(), bb.getMax(), isSubMesh ? UColour4(0, 0, 255, 255) : UColour4(255, 0, 255, 255));
         bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());
     } else if (_boundingBoxPrimitive != nullptr) {
@@ -736,12 +736,12 @@ void RenderingComponent::drawBounds(const bool AABB, const bool Sphere, GFX::Com
     if (Sphere) {
         if (_boundingSpherePrimitive == nullptr) {
             _boundingSpherePrimitive = _context.newIMP();
-            _boundingSpherePrimitive->name("BoundingSphere_" + _parentSGN.name());
+            _boundingSpherePrimitive->name("BoundingSphere_" + _parentSGN->name());
             _boundingSpherePrimitive->pipeline(*_primitivePipeline[0]);
             _boundingSpherePrimitive->skipPostFX(true);
         }
 
-        const BoundingSphere& bs = _parentSGN.get<BoundsComponent>()->getBoundingSphere();
+        const BoundingSphere& bs = _parentSGN->get<BoundsComponent>()->getBoundingSphere();
         _boundingSpherePrimitive->fromSphere(bs.getCenter(), bs.getRadius(), isSubMesh ? UColour4(0, 255, 0, 255) : UColour4(255, 255, 0, 255));
         bufferInOut.add(_boundingSpherePrimitive->toCommandBuffer());
     } else if (_boundingSpherePrimitive != nullptr) {

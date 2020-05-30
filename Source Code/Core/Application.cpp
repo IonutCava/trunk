@@ -55,14 +55,14 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
     _kernel = MemoryManager_NEW Kernel(argc, argv, *this);
 
     // and load it via an XML file config
-    err = Attorney::KernelApplication::initialize(*_kernel, entryPoint);
+    err = Attorney::KernelApplication::initialize(_kernel, entryPoint);
 
     // failed to start, so cleanup
     if (err != ErrorCode::NO_ERR) {
         throwError(err);
         stop();
     } else {
-        Attorney::KernelApplication::warmup(*_kernel);
+        Attorney::KernelApplication::warmup(_kernel);
         Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
         Console::toggleImmediateMode(false);
         mainLoopActive(true);
@@ -74,7 +74,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, I32 argc, char** argv
 void Application::stop() {
     if (_isInitialized) {
         if (_kernel != nullptr) {
-            Attorney::KernelApplication::shutdown(*_kernel);
+            Attorney::KernelApplication::shutdown(_kernel);
         }
         for (DELEGATE<void>& cbk : _shutdownCallback) {
             cbk();
@@ -107,7 +107,7 @@ void Application::stop() {
 bool Application::step() {
     if (onLoop()) {
         OPTICK_FRAME("MainThread");
-        Attorney::KernelApplication::onLoop(*_kernel);
+        Attorney::KernelApplication::onLoop(_kernel);
         return true;
     }
     windowManager().hideAll();
@@ -139,7 +139,7 @@ bool Application::onSDLEvent(SDL_Event event) {
 }
 
 bool Application::onSizeChange(const SizeChangeParams& params) const {
-    return Attorney::KernelApplication::onSizeChange(*_kernel, params);
+    return Attorney::KernelApplication::onSizeChange(_kernel, params);
 }
 
 void Application::mainThreadTask(const DELEGATE<void>& task, bool wait) {

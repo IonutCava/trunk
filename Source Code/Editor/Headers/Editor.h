@@ -136,7 +136,7 @@ class Editor : public PlatformContextComponent,
     void idle();
     void update(const U64 deltaTimeUS);
     /// Render any editor specific element that needs to be part of the scene (e.g. Control Gizmo)
-    void drawScreenOverlay(const Camera& camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void drawScreenOverlay(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
     void toggle(const bool state);
     void onSizeChange(const SizeChangeParams& params);
@@ -201,9 +201,9 @@ class Editor : public PlatformContextComponent,
   protected:
     inline bool isInit() const noexcept;
     bool render(const U64 deltaTime);
-    void teleportToNode(const SceneGraphNode& sgn) const;
-    void saveNode(const SceneGraphNode& sgn) const;
-    void loadNode(SceneGraphNode& sgn) const;
+    void teleportToNode(const SceneGraphNode* sgn) const;
+    void saveNode(const SceneGraphNode* sgn) const;
+    void loadNode(SceneGraphNode* sgn) const;
     void queueRemoveNode(I64 nodeGUID);
     void onPreviewFocus(const bool state);
 
@@ -341,15 +341,15 @@ namespace Attorney {
             editor._gizmo->enable(state);
         }
 
-        static void teleportToNode(const Editor& editor, const SceneGraphNode& targetNode) {
+        static void teleportToNode(const Editor& editor, const SceneGraphNode* targetNode) {
             editor.teleportToNode(targetNode);
         }
 
-        static void saveNode(const Editor& editor, const SceneGraphNode& targetNode) {
+        static void saveNode(const Editor& editor, const SceneGraphNode* targetNode) {
             editor.saveNode(targetNode);
         }
 
-        static void loadNode(const Editor& editor, SceneGraphNode& targetNode) {
+        static void loadNode(const Editor& editor, SceneGraphNode* targetNode) {
             editor.loadNode(targetNode);
         }
 

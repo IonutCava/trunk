@@ -51,7 +51,7 @@ namespace Divide {
 
     class RigidBodyComponent final : public BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY> {
       public:
-        RigidBodyComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+        RigidBodyComponent(SceneGraphNode* parentSGN, PlatformContext& context);
         ~RigidBodyComponent();
 
 

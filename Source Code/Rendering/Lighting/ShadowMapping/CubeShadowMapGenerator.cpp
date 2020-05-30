@@ -29,7 +29,7 @@ CubeShadowMapGenerator::CubeShadowMapGenerator(GFXDevice& context)
 void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(playerCamera);
 
-    const vec3<F32> lightPos = light.getSGN().get<TransformComponent>()->getPosition();
+    const vec3<F32> lightPos = light.getSGN()->get<TransformComponent>()->getPosition();
 
     auto& shadowCameras = ShadowMap::shadowCameras(ShadowType::CUBEMAP);
 
@@ -40,13 +40,13 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
 
     _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP)),
                              light.getShadowOffset(),
-                             light.getSGN().get<TransformComponent>()->getPosition(),
+                             light.getSGN()->get<TransformComponent>()->getPosition(),
                              vec2<F32>(0.001f, light.range() * 1.1f),
                              RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(light.getLightType()), lightIndex),
                              bufferInOut,
                              cameras,
                              true,
-                             &light.getSGN());
+                             light.getSGN());
 
     for (U8 i = 0; i < 6; ++i) {
         light.setShadowLightPos(i, lightPos);

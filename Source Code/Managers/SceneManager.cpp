@@ -312,7 +312,7 @@ void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, boo
 void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
     const I64 sgnGUID = playerNode->getGUID();
     for (UnitComponent* crtPlayer : _players) {
-        if (crtPlayer && crtPlayer->getSGN().getGUID() == sgnGUID) {
+        if (crtPlayer && crtPlayer->getSGN()->getGUID() == sgnGUID) {
             return;
         }
     }
@@ -353,7 +353,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, SceneGraphNode* play
 
     const I64 targetGUID = playerNode->getGUID();
     for (U32 i = 0; i < Config::MAX_LOCAL_PLAYER_COUNT; ++i) {
-        if (_players[i] != nullptr && _players[i]->getSGN().getGUID() == targetGUID) {
+        if (_players[i] != nullptr && _players[i]->getSGN()->getGUID() == targetGUID) {
             --_activePlayerCount;
             Attorney::SceneManager::onPlayerRemove(parentScene, _players[i]->getUnit<Player>());
             _players[i] = nullptr;
@@ -365,7 +365,7 @@ void SceneManager::removePlayerInternal(Scene& parentScene, SceneGraphNode* play
 vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const {
     OPTICK_EVENT();
 
-    const SceneGraph& sceneGraph = getActiveScene().sceneGraph();
+    const SceneGraph* sceneGraph = getActiveScene().sceneGraph();
     const vec3<F32>& eye = camera.getEye();
     const vec2<F32>& zPlanes = camera.getZPlanes();
 
@@ -378,7 +378,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         resultsOut.resize(0);
         resultsOut.reserve(16);
 
-        sceneGraph.intersect(cameraRay, 0.f, zPlanes.y, resultsOut);
+        sceneGraph->intersect(cameraRay, 0.f, zPlanes.y, resultsOut);
         for (SGNRayResult& result : resultsOut) {
             if (result.sgnGUID == nodeGUID || result.sgnGUID == parentNodeGUID) {
                 continue;
@@ -495,7 +495,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
 
-    FogDescriptor& fog = activeScene.state().renderState().fogDescriptor();
+    FogDescriptor& fog = activeScene.state()->renderState().fogDescriptor();
     const bool fogEnabled = _platformContext->config().rendering.enableFog;
     if (fog.dirty() || fogEnabled != fog.active()) {
         const vec3<F32>& colour = fog.colour();
@@ -505,20 +505,20 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
         fog.active(fogEnabled);
     }
 
-    const SceneState& activeSceneState = activeScene.state();
-    _sceneData->windDetails(activeSceneState.windDirX(),
+    const SceneState* activeSceneState = activeScene.state();
+    _sceneData->windDetails(activeSceneState->windDirX(),
                             0.0f,
-                            activeSceneState.windDirZ(),
-                            activeSceneState.windSpeed());
+                            activeSceneState->windDirZ(),
+                            activeSceneState->windSpeed());
 
-    _sceneData->shadowingSettings(activeSceneState.lightBleedBias(),
-                                  activeSceneState.minShadowVariance(),
-                                  to_F32(activeSceneState.shadowFadeDistance()),
-                                  to_F32(activeSceneState.shadowDistance()));
+    _sceneData->shadowingSettings(activeSceneState->lightBleedBias(),
+                                  activeSceneState->minShadowVariance(),
+                                  to_F32(activeSceneState->shadowFadeDistance()),
+                                  to_F32(activeSceneState->shadowDistance()));
     U8 index = 0;
     
-    vectorEASTL<WaterDetails>& waterBodies = activeScene.state().globalWaterBodies();
-    for (auto body : waterBodies) {
+    const vectorEASTL<WaterDetails>& waterBodies = activeSceneState->globalWaterBodies();
+    for (const auto& body : waterBodies) {
         const vec3<F32> posW (0.0f, body._heightOffset, 0.0f);
         const vec3<F32> dim(std::numeric_limits<I16>::max(),
                             std::numeric_limits<I16>::max(),
@@ -526,7 +526,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
         _sceneData->waterDetails(index++, posW, dim);
     }
 
-    const vectorEASTL<SceneGraphNode*>& waterNodes = activeScene.sceneGraph().getNodesByType(SceneNodeType::TYPE_WATER);
+    const vectorEASTL<SceneGraphNode*>& waterNodes = activeScene.sceneGraph()->getNodesByType(SceneNodeType::TYPE_WATER);
     for (SceneGraphNode* body : waterNodes) {
         _sceneData->waterDetails(index++,
                                  body->get<TransformComponent>()->getPosition(),
@@ -544,26 +544,26 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(const RenderStagePass& stagePass, const Camera& camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, getActiveScene().lightPool(), camera, bufferInOut);
 }
 
-void SceneManager::postRender(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     const SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
     parent().renderPassManager()->getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 }
 
-void SceneManager::preRenderAllPasses(const Camera& playerCamera) {
+void SceneManager::preRenderAllPasses(const Camera* playerCamera) {
     OPTICK_EVENT();
 
     getActiveScene().lightPool().preRenderAllPasses(playerCamera);
 }
 
-void SceneManager::postRenderAllPasses(const Camera& playerCamera) {
+void SceneManager::postRenderAllPasses(const Camera* playerCamera) {
     OPTICK_EVENT();
 
     getActiveScene().lightPool().postRenderAllPasses(playerCamera);
@@ -577,7 +577,7 @@ void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuf
     Attorney::SceneManager::drawCustomUI(getActiveScene(), targetViewport, bufferInOut);
 }
 
-void SceneManager::debugDraw(const RenderStagePass& stagePass, const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::debugDraw(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     Scene& activeScene = getActiveScene();
@@ -598,7 +598,7 @@ Camera* SceneManager::playerCamera(PlayerIndex idx) const {
         return nullptr;
     }
 
-    Camera* overrideCamera = getActiveScene().state().playerState(idx).overrideCamera();
+    Camera* overrideCamera = getActiveScene().state()->playerState(idx).overrideCamera();
     if (overrideCamera == nullptr) {
         overrideCamera = _players[idx]->getUnit<Player>()->camera();
     }
@@ -618,19 +618,19 @@ void SceneManager::currentPlayerPass(PlayerIndex idx) {
     playerCamera()->updateLookAt();
 }
 
-void SceneManager::moveCameraToNode(const SceneGraphNode& targetNode) const {
+void SceneManager::moveCameraToNode(const SceneGraphNode* targetNode) const {
     vec3<F32> targetPos = VECTOR3_ZERO;
 
     /// Root node just means a teleport to (0,0,0)
-    if (targetNode.parent() != nullptr) {
+    if (targetNode->parent() != nullptr) {
         targetPos = playerCamera()->getEye();
-        BoundsComponent* bComp = targetNode.get<BoundsComponent>();
+        BoundsComponent* bComp = targetNode->get<BoundsComponent>();
         if (bComp != nullptr) {
             const BoundingSphere& bSphere = bComp->getBoundingSphere();
             targetPos = bSphere.getCenter();
             targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
         } else {
-            TransformComponent* tComp = targetNode.get<TransformComponent>();
+            TransformComponent* tComp = targetNode->get<TransformComponent>();
             if (tComp != nullptr) {
                 targetPos = tComp->getPosition();
                 targetPos -= playerCamera()->getForwardDir() * 3.0f;
@@ -643,19 +643,19 @@ void SceneManager::moveCameraToNode(const SceneGraphNode& targetNode) const {
     playerCamera()->setEye(targetPos);
 }
 
-bool SceneManager::saveNode(const SceneGraphNode& targetNode) const {
+bool SceneManager::saveNode(const SceneGraphNode* targetNode) const {
     return LoadSave::saveNodeToXML(getActiveScene(), targetNode);
 }
 
-bool SceneManager::loadNode(SceneGraphNode& targetNode) const {
+bool SceneManager::loadNode(SceneGraphNode* targetNode) const {
     return LoadSave::loadNodeFromXML(getActiveScene(), targetNode);
 }
 
-void SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
+void SceneManager::getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
-    getActiveScene().sceneGraph().getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
+    getActiveScene().sceneGraph()->getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
 
     eastl::erase_if(allNodes,
                    [](SceneGraphNode* node) noexcept ->  bool {
@@ -665,10 +665,10 @@ void SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage st
 
     if (inView) {
         NodeCullParams cullParams = {};
-        cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();
+        cullParams._lodThresholds = getActiveScene().state()->renderState().lodThresholds();
         cullParams._stage = stage;
-        cullParams._currentCamera = &camera;
-        cullParams._cullMaxDistanceSq = SQUARED(camera.getZPlanes().y);
+        cullParams._currentCamera = camera;
+        cullParams._cullMaxDistanceSq = SQUARED(camera->getZPlanes().y);
 
         _renderPassCuller->frustumCull(cullParams, allNodes, nodesOut);
     } else {
@@ -676,11 +676,11 @@ void SceneManager::getSortedReflectiveNodes(const Camera& camera, RenderStage st
     }
 }
 
-void SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
+void SceneManager::getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
-    getActiveScene().sceneGraph().getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
+    getActiveScene().sceneGraph()->getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
 
     eastl::erase_if(allNodes,
                    [](SceneGraphNode* node) noexcept ->  bool {
@@ -689,10 +689,10 @@ void SceneManager::getSortedRefractiveNodes(const Camera& camera, RenderStage st
                    });
     if (inView) {
         NodeCullParams cullParams = {};
-        cullParams._lodThresholds = getActiveScene().state().renderState().lodThresholds();
+        cullParams._lodThresholds = getActiveScene().state()->renderState().lodThresholds();
         cullParams._stage = stage;
-        cullParams._currentCamera = &camera;
-        cullParams._cullMaxDistanceSq = SQUARED(camera.getZPlanes().y);
+        cullParams._currentCamera = camera;
+        cullParams._cullMaxDistanceSq = SQUARED(camera->getZPlanes().y);
 
         _renderPassCuller->frustumCull(cullParams, allNodes, nodesOut);
     } else {
@@ -706,10 +706,10 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
 
     Scene& activeScene = getActiveScene();
-    SceneState& sceneState = activeScene.state();
+    SceneState* sceneState = activeScene.state();
 
     NodeCullParams cullParams = {};
-    cullParams._lodThresholds = sceneState.renderState().lodThresholds(stage);
+    cullParams._lodThresholds = sceneState->renderState().lodThresholds(stage);
     cullParams._minExtents = minExtents;
     cullParams._ignoredGUIDS = std::make_pair(ignoredGUIDS, ignoredGUIDSCount);
     cullParams._currentCamera = &camera;
@@ -717,7 +717,7 @@ const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Cam
     cullParams._minLoD = minLoD;
     cullParams._stage = stage;
     if (stage != RenderStage::SHADOW) {
-        cullParams._cullMaxDistanceSq = SQUARED(sceneState.renderState().generalVisibility());
+        cullParams._cullMaxDistanceSq = SQUARED(sceneState->renderState().generalVisibility());
     } else {
         cullParams._cullMaxDistanceSq = std::min(cullParams._cullMaxDistanceSq, SQUARED(camera.getZPlanes().y));
     }
@@ -763,7 +763,9 @@ void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode
     }
 }
 
-void SceneManager::onNodeDestroy(SceneGraphNode& node) {
+void SceneManager::onNodeDestroy(SceneGraphNode* node) {
+    ACKNOWLEDGE_UNUSED(node);
+
     for (PlayerIndex p = 0; p < _activePlayerCount; ++p) {
         resetSelection(p);
     }
@@ -787,7 +789,7 @@ bool SceneManager::onKeyDown(const Input::KeyEvent& key) {
         return false;
     }
 
-    return getActiveScene().input().onKeyDown(key);
+    return getActiveScene().input()->onKeyDown(key);
 }
 
 bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
@@ -795,7 +797,7 @@ bool SceneManager::onKeyUp(const Input::KeyEvent& key) {
         return false;
     }
 
-    return getActiveScene().input().onKeyUp(key);
+    return getActiveScene().input()->onKeyUp(key);
 }
 
 bool SceneManager::mouseMoved(const Input::MouseMoveEvent& arg) {
@@ -804,7 +806,7 @@ bool SceneManager::mouseMoved(const Input::MouseMoveEvent& arg) {
 
     }
 
-    return getActiveScene().input().mouseMoved(arg);
+    return getActiveScene().input()->mouseMoved(arg);
 }
 
 bool SceneManager::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
@@ -812,7 +814,7 @@ bool SceneManager::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().mouseButtonPressed(arg);
+    return getActiveScene().input()->mouseButtonPressed(arg);
 }
 
 bool SceneManager::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
@@ -820,7 +822,7 @@ bool SceneManager::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().mouseButtonReleased(arg);
+    return getActiveScene().input()->mouseButtonReleased(arg);
 }
 
 bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg) {
@@ -828,7 +830,7 @@ bool SceneManager::joystickAxisMoved(const Input::JoystickEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickAxisMoved(arg);
+    return getActiveScene().input()->joystickAxisMoved(arg);
 }
 
 bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg) {
@@ -836,7 +838,7 @@ bool SceneManager::joystickPovMoved(const Input::JoystickEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickPovMoved(arg);
+    return getActiveScene().input()->joystickPovMoved(arg);
 }
 
 bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg) {
@@ -844,7 +846,7 @@ bool SceneManager::joystickButtonPressed(const Input::JoystickEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickButtonPressed(arg);
+    return getActiveScene().input()->joystickButtonPressed(arg);
 }
 
 bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg) {
@@ -852,7 +854,7 @@ bool SceneManager::joystickButtonReleased(const Input::JoystickEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickButtonReleased(arg);
+    return getActiveScene().input()->joystickButtonReleased(arg);
 }
 
 bool SceneManager::joystickBallMoved(const Input::JoystickEvent& arg) {
@@ -860,7 +862,7 @@ bool SceneManager::joystickBallMoved(const Input::JoystickEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickBallMoved(arg);
+    return getActiveScene().input()->joystickBallMoved(arg);
 }
 
 bool SceneManager::joystickAddRemove(const Input::JoystickEvent& arg) {
@@ -868,7 +870,7 @@ bool SceneManager::joystickAddRemove(const Input::JoystickEvent& arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickAddRemove(arg);
+    return getActiveScene().input()->joystickAddRemove(arg);
 }
 
 bool SceneManager::joystickRemap(const Input::JoystickEvent &arg) {
@@ -876,7 +878,7 @@ bool SceneManager::joystickRemap(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return getActiveScene().input().joystickRemap(arg);
+    return getActiveScene().input()->joystickRemap(arg);
 }
 
 bool SceneManager::onUTF8(const Input::UTF8Event& arg) {
@@ -886,7 +888,7 @@ bool SceneManager::onUTF8(const Input::UTF8Event& arg) {
 }
 
 bool LoadSave::loadScene(Scene& activeScene) {
-    if (activeScene.state().saveLoadDisabled()) {
+    if (activeScene.state()->saveLoadDisabled()) {
         return true;
     }
 
@@ -921,11 +923,11 @@ bool LoadSave::loadScene(Scene& activeScene) {
 }
 
 
-bool LoadSave::saveNodeToXML(const Scene& activeScene, const SceneGraphNode& node) {
+bool LoadSave::saveNodeToXML(const Scene& activeScene, const SceneGraphNode* node) {
     return activeScene.saveNodeToXML(node);
 }
 
-bool LoadSave::loadNodeFromXML(const Scene& activeScene, SceneGraphNode& node) {
+bool LoadSave::loadNodeFromXML(const Scene& activeScene, SceneGraphNode* node) {
     return activeScene.loadNodeFromXML(node);
 }
 
@@ -935,7 +937,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, 
     }
 
     bool ret = false;
-    if (activeScene.state().saveLoadDisabled()) {
+    if (activeScene.state()->saveLoadDisabled()) {
         ret = true;
     } else {
         const Str256& sceneName = activeScene.resourceName();

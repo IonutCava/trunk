@@ -203,7 +203,7 @@ bool SceneInput::joystickRemap(const Input::JoystickEvent &arg) {
 bool SceneInput::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
         PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
-        SceneStatePerPlayer& state = _parentScene.state().playerState(idx);
+        SceneStatePerPlayer& state = _parentScene.state()->playerState(idx);
         if (state.cameraLockedToMouse()) {
             
             if (arg.wheelEvent()) {

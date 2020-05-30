@@ -71,7 +71,7 @@ void MotionBlurPreRenderOperator::velocityScale(F32 val) {
     _context.context().config().rendering.postFX.velocityScale = val;
 }
 
-bool MotionBlurPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+bool MotionBlurPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
 
     const F32 fps = _context.parent().platformContext().app().timer().getFps();
 

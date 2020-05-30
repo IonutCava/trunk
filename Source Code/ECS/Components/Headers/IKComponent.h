@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 class IKComponent final : public BaseComponentType<IKComponent, ComponentType::INVERSE_KINEMATICS>{
     public:
-        IKComponent(SceneGraphNode& parentSGN, PlatformContext& context);
+        IKComponent(SceneGraphNode* parentSGN, PlatformContext& context);
 };
 
 INIT_COMPONENT(IKComponent);

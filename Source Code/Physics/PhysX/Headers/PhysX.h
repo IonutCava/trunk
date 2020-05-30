@@ -80,7 +80,7 @@ public:
     inline physx::PxPhysics* const getSDK() noexcept { return _gPhysicsSDK; }
     void setPhysicsScene(PhysicsSceneInterface* const targetScene) final;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode& node, RigidBodyComponent& parentComp) final;
+    PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) final;
 
 
     void togglePvdConnection();

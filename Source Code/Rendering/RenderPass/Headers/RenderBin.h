@@ -111,7 +111,7 @@ class RenderBin {
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh(RenderStage stage);
 
-    void addNodeToBin(const SceneGraphNode& sgn,
+    void addNodeToBin(const SceneGraphNode* sgn,
                       const RenderStagePass& renderStagePass,
                       const F32 minDistToCameraSq);
 

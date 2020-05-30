@@ -284,7 +284,7 @@ bool WarScene::addUnits() {
                                 to_base(ComponentType::UNIT) |
                                 to_base(ComponentType::NETWORKING);
 
-    SceneGraphNode& root = _sceneGraph->getRoot();
+    SceneGraphNode* root = _sceneGraph->getRoot();
     for (I32 k = 0; k < 2; ++k) {
         for (I32 i = 0; i < 15; ++i) {
 

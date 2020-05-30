@@ -50,7 +50,7 @@ namespace Divide {
 
     }
 
-    void SolutionExplorerWindow::printCameraNode(SceneManager& sceneManager, Camera* camera) {
+    void SolutionExplorerWindow::printCameraNode(SceneManager* sceneManager, Camera* camera) {
         if (camera == nullptr) {
             return;
         }
@@ -59,7 +59,7 @@ namespace Divide {
         if (_filter.PassFilter(camera->resourceName().c_str())) {
             if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->resourceName().c_str())) {
                 if (ImGui::IsItemClicked()) {
-                    sceneManager.resetSelection(0);
+                    sceneManager->resetSelection(0);
                     if (Attorney::EditorSolutionExplorerWindow::getSelectedCamera(_parent) == camera) {
                         Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
                     } else {
@@ -72,20 +72,20 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::drawContextMenu(SceneGraphNode& sgn) {
+    void SolutionExplorerWindow::drawContextMenu(SceneGraphNode* sgn) {
         if (ImGui::BeginPopupContextItem("Context menu")) {
-            const SceneNode& node = sgn.getNode();
+            const SceneNode& node = sgn->getNode();
             const bool isSubMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
-            const bool isRoot = sgn.parent() == nullptr;
+            const bool isRoot = sgn->parent() == nullptr;
 
             static F32 value = 0.0f;
-            ImGui::Text(sgn.name().c_str());
+            ImGui::Text(sgn->name().c_str());
             ImGui::Separator();
             if (isSubMesh) {
                 PushReadOnly();
             }
             if (ImGui::Selectable("Change Parent")) {
-                _childNode = &sgn;
+                _childNode = sgn;
                 _reparentSelectRequested = true;
             }
             if (isSubMesh) {
@@ -99,17 +99,17 @@ namespace Divide {
                 g_particleSource.reset();
 
                 g_nodeDescriptor = {};
-                g_nodeDescriptor._name = Util::StringFormat("New_Child_Node_%d", sgn.getGUID());
+                g_nodeDescriptor._name = Util::StringFormat("New_Child_Node_%d", sgn->getGUID());
                 g_nodeDescriptor._componentMask = to_U32(ComponentType::TRANSFORM) | to_U32(ComponentType::BOUNDS);
                 g_currentNodeType = SceneNodeType::TYPE_TRANSFORM;
-                _parentNode = &sgn;
+                _parentNode = sgn;
             }
             ImGui::Separator();
             if (isRoot) {
                 PushReadOnly();
             }
             if (ImGui::Selectable("Remove")) {
-                _nodeToRemove = sgn.getGUID();
+                _nodeToRemove = sgn->getGUID();
             }
             if (isRoot) {
                 PopReadOnly();
@@ -132,11 +132,11 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::printSceneGraphNode(SceneManager& sceneManager, SceneGraphNode& sgn, I32 nodeIDX, bool open, bool secondaryView) {
+    void SolutionExplorerWindow::printSceneGraphNode(SceneManager* sceneManager, SceneGraphNode* sgn, I32 nodeIDX, bool open, bool secondaryView) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
                                         //Conflicts with "Teleport to node on double click"
                                         // | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        const bool wasSelected = secondaryView ? (_tempParent != nullptr && _tempParent->getGUID() == sgn.getGUID()) : sgn.hasFlag(SceneGraphNode::Flags::SELECTED);
+        const bool wasSelected = secondaryView ? (_tempParent != nullptr && _tempParent->getGUID() == sgn->getGUID()) : sgn->hasFlag(SceneGraphNode::Flags::SELECTED);
 
         if (open) {
             node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -145,27 +145,27 @@ namespace Divide {
             node_flags |= ImGuiTreeNodeFlags_Selected;
         }
 
-        if (sgn.getChildCount() == 0u) {
+        if (sgn->getChildCount() == 0u) {
             node_flags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
         }
 
         const auto printNode = [&]() {
-            const bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn.getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn.name().c_str()).c_str());
-            const bool isRoot = sgn.parent() == nullptr;
+            const bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn->getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn->name().c_str()).c_str());
+            const bool isRoot = sgn->parent() == nullptr;
             if (!secondaryView && wasSelected) {
                 drawContextMenu(sgn);
             }
 
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                 if (secondaryView) {
-                    _tempParent = &sgn;
+                    _tempParent = sgn;
                 } else {
-                    const bool parentSelected = (!isRoot && sgn.parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
-                    const bool childrenSelected = sgn.getChildCount() > 0 && sgn.getChild(0u).hasFlag(SceneGraphNode::Flags::SELECTED);
+                    const bool parentSelected = (!isRoot && sgn->parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
+                    const bool childrenSelected = sgn->getChildCount() > 0 && sgn->getChild(0u)->hasFlag(SceneGraphNode::Flags::SELECTED);
 
-                    sceneManager.resetSelection(0);
+                    sceneManager->resetSelection(0);
                     if (!wasSelected || parentSelected || childrenSelected) {
-                        sceneManager.setSelected(0, { &sgn }, !wasSelected);
+                        sceneManager->setSelected(0, { sgn }, !wasSelected);
                     }
                     Attorney::EditorSolutionExplorerWindow::setSelectedCamera(_parent, nullptr);
                 }
@@ -178,19 +178,19 @@ namespace Divide {
 
         if (_filter.Filters.empty()) {
             if (printNode()) {
-                sgn.forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
-                    printSceneGraphNode(sceneManager, *child, childIdx, false, secondaryView);
+                sgn->forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
+                    printSceneGraphNode(sceneManager, child, childIdx, false, secondaryView);
                     return true;
                 });
                 ImGui::TreePop();
             }
         } else {
             bool nodeOpen = false;
-            if (_filter.PassFilter(sgn.name().c_str())) {
+            if (_filter.PassFilter(sgn->name().c_str())) {
                 nodeOpen = printNode();
             }
-            sgn.forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
-                printSceneGraphNode(sceneManager, *child, childIdx, false, secondaryView);
+            sgn->forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
+                printSceneGraphNode(sceneManager, child, childIdx, false, secondaryView);
                 return true;
             });
             if (nodeOpen) {
@@ -200,9 +200,9 @@ namespace Divide {
     }
 
     void SolutionExplorerWindow::drawInternal() {
-        SceneManager& sceneManager = *context().kernel().sceneManager();
-        Scene& activeScene = sceneManager.getActiveScene();
-        SceneGraphNode& root = activeScene.sceneGraph().getRoot();
+        SceneManager* sceneManager = context().kernel().sceneManager();
+        Scene& activeScene = sceneManager->getActiveScene();
+        SceneGraphNode* root = activeScene.sceneGraph()->getRoot();
 
         ImGui::PushItemWidth(200);
         ImGui::AlignTextToFramePadding();
@@ -230,7 +230,7 @@ namespace Divide {
         ImGui::Text("All scenes");
         ImGui::Separator();
 
-        const vectorEASTL<Str256>& scenes = sceneManager.sceneNameList();
+        const vectorEASTL<Str256>& scenes = sceneManager->sceneNameList();
         for (const Str256& scene : scenes) {
             if (scene != activeScene.resourceName()) {
                 if (ImGui::TreeNodeEx(scene.c_str(), ImGuiTreeNodeFlags_Leaf)) {
@@ -382,7 +382,7 @@ namespace Divide {
             ImGui::SetItemDefaultFocus();
             ImGui::SameLine();
             if (ImGui::Button("Yes", ImVec2(120, 0))) {
-                _childNode->setParent(*_tempParent, true);
+                _childNode->setParent(_tempParent, true);
                 _childNode = nullptr;
                 _tempParent = nullptr;
 
@@ -594,15 +594,15 @@ namespace Divide {
          Attorney::EditorSolutionExplorerWindow::editorEnableGizmo(_parent, enableGizmo);
     }
 
-    void SolutionExplorerWindow::goToNode(const SceneGraphNode& sgn) const {
+    void SolutionExplorerWindow::goToNode(const SceneGraphNode* sgn) const {
         Attorney::EditorSolutionExplorerWindow::teleportToNode(_parent, sgn);
     }
 
-    void SolutionExplorerWindow::saveNode(const SceneGraphNode& sgn) const {
+    void SolutionExplorerWindow::saveNode(const SceneGraphNode* sgn) const {
         Attorney::EditorSolutionExplorerWindow::saveNode(_parent, sgn);
     }
 
-    void SolutionExplorerWindow::loadNode(SceneGraphNode& sgn) const {
+    void SolutionExplorerWindow::loadNode(SceneGraphNode* sgn) const {
         Attorney::EditorSolutionExplorerWindow::loadNode(_parent, sgn);
     }
 
@@ -638,9 +638,9 @@ namespace Divide {
             ImGui::OpenPopup("Select New Parent");
 
             if (ImGui::BeginPopupModal("Select New Parent", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-                SceneManager& sceneManager = *context().kernel().sceneManager();
-                Scene& activeScene = sceneManager.getActiveScene();
-                SceneGraphNode& root = activeScene.sceneGraph().getRoot();
+                SceneManager* sceneManager = context().kernel().sceneManager();
+                Scene& activeScene = sceneManager->getActiveScene();
+                SceneGraphNode* root = activeScene.sceneGraph()->getRoot();
 
                 ImGui::Text("Selecting a new parent for SGN [ %d ][ %s ]?", _childNode->getGUID(), _childNode->name().c_str());
 

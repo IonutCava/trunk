@@ -21,7 +21,7 @@
 
 
 namespace Divide {
-    SGNComponent::SGNComponent(Key key, ComponentType type, SceneGraphNode& parentSGN, PlatformContext& context)
+    SGNComponent::SGNComponent(Key key, ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context)
         : PlatformContextComponent(context),
           _type(type),
           _parentSGN(parentSGN),
@@ -53,7 +53,7 @@ namespace Divide {
     }
 
     U64 SGNComponent::uniqueID() const {
-        return _ID(Util::StringFormat("%s_%s", _parentSGN.name().c_str(), _editorComponent.name().c_str()).c_str());
+        return _ID(Util::StringFormat("%s_%s", _parentSGN->name().c_str(), _editorComponent.name().c_str()).c_str());
     }
 
     void SGNComponent::PreUpdate(const U64 deltaTime) {

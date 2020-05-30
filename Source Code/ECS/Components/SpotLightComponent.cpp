@@ -11,8 +11,8 @@
 
 namespace Divide {
 
-SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& context)
-     : Light(sgn, 30.0f, LightType::SPOT, sgn.sceneGraph().parentScene().lightPool()),
+SpotLightComponent::SpotLightComponent(SceneGraphNode* sgn, PlatformContext& context)
+     : Light(sgn, 30.0f, LightType::SPOT, sgn->sceneGraph()->parentScene().lightPool()),
        BaseComponentType<SpotLightComponent, ComponentType::SPOT_LIGHT>(sgn, context)
 {
     _shadowProperties._lightDetails.z = 0.0001f;
@@ -65,7 +65,7 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode& sgn, PlatformContext& con
     BoundingBox bb = {};
     bb.setMin(-1.0f);
     bb.setMax(1.0f);
-    Attorney::SceneNodeLightComponent::setBounds(sgn.getNode(), bb);
+    Attorney::SceneNodeLightComponent::setBounds(sgn->getNode(), bb);
 }
 
 F32 SpotLightComponent::outerConeRadius() const noexcept {
@@ -105,7 +105,7 @@ void SpotLightComponent::OnData(const ECS::CustomEvent& data) {
 }
 
 void SpotLightComponent::setDirection(const vec3<F32>& direction) {
-    TransformComponent* tComp = _parentSGN.get<TransformComponent>();
+    TransformComponent* tComp = _parentSGN->get<TransformComponent>();
     if (tComp) {
         Quaternion<F32> rot = tComp->getOrientation();
         rot.fromRotation(directionCache(), direction, tComp->getUpVector());

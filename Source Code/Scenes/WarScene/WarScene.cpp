@@ -106,7 +106,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
         stringImpl selectionText = "";
         const Selections& selections = _currentSelection[0];
         for (U8 i = 0u; i < selections._selectionCount; ++i) {
-            SceneGraphNode* node = sceneGraph().findNode(selections._selections[i]);
+            SceneGraphNode* node = sceneGraph()->findNode(selections._selections[i]);
             if (node != nullptr) {
                 AI::AIEntity* entity = findAI(node);
                 if (entity) {
@@ -159,7 +159,7 @@ void WarScene::toggleTerrainMode() {
     _terrainMode = !_terrainMode;
 }
 
-void WarScene::debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+void WarScene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES)) {
         if (!_targetLines) {
             _targetLines = _context.gfx().newIMP();
@@ -251,7 +251,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 
     if (_terrainMode) {
         if (g_terrain == nullptr) {
-            auto objects = sceneGraph().getNodesByType(SceneNodeType::TYPE_OBJECT3D);
+            auto objects = sceneGraph()->getNodesByType(SceneNodeType::TYPE_OBJECT3D);
             for (SceneGraphNode* object : objects) {
                 if (object->getNode<Object3D>().getObjectType()._value == ObjectType::TERRAIN) {
                     g_terrain = object;
@@ -263,7 +263,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             if (g_terrain->get<BoundsComponent>()->getBoundingBox().containsPoint(camPos)) {
                 const Terrain& ter = g_terrain->getNode<Terrain>();
 
-                F32 headHeight = state().playerState(state().playerPass())._headHeight;
+                F32 headHeight = state()->playerState(state()->playerPass())._headHeight;
                 camPos -= g_terrain->get<TransformComponent>()->getPosition();
                 playerCamera()->setEye(ter.getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
             }
@@ -566,7 +566,7 @@ bool WarScene::load(const Str256& name) {
     lightParentNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                                to_base(ComponentType::BOUNDS) |
                                                to_base(ComponentType::NETWORKING);
-    SceneGraphNode* pointLightNode = _sceneGraph->getRoot().addChildNode(lightParentNodeDescriptor);
+    SceneGraphNode* pointLightNode = _sceneGraph->getRoot()->addChildNode(lightParentNodeDescriptor);
 
     SceneGraphNodeDescriptor lightNodeDescriptor;
     lightNodeDescriptor._serialize = false;
@@ -676,11 +676,11 @@ void WarScene::toggleCamera(InputParams param) {
 
     PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
     if (_currentSelection[idx]._selectionCount > 0u) {
-        SceneGraphNode* node = sceneGraph().findNode(_currentSelection[idx]._selections[0]);
+        SceneGraphNode* node = sceneGraph()->findNode(_currentSelection[idx]._selections[0]);
         if (node != nullptr) {
             if (flyCameraActive) {
-                state().playerState(idx).overrideCamera(tpsCamera);
-                static_cast<ThirdPersonCamera&>(*tpsCamera).setTarget(node);
+                state()->playerState(idx).overrideCamera(tpsCamera);
+                static_cast<ThirdPersonCamera*>(tpsCamera)->setTarget(node);
                 flyCameraActive = false;
                 tpsCameraActive = true;
                 return;
@@ -688,7 +688,7 @@ void WarScene::toggleCamera(InputParams param) {
         }
     }
     if (tpsCameraActive) {
-        state().playerState(idx).overrideCamera(nullptr);
+        state()->playerState(idx).overrideCamera(nullptr);
         tpsCameraActive = false;
         flyCameraActive = true;
     }
@@ -774,7 +774,7 @@ void WarScene::onSetActive() {
 }
 
 void WarScene::weaponCollision(const RigidBodyComponent& collider) {
-    Console::d_printfn("Weapon touched [ %s ]", collider.getSGN().name().c_str());
+    Console::d_printfn("Weapon touched [ %s ]", collider.getSGN()->name().c_str());
 }
 
 };

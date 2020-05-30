@@ -72,7 +72,7 @@ void DoFPreRenderOperator::autoFocus(const bool state) {
     _constants.set(_ID("autoFocus"), GFX::PushConstantType::BOOL, _autoFocus);
 }
 
-bool DoFPreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+bool DoFPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
     const TextureData depthTex = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 

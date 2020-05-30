@@ -116,9 +116,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     for(const ptree::value_type & f : pt.get_child("actions", g_emptyPtree))
     {
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
-        scene->input().actionList()
-                      .getInputAction(attributes.get<U16>("id", 0))
-                      .displayName(attributes.get<stringImpl>("name", "").c_str());
+        scene->input()->actionList().getInputAction(attributes.get<U16>("id", 0)).displayName(attributes.get<stringImpl>("name", "").c_str());
     }
 
     PressReleaseActions::Entry entry = {};
@@ -133,7 +131,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
         populatePressRelease(attributes, entry);
 
         Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
-        scene->input().addKeyMapping(key, entry);
+        scene->input()->addKeyMapping(key, entry);
     }
 
     for (const ptree::value_type & f : pt.get_child("mouseButtons", g_emptyPtree))
@@ -147,7 +145,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
 
         Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
 
-        scene->input().addMouseMapping(btn, entry);
+        scene->input()->addMouseMapping(btn, entry);
     }
 
     const stringImpl label("joystickButtons.joystick");
@@ -165,7 +163,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
 
             Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
 
-            scene->input().addJoystickMapping(joystick, element._type, element._elementIndex, entry);
+            scene->input()->addJoystickMapping(joystick, element._type, element._elementIndex, entry);
         }
     }
 }

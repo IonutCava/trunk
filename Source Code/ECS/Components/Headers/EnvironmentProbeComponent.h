@@ -59,7 +59,7 @@ public:
         COUNT
     };
 public:
-    explicit EnvironmentProbeComponent(SceneGraphNode& sgn, PlatformContext& context);
+    explicit EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
 
     void PreUpdate(const U64 deltaTime) final;

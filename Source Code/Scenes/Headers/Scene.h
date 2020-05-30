@@ -137,15 +137,13 @@ class Scene : public Resource, public PlatformContextComponent {
     void onStartUpdateLoop(const U8 loopNumber);
     /// Override this for Scene specific updates
     virtual void updateSceneStateInternal(const U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
-    inline SceneState& state() noexcept { return *_sceneState; }
-    inline const SceneState& state() const noexcept { return *_sceneState; }
+    
     inline SceneRenderState& renderState() { return _sceneState->renderState(); }
     inline const SceneRenderState& renderState() const { return _sceneState->renderState(); }
-    inline SceneInput& input() noexcept { return *_input; }
-    inline const SceneInput& input() const noexcept { return *_input; }
 
-    inline SceneGraph& sceneGraph() noexcept { return *_sceneGraph; }
-    inline const SceneGraph& sceneGraph() const noexcept { return *_sceneGraph; }
+    inline SceneState* state()      const noexcept { return _sceneState; }
+    inline SceneInput* input()      const noexcept { return _input; }
+    inline SceneGraph* sceneGraph() const noexcept { return _sceneGraph; }
 
     void registerTask(Task& taskItem, bool start = true, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
@@ -154,10 +152,10 @@ class Scene : public Resource, public PlatformContextComponent {
 
     void addMusic(MusicType type, const Str64& name, const Str256& srcFile);
 
-    SceneGraphNode* addSky(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
-    SceneGraphNode* addInfPlane(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
-    void addWater(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
-    void addTerrain(SceneGraphNode& parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
+    SceneGraphNode* addSky(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
+    SceneGraphNode* addInfPlane(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
+    void addWater(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
+    void addTerrain(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
 
     /// Object picking
     inline Selections getCurrentSelection(PlayerIndex index = 0) const {
@@ -175,7 +173,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     SceneGraphNode* addParticleEmitter(const Str64& name,
                                        std::shared_ptr<ParticleData> data,
-                                       SceneGraphNode& parentNode);
+                                       SceneGraphNode* parentNode);
 
     inline AI::AIManager& aiManager() noexcept { return *_aiManager; }
     inline const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
@@ -192,8 +190,8 @@ class Scene : public Resource, public PlatformContextComponent {
     // can save at any time, I guess?
     virtual bool saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const;
 
-    bool saveNodeToXML(const SceneGraphNode& node) const;
-    bool loadNodeFromXML(SceneGraphNode& node) const;
+    bool saveNodeToXML(const SceneGraphNode* node) const;
+    bool loadNodeFromXML(SceneGraphNode* node) const;
 
     void initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) noexcept;
 
@@ -228,7 +226,7 @@ class Scene : public Resource, public PlatformContextComponent {
     virtual U16 registerInputActions();
     virtual void loadKeyBindings();
 
-    void onNodeDestroy(SceneGraphNode& node);
+    void onNodeDestroy(SceneGraphNode* node);
     void findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos);
     void clearHoverTarget(PlayerIndex idx);
 
@@ -264,7 +262,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// returns true if the camera was moved/rotated/etc
     bool updateCameraControls(PlayerIndex idx);
     /// Draw debug entities
-    virtual void debugDraw(const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
+    virtual void debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     /// Draw custom ui elements
     virtual void drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
@@ -384,7 +382,7 @@ class SceneManager {
     }
 
     /// Draw debug entities
-    static void debugDraw(Scene& scene, const Camera& activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+    static void debugDraw(Scene& scene, const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
         scene.debugDraw(activeCamera, stagePass, bufferInOut);
     }
 
@@ -443,7 +441,7 @@ class SceneManager {
     }
 
     static void clearHoverTarget(Scene& scene, const Input::MouseMoveEvent& arg) {
-        scene.clearHoverTarget(scene.input().getPlayerIndexForDevice(arg._deviceIndex));
+        scene.clearHoverTarget(scene.input()->getPlayerIndexForDevice(arg._deviceIndex));
     }
 
     static SceneNode_ptr createNode(Scene& scene, SceneNodeType type, const ResourceDescriptor& descriptor) {
@@ -470,12 +468,12 @@ class SceneRenderPass {
 class SceneEnvironmentProbeComponent
 {
 private:
-    static void registerProbe(Scene& scene, EnvironmentProbeComponent& probe) noexcept {
-        scene._envProbePool->registerProbe(&probe);
+    static void registerProbe(Scene& scene, EnvironmentProbeComponent* probe) noexcept {
+        scene._envProbePool->registerProbe(probe);
     }
 
-    static void unregisterProbe(Scene& scene, EnvironmentProbeComponent& probe) noexcept {
-        scene._envProbePool->unregisterProbe(&probe);
+    static void unregisterProbe(Scene& scene, EnvironmentProbeComponent* probe) noexcept {
+        scene._envProbePool->unregisterProbe(probe);
     }
     friend class Divide::EnvironmentProbeComponent;
 };
@@ -495,7 +493,7 @@ class SceneLoadSave {
 
 class SceneGraph {
 private:
-    static void onNodeDestroy(Scene& scene, SceneGraphNode& node) {
+    static void onNodeDestroy(Scene& scene, SceneGraphNode* node) {
         scene.onNodeDestroy(node);
     }
 

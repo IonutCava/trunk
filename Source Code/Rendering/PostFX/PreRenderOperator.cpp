@@ -31,12 +31,12 @@ PreRenderOperator::~PreRenderOperator()
 {
 }
 
-void PreRenderOperator::prepare(const Camera& camera, GFX::CommandBuffer& bufferInOut) {
+void PreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
-bool PreRenderOperator::execute(const Camera& camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+bool PreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(input);
     ACKNOWLEDGE_UNUSED(output);

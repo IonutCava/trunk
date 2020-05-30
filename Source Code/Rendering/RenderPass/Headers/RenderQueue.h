@@ -59,7 +59,7 @@ class RenderQueue : public KernelComponent {
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void sort(RenderStagePass stagePass, RenderBinType targetBinType = RenderBinType::RBT_COUNT, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void refresh(RenderStage stage, RenderBinType targetBinType = RenderBinType::RBT_COUNT);
-    void addNodeToQueue(const SceneGraphNode& sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType = RenderBinType::RBT_COUNT);
+    void addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType = RenderBinType::RBT_COUNT);
     U16 getRenderQueueStackSize(RenderStage stage) const;
 
     inline RenderBin* getBin(RenderBinType rbType) noexcept {
@@ -80,7 +80,7 @@ class RenderQueue : public KernelComponent {
 
     RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType);
 
-    RenderBin* getBinForNode(const SceneGraphNode& nodeType, const Material_ptr& matInstance);
+    RenderBin* getBinForNode(const SceneGraphNode* nodeType, const Material_ptr& matInstance);
 
   private:
     RenderBinArray _renderBins = {};

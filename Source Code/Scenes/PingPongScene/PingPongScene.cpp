@@ -243,11 +243,11 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     // Move LR = Left/Right
     static F32 paddleMovementDivisor = 10;
     // Camera controls
-    if (state().playerState(idx).angleLR() != MoveDirection::NONE) {
-        _paddleCam->rotateYaw(Angle::DEGREES<F32>(state().playerState(idx).angleLR()));
+    if (state()->playerState(idx).angleLR() != MoveDirection::NONE) {
+        _paddleCam->rotateYaw(Angle::DEGREES<F32>(state()->playerState(idx).angleLR()));
     }
-    if (state().playerState(idx).angleUD() != MoveDirection::NONE) {
-        _paddleCam->rotatePitch(Angle::DEGREES<F32>(state().playerState(idx).angleUD()));
+    if (state()->playerState(idx).angleUD() != MoveDirection::NONE) {
+        _paddleCam->rotatePitch(Angle::DEGREES<F32>(state()->playerState(idx).angleUD()));
     }
 
     SceneGraphNode* paddle(_sceneGraph->findNode("paddle"));
@@ -255,23 +255,23 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
     vec3<F32> pos = paddle->get<TransformComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
-    if (state().playerState(idx).moveFB() != MoveDirection::NONE) {
-        if ((state().playerState(idx).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
-            (state().playerState(idx).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
+    if (state()->playerState(idx).moveFB() != MoveDirection::NONE) {
+        if ((state()->playerState(idx).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
+            (state()->playerState(idx).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
             Scene::processInput(idx, deltaTimeUS);
             return;
         }
-        paddle->get<TransformComponent>()->translateY(to_I32(state().playerState(idx).moveFB()) / paddleMovementDivisor);
+        paddle->get<TransformComponent>()->translateY(to_I32(state()->playerState(idx).moveFB()) / paddleMovementDivisor);
     }
 
-    if (state().playerState(idx).moveLR() != MoveDirection::NONE) {
+    if (state()->playerState(idx).moveLR() != MoveDirection::NONE) {
         // Left/right movement is flipped for proper control
-        if ((state().playerState(idx).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
-            (state().playerState(idx).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
+        if ((state()->playerState(idx).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
+            (state()->playerState(idx).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
             Scene::processInput(idx, deltaTimeUS);
             return;
         }
-        paddle->get<TransformComponent>()->translateX(to_I32(state().playerState(idx).moveLR()) / paddleMovementDivisor);
+        paddle->get<TransformComponent>()->translateX(to_I32(state()->playerState(idx).moveLR()) / paddleMovementDivisor);
     }
 
     Scene::processInput(idx, deltaTimeUS);
@@ -303,7 +303,7 @@ bool PingPongScene::load(const Str256& name) {
         to_base(ComponentType::RIGID_BODY) |
         to_base(ComponentType::NAVIGATION) |
         to_base(ComponentType::NETWORKING);
-    _ballSGN = _sceneGraph->getRoot().addChildNode(ballNodeDescriptor);
+    _ballSGN = _sceneGraph->getRoot()->addChildNode(ballNodeDescriptor);
     _ballSGN->get<TransformComponent>()->translate(vec3<F32>(0, 2, 2));
     _ballSGN->get<RigidBodyComponent>()->physicsGroup(PhysicsGroup::GROUP_KINEMATIC);
     // Add some taunts
@@ -347,9 +347,9 @@ U16 PingPongScene::registerInputActions() {
         _input->actionList().registerInputAction(actionID, [this](InputParams param) {
             _freeFly = !_freeFly;
             if (!_freeFly) {
-                state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(_paddleCam);
+                state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(_paddleCam);
             } else {
-                state().playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
+                state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
             }
         });
         _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);

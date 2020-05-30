@@ -9,7 +9,7 @@ namespace Divide {
 
 hashMap<I64, NetworkingComponent*> NetworkingComponent::s_NetComponents;
 
-NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, PlatformContext& context)
+NetworkingComponent::NetworkingComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<NetworkingComponent, ComponentType::NETWORKING>(parentSGN, context),
      _parentClient(context.client()),
      _resendRequired(true)
@@ -17,12 +17,12 @@ NetworkingComponent::NetworkingComponent(SceneGraphNode& parentSGN, PlatformCont
     // Register a receive callback with parent:
     // e.g.: _receive->bind(NetworkingComponent::onNetworkReceive);
 
-    s_NetComponents[parentSGN.getGUID()] = this;
+    s_NetComponents[parentSGN->getGUID()] = this;
 }
 
 NetworkingComponent::~NetworkingComponent()
 {
-    s_NetComponents.erase(_parentSGN.getGUID());
+    s_NetComponents.erase(_parentSGN->getGUID());
 }
 
 void NetworkingComponent::flagDirty() {
@@ -43,10 +43,10 @@ void NetworkingComponent::onNetworkSend(U32 frameCountIn)  {
     }
 
     WorldPacket dataOut(OPCodes::CMSG_ENTITY_UPDATE);
-    dataOut << _parentSGN.getGUID();
+    dataOut << _parentSGN->getGUID();
     dataOut << frameCountIn;
 
-    Attorney::SceneNodeNetworkComponent::onNetworkSend(_parentSGN, _parentSGN.getNode(), dataOut);
+    Attorney::SceneNodeNetworkComponent::onNetworkSend(_parentSGN, _parentSGN->getNode(), dataOut);
 
     WorldPacket p = deltaCompress(dataOut, _previousSent);
     _previousSent = p;
@@ -58,7 +58,7 @@ void NetworkingComponent::onNetworkReceive(WorldPacket& dataIn) {
     WorldPacket p = deltaDecompress(dataIn, _previousReceived);
     _previousReceived = p;
 
-    Attorney::SceneNodeNetworkComponent::onNetworkReceive(_parentSGN, _parentSGN.getNode(), dataIn);
+    Attorney::SceneNodeNetworkComponent::onNetworkReceive(_parentSGN, _parentSGN->getNode(), dataIn);
 }
 
 NetworkingComponent* NetworkingComponent::getReceiver(I64 guid) {

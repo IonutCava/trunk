@@ -87,7 +87,7 @@ struct RefreshNodeDataParams {
 
 struct RenderCbkParams {
     explicit RenderCbkParams(GFXDevice& context,
-                             const SceneGraphNode& sgn,
+                             const SceneGraphNode* sgn,
                              const SceneRenderState& sceneRenderState,
                              const RenderTargetID& renderTarget,
                              U16 passIndex,
@@ -104,7 +104,7 @@ struct RenderCbkParams {
     }
 
     GFXDevice& _context;
-    const SceneGraphNode& _sgn;
+    const SceneGraphNode* _sgn = nullptr;
     const SceneRenderState& _sceneRenderState;
     const RenderTargetID& _renderTarget;
     Camera* _camera;
@@ -147,7 +147,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
        };
 
    public:
-    explicit RenderingComponent(SceneGraphNode& parentSGN,
+    explicit RenderingComponent(SceneGraphNode* parentSGN,
                                 PlatformContext& context);
     ~RenderingComponent();
 
@@ -337,11 +337,11 @@ class RenderingCompRenderPass {
 
 class RenderingCompRenderBin {
    private:
-    static void postRender(RenderingComponent& renderable,
+    static void postRender(RenderingComponent* renderable,
                            const SceneRenderState& sceneRenderState,
                            const RenderStagePass& renderStagePass,
                            GFX::CommandBuffer& bufferInOut) {
-        renderable.postRender(sceneRenderState, renderStagePass, bufferInOut);
+        renderable->postRender(sceneRenderState, renderStagePass, bufferInOut);
     }
 
     friend class Divide::RenderBin;

@@ -48,7 +48,7 @@ void Mesh::recomputeBB() {
 }
 
 void Mesh::sceneUpdate(const U64 deltaTimeUS,
-                       SceneGraphNode& sgn,
+                       SceneGraphNode* sgn,
                        SceneState& sceneState) {
 
     recomputeBB();
@@ -80,7 +80,7 @@ void Mesh::setMaterialTpl(const Material_ptr& material) {
 }
 
 /// After we loaded our mesh, we need to add submeshes as children nodes
-void Mesh::postLoad(SceneGraphNode& sgn) {
+void Mesh::postLoad(SceneGraphNode* sgn) {
     constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
                                to_base(ComponentType::TRANSFORM) |
                                to_base(ComponentType::BOUNDS) |
@@ -93,8 +93,8 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
                                 to_base(ComponentType::RAGDOLL);
 
     SceneGraphNodeDescriptor subMeshDescriptor;
-    subMeshDescriptor._usageContext = sgn.usageContext();
-    subMeshDescriptor._instanceCount = sgn.instanceCount();
+    subMeshDescriptor._usageContext = sgn->usageContext();
+    subMeshDescriptor._instanceCount = sgn->instanceCount();
 
     for (const SubMesh_ptr& submesh : _subMeshList) {
         const bool subMeshSkinned = submesh->getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED);
@@ -104,17 +104,17 @@ void Mesh::postLoad(SceneGraphNode& sgn) {
 
         subMeshDescriptor._node = submesh;
         subMeshDescriptor._componentMask = subMeshSkinned ? skinnedMask : normalMask;
-        if (sgn.get<RigidBodyComponent>() != nullptr) {
+        if (sgn->get<RigidBodyComponent>() != nullptr) {
             subMeshDescriptor._componentMask |= to_base(ComponentType::RIGID_BODY);
         }
-        subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn.name().c_str(), submesh->getID());
-        SceneGraphNode* subSGN = sgn.addChildNode(subMeshDescriptor);
+        subMeshDescriptor._name = Util::StringFormat("%s_%d", sgn->name().c_str(), submesh->getID());
+        SceneGraphNode* subSGN = sgn->addChildNode(subMeshDescriptor);
 
         if (BitCompare(subMeshDescriptor._componentMask, ComponentType::RIGID_BODY)) {
-            subSGN->get<RigidBodyComponent>()->physicsGroup(sgn.get<RigidBodyComponent>()->physicsGroup());
+            subSGN->get<RigidBodyComponent>()->physicsGroup(sgn->get<RigidBodyComponent>()->physicsGroup());
         }
 
-        RenderingComponent* rComp = sgn.get<RenderingComponent>();
+        RenderingComponent* rComp = sgn->get<RenderingComponent>();
         if (rComp != nullptr) {
             RenderingComponent* subRComp = subSGN->get<RenderingComponent>();
             for (auto it : rComp->getShaderBuffers()) {
