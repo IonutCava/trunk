@@ -16,7 +16,7 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 #define CAP_MAX_DISTANCE 0.005
 
 uniform vec3 sampleKernel[MAX_KERNEL_SIZE];
-uniform uint kernelSize = MAX_KERNEL_SIZE;
+uniform int kernelSize = MAX_KERNEL_SIZE;
 
 uniform float radius = 1.5f;
 uniform float power = 2.0f;

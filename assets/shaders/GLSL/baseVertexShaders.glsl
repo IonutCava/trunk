@@ -23,9 +23,8 @@ void main(void)
 
 void main(void)
 {
-    const NodeData data = fetchInputData();
-    computeData(data);
-    setClipPlanes(VAR._vertexW);
+    computeData(fetchInputData());
+    setClipPlanes();
     gl_Position = VAR._vertexWVP;
 }
 
@@ -37,7 +36,7 @@ void main(void)
 void main() {
     const NodeData data = fetchInputData();
     computeData(data);
-    setClipPlanes(VAR._vertexW);
+    setClipPlanes();
     computeLightVectors(data);
     gl_Position = VAR._vertexWVP;
 }

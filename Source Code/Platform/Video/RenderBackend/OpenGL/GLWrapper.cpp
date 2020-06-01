@@ -171,14 +171,9 @@ bool GL_API::initGLSW(Configuration& config) {
         { "vec4"       , "_vertexWVP"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
-        { "flat uvec3" , "_drawParams"},
-        { "vec2"       , "_texCoord"}
+        { "vec2"       , "_texCoord"},
+        { "flat uint"  , "_baseInstance" }
     };
-
-    constexpr const char* drawParams = ""
-        "#define dvd_baseInstance _drawParams.x\n"
-        "#define dvd_instanceID _drawParams.y\n"
-        "#define dvd_drawID _drawParams.z\n";
 
     constexpr std::pair<const char*, const char*> shaderVaryingsBump[] =
     {
@@ -260,15 +255,19 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
-    if (getStateTracker()._opengl46Supported) {
-        appendToShaderHeader(ShaderType::COUNT, "#define OPENGL_46", lineOffsets);
-    } else {
+    if (!getStateTracker()._opengl46Supported) {
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
+
+        appendToShaderHeader(ShaderType::COUNT, "#define GL_DRAW_ID gl_DrawIDARB", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define GL_BASE_INSTANCE gl_BaseInstanceARB", lineOffsets);
+    } else {
+        appendToShaderHeader(ShaderType::COUNT, "#define GL_DRAW_ID gl_DrawID", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define GL_BASE_INSTANCE gl_BaseInstance", lineOffsets);
     }
-    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
-    
+   
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
 
     // Add current build environment information to the shaders
@@ -754,7 +753,6 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::GEOMETRY, "#define VAR _in", lineOffsets);
     appendToShaderHeader(ShaderType::FRAGMENT, "#define VAR _in", lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT, drawParams, lineOffsets);
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader

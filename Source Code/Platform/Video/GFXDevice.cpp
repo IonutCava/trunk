@@ -1276,9 +1276,6 @@ void GFXDevice::uploadGPUBlock() {
 
 /// set a new list of clipping planes. The old one is discarded
 void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
-    static_assert(std::is_same<std::remove_reference<decltype(*(_gpuBlock._data._clipPlanes))>::type, vec4<F32>>::value, "GFXDevice error: invalid clip plane type!");
-    static_assert(sizeof(vec4<F32>) == sizeof(Plane<F32>), "GFXDevice error: clip plane size mismatch!");
-
     if (clipPlanes._planes != _clippingPlanes._planes)
     {
         _clippingPlanes = clipPlanes;
@@ -1286,6 +1283,13 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
         memcpy(&_gpuBlock._data._clipPlanes[0],
                _clippingPlanes._planes.data(),
                sizeof(vec4<F32>) * to_base(ClipPlaneIndex::COUNT));
+
+
+        const auto count = std::count_if(std::cbegin(_gpuBlock._data._clipPlanes),
+                                         std::cend(_gpuBlock._data._clipPlanes),
+                                         [](const vec4<F32>& plane) {return !IS_ZERO(plane.w); });
+
+        _gpuBlock._data._otherProperties.w = to_F32(count);
 
         _gpuBlock._needsUpload = true;
     }
@@ -1330,7 +1334,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         to_F32(materialDebugFlag()),
         to_F32(csmPreviewIndex()),
         to_F32(cameraSnapshot._flag),
-        to_F32(cameraSnapshot._isOrthoCamera ? 1 : 0));
+        data._otherProperties.w);
 
     if (data._otherProperties != otherProperties) {
         data._otherProperties.set(otherProperties);

@@ -26,6 +26,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_AMBIENT_OCCLUSION),
       _enabled(true)
 {
+    _kernelIndex = context.context().config().rendering.postFX.ssaoKernelSizeIndex;
+
     vectorEASTL<vec3<F32>> noiseData(SSAO_NOISE_SIZE * SSAO_NOISE_SIZE);
 
     for (vec3<F32>& noise : noiseData) {
@@ -131,7 +133,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     ssaoBlur.waitForReady(false);
     _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
     _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, g_kernels[_kernelIndex]);
-    _ssaoGenerateConstants.set(_ID("kernelSize"), GFX::PushConstantType::UINT, to_U32(g_kernels[_kernelIndex].size()));
+    _ssaoGenerateConstants.set(_ID("kernelSize"), GFX::PushConstantType::INT, to_I32(g_kernels[_kernelIndex].size()));
 
     _ssaoBlurConstants.set(_ID("passThrough"), GFX::PushConstantType::BOOL, false);
     
@@ -174,7 +176,7 @@ void SSAOPreRenderOperator::power(const F32 val) {
 
 void SSAOPreRenderOperator::kernelIndex(const U8 val) {
     _kernelIndex = CLAMPED(val, 0, 3);
-    _ssaoGenerateConstants.set(_ID("kernelSize"), GFX::PushConstantType::UINT, to_U32(g_kernels[_kernelIndex].size()));
+    _ssaoGenerateConstants.set(_ID("kernelSize"), GFX::PushConstantType::INT, to_I32(g_kernels[_kernelIndex].size()));
     _context.context().config().rendering.postFX.ssaoKernelSizeIndex = val;
 }
 
@@ -206,7 +208,6 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             data = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)).texture()->data();
             descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::NORMALMAP);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-
 
             GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });
 

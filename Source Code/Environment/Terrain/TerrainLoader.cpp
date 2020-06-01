@@ -371,7 +371,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             hasGeometryPass = true;
         }
 
-        shaderModule._defines.emplace_back(Util::StringFormat("MAX_NODES_PER_STAGE %d", terrainDescriptor->maxNodesPerStage()), true);
         shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", Terrain::PATCHES_PER_TILE_EDGE), true);
         shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %5.2ff", to_F32(Terrain::VTX_PER_TILE_EDGE)), true);
 
@@ -388,12 +387,16 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
         }
 
+        const vec2<F32> TerrainOrigin(-(terrainDimensions.width * 0.5f), -(terrainDimensions.height * 0.5f));
+
         shaderModule._defines.emplace_back("COMPUTE_TBN", true);
         shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
         shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
         shaderModule._defines.emplace_back("ALBEDO_TILING " + Util::to_string(albedoTilingFactor), true);
         shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(terrainDimensions.width), true);
         shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(terrainDimensions.height), true);
+        shaderModule._defines.emplace_back("TERRAIN_ORIGIN_X " + Util::to_string(TerrainOrigin.x), true);
+        shaderModule._defines.emplace_back("TERRAIN_ORIGIN_Y " + Util::to_string(TerrainOrigin.y), true);
         shaderModule._defines.emplace_back("TERRAIN_MIN_HEIGHT " + Util::to_string(altitudeRange.x) + "f", true);
         shaderModule._defines.emplace_back("TERRAIN_HEIGHT_RANGE " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
         shaderModule._defines.emplace_back("NODE_STATIC", true);

@@ -287,7 +287,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
 
     if (_init) {
         
-        const F32 fov = _platformContext->config().runtime.verticalFOV;;
+        const F32 fov = _platformContext->config().runtime.verticalFOV;
         const vec2<F32> zPlanes(Camera::s_minNearZ, _platformContext->config().runtime.cameraViewDistance);
 
         for (UnitComponent* player : _players) {
@@ -488,9 +488,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     // Update internal timers
     _elapsedTime += deltaTimeUS;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
-
-    // Shadow splits are only visible in debug builds
-    _sceneData->enableDebugRender(_platformContext->paramHandler().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo")));
     // Time, fog, etc
     _sceneData->elapsedTime(_elapsedTimeMS);
     _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));

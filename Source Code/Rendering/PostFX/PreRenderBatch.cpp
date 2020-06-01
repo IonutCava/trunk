@@ -288,23 +288,23 @@ bool PreRenderBatch::operatorsReady() const {
 }
 
 RenderTargetHandle PreRenderBatch::getInput(bool hdr) const {
-    if (hdr && _swapped) {
+    if (hdr && _screenRTs._swappedHDR) {
         return _screenRTs._hdr._screenCopy;
     } else if (hdr) {
         return _screenRTs._hdr._screenRef;
     }
 
-    return _screenRTs._ldr._temp[_swapped ? 0 : 1];
+    return _screenRTs._ldr._temp[_screenRTs._swappedLDR ? 0 : 1];
 }
 
 RenderTargetHandle PreRenderBatch::getOutput(bool hdr) const {
-    if (hdr && _swapped) {
+    if (hdr && _screenRTs._swappedHDR) {
         return _screenRTs._hdr._screenRef;
     } else if (hdr) {
         return _screenRTs._hdr._screenCopy;
     }
 
-    return _screenRTs._ldr._temp[_swapped ? 1 : 0];
+    return _screenRTs._ldr._temp[_screenRTs._swappedLDR ? 1 : 0];
 }
 
 void PreRenderBatch::idle(const Configuration& config) {
@@ -320,9 +320,8 @@ void PreRenderBatch::adaptiveExposureControl(const bool state) noexcept {
     _context.context().config().rendering.postFX.enableAdaptiveToneMapping = state;
 }
 
-void PreRenderBatch::update(const U64 deltaTimeUS) {
+void PreRenderBatch::update(const U64 deltaTimeUS) noexcept {
     _lastDeltaTimeUS = deltaTimeUS;
-    _swapped = false;
 }
 
 RenderTargetHandle PreRenderBatch::screenRT() const noexcept {
@@ -368,6 +367,8 @@ void PreRenderBatch::prepare(const Camera* camera, U32 filterStack, GFX::Command
 void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipelineLumCalcHistogram = nullptr, * pipelineLumCalcAverage = nullptr, * pipelineToneMap = nullptr, * pipelineToneMapAdaptive = nullptr;
     static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+
+    _screenRTs._swappedHDR = _screenRTs._swappedLDR = false;
 
     if (pipelineLumCalcHistogram == nullptr) {
         PipelineDescriptor pipelineDescriptor = {};
@@ -497,7 +498,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     for (auto& op : hdrBatch) {
         if (BitCompare(filterStack, to_U32(op->operatorType()))) {
             if (op->execute(camera, getInput(true), getOutput(true), bufferInOut)) {
-                _swapped = !_swapped;
+                _screenRTs._swappedHDR = !_screenRTs._swappedHDR;
             }
         }
     }
@@ -526,8 +527,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         GFX::EnqueueCommand(bufferInOut, drawCmd);
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
-        // We need input to be LDR after this step
-        _swapped = !_swapped;
+        _screenRTs._swappedLDR = !_screenRTs._swappedLDR;
     }
 
     // Now that we have an LDR target, proceed with edge detection
@@ -565,13 +565,13 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     for (auto& op : ldrBatch) {
         if (BitCompare(filterStack, to_U32(op->operatorType()))) {
             if (op->execute(camera, getInput(false), getOutput(false), bufferInOut)) {
-                _swapped = !_swapped;
+                _screenRTs._swappedLDR = !_screenRTs._swappedLDR;
             }
         }
     }
 
     // At this point, the last output should remain the general output. So the last swap was redundant
-    _swapped = !_swapped;
+    _screenRTs._swappedLDR = !_screenRTs._swappedLDR;
 }
 
 void PreRenderBatch::reshape(U16 width, U16 height) {

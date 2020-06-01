@@ -366,10 +366,12 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
     }
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
+    bool frameTicked = false;
     if (playAnimations) {
         AnimationComponent* animComp = node->get<AnimationComponent>();
         if (animComp && animComp->playAnimations()) {
             dataOut._normalMatrixW.element(0, 3) = to_F32(animComp->boneCount());
+            frameTicked = animComp->frameTicked();
         }
     }
 
@@ -401,7 +403,7 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     dataOut._prevWorldMatrix.element(0, 3) = to_F32(properties._texOperation);
     dataOut._prevWorldMatrix.element(1, 3) = to_F32(properties._bumpMethod);
-    dataOut._prevWorldMatrix.element(2, 3) = 0.0f;
+    dataOut._prevWorldMatrix.element(2, 3) = frameTicked ? 1.0f : 0.0f;
     dataOut._prevWorldMatrix.element(3, 3) = 1.0f;
 }
 

@@ -28,7 +28,7 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
 void main() {
     const NodeData nodeData = fetchInputData();
 
-    VegetationData data = GrassData(VAR.dvd_instanceID);
+    VegetationData data = GrassData(gl_InstanceID);
 
 #if defined(USE_CULL_DISTANCE)
     if (data.data.z > 2.5f) {
@@ -65,7 +65,7 @@ void main() {
     VAR._normalWV = normalize(normalMatrixWV * rotate_vertex_position(dvd_Normal, data.orientationQuad));
 
 #if !defined(SHADOW_PASS)
-    setClipPlanes(VAR._vertexW);
+    setClipPlanes();
 #endif
 
     gl_Position = VAR._vertexWVP;

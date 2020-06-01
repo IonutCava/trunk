@@ -21,9 +21,9 @@ void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
 
 void main(void){
 
-    const NodeData data = fetchInputData();
+    const NodeData nodeData = fetchInputData();
 
-    const VegetationData data = TreeData(VAR.dvd_instanceID);
+    const VegetationData data = TreeData(gl_InstanceID);
 
     float scale = data.positionAndScale.w;
 
@@ -46,8 +46,8 @@ void main(void){
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
 #if !defined(SHADOW_PASS)
-    computeLightVectors(data);
-    setClipPlanes(VAR._vertexW);
+    computeLightVectors(nodeData);
+    setClipPlanes();
 #endif
 
     //Compute the final vert position

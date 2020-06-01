@@ -56,7 +56,6 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     }
 
     _lightTypeState.fill(true);
-    context.paramHandler().setParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"), false);
 
     init();
 }
@@ -245,8 +244,6 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 void LightPool::debugLight(Light* light) {
     _debugLight = light;
     ShadowMap::setDebugViewLight(context().gfx(), _debugLight);
-    const bool showDebugInfo = context().paramHandler().getParam<bool>(_ID("rendering.debug.displayShadowDebugInfo"));
-    context().paramHandler().setParam(_ID("rendering.debug.displayShadowDebugInfo"), _debugLight != nullptr || showDebugInfo);
 }
 
 Light* LightPool::getLight(I64 lightGUID, LightType type) {

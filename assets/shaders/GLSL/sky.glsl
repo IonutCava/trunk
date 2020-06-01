@@ -3,8 +3,7 @@
 #include "vbInputData.vert"
 
 void main(void){
-    const NodeData data = fetchInputData();
-    computeData(data);
+    computeData(fetchInputData());
 
     VAR._vertexW += vec4(dvd_cameraPosition.xyz, 0.0f);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;

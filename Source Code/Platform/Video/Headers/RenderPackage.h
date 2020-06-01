@@ -106,6 +106,8 @@ public:
     template<>
     inline void add(const GFX::DrawCommand& command) { addDrawCommand(command); }
 
+    const ShaderBufferBinding& getShaderBuffer(I32 descriptorSetIndex, I32 bufferIndex) const;
+
     void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer);
     void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
     inline void setTexture(I32 descriptorSetIndex, const TextureData& data, TextureUsage binding) {

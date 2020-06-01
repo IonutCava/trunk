@@ -10,7 +10,7 @@ void main(void)
 {
     const NodeData data = fetchInputData();
     computeData(data);
-    setClipPlanes(VAR._vertexW);
+    setClipPlanes();
     computeLightVectors(data);
 
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;

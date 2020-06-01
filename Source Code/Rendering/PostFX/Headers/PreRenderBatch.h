@@ -38,7 +38,7 @@ class PreRenderBatch {
     PostFX& parent() const noexcept { return _parent; }
 
     void idle(const Configuration& config);
-    void update(const U64 deltaTimeUS);
+    void update(const U64 deltaTimeUS) noexcept;
 
     void prepare(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
     void execute(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
@@ -136,10 +136,11 @@ class PreRenderBatch {
     struct ScreenTargets {
         HDRTargets _hdr;
         LDRTargets _ldr;
+        bool _swappedHDR = false;
+        bool _swappedLDR = false;
     };
 
     ScreenTargets _screenRTs;
-    bool _swapped = false;
 
     RenderTargetHandle _sceneEdges;
     RenderTargetHandle _currentLuminance;

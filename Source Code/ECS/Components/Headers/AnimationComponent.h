@@ -70,6 +70,8 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     I32 frameCount(U32 animationID) const;
 
     U32 boneCount() const;
+    bool frameTicked() const noexcept;
+
     Bone* getBoneByName(const stringImpl& bname) const;
     mat4<F32> getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name);
     const vectorEASTL<Line>& skeletonLines() const;

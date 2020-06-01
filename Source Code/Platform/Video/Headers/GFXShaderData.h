@@ -59,9 +59,9 @@ class GFXShaderData {
           vec4<F32> _ViewPort = { 0.0f, 0.0f, 1.0f, 1.0f };
           //x - near plane, y - far plane, z - FoV, w - lightTilesX
           vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f };
-          //x - material debug flag, y - CSM splits view index, z - camera flag, w - isOrtho
+          //x - material debug flag, y - CSM splits view index, z - camera flag, w - active clip plane count
           vec4<F32> _otherProperties;
-          vec4<F32> _clipPlanes[to_base(Frustum::FrustPlane::COUNT)];
+          std::array<vec4<F32>, to_base(Frustum::FrustPlane::COUNT)> _clipPlanes;
 
           inline F32 aspectRatio() const noexcept;
           inline vec2<F32> cameraZPlanes() const noexcept;

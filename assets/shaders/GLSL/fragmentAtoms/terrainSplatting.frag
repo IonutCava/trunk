@@ -47,7 +47,9 @@ vec4 sampleTexture(in sampler2DArray tex, in vec3 texUV) {
 }
 #endif //LOW_QUALITY
 
-void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
+float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
+    INSERT_BLEND_AMNT_ARRAY
+
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
         const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
@@ -57,6 +59,8 @@ void getBlendFactor(in vec2 uv, inout float blendAmount[TOTAL_LAYER_COUNT]) {
         }
         offset += layerCount;
     }
+
+    return blendAmount;
 }
 
 vec2 scaledTextureCoords(in vec2 uv) {
@@ -109,10 +113,11 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDirTBN, float currentDepth
 }
 
 #endif //HAS_PARALLAX
-vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt, in vec3 viewDirTBN) {
+vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
     vec2 scaledCoords = scaledTextureCoords(TexCoords);
 
 #if defined(HAS_PARALLAX)
+    const vec3 viewDirTBN = normalize(_tangentViewPos - _tangentFragPos);
     if (LoD < 2 && dvd_bumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         if (dvd_bumpMethod == BUMP_PARALLAX) {
@@ -128,11 +133,10 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt, in vec3 viewDirTBN) {
 
 #if defined(PRE_PASS)
 
-vec3 getTerrainNormal(in vec3 viewDirTBN) {
-    INSERT_BLEND_AMNT_ARRAY;
-    getBlendFactor(TexCoords, blendAmount);
+vec3 getTerrainNormal() {
+    float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(TexCoords);
 
-    const vec2 scaledUV = getScaledCoords(blendAmount, viewDirTBN);
+    const vec2 scaledUV = getScaledCoords(blendAmount);
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         normal = mix(normal, sampleTexture(texNormalMaps, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
@@ -142,17 +146,16 @@ vec3 getTerrainNormal(in vec3 viewDirTBN) {
 }
 
 vec3 getMixedNormal(in float waterDepth) {
-    const vec3 viewDirTBN = normalize(_tangentViewPos - _tangentFragPos);
+    const vec3 ret = mix(texture(helperTextures, vec3(TexCoords * UNDERWATER_TILE_SCALE, 2)).rgb, 
+                         getTerrainNormal(),
+                         saturate(waterDepth));
 
-    vec3 ret = mix(texture(helperTextures, vec3(TexCoords * UNDERWATER_TILE_SCALE, 2)).rgb,
-                   getTerrainNormal(viewDirTBN),
-                   saturate(waterDepth));
     return VAR._tbn * (2.0f * ret - 1.0f);
 }
 
 #else //PRE_PASS
 
-vec4 getUnderwaterAlbedo(in float waterDepth, in vec3 viewDirTBN) {
+vec4 getUnderwaterAlbedo(in float waterDepth) {
     const vec2 scaledUV = TexCoords * UNDERWATER_TILE_SCALE;
 #if defined(LOW_QUALITY)
     return vec4(texture(helperTextures, vec3(scaledUV, 1)).rgb, 0.3f);
@@ -168,10 +171,9 @@ vec4 getUnderwaterAlbedo(in float waterDepth, in vec3 viewDirTBN) {
 #endif //LOW_QUALITY
 }
 
-vec4 getTerrainAlbedo(in vec3 viewDirTBN) {
-    INSERT_BLEND_AMNT_ARRAY;
-    getBlendFactor(TexCoords, blendAmount);
-    const vec2 scaledUV = getScaledCoords(blendAmount, viewDirTBN);
+vec4 getTerrainAlbedo() {
+    float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(TexCoords);
+    const vec2 scaledUV = getScaledCoords(blendAmount);
 
     vec4 ret = vec4(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
@@ -189,10 +191,9 @@ void BuildTerrainData(in vec2 waterDetails, out vec4 albedo, out vec3 normalWV) 
     normalWV = getNormal(TexCoords);
 #endif //LOW_QUALITY
 
-    const vec3 viewDirTBN = normalize(_tangentViewPos - _tangentFragPos);
-    albedo =  mix(getUnderwaterAlbedo(waterDetails.y, viewDirTBN),
-                  getTerrainAlbedo(viewDirTBN),
-                  1.0f - waterDetails.x);
+    albedo =  mix(getTerrainAlbedo(), 
+                  getUnderwaterAlbedo(waterDetails.y),
+                  waterDetails.x);
     
 }
 #endif // PRE_PASS

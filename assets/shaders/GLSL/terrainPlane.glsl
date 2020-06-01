@@ -3,9 +3,8 @@
 #include "vbInputData.vert"
 
 void main(void) {
-    const NodeData data = fetchInputData();
-    computeData(data);
-    setClipPlanes(VAR._vertexW);
+    computeData(fetchInputData());
+    setClipPlanes();
     gl_Position = VAR._vertexWVP;
 }
 
@@ -16,9 +15,8 @@ void main(void) {
 layout(location = 0) out vec4 _scrollingUV;
 
 void main(void) {
-    const NodeData data = fetchInputData();
-    computeData(data);
-    setClipPlanes(VAR._vertexW);
+    computeData(fetchInputData());
+    setClipPlanes();
 
     float time2 = float(dvd_time) * 0.0001;
     vec2 noiseUV = VAR._texCoord * UNDERWATER_TILE_SCALE;

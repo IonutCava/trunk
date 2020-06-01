@@ -74,16 +74,13 @@ vec3 UNPACK_FLOAT(in float value) {
 }
 
 void main(void) {
-
-    VAR.dvd_baseInstance = gl_BaseInstanceARB;
-
     vec4 dvd_Vertex = vec4(inVertexData, 1.0);
     vec3 dvd_Normal = UNPACK_FLOAT(inNormalData);
     VAR._vertexW = dvd_WorldMatrixOverride * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     VAR._viewDirectionWV = normalize(-VAR._vertexWV.xyz);
-    NodeData nodeData = dvd_Matrices[VAR.dvd_baseInstance];
+    NodeData nodeData = dvd_Matrices[GL_BASE_INSTANCE];
     mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(nodeData._normalMatrixW);
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
     //Compute the final vert position

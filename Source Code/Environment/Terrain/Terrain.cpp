@@ -379,6 +379,10 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
     if (cmd._cmd.primCount != depth) {
         cmd._cmd.primCount = depth;
         pkg.drawCommand(0, 0, cmd);
+
+        ShaderBufferBinding buffer = pkg.getShaderBuffer(0, 0);
+        buffer._elementRange.max = depth;
+        pkg.addShaderBuffer(0, buffer);
     }
 
     return Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);

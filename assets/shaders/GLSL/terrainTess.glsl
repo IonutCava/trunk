@@ -2,11 +2,9 @@
 
 #include "vbInputData.vert"
 
-layout(location = 10) out vec4 vtx_adjacency;
-layout(location = 11) out int vtx_tileScale;
-layout(location = 12) out float vtx_height;
-
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+
+layout(location = 10) out flat uint dvd_instanceID;
 
 struct TerrainNodeData {
     vec4 _positionAndTileScale;
@@ -15,59 +13,53 @@ struct TerrainNodeData {
 
 layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock
 {
-    TerrainNodeData dvd_TerrainData[MAX_NODES_PER_STAGE];
+    TerrainNodeData dvd_TerrainData[];
 };
 
 void main(void)
 {
-    _out.dvd_baseInstance = DATA_IDX;
-    _out.dvd_instanceID = gl_InstanceID;
-#if defined(OPENGL_46)
-    _out.dvd_drawID = gl_DrawID;
-#else
-    _out.dvd_drawID = gl_DrawIDARB;
-#endif
-    NodeData data = dvd_Matrices[DATA_IDX];
+    VAR._baseInstance = DATA_IDX;
+    dvd_instanceID = gl_InstanceID;
+
+    const TerrainNodeData tData = dvd_TerrainData[dvd_instanceID];
 
     // Calculate texture coordinates (u,v) relative to entire terrain
-    const vec2 TerrainOrigin = vec2(-(TERRAIN_WIDTH * 0.5f), -(TERRAIN_LENGTH * 0.5f));
-    const TerrainNodeData tData = dvd_TerrainData[_out.dvd_instanceID];
-
-    vtx_adjacency = tData._tScale;
-    vtx_tileScale = int(tData._positionAndTileScale.w);
-
     const float iv = floor(gl_VertexID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
     const float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
-    const float u = (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f));
-    const float v = (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f));
+    const float u = 2.0f * (iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f)) - 1.0f;
+    const float v = 2.0f * (iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f)) - 1.0f;
 
-    dvd_Vertex.x = 2.f * u - 1.0f;
-    dvd_Vertex.y = 0.0f;
-    dvd_Vertex.z = 2.f * v - 1.0f;
-    dvd_Vertex.w = 1.0f;
-    dvd_Vertex.xyz *= vtx_tileScale;
+    dvd_Vertex = vec4(u, 0.f, v, 1.f);
+    dvd_Vertex.xyz *= int(tData._positionAndTileScale.w);
     dvd_Vertex.xyz += tData._positionAndTileScale.xyz;
 
-    _out._vertexW = data._worldMatrix * dvd_Vertex;
-    _out._vertexW.y = vtx_height;
+    VAR._vertexW = dvd_Matrices[DATA_IDX]._worldMatrix * dvd_Vertex;
 
-    _out._texCoord = vec2(abs(_out._vertexW.x - TerrainOrigin.x) / TERRAIN_WIDTH,
-                          abs(_out._vertexW.z - TerrainOrigin.y) / TERRAIN_LENGTH);
-    vtx_height = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, _out._texCoord).r) + TERRAIN_MIN_HEIGHT;
+    VAR._texCoord = vec2(abs(VAR._vertexW.x - TERRAIN_ORIGIN_X) / TERRAIN_WIDTH,
+                         abs(VAR._vertexW.z - TERRAIN_ORIGIN_Y) / TERRAIN_LENGTH);
+    VAR._vertexW.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, VAR._texCoord).r) + TERRAIN_MIN_HEIGHT;
 
     // Send vertex position along
-    gl_Position = _out._vertexW;
+    gl_Position = VAR._vertexW;
 }
 
 --TessellationC
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
 uniform float tessTriangleWidth = 25.0f;
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
-// Inputs
-layout(location = 10) in vec4 vtx_adjacency[];
-layout(location = 11) in flat int vtx_tileScale[];
-layout(location = 12) in float vtx_height[];
+struct TerrainNodeData
+{
+    vec4 _positionAndTileScale;
+    vec4 _tScale;
+};
+
+layout(binding = BUFFER_TERRAIN_DATA, std430) coherent readonly buffer dvd_TerrainBlock {
+    TerrainNodeData dvd_TerrainData[];
+};
+
+layout(location = 10) in flat uint dvd_instanceID[];
 // Outputs
 layout(vertices = 4) out;
 layout(location = 10) out float tcs_tessLevel[];
@@ -115,31 +107,32 @@ float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
 // However, only power of two sizes *seem* to get correctly tessellated with no cracks.
 float SmallerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
-    // Output is [4,64].
+    // Output is [4,64]. Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
     const float t = pow(2, ceil(log2(tess)));
-
-    // Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
     return max(4, t);
 }
 
 float LargerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
-    const float t = pow(2, ceil(log2(tess)));
-
     // Our larger neighbour's max tessellation is 64; as we are half its size, our tessellation must max out
     // at 32, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,32].
+    const float t = pow(2, ceil(log2(tess)));
     return clamp(t, 2, 32);
 }
 
-void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1, in int idx0, in int idx1)
+void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1)
 {
-    p0.y = p1.y = max(vtx_height[idx0], vtx_height[idx1]);
+    const vec2 texCoords = vec2(abs(p0.x - TERRAIN_ORIGIN_X) / TERRAIN_WIDTH,
+                                abs(p0.y - TERRAIN_ORIGIN_Y) / TERRAIN_LENGTH);
+    // This ought to work: if the adjacency has repositioned a vertex in XZ, we need to re-acquire its height.
+	// However, causes an internal fxc error.  Again! :-(
+	p0.y = p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, texCoords).r) + TERRAIN_MIN_HEIGHT;
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
     vec3 p0 = gl_in[idx0].gl_Position.xyz;
     vec3 p1 = gl_in[idx1].gl_Position.xyz;
-    MakeVertexHeightsAgree(p0, p1, idx0, idx1);
+    MakeVertexHeightsAgree(p0, p1);
     const float t = SphereToScreenSpaceTessellation(p0, p1, diameter);
     return SmallerNeighbourAdjacencyClamp(t);
 }
@@ -168,7 +161,7 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
     }
 
     // Having moved the vertex in (x,z), its height is no longer correct.
-    MakeVertexHeightsAgree(p0, p1, idx0, idx1);
+    MakeVertexHeightsAgree(p0, p1);
     // Half the tessellation because the edge is twice as long.
     const float t = 0.5f * SphereToScreenSpaceTessellation(p0, p1, 2 * diameter);
     return LargerNeighbourAdjacencyClamp(t);
@@ -189,6 +182,8 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
 
 void main(void)
 {
+    const TerrainNodeData tData = dvd_TerrainData[dvd_instanceID[gl_InvocationID]];
+
     const vec3  centre = 0.25f * (gl_in[0].gl_Position.xyz + gl_in[1].gl_Position.xyz + gl_in[2].gl_Position.xyz + gl_in[3].gl_Position.xyz);
     const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x));     // assume square & uniform
     const float diagLen = sqrt(2 * sideLen * sideLen);
@@ -215,7 +210,7 @@ void main(void)
         patchXY.y = PatchID / PATCHES_PER_TILE_EDGE;
         patchXY.x = PatchID - patchXY.y * PATCHES_PER_TILE_EDGE;
  
-        const vec4 adj = vtx_adjacency[gl_InvocationID];
+        const vec4 adj = tData._tScale;
         // Identify patch edges that are adjacent to a patch of a different size.  The size difference
         // is encoded in _in[n].adjacency, either 0.5, 1.0 or 2.0.
         // neighbourMinusX refers to our adjacent neighbour in the direction of -ve x.  The value 
@@ -259,7 +254,7 @@ void main(void)
     gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
     // Output tessellation level (used for wireframe coloring)
     tcs_tessLevel[gl_InvocationID] = gl_TessLevelOuter[0];
-    tcs_tileScale[gl_InvocationID] = vtx_tileScale[gl_InvocationID];
+    tcs_tileScale[gl_InvocationID] = int(tData._positionAndTileScale.w);
 
 }
 
@@ -279,7 +274,7 @@ layout(location = 11) in flat int tcs_tileScale[];
 layout(location = 10) out int tes_tessLevel;
 layout(location = 11) out int tes_tileScale;
 layout(location = 12) out vec3 tes_tangentViewPos;
-layout(location = 13) out vec3 tes_tangentViewPos;
+layout(location = 13) out vec3 tes_tangentFragPos;
 #else
 layout(location = 10) out flat int LoD;
 // x = distance, y = depth
@@ -287,7 +282,6 @@ layout(location = 11) smooth out vec2 _waterDetails;
 layout(location = 12) out vec3 _tangentViewPos;
 layout(location = 13) out vec3 _tangentFragPos;
 #endif
-
 
 // Templates please!!!
 vec2 Bilerp(vec2 v0, vec2 v1, vec2 v2, vec2 v3, vec2 i)
@@ -390,17 +384,14 @@ void main()
 #else
 
     gl_Position = _out._vertexWVP;
-    setClipPlanes(_out._vertexW);
+    setClipPlanes();
 #endif //TOGGLE_WIREFRAME
 
 #if !defined(SHADOW_PASS)
 #if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
     _waterDetails = waterDetails(_out._vertexW.xyz, TERRAIN_MIN_HEIGHT);
-#endif //TOGGLE_WIREFRAME
-
-#if !defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
     LoD = int(log2(max(tcs_tileScale[0], 16)) - 4);
-#endif //TOGGLE_WIREFRAME
+#endif //!TOGGLE_WIREFRAME && !TOGGLE_NORMALS
 
 #endif //SHADOW_PASS
 }
@@ -447,6 +438,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
 #if !defined(SHADOW_PASS)
     LoD = int(log2(max(tes_tileScale[i], 16)) - 4);
 
+#if !defined(TOGGLE_NORMALS)
 #if !defined(SHOW_TILE_SCALE)
     if (tes_tessLevel[0] == 64) {
         gs_wireColor = vec3(0.0, 0.0, 1.0);
@@ -463,7 +455,7 @@ void PerVertex(in int i, in vec3 edge_dist) {
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
-#else
+#else //SHOW_TILE_SCALE
     if (tes_tileScale[i] == 256) {
         gs_wireColor = vec3(0.0, 0.0, 0.0);
     }
@@ -484,14 +476,15 @@ void PerVertex(in int i, in vec3 edge_dist) {
     } else {
         gs_wireColor = vec3(1.0, 1.0, 1.0);
     }
-#endif
+#endif //SHOW_TILE_SCALE
+#endif //TOGGLE_NORMALS
     _waterDetails = waterDetails(_in[i]._vertexW.xyz, TERRAIN_MIN_HEIGHT);
 
     gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
                        i == 1 ? edge_dist.y : 0.0,
                        i >= 2 ? edge_dist.z : 0.0);
-#endif
-    setClipPlanes(gl_in[i].gl_Position);
+#endif //SHADOW_PASS
+    setClipPlanes();
 }
 
 void main(void)
@@ -518,6 +511,7 @@ void main(void)
     }
 
     const int count = gl_in.length();
+
 #if defined(TOGGLE_NORMALS)
     NodeData nodeData = dvd_Matrices[DATA_IDX];
     const float sizeFactor = 0.75f;
@@ -536,38 +530,47 @@ void main(void)
                            i == 1 ? edge_dist.y : 0.0,
                            i >= 2 ? edge_dist.z : 0.0);
 
-        LoD = 0;
-        // normals
-        gs_wireColor = vec3(0.0f, 0.0f, 1.0f);
-        gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
-        EmitVertex();
+        { // normals
+            PerVertex(0, edge_dist);
+            gs_wireColor = vec3(0.0f, 0.0f, 1.0f);
+            gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
+            EmitVertex();
 
-        gl_Position = dvd_ViewProjectionMatrix * vec4(P + N * sizeFactor, 1.0);
-        EmitVertex();
+            PerVertex(1, edge_dist);
+            gs_wireColor = vec3(0.0f, 0.0f, 1.0f);
+            gl_Position = dvd_ViewProjectionMatrix * vec4(P + N * sizeFactor, 1.0);
+            EmitVertex();
 
-        EndPrimitive();
+            EndPrimitive();
+        }
+        { // binormals
+            PerVertex(2, edge_dist);
+            gs_wireColor = vec3(0.0f, 1.0f, 0.0f);
+            gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
+            EmitVertex();
 
-        // binormals
-        gs_wireColor = vec3(0.0f, 1.0f, 0.0f);
-        gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
-        EmitVertex();
+            PerVertex(3, edge_dist);
+            gs_wireColor = vec3(0.0f, 1.0f, 0.0f);
+            gl_Position = dvd_ViewProjectionMatrix * vec4(P + B * sizeFactor, 1.0);
+            EmitVertex();
 
-        gl_Position = dvd_ViewProjectionMatrix * vec4(P + B * sizeFactor, 1.0);
-        EmitVertex();
+            EndPrimitive();
+        }
+        { // tangents
+            PerVertex(4, edge_dist);
+            gs_wireColor = vec3(1.0f, 0.0f, 0.0f);
+            gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
+            EmitVertex();
 
-        EndPrimitive();
+            PerVertex(5, edge_dist);
+            gs_wireColor = vec3(1.0f, 0.0f, 0.0f);
+            gl_Position = dvd_ViewProjectionMatrix * vec4(P + T * sizeFactor, 1.0);
+            EmitVertex();
 
-        // tangents
-        gs_wireColor = vec3(1.0f, 0.0f, 0.0f);
-        gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
-        EmitVertex();
-
-        gl_Position = dvd_ViewProjectionMatrix * vec4(P + T * sizeFactor, 1.0);
-        EmitVertex();
-
-        EndPrimitive();
+            EndPrimitive();
+        }
     }
-#else
+#else //TOGGLE_NORMALS
     // Output verts
     for (int i = 0; i < count; ++i) {
         PerVertex(i, edge_dist);
@@ -579,7 +582,7 @@ void main(void)
     EmitVertex();
 
     EndPrimitive();
-#endif
+#endif //TOGGLE_NORMALS
 }
 
 --Fragment.LQPass
@@ -630,19 +633,21 @@ void main(void)
 #if defined(PRE_PASS)
     writeOutput(data, TexCoords, VAR._normalWV);
 #else //PRE_PASS
+#if !defined(TOGGLE_NORMALS)
     vec4 albedo;
     vec3 normalWV;
     BuildTerrainData(_waterDetails, albedo, normalWV);
 
     vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, TexCoords);
+#else//TOGGLE_NORMALS
+    vec4 colourOut = vec4(gs_wireColor, 1.0f);
+#endif//TOGGLE_NORMALS
 
-#if defined(TOGGLE_NORMALS)
-    colourOut = vec4(gs_WireColor, 1.0f);
-#elif defined(TOGGLE_WIREFRAME)
+#if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.25f;
     const float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
-#endif
+#endif//TOGGLE_WIREFRAME
 
     writeOutput(colourOut);
 #endif //PRE_PASS
@@ -698,6 +703,8 @@ void main(void)
 #if defined(PRE_PASS)
     writeOutput(data, TexCoords, getMixedNormal(1.0f - _waterDetails.x));
 #else //PRE_PASS
+
+#if !defined(TOGGLE_NORMALS)
     vec4 albedo;
     vec3 normalWV;
     BuildTerrainData(_waterDetails, albedo, normalWV);
@@ -705,12 +712,15 @@ void main(void)
     _private_roughness = albedo.a;
 
     vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, TexCoords);
+#else //TOGGLE_NORMALS
+    vec4 colourOut = vec4(gs_wireColor, 1.0f);
+#endif //TOGGLE_NORMALS
 
-#if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
+#if defined(TOGGLE_WIREFRAME)
     const float LineWidth = 0.75f;
     const float d = min(min(gs_edgeDist.x, gs_edgeDist.y), gs_edgeDist.z);
     colourOut = mix(vec4(gs_wireColor, 1.0f), colourOut, smoothstep(LineWidth - 1, LineWidth + 1, d));
-#endif //WIREFRAME/NORMALS
+#endif //TOGGLE_WIREFRAME
 
     writeOutput(colourOut);
 

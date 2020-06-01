@@ -190,6 +190,10 @@ U32 AnimationComponent::boneCount() const {
     return _animator != nullptr ? to_U32(_animator->boneCount()) : 0;
 }
 
+bool AnimationComponent::frameTicked() const noexcept {
+    return _frameIndex._prev != _frameIndex._curr;
+}
+
 const BoneTransform& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
     assert(_animator != nullptr);
 

@@ -39,6 +39,7 @@ float TanAcosNdL(in float ndl) {
     return sqrt(1.f - ndl * ndl) / ndl;
 #endif
 }
+
 vec3 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
     vec3 ret = vec3(0.0);
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
@@ -68,12 +69,12 @@ float getPointAttenuation(in Light light, in vec3 lightDirectionWV) {
     return att * att;
 }
 
-float getSpotAttenuation(in Light light, in vec3 lightDirectionWV) {
+float getSpotAttenuation(in Light light, in vec3 lightDirectionWV, in vec3 lightDirectionWVNorm) {
     const vec3 spotDirectionWV = normalize(light._directionWV.xyz);
     const float cosOuterConeAngle = light._colour.w;
     const float cosInnerConeAngle = light._directionWV.w;
 
-    const float theta = dot(normalize(lightDirectionWV), normalize(-spotDirectionWV));
+    const float theta = dot(lightDirectionWVNorm, normalize(-spotDirectionWV));
     const float intensity = saturate((theta - cosOuterConeAngle) / (cosInnerConeAngle - cosOuterConeAngle));
 
     const float radiusSpot = mix(float(light._options.z), light._positionWV.w, 1.0f - intensity);
@@ -95,7 +96,9 @@ vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 oc
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
         const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
-        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
+        const vec3 lightDirectionWVNorm = normalize(lightDirectionWV);
+
+        const float ndl = saturate(dot(normalWV, lightDirectionWVNorm));
 
         const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
 
@@ -103,7 +106,7 @@ vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 oc
         if (light._options.x == 1) {
             att = getPointAttenuation(light, lightDirectionWV);
         } else {
-            att = getSpotAttenuation(light, lightDirectionWV);
+            att = getSpotAttenuation(light, lightDirectionWV, lightDirectionWVNorm);
         }
 
         const vec4 colourAndAtt = vec4(light._colour.rgb, att);
@@ -165,15 +168,16 @@ vec3 lightTileColour() {
 #ifdef CUSTOM_IBL
 vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize);
 #else
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
-
+vec3 CubeLookup(in vec3 normalWV, in float roughness, in int textureSize) {
     const vec3 normal = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
-    const vec3 cubeColor = vec3(0.0f);
     const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
     const vec3 reflection = normalize(reflect(toCamera, normal));
-    return mix(ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize),
-               colour,
-               1.0f - metallic);
+
+    return  ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize);
+}
+
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
+    return mix(colour, CubeLookup(normalWV, roughness, textureSize), metallic);
 }
 #endif
 
@@ -198,10 +202,9 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     return albedo;
 #else //USE_SHADING_FLAT
 
-    // Apply all lighting contributions (.a = reflectionCoeff)
     const uint dirLightCount = dvd_LightData.x;
 
-    vec3 lightColour = 
+    vec3 lightColour =
         getEmissive(colourMatrix) +
         getDirectionalLightContribution(dirLightCount, albedo, OMR, normalWV, receivesShadows, lodLevel) +
         getOtherLightContribution(dirLightCount, albedo, OMR, normalWV, receivesShadows, lodLevel);
@@ -220,24 +223,19 @@ vec4 getPixelColour(in vec4 albedo, in NodeData data, in vec3 normalWV, in vec2 
     const bool receivesShadows = dvd_receivesShadow(data);
 
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv, receivesShadows, lodLevel), albedo.a);
-
-    if (dvd_showDebugInfo) {
 #if !defined(DISABLE_SHADOW_MAPPING)
-        // CSM Info
-        if (dvd_CSMSplitsViewIndex > -1) {
-            switch (getCSMSlice(dvd_CSMShadowTransforms[dvd_CSMSplitsViewIndex].dvd_shadowLightPosition)) {
-                case  0: colour.r += 0.15f; break;
-                case  1: colour.g += 0.25f; break;
-                case  2: colour.b += 0.40f; break;
-                case  3: colour.rgb += 1 * vec3(0.15f, 0.25f, 0.40f); break;
-                case  4: colour.rgb += 2 * vec3(0.15f, 0.25f, 0.40f); break;
-                case  5: colour.rgb += 3 * vec3(0.15f, 0.25f, 0.40f); break;
-            };
-        }
-#endif //DISABLE_SHADOW_MAPPING
-        // Other stuff
+    // CSM Info
+    if (dvd_CSMSplitsViewIndex > -1) {
+        switch (getCSMSlice(dvd_CSMShadowTransforms[dvd_CSMSplitsViewIndex].dvd_shadowLightPosition)) {
+            case  0: colour.r += 0.15f; break;
+            case  1: colour.g += 0.25f; break;
+            case  2: colour.b += 0.40f; break;
+            case  3: colour.rgb += 1 * vec3(0.15f, 0.25f, 0.40f); break;
+            case  4: colour.rgb += 2 * vec3(0.15f, 0.25f, 0.40f); break;
+            case  5: colour.rgb += 3 * vec3(0.15f, 0.25f, 0.40f); break;
+        };
     }
-
+#endif //DISABLE_SHADOW_MAPPING
     return colour;
 }
 

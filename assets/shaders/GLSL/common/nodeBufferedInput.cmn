@@ -6,18 +6,18 @@
 #if defined(OVERRIDE_DATA_IDX)
 uniform uint DATA_IDX = 0u;
 #else
-#define DATA_IDX VAR.dvd_baseInstance
+#define DATA_IDX VAR._baseInstance
 #endif
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
 {
-    NodeData dvd_Matrices[MAX_VISIBLE_NODES];
+    NodeData dvd_Matrices[];
 };
 
 #define dvd_boneCount(nodeData) uint(nodeData._normalMatrixW[0][3])
 #define dvd_lodLevel(nodeData) int(nodeData._colourMatrix[3].z)
 
-#define dvd_reserved1(nodeData) uint(nodeData._prevWorldMatrix[2][3])
+#define dvd_frameTicked(nodeData) (uint(nodeData._prevWorldMatrix[2][3]) == 1)
 #define dvd_reseverd2(nodeData) uint(nodeData._prevWorldMatrix[3][3])
 
 #define buffer_matProperties dvd_Matrices[DATA_IDX]._colourMatrix[3]
