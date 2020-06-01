@@ -353,11 +353,11 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 }
 
 void WaterPlane::updatePlaneEquation(const SceneGraphNode* sgn, Plane<F32>& plane, bool reflection, F32 offset) {
-    const F32 waterLevel = sgn->get<TransformComponent>()->getPosition().y;
+    const F32 waterLevel = sgn->get<TransformComponent>()->getPosition().y * (reflection ? -1.f : 1.f);
     const Quaternion<F32>& orientation = sgn->get<TransformComponent>()->getOrientation();
 
     plane.set(Normalized(vec3<F32>(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS))), 
-              offset - waterLevel);
+              offset + waterLevel);
 }
 
 const vec3<U16>& WaterPlane::getDimensions() const {

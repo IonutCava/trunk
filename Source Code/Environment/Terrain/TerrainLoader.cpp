@@ -442,6 +442,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             tempModule._variant = "Shadow.VSM";
         }
         tempModule._defines.emplace_back("SHADOW_PASS", true);
+        tempModule._defines.emplace_back("MAX_TESS_LEVEL 32.f", true);
     }
 
     ResourceDescriptor terrainShaderShadowVSM("Terrain_ShadowVSM-" + name);
@@ -457,6 +458,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
         shaderModule._defines.emplace_back("USE_SSAO", true);
         shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
+        shaderModule._defines.emplace_back("MAX_TESS_LEVEL 64.f", true);
     }
 
     ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
@@ -483,6 +485,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
         shaderModule._defines.emplace_back("PRE_PASS", true);
         shaderModule._defines.emplace_back("LOW_QUALITY", true);
+        shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
     }
 
     ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name);
@@ -498,6 +501,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
 
         shaderModule._defines.emplace_back("LOW_QUALITY", true);
+        shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
     }
 
     ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
@@ -537,6 +541,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     { //Shadow rendering
         RenderStateBlock terrainRenderStateShadow = terrainRenderStatePrePass;
         terrainRenderStateShadow.setColourWrites(true, true, false, false);
+        terrainRenderStateShadow.setZFunc(ComparisonFunction::LESS);
+        terrainRenderStateShadow.setCullMode(CullMode::FRONT);
         //terrainRenderStateShadow.setZBias(4.0f, 20.0f);
 
         terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT);

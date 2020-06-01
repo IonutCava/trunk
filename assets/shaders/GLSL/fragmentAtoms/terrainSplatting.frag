@@ -117,7 +117,7 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
     vec2 scaledCoords = scaledTextureCoords(TexCoords);
 
 #if defined(HAS_PARALLAX)
-    const vec3 viewDirTBN = normalize(_tangentViewPos - _tangentFragPos);
+    /*const vec3 viewDirTBN = normalize(_tangentViewPos - _tangentFragPos);
     if (LoD < 2 && dvd_bumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         if (dvd_bumpMethod == BUMP_PARALLAX) {
@@ -125,7 +125,7 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
         } else if (dvd_bumpMethod == BUMP_PARALLAX_OCCLUSION) {
             return ParallaxOcclusionMapping(TexCoords, viewDirTBN, currentHeight, amnt);
         }
-    }
+    }*/
 #endif //HAS_PARALLAX
 
     return scaledCoords;
@@ -191,9 +191,9 @@ void BuildTerrainData(in vec2 waterDetails, out vec4 albedo, out vec3 normalWV) 
     normalWV = getNormal(TexCoords);
 #endif //LOW_QUALITY
 
-    albedo =  mix(getTerrainAlbedo(), 
+    albedo = mix(getTerrainAlbedo(),
                   getUnderwaterAlbedo(waterDetails.y),
-                  waterDetails.x);
+                  saturate(waterDetails.x));
     
 }
 #endif // PRE_PASS

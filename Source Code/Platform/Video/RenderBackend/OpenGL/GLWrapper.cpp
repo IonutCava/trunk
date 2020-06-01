@@ -261,11 +261,11 @@ bool GL_API::initGLSW(Configuration& config) {
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
 
-        appendToShaderHeader(ShaderType::COUNT, "#define GL_DRAW_ID gl_DrawIDARB", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "#define GL_BASE_INSTANCE gl_BaseInstanceARB", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawIDARB", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstanceARB", lineOffsets);
     } else {
-        appendToShaderHeader(ShaderType::COUNT, "#define GL_DRAW_ID gl_DrawID", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "#define GL_BASE_INSTANCE gl_BaseInstance", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawID", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstance", lineOffsets);
     }
    
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);

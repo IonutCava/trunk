@@ -215,12 +215,6 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 
             const U32 shadowIndex = indexCounter[lTypeIndex]++;
             switch (lType) {
-                case LightType::DIRECTIONAL: {
-                    CSMShadowProperties& propsTarget = _shadowBufferData._dirLights[shadowIndex];
-                    propsTarget._details = propsSource._lightDetails;
-                    std::memcpy(propsTarget._position.data(), propsSource._lightPosition[0]._v, sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-                    std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP[0].mat, sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-                }break;
                 case LightType::POINT: {
                     PointShadowProperties& propsTarget = _shadowBufferData._pointLights[shadowIndex];
                     propsTarget._details = propsSource._lightDetails;
@@ -231,6 +225,13 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                     propsTarget._details = propsSource._lightDetails;
                     propsTarget._vpMatrix = propsSource._lightVP[0];
                     propsTarget._position = propsSource._lightPosition[0];
+                }break;
+                case LightType::DIRECTIONAL:
+                {
+                    CSMShadowProperties& propsTarget = _shadowBufferData._dirLights[shadowIndex];
+                    propsTarget._details = propsSource._lightDetails;
+                    std::memcpy(propsTarget._position.data(), propsSource._lightPosition.data(), sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+                    std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP.data(), sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
                 }break;
             };
         }

@@ -47,7 +47,7 @@ NodeData fetchInputData() {
 
     VAR._texCoord = inTexCoordData;
 
-    VAR._baseInstance = GL_BASE_INSTANCE;
+    VAR._baseInstance = DVD_GL_BASE_INSTANCE;
 
     return dvd_Matrices[DATA_IDX];
 }

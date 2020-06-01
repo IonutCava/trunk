@@ -5,6 +5,17 @@
 
 //dvd_shadowLightDetails:  x = light type, y =  arrayOffset, z - bias, w - strength
 
+struct PointShadowProperties
+{
+    vec4  dvd_shadowLightDetails;
+    vec4  dvd_shadowLightPosition;
+};
+struct SpotShadowProperties
+{
+    vec4  dvd_shadowLightDetails;
+    vec4  dvd_shadowLightPosition;
+    mat4  dvd_shadowLightVP;
+};
 struct CSMShadowProperties
 {
     vec4  dvd_shadowLightDetails;
@@ -12,24 +23,11 @@ struct CSMShadowProperties
     mat4  dvd_shadowLightVP[MAX_CSM_SPLITS_PER_LIGHT];
 };
 
-struct PointShadowProperties
-{
-    vec4  dvd_shadowLightDetails;
-    vec4  dvd_shadowLightPosition;
-};
-
-struct SpotShadowProperties
-{
-    vec4  dvd_shadowLightDetails;
-    vec4  dvd_shadowLightPosition;
-    mat4  dvd_shadowLightVP;
-};
-
 layout(binding = BUFFER_LIGHT_SHADOW, std430) coherent readonly buffer dvd_ShadowBlock
 {
-    CSMShadowProperties dvd_CSMShadowTransforms[MAX_SHADOW_CASTING_DIR_LIGHTS];
     PointShadowProperties dvd_PointShadowTransforms[MAX_SHADOW_CASTING_POINT_LIGHTS];
     SpotShadowProperties dvd_SpotShadowTransforms[MAX_SHADOW_CASTING_SPOT_LIGHTS];
+    CSMShadowProperties dvd_CSMShadowTransforms[MAX_SHADOW_CASTING_DIR_LIGHTS];
 };
 
 // find the appropriate depth map to look up in based on the depth of this fragment

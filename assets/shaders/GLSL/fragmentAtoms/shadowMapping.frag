@@ -43,14 +43,15 @@ float detail_getShadowFactorDirectional(in uint shadowIndex, in float TanAcosNdo
     const int Split = getCSMSlice(properties.dvd_shadowLightPosition);
     const vec4 sc = properties.dvd_shadowLightVP[Split] * VAR._vertexW;
     const vec3 shadowCoord = sc.xyz / sc.w;
-    if (detail_isInFrustum(shadowCoord)) {
+    if (detail_isInFrustum(shadowCoord)) 
+    {
         const vec4 crtDetails = properties.dvd_shadowLightDetails;
         const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
         // now get current linear depth as the length between the fragment and light position
         const float currentDepth = shadowCoord.z - bias;
-        const vec2 moments = texture(layeredDepthMaps, vec3(shadowCoord.xy, float(Split + int(crtDetails.y)))).rg;
-        const float ret = detail_ChebyshevUpperBound(moments, currentDepth);
-        return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
+        const vec2 moments = texture(layeredDepthMaps, vec3(shadowCoord.xy, crtDetails.y + Split)).rg;
+        const float ret = detail_ChebyshevUpperBound(moments, currentDepth) * SHADOW_INTENSITY_FACTOR;
+        return saturate(ret * crtDetails.w);
     }
 
     return 1.0f;
@@ -68,8 +69,8 @@ float detail_getShadowFactorSpot(in uint shadowIndex, in float TanAcosNdotL) {
 
     const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
     const float farPlane = properties.dvd_shadowLightPosition.w;
-    const float ret = detail_ChebyshevUpperBound(moments, (fragToLight / farPlane) - bias);
-    return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
+    const float ret = detail_ChebyshevUpperBound(moments, (fragToLight / farPlane) - bias) * SHADOW_INTENSITY_FACTOR;
+    return saturate(ret * crtDetails.w);
 }
 
 float detail_getShadowFactorPoint(in uint shadowIndex, in float TanAcosNdotL) {
@@ -83,8 +84,8 @@ float detail_getShadowFactorPoint(in uint shadowIndex, in float TanAcosNdotL) {
 
     const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
     const float farPlane = properties.dvd_shadowLightPosition.w;
-    const float ret = detail_ChebyshevUpperBound(moments, (length(fragToLight) / farPlane) - bias);
-    return 1.0f - (1.0f - saturate(ret / SHADOW_INTENSITY_FACTOR)) * crtDetails.w;
+    const float ret = detail_ChebyshevUpperBound(moments, (length(fragToLight) / farPlane) - bias) * SHADOW_INTENSITY_FACTOR;
+    return saturate(ret * crtDetails.w);
 }
 
 bool CanReceiveShadows(in int shadowIndex, in bool receivesShadows, in int lodLevel) {

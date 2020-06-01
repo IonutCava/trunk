@@ -32,11 +32,9 @@ void main(void)
     dvd_Vertex = vec4(u, 0.f, v, 1.f);
     dvd_Vertex.xyz *= int(tData._positionAndTileScale.w);
     dvd_Vertex.xyz += tData._positionAndTileScale.xyz;
-
-    VAR._vertexW = dvd_Matrices[DATA_IDX]._worldMatrix * dvd_Vertex;
-
-    VAR._texCoord = vec2(abs(VAR._vertexW.x - TERRAIN_ORIGIN_X) / TERRAIN_WIDTH,
-                         abs(VAR._vertexW.z - TERRAIN_ORIGIN_Y) / TERRAIN_LENGTH);
+    VAR._texCoord = vec2(abs(dvd_Vertex.x - TERRAIN_ORIGIN_X) / TERRAIN_WIDTH,
+                         abs(dvd_Vertex.z - TERRAIN_ORIGIN_Y) / TERRAIN_LENGTH);
+    VAR._vertexW = dvd_Vertex;
     VAR._vertexW.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, VAR._texCoord).r) + TERRAIN_MIN_HEIGHT;
 
     // Send vertex position along
@@ -46,7 +44,8 @@ void main(void)
 --TessellationC
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
-uniform float tessTriangleWidth = 25.0f;
+uniform float tessTriangleWidth;
+
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 struct TerrainNodeData
@@ -94,12 +93,12 @@ float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
     clip0 /= clip0.w;
     clip1 /= clip1.w;
 
-    clip0.xy = ((clip0.xy * 0.5f) + 0.5f) * dvd_ViewPort.zw;
-    clip1.xy = ((clip1.xy * 0.5f) + 0.5f) * dvd_ViewPort.zw;
+    clip0.xy *= dvd_ViewPort.zw;
+    clip1.xy *= dvd_ViewPort.zw;
     const float d = distance(clip0, clip1);
 
     // tessTriangleWidth is desired pixels per tri edge
-    return clamp(d / tessTriangleWidth, 0.f, 64.f);
+    return clamp(d / tessTriangleWidth, 0.f, MAX_TESS_LEVEL);
 }
 
 
@@ -107,17 +106,17 @@ float SphereToScreenSpaceTessellation(in vec3 p0, in vec3 p1, in float diameter)
 // However, only power of two sizes *seem* to get correctly tessellated with no cracks.
 float SmallerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
-    // Output is [4,64]. Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
+    // Output is [4, MAX_TESS_LEVEL]. Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
     const float t = pow(2, ceil(log2(tess)));
     return max(4, t);
 }
 
 float LargerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
-    // Our larger neighbour's max tessellation is 64; as we are half its size, our tessellation must max out
-    // at 32, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,32].
+    // Our larger neighbour's max tessellation is MAX_TESS_LEVEL; as we are half its size, our tessellation must max out
+    // at MAX_TESS_LEVEL / 2, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,MAX_TESS_LEVEL].
     const float t = pow(2, ceil(log2(tess)));
-    return clamp(t, 2, 32);
+    return clamp(t, 2, MAX_TESS_LEVEL * 0.5f);
 }
 
 void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1)
@@ -125,8 +124,8 @@ void MakeVertexHeightsAgree(inout vec3 p0, inout vec3 p1)
     const vec2 texCoords = vec2(abs(p0.x - TERRAIN_ORIGIN_X) / TERRAIN_WIDTH,
                                 abs(p0.y - TERRAIN_ORIGIN_Y) / TERRAIN_LENGTH);
     // This ought to work: if the adjacency has repositioned a vertex in XZ, we need to re-acquire its height.
-	// However, causes an internal fxc error.  Again! :-(
-	p0.y = p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, texCoords).r) + TERRAIN_MIN_HEIGHT;
+    // However, causes an internal fxc error.  Again! :-(
+    p0.y = p1.y = (TERRAIN_HEIGHT_RANGE * texture(TexTerrainHeight, texCoords).r) + TERRAIN_MIN_HEIGHT;
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
@@ -172,7 +171,11 @@ float getTessLevel(in int idx0, in int idx1, in float diameter) {
     const vec3 p1 = gl_in[idx1].gl_Position.xyz;
 
     const float tess = SphereToScreenSpaceTessellation(p0, p1, diameter);
+#if 0
     return pow(2, ceil(log2(tess)));
+#else
+    return tess;
+#endif
 }
 
 #define neighbourMinusX z
@@ -260,10 +263,13 @@ void main(void)
 
 --TessellationE
 
+#if defined(SHADOW_PASS)
+layout(quads, fractional_even_spacing, ccw) in;
+#else
 layout(quads, fractional_even_spacing, cw) in;
+#endif
 
 #include "nodeBufferedInput.cmn"
-#include "waterData.cmn"
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
@@ -278,7 +284,6 @@ layout(location = 13) out vec3 tes_tangentFragPos;
 #else
 layout(location = 10) out flat int LoD;
 // x = distance, y = depth
-layout(location = 11) smooth out vec2 _waterDetails;
 layout(location = 12) out vec3 _tangentViewPos;
 layout(location = 13) out vec3 _tangentFragPos;
 #endif
@@ -308,7 +313,7 @@ vec4 getHeightOffsets(in vec2 tex_coord) {
     const float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
     const float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
 
-    return (TERRAIN_HEIGHT_RANGE * vec4(s01, s21, s10, s12)) + TERRAIN_MIN_HEIGHT;
+    return (TERRAIN_HEIGHT_RANGE * vec4(s01, s21, s10, s12)) + vec4(TERRAIN_MIN_HEIGHT);
 }
 
 float getHeight(in vec4 heightOffsets) {
@@ -389,7 +394,6 @@ void main()
 
 #if !defined(SHADOW_PASS)
 #if !defined(TOGGLE_WIREFRAME) && !defined(TOGGLE_NORMALS)
-    _waterDetails = waterDetails(_out._vertexW.xyz, TERRAIN_MIN_HEIGHT);
     LoD = int(log2(max(tcs_tileScale[0], 16)) - 4);
 #endif //!TOGGLE_WIREFRAME && !TOGGLE_NORMALS
 
@@ -399,7 +403,6 @@ void main()
 --Geometry
 
 #include "nodeBufferedInput.cmn"
-#include "waterData.cmn"
 
 layout(triangles) in;
 
@@ -418,7 +421,6 @@ layout(triangle_strip, max_vertices = 4) out;
 
 // x = distance, y = depth
 layout(location = 10) out flat int LoD;
-layout(location = 11) smooth out vec2 _waterDetails;
 
 layout(location = 12) out vec3 gs_wireColor;
 layout(location = 13) noperspective out vec3 gs_edgeDist;
@@ -478,8 +480,6 @@ void PerVertex(in int i, in vec3 edge_dist) {
     }
 #endif //SHOW_TILE_SCALE
 #endif //TOGGLE_NORMALS
-    _waterDetails = waterDetails(_in[i]._vertexW.xyz, TERRAIN_MIN_HEIGHT);
-
     gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
                        i == 1 ? edge_dist.y : 0.0,
                        i >= 2 ? edge_dist.z : 0.0);
@@ -592,8 +592,6 @@ layout(early_fragment_tests) in;
 #endif
 
 layout(location = 10) in flat int LoD;
-// x = distance, y = depth
-layout(location = 11) smooth in vec2 _waterDetails;
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
@@ -604,12 +602,14 @@ layout(location = 12) in vec3 _tangentViewPos;
 layout(location = 13) in vec3 _tangentFragPos;
 #endif
 
-#include "nodeBufferedInput.cmn"
-
+#define IS_TERRAIN
 #define USE_CUSTOM_ROUGHNESS
+#define SHADOW_INTENSITY_FACTOR 0.75f
 
+#include "nodeBufferedInput.cmn"
 #include "BRDF.frag"
 #include "output.frag"
+#include "waterData.cmn"
 
 #if defined(MAX_TEXTURE_LAYERS)
 #undef MAX_TEXTURE_LAYERS
@@ -630,13 +630,15 @@ void main(void)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
+    const vec2 waterData = waterDetails(VAR._vertexW.xyz, TERRAIN_MIN_HEIGHT);
+
 #if defined(PRE_PASS)
     writeOutput(data, TexCoords, VAR._normalWV);
 #else //PRE_PASS
 #if !defined(TOGGLE_NORMALS)
     vec4 albedo;
     vec3 normalWV;
-    BuildTerrainData(_waterDetails, albedo, normalWV);
+    BuildTerrainData(waterData, albedo, normalWV);
 
     vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, TexCoords);
 #else//TOGGLE_NORMALS
@@ -657,15 +659,18 @@ void main(void)
 
 #if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
+#define IS_TERRAIN
+#define USE_CUSTOM_ROUGHNESS
+#define SHADOW_INTENSITY_FACTOR 0.75f
 #else
 #define USE_CUSTOM_NORMAL_MAP
 #endif
 
 #include "nodeBufferedInput.cmn"
+#include "waterData.cmn"
 
 layout(location = 10) in flat int LoD;
 // x = distance, y = depth
-layout(location = 11) smooth in vec2 _waterDetails;
 #if defined(TOGGLE_WIREFRAME) || defined(TOGGLE_NORMALS)
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
@@ -676,11 +681,9 @@ layout(location = 12) in vec3 _tangentViewPos;
 layout(location = 13) in vec3 _tangentFragPos;
 #endif
 
-#define SHADOW_INTENSITY_FACTOR 0.75f
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else
-#define USE_CUSTOM_ROUGHNESS
 #include "BRDF.frag"
 #include "output.frag"
 #endif
@@ -700,14 +703,15 @@ void main(void)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
+    const vec2 waterData = waterDetails(VAR._vertexW.xyz, TERRAIN_MIN_HEIGHT);
 #if defined(PRE_PASS)
-    writeOutput(data, TexCoords, getMixedNormal(1.0f - _waterDetails.x));
+    writeOutput(data, TexCoords, getMixedNormal(1.0f - waterData.x));
 #else //PRE_PASS
 
 #if !defined(TOGGLE_NORMALS)
     vec4 albedo;
     vec3 normalWV;
-    BuildTerrainData(_waterDetails, albedo, normalWV);
+    BuildTerrainData(waterData, albedo, normalWV);
 
     _private_roughness = albedo.a;
 

@@ -74,8 +74,10 @@ class TerrainTessellator {
 public:
     struct Configuration {
         vec2<U16> _terrainDimensions = { 128, 128 };
+        vec2<F32> _altitudeRange = { -1.0f, 1.0f };
         // The size of a patch in meters at which point to stop subdividing a terrain patch once it's width is less than the cutoff
-        F32 _minPatchSize = 100.0f;
+        F32 _minPatchSize = 32.0f;
+        F32 _cullFuzzFactor = 1.25f;
     };
 
     using TreeVector = vectorEASTL<TessellatedTerrainNode>;
@@ -101,14 +103,14 @@ public:
 
 protected:
     // Prepare data to draw the terrain. Returns the final render depth
-    const TerrainTessellator::RenderData& updateAndGetRenderData(const Frustum& frust, U16& renderDepth);
+    const TerrainTessellator::RenderData& updateAndGetRenderData(const Frustum& frust, const vec3<F32>& eye, U16& renderDepth);
 
     // Determines whether a node should be subdivided based on its distance to the camera.
     // Returns true if the node should be subdivided.
-    bool checkDivide(TessellatedTerrainNode* node);
+    bool checkDivide(TessellatedTerrainNode* node, const vec3<F32>& eye);
 
     // Returns true if node is sub-divided. False otherwise.
-    bool divideNode(TessellatedTerrainNode* node);
+    bool divideNode(TessellatedTerrainNode* node, const vec3<F32>& eye);
 
     //Allocates a new node in the terrain quadtree with the specified parameters.
     TessellatedTerrainNode* createNode(TessellatedTerrainNode* parent, TessellatedTerrainNodeType type, F32 x, F32 y, F32 z, F32 width, F32 height);
@@ -117,7 +119,7 @@ protected:
     vec4<F32> calcTessScale(TessellatedTerrainNode* node);
 
     // Traverses the terrain quadtree to draw nodes with no children.
-    void renderRecursive(TessellatedTerrainNode* node);
+    void renderRecursive(TessellatedTerrainNode* node, const vec3<F32>& eye);
 
 private:
     Frustum _frustumCache;
@@ -129,7 +131,7 @@ private:
     F32 _maxDistanceSQ = 0.0f;
     I32 _numNodes = 0;
     U16 _renderDepth = 0;
-    I8  _lastFrustumPlaneCache = -1;
+    I8 _lastPlaneIndex = -1;
 }; //TerrainTessellator
 
 }; //namespace Divide

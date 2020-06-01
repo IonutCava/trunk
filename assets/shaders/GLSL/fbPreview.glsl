@@ -59,24 +59,6 @@ void main()
     _colourOut.a = 1.0;
 }
 
--- Fragment.Layered.LinearDepth
-
-#include "utility.frag"
-
-out vec4 _colourOut;
-
-
-layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform int layer;
-uniform float lodLevel = 0;
-uniform vec2 zPlanes;
-
-void main()
-{
-    float linearDepth = ToLinearPreviewDepth(textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r, zPlanes);
-    _colourOut = vec4(vec3(linearDepth), 1.0);
-}
-
 --Fragment.Layered.LinearDepth
 
 #include "utility.frag"
@@ -86,12 +68,10 @@ out vec4 _colourOut;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 uniform int layer;
 uniform float lodLevel = 0.0;
-uniform vec2 zPlanes;
 
 void main()
 {
-    float depth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
-    float linearDepth = 0.5f * ToLinearPreviewDepth(depth, zPlanes) + 0.5f;
+    float linearDepth = textureLod(texDiffuse0, vec3(VAR._texCoord, layer), lodLevel).r;
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 

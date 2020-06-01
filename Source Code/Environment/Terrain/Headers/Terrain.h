@@ -114,11 +114,10 @@ class Terrain final : public Object3D {
 
    protected:
     TerrainTessellator& getTessellator(const RenderStagePass& renderStagePass);
-    U32& getUpdateCounter(const RenderStagePass& renderStagePass);
-    F32 getDrawDistance(const RenderStagePass& renderStagePass) const noexcept;
+    U32 getBufferOffset(RenderStage renderStage) const noexcept;
+
     F32 getTriangleWidth(const RenderStagePass& renderStagePass) const noexcept;
 
-    U32 getBufferOffset(const RenderStagePass& renderStagePass) const noexcept;
 
     Vert getVert(F32 x_clampf, F32 z_clampf) const;
     Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
@@ -159,19 +158,16 @@ class Terrain final : public Object3D {
     ShaderBuffer* _shaderData = nullptr;
     VegetationDetails _vegDetails;
 
-    using TessellatorArray = std::array<TerrainTessellator, to_base(RenderStage::COUNT)-1>;
-    using CameraUpdateFlagArray = hashMap<I64, bool>;
+    U32 _bufferSizePerFrame = 0u;
 
     Quadtree _terrainQuadtree;
     vectorEASTL<TerrainChunk*> _terrainChunks;
 
     using TessellatorsPerIndex = vectorEASTL<TerrainTessellator>;
-    using TessellatorsPerStage = std::array<TessellatorsPerIndex, to_base(RenderStage::COUNT) - 1>;
+    using TessellatorsPerStage = std::array<TessellatorsPerIndex, to_base(RenderStage::COUNT)>;
     TessellatorsPerStage _terrainTessellators;
 
-    using UpdateCounterPerIndex = vectorEASTLFast<U32>;
-    using UpdateCounterPerStage = std::array<UpdateCounterPerIndex, to_base(RenderStage::COUNT) - 1>;
-    UpdateCounterPerStage _bufferUpdateCounter;
+    std::array<U8, to_base(RenderStage::COUNT)> _bufferOffsetIndex;
 
     EditorDataState _editorDataDirtyState = EditorDataState::IDLE;
     bool _shaderDataDirty = true;

@@ -41,7 +41,8 @@ uniform vec2 _noiseFactor;
 #include "BRDF.frag"
 #include "output.frag"
 
-const float Eta = 0.15f; //water
+//const float Eta = 0.15f; //water
+const float Eta = 0.35f; //Biased water towards reflection
 
 // Use metalness as a bias towards extra reflectivity (for artistic purposes)
 float Fresnel(in vec3 viewDir, in vec3 normal, in float metalness) {

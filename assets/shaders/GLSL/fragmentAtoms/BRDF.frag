@@ -33,10 +33,10 @@ uint GetTileIndex() {
 
 float TanAcosNdL(in float ndl) {
 #if 0
-    return tan(acos(ndl));
+    return saturate(tan(acos(ndl)));
 #else
     // Same as above but maybe faster?
-    return sqrt(1.f - ndl * ndl) / ndl;
+    return saturate(sqrt(1.f - ndl * ndl) / ndl);
 #endif
 }
 

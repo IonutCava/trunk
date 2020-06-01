@@ -72,11 +72,7 @@ class LightPool : public SceneComponent,
           vec4<I32> _options = { 3, 1, 0, 0 };
       };
 
-      struct CSMShadowProperties{
-          vec4<F32> _details;
-          std::array<vec4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _position;
-          std::array<mat4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _vpMatrix;
-      };
+#pragma pack(push, 1)
       struct PointShadowProperties
       {
           vec4<F32> _details;
@@ -88,13 +84,21 @@ class LightPool : public SceneComponent,
           vec4<F32> _position;
           mat4<F32> _vpMatrix;
       };
+      struct CSMShadowProperties
+      {
+          vec4<F32> _details;
+          std::array<vec4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _position;
+          std::array<mat4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _vpMatrix;
+      };
       struct ShadowProperties {
-          std::array<CSMShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS> _dirLights;
           std::array<PointShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS> _pointLights;
           std::array<SpotShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS> _spotLights;
+          std::array<CSMShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS> _dirLights;
 
-          [[nodiscard]] bufferPtr data() const noexcept { return (bufferPtr)_dirLights.data(); }
+          [[nodiscard]] bufferPtr data() const noexcept { return (bufferPtr)_pointLights.data(); }
       };
+#pragma pack(pop)
+
   public:
     using LightList = vectorEASTL<Light*>;
 

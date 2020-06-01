@@ -5,7 +5,7 @@
 <blurKernelSize>3</blurKernelSize>
 <TRANSFORM>
     <Transform>
-        <position x="0" y="0" z="0"/>
+        <position x="0" y="2" z="0"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -287,5 +287,5 @@
 <WATER>
     <Blur__reflections>true</Blur__reflections>
     <Reflection__Plane__Offset>0</Reflection__Plane__Offset>
-    <Refraction__Plane__Offset>1.5</Refraction__Plane__Offset>
+    <Refraction__Plane__Offset>1.75</Refraction__Plane__Offset>
 </WATER>

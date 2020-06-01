@@ -5,7 +5,7 @@
 <altitudeRange min="-39.02" max="75.13"/>
 <horizontalScale>1</horizontalScale>
 <albedoTilingFactor>1</albedoTilingFactor>
-<tessellationSettings chunkSize="256" patchSizeInM="72"/>
+<tessellationSettings chunkSize="256" patchSizeInM="16"/>
 <tessellatedTriangleWidth>32</tessellatedTriangleWidth>
 <normalMap>normals.png</normalMap>
 <textureMap>texture.png</textureMap>

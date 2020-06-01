@@ -54,7 +54,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
             if (!lock._valid || wait(lock._syncObj, blockClient, quickCheck, retryCount)) {
                 glDeleteSync(lock._syncObj);
                 if (retryCount > 4) {
-                    Console::d_errorfn("glBufferLockManager: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
+                    Console::errorfn("glBufferLockManager: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
                 }
             } else if (!quickCheck) {
                 error = true;
