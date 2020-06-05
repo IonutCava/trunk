@@ -25,13 +25,12 @@ const float tiling[] = {
 };
 
 mat3 dvd_TBN;
+mat3 dvd_TBNWV;
+vec3 dvd_viewDirTBN;
+
 #if defined(LOW_QUALITY)
 #define sampleTexture texture
 #else //LOW_QUALITY
-
-#if defined(HAS_PARALLAX)
-vec3 dvd_viewDirTBN;
-#endif //HAS_PARALLAX
 
 vec4 sampleTexture(in sampler2DArray tex, in vec3 texUV) {
 #if defined(REDUCE_TEXTURE_TILE_ARTIFACT) 
@@ -106,18 +105,23 @@ void computeTBN() {
     ///  Decoupling the tasks simplifies the whole."
     ///
     /// So ... yeah :/
-    const mat3 viewNormalMatrix = mat3(dvd_ViewMatrix) * mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
+    const mat3 normalMatrix = mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
 
     const vec3 N = getVertNormal(TexCoords);
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);
 
-    dvd_TBN = mat3(viewNormalMatrix * T, viewNormalMatrix * B, viewNormalMatrix * N);
+    dvd_TBN = mat3(normalMatrix * T, normalMatrix * B, normalMatrix * N);
+    dvd_TBNWV = mat3(dvd_ViewMatrix) * dvd_TBN;
 #endif //LOW_QUALITY
 }
 
-mat3 getTBN() {
-    return dvd_TBN;
+mat3 getTBNWV() {
+    return dvd_TBNWV;
+}
+
+vec3 getTBNViewDir() {
+    return normalize(dvd_TBNWV * VAR._viewDirectionWV);
 }
 
 #if defined(HAS_PARALLAX)
@@ -169,7 +173,7 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, vec3 viewDirTBN, float currentDepth
 vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
     vec2 scaledCoords = scaledTextureCoords(TexCoords);
 
-#if defined(HAS_PARALLAX)
+#if !defined(LOW_QUALITY) && defined(HAS_PARALLAX)
     if (dvd_LoD < 2 && dvd_bumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         if (dvd_bumpMethod == BUMP_PARALLAX) {
@@ -187,9 +191,9 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
 vec3 getTerrainNormal() {
     float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(TexCoords);
 
-#if defined(HAS_PARALLAX)
+#if !defined(LOW_QUALITY)
     dvd_viewDirTBN = getTBNViewDirection();
-#endif //HAS_PARALLAX
+#endif
 
     const vec2 scaledUV = getScaledCoords(blendAmount);
     vec3 normal = vec3(0.0f);
@@ -200,16 +204,16 @@ vec3 getTerrainNormal() {
     return normal;
 }
 
-vec3 getMixedNormal(in float waterDepth) {
+vec3 getMixedNormalWV(in float waterDepth) {
 #if defined(LOW_QUALITY)
     return mat3(dvd_ViewMatrix) * getVertNormal(TexCoords);
 #else //LOW_QUALITY
     computeTBN();
-    const vec3 ret = mix(texture(helperTextures, vec3(TexCoords * UNDERWATER_TILE_SCALE, 2)).rgb, 
-                         getTerrainNormal(),
-                         saturate(waterDepth));
+    const vec3 normalTBN = mix(texture(helperTextures, vec3(TexCoords * UNDERWATER_TILE_SCALE, 2)).rgb,
+                               getTerrainNormal(),
+                               saturate(waterDepth));
 
-    return getTBN() * (2.0f * ret - 1.0f);
+    return getTBNWV() * (2.0f * normalTBN - 1.0f);
 #endif //LOW_QUALITY
 }
 
@@ -235,9 +239,7 @@ vec4 getTerrainAlbedo() {
     computeTBN();
 
 #if !defined(LOW_QUALITY)
-#if defined(HAS_PARALLAX)
     dvd_viewDirTBN = getTBNViewDirection();
-#endif //HAS_PARALLAX
 #endif //LOW_QUALITY
 
     float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(TexCoords);
@@ -253,7 +255,7 @@ vec4 getTerrainAlbedo() {
 }
 
 void BuildTerrainData(in vec2 waterDetails, out vec4 albedo, out vec3 normalWV) {
-    normalWV = getNormal(TexCoords);
+    normalWV = getNormalWV(TexCoords);
     albedo = mix(getTerrainAlbedo(),
                   getUnderwaterAlbedo(waterDetails.y),
                   saturate(waterDetails.x));

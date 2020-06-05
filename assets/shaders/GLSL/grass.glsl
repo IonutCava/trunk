@@ -97,7 +97,7 @@ void main (void){
     vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a = min(albedo.a, _alphaFactor);
 
-    writeOutput(getPixelColour(albedo, data, getNormal(uv), uv));
+    writeOutput(getPixelColour(albedo, data, getNormalWV(uv), uv));
 }
 
 --Fragment.PrePass

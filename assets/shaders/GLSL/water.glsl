@@ -78,10 +78,10 @@ void main()
     vec3 normal0 = getBump(uvNormal0);
     vec3 normal1 = getBump(uvNormal1);
 
-    writeOutput(data, VAR._texCoord, getTBN() * normalize(normal0 + normal1));
+    writeOutput(data, VAR._texCoord, getTBNWV() * normalize(normal0 + normal1));
 #else
 
-    const vec3 normalWV = getNormal(VAR._texCoord);
+    const vec3 normalWV = getNormalWV(VAR._texCoord);
     vec3 uvReflection = ((VAR._vertexWVP.xyz / VAR._vertexWVP.w) + 1.0f) * 0.5f;
     uvReflection = clamp(uvReflection, vec3(0.001f), vec3(0.999f));
 

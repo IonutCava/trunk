@@ -45,13 +45,13 @@ void writeOutput(in NodeData data, in vec2 uv, in vec3 normal) {
 
 void writeOutput(in NodeData data, in vec2 uv, in float alphaFactor) {
 #if defined(USE_ALPHA_DISCARD) || defined(USE_DEFERRED_NORMALS)
-    writeOutput(data, uv, getNormal(uv), getTBNViewDirection(), alphaFactor);
+    writeOutput(data, uv, getNormalWV(uv), getTBNViewDirection(), alphaFactor);
 #endif
 }
 
 void writeOutput(in NodeData data, in vec2 uv) {
 #if defined(USE_ALPHA_DISCARD) || defined(USE_DEFERRED_NORMALS)
-    writeOutput(data, uv, getNormal(uv), getTBNViewDirection(), 1.0f);
+    writeOutput(data, uv, getNormalWV(uv), getTBNViewDirection(), 1.0f);
 #endif
 }
 

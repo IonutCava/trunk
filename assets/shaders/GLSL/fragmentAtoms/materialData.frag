@@ -46,15 +46,24 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #define TexCoords VAR._texCoord
 
 #if defined(USE_CUSTOM_TBN)
-mat3 getTBN();
+mat3 getTBNWV();
+vec3 getTBNViewDir();
 #else //USE_CUSTOM_TBN
-mat3 getTBN() {
+mat3 getTBNWV() {
 #   if defined(COMPUTE_TBN)
-    return VAR._tbn;
+    return VAR._tbnWV;
 #   else //COMPUTE_TBN
-    return mat3(1.0f);
+    return mat3(dvd_ViewMatrix);
 #   endif//COMPUTE_TBN
 }
+vec3 getTBNViewDir() {
+#   if defined(COMPUTE_TBN)
+    return VAR._tbnViewDir;
+#   else //COMPUTE_TBN
+    return vec3(0.0f);
+#   endif//COMPUTE_TBN
+}
+
 #endif//USE_CUSTOM_TBN
 
 #if !defined(PRE_PASS)
@@ -199,23 +208,23 @@ vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 #endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 
 // Computed normals are NOT normalized. Retrieved normals ARE.
-vec3 getNormal(in vec2 uv) {
+vec3 getNormalWV(in vec2 uv) {
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
-    vec3 normal = VAR._normalWV;
+    vec3 normalWV = VAR._normalWV;
 
 #   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
         if (dvd_bumpMethod != BUMP_NONE) {
-            normal = getTBN() * getBump(uv);
+            normalWV = getTBNWV() * getBump(uv);
         }
 #   endif //COMPUTE_TBN
 
 #   if defined (USE_DOUBLE_SIDED)
         if (!gl_FrontFacing) {
-            normal = -normal;
+            normalWV = -normalWV;
         }
 #   endif //USE_DOUBLE_SIDED
 
-    return normal;
+    return normalWV;
 #else //PRE_PASS
     return normalize(unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg));
 #endif //PRE_PASS
@@ -226,7 +235,7 @@ vec3 getTBNViewDirection() {
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
 
 #   if defined(COMPUTE_TBN)
-    return normalize(transpose(getTBN()) * (dvd_cameraPosition.xyz - VAR._vertexW.xyz));
+    return getTBNViewDir();
 #   else //COMPUTE_TBN
     return vec3(0.0f);
 #   endif//COMPUTE_TBN

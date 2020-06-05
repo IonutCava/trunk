@@ -611,7 +611,7 @@ void main(void)
     const vec2 waterData = waterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
 
 #if defined(PRE_PASS)
-    writeOutput(data, TexCoords, getMixedNormal(1.0f - waterData.x));
+    writeOutput(data, TexCoords, getMixedNormalWV(1.0f - waterData.x));
 #else //PRE_PASS
 
     vec4 albedo;

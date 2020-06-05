@@ -177,7 +177,8 @@ bool GL_API::initGLSW(Configuration& config) {
 
     constexpr std::pair<const char*, const char*> shaderVaryingsBump[] =
     {
-        { "mat3" , "_tbn"}
+        { "mat3" , "_tbnWV"},
+        { "vec3" , "_tbnViewDir"}
     };
 
     constexpr std::pair<const char*, const char*> shaderVaryingsVelocity[] =

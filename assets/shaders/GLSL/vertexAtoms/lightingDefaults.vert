@@ -2,18 +2,24 @@
 #define _LIGHTING_DEFAULTS_VERT_
 
 void computeLightVectors(in NodeData data) {
-    const mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(data._normalMatrixW);
-
-    VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
     VAR._viewDirectionWV = normalize(-VAR._vertexWV.xyz);
 
+    const mat3 normalMatrixW = mat3(data._normalMatrixW);
+    const vec3 N = normalize(normalMatrixW * dvd_Normal);
+
 #if defined(COMPUTE_TBN)
-    const vec3 N = VAR._normalWV;
-    const vec3 T = normalize(normalMatrixWV * dvd_Tangent);
-    const vec3 B = normalize(cross(N, T));
+    vec3 T = normalize(normalMatrixW * dvd_Tangent);
+    // re-orthogonalize T with respect to N (Gram-Schmidt)
+    T = normalize(T - dot(T, N) * N);
+    const vec3 B = cross(N, T);
     
-    VAR._tbn = mat3(T, B, N);
-#endif
+    const mat3 TBN = mat3(T, B, N);
+    VAR._tbnWV = mat3(dvd_ViewMatrix) * TBN;
+    VAR._tbnViewDir = normalize(VAR._tbnWV * VAR._viewDirectionWV);
+#endif //COMPUTE_TBN
+
+    
+    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
 }
 
 #endif //_LIGHTING_DEFAULTS_VERT_

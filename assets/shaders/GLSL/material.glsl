@@ -22,5 +22,5 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, data, getNormal(TexCoords), TexCoords));
+    writeOutput(getPixelColour(albedo, data, getNormalWV(TexCoords), TexCoords));
 }
