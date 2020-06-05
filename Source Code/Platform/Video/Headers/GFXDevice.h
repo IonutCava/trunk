@@ -219,10 +219,12 @@ public:
 
     enum class MaterialDebugFlag : U8 {
         DEBUG_ALBEDO = 0,
+        DEBUG_SSAO,
         DEBUG_EMISSIVE,
         DEBUG_ROUGHNESS,
         DEBUG_METALLIC,
         DEBUG_NORMALS,
+        DEBUG_TBN_VIEW_DIRECTION, //Used for parallax occlusion mapping
         DEBUG_SHADOW_MAPS,
         DEBUG_LIGHT_TILES,
         DEBUG_REFLECTIONS,

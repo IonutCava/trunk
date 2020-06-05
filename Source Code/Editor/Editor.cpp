@@ -1020,7 +1020,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
 
             if (io.WantSetMousePos) {
                 WindowManager::SetGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
-            } else if (i == to_base(ImGuiContextType::Editor)) {
+            } else {
                 io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
             }
 
@@ -1036,7 +1036,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
         const ImVec2 editorMousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
         scenePreviewHovered(sceneView->isHovered() && sceneView->sceneRect(true).contains(editorMousePos.x, editorMousePos.y));
 
-        vec2<I32> gizmoMousePos(gizmoContext->IO.MousePos.x, gizmoContext->IO.MousePos.y);
+        vec2<I32> gizmoMousePos(editorMousePos.x, editorMousePos.y);
         const Rect<I32>& sceneRect = scenePreviewRect(true);
         gizmoMousePos = COORD_REMAP(gizmoMousePos, sceneRect, Rect<I32>(0, 0, viewportSize.z, viewportSize.w));
         gizmoContext->IO.MousePos = ImVec2(to_F32(gizmoMousePos.x), to_F32(gizmoMousePos.y));

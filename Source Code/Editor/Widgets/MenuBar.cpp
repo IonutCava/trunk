@@ -458,6 +458,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug albedo", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SSAO;
+            if (ImGui::MenuItem("Debug ssao", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SSAO : GFXDevice::MaterialDebugFlag::COUNT);
+            }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_EMISSIVE;
             if (ImGui::MenuItem("Debug emissive", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_EMISSIVE : GFXDevice::MaterialDebugFlag::COUNT);
@@ -473,6 +477,10 @@ void MenuBar::drawDebugMenu() {
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_NORMALS;
             if (ImGui::MenuItem("Debug normals", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_NORMALS : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_TBN_VIEW_DIRECTION;
+            if (ImGui::MenuItem("Debug TBN view dir", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_TBN_VIEW_DIRECTION : GFXDevice::MaterialDebugFlag::COUNT);
             }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS;
             if (ImGui::MenuItem("Debug shadow maps", "", &debug)) {

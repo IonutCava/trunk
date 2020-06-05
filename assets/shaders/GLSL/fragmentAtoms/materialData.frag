@@ -25,9 +25,7 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOcclusionMetallicRoughness;
 #endif //USE_METALLIC_ROUGHNESS_MAP
 
-#if defined(USE_SSAO)
 layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
-#endif //USE_SSAO
 
 #endif  //PRE_PASS
 
@@ -46,6 +44,18 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #endif
 
 #define TexCoords VAR._texCoord
+
+#if defined(USE_CUSTOM_TBN)
+mat3 getTBN();
+#else //USE_CUSTOM_TBN
+mat3 getTBN() {
+#   if defined(COMPUTE_TBN)
+    return VAR._tbn;
+#   else //COMPUTE_TBN
+    return mat3(1.0f);
+#   endif//COMPUTE_TBN
+}
+#endif//USE_CUSTOM_TBN
 
 #if !defined(PRE_PASS)
 float Gloss(in vec3 bump, in vec2 uv)
@@ -195,7 +205,7 @@ vec3 getNormal(in vec2 uv) {
 
 #   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
         if (dvd_bumpMethod != BUMP_NONE) {
-            normal = VAR._tbn * getBump(uv);
+            normal = getTBN() * getBump(uv);
         }
 #   endif //COMPUTE_TBN
 
@@ -210,4 +220,20 @@ vec3 getNormal(in vec2 uv) {
     return normalize(unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg));
 #endif //PRE_PASS
 }
+
+// Computed directions are NOT normalized. Retrieved directions ARE.
+vec3 getTBNViewDirection() {
+#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
+
+#   if defined(COMPUTE_TBN)
+    return normalize(transpose(getTBN()) * (dvd_cameraPosition.xyz - VAR._vertexW.xyz));
+#   else //COMPUTE_TBN
+    return vec3(0.0f);
+#   endif//COMPUTE_TBN
+
+#else //PRE_PASS
+    return normalize(unpackNormal(texture(texGBufferExtra, dvd_screenPositionNormalised).rg));
+#endif //PRE_PASS
+}
+
 #endif //_MATERIAL_DATA_FRAG_

@@ -556,6 +556,8 @@ layout(early_fragment_tests) in;
 #define USE_CUSTOM_NORMAL_MAP
 #endif //PRE_ASS
 
+#define USE_CUSTOM_TBN
+
 layout(location = 10) in flat int dvd_LoD;
 layout(location = 11) in float dvd_PatternValue;
 

@@ -1853,6 +1853,17 @@ void GFXDevice::initDebugViews() {
         VelocityPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
         VelocityPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 5.0f);
 
+
+        DebugView_ptr TBNViewDirPreview = std::make_shared<DebugView>();
+        TBNViewDirPreview->_shader = _renderTargetDraw;
+        TBNViewDirPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
+        TBNViewDirPreview->_name = "TBN View Direction";
+        TBNViewDirPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        TBNViewDirPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        TBNViewDirPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
+        TBNViewDirPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        TBNViewDirPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
+
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
@@ -1926,6 +1937,7 @@ void GFXDevice::initDebugViews() {
         HiZView = addDebugView(HiZ);
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
+        addDebugView(TBNViewDirPreview);
         addDebugView(VelocityPreview);
         addDebugView(SSAOPreview);
         addDebugView(AlphaAccumulationHigh);

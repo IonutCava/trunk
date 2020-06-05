@@ -185,10 +185,12 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     const vec3 OMR = getOcclusionMetallicRoughness(colourMatrix, uv);
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO: return albedo;
+        case DEBUG_SSAO: return vec3(getSSAO());
         case DEBUG_EMISSIVE: return getEmissive(colourMatrix);
         case DEBUG_ROUGHNESS: return vec3(OMR.b);
         case DEBUG_METALLIC: return vec3(OMR.g);
         case DEBUG_NORMALS: return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
+        case DEBUG_TBN_VIEW_DIRECTION: return getTBNViewDirection();
         case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
         case DEBUG_LIGHT_TILES: return lightTileColour();
         case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));

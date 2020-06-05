@@ -125,7 +125,7 @@ void main() {
         discard;
     }
 
-    writeOutput(data, VAR._texCoord, VAR._normalWV, _alphaFactor);
+    writeOutput(data, VAR._texCoord, VAR._normalWV, vec3(0.0f), _alphaFactor);
 }
 
 --Fragment.Shadow.VSM

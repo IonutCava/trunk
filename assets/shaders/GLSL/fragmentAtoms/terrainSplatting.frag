@@ -24,6 +24,7 @@ const float tiling[] = {
     0.083125f,
 };
 
+mat3 dvd_TBN;
 #if defined(LOW_QUALITY)
 #define sampleTexture texture
 #else //LOW_QUALITY
@@ -90,15 +91,33 @@ vec3 getVertNormal(in vec2 tex_coord) {
     return normalize(vec3(hL - hR, 2.0f, hD - hU));
 }
 
-mat3 getTBN(in vec3 N) {
-    const mat3 normalMatrix = mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
+void computeTBN() {
+#if !defined(LOW_QUALITY)
+    /// We need to compute normals per-pixels (sadly). The nvidia whitepaper on terrain tessellation has this to say about the issue:
+    ///
+    /// "Normals  can  be  computed  in  the  domain  shader  and  this  might be  more  efficient than per-pixel normals. 
+    ///  But we prefer fractional_even partitioning because it leads to  smooth  transitions  between  tessellation  factors.
+    ///  Fractional partioning  gives tessellated geometry that moves continuously.
+    ///  If geometric normals are computed from the tessellated polygons, the shading aliases significantly.
+    ///
+    ///  The tessellation can be designed such that the vertices and normals move less –see the  geo - morphing  ideas  in(Cantlay, 2008).
+    ///  However, this  would  impose  further constraints  on  an  already - complex  hull  shader.
+    ///  We prefer to limit the hull and domain shaders to geometry and LOD and place the shading in the pixel shader.
+    ///  Decoupling the tasks simplifies the whole."
+    ///
+    /// So ... yeah :/
+    const mat3 viewNormalMatrix = mat3(dvd_ViewMatrix) * mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
+
+    const vec3 N = getVertNormal(TexCoords);
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);
-    const mat3 TBN = mat3(normalMatrix * T,
-                          normalMatrix * B,
-                          normalMatrix * N);
 
-    return mat3(dvd_ViewMatrix) * TBN;
+    dvd_TBN = mat3(viewNormalMatrix * T, viewNormalMatrix * B, viewNormalMatrix * N);
+#endif //LOW_QUALITY
+}
+
+mat3 getTBN() {
+    return dvd_TBN;
 }
 
 #if defined(HAS_PARALLAX)
@@ -165,10 +184,11 @@ vec2 getScaledCoords(in float[TOTAL_LAYER_COUNT] amnt) {
 }
 
 #if defined(PRE_PASS)
-vec3 getTerrainNormal(in mat3 TBN) {
+vec3 getTerrainNormal() {
     float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(TexCoords);
+
 #if defined(HAS_PARALLAX)
-    dvd_viewDirTBN = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - _out._vertexW.xyz));
+    dvd_viewDirTBN = getTBNViewDirection();
 #endif //HAS_PARALLAX
 
     const vec2 scaledUV = getScaledCoords(blendAmount);
@@ -181,17 +201,15 @@ vec3 getTerrainNormal(in mat3 TBN) {
 }
 
 vec3 getMixedNormal(in float waterDepth) {
-    const vec3 N = getVertNormal(TexCoords);
 #if defined(LOW_QUALITY)
-    return mat3(dvd_ViewMatrix) * N;
+    return mat3(dvd_ViewMatrix) * getVertNormal(TexCoords);
 #else //LOW_QUALITY
-    const mat3 TBN = getTBN(N);
-
+    computeTBN();
     const vec3 ret = mix(texture(helperTextures, vec3(TexCoords * UNDERWATER_TILE_SCALE, 2)).rgb, 
-                            getTerrainNormal(TBN),
-                            saturate(waterDepth));
+                         getTerrainNormal(),
+                         saturate(waterDepth));
 
-    return TBN * (2.0f * ret - 1.0f);
+    return getTBN() * (2.0f * ret - 1.0f);
 #endif //LOW_QUALITY
 }
 
@@ -214,12 +232,11 @@ vec4 getUnderwaterAlbedo(in float waterDepth) {
 }
 
 vec4 getTerrainAlbedo() {
+    computeTBN();
 
 #if !defined(LOW_QUALITY)
 #if defined(HAS_PARALLAX)
-    const vec3 N = getVertNormal(TexCoords);
-    const mat3 TBN = getTBN(N);
-    dvd_viewDirTBN = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - _out._vertexW.xyz));
+    dvd_viewDirTBN = getTBNViewDirection();
 #endif //HAS_PARALLAX
 #endif //LOW_QUALITY
 

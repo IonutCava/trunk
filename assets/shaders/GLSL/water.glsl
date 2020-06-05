@@ -78,7 +78,7 @@ void main()
     vec3 normal0 = getBump(uvNormal0);
     vec3 normal1 = getBump(uvNormal1);
 
-    writeOutput(data, VAR._texCoord, normalize(VAR._tbn * normalize(normal0 + normal1)));
+    writeOutput(data, VAR._texCoord, getTBN() * normalize(normal0 + normal1));
 #else
 
     const vec3 normalWV = getNormal(VAR._texCoord);

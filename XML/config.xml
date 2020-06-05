@@ -55,7 +55,7 @@
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
 </GUI>
 <rendering>
-	<MSAASamples>4</MSAASamples>
+	<MSAASamples>2</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
 	<reflectionResolutionFactor>1</reflectionResolutionFactor>
@@ -97,7 +97,7 @@
 		<!-- Resolution will be rounded up to the next POW_2. -->
 		<csm>
 			<shadowMapResolution>1024</shadowMapResolution>
-			<MSAASamples>4</MSAASamples>
+			<MSAASamples>2</MSAASamples>
 			<enableBlurring>true</enableBlurring>
 			<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 			<splitLambda>0.899999976</splitLambda>

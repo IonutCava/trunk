@@ -8,6 +8,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
@@ -178,6 +179,9 @@ void SSAOPreRenderOperator::kernelIndex(const U8 val) {
 
 void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     if (_enabled) {
+        RenderStateBlock blueChannelOnly = RenderStateBlock::get(_context.get2DStateBlock());
+        blueChannelOnly.setColourWrites(false, false, true, false);
+
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
@@ -221,6 +225,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
             pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getGUID();
+            pipelineDescriptor._stateHash = blueChannelOnly.getHash();
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
             const TextureData data = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();  // AO texture

@@ -115,7 +115,7 @@ vectorEASTL<TileRing::InstanceData> TileRing::createInstanceDataVB(I32 ringID)
 			}
 		}
 	}
-	assert(index == _nTiles);
+	assert(index == tileCount());
 	return ret;
 }
 

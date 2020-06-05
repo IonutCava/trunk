@@ -8,12 +8,11 @@ void computeLightVectors(in NodeData data) {
     VAR._viewDirectionWV = normalize(-VAR._vertexWV.xyz);
 
 #if defined(COMPUTE_TBN)
-    vec3 tangent = normalize(normalMatrixWV * dvd_Tangent);
-    VAR._tbn = mat3(
-                    tangent,
-                    normalize(cross(VAR._normalWV, tangent)),
-                    VAR._normalWV
-                );
+    const vec3 N = VAR._normalWV;
+    const vec3 T = normalize(normalMatrixWV * dvd_Tangent);
+    const vec3 B = normalize(cross(N, T));
+    
+    VAR._tbn = mat3(T, B, N);
 #endif
 }
 
