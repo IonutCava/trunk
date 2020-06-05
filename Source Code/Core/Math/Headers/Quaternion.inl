@@ -622,8 +622,7 @@ inline const vec4<T>& Quaternion<T>::asVec4() const {
 }
 
 
-/// get the shortest arc quaternion to rotate vector 'v' to the target vector
-/// 'u'(from Ogre3D!)
+/// get the shortest arc quaternion to rotate vector 'v' to the target vector 'u'(from Ogre3D!)
 template <typename T>
 inline Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T>& fallbackAxis) {
     // Based on Stan Melax's article in Game Programming Gems

@@ -224,26 +224,29 @@ void RenderPackage::setTexture(I32 descriptorSetIndex, const TextureData& data, 
 void RenderPackage::updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel) {
     OPTICK_EVENT();
 
-    lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
-    const auto& [offset, count] = _lodIndexOffsets[lodLevel];
+    {
+        lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
+        const auto& [offset, count] = _lodIndexOffsets[lodLevel];
 
-    const GFX::CommandBuffer::Container::EntryList& cmds = commands()->get<GFX::DrawCommand>();
-    const bool autoIndex = autoIndexBuffer() && (offset != 0u || count != 0u);
+        const GFX::CommandBuffer::Container::EntryList& cmds = commands()->get<GFX::DrawCommand>();
+        const bool autoIndex = autoIndexBuffer() && (offset != 0u || count != 0u);
 
-    for (GFX::CommandBase* cmd : cmds) {
-        GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
-        for (GenericDrawCommand& drawCmd : drawCommands) {
-            drawCmd._commandOffset = startOffset++;
+        for (GFX::CommandBase* cmd : cmds) {
+            GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
+            for (GenericDrawCommand& drawCmd : drawCommands) {
+                drawCmd._commandOffset = startOffset++;
 
-            drawCmd._cmd.baseInstance = (_isInstanced || drawCmd._cmd.primCount > 1u) ? 0u : dataIndex;
-            drawCmd._cmd.firstIndex = autoIndex ? to_U32(offset) : drawCmd._cmd.firstIndex;
-            drawCmd._cmd.indexCount = autoIndex ? to_U32(count) : drawCmd._cmd.indexCount;
+                drawCmd._cmd.baseInstance = (_isInstanced || drawCmd._cmd.primCount > 1u) ? 0u : dataIndex;
+                drawCmd._cmd.firstIndex = autoIndex ? to_U32(offset) : drawCmd._cmd.firstIndex;
+                drawCmd._cmd.indexCount = autoIndex ? to_U32(count) : drawCmd._cmd.indexCount;
+            }
         }
     }
-
     if (_isInstanced) {
-        assert(_commands->exists<GFX::SendPushConstantsCommand>(0));
-        pushConstants(0).set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, dataIndex);
+        const size_t count = _commands->count<GFX::SendPushConstantsCommand>();
+        for (I32 i = 0; i < count; ++i) {
+            pushConstants(i).set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, dataIndex);
+        }
     }
 }
 

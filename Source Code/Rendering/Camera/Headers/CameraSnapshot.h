@@ -38,6 +38,7 @@ namespace Divide {
         mat4<F32> _viewMatrix;
         mat4<F32> _projectionMatrix;
         Quaternion<F32> _orientation;
+        std::array<Plane<F32>, 6> _frustumPlanes;
         vec3<F32> _eye;
         vec2<F32> _zPlanes;
         Angle::DEGREES<F32> _FoV = 0.0f;
@@ -55,7 +56,8 @@ namespace Divide {
                lhs._eye == rhs._eye &&
                lhs._viewMatrix == rhs._viewMatrix &&
                lhs._projectionMatrix == rhs._projectionMatrix &&
-               lhs._orientation == rhs._orientation;
+               lhs._orientation == rhs._orientation &&
+               lhs._frustumPlanes == rhs._frustumPlanes;
     }
 
     inline bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
@@ -67,7 +69,8 @@ namespace Divide {
                lhs._eye != rhs._eye ||
                lhs._viewMatrix != rhs._viewMatrix ||
                lhs._projectionMatrix != rhs._projectionMatrix ||
-               lhs._orientation != rhs._orientation;
+               lhs._orientation != rhs._orientation ||
+               lhs._frustumPlanes != rhs._frustumPlanes;
     }
 };
 

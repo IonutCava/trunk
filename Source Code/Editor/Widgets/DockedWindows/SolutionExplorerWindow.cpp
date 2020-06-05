@@ -7,6 +7,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
@@ -280,6 +281,28 @@ namespace Divide {
                              max_ms_per_frame,
                              ImVec2(0, 50));
 
+        const auto& rpm = _context.kernel().renderPassManager();
+
+        ImGui::NewLine();
+        ImGui::Columns(5, "draw_call_columns");
+        ImGui::Separator();
+        ImGui::Text("Data");        ImGui::NextColumn();
+        ImGui::Text("Display");     ImGui::NextColumn();
+        ImGui::Text("Shadows");     ImGui::NextColumn();
+        ImGui::Text("Reflections"); ImGui::NextColumn();
+        ImGui::Text("Refractions"); ImGui::NextColumn();
+        ImGui::Separator();
+        ImGui::Text("Draw Calls");                                            ImGui::NextColumn();
+        ImGui::Text("%d", rpm->drawCallCount(RenderStage::DISPLAY));          ImGui::NextColumn();
+        ImGui::Text("%d", rpm->drawCallCount(RenderStage::SHADOW));           ImGui::NextColumn();
+        ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFLECTION));       ImGui::NextColumn();
+        ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFRACTION));       ImGui::NextColumn();
+        ImGui::Text("Visible Nodes");                                         ImGui::NextColumn();
+        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::DISPLAY));    ImGui::NextColumn();
+        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::SHADOW));     ImGui::NextColumn();
+        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::REFLECTION)); ImGui::NextColumn();
+        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::REFRACTION)); ImGui::NextColumn();
+        ImGui::Columns(1);
         ImGui::Separator();
 
         static U32 cullCount = 0;
@@ -290,8 +313,10 @@ namespace Divide {
             crtUpdate = 0;
         }
 
+        ImGui::NewLine();
         ImGui::Text("HiZ Cull Count: %d", cullCount);
         ImGui::Separator();
+        ImGui::NewLine();
 
         bool dayNightEnabled = activeScene.dayNightCycleEnabled();
         if (ImGui::Checkbox("Enable day/night cycle", &dayNightEnabled)) {

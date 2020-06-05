@@ -23,9 +23,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     desc._resolution = parent.screenRT()._rt->getResolution();
     {
         SamplerDescriptor sampler = {};
-        sampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-        sampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-        sampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+        sampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
         sampler.minFilter(TextureFilter::LINEAR);
         sampler.magFilter(TextureFilter::LINEAR);
         sampler.anisotropyLevel(0);

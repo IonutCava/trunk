@@ -285,7 +285,7 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
         /// Process any events that might of queued up during the ECS Update stages
         void processEvents();
         /// Returns true if the node should be culled (is not visible for the current stage). Calls "preCullNode" internally.
-        bool cullNode(const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
+        bool cullNode(const NodeCullParams& params, FrustumCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
         /// Fast distance-to-camera and min-LoD checks. Part of the cullNode call but usefull for quick visibility checks elsewhere
         bool preCullNode(const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) const;
         /// Called after preRender and after we rebuild our command buffers. Useful for modifying the command buffer that's going to be used for this RenderStagePass
@@ -438,7 +438,7 @@ namespace Attorney {
     private:
 
         // Returns true if the node should be culled (is not visible for the current stage)
-        static bool cullNode(const SceneGraphNode* node, const NodeCullParams& params, Frustum::FrustCollision& collisionTypeOut, F32& distanceToClosestPointSQ) {
+        static bool cullNode(const SceneGraphNode* node, const NodeCullParams& params, FrustumCollision& collisionTypeOut, F32& distanceToClosestPointSQ) {
             return node->cullNode(params, collisionTypeOut, distanceToClosestPointSQ);
         }
 

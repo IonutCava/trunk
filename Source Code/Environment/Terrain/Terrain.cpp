@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Terrain.h"
+#include "Headers/TileRing.h"
 #include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
 
@@ -20,36 +21,52 @@
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
 
 namespace {
-    constexpr U32 g_bufferSizeFactor = 3;
+    // This array defines the outer width of each successive terrain ring.
+    constexpr I32 g_RingWidths[] = {
+        0,
+        16,
+        20,
+        28
+    };
 
-    void CreateTileQuadListIB(vectorEASTLFast<U32>& indices)
+    constexpr F32 g_StartTileSize = 0.25f;
+
+    vectorEASTLFast<U16> CreateTileQuadListIB()
     {
-        indices.resize(Terrain::QUAD_LIST_INDEX_COUNT, 0u);
-        I32 index = 0;
+        vectorEASTLFast<U16> indices(TessellationParams::QUAD_LIST_INDEX_COUNT, 0u);
+
+        U16 index = 0;
 
         // The IB describes one tile of NxN patches.
         // Four vertices per quad, with VTX_PER_TILE_EDGE-1 quads per tile edge.
-        for (I32 y = 0; y < Terrain::VTX_PER_TILE_EDGE - 1; ++y)
+        for (U8 y = 0; y < TessellationParams::VTX_PER_TILE_EDGE - 1; ++y)
         {
-            const I32 rowStart = y * Terrain::VTX_PER_TILE_EDGE;
+            const U16 rowStart = y * TessellationParams::VTX_PER_TILE_EDGE;
 
-            for (I32 x = 0; x < Terrain::VTX_PER_TILE_EDGE - 1; ++x) {
+            for (U8 x = 0; x < TessellationParams::VTX_PER_TILE_EDGE - 1; ++x) {
                 indices[index++] = rowStart + x;
-                indices[index++] = rowStart + x + Terrain::VTX_PER_TILE_EDGE;
-                indices[index++] = rowStart + x + Terrain::VTX_PER_TILE_EDGE + 1;
+                indices[index++] = rowStart + x + TessellationParams::VTX_PER_TILE_EDGE;
+                indices[index++] = rowStart + x + TessellationParams::VTX_PER_TILE_EDGE + 1;
                 indices[index++] = rowStart + x + 1;
             }
         }
-        assert(index == Terrain::QUAD_LIST_INDEX_COUNT);
+        assert(index == TessellationParams::QUAD_LIST_INDEX_COUNT);
+
+        return indices;
     }
 }
 
+void TessellationParams::fromDescriptor(const std::shared_ptr<TerrainDescriptor>& descriptor) {
+    WorldScale((descriptor->dimensions() * 0.5f) / to_F32(PATCHES_PER_TILE_EDGE));
+}
+
 Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
-    : Object3D(context, parentCache, descriptorHash, name, name, "", ObjectType::TERRAIN, 0u),
+    : Object3D(context, parentCache, descriptorHash, name, name, "", ObjectType::TERRAIN, to_U32(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _terrainQuadtree(context)
 {
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
@@ -125,23 +142,6 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         treeVisibilityDistanceField._basicType = GFX::PushConstantType::FLOAT;
         treeVisibilityDistanceField._readOnly = false;
         _editorComponent.registerField(std::move(treeVisibilityDistanceField));
-
-        _bufferSizePerFrame = (descriptor()->maxNodesPerStage() * to_base(RenderStage::COUNT));
-
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._elementCount = _bufferSizePerFrame * g_bufferSizeFactor;
-        bufferDescriptor._elementSize = sizeof(TessellatedNodeData);
-        bufferDescriptor._ringBufferLength = 1;
-        bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
-                                  to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-        //Should be once per frame
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-
-        bufferDescriptor._name = "TERRAIN_RENDER_NODES";
-        _shaderData = _context.newSB(bufferDescriptor);
         _initialSetupDone = true;
     }
 
@@ -172,35 +172,7 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
     SceneNode::postLoad(sgn);
 }
 
-U32 Terrain::getBufferOffset(RenderStage renderStage) const noexcept {
-    const U32 dataOffset = _bufferOffsetIndex[to_U8(renderStage)] * _bufferSizePerFrame;
-    return dataOffset + (to_U32(renderStage)  * descriptor()->maxNodesPerStage());
-}
-
-TerrainTessellator& Terrain::getTessellator(const RenderStagePass& renderStagePass) {
-    const U32 i = renderStagePass._stage == RenderStage::SHADOW ? 0u : RenderStagePass::indexForStage(renderStagePass);
-    return _terrainTessellators[to_U8(renderStagePass._stage)][i];
-}
-
-F32 Terrain::getTriangleWidth(const RenderStagePass& renderStagePass)  const noexcept {
-    const F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
-    // Lower detail for reflections and refraction
-    if (renderStagePass._stage == RenderStage::REFLECTION || renderStagePass._stage == RenderStage::REFRACTION) {
-        return triangleWidth * 1.5f;
-    } else if (renderStagePass._stage == RenderStage::SHADOW && renderStagePass._variant == to_U8(LightType::DIRECTIONAL)) {
-        if (renderStagePass._pass == 2) {
-            return triangleWidth * 0.5f;
-        } else if (renderStagePass._pass == 1) {
-            return triangleWidth * 0.75f;
-        }
-    }
-
-    return triangleWidth;
-}
-
 void Terrain::onEditorChange(std::string_view field) {
-    ACKNOWLEDGE_UNUSED(field);
-
     if (field == "Toggle Quadtree Bounds") {
         toggleBoundingBoxes();
     } else {
@@ -209,27 +181,6 @@ void Terrain::onEditorChange(std::string_view field) {
 }
 
 void Terrain::postBuild() {
-    TerrainTessellator::Configuration config = {};
-    config._minPatchSize = _descriptor->tessellationSettings().y;
-    config._terrainDimensions = _descriptor->dimensions();
-    config._altitudeRange = _descriptor->altitudeRange();
-
-    _bufferOffsetIndex.fill(0u);
-    for (U8 s = 0; s < to_U8(RenderStage::COUNT); ++s) {
-        U8 count =  RenderStagePass::passCountForStage(static_cast<RenderStage>(s));
-        if (s == to_U8(RenderStage::SHADOW)) {
-            count = 1u;
-            config._cullFuzzFactor = 1.5f;
-        }
-
-        _terrainTessellators[s].resize(count);
-
-        for (auto& tess : _terrainTessellators[s]) {
-            tess.overrideConfig(config);
-        }
-    }
-
-
     const U16 terrainWidth = _descriptor->dimensions().width;
     const U16 terrainHeight = _descriptor->dimensions().height;
 
@@ -256,21 +207,69 @@ void Terrain::postBuild() {
     _boundingBox.setMin(-halfWidth, _descriptor->altitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->altitudeRange().max, halfWidth);
 
-    const U32 chunkSize = to_U32(_descriptor->tessellationSettings().x);
+    const U32 chunkSize = to_U32(_descriptor->tessellationSettings());
 
     _terrainQuadtree.build(_boundingBox, _descriptor->dimensions(), chunkSize, this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
-    vectorEASTLFast<U32> indices;
-    CreateTileQuadListIB(indices);
+    {
+        // widths[0] doesn't define a ring hence -1
+        const size_t ringCount = sizeof(g_RingWidths) / sizeof(g_RingWidths[0]) - 1;
+        _tileRings.reserve(ringCount);
+        F32 tileWidth = g_StartTileSize;
+        for (size_t i = 0; i < ringCount ; ++i) {
+            _tileRings.emplace_back(eastl::make_unique<TileRing>(g_RingWidths[i] / 2, g_RingWidths[i + 1], tileWidth));
+            tileWidth *= 2.0f;
+        }
 
-    VertexBuffer* vb = getGeometryVB();
-    vb->resizeVertexCount(SQUARED(Terrain::VTX_PER_TILE_EDGE));
-    vb->addIndices(indices, false);
-    vb->keepData(false);
-    vb->create(true);
+        vectorEASTL<TileRing::InstanceData> vbData;
+        for (size_t i = 0; i < ringCount; ++i) {
+            vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
+            vbData.insert(eastl::cend(vbData), eastl::cbegin(ringData), eastl::cend(ringData));
+        }
+
+        // This is a whole fraction of the max tessellation, i.e., 64/N.  The intent is that 
+        // the height field scrolls through the terrain mesh in multiples of the polygon spacing.
+        // So polygon vertices mostly stay fixed relative to the displacement map and this reduces
+        // scintillation.  Without snapping, it scintillates badly.  Additionally, we make the
+        // snap size equal to one patch width, purely to stop the patches dancing around like crazy.
+        // The non-debug rendering works fine either way, but crazy flickering of the debug patches 
+        // makes understanding much harder.
+        const vec2<F32> snapGridSize = tessParams().WorldScale() * _tileRings[ringCount - 1]->tileSize();
+        _tessParams.SnapGridSize(snapGridSize / TessellationParams::PATCHES_PER_TILE_EDGE);
+
+        vectorEASTLFast<U16> indices = CreateTileQuadListIB();
+
+        { // Create a single buffer to hold the data for all of our tile rings
+            Divide::GenericVertexData::IndexBuffer idxBuff = {};
+            idxBuff.smallIndices = true;
+            idxBuff.count = indices.size();
+            idxBuff.data = indices.data();
+
+            Divide::GenericVertexData::SetBufferParams params = {};
+            params._buffer = 0;
+            params._elementSize = sizeof(TileRing::InstanceData);
+            params._updateFrequency = Divide::BufferUpdateFrequency::ONCE;
+            params._updateUsage = Divide::BufferUpdateUsage::CPU_W_GPU_R;
+            params._storageType = Divide::BufferStorageType::NORMAL;
+            params._instanceDivisor = 1u;
+            params._sync = false;
+            params._data = vbData.data();
+            params._elementCount = to_U32(vbData.size());
+
+            _terrainBuffer = _context.newGVD(1);
+            _terrainBuffer->create(1);
+            _terrainBuffer->setIndexBuffer(idxBuff, Divide::BufferUpdateFrequency::ONCE);
+            _terrainBuffer->setBuffer(params);
+            Divide::AttributeDescriptor& descPosition  = _terrainBuffer->attribDescriptor(Divide::to_base(Divide::AttribLocation::POSITION));
+            Divide::AttributeDescriptor& descAdjacency = _terrainBuffer->attribDescriptor(Divide::to_base(Divide::AttribLocation::COLOR));
+
+            descPosition.set( 0, 4, Divide::GFXDataFormat::FLOAT_32, false,  0u * sizeof(F32));
+            descAdjacency.set(0, 4, Divide::GFXDataFormat::FLOAT_32, false,  4u * sizeof(F32));
+        }
+    }
 }
 
 void Terrain::toggleBoundingBoxes() {
@@ -281,15 +280,7 @@ void Terrain::toggleBoundingBoxes() {
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
     OPTICK_EVENT();
 
-    if (_drawDistanceChanged) {
-        _drawDistanceChanged = false;
-    }
-
-    const F32 newDrawDistance = sceneState.renderState().generalVisibility();
-    if (newDrawDistance != _drawDistance) {
-        _drawDistance = newDrawDistance;
-        _drawDistanceChanged = true;
-    }
+    _drawDistance = sceneState.renderState().generalVisibility();
 
     switch (_editorDataDirtyState) {
         case EditorDataState::QUEUED:
@@ -311,12 +302,6 @@ void Terrain::onRefreshNodeData(const SceneGraphNode* sgn,
         rebuildDrawCommands(true);
         _drawCommandsDirty = false;
     }
-
-    if (_shaderDataDirty) {
-        GFX::MemoryBarrierCommand memCmd = {};
-        memCmd._barrierMask = to_U32(MemoryBarrierType::SHADER_STORAGE);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
-    }
 }
 
 bool Terrain::prepareRender(SceneGraphNode* sgn,
@@ -327,54 +312,45 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         rComp.getMaterialInstance()->parallaxFactor(_descriptor->parallaxHeightScale());
-        if (!pkg.empty()) {
-            PushConstants constants = pkg.pushConstants(0);
-            constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, getTriangleWidth(renderStagePass));
-            pkg.pushConstants(0, constants);
-            _editorDataDirtyState = EditorDataState::PROCESSED;
-        }
+        _editorDataDirtyState = EditorDataState::PROCESSED;
     }
 
-    TerrainTessellator& tessellator = getTessellator(renderStagePass);
-
-    U16 depth = tessellator.getRenderDepth();
-    U32  offset = getBufferOffset(renderStagePass._stage);
-    if (refreshData) {
-        const Camera* cam = &camera;
-        F32 maxDistance = _drawDistance;
-        if (renderStagePass._stage == RenderStage::SHADOW) {
-            cam = sgn->sceneGraph()->parentScene().playerCamera();
-            maxDistance *= 1.5f;
+    if (!pkg.empty()) {
+        F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
+        if (renderStagePass._stage == RenderStage::REFLECTION ||
+            renderStagePass._stage == RenderStage::REFRACTION)                 
+        {
+            // Lower the level of detail in reflections and refractions
+            triangleWidth *= 1.5f;
         }
 
-        const vec3<F32>& eye = cam->getEye();
-        const Frustum& frustum = cam->getFrustum();
-        const vec3<F32>& crtPos = sgn->get<TransformComponent>()->getPosition();
+        const vec2<F32>& grid  = tessParams().SnapGridSize();
+        const vec2<F32>& scale = tessParams().WorldScale();
 
-        if (_drawDistanceChanged || tessellator.getOrigin() != crtPos || tessellator.getFrustum() != frustum) {
-            tessellator.createTree(frustum, eye, crtPos, maxDistance, depth);
-            const TessellatedNodeData* renderData = tessellator.renderData().data();
+        const vec2<F32> eye = camera.getEye().xz();
 
-            U8& frameOffset = _bufferOffsetIndex[to_base(renderStagePass._stage)];
-            frameOffset = ++frameOffset % g_bufferSizeFactor;
-
-            offset = getBufferOffset(renderStagePass._stage);
-            _shaderData->writeData(offset, depth, (bufferPtr)renderData);
-            _shaderDataDirty = true;
-
+        vec2<F32> snapped = eye;
+        vec2<F32> offset  = eye;
+        for (U8 i = 0; i < 2; ++i) {
+            if (grid[i] > 0.f) {
+                snapped[i] = std::floorf(snapped[i] / grid[i]) * grid[i];
+                offset[i]  = std::floorf(offset[i] / grid[i]) * grid[i];
+            }
         }
-    }
+        // Why the 2x?  I'm confused.  But it works.
+        snapped = eye - ((eye - snapped) * 2);
 
-    GenericDrawCommand cmd = pkg.drawCommand(0, 0);
-    if (cmd._cmd.primCount != depth) {
-        cmd._cmd.primCount = depth;
-        pkg.drawCommand(0, 0, cmd);
-    }
+        const mat4<F32> transform(
+            // Pos
+            vec3<F32>{ snapped.width, 0.0f, snapped.height },
+            //Scale
+            vec3<F32>{ scale.width, 1.0f, scale.height });
 
-    ShaderBufferBinding buffer = pkg.getShaderBuffer(0, 0);
-    buffer._elementRange.min = offset;
-    buffer._elementRange.max = depth;
-    pkg.addShaderBuffer(0, buffer);
+        PushConstants& constants = pkg.pushConstants(0);
+        constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
+        constants.set(_ID("dvd_tileWorldMatrix"),    GFX::PushConstantType::MAT4,  transform);
+        constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  offset / scale);
+    }
 
     return Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
@@ -384,90 +360,87 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
-    ShaderBufferBinding buffer = {};
-    buffer._binding = ShaderBufferLocation::TERRAIN_DATA;
-    buffer._buffer = _shaderData;
-    buffer._elementRange = { getBufferOffset(renderStagePass._stage), descriptor()->maxNodesPerStage() };
-    pkgInOut.addShaderBuffer(0, buffer);
-
+    const F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set(_ID("tessTriangleWidth"), GFX::PushConstantType::FLOAT, getTriangleWidth(renderStagePass));
+    pushConstantsCommand._constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
+    pushConstantsCommand._constants.set(_ID("dvd_tileWorldMatrix"),    GFX::PushConstantType::MAT4,  MAT4_IDENTITY);
+    pushConstantsCommand._constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  VECTOR2_ZERO);
+    pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
+
     cmd._bufferIndex = renderStagePass.baseIndex();
     cmd._primitiveType = PrimitiveType::PATCH;
-    cmd._cmd.indexCount = to_U32(Terrain::QUAD_LIST_INDEX_COUNT);
+    cmd._sourceBuffer = _terrainBuffer->handle();
+    cmd._cmd.indexCount = to_U32(TessellationParams::QUAD_LIST_INDEX_COUNT);
 
-    cmd._sourceBuffer = getGeometryVB()->handle();
-    cmd._cmd.primCount = buffer._elementRange.max;
-
-    pkgInOut.add(pushConstantsCommand);    
-    pkgInOut.add(GFX::DrawCommand{ cmd });
+    for (const auto& tileRing : _tileRings) {
+        cmd._cmd.baseVertex += cmd._cmd.primCount;
+        cmd._cmd.primCount = tileRing->tileCount();
+        pkgInOut.add(GFX::DrawCommand{ cmd });
+    }
 
     _terrainQuadtree.drawBBox(pkgInOut);
 
     Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-vec3<F32> Terrain::getPositionFromGlobal(F32 x, F32 z, bool smooth) const {
+Terrain::Vert Terrain::getVertFromGlobal(F32 x, F32 z, bool smooth) const {
     x -= _boundingBox.getCenter().x;
     z -= _boundingBox.getCenter().z;
-    F32 xClamp = (0.5f * _descriptor->dimensions().x) + x;
-    F32 zClamp = (0.5f * _descriptor->dimensions().y) - z;
-    xClamp /= _descriptor->dimensions().x;
-    zClamp /= _descriptor->dimensions().y;
-    zClamp = 1 - zClamp;
-    vec3<F32> temp = getPosition(xClamp, zClamp, smooth);
-
-    return temp;
+    const vec2<U16>& dim = _descriptor->dimensions();
+    const F32 xClamp = ((0.5f * dim.width) + x) / dim.width;
+    const F32 zClamp = ((0.5f * dim.height) - z) / dim.height;
+    return getVert(xClamp, 1 - zClamp, smooth);
 }
 
 Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf, bool smooth) const {
-    if (smooth) {
-        return getSmoothVert(x_clampf, z_clampf);
-    }
-
-    return getVert(x_clampf, z_clampf);
+    return smooth ? getSmoothVert(x_clampf, z_clampf)
+                  : getVert(x_clampf, z_clampf);
 }
 
 Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
+    assert(!(x_clampf < 0.0f || z_clampf < 0.0f || 
+             x_clampf > 1.0f || z_clampf > 1.0f));
 
-    const vec2<U16>& dim = _descriptor->dimensions();
+    const vec2<U16>& dim   = _descriptor->dimensions();
     const vec3<F32>& bbMin = _boundingBox.getMin();
     const vec3<F32>& bbMax = _boundingBox.getMax();
 
-    vec2<F32> posF(x_clampf * dim.x, z_clampf * dim.y);
-    vec2<I32> posI(to_I32(posF.x), to_I32(posF.y));
-    vec2<F32> posD(posF.x - posI.x, posF.y - posI.y);
+    const vec2<F32> posF(x_clampf * dim.width,    z_clampf * dim.height);
+          vec2<I32> posI(to_I32(posF.width),      to_I32(posF.height));
+    const vec2<F32> posD(posF.width - posI.width, posF.height - posI.height);
 
-    if (posI.x >= (I32)dim.x - 1) {
-        posI.x = dim.x - 2;
+    if (posI.width >= to_I32(dim.width) - 1) {
+        posI.width = dim.width - 2;
     }
 
-    if (posI.y >= (I32)dim.y - 1) {
-        posI.y = dim.y - 2;
+    if (posI.height >= to_I32(dim.height) - 1) {
+        posI.height = dim.height - 2;
     }
 
-    assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 && posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
+    assert(posI.width  >= 0 && posI.width  < to_I32(dim.width)  - 1 &&
+           posI.height >= 0 && posI.height < to_I32(dim.height) - 1);
 
-    const VertexBuffer::Vertex& tempVert1 = _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))];
-    const VertexBuffer::Vertex& tempVert2 = _physicsVerts[TER_COORD(posI.x + 1, posI.y, to_I32(dim.x))];
-    const VertexBuffer::Vertex& tempVert3 = _physicsVerts[TER_COORD(posI.x, posI.y + 1, to_I32(dim.x))];
-    const VertexBuffer::Vertex& tempVert4 = _physicsVerts[TER_COORD(posI.x + 1, posI.y + 1, to_I32(dim.x))];
+    const VertexBuffer::Vertex& tempVert1 = _physicsVerts[TER_COORD(posI.width,     posI.height,     to_I32(dim.width))];
+    const VertexBuffer::Vertex& tempVert2 = _physicsVerts[TER_COORD(posI.width + 1, posI.height,     to_I32(dim.width))];
+    const VertexBuffer::Vertex& tempVert3 = _physicsVerts[TER_COORD(posI.width,     posI.height + 1, to_I32(dim.width))];
+    const VertexBuffer::Vertex& tempVert4 = _physicsVerts[TER_COORD(posI.width + 1, posI.height + 1, to_I32(dim.width))];
 
-    vec3<F32> normals[4];
-    Util::UNPACK_VEC3(tempVert1._normal, normals[0]);
-    Util::UNPACK_VEC3(tempVert2._normal, normals[1]);
-    Util::UNPACK_VEC3(tempVert3._normal, normals[2]);
-    Util::UNPACK_VEC3(tempVert4._normal, normals[3]);
+    const vec3<F32> normals[4]{
+        Util::UNPACK_VEC3(tempVert1._normal),
+        Util::UNPACK_VEC3(tempVert2._normal),
+        Util::UNPACK_VEC3(tempVert3._normal),
+        Util::UNPACK_VEC3(tempVert4._normal)
+    };
 
-    vec3<F32> tangents[4];
-    Util::UNPACK_VEC3(tempVert1._tangent, tangents[0]);
-    Util::UNPACK_VEC3(tempVert2._tangent, tangents[1]);
-    Util::UNPACK_VEC3(tempVert3._tangent, tangents[2]);
-    Util::UNPACK_VEC3(tempVert4._tangent, tangents[3]);
+    const vec3<F32> tangents[4]{
+        Util::UNPACK_VEC3(tempVert1._tangent),
+        Util::UNPACK_VEC3(tempVert2._tangent),
+        Util::UNPACK_VEC3(tempVert3._tangent),
+        Util::UNPACK_VEC3(tempVert4._tangent)
+    };
 
     Vert ret = {};
     ret._position.set(
@@ -475,79 +448,70 @@ Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
         bbMin.x + x_clampf * (bbMax.x - bbMin.x),
 
         //Y
-        tempVert1._position.y *  (1.0f - posD.x) * (1.0f - posD.y) +
-        tempVert2._position.y * posD.x * (1.0f - posD.y) +
-        tempVert3._position.y * (1.0f - posD.x) * posD.y +
-        tempVert4._position.y * posD.x * posD.y,
+        tempVert1._position.y * (1.0f - posD.width) * (1.0f - posD.height) +
+        tempVert2._position.y *         posD.width  * (1.0f - posD.height) +
+        tempVert3._position.y * (1.0f - posD.width) *         posD.height +
+        tempVert4._position.y *         posD.width  *         posD.height,
 
         //Z
         bbMin.z + z_clampf * (bbMax.z - bbMin.z));
 
-    ret._normal.set(normals[0] * (1.0f - posD.x) * (1.0f - posD.y) +
-                    normals[1] * posD.x * (1.0f - posD.y) +
-                    normals[2] * (1.0f - posD.x) * posD.y +
-                    normals[3] * posD.x * posD.y);
+    ret._normal.set(normals[0] * (1.0f - posD.width) * (1.0f - posD.height) +
+                    normals[1] *         posD.width  * (1.0f - posD.height) +
+                    normals[2] * (1.0f - posD.width) *         posD.height +
+                    normals[3] *         posD.width  *         posD.height);
 
-    ret._tangent.set(tangents[0] * (1.0f - posD.x) * (1.0f - posD.y) +
-                        tangents[1] * posD.x * (1.0f - posD.y) +
-                        tangents[2] * (1.0f - posD.x) * posD.y +
-                        tangents[3] * posD.x * posD.y);
+    ret._tangent.set(tangents[0] * (1.0f - posD.width) * (1.0f - posD.height) +
+                     tangents[1] *         posD.width  * (1.0f - posD.height) +
+                     tangents[2] * (1.0f - posD.width) *         posD.height +
+                     tangents[3] *         posD.width  *         posD.height);
     
     return ret;
 
 }
 
 Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
-    assert(!(x_clampf < .0f || z_clampf < .0f || x_clampf > 1.0f || z_clampf > 1.0f));
+    assert(!(x_clampf < 0.0f || z_clampf < 0.0f ||
+             x_clampf > 1.0f || z_clampf > 1.0f));
 
     const vec2<U16>& dim = _descriptor->dimensions();
-    vec2<I32> posI(to_I32(x_clampf * dim.x), to_I32(z_clampf * dim.y));
+    
+    vec2<I32> posI(to_I32(x_clampf * dim.width), 
+                   to_I32(z_clampf * dim.height));
 
-    if (posI.x >= (I32)dim.x - 1) {
-        posI.x = dim.x - 2;
+    if (posI.width >= to_I32(dim.width) - 1) {
+        posI.width = dim.width - 2;
     }
 
-    if (posI.y >= (I32)dim.y - 1) {
-        posI.y = dim.y - 2;
+    if (posI.height >= to_I32(dim.height) - 1) {
+        posI.height = dim.height - 2;
     }
 
-    assert(posI.x >= 0 && posI.x < to_I32(dim.x) - 1 && posI.y >= 0 && posI.y < to_I32(dim.y) - 1);
+    assert(posI.width  >= 0 && posI.width  < to_I32(dim.width)  - 1 &&
+           posI.height >= 0 && posI.height < to_I32(dim.height) - 1);
 
-    const VertexBuffer::Vertex& tempVert1 = _physicsVerts[TER_COORD(posI.x, posI.y, to_I32(dim.x))];
+    const VertexBuffer::Vertex& tempVert1 = _physicsVerts[TER_COORD(posI.width, posI.height, to_I32(dim.width))];
 
     Vert ret = {};
     ret._position.set(tempVert1._position);
-    Util::UNPACK_VEC3(tempVert1._normal, ret._normal);
-    Util::UNPACK_VEC3(tempVert1._tangent, ret._tangent);
+    ret._normal.set(Util::UNPACK_VEC3(tempVert1._normal));
+    ret._tangent.set(Util::UNPACK_VEC3(tempVert1._tangent));
 
     return ret;
 
 }
 
-vec3<F32> Terrain::getPosition(F32 x_clampf, F32 z_clampf, bool smooth) const {
-    return getVert(x_clampf, z_clampf, smooth)._position;
-}
-
-vec3<F32> Terrain::getNormal(F32 x_clampf, F32 z_clampf, bool smooth) const {
-    return getVert(x_clampf, z_clampf, smooth)._normal;
-}
-
-vec3<F32> Terrain::getTangent(F32 x_clampf, F32 z_clampf, bool smooth) const {
-    return getVert(x_clampf, z_clampf, smooth)._tangent;
-
-}
-
-vec2<U16> Terrain::getDimensions() const {
+vec2<U16> Terrain::getDimensions() const noexcept {
     return _descriptor->dimensions();
 }
 
-vec2<F32> Terrain::getAltitudeRange() const {
+vec2<F32> Terrain::getAltitudeRange() const noexcept {
     return _descriptor->altitudeRange();
 }
 
 void Terrain::getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) const {
+    U32 grassInstanceCount = 0u, treeInstanceCount = 0u;
     for (TerrainChunk* chunk : _terrainChunks) {
-        U32 grassInstanceCount = 0u, treeInstanceCount = 0u;
         Attorney::TerrainChunkTerrain::getVegetation(*chunk)->getStats(grassInstanceCount, treeInstanceCount);
         maxGrassInstances = std::max(maxGrassInstances, grassInstanceCount);
         maxTreeInstances = std::max(maxTreeInstances, treeInstanceCount);
@@ -555,7 +519,6 @@ void Terrain::getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) 
 }
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
-
     pt.put("descriptor", _descriptor->getVariable("descriptor"));
     pt.put("wireframeDebugMode", to_base(_descriptor->wireframeDebug()));
     pt.put("parallaxMappingMode", to_base(_descriptor->parallaxMode()));

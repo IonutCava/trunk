@@ -106,11 +106,12 @@ public:
                               bool usePerformanceCounters = false);
     /// Find a renderpass by name and remove it from the manager
     void removeRenderPass(const Str64& name);
-    U32  getLastTotalBinSize(RenderStage renderStage) const;
+    [[nodiscard]] U32  getLastTotalBinSize(RenderStage renderStage) const;
+    [[nodiscard]] inline I32 drawCallCount(RenderStage stage) const noexcept { return _drawCallCount[to_base(stage)]; }
 
-    inline RenderQueue& getQueue() { return _renderQueue; }
+    [[nodiscard]] inline RenderQueue& getQueue() noexcept { return _renderQueue; }
 
-    RenderPass::BufferData getBufferData(const RenderStagePass& stagePass) const;
+    [[nodiscard]] RenderPass::BufferData getBufferData(const RenderStagePass& stagePass) const;
 
     void doCustomPass(PassParams params, GFX::CommandBuffer& bufferInOut);
     void postInit();
@@ -145,8 +146,8 @@ private:
                   const RenderTarget& target,
                   GFX::CommandBuffer& bufferInOut);
 
-    RenderPass& getPassForStage(RenderStage renderStage);
-    const RenderPass& getPassForStage(RenderStage renderStage) const;
+    [[nodiscard]] RenderPass& getPassForStage(RenderStage renderStage);
+    [[nodiscard]] const RenderPass& getPassForStage(RenderStage renderStage) const;
     void prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void buildDrawCommands(const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     void buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const PassParams& params, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
@@ -154,7 +155,7 @@ private:
 
 private: //TEMP
     friend class RenderBin;
-    U32  renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
+    [[nodiscard]] U32  renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
     void renderQueueToSubPasses(RenderStage stage, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
 private:
@@ -178,6 +179,7 @@ private:
     Time::ProfileTimer* _blitToDisplayTimer = nullptr;
 
     std::array<RenderQueuePackages, to_base(RenderStage::COUNT)> _renderQueues;
+    std::array<I32, to_base(RenderStage::COUNT)> _drawCallCount;
 };
 
 };  // namespace Divide

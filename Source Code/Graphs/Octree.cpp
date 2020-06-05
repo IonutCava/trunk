@@ -476,7 +476,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, 
     for (I32 i = 0; i < 8; ++i) {
         I8 frustPlaneCache = -1;
         if (_childNodes[i] != nullptr &&
-            frustum.ContainsBoundingBox(_childNodes[i]->_region, frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT)
+            frustum.ContainsBoundingBox(_childNodes[i]->_region, frustPlaneCache) != FrustumCollision::FRUSTUM_OUT)
         {
             vectorEASTL<IntersectionRecord> hitList = _childNodes[i]->getIntersection(frustum, typeFilterMask);
             ret.insert(eastl::cend(ret), eastl::cbegin(hitList), eastl::cend(hitList));
@@ -673,7 +673,7 @@ bool Octree::getIntersection(SceneGraphNode* node, const Frustum& frustum, Inter
 
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     _frustPlaneCache = -1;
-    if (frustum.ContainsBoundingBox(bb, _frustPlaneCache) != Frustum::FrustCollision::FRUSTUM_OUT) {
+    if (frustum.ContainsBoundingBox(bb, _frustPlaneCache) != FrustumCollision::FRUSTUM_OUT) {
         irOut.reset();
         irOut._intersectedObject1 = node;
         irOut._treeNode = shared_from_this();

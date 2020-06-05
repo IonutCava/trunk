@@ -719,7 +719,8 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
         to_base(TextureUsage::UNIT1),
         to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS),
         to_base(TextureUsage::HEIGHTMAP),
-        to_base(TextureUsage::PROJECTION)
+        to_base(TextureUsage::PROJECTION),
+        to_base(TextureUsage::ADDITIONAL_DATA)
     };
 
     bool ret = false;

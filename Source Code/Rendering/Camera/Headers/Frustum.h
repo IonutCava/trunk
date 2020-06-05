@@ -33,59 +33,33 @@
 #ifndef _FRUSTUM_H_
 #define _FRUSTUM_H_
 
+#include "Platform/Video/Headers/RenderAPIEnums.h"
+
 namespace Divide {
 
 class Camera;
 class BoundingBox;
 class Frustum {
    public:
-    enum class FrustCollision : U8 {
-        FRUSTUM_OUT = 0,
-        FRUSTUM_IN = 1,
-        FRUSTUM_INTERSECT = 2
-    };
-
-    enum class FrustPlane : U8 {
-        PLANE_LEFT = 0,
-        PLANE_RIGHT,
-        PLANE_NEAR,
-        PLANE_FAR,
-        PLANE_TOP,
-        PLANE_BOTTOM,
-        COUNT
-    };
-
-    enum class FrustPoints : U8 {
-        NEAR_LEFT_TOP = 0,
-        NEAR_RIGHT_TOP,
-        NEAR_RIGHT_BOTTOM,
-        NEAR_LEFT_BOTTOM,
-        FAR_LEFT_TOP,
-        FAR_RIGHT_TOP,
-        FAR_RIGHT_BOTTOM,
-        FAR_LEFT_BOTTOM,
-        COUNT
-    };
-
    public:
     Frustum() = default;
     void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
 
     void set(const Frustum& other);
 
-    FrustCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const noexcept;
-    FrustCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const noexcept;
-    FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept;
+    FrustumCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const noexcept;
+    FrustumCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const noexcept;
+    FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept;
 
-    inline FrustCollision ContainsPoint(const vec3<F32>& point) const noexcept {
+    inline FrustumCollision ContainsPoint(const vec3<F32>& point) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsPoint(point, lastPlaneCache);
     }
-    inline FrustCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
+    inline FrustumCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsBoundingBox(bbox, lastPlaneCache);
     }
-    inline FrustCollision ContainsSphere(const vec3<F32>& center, F32 radius) const noexcept {
+    inline FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsSphere(center, radius, lastPlaneCache);
     }
@@ -98,7 +72,7 @@ class Frustum {
     void computePlanes(const mat4<F32>& viewProjMatrix);
 
     inline bool operator==(const Frustum& other) const noexcept {
-        for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
+        for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
             if (_frustumPlanes[i] != other._frustumPlanes[i]) {
                 return false;
             }
@@ -108,7 +82,7 @@ class Frustum {
     }
 
     inline bool operator!=(const Frustum& other) const noexcept {
-        for (U8 i = 0; i < to_U8(FrustPlane::COUNT); ++i) {
+        for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
             if (_frustumPlanes[i] != other._frustumPlanes[i]) {
                 return true;
             }
@@ -117,37 +91,39 @@ class Frustum {
         return false;
     }
 
-     FrustCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
+     FrustumCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
                                               const BoundingBox& bbox) const noexcept;
-     FrustCollision PlanePointIntersect(const Plane<F32>& frustumPlane, 
+     FrustumCollision PlanePointIntersect(const Plane<F32>& frustumPlane, 
                                         const vec3<F32>& point) const noexcept;
-     FrustCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane,
+     FrustumCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane,
                                          const vec3<F32>& center,
                                          F32 radius) const noexcept;
 
-     FrustCollision PlaneBoundingBoxIntersect(const FrustPlane frustumPlane,
+     FrustumCollision PlaneBoundingBoxIntersect(const FrustumPlane frustumPlane,
                                               const BoundingBox& bbox) const noexcept;
-     FrustCollision PlanePointIntersect(const FrustPlane frustumPlane,
+     FrustumCollision PlanePointIntersect(const FrustumPlane frustumPlane,
                                         const vec3<F32>& point) const noexcept;
-     FrustCollision PlaneSphereIntersect(const FrustPlane frustumPlane,
+     FrustumCollision PlaneSphereIntersect(const FrustumPlane frustumPlane,
                                          const vec3<F32>& center,
                                          F32 radius) const noexcept;
 
-     FrustCollision PlaneBoundingBoxIntersect(const FrustPlane* frustumPlanes,
+     FrustumCollision PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes,
                                               const U8 count,
                                               const BoundingBox& bbox) const noexcept;
-     FrustCollision PlanePointIntersect(const FrustPlane* frustumPlanes,
+     FrustumCollision PlanePointIntersect(const FrustumPlane* frustumPlanes,
                                         const U8 count,
                                         const vec3<F32>& point) const noexcept;
-     FrustCollision PlaneSphereIntersect(const FrustPlane* frustumPlanes,
+     FrustumCollision PlaneSphereIntersect(const FrustumPlane* frustumPlanes,
                                          const U8 count,
                                          const vec3<F32>& center,
                                          F32 radius) const noexcept;
     void updatePoints() noexcept;
 
+    inline const std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>& planes() const noexcept { return _frustumPlanes; }
+
    private:
-    std::array<Plane<F32>, to_base(FrustPlane::COUNT)>  _frustumPlanes = create_array<to_base(FrustPlane::COUNT)>(DEFAULT_PLANE);
-    std::array<vec3<F32>,  to_base(FrustPoints::COUNT)> _frustumPoints = create_array<to_base(FrustPoints::COUNT)>(VECTOR3_ZERO);
+    std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>  _frustumPlanes = create_array<to_base(FrustumPlane::COUNT)>(DEFAULT_PLANE);
+    std::array<vec3<F32>,  to_base(FrustumPoints::COUNT)> _frustumPoints = create_array<to_base(FrustumPoints::COUNT)>(VECTOR3_ZERO);
 };
 
 };  // namespace Divide

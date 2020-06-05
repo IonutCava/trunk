@@ -55,9 +55,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
 
     SamplerDescriptor noiseSampler = {};
-    noiseSampler.wrapU(TextureWrap::REPEAT);
-    noiseSampler.wrapV(TextureWrap::REPEAT);
-    noiseSampler.wrapW(TextureWrap::REPEAT);
+    noiseSampler.wrapUVW(TextureWrap::REPEAT);
     noiseSampler.minFilter(TextureFilter::NEAREST);
     noiseSampler.magFilter(TextureFilter::NEAREST);
     noiseSampler.anisotropyLevel(0);
@@ -75,9 +73,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(FColour3) }, vec2<U16>(SSAO_NOISE_SIZE));
 
     SamplerDescriptor screenSampler = {};
-    screenSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.minFilter(TextureFilter::LINEAR);
     screenSampler.magFilter(TextureFilter::LINEAR);
     screenSampler.anisotropyLevel(0);

@@ -68,9 +68,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler.wrapU(TextureWrap::REPEAT);
-    defaultSampler.wrapV(TextureWrap::REPEAT);
-    defaultSampler.wrapW(TextureWrap::REPEAT);
+    defaultSampler.wrapUVW(TextureWrap::REPEAT);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.samplerDescriptor(defaultSampler);

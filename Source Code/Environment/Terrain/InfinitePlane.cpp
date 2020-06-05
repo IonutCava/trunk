@@ -46,9 +46,7 @@ bool InfinitePlane::load() {
     planeMaterial->roughness(1.0f);
 
     SamplerDescriptor albedoSampler = {};
-    albedoSampler.wrapU(TextureWrap::REPEAT);
-    albedoSampler.wrapV(TextureWrap::REPEAT);
-    albedoSampler.wrapW(TextureWrap::REPEAT);
+    albedoSampler.wrapUVW(TextureWrap::REPEAT);
     albedoSampler.minFilter(TextureFilter::LINEAR);
     albedoSampler.magFilter(TextureFilter::LINEAR);
     albedoSampler.anisotropyLevel(8);

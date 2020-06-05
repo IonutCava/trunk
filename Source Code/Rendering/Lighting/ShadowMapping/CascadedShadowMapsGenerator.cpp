@@ -90,9 +90,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     _shaderConstants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, blurSizes);
 
     SamplerDescriptor sampler = {};
-    sampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    sampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    sampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    sampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     sampler.minFilter(TextureFilter::LINEAR);
     sampler.magFilter(TextureFilter::LINEAR);
 

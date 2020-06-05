@@ -296,9 +296,7 @@ namespace Divide {
 
     Texture_ptr ContentExplorerWindow::getTextureForPath(const Str256& texturePath, const Str64& textureName) {
         SamplerDescriptor texturePreviewSampler = {};
-        texturePreviewSampler.wrapU(TextureWrap::CLAMP);
-        texturePreviewSampler.wrapV(TextureWrap::CLAMP);
-        texturePreviewSampler.wrapW(TextureWrap::CLAMP);
+        texturePreviewSampler.wrapUVW(TextureWrap::CLAMP);
         texturePreviewSampler.minFilter(TextureFilter::NEAREST);
         texturePreviewSampler.magFilter(TextureFilter::NEAREST);
         texturePreviewSampler.anisotropyLevel(0);

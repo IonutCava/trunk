@@ -46,7 +46,7 @@ float detail_getShadowFactorDirectional(in uint shadowIndex, in float TanAcosNdo
     if (detail_isInFrustum(shadowCoord)) 
     {
         const vec4 crtDetails = properties.dvd_shadowLightDetails;
-        const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
+        const float bias = crtDetails.z;//clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
         // now get current linear depth as the length between the fragment and light position
         const float currentDepth = shadowCoord.z - bias;
         const vec2 moments = texture(layeredDepthMaps, vec3(shadowCoord.xy, crtDetails.y + Split)).rg;
@@ -102,6 +102,7 @@ int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
 
 float getShadowFactor(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
     float ret = 1.0f;
+
 #if !defined(DISABLE_SHADOW_MAPPING)
     const int shadowIndex = lightOptions.y;
     if (CanReceiveShadows(shadowIndex, receivesShadows, lodLevel)) {

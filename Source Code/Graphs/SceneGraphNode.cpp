@@ -597,15 +597,15 @@ bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullPa
 }
 
 bool SceneGraphNode::cullNode(const NodeCullParams& params,
-                              Frustum::FrustCollision& collisionTypeOut,
+                              FrustumCollision& collisionTypeOut,
                               F32& distanceToClosestPointSQ) const {
     OPTICK_EVENT();
 
-    collisionTypeOut = Frustum::FrustCollision::FRUSTUM_OUT;
+    collisionTypeOut = FrustumCollision::FRUSTUM_OUT;
 
     // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
     if (hasFlag(Flags::VISIBILITY_LOCKED)) {
-        collisionTypeOut = Frustum::FrustCollision::FRUSTUM_IN;
+        collisionTypeOut = FrustumCollision::FRUSTUM_IN;
         return false;
     }
 
@@ -630,16 +630,16 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
         const Frustum& frust = params._currentCamera->getFrustum();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast
         collisionTypeOut = frust.ContainsSphere(center, radius, fakePlaneCache);
-        if (collisionTypeOut == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+        if (collisionTypeOut == FrustumCollision::FRUSTUM_INTERSECT) {
             // If the sphere is not completely in the frustum, check the AABB
             collisionTypeOut = frust.ContainsBoundingBox(boundingBox, fakePlaneCache);
         }
     } else {
         // We are inside the AABB. So ... intersect?
-        collisionTypeOut = Frustum::FrustCollision::FRUSTUM_INTERSECT;
+        collisionTypeOut = FrustumCollision::FRUSTUM_INTERSECT;
     }
 
-    return collisionTypeOut == Frustum::FrustCollision::FRUSTUM_OUT;
+    return collisionTypeOut == FrustumCollision::FRUSTUM_OUT;
 }
 
 void SceneGraphNode::occlusionCull(const RenderStagePass& stagePass,

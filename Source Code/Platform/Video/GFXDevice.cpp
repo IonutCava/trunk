@@ -265,9 +265,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     // buffer (MSAA + HDR rendering if possible)
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    defaultSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    defaultSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    defaultSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     defaultSampler.minFilter(TextureFilter::NEAREST);
     defaultSampler.magFilter(TextureFilter::NEAREST);
 
@@ -317,9 +315,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
     SamplerDescriptor hiZSampler = {};
-    hiZSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    hiZSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    hiZSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    hiZSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.anisotropyLevel(0u);
 
     if (GetHiZMethod() == HiZMethod::ARM) {
@@ -356,9 +352,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         SamplerDescriptor editorSampler = {};
         editorSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
         editorSampler.magFilter(TextureFilter::LINEAR);
-        editorSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-        editorSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-        editorSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+        editorSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
         editorSampler.anisotropyLevel(0);
 
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
@@ -377,9 +371,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     }
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
-    reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.minFilter(TextureFilter::NEAREST);
     reflectionSampler.magFilter(TextureFilter::NEAREST);
 
@@ -425,9 +417,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     }
 
     SamplerDescriptor accumulationSampler = {};
-    accumulationSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    accumulationSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    accumulationSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    accumulationSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     accumulationSampler.minFilter(TextureFilter::NEAREST);
     accumulationSampler.magFilter(TextureFilter::NEAREST);
 
@@ -1287,7 +1277,7 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
 
         const auto count = std::count_if(std::cbegin(_gpuBlock._data._clipPlanes),
                                          std::cend(_gpuBlock._data._clipPlanes),
-                                         [](const vec4<F32>& plane) {return !IS_ZERO(plane.w); });
+                                         [](const Plane<F32>& plane) {return !IS_ZERO(plane._distance); });
 
         _gpuBlock._data._otherProperties.w = to_F32(count);
 
@@ -1315,6 +1305,8 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
     if (projectionDirty || viewDirty) {
         mat4<F32>::Multiply(data._ViewMatrix, data._ProjectionMatrix, data._ViewProjectionMatrix);
+
+        data._frustumPlanes = cameraSnapshot._frustumPlanes;
         needsUpdate = true;
     }
 
@@ -2213,8 +2205,8 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
     const U32 frustumCount = _debugFrustums._Id.load();
 
     Line temp = {};
-    std::array<Line, to_base(Frustum::FrustPlane::COUNT) * 2> lines = {};
-    std::array<vec3<F32>, to_base(Frustum::FrustPoints::COUNT)> corners = {};
+    std::array<Line, to_base(FrustumPlane::COUNT) * 2> lines = {};
+    std::array<vec3<F32>, to_base(FrustumPoints::COUNT)> corners = {};
     for (U32 f = 0; f < frustumCount; ++f) {
         IMPrimitive*& frustumPrimitive = _debugFrustums._debugPrimitives[f];
         if (frustumPrimitive == nullptr) {
@@ -2234,76 +2226,76 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
 
         U8 lineCount = 0;
         // Draw Near Plane
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_BOTTOM)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_BOTTOM)]);
+        temp.positionStart(corners[to_base(FrustumPoints::NEAR_LEFT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_RIGHT_BOTTOM)]);
         temp.colourStart(startColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_BOTTOM)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_TOP)]);
+        temp.positionStart(corners[to_base(FrustumPoints::NEAR_RIGHT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_RIGHT_TOP)]);
         temp.colourStart(startColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_TOP)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_TOP)]);
+        temp.positionStart(corners[to_base(FrustumPoints::NEAR_RIGHT_TOP)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_LEFT_TOP)]);
         temp.colourStart(startColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_TOP)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_BOTTOM)]);
+        temp.positionStart(corners[to_base(FrustumPoints::NEAR_LEFT_TOP)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_LEFT_BOTTOM)]);
         temp.colourStart(startColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
         // Draw Far Plane
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_BOTTOM)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_BOTTOM)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_LEFT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::FAR_RIGHT_BOTTOM)]);
         temp.colourStart(endColourU);
         temp.colourEnd(endColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_BOTTOM)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_TOP)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_RIGHT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::FAR_RIGHT_TOP)]);
         temp.colourStart(endColourU);
         temp.colourEnd(endColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_TOP)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_LEFT_TOP)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_RIGHT_TOP)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::FAR_LEFT_TOP)]);
         temp.colourStart(endColourU);
         temp.colourEnd(endColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_TOP)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::FAR_LEFT_BOTTOM)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_LEFT_TOP)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::FAR_LEFT_BOTTOM)]);
         temp.colourStart(endColourU);
         temp.colourEnd(endColourU);
         lines[lineCount++] = temp;
         
         // Connect Planes
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_BOTTOM)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_BOTTOM)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_RIGHT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_RIGHT_BOTTOM)]);
         temp.colourStart(endColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_RIGHT_TOP)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_RIGHT_TOP)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_RIGHT_TOP)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_RIGHT_TOP)]);
         temp.colourStart(endColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_TOP)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_TOP)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_LEFT_TOP)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_LEFT_TOP)]);
         temp.colourStart(endColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;
 
-        temp.positionStart(corners[to_base(Frustum::FrustPoints::FAR_LEFT_BOTTOM)]);
-        temp.positionEnd(corners[to_base(Frustum::FrustPoints::NEAR_LEFT_BOTTOM)]);
+        temp.positionStart(corners[to_base(FrustumPoints::FAR_LEFT_BOTTOM)]);
+        temp.positionEnd(corners[to_base(FrustumPoints::NEAR_LEFT_BOTTOM)]);
         temp.colourStart(endColourU);
         temp.colourEnd(startColourU);
         lines[lineCount++] = temp;

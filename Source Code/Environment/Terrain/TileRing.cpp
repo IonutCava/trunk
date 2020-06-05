@@ -14,158 +14,109 @@
 
 #include "stdafx.h"
 #include "Headers/TileRing.h"
-#include "Headers/Terrain.h"
 
-#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
 
-#pragma pack(push)  /* push current alignment to stack */
-#pragma pack(1)
-    struct InstanceData
-    {
-        F32 x = 0.0f;
-        F32 y = 0.0f;
+TileRing::TileRing(I32 holeWidth, I32 outerWidth, F32 tileSize):
+	_holeWidth(holeWidth),
+	_outerWidth(outerWidth), 
+	_ringWidth((outerWidth - holeWidth) / 2), // No remainder - see assert below.
+	_tileCount(outerWidth*outerWidth - holeWidth*holeWidth),
+	_tileSize(tileSize)
+{
+}
 
-        // These are the size of the neighbours along +/- x or y axes.  For interior tiles
-        // this is 1.  For edge tiles it is 0.5 or 2.0.
-        F32 neighbourMinusX = 1.0f;
-        F32 neighbourMinusY = 1.0f;
-        F32 neighbourPlusX = 1.0f;
-        F32 neighbourPlusY = 1.0f;
-    };
-#pragma pack(pop)   /* restore original alignment from stack */
+bool TileRing::InRing(I32 x, I32 y) const
+{
+	assert(x >= 0 && x < _outerWidth);
+	assert(y >= 0 && y < _outerWidth);
+	return (x < _ringWidth || y < _ringWidth || x >= _outerWidth - _ringWidth || y >= _outerWidth - _ringWidth);
+}
 
-    TileRing::TileRing(GFXDevice& device, I32 holeWidth, I32 outerWidth, F32 tileSize) :
-        _holeWidth(holeWidth),
-        _outerWidth(outerWidth),
-        _ringWidth((outerWidth - holeWidth) / 2),   // No remainder - see assert below.
-        _nTiles(outerWidth* outerWidth - holeWidth * holeWidth),
-        _tileSize(tileSize)
-    {
-        _buffer = device.newGVD(1, Util::StringFormat("Terrain Tile Ring [ %d - %d - %5.2f ]", holeWidth, outerWidth, tileSize).c_str());
-        assert((outerWidth - holeWidth) % 2 == 0);
-        CreateInstanceDataVB();
-    }
+void TileRing::AssignNeighbourSizes(I32 x, I32 y, Adjacency* pAdj) const
+{
+	pAdj->neighbourPlusX  = 1.0f;
+	pAdj->neighbourPlusY  = 1.0f;
+	pAdj->neighbourMinusX = 1.0f;
+	pAdj->neighbourMinusY = 1.0f;
 
-    TileRing::~TileRing()
-    {
-    }
+	// TBD: these aren't necessarily 2x different.  Depends on the relative tiles sizes supplied to ring ctors.
+	constexpr F32 innerNeighbourSize = 0.5f;
+	constexpr F32 outerNeighbourSize = 2.0f;
 
-    void TileRing::CreateInputLayout(const GenericVertexData::IndexBuffer& idxBuff)
-    {
-        _buffer->setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
+	// Inner edges abut tiles that are smaller.  (But not on the inner-most.)
+	if (_holeWidth > 0)
+	{
+		if (y >= _ringWidth && y < _outerWidth-_ringWidth)
+		{
+			if (x == _ringWidth-1)
+			{
+				pAdj->neighbourPlusX  = innerNeighbourSize;
+			}
+			if (x == _outerWidth - _ringWidth)
+			{
+				pAdj->neighbourMinusX = innerNeighbourSize;
+			}
+		}
+		if (x >= _ringWidth && x < _outerWidth - _ringWidth)
+		{
+			if (y == _ringWidth-1)
+			{
+				pAdj->neighbourPlusY  = innerNeighbourSize;
+			}
+			if (y == _outerWidth - _ringWidth)
+			{
+				pAdj->neighbourMinusY = innerNeighbourSize;
+			}
+		}
+	}
 
-        AttributeDescriptor& desc1 = _buffer->attribDescriptor(to_base(AttribLocation::POSITION));
-        desc1.set(0,
-                  2,
-                  GFXDataFormat::FLOAT_32,
-                  false,
-                  offsetof(InstanceData, x));
+	// Outer edges abut tiles that are larger.  We could skip this on the outer-most ring.  But it will
+	// make almost zero visual or perf difference.
+	if (x == 0) 
+	{
+		pAdj->neighbourMinusX = outerNeighbourSize;
+	}
+	if (y == 0) 
+	{
+		pAdj->neighbourMinusY = outerNeighbourSize;
+	}
+	if (x == _outerWidth - 1) 
+	{
+		pAdj->neighbourPlusX  = outerNeighbourSize;
+	}
+	if (y == _outerWidth - 1) 
+	{
+		pAdj->neighbourPlusY  = outerNeighbourSize;
+	}
+}
 
-        AttributeDescriptor& desc2 = _buffer->attribDescriptor(to_base(AttribLocation::TEXCOORD));
-        desc2.set(0,
-                  4,
-                  GFXDataFormat::FLOAT_32,
-                  false,
-                  offsetof(InstanceData, neighbourMinusX));
-    }
+vectorEASTL<TileRing::InstanceData> TileRing::createInstanceDataVB(I32 ringID)
+{
+	vectorEASTL<TileRing::InstanceData> ret(tileCount());
 
-    void TileRing::ReleaseInputLayout()
-    {
-    }
+	I32 index = 0;
+	const F32 halfWidth = 0.5f * to_F32(_outerWidth);
+	for (I32 y = 0; y < _outerWidth; ++y)
+	{
+		for (I32 x = 0; x < _outerWidth; ++x)
+		{
+			if (InRing(x,y))
+			{
+				ret[index].data.positionX = tileSize() * (to_F32(x) - halfWidth);
+				ret[index].data.positionZ = tileSize() * (to_F32(y) - halfWidth);
+				ret[index].data.tileScale = tileSize();
+				ret[index].data.ringID = to_F32(ringID);
+				AssignNeighbourSizes(x, y, &(ret[index].adjacency));
+				index++;
+			}
+		}
+	}
+	assert(index == _nTiles);
+	return ret;
+}
 
-    bool TileRing::InRing(I32 x, I32 y) const
-    {
-        assert(x >= 0 && x < _outerWidth);
-        assert(y >= 0 && y < _outerWidth);
-        return (x < _ringWidth || y < _ringWidth || x >= _outerWidth - _ringWidth || y >= _outerWidth - _ringWidth);
-    }
-
-    void TileRing::AssignNeighbourSizes(I32 x, I32 y, InstanceData* pAdj) const
-    {
-        pAdj->neighbourPlusX = 1.0f;
-        pAdj->neighbourPlusY = 1.0f;
-        pAdj->neighbourMinusX = 1.0f;
-        pAdj->neighbourMinusY = 1.0f;
-
-        // TBD: these aren't necessarily 2x different.  Depends on the relative tiles sizes supplied to ring ctors.
-        const F32 innerNeighbourSize = 0.5f;
-        const F32 outerNeighbourSize = 2.0f;
-
-        // Inner edges abut tiles that are smaller.  (But not on the inner-most.)
-        if (_holeWidth > 0)
-        {
-            if (y >= _ringWidth && y < _outerWidth - _ringWidth)
-            {
-                if (x == _ringWidth - 1) {
-                    pAdj->neighbourPlusX = innerNeighbourSize;
-                }
-                if (x == _outerWidth - _ringWidth) {
-                    pAdj->neighbourMinusX = innerNeighbourSize;
-                }
-            }
-            if (x >= _ringWidth && x < _outerWidth - _ringWidth)
-            {
-                if (y == _ringWidth - 1) {
-                    pAdj->neighbourPlusY = innerNeighbourSize;
-                }
-                if (y == _outerWidth - _ringWidth) {
-                    pAdj->neighbourMinusY = innerNeighbourSize;
-                }
-            }
-        }
-
-        // Outer edges abut tiles that are larger.  We could skip this on the outer-most ring.  But it will
-        // make almost zero visual or perf difference.
-        if (x == 0) {
-            pAdj->neighbourMinusX = outerNeighbourSize;
-        }
-        if (y == 0) {
-            pAdj->neighbourMinusY = outerNeighbourSize;
-        }
-        if (x == _outerWidth - 1) {
-            pAdj->neighbourPlusX = outerNeighbourSize;
-        }
-        if (y == _outerWidth - 1) {
-            pAdj->neighbourPlusY = outerNeighbourSize;
-        }
-    }
-
-    void TileRing::CreateInstanceDataVB()
-    {
-        I32 index = 0;
-        vectorEASTL<InstanceData> vbData(_nTiles);
-
-        const F32 halfWidth = 0.5f * (F32)_outerWidth;
-        for (I32 y = 0; y < _outerWidth; ++y)
-        {
-            for (I32 x = 0; x < _outerWidth; ++x)
-            {
-                if (InRing(x, y))
-                {
-                    vbData[index].x = _tileSize * (to_F32(x) - halfWidth);
-                    vbData[index].y = _tileSize * (to_F32(y) - halfWidth);
-                    AssignNeighbourSizes(x, y, &(vbData[index]));
-                    ++index;
-                }
-            }
-        }
-        assert(index == _nTiles);
-
-        _buffer->create(1);
-
-        GenericVertexData::SetBufferParams params = {};
-        params._buffer = 0;
-        params._elementCount = _nTiles;
-        params._elementSize = sizeof(InstanceData);
-        params._useRingBuffer = false;
-        params._updateFrequency = BufferUpdateFrequency::ONCE;
-        params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        params._sync = false;
-        params._data = vbData.data();
-        params._instanceDivisor = 1;
-
-        _buffer->setBuffer(params);
-    }
 }; //namespace Divide

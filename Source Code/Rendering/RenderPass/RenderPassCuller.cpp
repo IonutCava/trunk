@@ -126,7 +126,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* current
     // Early out for inactive nodes
     if (currentNode->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
 
-        Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+        FrustumCollision collisionResult = FrustumCollision::FRUSTUM_OUT;
         const I64 nodeGUID = currentNode->getGUID();
         for (size_t i = 0; i < params._ignoredGUIDS.second; ++i) {
             if (nodeGUID == params._ignoredGUIDS.first[i]) {
@@ -138,7 +138,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* current
         bool isTransformNode = false;
         if (shouldCullNode(params._stage, currentNode, isTransformNode)) {
             if (isTransformNode) {
-                collisionResult = Frustum::FrustCollision::FRUSTUM_INTERSECT;
+                collisionResult = FrustumCollision::FRUSTUM_INTERSECT;
             } else {
                 return;
             }
@@ -154,7 +154,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* current
                 nodes.append(node);
             }
             // Parent node intersects the view, so check children
-            if (collisionResult == Frustum::FrustCollision::FRUSTUM_INTERSECT) {
+            if (collisionResult == FrustumCollision::FRUSTUM_INTERSECT) {
 
                 currentNode->lockChildrenForRead();
                 const vectorEASTL<SceneGraphNode*>& children = currentNode->getChildrenLocked();
@@ -213,7 +213,7 @@ void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEAS
     nodesOut.reset();
 
     F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-    Frustum::FrustCollision collisionResult = Frustum::FrustCollision::FRUSTUM_OUT;
+    FrustumCollision collisionResult = FrustumCollision::FRUSTUM_OUT;
     for (SceneGraphNode* node : nodes) {
         // Internal node cull (check against camera frustum and all that ...)
         if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(node, params, collisionResult, distanceSqToCamera)) {

@@ -9,7 +9,7 @@ namespace Divide {
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
         , _altitudeRange(0.f, 1.f)
-        , _tessellationSettings(32.f, 100.f)
+        , _tessellationSettings(32.f)
     {
     }
 
@@ -43,12 +43,12 @@ namespace Divide {
 
             addVariable("heightfield", descTree.get<stringImpl>("heightfield", ""));
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
+            addVariable("normalTex", descTree.get<stringImpl>("normalMap", ""));
             addVariable("horizontalScale", descTree.get<F32>("horizontalScale", 1.0f));
             addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
             dimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
             altitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-            tessellationSettings(vec2<F32>(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f),
-                                           descTree.get<F32>("tessellationSettings.<xmlattr>.patchSizeInM", 100.0f)));
+            tessellationSettings(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f));
             tessellatedTriangleWidth(descTree.get<U32>("tessellatedTriangleWidth", 30));
             addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation.c_str()));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));

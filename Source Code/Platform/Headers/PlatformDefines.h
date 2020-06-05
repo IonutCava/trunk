@@ -909,42 +909,42 @@ struct AtomicWrapper : private NonMovable
 #define PROPERTY_GET_SET(Type, Name) \
 public: \
     FORCE_INLINE void Name(const Type& val) noexcept { _##Name = val; } \
-    FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+    [[nodiscard]] FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
 
 #define PROPERTY_GET(Type, Name) \
 public: \
-    FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+    [[nodiscard]] FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
 
 #define VIRTUAL_PROPERTY_GET_SET(Type, Name) \
 public: \
     virtual void Name(const Type& val) noexcept { _##Name = val; } \
-    virtual const Type& Name() const noexcept { return _##Name; }
+    [[nodiscard]] virtual const Type& Name() const noexcept { return _##Name; }
 
 #define VIRTUAL_PROPERTY_GET(Type, Name) \
 public: \
-    virtual const Type& Name() const noexcept { return _##Name; }
+    [[nodiscard]] virtual const Type& Name() const noexcept { return _##Name; }
 
 #define POINTER_GET_SET(Type, Name) \
 public: \
     FORCE_INLINE void Name(Type* const val) noexcept { _##Name = val; } \
-    FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+    [[nodiscard]] FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
 
 #define POINTER_GET(Type, Name) \
 public: \
-    FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+   [[nodiscard]] FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
 
 
 #define PROPERTY_GET_INTERNAL(Type, Name) \
 protected: \
-    FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+    [[nodiscard]] FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
 
 #define VIRTUAL_PROPERTY_GET_INTERNAL(Type, Name) \
 protected: \
-    virtual const Type& Name() const noexcept { return _##Name; }
+    [[nodiscard]] virtual const Type& Name() const noexcept { return _##Name; }
 
 #define POINTER_GET_INTERNAL(Type, Name) \
 protected: \
-    FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+    [[nodiscard]] FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
 
 #define PROPERTY_SET_INTERNAL(Type, Name) \
 protected: \

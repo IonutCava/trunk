@@ -25,18 +25,18 @@ Copyright (c) 2009 Ionut Cava
 
 This file is part of DIVIDE Framework.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software
 and associated documentation files (the "Software"), to deal in the Software
 without restriction,
 including without limitation the rights to use, copy, modify, merge, publish,
 distribute, sublicense,
-and/or sell copies of the Software, and to permit persons to whom the
-Software is furnished to do so,
+and/or sell copies of the Software, and to permit persons to whom the Software
+is furnished to do so,
 subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED,
@@ -44,63 +44,85 @@ INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
 PARTICULAR PURPOSE AND NONINFRINGEMENT.
 IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR
-IN CONNECTION WITH THE SOFTWARE
+WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE
 OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
 #pragma once
-#ifndef _TERRAIN_TILE_RING_H_
-#define _TERRAIN_TILE_RING_H_
+#ifndef _TILE_RING_H_
+#define _TILE_RING_H_
 
-#include "Rendering/Camera/Headers/Frustum.h"
-#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/NonCopyable.h"
 
 namespace Divide {
-    class GenericVertexData;
-    struct InstanceData;
-    // Int dimensions specified to the ctor are in numbers of tiles.  It's symmetrical in
-    // each direction.  (Don't read much into the exact numbers of #s in this diagram.)
-    //
-    //    <-   outerWidth  ->
-    //    ###################
-    //    ###################
-    //    ###             ###
-    //    ###<-holeWidth->###
-    //    ###             ###
-    //    ###    (0,0)    ###
-    //    ###             ###
-    //    ###             ###
-    //    ###             ###
-    //    ###################
-    //    ###################
-    //
-    class TileRing : private NonCopyable
-    {
-    public:
-        // holeWidth & outerWidth are nos. of tiles. tileSize is a world-space length
-        explicit TileRing(GFXDevice& device, I32 holeWidth, I32 outerWidth, F32 tileSize);
-        ~TileRing();
 
-        void CreateInputLayout(const GenericVertexData::IndexBuffer& idxBuff);
-        void ReleaseInputLayout();
+// Int dimensions specified to the ctor are in numbers of tiles.  It's symmetrical in
+// each direction.  (Don't read much into the exact numbers of #s in this diagram.)
+//
+//    <-   outerWidth  ->
+//    ###################
+//    ###################
+//    ###             ###
+//    ###<-holeWidth->###
+//    ###             ###
+//    ###    (0,0)    ###
+//    ###             ###
+//    ###             ###
+//    ###             ###
+//    ###################
+//    ###################
+//
+class TileRing : private NonCopyable
+{
+public:
+	struct Adjacency
+	{
+		// These are the size of the neighbours along +/- x or y axes.
+		// For interior tiles this is 1.  For edge tiles it is 0.5 or 2.0.
+		F32 neighbourMinusX;
+		F32 neighbourMinusY;
+		F32 neighbourPlusX;
+		F32 neighbourPlusY;
+	};
 
-        inline I32 outerWidth() const { return _outerWidth; }
-        inline I32 nTiles()     const { return _nTiles; }
-        inline F32 tileSize()   const { return _tileSize; }
+	struct VertexData
+	{
+		F32 positionX = 0.0f;
+		F32 positionZ = 0.0f;
+		F32 tileScale = 1.0f;
+		F32 ringID = 0.0f;
+	};
 
-        inline GenericVertexData* getBuffer() const { return _buffer; }
+	struct InstanceData
+	{
+		VertexData data;
+		Adjacency adjacency;
+	};
 
-    private:
-        void CreateInstanceDataVB();
-        bool InRing(I32 x, I32 y) const;
-        void AssignNeighbourSizes(I32 x, I32 y, InstanceData*) const;
+public:
+	// holeWidth & outerWidth are nos. of tiles; tileSize is a world-space length
+	explicit TileRing(I32 holeWidth, I32 outerWidth, F32 tileSize);
+	~TileRing() = default;
 
-        const I32 _holeWidth, _outerWidth, _ringWidth;
-        const I32 _nTiles;
-        const F32 _tileSize;
-        GenericVertexData* _buffer;
-    };
-}; //namespace Divide
-#endif //_TERRAIN_TILE_RING_H_
+	PROPERTY_R(I32, tileCount, 0);
+	PROPERTY_R(F32, tileSize, 1.f);
+
+	// We use ID as a really hacky LoD system. Ring 0 => LoD 0. Ring 1 => LoD 1 (e.g. no detail normals), etc
+	vectorEASTL<InstanceData> createInstanceDataVB(I32 ringID);
+
+private:
+	bool InRing(I32 x, I32 y) const;
+	void AssignNeighbourSizes(I32 x, I32 y, Adjacency*) const;
+
+private:
+	const I32 _holeWidth = 0;
+	const I32 _outerWidth = 0;
+	const I32 _ringWidth = 0;
+};
+
+};  // namespace Divide
+
+#endif //_TILE_RING_H_

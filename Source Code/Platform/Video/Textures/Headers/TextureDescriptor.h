@@ -54,6 +54,10 @@ struct SamplerDescriptor : public Hashable {
                minFilter() != TextureFilter::COUNT;
     }
 
+    inline void wrapUVW(TextureWrap wrap) noexcept {
+        wrapU(wrap); wrapV(wrap); wrapW(wrap);
+    }
+
     /// Texture filtering mode
     PROPERTY_RW(TextureFilter, minFilter, TextureFilter::LINEAR_MIPMAP_LINEAR);
     PROPERTY_RW(TextureFilter, magFilter, TextureFilter::LINEAR);

@@ -19,9 +19,7 @@ GUISplash::GUISplash(ResourceCache* cache,
     : _dimensions(dimensions)
 {
     SamplerDescriptor splashSampler = {};
-    splashSampler.wrapU(TextureWrap::CLAMP);
-    splashSampler.wrapV(TextureWrap::CLAMP);
-    splashSampler.wrapW(TextureWrap::CLAMP);
+    splashSampler.wrapUVW(TextureWrap::CLAMP);
     splashSampler.minFilter(TextureFilter::NEAREST);
     splashSampler.magFilter(TextureFilter::NEAREST);
     splashSampler.anisotropyLevel(0);

@@ -54,9 +54,7 @@ void SceneEnvironmentProbePool::onStartup(GFXDevice& context) {
 
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
-    reflectionSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    reflectionSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    reflectionSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.magFilter(TextureFilter::LINEAR);
     reflectionSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     reflectionSampler.anisotropyLevel(context.context().config().rendering.anisotropicFilteringLevel);

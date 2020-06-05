@@ -326,13 +326,13 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + 
-        Util::to_string(to_base(Frustum::FrustPlane::COUNT)),
+        Util::to_string(to_base(FrustumPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CULL_DISTANCES " + 
-         Util::to_string(maxClipCull - to_base(Frustum::FrustPlane::COUNT)),
+         Util::to_string(maxClipCull - to_base(FrustumPlane::COUNT)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -541,6 +541,12 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
+        "#define TEXTURE_ADDITIONAL_DATA " +
+        Util::to_string(to_base(TextureUsage::ADDITIONAL_DATA)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
         "#define SHADOW_CUBE_MAP_ARRAY " +
         Util::to_string(to_base(TextureUsage::SHADOW_CUBE)),
         lineOffsets);
@@ -561,12 +567,6 @@ bool GL_API::initGLSW(Configuration& config) {
         ShaderType::FRAGMENT,
         "#define TEXTURE_COUNT " +
         Util::to_string(to_U32(TextureUsage::COUNT)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_TERRAIN_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::TERRAIN_DATA)),
         lineOffsets);
 
     appendToShaderHeader(

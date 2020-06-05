@@ -82,8 +82,13 @@ GFXDevice::getFrameCount() const noexcept {
 }
 
 inline I32
-GFXDevice::getDrawCallCount() const noexcept {
+GFXDevice::getDrawCallCountLastFrame() const noexcept {
     return FRAME_DRAW_CALLS_PREV;
+}
+
+inline I32
+GFXDevice::getDrawCallCount() const noexcept {
+    return FRAME_DRAW_CALLS;
 }
 
 /// Return the last number of HIZ culled items

@@ -265,7 +265,7 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 
                 F32 headHeight = state()->playerState(state()->playerPass())._headHeight;
                 camPos -= g_terrain->get<TransformComponent>()->getPosition();
-                playerCamera()->setEye(ter.getPositionFromGlobal(camPos.x, camPos.z, true) + vec3<F32>(0.0f, headHeight, 0.0f));
+                playerCamera()->setEye(ter.getVertFromGlobal(camPos.x, camPos.z, true)._position + vec3<F32>(0.0f, headHeight, 0.0f));
             }
         }
     }

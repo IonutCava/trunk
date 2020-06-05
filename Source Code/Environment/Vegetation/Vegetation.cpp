@@ -149,9 +149,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
         const vec3<F32> vertices[] = {
-            vec3<F32>(-pos000.x,                0.0f, -pos000.y - offsetBottom),  vec3<F32>(-pos000.x,             1.0f, -pos000.y + offsetTop),  vec3<F32>(pos000.x,             1.0f, pos000.y + offsetTop), vec3<F32>(pos000.x,                0.0f, pos000.y - offsetBottom),
-            vec3<F32>(-pos120.x + offsetBottom, 0.0f, -pos120.y               ),  vec3<F32>(-pos120.x + offsetTop, 1.0f, -pos120.y            ),  vec3<F32>(pos120.x + offsetTop, 1.0f, pos120.y            ), vec3<F32>(pos120.x + offsetBottom, 0.0f, pos120.y               ),
-            vec3<F32>(-pos240.x - offsetBottom, 0.0f, -pos240.y               ),  vec3<F32>(-pos240.x - offsetTop, 1.0f, -pos240.y            ),  vec3<F32>(pos240.x - offsetTop, 1.0f, pos240.y            ), vec3<F32>(pos240.x - offsetBottom, 0.0f, pos240.y               )
+            vec3<F32>(-pos000.x,                -0.025f, -pos000.y - offsetBottom),  vec3<F32>(-pos000.x,             1.0f, -pos000.y + offsetTop),  vec3<F32>(pos000.x,             1.0f, pos000.y + offsetTop), vec3<F32>(pos000.x,                -0.025f, pos000.y - offsetBottom),
+            vec3<F32>(-pos120.x + offsetBottom, -0.025f, -pos120.y               ),  vec3<F32>(-pos120.x + offsetTop, 1.0f, -pos120.y            ),  vec3<F32>(pos120.x + offsetTop, 1.0f, pos120.y            ), vec3<F32>(pos120.x + offsetBottom, -0.025f, pos120.y               ),
+            vec3<F32>(-pos240.x - offsetBottom, -0.025f, -pos240.y               ),  vec3<F32>(-pos240.x - offsetTop, 1.0f, -pos240.y            ),  vec3<F32>(pos240.x - offsetTop, 1.0f, pos240.y            ), vec3<F32>(pos240.x - offsetBottom, -0.025f, pos240.y               )
         };
 
         const size_t billboardsPlaneCount = sizeof(vertices) / (sizeof(vec3<F32>) * 4);
@@ -194,8 +194,8 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
     constexpr F32 ArBase = 1.0f; // Starting radius of circle A
     constexpr F32 BrBase = 1.0f; // Starting radius of circle B
 
-    F32 PointRadius = 0.95f;
-    F32 dR = 2.5f * PointRadius; // Distance between concentric rings
+    F32 PointRadius = 0.935f;
+    F32 dR = 2.35f * PointRadius; // Distance between concentric rings
 
     s_grassPositions.reserve(to_size(chunkSize) * chunkSize);
     s_treePositions.reserve(to_size(chunkSize) * chunkSize);
@@ -277,9 +277,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     s_treeMaterial->addShaderDefine(ShaderType::COUNT, Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true);
 
     SamplerDescriptor grassSampler = {};
-    grassSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    grassSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    grassSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    grassSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     grassSampler.anisotropyLevel(8);
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
@@ -775,7 +773,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         const U16 mapHeight = map->dimensions(0u, 0u).height;
         const auto& positions = treeData ? s_treePositions : s_grassPositions;
         const auto& scales = treeData ? _treeScales : _grassScales;
-        const F32 slopeLimit = treeData ? 10.0f : 35.0f;
+        const F32 slopeLimit = treeData ? 10.0f : 30.0f;
 
         for (vec2<F32> pos : positions) {
             if (!ScaleAndCheckBounds(chunkPos, chunkSize, pos)) {
@@ -820,10 +818,10 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             if (treeData) {
                 modelRotation.fromEuler(_treeRotations[meshID]);
             } else {
-                modelRotation = RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_AXIS);
+                modelRotation = RotationFromVToU(WORLD_Y_AXIS, vert._normal, WORLD_Z_NEG_AXIS);
             }
 
-            entry._orientationQuat = (Quaternion<F32>(WORLD_Y_AXIS, Random(360.0f)) * modelRotation).asVec4();
+            entry._orientationQuat = (Quaternion<F32>(vert._normal, Random(360.0f)) * modelRotation).asVec4();
             entry._data = {
                 to_F32(index),
                 to_F32(ID),

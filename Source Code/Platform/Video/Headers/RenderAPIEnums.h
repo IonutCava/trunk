@@ -80,6 +80,7 @@ enum class TextureUsage : U8 {
     REFLECTION_PLANAR = 12,
     REFRACTION_PLANAR = 13,
     GBUFFER_EXTRA = 14,
+    ADDITIONAL_DATA = 15,
     COUNT,
 
     GLOSS = OCCLUSION_METALLIC_ROUGHNESS,
@@ -87,13 +88,14 @@ enum class TextureUsage : U8 {
     TERRAIN_ALBEDO_TILE = UNIT0,
     TERRAIN_NORMAL_TILE = UNIT1,
     TERRAIN_EXTRA_TILE = PROJECTION,
-    TERRAIN_HELPER_TEXTURES = OCCLUSION_METALLIC_ROUGHNESS
+    TERRAIN_HELPER_TEXTURES = OCCLUSION_METALLIC_ROUGHNESS,
+    TERRAIN_WORLD_NORMALS = ADDITIONAL_DATA
 };
 
 namespace Names {
     static const char* textureUsage[] = {
         "UNIT0", "NORMALMAP", "HEIGHTMAP", "SHADOW_LAYERED", "DEPTH", "SHADOW_SINGLE", "REFLECTION_CUBE", "SHADOW_CUBE", "OPACITY",
-        "OCCLUSION_METALLIC_ROUGHNESS", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "GBUFFER_EXTRA", "NONE"
+        "OCCLUSION_METALLIC_ROUGHNESS", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "GBUFFER_EXTRA", "ADDITIONAL_DATA", "NONE"
     };
 };
 
@@ -124,6 +126,37 @@ namespace Names {
     };
 };
 
+enum class FrustumCollision : U8
+{
+    FRUSTUM_OUT = 0,
+    FRUSTUM_IN = 1,
+    FRUSTUM_INTERSECT = 2
+};
+
+enum class FrustumPlane : U8
+{
+    PLANE_LEFT = 0,
+    PLANE_RIGHT,
+    PLANE_NEAR,
+    PLANE_FAR,
+    PLANE_TOP,
+    PLANE_BOTTOM,
+    COUNT
+};
+
+enum class FrustumPoints : U8
+{
+    NEAR_LEFT_TOP = 0,
+    NEAR_RIGHT_TOP,
+    NEAR_RIGHT_BOTTOM,
+    NEAR_LEFT_BOTTOM,
+    FAR_LEFT_TOP,
+    FAR_RIGHT_TOP,
+    FAR_RIGHT_BOTTOM,
+    FAR_LEFT_BOTTOM,
+    COUNT
+};
+
 /// State the various attribute locations to use in shaders with VAO/VB's
 enum class AttribLocation : U8 {
     POSITION = 0,
@@ -149,7 +182,6 @@ enum class ShaderBufferLocation : U8 {
     BONE_TRANSFORMS,
     BONE_TRANSFORMS_PREV,
     SCENE_DATA,
-    TERRAIN_DATA,
     GRASS_DATA,
     TREE_DATA,
     CMD_BUFFER,

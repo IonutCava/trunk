@@ -84,9 +84,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
     }
 
     SamplerDescriptor depthMapSampler = {};
-    depthMapSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    depthMapSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    depthMapSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    depthMapSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     depthMapSampler.magFilter(TextureFilter::LINEAR);
     depthMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
 

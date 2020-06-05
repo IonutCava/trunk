@@ -408,9 +408,6 @@
     <ClCompile Include="../../Source Code/Scenes\SceneEnvironmentProbePool.cpp">
       <Filter>Scenes</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Environment\Terrain\TerrainTessellator.cpp">
-      <Filter>Environment\Terrain</Filter>
-    </ClCompile>
     <ClCompile Include="../../Source Code\Environment\Terrain\InfinitePlane.cpp">
       <Filter>Environment\Terrain</Filter>
     </ClCompile>
@@ -641,9 +638,6 @@
     </ClInclude>
     <ClInclude Include="../../Source Code/Scenes\Headers\SceneEnvironmentProbePool.h">
       <Filter>Scenes\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="../../Source Code/Environment\Terrain\Headers\TerrainTessellator.h">
-      <Filter>Environment\Terrain\Headers</Filter>
     </ClInclude>
     <ClInclude Include="../../Source Code\Environment\Terrain\Headers\InfinitePlane.h">
       <Filter>Environment\Terrain\Headers</Filter>

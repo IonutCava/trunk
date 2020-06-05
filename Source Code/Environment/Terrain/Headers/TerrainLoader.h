@@ -74,4 +74,4 @@ class TerrainLoader : private NonCopyable {
 
 };  // namespace Divide
 
-#endif
+#endif //_TERRAIN_LOADER_H_

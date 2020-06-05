@@ -316,6 +316,7 @@ public:  // Accessors and Mutators
     inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const noexcept;
     inline U32 getFrameCount() const noexcept;
     inline I32 getDrawCallCount() const noexcept;
+    inline I32 getDrawCallCountLastFrame() const noexcept;
     /// Return the last number of HIZ culled items
     inline U32 getLastCullCount() const noexcept;
     inline Arena::Statistics getObjectAllocStats() const noexcept;

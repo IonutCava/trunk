@@ -296,7 +296,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     glEnable(GL_CULL_FACE);
 
     // Enable all 6 clip planes, I guess
-    for (U8 i = 0; i < to_U8(Frustum::FrustPlane::COUNT); ++i) {
+    for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
         glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
     }
 

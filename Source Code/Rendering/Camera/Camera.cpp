@@ -292,6 +292,7 @@ bool Camera::updateFrustum() {
     }
 
     _frustum.Extract(getViewMatrix(), getProjectionMatrix());
+    _data._frustumPlanes = _frustum.planes();
     _frustumDirty = false;
 
     return true;

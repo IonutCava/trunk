@@ -92,9 +92,7 @@ bool WaterPlane::load() {
     const Str256& name = resourceName();
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler.wrapU(TextureWrap::REPEAT);
-    defaultSampler.wrapV(TextureWrap::REPEAT);
-    defaultSampler.wrapW(TextureWrap::REPEAT);
+    defaultSampler.wrapUVW(TextureWrap::REPEAT);
     defaultSampler.minFilter(TextureFilter::LINEAR);
     defaultSampler.magFilter(TextureFilter::LINEAR);
 

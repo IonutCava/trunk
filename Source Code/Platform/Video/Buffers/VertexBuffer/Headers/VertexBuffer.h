@@ -57,7 +57,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         F32       _normal = 0.f;
         F32       _tangent = 0.f;
 
-        inline bool operator==(const Vertex& other) const {
+        inline bool operator==(const Vertex& other) const noexcept {
             return _position == other._position &&
                    _normal == other._normal &&
                    _tangent == other._tangent &&
@@ -67,7 +67,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                    _indices.i == other._indices.i;
         }
 
-        inline bool operator!=(const Vertex& other) const {
+        inline bool operator!=(const Vertex& other) const noexcept {
             return _position != other._position ||
                    _normal != other._normal ||
                    _tangent != other._tangent ||
@@ -321,6 +321,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::BONE_WEIGHT)] = true;
     }
 
+    inline size_t partitionCount() const noexcept {
+        return _partitions.size();
+    }
+
     inline U16 partitionBuffer() {
         const size_t previousIndexCount = _partitions.empty() ? 0 : _partitions.back().second;
         const size_t previousOffset = _partitions.empty() ? 0 : _partitions.back().first;
@@ -337,12 +341,19 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _partitions[partitionID].second;
     }
 
-    inline size_t getPartitionOffset(U16 partitionID) noexcept {
+    inline size_t getPartitionOffset(U16 partitionID) const noexcept {
         if (_partitions.empty()) {
             return 0;
         }
         assert(partitionID < _partitions.size() && "VertexBuffer error: Invalid partition offset!");
         return _partitions[partitionID].first;
+    }
+
+    inline size_t lastPartitionOffset() const noexcept {
+        if (_partitions.empty()) {
+            return 0;
+        }
+        return getPartitionOffset(to_U16(_partitions.size() - 1));
     }
 
     virtual void reset() {

@@ -51,6 +51,7 @@ namespace Divide {
     {
         _buildCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
+        _drawCallCount.fill(0);
     }
 
     RenderPassManager::~RenderPassManager()
@@ -210,6 +211,7 @@ namespace Divide {
 
                         // Grab the list of dependencies
                         const vectorEASTL<U8>& dependencies = _renderPasses[i]->dependencies();
+                        const RenderStage stage = _renderPasses[i]->stageFlag();
 
                         bool dependenciesRunning = false;
                         // For every dependency in the list
@@ -232,7 +234,10 @@ namespace Divide {
                             OPTICK_TAG("Buffer ID: ", i);
                             //Start(*whileRendering);
                             // No running dependency so we can flush the command buffer and add the pass to the skip list
+                            _drawCallCount[i] = _context.getDrawCallCount();
                             _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
+                            _drawCallCount[i] = _context.getDrawCallCount() - _drawCallCount[i];
+
                             _completedPasses[i] = true;
                             //Wait(*whileRendering);
 

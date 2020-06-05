@@ -36,9 +36,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     _screenRTs._hdr._screenRef._rt = &context.renderTargetPool().renderTarget(_screenRTs._hdr._screenRef._targetID);
 
     SamplerDescriptor screenSampler = {};
-    screenSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    screenSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    screenSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.minFilter(TextureFilter::LINEAR);
     screenSampler.magFilter(TextureFilter::LINEAR);
     screenSampler.anisotropyLevel(0);
@@ -81,9 +79,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     }
     {
         SamplerDescriptor lumaSampler = {};
-        lumaSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-        lumaSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-        lumaSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+        lumaSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
         lumaSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
         lumaSampler.magFilter(TextureFilter::LINEAR);
 

@@ -231,9 +231,7 @@ bool Sky::load() {
     std::atomic_uint loadTasks = 0u;
 
     SamplerDescriptor skyboxSampler = {};
-    skyboxSampler.wrapU(TextureWrap::CLAMP_TO_EDGE);
-    skyboxSampler.wrapV(TextureWrap::CLAMP_TO_EDGE);
-    skyboxSampler.wrapW(TextureWrap::CLAMP_TO_EDGE);
+    skyboxSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     skyboxSampler.minFilter(TextureFilter::LINEAR);
     skyboxSampler.magFilter(TextureFilter::LINEAR);
     skyboxSampler.anisotropyLevel(0);
