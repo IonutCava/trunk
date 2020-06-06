@@ -15,8 +15,8 @@ void computeLightVectors(in NodeData data) {
     
     const mat3 TBN = mat3(T, B, N);
     VAR._tbnWV = mat3(dvd_ViewMatrix) * TBN;
-    VAR._tbnViewDir = normalize(VAR._tbnWV * VAR._viewDirectionWV);
-#endif //COMPUTE_TBN
+    VAR._tbnViewDir = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - VAR._vertexW.xyz));
+#endif
 
     
     VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);

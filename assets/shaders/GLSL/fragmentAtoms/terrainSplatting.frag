@@ -121,7 +121,7 @@ mat3 getTBNWV() {
 }
 
 vec3 getTBNViewDir() {
-    return normalize(dvd_TBNWV * VAR._viewDirectionWV);
+    return normalize(transpose(dvd_TBN) * (dvd_cameraPosition.xyz - VAR._vertexW.xyz));
 }
 
 #if defined(HAS_PARALLAX)
