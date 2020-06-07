@@ -34,11 +34,11 @@ namespace {
     constexpr I32 g_RingWidths[] = {
         0,
         16,
-        32,
-        32
+        16,
+        16
     };
 
-    constexpr F32 g_StartTileSize = 0.325f;
+    constexpr F32 g_StartTileSize = 0.35f;
 
     vectorEASTLFast<U16> CreateTileQuadListIB()
     {
@@ -243,7 +243,7 @@ void Terrain::postBuild() {
         // The non-debug rendering works fine either way, but crazy flickering of the debug patches 
         // makes understanding much harder.
         const vec2<F32> snapGridSize = tessParams().WorldScale() * _tileRings[ringCount - 1]->tileSize();
-        _tessParams.SnapGridSize(snapGridSize / (TessellationParams::PATCHES_PER_TILE_EDGE / 2));
+        _tessParams.SnapGridSize(snapGridSize / TessellationParams::PATCHES_PER_TILE_EDGE);
 
         vectorEASTLFast<U16> indices = CreateTileQuadListIB();
 
@@ -362,8 +362,13 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
                 offset[i]  = std::floorf(offset[i] / grid[i]) * grid[i];
             }
         }
+#if 0
         // Why the 2x?  I'm confused.  But it works.
-        snapped = eye - ((eye - snapped) * 2);
+        snapped = eye - ((eye - snapped)/* * 2*/);
+#else
+        // The 2x DOES NOT WORK here. Causes awful "swimming" artifacts. Now I'm confused ... -Ionut
+        snapped = eye - (eye - snapped);
+#endif
 
         PushConstants& constants = pkg.pushConstants(0);
         constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);

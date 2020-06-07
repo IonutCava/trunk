@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <descriptor>Main</descriptor>
-<wireframeDebugMode>1</wireframeDebugMode>
+<wireframeDebugMode>0</wireframeDebugMode>
 <parallaxMappingMode>0</parallaxMappingMode>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
@@ -10,7 +10,7 @@
 <underwaterTileScale>100</underwaterTileScale>
 <model>Terrain</model>
 <TERRAIN>
-    <Tessellated__Triangle__Width>16</Tessellated__Triangle__Width>
+    <Tessellated__Triangle__Width>22</Tessellated__Triangle__Width>
     <Parallax__Height>0.300000012</Parallax__Height>
 </TERRAIN>
 <TRANSFORM>
