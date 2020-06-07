@@ -321,6 +321,7 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f", lineOffsets);
     appendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
     static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
 

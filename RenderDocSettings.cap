@@ -2,24 +2,26 @@
     "rdocCaptureSettings": 1,
     "settings": {
         "autoStart": false,
-        "commandLine": "--enableGPUMessageGroups --disableRenderAPIDebugging",
+        "commandLine": "",
         "environment": [
         ],
-        "executable": "D:\\Divide-Framework\\Divide-Executable_d.exe",
+        "executable": "D:\\Divide-Framework\\Divide-Executable_p.exe",
         "inject": false,
+        "numQueuedFrames": 0,
         "options": {
             "allowFullscreen": true,
             "allowVSync": true,
-            "apiValidation": true,
+            "apiValidation": false,
             "captureAllCmdLists": false,
-            "captureCallstacks": true,
-            "captureCallstacksOnlyDraws": true,
+            "captureCallstacks": false,
+            "captureCallstacksOnlyDraws": false,
             "debugOutputMute": true,
             "delayForDebugger": 0,
             "hookIntoChildren": false,
             "refAllResources": false,
-            "verifyBufferAccess": false
+            "verifyBufferAccess": true
         },
+        "queuedFrameCap": 0,
         "workingDir": ""
     }
 }

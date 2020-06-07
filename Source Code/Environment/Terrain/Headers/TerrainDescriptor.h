@@ -95,9 +95,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(_hash, _textureLayers);
         Util::Hash_combine(_hash, _altitudeRange.x);
         Util::Hash_combine(_hash, _altitudeRange.y);
-        Util::Hash_combine(_hash, _tessellationSettings);
-        Util::Hash_combine(_hash, _tessellatedTriangleWidth);
-        Util::Hash_combine(_hash, _parallaxHeightScale);
+        Util::Hash_combine(_hash, _chunkSize);
         Util::Hash_combine(_hash, _dimensions.x);
         Util::Hash_combine(_hash, _dimensions.y);
         Util::Hash_combine(_hash, to_base(_wireframeDebug));
@@ -116,9 +114,7 @@ protected:
     //x - chunk size, y - patch size in meters
     PROPERTY_RW(vec2<F32>, altitudeRange);
     PROPERTY_RW(vec2<U16>, dimensions, { 1 });
-    PROPERTY_RW(U32, tessellatedTriangleWidth, 35u);
-    PROPERTY_RW(F32, parallaxHeightScale, 0.3f);
-    PROPERTY_RW(F32, tessellationSettings);
+    PROPERTY_RW(U16, chunkSize);
     PROPERTY_RW(WireframeMode, wireframeDebug, WireframeMode::NONE);
     PROPERTY_RW(ParallaxMode, parallaxMode, ParallaxMode::NONE);
     PROPERTY_RW(U8, textureLayers, 1u);

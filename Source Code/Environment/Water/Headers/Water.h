@@ -75,12 +75,18 @@ class WaterPlane : public SceneNode {
                            RenderPackage& pkgInOut) override;
 
     void postLoad(SceneGraphNode* sgn) override;
-
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState);
+    bool prepareRender(SceneGraphNode* sgn,
+                       RenderingComponent& rComp,
+                       const RenderStagePass& renderStagePass,
+                       const Camera& camera,
+                       bool refreshData);
    protected:
     template <typename T>
     friend class ImplResourceLoader;
 
     bool load() override;
+    void onEditorChange(std::string_view field);
 
     const char* getResourceTypeName() const noexcept override { return "WaterPlane"; }
 
@@ -94,8 +100,11 @@ class WaterPlane : public SceneNode {
     std::shared_ptr<Quad3D> _plane = nullptr;
 
     StaticCamera* _reflectionCam = nullptr;
-    U16     _blurKernelSize = 3u;
+    vec2<F32> _noiseTile;
+    vec2<F32> _noiseFactor;
+    U16     _blurKernelSize = 9u;
     bool    _blurReflections = true;
+    EditorDataState _editorDataDirtyState = EditorDataState::IDLE;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(WaterPlane);

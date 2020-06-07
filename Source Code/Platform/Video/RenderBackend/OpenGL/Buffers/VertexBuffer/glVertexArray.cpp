@@ -400,12 +400,12 @@ void glVertexArray::draw(const GenericDrawCommand& command, U32 cmdBufferOffset)
 
     GLStateTracker& stateTracker = GL_API::getStateTracker();
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
-    const GLuint vao = _vaoCaches[command._bufferIndex];
+    const GLuint vao = _vaoCaches[command._bufferIndex == GenericDrawCommand::INVALID_BUFFER_INDEX ? 0u : command._bufferIndex];
     stateTracker.setActiveVAO(vao);
     stateTracker.togglePrimitiveRestart(_primitiveRestartEnabled);
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
     stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
-    stateTracker.bindActiveBuffer(vao, 0, _VBHandle._id, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
+    stateTracker.bindActiveBuffer(vao, 0u, _VBHandle._id, 0u, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
         GLUtil::submitRenderCommand(command, true, true, cmdBufferOffset, _formatInternal);
@@ -421,8 +421,9 @@ void glVertexArray::uploadVBAttributes(GLuint VAO) {
     GL_API::getStateTracker().setActiveVAO(VAO);
     // Bind the vertex buffer and index buffer
     GL_API::getStateTracker().bindActiveBuffer(VAO,
-                                               0,
+                                               0u,
                                                _VBHandle._id,
+                                               0u,
                                                _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                                                _effectiveEntrySize);
 

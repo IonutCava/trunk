@@ -5,6 +5,7 @@
 out vec4 _colourOut;
 
 layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
+layout(binding = TEX_BIND_POINT_GBUFFER)    uniform sampler2D texGBuffer;
 layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
 layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
 layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
@@ -59,6 +60,23 @@ vec4 Underwater() {
     return clamp(texture(texScreen, coords) * vec4(0.35), vec4(0.0), vec4(1.0));
 }
 
+vec3 applyFogColour(in float depth, in vec3 colour, in vec2 depthRange, in float flag) {
+    const float LOG2 = 1.442695f;
+    float zDepth = ToLinearDepth(depth, depthRange);
+#if 0
+    if (flag < 0.99f) {
+#else
+    if (zDepth < depthRange.y - 0.99f) {
+#endif
+        return mix(dvd_fogColour, colour, saturate(exp2(-dvd_fogDensity * dvd_fogDensity * zDepth * zDepth * LOG2)));
+    }
+    return colour;
+}
+
+vec4 applyFog(in float depth, in vec4 colour, in vec2 depthRange, in float flag) {
+    return vec4(applyFogColour(depth, colour.rgb, depthRange, flag), colour.a);
+}
+
 void main(void){
     vec4 colour = underwaterEnabled ? Underwater() : texture(texScreen, VAR._texCoord);
     if (noiseEnabled) {
@@ -73,5 +91,6 @@ void main(void){
     }
 
     const float depth = textureLod(texDepthMap, dvd_screenPositionNormalised, 0).r;
-    _colourOut = applyFog(depth, colour, _zPlanes);
+    const float flag = textureLod(texGBuffer, dvd_screenPositionNormalised, 0).a;
+    _colourOut = applyFog(depth, colour, _zPlanes, flag);
 }

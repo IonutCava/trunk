@@ -458,6 +458,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug albedo", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_UV;
+            if (ImGui::MenuItem("Debug tex coords", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_UV : GFXDevice::MaterialDebugFlag::COUNT);
+            }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SSAO;
             if (ImGui::MenuItem("Debug ssao", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SSAO : GFXDevice::MaterialDebugFlag::COUNT);

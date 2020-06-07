@@ -27,6 +27,7 @@ TileRing::TileRing(I32 holeWidth, I32 outerWidth, F32 tileSize):
 	_tileCount(outerWidth*outerWidth - holeWidth*holeWidth),
 	_tileSize(tileSize)
 {
+	assert((outerWidth - holeWidth) % 2 == 0);
 }
 
 bool TileRing::InRing(I32 x, I32 y) const

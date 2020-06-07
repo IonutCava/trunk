@@ -270,8 +270,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     defaultSampler.magFilter(TextureFilter::NEAREST);
 
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor normalAndVelocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor lightingDetails(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
+    TextureDescriptor normAndVelDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
     // Normal and MSAA
@@ -284,18 +284,18 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         depthDescriptor.samplerDescriptor(defaultSampler);
         depthDescriptor.msaaSamples(sampleCount);
 
-        normalAndVelocityDescriptor.samplerDescriptor(defaultSampler);
-        normalAndVelocityDescriptor.msaaSamples(sampleCount);
+        normAndVelDescriptor.samplerDescriptor(defaultSampler);
+        normAndVelDescriptor.msaaSamples(sampleCount);
 
-        lightingDetails.samplerDescriptor(defaultSampler);
-        lightingDetails.msaaSamples(sampleCount);
+        gbufferDescriptor.samplerDescriptor(defaultSampler);
+        gbufferDescriptor.msaaSamples(sampleCount);
 
         {
             vectorEASTL<RTAttachmentDescriptor> attachments = {
-                { screenDescriptor,              RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-                { normalAndVelocityDescriptor,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-                { lightingDetails,               RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
-                { depthDescriptor,               RTAttachmentType::Depth }
+                { screenDescriptor,     RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
+                { normAndVelDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
+                { gbufferDescriptor,    RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
+                { depthDescriptor,      RTAttachmentType::Depth }
             };
 
             RenderTargetDescriptor screenDesc = {};
@@ -1840,7 +1840,7 @@ void GFXDevice::initDebugViews() {
         NormalPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         NormalPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         NormalPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
-        NormalPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        NormalPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
@@ -1850,7 +1850,7 @@ void GFXDevice::initDebugViews() {
         VelocityPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         VelocityPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        VelocityPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
+        VelocityPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 2u);
         VelocityPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 5.0f);
 
 
@@ -1861,7 +1861,7 @@ void GFXDevice::initDebugViews() {
         TBNViewDirPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         TBNViewDirPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         TBNViewDirPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
-        TBNViewDirPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        TBNViewDirPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         TBNViewDirPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
@@ -1871,8 +1871,18 @@ void GFXDevice::initDebugViews() {
         SSAOPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         SSAOPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         SSAOPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        SSAOPreview->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 1u);
+        SSAOPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 2u);
         SSAOPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
+
+        DebugView_ptr FlagPreview = std::make_shared<DebugView>();
+        FlagPreview->_shader = _renderTargetDraw;
+        FlagPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
+        FlagPreview->_name = "Flag Map";
+        FlagPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        FlagPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
+        FlagPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        FlagPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 3u);
+        FlagPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
@@ -1881,7 +1891,7 @@ void GFXDevice::initDebugViews() {
         AlphaAccumulationHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         AlphaAccumulationHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         AlphaAccumulationHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        AlphaAccumulationHigh->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         AlphaAccumulationHigh->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
@@ -1891,7 +1901,7 @@ void GFXDevice::initDebugViews() {
         AlphaRevealageHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         AlphaRevealageHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         AlphaRevealageHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        AlphaRevealageHigh->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         AlphaRevealageHigh->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
@@ -1901,7 +1911,7 @@ void GFXDevice::initDebugViews() {
         //AlphaAccumulationLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         //AlphaAccumulationLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
         //AlphaAccumulationLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaAccumulationLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        //AlphaAccumulationLow->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         //AlphaAccumulationLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
@@ -1911,7 +1921,7 @@ void GFXDevice::initDebugViews() {
         //AlphaRevealageLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         //AlphaRevealageLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         //AlphaRevealageLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaRevealageLow->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        //AlphaRevealageLow->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         //AlphaRevealageLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr Luminance = std::make_shared<DebugView>();
@@ -1921,7 +1931,7 @@ void GFXDevice::initDebugViews() {
         Luminance->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         Luminance->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         Luminance->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        Luminance->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        Luminance->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         Luminance->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr Edges = std::make_shared<DebugView>();
@@ -1931,7 +1941,7 @@ void GFXDevice::initDebugViews() {
         Edges->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         Edges->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
         Edges->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
-        Edges->_shaderData.set(_ID("startOnBlue"), GFX::PushConstantType::UINT, 0u);
+        Edges->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         Edges->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         HiZView = addDebugView(HiZ);
@@ -1940,6 +1950,7 @@ void GFXDevice::initDebugViews() {
         addDebugView(TBNViewDirPreview);
         addDebugView(VelocityPreview);
         addDebugView(SSAOPreview);
+        addDebugView(FlagPreview);
         addDebugView(AlphaAccumulationHigh);
         addDebugView(AlphaRevealageHigh);
         //addDebugView(AlphaAccumulationLow);

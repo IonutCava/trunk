@@ -85,20 +85,32 @@ class VAOBindings {
 public:
     using BufferBindingParams = std::tuple<GLuint, size_t, size_t>;
 
+private:
+    using VAOBufferData = vectorEASTL<BufferBindingParams>;
+    using VAODivisors = vectorEASTL<GLuint>;
+    using VAOData = std::pair<VAOBufferData, VAODivisors>;
+
+public:
+
     VAOBindings() noexcept;
     ~VAOBindings();
     void init(U32 maxBindings);
 
     const BufferBindingParams& bindingParams(GLuint vao, GLuint index);
+
+    GLuint instanceDivisor(GLuint vao, GLuint index);
+    void instanceDivisor(GLuint vao, GLuint index, GLuint divisor);
+
     void bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams);
 
 private:
-    using VAOBufferData = vectorEASTL<BufferBindingParams>;
+    VAOData* getVAOData(GLuint vao);
 
-    mutable VAOBufferData* _cachedData = nullptr;
+private:
+    mutable VAOData* _cachedData = nullptr;
     mutable GLuint _cachedVao = 0;
 
-    hashMap<GLuint /*vao ID*/, VAOBufferData> _bindings;
+    hashMap<GLuint /*vao ID*/, VAOData> _bindings;
     U32 _maxBindings;
 };
 

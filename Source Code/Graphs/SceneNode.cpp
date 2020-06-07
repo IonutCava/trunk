@@ -174,11 +174,11 @@ void SceneNode::loadCache(ByteBuffer& inputBuffer) {
 }
 
 void SceneNode::saveToXML(boost::property_tree::ptree& pt) const {
-    ACKNOWLEDGE_UNUSED(pt);
+    Attorney::EditorComponentSceneGraphNode::saveToXML(getEditorComponent(), pt);
 }
 
 void SceneNode::loadFromXML(const boost::property_tree::ptree& pt) {
-    ACKNOWLEDGE_UNUSED(pt);
+    Attorney::EditorComponentSceneGraphNode::loadFromXML(getEditorComponent(), pt);
 }
 
 };

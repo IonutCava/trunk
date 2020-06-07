@@ -43,8 +43,6 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #include "bumpMapping.frag"
 #endif
 
-#define TexCoords VAR._texCoord
-
 #if defined(USE_CUSTOM_TBN)
 mat3 getTBNWV();
 vec3 getTBNViewDir();
@@ -214,7 +212,7 @@ vec3 getNormalWV(in vec2 uv) {
 
 #   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
         if (dvd_bumpMethod != BUMP_NONE) {
-            normalWV = getTBNWV() * getBump(uv);
+            normalWV = getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f);
         }
 #   endif //COMPUTE_TBN
 

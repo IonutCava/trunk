@@ -92,7 +92,7 @@ void main (void){
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    const vec2 uv = TexCoords;
+    const vec2 uv = VAR._texCoord;
 
     vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
     albedo.a = min(albedo.a, _alphaFactor);
@@ -125,7 +125,11 @@ void main() {
         discard;
     }
 
-    writeOutput(data, VAR._texCoord, VAR._normalWV, vec3(0.0f), _alphaFactor);
+    writeOutput(data,
+                VAR._texCoord,
+                VAR._normalWV,
+                getTBNViewDirection(),
+                _alphaFactor);
 }
 
 --Fragment.Shadow.VSM

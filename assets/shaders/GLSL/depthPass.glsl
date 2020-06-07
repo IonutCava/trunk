@@ -6,7 +6,10 @@ void main() {
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    writeOutput(data, TexCoords);
+    writeOutput(data, 
+                VAR._texCoord,
+                getNormalWV(VAR._texCoord),
+                getTBNViewDirection());
 }
 
 -- Fragment.Shadow
@@ -25,7 +28,7 @@ void main() {
     prepareData(data);
 
     mat4 colourMatrix = data._colourMatrix;
-    if (getAlbedo(colourMatrix, TexCoords).a < INV_Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif
@@ -51,7 +54,7 @@ void main() {
     prepareData(data);
 
     mat4 colourMatrix = data._colourMatrix;
-    if (getAlbedo(colourMatrix, TexCoords).a < INV_Z_TEST_SIGMA) {
+    if (getAlbedo(colourMatrix, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif

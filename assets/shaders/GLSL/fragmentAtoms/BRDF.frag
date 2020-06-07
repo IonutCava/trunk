@@ -185,6 +185,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     const vec3 OMR = getOcclusionMetallicRoughness(colourMatrix, uv);
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO: return albedo;
+        case DEBUG_UV: return vec3(fract(uv), 0.0f);
         case DEBUG_SSAO: return vec3(getSSAO());
         case DEBUG_EMISSIVE: return getEmissive(colourMatrix);
         case DEBUG_ROUGHNESS: return vec3(OMR.b);

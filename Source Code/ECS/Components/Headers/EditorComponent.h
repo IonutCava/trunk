@@ -38,6 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     class ByteBuffer;
+    class SceneNode;
     class SceneGraphNode;
     class PropertyWindow;
 
@@ -253,6 +254,7 @@ namespace Divide {
                 comp.loadFromXML(pt);
             }
 
+            friend class Divide::SceneNode;
             friend class Divide::SceneGraphNode;
         };
     };  // namespace Attorney

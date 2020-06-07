@@ -54,6 +54,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "postProcessing.glsl";
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_SCREEN %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN)).c_str(), true);
+    fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_GBUFFER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER)).c_str(), true);
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_NOISE %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_NOISE)).c_str(), true);
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_BORDER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_BORDER)).c_str(), true);
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_UNDERWATER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str(), true);
@@ -166,6 +167,7 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     const TextureData data2 = _screenBorder->data();
 
     RenderTarget& screenRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    TextureData gbuffer = screenRT.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
     TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->data();
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -183,10 +185,11 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.setTexture(depthData, TextureUsage::DEPTH);
-    bindDescriptorSetsCmd._set._textureData.setTexture(output, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data0, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data1, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data2, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(output,  to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    bindDescriptorSetsCmd._set._textureData.setTexture(gbuffer, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data0,   to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data1,   to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data2,   to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::DrawCommand drawCommand = { _drawCommand };

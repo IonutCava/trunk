@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <dimensions width="4096" length="4096" depth="500"/>
-<blurReflections>true</blurReflections>
-<blurKernelSize>3</blurKernelSize>
+<WATER>
+    <Blur__reflections>true</Blur__reflections>
+    <Blur__kernel__size>9</Blur__kernel__size>
+    <Reflection__Plane__Offset>0</Reflection__Plane__Offset>
+    <Refraction__Plane__Offset>1.75</Refraction__Plane__Offset>
+    <Noise__tile__factor x="30" y="30"/>
+    <Noise__factor x="0.100000001" y="0.100000001"/>
+</WATER>
 <TRANSFORM>
     <Transform>
         <position x="0" y="2" z="0"/>
@@ -237,7 +243,7 @@
                 <path>assets/misc_images/</path>
                 <flipped>true</flipped>
                 <Sampler>
-                    <hash>7302332944255784539</hash>
+                    <hash>11091076668229635101</hash>
                 </Sampler>
             </UNIT0>
             <NORMALMAP>
@@ -250,19 +256,19 @@
             </NORMALMAP>
         </texture>
         <SamplerDescriptors>
-            <7302332944255784539>
+            <11091076668229635101>
                 <Sampler>
-                    <Filter min="LINEAR" mag="LINEAR"/>
-                    <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
+                    <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
+                    <Map U="MIRROR_REPEAT" V="MIRROR_REPEAT" W="MIRROR_REPEAT"/>
                     <useRefCompare>false</useRefCompare>
                     <comparisonFunction>LEQUAL</comparisonFunction>
-                    <anisotropy>255</anisotropy>
+                    <anisotropy>4</anisotropy>
                     <minLOD>-1000</minLOD>
                     <maxLOD>1000</maxLOD>
                     <biasLOD>0</biasLOD>
                     <borderColour r="0" g="0" b="0" a="1"/>
                 </Sampler>
-            </7302332944255784539>
+            </11091076668229635101>
             <10222214166118427337>
                 <Sampler>
                     <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
@@ -284,8 +290,3 @@
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>
-<WATER>
-    <Blur__reflections>true</Blur__reflections>
-    <Reflection__Plane__Offset>0</Reflection__Plane__Offset>
-    <Refraction__Plane__Offset>1.75</Refraction__Plane__Offset>
-</WATER>

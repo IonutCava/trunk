@@ -13,7 +13,7 @@ void main (void) {
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    vec4 albedo = getAlbedo(data._colourMatrix, TexCoords);
+    vec4 albedo = getAlbedo(data._colourMatrix, VAR._texCoord);
   
 #if !defined(OIT_PASS) && defined(USE_ALPHA_DISCARD)
     float alpha = albedo.a;
@@ -22,5 +22,5 @@ void main (void) {
     }
 #endif
 
-    writeOutput(getPixelColour(albedo, data, getNormalWV(TexCoords), TexCoords));
+    writeOutput(getPixelColour(albedo, data, getNormalWV(VAR._texCoord), VAR._texCoord));
 }

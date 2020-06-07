@@ -95,9 +95,9 @@ class glGenericVertexData final : public GenericVertexData,
     void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override;
 
    protected:
-    void setBufferBindings();
-    void setAttributes();
-    void setAttributeInternal(AttributeDescriptor& descriptor);
+    void setBufferBindings(const GenericDrawCommand& command);
+    void setAttributes(const GenericDrawCommand& command);
+    void setAttributeInternal(const GenericDrawCommand& command, AttributeDescriptor& descriptor);
 
    private:
     bool _smallIndices;

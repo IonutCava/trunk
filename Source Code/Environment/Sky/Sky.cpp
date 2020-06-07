@@ -47,7 +47,6 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     skyboxRenderStateReflection.setColourWrites(false, false, false, false);
     _skyboxRenderStateReflectedHashPrePass = skyboxRenderStateReflection.getHash();
 
-
     getEditorComponent().onChangedCbk([this](std::string_view field) {
         if (field == "Reset To Default") {
             _atmosphere = defaultAtmosphere();
@@ -200,7 +199,7 @@ Sky::~Sky()
 {
 }
 
-const std::array<vec4<F32>, 3> Sky::atmoTooShaderData() const noexcept {
+const std::array<vec4<F32>, 3> Sky::atmoToShaderData() const noexcept {
     return {
         vec4<F32>
         {
@@ -381,7 +380,7 @@ bool Sky::prepareRender(SceneGraphNode* sgn,
         constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());
         if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
             constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
-            constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoTooShaderData());
+            constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
             _atmosphereChanged = EditorDataState::PROCESSED;
         }
          pkg.pushConstants(0, constants);
@@ -423,7 +422,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz(), WORLD_Z_NEG_AXIS);
     pushConstantsCommand._constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
-    pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoTooShaderData());
+    pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
     pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());
     pushConstantsCommand._constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
     pkgInOut.add(pushConstantsCommand);

@@ -9,7 +9,7 @@ void main(void){
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     gl_Position = VAR._vertexWVP;
-    gl_Position.z = gl_Position.w - 0.000001f;
+    gl_Position.z = gl_Position.w - SKY_OFFSET;
 }
 
 -- Fragment.Display
@@ -236,11 +236,18 @@ void main() {
 
 --Fragment.PrePass
 
+#define USE_DEFERRED_NORMALS
+
 #include "prePass.frag"
 
 void main() {
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    writeOutput(data, VAR._texCoord);
+    writeOutput(data, 
+                VAR._texCoord,
+                VAR._normalWV,
+                vec3(0.0f),
+                1.0f,
+                1.0f);
 }

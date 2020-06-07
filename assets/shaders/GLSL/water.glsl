@@ -64,10 +64,7 @@ void main()
     prepareData(data);
 
 #if defined(PRE_PASS)
-    const float kDistortion = 0.015f;
-    const float kRefraction = 0.09f;
-
-    float time2 = float(dvd_time) * 0.00001f;
+    const float time2 = float(dvd_time) * 0.00001f;
     vec2 uvNormal0 = VAR._texCoord * _noiseTile;
     uvNormal0.s += time2;
     uvNormal0.t += time2;
@@ -75,11 +72,17 @@ void main()
     uvNormal1.s -= time2;
     uvNormal1.t += time2;
 
-    vec3 normal0 = getBump(uvNormal0);
-    vec3 normal1 = getBump(uvNormal1);
+    vec3 normal0 = (2.0f * texture(texNormalMap, uvNormal0).rgb - 1.0f);
+    vec3 normal1 = (2.0f * texture(texNormalMap, uvNormal1).rgb - 1.0f);
 
-    writeOutput(data, VAR._texCoord, getTBNWV() * normalize(normal0 + normal1));
+    writeOutput(data, 
+                VAR._texCoord,
+                getTBNWV() * normalize(normal0 + normal1),
+                vec3(0.0f));
 #else
+
+    const float kDistortion = 0.015f;
+    const float kRefraction = 0.09f;
 
     const vec3 normalWV = getNormalWV(VAR._texCoord);
     vec3 uvReflection = ((VAR._vertexWVP.xyz / VAR._vertexWVP.w) + 1.0f) * 0.5f;
@@ -101,7 +104,7 @@ void main()
     const vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect);
     const vec4 reflectionColour = texture(texReflectPlanar, uvFinalReflect);
     
-    const vec3 normalW = (dvd_InverseViewMatrix * vec4(VAR._normalWV, 0.0f)).xyz;
+    const vec3 normalW = mat3(dvd_InverseViewMatrix) * mix(VAR._normalWV, normalWV, 0.05f);
     const vec4 texColour = mix(mix(refractionColour, reflectionColour, Fresnel(_incident, normalW, metalness)),
                                    refractionColour,
                                    _underwater);

@@ -27,6 +27,8 @@ namespace {
 WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
     : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
 {
+    _noiseTile = { 15.0f, 15.0f };
+    _noiseFactor = { 0.1f, 0.1f };
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -42,7 +44,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     getEditorComponent().registerField(std::move(blurReflectionField));
     
     EditorComponentField blurKernelSizeField = {};
-    blurKernelSizeField._name = "Blur reflections";
+    blurKernelSizeField._name = "Blur kernel size";
     blurKernelSizeField._data = &_blurKernelSize;
     blurKernelSizeField._type = EditorComponentFieldType::SLIDER_TYPE;
     blurKernelSizeField._readOnly = false;
@@ -72,6 +74,28 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     refrPlaneOffsetField._basicType = GFX::PushConstantType::FLOAT;
 
     getEditorComponent().registerField(std::move(refrPlaneOffsetField));
+
+    EditorComponentField noiseTileSizeField = {};
+    noiseTileSizeField._name = "Noise tile factor";
+    noiseTileSizeField._data = &_noiseTile;
+    noiseTileSizeField._range = { 0.0f, 100.0f };
+    noiseTileSizeField._type = EditorComponentFieldType::PUSH_TYPE;
+    noiseTileSizeField._readOnly = false;
+    noiseTileSizeField._basicType = GFX::PushConstantType::VEC2;
+
+    getEditorComponent().registerField(std::move(noiseTileSizeField));
+
+    EditorComponentField noiseFactorField = {};
+    noiseFactorField._name = "Noise factor";
+    noiseFactorField._data = &_noiseFactor;
+    noiseFactorField._range = { 0.0f, 10.0f };
+    noiseFactorField._type = EditorComponentFieldType::PUSH_TYPE;
+    noiseFactorField._readOnly = false;
+    noiseFactorField._basicType = GFX::PushConstantType::VEC2;
+
+    getEditorComponent().registerField(std::move(noiseFactorField));
+
+    getEditorComponent().onChangedCbk([this](std::string_view field) {onEditorChange(field); });
 }
 
 WaterPlane::~WaterPlane()
@@ -79,6 +103,10 @@ WaterPlane::~WaterPlane()
     Camera::destroyCamera(_reflectionCam);
 }
 
+
+void WaterPlane::onEditorChange(std::string_view field) {
+    _editorDataDirtyState = EditorDataState::QUEUED;
+}
 
 bool WaterPlane::load() {
     if (_plane != nullptr) {
@@ -92,9 +120,10 @@ bool WaterPlane::load() {
     const Str256& name = resourceName();
 
     SamplerDescriptor defaultSampler = {};
-    defaultSampler.wrapUVW(TextureWrap::REPEAT);
-    defaultSampler.minFilter(TextureFilter::LINEAR);
+    defaultSampler.wrapUVW(TextureWrap::MIRROR_REPEAT);
+    defaultSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     defaultSampler.magFilter(TextureFilter::LINEAR);
+    defaultSampler.anisotropyLevel(4);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
     texDescriptor.samplerDescriptor(defaultSampler);
@@ -226,6 +255,34 @@ void WaterPlane::postLoad(SceneGraphNode* sgn) {
     SceneNode::postLoad(sgn);
 }
 
+void WaterPlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
+
+    switch (_editorDataDirtyState) {
+        case EditorDataState::QUEUED:
+            _editorDataDirtyState = EditorDataState::CHANGED;
+            break;
+        case EditorDataState::PROCESSED:
+            _editorDataDirtyState = EditorDataState::IDLE;
+            break;
+    };
+    SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
+}
+
+bool WaterPlane::prepareRender(SceneGraphNode* sgn,
+                               RenderingComponent& rComp,
+                               const RenderStagePass& renderStagePass,
+                               const Camera& camera,
+                               bool refreshData) {
+    if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
+        RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
+        PushConstants& constants = pkg.pushConstants(0);
+        constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
+        constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
+        
+    }
+    return SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
+}
+
 bool WaterPlane::pointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point) {
     return sgn->get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
@@ -236,8 +293,8 @@ void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, vec2<F32>(0.10f, 0.10f));
-    pushConstantsCommand._constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, vec2<F32>(15.0f, 15.0f));
+    pushConstantsCommand._constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
+    pushConstantsCommand._constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
@@ -366,8 +423,6 @@ void WaterPlane::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("dimensions.<xmlattr>.width", _dimensions.width);
     pt.put("dimensions.<xmlattr>.length", _dimensions.height);
     pt.put("dimensions.<xmlattr>.depth", _dimensions.depth);
-    pt.put("blurReflections", _blurReflections);
-    pt.put("blurKernelSize", _blurKernelSize);
 
     SceneNode::saveToXML(pt);
 }
@@ -376,8 +431,6 @@ void WaterPlane::loadFromXML(const boost::property_tree::ptree& pt) {
     _dimensions.width = pt.get<U16>("dimensions.<xmlattr>.width", 500u);
     _dimensions.height = pt.get<U16>("dimensions.<xmlattr>.length", 500u);
     _dimensions.depth = pt.get<U16>("dimensions.<xmlattr>.depth", 500u);
-    _blurReflections = pt.get<bool>("blurReflections", true);
-    _blurKernelSize = pt.get<U16>("_blurKernelSize", 3u);
 
     SceneNode::loadFromXML(pt);
 }

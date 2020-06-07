@@ -9,7 +9,7 @@ namespace Divide {
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
         , _altitudeRange(0.f, 1.f)
-        , _tessellationSettings(32.f)
+        , _chunkSize(256)
     {
     }
 
@@ -48,8 +48,7 @@ namespace Divide {
             addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
             dimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
             altitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-            tessellationSettings(descTree.get<F32>("tessellationSettings.<xmlattr>.chunkSize", 32.0f));
-            tessellatedTriangleWidth(descTree.get<U32>("tessellatedTriangleWidth", 30));
+            chunkSize(descTree.get<U16>("chunkSize", 256));
             addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation.c_str()));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));
             addVariable("treeMap", descTree.get<stringImpl>("vegetation.treeMap"));

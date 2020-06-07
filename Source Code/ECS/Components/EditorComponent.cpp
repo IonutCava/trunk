@@ -71,6 +71,7 @@ namespace Divide {
             }
 
             switch(field._type) {
+                case EditorComponentFieldType::SLIDER_TYPE:
                 case EditorComponentFieldType::PUSH_TYPE: {
                     saveFieldToXML(field, pt);
                 } break;
@@ -137,6 +138,7 @@ namespace Divide {
                 }
 
                 switch (field._type) {
+                    case EditorComponentFieldType::SLIDER_TYPE:
                     case EditorComponentFieldType::PUSH_TYPE: {
                         loadFieldFromXML(field, pt);
                     } break;

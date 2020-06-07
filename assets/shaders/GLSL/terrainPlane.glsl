@@ -55,5 +55,8 @@ void main() {
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    writeOutput(data, VAR._texCoord);
+    writeOutput(data, 
+                VAR._texCoord,
+                getNormalWV(VAR._texCoord),
+                vec3(0.0f));
 }

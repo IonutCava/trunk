@@ -9,7 +9,7 @@ layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 
 uniform vec2 dvd_textureWorldOffset;
-uniform mat4 dvd_tileWorldMatrix;
+uniform vec2 dvd_tileWorldPosition;
 
 layout(location = 10) out vec4 vtx_adjancency;
 layout(location = 11) out float vtx_tileSize;
@@ -22,7 +22,11 @@ vec2 worldXZtoHeightUV(vec2 worldXZ) {
 }
 
 vec4 ReconstructPosition() {
+#if defined(USE_BASE_VERTEX_OFFSET)
     const int vertID = gl_VertexID - gl_BaseVertex;
+#else
+    const int vertID = gl_VertexID;
+#endif
 
     // Calculate texture coordinates (u,v) relative to entire terrain
     const float iv = floor(vertID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
@@ -34,13 +38,18 @@ vec4 ReconstructPosition() {
     vtx_adjancency = inColourData;
     vtx_ringID = int(inVertexData.w);
 
-    const vec2 tempPos = vec2(u, v) * vtx_tileSize + inVertexData.xy;
-    const vec2 displacedPos = (dvd_tileWorldMatrix * vec4(tempPos.x, 0.0f, tempPos.y, 1.0f)).xz;
+    vec2 tempPos = vec2(u * vtx_tileSize + inVertexData.x,
+                        v * vtx_tileSize + inVertexData.y);
 
-    _out._texCoord = worldXZtoHeightUV(displacedPos);
-    const float height = (TERRAIN_HEIGHT * texture(TexTerrainHeight, _out._texCoord).r) + TERRAIN_HEIGHT_OFFSET;
+    tempPos.x *= WORLD_SCALE_X;
+    tempPos.y *= WORLD_SCALE_Z;
+    tempPos += dvd_tileWorldPosition;
 
-    return vec4(displacedPos.x, height, displacedPos.y, 1.0f);
+    VAR._texCoord = tempPos;
+    const vec2 texCoords = worldXZtoHeightUV(tempPos);
+    const float height = (TERRAIN_HEIGHT * texture(TexTerrainHeight, texCoords).r) + TERRAIN_HEIGHT_OFFSET;
+
+    return vec4(tempPos.x, height, tempPos.y, 1.0f);
 }
 
 void main(void)
@@ -611,17 +620,20 @@ void main(void)
     const vec2 waterData = waterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
 
 #if defined(PRE_PASS)
-    writeOutput(data, TexCoords, getMixedNormalWV(1.0f - waterData.x));
+    writeOutput(data, 
+                VAR._texCoord,
+                getMixedNormalWV(VAR._texCoord, 1.0f - waterData.x),
+                getTBNViewDirection());
 #else //PRE_PASS
 
     vec4 albedo;
     vec3 normalWV;
-    BuildTerrainData(waterData, albedo, normalWV);
+    BuildTerrainData(VAR._texCoord, waterData, albedo, normalWV);
 #if !defined(LOW_QUALITY)
     _private_roughness = albedo.a;
 #endif //LOW_QUALITY
 
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, TexCoords);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord);
 
 #if defined (TOGGLE_DEBUG)
 

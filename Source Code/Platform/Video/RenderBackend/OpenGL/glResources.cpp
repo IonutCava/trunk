@@ -34,8 +34,8 @@ void VAOBindings::init(U32 maxBindings) {
     _maxBindings = maxBindings;
 }
 
-const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, GLuint index) {
-    VAOBufferData* data = nullptr;
+VAOBindings::VAOData* VAOBindings::getVAOData(GLuint vao) {
+    VAOData* data = nullptr;
     if (vao == _cachedVao) {
         data = _cachedData;
     } else {
@@ -43,33 +43,56 @@ const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, G
         _cachedData = data;
         _cachedVao = vao;
     }
-    
-    const size_t count = data->size();
+
+    return data;
+}
+
+GLuint VAOBindings::instanceDivisor(GLuint vao, GLuint index) {
+    VAOData* data = getVAOData(vao);
+
+    const size_t count = data->second.size();
     if (count > 0) {
         assert(index <= count);
-        return (*data)[index];
+        return data->second[index];
     }
 
     assert(_maxBindings != 0);
-    data->resize(_maxBindings);
-    return data->front();
+    data->second.resize(_maxBindings);
+    return data->second.front();
 }
 
-void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams) {
-    VAOBufferData* data = nullptr;
-    if (vao == _cachedVao) {
-        data = _cachedData;
-    } else {
-        data = &_bindings[vao];
-        _cachedData = data;
-        _cachedVao = vao;
-    }
+void VAOBindings::instanceDivisor(GLuint vao, GLuint index, GLuint divisor) {
+    VAOData* data = getVAOData(vao);
 
-    const size_t count = data->size();
+    const size_t count = data->second.size();
     assert(count > 0 && count > index);
     ACKNOWLEDGE_UNUSED(count);
 
-    (*data)[index] = newParams;
+    data->second[index] = divisor;
+}
+
+const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, GLuint index) {
+    VAOData* data = getVAOData(vao);
+   
+    const size_t count = data->first.size();
+    if (count > 0) {
+        assert(index <= count);
+        return data->first[index];
+    }
+
+    assert(_maxBindings != 0);
+    data->first.resize(_maxBindings);
+    return data->first.front();
+}
+
+void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams) {
+    VAOData* data = getVAOData(vao);
+
+    const size_t count = data->first.size();
+    assert(count > 0 && count > index);
+    ACKNOWLEDGE_UNUSED(count);
+
+    data->first[index] = newParams;
 }
 
 namespace GLUtil {

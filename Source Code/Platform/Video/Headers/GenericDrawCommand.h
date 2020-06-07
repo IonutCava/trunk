@@ -73,6 +73,8 @@ enum class CmdRenderOptions : U16 {
 
 #pragma pack(push, 1)
 struct GenericDrawCommand {
+    static constexpr U8 INVALID_BUFFER_INDEX = std::numeric_limits<U8>::max();
+
     GenericDrawCommand() = default;
     ~GenericDrawCommand() = default;
     GenericDrawCommand(PrimitiveType type) : _primitiveType(type) {}
@@ -81,8 +83,8 @@ struct GenericDrawCommand {
     PoolHandle _sourceBuffer = {};                                   // 12 bytes
     U24 _commandOffset = 0u;                                         // 9  bytes
     U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
-    U16 _drawCount = 1;                                              // 4  bytes
-    U8  _bufferIndex  = 0;                                           // 2  bytes
+    U16 _drawCount = 1u;                                             // 4  bytes
+    U8  _bufferIndex  = INVALID_BUFFER_INDEX;                        // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::TRIANGLE_STRIP;    // 1  bytes
 };
 #pragma pack(pop)

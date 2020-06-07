@@ -41,7 +41,7 @@
 	<resolution width="1920" height="1080"/>
 	<!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
 	<simSpeed>0</simSpeed>
-	<cameraViewDistance>500</cameraViewDistance>
+	<cameraViewDistance>1000</cameraViewDistance>
 	<verticalFOV>60</verticalFOV>
 </runtime>
 <GUI>
@@ -58,7 +58,7 @@
 	<MSAASamples>2</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
-	<reflectionResolutionFactor>1</reflectionResolutionFactor>
+	<reflectionResolutionFactor>2</reflectionResolutionFactor>
 	<!-- higher => better (less tilling, more parallax effects, etc) -->
 	<terrainDetailLevel>2</terrainDetailLevel>
 	<!-- 0 - low, 1 - med, 2 - high -->

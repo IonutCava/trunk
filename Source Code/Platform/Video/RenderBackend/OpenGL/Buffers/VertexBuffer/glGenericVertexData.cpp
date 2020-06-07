@@ -55,9 +55,9 @@ void glGenericVertexData::create(U8 numBuffers) {
 /// Submit a draw command to the GPU using this object and the specified command
 void glGenericVertexData::draw(const GenericDrawCommand& command, U32 cmdBufferOffset) {
     // Update buffer bindings
-    setBufferBindings();
+    setBufferBindings(command);
     // Update vertex attributes if needed (e.g. if offsets changed)
-    setAttributes();
+    setAttributes(command);
 
     // Delay this for as long as possible
     GL_API::getStateTracker().setActiveVAO(_vertexArray);
@@ -171,37 +171,44 @@ void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset
     _bufferObjects[buffer]->setBindOffset(elementCountOffset);
 }
 
-void glGenericVertexData::setBufferBindings() {
+void glGenericVertexData::setBufferBindings(const GenericDrawCommand& command) {
     if (_bufferObjects.empty()) {
         return;
     }
 
-    for (U32 i = 0; i < _bufferObjects.size(); ++i) {
-        glGenericBuffer* buffer = _bufferObjects[i];
+    const auto bindBuffer = [&](const U32 bufferIdx, U32 location) {
+        glGenericBuffer* buffer = _bufferObjects[bufferIdx];
         const size_t elementSize = buffer->bufferImpl()->elementSize();
 
         BufferLockEntry entry = {};
         entry._buffer = buffer->bufferImpl();
-        entry._offset = buffer->getBindOffset(queueIndex());
         entry._length = buffer->elementCount() * elementSize;
+        entry._offset = buffer->getBindOffset(queueIndex());
         entry._flush = true;
 
-        GL_API::getStateTracker().bindActiveBuffer(_vertexArray, i, buffer->bufferHandle(),entry._offset, elementSize);
-        glVertexArrayBindingDivisor(_vertexArray, i, _instanceDivisor[i]);
+        GL_API::getStateTracker().bindActiveBuffer(_vertexArray, location, buffer->bufferHandle(), _instanceDivisor[bufferIdx], entry._offset, elementSize);
         GL_API::registerBufferBind(std::move(entry));
+    };
+
+    if (command._bufferIndex == GenericDrawCommand::INVALID_BUFFER_INDEX) {
+        for (U32 i = 0; i < _bufferObjects.size(); ++i) {
+            bindBuffer(i, i);
+        }
+    } else {
+        bindBuffer(command._bufferIndex, 0u);
     }
 }
 
 /// Update the appropriate attributes 
-void glGenericVertexData::setAttributes() {
+void glGenericVertexData::setAttributes(const GenericDrawCommand& command) {
     // Get the appropriate list of attributes and update them in turn
     for (auto& [buf, descriptor] : _attributeMapDraw) {
-        setAttributeInternal(descriptor);
+        setAttributeInternal(command, descriptor);
     }
 }
 
 /// Update internal attribute data
-void glGenericVertexData::setAttributeInternal(AttributeDescriptor& descriptor) {
+void glGenericVertexData::setAttributeInternal(const GenericDrawCommand& command, AttributeDescriptor& descriptor) {
     // Early out if the attribute didn't change
     if (!descriptor.dirty()) {
         return;

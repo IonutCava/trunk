@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <descriptor>Main</descriptor>
-<wireframeDebugMode>0</wireframeDebugMode>
+<wireframeDebugMode>1</wireframeDebugMode>
 <parallaxMappingMode>0</parallaxMappingMode>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
@@ -9,6 +9,10 @@
 <tileNoiseTexture>bruit_gaussien_2.jpg</tileNoiseTexture>
 <underwaterTileScale>100</underwaterTileScale>
 <model>Terrain</model>
+<TERRAIN>
+    <Tessellated__Triangle__Width>16</Tessellated__Triangle__Width>
+    <Parallax__Height>0.300000012</Parallax__Height>
+</TERRAIN>
 <TRANSFORM>
     <Transform>
         <position x="0" y="0" z="0"/>
@@ -31,51 +35,51 @@
         <roughness>0.800000012</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
-        <bumpMethod>PARALLAX</bumpMethod>
+        <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.300000012</parallaxFactor>
         <transparencyEnabled>false</transparencyEnabled>
         <isRefractive>false</isRefractive>
         <SHADOW>
             <PRE_PASS>
                 <0>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </0>
                 <1>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </1>
                 <2>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </0>
                 <1>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </1>
                 <2>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </0>
                 <1>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </1>
                 <2>
-                    <hash>10792318322046291732</hash>
+                    <hash>18244132346642401061</hash>
                 </2>
             </OIT_PASS>
         </SHADOW>
         <RenderStates>
-            <10792318322046291732>
+            <18244132346642401061>
                 <colourWrite r="true" g="true" b="false" a="false"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
-                <zFunc>LEQUAL</zFunc>
+                <zFunc>LESS</zFunc>
                 <tessControlPoints>4</tessControlPoints>
                 <cullMode>CW/BACK</cullMode>
                 <fillMode>Solid</fillMode>
@@ -90,7 +94,7 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </10792318322046291732>
+            </18244132346642401061>
             <9071389042233026226>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
@@ -367,4 +371,3 @@
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>
-<TERRAIN/>

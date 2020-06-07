@@ -46,7 +46,7 @@ float detail_getShadowFactorDirectional(in uint shadowIndex, in float TanAcosNdo
     if (detail_isInFrustum(shadowCoord)) 
     {
         const vec4 crtDetails = properties.dvd_shadowLightDetails;
-        const float bias = crtDetails.z;//clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
+        const float bias = clamp(crtDetails.z * TanAcosNdotL, 0.f, 0.01f);
         // now get current linear depth as the length between the fragment and light position
         const float currentDepth = shadowCoord.z - bias;
         const vec2 moments = texture(layeredDepthMaps, vec3(shadowCoord.xy, crtDetails.y + Split)).rg;

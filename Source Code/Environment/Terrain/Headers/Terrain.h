@@ -76,7 +76,8 @@ struct TessellationParams
 {
     PROPERTY_RW(vec2<F32>, WorldScale);
     PROPERTY_RW(vec2<F32>, SnapGridSize);
-    
+    PROPERTY_RW(U32, tessellatedTriangleWidth, 24u);
+
     static constexpr U8 VTX_PER_TILE_EDGE = 9; // overlap => -2
     static constexpr U8 PATCHES_PER_TILE_EDGE = VTX_PER_TILE_EDGE - 1;
     static constexpr U16 QUAD_LIST_INDEX_COUNT = (VTX_PER_TILE_EDGE - 1) * (VTX_PER_TILE_EDGE - 1) * 4;
@@ -149,6 +150,7 @@ class Terrain final : public Object3D {
     [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Terrain"; }
 
     PROPERTY_R(TessellationParams, tessParams);
+    PROPERTY_RW(F32, parallaxHeightScale, 0.3f);
 
    public:
      vectorEASTL<VertexBuffer::Vertex> _physicsVerts;

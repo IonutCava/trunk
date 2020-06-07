@@ -505,6 +505,42 @@ namespace Divide {
                     }
                     ImGui::Separator();
 
+                    SceneManager* sceneManager = context().kernel().sceneManager();
+                    SceneState* activeSceneState = sceneManager->getActiveScene().state();
+                    // Root
+                    if (sgnNode->parent() == nullptr) {
+                        F32 fogDensity = activeSceneState->renderState().fogDescriptor().density();
+                        FColour3 fogColour = activeSceneState->renderState().fogDescriptor().colour();
+                        {
+                            EditorComponentField tempField = {};
+                            tempField._name = "Fog Density";
+                            tempField._basicType = GFX::PushConstantType::FLOAT;
+                            tempField._type = EditorComponentFieldType::PUSH_TYPE;
+                            tempField._readOnly = false;
+                            tempField._data = &fogDensity;
+                            tempField._format = "%.6f";
+                            tempField._range = { 0.0f, 1.0f };
+                            tempField._dataSetter = [&](const void* density) {
+                                activeSceneState->renderState().fogDescriptor().set(fogColour, *static_cast<const F32*>(density));
+                            };
+                            sceneChanged = processField(tempField) || sceneChanged;
+                        }
+                        {
+                            EditorComponentField tempField = {};
+                            tempField._name = "Fog Colour";
+                            tempField._basicType = GFX::PushConstantType::FCOLOUR3;
+                            tempField._type = EditorComponentFieldType::PUSH_TYPE;
+                            tempField._readOnly = false;
+                            tempField._data = &fogColour;
+                            tempField._format = "%.6f";
+                            tempField._range = { 0.0f, 1.0f };
+                            tempField._dataSetter = [&](const void* colour) {
+                                activeSceneState->renderState().fogDescriptor().set(*static_cast<const FColour3*>(colour), fogDensity);
+                            };
+                            sceneChanged = processField(tempField) || sceneChanged;
+                        }
+                        ImGui::Separator();
+                    }
                     vectorEASTLFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(sgnNode);
                     for (EditorComponent* comp : editorComp) {
                         if (comp->fields().empty()) {
@@ -534,7 +570,6 @@ namespace Divide {
                             }
 
                             ImGui::Separator();
-
                             vectorEASTL<EditorComponentField>& fields = Attorney::EditorComponentEditor::fields(*comp);
                             for (EditorComponentField& field : fields) {
                                 if (processField(field) && !field._readOnly) {
@@ -614,8 +649,6 @@ namespace Divide {
                                 }
 
                                 if (ImGui::CollapsingHeader("Scene Shadow Settings", ImGuiTreeNodeFlags_OpenOnArrow)) {
-                                    SceneManager* sceneManager = context().kernel().sceneManager();
-                                    SceneState* activeSceneState = sceneManager->getActiveScene().state();
                                     {
                                         F32 bleedBias = activeSceneState->lightBleedBias();
                                         EditorComponentField tempField = {};

@@ -184,11 +184,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     blendMapSampler.anisotropyLevel(0);
 
     SamplerDescriptor albedoSampler = {};
-    if (false) {
-        albedoSampler.wrapUVW(TextureWrap::MIRROR_REPEAT);
-    } else {
-        albedoSampler.wrapUVW(TextureWrap::REPEAT);
-    }
+    albedoSampler.wrapUVW(TextureWrap::REPEAT);
     albedoSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     albedoSampler.magFilter(TextureFilter::LINEAR);
     albedoSampler.anisotropyLevel(4);
@@ -248,7 +244,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
     terrainMaterial->metallic(0.0f);
     terrainMaterial->roughness(0.8f);
-    terrainMaterial->parallaxFactor(terrainDescriptor->parallaxHeightScale());
+    terrainMaterial->parallaxFactor(terrain->parallaxHeightScale());
     terrainMaterial->toggleTransparency(false);
 
     U8 totalLayerCount = 0;
@@ -393,9 +389,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
         }
 
-        vec2<F32> uvDivisor(terrain->tessParams().WorldScale().width * TessellationParams::PATCHES_PER_TILE_EDGE,
-                            terrain->tessParams().WorldScale().height * TessellationParams::PATCHES_PER_TILE_EDGE);
-        uvDivisor -= TessellationParams::PATCHES_PER_TILE_EDGE * 2.f;
+        const vec2<F32> uvDivisor = (terrain->tessParams().WorldScale() * TessellationParams::PATCHES_PER_TILE_EDGE) -
+                                    (TessellationParams::PATCHES_PER_TILE_EDGE * 2.f);
 
         shaderModule._defines.emplace_back("COMPUTE_TBN", true);
 
@@ -403,6 +398,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
         shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x) + "f", true);
         shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
+        shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(terrain->tessParams().WorldScale().width) + "f", true);
+        shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(terrain->tessParams().WorldScale().height) + "f", true);
         shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width) + "f", true);
         shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height) + "f", true);
         shaderModule._defines.emplace_back("NODE_STATIC", true);
@@ -709,7 +706,7 @@ VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Te
 
     const U32 terrainWidth = terrainDescriptor->dimensions().width;
     const U32 terrainHeight = terrainDescriptor->dimensions().height;
-    const U32 chunkSize = to_U32(terrainDescriptor->tessellationSettings());
+    const U16 chunkSize = terrainDescriptor->chunkSize();
     const U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
 
     Vegetation::precomputeStaticData(context.gfx(), chunkSize, maxChunkCount);

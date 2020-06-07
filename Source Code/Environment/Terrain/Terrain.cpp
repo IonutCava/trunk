@@ -26,15 +26,19 @@
 namespace Divide {
 
 namespace {
+    // This doesn't seem to work for whatever reason, so using multiple buffers for now as I have
+    // more important things to pull my hair over :/
+    constexpr bool USE_BASE_VERTEX_OFFSETS = false;
+
     // This array defines the outer width of each successive terrain ring.
     constexpr I32 g_RingWidths[] = {
         0,
         16,
-        20,
-        28
+        32,
+        32
     };
 
-    constexpr F32 g_StartTileSize = 0.25f;
+    constexpr F32 g_StartTileSize = 0.325f;
 
     vectorEASTLFast<U16> CreateTileQuadListIB()
     {
@@ -80,9 +84,15 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
 
         EditorComponentField tessTriangleWidthField = {};
         tessTriangleWidthField._name = "Tessellated Triangle Width";
-        tessTriangleWidthField._data = &_descriptor->_tessellatedTriangleWidth;
+        tessTriangleWidthField._dataGetter = [&](void* dataOut) {
+            *static_cast<U32*>(dataOut) = tessParams().tessellatedTriangleWidth();
+        };
+        tessTriangleWidthField._dataSetter = [&](const void* data) {
+            _tessParams.tessellatedTriangleWidth(*static_cast<const U32*>(data));
+        };
         tessTriangleWidthField._type = EditorComponentFieldType::SLIDER_TYPE;
         tessTriangleWidthField._readOnly = false;
+        tessTriangleWidthField._serialise = true;
         tessTriangleWidthField._basicType = GFX::PushConstantType::UINT;
         tessTriangleWidthField._range = { 1.0f, 150.0f };
         tessTriangleWidthField._step = 1.0f;
@@ -91,9 +101,10 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
 
         EditorComponentField parallaxHeightField = {};
         parallaxHeightField._name = "Parallax Height";
-        parallaxHeightField._data = &_descriptor->_parallaxHeightScale;
+        parallaxHeightField._data = &_parallaxHeightScale;
         parallaxHeightField._type = EditorComponentFieldType::SLIDER_TYPE;
         parallaxHeightField._readOnly = false;
+        parallaxHeightField._serialise = true;
         parallaxHeightField._basicType = GFX::PushConstantType::FLOAT;
         parallaxHeightField._range = { 0.01f, 10.0f };
 
@@ -207,7 +218,7 @@ void Terrain::postBuild() {
     _boundingBox.setMin(-halfWidth, _descriptor->altitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->altitudeRange().max, halfWidth);
 
-    const U32 chunkSize = to_U32(_descriptor->tessellationSettings());
+    const U16 chunkSize = _descriptor->chunkSize();
 
     _terrainQuadtree.build(_boundingBox, _descriptor->dimensions(), chunkSize, this);
 
@@ -224,12 +235,6 @@ void Terrain::postBuild() {
             tileWidth *= 2.0f;
         }
 
-        vectorEASTL<TileRing::InstanceData> vbData;
-        for (size_t i = 0; i < ringCount; ++i) {
-            vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
-            vbData.insert(eastl::cend(vbData), eastl::cbegin(ringData), eastl::cend(ringData));
-        }
-
         // This is a whole fraction of the max tessellation, i.e., 64/N.  The intent is that 
         // the height field scrolls through the terrain mesh in multiples of the polygon spacing.
         // So polygon vertices mostly stay fixed relative to the displacement map and this reduces
@@ -238,7 +243,7 @@ void Terrain::postBuild() {
         // The non-debug rendering works fine either way, but crazy flickering of the debug patches 
         // makes understanding much harder.
         const vec2<F32> snapGridSize = tessParams().WorldScale() * _tileRings[ringCount - 1]->tileSize();
-        _tessParams.SnapGridSize(snapGridSize / TessellationParams::PATCHES_PER_TILE_EDGE);
+        _tessParams.SnapGridSize(snapGridSize / (TessellationParams::PATCHES_PER_TILE_EDGE / 2));
 
         vectorEASTLFast<U16> indices = CreateTileQuadListIB();
 
@@ -249,25 +254,43 @@ void Terrain::postBuild() {
             idxBuff.data = indices.data();
 
             Divide::GenericVertexData::SetBufferParams params = {};
-            params._buffer = 0;
             params._elementSize = sizeof(TileRing::InstanceData);
             params._updateFrequency = Divide::BufferUpdateFrequency::ONCE;
             params._updateUsage = Divide::BufferUpdateUsage::CPU_W_GPU_R;
             params._storageType = Divide::BufferStorageType::NORMAL;
             params._instanceDivisor = 1u;
             params._sync = false;
-            params._data = vbData.data();
-            params._elementCount = to_U32(vbData.size());
 
             _terrainBuffer = _context.newGVD(1);
-            _terrainBuffer->create(1);
+            if_constexpr(USE_BASE_VERTEX_OFFSETS) {
+                _terrainBuffer->create(1);
+            } else {
+                _terrainBuffer->create(ringCount);
+            }
             _terrainBuffer->setIndexBuffer(idxBuff, Divide::BufferUpdateFrequency::ONCE);
-            _terrainBuffer->setBuffer(params);
-            Divide::AttributeDescriptor& descPosition  = _terrainBuffer->attribDescriptor(Divide::to_base(Divide::AttribLocation::POSITION));
-            Divide::AttributeDescriptor& descAdjacency = _terrainBuffer->attribDescriptor(Divide::to_base(Divide::AttribLocation::COLOR));
-
-            descPosition.set( 0, 4, Divide::GFXDataFormat::FLOAT_32, false,  0u * sizeof(F32));
-            descAdjacency.set(0, 4, Divide::GFXDataFormat::FLOAT_32, false,  4u * sizeof(F32));
+            if_constexpr(USE_BASE_VERTEX_OFFSETS) {
+                vectorEASTL<TileRing::InstanceData> vbData;
+                for (size_t i = 0; i < ringCount; ++i) {
+                    vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
+                    vbData.insert(eastl::cend(vbData), eastl::cbegin(ringData), eastl::cend(ringData));
+                }
+                params._buffer = 0;
+                params._data = vbData.data();
+                params._elementCount = to_U32(vbData.size());
+                _terrainBuffer->setBuffer(params);
+            } else {
+                for (size_t i = 0; i < ringCount; ++i) {
+                    vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
+                    params._buffer = to_U32(i);
+                    params._data = ringData.data();
+                    params._elementCount = to_U32(ringData.size());
+                    _terrainBuffer->setBuffer(params);
+                }
+            }
+            AttributeDescriptor& descPosition  = _terrainBuffer->attribDescriptor(Divide::to_base(AttribLocation::POSITION));
+            AttributeDescriptor& descAdjacency = _terrainBuffer->attribDescriptor(Divide::to_base(AttribLocation::COLOR));
+            descPosition.set( 0u, 4, GFXDataFormat::FLOAT_32, false, 0u * sizeof(F32));
+            descAdjacency.set(0u, 4, GFXDataFormat::FLOAT_32, false, 4u * sizeof(F32));
         }
     }
 }
@@ -311,17 +334,19 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
                             bool refreshData) {
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
-        rComp.getMaterialInstance()->parallaxFactor(_descriptor->parallaxHeightScale());
+        rComp.getMaterialInstance()->parallaxFactor(parallaxHeightScale());
         _editorDataDirtyState = EditorDataState::PROCESSED;
     }
 
     if (!pkg.empty()) {
-        F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
+        F32 triangleWidth = to_F32(tessParams().tessellatedTriangleWidth());
         if (renderStagePass._stage == RenderStage::REFLECTION ||
             renderStagePass._stage == RenderStage::REFRACTION)                 
         {
             // Lower the level of detail in reflections and refractions
             triangleWidth *= 1.5f;
+        } else if (renderStagePass._stage == RenderStage::SHADOW) {
+            triangleWidth *= 2.0f;
         }
 
         const vec2<F32>& grid  = tessParams().SnapGridSize();
@@ -340,15 +365,9 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
         // Why the 2x?  I'm confused.  But it works.
         snapped = eye - ((eye - snapped) * 2);
 
-        const mat4<F32> transform(
-            // Pos
-            vec3<F32>{ snapped.width, 0.0f, snapped.height },
-            //Scale
-            vec3<F32>{ scale.width, 1.0f, scale.height });
-
         PushConstants& constants = pkg.pushConstants(0);
         constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
-        constants.set(_ID("dvd_tileWorldMatrix"),    GFX::PushConstantType::MAT4,  transform);
+        constants.set(_ID("dvd_tileWorldPosition"),  GFX::PushConstantType::VEC2,  snapped);
         constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  offset / scale);
     }
 
@@ -360,25 +379,29 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
-    const F32 triangleWidth = to_F32(_descriptor->tessellatedTriangleWidth());
+    const F32 triangleWidth = to_F32(tessParams().tessellatedTriangleWidth());
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
-    pushConstantsCommand._constants.set(_ID("dvd_tileWorldMatrix"),    GFX::PushConstantType::MAT4,  MAT4_IDENTITY);
+    pushConstantsCommand._constants.set(_ID("dvd_tileWorldPosition"),  GFX::PushConstantType::VEC2,  VECTOR2_ZERO);
     pushConstantsCommand._constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  VECTOR2_ZERO);
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
     enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-    cmd._bufferIndex = renderStagePass.baseIndex();
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._sourceBuffer = _terrainBuffer->handle();
     cmd._cmd.indexCount = to_U32(TessellationParams::QUAD_LIST_INDEX_COUNT);
+    cmd._bufferIndex = 0u;
 
     for (const auto& tileRing : _tileRings) {
-        cmd._cmd.baseVertex += cmd._cmd.primCount;
         cmd._cmd.primCount = tileRing->tileCount();
         pkgInOut.add(GFX::DrawCommand{ cmd });
+        if_constexpr(USE_BASE_VERTEX_OFFSETS) {
+            cmd._cmd.baseVertex += cmd._cmd.primCount;
+        } else {
+            ++cmd._bufferIndex;
+        }
     }
 
     _terrainQuadtree.drawBBox(pkgInOut);

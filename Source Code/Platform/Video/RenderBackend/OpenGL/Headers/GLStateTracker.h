@@ -118,6 +118,7 @@ namespace Divide {
         bool bindActiveBuffer(GLuint vaoID,
                               GLuint location,
                               GLuint bufferID,
+                              GLuint instanceDivisor,
                               size_t offset,
                               size_t stride);
 

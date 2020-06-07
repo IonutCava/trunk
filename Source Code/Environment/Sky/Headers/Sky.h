@@ -112,7 +112,7 @@ class Sky : public SceneNode {
 
     const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
-    const std::array<vec4<F32>, 3> atmoTooShaderData() const noexcept;
+    const std::array<vec4<F32>, 3> atmoToShaderData() const noexcept;
   
     GFXDevice& _context;
     eastl::unique_ptr<Sun> _sun = nullptr;
