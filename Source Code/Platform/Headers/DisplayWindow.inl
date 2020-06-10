@@ -131,7 +131,7 @@ namespace Divide {
         _eventListeners[to_base(windowEvent)].push_back(listener);
     }
 
-    inline void DisplayWindow::clearEventlisteners(WindowEvent windowEvent) {
+    inline void DisplayWindow::clearEventListeners(WindowEvent windowEvent) {
         _eventListeners[to_base(windowEvent)].clear();
     }
 

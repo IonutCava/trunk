@@ -31,7 +31,7 @@ namespace Divide {
 
 
     void OutputWindow::clearLog() {
-        g_log.fill({ "", Console::EntryType::Info });
+        g_log.fill({ "", Console::EntryType::INFO });
         g_writeIndex.store(0);
         _scrollToBottom = true;
     }
@@ -138,7 +138,7 @@ namespace Divide {
         printText(
             {
                 Util::StringFormat("# %s\n", command_line).c_str(),
-                Console::EntryType::Command
+                Console::EntryType::COMMAND
             }
         );
     }

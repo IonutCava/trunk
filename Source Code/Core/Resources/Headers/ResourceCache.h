@@ -42,7 +42,7 @@
 
 namespace Divide {
 
-class ResourceLoadLock : private NonMovable {
+class ResourceLoadLock : NonMovable {
 public:
     explicit ResourceLoadLock(size_t hash, PlatformContext& context);
     ~ResourceLoadLock();
@@ -50,9 +50,9 @@ public:
     static void notifyTaskPool(PlatformContext& context);
 
 private:
-    bool isLoading(size_t hash) const;
-    bool setLoading(size_t hash);
-    bool setLoadingFinished(size_t hash);
+    static bool IsLoading(size_t hash);
+    static bool SetLoading(size_t hash);
+    static bool SetLoadingFinished(size_t hash);
 
 private:
     const size_t _loadingHash;
@@ -62,9 +62,9 @@ private:
 /// - keep track of already loaded resources
 /// - load new resources using appropriate resource loader and store them in cache
 /// - remove resources by name / pointer or remove all
-class ResourceCache : public PlatformContextComponent {
+class ResourceCache final : public PlatformContextComponent {
 public:
-    ResourceCache(PlatformContext& context);
+    explicit ResourceCache(PlatformContext& context);
     ~ResourceCache();
 
     /// Each resource entity should have a 'resource name'Loader implementation.
@@ -84,21 +84,22 @@ public:
             // The loading process may change the resource descriptor so always use the user-specified descriptor hash for lookup!
             const size_t loadingHash = descriptor.getHash();
 
-            // If two thread are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
+            // If two threads are trying to load the same resource at the same time, by the time one of them adds the resource to the cache, it's too late
             // So check if the hash is currently in the "processing" list, and if it is, just busy-spin until done
             // Once done, lock the hash for ourselves
             ResourceLoadLock res_lock(loadingHash, _context);
-            /// Check cache first to avoid loading the same resource twice
-            ptr = std::static_pointer_cast<T>(find(loadingHash));
+            /// Check cache first to avoid loading the same resource twice (or if we have stale, expired pointers in there)
+            bool cacheHit = false;
+            ptr = std::static_pointer_cast<T>(find(loadingHash, cacheHit));
             /// If the cache did not contain our resource ...
             wasInCache = ptr != nullptr;
             if (!wasInCache) {
                 Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
-                /// ...aquire the resource's loader and get our resource as the loader creates it
+                /// ...acquire the resource's loader and get our resource as the loader creates it
                 ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(this, _context, descriptor, loadingHash)());
                 assert(ptr != nullptr);
-                add(ptr);
+                add(ptr, cacheHit);
             }
 
             if_constexpr(UseAtomicCounter) {
@@ -136,16 +137,12 @@ public:
         return ptr;
     }
 
-    CachedResource_ptr find(const size_t descriptorHash);
-    void add(CachedResource_wptr resource);
+    CachedResource_ptr find(const size_t descriptorHash, bool& entryInMap);
+    void add(CachedResource_wptr resource, bool overwriteEntry);
     /// Empty the entire cache of resources
     void clear();
 
     void printContents() const;
-
-protected:
-    /// this method handles cache lookups and reference counting
-    CachedResource_ptr loadResource(size_t descriptorHash, const Str128& resourceName);
 
 protected:
     friend struct DeleteResource;
@@ -154,7 +151,8 @@ protected:
 
 protected:
     /// multithreaded resource creation
-    using ResourceMap = ska::bytell_hash_map<size_t, CachedResource_wptr>;
+    //using ResourceMap = ska::bytell_hash_map<size_t, CachedResource_wptr>;
+    using ResourceMap = hashMap<size_t, CachedResource_wptr>;
 
     ResourceMap _resDB; 
     mutable SharedMutex _creationMutex;

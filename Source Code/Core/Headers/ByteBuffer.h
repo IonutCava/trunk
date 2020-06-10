@@ -20,8 +20,6 @@
 #ifndef _CORE_BYTE_BUFFER_H_
 #define _CORE_BYTE_BUFFER_H_
 
-#include "Platform/Headers/ByteConverter.h"
-
 namespace Divide {
 
 class ByteBufferException {
@@ -50,9 +48,8 @@ class ByteBuffer {
 
     // constructor
     ByteBuffer();
-
     // constructor
-    ByteBuffer(size_t res);
+    explicit ByteBuffer(size_t res);
     
     void clear() noexcept;
 
@@ -70,7 +67,7 @@ class ByteBuffer {
     template <typename T>
     void read_noskip(T& value);
     template <typename T>
-    void read_noskip(bool& value);
+    void read_noskip(bool& value) const;
     template <typename T>
     void read_noskip(stringImpl& value);
 

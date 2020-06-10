@@ -38,18 +38,18 @@ namespace Divide {
 constexpr int CONSOLE_OUTPUT_BUFFER_SIZE = 4096 * 16 * 2;
 constexpr int MAX_CONSOLE_ENTRIES = 128;
 
-class Console : private NonCopyable {
+class Console : NonCopyable {
    public:
      enum class EntryType : U8 {
-         Info = 0,
-         Warning,
-         Error,
-         Command
+         INFO = 0,
+         WARNING,
+         ERR,
+         COMMAND
     };
 
     struct OutputEntry {
         stringImpl _text;
-        EntryType _type = EntryType::Info;
+        EntryType _type = EntryType::INFO;
     };
 
     using ConsolePrintCallback = std::function<void(const Console::OutputEntry&)>;

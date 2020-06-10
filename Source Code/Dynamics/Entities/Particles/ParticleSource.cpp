@@ -3,6 +3,7 @@
 #include "Headers/ParticleSource.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {

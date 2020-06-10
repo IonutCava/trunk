@@ -4,8 +4,8 @@
 
 #include "Utility/Headers/Localization.h"
 
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Camera/Headers/FirstPersonCamera.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Camera/Headers/OrbitCamera.h"
 #include "Rendering/Camera/Headers/ScriptedCamera.h"
 #include "Rendering/Camera/Headers/ThirdPersonCamera.h"
@@ -82,6 +82,7 @@ Camera* Camera::createCameraInternal(const Str256& cameraName, CameraType type) 
         case Camera::CameraType::THIRD_PERSON:
             camera = MemoryManager_NEW ThirdPersonCamera(cameraName);
             break;
+        default: break;
     }
 
     if (camera != nullptr) {
@@ -108,7 +109,7 @@ bool Camera::destroyCameraInternal(Camera* camera) {
 
 Camera* Camera::findCameraInternal(U64 nameHash) {
     SharedLock<SharedMutex> r_lock(s_cameraPoolLock);
-    auto it = eastl::find_if(eastl::cbegin(s_cameraPool), eastl::cend(s_cameraPool), [nameHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == nameHash; });
+    const auto it = eastl::find_if(eastl::cbegin(s_cameraPool), eastl::cend(s_cameraPool), [nameHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == nameHash; });
     if (it != std::end(s_cameraPool)) {
         return *it;
     }
@@ -116,8 +117,8 @@ Camera* Camera::findCameraInternal(U64 nameHash) {
     return nullptr;
 }
 
-bool Camera::removeChangeListener(U32 id) {
-    ListenerMap::const_iterator it = s_changeCameraListeners.find(id);
+bool Camera::removeChangeListener(const U32 id) {
+    const ListenerMap::const_iterator it = s_changeCameraListeners.find(id);
     if (it != std::cend(s_changeCameraListeners)) {
         s_changeCameraListeners.erase(it);
         return true;

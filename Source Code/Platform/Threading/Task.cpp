@@ -1,12 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Task.h"
-
-#include "Core/Headers/Application.h"
-#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Utility/Headers/Localization.h"
-
-#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -31,10 +26,10 @@ void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction)
     task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
 };
 
-Task& Start(Task& task, TaskPriority priority, DELEGATE<void>&& onCompletionFunction) {
+Task& Start(Task& task, const TaskPriority priority, DELEGATE<void>&& onCompletionFunction) {
     const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
 
-    const auto run = [&task, hasOnCompletionFunction](bool threadWaitingCall) {
+    const auto run = [&task, hasOnCompletionFunction](const bool threadWaitingCall) {
         while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
             if (threadWaitingCall) {
                 TaskYield(task);

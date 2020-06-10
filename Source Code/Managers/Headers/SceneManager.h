@@ -234,7 +234,7 @@ protected:
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
-    void preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut);
+    void preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, const size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut);
     void postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera* playerCamera);
     void postRenderAllPasses(const Camera* playerCamera);
@@ -396,8 +396,8 @@ class SceneManagerRenderPass {
         mgr->prepareLightData(stage, camPosition, viewMatrix);
     }
 
-    static void preRenderMainPass(Divide::SceneManager* mgr, const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
-        mgr->preRender(stagePass, camera, hizColourTexture, bufferInOut);
+    static void preRenderMainPass(Divide::SceneManager* mgr, const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, const size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut) {
+        mgr->preRender(stagePass, camera, hizColourTexture, hizTextureSampler, bufferInOut);
     }
 
     static void postRender(Divide::SceneManager* mgr, const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {

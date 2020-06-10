@@ -2,9 +2,9 @@
 #ifndef _PRE_RENDER_OPERATOR_H_
 #define _PRE_RENDER_OPERATOR_H_
 
-#include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
@@ -52,7 +52,7 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual void reshape(U16 width, U16 height);
 
-    inline FilterType operatorType() const noexcept { return _operatorType; }
+    FilterType operatorType() const noexcept { return _operatorType; }
 
     virtual void idle(const Configuration& config);
     virtual void onToggle(const bool state);

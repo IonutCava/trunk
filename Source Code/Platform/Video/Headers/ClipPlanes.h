@@ -50,7 +50,7 @@ namespace Divide {
         {
         }
 
-        ClipPlaneList(const Plane<F32>& defaultValue)
+        explicit ClipPlaneList(const Plane<F32>& defaultValue)
         {
             _planes.fill(defaultValue);
         }

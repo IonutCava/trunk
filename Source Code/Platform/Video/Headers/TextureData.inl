@@ -49,14 +49,14 @@ namespace Divide {
     }
 
     template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, U8 binding) {
+    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, size_t samplerHash, U8 binding) {
         assert(data._textureType != TextureType::COUNT);
-        return setTextureInternal(data, binding);
+        return setTextureInternal(data, samplerHash, binding);
     }
 
     template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, TextureUsage binding) {
-        return setTexture(data, to_U8(binding));
+    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, size_t samplerHash, TextureUsage binding) {
+        return setTexture(data, samplerHash, to_U8(binding));
     }
 
     template<size_t Size>
@@ -66,10 +66,10 @@ namespace Divide {
 
     template<size_t Size>
     TextureUpdateState TextureDataContainer<Size>::setTextures(const DataEntries& textureEntries) {
-        UpdateState ret = UpdateState::COUNT;
+        TextureUpdateState ret = TextureUpdateState::COUNT;
         for (auto entry : textureEntries) {
-            const UpdateState state = setTextureInternal(entry.second, entry.first);
-            if (ret == UpdateState::COUNT || state != UpdateState::NOTHING) {
+            const TextureUpdateState state = setTextureInternal(std::get<2>(entry), std::get<1>(entry), std::get<0>(entry));
+            if (ret == TextureUpdateState::COUNT || state != TextureUpdateState::NOTHING) {
                 ret = state;
             }
         }
@@ -80,7 +80,7 @@ namespace Divide {
     template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(U8 binding) {
         for (auto& it : _textures) {
-            auto& crtBinding = it.first;
+            auto& crtBinding = std::get<0>(it);
             assert(_count > 0u);
             if (crtBinding == binding) {
                 crtBinding = INVALID_BINDING;
@@ -96,7 +96,7 @@ namespace Divide {
     bool TextureDataContainer<Size>::removeTexture(const TextureData& data) {
         assert(_count > 0u);
         for (auto& it : _textures) {
-            auto& crtBinding = it.first;
+            auto& crtBinding = std::get<0>(it);
             if (it.second == data) {
                 crtBinding = INVALID_BINDING;
                 --_count;
@@ -110,19 +110,21 @@ namespace Divide {
     template<size_t Size>
     void TextureDataContainer<Size>::clear() {
         for (const auto& it : _textures) {
-            removeTexture(it.first);
+            removeTexture(std::get<0>(it));
         }
     }
 
     template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, U8 binding) {
+    TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, size_t samplerHash, U8 binding) {
         OPTICK_EVENT();
         if (binding != INVALID_BINDING) {
             for (auto& it : _textures) {
-                if (it.first == binding) {
-                    auto& crtData = it.second;
-                    if (crtData != data) {
+                if (std::get<0>(it) == binding) {
+                    auto& crtData = std::get<1>(it);
+                    auto& crtSamp = std::get<2>(it);
+                    if (crtData != data || crtSamp != samplerHash) {
                         crtData = data;
+                        crtSamp = samplerHash;
                         return TextureUpdateState::REPLACED;
                     } else {
                         return TextureUpdateState::NOTHING;
@@ -130,10 +132,11 @@ namespace Divide {
                 }
             }
             for (auto& it : _textures) {
-                auto& crtBinding = it.first;
+                auto& crtBinding = std::get<0>(it);
                 if (crtBinding == INVALID_BINDING) {
                     crtBinding = binding;
-                    it.second = data;
+                    std::get<1>(it) = data;
+                    std::get<2>(it) = samplerHash;
                     ++_count;
                     return TextureUpdateState::ADDED;
                 }
@@ -160,8 +163,10 @@ namespace Divide {
             const auto & lhsEntry = lhsTextures[i];
         
             for (const auto& rhsEntry : rhsTextures) {
-                if (rhsEntry.first == lhsEntry.first) {
-                    if (rhsEntry.second != lhsEntry.second) {
+                if (std::get<0>(rhsEntry) == std::get<0>(lhsEntry)) {
+                    if (std::get<1>(rhsEntry) != std::get<1>(lhsEntry) ||
+                        std::get<2>(rhsEntry) != std::get<2>(lhsEntry))
+                    {
                         return false;
                     }
                     foundEntry = true;
@@ -189,8 +194,10 @@ namespace Divide {
             const auto & lhsEntry = lhsTextures[i];
 
             for (const auto& rhsEntry : rhsTextures) {
-                if (rhsEntry.first == lhsEntry.first) {
-                    if (rhsEntry.second != lhsEntry.second) {
+                if (std::get<0>(rhsEntry) == std::get<0>(lhsEntry)) {
+                    if (std::get<1>(rhsEntry) != std::get<1>(lhsEntry) ||
+                        std::get<2>(rhsEntry) != std::get<2>(lhsEntry)) 
+                    {
                         return true;
                     }
                     foundEntry = true;

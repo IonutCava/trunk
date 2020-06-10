@@ -2,28 +2,28 @@
 
 #include "Headers/Scene.h"
 
-#include "Editor/Headers/Editor.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/XMLEntryData.h"
-#include "Core/Headers/Configuration.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/EngineTaskPool.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/StringHelper.h"
+#include "Editor/Headers/Editor.h"
 
-#include "Utility/Headers/XMLParser.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Utility/Headers/XMLParser.h"
 
 #include "Environment/Sky/Headers/Sky.h"
-#include "Environment/Water/Headers/Water.h"
-#include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/InfinitePlane.h"
+#include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainDescriptor.h"
+#include "Environment/Water/Headers/Water.h"
 
-#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
@@ -31,21 +31,20 @@
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIConsole.h"
 
-#include "ECS/Components/Headers/UnitComponent.h"
-#include "ECS/Components/Headers/BoundsComponent.h"
-#include "ECS/Components/Headers/SelectionComponent.h"
-#include "ECS/Components/Headers/TransformComponent.h"
-#include "ECS/Components/Headers/RigidBodyComponent.h"
-#include "ECS/Components/Headers/NavigationComponent.h"
-#include "ECS/Components/Headers/SpotLightComponent.h"
-#include "ECS/Components/Headers/PointLightComponent.h"
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
+#include "ECS/Components/Headers/NavigationComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "ECS/Components/Headers/SelectionComponent.h"
+#include "ECS/Components/Headers/SpotLightComponent.h"
+#include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/UnitComponent.h"
 
-#include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
+#include "Dynamics/Entities/Units/Headers/Player.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
@@ -63,10 +62,7 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
       PlatformContextComponent(context),
       _parent(parent),
       _resCache(cache),
-      _LRSpeedFactor(5.0f),
-      _loadComplete(false),
-      _cookCollisionMeshesScheduled(false),
-      _pxScene(nullptr)
+      _LRSpeedFactor(5.0f)
 {
     _sceneTimerUS = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
@@ -80,10 +76,10 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
 
     _loadingTasks.store(0);
 
-    RenderStateBlock primitiveDescriptor;
     _linesPrimitive = _context.gfx().newIMP();
     _linesPrimitive->name("GenericLinePrimitive");
 
+    const RenderStateBlock primitiveDescriptor;
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveDescriptor.getHash();
     pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
@@ -155,9 +151,8 @@ bool Scene::idle() {  // Called when application is idle
     return true;
 }
 
-void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) {
-
-    FileWithPath fileResult = splitPathToNameAndLocation(srcFile.c_str());
+void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) const {
+    const FileWithPath fileResult = splitPathToNameAndLocation(srcFile.c_str());
     const stringImpl& musicFile = fileResult._fileName;
     const stringImpl& musicFilePath = fileResult._path;
 
@@ -217,11 +212,6 @@ bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void,
         pt.put("wind.windDirX", state()->windDirX());
         pt.put("wind.windDirZ", state()->windDirZ());
         pt.put("wind.windSpeed", state()->windSpeed());
-
-        if (!state()->globalWaterBodies().empty()) {
-            pt.put("water.waterLevel", state()->globalWaterBodies()[0]._heightOffset);
-            pt.put("water.waterDepth", state()->globalWaterBodies()[0]._depth);
-        }
 
         pt.put("options.visibility", state()->renderState().generalVisibility());
         pt.put("options.cameraSpeed.<xmlattr>.move", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str())));
@@ -315,14 +305,7 @@ bool Scene::loadXML(const Str256& name) {
     _dayNightData._time._minutes = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.minute", 30u);
     _dayNightData._speedFactor = pt.get("dayNight.timeOfDay.<xmlattr>.timeFactor", 1.0f);
 
-    if (boost::optional<boost::property_tree::ptree&> waterOverride = pt.get_child_optional("water")) {
-        WaterDetails waterDetails = {};
-        waterDetails._heightOffset = pt.get("water.waterLevel", 0.0f);
-        waterDetails._depth = pt.get("water.waterDepth", -75.0f);
-        state()->globalWaterBodies().push_back(waterDetails);
-    }
-
-    if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraStartPosition")) {
+    if (pt.get_child_optional("options.cameraStartPosition")) {
         par.setParam(_ID((name + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
         par.setParam(_ID((name + ".options.cameraStartPosition.y").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.y", 0.0f));
         par.setParam(_ID((name + ".options.cameraStartPosition.z").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.z", 0.0f));
@@ -333,13 +316,13 @@ bool Scene::loadXML(const Str256& name) {
         par.setParam(_ID((name + ".options.cameraStartPositionOverride").c_str()), false);
     }
 
-    if (boost::optional<boost::property_tree::ptree&> physicsCook = pt.get_child_optional("options.autoCookPhysicsAssets")) {
+    if (pt.get_child_optional("options.autoCookPhysicsAssets")) {
         par.setParam(_ID((name + ".options.autoCookPhysicsAssets").c_str()), pt.get<bool>("options.autoCookPhysicsAssets", false));
     } else {
         par.setParam(_ID((name + ".options.autoCookPhysicsAssets").c_str()), false);
     }
 
-    if (boost::optional<boost::property_tree::ptree&> cameraPositionOverride = pt.get_child_optional("options.cameraSpeed")) {
+    if (pt.get_child_optional("options.cameraSpeed")) {
         par.setParam(_ID((name + ".options.cameraSpeed.move").c_str()), pt.get("options.cameraSpeed.<xmlattr>.move", 35.0f));
         par.setParam(_ID((name + ".options.cameraSpeed.turn").c_str()), pt.get("options.cameraSpeed.<xmlattr>.turn", 35.0f));
     } else {
@@ -350,7 +333,7 @@ bool Scene::loadXML(const Str256& name) {
     vec3<F32> fogColour(config.rendering.fogColour);
     F32 fogDensity = config.rendering.fogDensity;
 
-    if (boost::optional<boost::property_tree::ptree&> fog = pt.get_child_optional("fog")) {
+    if (pt.get_child_optional("fog")) {
         fogDensity = pt.get("fog.fogDensity", fogDensity);
         fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", fogColour.r),
                       pt.get<F32>("fog.fogColour.<xmlattr>.g", fogColour.g),
@@ -360,7 +343,7 @@ bool Scene::loadXML(const Str256& name) {
 
     vec4<U16> lodThresholds(config.rendering.lodThresholds);
 
-    if (boost::optional<boost::property_tree::ptree&> fog = pt.get_child_optional("lod")) {
+    if (pt.get_child_optional("lod")) {
         lodThresholds.set(pt.get<U16>("lod.lodThresholds.<xmlattr>.x", lodThresholds.x),
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.y", lodThresholds.y),
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.z", lodThresholds.z),
@@ -391,28 +374,29 @@ namespace {
     }
 };
 
-SceneNode_ptr Scene::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
+SceneNode_ptr Scene::createNode(const SceneNodeType type, const ResourceDescriptor& descriptor) const {
     switch (type) {
         case SceneNodeType::TYPE_TRANSFORM: 
         {
             return nullptr;
-        }break;
+        };
         case SceneNodeType::TYPE_WATER:
         {
             return CreateResource<WaterPlane>(_resCache, descriptor);
-        }break;
+        };
         case SceneNodeType::TYPE_TRIGGER:
         {
             return CreateResource<Trigger>(_resCache, descriptor);
-        }break;
+        };
         case SceneNodeType::TYPE_PARTICLE_EMITTER:
         {
             return CreateResource<ParticleEmitter>(_resCache, descriptor);
-        }break;
+        };
         case SceneNodeType::TYPE_INFINITEPLANE:
         {
             return CreateResource<InfinitePlane>(_resCache, descriptor);
-        }break;
+        };
+        default: break;
     }
     // Warning?
     return nullptr;
@@ -819,7 +803,7 @@ U16 Scene::registerInputActions() {
     const auto togglePauseState = [this](InputParams param){
         _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false));
     };
-    const auto takeScreenshot = [this](InputParams param) { _context.gfx().Screenshot("screenshot_"); };
+    const auto takeScreenshot = [this](InputParams param) { _context.gfx().screenshot("screenshot_"); };
     const auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
     const auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
     const auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
@@ -1270,7 +1254,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
             updateSelectionData(idx, data, arg.remaped());
         } else {
             bool sceneFocused = true;
-            if (Config::Build::ENABLE_EDITOR) {
+            if_constexpr (Config::Build::ENABLE_EDITOR) {
                 const Editor& editor = _context.editor();
                 sceneFocused = !editor.running() || editor.scenePreviewFocused();
             }
@@ -1283,7 +1267,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
     return false;
 }
 
-bool Scene::updateCameraControls(PlayerIndex idx) {
+bool Scene::updateCameraControls(const PlayerIndex idx) const {
     FreeFlyCamera* cam = getPlayerForIndex(idx)->camera();
     
     SceneStatePerPlayer& playerState = state()->playerState(idx);
@@ -1315,6 +1299,7 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
 
     _sceneTimerUS += deltaTimeUS;
     updateSceneStateInternal(deltaTimeUS);
+    _sceneState->waterBodies().clear();
     _sceneGraph->sceneUpdate(deltaTimeUS, *_sceneState);
     _aiManager->update(deltaTimeUS);
 }
@@ -1493,18 +1478,17 @@ bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
 bool Scene::checkCameraUnderwater(const Camera& camera) const {
     const vec3<F32>& eyePos = camera.getEye();
     {
-        const auto& waterBodies = state()->globalWaterBodies();
-        for (const WaterDetails& water : waterBodies) {
-            if (IS_IN_RANGE_INCLUSIVE(eyePos.y, water._heightOffset - water._depth, water._heightOffset)) {
-                return true;
+        const auto& waterBodies = state()->waterBodies();
+        for (const WaterBodyData& water : waterBodies) {
+            const vec3<F32>& extents = water._extents;
+            const vec3<F32>& position = water._positionW;
+            const F32 halfWidth = (extents.x + position.x) * 0.5f;
+            const F32 halfLength = (extents.z + position.z) * 0.5f;
+            if (eyePos.x >= -halfWidth && eyePos.x <= halfWidth &&
+                eyePos.z >= -halfLength && eyePos.z <= halfLength) {
+                const float depth = -extents.y + position.y;
+                return (eyePos.y < position.y && eyePos.y > depth);
             }
-        }
-    }
-
-    const auto& waterBodies = _sceneGraph->getNodesByType(SceneNodeType::TYPE_WATER);
-    for (SceneGraphNode* node : waterBodies) {
-        if (node && node->getNode<WaterPlane>().pointUnderwater(node, eyePos)) {
-            return true;
         }
     }
 
@@ -1601,7 +1585,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
     }
 }
 
-void Scene::clearHoverTarget(PlayerIndex idx) {
+void Scene::clearHoverTarget(const PlayerIndex idx) {
 
     if (_currentHoverTarget[idx] != -1) {
         SceneGraphNode* oldTarget = _sceneGraph->findNode(_currentHoverTarget[idx]);
@@ -1615,7 +1599,7 @@ void Scene::clearHoverTarget(PlayerIndex idx) {
 
 void Scene::onNodeDestroy(SceneGraphNode* node) {
     const I64 guid = node->getGUID();
-    for (auto iter : _currentHoverTarget) {
+    for (auto& iter : _currentHoverTarget) {
         if (iter.second == guid) {
             iter.second = -1;
         }

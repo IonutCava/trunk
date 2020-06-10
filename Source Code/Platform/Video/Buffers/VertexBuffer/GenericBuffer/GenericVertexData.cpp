@@ -17,7 +17,7 @@ GenericVertexData::~GenericVertexData()
     _attributeMapDraw.clear();
 }
 
-AttributeDescriptor& GenericVertexData::attribDescriptor(U32 attribIndex) {
+AttributeDescriptor& GenericVertexData::attribDescriptor(const U32 attribIndex) {
     AttributeDescriptor& desc = _attributeMapDraw[attribIndex];
     desc.attribIndex(attribIndex);
     return desc;

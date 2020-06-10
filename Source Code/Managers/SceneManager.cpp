@@ -14,6 +14,7 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Scenes/Headers/ScenePool.h"
 #include "Scenes/Headers/SceneShaderData.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Headers/Renderer.h"
@@ -512,27 +513,14 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                                   activeSceneState->minShadowVariance(),
                                   to_F32(activeSceneState->shadowFadeDistance()),
                                   to_F32(activeSceneState->shadowDistance()));
-    U8 index = 0;
-    
-    const vectorEASTL<WaterDetails>& waterBodies = activeSceneState->globalWaterBodies();
-    for (const auto& body : waterBodies) {
-        const vec3<F32> posW (0.0f, body._heightOffset, 0.0f);
-        const vec3<F32> dim(std::numeric_limits<I16>::max(),
-                            std::numeric_limits<I16>::max(),
-                            body._depth);
-        _sceneData->waterDetails(index++, posW, dim);
-    }
-
-    const vectorEASTL<SceneGraphNode*>& waterNodes = activeScene.sceneGraph()->getNodesByType(SceneNodeType::TYPE_WATER);
-    for (SceneGraphNode* body : waterNodes) {
-        _sceneData->waterDetails(index++,
-                                 body->get<TransformComponent>()->getPosition(),
-                                 body->getNode<WaterPlane>().getDimensions());
-    }
-
-
     activeScene.updateSceneState(deltaTimeUS);
 
+    U8 index = 0;
+
+    const vectorEASTL<WaterBodyData>& waterBodies = activeSceneState->waterBodies();
+    for (const auto& body : waterBodies) {
+        _sceneData->waterDetails(index++, body);
+    }
     _saveTimer += deltaTimeUS;
 
     if (_saveTimer >= Time::SecondsToMicroseconds(Config::Build::IS_DEBUG_BUILD ? 5 : 10)) {
@@ -541,10 +529,10 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, GFX::CommandBuffer& bufferInOut) {
+void SceneManager::preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, const size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, getActiveScene().lightPool(), camera, bufferInOut);
+    _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, hizTextureSampler , getActiveScene().lightPool(), camera, bufferInOut);
 }
 
 void SceneManager::postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {

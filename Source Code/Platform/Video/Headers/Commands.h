@@ -33,19 +33,27 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GFX_COMMAND_H_
 #define _GFX_COMMAND_H_
 
-#include "GenericDrawCommand.h"
-#include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
-#include "Rendering/Camera/Headers/CameraSnapshot.h"
 
 #ifndef TO_STR
 #define TO_STR(arg) #arg
 #endif
 
+#include "ClipPlanes.h"
+#include "DescriptorSets.h"
+#include "GenericDrawCommand.h"
+#include "PushConstants.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Rendering/Camera/Headers/CameraSnapshot.h"
+#include "Utility/Headers/TextLabel.h"
+
 struct ImDrawData;
 
 namespace Divide {
-namespace GFX {
+    class Pipeline;
+    class ShaderBuffer;
+    class PixelBuffer;
+
+    namespace GFX {
 
 constexpr size_t g_commandPoolSizeFactor = 256;
 
@@ -119,8 +127,8 @@ namespace Names {
 
 class CommandBuffer;
 struct CommandBase;
-
 struct Deleter {
+    virtual ~Deleter() = default;
     virtual void del(CommandBase*& cmd) const { ACKNOWLEDGE_UNUSED(cmd); }
 };
 
@@ -134,14 +142,14 @@ struct DeleterImpl final : Deleter {
 
 struct CommandBase
 {
-    explicit CommandBase(CommandType type) noexcept : EType(type) {}
+    explicit CommandBase(const CommandType type) noexcept : EType(type) {}
     virtual ~CommandBase() = default;
 
     virtual void addToBuffer(CommandBuffer* buffer) const = 0;
     virtual Deleter& getDeleter() const noexcept = 0;
 
-    inline const char* Name() const noexcept { return Names::commandType[to_base(EType)]; }
-    inline CommandType Type() const noexcept { return EType; }
+    const char* Name() const noexcept { return Names::commandType[to_base(EType)]; }
+    CommandType Type() const noexcept { return EType; }
 
 protected:
     CommandType EType = CommandType::COUNT;
@@ -150,19 +158,17 @@ protected:
 stringImpl ToString(const CommandBase& cmd, U16 indent);
 
 template<typename T, CommandType EnumVal>
-struct Command : public CommandBase {
+struct Command : CommandBase {
     static constexpr CommandType EType = EnumVal;
 
     Command() noexcept : CommandBase(EnumVal) {}
 
-    inline void addToBuffer(CommandBuffer* buffer) const final {
-        buffer->add(static_cast<const T&>(*this));
-    }
+    void addToBuffer(CommandBuffer* buffer) const final;
 
 protected:
     void DELETE_CMD(GFX::CommandBase*& cmd) noexcept;
 
-    inline Deleter& getDeleter() const noexcept final {
+    Deleter& getDeleter() const noexcept final {
         static DeleterImpl<T> s_deleter;
         return s_deleter; 
     }

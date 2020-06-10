@@ -18,12 +18,11 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
 
+#include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include <CEGUI/CEGUI.h>
-
-#include <stdarg.h>
 
 namespace Divide {
 namespace {
@@ -158,7 +157,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
         blendCmd._blendProperties._enabled = true;
         GFX::EnqueueCommand(bufferInOut, blendCmd);
 
-        context.drawTextureInViewport(getCEGUIRenderTextureData(), viewport, false, false, bufferInOut);
+        context.drawTextureInViewport(getCEGUIRenderTextureData(), 0u, viewport, false, false, bufferInOut);
     }
 
     // Restore full state
@@ -514,12 +513,11 @@ TextureData GUI::getCEGUIRenderTextureData() const {
         return
         {
             gfx.getHandleFromCEGUITexture(_ceguiRenderTextureTarget->getTexture()),
-            0u,
             TextureType::TEXTURE_2D 
         };
 
     }
 
-    return { 0u, 0u, TextureType::COUNT };
+    return { 0u, TextureType::COUNT };
 }
 };

@@ -12,7 +12,7 @@ layout(location = 1) out float _alphaFactor;
 #define GRASS_DISPLACEMENT_MAGNITUDE 2.0f
 
 void computeFoliageMovementGrass(inout vec4 vertex, in float heightExtent) {
-    float timeGrass = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
+    float timeGrass = dvd_windDetails.w * MSToSeconds(dvd_time) * 0.25f;
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
     float halfScale = 0.5f * heightExtent;

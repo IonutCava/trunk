@@ -42,9 +42,10 @@ namespace Divide {
 
 struct RenderStagePass;
 struct GenericDrawCommand;
+
 class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsResource {
    public:
-    VertexDataInterface(GFXDevice& context);
+    explicit VertexDataInterface(GFXDevice& context);
     virtual ~VertexDataInterface();
 
     virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
@@ -54,6 +55,7 @@ class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsReso
 protected:
     using VDIPool = ObjectPool<VertexDataInterface, 4096>;
 
+public:
     // We only need this pool in order to get a valid handle to pass around to command buffers instead of using raw pointers
     static VDIPool s_VDIPool;
 };

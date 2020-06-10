@@ -50,17 +50,18 @@ class Renderer : public PlatformContextComponent {
 
     void preRender(RenderStagePass stagePass,
                    const Texture_ptr& hizColourTexture,
+                   const size_t samplerHash,
                    LightPool& lightPool,
                    const Camera* camera,
-                   GFX::CommandBuffer& bufferInOut);
+                   GFX::CommandBuffer& bufferInOut) const;
 
-    void idle();
+    void idle() const;
 
-    void updateResolution(U16 newWidth, U16 newHeight);
+    void updateResolution(U16 newWidth, U16 newHeight) const;
 
-    inline PostFX& postFX() noexcept { return *_postFX; }
+    PostFX& postFX() noexcept { return *_postFX; }
 
-    inline const PostFX& postFX() const noexcept { return *_postFX; }
+    const PostFX& postFX() const noexcept { return *_postFX; }
 
   private:
     ResourceCache* _resCache = nullptr;

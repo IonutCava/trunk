@@ -9,9 +9,9 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "Managers/Headers/RenderPassManager.h"
 
 namespace Divide {
 namespace {
@@ -38,15 +38,18 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand({ Util::StringFormat("Cube Shadow Pass Light: [ %d ]", lightIndex).c_str() }));
 
-    _context.generateCubeMap(RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP)),
+    RenderPassParams params = {};
+    params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP));
+    params._sourceNode = light.getSGN();
+    params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(light.getLightType()), lightIndex);
+    params._shadowMappingEnabled = false;
+
+    _context.generateCubeMap(params,
                              light.getShadowOffset(),
                              light.getSGN()->get<TransformComponent>()->getPosition(),
                              vec2<F32>(0.001f, light.range() * 1.1f),
-                             RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(light.getLightType()), lightIndex),
                              bufferInOut,
-                             cameras,
-                             true,
-                             light.getSGN());
+                             cameras);
 
     for (U8 i = 0; i < 6; ++i) {
         light.setShadowLightPos(i, lightPos);
@@ -60,7 +63,6 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
     }
 
     const RenderTarget& shadowMapRT = _context.renderTargetPool().renderTarget(g_depthMapID);
-    const U16 layerOffset = light.getShadowOffset();
     const I32 layerCount = 1;
 
     GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
@@ -72,7 +74,7 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void CubeShadowMapGenerator::updateMSAASampleCount(U8 sampleCount) {
+void CubeShadowMapGenerator::updateMSAASampleCount(const U8 sampleCount) {
     if (_context.context().config().rendering.shadowMapping.point.MSAASamples != sampleCount) {
         _context.context().config().rendering.shadowMapping.point.MSAASamples = sampleCount;
     }

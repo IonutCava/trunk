@@ -14,14 +14,9 @@
 
 #include "IBL.frag"
 
-//Schlick Gaussian Fresnel
-//specular  = the rgb specular color value of the pixel
-//VdotH     = the dot product of the camera view direction and the half vector 
-vec3 SchlickGaussianFresnel(in vec3 f0, in float VdotH)
-{
-    const float sphericalGaussian = pow(2.0, (-5.55473f * VdotH - 6.98316f) * VdotH);
-    return mix(f0, vec3(1.0f), sphericalGaussian);
-}
+#ifndef F0
+#define F0 vec3(0.04f)
+#endif
 
 // Smith GGX corrected Visibility
 // NdotL        = the dot product of the normal and direction to the light
@@ -44,7 +39,6 @@ float SchlickG1(in float factor, in float rough2)
 {
     return 1.0f / (factor * (1.0f - rough2) + rough2);
 }
-
 
 float SchlickVisibility(float NdotL, float NdotV, float roughness)
 {
@@ -115,9 +109,17 @@ vec3 BurleyDiffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL,
 //Get Fresnel
 //specular  = the rgb specular color value of the pixel
 //VdotH     = the dot product of the camera view direction and the half vector 
-vec3 Fresnel(vec3 f0, float VdotH) {
+vec3 Fresnel(in vec3 f0, in float VdotH) {
     //Schlick Fresnel
     return mix(f0, vec3(1.0f), pow(1.01f - VdotH, 5.0f));
+}
+
+//Schlick Gaussian Fresnel
+//specular  = the rgb specular color value of the pixel
+//VdotH     = the dot product of the camera view direction and the half vector 
+vec3 SchlickGaussianFresnel(in vec3 f0, in float VdotH) {
+    const float sphericalGaussian = pow(2.0, (-5.55473f * VdotH - 6.98316f) * VdotH);
+    return mix(f0, vec3(1.0f), sphericalGaussian);
 }
 
 // Get Distribution
@@ -144,6 +146,12 @@ vec3 Fresnel(vec3 f0, float VdotH) {
 // BurleyDiffuse(...) => PBR
 // LambertianDiffuse(...) => diffuse * NdotL
 
+float GetSpecular(vec3 normal, vec3 eyeVec, vec3 lightDir, float specularPower) {
+    vec3 halfVec = normalize(normalize(eyeVec) + lightDir);
+    return pow(max(dot(normal, halfVec), 0.0), specularPower);
+}
+
+
 vec4 PBR(in vec3 lightDirectionWV,
          in vec4 lightColourAndAtt,
          in vec3 occlusionMetallicRoughness,
@@ -151,20 +159,27 @@ vec4 PBR(in vec3 lightDirectionWV,
          in vec3 normalWV,
          in float ndl)
 {
-    const vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, occlusionMetallicRoughness.g);
-    
+    ndl = saturate(ndl);
+
+    const vec3 specular = mix(F0, albedoAndShadow.rgb, occlusionMetallicRoughness.g);
+
     const vec3 Hn = normalize(VAR._viewDirectionWV + lightDirectionWV);
     const float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0f);
     const float ndh = clamp((dot(normalWV, Hn)), M_EPSILON, 1.0f);
     const float ndv = clamp((dot(normalWV, VAR._viewDirectionWV)), M_EPSILON, 1.0f);
 
     const float roughness = occlusionMetallicRoughness.b;
+
+#if 0
     const vec3 diffuseFactor = BurleyDiffuse(albedoAndShadow.rgb, roughness, ndv, ndl, vdh) * albedoAndShadow.a;
+#else
+    const vec3 diffuseFactor = LambertianDiffuse(albedoAndShadow.rgb, ndl) * albedoAndShadow.a;
+#endif
 
     const float distTerm = GGXDistribution(ndh, roughness);
     const float visTerm = SchlickVisibility(ndl, ndv, roughness);
 
-    const vec3 specularFactor = ((Fresnel(specular, vdh) * distTerm * visTerm) * INV_M_PI) * albedoAndShadow.a;
+    const vec3 specularFactor = ((SchlickGaussianFresnel(specular, vdh) * distTerm * visTerm) * INV_M_PI) * albedoAndShadow.a;
 
     return vec4((lightColourAndAtt.rgb * (diffuseFactor + specularFactor) * lightColourAndAtt.a) * INV_M_PI, length(specularFactor));
 }
@@ -177,7 +192,7 @@ vec4 Phong(in vec3 lightDirectionWV,
            in vec3 normalWV,
            in float ndl)
 {
-    const vec3 specular = mix(vec3(0.04f), albedoAndShadow.rgb, occlusionMetallicRoughness.g);
+    const vec3 specular = mix(F0, albedoAndShadow.rgb, occlusionMetallicRoughness.g);
 
     const vec3 Hn = normalize(VAR._viewDirectionWV + lightDirectionWV);
     const float vdh = clamp((dot(VAR._viewDirectionWV, Hn)), M_EPSILON, 1.0f);
@@ -186,8 +201,9 @@ vec4 Phong(in vec3 lightDirectionWV,
 
     const vec3 diffuseFactor = LambertianDiffuse(albedoAndShadow.rgb, ndl) * albedoAndShadow.a;
 
-    const float distTerm = BlinnPhongDistribution(ndh, occlusionMetallicRoughness.b);
-    const float visTerm = SchlickVisibility(ndl, ndv, occlusionMetallicRoughness.b);
+    const float roughness = occlusionMetallicRoughness.b;
+    const float distTerm = BlinnPhongDistribution(ndh, roughness);
+    const float visTerm = SchlickVisibility(ndl, ndv, roughness);
 
     const vec3 specularFactor = ((Fresnel(specular, vdh) * distTerm * visTerm) * INV_M_PI) * albedoAndShadow.a;
 

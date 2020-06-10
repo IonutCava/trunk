@@ -47,7 +47,7 @@ inline U32 WindowManager::getWindowCount() const noexcept {
     return to_U32(_windows.size());
 }
 
-inline DisplayWindow& WindowManager::getWindow(I64 guid) {
+inline DisplayWindow& WindowManager::getWindow(const I64 guid) {
     for (DisplayWindow* win : _windows) {
         if (win->getGUID() == guid) {
             return *win;
@@ -57,7 +57,7 @@ inline DisplayWindow& WindowManager::getWindow(I64 guid) {
     return *_windows.front();
 }
 
-inline const DisplayWindow& WindowManager::getWindow(I64 guid) const {
+inline const DisplayWindow& WindowManager::getWindow(const I64 guid) const {
     for (const DisplayWindow* win : _windows) {
         if (win->getGUID() == guid) {
             return *win;
@@ -107,17 +107,17 @@ inline const DisplayWindow* WindowManager::getHoveredWindow() const noexcept {
     return nullptr;
 }
 
-inline DisplayWindow& WindowManager::getWindow(U32 index) {
+inline DisplayWindow& WindowManager::getWindow(const U32 index) {
     assert(index < to_U32(_windows.size()));
     return *_windows[index];
 }
 
-inline const DisplayWindow& WindowManager::getWindow(U32 index) const {
+inline const DisplayWindow& WindowManager::getWindow(const U32 index) const {
     assert(index < to_U32(_windows.size()));
     return *_windows[index];
 }
 
-DisplayWindow* WindowManager::getWindowByID(U32 ID) noexcept {
+DisplayWindow* WindowManager::getWindowByID(const U32 ID) noexcept {
     for (DisplayWindow* win : _windows) {
         if (win->_windowID == ID) {
             return win;
@@ -127,7 +127,7 @@ DisplayWindow* WindowManager::getWindowByID(U32 ID) noexcept {
     return nullptr;
 }
 
-const DisplayWindow* WindowManager::getWindowByID(U32 ID) const noexcept {
+const DisplayWindow* WindowManager::getWindowByID(const U32 ID) const noexcept {
     for (const DisplayWindow* win : _windows) {
         if (win->_windowID == ID) {
             return win;

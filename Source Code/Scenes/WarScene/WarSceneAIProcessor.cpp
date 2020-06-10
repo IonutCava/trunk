@@ -4,6 +4,7 @@
 
 #include "Headers/WarScene.h"
 
+#include "AI/Sensors/Headers/AudioSensor.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 #include "AI/ActionInterface/Headers/AITeam.h"
 
@@ -819,7 +820,7 @@ bool WarSceneAIProcessor::processData(const U64 deltaTimeUS) {
 }
 
 bool WarSceneAIProcessor::update(const U64 deltaTimeUS, NPC* unitRef) {
-    U8 visualSensorUpdateFreq = 10;
+	constexpr U8 visualSensorUpdateFreq = 10;
     _visualSensorUpdateCounter =
         (_visualSensorUpdateCounter + 1) % (visualSensorUpdateFreq + 1);
     // Update sensor information

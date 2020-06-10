@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
+<INFINITE_PLANE/>
 <TRANSFORM>
     <Transform>
-        <position x="109.47097" y="-50" z="475.423523"/>
+        <position x="-26.3897972" y="-50" z="-84.2295609"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -25,43 +26,8 @@
         <parallaxFactor>0.00999999978</parallaxFactor>
         <transparencyEnabled>true</transparencyEnabled>
         <isRefractive>true</isRefractive>
-        <SHADOW>
-            <PRE_PASS>
-                <0>
-                    <hash>18244132346642401060</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401060</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401060</hash>
-                </2>
-            </PRE_PASS>
-            <MAIN_PASS>
-                <0>
-                    <hash>18244132346642401060</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401060</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401060</hash>
-                </2>
-            </MAIN_PASS>
-            <OIT_PASS>
-                <0>
-                    <hash>18244132346642401060</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401060</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401060</hash>
-                </2>
-            </OIT_PASS>
-        </SHADOW>
         <RenderStates>
-            <18244132346642401060>
+            <1>
                 <colourWrite r="true" g="true" b="false" a="false"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -80,8 +46,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </18244132346642401060>
-            <11982279051139428370>
+            </1>
+            <2>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -100,8 +66,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </11982279051139428370>
-            <7601331381234247373>
+            </2>
+            <3>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -120,110 +86,145 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </7601331381234247373>
+            </3>
         </RenderStates>
-        <REFLECTION>
+        <SHADOW>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>7601331381234247373</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>7601331381234247373</hash>
+                    <id>1</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
+                </2>
+            </OIT_PASS>
+        </SHADOW>
+        <REFLECTION>
+            <PRE_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>3</id>
+                </0>
+                <1>
+                    <id>3</id>
+                </1>
+                <2>
+                    <id>3</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
                 </2>
             </OIT_PASS>
         </REFLECTION>
         <REFRACTION>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </0>
                 <1>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </1>
                 <2>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </OIT_PASS>
         </REFRACTION>
         <DISPLAY>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </0>
                 <1>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </1>
                 <2>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </OIT_PASS>
         </DISPLAY>
@@ -233,12 +234,12 @@
                 <path>assets/misc_images/</path>
                 <flipped>true</flipped>
                 <Sampler>
-                    <hash>7302334917774055625</hash>
+                    <id>1</id>
                 </Sampler>
             </UNIT0>
         </texture>
         <SamplerDescriptors>
-            <7302334917774055625>
+            <1>
                 <Sampler>
                     <Filter min="LINEAR" mag="LINEAR"/>
                     <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
@@ -250,11 +251,10 @@
                     <biasLOD>0</biasLOD>
                     <borderColour r="0" g="0" b="0" a="1"/>
                 </Sampler>
-            </7302334917774055625>
+            </1>
         </SamplerDescriptors>
     </Material>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
     <Show__Axis>false</Show__Axis>
 </RENDERING>
-<INFINITE_PLANE/>

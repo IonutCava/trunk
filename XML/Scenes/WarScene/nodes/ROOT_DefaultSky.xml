@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>false</static>
-<TRANSFORM>
-    <Transform>
-        <position x="0" y="0" z="0"/>
-        <orientation x="-179.999985" y="7.62100983" z="-179.999985"/>
-        <scale x="1" y="1" z="1"/>
-    </Transform>
-</TRANSFORM>
-<BOUNDS>
-    <Show__AABB>false</Show__AABB>
-    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
-</BOUNDS>
-<RENDERING>
-    <Show__Axis>false</Show__Axis>
-</RENDERING>
-<NETWORKING/>
-<SCRIPT/>
 <SKY>
     <Sun__Intensity>11.1999998</Sun__Intensity>
     <Distance__Multplier__x10>1000</Distance__Multplier__x10>
@@ -29,3 +13,19 @@
     <Use__Night__Skybox>true</Use__Night__Skybox>
     <Night__Colour r="0" g="0" b="0" a="1"/>
 </SKY>
+<TRANSFORM>
+    <Transform>
+        <position x="0" y="0" z="0"/>
+        <orientation x="-179.999985" y="3.70747924" z="-179.999985"/>
+        <scale x="1" y="1" z="1"/>
+    </Transform>
+</TRANSFORM>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
+<RENDERING>
+    <Show__Axis>false</Show__Axis>
+</RENDERING>
+<NETWORKING/>
+<SCRIPT/>

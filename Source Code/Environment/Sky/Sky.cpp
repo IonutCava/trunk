@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/Sky.h"
+
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Headers/Sun.h"
 
 #include "Managers/Headers/SceneManager.h"
@@ -234,9 +236,9 @@ bool Sky::load() {
     skyboxSampler.minFilter(TextureFilter::LINEAR);
     skyboxSampler.magFilter(TextureFilter::LINEAR);
     skyboxSampler.anisotropyLevel(0);
+    _skyboxSampler = skyboxSampler.getHash();
 
     TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
-    skyboxTexture.samplerDescriptor(skyboxSampler);
     skyboxTexture.srgb(true);
     {
         ResourceDescriptor skyboxTextures("DayTextures");
@@ -267,6 +269,7 @@ bool Sky::load() {
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "sky.glsl";
+    vertModule._defines.emplace_back("HAS_CLIPPING_OUT", true);
 
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
@@ -380,6 +383,7 @@ bool Sky::prepareRender(SceneGraphNode* sgn,
         constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());
         if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
             constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
+            constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
             constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
             _atmosphereChanged = EditorDataState::PROCESSED;
         }
@@ -415,12 +419,13 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[0]->data(), TextureUsage::UNIT0);
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[1]->data(), TextureUsage::UNIT1);
+    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0);
+    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1);
     pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz(), WORLD_Z_NEG_AXIS);
+    pushConstantsCommand._constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
     pushConstantsCommand._constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
     pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
     pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());

@@ -5,7 +5,7 @@
 namespace Divide {
 namespace Util {
 
-bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix) {
+bool FindCommandLineArgument(const int argc, char** argv, const char* target_arg, const char* arg_prefix) {
     stringImpl tempArg(arg_prefix);
     tempArg += target_arg;
     const char* target = tempArg.c_str();
@@ -26,7 +26,7 @@ bool IsNumber(const char* s) {
     return false;
 }
 
-void CStringRemoveChar(char* str, char charToRemove) noexcept {
+void CStringRemoveChar(char* str, const char charToRemove) noexcept {
     char *pr = str, *pw = str;
     while (*pr) {
         *pw = *pr++;

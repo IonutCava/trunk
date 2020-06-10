@@ -26,7 +26,7 @@ GUIConsole::GUIConsole(GUI& parent, PlatformContext& context, ResourceCache* cac
       _init(false),
       _closing(false),
       _editBox(nullptr),
-      _lastMsgType(Console::EntryType::Info),
+      _lastMsgType(Console::EntryType::INFO),
       _inputHistoryIndex(0),
       _consoleCallbackIndex(0),
       _outputWindow(nullptr),
@@ -162,7 +162,7 @@ void GUIConsole::setVisible(bool visible) {
             {
                 visible ? "Toggling console display: ON"
                         : "Toggling console display: OFF",
-                Console::EntryType::Info
+                Console::EntryType::INFO
             }
         );
         size_t count = _outputWindow->getItemCount();
@@ -191,9 +191,9 @@ void GUIConsole::OutputText(const Console::OutputEntry& text) {
     CEGUI::FormattedListboxTextItem* crtItem =
         new CEGUI::FormattedListboxTextItem(
             CEGUI::String(text._text.c_str()),
-            (text._type == Console::EntryType::Error 
+            (text._type == Console::EntryType::ERR 
                          ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
-                         : text._type == Console::EntryType::Warning 
+                         : text._type == Console::EntryType::WARNING 
                                       ? CEGUI::Colour(1.0f, 1.0f, 0.0f)
                                       : CEGUI::Colour(0.4f, 0.4f, 0.3f)),
             CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);

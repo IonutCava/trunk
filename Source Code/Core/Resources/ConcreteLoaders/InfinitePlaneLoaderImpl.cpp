@@ -11,7 +11,7 @@ namespace Divide {
     CachedResource_ptr ImplResourceLoader<InfinitePlane>::operator()() {
         std::shared_ptr<InfinitePlane> ptr(MemoryManager_NEW InfinitePlane(_context.gfx(), _cache, _loadingDescriptorHash, _descriptor.resourceName(), vec2<U16>(_descriptor.ID())), DeleteResource(_cache));
 
-        if (!load(ptr)) {
+        if (!Load(ptr)) {
             ptr.reset();
         }
 

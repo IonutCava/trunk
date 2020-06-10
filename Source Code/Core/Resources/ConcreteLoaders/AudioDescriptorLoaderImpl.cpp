@@ -13,7 +13,7 @@ CachedResource_ptr ImplResourceLoader<AudioDescriptor>::operator()() {
                                                               _descriptor.assetName(),
                                                               _descriptor.assetLocation()),
                             DeleteResource(_cache));
-    if (!load(ptr)) {
+    if (!Load(ptr)) {
         ptr.reset();
     } else {
         ptr->isLooping() = _descriptor.flag();

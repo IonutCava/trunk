@@ -9,10 +9,8 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/RenderPassManager.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
-#include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
 
@@ -20,7 +18,6 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
-#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
@@ -33,6 +30,7 @@ namespace {
     // This array defines the outer width of each successive terrain ring.
     constexpr I32 g_RingWidths[] = {
         0,
+        8,
         16,
         16,
         16
@@ -248,12 +246,12 @@ void Terrain::postBuild() {
         vectorEASTLFast<U16> indices = CreateTileQuadListIB();
 
         { // Create a single buffer to hold the data for all of our tile rings
-            Divide::GenericVertexData::IndexBuffer idxBuff = {};
+            GenericVertexData::IndexBuffer idxBuff = {};
             idxBuff.smallIndices = true;
             idxBuff.count = indices.size();
             idxBuff.data = indices.data();
 
-            Divide::GenericVertexData::SetBufferParams params = {};
+            GenericVertexData::SetBufferParams params = {};
             params._elementSize = sizeof(TileRing::InstanceData);
             params._updateFrequency = Divide::BufferUpdateFrequency::ONCE;
             params._updateUsage = Divide::BufferUpdateUsage::CPU_W_GPU_R;
@@ -312,6 +310,7 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState
         case EditorDataState::PROCESSED:
             _editorDataDirtyState = EditorDataState::IDLE;
             break;
+        default: break;
     };
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }

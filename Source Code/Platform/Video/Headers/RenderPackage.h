@@ -33,7 +33,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RENDER_PACKAGE_H_
 #define _RENDER_PACKAGE_H_
 
+#include "ClipPlanes.h"
 #include "CommandBuffer.h"
+#include "DescriptorSets.h"
+#include "PushConstants.h"
 
 namespace Divide {
 
@@ -76,49 +79,49 @@ public:
 
     size_t getSortKeyHash() const;
 
-    inline I32 drawCommandCount() const noexcept { return _drawCommandCount; }
+    I32 drawCommandCount() const noexcept { return _drawCommandCount; }
 
     const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
-    void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd);
+    void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd) const;
 
     const GFX::DrawCommand& drawCommand(I32 index) const;
 
     const Pipeline* pipeline(I32 index) const;
-    void pipeline(I32 index, const Pipeline& pipeline);
+    void pipeline(I32 index, const Pipeline& pipeline) const;
 
     const FrustumClipPlanes& clipPlanes(I32 index) const;
-    void clipPlanes(I32 index, const FrustumClipPlanes& pipeline);
+    void clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) const;
 
     PushConstants& pushConstants(I32 index);
     const PushConstants& pushConstants(I32 index) const;
-    void pushConstants(I32 index, const PushConstants& constants);
+    void pushConstants(I32 index, const PushConstants& constants) const;
 
     DescriptorSet& descriptorSet(I32 index);
     const DescriptorSet& descriptorSet(I32 index) const;
-    void descriptorSet(I32 index, const DescriptorSet& descriptorSets);
+    void descriptorSet(I32 index, const DescriptorSet& descriptorSets) const;
 
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
     template<typename T>
-    inline typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, void>::type
+    typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, void>::type
     add(const T& command) { commands()->add(command); }
 
     template<>
-    inline void add(const GFX::DrawCommand& command) { addDrawCommand(command); }
+    void add(const GFX::DrawCommand& command);
 
     const ShaderBufferBinding& getShaderBuffer(I32 descriptorSetIndex, I32 bufferIndex) const;
 
-    void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer);
-    void setTexture(I32 descriptorSetIndex, const TextureData& data, U8 binding);
-    inline void setTexture(I32 descriptorSetIndex, const TextureData& data, TextureUsage binding) {
-        setTexture(descriptorSetIndex, data, to_U8(binding));
+    void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) const;
+    void setTexture(I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, U8 binding) const;
+    void setTexture(const I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, const TextureUsage binding) {
+        setTexture(descriptorSetIndex, data, samplerHash, to_U8(binding));
     }
 
     void setDrawOption(CmdRenderOptions option, bool state);
     void enableOptions(U16 optionMask);
     void disableOptions(U16 optionMask);
 
-    inline bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
+    bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
 
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
 
@@ -139,10 +142,13 @@ protected:
     bool _isInstanced = false;
 };
 
+template <>
+void RenderPackage::add<GFX::DrawCommand>(const GFX::DrawCommand& command) {
+    addDrawCommand(command);
+}
 
 namespace Attorney {
     class RenderPackageRenderPassManager {
-        private:
         static GFX::CommandBuffer* getCommandBuffer(RenderPackage* pkg) {
             return pkg->commands();
         }
@@ -151,7 +157,6 @@ namespace Attorney {
     };
 
     class RenderPackageRenderingComponent {
-        private:
         static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
             pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
         }

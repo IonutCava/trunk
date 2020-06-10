@@ -7,7 +7,6 @@
 
 #include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
 #include "Platform/File/Headers/FileWatcherManager.h"
@@ -17,15 +16,14 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
-#include "Core/Headers/EngineTaskPool.h"
 #include "Utility/Headers/Localization.h"
 
 #pragma warning(push)
 #pragma warning(disable:4458)
 #pragma warning(disable:4706)
 #include <boost/wave.hpp>
-#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
 #include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
 #pragma warning(pop)
 
 namespace Divide {
@@ -74,7 +72,7 @@ namespace {
         ctx.set_language(boost::wave::enable_emit_line_directives(ctx.get_language(), false));
 
         context_type::iterator_type first = ctx.begin();
-        context_type::iterator_type last = ctx.end();
+        const context_type::iterator_type last = ctx.end();
 
         stringImpl ret = "";
         while (first != last) {
@@ -134,7 +132,7 @@ void glShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) 
 
         const vectorEASTL<Str256> atomLocations = getAllAtomLocations();
         for (const Str256& loc : atomLocations) {
-            createDirectories(loc.c_str());
+            CreateDirectories(loc.c_str());
             watcher().addWatch(loc.c_str(), &s_fileWatcherListener);
         }
     }
@@ -146,18 +144,17 @@ void glShaderProgram::onShutdown() {
 }
 
 glShaderProgram::glShaderProgram(GFXDevice& context,
-                                 size_t descriptorHash,
+                                 const size_t descriptorHash,
                                  const Str256& name,
                                  const Str256& assetName,
                                  const stringImpl& assetLocation,
                                  const ShaderProgramDescriptor& descriptor,
-                                 bool asyncLoad)
+                                 const bool asyncLoad)
     : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad),
       glObject(glObjectType::TYPE_SHADER_PROGRAM, context),
-      _stageMask(UseProgramStageMask::GL_NONE_BIT),
-      _validated(false),
+      _handle(GLUtil::k_invalidObjectID),
       _validationQueued(false),
-      _handle(GLUtil::k_invalidObjectID)
+      _validated(false)
 {
 }
 
@@ -274,7 +271,7 @@ void glShaderProgram::validatePostBind() {
 }
 
 /// This should be called in the loading thread, but some issues are still present, and it's not recommended (yet)
-void glShaderProgram::threadedLoad(bool reloadExisting) {
+void glShaderProgram::threadedLoad(const bool reloadExisting) {
     OPTICK_EVENT();
 
     if (!weak_from_this().expired()) {
@@ -294,14 +291,14 @@ void glShaderProgram::threadedLoad(bool reloadExisting) {
     }
 }
 
-vectorEASTL<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
-                                                   const Str128& stageName,
+vectorEASTL<Str64> glShaderProgram::loadSourceCode(const Str128& stageName,
                                                    const Str8& extension,
                                                    const stringImpl& header,
                                                    size_t definesHash,
                                                    U32 lineOffset,
-                                                   bool reloadExisting,
-                                                   std::pair<bool, stringImpl>& sourceCodeOut) {
+                                                   const bool reloadExisting,
+                                                   std::pair<bool, stringImpl>& sourceCodeOut) const
+{
                                              
     vectorEASTL<Str64> atoms = {};
     const stringImpl fileName = (definesHash != 0
@@ -346,7 +343,7 @@ vectorEASTL<Str64> glShaderProgram::loadSourceCode(ShaderType stage,
     return atoms;
 }
 
-/// Creation of a new shader piepline. Pass in a shader token and use glsw to load the corresponding effects
+/// Creation of a new shader pipeline. Pass in a shader token and use glsw to load the corresponding effects
 bool glShaderProgram::load() {
     if (_asyncLoad) {
         Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
@@ -360,7 +357,7 @@ bool glShaderProgram::load() {
     return true;
 }
 
-bool glShaderProgram::reloadShaders(bool reloadExisting) {
+bool glShaderProgram::reloadShaders(const bool reloadExisting) {
     //glswClearCurrentContext();
     glswSetPath((assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), ".glsl");
 
@@ -421,8 +418,7 @@ bool glShaderProgram::reloadShaders(bool reloadExisting) {
             }
 
             std::pair<bool, stringImpl> sourceCode;
-            vectorEASTL<Str64> atomsTemp = loadSourceCode(type, 
-                                                          stageData._name,
+            vectorEASTL<Str64> atomsTemp = loadSourceCode(stageData._name, 
                                                           shaderAtomExtensionName[shaderIdx],
                                                           header,
                                                           definesHash,
@@ -484,7 +480,7 @@ bool glShaderProgram::shouldRecompile() const {
                          });
 }
 
-bool glShaderProgram::recompile(bool force) {
+bool glShaderProgram::recompile(const bool force) {
     // Invalid or not loaded yet
     if (ShaderProgram::recompile(force) &&
         _handle != GLUtil::k_invalidObjectID && 
@@ -592,9 +588,9 @@ stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
             DIVIDE_ASSERT(found, "Invalid shader include type");
             bool wasParsed = false;
             if (lock) {
-                include_string = glShaderProgram::shaderFileRead(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file, true, level, foundAtoms, wasParsed);
+                include_string = ShaderFileRead(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file, true, foundAtoms, wasParsed);
             } else {
-                include_string = glShaderProgram::shaderFileReadLocked(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file, true, level, foundAtoms, wasParsed);
+                include_string = ShaderFileReadLocked(shaderAtomLocationPrefix[to_U32(typeIndex)], include_file, true, foundAtoms, wasParsed);
             }
             if (include_string.empty()) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")),
@@ -616,13 +612,13 @@ stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
     return output;
 }
 
-const stringImpl& glShaderProgram::shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
+const stringImpl& glShaderProgram::ShaderFileRead(const Str256& filePath, const Str64& atomName, const bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
     UniqueLock<SharedMutex> w_lock(s_atomLock);
-    return shaderFileReadLocked(filePath, atomName, recurse, level, foundAtoms, wasParsed);
+    return ShaderFileReadLocked(filePath, atomName, recurse, foundAtoms, wasParsed);
 }
 
 /// Open the file found at 'filePath' matching 'atomName' and return it's source code
-const stringImpl& glShaderProgram::shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
+const stringImpl& glShaderProgram::ShaderFileReadLocked(const Str256& filePath, const Str64& atomName, const bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
     const U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
     const AtomMap::iterator it = s_atoms.find(atomNameHash);

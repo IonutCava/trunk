@@ -1,9 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/glBufferImpl.h"
-#include "Headers/glMemoryManager.h"
 #include "Headers/glBufferLockManager.h"
-#include "Platform/Headers/PlatformRuntime.h"
+#include "Headers/glMemoryManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
@@ -22,10 +21,10 @@ namespace {
     using BindConfig = std::array<BindConfigEntry, to_base(ShaderBufferLocation::COUNT)>;
     BindConfig g_currentBindConfig;
 
-    bool setIfDifferentBindRange(U32 UBOid,
-                                 U32 bindIndex,
-                                 size_t offsetInBytes,
-                                 size_t rangeInBytes) noexcept {
+    bool setIfDifferentBindRange(const U32 UBOid,
+                                 const U32 bindIndex,
+                                 const size_t offsetInBytes,
+                                 const size_t rangeInBytes) noexcept {
 
         BindConfigEntry& crtConfig = g_currentBindConfig[bindIndex];
 
@@ -45,14 +44,13 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     : glObject(glObjectType::TYPE_BUFFER, context),
       GUIDWrapper(),
       _context(context),
+      _elementSize(params._elementSize),
       _alignedSize(params._dataSize),
       _target(params._target),
       _unsynced(params._unsynced),
       _useExplicitFlush(_target == GL_ATOMIC_COUNTER_BUFFER ? false : params._explicitFlush),
       _updateFrequency(params._frequency),
-      _updateUsage(params._updateUsage),
-      _elementSize(params._elementSize),
-      _lockManager(nullptr)
+      _updateUsage(params._updateUsage)
 {
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         _usage = GL_STREAM_READ;
@@ -126,7 +124,7 @@ glBufferImpl::~glBufferImpl()
     MemoryManager::SAFE_DELETE(_lockManager);
 }
 
-bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) {
+bool glBufferImpl::waitRange(const size_t offsetInBytes, const size_t rangeInBytes, const bool blockClient) const {
     OPTICK_EVENT();
 
     if (_lockManager) {
@@ -136,7 +134,7 @@ bool glBufferImpl::waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blo
     return true;
 }
 
-void glBufferImpl::lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) {
+void glBufferImpl::lockRange(const size_t offsetInBytes, const size_t rangeInBytes, const U32 frameID) const {
     if (_lockManager) {
         _lockManager->LockRange(offsetInBytes, rangeInBytes, frameID);
     }
@@ -146,7 +144,7 @@ GLuint glBufferImpl::bufferID() const noexcept {
     return _handle;
 }
 
-bool glBufferImpl::bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) {
+bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) const {
     assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool bound = false;
@@ -202,8 +200,8 @@ void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const By
     }
 }
 
-void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data)
-{
+void glBufferImpl::readData(const size_t offsetInBytes, const size_t rangeInBytes, Byte* data) const {
+
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         glMemoryBarrier(MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT);
     }
@@ -229,7 +227,8 @@ void glBufferImpl::readData(size_t offsetInBytes, size_t rangeInBytes, Byte* dat
     }
 }
 
-void glBufferImpl::invalidateData(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::invalidateData(const size_t offsetInBytes, const size_t rangeInBytes) const {
+
     OPTICK_EVENT();
 
     if (_mappedBuffer != nullptr) {
@@ -243,7 +242,7 @@ void glBufferImpl::invalidateData(size_t offsetInBytes, size_t rangeInBytes) {
     }
 }
 
-void glBufferImpl::zeroMem(size_t offsetInBytes, size_t rangeInBytes) {
+void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
     const vectorEASTL<Byte> newData(rangeInBytes, Byte{ 0 });
     writeData(offsetInBytes, rangeInBytes, newData.data());
 }
@@ -252,13 +251,14 @@ size_t glBufferImpl::elementSize() const noexcept {
     return _elementSize;
 }
 
-GLenum glBufferImpl::GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept {
+GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const BufferUpdateUsage usage) noexcept {
     switch (frequency) {
         case BufferUpdateFrequency::ONCE:
             switch (usage) {
                 case BufferUpdateUsage::CPU_W_GPU_R: return GL_STATIC_DRAW;
                 case BufferUpdateUsage::CPU_R_GPU_W: return GL_STATIC_READ;
                 case BufferUpdateUsage::GPU_R_GPU_W: return GL_STATIC_COPY;
+                default: break;
             };
             break;
         case BufferUpdateFrequency::OCASSIONAL:
@@ -266,6 +266,7 @@ GLenum glBufferImpl::GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdat
                 case BufferUpdateUsage::CPU_W_GPU_R: return GL_DYNAMIC_DRAW;
                 case BufferUpdateUsage::CPU_R_GPU_W: return GL_DYNAMIC_READ;
                 case BufferUpdateUsage::GPU_R_GPU_W: return GL_DYNAMIC_COPY;
+                default: break;
             };
             break;
         case BufferUpdateFrequency::OFTEN:
@@ -273,8 +274,10 @@ GLenum glBufferImpl::GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdat
                 case BufferUpdateUsage::CPU_W_GPU_R: return GL_STREAM_DRAW;
                 case BufferUpdateUsage::CPU_R_GPU_W: return GL_STREAM_READ;
                 case BufferUpdateUsage::GPU_R_GPU_W: return GL_STREAM_COPY;
+                default: break;
             };
             break;
+        default: break;
     };
 
     DIVIDE_UNEXPECTED_CALL();

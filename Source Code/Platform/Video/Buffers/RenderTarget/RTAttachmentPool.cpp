@@ -14,18 +14,19 @@
 namespace Divide {
 
 namespace {
-    const char* getAttachmentName(RTAttachmentType type) noexcept {
+    const char* getAttachmentName(const RTAttachmentType type) noexcept {
         switch (type) {
-        case RTAttachmentType::Colour:  return "Colour";
-        case RTAttachmentType::Depth:   return "Depth";
-        case RTAttachmentType::Stencil: return "Stencil";
+            case RTAttachmentType::Colour:  return "Colour";
+            case RTAttachmentType::Depth:   return "Depth";
+            case RTAttachmentType::Stencil: return "Stencil";
+            default: break;
         };
 
         return "ERROR";
     };
 };
 
-RTAttachmentPool::RTAttachmentPool(RenderTarget& parent, U8 colourAttCount)
+RTAttachmentPool::RTAttachmentPool(RenderTarget& parent, const U8 colourAttCount)
     : _parent(parent)
 {
     _attachmentCount.fill(0);
@@ -55,7 +56,7 @@ void RTAttachmentPool::copy(const RTAttachmentPool& other) {
     }
 }
 
-RTAttachment_ptr& RTAttachmentPool::checkAndRemoveExistingAttachment(RTAttachmentType type, U8 index) {
+RTAttachment_ptr& RTAttachmentPool::checkAndRemoveExistingAttachment(const RTAttachmentType type, U8 index) {
     assert(index < to_U8(_attachment[to_U32(type)].size()));
 
     RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
@@ -98,7 +99,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     Texture_ptr tex = CreateResource<Texture>(parentCache, textureAttachment);
     assert(tex);
 
-    tex->loadData({ NULL, 0 }, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
+    tex->loadData({nullptr, 0 }, vec2<U16>(_parent.getWidth(), _parent.getHeight()));
     ptr->setTexture(tex);
 
     ++_attachmentCount[to_U32(type)];
@@ -126,7 +127,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const ExternalRTAttachmentDescriptor&
     return ptr;
 }
 
-bool RTAttachmentPool::clear(RTAttachmentType type, U8 index) {
+bool RTAttachmentPool::clear(const RTAttachmentType type, const U8 index) {
     RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
     if (ptr != nullptr) {
         ptr.reset();
@@ -136,7 +137,7 @@ bool RTAttachmentPool::clear(RTAttachmentType type, U8 index) {
     return false;
 }
 
-RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, RTAttachmentType type, U8 index) {
+RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, const RTAttachmentType type, const U8 index) {
     switch (type) {
         case RTAttachmentType::Colour:
         {
@@ -153,13 +154,14 @@ RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, RTAttachme
             assert(index == 0);
             return pool[to_base(RTAttachmentType::Stencil)].front();
         }
+        default: break;
     }
 
     DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
     return pool[0][0];
 }
 
-const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool, RTAttachmentType type, U8 index) const {
+const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool, const RTAttachmentType type, const U8 index) const {
     switch (type) {
         case RTAttachmentType::Colour:
         {
@@ -176,35 +178,37 @@ const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool
             assert(index == 0);
             return pool[to_base(RTAttachmentType::Stencil)].front();
         }
+        default: break;
     }
 
     DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
     return pool[0][0];
 }
 
-bool RTAttachmentPool::exists(RTAttachmentType type, U8 index) const {
+bool RTAttachmentPool::exists(const RTAttachmentType type, const U8 index) const {
     switch (type) {
         case RTAttachmentType::Depth:
         case RTAttachmentType::Stencil: return index == 0;
         case RTAttachmentType::Colour:  return index < to_U8(_attachment[to_U32(type)].size());
+        default: break;
     }
 
     return false;
 }
 
-RTAttachment_ptr& RTAttachmentPool::get(RTAttachmentType type, U8 index) {
+RTAttachment_ptr& RTAttachmentPool::get(const RTAttachmentType type, const U8 index) {
     return getInternal(_attachment, type, index);
 }
 
-const RTAttachment_ptr& RTAttachmentPool::get(RTAttachmentType type, U8 index) const {
+const RTAttachment_ptr& RTAttachmentPool::get(const RTAttachmentType type, const U8 index) const {
     return getInternal(_attachment, type, index);
 }
 
-const RTAttachmentPool::PoolEntry& RTAttachmentPool::get(RTAttachmentType type) const {
+const RTAttachmentPool::PoolEntry& RTAttachmentPool::get(const RTAttachmentType type) const {
     return _attachmentCache[to_base(type)];
 }
 
-U8 RTAttachmentPool::attachmentCount(RTAttachmentType type) const {
+U8 RTAttachmentPool::attachmentCount(const RTAttachmentType type) const noexcept {
     return _attachmentCount[to_U32(type)];
 }
 

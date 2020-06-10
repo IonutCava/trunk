@@ -34,7 +34,7 @@ GLuint glSamplerObject::construct(const SamplerDescriptor& descriptor) {
         glSamplerParameteri(samplerID, GL_TEXTURE_COMPARE_MODE, to_base(GL_NONE));
     }
 
-    if (descriptor.anisotropyLevel() > 1 && descriptor.generateMipMaps()) {
+    if (descriptor.anisotropyLevel() > 1) {
         glSamplerParameterf(samplerID,
                             GL_API::getStateTracker()._opengl46Supported ? GL_TEXTURE_MAX_ANISOTROPY
                                                                          : GL_TEXTURE_MAX_ANISOTROPY_EXT,

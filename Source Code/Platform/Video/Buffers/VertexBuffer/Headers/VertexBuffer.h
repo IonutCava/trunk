@@ -37,7 +37,6 @@
 
 #include "VertexDataInterface.h"
 #include "Core/Headers/ByteBuffer.h"
-#include "Platform/Video/Headers/RenderStagePass.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
@@ -57,7 +56,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         F32       _normal = 0.f;
         F32       _tangent = 0.f;
 
-        inline bool operator==(const Vertex& other) const noexcept {
+        bool operator==(const Vertex& other) const noexcept {
             return _position == other._position &&
                    _normal == other._normal &&
                    _tangent == other._tangent &&
@@ -67,7 +66,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
                    _indices.i == other._indices.i;
         }
 
-        inline bool operator!=(const Vertex& other) const noexcept {
+        bool operator!=(const Vertex& other) const noexcept {
             return _position != other._position ||
                    _normal != other._normal ||
                    _tangent != other._tangent ||
@@ -85,70 +84,70 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
 
-    inline void useLargeIndices(bool state = true) noexcept {
+    void useLargeIndices(const bool state = true) noexcept {
         assert(_indices.empty() && "VertexBuffer error: Index format type specified before buffer creation!");
 
         _format = state ? GFXDataFormat::UNSIGNED_INT
                         : GFXDataFormat::UNSIGNED_SHORT;
     }
 
-    inline void setVertexCount(size_t size) {
+    void setVertexCount(const size_t size) {
         _data.resize(size);
     }
 
-    inline size_t getVertexCount() const noexcept {
+    size_t getVertexCount() const noexcept {
         return _data.size();
     }
 
-    inline const vectorEASTL<Vertex>& getVertices() const noexcept {
+    const vectorEASTL<Vertex>& getVertices() const noexcept {
         return _data;
     }
 
-    inline void reserveIndexCount(size_t size) {
+    void reserveIndexCount(const size_t size) {
         _indices.reserve(size);
     }
 
-    inline void resizeVertexCount(size_t size, const Vertex& defaultValue = Vertex()) {
+    void resizeVertexCount(const size_t size, const Vertex& defaultValue = {}) {
         _data.resize(size, defaultValue);
     }
 
-    inline const vec3<F32>& getPosition(U32 index) const noexcept {
+    const vec3<F32>& getPosition(const U32 index) const noexcept {
         return _data[index]._position;
     }
 
-    inline const vec2<F32>& getTexCoord(U32 index) const noexcept {
+    const vec2<F32>& getTexCoord(const U32 index) const noexcept {
         return _data[index]._texcoord;
     }
 
-    inline F32 getNormal(U32 index) const noexcept {
+    F32 getNormal(const U32 index) const noexcept {
         return _data[index]._normal;
     }
 
-    inline F32 getNormal(U32 index, vec3<F32>& normalOut) const {
+    F32 getNormal(const U32 index, vec3<F32>& normalOut) const {
         const F32 normal = getNormal(index);
         Util::UNPACK_VEC3(normal, normalOut.x, normalOut.y, normalOut.z);
         return normal;
     }
 
-    inline F32 getTangent(U32 index) const noexcept {
+    F32 getTangent(const U32 index) const noexcept {
         return _data[index]._tangent;
     }
 
-    inline F32 getTangent(U32 index, vec3<F32>& tangentOut) const {
+    F32 getTangent(const U32 index, vec3<F32>& tangentOut) const {
         const F32 tangent = getTangent(index);
         Util::UNPACK_VEC3(tangent, tangentOut.x, tangentOut.y, tangentOut.z);
         return tangent;
     }
 
-    inline P32 getBoneIndices(U32 index) const noexcept {
+    P32 getBoneIndices(const U32 index) const noexcept {
         return _data[index]._indices;
     }
 
-    inline P32 getBoneWeightsPacked(U32 index) const noexcept {
+    P32 getBoneWeightsPacked(const U32 index) const noexcept {
         return _data[index]._weights;
     }
 
-    inline FColour4 getBoneWeights(U32 index) const noexcept {
+    FColour4 getBoneWeights(const U32 index) const noexcept {
         const P32& weight = _data[index]._weights;
         return FColour4(CHAR_TO_FLOAT_SNORM(weight.b[0]),
                         CHAR_TO_FLOAT_SNORM(weight.b[1]),
@@ -158,15 +157,15 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     virtual bool queueRefresh() = 0;
 
-    inline bool usesLargeIndices() const noexcept {
+    bool usesLargeIndices() const noexcept {
         return _format == GFXDataFormat::UNSIGNED_INT;
     }
 
-    inline size_t getIndexCount() const noexcept {
+    size_t getIndexCount() const noexcept {
         return _indices.size();
     }
 
-    inline U32 getIndex(size_t index) const {
+    U32 getIndex(const size_t index) const {
         assert(index < getIndexCount());
         return _indices[index];
     }
@@ -175,13 +174,13 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _indices;
     }
 
-    inline void addIndex(U32 index) {
+    void addIndex(const U32 index) {
         assert(usesLargeIndices() || index <= std::numeric_limits<U16>::max());
         _indices.push_back(index);
     }
 
     template <typename T>
-    inline void addIndices(const vectorEASTLFast<T>& indices, bool containsRestartIndex) {
+    void addIndices(const vectorEASTLFast<T>& indices, const bool containsRestartIndex) {
         eastl::transform(eastl::cbegin(indices),
                          eastl::cend(indices),
                          eastl::back_inserter(_indices),
@@ -192,16 +191,16 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         }
     }
 
-    inline void hasRestartIndex(bool state) noexcept {
+    void hasRestartIndex(const bool state) noexcept {
         _primitiveRestartEnabled = state;
     }
 
-    inline void addRestartIndex() {
+    void addRestartIndex() {
         hasRestartIndex(true);
         addIndex((usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S));
      }
 
-    inline void modifyPositionValues(U32 indexOffset, const vectorEASTL<vec3<F32>>& newValues) {
+    void modifyPositionValues(const U32 indexOffset, const vectorEASTL<vec3<F32>>& newValues) {
        assert(indexOffset + newValues.size() - 1 < _data.size());
        DIVIDE_ASSERT(_staticBuffer == false ||
            (_staticBuffer == true && !_data.empty()),
@@ -215,11 +214,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
        _attribDirty[to_base(AttribLocation::POSITION)] = true;
     }
 
-    inline void modifyPositionValue(U32 index, const vec3<F32>& newValue) {
+    void modifyPositionValue(const U32 index, const vec3<F32>& newValue) {
         modifyPositionValue(index, newValue.x, newValue.y, newValue.z);
     }
 
-    inline void modifyPositionValue(U32 index, F32 x, F32 y, F32 z) {
+    void modifyPositionValue(const U32 index, const F32 x, const F32 y, const F32 z) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -230,11 +229,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::POSITION)] = true;
     }
 
-    inline void modifyColourValue(U32 index, const UColour4& newValue) {
+    void modifyColourValue(const U32 index, const UColour4& newValue) {
         modifyColourValue(index, newValue.r, newValue.g, newValue.b, newValue.a);
     }
 
-    inline void modifyColourValue(U32 index, U8 r, U8 g, U8 b, U8 a) {
+    void modifyColourValue(const U32 index, const U8 r, const U8 g, const U8 b, const U8 a) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -245,11 +244,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::COLOR)] = true;
     }
 
-    inline void modifyNormalValue(U32 index, const vec3<F32>& newValue) {
+    void modifyNormalValue(const U32 index, const vec3<F32>& newValue) {
         modifyNormalValue(index, newValue.x, newValue.y, newValue.z);
     }
 
-    inline void modifyNormalValue(U32 index, F32 x, F32 y, F32 z) {
+    void modifyNormalValue(const U32 index, const F32 x, const F32 y, const F32 z) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -260,11 +259,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::NORMAL)] = true;
     }
 
-    inline void modifyTangentValue(U32 index, const vec3<F32>& newValue) {
+    void modifyTangentValue(const U32 index, const vec3<F32>& newValue) {
         modifyTangentValue(index, newValue.x, newValue.y, newValue.z);
     }
 
-    inline void modifyTangentValue(U32 index, F32 x, F32 y, F32 z) {
+    void modifyTangentValue(const U32 index, const F32 x, const F32 y, const F32 z) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -275,11 +274,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::TANGENT)] = true;
     }
 
-    inline void modifyTexCoordValue(U32 index, const vec2<F32>& newValue) {
+    void modifyTexCoordValue(const U32 index, const vec2<F32>& newValue) {
         modifyTexCoordValue(index, newValue.s, newValue.t);
     }
 
-    inline void modifyTexCoordValue(U32 index, F32 s, F32 t) {
+    void modifyTexCoordValue(const U32 index, const F32 s, const F32 t) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -290,7 +289,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::TEXCOORD)] = true;
     }
 
-    inline void modifyBoneIndices(U32 index, P32 indices) {
+    void modifyBoneIndices(const U32 index, const P32 indices) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -301,7 +300,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::BONE_INDICE)] = true;
     }
 
-    inline void modifyBoneWeights(U32 index, const FColour4& weights) {
+    void modifyBoneWeights(const U32 index, const FColour4& weights) {
         P32 boneWeights;
         boneWeights.b[0] = FLOAT_TO_CHAR_SNORM(weights.x);
         boneWeights.b[1] = FLOAT_TO_CHAR_SNORM(weights.y);
@@ -310,7 +309,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         modifyBoneWeights(index, boneWeights);
     }
 
-    inline void modifyBoneWeights(U32 index, P32 packedWeights) {
+    void modifyBoneWeights(const U32 index, const P32 packedWeights) {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
@@ -321,11 +320,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::BONE_WEIGHT)] = true;
     }
 
-    inline size_t partitionCount() const noexcept {
+    size_t partitionCount() const noexcept {
         return _partitions.size();
     }
 
-    inline U16 partitionBuffer() {
+    U16 partitionBuffer() {
         const size_t previousIndexCount = _partitions.empty() ? 0 : _partitions.back().second;
         const size_t previousOffset = _partitions.empty() ? 0 : _partitions.back().first;
         size_t partitionedIndexCount = previousIndexCount + previousOffset;
@@ -333,7 +332,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return to_U16(_partitions.size() - 1);
     }
 
-    inline size_t getPartitionIndexCount(U16 partitionID) {
+    size_t getPartitionIndexCount(const U16 partitionID) {
         if (_partitions.empty()) {
             return getIndexCount();
         }
@@ -341,7 +340,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _partitions[partitionID].second;
     }
 
-    inline size_t getPartitionOffset(U16 partitionID) const noexcept {
+    size_t getPartitionOffset(const U16 partitionID) const noexcept {
         if (_partitions.empty()) {
             return 0;
         }
@@ -349,7 +348,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _partitions[partitionID].first;
     }
 
-    inline size_t lastPartitionOffset() const noexcept {
+    size_t lastPartitionOffset() const noexcept {
         if (_partitions.empty()) {
             return 0;
         }
@@ -372,7 +371,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     static void setAttribMasks(size_t count, const AttribFlags& flagMask);
     static void setAttribMask(size_t index, const AttribFlags& flagMask);
 
-    inline void keepData(const bool state) noexcept {
+    void keepData(const bool state) noexcept {
         _keepDataInMemory = state;
     }
 
@@ -385,7 +384,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual bool refresh() = 0;
     virtual bool createInternal();
 
-    inline bool keepData() const noexcept {
+    bool keepData() const noexcept {
         return _keepDataInMemory;
     }
 

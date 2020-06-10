@@ -250,7 +250,7 @@ void UNPACK_11_11_10(const U32 src, vec3<F32>& res) noexcept {
     Divide::UNPACK_11_11_10(src, res.x, res.y, res.z);
 }
 
-void Normalize(vec3<F32>& inputRotation, bool degrees, bool normYaw, bool normPitch, bool normRoll) noexcept {
+void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw, const bool normPitch, const bool normRoll) noexcept {
     if (normYaw) {
         F32 yaw = degrees ? Angle::to_RADIANS(inputRotation.yaw)
                           : inputRotation.yaw;

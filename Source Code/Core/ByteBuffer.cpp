@@ -10,7 +10,7 @@
 
 namespace Divide {
 
-ByteBufferException::ByteBufferException(bool add, size_t pos, size_t esize, size_t size)
+ByteBufferException::ByteBufferException(const bool add, const size_t pos, const size_t esize, const size_t size)
   : _add(add), _pos(pos), _esize(esize), _size(size)
 {
     printPosError();
@@ -30,7 +30,7 @@ ByteBuffer::ByteBuffer() : ByteBuffer(DEFAULT_SIZE)
 }
 
 // constructor
-ByteBuffer::ByteBuffer(size_t res) : _rpos(0), _wpos(0)
+ByteBuffer::ByteBuffer(const size_t res) : _rpos(0), _wpos(0)
 {
     _storage.reserve(res);
 }
@@ -40,7 +40,7 @@ void ByteBuffer::clear() noexcept {
     _rpos = _wpos = 0;
 }
 
-void ByteBuffer::append(const Byte *src, size_t cnt) {
+void ByteBuffer::append(const Byte *src, const size_t cnt) {
     if (src != nullptr && cnt > 0) {
         if (_storage.size() < _wpos + cnt) {
             _storage.resize(_wpos + cnt);

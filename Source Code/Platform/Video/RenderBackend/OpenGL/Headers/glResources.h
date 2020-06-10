@@ -36,7 +36,6 @@
 #include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
-#include <glbinding/gl46/gl.h>
 #include <glbinding/gl/gl.h>
 using namespace gl;
 
@@ -58,7 +57,7 @@ struct ImageBindSettings {
     GLenum _access = GL_NONE;
     GLenum _format = GL_NONE;
 
-    inline void reset() {
+    void reset() {
         _texture = 0;
          _level = 0;
         _layered = GL_FALSE;
@@ -67,7 +66,7 @@ struct ImageBindSettings {
         _format = GL_NONE;
     }
 
-    inline bool operator==(const ImageBindSettings& other) const {
+    bool operator==(const ImageBindSettings& other) const {
         return _texture == other._texture &&
                _level == other._level &&
                _layered == other._layered &&
@@ -76,7 +75,7 @@ struct ImageBindSettings {
                _format == other._format;
     }
 
-    inline bool operator!=(const ImageBindSettings& other) const {
+    bool operator!=(const ImageBindSettings& other) const {
         return !(*this == other);
     }
 };
@@ -92,8 +91,9 @@ private:
 
 public:
 
-    VAOBindings() noexcept;
-    ~VAOBindings();
+    VAOBindings() = default;
+    ~VAOBindings() = default;
+
     void init(U32 maxBindings);
 
     const BufferBindingParams& bindingParams(GLuint vao, GLuint index);
@@ -187,7 +187,7 @@ public:
 
     bool hasPool(GLenum type) const;
 protected:
-    void onFrameEndInternal(poolImpl& impl);
+    static void OnFrameEndInternal(poolImpl& impl);
 
 private:
     vectorEASTL<GLenum> _types;
@@ -228,7 +228,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 /// Populate enumeration tables with appropriate API values
 void fillEnumTables();
 
-GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool srgb);
+GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool srgb, bool normalized);
 
 extern std::array<GLenum, to_base(BlendProperty::COUNT)> glBlendTable;
 extern std::array<GLenum, to_base(BlendOperation::COUNT)> glBlendOpTable;

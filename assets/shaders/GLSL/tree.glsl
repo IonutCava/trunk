@@ -11,7 +11,7 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
 }
 
 void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
-    float time = dvd_windDetails.w * dvd_time * 0.00025f; //to seconds
+    float time = dvd_windDetails.w * MSToSeconds(dvd_time) * 0.25f;
     float cosX = cos(vertex.x);
     float sinX = sin(vertex.x);
     float halfScale = 0.5f * heightExtent;

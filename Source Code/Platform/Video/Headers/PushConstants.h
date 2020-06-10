@@ -47,7 +47,7 @@ struct PushConstants {
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
-    inline void set(U64 bindingHash, GFX::PushConstantType type, const T* values, size_t count, bool flag = false) {
+    void set(U64 bindingHash, GFX::PushConstantType type, const T* values, size_t count, bool flag = false) {
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingHash) {
                 assert(constant._type == type);
@@ -60,26 +60,26 @@ struct PushConstants {
     }
 
     template<typename T>
-    inline void set(U64 bindingHash, GFX::PushConstantType type, const T& value, bool flag = false) {
+    void set(U64 bindingHash, GFX::PushConstantType type, const T& value, bool flag = false) {
         set(bindingHash, type, &value, 1, flag);
     }
 
     template<typename T>
-    inline void set(U64 bindingHash, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
+    void set(U64 bindingHash, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
         set(bindingHash, type, values.data(), values.size(), flag);
     }
 
     template<typename T, size_t N>
-    inline void set(U64 bindingHash, GFX::PushConstantType type, const std::array<T, N>& values, bool flag = false) {
+    void set(U64 bindingHash, GFX::PushConstantType type, const std::array<T, N>& values, bool flag = false) {
         set(bindingHash, type, values.data(), N, flag);
     }
 
-    inline void clear() noexcept { _data.clear(); }
-    inline bool empty() const noexcept { return _data.empty(); }
-    inline void countHint(size_t count) { _data.reserve(count); }
+    void clear() noexcept { _data.clear(); }
+    bool empty() const noexcept { return _data.empty(); }
+    void countHint(const size_t count) { _data.reserve(count); }
 
-    inline vectorEASTL<GFX::PushConstant>& data() noexcept { return _data; }
-    inline const vectorEASTL<GFX::PushConstant>& data() const noexcept { return _data; }
+    vectorEASTL<GFX::PushConstant>& data() noexcept { return _data; }
+    const vectorEASTL<GFX::PushConstant>& data() const noexcept { return _data; }
 };
 
 bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial);

@@ -5,8 +5,8 @@
 
 namespace Divide {
 glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
-    : _elementCountBindOffset(0),
-      _elementCount(params._elementCount),
+    : _elementCount(params._elementCount),
+      _elementCountBindOffset(0),
       _ringSizeFactor(params._ringSizeFactor)
 {
     const size_t bufferSizeInBytes = _elementCount * params._elementSizeInBytes;
@@ -41,10 +41,10 @@ GLuint glGenericBuffer::bufferHandle() const {
     return _buffer->bufferID();
 }
 
-void glGenericBuffer::writeData(GLuint elementCount,
-                                GLuint elementOffset,
-                                GLuint ringWriteOffset,
-                                const bufferPtr data)
+void glGenericBuffer::writeData(const GLuint elementCount,
+                                const GLuint elementOffset,
+                                const GLuint ringWriteOffset,
+                                const bufferPtr data) const
 {
     // Calculate the size of the data that needs updating
     const size_t dataCurrentSizeInBytes = elementCount * _buffer->elementSize();
@@ -58,10 +58,10 @@ void glGenericBuffer::writeData(GLuint elementCount,
     _buffer->writeData(offsetInBytes, dataCurrentSizeInBytes, (Byte*)data);
 }
 
-void glGenericBuffer::readData(GLuint elementCount,
-                               GLuint elementOffset,
-                               GLuint ringReadOffset,
-                               bufferPtr dataOut) 
+void glGenericBuffer::readData(const GLuint elementCount,
+                               const GLuint elementOffset,
+                               const GLuint ringReadOffset,
+                               bufferPtr dataOut) const
 {
     // Calculate the size of the data that needs updating
     const size_t dataCurrentSizeInBytes = elementCount * _buffer->elementSize();
@@ -75,7 +75,7 @@ void glGenericBuffer::readData(GLuint elementCount,
     _buffer->readData(offsetInBytes, dataCurrentSizeInBytes, (Byte*)dataOut);
 }
 
-void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
+void glGenericBuffer::clearData(const GLuint elementOffset, const GLuint ringWriteOffset) const
 {
     const size_t rangeInBytes = _elementCount * _buffer->elementSize();
     size_t offsetInBytes = elementOffset * _buffer->elementSize();
@@ -87,7 +87,7 @@ void glGenericBuffer::clearData(GLuint elementOffset, GLuint ringWriteOffset)
     _buffer->zeroMem(offsetInBytes, rangeInBytes);
 }
 
-size_t glGenericBuffer::getBindOffset(GLuint ringReadOffset)
+size_t glGenericBuffer::getBindOffset(const GLuint ringReadOffset) const
 {
     size_t retInBytes = static_cast<size_t>(_elementCountBindOffset * _buffer->elementSize());
 
@@ -98,7 +98,7 @@ size_t glGenericBuffer::getBindOffset(GLuint ringReadOffset)
     return retInBytes;
 }
 
-void glGenericBuffer::setBindOffset(GLuint elementCountOffset) noexcept {
+void glGenericBuffer::setBindOffset(const GLuint elementCountOffset) noexcept {
     _elementCountBindOffset = elementCountOffset;
 }
 
@@ -106,9 +106,7 @@ glBufferImpl* glGenericBuffer::bufferImpl() const noexcept {
     return _buffer;
 }
 
-
-
-void glVertexDataContainer::rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex, size_t indexBufferSize) {
+void glVertexDataContainer::rebuildCountAndIndexData(const U32 drawCount, const  U32 indexCount, const U32 firstIndex, const size_t indexBufferSize) {
     if (_lastDrawCount == drawCount && _lastIndexCount == indexCount && _lastFirstIndex == firstIndex) {
         return;
     }

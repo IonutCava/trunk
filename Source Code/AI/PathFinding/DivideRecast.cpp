@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/DivideRecast.h"
-#include "Waypoints/Headers/WaypointGraph.h"
 
 namespace Divide {
 namespace AI {

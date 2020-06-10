@@ -10,7 +10,7 @@
 <underwaterTileScale>100</underwaterTileScale>
 <model>Terrain</model>
 <TERRAIN>
-    <Tessellated__Triangle__Width>22</Tessellated__Triangle__Width>
+    <Tessellated__Triangle__Width>32</Tessellated__Triangle__Width>
     <Parallax__Height>0.300000012</Parallax__Height>
 </TERRAIN>
 <TRANSFORM>
@@ -39,43 +39,8 @@
         <parallaxFactor>0.300000012</parallaxFactor>
         <transparencyEnabled>false</transparencyEnabled>
         <isRefractive>false</isRefractive>
-        <SHADOW>
-            <PRE_PASS>
-                <0>
-                    <hash>18244132346642401061</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401061</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401061</hash>
-                </2>
-            </PRE_PASS>
-            <MAIN_PASS>
-                <0>
-                    <hash>18244132346642401061</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401061</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401061</hash>
-                </2>
-            </MAIN_PASS>
-            <OIT_PASS>
-                <0>
-                    <hash>18244132346642401061</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401061</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401061</hash>
-                </2>
-            </OIT_PASS>
-        </SHADOW>
         <RenderStates>
-            <18244132346642401061>
+            <1>
                 <colourWrite r="true" g="true" b="false" a="false"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -94,8 +59,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </18244132346642401061>
-            <9071389042233026226>
+            </1>
+            <2>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -114,8 +79,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </9071389042233026226>
-            <11982279051139428369>
+            </2>
+            <3>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -134,8 +99,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </11982279051139428369>
-            <577939089991709513>
+            </3>
+            <4>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -154,8 +119,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </577939089991709513>
-            <7601331381234247372>
+            </4>
+            <5>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -174,8 +139,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </7601331381234247372>
-            <11982279051139428370>
+            </5>
+            <6>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -194,110 +159,145 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </11982279051139428370>
+            </6>
         </RenderStates>
-        <REFLECTION>
+        <SHADOW>
             <PRE_PASS>
                 <0>
-                    <hash>9071389042233026226</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>11982279051139428369</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>11982279051139428369</hash>
+                    <id>1</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>577939089991709513</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>7601331381234247372</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>7601331381234247372</hash>
+                    <id>1</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
+                </2>
+            </OIT_PASS>
+        </SHADOW>
+        <REFLECTION>
+            <PRE_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>3</id>
+                </1>
+                <2>
+                    <id>3</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>4</id>
+                </0>
+                <1>
+                    <id>5</id>
+                </1>
+                <2>
+                    <id>5</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>6</id>
+                </0>
+                <1>
+                    <id>6</id>
+                </1>
+                <2>
+                    <id>6</id>
                 </2>
             </OIT_PASS>
         </REFLECTION>
         <REFRACTION>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428369</hash>
+                    <id>3</id>
                 </0>
                 <1>
-                    <hash>11982279051139428369</hash>
+                    <id>3</id>
                 </1>
                 <2>
-                    <hash>11982279051139428369</hash>
+                    <id>3</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247372</hash>
+                    <id>5</id>
                 </0>
                 <1>
-                    <hash>7601331381234247372</hash>
+                    <id>5</id>
                 </1>
                 <2>
-                    <hash>7601331381234247372</hash>
+                    <id>5</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>6</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>6</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>6</id>
                 </2>
             </OIT_PASS>
         </REFRACTION>
         <DISPLAY>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428369</hash>
+                    <id>3</id>
                 </0>
                 <1>
-                    <hash>11982279051139428369</hash>
+                    <id>3</id>
                 </1>
                 <2>
-                    <hash>11982279051139428369</hash>
+                    <id>3</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247372</hash>
+                    <id>5</id>
                 </0>
                 <1>
-                    <hash>7601331381234247372</hash>
+                    <id>5</id>
                 </1>
                 <2>
-                    <hash>7601331381234247372</hash>
+                    <id>5</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>6</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>6</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>6</id>
                 </2>
             </OIT_PASS>
         </DISPLAY>
@@ -307,7 +307,7 @@
                 <path>assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/</path>
                 <flipped>false</flipped>
                 <Sampler>
-                    <hash>10222214137048750614</hash>
+                    <id>1</id>
                 </Sampler>
             </UNIT0>
             <UNIT1>
@@ -316,7 +316,7 @@
                 <flipped>false</flipped>
                 <usage>NONE</usage>
                 <Sampler>
-                    <hash>10222214137048750614</hash>
+                    <id>1</id>
                 </Sampler>
             </UNIT1>
             <OPACITY>
@@ -324,7 +324,7 @@
                 <path>assets/terrain/Main,assets/terrain/Main</path>
                 <flipped>false</flipped>
                 <Sampler>
-                    <hash>11123079089783220254</hash>
+                    <id>2</id>
                 </Sampler>
             </OPACITY>
             <OCCLUSION_METALLIC_ROUGHNESS>
@@ -332,12 +332,12 @@
                 <path>assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/</path>
                 <flipped>true</flipped>
                 <Sampler>
-                    <hash>11123079089783220254</hash>
+                    <id>1</id>
                 </Sampler>
             </OCCLUSION_METALLIC_ROUGHNESS>
         </texture>
         <SamplerDescriptors>
-            <10222214137048750614>
+            <1>
                 <Sampler>
                     <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                     <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
@@ -349,8 +349,8 @@
                     <biasLOD>0</biasLOD>
                     <borderColour r="0" g="0" b="0" a="1"/>
                 </Sampler>
-            </10222214137048750614>
-            <11123079089783220254>
+            </1>
+            <2>
                 <Sampler>
                     <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                     <Map U="CLAMP_TO_EDGE" V="CLAMP_TO_EDGE" W="CLAMP_TO_EDGE"/>
@@ -362,7 +362,7 @@
                     <biasLOD>0</biasLOD>
                     <borderColour r="0" g="0" b="0" a="1"/>
                 </Sampler>
-            </11123079089783220254>
+            </2>
         </SamplerDescriptors>
     </Material>
     <Lock__LoD>true</Lock__LoD>

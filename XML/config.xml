@@ -32,7 +32,7 @@
 	<!-- toggle Vsync on or off. This can be overridden by the display driver! -->
 	<enableVSync>false</enableVSync>
 	<!-- try to enable late v-swap. Only works with VSync. May fallback to regular vsync-->
-	<adaptiveSync>true</adaptiveSync>
+	<adaptiveSync>false</adaptiveSync>
 	<!-- splash screen dimensions -->
 	<splashScreenSize width="400" height="300"/>
 	<!-- window size. Only for windowed mode! -->
@@ -55,7 +55,7 @@
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
 </GUI>
 <rendering>
-	<MSAASamples>2</MSAASamples>
+	<MSAASamples>4</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
 	<reflectionResolutionFactor>2</reflectionResolutionFactor>
@@ -66,7 +66,7 @@
 	<numLightsPerScreenTile>512</numLightsPerScreenTile>
 	<!-- 0 - 8x8, 1 - 16x16, 2 - 32x32 -->
 	<lightThreadGroupSize>1</lightThreadGroupSize>
-	<enableFog>true</enableFog>
+	<enableFog>false</enableFog>
 	<fogDensity>0.00100000005</fogDensity>
 	<fogColour r="0.5" g="0.5" b="0.550000012"/>
 	<lodThresholds x="25" y="45" z="85" w="165"/>

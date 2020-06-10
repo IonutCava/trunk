@@ -49,7 +49,7 @@ bool ASIO::init(const stringImpl& address, U16 port) {
         _localClient->start(
             res.resolve(boost::asio::ip::tcp::resolver::query(address.c_str(), Util::to_string(port).c_str())));
         _thread = new std::thread([&] { io_service_.run(); });
-        setThreadName(_thread, "ASIO_THREAD");
+        SetThreadName(_thread, "ASIO_THREAD");
 
         io_service_.poll();
         _connected = true;

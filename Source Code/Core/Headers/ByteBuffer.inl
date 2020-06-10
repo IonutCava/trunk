@@ -22,13 +22,12 @@
 namespace Divide {
 
 template <typename T>
-inline void ByteBuffer::put(size_t pos, const T& value) {
-    //EndianConvert(value);
-    put(pos, (Byte *)&value, sizeof(T));
+void ByteBuffer::put(const size_t pos, const T& value) {
+    put(pos, (Byte*)(&value), sizeof(T));
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator<<(const T& value) {
+ByteBuffer& ByteBuffer::operator<<(const T& value) {
     append<T>(value);
     return *this;
 }
@@ -42,12 +41,12 @@ inline ByteBuffer& ByteBuffer::operator<<(const bool& value) {
 template <>
 inline ByteBuffer& ByteBuffer::operator<<(const stringImpl &value) {
     append(value.c_str(), value.length());
-    append((U8)0);
+    append(to_U8(0));
     return *this;
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator>>(T& value) {
+ByteBuffer& ByteBuffer::operator>>(T& value) {
     value = read<T>();
     return *this;
 }
@@ -79,7 +78,8 @@ void ByteBuffer::read_noskip(T& value) {
 }
 
 template <typename T>
-void ByteBuffer::read_noskip(bool& value) {
+void ByteBuffer::read_noskip(bool& value) const
+{
     value = read<I8>(_rpos) == to_I8(1);
 }
 
@@ -99,15 +99,15 @@ void ByteBuffer::read_noskip(stringImpl& value) {
 }
 
 template <typename T>
-inline ByteBuffer& ByteBuffer::operator>>(Unused<T>& unused) {
-    ACKNOWLEDGE_UNUSED(unused);
+ByteBuffer& ByteBuffer::operator>>(Unused<T>& value) {
+    ACKNOWLEDGE_UNUSED(value);
 
     read_skip<T>();
     return *this;
 }
 
 template <typename T>
-inline void ByteBuffer::read_skip() {
+void ByteBuffer::read_skip() {
     read_skip(sizeof(T));
 }
 
@@ -135,14 +135,14 @@ inline void ByteBuffer::read_skip(size_t skip) {
 }
 
 template <typename T>
-inline T ByteBuffer::read() {
+T ByteBuffer::read() {
     T r = read<T>(_rpos);
     _rpos += sizeof(T);
     return r;
 }
 
 template <typename T>
-inline T ByteBuffer::read(size_t pos) const {
+T ByteBuffer::read(size_t pos) const {
     if (pos + sizeof(T) > size()) {
         throw ByteBufferException(false, pos, sizeof(T), size());
     }
@@ -186,12 +186,12 @@ inline U64 ByteBuffer::readPackGUID() {
 }
 
 template <typename T>
-inline void ByteBuffer::append(const T *src, size_t cnt) {
-    return append((const Byte *)src, cnt * sizeof(T));
+void ByteBuffer::append(const T *src, size_t cnt) {
+    return append((const Byte*)(src), cnt * sizeof(T));
 }
 
 inline void ByteBuffer::append(const stringImpl& str) {
-    append((Byte const *)str.c_str(), str.size() + 1);
+    append(reinterpret_cast<Byte const*>(str.c_str()), str.size() + 1);
 }
 
 inline void ByteBuffer::append(const ByteBuffer &buffer) {
@@ -200,7 +200,7 @@ inline void ByteBuffer::append(const ByteBuffer &buffer) {
     }
 }
 
-inline void ByteBuffer::appendPackXYZ(F32 x, F32 y, F32 z) {
+inline void ByteBuffer::appendPackXYZ(const F32 x, const F32 y, const F32 z) {
     U32 packed = 0;
     packed |= (to_I32(x / 0.25f) & 0x7FF);
     packed |= (to_I32(y / 0.25f) & 0x7FF) << 11;
@@ -233,7 +233,7 @@ inline size_t ByteBuffer::rpos() const noexcept {
     return _rpos;
 }
 
-inline size_t ByteBuffer::rpos(size_t rpos_) noexcept {
+inline size_t ByteBuffer::rpos(const size_t rpos_) noexcept {
     _rpos = rpos_;
     return _rpos;
 }
@@ -242,7 +242,7 @@ inline size_t ByteBuffer::wpos() const noexcept {
     return _wpos;
 }
 
-inline size_t ByteBuffer::wpos(size_t wpos_) noexcept {
+inline size_t ByteBuffer::wpos(const size_t wpos_) noexcept {
     _wpos = wpos_;
     return _wpos;
 }
@@ -255,13 +255,13 @@ inline bool ByteBuffer::empty() const noexcept {
     return _storage.empty();
 }
 
-inline void ByteBuffer::resize(size_t newsize) {
+inline void ByteBuffer::resize(const size_t newsize) {
     _storage.resize(newsize);
     _rpos = 0;
     _wpos = size();
 }
 
-inline void ByteBuffer::reserve(size_t ressize) {
+inline void ByteBuffer::reserve(const size_t ressize) {
     if (ressize > size()) {
         _storage.reserve(ressize);
     }
@@ -271,7 +271,7 @@ inline const Byte* ByteBuffer::contents() const noexcept {
     return _storage.data();
 }
 
-inline void ByteBuffer::put(size_t pos, const Byte *src, size_t cnt) {
+inline void ByteBuffer::put(const size_t pos, const Byte *src, const size_t cnt) {
     if (pos + cnt > size()) {
         throw ByteBufferException(true, pos, cnt, size());
     }
@@ -280,28 +280,27 @@ inline void ByteBuffer::put(size_t pos, const Byte *src, size_t cnt) {
 
 //private:
 template <typename T>
-inline void ByteBuffer::append(const T& value) {
-    //EndianConvert(value);
-    append((Byte *)&value, sizeof(T));
+void ByteBuffer::append(const T& value) {
+    append((Byte*)(&value), sizeof(T));
 }
 
 //specializations
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, vec2<T> const &v) {
+ByteBuffer &operator<<(ByteBuffer &b, vec2<T> const &v) {
     b << v.x;
     b << v.y;
     return b;
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, vec2<T> &v) {
+ByteBuffer &operator>>(ByteBuffer &b, vec2<T> &v) {
     b >> v.x;
     b >> v.y;
     return b;
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, vec3<T> const &v) {
+ByteBuffer &operator<<(ByteBuffer &b, vec3<T> const &v) {
     b << v.x;
     b << v.y;
     b << v.z;
@@ -309,7 +308,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, vec3<T> const &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, vec3<T> &v) {
+ByteBuffer &operator>>(ByteBuffer &b, vec3<T> &v) {
     b >> v.x;
     b >> v.y;
     b >> v.z;
@@ -317,7 +316,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec3<T> &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, vec4<T> const &v) {
+ByteBuffer &operator<<(ByteBuffer &b, vec4<T> const &v) {
     b << v.x;
     b << v.y;
     b << v.z;
@@ -326,7 +325,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, vec4<T> const &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
+ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
     b >> v.x;
     b >> v.y;
     b >> v.z;
@@ -334,7 +333,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vec4<T> &v) {
     return b;
 }
 template <typename T>
-inline ByteBuffer& operator<<(ByteBuffer& b, Quaternion<T> const& q) {
+ByteBuffer& operator<<(ByteBuffer& b, Quaternion<T> const& q) {
     b << q.X();
     b << q.Y();
     b << q.Z();
@@ -343,7 +342,7 @@ inline ByteBuffer& operator<<(ByteBuffer& b, Quaternion<T> const& q) {
 }
 
 template <typename T>
-inline ByteBuffer& operator>>(ByteBuffer& b, Quaternion<T>& q) {
+ByteBuffer& operator>>(ByteBuffer& b, Quaternion<T>& q) {
     vec4<T> elems = {};
     b >> elems.x; q.X(elems.x);
     b >> elems.y; q.Y(elems.y);
@@ -354,7 +353,7 @@ inline ByteBuffer& operator>>(ByteBuffer& b, Quaternion<T>& q) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, mat2<T> const &m) {
+ByteBuffer &operator<<(ByteBuffer &b, mat2<T> const &m) {
     for (U8 i = 0; i < 4; ++i) {
         b << m[i];
     }
@@ -363,7 +362,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, mat2<T> const &m) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, mat2<T> &n) {
+ByteBuffer &operator>>(ByteBuffer &b, mat2<T> &m) {
     for (U8 i = 0; i < 4; ++i) {
         b >> m[i];
     }
@@ -372,7 +371,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, mat2<T> &n) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, mat3<T> const &m) {
+ByteBuffer &operator<<(ByteBuffer &b, mat3<T> const &m) {
     for (U8 i = 0; i < 9; ++i) {
         b << m[i];
     }
@@ -381,7 +380,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, mat3<T> const &m) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, mat3<T> &n) {
+ByteBuffer &operator>>(ByteBuffer &b, mat3<T> &m) {
     for (U8 i = 0; i < 9; ++i) {
         b >> m[i];
     }
@@ -390,7 +389,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, mat3<T> &n) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, mat4<T> const &m) {
+ByteBuffer &operator<<(ByteBuffer &b, mat4<T> const &m) {
     for (U8 i = 0; i < 16; ++i) {
         b << m[i];
     }
@@ -399,7 +398,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, mat4<T> const &m) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, mat4<T> &m) {
+ByteBuffer &operator>>(ByteBuffer &b, mat4<T> &m) {
     for (U8 i = 0; i < 16; ++i) {
         b >> m[i];
     }
@@ -407,7 +406,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, mat4<T> &m) {
     return b;
 }
 template <typename T, size_t N>
-inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<T, N>& v) {
+ByteBuffer &operator<<(ByteBuffer &b, const std::array<T, N>& v) {
     b << static_cast<U64>(N);
     b.append(v.data(), N);
 
@@ -415,17 +414,17 @@ inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<T, N>& v) {
 }
 
 template <typename T, size_t N>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::array<T, N>& a) {
+ByteBuffer &operator>>(ByteBuffer &b, std::array<T, N>& a) {
     U64 size;
     b >> size;
     assert(size == static_cast<U64>(N));
-    b.read((Byte*)a.data(), N * sizeof(T));
+    b.read((Byte*)(a.data()), N * sizeof(T));
 
     return b;
 }
 
 template <size_t N>
-inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<stringImpl, N>& a) {
+ByteBuffer &operator<<(ByteBuffer &b, const std::array<stringImpl, N>& a) {
     b << static_cast<U64>(N);
     for (const stringImpl& str : a) {
         b << str;
@@ -435,7 +434,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, const std::array<stringImpl, N>& a)
 }
 
 template <size_t N>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
+ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
     U64 size;
     b >> size;
     assert(size == static_cast<U64>(N));
@@ -447,7 +446,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::array<stringImpl, N>& a) {
 }
 
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, vectorEASTL<T> const &v) {
+ByteBuffer &operator<<(ByteBuffer &b, vectorEASTL<T> const &v) {
     b << to_U32(v.size());
     b.append(v.data(), v.size());
 
@@ -455,11 +454,11 @@ inline ByteBuffer &operator<<(ByteBuffer &b, vectorEASTL<T> const &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, vectorEASTL<T> &v) {
+ByteBuffer &operator>>(ByteBuffer &b, vectorEASTL<T> &v) {
     U32 vsize;
     b >> vsize;
     v.resize(vsize);
-    b.read((Byte*)v.data(), vsize * sizeof(T));
+    b.read((Byte*)(v.data()), vsize * sizeof(T));
     return b;
 }
 
@@ -484,7 +483,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, vectorEASTL<stringImpl> &v) {
     return b;
 }
 template <typename T>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const &v) {
+ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const &v) {
     b << to_U32(v.size());
     for (const T& i : v) {
         b << i;
@@ -493,7 +492,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::list<T> const &v) {
 }
 
 template <typename T>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
+ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
     T t;
     U32 vsize;
     b >> vsize;
@@ -507,7 +506,7 @@ inline ByteBuffer &operator>>(ByteBuffer &b, std::list<T> &v) {
 }
 
 template <typename K, typename V>
-inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m) {
+ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m) {
     b << to_U32(m.size());
     for (typename std::map<K, V>::value_type i : m) {
         b << i.first;
@@ -517,7 +516,7 @@ inline ByteBuffer &operator<<(ByteBuffer &b, std::map<K, V> &m) {
 }
 
 template <typename K, typename V>
-inline ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m) {
+ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m) {
     K k;
     V v;
     U32 msize;

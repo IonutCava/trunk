@@ -44,7 +44,7 @@ vec4 Noise(in vec4 colourIn){
 }
 
 vec4 Underwater() {
-    float time2 = float(dvd_time) * 0.00001;
+    float time2 = MSToSeconds(dvd_time) * 0.01f;
     vec2 uvNormal0 = VAR._texCoord * _noiseTile;
     uvNormal0.s += time2;
     uvNormal0.t += time2;

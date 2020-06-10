@@ -6,7 +6,6 @@
 #include "stdafx.h"
 
 #include "Headers/NavMeshDebugDraw.h"
-#include "Headers/NavMesh.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/IMPrimitive.h"

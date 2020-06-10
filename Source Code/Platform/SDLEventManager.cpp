@@ -11,14 +11,10 @@ namespace Divide {
     void SDLEventManager::registerListener(SDLEventListener& listener) {
         UniqueLock<SharedMutex> lock(s_eventListenerLock);
 
-        const U64 targetID = listener.listenerID();
-
-        // prevent double add
-        vectorEASTLFast<SDLEventListener*>::const_iterator it;
-        it = eastl::find_if(eastl::cbegin(s_eventListeners), eastl::cend(s_eventListeners), [targetID](SDLEventListener* listener) {
-            return listener && listener->listenerID() == targetID;
-        });
-        assert(it == eastl::cend(s_eventListeners));
+        assert(eastl::find_if(
+            eastl::cbegin(s_eventListeners), eastl::cend(s_eventListeners), [&](SDLEventListener* l) {
+            return l != nullptr && l->listenerID() == listener.listenerID();
+         }) == eastl::cend(s_eventListeners));
 
         s_eventListeners.push_back(&listener);
     }
@@ -28,11 +24,11 @@ namespace Divide {
 
         const U64 targetID = listener.listenerID();
 
-        // prevent double remove
-        vectorEASTLFast<SDLEventListener*>::const_iterator it;
-        it = eastl::find_if(eastl::cbegin(s_eventListeners), eastl::cend(s_eventListeners), [targetID](SDLEventListener* listener) {
-            return listener && listener->listenerID() == targetID;
-        });
+        vectorEASTLFast<SDLEventListener*>::const_iterator it = eastl::find_if(
+            eastl::cbegin(s_eventListeners), eastl::cend(s_eventListeners), [targetID](SDLEventListener* listener)
+            {
+                return listener && listener->listenerID() == targetID;
+            });
         assert(it != eastl::cend(s_eventListeners));
 
         s_eventListeners.erase(it);

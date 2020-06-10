@@ -33,22 +33,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCENE_SHADER_DATA_H_
 #define _SCENE_SHADER_DATA_H_
 
-#include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Scenes/Headers/SceneState.h"
 
 namespace Divide {
 
 class GFXDevice;
 class ShaderBuffer;
 
-constexpr U8 MAX_WATER_BODIES = 6;
+constexpr U8 GLOBAL_WATER_BODIES = 2;
 
 class SceneShaderData {
   private:
-    struct WaterBodyData {
-        vec4<F32> _positionW = {0.0f};
-        vec4<F32> _details = {0.0f};
-    };
-
     struct SceneShaderBufferData {
         // x,y,z - colour, w - density
         vec4<F32> _fogDetails = { 0.0f};
@@ -58,7 +53,7 @@ class SceneShaderData {
         vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1000.0f, 1000.0f};
         //x - elapsed time, y - delta time, z,w - reserved
         vec4<F32> _otherData = {0.0f};
-        WaterBodyData _waterEntities[MAX_WATER_BODIES] = {};
+        WaterBodyData _waterEntities[GLOBAL_WATER_BODIES] = {};
 
         //RenderDoc: vec4 fogDetails; vec4 windDetails; vec4 shadowSettings; vec4 otherData;
     };
@@ -67,46 +62,44 @@ class SceneShaderData {
     SceneShaderData(GFXDevice& context);
     ~SceneShaderData();
 
-    inline ShaderBuffer* buffer() const noexcept {
+    ShaderBuffer* buffer() const noexcept {
         return _sceneShaderData;
     }
 
-    inline void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) noexcept {
+    void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) noexcept {
         _bufferData._fogDetails.set(colourR, colourG, colourB, density);
         _dirty = true;
     }
 
-    inline void fogDensity(F32 density) noexcept {
+    void fogDensity(F32 density) noexcept {
         CLAMP_01(density);
         _bufferData._fogDetails.w = density;
         _dirty = true;
     }
 
-    inline void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) noexcept {
+    void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) noexcept {
         _bufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
         _dirty = true;
     }
 
-    inline void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) noexcept {
+    void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) noexcept {
         _bufferData._windDetails.set(directionX, directionY, directionZ, speed);
         _dirty = true;
     }
 
-    inline void elapsedTime(U32 timeMS) noexcept {
+    void elapsedTime(U32 timeMS) noexcept {
         _bufferData._otherData.x = to_F32(timeMS);
         _dirty = true;
     }
 
-    inline void deltaTime(F32 deltaTimeMS) noexcept {
+    void deltaTime(F32 deltaTimeMS) noexcept {
         _bufferData._otherData.y = deltaTimeMS;
         _dirty = true;
     }
 
-    inline bool waterDetails(U8 index, const vec3<F32>& positionW, const vec3<F32>& dimensions) {
-        if (index < MAX_WATER_BODIES) {
-            WaterBodyData& waterBody = _bufferData._waterEntities[index];
-            waterBody._positionW.set(positionW);
-            waterBody._details.set(dimensions);
+    bool waterDetails(U8 index, const WaterBodyData& data) {
+        if (index < GLOBAL_WATER_BODIES) {
+            _bufferData._waterEntities[index] = data;
             _dirty = true;
 
             return true;

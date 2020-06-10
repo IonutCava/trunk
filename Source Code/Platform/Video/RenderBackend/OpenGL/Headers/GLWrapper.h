@@ -33,20 +33,17 @@
 #ifndef _GL_WRAPPER_H_
 #define _GL_WRAPPER_H_
 
-#include "config.h"
-
-#include "GLStateTracker.h"
 #include "glHardwareQueryPool.h"
 #include "glIMPrimitive.h"
-#include "Rendering/Camera/Headers/Frustum.h"
+#include "GLStateTracker.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
-#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"
-#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShader.h"
-#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glSamplerObject.h"
-#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glTexture.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVAOPool.h"
+#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShader.h"
+#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"
+#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glSamplerObject.h"
+#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glTexture.h"
+#include "Rendering/Camera/Headers/Frustum.h"
 
 struct glslopt_ctx;
 struct FONScontext;
@@ -115,7 +112,7 @@ protected:
 
     void drawIMGUI(ImDrawData* data, I64 windowGUID);
 
-    bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset);
+    bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const;
 
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
 
@@ -138,12 +135,12 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
 
-    bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews);
-    bool makeImagesResident(const vectorEASTLFast<Image>& images);
+    bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const;
+    bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
 
     bool setViewport(const Rect<I32>& viewport) final;
-    bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady);
-    void sendPushConstants(const PushConstants & pushConstants);
+    bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady) const;
+    void sendPushConstants(const PushConstants & pushConstants) const;
 
 public:
     static GLStateTracker& getStateTracker() noexcept;
@@ -171,8 +168,6 @@ public:
     static IMPrimitive* newIMP(Mutex& lock, GFXDevice& parent);
     static bool destroyIMP(Mutex& lock, IMPrimitive*& primitive);
 
-    /// Verify if we have a sampler object created and available for the given descriptor
-    static U32 getOrCreateSamplerObject(const SamplerDescriptor& descriptor);
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);
 private:

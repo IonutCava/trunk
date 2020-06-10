@@ -14,13 +14,13 @@ size_t PropertyDescriptor::getHash() const noexcept {
 }
 
 ResourceDescriptor::ResourceDescriptor(const Str256& resourceName)
-    : _resourceName(resourceName),
-      _assetName(resourceName)
+    : _assetName(resourceName),
+      _resourceName(resourceName)
 {
 }
 
 size_t ResourceDescriptor::getHash() const noexcept {
-    _hash = 31;
+    _hash = 9999991;
     stringImpl fullPath = _assetLocation;
     fullPath.append("/");
     fullPath.append(_assetName.c_str());

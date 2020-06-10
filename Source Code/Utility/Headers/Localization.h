@@ -47,7 +47,7 @@ constexpr const char* const g_languageFileExtension = ".ini";
 class LanguageData {
 public:
     using LangCallback = DELEGATE<void, std::string_view/*new language*/>;
-public:
+
     LanguageData() = default;
     ~LanguageData() = default;
 

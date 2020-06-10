@@ -6,8 +6,6 @@
 #include "Headers/PlatformRuntime.h"
 
 #include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUIMessageBox.h"
-
 
 #include "Utility/Headers/Localization.h"
 #include "Utility/Headers/MemoryTracker.h"
@@ -53,24 +51,24 @@ const SysInfo& const_sysInfo() noexcept {
 }
 
 
-ErrorCode PlatformPreInit(int argc, char** argv) {
+ErrorCode PlatformPreInit(const int argc, char** argv) {
     InitSysInfo(sysInfo(), argc, argv);
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode PlatformPostInit(int argc, char** argv) {
+ErrorCode PlatformPostInit(const int argc, char** argv) {
     Runtime::mainThreadID(std::this_thread::get_id());
     SeedRandom();
     Paths::initPaths(sysInfo());
 
-    ErrorCode err = ErrorCode::NO_ERR;
+    ErrorCode err;
     if (pathExists((Paths::g_exePath + Paths::g_assetsLocation).c_str())) {
         // Read language table
         err = Locale::init();
         if (err == ErrorCode::NO_ERR) {
             Console::start();
             // Print a copyright notice in the log file
-            if (!Util::findCommandLineArgument(argc, argv, "disableCopyright")) {
+            if (!Util::FindCommandLineArgument(argc, argv, "disableCopyright")) {
                 Console::printCopyrightNotice();
             }
             Console::toggleTimeStamps(true);
@@ -84,8 +82,8 @@ ErrorCode PlatformPostInit(int argc, char** argv) {
 }
 
 
-ErrorCode PlatformInit(int argc, char** argv) {
-    ErrorCode err = ErrorCode::NO_ERR;
+ErrorCode PlatformInit(const int argc, char** argv) {
+    ErrorCode err;
     err = PlatformPreInit(argc, argv);
     if (err == ErrorCode::NO_ERR) {
         err = PlatformInitImpl(argc, argv);
@@ -108,18 +106,18 @@ bool PlatformClose() {
     return false;
 }
 
-void InitSysInfo(SysInfo& info, I32 argc, char** argv) {
+void InitSysInfo(SysInfo& info, const I32 argc, char** argv) {
     GetAvailableMemory(info);
-    info._pathAndFilename = getExecutableLocation(argc, argv);
+    info._pathAndFilename = GetExecutableLocation(argc, argv);
     info._pathAndFilename._path.append("/");
 }
 
-U32 HARDWARE_THREAD_COUNT() noexcept {
+U32 HardwareThreadCount() noexcept {
     return std::max(std::thread::hardware_concurrency(), 2u);
 }
 
 
-bool createDirectories(const char* path) {
+bool CreateDirectories(const char* path) {
     assert(path != nullptr && strlen(path) > 0);
     //Always end in a '/'
     assert(path[strlen(path) - 1] == '/');
@@ -141,7 +139,7 @@ bool createDirectories(const char* path) {
     return true;
 }
 
-FileWithPath getExecutableLocation(char* argv0) {
+FileWithPath GetExecutableLocation(char* argv0) {
     if (argv0 == nullptr || argv0[0] == 0) {
         return FileWithPath();
     }
@@ -163,7 +161,7 @@ void SetClipboardText(void* user_data, const char* text) noexcept
     SDL_SetClipboardText(text);
 }
 
-void ToggleCursor(bool state) noexcept
+void ToggleCursor(const bool state) noexcept
 {
     SDL_ShowCursor((state ? SDL_TRUE : SDL_FALSE));
 }
@@ -175,7 +173,7 @@ bool CursorState() noexcept
 
 };  // namespace Divide
 
-void* operator new(size_t size, const char* zFile, size_t nLine) {
+void* operator new(const size_t size, const char* zFile, const size_t nLine) {
     void* ptr = malloc(size);
 #if defined(_DEBUG)
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
@@ -187,16 +185,16 @@ void* operator new(size_t size, const char* zFile, size_t nLine) {
 }
 
 void operator delete(void* ptr, const char* zFile, size_t nLine) {
-#if defined(_DEBUG)
-    Divide::MemoryManager::log_delete(ptr);
-#else
     ACKNOWLEDGE_UNUSED(zFile);
     ACKNOWLEDGE_UNUSED(nLine);
+#if defined(_DEBUG)
+    Divide::MemoryManager::log_delete(ptr);
 #endif
+
     free(ptr);
 }
 
-void* operator new[](size_t size, const char* zFile, size_t nLine) {
+void* operator new[](size_t size, const char* zFile, const size_t nLine) {
     void* ptr = malloc(size);
 #if defined(_DEBUG)
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);
@@ -208,11 +206,10 @@ ACKNOWLEDGE_UNUSED(nLine);
 }
 
 void operator delete[](void* ptr, const char* zFile, size_t nLine) {
+    ACKNOWLEDGE_UNUSED(zFile);
+    ACKNOWLEDGE_UNUSED(nLine);
 #if defined(_DEBUG)
     Divide::MemoryManager::log_delete(ptr);
-#else
-ACKNOWLEDGE_UNUSED(zFile);
-ACKNOWLEDGE_UNUSED(nLine);
 #endif
     free(ptr);
 }

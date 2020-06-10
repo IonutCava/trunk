@@ -7,10 +7,9 @@
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Managers/Headers/RenderPassManager.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
@@ -109,6 +108,10 @@ SceneGraphNode* EnvironmentProbeComponent::findNodeToIgnore() const noexcept {
 }
 
 void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
+    if (!_dirty) {
+        return;
+    }
+
     if (++_currentUpdateCall % _updateRate == 0) {
         if (_updateRate != 0) {
             rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(false));
@@ -121,19 +124,23 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
         std::array<Camera*, 6> cameras = {};
         std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
 
-        _context.gfx().generateCubeMap(SceneEnvironmentProbePool::reflectionTarget()._targetID,
+        RenderPassParams params = {};
+        params._target = SceneEnvironmentProbePool::reflectionTarget()._targetID;
+        params._sourceNode = findNodeToIgnore();
+        params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), rtLayerIndex());
+        params._shadowMappingEnabled = false;
+
+        _context.gfx().generateCubeMap(params,
                                        rtLayerIndex(),
                                        _aabb.getCenter(),
                                        vec2<F32>(0.1f, _aabb.getHalfExtent().length()),
-                                       RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), rtLayerIndex()),
                                        bufferInOut,
-                                       cameras,
-                                       true,
-                                       findNodeToIgnore());
+                                       cameras);
 
         GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         _currentUpdateCall = 0;
+        _dirty = false;
     }
 }
 

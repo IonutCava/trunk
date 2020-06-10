@@ -4,8 +4,6 @@
 #include "Headers/SceneInput.h"
 
 #include "Core/Headers/PlatformContext.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
-#include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
 

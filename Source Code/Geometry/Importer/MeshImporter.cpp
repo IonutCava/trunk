@@ -330,7 +330,6 @@ namespace Import {
                 textureSampler.wrapV(tex.wrapV());
                 textureSampler.wrapW(tex.wrapW());
 
-                textureDescriptor.samplerDescriptor(textureSampler);
                 textureDescriptor.srgb(tex.srgb());
 
                 ResourceDescriptor texture(tex.textureName());
@@ -338,8 +337,8 @@ namespace Import {
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
                 Texture_ptr texPtr = CreateResource<Texture>(cache, texture);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [&tempMaterial, i, &texPtr, &tex](CachedResource* res) {
-                    tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, tex.operation());
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource* res) {
+                    tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, textureSampler.getHash(),tex.operation());
                 });
             }
         }
@@ -355,8 +354,8 @@ namespace Import {
                 opacityDesc.assetLocation(diffuse->assetLocation());
                 opacityDesc.propertyDescriptor(diffuse->descriptor());
                 Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [&tempMaterial, &texPtr](CachedResource* res) {
-                    tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, TextureOperation::REPLACE);
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource* res) {
+                    tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, tempMaterial->getSampler(TextureUsage::UNIT0),TextureOperation::REPLACE);
                 });
                 
             }

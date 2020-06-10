@@ -59,16 +59,16 @@
 
 namespace Divide {
 
-template <size_t alignment = 16>
-struct alligned_base {
+template <size_t Alignment = 16>
+struct AlignedBase {
     void *operator new (size_t size)
     {
-        return _mm_malloc(size, alignment);
+        return _mm_malloc(size, Alignment);
     }
 
     void *operator new[](size_t size)
     {
-        return _mm_malloc(size, alignment);
+        return _mm_malloc(size, Alignment);
     }
 
     void operator delete (void *mem)
@@ -82,41 +82,41 @@ struct alligned_base {
     }
 };
 
-struct non_aligned_base {
+struct NonAlignedBase {
 };
 
 template<typename T, typename Enable = void>
-class simd_vector;
+class SimdVector;
 
 template<typename T>
-class simd_vector<T, std::enable_if_t<std::is_same<T, F32>::value>> {
+class SimdVector<T, std::enable_if_t<std::is_same<T, F32>::value>> {
 public:
-    simd_vector() noexcept : simd_vector(0) {}
-    simd_vector(T reg)  noexcept : _reg(_mm_set_ps(reg, reg, reg, reg)) {}
-    simd_vector(T reg0, T reg1, T reg2, T reg3)  noexcept : _reg(_mm_set_ps(reg3, reg2, reg1, reg0)) {}
-    simd_vector(T reg[4])  noexcept : _reg(_mm_set_ps(reg[3], reg[2], reg[1], reg[0])) {}
-    simd_vector(__m128 reg)  noexcept : _reg(reg) {}
+    SimdVector() noexcept : SimdVector(0) {}
+    SimdVector(T reg0, T reg1, T reg2, T reg3)  noexcept : _reg(_mm_set_ps(reg3, reg2, reg1, reg0)) {}
+    SimdVector(T reg)  noexcept : _reg(_mm_set_ps(reg, reg, reg, reg)) {}
+    SimdVector(T reg[4])  noexcept : _reg(_mm_set_ps(reg[3], reg[2], reg[1], reg[0])) {}
+    SimdVector(__m128 reg)  noexcept : _reg(reg) {}
 
-    inline bool operator==(const simd_vector& other) const noexcept {
-        return !fneq128(_reg, other._reg, EPSILON_F32);
+    bool operator==(const SimdVector& other) const noexcept {
+        return !AVX::Fneq128(_reg, other._reg, EPSILON_F32);
     }
 
-    inline bool operator!=(const simd_vector& other) const noexcept {
-        return fneq128(_reg, other._reg, EPSILON_F32);
+    bool operator!=(const SimdVector& other) const noexcept {
+        return AVX::Fneq128(_reg, other._reg, EPSILON_F32);
     }
 
     __m128 _reg;
 };
 
 template<typename T>
-class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
+class SimdVector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
   public:
-    simd_vector()  noexcept : simd_vector(0) {}
-    simd_vector(T val) noexcept : _reg { val, val, val, val } {}
-    simd_vector(T reg0, T reg1, T reg2, T reg3)  noexcept :  _reg{reg0, reg1, reg2, reg3} {}
-    simd_vector(T reg[4])  noexcept : _reg(reg) {}
+    SimdVector()  noexcept : SimdVector(0) {}
+    SimdVector(T reg0, T reg1, T reg2, T reg3)  noexcept :  _reg{reg0, reg1, reg2, reg3} {}
+    SimdVector(T val) noexcept : _reg{ val, val, val, val } {}
+    SimdVector(T reg[4])  noexcept : _reg(reg) {}
 
-    inline bool operator==(const simd_vector& other) const noexcept {
+    bool operator==(const SimdVector& other) const noexcept {
         for (U8 i = 0; i < 4; ++i) {
             if (_reg[i] != other._reg[i]) {
                 return false;
@@ -125,7 +125,7 @@ class simd_vector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
         return true;
     }
 
-    inline bool operator!=(const simd_vector& other) const noexcept {
+    bool operator!=(const SimdVector& other) const noexcept {
         for (U8 i = 0; i < 4; ++i) {
             if (_reg[i] != other._reg[i]) {
                 return true;
@@ -146,7 +146,7 @@ class vec2 {
     static_assert(std::is_arithmetic<T>::value || std::is_same<T, bool>::value, "non-arithmetic vector type");
 
    public:
-    vec2() noexcept : vec2((T)0) {}
+    vec2() noexcept : vec2(static_cast<T>(0)) {}
     vec2(T value) noexcept : vec2(value, value) {}
     template<typename U>
     vec2(U value) noexcept : vec2(value, value) {}
@@ -183,22 +183,22 @@ class vec2 {
     bool operator==(const vec2<U> &v) const noexcept { return this->compare(v); }
 
     template<typename U>
-    [[nodiscard]] const vec2 operator-(U _f) const noexcept { return vec2(this->x - _f, this->y - _f); }
+    [[nodiscard]] vec2 operator-(U _f) const noexcept { return vec2(this->x - _f, this->y - _f); }
     template<typename U>
-    [[nodiscard]] const vec2 operator+(U _f) const noexcept { return vec2(this->x + _f, this->y + _f); }
+    [[nodiscard]] vec2 operator+(U _f) const noexcept { return vec2(this->x + _f, this->y + _f); }
     template<typename U>
-    [[nodiscard]] const vec2 operator*(U _f) const noexcept { return vec2(this->x * _f, this->y * _f); }
+    [[nodiscard]] vec2 operator*(U _f) const noexcept { return vec2(this->x * _f, this->y * _f); }
     template<typename U>
-    [[nodiscard]] const vec2 operator/(U _i) const noexcept { if (!IS_ZERO(_i)) { return vec2(this->x / _i, this->y / _i); } return *this; }
+    [[nodiscard]] vec2 operator/(U _i) const noexcept { if (!IS_ZERO(_i)) { return vec2(this->x / _i, this->y / _i); } return *this; }
 
     template<typename U>
-    [[nodiscard]] const vec2 operator+(const vec2<U> &v) const noexcept { return vec2(this->x + v.x, this->y + v.y); }
+    [[nodiscard]] vec2 operator+(const vec2<U> &v) const noexcept { return vec2(this->x + v.x, this->y + v.y); }
     template<typename U>
-    [[nodiscard]] const vec2 operator-(const vec2<U> &v) const noexcept { return vec2(this->x - v.x, this->y - v.y); }
+    [[nodiscard]] vec2 operator-(const vec2<U> &v) const noexcept { return vec2(this->x - v.x, this->y - v.y); }
     template<typename U>
-    [[nodiscard]] const vec2 operator*(const vec2<U> &v) const noexcept { return vec2(this->x * v.x, this->y * v.y); }
+    [[nodiscard]] vec2 operator*(const vec2<U> &v) const noexcept { return vec2(this->x * v.x, this->y * v.y); }
 
-    [[nodiscard]] const vec2 operator-() const noexcept { return vec2(-this->x, -this->y); }
+    [[nodiscard]] vec2 operator-() const noexcept { return vec2(-this->x, -this->y); }
  
     template<typename U>
     vec2 &operator+=(U _f) noexcept { this->set(*this + _f); return *this; }
@@ -218,10 +218,10 @@ class vec2 {
     template<typename U>
     vec2 &operator/=(const vec2<U> &v) noexcept { this->set(*this / v); return *this; }
 
-    [[nodiscard]]        T &operator[](I32 i)       noexcept { return this->_v[i]; }
-    [[nodiscard]]  const T &operator[](I32 i) const noexcept { return this->_v[i]; }
+    [[nodiscard]]       T &operator[](I32 i)       noexcept { return this->_v[i]; }
+    [[nodiscard]] const T &operator[](I32 i) const noexcept { return this->_v[i]; }
 
-    [[nodiscard]] const vec2 operator/(const vec2 &v) const noexcept {
+    [[nodiscard]] vec2 operator/(const vec2 &v) const noexcept {
         return vec2(IS_ZERO(v.x) ? this->x : this->x / v.x,
                     IS_ZERO(v.y) ? this->y : this->y / v.y);
     }
@@ -230,66 +230,64 @@ class vec2 {
     [[nodiscard]] operator const T *() const { return this->_v; }
 
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec2 *iv) noexcept { std::swap(this->x, iv->x); std::swap(this->x, iv->x); }
+    void swap(vec2 *iv) noexcept { std::swap(this->x, iv->x); std::swap(this->x, iv->x); }
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec2 &iv) noexcept { std::swap(this->x, iv.x); std::swap(this->x, iv.x); }
+    void swap(vec2 &iv) noexcept { std::swap(this->x, iv.x); std::swap(this->x, iv.x); }
     /// set the 2 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], sizeof(T) * 2); }
+    void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], sizeof(T) * 2); }
     /// set the 2 components of the vector manually
-    inline void set(T value) noexcept { this->set(value, value); }
+    void set(T value) noexcept { this->set(value, value); }
     /// set the 2 components of the vector manually
-    inline void set(T _x, T _y) noexcept { this->x = _x; this->y = _y; }
+    void set(T _x, T _y) noexcept { this->x = _x; this->y = _y; }
     template <typename U> 
-    inline void set(U _x, U _y) noexcept { this->x = static_cast<T>(_x); this->y = static_cast<T>(_y); }
+    void set(U _x, U _y) noexcept { this->x = static_cast<T>(_x); this->y = static_cast<T>(_y); }
     /// set the 2 components of the vector using a source vector
-    inline void set(const vec2 &v) noexcept { this->set(&v._v[0]); }
-    /// set the 2 components of the vector using the first 2 components of the
-    /// source vector
-    inline void set(const vec3<T> &v) noexcept { this->set(v.x, v.y); }
-    /// set the 2 components of the vector using the first 2 components of the
-    /// source vector
-    inline void set(const vec4<T> &v) noexcept { this->set(v.x, v.y); }
+    void set(const vec2 &v) noexcept { this->set(&v._v[0]); }
+    /// set the 2 components of the vector using the first 2 components of the source vector
+    void set(const vec3<T> &v) noexcept { this->set(v.x, v.y); }
+    /// set the 2 components of the vector using the first 2 components of the source vector
+    void set(const vec4<T> &v) noexcept { this->set(v.x, v.y); }
     /// set the 2 components of the vector back to 0
-    inline void reset() { this->set((T)0); }
+    void reset() { this->set(static_cast<T>(0)); }
     /// return the vector's length
-    [[nodiscard]] inline T length()        const          { return Divide::Sqrt(lengthSquared()); }
-    [[nodiscard]] inline T lengthSquared() const noexcept;
+    [[nodiscard]] T length()        const          { return Divide::Sqrt(lengthSquared()); }
+    [[nodiscard]] T lengthSquared() const noexcept;
     /// return the angle defined by the 2 components
-    [[nodiscard]] inline T angle() const { return (T)std::atan2(this->y, this->x); }
+    [[nodiscard]] T angle() const { return static_cast<T>(std::atan2(this->y, this->x)); }
     /// return the angle defined by the 2 components
-    [[nodiscard]] inline T angle(const vec2 &v) const { return (T)std::atan2(v.y - this->y, v.x - this->x); }
+    [[nodiscard]] T angle(const vec2 &v) const { return static_cast<T>(std::atan2(v.y - this->y, v.x - this->x)); }
     /// compute the vector's distance to another specified vector
-    [[nodiscard]] inline T distance(const vec2 &v) const;
+    [[nodiscard]] T distance(const vec2 &v) const;
     /// compute the vector's squared distance to another specified vector
-    [[nodiscard]] inline T distanceSquared(const vec2 &v) const noexcept;
+    [[nodiscard]] T distanceSquared(const vec2 &v) const noexcept;
     /// convert the vector to unit length
-    [[nodiscard]] inline vec2& normalize();
+    [[nodiscard]] vec2& normalize();
     /// get the smallest value of X or Y
-    [[nodiscard]] inline T minComponent() const noexcept;
+    [[nodiscard]] T minComponent() const noexcept;
     /// get the largest value of X or Y
-    [[nodiscard]] inline T maxComponent() const noexcept;
+    [[nodiscard]] T maxComponent() const noexcept;
     /// round both values
-    inline void round();
+    void round();
     /// lerp between this and the specified vector by the specified amount
-    inline void lerp(const vec2 &v, T factor) noexcept;
+    void lerp(const vec2 &v, T factor) noexcept;
     /// lerp between this and the specified vector by the specified amount for each component
-    inline void lerp(const vec2 &v, const vec2 &factor) noexcept;
+    void lerp(const vec2 &v, const vec2 &factor) noexcept;
     /// calculate the dot product between this vector and the specified one
-    [[nodiscard]] inline T dot(const vec2 &v) const noexcept;
+    [[nodiscard]] T dot(const vec2 &v) const noexcept;
     /// project this vector on the line defined by the 2 points(A, B)
-    [[nodiscard]] inline T projectionOnLine(const vec2 &vA, const vec2 &vB) const;
+    [[nodiscard]] T projectionOnLine(const vec2 &vA, const vec2 &vB) const;
     /// return the closest point on the line defined by the 2 points (A, B) and this vector
-    [[nodiscard]] inline vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB);
+    [[nodiscard]] vec2 closestPointOnLine(const vec2 &vA, const vec2 &vB);
     /// return the closest point on the line segment defined between the 2 points (A, B) and this vector
-    [[nodiscard]] inline vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
+    [[nodiscard]] vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
     /// compare 2 vectors
     template<typename U>
-    [[nodiscard]] inline bool compare(const vec2<U> &_v) const noexcept;
+    [[nodiscard]] bool compare(const vec2<U> &_v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    [[nodiscard]] inline bool compare(const vec2<U> &_v, U epsi) const noexcept;
+    [[nodiscard]] bool compare(const vec2<U> &_v, U epsi) const noexcept;
     /// export the vector's components in the first 2 positions of the specified array
-    [[nodiscard]] inline void get(T *v) const;
+    [[nodiscard]] void get(T *v) const;
 
     union {
         struct { T x, y; };
@@ -302,25 +300,25 @@ class vec2 {
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
-[[nodiscard]] inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) noexcept;
+[[nodiscard]] vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) noexcept;
 /// lerp between the 2 specified vectors by the specified amount for each component
 template <typename T>
-[[nodiscard]] inline vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) noexcept;
+[[nodiscard]] vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) noexcept;
 template <typename T>
-[[nodiscard]] inline vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) noexcept;
+[[nodiscard]] vec2<T> Cross(const vec2<T> &v1, const vec2<T> &v2) noexcept;
 template <typename T>
-[[nodiscard]] inline vec2<T> Inverse(const vec2<T> &v) noexcept;
+[[nodiscard]] vec2<T> Inverse(const vec2<T> &v) noexcept;
 template <typename T>
-[[nodiscard]] inline vec2<T> Normalize(vec2<T> &vector);
+[[nodiscard]] vec2<T> Normalize(vec2<T> &vector);
 template <typename T>
-[[nodiscard]] inline vec2<T> Normalized(const vec2<T> &vector);
+[[nodiscard]] vec2<T> Normalized(const vec2<T> &vector);
 template <typename T>
-[[nodiscard]] inline T Dot(const vec2<T> &a, const vec2<T> &b) noexcept;
+[[nodiscard]] T Dot(const vec2<T> &a, const vec2<T> &b) noexcept;
 template <typename T>
-[[nodiscard]] inline void OrthoNormalize(vec2<T> &v1, vec2<T> &v2);
+[[nodiscard]] void OrthoNormalize(vec2<T> &v1, vec2<T> &v2);
 /// multiply a vector by a value
 template <typename T>
-[[nodiscard]] inline vec2<T> operator*(T fl, const vec2<T> &v) noexcept;
+[[nodiscard]] vec2<T> operator*(T fl, const vec2<T> &v) noexcept;
 
 
 /***********************************************************************
@@ -331,7 +329,7 @@ template <typename T>
 class vec3 {
     static_assert(std::is_arithmetic<T>::value || std::is_same<T, bool>::value, "non-arithmetic vector type");
    public:
-    vec3() noexcept : vec3((T)0) {}
+    vec3() noexcept : vec3(static_cast<T>(0)) {}
     vec3(T value) noexcept : vec3(value, value, value) {}
     template<typename U>
     vec3(U value) noexcept : vec3(value, value, value) {}
@@ -372,22 +370,22 @@ class vec3 {
     template <typename U>
     vec3 &operator=(const vec3<U>& other) noexcept { this->set(other); return (*this); }
     template <typename U>
-    [[nodiscard]] const vec3 operator+(U _f) const noexcept { return vec3(this->x + _f, this->y + _f, this->z + _f); }
+    [[nodiscard]] vec3 operator+(U _f) const noexcept { return vec3(this->x + _f, this->y + _f, this->z + _f); }
     template <typename U>
-    [[nodiscard]] const vec3 operator-(U _f) const noexcept { return vec3(this->x - _f, this->y - _f, this->z - _f); }
+    [[nodiscard]] vec3 operator-(U _f) const noexcept { return vec3(this->x - _f, this->y - _f, this->z - _f); }
     template <typename U>
-    [[nodiscard]] const vec3 operator*(U _f) const noexcept { return vec3(this->x * _f, this->y * _f, this->z * _f); }
+    [[nodiscard]] vec3 operator*(U _f) const noexcept { return vec3(this->x * _f, this->y * _f, this->z * _f); }
     template <typename U>
-    [[nodiscard]] const vec3 operator/(U _f) const noexcept { if (IS_ZERO(_f)) { return *this; } return vec3(this->x / _f, this->y / _f, this->z / _f); }
+    [[nodiscard]] vec3 operator/(U _f) const noexcept { if (IS_ZERO(_f)) { return *this; } return vec3(this->x / _f, this->y / _f, this->z / _f); }
 
-    [[nodiscard]] const vec3 operator-() const noexcept { return vec3(-this->x, -this->y, -this->z); }
+    [[nodiscard]] vec3 operator-() const noexcept { return vec3(-this->x, -this->y, -this->z); }
 
     template <typename U>
-    [[nodiscard]] const vec3 operator+(const vec3<U> &v) const noexcept { return vec3(this->x + v.x, this->y + v.y, this->z + v.z); }
+    [[nodiscard]] vec3 operator+(const vec3<U> &v) const noexcept { return vec3(this->x + v.x, this->y + v.y, this->z + v.z); }
     template <typename U>
-    [[nodiscard]] const vec3 operator-(const vec3<U> &v) const noexcept { return vec3(this->x - v.x, this->y - v.y, this->z - v.z); }
+    [[nodiscard]] vec3 operator-(const vec3<U> &v) const noexcept { return vec3(this->x - v.x, this->y - v.y, this->z - v.z); }
     template<typename U>
-    [[nodiscard]] const vec3 operator*(const vec3<U> &v) const noexcept { return vec3(this->x * v.x, this->y * v.y, this->z * v.z); }
+    [[nodiscard]] vec3 operator*(const vec3<U> &v) const noexcept { return vec3(this->x * v.x, this->y * v.y, this->z * v.z); }
 
     template<typename U>
     vec3 &operator+=(U _f) noexcept { this->set(*this + _f); return *this; }
@@ -410,7 +408,7 @@ class vec3 {
     [[nodiscard]] T &operator[](const I32 i) noexcept { return this->_v[i]; }
 
     template<typename U>
-    [[nodiscard]] const vec3 operator/(const vec3<U> &v) const noexcept {
+    [[nodiscard]] vec3 operator/(const vec3<U> &v) const noexcept {
         return vec3(IS_ZERO(v.x) ? this->x : this->x / v.x,
                     IS_ZERO(v.y) ? this->y : this->y / v.y,
                     IS_ZERO(v.z) ? this->z : this->z / v.z);
@@ -420,102 +418,102 @@ class vec3 {
     [[nodiscard]] operator const T *() const  noexcept { return this->_v; }
 
     /// GLSL like accessors (const to prevent erroneous usage like .xy() += n)
-    [[nodiscard]] inline const vec2<T> rg() const noexcept { return vec2<T>(this->r, this->g); }
-    [[nodiscard]] inline const vec2<T> xy() const noexcept { return this->rg(); }
-    [[nodiscard]] inline const vec2<T> rb() const noexcept { return vec2<T>(this->r, this->b); }
-    [[nodiscard]] inline const vec2<T> xz() const noexcept { return this->rb(); }
-    [[nodiscard]] inline const vec2<T> gb() const noexcept { return vec2<T>(this->g, this->b); }
-    [[nodiscard]] inline const vec2<T> yz() const noexcept { return this->gb(); }
+    [[nodiscard]] vec2<T> rg() const noexcept { return vec2<T>(this->r, this->g); }
+    [[nodiscard]] vec2<T> xy() const noexcept { return this->rg(); }
+    [[nodiscard]] vec2<T> rb() const noexcept { return vec2<T>(this->r, this->b); }
+    [[nodiscard]] vec2<T> xz() const noexcept { return this->rb(); }
+    [[nodiscard]] vec2<T> gb() const noexcept { return vec2<T>(this->g, this->b); }
+    [[nodiscard]] vec2<T> yz() const noexcept { return this->gb(); }
 
-    inline void rg(const vec2<T> &rg) noexcept { this->set(rg); }
-    inline void xy(const vec2<T> &xy) noexcept { this->set(xy); }
-    inline void rb(const vec2<T> &rb) noexcept { this->r = rb.x; this->b = rb.y; }
-    inline void xz(const vec2<T> &xz) noexcept { this->x = xz.x; this->z = xz.y; }
-    inline void gb(const vec2<T> &gb) noexcept { this->g = gb.x; this->b = gb.y; }
-    inline void yz(const vec2<T> &yz) noexcept { this->y = yz.x; this->z = yz.y; }
+    void rg(const vec2<T> &rg) noexcept { this->set(rg); }
+    void xy(const vec2<T> &xy) noexcept { this->set(xy); }
+    void rb(const vec2<T> &rb) noexcept { this->r = rb.x; this->b = rb.y; }
+    void xz(const vec2<T> &xz) noexcept { this->x = xz.x; this->z = xz.y; }
+    void gb(const vec2<T> &gb) noexcept { this->g = gb.x; this->b = gb.y; }
+    void yz(const vec2<T> &yz) noexcept { this->y = yz.x; this->z = yz.y; }
 
     /// set the 3 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], 3 * sizeof(T)); }
+    void set(const T* v) noexcept { std::memcpy(&_v[0], &v[0], 3 * sizeof(T)); }
     /// set the 3 components of the vector manually
-    inline void set(T value)  noexcept { x = value; y = value; z = value; }
+    void set(T value)  noexcept { x = value; y = value; z = value; }
     /// set the 3 components of the vector manually
-    inline void set(T _x, T _y, T _z) noexcept { this->x = _x; this->y = _y; this->z = _z; }
+    void set(T _x, T _y, T _z) noexcept { this->x = _x; this->y = _y; this->z = _z; }
     template <typename U> 
-    inline void set(U _x, U _y, U _z) noexcept { this->x = static_cast<T>(_x); this->y = static_cast<T>(_y); this->z = static_cast<T>(_z); }
+    void set(U _x, U _y, U _z) noexcept { this->x = static_cast<T>(_x); this->y = static_cast<T>(_y); this->z = static_cast<T>(_z); }
     /// set the 3 components of the vector using a smaller source vector
-    inline void set(const vec2<T> &v)  noexcept { std::memcpy(_v, v._v, 2 * sizeof(T)); }
+    void set(const vec2<T> &v)  noexcept { std::memcpy(_v, v._v, 2 * sizeof(T)); }
     /// set the 3 components of the vector using a source vector
-    inline void set(const vec3 &v)  noexcept { std::memcpy(_v, v._v, 3 * sizeof(T)); }
+    void set(const vec3 &v)  noexcept { std::memcpy(_v, v._v, 3 * sizeof(T)); }
     /// set the 3 components of the vector using the first 3 components of the source vector
-    inline void set(const vec4<T> &v)  noexcept { std::memcpy(_v, v._v, 3 * sizeof(T)); }
+    void set(const vec4<T> &v)  noexcept { std::memcpy(_v, v._v, 3 * sizeof(T)); }
     /// set all the components back to 0
-    inline void reset()  noexcept { std::memset(_v, 0, 3 * sizeof(T)); }
+    void reset()  noexcept { std::memset(_v, 0, 3 * sizeof(T)); }
     /// return the vector's length
-    [[nodiscard]] inline T length() const  noexcept { return Divide::Sqrt(lengthSquared()); }
+    [[nodiscard]] T length() const  noexcept { return Divide::Sqrt(lengthSquared()); }
     /// return true if length is zero
-    [[nodiscard]] inline bool isZeroLength() const  noexcept { return lengthSquared() < EPSILON_F32; }
+    [[nodiscard]] bool isZeroLength() const  noexcept { return lengthSquared() < EPSILON_F32; }
     /// compare 2 vectors
     template<typename U>
-    [[nodiscard]] inline bool compare(const vec3<U> &v) const noexcept;
+    [[nodiscard]] bool compare(const vec3<U> &v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    [[nodiscard]] inline bool compare(const vec3<U> &v, U epsi) const noexcept;
+    [[nodiscard]] bool compare(const vec3<U> &v, U epsi) const noexcept;
     /// uniform vector: x = y = z
-    [[nodiscard]] inline bool isUniform() const noexcept;
+    [[nodiscard]] bool isUniform() const noexcept;
     /// return the squared distance of the vector
-    [[nodiscard]] inline T lengthSquared() const noexcept;
+    [[nodiscard]] T lengthSquared() const noexcept;
     /// calculate the dot product between this vector and the specified one
-    [[nodiscard]] inline T dot(const vec3 &v) const noexcept;
+    [[nodiscard]] T dot(const vec3 &v) const noexcept;
     /// returns the angle in radians between '*this' and 'v'
-    [[nodiscard]] inline T angle(vec3 &v) const;
+    [[nodiscard]] T angle(vec3 &v) const;
     /// compute the vector's distance to another specified vector
-    [[nodiscard]] inline T distance(const vec3 &v) const noexcept;
+    [[nodiscard]] T distance(const vec3 &v) const noexcept;
     /// compute the vector's squared distance to another specified vector
-    [[nodiscard]] inline T distanceSquared(const vec3 &v) const noexcept;
+    [[nodiscard]] T distanceSquared(const vec3 &v) const noexcept;
     /// transform the vector to unit length
-    inline vec3& normalize();
+    vec3& normalize();
     /// get the smallest value of X,Y or Z
-    [[nodiscard]] inline T minComponent() const  noexcept;
+    [[nodiscard]] T minComponent() const  noexcept;
     /// get the largest value of X,Y or Z
-    [[nodiscard]] inline T maxComponent() const  noexcept;
+    [[nodiscard]] T maxComponent() const  noexcept;
     /// round all three values
-    inline void round();
+    void round();
     /// project this vector on the line defined by the 2 points(A, B)
-    [[nodiscard]] inline T projectionOnLine(const vec3 &vA, const vec3 &vB) const;
+    [[nodiscard]] T projectionOnLine(const vec3 &vA, const vec3 &vB) const;
     /// return the closest point on the line defined by the 2 points (A, B) and this
     /// vector
-    [[nodiscard]] inline vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB);
+    [[nodiscard]] vec3 closestPointOnLine(const vec3 &vA, const vec3 &vB);
     /// return the closest point on the line segment created between the 2 points
     /// (A, B) and this vector
-    [[nodiscard]] inline vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB);
+    [[nodiscard]] vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB);
     /// get the direction vector to the specified point
-    [[nodiscard]] inline vec3 direction(const vec3 &u) const;
+    [[nodiscard]] vec3 direction(const vec3 &u) const;
     /// lerp between this and the specified vector by the specified amount
-    inline void lerp(const vec3 &v, T factor) noexcept;
+    void lerp(const vec3 &v, T factor) noexcept;
     /// lerp between this and the specified vector by the specified amount for
     /// each component
-    inline void lerp(const vec3 &v, const vec3 &factor) noexcept;
+    void lerp(const vec3 &v, const vec3 &factor) noexcept;
     /// this calculates a vector between the two specified points and returns
     /// the result
-    [[nodiscard]] inline vec3 vector(const vec3 &vp1, const vec3 &vp2) const noexcept;
+    [[nodiscard]] vec3 vector(const vec3 &vp1, const vec3 &vp2) const noexcept;
     /// set this vector to be equal to the cross of the 2 specified vectors
-    inline void cross(const vec3 &v1, const vec3 &v2) noexcept;
+    void cross(const vec3 &v1, const vec3 &v2) noexcept;
     /// set this vector to be equal to the cross between itself and the
     /// specified vector
-    inline void cross(const vec3 &v2) noexcept;
+    void cross(const vec3 &v2) noexcept;
     /// rotate this vector on the X axis
-    inline void rotateX(D64 radians);
+    void rotateX(D64 radians);
     /// rotate this vector on the Y axis
-    inline void rotateY(D64 radians);
+    void rotateY(D64 radians);
     /// rotate this vector on the Z axis
-    inline void rotateZ(D64 radians);
+    void rotateZ(D64 radians);
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec3 &iv) noexcept;
+    void swap(vec3 &iv) noexcept;
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec3 *iv) noexcept;
+    void swap(vec3 *iv) noexcept;
     /// export the vector's components in the first 3 positions of the specified
     /// array
-    inline void get(T *v) const noexcept;
+    void get(T *v) const noexcept;
 
     union {
         struct { T x, y, z; };
@@ -530,34 +528,34 @@ class vec3 {
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T, typename U>
-[[nodiscard]] inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) noexcept;
+[[nodiscard]] vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) noexcept;
 /// lerp between the 2 specified vectors by the specified amount for each component
 template <typename T>
-[[nodiscard]] inline vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) noexcept;
+[[nodiscard]] vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, const vec3<T> &factor) noexcept;
 template <typename T>
-[[nodiscard]] inline vec3<T> Abs(const vec3<T> &vector) noexcept;
+[[nodiscard]] vec3<T> Abs(const vec3<T> &vector) noexcept;
 template <typename T>
-[[nodiscard]] inline vec3<T> Min(const vec3<T> &v1, const vec3<T> &v2) noexcept;
+[[nodiscard]] vec3<T> Min(const vec3<T> &v1, const vec3<T> &v2) noexcept;
 template <typename T>
-[[nodiscard]] inline vec3<T> Max(const vec3<T> &v1, const vec3<T> &v2) noexcept;
+[[nodiscard]] vec3<T> Max(const vec3<T> &v1, const vec3<T> &v2) noexcept;
 template <typename T>
-[[nodiscard]] inline vec3<T> Normalize(vec3<T> &vector);
+[[nodiscard]] vec3<T> Normalize(vec3<T> &vector);
 template <typename T>
-[[nodiscard]] inline vec3<T> Normalized(const vec3<T> &vector);
+[[nodiscard]] vec3<T> Normalized(const vec3<T> &vector);
 /// general vec3 dot product
 template <typename T>
-[[nodiscard]] inline T Dot(const vec3<T> &a, const vec3<T> &b) noexcept;
+[[nodiscard]] T Dot(const vec3<T> &a, const vec3<T> &b) noexcept;
 /// general vec3 cross function
 template <typename T>
-[[nodiscard]] inline vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) noexcept;
+[[nodiscard]] vec3<T> Cross(const vec3<T> &v1, const vec3<T> &v2) noexcept;
 template <typename T>
-[[nodiscard]] inline vec3<T> Inverse(const vec3<T> &v) noexcept;
+[[nodiscard]] vec3<T> Inverse(const vec3<T> &v) noexcept;
 template <typename T>
-[[nodiscard]] inline vec3<T> operator*(T fl, const vec3<T> &v) noexcept;
+[[nodiscard]] vec3<T> operator*(T fl, const vec3<T> &v) noexcept;
 template <typename T>
-inline void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
+void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
 template<typename T>
-[[nodiscard]] inline vec3<T> Perpendicular(const vec3<T> &v) noexcept;
+[[nodiscard]] vec3<T> Perpendicular(const vec3<T> &v) noexcept;
 
 /*************************************************************************************
  * vec4 -  A 4-tuple used to represent things like a vector in 4D space
@@ -568,7 +566,7 @@ template<typename T>
 #pragma pack(1)
 //__declspec(align(alignment))
 template <typename T>
-class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
+class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16>, NonAlignedBase>::type {
     static_assert(std::is_arithmetic<T>::value || std::is_same<T, bool>::value, "non-arithmetic vector type");
 
    public:
@@ -580,7 +578,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     vec4(U _x, U _y, U _z) noexcept : vec4(_x, _y, _z, static_cast<T>(1)) {}
     vec4(__m128 reg) noexcept: _reg(reg) {}
-    vec4(const simd_vector<T>& reg) noexcept: _reg(reg) {}
+    vec4(const SimdVector<T>& reg) noexcept: _reg(reg) {}
     vec4(T value) noexcept : vec4(value, value, value, value) {}
     template<typename U>
     vec4(U value) noexcept : vec4(value, value, value, value) {}
@@ -609,21 +607,21 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     template<typename U>
     [[nodiscard]] bool operator==(const vec4<U> &v) const noexcept { return this->compare(v); }
 
-    inline vec4 &operator=(T _f) noexcept { this->set(_f); return *this; }
-    inline vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
+    vec4 &operator=(T _f) noexcept { this->set(_f); return *this; }
+    vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
     template<typename U>
     vec4 &operator=(U _f) noexcept { this->set(_f); return *this; }
     template<typename U>
     vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
 
     template<typename U>
-    [[nodiscard]] const vec4 operator-(U _f) const noexcept { return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f); }
+    [[nodiscard]] vec4 operator-(U _f) const noexcept { return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f); }
     template<typename U>
-    [[nodiscard]] const vec4 operator+(U _f) const noexcept { return vec4(this->x + _f, this->y + _f, this->z + _f, this->w + _f); }
+    [[nodiscard]] vec4 operator+(U _f) const noexcept { return vec4(this->x + _f, this->y + _f, this->z + _f, this->w + _f); }
     template<typename U>
-    [[nodiscard]] const vec4 operator*(U _f) const noexcept { return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f); }
+    [[nodiscard]] vec4 operator*(U _f) const noexcept { return vec4(this->x * _f, this->y * _f, this->z * _f, this->w * _f); }
     template<typename U>
-    [[nodiscard]] const vec4 operator/(U _f) const noexcept {
+    [[nodiscard]] vec4 operator/(U _f) const noexcept {
         if (!IS_ZERO(_f)) {
             return vec4(static_cast<T>(this->x / _f),
                         static_cast<T>(this->y / _f),
@@ -634,16 +632,16 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         return *this;
     }
 
-    [[nodiscard]] const vec4 operator-() const noexcept { return vec4(-x, -y, -z, -w); }
+    [[nodiscard]] vec4 operator-() const noexcept { return vec4(-x, -y, -z, -w); }
 
     template<typename U>
-    [[nodiscard]] const vec4 operator+(const vec4<U> &v) const noexcept { return vec4(this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w); }
+    [[nodiscard]] vec4 operator+(const vec4<U> &v) const noexcept { return vec4(this->x + v.x, this->y + v.y, this->z + v.z, this->w + v.w); }
     template<typename U>
-    [[nodiscard]] const vec4 operator-(const vec4<U> &v) const noexcept { return vec4(this->x - v.x, this->y - v.y, this->z - v.z, this->w - v.w); }
+    [[nodiscard]] vec4 operator-(const vec4<U> &v) const noexcept { return vec4(this->x - v.x, this->y - v.y, this->z - v.z, this->w - v.w); }
     template<typename U>
-    [[nodiscard]] const vec4 operator*(const vec4<U>& v) const noexcept { return vec4(this->x * v.x, this->y * v.y, this->z * v.z, this->w * v.w); }
+    [[nodiscard]] vec4 operator*(const vec4<U>& v) const noexcept { return vec4(this->x * v.x, this->y * v.y, this->z * v.z, this->w * v.w); }
     template<typename U>
-    [[nodiscard]] const vec4 operator/(const vec4<U> &v) const noexcept {
+    [[nodiscard]] vec4 operator/(const vec4<U> &v) const noexcept {
         return vec4(IS_ZERO(v.x) ? this->x : this->x / v.x,
                     IS_ZERO(v.y) ? this->y : this->y / v.y,
                     IS_ZERO(v.z) ? this->z : this->z / v.z,
@@ -675,107 +673,107 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
     [[nodiscard]] const T &operator[](I32 _i) const noexcept { return this->_v[_i]; }
 
     /// GLSL like accessors (const to prevent erroneous usage like .xyz() += n)
-    [[nodiscard]] inline const vec2<T> rg()  const noexcept { return vec2<T>(this->r, this->g); }
-    [[nodiscard]] inline const vec2<T> xy()  const noexcept { return this->rg(); }
-    [[nodiscard]] inline const vec2<T> rb()  const noexcept { return vec2<T>(this->r, this->b); }
-    [[nodiscard]] inline const vec2<T> xz()  const noexcept { return this->rb(); }
-    [[nodiscard]] inline const vec2<T> gb()  const noexcept { return vec2<T>(this->g, this->b); }
-    [[nodiscard]] inline const vec2<T> yz()  const noexcept { return this->gb(); }
-    [[nodiscard]] inline const vec2<T> ra()  const noexcept { return vec2<T>(this->r, this->a); }
-    [[nodiscard]] inline const vec2<T> xw()  const noexcept { return this->ra(); }
-    [[nodiscard]] inline const vec2<T> ga()  const noexcept { return vec2<T>(this->g, this->a); }
-    [[nodiscard]] inline const vec2<T> yw()  const noexcept { return this->ga(); }
-    [[nodiscard]] inline const vec2<T> ba()  const noexcept { return vec2<T>(this->b, this->a); }
-    [[nodiscard]] inline const vec2<T> zw()  const noexcept { return this->ba(); }
-    [[nodiscard]] inline const vec3<T> rgb() const noexcept { return vec3<T>(this->r, this->g, this->b); }
-    [[nodiscard]] inline const vec3<T> xyz() const noexcept { return this->rgb(); }
-    [[nodiscard]] inline const vec3<T> bgr() const noexcept { return vec3<T>(this->b, this->g, this->r); }
-    [[nodiscard]] inline const vec3<T> zyx() const noexcept { return this->bgr(); }
-    [[nodiscard]] inline const vec3<T> rga() const noexcept { return vec3<T>(this->r, this->g, this->a); }
-    [[nodiscard]] inline const vec3<T> xyw() const noexcept { return this->rga(); }
-    [[nodiscard]] inline const vec3<T> gba() const noexcept { return vec3<T>(this->g, this->b, this->a); }
-    [[nodiscard]] inline const vec3<T> yzw() const noexcept { return this->gba(); }
+    [[nodiscard]] vec2<T> rg()  const noexcept { return vec2<T>(this->r, this->g); }
+    [[nodiscard]] vec2<T> xy()  const noexcept { return this->rg(); }
+    [[nodiscard]] vec2<T> rb()  const noexcept { return vec2<T>(this->r, this->b); }
+    [[nodiscard]] vec2<T> xz()  const noexcept { return this->rb(); }
+    [[nodiscard]] vec2<T> gb()  const noexcept { return vec2<T>(this->g, this->b); }
+    [[nodiscard]] vec2<T> yz()  const noexcept { return this->gb(); }
+    [[nodiscard]] vec2<T> ra()  const noexcept { return vec2<T>(this->r, this->a); }
+    [[nodiscard]] vec2<T> xw()  const noexcept { return this->ra(); }
+    [[nodiscard]] vec2<T> ga()  const noexcept { return vec2<T>(this->g, this->a); }
+    [[nodiscard]] vec2<T> yw()  const noexcept { return this->ga(); }
+    [[nodiscard]] vec2<T> ba()  const noexcept { return vec2<T>(this->b, this->a); }
+    [[nodiscard]] vec2<T> zw()  const noexcept { return this->ba(); }
+    [[nodiscard]] vec3<T> rgb() const noexcept { return vec3<T>(this->r, this->g, this->b); }
+    [[nodiscard]] vec3<T> xyz() const noexcept { return this->rgb(); }
+    [[nodiscard]] vec3<T> bgr() const noexcept { return vec3<T>(this->b, this->g, this->r); }
+    [[nodiscard]] vec3<T> zyx() const noexcept { return this->bgr(); }
+    [[nodiscard]] vec3<T> rga() const noexcept { return vec3<T>(this->r, this->g, this->a); }
+    [[nodiscard]] vec3<T> xyw() const noexcept { return this->rga(); }
+    [[nodiscard]] vec3<T> gba() const noexcept { return vec3<T>(this->g, this->b, this->a); }
+    [[nodiscard]] vec3<T> yzw() const noexcept { return this->gba(); }
 
-    inline void rg(const vec2<T> &rg)  noexcept { this->set(rg); }
-    inline void xy(const vec2<T> &xy)  noexcept { this->set(xy); }
-    inline void rb(const vec2<T> &rb)  noexcept { this->xz(rb); }
-    inline void xz(const vec2<T> &xz)  noexcept { this->xz(xz.x, xz.y);}
-    inline void gb(const vec2<T> &gb)  noexcept { this->yz(gb); }
-    inline void yz(const vec2<T> &yz)  noexcept { this->yz(yz.x, yz.y); }
-    inline void ra(const vec2<T> &ra)  noexcept { this->xw(ra); }
-    inline void xw(const vec2<T> &xw)  noexcept { this->xw(xw.x, xw.y); }
-    inline void ga(const vec2<T> &ga)  noexcept { this->yw(ga); }
-    inline void yw(const vec2<T> &yw)  noexcept { this->yw(yw.x, yw.y); }
-    inline void ba(const vec2<T> &ba)  noexcept { this->zw(ba); }
-    inline void zw(const vec2<T> &zw)  noexcept { this->zw(zw.x, zw.y); }
-    inline void rgb(const vec3<T> &rgb) noexcept { this->xyz(rgb); }
-    inline void xyz(const vec3<T> &xyz) noexcept { this->xyz(xyz.x, xyz.y, xyz.z); }
-    inline void bgr(const vec3<T> &bgr) noexcept { this->zyx(bgr); }
-    inline void zyx(const vec3<T> &zyx) noexcept { this->z = zyx.x; this->y = zyx.y; this->x = zyx.z; }
-    inline void rga(const vec3<T> &rga) noexcept { this->xyw(rga); }
-    inline void xyw(const vec3<T> &xyw) noexcept { this->xyw(xyw.x, xyw.y, xyw.z); }
-    inline void gba(const vec3<T> &gba) noexcept { this->yzw(gba); }
-    inline void yzw(const vec3<T> &yzw) noexcept { this->yzw(yzw.x, yzw.y, yzw.z); }
-    inline void xy(T _x, T _y) noexcept { this->x = _x; this->y = _y; }
-    inline void xz(T _x, T _z) noexcept { this->x = _x; this->z = _z; }
-    inline void xw(T _x, T _w) noexcept { this->x = _x; this->w = _w; }
-    inline void yz(T _y, T _z) noexcept { this->y = _y; this->z = _z; }
-    inline void yw(T _y, T _w) noexcept { this->y = _y; this->w = _w; }
-    inline void zw(T _z, T _w) noexcept { this->z = _z; this->w = _w; }
-    inline void xyz(T _x, T _y, T _z) noexcept { xy(_x, _y); this->z = _z; }
-    inline void xyw(T _x, T _y, T _w) noexcept { xy(_x, _y); this->w = _w; }
-    inline void xzw(T _x, T _z, T _w) noexcept { xz(_x, _z); this->w = _w; }
-    inline void yzw(T _y, T _z, T _w) noexcept { yz(_y, _z); this->w = _w; }
+    void rg(const vec2<T> &rg)  noexcept { this->set(rg); }
+    void xy(const vec2<T> &xy)  noexcept { this->set(xy); }
+    void rb(const vec2<T> &rb)  noexcept { this->xz(rb); }
+    void xz(const vec2<T> &xz)  noexcept { this->xz(xz.x, xz.y);}
+    void gb(const vec2<T> &gb)  noexcept { this->yz(gb); }
+    void yz(const vec2<T> &yz)  noexcept { this->yz(yz.x, yz.y); }
+    void ra(const vec2<T> &ra)  noexcept { this->xw(ra); }
+    void xw(const vec2<T> &xw)  noexcept { this->xw(xw.x, xw.y); }
+    void ga(const vec2<T> &ga)  noexcept { this->yw(ga); }
+    void yw(const vec2<T> &yw)  noexcept { this->yw(yw.x, yw.y); }
+    void ba(const vec2<T> &ba)  noexcept { this->zw(ba); }
+    void zw(const vec2<T> &zw)  noexcept { this->zw(zw.x, zw.y); }
+    void rgb(const vec3<T> &rgb) noexcept { this->xyz(rgb); }
+    void xyz(const vec3<T> &xyz) noexcept { this->xyz(xyz.x, xyz.y, xyz.z); }
+    void bgr(const vec3<T> &bgr) noexcept { this->zyx(bgr); }
+    void zyx(const vec3<T> &zyx) noexcept { this->z = zyx.x; this->y = zyx.y; this->x = zyx.z; }
+    void rga(const vec3<T> &rga) noexcept { this->xyw(rga); }
+    void xyw(const vec3<T> &xyw) noexcept { this->xyw(xyw.x, xyw.y, xyw.z); }
+    void gba(const vec3<T> &gba) noexcept { this->yzw(gba); }
+    void yzw(const vec3<T> &yzw) noexcept { this->yzw(yzw.x, yzw.y, yzw.z); }
+    void xy(T _x, T _y) noexcept { this->x = _x; this->y = _y; }
+    void xz(T _x, T _z) noexcept { this->x = _x; this->z = _z; }
+    void xw(T _x, T _w) noexcept { this->x = _x; this->w = _w; }
+    void yz(T _y, T _z) noexcept { this->y = _y; this->z = _z; }
+    void yw(T _y, T _w) noexcept { this->y = _y; this->w = _w; }
+    void zw(T _z, T _w) noexcept { this->z = _z; this->w = _w; }
+    void xyz(T _x, T _y, T _z) noexcept { xy(_x, _y); this->z = _z; }
+    void xyw(T _x, T _y, T _w) noexcept { xy(_x, _y); this->w = _w; }
+    void xzw(T _x, T _z, T _w) noexcept { xz(_x, _z); this->w = _w; }
+    void yzw(T _y, T _z, T _w) noexcept { yz(_y, _z); this->w = _w; }
     // special common case
-    inline void xyz(const vec4<T> &xyzw) noexcept { this->xyz(xyzw.x, xyzw.y, xyzw.z); }
+    void xyz(const vec4<T> &xyzw) noexcept { this->xyz(xyzw.x, xyzw.y, xyzw.z); }
     /// set the 4 components of the vector manually using a source pointer to a (large enough) array
-    inline void set(const T* v) noexcept { std::memcpy(_v, v, 4 * sizeof(T)); }
+    void set(const T* v) noexcept { std::memcpy(_v, v, 4 * sizeof(T)); }
     /// set the 4 components of the vector manually
-    inline void set(T value) noexcept { _reg = simd_vector<T>(value); }
+    void set(T value) noexcept { _reg = SimdVector<T>(value); }
     /// set the 4 components of the vector manually
-    inline void set(T _x, T _y, T _z, T _w) noexcept { _reg = simd_vector<T>(_x, _y, _z, _w); }
+    void set(T _x, T _y, T _z, T _w) noexcept { _reg = SimdVector<T>(_x, _y, _z, _w); }
     template <typename U>
-    inline void set(U _x, U _y, U _z, U _w) noexcept { set(static_cast<T>(_x), static_cast<T>(_y), static_cast<T>(_z), static_cast<T>(_w)); }
+    void set(U _x, U _y, U _z, U _w) noexcept { set(static_cast<T>(_x), static_cast<T>(_y), static_cast<T>(_z), static_cast<T>(_w)); }
     /// set the 4 components of the vector using a source vector
-    inline void set(const vec4 &v) noexcept { _reg = v._reg; }
+    void set(const vec4 &v) noexcept { _reg = v._reg; }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v) noexcept { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); }
+    void set(const vec3<T> &v) noexcept { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec3<T> &v, T _w) noexcept { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); w = _w; }
+    void set(const vec3<T> &v, T _w) noexcept { std::memcpy(&_v[0], &v._v[0], 3 * sizeof(T)); w = _w; }
     /// set the 4 components of the vector using a smaller source vector
-    inline void set(const vec2<T> &v) noexcept { std::memcpy(&_v[0], &v._v[0], 2 * sizeof(T)); }
-    /// set the 4 components of the vector using smallers source vectors
-    inline void set(const vec2<T> &v1, const vec2<T> &v2) noexcept { this->set(v1.x, v1.y, v2.x, v2.y); }
+    void set(const vec2<T> &v) noexcept { std::memcpy(&_v[0], &v._v[0], 2 * sizeof(T)); }
+    /// set the 4 components of the vector using smaller source vectors
+    void set(const vec2<T> &v1, const vec2<T> &v2) noexcept { this->set(v1.x, v1.y, v2.x, v2.y); }
     /// set all the components back to 0
-    inline void reset() noexcept { this->set((T)0); }
+    void reset() noexcept { this->set(static_cast<T>(0)); }
     /// compare 2 vectors
     template<typename U>
-    [[nodiscard]] inline bool compare(const vec4<U> &v) const noexcept;
+    [[nodiscard]] bool compare(const vec4<U> &v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U>
-    [[nodiscard]] inline bool compare(const vec4<U> &v, U epsi) const noexcept;
+    [[nodiscard]] bool compare(const vec4<U> &v, const U epsi) const noexcept;
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec4 *iv) noexcept;
+    void swap(vec4 *iv) noexcept;
     /// swap the components  of this vector with that of the specified one
-    inline void swap(vec4 &iv) noexcept;
+    void swap(vec4 &iv) noexcept;
     /// transform the vector to unit length
-    inline vec4& normalize();
+    vec4& normalize();
     /// get the smallest value of X,Y,Z or W
-    [[nodiscard]] inline T minComponent() const noexcept;
+    [[nodiscard]] T minComponent() const noexcept;
     /// get the largest value of X,Y,Z or W
-    [[nodiscard]] inline T maxComponent() const noexcept;
+    [[nodiscard]] T maxComponent() const noexcept;
     /// calculate the dot product between this vector and the specified one
-    [[nodiscard]] inline T dot(const vec4 &v) const noexcept;
+    [[nodiscard]] T dot(const vec4 &v) const noexcept;
     /// return the vector's length
-    [[nodiscard]] inline T length() const  noexcept { return Divide::Sqrt(lengthSquared()); }
+    [[nodiscard]] T length() const  noexcept { return Divide::Sqrt(lengthSquared()); }
     /// return the squared distance of the vector
-    [[nodiscard]] inline T lengthSquared() const noexcept;
+    [[nodiscard]] T lengthSquared() const noexcept;
     /// round all four values
-    inline void round();
+    void round();
     /// lerp between this and the specified vector by the specified amount
-    inline void lerp(const vec4 &v, T factor) noexcept;
+    void lerp(const vec4 &v, T factor) noexcept;
     /// lerp between this and the specified vector by the specified amount for each component
-    inline void lerp(const vec4 &v, const vec4 &factor) noexcept;
+    void lerp(const vec4 &v, const vec4 &factor) noexcept;
     union {
         struct { T x, y, z, w; };
         struct { T s, t, p, q; };
@@ -788,31 +786,31 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
         struct { T width, height, depth, key; };
         struct { T offsetX, offsetY, sizeX, sizeY; };
         T _v[4];
-        simd_vector<T> _reg;
+        SimdVector<T> _reg;
     };
 };
 #pragma pack(pop)
 
 /// lerp between the 2 specified vectors by the specified amount
 template <typename T>
-[[nodiscard]] inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor) noexcept;
+[[nodiscard]] vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, T factor) noexcept;
 /// lerp between the 2 specified vectors by the specified amount for each component
 template <typename T>
-[[nodiscard]] inline vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) noexcept;
+[[nodiscard]] vec4<T> Lerp(const vec4<T> &u, const vec4<T> &v, const vec4<T> &factor) noexcept;
 template <typename T>
-[[nodiscard]] inline vec4<T> Abs(const vec4<T> &vector) noexcept;
+[[nodiscard]] vec4<T> Abs(const vec4<T> &vector) noexcept;
 /// min/max functions
 template <typename T>
-[[nodiscard]] inline vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) noexcept;
+[[nodiscard]] vec4<T> Min(const vec4<T> &v1, const vec4<T> &v2) noexcept;
 template <typename T>
-[[nodiscard]] inline vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2) noexcept;
+[[nodiscard]] vec4<T> Max(const vec4<T> &v1, const vec4<T> &v2) noexcept;
 template <typename T>
-[[nodiscard]] inline vec4<T> Normalize(vec4<T> &vector);
+[[nodiscard]] vec4<T> Normalize(vec4<T> &vector);
 template <typename T>
-[[nodiscard]] inline vec4<T> Normalized(const vec4<T> &vector);
+[[nodiscard]] vec4<T> Normalized(const vec4<T> &vector);
 /// multiply a vector by a value
 template <typename T>
-[[nodiscard]] inline vec4<T> operator*(T fl, const vec4<T> &v) noexcept;
+[[nodiscard]] vec4<T> operator*(T fl, const vec4<T> &v) noexcept;
 
 /// Quaternion multiplications require these to be floats
 extern vec2<F32> VECTOR2_ZERO;
@@ -847,11 +845,11 @@ class Rect : public vec4<T> {
     using vec4<T>::vec4;
 
     template<typename U>
-    [[nodiscard]] inline bool contains(U _x, U _y) const noexcept { return COORDS_IN_RECT(static_cast<T>(_x), static_cast<T>(_y), *this); }
-    [[nodiscard]] inline bool contains(const vec2<T>& coords) const noexcept { return contains(coords.x, coords.y); }
-    [[nodiscard]] inline bool contains(T _x, T _y) const noexcept { return COORDS_IN_RECT(_x, _y, *this); }
-    [[nodiscard]] inline vec2<T> clamp(T _x, T _y) const noexcept { CLAMP_IN_RECT(_x, _y, *this); return vec2<T>(_x, _y); }
-    [[nodiscard]] inline vec2<T> clamp(const vec2<T>& coords) const noexcept { return clamp(coords.x, coords.y); }
+    [[nodiscard]] bool contains(U _x, U _y) const noexcept { return COORDS_IN_RECT(static_cast<T>(_x), static_cast<T>(_y), *this); }
+    [[nodiscard]] bool contains(const vec2<T>& coords) const noexcept { return contains(coords.x, coords.y); }
+    [[nodiscard]] bool contains(T _x, T _y) const noexcept { return COORDS_IN_RECT(_x, _y, *this); }
+    [[nodiscard]] vec2<T> clamp(T _x, T _y) const noexcept { CLAMP_IN_RECT(_x, _y, *this); return vec2<T>(_x, _y); }
+    [[nodiscard]] vec2<T> clamp(const vec2<T>& coords) const noexcept { return clamp(coords.x, coords.y); }
 };
 
 };  // namespace Divide

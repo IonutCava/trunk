@@ -56,7 +56,7 @@ namespace Divide {
 
 #define SMALL_NUMBER		(1.e-8f)
 
-namespace {
+namespace AVX {
     //Ref: http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
     FORCE_INLINE void M4x4_SSE(const F32 *A, const F32 *B, F32 *C) noexcept {
         const __m128 row1 = _mm_load_ps(&B[0]);
@@ -124,20 +124,20 @@ namespace {
     // we use __m128 to represent 2x2 matrix as A = | A0  A2 |
     //                                              | A1  A3 |
     // 2x2 column major Matrix multiply A*B
-    FORCE_INLINE __m128 Mat2Mul(__m128 vec1, __m128 vec2) noexcept
+    FORCE_INLINE __m128 Mat2Mul(const __m128 vec1, const __m128 vec2) noexcept
     {
         return  _mm_add_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 0, 0, 3, 3)),
                            _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
     }
     // 2x2 column major Matrix adjugate multiply (A#)*B
-    FORCE_INLINE __m128 Mat2AdjMul(__m128 vec1, __m128 vec2) noexcept
+    FORCE_INLINE __m128 Mat2AdjMul(const __m128 vec1, const __m128 vec2) noexcept
     {
         return  _mm_sub_ps(_mm_mul_ps(VecSwizzle(vec1, 3, 0, 3, 0), vec2),
                             _mm_mul_ps(VecSwizzle(vec1, 2, 1, 2, 1), VecSwizzle(vec2, 1, 0, 3, 2)));
 
     }
     // 2x2 column major Matrix multiply adjugate A*(B#)
-    FORCE_INLINE __m128 Mat2MulAdj(__m128 vec1, __m128 vec2) noexcept
+    FORCE_INLINE __m128 Mat2MulAdj(const __m128 vec1, const __m128 vec2) noexcept
     {
         return  _mm_sub_ps(_mm_mul_ps(vec1, VecSwizzle(vec2, 3, 3, 0, 0)),
                            _mm_mul_ps(VecSwizzle(vec1, 2, 3, 0, 1), VecSwizzle(vec2, 1, 1, 2, 2)));
@@ -153,9 +153,7 @@ namespace {
         r._reg[1]._reg = VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3);   // 01, 11, 21, 23(=0)
         r._reg[2]._reg = VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3);   // 02, 12, 22, 23(=0)
 
-        // (SizeSqr(_reg[0]._reg), SizeSqr(_reg[1]._reg), SizeSqr(_reg[2]._reg), 0)
-        __m128 sizeSqr;
-        sizeSqr = _mm_mul_ps(r._reg[0]._reg, r._reg[0]._reg);
+        __m128 sizeSqr = _mm_mul_ps(r._reg[0]._reg, r._reg[0]._reg);
         sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(r._reg[1]._reg, r._reg[1]._reg));
         sizeSqr = _mm_add_ps(sizeSqr, _mm_mul_ps(r._reg[2]._reg, r._reg[2]._reg));
 
@@ -254,12 +252,31 @@ namespace {
         r._reg[3]._reg = VecShuffle(Y_, W_, 2, 0, 2, 0);
     }
 
-    inline mat4<F32> GetInverse(const mat4<F32>& inM) noexcept {
-        mat4<F32> r;
-        GetInverse(inM, r);
-        return r;
-    }
 };
+
+template<typename T>
+void GetInverse(const mat4<T>& inM, mat4<T>& r) noexcept
+{
+    inM.getInverse(r);
+}
+
+template<>
+inline void GetInverse(const mat4<F32>& inM, mat4<F32>& r) noexcept
+{
+    AVX::GetInverse(inM, r);
+}
+
+template<typename T>
+mat4<T> GetInverse(const mat4<T>& inM) noexcept {
+    return inM.getInverse();
+}
+
+template<>
+inline mat4<F32> GetInverse(const mat4<F32> & inM) noexcept {
+    mat4<F32> r;
+    AVX::GetInverse(inM, r);
+    return r;
+}
 
 /*********************************
 * mat2
@@ -410,10 +427,7 @@ mat2<T>& mat2<T>::operator+=(const mat2<U> &B) noexcept {
 template<typename T>
 template<typename U>
 mat2<T>& mat2<T>::operator-=(const mat2<U> &B) noexcept {
-    for (auto& val : _vec) {
-        val -= f;
-    }
-    return *this;
+    return *this = *this - B;
 }
 
 template<typename T>
@@ -843,7 +857,7 @@ mat3<T>::mat3(const vec3<U>& rotStart, const vec3<U>& rotEnd) noexcept
 
     set(v.x * v.x * k + c, v.y * v.x * k - v.z, v.z * v.x * k + v.y,
         v.x * v.y * k + v.z, v.y * v.y * k + c, v.z * v.y * k - v.x,
-        v.x * v.z * K - v.y, v.y * v.z * k + v.x, v.z * v.z * k + c);
+        v.x * v.z * k - v.y, v.y * v.z * k + v.x, v.z * v.z * k + c);
 }
 
 template<typename T>
@@ -1342,8 +1356,8 @@ void mat3<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
     U c1 = 1 - c;
 
     set(c1 * x * x + c, c1 * xy + zs,   c1 * zx - ys,
-        c1 * xy - zs,   c1 * y * y + c, c1 * yz + xs;
-        c1 * zx + ys,   c1 * yz - xs;   c1 * z * z + c);
+        c1 * xy - zs,   c1 * y * y + c, c1 * yz + xs,
+        c1 * zx + ys,   c1 * yz - xs,   c1 * z * z + c);
 }
 
 template<typename T>
@@ -1403,7 +1417,7 @@ void mat3<T>::setScale(const vec3<U> &v) noexcept {
 }
 
 template<typename T>
-void mat3<T>::orthoNormalize(void) {
+void mat3<T>::orthoNormalize() {
     vec3<T> x(mat[0], mat[1], mat[2]);
     x.normalize();
     vec3<T> y(mat[3], mat[4], mat[5]);
@@ -1960,10 +1974,7 @@ void mat4<T>::identity() noexcept {
 
 template<typename T>
 bool mat4<T>::isIdentity() const noexcept {
-    return (COMPARE(mat[0], 1) && IS_ZERO(mat[1])    && IS_ZERO(mat[2])     && IS_ZERO(mat[3])
-            IS_ZERO(mat[4])    && COMPARE(mat[5], 1) && IS_ZERO(mat[6])     && IS_ZERO(mat[7])
-            IS_ZERO(mat[8])    && IS_ZERO(mat[9])    && COMPARE(mat[10], 1) && IS_ZERO(mat[11]),
-            IS_ZERO(mat[12])   && IS_ZERO(mat[13])   && IS_ZERO(mat[14])    && COMPARE(mat[15], 1));
+    return *this == MAT4_IDENTITY;
 }
 
 template<typename T>
@@ -2018,15 +2029,19 @@ void mat4<T>::inverse() noexcept {
 
 template<>
 inline void mat4<F32>::inverse() noexcept {
-    *this = GetInverse(*this);
+    mat4<F32> ret;
+    AVX::GetInverse(*this, ret);
+    *this = ret;
 }
 
 template<typename T>
 void mat4<T>::transpose() noexcept {
-    set({ mat[0], mat[4], mat[8],  mat[12],
-          mat[1], mat[5], mat[9],  mat[13],
-          mat[2], mat[6], mat[10], mat[14],
-          mat[3], mat[7], mat[11], mat[15] });
+    set({
+        mat[0], mat[4], mat[8],  mat[12],
+        mat[1], mat[5], mat[9],  mat[13],
+        mat[2], mat[6], mat[10], mat[14],
+        mat[3], mat[7], mat[11], mat[15]
+    });
 }
 
 template<typename T>
@@ -2042,6 +2057,7 @@ mat4<T> mat4<T>::transposeRotation() const noexcept {
           mat[1],   mat[5],  mat[9], mat[7],
           mat[2],   mat[6], mat[10], mat[11],
           mat[12], mat[13], mat[14], mat[15] });
+    return *this;
 }
 
 template<typename T>
@@ -2054,7 +2070,7 @@ mat4<T> mat4<T>::getInverse() const noexcept {
 template<>
 inline mat4<F32> mat4<F32>::getInverse() const noexcept {
     mat4<F32> ret;
-    GetInverse(*this, ret);
+    AVX::GetInverse(*this, ret);
     return ret;
 }
 
@@ -2065,7 +2081,7 @@ void mat4<T>::getInverse(mat4 &ret) const noexcept {
 
 template<>
 inline void mat4<F32>::getInverse(mat4<F32> &ret) const noexcept {
-    GetInverse(*this, ret);
+    AVX::GetInverse(*this, ret);
 }
 
 template<typename T>
@@ -2095,7 +2111,7 @@ mat4<T> mat4<T>::getInverseTranspose() const noexcept {
 template<>
 inline mat4<F32> mat4<F32>::getInverseTranspose() const noexcept {
     mat4<F32> ret;
-    GetInverse(*this, ret);
+    AVX::GetInverse(*this, ret);
     ret.transpose();
     return ret;
 }
@@ -2108,7 +2124,7 @@ void mat4<T>::getInverseTranspose(mat4 &ret) const noexcept {
 
 template<>
 inline void mat4<F32>::getInverseTranspose(mat4<F32> &ret) const noexcept {
-    GetInverse(*this, ret);
+    AVX::GetInverse(*this, ret);
     ret.transpose();
 }
 
@@ -2150,7 +2166,7 @@ void mat4<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
     set((1 - c) * xx + c,        (1 - c) * xy + zs,       (1 - c) * zx - ys,       static_cast<U>(mat[3]),
         (1 - c) * xy - zs,       (1 - c) * yy + c,        (1 - c) * yz + xs,       static_cast<U>(mat[7]),
         (1 - c) * zx + ys,       (1 - c) * yz - xs,       (1 - c) * zz + c,        static_cast<U>(mat[11]),
-        static_cast<U>(mat[12]), static_cast<U>(mat[13]), static_cast<U>(mat[14]), static_cast<U>(mat[15]))
+        static_cast<U>(mat[12]), static_cast<U>(mat[13]), static_cast<U>(mat[14]), static_cast<U>(mat[15]));
 }
 
 template<typename T>
@@ -2374,7 +2390,7 @@ void mat4<T>::ortho(U left, U right, U bottom, U top, U zNear, U zFar) {
 
 template<typename T>
 template<typename U>
-void mat4<T>::perspective(Angle::DEGREES<U> fovyRad, U aspect, U zNear, U zFar) {
+void mat4<T>::perspective(const Angle::DEGREES<U> fovyRad, const U aspect, const U zNear, const U zFar) {
     assert(!IS_ZERO(aspect));
     assert(zFar > zNear);
 
@@ -2391,7 +2407,7 @@ void mat4<T>::perspective(Angle::DEGREES<U> fovyRad, U aspect, U zNear, U zFar) 
 
 template<typename T>
 template<typename U>
-void mat4<T>::frustum(U left, U right, U bottom, U top, U nearVal, U farVal) {
+void mat4<T>::frustum(const U left, const U right, const U bottom, const U top, const U nearVal, const U farVal) {
     zero();
 
     m[0][0] = static_cast<T>((2.0f * nearVal) / (right - left));
@@ -2438,14 +2454,14 @@ inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matri
     auto& retReg = ret._reg;
     const auto& inputReg = matrixA._reg;
     for (U8 i = 0; i < 4; ++i) {
-        retReg[i]._reg = lincomb_SSE(inputReg[i]._reg, matrixB);
+        retReg[i]._reg = AVX::lincomb_SSE(inputReg[i]._reg, matrixB);
     }
 #else
     // using AVX instructions, 4-wide
     // this can be better if A is in memory.
     _mm256_zeroupper();
     for (U8 i = 0; i < 4; ++i) {
-        ret._reg[i] = lincomb_AVX_4mem(matrixA.m[i], matrixB);
+        ret._reg[i] = AVX::lincomb_AVX_4mem(matrixA.m[i], matrixB);
     }
 #endif
 }

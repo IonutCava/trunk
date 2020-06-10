@@ -6,47 +6,43 @@
 
 #include "Editor/Headers/Editor.h"
 
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 
-#include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "Managers/Headers/SceneManager.h"
 
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "Geometry/Material/Headers/ShaderComputeQueue.h"
 
-#include "ECS/Components/Headers/EnvironmentProbeComponent.h"
-
 #include "Platform/Headers/PlatformRuntime.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
+#include "Platform/Video/RenderBackend/None/Headers/NoneWrapper.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/RenderBackend/Vulkan/Headers/VKWrapper.h"
-#include "Platform/Video/RenderBackend/None/Headers/NoneWrapper.h"
 
-#include "Platform/Video/RenderBackend/Vulkan/Headers/VKWrapper.h"
-#include "Platform/Video/RenderBackend/None/Headers/NoneWrapper.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glIMPrimitive.h"
-#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glTexture.h"
-#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
+#include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"
+#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glTexture.h"
 
 #include <RenderDoc-Manager/RenderDocManager.h>
+
+#include "Headers/CommandBufferPool.h"
 
 namespace Divide {
     constexpr HiZMethod GetHiZMethod() { return HiZMethod::RASTER_GRID; }
@@ -218,7 +214,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     constexpr size_t TargetBufferSize = (1024 * 1024) / 4 / sizeof(GFXShaderData::GPUData);
 
     // Initialize the shader manager
-    ShaderProgram::onStartup(*this, cache);
+    ShaderProgram::onStartup(cache);
     SceneEnvironmentProbePool::onStartup(*this);
     GFX::initPools();
 
@@ -268,34 +264,33 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     defaultSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     defaultSampler.minFilter(TextureFilter::NEAREST);
     defaultSampler.magFilter(TextureFilter::NEAREST);
+    const size_t samplerHash = defaultSampler.getHash();
 
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normAndVelDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
+    screenDescriptor.hasMipMaps(false);
+    normAndVelDescriptor.hasMipMaps(false);
+    gbufferDescriptor.hasMipMaps(false);
+    depthDescriptor.hasMipMaps(false);
+
     // Normal and MSAA
     for (U8 i = 0; i < 2; ++i) {
         const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAASamples;
 
-        screenDescriptor.samplerDescriptor(defaultSampler);
         screenDescriptor.msaaSamples(sampleCount);
-
-        depthDescriptor.samplerDescriptor(defaultSampler);
         depthDescriptor.msaaSamples(sampleCount);
-
-        normAndVelDescriptor.samplerDescriptor(defaultSampler);
         normAndVelDescriptor.msaaSamples(sampleCount);
-
-        gbufferDescriptor.samplerDescriptor(defaultSampler);
         gbufferDescriptor.msaaSamples(sampleCount);
 
         {
             vectorEASTL<RTAttachmentDescriptor> attachments = {
-                { screenDescriptor,     RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-                { normAndVelDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-                { gbufferDescriptor,    RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
-                { depthDescriptor,      RTAttachmentType::Depth }
+                { screenDescriptor,     samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
+                { normAndVelDescriptor, samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
+                { gbufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
+                { depthDescriptor,      samplerHash, RTAttachmentType::Depth }
             };
 
             RenderTargetDescriptor screenDesc = {};
@@ -318,7 +313,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.anisotropyLevel(0u);
 
-    if (GetHiZMethod() == HiZMethod::ARM) {
+    if_constexpr (GetHiZMethod() == HiZMethod::ARM) {
         hiZSampler.magFilter(TextureFilter::LINEAR);
         hiZSampler.minFilter(TextureFilter::LINEAR_MIPMAP_NEAREST);
         hiZSampler.useRefCompare(true);
@@ -328,11 +323,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
     }
 
-    hiZDescriptor.samplerDescriptor(hiZSampler);
     hiZDescriptor.autoMipMaps(false);
 
     vectorEASTL<RTAttachmentDescriptor> hiZAttachments = {
-        { hiZDescriptor, RTAttachmentType::Depth, 0, VECTOR4_ZERO },
+        { hiZDescriptor, hiZSampler.getHash(), RTAttachmentType::Depth, 0, VECTOR4_ZERO },
     };
 
     {
@@ -356,10 +350,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         editorSampler.anisotropyLevel(0);
 
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-        editorDescriptor.samplerDescriptor(editorSampler);
+        editorDescriptor.hasMipMaps(false);
 
         vectorEASTL<RTAttachmentDescriptor> attachments = {
-            { editorDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
+            { editorDescriptor, editorSampler.getHash(), RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
         RenderTargetDescriptor editorDesc = {};
@@ -374,14 +368,15 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     reflectionSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.minFilter(TextureFilter::NEAREST);
     reflectionSampler.magFilter(TextureFilter::NEAREST);
+    const size_t reflectionSamplerHash = reflectionSampler.getHash();
 
     {
         // "A" could be used for anything (e.g. depth)
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-        environmentDescriptorPlanar.samplerDescriptor(reflectionSampler);
-
         TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-        depthDescriptorPlanar.samplerDescriptor(reflectionSampler);
+
+        environmentDescriptorPlanar.hasMipMaps(false);
+        depthDescriptorPlanar.hasMipMaps(false);
 
         RenderTargetDescriptor hizRTDesc = {};
         hizRTDesc._resolution = reflectRes;
@@ -390,8 +385,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
         {
             vectorEASTL<RTAttachmentDescriptor> attachments = {
-                { environmentDescriptorPlanar, RTAttachmentType::Colour },
-                { depthDescriptorPlanar, RTAttachmentType::Depth },
+                { environmentDescriptorPlanar, reflectionSamplerHash, RTAttachmentType::Colour },
+                { depthDescriptorPlanar,       reflectionSamplerHash, RTAttachmentType::Depth },
             };
 
             RenderTargetDescriptor refDesc = {};
@@ -420,18 +415,17 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     accumulationSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     accumulationSampler.minFilter(TextureFilter::NEAREST);
     accumulationSampler.magFilter(TextureFilter::NEAREST);
+    const size_t accumulationSamplerHash = accumulationSampler.getHash();
 
     TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    accumulationDescriptor.autoMipMaps(false);
-    accumulationDescriptor.samplerDescriptor(accumulationSampler);
+    accumulationDescriptor.hasMipMaps(false);
 
     TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-    revealageDescriptor.autoMipMaps(false);
-    revealageDescriptor.samplerDescriptor(accumulationSampler);
+    revealageDescriptor.hasMipMaps(false);
 
     vectorEASTL<RTAttachmentDescriptor> oitAttachments = {
-        { accumulationDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
-        { revealageDescriptor, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
+        { accumulationDescriptor, accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
+        { revealageDescriptor,    accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
     };
 
     for (U8 i = 0; i < 2; ++i) 
@@ -497,14 +491,14 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     }
     {
         TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-        environmentDescriptorCube.samplerDescriptor(reflectionSampler);
-
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
-        depthDescriptorCube.samplerDescriptor(reflectionSampler);
+
+        environmentDescriptorCube.hasMipMaps(false);
+        depthDescriptorCube.hasMipMaps(false);
 
         vectorEASTL<RTAttachmentDescriptor> attachments = {
-            { environmentDescriptorCube, RTAttachmentType::Colour },
-            { depthDescriptorCube, RTAttachmentType::Depth },
+            { environmentDescriptorCube, reflectionSamplerHash, RTAttachmentType::Colour },
+            { depthDescriptorCube,       reflectionSamplerHash, RTAttachmentType::Depth },
         };
 
         RenderTargetDescriptor refDesc = {};
@@ -717,7 +711,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
             _depthShader = CreateResource<ShaderProgram>(cache, descriptor3, loadTasks);
             _depthShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
                 PipelineDescriptor pipelineDescriptor = {};
-                pipelineDescriptor._stateHash = get2DStateBlock();
                 pipelineDescriptor._stateHash = _stateDepthOnlyRenderingHash;
                 pipelineDescriptor._shaderProgramHandle = _depthShader->getGUID();
                 _DrawFSDepthPipeline = newPipeline(pipelineDescriptor);
@@ -821,7 +814,7 @@ void GFXDevice::closeRenderingAPI() {
 
 #pragma region Main frame loop
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
-void GFXDevice::idle() {
+void GFXDevice::idle() const {
     OPTICK_EVENT();
 
     _api->idle();
@@ -833,11 +826,11 @@ void GFXDevice::idle() {
     ShaderProgram::idle();
 }
 
-void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
+void GFXDevice::beginFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 
-    if (global && Config::ENABLE_GPU_VALIDATION) {
-        if (_renderDocManager) {
+    if_constexpr (Config::ENABLE_GPU_VALIDATION) {
+        if (global && _renderDocManager != nullptr) {
             _renderDocManager->StartFrameCapture();
         }
     }
@@ -862,7 +855,7 @@ void GFXDevice::beginFrame(DisplayWindow& window, bool global) {
     setViewport(0, 0, drawableSize.width, drawableSize.height);
 }
 
-void GFXDevice::endFrame(DisplayWindow& window, bool global) {
+void GFXDevice::endFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 
     if (global) {
@@ -871,12 +864,12 @@ void GFXDevice::endFrame(DisplayWindow& window, bool global) {
         FRAME_DRAW_CALLS = 0;
     }
     DIVIDE_ASSERT(_cameraSnapshots.empty(), "Not all camera snapshots have been cleared properly! Check command buffers for missmatched push/pop!");
-    DIVIDE_ASSERT(_viewportStack.empty(), "Not all viewportshave been cleared properly! Check command buffers for missmatched push/pop!");
+    DIVIDE_ASSERT(_viewportStack.empty(), "Not all viewports have been cleared properly! Check command buffers for missmatched push/pop!");
     // Activate the default render states
     _api->endFrame(window, global);
 
-    if (global && Config::ENABLE_GPU_VALIDATION) {
-        if (_renderDocManager) {
+    if_constexpr (Config::ENABLE_GPU_VALIDATION) {
+        if (global && _renderDocManager != nullptr) {
             _renderDocManager->EndFrameCapture();
         }
     }
@@ -885,27 +878,24 @@ void GFXDevice::endFrame(DisplayWindow& window, bool global) {
 
 #pragma region Utility functions
 /// Generate a cube texture and store it in the provided RenderTarget
-void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
+void GFXDevice::generateCubeMap(RenderPassParams& params,
                                 const U16 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
-                                RenderStagePass stagePass,
-                                GFX::CommandBuffer& bufferInOut,
-                                std::array<Camera*, 6>& cameras,
-                                bool disableShadowMaps,
-                                SceneGraphNode* sourceNode) {
+                                GFX::CommandBuffer& commandsInOut,
+                                std::array<Camera*, 6>& cameras) {
 
 
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
-    RenderTarget& cubeMapTarget = _rtPool->renderTarget(cubeMap);
+    RenderTarget& cubeMapTarget = _rtPool->renderTarget(params._target);
     // Colour attachment takes precedent over depth attachment
     const bool hasColour = cubeMapTarget.hasAttachment(RTAttachmentType::Colour, 0);
     const bool hasDepth = cubeMapTarget.hasAttachment(RTAttachmentType::Depth, 0);
     const vec2<U16> targetResolution = cubeMapTarget.getResolution();
 
     // Everyone's innocent until proven guilty
-    bool isValidFB = true;
+    bool isValidFB;
     if (hasColour) {
         const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
         // We only need the colour attachment
@@ -944,16 +934,10 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     RenderPassManager* passMgr = parent().renderPassManager();
-    RenderPassManager::PassParams params;
-    params._sourceNode = sourceNode;
-    params._target = cubeMap;
-    params._stagePass = stagePass;
     params._passName = "CubeMap";
     params._layerParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     params._layerParams._includeDepth = hasColour && hasDepth;
-
     params._layerParams._index = 0;
-    params._shadowMappingEnabled = !disableShadowMaps;
 
     const D64 aspect = to_D64(targetResolution.width) / targetResolution.height;
 
@@ -973,27 +957,24 @@ void GFXDevice::generateCubeMap(RenderTargetID cubeMap,
         params._camera = camera;
         params._stagePass._pass = i;
         // Pass our render function to the renderer
-        passMgr->doCustomPass(params, bufferInOut);
+        passMgr->doCustomPass(params, commandsInOut);
     }
 }
 
-void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
+void GFXDevice::generateDualParaboloidMap(RenderPassParams& params,
                                           const U16 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
-                                          RenderStagePass stagePass,
                                           GFX::CommandBuffer& bufferInOut,
-                                          std::array<Camera*, 2>& cameras,
-                                          bool disableShadowMaps,
-                                          SceneGraphNode* sourceNode)
+                                          std::array<Camera*, 2>& cameras)
 {
-    RenderTarget& paraboloidTarget = _rtPool->renderTarget(targetBuffer);
+    RenderTarget& paraboloidTarget = _rtPool->renderTarget(params._target);
     // Colour attachment takes precedent over depth attachment
     const bool hasColour = paraboloidTarget.hasAttachment(RTAttachmentType::Colour, 0);
     const bool hasDepth = paraboloidTarget.hasAttachment(RTAttachmentType::Depth, 0);
     const vec2<U16> targetResolution = paraboloidTarget.getResolution();
 
-    bool isValidFB = true;
+    bool isValidFB;
     if (hasColour) {
         const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
         // We only need the colour attachment
@@ -1011,15 +992,9 @@ void GFXDevice::generateDualParaboloidMap(RenderTargetID targetBuffer,
     }
 
     RenderPassManager* passMgr = parent().renderPassManager();
-    RenderPassManager::PassParams params;
-    params._sourceNode = sourceNode;
-
-    params._stagePass = stagePass;
-    params._target = targetBuffer;
     params._passName = "DualParaboloid";
     params._layerParams._type = hasColour ? RTAttachmentType::Colour : RTAttachmentType::Depth;
     params._layerParams._index = 0;
-    params._shadowMappingEnabled = !disableShadowMaps;
 
     const D64 aspect = to_D64(targetResolution.width) / targetResolution.height;
     for (U8 i = 0; i < 2; ++i) {
@@ -1059,11 +1034,13 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     beginRenderPassCmd._name = "BLUR_RENDER_TARGET_HORIZONTAL";
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    TextureData data = blurSource._rt->getAttachment(att, index).texture()->data();
-    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::UNIT0);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    const auto& attachment = blurSource._rt->getAttachment(att, index);
+    const TextureData data = attachment.texture()->data();
+    const size_t sampler = attachment.samplerHash();
 
+    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+    descriptorSetCmd._set._textureData.setTexture(data, sampler, TextureUsage::UNIT0);
+    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurPipeline });
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -1088,8 +1065,10 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    data = blurBuffer._rt->getAttachment(att, index).texture()->data();
-    descriptorSetCmd._set._textureData.setTexture(data, TextureUsage::UNIT0);
+    const auto& attachment2 = blurSource._rt->getAttachment(att, index);
+    const TextureData data2 = attachment2.texture()->data();
+    const size_t sampler2 = attachment2.samplerHash();
+    descriptorSetCmd._set._textureData.setTexture(data2, sampler2, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, drawCmd);
@@ -1144,7 +1123,8 @@ void GFXDevice::stepResolution(bool increment) {
     }
 }
 
-void GFXDevice::toggleFullScreen() {
+void GFXDevice::toggleFullScreen() const
+{
     WindowManager& winManager = _parent.platformContext().app().windowManager();
 
     switch (winManager.mainWindow()->type()) {
@@ -1157,6 +1137,7 @@ void GFXDevice::toggleFullScreen() {
         case WindowType::FULLSCREEN:
             winManager.mainWindow()->changeType(WindowType::WINDOW);
             break;
+        default: break;
     };
 }
 
@@ -1169,7 +1150,7 @@ void GFXDevice::setScreenMSAASampleCount(U8 sampleCount) {
     }
 }
 
-void GFXDevice::setShadowMSAASampleCount(ShadowType type, U8 sampleCount) {
+void GFXDevice::setShadowMSAASampleCount(const ShadowType type, U8 sampleCount) {
     CLAMP(sampleCount, to_U8(0u), gpuState().maxMSAASampleCount());
     ShadowMap::setMSAASampleCount(type, sampleCount);
 }
@@ -1217,7 +1198,7 @@ bool GFXDevice::onSizeChange(const SizeChangeParams& params) {
     return fitViewportInWindow(w, h);
 }
 
-bool GFXDevice::fitViewportInWindow(U16 w, U16 h) {
+bool GFXDevice::fitViewportInWindow(const U16 w, const U16 h) {
     const F32 currentAspectRatio = renderingAspectRatio();
 
     I32 left = 0, bottom = 0;
@@ -1487,7 +1468,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
 /// Transform our depth buffer to a HierarchicalZ buffer (for occlusion queries and screen space reflections)
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
-const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) {
+std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) {
     assert(depthBuffer != HiZTarget);
     static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
 
@@ -1529,15 +1510,19 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
         RenderTarget& depthSource = _rtPool->renderTarget(depthBuffer);
-        const Texture_ptr& depthTex = depthSource.getAttachment(RTAttachmentType::Depth, 0).texture();
+        const auto& att = depthSource.getAttachment(RTAttachmentType::Depth, 0);
+        const Texture_ptr& depthTex = att.texture();
 
         const Rect<I32> viewport(0, 0, renderTarget.getWidth(), renderTarget.getHeight());
-        drawTextureInViewport(depthTex->data(), viewport, false, true, cmdBufferInOut);
+        drawTextureInViewport(depthTex->data(), att.samplerHash(), viewport, false, true, cmdBufferInOut);
 
         GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
     }
 
-    const Texture_ptr& hizDepthTex = renderTarget.getAttachment(RTAttachmentType::Depth, 0).texture();
+    const auto& att = renderTarget.getAttachment(RTAttachmentType::Depth, 0);
+    const Texture_ptr& hizDepthTex = att.texture();
+    const size_t hiZSampler = att.samplerHash();
+
     const TextureData hizData = hizDepthTex->data();
     if (!hizDepthTex->descriptor().autoMipMaps()) {
         GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -1546,7 +1531,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
-        if (GetHiZMethod() == HiZMethod::COUNT) {
+        if_constexpr (GetHiZMethod() == HiZMethod::COUNT) {
             GFX::ComputeMipMapsCommand mipMapCommand = {};
             mipMapCommand._texture = hizDepthTex.get();
             mipMapCommand._layerRange = { 0, hizDepthTex->getMipCount() };
@@ -1563,7 +1548,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
             // for i > 0, use texture views?
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(hizData, TextureUsage::DEPTH);
+            descriptorSetCmd._set._textureData.setTexture(hizData, att.samplerHash(), TextureUsage::DEPTH);
             GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
             // We skip the first level as that's our full resolution image
@@ -1585,7 +1570,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
                     viewportCommand._viewport.set(0, 0, twidth, theight);
                     GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
-                    if (GetHiZMethod() == HiZMethod::NVIDIA) {
+                    if_constexpr (GetHiZMethod() == HiZMethod::NVIDIA) {
                         pushConstantsCommand._constants.set(_ID("depthInfo"), GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
                     } else {
                         mipCommand._baseLevel = level - 1;
@@ -1619,7 +1604,7 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
             beginRenderSubPassCmd._mipWriteLevel = 0;
             GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
 
-            if (GetHiZMethod() != HiZMethod::NVIDIA) {
+            if_constexpr (GetHiZMethod() != HiZMethod::NVIDIA) {
                 mipCommand._baseLevel = 0;
                 mipCommand._maxLevel = hizDepthTex->getMipCount() - 1;
                 GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
@@ -1636,15 +1621,17 @@ const Texture_ptr& GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTar
 
     GFX::EnqueueCommand(cmdBufferInOut, GFX::EndDebugScopeCommand{});
 
-    return hizDepthTex;
+    return { hizDepthTex, hiZSampler };
 }
 
 void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
                               const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
+                              const size_t samplerHash,
                               const Camera& camera,
                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
-                              GFX::CommandBuffer& bufferInOut) {
+                              GFX::CommandBuffer& bufferInOut) const
+{
 
     OPTICK_EVENT();
 
@@ -1672,7 +1659,7 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
         bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
     }
 
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), TextureUsage::UNIT0);
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), samplerHash, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     const mat4<F32>& viewMatrix = camera.getViewMatrix();
@@ -1743,7 +1730,7 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     flushCommandBuffer(sBuffer());
 }
 
-void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
+void GFXDevice::drawTextureInViewport(TextureData data, const size_t samplerHash, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
     static GFX::DrawCommand drawCmd = {{ PrimitiveType::TRIANGLES }};
     static GFX::BeginDebugScopeCommand beginDebugScopeCmd = { "Draw Texture In Viewport" };
     static GFX::PushCameraCommand push2DCameraCmd = { Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
@@ -1755,7 +1742,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const Rect<I32>& viewpor
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ (drawToDepthOnly ? _DrawFSDepthPipeline : _DrawFSTexturePipeline) });
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set._textureData.setTexture(data, TextureUsage::UNIT0);
+    bindDescriptorSetsCmd._set._textureData.setTexture(data, samplerHash, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::PushViewportCommand{ viewport });
@@ -1822,6 +1809,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr HiZ = std::make_shared<DebugView>();
         HiZ->_shader = _previewDepthMapShader;
         HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        HiZ->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).samplerHash();
         HiZ->_name = "Hierarchical-Z";
         HiZ->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
         HiZ->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
@@ -1829,6 +1817,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr DepthPreview = std::make_shared<DebugView>();
         DepthPreview->_shader = _previewDepthMapShader;
         DepthPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).texture();
+        DepthPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Depth, 0).samplerHash();
         DepthPreview->_name = "Depth Buffer";
         DepthPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         DepthPreview->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
@@ -1836,6 +1825,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr NormalPreview = std::make_shared<DebugView>();
         NormalPreview->_shader = _renderTargetDraw;
         NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
+        NormalPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).samplerHash();
         NormalPreview->_name = "Normals";
         NormalPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         NormalPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
@@ -1846,6 +1836,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
         VelocityPreview->_shader = _renderTargetDraw;
         VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
+        VelocityPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).samplerHash();
         VelocityPreview->_name = "Velocity Map";
         VelocityPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         VelocityPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
@@ -1857,6 +1848,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr TBNViewDirPreview = std::make_shared<DebugView>();
         TBNViewDirPreview->_shader = _renderTargetDraw;
         TBNViewDirPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
+        TBNViewDirPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).samplerHash();
         TBNViewDirPreview->_name = "TBN View Direction";
         TBNViewDirPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         TBNViewDirPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
@@ -1867,6 +1859,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
+        SSAOPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).samplerHash();
         SSAOPreview->_name = "SSAO Map";
         SSAOPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         SSAOPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
@@ -1877,6 +1870,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr FlagPreview = std::make_shared<DebugView>();
         FlagPreview->_shader = _renderTargetDraw;
         FlagPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
+        FlagPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).samplerHash();
         FlagPreview->_name = "Flag Map";
         FlagPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         FlagPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
@@ -1887,6 +1881,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
         AlphaAccumulationHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+        AlphaAccumulationHigh->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).samplerHash();
         AlphaAccumulationHigh->_name = "Alpha Accumulation High";
         AlphaAccumulationHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         AlphaAccumulationHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
@@ -1897,6 +1892,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
         AlphaRevealageHigh->_shader = _renderTargetDraw;
         AlphaRevealageHigh->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
+        AlphaRevealageHigh->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).samplerHash();
         AlphaRevealageHigh->_name = "Alpha Revealage High";
         AlphaRevealageHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         AlphaRevealageHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
@@ -1907,6 +1903,7 @@ void GFXDevice::initDebugViews() {
         //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
         //AlphaAccumulationLow->_shader = _renderTargetDraw;
         //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
+        //AlphaAccumulationLow->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).samplerHash();
         //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
         //AlphaAccumulationLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         //AlphaAccumulationLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
@@ -1917,6 +1914,7 @@ void GFXDevice::initDebugViews() {
         //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
         //AlphaRevealageLow->_shader = _renderTargetDraw;
         //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
+        //AlphaRevealageLow->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).samplerHash();
         //AlphaRevealageLow->_name = "Alpha Revealage Low";
         //AlphaRevealageLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         //AlphaRevealageLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
@@ -1927,6 +1925,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr Luminance = std::make_shared<DebugView>();
         Luminance->_shader = _renderTargetDraw;
         Luminance->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->luminanceRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
+        Luminance->_samplerHash = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->luminanceRT()).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
         Luminance->_name = "Luminance";
         Luminance->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         Luminance->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
@@ -1937,6 +1936,7 @@ void GFXDevice::initDebugViews() {
         DebugView_ptr Edges = std::make_shared<DebugView>();
         Edges->_shader = _renderTargetDraw;
         Edges->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
+        Edges->_samplerHash = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
         Edges->_name = "Edges";
         Edges->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         Edges->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
@@ -2032,7 +2032,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         GFX::EnqueueCommand(bufferInOut, setViewport);
 
         GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(view._texture->data(), view._textureBindSlot);
+        bindDescriptorSets._set._textureData.setTexture(view._texture->data(), view._samplerHash, view._textureBindSlot);
         GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
         GFX::EnqueueCommand(bufferInOut, drawCmd);
@@ -2058,7 +2058,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
 
         text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
         text.text(entry.first.c_str(), false);
-        drawText(text, bufferInOut);
+        drawText(GFX::DrawTextCommand{ TextElementBatch{ text } }, bufferInOut);
     }
 
     setViewport._viewport.set(previousViewport);
@@ -2419,13 +2419,13 @@ IMPrimitive* GFXDevice::newIMP() {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             return GL_API::newIMP(_imprimitiveMutex , *this);
-        } break;
+        };
         case RenderAPI::Vulkan: {
             return nullptr;
-        } break;
+        };
         case RenderAPI::None: {
             return nullptr;
-        } break;
+        };
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
@@ -2439,13 +2439,13 @@ bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
             return GL_API::destroyIMP(_imprimitiveMutex , primitive);
-        } break;
+        };
         case RenderAPI::Vulkan: {
             return false;
-        } break;
+        };
         case RenderAPI::None: {
             return false;
-        } break;
+        };
         default: {
             DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
@@ -2661,7 +2661,7 @@ const ShaderComputeQueue& GFXDevice::shaderComputeQueue() const {
 }
 
 /// Extract the pixel data from the main render target's first colour attachment and save it as a TGA image
-void GFXDevice::Screenshot(const stringImpl& filename) {
+void GFXDevice::screenshot(const stringImpl& filename) const {
     // Get the screen's resolution
     const RenderTarget& screenRT = _rtPool->screenTarget();
     const U16 width = screenRT.getWidth();

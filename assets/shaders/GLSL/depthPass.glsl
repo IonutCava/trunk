@@ -1,12 +1,16 @@
 -- Fragment.PrePass
 
+#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
+#   define HAS_TRANSPARENCY
+#endif
+
 #include "prePass.frag"
 
 void main() {
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    writeOutput(data, 
+    writeOutput(data,
                 VAR._texCoord,
                 getNormalWV(VAR._texCoord),
                 getTBNViewDirection());

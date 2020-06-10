@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     namespace Util {
-        bool findCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
+        bool FindCommandLineArgument(int argc, char** argv, const char* target_arg, const char* arg_prefix = "--");
 
         template<size_t N, typename T_str = stringImpl>
         bool ReplaceStringInPlace(T_str& subject, const std::array<std::string_view, N>& search, std::string_view replace, bool recursive = false);

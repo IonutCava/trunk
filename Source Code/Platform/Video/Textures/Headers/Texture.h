@@ -35,8 +35,8 @@
 
 #include "Core/Resources/Headers/Resource.h"
 
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 #include "Utility/Headers/ImageTools.h"
@@ -75,7 +75,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
     /// Change the texture's mip levels. This can be called at any time
-    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
+    virtual void setMipMapRange(const U16 base = 0, const U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) = 0;
     /// Change the number of MSAA samples for this current texture
@@ -86,18 +86,14 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     virtual void loadData(const ImageTools::ImageData& imageData) = 0;
     virtual void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) = 0;
 
-    /// Specify the sampler descriptor used to sample from this texture in the shaders
-    virtual void setCurrentSampler(const SamplerDescriptor& descriptor);
-
-    /// Get the sampler descriptor used by this texture
-    inline const SamplerDescriptor& getCurrentSampler() const noexcept { return _descriptor.samplerDescriptor(); }
     /// Texture base mip level
-    inline U16 getBaseMipLevel() const noexcept { return _descriptor.mipLevels().x; }
+    U16 getBaseMipLevel() const noexcept { return _descriptor.mipLevels().x; }
     /// Texture max mip level
-    inline U16 getMaxMipLevel() const noexcept { return _descriptor.mipLevels().y; }
+    U16 getMaxMipLevel() const noexcept { return _descriptor.mipLevels().y; }
     /// Number of loaded mip levels in VRAM
-    inline U16 getMipCount() const noexcept { return _descriptor._mipCount; }
-    inline bool automaticMipMapGeneration() const noexcept { return _descriptor.autoMipMaps(); }
+    U16 getMipCount() const noexcept { return _descriptor._mipCount; }
+    bool automaticMipMapGeneration() const noexcept { return _descriptor.autoMipMaps(); }
+    bool hasMipMaps() const noexcept { return _descriptor.hasMipMaps(); }
 
     PROPERTY_R(TextureDescriptor, descriptor);
     PROPERTY_R(TextureData, data);

@@ -1,17 +1,17 @@
 #include "stdafx.h"
 
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Headers/glPixelBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
-#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
-size_t glPixelBuffer::sizeOf(GLenum dataType) const noexcept {
-    switch (_dataType) {
+size_t glPixelBuffer::SizeOf(const GLenum dataType) noexcept {
+    switch (dataType) {
         case GL_FLOAT:
             return sizeof(GLfloat);
         case GL_UNSIGNED_BYTE:
@@ -32,13 +32,13 @@ size_t glPixelBuffer::sizeOf(GLenum dataType) const noexcept {
     return 0;
 }
 
-glPixelBuffer::glPixelBuffer(GFXDevice& context, PBType type, const char* name) 
+glPixelBuffer::glPixelBuffer(GFXDevice& context, const PBType type, const char* name)
     : PixelBuffer(context, type, name)
+    , _bufferSize(0)
+    , _dataSizeBytes(0)
     , _dataType(GL_NONE)
     , _format(GL_NONE)
     , _internalFormat(GL_NONE)
-    , _dataSizeBytes(0)
-    , _bufferSize(0)
 {
     switch (_pbtype) {
         case PBType::PB_TEXTURE_1D:
@@ -64,7 +64,7 @@ glPixelBuffer::~glPixelBuffer()
 
 bufferPtr glPixelBuffer::begin() const {
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
-    glNamedBufferSubData(_pixelBufferHandle, 0, _bufferSize, NULL);
+    glNamedBufferSubData(_pixelBufferHandle, 0, _bufferSize, nullptr);
     GL_API::getStateTracker().setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, _pixelBufferHandle);
 
     switch (_pbtype) {
@@ -75,7 +75,7 @@ bufferPtr glPixelBuffer::begin() const {
                                 _width,
                                 _format,
                                 _dataType,
-                                NULL);
+                                nullptr);
             break;
         case PBType::PB_TEXTURE_2D:
             glTextureSubImage2D(_textureID,
@@ -86,7 +86,7 @@ bufferPtr glPixelBuffer::begin() const {
                                 _height,
                                 _format,
                                 _dataType,
-                                NULL);
+                                nullptr);
             break;
         case PBType::PB_TEXTURE_3D:
             glTextureSubImage3D(_textureID,
@@ -99,8 +99,9 @@ bufferPtr glPixelBuffer::begin() const {
                                 _depth,
                                 _format,
                                 _dataType,
-                                NULL);
+                                nullptr);
             break;
+        default: break;;
     };
 
     return glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
@@ -111,11 +112,12 @@ void glPixelBuffer::end() const {
     GL_API::getStateTracker().setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
-                           GFXImageFormat formatEnum,
-                           GFXDataFormat dataTypeEnum) {
+bool glPixelBuffer::create(GLushort width, GLushort height, const GLushort depth,
+                           const GFXImageFormat formatEnum,
+                           const GFXDataFormat dataTypeEnum,
+                           const bool normalized) {
     const GLenum textureTypeEnum = GLUtil::glTextureTypeTable[to_U32(_textureType)];
-    _internalFormat = GLUtil::internalFormat(formatEnum, dataTypeEnum, false);
+    _internalFormat = GLUtil::internalFormat(formatEnum, dataTypeEnum, false, normalized);
     _format = GLUtil::glImageFormatTable[to_U32(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_U32(dataTypeEnum)];
 
@@ -132,6 +134,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
         case PBType::PB_TEXTURE_3D:
             _bufferSize *= _height * _depth;
             break;
+        default: break;
     };
 
     switch (_dataType) {
@@ -179,6 +182,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, GLushort depth,
         case PBType::PB_TEXTURE_3D:
             glTextureStorage3D(_textureID, mipLevels, _internalFormat, _width, _height, _depth);
             break;
+        default: break;
     };
 
     if (_pixelBufferHandle > 0) {

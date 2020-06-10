@@ -33,8 +33,6 @@
 #ifndef _CORE_TIME_PROFILE_TIMER_H_
 #define _CORE_TIME_PROFILE_TIMER_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 namespace Time {
 
@@ -51,7 +49,7 @@ class ProfileTimer {
 
     U64 get() const;
     U64 getChildTotal() const;
-    const stringImpl& name() const;
+    const stringImpl& name() const noexcept;
 
     static stringImpl printAll();
     static ProfileTimer& getNewTimer(const char* timerName);
@@ -76,7 +74,7 @@ class ProfileTimer {
     void addChildTimer(ProfileTimer& child);
     void removeChildTimer(ProfileTimer& child);
 
-    bool hasChildTimer(ProfileTimer& child);
+    bool hasChildTimer(ProfileTimer& child) const;
 
    protected:
      vectorEASTL<U32> _children;

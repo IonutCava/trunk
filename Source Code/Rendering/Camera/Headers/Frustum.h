@@ -41,7 +41,6 @@ class Camera;
 class BoundingBox;
 class Frustum {
    public:
-   public:
     Frustum() = default;
     void Extract(const mat4<F32>& viewMatrix, const mat4<F32>& projectionMatrix);
 
@@ -51,15 +50,15 @@ class Frustum {
     FrustumCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const noexcept;
     FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept;
 
-    inline FrustumCollision ContainsPoint(const vec3<F32>& point) const noexcept {
+    FrustumCollision ContainsPoint(const vec3<F32>& point) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsPoint(point, lastPlaneCache);
     }
-    inline FrustumCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
+    FrustumCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsBoundingBox(bbox, lastPlaneCache);
     }
-    inline FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius) const noexcept {
+    FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsSphere(center, radius, lastPlaneCache);
     }
@@ -71,7 +70,7 @@ class Frustum {
 
     void computePlanes(const mat4<F32>& viewProjMatrix);
 
-    inline bool operator==(const Frustum& other) const noexcept {
+    bool operator==(const Frustum& other) const noexcept {
         for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
             if (_frustumPlanes[i] != other._frustumPlanes[i]) {
                 return false;
@@ -81,7 +80,7 @@ class Frustum {
         return true;
     }
 
-    inline bool operator!=(const Frustum& other) const noexcept {
+    bool operator!=(const Frustum& other) const noexcept {
         for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
             if (_frustumPlanes[i] != other._frustumPlanes[i]) {
                 return true;
@@ -119,7 +118,7 @@ class Frustum {
                                          F32 radius) const noexcept;
     void updatePoints() noexcept;
 
-    inline const std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>& planes() const noexcept { return _frustumPlanes; }
+    const std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>& planes() const noexcept { return _frustumPlanes; }
 
    private:
     std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>  _frustumPlanes = create_array<to_base(FrustumPlane::COUNT)>(DEFAULT_PLANE);

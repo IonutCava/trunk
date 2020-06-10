@@ -42,36 +42,37 @@ namespace Divide {
 
 class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
    public:
-       PixelBuffer(GFXDevice& context, PBType type, const char* name = nullptr)
-         : GraphicsResource(context, GraphicsResource::Type::PIXEL_BUFFER, getGUID(), name == nullptr ? 0u : _ID(name)),
+       PixelBuffer(GFXDevice& context, const PBType type, const char* name = nullptr)
+         : GraphicsResource(context, Type::PIXEL_BUFFER, getGUID(), name == nullptr ? 0u : _ID(name)),
            _pbtype(type),
-           _name(name != nullptr ? name : ""),
            _textureID(0),
            _width(0),
            _height(0),
            _depth(0),
            _pixelBufferHandle(0),
-           _textureType(TextureType::COUNT)
+           _textureType(TextureType::COUNT),
+           _name(name != nullptr ? name : "")
        {
        }
 
     virtual bool create(
         U16 width, U16 height, U16 depth = 0,
         GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-        GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) = 0;
+        GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
+        bool normalized = true) = 0;
 
     virtual void updatePixels(const F32* const pixels, U32 pixelCount) = 0;
 
-    inline U32 getTextureHandle() const noexcept { return _textureID; }
-    inline U16 getWidth() const noexcept { return _width; }
-    inline U16 getHeight() const noexcept { return _height; }
-    inline U16 getDepth() const noexcept { return _depth; }
-    inline PBType getType() const noexcept { return _pbtype; }
+    U32 getTextureHandle() const noexcept { return _textureID; }
+    U16 getWidth() const noexcept { return _width; }
+    U16 getHeight() const noexcept { return _height; }
+    U16 getDepth() const noexcept { return _depth; }
+    PBType getType() const noexcept { return _pbtype; }
 
-    inline TextureData getData() const noexcept { return TextureData{ _textureID, 0u, _textureType }; }
+    TextureData getData() const noexcept { return TextureData{ _textureID,  _textureType }; }
 
    protected:
-    PBType _pbtype;
+    PBType _pbtype = PBType::COUNT;
     U32 _textureID;
     U16 _width, _height, _depth;
     U32 _pixelBufferHandle;

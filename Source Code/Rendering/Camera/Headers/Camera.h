@@ -33,8 +33,8 @@
 #ifndef _CAMERA_H
 #define _CAMERA_H
 
-#include "Frustum.h"
 #include "CameraSnapshot.h"
+#include "Frustum.h"
 
 #include "Core/Resources/Headers/Resource.h"
 
@@ -78,83 +78,83 @@ class Camera : public Resource {
 
     /// Global rotations are applied relative to the world axis, not the camera's
     virtual void setGlobalRotation(F32 yaw, F32 pitch, F32 roll = 0.0f);
-    inline void setGlobalRotation(const vec3<Angle::DEGREES<F32>>& euler) { setGlobalRotation(euler.yaw, euler.pitch, euler.roll); }
+    void setGlobalRotation(const vec3<Angle::DEGREES<F32>>& euler) { setGlobalRotation(euler.yaw, euler.pitch, euler.roll); }
 
     const mat4<F32>& lookAt(const mat4<F32>& viewMatrix);
     /// Sets the camera's position, target and up directions
     const mat4<F32>& lookAt(const vec3<F32>& eye, const vec3<F32>& target, const vec3<F32>& up);
     /// Sets the camera to point at the specified target point
-    inline const mat4<F32>& lookAt(const vec3<F32>& target) { return lookAt(_data._eye, target); }
-    inline const mat4<F32>& lookAt(const vec3<F32>& eye, const vec3<F32>& target) { return lookAt(eye, target, getUpDir()); }
+    const mat4<F32>& lookAt(const vec3<F32>& target) { return lookAt(_data._eye, target); }
+    const mat4<F32>& lookAt(const vec3<F32>& eye, const vec3<F32>& target) { return lookAt(eye, target, getUpDir()); }
 
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the Euler angles
-    inline void setYaw(Angle::DEGREES<F32> angle) { setRotation(angle, _euler.pitch, _euler.roll); }
+    void setYaw(Angle::DEGREES<F32> angle) { setRotation(angle, _euler.pitch, _euler.roll); }
     /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted values
-    inline void setPitch(Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, angle, _euler.roll); }
+    void setPitch(Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, angle, _euler.roll); }
     /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted values
-    inline void setRoll(Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, _euler.pitch, angle); }
+    void setRoll(Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, _euler.pitch, angle); }
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the Euler angles
-    inline void setGlobalYaw(Angle::DEGREES<F32> angle) { setGlobalRotation(angle, _euler.pitch, _euler.roll); }
+    void setGlobalYaw(Angle::DEGREES<F32> angle) { setGlobalRotation(angle, _euler.pitch, _euler.roll); }
     /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted values
-    inline void setGlobalPitch(Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, angle, _euler.roll); }
+    void setGlobalPitch(Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, angle, _euler.roll); }
     /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted values
-    inline void setGlobalRoll(Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, _euler.pitch, angle); }
+    void setGlobalRoll(Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, _euler.pitch, angle); }
 
-    inline void setEye(F32 x, F32 y, F32 z) noexcept { _data._eye.set(x, y, z); _viewMatrixDirty = true; }
-    inline void setEye(const vec3<F32>& position) noexcept { setEye(position.x, position.y, position.z); }
+    void setEye(F32 x, F32 y, F32 z) noexcept { _data._eye.set(x, y, z); _viewMatrixDirty = true; }
+    void setEye(const vec3<F32>& position) noexcept { setEye(position.x, position.y, position.z); }
 
-    inline void setRotation(const Quaternion<F32>& q) { _data._orientation = q; _viewMatrixDirty = true; }
-    inline void setRotation(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll = 0.0f) { setRotation(Quaternion<F32>(-pitch, -yaw, -roll)); }
+    void setRotation(const Quaternion<F32>& q) { _data._orientation = q; _viewMatrixDirty = true; }
+    void setRotation(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll = 0.0f) { setRotation(Quaternion<F32>(-pitch, -yaw, -roll)); }
 
-    inline void setEuler(const vec3<Angle::DEGREES<F32>>& euler) { setRotation(euler.yaw, euler.pitch, euler.roll); }
+    void setEuler(const vec3<Angle::DEGREES<F32>>& euler) { setRotation(euler.yaw, euler.pitch, euler.roll); }
 
     void setAspectRatio(F32 ratio) noexcept;
-    inline const F32 getAspectRatio() const noexcept { return _data._aspectRatio; }
+    const F32 getAspectRatio() const noexcept { return _data._aspectRatio; }
 
     void setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept;
-    inline const Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
+    const Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
 
     void setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept;
-    inline const Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
+    const Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
         const Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_data._FoV) * 0.5f;
         return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _data._aspectRatio));
     }
 
-    inline const CameraType& type() const noexcept { return _type; }
-    inline const vec3<F32>& getEye() const noexcept { return _data._eye; }
-    inline const vec3<Angle::DEGREES<F32>>& getEuler() const noexcept { return _euler; }
-    inline const Quaternion<F32>& getOrientation() const noexcept { return _data._orientation; }
-    inline const vec2<F32>& getZPlanes() const noexcept { return _data._zPlanes; }
-    inline const vec4<F32>& orthoRect() const noexcept { return _orthoRect; }
-    inline bool isOrthoProjected() const noexcept { return _data._isOrthoCamera; }
+    const CameraType& type() const noexcept { return _type; }
+    const vec3<F32>& getEye() const noexcept { return _data._eye; }
+    const vec3<Angle::DEGREES<F32>>& getEuler() const noexcept { return _euler; }
+    const Quaternion<F32>& getOrientation() const noexcept { return _data._orientation; }
+    const vec2<F32>& getZPlanes() const noexcept { return _data._zPlanes; }
+    const vec4<F32>& orthoRect() const noexcept { return _orthoRect; }
+    bool isOrthoProjected() const noexcept { return _data._isOrthoCamera; }
 
-    inline vec3<F32> getUpDir() const noexcept {
+    vec3<F32> getUpDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(viewMat.m[0][1], viewMat.m[1][1], viewMat.m[2][1]);
     }
 
-    inline vec3<F32> getRightDir() const noexcept {
+    vec3<F32> getRightDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(viewMat.m[0][0], viewMat.m[1][0], viewMat.m[2][0]);
     }
 
-    inline vec3<F32> getForwardDir() const noexcept {
+    vec3<F32> getForwardDir() const noexcept {
         const mat4<F32>& viewMat = getViewMatrix();
         return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
 
-    inline const mat4<F32>& getViewMatrix() const noexcept { return _data._viewMatrix; }
-    inline const mat4<F32>& getViewMatrix() { updateViewMatrix(); return _data._viewMatrix; }
+    const mat4<F32>& getViewMatrix() const noexcept { return _data._viewMatrix; }
+    const mat4<F32>& getViewMatrix() { updateViewMatrix(); return _data._viewMatrix; }
 
-    inline const mat4<F32>& getProjectionMatrix() const noexcept { return _data._projectionMatrix; }
-    inline const mat4<F32>& getProjectionMatrix() { updateProjection(); return _data._projectionMatrix; }
+    const mat4<F32>& getProjectionMatrix() const noexcept { return _data._projectionMatrix; }
+    const mat4<F32>& getProjectionMatrix() { updateProjection(); return _data._projectionMatrix; }
 
-    inline mat4<F32> getWorldMatrix() { return getViewMatrix().getInverse(); }
-    inline mat4<F32> getWorldMatrix() const noexcept { return getViewMatrix().getInverse(); }
-    inline void getWorldMatrix(mat4<F32>& worldMatOut) { getViewMatrix().getInverse(worldMatOut); }
-    inline void getWorldMatrix(mat4<F32>& worldMatOut) const noexcept { getViewMatrix().getInverse(worldMatOut); }
+    mat4<F32> getWorldMatrix() { return getViewMatrix().getInverse(); }
+    mat4<F32> getWorldMatrix() const noexcept { return getViewMatrix().getInverse(); }
+    void getWorldMatrix(mat4<F32>& worldMatOut) { getViewMatrix().getInverse(worldMatOut); }
+    void getWorldMatrix(mat4<F32>& worldMatOut) const noexcept { getViewMatrix().getInverse(worldMatOut); }
 
     /// Nothing really to unload
     virtual bool unload() noexcept { return true; }
@@ -168,21 +168,21 @@ class Camera : public Resource {
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
     /// Get the camera's current frustum
-    inline const Frustum& getFrustum() const noexcept { assert(!_frustumDirty); return _frustum; }
-    inline Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
-    inline void lockFrustum(bool state) noexcept { _frustumLocked = state; }
+    const Frustum& getFrustum() const noexcept { assert(!_frustumDirty); return _frustum; }
+    Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
+    void lockFrustum(bool state) noexcept { _frustumLocked = state; }
 
     /// Get the world space position from the specified screen coordinates
     /// (use winCoords.z for depth from 0 to 1)
     vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const;
-    inline vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const { return unProject(winCoords.x, winCoords.y, winCoords.z, viewport); }
+    vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const { return unProject(winCoords.x, winCoords.y, winCoords.z, viewport); }
     vec2<F32> project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const;
 
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
 
-                  inline void flag(U8 flag)       noexcept { _data._flag = flag; }
-    [[nodiscard]] inline U8   flag()        const noexcept { return _data._flag; }
+                  void flag(U8 flag)       noexcept { _data._flag = flag; }
+    [[nodiscard]] U8   flag()        const noexcept { return _data._flag; }
 
    protected:
     virtual bool updateViewMatrix();
@@ -191,7 +191,7 @@ class Camera : public Resource {
 
     const char* getResourceTypeName() const noexcept override { return "Camera"; }
 
-    inline bool dirty() const noexcept { return _projectionDirty || _viewMatrixDirty || _frustumDirty; }
+    bool dirty() const noexcept { return _projectionDirty || _viewMatrixDirty || _frustumDirty; }
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND

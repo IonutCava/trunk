@@ -3,14 +3,10 @@
 #include "Headers/glUniformBuffer.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferImpl.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glGenericBuffer.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferLockManager.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
-#include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
 #include <iomanip>
@@ -25,7 +21,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 
     _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
 
-    BufferImplParams implParams = {};
+    BufferImplParams implParams;
     implParams._dataSize = _allignedBufferSize * queueLength();
     implParams._elementSize = _elementSize;
     implParams._frequency = _frequency;
@@ -64,8 +60,8 @@ glUniformBuffer::~glUniformBuffer()
     MemoryManager::DELETE(_buffer);
 }
 
-void glUniformBuffer::clearData(U32 offsetElementCount,
-                                U32 rangeElementCount) {
+void glUniformBuffer::clearData(const U32 offsetElementCount,
+                                const U32 rangeElementCount) {
     OPTICK_EVENT();
 
     if (rangeElementCount > 0) {
@@ -89,8 +85,8 @@ void glUniformBuffer::clearData(U32 offsetElementCount,
     }
 }
 
-void glUniformBuffer::readData(U32 offsetElementCount,
-                               U32 rangeElementCount,
+void glUniformBuffer::readData(const U32 offsetElementCount,
+                               const U32 rangeElementCount,
                                bufferPtr result) const {
 
     if (rangeElementCount > 0) {
@@ -114,8 +110,8 @@ void glUniformBuffer::readData(U32 offsetElementCount,
     }
 }
 
-void glUniformBuffer::writeData(U32 offsetElementCount,
-                                U32 rangeElementCount,
+void glUniformBuffer::writeData(const U32 offsetElementCount,
+                                const U32 rangeElementCount,
                                 const bufferPtr data) {
 
     writeBytes(static_cast<ptrdiff_t>(offsetElementCount * _elementSize),
@@ -154,10 +150,10 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
     bufferImpl()->writeData(offsetInBytes, writeRange, reinterpret_cast<Byte*>(data));
 }
 
-bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) {
+bool glUniformBuffer::bindRange(const U8 bindIndex, const U32 offsetElementCount, U32 rangeElementCount) {
     BufferLockEntry data = {};
     data._buffer = bufferImpl();
-    data._flush = BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    data._flush = BitCompare(_flags, Flags::ALLOW_THREADED_WRITES);
 
     if (rangeElementCount == 0) {
         rangeElementCount = _elementCount;
@@ -182,13 +178,13 @@ bool glUniformBuffer::bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeE
     return wasBound;
 }
 
-bool glUniformBuffer::bind(U8 bindIndex) {
+bool glUniformBuffer::bind(const U8 bindIndex) {
     return bindRange(bindIndex, 0, _elementCount);
 }
 
 void glUniformBuffer::onGLInit() {
-    ShaderBuffer::s_boundAlignmentRequirement = GL_API::s_UBOffsetAlignment;
-    ShaderBuffer::s_unboundAlignmentRequirement = GL_API::s_SSBOffsetAlignment;
+    s_boundAlignmentRequirement = GL_API::s_UBOffsetAlignment;
+    s_unboundAlignmentRequirement = GL_API::s_SSBOffsetAlignment;
 }
 
 glBufferImpl* glUniformBuffer::bufferImpl() const {

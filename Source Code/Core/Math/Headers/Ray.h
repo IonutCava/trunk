@@ -61,7 +61,7 @@ class Ray {
     {
     }
 
-    Ray(const Ray &r)
+    Ray(const Ray &r) noexcept
     {
         origin.set(r.origin);
         direction.set(r.direction);
@@ -69,7 +69,7 @@ class Ray {
         memcpy(sign, r.sign, 3 * sizeof(I32));
     }
 
-    Ray& operator=(const Ray &r) {
+    Ray& operator=(const Ray &r) noexcept {
         origin.set(r.origin);
         direction.set(r.direction);
         inv_direction.set(r.inv_direction);
@@ -77,11 +77,11 @@ class Ray {
         return *this;
     }
 
-    inline void identity() {
+    void identity() {
         set(VECTOR3_ZERO, WORLD_Y_AXIS);
     }
 
-    inline void set(const vec3<F32> &o, const vec3<F32> &d) {
+    void set(const vec3<F32> &o, const vec3<F32> &d) {
         origin.set(o);
         direction.set(d);
         inv_direction.set(1.0f / d.x, 1.0f / d.y, 1.0f / d.z);

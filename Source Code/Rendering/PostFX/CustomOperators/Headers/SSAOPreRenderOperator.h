@@ -66,6 +66,7 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     ShaderProgram_ptr _ssaoGenerateShader = nullptr;
     ShaderProgram_ptr _ssaoBlurShader = nullptr;
     Texture_ptr _noiseTexture = nullptr;
+    size_t _noiseSampler = 0;
     RenderTargetHandle _ssaoOutput;
     F32 _radius = 1.0f;
     F32 _power = 1.0f;

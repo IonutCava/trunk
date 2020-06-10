@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Headers/SDLEventListener.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
-typedef struct SDL_Window SDL_Window;
+using SDL_Window = struct SDL_Window;
 
 namespace Divide {
 
@@ -102,9 +102,9 @@ struct WindowDescriptor;
 
 enum class ErrorCode : I8;
 // Platform specific window
-class DisplayWindow : public GUIDWrapper,
-                      public PlatformContextComponent,
-                      public SDLEventListener {
+class DisplayWindow final : public GUIDWrapper,
+                            public PlatformContextComponent,
+                            public SDLEventListener {
 public:
     struct WindowEventArgs {
         I64 _windowGUID = -1;
@@ -127,7 +127,6 @@ protected:
     ~DisplayWindow();
 
 public:
-
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
                    const WindowDescriptor& descriptor);
@@ -199,7 +198,7 @@ public:
     WindowHandle handle() const noexcept;
 
     inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
-    inline void clearEventlisteners(WindowEvent windowEvent);
+    inline void clearEventListeners(WindowEvent windowEvent);
 
     void refreshDrawableSize();
 
@@ -215,7 +214,7 @@ public:
     inline void* userData() const noexcept;
 
     bool grabState() const noexcept;
-    void grabState(bool state) noexcept;
+    void grabState(bool state) const noexcept;
 
     bool onSDLEvent(SDL_Event event) override;
 
@@ -237,22 +236,22 @@ private:
     vec2<U16> _prevDimensions;
     vec2<U16> _drawableSize;
     U32 _flags = 0;
-    Uint32 _windowID;
+    Uint32 _windowID = 0u;
 
     WindowManager& _parent;
-    SDL_Window* _sdlWindow;
+    SDL_Window* _sdlWindow = nullptr;
     void* _userData = nullptr;
 
     /// The current rendering window type
-    WindowType _type;
-    WindowType _previousType;
-    WindowType _queuedType;
+    WindowType _type = WindowType::COUNT;
+    WindowType _previousType = WindowType::COUNT;
+    WindowType _queuedType = WindowType::COUNT;
     U8 _opacity = 255u;
     U8 _prevOpacity = 255u;
     
     /// Did we generate the window move event?
-    bool _internalMoveEvent;
-    bool _internalResizeEvent;
+    bool _internalMoveEvent = false;
+    bool _internalResizeEvent = false;
 
     static I64 s_cursorWindowGUID;
 

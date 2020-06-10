@@ -40,7 +40,7 @@ namespace Divide {
 
 /// glShader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
 /// It can be used simultaneously in multiple programs/pipelines
-class glShader : public GUIDWrapper, public GraphicsResource,  public glObject {
+class glShader final : public GUIDWrapper, public GraphicsResource, public glObject {
    public:
     using ShaderMap = ska::bytell_hash_map<U64, glShader*>;
 
@@ -70,18 +70,18 @@ class glShader : public GUIDWrapper, public GraphicsResource,  public glObject {
 
     bool load(const ShaderLoadData& data);
 
-    inline U32 getProgramHandle() const noexcept { return _programHandle; }
+    U32 getProgramHandle() const noexcept { return _programHandle; }
 
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
-    inline const Str256& name() const noexcept { return _name; }
+    const Str256& name() const noexcept { return _name; }
 
     bool embedsType(ShaderType type) const;
 
-    inline void AddRef() noexcept { _refCount.fetch_add(1); }
+    void AddRef() noexcept { _refCount.fetch_add(1); }
     /// Returns true if ref count reached 0
-    inline bool SubRef() noexcept { return _refCount.fetch_sub(1) == 1; }
-    inline const size_t GetRef() const { return _refCount.load(); }
+    bool SubRef() noexcept { return _refCount.fetch_sub(1) == 1; }
+    const size_t GetRef() const { return _refCount.load(); }
 
    public:
     // ======================= static data ========================= //
@@ -116,8 +116,8 @@ class glShader : public GUIDWrapper, public GraphicsResource,  public glObject {
     /// Remove a define from the shader. The defined must have been added previously
     void removeShaderDefine(const stringImpl& define);
 
-    inline UseProgramStageMask stageMask() const noexcept { return _stageMask;  }
-    inline const eastl::unordered_set<U64>& usedAtoms() const noexcept { return _usedAtoms; }
+    UseProgramStageMask stageMask() const noexcept { return _stageMask;  }
+    const eastl::unordered_set<U64>& usedAtoms() const noexcept { return _usedAtoms; }
 
     PROPERTY_R(bool, valid, false);
     PROPERTY_R_IW(bool, shouldRecompile, false);

@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEXTURE_DATA_H_
 
 #include "RenderAPIEnums.h"
-#include "Core/Headers/Hashable.h"
 
 namespace Divide {
 
@@ -48,7 +47,6 @@ struct CopyTexParams {
 
 struct TextureData {
     U32 _textureHandle = 0u;
-    U32 _samplerHandle = 0u;
     TextureType _textureType = TextureType::COUNT;
 };
 
@@ -58,20 +56,17 @@ FORCE_INLINE bool IsValid(const TextureData& data) noexcept {
 
 FORCE_INLINE bool operator==(const TextureData& lhs, const TextureData& rhs) noexcept {
     return lhs._textureHandle == rhs._textureHandle &&
-           lhs._samplerHandle == rhs._samplerHandle &&
            lhs._textureType == rhs._textureType;
 }
 
 FORCE_INLINE bool operator!=(const TextureData& lhs, const TextureData& rhs) noexcept {
     return lhs._textureHandle != rhs._textureHandle ||
-           lhs._samplerHandle != rhs._samplerHandle ||
            lhs._textureType != rhs._textureType;
 }
 
 inline size_t GetHash(const TextureData& data) noexcept {
     size_t ret = 11;
     Util::Hash_combine(ret, data._textureHandle);
-    Util::Hash_combine(ret, data._samplerHandle);
     Util::Hash_combine(ret, to_base(data._textureType));
     return ret;
 }
@@ -83,18 +78,20 @@ enum class TextureUpdateState : U8 {
     COUNT
 };
 
+using TextureEntry = std::tuple<U8/*binding*/, TextureData, size_t/*sampler*/>;
+
 template<size_t Size = to_size(TextureUsage::COUNT)>
 struct TextureDataContainer {
     static constexpr U8 INVALID_BINDING = std::numeric_limits<U8>::max();
-    static constexpr std::pair<U8, TextureData> DefaultEntry = { INVALID_BINDING, {} };
-    using DataEntries = std::array<std::pair<U8/*binding*/, TextureData>, Size>;
+    static constexpr TextureEntry DefaultEntry = { INVALID_BINDING, {}, 0 };
+    using DataEntries = std::array<TextureEntry, Size>;
     constexpr size_t ContainerSize() noexcept { return Size; }
 
     bool set(const TextureDataContainer& other);
     TextureUpdateState setTextures(const TextureDataContainer& textureEntries);
     TextureUpdateState setTextures(const DataEntries& textureEntries);
-    TextureUpdateState setTexture(const TextureData& data, U8 binding);
-    TextureUpdateState setTexture(const TextureData& data, TextureUsage binding);
+    TextureUpdateState setTexture(const TextureData& data, size_t samplerHash, U8 binding);
+    TextureUpdateState setTexture(const TextureData& data, size_t samplerHash, TextureUsage binding);
 
     bool removeTexture(U8 binding);
     bool removeTexture(const TextureData& data);
@@ -104,7 +101,7 @@ struct TextureDataContainer {
     PROPERTY_RW(U8, count, 0u);
 
 protected:
-    TextureUpdateState setTextureInternal(const TextureData& data, U8 binding);
+    TextureUpdateState setTextureInternal(const TextureData& data, size_t samplerHash, U8 binding);
 
 XALLOCATOR
 };

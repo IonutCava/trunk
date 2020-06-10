@@ -35,27 +35,30 @@
 
 #include "config.h"
 
-#include "GFXState.h"
+#include "ClipPlanes.h"
 #include "GFXRTPool.h"
 #include "GFXShaderData.h"
-#include "CommandBufferPool.h"
+#include "GFXState.h"
+#include "IMPrimitive.h"
 #include "Core/Math/Headers/Line.h"
 
 #include "Core/Headers/KernelComponent.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
-#include "Platform/Video/Headers/RenderStagePass.h"
+#include "Platform/Video/Headers/PushConstants.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Platform/Video/Headers/RenderStagePass.h"
 
 #include "Rendering/Camera/Headers/Frustum.h"
+#include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
 
 class RenderDocManager;
 
 namespace Divide {
+    struct RenderPassParams;
 
-enum class SceneNodeType : U16;
+    enum class SceneNodeType : U16;
 enum class WindowEvent : U8;
 
 class GUI;
@@ -112,13 +115,13 @@ namespace TypeUtil {
     RenderPassType StringToRenderPassType(const char* pass) noexcept;
 };
 
-struct DebugView : public GUIDWrapper {
+struct DebugView final : GUIDWrapper {
     DebugView() noexcept
         : DebugView(-1)
     {
     }
 
-    DebugView(I16 sortIndex) noexcept 
+    explicit DebugView(const I16 sortIndex) noexcept 
         : GUIDWrapper()
         , _sortIndex(to_I16(sortIndex))
     {
@@ -128,6 +131,7 @@ struct DebugView : public GUIDWrapper {
     stringImpl _name;
     ShaderProgram_ptr _shader = nullptr;
     Texture_ptr _texture = nullptr;
+    size_t _samplerHash = 0;
     I16 _groupID = -1;
     I16 _sortIndex = -1;
     U8 _textureBindSlot = 0u;
@@ -149,17 +153,9 @@ struct DebugPrimitiveHandler
         reset();
     }
 
-    inline void reset() {
-        for (IMPrimitive*& primitive : _debugPrimitives) {
-            if (primitive != nullptr) {
-                primitive->context().destroyIMP(primitive);
-            }
-        }
-        _Id.store(0u);
-        _debugPrimitives.fill(nullptr);
-    }
+    void reset();
 
-    inline void add(Data&& data) {
+    void add(Data&& data) {
         if (_Id.load() == N) {
             return;
         }
@@ -172,9 +168,8 @@ struct DebugPrimitiveHandler
     std::atomic_uint _Id;
 };
 
-/// Rough around the edges Adapter pattern abstracting the actual rendering API
-/// and access to the GPU
-class GFXDevice : public KernelComponent, public PlatformContextComponent {
+/// Rough around the edges Adapter pattern abstracting the actual rendering API and access to the GPU
+class GFXDevice final : public KernelComponent, public PlatformContextComponent {
     friend class Attorney::GFXDeviceAPI;
     friend class Attorney::GFXDeviceGUI;
     friend class Attorney::GFXDeviceKernel;
@@ -245,7 +240,7 @@ public:  // GPU interface
     ErrorCode postInitRenderingAPI();
     void closeRenderingAPI();
 
-    void idle();
+    void idle() const;
     void beginFrame(DisplayWindow& window, bool global);
     void endFrame(DisplayWindow& window, bool global);
 
@@ -259,26 +254,19 @@ public:  // GPU interface
     /// Generate a cubemap from the given position
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
-    void generateCubeMap(
-        RenderTargetID cubeMap,
-        const U16 arrayOffset,
-        const vec3<F32>& pos,
-        const vec2<F32>& zPlanes,
-        RenderStagePass stagePass,
-        GFX::CommandBuffer& commandsInOut,
-        std::array<Camera*, 6>& cameras,
-        bool disableShadowMaps = true,
-        SceneGraphNode* sourceNode = nullptr);
+    void generateCubeMap(RenderPassParams& params,
+                         const U16 arrayOffset,
+                         const vec3<F32>& pos,
+                         const vec2<F32>& zPlanes,
+                         GFX::CommandBuffer& commandsInOut,
+                         std::array<Camera*, 6>& cameras);
 
-    void generateDualParaboloidMap(RenderTargetID targetBuffer,
-        const U16 arrayOffset,
-        const vec3<F32>& pos,
-        const vec2<F32>& zPlanes,
-        RenderStagePass stagePass,
-        GFX::CommandBuffer& commandsInOut,
-        std::array<Camera*, 2>& cameras,
-        bool disableShadowMaps = true,
-        SceneGraphNode* sourceNode = nullptr);
+    void generateDualParaboloidMap(RenderPassParams& params,
+                                   const U16 arrayOffset,
+                                   const vec3<F32>& pos,
+                                   const vec2<F32>& zPlanes,
+                                   GFX::CommandBuffer& commandsInOut,
+                                   std::array<Camera*, 2>& cameras);
 
     /// Access (Read Only) rendering data used by the GFX
     inline const GFXShaderData::GPUData& renderingData() const noexcept;
@@ -294,7 +282,7 @@ public:  // GPU interface
     inline const vec2<U16>& renderingResolution() const noexcept;
 
     /// Switch between fullscreen rendering
-    void toggleFullScreen();
+    void toggleFullScreen() const;
     void increaseResolution();
     void decreaseResolution();
 
@@ -302,7 +290,7 @@ public:  // GPU interface
     void setShadowMSAASampleCount(ShadowType type, U8 sampleCount);
 
     /// Save a screenshot in TGA format
-    void Screenshot(const stringImpl& filename);
+    void screenshot(const stringImpl& filename) const;
 
     ShaderComputeQueue& shaderComputeQueue();
     const ShaderComputeQueue& shaderComputeQueue() const;
@@ -338,13 +326,13 @@ public:  // Accessors and Mutators
     inline F32 getFrameDurationGPU() const noexcept;
     inline vec2<U16> getDrawableSize(const DisplayWindow& window) const;
     inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
-    inline void onThreadCreated(const std::thread::id& threadID);
+    inline void onThreadCreated(const std::thread::id& threadID) const;
 
     static void setFrameInterpolationFactor(const D64 interpolation) noexcept { s_interpolationFactor = interpolation; }
     static D64 getFrameInterpolationFactor() noexcept { return s_interpolationFactor; }
-    static void setGPUVendor(GPUVendor gpuvendor) noexcept { s_GPUVendor = gpuvendor; }
+    static void setGPUVendor(GPUVendor gpuVendor) noexcept { s_GPUVendor = gpuVendor; }
     static GPUVendor getGPUVendor() noexcept { return s_GPUVendor; }
-    static void setGPURenderer(GPURenderer gpurenderer) noexcept { s_GPURenderer = gpurenderer; }
+    static void setGPURenderer(GPURenderer gpuRenderer) noexcept { s_GPURenderer = gpuRenderer; }
     static GPURenderer getGPURenderer() noexcept { return s_GPURenderer; }
 
 public:
@@ -390,7 +378,7 @@ public:
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
 
     // Render the texture using a custom viewport
-    void drawTextureInViewport(TextureData data, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut);
+    void drawTextureInViewport(TextureData data, const size_t samplerHash, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut);
 
     void blurTarget(RenderTargetHandle& blurSource, 
                     RenderTargetHandle& blurBuffer,
@@ -435,12 +423,13 @@ protected:
     void occlusionCull(const RenderStagePass& stagePass,
                        const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
+                       const size_t samplerHash,
                        const Camera& camera,
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
-                       GFX::CommandBuffer& bufferInOut);
+                       GFX::CommandBuffer& bufferInOut) const;
 
     // Returns the HiZ texture that can be sent directly to occlusionCull
-    const Texture_ptr& constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut);
+    std::pair<const Texture_ptr&, size_t> constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut);
 
     void updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut);
 
@@ -550,7 +539,6 @@ private:
 
 namespace Attorney {
     class GFXDeviceGUI {
-    private:
         static void drawText(const GFXDevice& device, const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bufferInOut) {
             return device.drawText(cmd, bufferInOut);
         }
@@ -564,7 +552,6 @@ namespace Attorney {
     };
 
     class GFXDeviceKernel {
-    private:
         static bool onSizeChange(GFXDevice& device, const SizeChangeParams& params) {
             return device.onSizeChange(params);
         }
@@ -574,7 +561,6 @@ namespace Attorney {
     };
 
     class GFXDeviceGraphicsResource {
-       private:
        static void onResourceCreate(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
            UniqueLock<Mutex> w_lock(device._graphicsResourceMutex);
            device._graphicResources.emplace_back(type, GUID, nameHash);
@@ -599,7 +585,6 @@ namespace Attorney {
     };
 
     class GFXDeviceGFXRTPool {
-        private:
         static RenderTarget* newRT(GFXDevice& device, const RenderTargetDescriptor& descriptor) {
             return device.newRT(descriptor);
         };

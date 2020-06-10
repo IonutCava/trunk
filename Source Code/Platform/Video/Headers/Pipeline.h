@@ -33,11 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PIPELINE_H_
 #define _PIPELINE_H_
 
-#include "PushConstants.h"
-#include "DescriptorSets.h"
 #include "Core/Headers/Hashable.h"
-#include "Utility/Headers/TextLabel.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
@@ -62,7 +58,7 @@ enum class MemoryBarrierType : U32 {
     COUNT = 15
 };
 
-struct PipelineDescriptor : public Hashable {
+struct PipelineDescriptor final : Hashable {
     size_t getHash() const noexcept override;
     bool operator==(const PipelineDescriptor& other) const;
     bool operator!=(const PipelineDescriptor& other) const;
@@ -74,33 +70,33 @@ struct PipelineDescriptor : public Hashable {
 
 class Pipeline {
 public:
-    Pipeline(const PipelineDescriptor& descriptor);
+    explicit Pipeline(const PipelineDescriptor& descriptor);
 
-    inline I64 shaderProgramHandle() const noexcept {
+    I64 shaderProgramHandle() const noexcept {
         return _descriptor._shaderProgramHandle;
     }
 
-    inline const PipelineDescriptor& descriptor() const noexcept {
+    const PipelineDescriptor& descriptor() const noexcept {
         return _descriptor;
     }
 
-    inline size_t stateHash() const noexcept {
+    size_t stateHash() const noexcept {
         return _descriptor._stateHash;
     }
 
-    inline U8 multiSampleCount() const noexcept {
+    U8 multiSampleCount() const noexcept {
         return _descriptor._multiSampleCount;
     }
 
-    inline size_t getHash() const noexcept {
+    size_t getHash() const noexcept {
         return _cachedHash;
     }
 
-    inline bool operator==(const Pipeline& other) const noexcept {
+    bool operator==(const Pipeline& other) const noexcept {
         return _cachedHash == other._cachedHash;
     }
 
-    inline bool operator!=(const Pipeline& other) const noexcept {
+    bool operator!=(const Pipeline& other) const noexcept {
         return _cachedHash != other._cachedHash;
     }
 

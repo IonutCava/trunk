@@ -2,28 +2,23 @@
 
 #include "Headers/DebugInterface.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
 DebugInterface::DebugInterface(Kernel& parent) noexcept
-    : KernelComponent(parent),
-      _enabled(false)
-{
-}
-
-DebugInterface::~DebugInterface()
+    : KernelComponent(parent)
 {
 }
 
 void DebugInterface::idle() {
-    if (!Config::Profile::BENCHMARK_PERFORMANCE && !Config::Profile::ENABLE_FUNCTION_PROFILING) {
+    if_constexpr (!Config::Profile::BENCHMARK_PERFORMANCE && !Config::Profile::ENABLE_FUNCTION_PROFILING) {
         return;
     }
 

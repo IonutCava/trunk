@@ -2,19 +2,18 @@
 
 #include "Headers/WindowManager.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Utility/Headers/Localization.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
  
 
 namespace {
     
-    SDL_SystemCursor CursorToSDL(CursorStyle style) noexcept {
+    SDL_SystemCursor CursorToSDL(const CursorStyle style) noexcept {
         switch (style) {
             case CursorStyle::ARROW: return SDL_SYSTEM_CURSOR_ARROW;
             case CursorStyle::HAND: return SDL_SYSTEM_CURSOR_HAND;
@@ -25,12 +24,13 @@ namespace {
             case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
             case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
             case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
+            default: break;
         };
 
         return SDL_SYSTEM_CURSOR_NO;
     }
 
-    bool validate(I32 errCode) {
+    bool Validate(const I32 errCode) {
         if (errCode != 0) {
             Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
             return false;
@@ -39,8 +39,8 @@ namespace {
         return true;
     };
 
-    bool validateAssert(I32 errCode) {
-        if (!validate(errCode)) {
+    bool ValidateAssert(const I32 errCode) {
+        if (!Validate(errCode)) {
             assert(errCode == 0);
             return false;
         }
@@ -52,10 +52,7 @@ namespace {
 
 hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
 
-WindowManager::WindowManager()  noexcept 
-   : _apiFlags(0),
-     _mainWindowGUID(-1),
-     _context(nullptr)
+WindowManager::WindowManager()  noexcept
 {
     SDL_Init(SDL_INIT_VIDEO);
 }
@@ -65,18 +62,18 @@ WindowManager::~WindowManager()
     close();
 }
 
-vec2<U16> WindowManager::getFullscreenResolution() const noexcept {
+vec2<U16> WindowManager::GetFullscreenResolution() noexcept {
     const SysInfo& systemInfo = sysInfo();
     return vec2<U16>(systemInfo._systemResolutionWidth,
                      systemInfo._systemResolutionHeight);
 }
 
 ErrorCode WindowManager::init(PlatformContext& context,
-                              RenderAPI renderingAPI,
+                              const RenderAPI renderingAPI,
                               const vec2<I16>& initialPosition,
                               const vec2<U16>& initialSize,
-                              WindowMode windowMode,
-                              I32 targetDisplayIndex)
+                              const WindowMode windowMode,
+                              const I32 targetDisplayIndex)
 {
     if (!_monitors.empty()) {
         // Double init
@@ -116,7 +113,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     systemInfo._systemResolutionWidth = displayMode.w;
     systemInfo._systemResolutionHeight = displayMode.h;
 
-    _apiFlags = createAPIFlags(renderingAPI);
+    _apiFlags = CreateAPIFlags(renderingAPI);
 
 
     WindowDescriptor descriptor = {};
@@ -216,7 +213,7 @@ void WindowManager::close() {
     }
     MemoryManager::DELETE_CONTAINER(_windows);
 
-    for (auto it : s_cursors) {
+    for (const auto it : s_cursors) {
         SDL_FreeCursor(it.second);
     }
     s_cursors.clear();
@@ -299,8 +296,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
             params.winGUID = args._windowGUID;
 
             // Only if rendering window
-            _context->app().onSizeChange(params);
-            return true;
+            return _context->app().onSizeChange(params);
         });
 
         if (!descriptor.externalClose) {
@@ -365,7 +361,7 @@ bool WindowManager::anyWindowFocus() const noexcept {
     return getFocusedWindow() != nullptr;
 }
 
-U32 WindowManager::createAPIFlags(RenderAPI api) noexcept {
+U32 WindowManager::CreateAPIFlags(const RenderAPI api) noexcept {
     if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES) {
         return SDL_WINDOW_OPENGL;
     } 
@@ -373,18 +369,19 @@ U32 WindowManager::createAPIFlags(RenderAPI api) noexcept {
     return 0u;
 }
 
-void WindowManager::destroyAPISettings(DisplayWindow* window) noexcept {
+void WindowManager::DestroyAPISettings(DisplayWindow* window) noexcept {
     if (!window || !BitCompare(SDL_GetWindowFlags(window->getRawWindow()), to_U32(SDL_WINDOW_OPENGL))) {
         return;
     }
 
     if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
-        SDL_GL_DeleteContext((SDL_GLContext)window->_userData);
+        SDL_GL_DeleteContext(static_cast<SDL_GLContext>(window->_userData));
         window->_userData = nullptr;
     }
 }
 
-ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags) {
+ErrorCode WindowManager::configureAPISettings(const RenderAPI api, const U16 descriptorFlags) const
+{
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
 
     if_constexpr (Config::ENABLE_GPU_VALIDATION) {
@@ -394,48 +391,49 @@ ErrorCode WindowManager::configureAPISettings(RenderAPI api, U16 descriptorFlags
             OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
         }
     }
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, OpenGLFlags));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
 
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1));
     // 32Bit RGBA (R8G8B8A8), 24bit Depth, 8bit Stencil
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
-    validateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
+    ValidateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
 
     if (!Config::ENABLE_GPU_VALIDATION || !_context->config().debug.enableRenderAPIDebugging) {
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
     }
 
     // OpenGL ES is not yet supported, but when added, it will need to mirror
     // OpenGL functionality 1-to-1
     if (api == RenderAPI::OpenGLES) {
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1));
     } else {
-        validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
+        Validate(SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4));
         if (SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6) != 0) {
-            validateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
+            ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5));
         }
     }
 
     if (BitCompare(descriptorFlags, to_base(WindowDescriptor::Flags::SHARE_CONTEXT))) {
-        validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), (SDL_GLContext)mainWindow()->userData()));
+        Validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), static_cast<SDL_GLContext>(mainWindow()->userData())));
     } else {
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
-        validateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1));
+        ValidateAssert(SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1));
     }
 
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorFlags) {
+ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorFlags) const
+{
     // Create a context and make it current
     if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {
         window->_userData = SDL_GL_CreateContext(window->getRawWindow());
@@ -450,7 +448,7 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
         return ErrorCode::OGL_OLD_HARDWARE;
     }
 
-    validate(SDL_GL_MakeCurrent(window->getRawWindow(), (SDL_GLContext)window->userData()));
+    Validate(SDL_GL_MakeCurrent(window->getRawWindow(), static_cast<SDL_GLContext>(window->userData())));
 
     if (BitCompare(window->_flags, WindowFlags::VSYNC)) {
         // Vsync is toggled on or off via the external config file
@@ -469,12 +467,12 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorF
     }
 
     // Switch back to the main render context
-    validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), (SDL_GLContext)mainWindow()->userData()));
+    Validate(SDL_GL_MakeCurrent(mainWindow()->getRawWindow(), static_cast<SDL_GLContext>(mainWindow()->userData())));
 
     return ErrorCode::NO_ERR;
 }
 
-void WindowManager::captureMouse(bool state) noexcept {
+void WindowManager::CaptureMouse(const bool state) noexcept {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 
@@ -495,7 +493,7 @@ bool WindowManager::setCursorPosition(I32 x, I32 y) {
     return true;
 }
 
-bool WindowManager::SetGlobalCursorPosition(I32 x, I32 y) {
+bool WindowManager::SetGlobalCursorPosition(I32 x, I32 y) noexcept {
     if (x == -1) {
         x = SDL_WINDOWPOS_CENTERED;
     }
@@ -506,11 +504,11 @@ bool WindowManager::SetGlobalCursorPosition(I32 x, I32 y) {
     return SDL_WarpMouseGlobal(x, y) == 0;
 }
 
-void WindowManager::SetCursorStyle(CursorStyle style) {
+void WindowManager::SetCursorStyle(const CursorStyle style) {
     SDL_SetCursor(s_cursors[style]);
 }
 
-void WindowManager::ToggleRelativeMouseMode(bool state) noexcept {
+void WindowManager::ToggleRelativeMouseMode(const bool state) noexcept {
     const I32 result = SDL_SetRelativeMouseMode(state ? SDL_TRUE : SDL_FALSE);
     assert(result != -1);
     ACKNOWLEDGE_UNUSED(result);

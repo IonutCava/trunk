@@ -33,6 +33,13 @@
 #ifndef _PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
 #define _PLATFORM_VIDEO_OPENGLS_PROGRAM_H_
 
+#include "glShaderProgram.h"
+#include "AI/ActionInterface/Headers/AIProcessor.h"
+#include "GLIM/Declarations.h"
+#include "GLIM/Declarations.h"
+#include "GLIM/Declarations.h"
+#include "GLIM/Declarations.h"
+#include "GLIM/Declarations.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
@@ -81,8 +88,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void UploadPushConstants(const PushConstants& constants);
 
     static void onAtomChange(std::string_view atomName, FileUpdateEvent evt);
-    static const stringImpl& shaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vectorEASTL<Str64>& foundAtoms, bool& wasParsed);
-    static const stringImpl& shaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, U32 level, vectorEASTL<Str64>& foundAtoms, bool& wasParsed);
+    static const stringImpl& ShaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed);
+    static const stringImpl& ShaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed);
 
     static void shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut);
     static void shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode);
@@ -93,14 +100,14 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                                          bool lock);
    protected:
     /// return a list of atom names
-    vectorEASTL<Str64> loadSourceCode(ShaderType stage,
-                                      const Str128& stageName,
-                                      const Str8& extension,
-                                      const stringImpl& header,
-                                      size_t definesHash,
-                                      U32 lineOffset,
-                                      bool reloadExisting,
-                                      std::pair<bool, stringImpl>& sourceCodeOut);
+    vectorEASTL<Str64> loadSourceCode(
+        const Str128& stageName,
+        const Str8& extension,
+        const stringImpl& header,
+        size_t definesHash,
+        U32 lineOffset,
+        bool reloadExisting,
+        std::pair<bool, stringImpl>& sourceCodeOut) const;
 
     bool rebindStages();
     void validatePreBind();
@@ -147,7 +154,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
 namespace Attorney {
     class GLAPIShaderProgram {
-    private:
         static void setGlobalLineOffset(U32 offset) {
             glShaderProgram::_lineOffset.fill(offset);
         }

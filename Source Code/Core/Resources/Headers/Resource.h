@@ -111,13 +111,14 @@ public:
     virtual bool load();
     virtual bool unload();
 
-    inline stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
+    stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
     void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);
 
 protected:
     void setState(ResourceState currentState) noexcept override;
-    virtual const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
+    const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
     void flushStateCallbacks();
+
 protected:
     using CallbackList = vectorEASTL<DELEGATE<void, CachedResource*>>;
     std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;

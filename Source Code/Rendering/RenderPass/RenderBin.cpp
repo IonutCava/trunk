@@ -2,14 +2,12 @@
 
 #include "Headers/RenderBin.h"
 
-#include "Utility/Headers/Localization.h"
-#include "Graphs/Headers/SceneGraphNode.h"
-#include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Material/Headers/Material.h"
-#include "Platform/Video/Headers/GFXDevice.h"
-#include "Managers/Headers/RenderPassManager.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "Geometry/Material/Headers/Material.h"
+#include "Graphs/Headers/SceneGraphNode.h"
+#include "Managers/Headers/RenderPassManager.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
@@ -17,23 +15,19 @@ namespace {
     constexpr U32 AVERAGE_BIN_SIZE = 127;
 };
 
-RenderBin::RenderBin(RenderBinType rbType) : _rbType(rbType)
+RenderBin::RenderBin(const RenderBinType rbType) : _rbType(rbType)
 {
     for (RenderBinStack& stack : _renderBinStack) {
         stack.reserve(AVERAGE_BIN_SIZE);
     }
 }
 
-RenderBin::~RenderBin()
-{
-}
-
-const RenderBinItem& RenderBin::getItem(RenderStage stage, U16 index) const {
+const RenderBinItem& RenderBin::getItem(const RenderStage stage, const U16 index) const {
     assert(index < _renderBinStack[to_base(stage)].size());
     return _renderBinStack[to_base(stage)][index];
 }
 
-void RenderBin::sort(RenderStage stage, RenderingOrder renderOrder) {
+void RenderBin::sort(const RenderStage stage, const RenderingOrder renderOrder) {
     OPTICK_EVENT();
 
     RenderBinStack& stack = _renderBinStack[to_U8(stage)];

@@ -90,7 +90,7 @@ vectorEASTL<T, A> convert(const vectorEASTL<U, A>& data) {
 template<typename Cont, typename It>
 auto ToggleIndices(Cont& cont, It beg, It end) -> decltype(eastl::end(cont))
 {
-    int helpIndx(0);
+    int helpIndx = 0;
     return eastl::stable_partition(eastl::begin(cont), eastl::end(cont),
         [&](decltype(*eastl::begin(cont)) const & val) -> bool {
             return eastl::find(beg, end, helpIndx++) == end;
@@ -113,13 +113,13 @@ void EraseIndices(Cont& cont, IndCont& indices) {
 //ref: https://stackoverflow.com/questions/7571937/how-to-delete-items-from-a-stdvector-given-a-list-of-indices
 
 template<typename T, typename A>
-inline vectorEASTL<T, A> erase_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */) {
+vectorEASTL<T, A> erase_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */) {
     eastl::sort(eastl::begin(indicesToDelete), eastl::end(indicesToDelete));
     return erase_sorted_indices(data, indicesToDelete);
 }
 
 template<typename T, typename A>
-inline vectorEASTL<T, A> erase_sorted_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+vectorEASTL<T, A> erase_sorted_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
@@ -129,10 +129,9 @@ inline vectorEASTL<T, A> erase_sorted_indices(const vectorEASTL<T, A>& data, vec
     ret.reserve(data.size() - indicesToDelete.size());
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorEASTL<T, A>::const_iterator itBlockBegin = eastl::cbegin(data);
-    vectorEASTL<T, A>::const_iterator itBlockEnd;
+    typename vectorEASTL<T, A>::const_iterator itBlockBegin = eastl::cbegin(data);
     for (size_t it : indicesToDelete) {
-        itBlockEnd = eastl::cbegin(data) + it;
+        typename vectorEASTL<T, A>::const_iterator itBlockEnd = eastl::cbegin(data) + it;
         if (itBlockBegin != itBlockEnd) {
             eastl::copy(itBlockBegin, itBlockEnd, eastl::back_inserter(ret));
         }
@@ -148,14 +147,14 @@ inline vectorEASTL<T, A> erase_sorted_indices(const vectorEASTL<T, A>& data, vec
 }
 
 template<typename T, typename A1, typename A2>
-inline vectorEASTL<T, A1> erase_indices(const vectorEASTL<T, A1>& data, vectorEASTL<size_t, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+vectorEASTL<T, A1> erase_indices(const vectorEASTL<T, A1>& data, vectorEASTL<size_t, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     eastl::sort(eastl::begin(indicesToDelete), eastl::end(indicesToDelete));
     return erase_sorted_indices(data, indicesToDelete);
 }
 
 template<typename T, typename A1, typename A2>
-inline vectorEASTL<T, A1> erase_sorted_indices(const vectorEASTL<T, A1>& data, vectorEASTL<size_t, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
+vectorEASTL<T, A1> erase_sorted_indices(const vectorEASTL<T, A1>& data, vectorEASTL<size_t, A2>& indicesToDelete/* can't assume copy elision, don't pass-by-value */)
 {
     if (indicesToDelete.empty()) {
         return data;
@@ -166,10 +165,9 @@ inline vectorEASTL<T, A1> erase_sorted_indices(const vectorEASTL<T, A1>& data, v
     ret.reserve(data.size() - indicesToDelete.size());
 
     // new we can assume there is at least 1 element to delete. copy blocks at a time.
-    vectorEASTL<T, A1>::const_iterator itBlockBegin = eastl::cbegin(data);
-    vectorEASTL<T, A1>::const_iterator itBlockEnd;
+    typename vectorEASTL<T, A1>::const_iterator itBlockBegin = eastl::cbegin(data);
     for (size_t it : indicesToDelete) {
-        itBlockEnd = eastl::cbegin(data) + it;
+        typename vectorEASTL<T, A1>::const_iterator itBlockEnd = eastl::cbegin(data) + it;
         if (itBlockBegin != itBlockEnd) {
             eastl::copy(itBlockBegin, itBlockEnd, eastl::back_inserter(ret));
         }

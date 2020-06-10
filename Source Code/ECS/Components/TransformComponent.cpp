@@ -63,11 +63,6 @@ namespace Divide {
         });
     }
 
-    TransformComponent::~TransformComponent()
-    {
-        
-    }
-
     void TransformComponent::onParentTransformDirty(U32 transformMask) noexcept {
         if (transformMask != to_base(TransformType::NONE)) {
             setTransformDirty(transformMask);
@@ -243,30 +238,30 @@ namespace Divide {
         setTransformDirty(TransformType::ROTATION);
     }
 
-    void TransformComponent::setScaleX(const F32 ammount) {
+    void TransformComponent::setScaleX(const F32 amount) {
         {
             UniqueLock<SharedMutex> w_lock(_lock);
-            _transformInterface.setScaleX(ammount);
+            _transformInterface.setScaleX(amount);
             _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
     }
 
-    void TransformComponent::setScaleY(const F32 ammount) {
+    void TransformComponent::setScaleY(const F32 amount) {
         {
             UniqueLock<SharedMutex> w_lock(_lock);
-            _transformInterface.setScaleY(ammount);
+            _transformInterface.setScaleY(amount);
             _uniformScaled = _transformInterface.isUniformScale();
         }
 
         setTransformDirty(TransformType::SCALE);
     }
 
-    void TransformComponent::setScaleZ(const F32 ammount) {
+    void TransformComponent::setScaleZ(const F32 amount) {
         {
             UniqueLock<SharedMutex> w_lock(_lock);
-            _transformInterface.setScaleZ(ammount);
+            _transformInterface.setScaleZ(amount);
             _uniformScaled = _transformInterface.isUniformScale();
         }
 

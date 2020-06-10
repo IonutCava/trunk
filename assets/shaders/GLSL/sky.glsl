@@ -6,6 +6,8 @@ void main(void){
     computeData(fetchInputData());
 
     VAR._vertexW += vec4(dvd_cameraPosition.xyz, 0.0f);
+    //setClipPlanes();
+
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     gl_Position = VAR._vertexWVP;
@@ -22,6 +24,8 @@ layout(binding = TEXTURE_UNIT1) uniform samplerCubeArray texSkyNight;
 uniform vec3 dvd_sunDirection;
 uniform vec3 dvd_nightSkyColour;
 uniform ivec2 dvd_useSkyboxes;
+uniform uint dvd_raySteps = 16;
+
 uniform vec4 dvd_atmosphereData[3];
 
 #define dvd_sunIntensity  dvd_atmosphereData[0].x
@@ -43,8 +47,8 @@ uniform vec4 dvd_atmosphereData[3];
 #include "output.frag"
 
 #define PI 3.141592
-#define iSteps 16
-#define jSteps 8
+#define iSteps dvd_raySteps
+#define jSteps int(dvd_raySteps * 0.5f)
 
 vec3 ray_dir_from_uv(vec2 uv) {
     vec3 dir;
@@ -76,6 +80,7 @@ vec2 uv_from_ray_dir(vec3 dir) {
 
     return uv;
 }
+
 //ref: https://github.com/wwwtyro/glsl-atmosphere
 vec2 rsi(vec3 r0, vec3 rd, float sr) {
     // ray-sphere intersection that assumes

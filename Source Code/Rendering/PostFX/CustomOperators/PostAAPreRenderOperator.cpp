@@ -29,10 +29,9 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         sampler.anisotropyLevel(0);
 
         TextureDescriptor weightsDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-        weightsDescriptor.samplerDescriptor(sampler);
 
         vectorEASTL<RTAttachmentDescriptor> att = {
-            { weightsDescriptor, RTAttachmentType::Colour }
+            { weightsDescriptor, sampler.getHash(), RTAttachmentType::Colour }
         };
 
         desc._name = "SMAAWeights";
@@ -108,9 +107,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         });
     }
     { //SMAA Textures
-        SamplerDescriptor textureSampler = {};
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
-        textureDescriptor.samplerDescriptor(textureSampler);
         textureDescriptor.srgb(false);
 
         ResourceDescriptor searchDescriptor("SMAA_Search");
@@ -169,7 +166,8 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
         }
     }
 
-    const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
+    const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
+    const TextureData screenTex = screenAtt.texture()->data();
 
     if (useSMAA()) {
         { //Step 1: Compute weights
@@ -187,14 +185,15 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
             beginRenderPassCmd._name = "DO_SMAA_WEIGHT_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-            const TextureData edgesTex = _parent.edgesRT()._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+            const auto& att = _parent.edgesRT()._rt->getAttachment(RTAttachmentType::Colour, 0);
+            const TextureData edgesTex = att.texture()->data();
             const TextureData areaTex = _areaTexture->data();
             const TextureData searchTex = _searchTexture->data();
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(edgesTex, TextureUsage::UNIT0);
-            descriptorSetCmd._set._textureData.setTexture(areaTex, TextureUsage::UNIT1);
-            descriptorSetCmd._set._textureData.setTexture(searchTex, to_U8(TextureUsage::UNIT1) + 1);
+            descriptorSetCmd._set._textureData.setTexture(edgesTex, att.samplerHash(),TextureUsage::UNIT0);
+            descriptorSetCmd._set._textureData.setTexture(areaTex, SamplerDescriptor::s_defaultHashValue, TextureUsage::UNIT1);
+            descriptorSetCmd._set._textureData.setTexture(searchTex, SamplerDescriptor::s_defaultHashValue, to_U8(TextureUsage::UNIT1) + 1);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaWeightPipeline });
@@ -211,11 +210,12 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
             beginRenderPassCmd._name = "DO_SMAA_BLEND_PASS";
             GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-            const TextureData blendTex = _smaaWeights._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+            const auto& att = _smaaWeights._rt->getAttachment(RTAttachmentType::Colour, 0);
+            const TextureData blendTex = att.texture()->data();
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
-            descriptorSetCmd._set._textureData.setTexture(blendTex, TextureUsage::UNIT1);
+            descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
+            descriptorSetCmd._set._textureData.setTexture(blendTex, att.samplerHash(),TextureUsage::UNIT1);
             GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaBlendPipeline });
@@ -237,7 +237,7 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
         GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+        descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);

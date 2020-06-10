@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <model>Bob.md5mesh</model>
+<MESH/>
 <TRANSFORM>
     <Transform>
         <position x="144" y="15" z="0"/>
@@ -17,4 +18,3 @@
 </RENDERING>
 <NETWORKING/>
 <SELECTION/>
-<MESH/>

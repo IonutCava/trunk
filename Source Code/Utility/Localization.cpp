@@ -70,7 +70,7 @@ ErrorCode LanguageData::changeLanguage(std::string_view newLanguage) {
     return ErrorCode::NO_ERR;
 }
 
-const char* LanguageData::get(U64 key, const char* defaultValue) {
+const char* LanguageData::get(const U64 key, const char* defaultValue) {
     // When we ask for a string for the given key, we check our language cache first
     const auto& entry = _languageTable.find(key);
     if (entry != std::cend(_languageTable)) {
@@ -84,7 +84,7 @@ const char* LanguageData::get(U64 key, const char* defaultValue) {
 }
 
 ErrorCode init(const char* newLanguage) {
-    if (!Config::Build::IS_SHIPPING_BUILD && Config::ENABLE_LOCALE_FILE_WATCHER) {
+    if_constexpr (!Config::Build::IS_SHIPPING_BUILD && Config::ENABLE_LOCALE_FILE_WATCHER) {
         if (!detail::g_LanguageFileWatcher) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
             detail::g_fileWatcherListener.addIgnoredEndCharacter('~');
@@ -118,7 +118,7 @@ ErrorCode changeLanguage(const char* newLanguage) {
     return detail::g_data->changeLanguage(newLanguage);
 }
 
-const char* get(U64 key, const char* defaultValue) {
+const char* get(const U64 key, const char* defaultValue) {
     if (detail::g_data) {
         return detail::g_data->get(key, defaultValue);
     }
@@ -126,7 +126,7 @@ const char* get(U64 key, const char* defaultValue) {
     return defaultValue;
 }
 
-const char* get(U64 key) {
+const char* get(const U64 key) {
     return get(key, "key not found");
 }
 

@@ -32,7 +32,6 @@
 #ifndef _AESOP_ACTION_INTERFACE_H_
 #define _AESOP_ACTION_INTERFACE_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 
 #include <CPPGoap/Planner.h>
 #include <CPPGoap/Action.h>

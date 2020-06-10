@@ -34,8 +34,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SHADER_BUFFER_H_
 
 #include "Core/Headers/RingBuffer.h"
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
 
@@ -65,7 +65,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
        };
 
    public:
-    explicit ShaderBuffer(GFXDevice& context, const ShaderBufferDescriptor& params);
+    explicit ShaderBuffer(GFXDevice& context, const ShaderBufferDescriptor& descriptor);
 
     virtual ~ShaderBuffer();
 
@@ -93,26 +93,26 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     /// Bind return false if the buffer was already bound
     virtual bool bind(U8 bindIndex) = 0;
 
-    inline bool bind(ShaderBufferLocation bindIndex) {
+    bool bind(const ShaderBufferLocation bindIndex) {
         return bind(to_U8(bindIndex));
     }
 
-    inline bool bindRange(ShaderBufferLocation bindIndex,
-                          U32 offsetElementCount,
-                          U32 rangeElementCount) {
+    bool bindRange(const ShaderBufferLocation bindIndex,
+                   const U32 offsetElementCount,
+                   const U32 rangeElementCount) {
         return bindRange(to_U8(bindIndex),
                          offsetElementCount,
                          rangeElementCount);
     }
 
-    inline U32 getPrimitiveCount() const noexcept { return _elementCount; }
-    inline size_t getPrimitiveSize() const noexcept { return _elementSize; }
+    U32 getPrimitiveCount() const noexcept { return _elementCount; }
+    size_t getPrimitiveSize() const noexcept { return _elementSize; }
 
     static size_t alignmentRequirement(Usage usage);
 
    protected:
-    size_t _bufferSize;
-    size_t _maxSize;
+    size_t _bufferSize = 0;
+    size_t _maxSize = 0;
     size_t _elementSize;
     U32 _elementCount;
 
@@ -126,7 +126,6 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
     stringImpl _name;
 };
-
 
 struct ShaderBufferDescriptor {
     stringImpl _name = "";

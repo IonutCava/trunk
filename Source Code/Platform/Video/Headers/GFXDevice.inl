@@ -34,6 +34,16 @@
 
 namespace Divide {
 
+template <typename Data, size_t N>
+void DebugPrimitiveHandler<Data, N>::reset() {
+    for (IMPrimitive*& primitive : _debugPrimitives) {
+        if (primitive != nullptr) {
+            primitive->context().destroyIMP(primitive);
+        }
+    }
+    _Id.store(0u);
+    _debugPrimitives.fill(nullptr);
+}
 
 inline const GFXShaderData::GPUData&
 GFXDevice::renderingData() const noexcept {
@@ -133,7 +143,7 @@ GFXDevice::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
 }
 
 inline void
-GFXDevice::onThreadCreated(const std::thread::id& threadID) {
+GFXDevice::onThreadCreated(const std::thread::id& threadID) const {
     _api->onThreadCreated(threadID);
 }
 

@@ -20,4 +20,6 @@
     <Range>10</Range>
     <Colour r="0.99609375" g="0" b="0"/>
     <Is__Shadow__Caster>true</Is__Shadow__Caster>
+    <Shadow__Bias>9.99999975e-05</Shadow__Bias>
+    <Shadow__Strength>1</Shadow__Strength>
 </SPOT_LIGHT>

@@ -5,12 +5,12 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Scenes/Headers/SceneState.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
 
-#include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -18,7 +18,6 @@
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
-#include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/SpotLightComponent.h"
 
 namespace Divide {
@@ -29,7 +28,9 @@ namespace {
 };
 
 SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
-    : ShadowMapGenerator(context, ShadowType::SINGLE) {
+    : ShadowMapGenerator(context, ShadowType::SINGLE)
+{
+
     Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "Single Shadow Map");
 
     g_shadowSettings = context.context().config().rendering.shadowMapping;
@@ -88,6 +89,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
     sampler.minFilter(TextureFilter::LINEAR);
     sampler.magFilter(TextureFilter::LINEAR);
     sampler.anisotropyLevel(0);
+    const size_t samplerHash = sampler.getHash();
 
     const RenderTarget& rt = _context.renderTargetPool().renderTarget(g_depthMapID);
     const TextureDescriptor& texDescriptor = rt.getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor();
@@ -98,16 +100,16 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         desc._resolution = rt.getResolution();
 
         TextureDescriptor colourDescriptor(TextureType::TEXTURE_2D_MS, texDescriptor.baseFormat(), texDescriptor.dataType());
-        colourDescriptor.samplerDescriptor(sampler);
         colourDescriptor.msaaSamples(g_shadowSettings.spot.MSAASamples);
+        colourDescriptor.hasMipMaps(false);
 
         TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
-        depthDescriptor.samplerDescriptor(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.spot.MSAASamples);
+        depthDescriptor.hasMipMaps(false);
 
         vectorEASTL<RTAttachmentDescriptor> att = {
-            { colourDescriptor, RTAttachmentType::Colour },
-            { depthDescriptor, RTAttachmentType::Depth }
+            { colourDescriptor, samplerHash, RTAttachmentType::Colour },
+            { depthDescriptor, samplerHash, RTAttachmentType::Depth }
         };
 
         desc._name = "Single_ShadowMap_Draw";
@@ -122,10 +124,9 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
     {
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D, texDescriptor.baseFormat(), texDescriptor.dataType());
         blurMapDescriptor.layerCount(1);
-        blurMapDescriptor.samplerDescriptor(sampler);
 
         vectorEASTL<RTAttachmentDescriptor> att = {
-            { blurMapDescriptor, RTAttachmentType::Colour }
+            { blurMapDescriptor, samplerHash, RTAttachmentType::Colour }
         };
 
         RenderTargetDescriptor desc = {};
@@ -163,7 +164,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     light.setShadowFloatValue(0, shadowCameras[0]->getZPlanes().y);
     light.setShadowVPMatrix(0, mat4<F32>::Multiply(lightVP, MAT4_BIAS));
 
-    RenderPassManager::PassParams params = {};
+    RenderPassParams params = {};
     params._sourceNode = light.getSGN();
     params._camera = shadowCameras[0];
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
@@ -222,8 +223,9 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
 
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
 
-        TextureData texData = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, TextureUsage::UNIT0);
+        const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
+        TextureData texData = shadowAtt.texture()->data();
+        descriptorSetCmd._set._textureData.setTexture(texData, shadowAtt.samplerHash(), TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         _shaderConstants.set(_ID("layered"), GFX::PushConstantType::BOOL, true);
@@ -239,8 +241,9 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         // Blur vertically
-        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, TextureUsage::UNIT0);
+        const auto& blurAtt = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0);
+        texData = blurAtt.texture()->data();
+        descriptorSetCmd._set._textureData.setTexture(texData, blurAtt.samplerHash(),TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         beginRenderPassCmd._target = g_depthMapID;

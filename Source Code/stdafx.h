@@ -116,7 +116,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <EASTL/shared_ptr.h>
 #include <EASTL/weak_ptr.h>
 #include <EASTL/unique_ptr.h>
-
+#include <EASTL/fixed_string.h>
+#include <EASTL/unordered_set.h>
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
 
@@ -131,6 +132,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <Libs/fmt/include/fmt/format.h>
 #include <Libs/fmt/include/fmt/printf.h>
+
+#pragma warning(push)
+#pragma warning(disable: 4310)
+#pragma warning(disable: 4458)
+#include <skarupke/bytell_hash_map.hpp>
+#pragma warning(pop)
 
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/File/Headers/FileWithPath.h"

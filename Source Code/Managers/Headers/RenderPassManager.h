@@ -52,38 +52,39 @@ class SceneEnvironmentProbePool;
 
 enum class RenderStage : U8;
 
-class RenderPassManager : public KernelComponent {
-public:
+struct FeedBackContainer
+{
+    vectorEASTL<VisibleNode> _visibleNodes;
+};
 
-    struct FeedBackContainer {
-        vectorEASTL<VisibleNode> _visibleNodes;
-    };
+struct RenderPassParams
+{
+    FrustumClipPlanes _clippingPlanes = {};
+    vec3<F32> _minExtents = { 0.0f };
+    // source node is used to determine if the current pass is triggered by a specific node:
+    // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
+    // safe to be set to null
+    FeedBackContainer* _feedBackContainer = nullptr;
+    const SceneGraphNode* _sourceNode = nullptr;
+    Camera* _camera = nullptr;
+    Str64 _passName = "";
+    I32 _minLoD = -1; //-1 = all
+    RenderTargetID _target = {};
 
-    struct PassParams {
-        FrustumClipPlanes _clippingPlanes = {};
-        vec3<F32> _minExtents = { 0.0f };
-        // source node is used to determine if the current pass is triggered by a specific node:
-        // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc
-        // safe to be set to null
-        FeedBackContainer* _feedBackContainer = nullptr;
-        const SceneGraphNode* _sourceNode = nullptr;
-        Camera* _camera = nullptr;
-        Str64 _passName = "";
-        I32 _minLoD = -1; //-1 = all
-        RenderTargetID _target = {};
+    RTDrawDescriptor _targetDescriptorPrePass = {};
+    RTDrawDescriptor _targetDescriptorMainPass = {};
 
-        RTDrawDescriptor _targetDescriptorPrePass = {};
-        RTDrawDescriptor _targetDescriptorMainPass = {};
+    RenderTargetID _targetHIZ = {};
+    RenderTargetID _targetOIT = {};
+    RenderStagePass _stagePass = {};
 
-        RenderTargetID _targetHIZ = {};
-        RenderTargetID _targetOIT = {};
-        RenderStagePass _stagePass = {};
+    RenderTarget::DrawLayerParams _layerParams = {};
 
-        RenderTarget::DrawLayerParams _layerParams = {};
+    //Ughhhh
+    bool _shadowMappingEnabled = true;
+};
 
-        //Ughhhh
-        bool _shadowMappingEnabled = true;
-    };
+class RenderPassManager final : public KernelComponent {
 
 public:
     struct RenderParams {
@@ -113,45 +114,47 @@ public:
 
     [[nodiscard]] RenderPass::BufferData getBufferData(const RenderStagePass& stagePass) const;
 
-    void doCustomPass(PassParams params, GFX::CommandBuffer& bufferInOut);
+    void doCustomPass(RenderPassParams params, GFX::CommandBuffer& bufferInOut);
     void postInit();
 
 private:
     // Returns false if we skipped the pre-pass step
     bool prePass(const VisibleNodeList& nodes,
-                 const PassParams& params,
+                 const RenderPassParams& params,
                  const RenderTarget& target,
+                 U32& visibleNodeCount,
                  GFX::CommandBuffer& bufferInOut);
     bool occlusionPass(const VisibleNodeList& nodes,
+                       const U32 visibleNodeCount,
                        const RenderStagePass& stagePass,
                        const Camera& camera,
                        const RenderTargetID& sourceDepthBuffer,
                        const RenderTargetID& targetDepthBuffer,
-                       GFX::CommandBuffer& bufferInOut);
+                       GFX::CommandBuffer& bufferInOut) const;
     void mainPass(const VisibleNodeList& nodes,
-                  const PassParams& params,
+                  const RenderPassParams& params,
                   RenderTarget& target,
                   bool prePassExecuted,
                   bool hasHiZ,
                   GFX::CommandBuffer& bufferInOut);
 
     void transparencyPass(const VisibleNodeList& nodes,
-                          const PassParams& params,
-                          const RenderTarget& target,
+                          const RenderPassParams& params,
                           GFX::CommandBuffer& bufferInOut);
 
     
     void woitPass(const VisibleNodeList& nodes,
-                  const PassParams& params,
-                  const RenderTarget& target,
+                  const RenderPassParams& params,
                   GFX::CommandBuffer& bufferInOut);
 
     [[nodiscard]] RenderPass& getPassForStage(RenderStage renderStage);
     [[nodiscard]] const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(const PassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, GFX::CommandBuffer& bufferInOut, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
-    void buildDrawCommands(const PassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    void buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const PassParams& params, const RenderBin::SortedQueues& sortedQueues, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, bool shadowMap, const mat4<F32>& viewMatrix, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
+    void prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
+    // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
+    U32 buildDrawCommands(const RenderPassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
+    // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
+    U32  buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const RenderPassParams& passParams, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
+    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, bool shadowMap, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
 
 private: //TEMP
     friend class RenderBin;

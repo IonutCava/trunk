@@ -35,10 +35,8 @@
 
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
-#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glGenericBuffer.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferLockManager.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {
 
@@ -49,15 +47,16 @@ class glGenericVertexData final : public GenericVertexData,
         {
         }
 
-        BufferBindConfig(GLuint buffer,
-                         size_t offset,
-                         size_t stride) : _buffer(buffer),
-                                           _offset(offset),
-                                           _stride(stride)
+        BufferBindConfig(const GLuint buffer,
+                         const size_t offset,
+                         const size_t stride)
+            : _stride(stride),
+              _offset(offset),
+              _buffer(buffer)
         {
         }
 
-        inline void set(const BufferBindConfig& other) {
+        void set(const BufferBindConfig& other) {
             _buffer = other._buffer;
             _offset = other._offset;
             _stride = other._stride;
@@ -97,7 +96,7 @@ class glGenericVertexData final : public GenericVertexData,
    protected:
     void setBufferBindings(const GenericDrawCommand& command);
     void setAttributes(const GenericDrawCommand& command);
-    void setAttributeInternal(const GenericDrawCommand& command, AttributeDescriptor& descriptor);
+    void setAttributeInternal(const GenericDrawCommand& command, AttributeDescriptor& descriptor) const;
 
    private:
     bool _smallIndices;

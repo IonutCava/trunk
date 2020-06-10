@@ -45,11 +45,11 @@ struct RenderTargetID {
     {
     }
 
-    RenderTargetID(RenderTargetUsage usage) noexcept : RenderTargetID(usage, 0)
+    RenderTargetID(const RenderTargetUsage usage) noexcept : RenderTargetID(usage, 0)
     {
     }
 
-    RenderTargetID(RenderTargetUsage usage, U16 index) noexcept
+    RenderTargetID(const RenderTargetUsage usage, const U16 index) noexcept
         : _index(index),
           _usage(usage)
     {
@@ -58,12 +58,12 @@ struct RenderTargetID {
     U16 _index = 0;
     RenderTargetUsage _usage = RenderTargetUsage::COUNT;
 
-    inline bool operator==(const RenderTargetID& other) const noexcept {
+    bool operator==(const RenderTargetID& other) const noexcept {
         return _index == other._index &&
                _usage == other._usage;
     }
 
-    inline bool operator!=(const RenderTargetID& other) const noexcept {
+    bool operator!=(const RenderTargetID& other) const noexcept {
         return _index != other._index ||
                _usage != other._usage;
     }
@@ -77,22 +77,22 @@ struct BlitIndex {
 };
 
 struct ColourBlitEntry {
-    inline void set(U16 indexIn, U16 indexOut, U16 layerIn = 0u, U16 layerOut = 0u) {
+    void set(const U16 indexIn, const U16 indexOut, const U16 layerIn = 0u, const U16 layerOut = 0u) {
         input(indexIn, layerIn);
         output(indexOut, layerOut);
     }
 
-    inline void input(U16 index, U16 layer = 0u) noexcept {
+    void input(const U16 index, const U16 layer = 0u) noexcept {
         _input = { to_I16(layer), to_I16(index) };
     }
 
-    inline void output(U16 index, U16 layer = 0u) noexcept {
+    void output(const U16 index, const U16 layer = 0u) noexcept {
         _output = { to_I16(layer), to_I16(index) };
     }
 
-    [[nodiscard]] inline BlitIndex input()  const noexcept { return _input; }
-    [[nodiscard]] inline BlitIndex output() const noexcept { return _output; }
-    [[nodiscard]] inline bool      valid()  const noexcept { return _input._index != INVALID_COLOUR_LAYER || _input._layer != INVALID_COLOUR_LAYER; }
+    [[nodiscard]] BlitIndex input()  const noexcept { return _input; }
+    [[nodiscard]] BlitIndex output() const noexcept { return _output; }
+    [[nodiscard]] bool      valid()  const noexcept { return _input._index != INVALID_COLOUR_LAYER || _input._layer != INVALID_COLOUR_LAYER; }
 
 protected:
     BlitIndex _input;
@@ -113,7 +113,7 @@ struct RenderTargetHandle {
     {
     }
 
-    RenderTargetHandle(RenderTargetID targetID, RenderTarget* rt) noexcept
+    RenderTargetHandle(const RenderTargetID targetID, RenderTarget* rt) noexcept
         : _rt(rt),
         _targetID(targetID)
     {
@@ -155,7 +155,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
         DepthBlitEntry _blitDepth;
         std::array<ColourBlitEntry, RT_MAX_COLOUR_ATTACHMENTS> _blitColours;
 
-        [[nodiscard]] inline bool hasBlitColours() const noexcept {
+        [[nodiscard]] bool hasBlitColours() const noexcept {
             return std::any_of(std::cbegin(_blitColours),
                                std::cend(_blitColours),
                                [](const auto& entry) {

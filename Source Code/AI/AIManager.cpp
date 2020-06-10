@@ -5,7 +5,6 @@
 #include "Headers/AIManager.h"
 
 #include "AI/ActionInterface/Headers/AITeam.h"
-#include "AI/PathFinding/Headers/DivideRecast.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 
 namespace Divide {

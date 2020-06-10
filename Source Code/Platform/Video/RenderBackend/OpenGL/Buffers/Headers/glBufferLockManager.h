@@ -60,7 +60,7 @@ struct BufferLock {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-class glBufferLockManager : public glLockManager {
+class glBufferLockManager final : public glLockManager {
    public:
     glBufferLockManager();
     ~glBufferLockManager();

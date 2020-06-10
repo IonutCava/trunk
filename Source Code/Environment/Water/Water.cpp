@@ -5,7 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/Configuration.h"
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
@@ -29,6 +29,8 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
 {
     _noiseTile = { 15.0f, 15.0f };
     _noiseFactor = { 0.1f, 0.1f };
+    _refractionTint = {0.f, 0.467f, 0.745f};
+
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -78,7 +80,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     EditorComponentField noiseTileSizeField = {};
     noiseTileSizeField._name = "Noise tile factor";
     noiseTileSizeField._data = &_noiseTile;
-    noiseTileSizeField._range = { 0.0f, 100.0f };
+    noiseTileSizeField._range = { 0.0f, 1000.0f };
     noiseTileSizeField._type = EditorComponentFieldType::PUSH_TYPE;
     noiseTileSizeField._readOnly = false;
     noiseTileSizeField._basicType = GFX::PushConstantType::VEC2;
@@ -95,14 +97,23 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
 
     getEditorComponent().registerField(std::move(noiseFactorField));
 
-    getEditorComponent().onChangedCbk([this](std::string_view field) {onEditorChange(field); });
+    EditorComponentField refractionTintField = {};
+    refractionTintField._name = "Refraction tint";
+    refractionTintField._data = &_refractionTint;
+    refractionTintField._type = EditorComponentFieldType::PUSH_TYPE;
+    refractionTintField._readOnly = false;
+    refractionTintField._basicType = GFX::PushConstantType::FCOLOUR3;
+
+    getEditorComponent().registerField(std::move(refractionTintField));
+
+    
+    getEditorComponent().onChangedCbk([this](const std::string_view field) {onEditorChange(field); });
 }
 
 WaterPlane::~WaterPlane()
 {
     Camera::destroyCamera(_reflectionCam);
 }
-
 
 void WaterPlane::onEditorChange(std::string_view field) {
     _editorDataDirtyState = EditorDataState::QUEUED;
@@ -126,12 +137,11 @@ bool WaterPlane::load() {
     defaultSampler.anisotropyLevel(4);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
-    texDescriptor.samplerDescriptor(defaultSampler);
 
     std::atomic_uint loadTasks = 0u;
 
     ResourceDescriptor waterTexture("waterTexture_" + name);
-    waterTexture.assetName("terrain_water_NM.jpg");
+    waterTexture.assetName("terrain_water_NM_old.jpg");
     waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTexture.propertyDescriptor(texDescriptor);
     waterTexture.waitForReady(false);
@@ -148,8 +158,8 @@ bool WaterPlane::load() {
     ResourceDescriptor waterMaterial("waterMaterial_" + name);
     Material_ptr waterMat = CreateResource<Material>(_parentCache, waterMaterial);
 
-    waterMat->shadingMode(ShadingMode::BLINN_PHONG);
-
+    waterMat->shadingMode(ShadingMode::COOK_TORRANCE);
+    
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "water.glsl";
@@ -191,8 +201,8 @@ bool WaterPlane::load() {
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0u);
 
-    waterMat->setTexture(TextureUsage::UNIT0, waterDUDV);
-    waterMat->setTexture(TextureUsage::NORMALMAP, waterNM);
+    waterMat->setTexture(TextureUsage::UNIT0, waterDUDV, defaultSampler.getHash());
+    waterMat->setTexture(TextureUsage::NORMALMAP, waterNM, defaultSampler.getHash());
     waterMat->setShaderProgram(waterPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS);
     waterMat->setShaderProgram(waterColour,  RenderStage::COUNT, RenderPassType::MAIN_PASS);
     waterMat->roughness(0.01f);
@@ -236,7 +246,7 @@ void WaterPlane::postLoad(SceneGraphNode* sgn) {
 
     RenderingComponent* renderable = sgn->get<RenderingComponent>();
 
-    // If the reflector is reasonibly sized, we should keep LoD fixed so that we always update reflections
+    // If the reflector is reasonably sized, we should keep LoD fixed so that we always update reflections
     if (sgn->context().config().rendering.lodThresholds.x < std::max(halfWidth, halfLength)) {
         renderable->lockLoD(0u);
     }
@@ -264,7 +274,15 @@ void WaterPlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneSt
         case EditorDataState::PROCESSED:
             _editorDataDirtyState = EditorDataState::IDLE;
             break;
+        default: break;
     };
+    WaterBodyData data;
+    data._positionW = sgn->get<TransformComponent>()->getPosition();
+    data._extents.xyz(to_F32(_dimensions.width),
+                      to_F32(_dimensions.depth),
+                      to_F32(_dimensions.height));
+
+    sceneState.waterBodies().push_back(data);
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -278,6 +296,7 @@ bool WaterPlane::prepareRender(SceneGraphNode* sgn,
         PushConstants& constants = pkg.pushConstants(0);
         constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
         constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
+        constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, _refractionTint);
         
     }
     return SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
@@ -295,6 +314,7 @@ void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
     pushConstantsCommand._constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
+    pushConstantsCommand._constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, _refractionTint);
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
@@ -311,6 +331,9 @@ void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
 
 /// update water refraction
 void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
+    static RTClearColourDescriptor clearColourDescriptor;
+    clearColourDescriptor._customClearColour[0] = DefaultColours::BLUE;
+
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
     const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
@@ -318,15 +341,13 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater, refrPlaneOffset());
 
     RTClearDescriptor clearDescriptor = {};
-    if (!underwater) {
-        //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
-        // This may not hold true forever (e.g. may run into fillrate issues) so this needs checking if rendering changes somehow
-        clearDescriptor.clearColour(0, false);
-    }
+    clearDescriptor.customClearColour(&clearColourDescriptor);
 
     refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
-    RenderPassManager::PassParams params = {};
+    Configuration& config = renderParams._context.context().config();
+
+    RenderPassParams params = {};
     params._sourceNode = renderParams._sgn;
     params._targetHIZ = {}; // We don't need to HiZ cull refractions
     params._targetOIT = {}; // We don't need to draw refracted transparents using woit 
@@ -336,20 +357,21 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._target = renderParams._renderTarget;
     params._clippingPlanes._planes[0] = refractionPlane;
     params._passName = "Refraction";
-    params._shadowMappingEnabled = underwater;
+    params._shadowMappingEnabled = underwater && config.rendering.shadowMapping.enabled;
 
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
     clearMainTarget._descriptor = clearDescriptor;
     GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
-    Configuration& config = renderParams._context.context().config();
-    const bool shadowMappingEnabled = config.rendering.shadowMapping.enabled;
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 }
 
 /// Update water reflections
 void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
+    static RTClearColourDescriptor clearColourDescriptor;
+    clearColourDescriptor._customClearColour[0] = DefaultColours::BLUE;
+
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
     const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
@@ -370,9 +392,9 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 
     //Don't clear colour attachment because we'll always draw something for every texel, even if that something is just the sky
     RTClearDescriptor clearDescriptor = {};
-    clearDescriptor.clearColour(0, false);
+    clearDescriptor.customClearColour(&clearColourDescriptor);
 
-    RenderPassManager::PassParams params = {};
+    RenderPassParams params = {};
     params._sourceNode = renderParams._sgn;
     params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
     params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);

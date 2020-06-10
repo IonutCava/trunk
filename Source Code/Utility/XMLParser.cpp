@@ -130,7 +130,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(attributes, entry);
 
-        Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
+        const Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
         scene->input()->addKeyMapping(key, entry);
     }
 
@@ -143,7 +143,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(attributes, entry);
 
-        Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
+        const Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
 
         scene->input()->addMouseMapping(btn, entry);
     }
@@ -161,7 +161,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
             const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
             populatePressRelease(attributes, entry);
 
-            Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
+            const Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
 
             scene->input()->addJoystickMapping(joystick, element._type, element._elementIndex, entry);
         }
@@ -169,7 +169,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
 }
 
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config) {
-    stringImpl file = scenePath + "/" + fileName.c_str();
+    const stringImpl file = scenePath + "/" + fileName.c_str();
 
     if (!fileExists(file.c_str())) {
         return;

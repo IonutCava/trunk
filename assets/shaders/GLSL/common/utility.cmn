@@ -1,8 +1,6 @@
 #ifndef _UTILITY_CMN_
 #define _UTILITY_CMN_
 
-#define PRECISION 0.000001
-
 //ref: http://theorangeduck.com/page/avoiding-shader-conditionals
 #define when_eq(x, y) (1.0f - abs(sign(x - y)))
 #define when_neq(x, y) abs(sign(x - y))
@@ -15,27 +13,24 @@
 #define XOR(a, b) ((a + b) % 2.0f)
 #define NOT(a) (1.0f - a)
 
-float DIST_TO_ZERO(float val) {
-    return 1.0 - (step(-PRECISION, val) * (1.0 - step(PRECISION, val)));
-}
+float saturate(in float v) { return clamp(v, 0.0, 1.0); }
+vec2  saturate(in vec2 v)  { return clamp(v, 0.0, 1.0); }
+vec3  saturate(in vec3 v)  { return clamp(v, 0.0, 1.0); }
+vec4  saturate(in vec4 v)  { return clamp(v, 0.0, 1.0); }
 
-float saturate(float v) { return clamp(v, 0.0, 1.0); }
-vec2  saturate(vec2 v) { return clamp(v, 0.0, 1.0); }
-vec3  saturate(vec3 v) { return clamp(v, 0.0, 1.0); }
-vec4  saturate(vec4 v) { return clamp(v, 0.0, 1.0); }
+float maxComponent(in vec2 v) { return max(v.x, v.y); }
+float maxComponent(in vec3 v) { return max(max(v.x, v.y), v.z); }
+float maxComponent(in vec4 v) { return max(max(max(v.x, v.y),v.z), v.w); }
 
-float maxComponent(vec2 v) { return max(v.x, v.y); }
-float maxComponent(vec3 v) { return max(maxComponent(v.xy), v.z); }
-float maxComponent(vec4 v) { return max(maxComponent(v.xyz), v.w); }
-
+float MSToSeconds(in int ms) { return ms * 0.001f; }
 
 //ref: https://aras-p.info/texts/CompactNormalStorage.html#method08ppview
-vec3 unpackNormal(vec2 enc)
+vec3 unpackNormal(in vec2 enc)
 {
 #if 1
-    vec2 fenc = enc * 4 - 2;
-    float f = dot(fenc, fenc);
-    float g = sqrt(1 - f * 0.25f);
+    const vec2 fenc = enc * 4 - 2;
+    const float f = dot(fenc, fenc);
+    const float g = sqrt(1 - f * 0.25f);
     return vec3(fenc * g, 1 - f * 0.5f);
 #else
     vec3 ret;
@@ -45,10 +40,10 @@ vec3 unpackNormal(vec2 enc)
 #endif
 }
 
-vec2 packNormal(vec3 n)
+vec2 packNormal(in vec3 n)
 {
 #if 1
-    float f = sqrt(8 * n.z + 8);
+    const float f = sqrt(8 * n.z + 8);
     return n.xy / f + 0.5f;
 #else
     return n.xy * 0.5f + 0.5f;

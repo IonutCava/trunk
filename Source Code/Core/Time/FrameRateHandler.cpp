@@ -1,16 +1,13 @@
 #include "stdafx.h"
 
 #include "Headers/FrameRateHandler.h"
-#include "Headers/ApplicationTimer.h"
 
 namespace Divide {
 namespace Time {
 
 
-void FrameRateHandler::tick(const U64 elapsedTime) noexcept {
-    constexpr F32 fpsLimitDiff = 30.0f;
-
-    const F32 elapsedSeconds = Time::MicrosecondsToSeconds<F32>(elapsedTime);
+void FrameRateHandler::tick(const U64 deltaTimeUS) noexcept {
+    const F32 elapsedSeconds = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
     const F32 deltaSeconds = elapsedSeconds - _previousElapsedSeconds;
     _framerateSecPerFrameAccum += deltaSeconds - _framerateSecPerFrame[_framerateSecPerFrameIdx];
     _framerateSecPerFrame[_framerateSecPerFrameIdx] = deltaSeconds;

@@ -100,62 +100,62 @@ NO_INLINE void Console::d_errorf(const char* format, Args&&... args) {
 
 template <typename... Args>
 NO_INLINE void Console::printfn(const char* format, Args&&... args) {
-    output(formatText(format, std::forward<Args>(args)...), true, EntryType::Info);
+    output(formatText(format, std::forward<Args>(args)...), true, EntryType::INFO);
 }
 
 template <typename... Args>
 NO_INLINE void Console::printf(const char* format, Args&&... args) {
-    output(formatText(format, std::forward<Args>(args)...), false, EntryType::Info);
+    output(formatText(format, std::forward<Args>(args)...), false, EntryType::INFO);
 }
 
 template <typename... Args>
 NO_INLINE void Console::warnfn(const char* format, Args&&... args) {
-    output(formatText(format, std::forward<Args>(args)...), true, EntryType::Warning);
+    output(formatText(format, std::forward<Args>(args)...), true, EntryType::WARNING);
 }
 
 template <typename... Args>
 NO_INLINE void Console::warnf(const char* format, Args&&... args) {
-    output(formatText(format, std::forward<Args>(args)...), false, EntryType::Warning);
+    output(formatText(format, std::forward<Args>(args)...), false, EntryType::WARNING);
 }
 
 template <typename... Args>
 NO_INLINE void Console::errorfn(const char* format, Args&&... args) {
-    output(formatText(format, std::forward<Args>(args)...), true, EntryType::Error);
+    output(formatText(format, std::forward<Args>(args)...), true, EntryType::ERR);
 }
 
 template <typename... Args>
 NO_INLINE void Console::errorf(const char* format, Args&&... args) {
-    output(formatText(format, std::forward<Args>(args)...), false, EntryType::Error);
+    output(formatText(format, std::forward<Args>(args)...), false, EntryType::ERR);
 }
 
 template <typename... Args>
 NO_INLINE void Console::printfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::Info);
+    output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::INFO);
 }
 
 template <typename... Args>
 NO_INLINE void Console::printf(std::ofstream& outStream, const char* format, Args&&... args) {
-    output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::Info);
+    output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::INFO);
 }
 
 template <typename... Args>
 NO_INLINE void Console::warnfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::Warning);
+    output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::WARNING);
 }
 
 template <typename... Args>
 NO_INLINE void Console::warnf(std::ofstream& outStream, const char* format, Args&&... args) {
-    output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::Warning);
+    output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::WARNING);
 }
 
 template <typename... Args>
 NO_INLINE void Console::errorfn(std::ofstream& outStream, const char* format, Args&&... args) {
-    output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::Error);
+    output(outStream, formatText(format, std::forward<Args>(args)...), true, EntryType::ERR);
 }
 
 template <typename... Args>
 NO_INLINE void Console::errorf(std::ofstream& outStream, const char* format, Args&&... args) {
-    output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::Error);
+    output(outStream, formatText(format, std::forward<Args>(args)...), false, EntryType::ERR);
 }
 
 template <typename... Args>

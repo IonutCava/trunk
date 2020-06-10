@@ -66,7 +66,7 @@ inline void BoundingBox::createFromPoints(const std::array<vec3<F32>, 8>& points
     }
 }
 
-inline void BoundingBox::createFromSphere(const vec3<F32>& center, F32 radius) noexcept {
+inline void BoundingBox::createFromSphere(const vec3<F32>& center, const F32 radius) noexcept {
     _max.set(center + radius);
     _min.set(center - radius);
 }
@@ -113,7 +113,7 @@ inline void BoundingBox::translate(const vec3<F32>& v) noexcept {
     _max += v;
 }
 
-inline void BoundingBox::multiply(F32 factor) noexcept {
+inline void BoundingBox::multiply(const F32 factor) noexcept {
     // Lock w_lock(_lock);
     _min *= factor;
     _max *= factor;
@@ -202,29 +202,29 @@ inline void BoundingBox::set(const BoundingBox& bb) noexcept {
     set(bb._min, bb._max); 
 }
 
-inline void BoundingBox::set(F32 min, F32 max) noexcept {
+inline void BoundingBox::set(const F32 min, const F32 max) noexcept {
     _min.set(min);
     _max.set(max);
 }
 
-inline void BoundingBox::set(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept {
+inline void BoundingBox::set(const F32 minX, const F32 minY, const F32 minZ, const F32 maxX, const F32 maxY, const F32 maxZ) noexcept {
     _min.set(minX, minY, minZ);
     _max.set(maxX, maxY, maxZ);
 }
 
-inline void BoundingBox::setMin(F32 min) noexcept {
+inline void BoundingBox::setMin(const F32 min) noexcept {
     _min.set(min);
 }
 
-inline void BoundingBox::setMin(F32 minX, F32 minY, F32 minZ) noexcept {
+inline void BoundingBox::setMin(const F32 minX, const F32 minY, const F32 minZ) noexcept {
     _min.set(minX, minY, minZ);
 }
 
-inline void BoundingBox::setMax(F32 max) noexcept {
+inline void BoundingBox::setMax(const F32 max) noexcept {
     _max.set(max);
 }
 
-inline void BoundingBox::setMax(F32 maxX, F32 maxY, F32 maxZ) noexcept {
+inline void BoundingBox::setMax(const F32 maxX, const F32 maxY, const F32 maxZ) noexcept {
     _max.set(maxX, maxY, maxZ);
 }
 

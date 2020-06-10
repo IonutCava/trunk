@@ -5,7 +5,7 @@
 
 namespace Divide {
     namespace TypeUtil {
-        const char* WrapModeToString(TextureWrap wrapMode) noexcept {
+        const char* WrapModeToString(const TextureWrap wrapMode) noexcept {
             return Names::textureWrap[to_base(wrapMode)];
         }
 
@@ -19,7 +19,7 @@ namespace Divide {
             return TextureWrap::COUNT;
         }
 
-        const char* TextureFilterToString(TextureFilter filter) noexcept {
+        const char* TextureFilterToString(const TextureFilter filter) noexcept {
             return Names::textureFilter[to_base(filter)];
         }
 
@@ -47,7 +47,7 @@ namespace Divide {
     }
 
     size_t SamplerDescriptor::getHash() const noexcept {
-        size_t tempHash = 23;
+        size_t tempHash = 59;
         Util::Hash_combine(tempHash, to_U32(_cmpFunc));
         Util::Hash_combine(tempHash, _useRefCompare);
         Util::Hash_combine(tempHash, to_U32(_wrapU));
@@ -76,7 +76,7 @@ namespace Divide {
         s_samplerDescriptorMap.clear();
     }
 
-    const SamplerDescriptor& SamplerDescriptor::get(size_t samplerDescriptorHash) {
+    const SamplerDescriptor& SamplerDescriptor::get(const size_t samplerDescriptorHash) {
         bool descriptorFound = false;
         const SamplerDescriptor& desc = get(samplerDescriptorHash, descriptorFound);
         // Assert if it doesn't exist. Avoids programming errors.
@@ -84,7 +84,7 @@ namespace Divide {
         return desc;
     }
    
-    const SamplerDescriptor& SamplerDescriptor::get(size_t samplerDescriptorHash, bool& descriptorFound) {
+    const SamplerDescriptor& SamplerDescriptor::get(const size_t samplerDescriptorHash, bool& descriptorFound) {
         descriptorFound = false;
 
         SharedLock<SharedMutex> r_lock(s_samplerDescriptorMapMutex);
@@ -96,6 +96,25 @@ namespace Divide {
         }
 
         return s_samplerDescriptorMap.find(s_defaultHashValue)->second;
+    }
+
+    size_t TextureDescriptor::getHash() const noexcept {
+        _hash = PropertyDescriptor::getHash();
+
+        Util::Hash_combine(_hash, _layerCount);
+        Util::Hash_combine(_hash, _mipLevels.x);
+        Util::Hash_combine(_hash, _mipLevels.y);
+        Util::Hash_combine(_hash, _mipCount);
+        Util::Hash_combine(_hash, _msaaSamples);
+        Util::Hash_combine(_hash, to_U32(_dataType));
+        Util::Hash_combine(_hash, to_U32(_baseFormat));
+        Util::Hash_combine(_hash, to_U32(_texType));
+        Util::Hash_combine(_hash, _autoMipMaps);
+        Util::Hash_combine(_hash, _srgb);
+        Util::Hash_combine(_hash, _normalized);
+        Util::Hash_combine(_hash, _compressed);
+
+        return _hash;
     }
 
     namespace XMLParser {
@@ -117,13 +136,7 @@ namespace Divide {
             pt.put(entryName + ".Sampler.borderColour.<xmlattr>.a", sampler.borderColour().a);
         }
 
-        const SamplerDescriptor& loadFromXML(size_t hash, const stringImpl& entryName, const boost::property_tree::ptree& pt) {
-            bool alreadyExists = false;
-            const SamplerDescriptor& temp = SamplerDescriptor::get(hash, alreadyExists);
-            if (alreadyExists) {
-                return temp;
-            }
-
+        size_t loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
             SamplerDescriptor sampler = {};
             sampler.minFilter(TypeUtil::StringToTextureFilter(pt.get<stringImpl>(entryName + ".Sampler.Filter.<xmlattr>.min", TypeUtil::TextureFilterToString(TextureFilter::LINEAR))));
             sampler.magFilter(TypeUtil::StringToTextureFilter(pt.get<stringImpl>(entryName + ".Sampler.Filter.<xmlattr>.mag", TypeUtil::TextureFilterToString(TextureFilter::LINEAR))));
@@ -145,7 +158,7 @@ namespace Divide {
                 }
             );
 
-            return SamplerDescriptor::get(sampler.getHash());
+            return sampler.getHash();
         }
     };
 }; //namespace Divide

@@ -33,9 +33,9 @@
 #ifndef _GL_FRAME_BUFFER_OBJECT_H_
 #define _GL_FRAME_BUFFER_OBJECT_H_
 
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 namespace Divide {
 
@@ -45,8 +45,8 @@ namespace Attorney {
     class GLAPIRenderTarget;
 };
 
-class glFramebuffer : public RenderTarget,
-                      public glObject {
+class glFramebuffer final : public RenderTarget,
+                            public glObject {
 
     friend class Attorney::GLAPIRenderTarget;
 
@@ -63,14 +63,14 @@ class glFramebuffer : public RenderTarget,
         U16 _writeLayer = 0;
         bool _layeredRendering = false;
 
-        inline bool operator==(const BindingState& other) const noexcept {
+        bool operator==(const BindingState& other) const noexcept {
             return _attState == other._attState &&
                    _writeLevel == other._writeLevel &&
                    _writeLayer == other._writeLayer &&
                    _layeredRendering == other._layeredRendering;
         }
 
-        inline bool operator!=(const BindingState& other) const noexcept {
+        bool operator!=(const BindingState& other) const noexcept {
             return _attState != other._attState ||
                    _writeLevel != other._writeLevel ||
                    _writeLayer != other._writeLayer ||
@@ -86,7 +86,7 @@ class glFramebuffer : public RenderTarget,
 
     void setMipLevel(U16 writeLevel);
 
-    void setBlendState(const RTBlendStates& blendState);
+    void setBlendState(const RTBlendStates& blendState) const;
 
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
@@ -102,17 +102,17 @@ class glFramebuffer : public RenderTarget,
     void toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering);
 
 protected:
-    void queueCheckStatus();
+    void queueCheckStatus() noexcept;
     bool checkStatus();
 
-    void setBlendState(const RTBlendStates& blendState, const RTAttachmentPool::PoolEntry& activeAttachments);
+    void setBlendState(const RTBlendStates& blendState, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments);
 
     void initAttachment(RTAttachmentType type, U8 index);
 
-    bool hasDepth() const;
+    bool hasDepth() const noexcept;
 
-    bool hasColour() const;
+    bool hasColour() const noexcept;
 
     void setAttachmentState(GLenum binding, BindingState state);
 
@@ -127,7 +127,7 @@ protected:
     void begin(const RTDrawDescriptor& drawPolicy);
     void end(bool needsUnbind);
     void queueMipMapRecomputation();
-    void queueMipMapRecomputation(const RTAttachment& attachment, U16 startLayer, U16 layerCount);
+    static void QueueMipMapRecomputation(const RTAttachment& attachment);
 
    protected:
     RTDrawDescriptor _previousPolicy;
@@ -149,11 +149,10 @@ protected:
 
 namespace Attorney {
     class GLAPIRenderTarget {
-        private:
         static void begin(glFramebuffer& buffer, const RTDrawDescriptor& drawPolicy) {
             buffer.begin(drawPolicy);
         }
-        static void end(glFramebuffer& buffer, bool needsUnbind) {
+        static void end(glFramebuffer& buffer, const bool needsUnbind) {
             buffer.end(needsUnbind);
         }
 

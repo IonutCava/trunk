@@ -3,14 +3,12 @@
 #include "config.h"
 
 #include "Platform/Headers/PlatformRuntime.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glLockManager.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 #include "Headers/glTexture.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
-
-#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
@@ -25,15 +23,15 @@ glTexture::glTexture(GFXDevice& context,
 
     : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor),
       glObject(glObjectType::TYPE_TEXTURE, context),
-     _lockManager(MemoryManager_NEW glLockManager()),
-     _loadingData(_data)
+     _loadingData(_data),
+     _lockManager(MemoryManager_NEW glLockManager())
 {
     _allocatedStorage = false;
 
     processTextureType();
-    _loadingData._textureType = _descriptor.type();
+    _loadingData._textureType = _descriptor.texType();
 
-    _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
+    _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.texType())];
 
     U32 tempHandle = 0;
     if (GL_API::s_texturePool.typeSupported(_type)) {
@@ -43,16 +41,13 @@ glTexture::glTexture(GFXDevice& context,
     }
     _loadingData._textureHandle = tempHandle;
 
-    assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
-    _loadingData._samplerHandle = GL_API::getOrCreateSamplerObject(_descriptor.samplerDescriptor());
-
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_TEXTURE, tempHandle, -1, name.c_str());
     }
 
     // Loading from file usually involves data that doesn't change, so call this here.
     addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
-        if (automaticMipMapGeneration() && _descriptor.samplerDescriptor().generateMipMaps()) {
+        if (automaticMipMapGeneration() && hasMipMaps()) {
             GL_API::queueComputeMipMap(_loadingData._textureHandle);
         }
         _data = _loadingData;
@@ -67,26 +62,26 @@ glTexture::~glTexture()
 
 void glTexture::processTextureType() noexcept {
     if (_descriptor.msaaSamples() == 0) {
-        if (_descriptor.type() == TextureType::TEXTURE_2D_MS) {
-            _descriptor.type(TextureType::TEXTURE_2D);
+        if (_descriptor.texType() == TextureType::TEXTURE_2D_MS) {
+            _descriptor.texType(TextureType::TEXTURE_2D);
         }
-        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
-            _descriptor.type(TextureType::TEXTURE_2D_ARRAY);
+        if (_descriptor.texType() == TextureType::TEXTURE_2D_ARRAY_MS) {
+            _descriptor.texType(TextureType::TEXTURE_2D_ARRAY);
         }
     }
     else {
-        if (_descriptor.type() == TextureType::TEXTURE_2D) {
-            _descriptor.type(TextureType::TEXTURE_2D_MS);
+        if (_descriptor.texType() == TextureType::TEXTURE_2D) {
+            _descriptor.texType(TextureType::TEXTURE_2D_MS);
         }
-        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY) {
-            _descriptor.type(TextureType::TEXTURE_2D_ARRAY_MS);
+        if (_descriptor.texType() == TextureType::TEXTURE_2D_ARRAY) {
+            _descriptor.texType(TextureType::TEXTURE_2D_ARRAY_MS);
         }
     }
 }
 
 void glTexture::validateDescriptor() {
     Texture::validateDescriptor();
-    _loadingData._textureType = _descriptor.type();
+    _loadingData._textureType = _descriptor.texType();
 }
 
 bool glTexture::unload() {
@@ -101,7 +96,7 @@ bool glTexture::unload() {
         if (GL_API::s_texturePool.typeSupported(_type)) {
             GL_API::s_texturePool.deallocate(textureID, _type);
         } else {
-            Divide::GL_API::deleteTextures(1, &textureID, _descriptor.type());
+            Divide::GL_API::deleteTextures(1, &textureID, _descriptor.texType());
         }
         _data._textureHandle = 0u;
     }
@@ -132,13 +127,13 @@ void glTexture::setMipRangeInternal(U16 base, U16 max) noexcept {
 
 void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) {
     const GLenum oldTexType = _type;
-    const TextureType oldTexTypeDescriptor = _descriptor.type();
+    const TextureType oldTexTypeDescriptor = _descriptor.texType();
     _loadingData = _data;
     _data = {};
 
     processTextureType();
-    _loadingData._textureType = _descriptor.type();
-    _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.type())];
+    _loadingData._textureType = _descriptor.texType();
+    _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.texType())];
 
     if (_loadingData._textureHandle > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
@@ -159,9 +154,7 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
         _loadingData._textureHandle = tempHandle;
     }
 
-    const vec2<U16> mipLevels(0, _descriptor.samplerDescriptor().generateMipMaps()
-                                    ? 1 + Texture::computeMipCount(_width, _height)
-                                    : 1);
+    const vec2<U16> mipLevels(0, hasMipMaps() ? 1 + Texture::computeMipCount(_width, _height) : 1);
 
     _allocatedStorage = false;
     // We may have limited the number of mips
@@ -170,7 +163,7 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
 
     loadData(ptr, dimensions);
 
-    if (automaticMipMapGeneration() && _descriptor.samplerDescriptor().generateMipMaps()) {
+    if (automaticMipMapGeneration() && hasMipMaps()) {
         GL_API::queueComputeMipMap(_loadingData._textureHandle);
     }
     _data = _loadingData;
@@ -181,7 +174,7 @@ void glTexture::reserveStorage() {
         !(_loadingData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
 
-    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
+    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
     const GLuint handle = _loadingData._textureHandle;
     const GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
     const GLushort mipMaxLevel = _descriptor.mipLevels().max;
@@ -246,7 +239,7 @@ void glTexture::reserveStorage() {
 
 void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) {
     // Create a new Rendering API-dependent texture object
-    _descriptor.type( _loadingData._textureType);
+    _descriptor.texType( _loadingData._textureType);
 
     // This should never be called for compressed textures                            
     assert(!_descriptor.compressed());
@@ -313,7 +306,7 @@ void glTexture::loadData(const ImageTools::ImageData& imageData) {
 void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
 
     _descriptor.autoMipMaps(false);
-    const GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
+    const GLenum glFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
     const U32 numLayers = imageData.layerCount();
 
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
@@ -438,16 +431,10 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) {
                         glType,
                         mip->_size == 0 ? NULL : mip->data());
                 } break;
+                default: break;
             }
         }
     }
-}
-
-
-void glTexture::setCurrentSampler(const SamplerDescriptor& descriptor) {
-    Texture::setCurrentSampler(descriptor);
-    _data._samplerHandle = GL_API::getOrCreateSamplerObject(descriptor);
-    _loadingData._samplerHandle = _data._samplerHandle;
 }
 
 void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
@@ -456,10 +443,9 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
     const GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
                                : (write ? GL_WRITE_ONLY : GL_NONE);
 
-    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb());
-    GL_API::getStateTracker().bindTextureImage(slot, _descriptor.type(), _data._textureHandle, level, layered, layer, access, glInternalFormat);
+    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
+    GL_API::getStateTracker().bindTextureImage(slot, _descriptor.texType(), _data._textureHandle, level, layered, layer, access, glInternalFormat);
 }
-
 
 
 /*static*/ void glTexture::copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params) {

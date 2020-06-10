@@ -45,21 +45,21 @@ namespace eastl {
         dvd_eastl_allocator() = default;
         dvd_eastl_allocator(const char* pName) noexcept { (void)pName; };
         dvd_eastl_allocator(const allocator& x, const char* pName) noexcept { (void)pName; };
-        inline dvd_eastl_allocator& operator=(const dvd_eastl_allocator& EASTL_NAME(x)) { return *this; }
+        dvd_eastl_allocator& operator=(const dvd_eastl_allocator& EASTL_NAME(x)) { return *this; }
 
-        [[nodiscard]] inline void* allocate(size_t n, int flags = 0)
+        [[nodiscard]] void* allocate(const size_t n, int flags = 0)
         {
             (void)flags;
             return xmalloc(n);
         }
 
-        [[nodiscard]] inline void* allocate(size_t n, size_t alignment, size_t offset, int flags = 0)
+        [[nodiscard]] void* allocate(const size_t n, size_t alignment, size_t offset, int flags = 0)
         {
             (void)flags; (void)offset; (void)alignment;
             return xmalloc(n);
         }
 
-        inline void deallocate(void* p, size_t n)
+        void deallocate(void* p, size_t n)
         {
             (void)n;
             //delete[](char*)p;
@@ -67,8 +67,8 @@ namespace eastl {
         }
 
         [[nodiscard]]
-        inline const char* get_name()                  const noexcept { return "dvd custom eastl allocator"; }
-        inline       void  set_name(const char* pName)       noexcept { (void)pName; }
+        const char* get_name()                  const noexcept { return "dvd custom eastl allocator"; }
+              void  set_name(const char* pName)       noexcept { (void)pName; }
     };
 
 

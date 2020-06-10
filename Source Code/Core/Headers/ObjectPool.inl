@@ -53,7 +53,7 @@ PoolHandle ObjectPool<T, N>::allocate(Args... args) {
 }
 
 template<typename T, size_t N>
-void ObjectPool<T, N>::deallocate(PoolHandle handle) {
+void ObjectPool<T, N>::deallocate(const PoolHandle handle) {
     T* obj = find(handle);
     MemoryManager::SAFE_DELETE(obj);
     unregisterExisting(handle);
@@ -67,7 +67,7 @@ PoolHandle ObjectPool<T, N>::allocate(void* mem, Args... args) {
 }
 
 template<typename T, size_t N>
-void ObjectPool<T, N>::deallocate(void* mem, PoolHandle handle) {
+void ObjectPool<T, N>::deallocate(void* mem, const PoolHandle handle) {
     T* obj = find(handle);
     if (obj) {
         obj->~T();
@@ -92,7 +92,7 @@ PoolHandle ObjectPool<T, N>::registerExisting(T& object) {
 }
 
 template<typename T, size_t N>
-void ObjectPool<T, N>::unregisterExisting(PoolHandle handle) {
+void ObjectPool<T, N>::unregisterExisting(const PoolHandle handle) {
     UniqueLock<SharedMutex> w_lock(_poolLock);
     PoolHandle& it = _ids[handle._id - 1];
     if (it._generation == handle._generation) {

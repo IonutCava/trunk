@@ -23,7 +23,7 @@ glVAOPool::~glVAOPool()
     destroy();
 }
 
-void glVAOPool::init(U32 capacity) {
+void glVAOPool::init(const U32 capacity) {
     destroy();
 
     GLuint warmupVAOs[g_numWarmupVAOs] = { { 0u } };
@@ -63,7 +63,7 @@ GLuint glVAOPool::allocate() {
     return 0;
 }
 
-void glVAOPool::allocate(U32 count, GLuint* vaosOUT) {
+void glVAOPool::allocate(const U32 count, GLuint* vaosOUT) {
     for (U32 i = 0; i < count; ++i) {
         vaosOUT[i] = allocate();
     }
@@ -72,12 +72,12 @@ void glVAOPool::allocate(U32 count, GLuint* vaosOUT) {
 void glVAOPool::deallocate(GLuint& vao) {
     assert(Runtime::isMainThread());
 
-    vectorEASTL<std::pair<GLuint, bool>>::iterator it;
-    it = eastl::find_if(eastl::begin(_pool),
-        eastl::end(_pool),
-        [vao](std::pair<GLuint, bool>& entry) noexcept {
-            return entry.first == vao;
-        });
+    vectorEASTL<std::pair<GLuint, bool>>::iterator it = eastl::find_if(eastl::begin(_pool),
+                                                                       eastl::end(_pool),
+                                                                       [vao](std::pair<GLuint, bool>& entry) noexcept
+                                                                       {
+                                                                           return entry.first == vao;
+                                                                       });
 
     assert(it != eastl::cend(_pool));
     // We don't know what kind of state we may have in the current VAO so delete it and create a new one.

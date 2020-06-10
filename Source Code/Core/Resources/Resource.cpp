@@ -2,15 +2,14 @@
 
 #include "Headers/Resource.h"
 #include "Headers/ResourceCache.h"
-#include "Core/Headers/Application.h"
 
 namespace Divide {
 
 //---------------------------- Resource ------------------------------------------//
-Resource::Resource(ResourceType type, const Str256& resourceName)
+Resource::Resource(const ResourceType type, const Str256& resourceName)
     : GUIDWrapper(),
-      _resourceType(type),
       _resourceName(resourceName),
+      _resourceType(type),
       _resourceState(ResourceState::RES_CREATED)
 {
 }
@@ -19,35 +18,35 @@ ResourceState Resource::getState() const noexcept {
     return _resourceState.load(std::memory_order_relaxed);
 }
 
-void Resource::setState(ResourceState currentState) noexcept {
+void Resource::setState(const ResourceState currentState) noexcept {
     _resourceState.store(currentState, std::memory_order_relaxed);
 }
 
 //---------------------------- Cached Resource ------------------------------------//
-CachedResource::CachedResource(ResourceType type,
-                               size_t descriptorHash,
+CachedResource::CachedResource(const ResourceType type,
+                               const size_t descriptorHash,
                                const Str256& resourceName)
     : CachedResource(type, descriptorHash, resourceName, "", "")
 {
 }
 
-CachedResource::CachedResource(ResourceType type,
-                               size_t descriptorHash,
+CachedResource::CachedResource(const ResourceType type,
+                               const size_t descriptorHash,
                                const Str256& resourceName,
                                const stringImpl& assetName)
     : CachedResource(type, descriptorHash, resourceName, assetName, "")
 {
 }
 
-CachedResource::CachedResource(ResourceType type,
-                               size_t descriptorHash,
+CachedResource::CachedResource(const ResourceType type,
+                               const size_t descriptorHash,
                                const Str256& resourceName,
                                const stringImpl& assetName,
                                const stringImpl& assetLocation)
     : Resource(type, resourceName),
-      _descriptorHash(descriptorHash),
+      _assetLocation(assetLocation),
       _assetName(assetName),
-      _assetLocation(assetLocation)
+      _descriptorHash(descriptorHash)
 {
 }
 
@@ -61,7 +60,7 @@ bool CachedResource::unload() {
     return true;
 }
 
-void CachedResource::addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk) {
+void CachedResource::addStateCallback(const ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk) {
     {
         UniqueLock<Mutex> w_lock(_callbackLock);
         _loadingCallbacks[to_U32(targetState)].push_back(cbk);
@@ -71,7 +70,7 @@ void CachedResource::addStateCallback(ResourceState targetState, const DELEGATE<
     }
 }
 
-void CachedResource::setState(ResourceState currentState) noexcept {
+void CachedResource::setState(const ResourceState currentState) noexcept {
     Resource::setState(currentState);
     flushStateCallbacks();
 }

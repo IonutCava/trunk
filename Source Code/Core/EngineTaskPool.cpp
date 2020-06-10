@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-void WaitForAllTasks(PlatformContext& context, bool yield, bool flushCallbacks) {
+void WaitForAllTasks(PlatformContext& context, const bool yield, const bool flushCallbacks) {
     WaitForAllTasks(context.taskPool(TaskPoolType::HIGH_PRIORITY), yield, flushCallbacks);
 }
 

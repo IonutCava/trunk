@@ -2,6 +2,8 @@
 
 #include "Headers/Pipeline.h"
 
+#include "Geometry/Material/Headers/ShaderComputeQueue.h"
+
 namespace Divide {
 
 size_t PipelineDescriptor::getHash() const noexcept {

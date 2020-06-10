@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <model>flag_obj.obj</model>
+<MESH/>
 <TRANSFORM>
     <Transform>
         <position x="150" y="14.826458" z="0"/>
@@ -16,4 +17,3 @@
     <Show__Axis>false</Show__Axis>
 </RENDERING>
 <NETWORKING/>
-<MESH/>

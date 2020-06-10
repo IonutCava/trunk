@@ -50,7 +50,7 @@ vec3 getDirectionalLightContribution(in uint dirLightCount, in vec3 albedo, in v
         const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
 
         vec4 temp = getBRDFFactors(lightDirectionWV,
-                                   vec4(light._colour.rgb, 1.0f),
+                                   vec4(light._colour.rgb, 1.f),
                                    occlusionMetallicRoughness,
                                    vec4(albedo, shadowFactor), 
                                    normalWV,

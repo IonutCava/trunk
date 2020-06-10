@@ -2,14 +2,12 @@
 
 #include "Headers/ShaderProgram.h"
 
-#include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Application.h"
-#include "Core/Headers/StringHelper.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
-#include "Platform/Video/Headers/GFXDevice.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
     bool ShaderProgram::s_useShaderTextCache = false;
@@ -37,14 +35,14 @@ size_t ShaderProgramDescriptor::getHash() const noexcept {
 }
 
 ShaderProgram::ShaderProgram(GFXDevice& context, 
-                             size_t descriptorHash,
+                             const size_t descriptorHash,
                              const Str256& shaderName,
                              const Str256& shaderFileName,
                              const stringImpl& shaderFileLocation,
                              const ShaderProgramDescriptor& descriptor,
-                             bool asyncLoad)
+                             const bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
-      GraphicsResource(context, GraphicsResource::Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
+      GraphicsResource(context, Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
       _descriptor(descriptor),
       _asyncLoad(asyncLoad)
 {
@@ -119,7 +117,7 @@ bool ShaderProgram::recompileShaderProgram(const Str256& name) {
     return state;
 }
 
-void ShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) {
+void ShaderProgram::onStartup(ResourceCache* parentCache) {
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -160,16 +158,18 @@ void ShaderProgram::onShutdown() {
     s_shaderPrograms.clear();
 }
 
-bool ShaderProgram::updateAll(const U64 deltaTimeUS) {
+bool ShaderProgram::updateAll() {
     OPTICK_EVENT();
 
     static bool onOddFrame = false;
 
     onOddFrame = !onOddFrame;
-    if (!Config::Build::IS_RELEASE_BUILD && onOddFrame) {
-        SharedLock<SharedMutex> r_lock(s_programLock);
-        for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-            it.second.first->recompile(false);
+    if_constexpr(!Config::Build::IS_RELEASE_BUILD) {
+        if (onOddFrame) {
+            SharedLock<SharedMutex> r_lock(s_programLock);
+            for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
+                it.second.first->recompile(false);
+            }
         }
     }
 
@@ -210,7 +210,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     return false;
 }
 
-ShaderProgram* ShaderProgram::findShaderProgram(I64 shaderHandle) {
+ShaderProgram* ShaderProgram::findShaderProgram(const I64 shaderHandle) {
     SharedLock<SharedMutex> r_lock(s_programLock);
     const auto& it = s_shaderPrograms.find(shaderHandle);
     if (it != eastl::cend(s_shaderPrograms)) {
@@ -220,7 +220,7 @@ ShaderProgram* ShaderProgram::findShaderProgram(I64 shaderHandle) {
     return nullptr;
 }
 
-ShaderProgram* ShaderProgram::findShaderProgram(size_t shaderHash) {
+ShaderProgram* ShaderProgram::findShaderProgram(const size_t shaderHash) {
     SharedLock<SharedMutex> r_lock(s_programLock);
     for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
         if (it.second.second == shaderHash) {

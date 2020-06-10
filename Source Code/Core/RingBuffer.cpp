@@ -4,28 +4,28 @@
 
 namespace Divide {
 
-RingBufferSeparateWrite::RingBufferSeparateWrite(I32 queueLength, bool separateReadWrite, bool writeAhead) noexcept :
+RingBufferSeparateWrite::RingBufferSeparateWrite(const I32 queueLength, const bool separateReadWrite, const bool writeAhead) noexcept :
         _queueLength(std::max(queueLength, 1)),
-        _separateReadWrite(separateReadWrite),
-        _writeAhead(writeAhead)
+        _writeAhead(writeAhead),
+        _separateReadWrite(separateReadWrite)
 {
     _queueIndex = 0;
 }
 
-void RingBufferSeparateWrite::resize(I32 queueLength) noexcept {
+void RingBufferSeparateWrite::resize(const I32 queueLength) noexcept {
     if (_queueLength != std::max(queueLength, 1)) {
         _queueLength = std::max(queueLength, 1);
         _queueIndex = std::min(_queueIndex.load(), _queueLength - 1);
     }
 }
 
-RingBuffer::RingBuffer(I32 queueLength)  noexcept :
+RingBuffer::RingBuffer(const I32 queueLength)  noexcept :
     _queueLength(std::max(queueLength, 1))
 {
     _queueIndex = 0;
 }
 
-void RingBuffer::resize(I32 queueLength) noexcept {
+void RingBuffer::resize(const I32 queueLength) noexcept {
     _queueLength = std::max(queueLength, 1);
     _queueIndex = 0;
 }

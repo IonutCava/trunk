@@ -1,41 +1,27 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/glResources.h"
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/Application.h"
-#include "Utility/Headers/Localization.h"
 
 #include <GLIM/glim.h>
 
 namespace Divide {
 
-glObject::glObject(glObjectType type, GFXDevice& context)
+glObject::glObject(const glObjectType type, GFXDevice& context)
     : _type(type)
 {
 }
 
-VAOBindings::VAOBindings() noexcept
-    : _maxBindings(0),
-      _cachedData(nullptr),
-      _cachedVao(0)
-{
-}
-
-VAOBindings::~VAOBindings()
-{
-}
-
-void VAOBindings::init(U32 maxBindings) {
+void VAOBindings::init(const U32 maxBindings) {
     _maxBindings = maxBindings;
 }
 
-VAOBindings::VAOData* VAOBindings::getVAOData(GLuint vao) {
-    VAOData* data = nullptr;
+VAOBindings::VAOData* VAOBindings::getVAOData(const GLuint vao) {
+    VAOData* data;
     if (vao == _cachedVao) {
         data = _cachedData;
     } else {
@@ -47,7 +33,7 @@ VAOBindings::VAOData* VAOBindings::getVAOData(GLuint vao) {
     return data;
 }
 
-GLuint VAOBindings::instanceDivisor(GLuint vao, GLuint index) {
+GLuint VAOBindings::instanceDivisor(const GLuint vao, const GLuint index) {
     VAOData* data = getVAOData(vao);
 
     const size_t count = data->second.size();
@@ -61,7 +47,7 @@ GLuint VAOBindings::instanceDivisor(GLuint vao, GLuint index) {
     return data->second.front();
 }
 
-void VAOBindings::instanceDivisor(GLuint vao, GLuint index, GLuint divisor) {
+void VAOBindings::instanceDivisor(const GLuint vao, const GLuint index, const GLuint divisor) {
     VAOData* data = getVAOData(vao);
 
     const size_t count = data->second.size();
@@ -71,7 +57,7 @@ void VAOBindings::instanceDivisor(GLuint vao, GLuint index, GLuint divisor) {
     data->second[index] = divisor;
 }
 
-const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, GLuint index) {
+const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(const GLuint vao, const GLuint index) {
     VAOData* data = getVAOData(vao);
    
     const size_t count = data->first.size();
@@ -85,7 +71,7 @@ const VAOBindings::BufferBindingParams& VAOBindings::bindingParams(GLuint vao, G
     return data->first.front();
 }
 
-void VAOBindings::bindingParams(GLuint vao, GLuint index, const BufferBindingParams& newParams) {
+void VAOBindings::bindingParams(const GLuint vao, const GLuint index, const BufferBindingParams& newParams) {
     VAOData* data = getVAOData(vao);
 
     const size_t count = data->first.size();
@@ -256,62 +242,66 @@ void fillEnumTables() {
     glQueryTypeTable[to_base(QueryType::GPU_TIME)] = GL_TIMESTAMP;
 }
 
-GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool srgb) {
+GLenum internalFormat(const GFXImageFormat baseFormat, const GFXDataFormat dataType, const bool srgb, const bool normalized) {
     switch (baseFormat) {
         case GFXImageFormat::RED:{
             assert(!srgb);
             switch (dataType) {
-                case GFXDataFormat::UNSIGNED_BYTE: return GL_R8;
-                case GFXDataFormat::UNSIGNED_SHORT: return GL_R16;
-                case GFXDataFormat::UNSIGNED_INT: return GL_R32UI;
-                case GFXDataFormat::SIGNED_BYTE: return GL_R8I;
-                case GFXDataFormat::SIGNED_SHORT: return GL_R16I;
-                case GFXDataFormat::SIGNED_INT: return GL_R32I;
+                case GFXDataFormat::UNSIGNED_BYTE: return normalized ? GL_R8 : GL_R8UI;
+                case GFXDataFormat::UNSIGNED_SHORT: return normalized ? GL_R16 : GL_R16UI;
+                case GFXDataFormat::UNSIGNED_INT: { assert(!normalized && "Format not supported"); return GL_R32UI; }
+                case GFXDataFormat::SIGNED_BYTE: return normalized ? GL_R8_SNORM : GL_R8I;
+                case GFXDataFormat::SIGNED_SHORT: return normalized ? GL_R16_SNORM : GL_R16I;
+                case GFXDataFormat::SIGNED_INT: { assert(!normalized && "Format not supported"); return GL_R32I; }
                 case GFXDataFormat::FLOAT_16: return GL_R16F;
                 case GFXDataFormat::FLOAT_32: return GL_R32F;
+                default: DIVIDE_UNEXPECTED_CALL();
             };
         }break;
         case GFXImageFormat::RG: {
             assert(!srgb);
             switch (dataType) {
-                case GFXDataFormat::UNSIGNED_BYTE: return GL_RG8;
-                case GFXDataFormat::UNSIGNED_SHORT: return GL_RG16;
-                case GFXDataFormat::UNSIGNED_INT: return GL_RG32UI;
-                case GFXDataFormat::SIGNED_BYTE: return GL_RG8I;
-                case GFXDataFormat::SIGNED_SHORT: return GL_RG16I;
-                case GFXDataFormat::SIGNED_INT: return GL_RG32I;
+                case GFXDataFormat::UNSIGNED_BYTE: return normalized ? GL_RG8 : GL_RG8UI;
+                case GFXDataFormat::UNSIGNED_SHORT: return normalized ? GL_RG16 : GL_RG16UI;
+                case GFXDataFormat::UNSIGNED_INT: { assert(!normalized && "Format not supported"); return GL_RG32UI; }
+                case GFXDataFormat::SIGNED_BYTE: return normalized ? GL_RG8_SNORM : GL_RG8I;
+                case GFXDataFormat::SIGNED_SHORT: return normalized ? GL_RG16_SNORM : GL_RG16I;
+                case GFXDataFormat::SIGNED_INT: { assert(!normalized && "Format not supported"); return GL_RG32I; }
                 case GFXDataFormat::FLOAT_16: return GL_RG16F;
                 case GFXDataFormat::FLOAT_32: return GL_RG32F;
+                default: DIVIDE_UNEXPECTED_CALL();
             };
         }break;
         case GFXImageFormat::BGR:
         case GFXImageFormat::RGB:
         {
-            assert(!srgb || srgb == (dataType == GFXDataFormat::UNSIGNED_BYTE));
+            assert(!srgb || srgb == (dataType == GFXDataFormat::UNSIGNED_BYTE && normalized));
             switch (dataType) {
-                case GFXDataFormat::UNSIGNED_BYTE: return srgb ? GL_SRGB8 : GL_RGB8;
-                case GFXDataFormat::UNSIGNED_SHORT: return GL_RGB16;
-                case GFXDataFormat::UNSIGNED_INT: return GL_RGB32UI;
-                case GFXDataFormat::SIGNED_BYTE: return GL_RGB8I;
-                case GFXDataFormat::SIGNED_SHORT: return GL_RGB16I;
-                case GFXDataFormat::SIGNED_INT: return GL_RGB32I;
+                case GFXDataFormat::UNSIGNED_BYTE: return normalized ? (srgb ? GL_SRGB8 : GL_RGB8) : GL_RGB8UI;
+                case GFXDataFormat::UNSIGNED_SHORT: return normalized ? GL_RGB16 : GL_RGB16UI;
+                case GFXDataFormat::UNSIGNED_INT: { assert(!normalized && "Format not supported"); return GL_RGB32UI; }
+                case GFXDataFormat::SIGNED_BYTE: return normalized ? GL_RGB8_SNORM : GL_RGB8I;
+                case GFXDataFormat::SIGNED_SHORT: return normalized ? GL_RGB16_SNORM : GL_RGB16I;
+                case GFXDataFormat::SIGNED_INT: { assert(!normalized && "Format not supported"); return GL_RGB32I; }
                 case GFXDataFormat::FLOAT_16: return GL_RGB16F;
                 case GFXDataFormat::FLOAT_32: return GL_RGB32F;
+                default: DIVIDE_UNEXPECTED_CALL();
             };
         }break;
         case GFXImageFormat::BGRA:
         case GFXImageFormat::RGBA:
         {
-            assert(!srgb || srgb == (dataType == GFXDataFormat::UNSIGNED_BYTE));
+            assert(!srgb || srgb == (dataType == GFXDataFormat::UNSIGNED_BYTE && normalized));
             switch (dataType) {
-                case GFXDataFormat::UNSIGNED_BYTE: return srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8;
-                case GFXDataFormat::UNSIGNED_SHORT: return GL_RGBA16;
-                case GFXDataFormat::UNSIGNED_INT: return GL_RGBA32UI;
-                case GFXDataFormat::SIGNED_BYTE: return GL_RGBA8I;
-                case GFXDataFormat::SIGNED_SHORT: return GL_RGBA16I;
-                case GFXDataFormat::SIGNED_INT: return GL_RGBA32I;
+                case GFXDataFormat::UNSIGNED_BYTE: return normalized ? (srgb ? GL_SRGB8_ALPHA8 : GL_RGBA8) : GL_RGBA8UI;
+                case GFXDataFormat::UNSIGNED_SHORT: return normalized ? GL_RGBA16 : GL_RGBA16UI;
+                case GFXDataFormat::UNSIGNED_INT: { assert(!normalized && "Format not supported"); return GL_RGBA32UI; }
+                case GFXDataFormat::SIGNED_BYTE: return normalized ? GL_RGBA8_SNORM : GL_RGBA8I;
+                case GFXDataFormat::SIGNED_SHORT: return normalized ? GL_RGBA16_SNORM : GL_RGBA16I;
+                case GFXDataFormat::SIGNED_INT: { assert(!normalized && "Format not supported"); return GL_RGBA32I; }
                 case GFXDataFormat::FLOAT_16: return GL_RGBA16F;
                 case GFXDataFormat::FLOAT_32: return GL_RGBA32F;
+                default: DIVIDE_UNEXPECTED_CALL();
             };
         }break;
         case GFXImageFormat::DEPTH_COMPONENT:
@@ -325,6 +315,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
                 case GFXDataFormat::UNSIGNED_INT: return GL_DEPTH_COMPONENT32;
                 case GFXDataFormat::FLOAT_16:
                 case GFXDataFormat::FLOAT_32: return GL_DEPTH_COMPONENT32F;
+                default: DIVIDE_UNEXPECTED_CALL();
             };
         }break;
         case GFXImageFormat::COMPRESSED_RGB_DXT1:
@@ -334,7 +325,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
             }
 
             return glImageFormatTable[to_base(baseFormat)];
-        }break;
+        };
         case GFXImageFormat::COMPRESSED_RGBA_DXT1:
         {
             if (srgb) {
@@ -342,7 +333,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
             }
 
             return glImageFormatTable[to_base(baseFormat)];
-        }break;
+        };
         case GFXImageFormat::COMPRESSED_RGBA_DXT3:
         {
             if (srgb) {
@@ -350,7 +341,7 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
             }
 
             return glImageFormatTable[to_base(baseFormat)];
-        }break;
+        };
         case GFXImageFormat::COMPRESSED_RGBA_DXT5:
         {
             if (srgb) {
@@ -358,7 +349,8 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
             }
 
             return glImageFormatTable[to_base(baseFormat)];
-        }break;
+        };
+        default: DIVIDE_UNEXPECTED_CALL();
     }
 
     return GL_NONE;
@@ -367,11 +359,11 @@ GLenum internalFormat(GFXImageFormat baseFormat, GFXDataFormat dataType, bool sr
 namespace {
 
 void submitIndirectCommand(const IndirectDrawCommand& cmd,
-                           U32 drawCount,
-                           GLenum mode,
-                           GLenum internalFormat,
-                           bool drawIndexed,
-                           GLuint cmdBufferOffset)
+                           const U32 drawCount,
+                           const GLenum mode,
+                           const GLenum internalFormat,
+                           const bool drawIndexed,
+                           const GLuint cmdBufferOffset)
 {
     const size_t offset = cmdBufferOffset * sizeof(IndirectDrawCommand);
     if (drawCount == 1) {
@@ -393,10 +385,10 @@ void submitIndirectCommand(const IndirectDrawCommand& cmd,
 }
 
 void submitDirectCommand(const IndirectDrawCommand& cmd,
-                         U32 drawCount,
-                         GLenum mode,
-                         GLenum internalFormat,
-                         bool drawIndexed,
+                         const U32 drawCount,
+                         const GLenum mode,
+                         const GLenum internalFormat,
+                         const bool drawIndexed,
                          size_t* countData,
                          bufferPtr indexData) 
 {
@@ -404,9 +396,9 @@ void submitDirectCommand(const IndirectDrawCommand& cmd,
         // We could just submit a multi-draw with a draw count of 1, but this might avoid some CPU overhead.
         // Either I or the driver has to do the count check/loop, but I can profile my own code.
         if (drawIndexed) {
-            glMultiDrawElements(mode, (GLsizei*)countData, internalFormat, (void* const*)indexData, drawCount);
+            glMultiDrawElements(mode, reinterpret_cast<GLsizei*>(countData), internalFormat, static_cast<void* const*>(indexData), drawCount);
         } else {
-            glMultiDrawArrays(mode, (GLint*)indexData, (GLsizei*)countData, drawCount);
+            glMultiDrawArrays(mode, static_cast<GLint*>(indexData), reinterpret_cast<GLsizei*>(countData), drawCount);
         }
     } else {
         if (drawIndexed) {
@@ -432,12 +424,12 @@ void submitDirectCommand(const IndirectDrawCommand& cmd,
     }
 }
 
-void submitRenderCommand(GLenum primitiveType,
+void submitRenderCommand(const GLenum primitiveType,
                          const GenericDrawCommand& drawCommand,
-                         bool drawIndexed,
-                         bool useIndirectBuffer,
-                         GLuint cmdBufferOffset,
-                         GLenum internalFormat,
+                         const bool drawIndexed,
+                         const bool useIndirectBuffer,
+                         const GLuint cmdBufferOffset,
+                         const GLenum internalFormat,
                          size_t* countData,
                          bufferPtr indexData)
 {
@@ -451,10 +443,10 @@ void submitRenderCommand(GLenum primitiveType,
 };
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,
-                         bool drawIndexed,
-                         bool useIndirectBuffer,
-                         GLuint cmdBufferOffset,
-                         GLenum internalFormat,
+                         const bool drawIndexed,
+                         const bool useIndirectBuffer,
+                         const GLuint cmdBufferOffset,
+                         const GLenum internalFormat,
                          size_t* countData,
                          bufferPtr indexData)
 {
@@ -518,16 +510,16 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
         poolImpl pool;
         pool._usageMap.reserve(it.second); 
         for (U32 i = 0; i < it.second; ++i) {
-            pool._usageMap.push_back({ State::FREE });
+            pool._usageMap.push_back(AtomicWrapper<State>{ State::FREE });
         }
         pool._type = it.first;
         pool._handles.resize(it.second, 0u);
         pool._lifeLeft.resize(it.second, 0u);
         pool._tempBuffer.resize(it.second, 0u);
         if (it.first != GL_NONE) {
-            glCreateTextures(it.first, (GLsizei)it.second, pool._handles.data());
+            glCreateTextures(it.first, static_cast<GLsizei>(it.second), pool._handles.data());
         } else {
-            glGenTextures((GLsizei)it.second, pool._handles.data());
+            glGenTextures(static_cast<GLsizei>(it.second), pool._handles.data());
         }
         _types.push_back(it.first);
 
@@ -537,11 +529,11 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
 
 void glTexturePool::onFrameEnd() {
     for (auto& it : _pools) {
-        onFrameEndInternal(it.second);
+        OnFrameEndInternal(it.second);
     }
 }
 
-void glTexturePool::onFrameEndInternal(poolImpl & impl) {
+void glTexturePool::OnFrameEndInternal(poolImpl & impl) {
     const U32 entryCount = to_U32(impl._tempBuffer.size());
 
     GLuint count = 0;
@@ -590,7 +582,7 @@ void glTexturePool::destroy() {
     for (auto& [type, impl] : _pools) {
 
         const U32 entryCount = to_U32(impl._tempBuffer.size());
-        glDeleteTextures((GLsizei)entryCount, impl._handles.data());
+        glDeleteTextures(static_cast<GLsizei>(entryCount), impl._handles.data());
         std::memset(impl._handles.data(), 0, sizeof(GLuint) * entryCount);
         std::memset(impl._lifeLeft.data(), 0, sizeof(U32) * entryCount);
 
@@ -601,11 +593,11 @@ void glTexturePool::destroy() {
     }
 }
 
-GLuint glTexturePool::allocate(GLenum type, bool retry) {
+GLuint glTexturePool::allocate(GLenum type, const bool retry) {
     return allocate(0u, type, retry).first;
 }
 
-std::pair<GLuint, bool> glTexturePool::allocate(size_t hash, GLenum type, bool retry) {
+std::pair<GLuint, bool> glTexturePool::allocate(const size_t hash, const GLenum type, const bool retry) {
     auto it = _pools.find(type);
     assert(it != _pools.cend());
 
@@ -614,7 +606,7 @@ std::pair<GLuint, bool> glTexturePool::allocate(size_t hash, GLenum type, bool r
     U32 idx = poolImpl::INVALID_IDX;
     if (hash != 0u) {
         const auto& cacheIt = impl._cache.find(hash);
-        if (cacheIt != eastl::cend(impl._cache)) {
+        if (cacheIt != cend(impl._cache)) {
             idx = cacheIt->second;
         }
     }
@@ -644,7 +636,7 @@ std::pair<GLuint, bool> glTexturePool::allocate(size_t hash, GLenum type, bool r
     return std::make_pair(0u, false);
 }
 
-void glTexturePool::deallocate(GLuint& handle, GLenum type, U32 frameDelay) {
+void glTexturePool::deallocate(GLuint& handle, const GLenum type, const U32 frameDelay) {
     const auto it = _pools.find(type);
     assert(it != _pools.cend());
 
@@ -663,8 +655,8 @@ void glTexturePool::deallocate(GLuint& handle, GLenum type, U32 frameDelay) {
     DIVIDE_UNEXPECTED_CALL();
 }
 
-bool glTexturePool::hasPool(GLenum type) const {
-    return _pools.find(type) != eastl::cend(_pools);
+bool glTexturePool::hasPool(const GLenum type) const {
+    return _pools.find(type) != cend(_pools);
 }
 
 };  // namespace GLutil

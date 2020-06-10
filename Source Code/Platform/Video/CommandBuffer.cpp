@@ -1,34 +1,37 @@
 #include "stdafx.h"
 
 #include "Headers/CommandBuffer.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Platform/Video/Headers/Pipeline.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
 namespace GFX {
 
 namespace {
-    inline bool ShouldSkipType(const U8 typeIndex) noexcept {
+    bool ShouldSkipType(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
             case GFX::CommandType::BEGIN_DEBUG_SCOPE:
             case GFX::CommandType::END_DEBUG_SCOPE:
                 return true;
+            default: break;
         }
         return false;
     }
 
-    inline bool IsCameraCommand(const U8 typeIndex) noexcept {
+    bool IsCameraCommand(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
             case GFX::CommandType::PUSH_CAMERA:
             case GFX::CommandType::POP_CAMERA:
             case GFX::CommandType::SET_CAMERA:
                 return true;
+            default: break;
         }
         return false;
     }
 
-    inline bool DoesNotAffectRT(const U8 typeIndex) noexcept {
+    bool DoesNotAffectRT(const U8 typeIndex) noexcept {
         if (ShouldSkipType(typeIndex) || IsCameraCommand(typeIndex)) {
             return true;
         }
@@ -42,6 +45,7 @@ namespace {
             case GFX::CommandType::SEND_PUSH_CONSTANTS:
             case GFX::CommandType::SET_CLIPING_STATE:
                 return true;
+            default: break;
         }
         return false;
     }
@@ -93,8 +97,7 @@ void CommandBuffer::batch() {
 
     clean();
 
-    CommandBase* prevCommand = nullptr;
-    CommandType prevType = CommandType::COUNT;
+    CommandBase* prevCommand;
 
     const auto  EraseEmptyCommands = [this]() {
         const size_t initialSize = _commandOrder.size();
@@ -136,7 +139,7 @@ void CommandBuffer::batch() {
 
             tryMerge = false;
             prevCommand = nullptr;
-            prevType = CommandType::COUNT;
+            CommandType prevType = CommandType::COUNT;
             for (CommandEntry& entry : _commandOrder) {
                 if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !ShouldSkipType(entry._typeIndex)) {
                     const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
@@ -155,7 +158,7 @@ void CommandBuffer::batch() {
         }
     } while (EraseEmptyCommands());
 
-    // Now try and merge ONLY End/Begin render pass (don't unbind a render target if we immediatelly bind a new one
+    // Now try and merge ONLY End/Begin render pass (don't unbind a render target if we immediately bind a new one
     prevCommand = nullptr;
     for (const CommandEntry& entry : _commandOrder) {
         if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !DoesNotAffectRT(entry._typeIndex)) {
@@ -211,8 +214,7 @@ void CommandBuffer::batch() {
             case GFX::CommandType::SET_CLIPING_STATE:
             case GFX::CommandType::SWITCH_WINDOW: {
                 hasWork = true;
-                break;
-            }break;
+            } break;
             case GFX::CommandType::SET_MIP_LEVELS: {
                 const SetTextureMipLevelsCommand* crtCmd = get<SetTextureMipLevelsCommand>(cmd);
                 hasWork = crtCmd->_texture != nullptr && (crtCmd->_baseLevel != crtCmd->_texture->getBaseMipLevel() || crtCmd->_maxLevel != crtCmd->_texture->getMaxMipLevel());
@@ -225,6 +227,7 @@ void CommandBuffer::batch() {
                 const BindPipelineCommand* crtCmd = get<BindPipelineCommand>(cmd);
                 hasWork = crtCmd->_pipeline != nullptr && crtCmd->_pipeline->getHash() != 0;
             }break;
+            default: break;
         };
     }
 
@@ -249,9 +252,8 @@ void CommandBuffer::clean() {
     const DescriptorSet* prevDescriptorSet = nullptr;
     const BlendingProperties* prevBlendProperties = nullptr;
 
-    bool erase = false;
     for (CommandEntry& cmd :_commandOrder) {
-        erase = false;
+        bool erase = false;
 
         switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
@@ -492,7 +494,8 @@ ErrorType CommandBuffer::validate() const {
     }
 }
 
-void CommandBuffer::toString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out) const {
+void CommandBuffer::ToString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out)
+{
     const auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
         for (I32 i = 0; i < indent; ++i) {
             target.append("    ");
@@ -525,7 +528,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        toString(*get<CommandBase>(cmd), static_cast<GFX::CommandType>(cmd._typeIndex), crtIndent, out);
+        ToString(*get<CommandBase>(cmd), static_cast<GFX::CommandType>(cmd._typeIndex), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");
@@ -537,7 +540,7 @@ stringImpl CommandBuffer::toString() const {
 
 
 
-bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) noexcept {
+bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) noexcept {
     // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
     if (previousIDC._cmd.primCount != currentIDC._cmd.primCount && (previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1)) {
         return false;
@@ -564,7 +567,7 @@ bool BatchDrawCommands(bool byBaseInstance, GenericDrawCommand& previousIDC, Gen
 bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     OPTICK_EVENT();
 
-    const auto BatchCommands = [](DrawCommand::CommandContainer& commands, bool byBaseInstance) {
+    const auto BatchCommands = [](DrawCommand::CommandContainer& commands, const bool byBaseInstance) {
         const size_t commandCount = commands.size();
         for (size_t previousCommandIndex = 0, currentCommandIndex = 1;
              currentCommandIndex < commandCount;

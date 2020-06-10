@@ -45,12 +45,12 @@ FWD_DECLARE_MANAGED_CLASS(Material);
 FWD_DECLARE_MANAGED_CLASS(SceneNode);
 
 /// This class manages all of the RenderBins and renders them in the correct order
-class RenderQueue : public KernelComponent {
+class RenderQueue final : public KernelComponent {
   public: 
     using RenderBinArray = std::array<RenderBin*, RenderBinType::RBT_COUNT>;
 
   public:
-    RenderQueue(Kernel& parent);
+    explicit RenderQueue(Kernel& parent);
     ~RenderQueue();
 
     //binAndFlag: if true, populate from bin, if false, populate from everything except bin
@@ -62,15 +62,15 @@ class RenderQueue : public KernelComponent {
     void addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType = RenderBinType::RBT_COUNT);
     U16 getRenderQueueStackSize(RenderStage stage) const;
 
-    inline RenderBin* getBin(RenderBinType rbType) noexcept {
+    RenderBin* getBin(RenderBinType rbType) noexcept {
         return _renderBins[rbType._to_integral()];
     }
 
-    inline RenderBin* getBin(U16 renderBin) noexcept {
+    RenderBin* getBin(U16 renderBin) noexcept {
         return _renderBins[renderBin];
     }
 
-    inline RenderBinArray& getBins() noexcept {
+    RenderBinArray& getBins() noexcept {
         return _renderBins;
     }
 
@@ -78,9 +78,9 @@ class RenderQueue : public KernelComponent {
 
   private:
 
-    RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType);
+    RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType) const;
 
-    RenderBin* getBinForNode(const SceneGraphNode* nodeType, const Material_ptr& matInstance);
+    RenderBin* getBinForNode(const SceneGraphNode* node, const Material_ptr& matInstance);
 
   private:
     RenderBinArray _renderBins = {};

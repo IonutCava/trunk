@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORE_TIME_FRAMERATE_HANDLER_H_
 #define _CORE_TIME_FRAMERATE_HANDLER_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 namespace Time {
 class FrameRateHandler {

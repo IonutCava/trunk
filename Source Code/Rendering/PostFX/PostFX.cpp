@@ -6,17 +6,17 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/StringHelper.h"
-#include "Core/Time/Headers/ApplicationTimer.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
 
-#include "Managers/Headers/SceneManager.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Rendering/Camera/Headers/Camera.h"
 
 namespace Divide {
 
-const char* PostFX::FilterName(FilterType filter) noexcept {
+const char* PostFX::FilterName(const FilterType filter) noexcept {
     switch (filter) {
         case FilterType::FILTER_SS_ANTIALIASING:  return "SS_ANTIALIASING";
         case FilterType::FILTER_SS_REFLECTIONS:  return "SS_REFLECTIONS";
@@ -28,6 +28,7 @@ const char* PostFX::FilterName(FilterType filter) noexcept {
         case FilterType::FILTER_UNDERWATER: return "UNDERWATER";
         case FilterType::FILTER_NOISE: return "NOISE";
         case FilterType::FILTER_VIGNETTE: return "VIGNETTE";
+        default: break;
     }
 
     return "Unknown";
@@ -68,11 +69,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
 
-    SamplerDescriptor defaultSampler = {};
-    defaultSampler.wrapUVW(TextureWrap::REPEAT);
-
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
-    texDescriptor.samplerDescriptor(defaultSampler);
 
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
     textureWaterCaustics.assetName("terrain_water_NM.jpg");
@@ -155,20 +152,31 @@ void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
 }
 
 void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
+    static size_t s_samplerHash = 0u;
+    if (s_samplerHash == 0u) {
+        SamplerDescriptor defaultSampler = {};
+        defaultSampler.wrapUVW(TextureWrap::REPEAT);
+        s_samplerHash = defaultSampler.getHash();
+    }
+
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Apply" });
 
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
     _preRenderBatch->execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
 
-    const TextureData output = _preRenderBatch->getOutput(false)._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+    const auto& prbAtt = _preRenderBatch->getOutput(false)._rt->getAttachment(RTAttachmentType::Colour, 0);
+    const TextureData output = prbAtt.texture()->data();
     const TextureData data0 = _underwaterTexture->data();
     const TextureData data1 = _noise->data();
     const TextureData data2 = _screenBorder->data();
 
     RenderTarget& screenRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
-    TextureData gbuffer = screenRT.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA))->texture()->data();
-    TextureData depthData = screenRT.getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+
+    const auto& gbufferAtt = screenRT.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA));
+    const TextureData gbuffer = gbufferAtt.texture()->data();
+    const auto& depthAtt = screenRT.getAttachment(RTAttachmentType::Depth, 0);
+    const TextureData depthData = depthAtt.texture()->data();
 
     GFX::BeginRenderPassCommand beginRenderPassCmd;
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
@@ -184,12 +192,12 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthData, TextureUsage::DEPTH);
-    bindDescriptorSetsCmd._set._textureData.setTexture(output,  to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    bindDescriptorSetsCmd._set._textureData.setTexture(gbuffer, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data0,   to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data1,   to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data2,   to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(depthData, depthAtt.samplerHash(),TextureUsage::DEPTH);
+    bindDescriptorSetsCmd._set._textureData.setTexture(output, prbAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
+    bindDescriptorSetsCmd._set._textureData.setTexture(gbuffer, gbufferAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data0, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data1, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
+    bindDescriptorSetsCmd._set._textureData.setTexture(data2, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GFX::DrawCommand drawCommand = { _drawCommand };

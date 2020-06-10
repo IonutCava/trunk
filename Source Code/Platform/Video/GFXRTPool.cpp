@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
 #include "Headers/GFXRTPool.h"
-#include "Headers/GFXDevice.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Headers/GFXDevice.h"
 
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
@@ -14,7 +14,7 @@ namespace {
 
     // Used to delete resources
     struct DeleteRT {
-        void operator()(RenderTarget* res) {
+        void operator()(RenderTarget* res) const {
             if (res != nullptr) {
                 res->destroy();
             }
@@ -128,7 +128,8 @@ RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const Re
     return add(targetUsage, rt, index);
 }
 
-const RenderTargetID GFXRTPool::screenTargetID() const noexcept {
+RenderTargetID GFXRTPool::screenTargetID() const noexcept
+{
     const RenderTargetUsage screenRT = _parent.context().config().rendering.MSAASamples > 0 ? RenderTargetUsage::SCREEN_MS : RenderTargetUsage::SCREEN;
     return RenderTargetID(screenRT);
 }

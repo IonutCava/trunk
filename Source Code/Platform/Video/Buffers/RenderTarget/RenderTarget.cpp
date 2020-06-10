@@ -3,14 +3,12 @@
 #include "Headers/RenderTarget.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
-#include "Core/Resources/Headers/ResourceCache.h"
 
 namespace Divide {
 
 RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor)
-    : GraphicsResource(context, GraphicsResource::Type::RENDER_TARGET, getGUID(), _ID(descriptor._name.c_str())),
-     _descriptor(descriptor),
-     _colourAttachmentCount(0)
+    : GraphicsResource(context, Type::RENDER_TARGET, getGUID(), _ID(descriptor._name.c_str())),
+     _descriptor(descriptor)
 {
     for (U8 i = 0; i < descriptor._attachmentCount; ++i) {
         if (descriptor._attachments[i]._type == RTAttachmentType::Colour) {

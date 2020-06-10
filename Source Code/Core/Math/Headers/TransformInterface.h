@@ -51,7 +51,8 @@ bool operator!=(const TransformValues& lhs, const TransformValues& rhs);
 
 class ITransform {
 public:
-    /// Set the local X,Y and Z position
+	virtual ~ITransform() = default;
+	/// Set the local X,Y and Z position
     virtual void setPosition(const vec3<F32>& position) = 0;
     /// Set the local X,Y and Z position
     virtual void setPosition(const F32 x, const F32 y, const F32 z) = 0;
@@ -65,21 +66,21 @@ public:
     virtual void translate(const vec3<F32>& axisFactors) = 0;
 
     /// Set the local X,Y and Z scale factors
-    virtual void setScale(const vec3<F32>& ammount) = 0;
+    virtual void setScale(const vec3<F32>& amount) = 0;
     /// Set the scaling factor on the X axis
-    virtual void setScaleX(const F32 ammount) = 0;
+    virtual void setScaleX(const F32 amount) = 0;
     /// Set the scaling factor on the Y axis
-    virtual void setScaleY(const F32 ammount) = 0;
+    virtual void setScaleY(const F32 amount) = 0;
     /// Set the scaling factor on the Z axis
-    virtual void setScaleZ(const F32 ammount) = 0;
+    virtual void setScaleZ(const F32 amount) = 0;
     /// Add the specified scale factors to the current local position
     virtual void scale(const vec3<F32>& axisFactors) = 0;
     /// Increase the scaling factor on the X axis by the specified factor
-    virtual void scaleX(const F32 ammount) = 0;
+    virtual void scaleX(const F32 amount) = 0;
     /// Increase the scaling factor on the Y axis by the specified factor
-    virtual void scaleY(const F32 ammount) = 0;
+    virtual void scaleY(const F32 amount) = 0;
     /// Increase the scaling factor on the Z axis by the specified factor
-    virtual void scaleZ(const F32 ammount) = 0;
+    virtual void scaleZ(const F32 amount) = 0;
 
     /// Set the local orientation using the Axis-Angle system.
     /// The angle can be in either degrees(default) or radians
@@ -116,51 +117,51 @@ public:
     virtual void rotateZ(const Angle::DEGREES<F32> angle) = 0;
 
     /// Set an uniform scale on all three axis
-    inline void setScale(F32 ammount) {
-        setScale(vec3<F32>(ammount));
+    void setScale(const F32 amount) {
+        setScale(vec3<F32>(amount));
     }
 
-    inline void setScale(F32 x, F32 y, F32 z) {
+    void setScale(const F32 x, const F32 y, const F32 z) {
         setScale(vec3<F32>(x, y, z));
     }
 
     /// Set the euler rotation in degrees
-    inline void setRotationEuler(const vec3<F32>& euler) {
+    void setRotationEuler(const vec3<F32>& euler) {
         setRotation(euler.pitch, euler.yaw, euler.roll);
     }
 
-    inline void translate(F32 x, F32 y, F32 z) {
+    void translate(const F32 x, const F32 y, const F32 z) {
         translate(vec3<F32>(x, y, z));
     }
     
     /// Translate the object on the X axis by the specified amount
-    inline void translateX(const F32 positionX) {
+    void translateX(const F32 positionX) {
         translate(vec3<F32>(positionX, 0.0f, 0.0f));
     }
 
     /// Translate the object on the Y axis by the specified amount
-    inline void translateY(const F32 positionY) {
+    void translateY(const F32 positionY) {
         translate(vec3<F32>(0.0f, positionY, 0.0f));
     }
 
     /// Translate the object on the Z axis by the specified amount
-    inline void translateZ(const F32 positionZ) {
+    void translateZ(const F32 positionZ) {
         translate(vec3<F32>(0.0f, 0.0f, positionZ));
     }
     /// Increase the scaling factor on all three axis by an uniform factor
-    inline void scale(const F32 ammount) {
-        scale(vec3<F32>(ammount));
+    void scale(const F32 amount) {
+        scale(vec3<F32>(amount));
     }
 
-    inline void scale(F32 x, F32 y, F32 z) {
+    void scale(const F32 x, const F32 y, const F32 z) {
         scale(vec3<F32>(x, y, z));
     }
 
-    inline void rotate(F32 xAxis, F32 yAxis, F32 zAxis, Angle::DEGREES<F32> degrees) {
+    void rotate(const F32 xAxis, const F32 yAxis, const F32 zAxis, const Angle::DEGREES<F32> degrees) {
         rotate(vec3<F32>(xAxis, yAxis, zAxis), degrees);
     }
 
-    inline void rotate(const vec3<F32>& euler) {
+    void rotate(const vec3<F32>& euler) {
         rotate(euler.pitch, euler.yaw, euler.roll);
     }
     

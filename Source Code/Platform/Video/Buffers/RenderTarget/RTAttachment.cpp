@@ -4,9 +4,6 @@
 
 #include "Headers/RenderTarget.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
@@ -18,14 +15,11 @@ RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescripto
 }
 
 RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt)
-    : _parent(parent),
+    : _samplerHash(descriptor._samplerHash),
       _descriptor(descriptor),
-      _texture(nullptr),
       _externalAttachment(externalAtt),
-      _changed(false),
-      _mipWriteLevel(0),
-      _writeLayer(0),
-      _binding(0)
+      _parent(parent)
+
 {
 }
 
@@ -33,7 +27,7 @@ RTAttachment::~RTAttachment()
 {
 }
 
-const Texture_ptr& RTAttachment::texture(bool autoResolve) const {
+const Texture_ptr& RTAttachment::texture(const bool autoResolve) const {
     return (autoResolve && isExternal()) ? _externalAttachment->texture() : _texture;
 }
 

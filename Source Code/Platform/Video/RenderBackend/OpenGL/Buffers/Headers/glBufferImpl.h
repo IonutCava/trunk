@@ -62,19 +62,19 @@ struct BufferLockEntry {
 };
 
 class glBufferLockManager;
-class glBufferImpl : public glObject, public GUIDWrapper {
+class glBufferImpl final : public glObject, public GUIDWrapper {
 public:
     explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
 
     GLuint bufferID() const noexcept;
 
-    bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
-    void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID);
-    bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient);
+    bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) const;
+    void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
+    bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data);
-    void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data);
+    void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data) const;
     void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
 
     size_t elementSize() const noexcept;
@@ -82,7 +82,7 @@ public:
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
 
 protected:
-    void invalidateData(size_t offsetInBytes, size_t rangeInBytes);
+    void invalidateData(size_t offsetInBytes, size_t rangeInBytes) const;
 
 protected:
     GLenum _usage = GL_NONE;

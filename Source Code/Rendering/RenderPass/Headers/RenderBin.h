@@ -104,7 +104,7 @@ class RenderBin {
     friend class RenderQueue;
 
     explicit RenderBin(RenderBinType rbType);
-    ~RenderBin();
+    ~RenderBin() = default;
 
     void sort(RenderStage stage, RenderingOrder renderOrder);
     void populateRenderQueue(RenderStagePass stagePass, RenderQueuePackages& queueInOut) const;
@@ -123,7 +123,7 @@ class RenderBin {
 
     bool empty(RenderStage stage) const;
 
-    inline RenderBinType getType() const noexcept { return _rbType; }
+    RenderBinType getType() const noexcept { return _rbType; }
 
    private:
     const RenderBinType _rbType;

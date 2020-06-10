@@ -43,7 +43,7 @@ class StateTracker {
         bool initialized;
 
         optionalValue()
-            : value((T)0),
+            : value(static_cast<T>(0)),
               initialized(false)
         {
         }
@@ -76,27 +76,27 @@ class StateTracker {
         return *this;
     }
 
-    inline bool isTrackedValueInitialized(State state) const {
+    bool isTrackedValueInitialized(State state) const {
         return _trackedValues[to_U32(state)].initialized;
     }
 
-    inline T getTrackedValue(State state, bool& isInitialized) const {
+    T getTrackedValue(State state, bool& isInitialized) const {
         const optionalValue& value = _trackedValues[to_U32(state)];
         isInitialized = value.initialized;
         return value.value;
     }
 
-    inline T getTrackedValue(State state) const {
+    T getTrackedValue(State state) const {
         return _trackedValues[to_U32(state)].value;
     }
 
-    inline void setTrackedValue(State state, T value) {
+    void setTrackedValue(State state, T value) {
         _trackedValues[to_U32(state)].value = value;
         _trackedValues[to_U32(state)].initialized = true;
     }
 
     /// Init will not change an already initialized value
-    inline void initTrackedValue(State state, const T value) {
+    void initTrackedValue(State state, const T value) {
         getTrackedValue(state);
         if (!_trackedValues[to_U32(state)].initialized) {
             setTrackedValue(state, value);

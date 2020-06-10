@@ -39,7 +39,7 @@ namespace Divide {
 
 class glHardwareQueryPool {
 public:
-    glHardwareQueryPool(GFXDevice& context);
+    explicit glHardwareQueryPool(GFXDevice& context);
     ~glHardwareQueryPool();
 
     void init(const hashMap<GLenum, U32>& sizes);

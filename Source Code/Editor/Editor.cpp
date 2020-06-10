@@ -40,6 +40,8 @@
 #include <imgui_internal.h>
 #include <imgui/addons/imgui_memory_editor/imgui_memory_editor.h>
 
+#include "Platform/Video/Headers/CommandBufferPool.h"
+
 namespace Divide {
 
 namespace {
@@ -142,7 +144,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         return false;
     }
     
-    createDirectories((Paths::g_saveLocation + Paths::Editor::g_saveLocation).c_str());
+    CreateDirectories((Paths::g_saveLocation + Paths::Editor::g_saveLocation).c_str());
     _mainWindow = &_context.app().windowManager().getWindow(0u);
 
     IMGUI_CHECKVERSION();
@@ -157,12 +159,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.Fonts->AddFontDefault();
     io.Fonts->GetTexDataAsRGBA32(&pPixels, &iWidth, &iHeight);
 
-    SamplerDescriptor sampler = {};
-    sampler.minFilter(TextureFilter::LINEAR);
-    sampler.magFilter(TextureFilter::LINEAR);
-
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
-    texDescriptor.samplerDescriptor(sampler);
 
     ResourceDescriptor resDescriptor("IMGUI_font_texture");
     resDescriptor.threaded(false);
@@ -1321,7 +1318,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         data._gfxDevice->flushCommandBuffer(buffer);
     } };
 
-    bool opened = false,  closed = false;
+    bool opened,  closed = false;
 
     if (useModal) {
         ImGui::OpenPopup(modalName);

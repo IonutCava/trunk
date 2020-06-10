@@ -11,6 +11,7 @@ void main(void) {
 -- Vertex.Colour
 
 #include "vbInputData.vert"
+#include "utility.cmn"
 
 layout(location = 0) out vec4 _scrollingUV;
 
@@ -18,11 +19,13 @@ void main(void) {
     computeData(fetchInputData());
     setClipPlanes();
 
-    float time2 = float(dvd_time) * 0.0001;
-    vec2 noiseUV = VAR._texCoord * UNDERWATER_TILE_SCALE;
-    _scrollingUV.st = noiseUV;
-    _scrollingUV.pq = noiseUV + time2;
-    _scrollingUV.s -= time2;
+    const float time2 = MSToSeconds(dvd_time) * 0.01f;
+    vec2 uvNormal0 = VAR._texCoord * UNDERWATER_TILE_SCALE;
+    _scrollingUV.s += time2;
+    _scrollingUV.t += time2;
+    vec2 uvNormal1 = VAR._texCoord * UNDERWATER_TILE_SCALE;
+    _scrollingUV.p -= time2;
+    _scrollingUV.q += time2;
 
     gl_Position = VAR._vertexWVP;
 }

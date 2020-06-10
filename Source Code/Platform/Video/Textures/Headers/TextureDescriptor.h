@@ -41,20 +41,14 @@ namespace Divide {
 
 /// This struct is used to define all of the sampler settings needed to use a texture
 /// We do not define copy constructors as we must define descriptors only with POD
-struct SamplerDescriptor : public Hashable {
+struct SamplerDescriptor final : Hashable {
    
     SamplerDescriptor();
     ~SamplerDescriptor() = default;
 
     size_t getHash() const noexcept override;
 
-    inline bool generateMipMaps() const noexcept {
-        return minFilter() != TextureFilter::LINEAR &&
-               minFilter() != TextureFilter::NEAREST &&
-               minFilter() != TextureFilter::COUNT;
-    }
-
-    inline void wrapUVW(TextureWrap wrap) noexcept {
+    void wrapUVW(const TextureWrap wrap) noexcept {
         wrapU(wrap); wrapV(wrap); wrapW(wrap);
     }
 
@@ -107,39 +101,39 @@ class TextureDescriptor final : public PropertyDescriptor {
     {
     }
 
-    TextureDescriptor(TextureType type) noexcept
+    TextureDescriptor(const TextureType type) noexcept
          : TextureDescriptor(type,
                              GFXImageFormat::RGB,
                              GFXDataFormat::UNSIGNED_BYTE)
     {
     }
 
-    TextureDescriptor(TextureType type,
-                      GFXImageFormat format,
-                      GFXDataFormat dataType) noexcept
+    TextureDescriptor(const TextureType type,
+                      const GFXImageFormat format,
+                      const GFXDataFormat dataType) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
-          _type(type),
-          _baseFormat(format),
+          _mipLevels(0u, 1u),
           _dataType(dataType),
-          _mipLevels(0u, 1u)
+          _baseFormat(format),
+          _texType(type)
     {
     }
 
-    inline bool isCubeTexture() const noexcept {
-        return (_type == TextureType::TEXTURE_CUBE_MAP ||
-                _type == TextureType::TEXTURE_CUBE_ARRAY);
+    bool isCubeTexture() const noexcept {
+        return (_texType == TextureType::TEXTURE_CUBE_MAP ||
+                _texType == TextureType::TEXTURE_CUBE_ARRAY);
     }
 
-    inline bool isArrayTexture() const noexcept {
-        return _type == TextureType::TEXTURE_2D_ARRAY;
+    bool isArrayTexture() const noexcept {
+        return _texType == TextureType::TEXTURE_2D_ARRAY;
     }
 
-    inline bool isMultisampledTexture() const noexcept {
-        return _type == TextureType::TEXTURE_2D_MS ||
-               _type == TextureType::TEXTURE_2D_ARRAY_MS;
+    bool isMultisampledTexture() const noexcept {
+        return _texType == TextureType::TEXTURE_2D_MS ||
+               _texType == TextureType::TEXTURE_2D_ARRAY_MS;
     }
 
-    inline U8 numChannels() const noexcept {
+    U8 numChannels() const noexcept {
         switch (baseFormat()) {
                 case GFXImageFormat::RED:
                 case GFXImageFormat::DEPTH_COMPONENT:
@@ -152,6 +146,7 @@ class TextureDescriptor final : public PropertyDescriptor {
                 case GFXImageFormat::BGRA:
                 case GFXImageFormat::RGBA:
                     return 4;
+                default: break;
         }
 
         return 0;
@@ -159,19 +154,21 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     const vectorEASTL<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
 
-    /// A TextureDescriptor will always have a sampler, even if it is the default one
-    PROPERTY_RW(SamplerDescriptor, samplerDescriptor);
+    size_t getHash() const noexcept final;
+
     PROPERTY_RW(U16, layerCount, 1);
     PROPERTY_RW(vec2<U16>, mipLevels);
     PROPERTY_RW(U16, mipCount, 1);
     PROPERTY_RW(U8, msaaSamples, 0);
     PROPERTY_RW(GFXDataFormat, dataType, GFXDataFormat::COUNT);
     PROPERTY_RW(GFXImageFormat, baseFormat, GFXImageFormat::COUNT);
-    PROPERTY_RW(TextureType, type, TextureType::COUNT);
+    PROPERTY_RW(TextureType, texType, TextureType::COUNT);
     /// Automatically compute mip maps (overwrites any manual mipmap computation)
     PROPERTY_RW(bool, autoMipMaps, true);
+    PROPERTY_RW(bool, hasMipMaps, true);
     /// Use SRGB colour space
     PROPERTY_RW(bool, srgb, false);
+    PROPERTY_RW(bool, normalized, true);
     PROPERTY_RW(bool, compressed, false);
 
    private:
@@ -180,7 +177,7 @@ class TextureDescriptor final : public PropertyDescriptor {
 
 namespace XMLParser {
     void saveToXML(const SamplerDescriptor& sampler, const stringImpl& entryName, boost::property_tree::ptree& pt);
-    const SamplerDescriptor& loadFromXML(size_t hash, const stringImpl& entryName, const boost::property_tree::ptree& pt);
+    size_t loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 };
 };  // namespace Divide
 #endif

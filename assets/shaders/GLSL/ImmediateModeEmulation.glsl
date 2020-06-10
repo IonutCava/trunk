@@ -79,7 +79,7 @@ void main(void) {
     VAR._vertexW = dvd_WorldMatrixOverride * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
-    VAR._viewDirectionWV = normalize(-VAR._vertexWV.xyz);
+    VAR._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
     NodeData nodeData = dvd_Matrices[DVD_GL_BASE_INSTANCE];
     mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(nodeData._normalMatrixW);
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);

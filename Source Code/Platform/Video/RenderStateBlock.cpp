@@ -69,7 +69,7 @@ RenderStateBlock::RenderStateBlock() noexcept
 {
     if (defaultHash() == 0) {
         _dirty = true;
-        s_defaultHashValue = getHash();
+        s_defaultHashValue = RenderStateBlock::getHash();
     }
 }
 
@@ -113,6 +113,7 @@ void RenderStateBlock::flipCullMode()  noexcept {
         case CullMode::ALL:  _cullMode = CullMode::NONE; break;
         case CullMode::CW:   _cullMode = CullMode::CCW;  break;
         case CullMode::CCW:  _cullMode = CullMode::CW;   break;
+        default: break;
     }
     _dirty = true;
 }
@@ -331,13 +332,7 @@ void RenderStateBlock::saveToXML(const RenderStateBlock& block, const stringImpl
     pt.put(entryName + ".stencilWriteMask", block._stencilWriteMask);
 }
 
-bool RenderStateBlock::loadFromXML(size_t stateHash, const stringImpl& entryName, const boost::property_tree::ptree& pt) {
-    bool alreadyExists = false;
-    RenderStateBlock::get(stateHash, alreadyExists);
-    if (alreadyExists) {
-        return false;
-    }
-
+size_t RenderStateBlock::loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
     RenderStateBlock block;
     block.setColourWrites(pt.get(entryName + ".colourWrite.<xmlattr>.r", true),
                           pt.get(entryName + ".colourWrite.<xmlattr>.g", true),
@@ -365,10 +360,7 @@ bool RenderStateBlock::loadFromXML(size_t stateHash, const stringImpl& entryName
     
     block.setStencilReadWriteMask(pt.get(entryName + ".stencilMask", 0xFFFFFFFF),
                                   pt.get(entryName + ".stencilWriteMask", 0xFFFFFFFF));
-    const size_t crtHash = block.getHash();
-    DIVIDE_ASSERT(crtHash == stateHash, "RenderStateBlock::loadFromXML error: Failed to load properly. Hash mismatch");
-
-    return true;
+    return block.getHash();
 }
 
 };

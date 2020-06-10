@@ -11,7 +11,7 @@ namespace Divide {
 bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType) {
 
     if (!Util::IsEmptyOrNull(filePath) && content != nullptr && length > 0) {
-        if (!pathExists(filePath) && !createDirectories(filePath)) {
+        if (!pathExists(filePath) && !CreateDirectories(filePath)) {
             return false;
         }
 
@@ -82,7 +82,7 @@ bool createFile(const char* filePathAndName, bool overwriteExisting) {
         return std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
     }
 
-    createDirectories((const_sysInfo()._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
+    CreateDirectories((const_sysInfo()._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
 
     return std::ifstream(filePathAndName, std::fstream::in).good();
 }

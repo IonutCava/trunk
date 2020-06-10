@@ -40,9 +40,9 @@ namespace Divide {
 namespace Util {
 
 template<typename T_vec, typename T_str>
-typename std::enable_if<std::is_same<T_vec, typename vectorEASTL<T_str>>::value ||
-                        std::is_same<T_vec, typename vectorEASTLFast<T_str>>::value, T_vec&>::type
-Split(const char* input, char delimiter, T_vec& elems) {
+typename std::enable_if<std::is_same<T_vec, vectorEASTL<T_str>>::value ||
+                        std::is_same<T_vec, vectorEASTLFast<T_str>>::value, T_vec&>::type
+Split(const char* input, const char delimiter, T_vec& elems) {
     if (input != nullptr) {
         {
             size_t i = 0;
@@ -80,15 +80,15 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
         }
 
         size_t idx = 0;
-        T_str::const_iterator start = eastl::begin(original);
-        T_str::const_iterator end = eastl::end(original);
-        T_str::const_iterator next = eastl::find(start, end, delimiter);
+        typename T_str::const_iterator start = eastl::begin(original);
+        typename T_str::const_iterator end = eastl::end(original);
+        typename T_str::const_iterator next = eastl::find(start, end, delimiter);
         while (next != end) {
             elems[idx++] = { start, next };
             start = next + 1;
             next = eastl::find(start, end, delimiter);
         }
-        elems[idx++] = { start, next };
+        elems[idx] = { start, next };
     } else {
         elems.clear();
     }
@@ -99,7 +99,7 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
 template<typename T_vec, typename T_str>
 typename std::enable_if<std::is_same<T_vec, vectorEASTLFast<T_str>>::value ||
                         std::is_same<T_vec, vectorEASTL<T_str>>::value, T_vec>::type
-Split(const char* input, char delimiter) {
+Split(const char* input, const char delimiter) {
     T_vec elems;
     return Split<T_vec, T_str>(input, delimiter, elems);
 }
@@ -150,10 +150,10 @@ T_str ReplaceString(std::string_view subject, const std::array<std::string_view,
 }
 
 template<typename T_str>
-inline bool ReplaceStringInPlace(T_str& subject,
-                                 std::string_view search,
-                                 std::string_view replace,
-                                 bool recursive) {
+bool ReplaceStringInPlace(T_str& subject,
+                          const std::string_view search,
+                          const std::string_view replace,
+                          const bool recursive) {
     bool ret = false;
     bool changed = true;
     while (changed) {
@@ -176,10 +176,10 @@ inline bool ReplaceStringInPlace(T_str& subject,
 }
 
 template<typename T_str>
-inline T_str ReplaceString(std::string_view subject,
-                           std::string_view search,
-                           std::string_view replace,
-                           bool recursive)
+T_str ReplaceString(std::string_view subject,
+                    std::string_view search,
+                    std::string_view replace,
+                    bool recursive)
 {
     T_str ret{ subject };
     ReplaceStringInPlace(ret, search, replace, recursive);
@@ -208,7 +208,7 @@ inline bool CompareIgnoreCase(const char* a, const char* b) noexcept {
     return strcasecmp(a, b) == 0;
 }
 
-inline bool CompareIgnoreCase(const char* a, std::string_view b) noexcept {
+inline bool CompareIgnoreCase(const char* a, const std::string_view b) noexcept {
     if (a != nullptr && !b.empty()) {
         return strncasecmp(a, b.data(), b.length()) == 0;
     } else if (b.empty()) {
@@ -219,7 +219,7 @@ inline bool CompareIgnoreCase(const char* a, std::string_view b) noexcept {
 }
 
 template<typename T_strA>
-inline bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
+bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
     if (b != nullptr && !a.empty()) {
         return CompareIgnoreCase(a.c_str(), b);
     } else if (a.empty()) {
@@ -229,7 +229,7 @@ inline bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
 }
 
 template<typename T_strA>
-inline bool CompareIgnoreCase(const T_strA& a, std::string_view b) noexcept {
+bool CompareIgnoreCase(const T_strA& a, std::string_view b) noexcept {
     return CompareIgnoreCase(a.c_str(), b);
 }
 
@@ -239,7 +239,7 @@ inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
         return std::equal(std::cbegin(b),
                           std::cend(b),
                           std::cbegin(a),
-            [](unsigned char a, unsigned char b) noexcept {
+            [](const unsigned char a, const unsigned char b) noexcept {
                 return a == b || std::tolower(a) == std::tolower(b);
             });
     }
@@ -253,7 +253,7 @@ inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) 
         return std::equal(std::cbegin(b),
                           std::cend(b),
                           std::cbegin(a),
-            [](unsigned char a, unsigned char b) noexcept {
+            [](const unsigned char a, const unsigned char b) noexcept {
                 return a == b || std::tolower(a) == std::tolower(b);
             });
     }
@@ -283,38 +283,38 @@ inline T_str& Ltrim(T_str& s) {
     s.erase(eastl::begin(s),
             eastl::find_if(eastl::begin(s),
                          eastl::end(s),
-                         [](char c) { return !std::isspace(c); }));
+                         [](const char c) { return !std::isspace(c); }));
     return s;
 }
 
 template<typename T_str>
-inline T_str Rtrim(const T_str& s) {
+T_str Rtrim(const T_str& s) {
     T_str temp(s);
     return Rtrim(temp);
 }
 
 template<typename T_str>
-inline T_str& Rtrim(T_str& s) {
+T_str& Rtrim(T_str& s) {
     s.erase(eastl::find_if(eastl::rbegin(s),
                          eastl::rend(s),
-                         [](char c) { return !std::isspace(c); }).base(),
+                         [](const char c) { return !std::isspace(c); }).base(),
             eastl::end(s));
     return s;
 }
 
 template<typename T_str>
-inline T_str& Trim(T_str& s) {
+T_str& Trim(T_str& s) {
     return Ltrim(Rtrim(s));
 }
 
 template<typename T_str>
-inline T_str Trim(const T_str& s) {
+T_str Trim(const T_str& s) {
     T_str temp(s);
     return Trim(temp);
 }
 
 template<typename T>
-inline stringImpl to_string(T value) {
+stringImpl to_string(T value) {
     return fmt::format("{}", value);
 }
 

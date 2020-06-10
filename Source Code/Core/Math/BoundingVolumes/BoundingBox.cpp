@@ -17,7 +17,7 @@ BoundingBox::BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept
 {
 }
 
-BoundingBox::BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept
+BoundingBox::BoundingBox(const F32 minX, const F32 minY, const F32 minZ, const F32 maxX, const F32 maxY, const F32 maxZ) noexcept
     : _min(minX, minY, minZ),
       _max(maxX, maxY, maxZ)
 {
@@ -35,17 +35,14 @@ BoundingBox::BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept
     createFromPoints(points);
 }
 
-BoundingBox::~BoundingBox()
-{
-}
 
-BoundingBox::BoundingBox(const BoundingBox& b) {
+BoundingBox::BoundingBox(const BoundingBox& b) noexcept {
     // Lock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
 }
 
-void BoundingBox::operator=(const BoundingBox& b) {
+void BoundingBox::operator=(const BoundingBox& b) noexcept {
     // Lock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
@@ -146,7 +143,7 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox, const mat4<F3
     transform(initialBoundingBox.getMin(), initialBoundingBox.getMax(), mat);
 }
 
-void BoundingBox::transform(vec3<F32> initialMin, vec3<F32> initialMax, const mat4<F32>& mat) {
+void BoundingBox::transform(vec3<F32> initialMin, vec3<F32> initialMax, const mat4<F32>& mat) noexcept {
     // UpgradeToWriteLock uw_lock(ur_lock);
     _min = _max = mat.getTranslation<F32>();
 

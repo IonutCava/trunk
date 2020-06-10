@@ -33,11 +33,11 @@
 #ifndef _IM_EMULATION_H_
 #define _IM_EMULATION_H_
 
-#include "Utility/Headers/Colours.h"
+#include "DescriptorSets.h"
 #include "Core/Math/Headers/Line.h"
-#include "Platform/Video/Headers/Pipeline.h"
-#include "Platform/Video/Headers/GraphicsResource.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
+#include "Platform/Video/Headers/GraphicsResource.h"
+#include "Platform/Video/Headers/Pipeline.h"
 
 namespace Divide {
 
@@ -52,16 +52,17 @@ FWD_DECLARE_MANAGED_CLASS(IMPrimitive);
 /// IMPrimitive replaces immediate mode calls to VB based rendering
 class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    public:
-    inline const Pipeline* pipeline() const noexcept {
+    const Pipeline* pipeline() const noexcept {
         return _pipeline;
     }
 
-    inline const Texture* texture() const noexcept {
+    const Texture* texture() const noexcept {
         return _texture;
     }
 
     virtual void pipeline(const Pipeline& pipeline) noexcept;
-    virtual void texture(const Texture& texture);
+
+    void texture(const Texture& texture, size_t samplerHash);
 
     virtual void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) = 0;
 
@@ -71,17 +72,17 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     virtual void begin(PrimitiveType type) = 0;
     virtual void vertex(F32 x, F32 y, F32 z) = 0;
-    inline void vertex(const vec3<F32>& vert) {
+    void vertex(const vec3<F32>& vert) {
         vertex(vert.x, vert.y, vert.z);
     }
     virtual void attribute1i(U32 attribLocation, I32 value) = 0;
     virtual void attribute1f(U32 attribLocation, F32 value) = 0;
     virtual void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z,  U8 w) = 0;
     virtual void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) = 0;
-    inline void attribute4ub(U32 attribLocation, const vec4<U8>& value) {
+    void attribute4ub(U32 attribLocation, const vec4<U8>& value) {
         attribute4ub(attribLocation, value.x, value.y, value.z, value.w);
     }
-    inline void attribute4f(U32 attribLocation, const vec4<F32>& value) {
+    void attribute4f(U32 attribLocation, const vec4<F32>& value) {
         attribute4f(attribLocation, value.x, value.y, value.z, value.w);
     }
 
@@ -91,31 +92,32 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     virtual bool hasBatch() const = 0;
     void reset();
 
-    inline void forceWireframe(bool state) noexcept { _forceWireframe = state; }
-    inline bool forceWireframe() const noexcept { return _forceWireframe; }
+    void forceWireframe(const bool state) noexcept { _forceWireframe = state; }
+    bool forceWireframe() const noexcept { return _forceWireframe; }
 
-    inline const mat4<F32>& worldMatrix() const noexcept { return _worldMatrix; }
+    const mat4<F32>& worldMatrix() const noexcept { return _worldMatrix; }
 
-    inline void worldMatrix(const mat4<F32>& worldMatrix) noexcept {
+    void worldMatrix(const mat4<F32>& worldMatrix) noexcept {
         _worldMatrix.set(worldMatrix);
         _cmdBufferDirty = true;
     }
-    inline void resetWorldMatrix() noexcept {
+
+    void resetWorldMatrix() noexcept {
         _worldMatrix.identity();
         _cmdBufferDirty = true;
     }
 
-    inline void viewport(const Rect<I32>& viewport) {
+    void viewport(const Rect<I32>& viewport) {
         _viewport.set(viewport);
         _cmdBufferDirty = true;
     }
 
-    inline void resetViewport() noexcept {
+    void resetViewport() noexcept {
         _viewport.set(-1);
         _cmdBufferDirty = true;
     }
 
-    inline void name(const Str64& name) {
+    void name(const Str64& name) {
 #       ifdef _DEBUG
         _name = name;
 #       else

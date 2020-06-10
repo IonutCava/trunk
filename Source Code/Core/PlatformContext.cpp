@@ -1,22 +1,22 @@
 #include "stdafx.h"
 
 #include "Headers/PlatformContext.h"
-#include "Headers/XMLEntryData.h"
 #include "Headers/Configuration.h"
+#include "Headers/XMLEntryData.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Utility/Headers/Localization.h"
 
-#include "GUI/Headers/GUI.h"
-#include "Editor/Headers/Editor.h"
-#include "Physics/Headers/PXDevice.h"
+#include "Core/Debugging/Headers/DebugInterface.h"
 #include "Core/Networking/Headers/LocalClient.h"
 #include "Core/Networking/Headers/Server.h"
-#include "Core/Debugging/Headers/DebugInterface.h"
+#include "Editor/Headers/Editor.h"
+#include "GUI/Headers/GUI.h"
+#include "Physics/Headers/PXDevice.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Input/Headers/InputHandler.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 
@@ -24,18 +24,18 @@ PlatformContext::PlatformContext(Application& app, Kernel& kernel)
   :  _app(app)
   ,  _kernel(kernel)
   ,  _taskPool{}
-  ,  _gfx(MemoryManager_NEW GFXDevice(_kernel))        // Video
-  ,  _sfx(MemoryManager_NEW SFXDevice(_kernel))        // Audio
-  ,  _pfx(MemoryManager_NEW PXDevice(_kernel))         // Physics
-  ,  _gui(MemoryManager_NEW GUI(_kernel))              // Graphical User Interface
-  ,  _entryData(MemoryManager_NEW XMLEntryData())      // Initial XML data
-  ,  _config(MemoryManager_NEW Configuration())        // XML based configuration
-  ,  _client(MemoryManager_NEW LocalClient(_kernel))   // Network client
-  ,  _server(MemoryManager_NEW Server())               // Network server
-  ,  _debug(MemoryManager_NEW DebugInterface(_kernel)) // Debug Interface
+  ,  _gfx(MemoryManager_NEW GFXDevice(_kernel))         // Video
+  ,  _gui(MemoryManager_NEW GUI(_kernel))               // Audio
+  ,  _sfx(MemoryManager_NEW SFXDevice(_kernel))         // Physics
+  ,  _pfx(MemoryManager_NEW PXDevice(_kernel))          // Graphical User Interface
+  ,  _entryData(MemoryManager_NEW XMLEntryData())          // Initial XML data
+  ,  _config(MemoryManager_NEW Configuration())            // XML based configuration
+  ,  _client(MemoryManager_NEW LocalClient(_kernel))    // Network client
+  ,  _server(MemoryManager_NEW Server())                   // Network server
+  ,  _debug(MemoryManager_NEW DebugInterface(_kernel))  // Debug Interface
+  ,  _editor(Config::Build::ENABLE_EDITOR ? MemoryManager_NEW Editor(*this) : nullptr)
   ,  _inputHandler(MemoryManager_NEW Input::InputHandler(_kernel, _app))
   ,  _paramHandler(MemoryManager_NEW ParamHandler())
-  ,  _editor(Config::Build::ENABLE_EDITOR ? MemoryManager_NEW Editor(*this) : nullptr)
 {
     for (U8 i = 0; i < to_U8(TaskPoolType::COUNT); ++i) {
         _taskPool[i] = MemoryManager_NEW TaskPool();
@@ -143,7 +143,7 @@ const Kernel& PlatformContext::kernel() const {
     return _kernel;
 }
 
-void PlatformContext::onThreadCreated(const std::thread::id& threadID) {
+void PlatformContext::onThreadCreated(const std::thread::id& threadID) const {
     _gfx->onThreadCreated(threadID);
 }
 

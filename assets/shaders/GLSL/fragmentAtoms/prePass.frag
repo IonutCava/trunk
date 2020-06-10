@@ -5,6 +5,11 @@
 #define PRE_PASS
 #endif
 
+
+#if defined(USE_ALPHA_DISCARD) || defined(USE_DEFERRED_NORMALS)
+#define HAS_PRE_PASS_DATA
+#endif //USE_ALPHA_DISCARD || USE_DEFERRED_NORMALS
+
 #include "materialData.frag"
 
 #if defined(USE_DEFERRED_NORMALS)
@@ -23,7 +28,6 @@ void writeOutput(in NodeData nodeData,
                  float alphaFactor,
                  float extraFlag)
 {
-    
 #if defined(USE_ALPHA_DISCARD)
     float alpha = getAlbedo(nodeData._colourMatrix, uv).a;
     if (alpha * alphaFactor < INV_Z_TEST_SIGMA) {
@@ -43,7 +47,9 @@ void writeOutput(in NodeData nodeData,
                 vec3 tbnViewDirection,
                 float alphaFactor)
 {
+#if defined(HAS_PRE_PASS_DATA)
     writeOutput(nodeData, uv, normal, tbnViewDirection, alphaFactor, 0.0f);
+#endif //HAS_PRE_PASS_DATA
 }
 
 void writeOutput(in NodeData nodeData,
@@ -51,6 +57,9 @@ void writeOutput(in NodeData nodeData,
                  vec3 normal,
                  vec3 tbnViewDirection) 
 {
+#if defined(HAS_PRE_PASS_DATA)
     writeOutput(nodeData, uv, normal, tbnViewDirection, 1.0f, 0.0f);
+#endif //HAS_PRE_PASS_DATA
 }
+
 #endif //_PRE_PASS_FRAG_

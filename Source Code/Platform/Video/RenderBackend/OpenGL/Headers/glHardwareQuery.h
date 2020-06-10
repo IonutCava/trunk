@@ -52,16 +52,16 @@ public:
     I64 getResult() const;
     I64 getResultNoWait() const;
 
-    inline U32 getID() const noexcept { return _queryID; }
-    inline bool enabled() const noexcept { return _enabled; }
-    inline void enabled(bool state) noexcept { _enabled = state; }
+    U32 getID() const noexcept { return _queryID; }
+    bool enabled() const noexcept { return _enabled; }
+    void enabled(const bool state) noexcept { _enabled = state; }
 
 protected:
     bool _enabled = true;
     U32 _queryID = 0u;
 };
 
-class glHardwareQueryRing : public RingBufferSeparateWrite {
+class glHardwareQueryRing final : public RingBufferSeparateWrite {
 
 public:
     glHardwareQueryRing(GFXDevice& context, GLenum queryType, U32 queueLength, U32 id = 0);
@@ -69,24 +69,24 @@ public:
 
     void resize(I32 queueLength) noexcept override;
 
-    inline U32 id() const noexcept { return _id; }
+    U32 id() const noexcept { return _id; }
 
     void begin() const;
     void end() const;
 
-    inline bool isResultAvailable() const {
+    bool isResultAvailable() const {
         return readQuery().isResultAvailable();
     }
 
-    inline I64 getResult() const {
+    I64 getResult() const {
         return readQuery().getResult();
     }
 
-    inline I64 getResultNoWait() const {
+    I64 getResultNoWait() const {
         return readQuery().getResultNoWait();
     }
 
-    inline GLenum type() const {
+    GLenum type() const {
         return _queryType;
     }
 protected:

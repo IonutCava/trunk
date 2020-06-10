@@ -5,6 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Managers/Headers/SceneManager.h"
@@ -15,7 +16,6 @@
 #include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
@@ -282,7 +282,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     TextureDescriptor grassTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
     grassTexDescriptor.layerCount(vegDetails.billboardCount);
-    grassTexDescriptor.samplerDescriptor(grassSampler);
     grassTexDescriptor.srgb(true);
     grassTexDescriptor.autoMipMaps(true);
 
@@ -413,7 +412,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vegMaterial->setShaderProgram(grassColourOIT, RenderStage::COUNT,  RenderPassType::OIT_PASS);
     vegMaterial->setShaderProgram(grassShadowVSM, RenderStage::SHADOW, RenderPassType::COUNT);
 
-    vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray);
+    vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray, grassSampler.getHash());
     s_vegetationMaterial = vegMaterial;
 }
 

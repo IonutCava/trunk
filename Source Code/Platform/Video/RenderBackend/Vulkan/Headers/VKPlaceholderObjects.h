@@ -111,7 +111,8 @@ namespace Divide {
         bool create(
             U16 width, U16 height, U16 depth = 0,
             GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-            GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) final
+            GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
+            bool normalized = true) final
         {
             return true;
         }

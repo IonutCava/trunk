@@ -15,7 +15,7 @@ bool Console::_errorStreamEnabled = true;
 std::atomic_bool Console::_running = false;
 vectorEASTL<Console::ConsolePrintCallback> Console::_guiConsoleCallbacks;
 
-//Use moodycamel's implementation of a concurent queue due to its "Knock-your-socks-off blazing fast performance."
+//Use moodycamel's implementation of a concurrent queue due to its "Knock-your-socks-off blazing fast performance."
 //https://github.com/cameron314/concurrentqueue
 namespace {
     thread_local char textBuffer[CONSOLE_OUTPUT_BUFFER_SIZE + 1];
@@ -73,7 +73,7 @@ void Console::decorate(std::ostream& outStream, const char* text, const bool new
         outStream << "[ " << std::this_thread::get_id() << " ] ";
     }
 
-    outStream << (type == EntryType::Error ? " Error: " : type == EntryType::Warning ? " Warning: " : "");
+    outStream << (type == EntryType::ERR ? " Error: " : type == EntryType::WARNING ? " Warning: " : "");
     outStream << text;
     outStream << (newline ? "\n" : "");
 }
@@ -104,7 +104,7 @@ void Console::output(const char* text, const bool newline, const EntryType type)
 }
 
 void Console::printToFile(const OutputEntry& entry) {
-    ((entry._type == EntryType::Error && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
+    ((entry._type == EntryType::ERR && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
 
     for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
         if (!_running) {

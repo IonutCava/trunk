@@ -53,6 +53,8 @@ class ParticleEmitter;
 class SceneEnvironmentProbePool;
 class EnvironmentProbeComponent;
 
+struct RenderBinItem;
+
 using EnvironmentProbeList = vectorEASTL<EnvironmentProbeComponent*>;
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);
@@ -249,6 +251,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;
+    size_t _reflectionSampler = 0u;
+    size_t _refractionSampler = 0u;
     Texture* _reflectionTexture = nullptr;
     Texture* _refractionTexture = nullptr;
 

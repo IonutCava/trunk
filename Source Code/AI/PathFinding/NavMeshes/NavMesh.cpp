@@ -7,6 +7,7 @@
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include "Platform/File/Headers/FileManagement.h"

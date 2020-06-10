@@ -18,11 +18,6 @@
 extern "C" {
 #endif
 
-#include <stdarg.h>
-#include <string.h>
-#include <limits.h>
-#include <ctype.h>
-
 #if !defined (BSTRLIB_VSNP_OK) && !defined (BSTRLIB_NOVSNP)
 # if defined (__TURBOC__) && !defined (__BORLANDC__)
 #  define BSTRLIB_NOVSNP

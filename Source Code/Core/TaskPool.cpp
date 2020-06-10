@@ -3,7 +3,6 @@
 #include "Platform/Threading/Headers/Task.h"
 #include "Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
-#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -15,9 +14,7 @@ namespace {
 
 TaskPool::TaskPool()
     : GUIDWrapper(),
-      _taskCallbacks(Config::MAX_POOLED_TASKS),
-      _runningTaskCount(0u),
-      _workerThreadCount(0u)
+      _taskCallbacks(Config::MAX_POOLED_TASKS)
 {
     _threadCount = 0u;
 }
@@ -27,7 +24,7 @@ TaskPool::~TaskPool()
     shutdown();
 }
 
-bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
+bool TaskPool::init(const U32 threadCount, const TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName) {
     if (threadCount == 0 || _poolImpl.init()) {
         return false;
     }
@@ -43,6 +40,7 @@ bool TaskPool::init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void,
         case TaskPoolType::TYPE_BLOCKING: {
             std::get<0>(_poolImpl._poolImpl) = MemoryManager_NEW ThreadPool<true>(*this, _workerThreadCount);
         } break;
+        default: break;
     }
 
     return true;
@@ -60,19 +58,21 @@ void TaskPool::onThreadCreate(const std::thread::id& threadID) {
         OPTICK_START_THREAD(threadName.c_str());
     }
 
-    setThreadName(threadName.c_str());
+    SetThreadName(threadName.c_str());
     if (_threadCreateCbk) {
         _threadCreateCbk(threadID);
     }
 }
 
 void TaskPool::onThreadDestroy(const std::thread::id& threadID) {
+    ACKNOWLEDGE_UNUSED(threadID);
+
     if (USE_OPTICK_PROFILER) {
         OPTICK_STOP_THREAD();
     }
 }
 
-bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE<void>&& onCompletionFunction) {
+bool TaskPool::enqueue(PoolTask&& task, const TaskPriority priority, const U32 taskIndex, DELEGATE<void>&& onCompletionFunction) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
@@ -81,19 +81,21 @@ bool TaskPool::enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DE
             onCompletionFunction();
         }
         return true;
-    } else if (onCompletionFunction) {
+    }
+
+    if (onCompletionFunction) {
         _taskCallbacks[taskIndex].push_back(onCompletionFunction);
     }
 
     return _poolImpl.addTask(std::move(task));
 }
 
-void TaskPool::runCbkAndClearTask(U32 taskIdentifier) {
+void TaskPool::runCbkAndClearTask(const U32 taskIdentifier) {
     auto& cbks = _taskCallbacks[taskIdentifier];
     for (auto& cbk : cbks) {
         if (cbk) {
             cbk();
-            cbk = 0;
+            cbk = nullptr;
         }
     }
     cbks.resize(0);
@@ -107,7 +109,7 @@ void TaskPool::flushCallbackQueue() {
     constexpr I32 maxDequeueItems = 10;
     
     U32 taskIndex[maxDequeueItems] = { 0 };
-    size_t count = 0;
+    size_t count;
     do {
         count = _threadedCallbackBuffer.try_dequeue_bulk(taskIndex, maxDequeueItems);
         for (size_t i = 0; i < count; ++i) {
@@ -116,7 +118,7 @@ void TaskPool::flushCallbackQueue() {
     } while (count > 0);
 }
 
-void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks) {
+void TaskPool::waitForAllTasks(const bool yield, const bool flushCallbacks) {
     if (!_poolImpl.init()) {
         return;
     }
@@ -136,7 +138,7 @@ void TaskPool::waitForAllTasks(bool yield, bool flushCallbacks) {
     _poolImpl.waitAndJoin();
 }
 
-void TaskPool::taskCompleted(U32 taskIndex, bool hasOnCompletionFunction) {
+void TaskPool::taskCompleted(const U32 taskIndex, const bool hasOnCompletionFunction) {
     if (hasOnCompletionFunction) {
         _threadedCallbackBuffer.enqueue(taskIndex);
     }
@@ -144,7 +146,7 @@ void TaskPool::taskCompleted(U32 taskIndex, bool hasOnCompletionFunction) {
     _runningTaskCount.fetch_sub(1);
 }
 
-Task* TaskPool::allocateTask(Task* parentTask, bool allowedInIdle) {
+Task* TaskPool::allocateTask(Task* parentTask, const bool allowedInIdle) {
     Task* task = nullptr;
     do {
         Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
@@ -168,11 +170,11 @@ Task* TaskPool::allocateTask(Task* parentTask, bool allowedInIdle) {
     return task;
 }
 
-void TaskPool::threadWaiting() {
+void TaskPool::threadWaiting() const {
     _poolImpl.threadWaiting();
 }
 
-void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks) {
+void WaitForAllTasks(TaskPool& pool, const bool yield, const bool flushCallbacks) {
     pool.waitForAllTasks(yield, flushCallbacks);
 }
 
@@ -181,7 +183,7 @@ bool TaskPool::PoolHolder::init() const noexcept {
            _poolImpl.second != nullptr;
 }
 
-void TaskPool::PoolHolder::waitAndJoin() {
+void TaskPool::PoolHolder::waitAndJoin() const {
     if (_poolImpl.first != nullptr) {
         _poolImpl.first->wait();
         _poolImpl.first->join();
@@ -192,7 +194,7 @@ void TaskPool::PoolHolder::waitAndJoin() {
     _poolImpl.second->join();
 }
 
-void TaskPool::PoolHolder::threadWaiting() {
+void TaskPool::PoolHolder::threadWaiting() const {
     if (_poolImpl.first != nullptr) {
         _poolImpl.first->executeOneTask(false);
     } else {
@@ -200,7 +202,7 @@ void TaskPool::PoolHolder::threadWaiting() {
     }
 }
 
-bool TaskPool::PoolHolder::addTask(PoolTask&& job) {
+bool TaskPool::PoolHolder::addTask(PoolTask&& job) const {
     if (_poolImpl.first != nullptr) {
         return _poolImpl.first->addTask(std::move(job));
     }

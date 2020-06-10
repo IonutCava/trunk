@@ -5,13 +5,8 @@
 #include "Headers/GUI.h"
 #include "Headers/GUIFlash.h"
 #include "Headers/GUIText.h"
-#include "Headers/GUIButton.h"
-#include "Headers/GUIConsole.h"
-#include "Headers/GUIMessageBox.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
-
-#include <CEGUI/CEGUI.h>
 
 namespace Divide {
 

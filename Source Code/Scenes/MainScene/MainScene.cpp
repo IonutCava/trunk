@@ -5,6 +5,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
@@ -12,15 +13,13 @@
 #include "Environment/Water/Headers/Water.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/File/Headers/FileManagement.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Environment/Terrain/Headers/TerrainDescriptor.h"
 
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/NavigationComponent.h"
-#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 namespace Divide {
 
@@ -97,7 +96,7 @@ void MainScene::processGUI(const U64 deltaTimeUS) {
         _GUI->modifyText("underwater",
                          Util::StringFormat("Underwater [ %s ] | WaterLevel [%f] ]",
                                              state()->playerState(0).cameraUnderwater() ? "true" : "false",
-                                             state()->globalWaterBodies()[0]._heightOffset), false);
+                                             state()->waterBodies()[0]._positionW.y), false);
         _GUI->modifyText("RenderBinCount",
                          Util::StringFormat("Number of items in Render Bin: %d.",
                                             _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
@@ -156,7 +155,6 @@ bool MainScene::load(const Str256& name) {
     SceneGraphNode* waterGraphNode = _sceneGraph->getRoot()->addChildNode(waterNodeDescriptor);
     
     waterGraphNode->get<NavigationComponent>()->navigationContext(NavigationComponent::NavigationContext::NODE_IGNORE);
-    waterGraphNode->get<TransformComponent>()->setPositionY(state()->globalWaterBodies()[0]._heightOffset);
 
 
     if (loadState) {

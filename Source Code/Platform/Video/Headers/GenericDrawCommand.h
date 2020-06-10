@@ -33,14 +33,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GENERIC_DRAW_COMMAND_H_
 #define _GENERIC_DRAW_COMMAND_H_
 
-#include "Pipeline.h"
-
+#include "RenderAPIEnums.h"
 #include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/ObjectPool.h"
 
 namespace Divide {
-
-enum class PrimitiveType : U8;
 
 namespace GenericDrawCommandResults {
     struct QueryResult {
@@ -77,7 +74,7 @@ struct GenericDrawCommand {
 
     GenericDrawCommand() = default;
     ~GenericDrawCommand() = default;
-    GenericDrawCommand(PrimitiveType type) : _primitiveType(type) {}
+    GenericDrawCommand(const PrimitiveType type) : _primitiveType(type) {}
 
     IndirectDrawCommand _cmd = {};                                   // 32 bytes
     PoolHandle _sourceBuffer = {};                                   // 12 bytes

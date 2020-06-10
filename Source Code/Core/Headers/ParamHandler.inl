@@ -32,30 +32,32 @@
 #ifndef _CORE_PARAM_HANDLER_INL_
 #define _CORE_PARAM_HANDLER_INL_
 
+#include "Utility/Headers/Localization.h"
+
 namespace Divide {
 
-inline void ParamHandler::setDebugOutput(bool logState) noexcept {
+inline void ParamHandler::setDebugOutput(const bool logState) noexcept {
     _logState = logState;
 }
 
 template <typename T>
-inline bool ParamHandler::isParam(HashType paramID) const {
+inline bool ParamHandler::isParam(const HashType nameID) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    return _params.find(paramID) != std::cend(_params);
+    return _params.find(nameID) != std::cend(_params);
 }
 
 #if !defined(CPP_17_SUPPORT)
-namespace cast = boost;
+namespace Cast = boost;
 #else
-namespace cast = std;
+namespace Cast = std;
 #endif
 
 template <typename T>
-inline T ParamHandler::getParam(HashType nameID, T defaultValue) const {
+T ParamHandler::getParam(HashType nameID, T defaultValue) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    ParamMap::const_iterator it = _params.find(nameID);
+    const ParamMap::const_iterator it = _params.find(nameID);
     if (it != std::cend(_params)) {
-        return cast::any_cast<T>(it->second);
+        return Cast::any_cast<T>(it->second);
     }
 
     Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), nameID);
@@ -63,11 +65,11 @@ inline T ParamHandler::getParam(HashType nameID, T defaultValue) const {
 }
 
 template <typename T>
-inline void ParamHandler::setParam(HashType nameID, const T& value) {
+void ParamHandler::setParam(HashType nameID, const T& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
     ParamMap::iterator it = _params.find(nameID);
     if (it == std::end(_params)) {
-        bool result = hashAlg::emplace(_params, nameID, value).second;
+        const bool result = hashAlg::emplace(_params, nameID, value).second;
         DIVIDE_ASSERT(result,"ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -75,7 +77,7 @@ inline void ParamHandler::setParam(HashType nameID, const T& value) {
 }
 
 template <typename T>
-inline void ParamHandler::delParam(HashType nameID) {
+void ParamHandler::delParam(HashType nameID) {
     if (isParam<T>(nameID)) {
         UniqueLock<SharedMutex> w_lock(_mutex);
         _params.erase(nameID);
@@ -88,23 +90,23 @@ inline void ParamHandler::delParam(HashType nameID) {
 }
 
 template <>
-inline stringImpl ParamHandler::getParam(HashType paramID, stringImpl defaultValue) const {
+inline stringImpl ParamHandler::getParam(HashType nameID, stringImpl defaultValue) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    const ParamStringMap::const_iterator it = _paramsStr.find(paramID);
+    const ParamStringMap::const_iterator it = _paramsStr.find(nameID);
     if (it != std::cend(_paramsStr)) {
         return it->second;
     }
 
-    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), paramID);
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), nameID);
     return defaultValue;
 }
 
 template <>
-inline void ParamHandler::setParam(HashType paramID, const stringImpl& value) {
+inline void ParamHandler::setParam(const HashType nameID, const stringImpl& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
-    const ParamStringMap::iterator it = _paramsStr.find(paramID);
+    const ParamStringMap::iterator it = _paramsStr.find(nameID);
     if (it == std::end(_paramsStr)) {
-        const bool result = hashAlg::insert(_paramsStr, paramID, value).second;
+        const bool result = hashAlg::insert(_paramsStr, nameID, value).second;
         DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -112,43 +114,43 @@ inline void ParamHandler::setParam(HashType paramID, const stringImpl& value) {
 }
 
 template <>
-inline bool ParamHandler::isParam<stringImpl>(HashType paramID) const {
+inline bool ParamHandler::isParam<stringImpl>(const HashType nameID) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    return _paramsStr.find(paramID) != std::cend(_paramsStr);
+    return _paramsStr.find(nameID) != std::cend(_paramsStr);
 }
 
 
 template <>
-inline void ParamHandler::delParam<stringImpl>(HashType paramID) {
-    if (isParam<stringImpl>(paramID)) {
+inline void ParamHandler::delParam<stringImpl>(HashType nameID) {
+    if (isParam<stringImpl>(nameID)) {
         if (_logState) {
-            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), nameID);
         }
         UniqueLock<SharedMutex> w_lock(_mutex);
-        _paramsStr.erase(paramID);
+        _paramsStr.erase(nameID);
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), nameID);
     }
 }
 
 template <>
-inline bool ParamHandler::getParam(HashType paramID, bool defaultValue) const {
+inline bool ParamHandler::getParam(HashType nameID, const bool defaultValue) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    const ParamBoolMap::const_iterator it = _paramBool.find(paramID);
+    const ParamBoolMap::const_iterator it = _paramBool.find(nameID);
     if (it != std::cend(_paramBool)) {
         return it->second;
     }
 
-    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), paramID);
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), nameID);
     return defaultValue;
 }
 
 template <>
-inline void ParamHandler::setParam(HashType paramID, const bool& value) {
+inline void ParamHandler::setParam(const HashType nameID, const bool& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
-    const ParamBoolMap::iterator it = _paramBool.find(paramID);
+    const ParamBoolMap::iterator it = _paramBool.find(nameID);
     if (it == std::end(_paramBool)) {
-        const bool result = hashAlg::emplace(_paramBool, paramID, value).second;
+        const bool result = hashAlg::emplace(_paramBool, nameID, value).second;
         DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -156,42 +158,42 @@ inline void ParamHandler::setParam(HashType paramID, const bool& value) {
 }
 
 template <>
-inline bool ParamHandler::isParam<bool>(HashType paramID) const {
+inline bool ParamHandler::isParam<bool>(const HashType nameID) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    return _paramBool.find(paramID) != std::cend(_paramBool);
+    return _paramBool.find(nameID) != std::cend(_paramBool);
 }
 
 template <>
-inline void ParamHandler::delParam<bool>(HashType paramID) {
-    if (isParam<bool>(paramID)) {
+inline void ParamHandler::delParam<bool>(HashType nameID) {
+    if (isParam<bool>(nameID)) {
         UniqueLock<SharedMutex> w_lock(_mutex);
-        _paramBool.erase(paramID);
+        _paramBool.erase(nameID);
         if (_logState) {
-            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), nameID);
         }
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), nameID);
     }
 }
 
 template <>
-inline F32 ParamHandler::getParam(HashType paramID, F32 defaultValue) const {
+inline F32 ParamHandler::getParam(HashType nameID, const F32 defaultValue) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    const ParamFloatMap::const_iterator it = _paramsFloat.find(paramID);
+    const ParamFloatMap::const_iterator it = _paramsFloat.find(nameID);
     if (it != std::cend(_paramsFloat)) {
         return it->second;
     }
 
-    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), paramID);
+    Console::errorfn(Locale::get(_ID("ERROR_PARAM_GET")), nameID);
     return defaultValue;
 }
 
 template <>
-inline void ParamHandler::setParam(HashType paramID, const F32& value) {
+inline void ParamHandler::setParam(const HashType nameID, const F32& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
-    const ParamFloatMap::iterator it = _paramsFloat.find(paramID);
+    const ParamFloatMap::iterator it = _paramsFloat.find(nameID);
     if (it == std::end(_paramsFloat)) {
-        const bool result = hashAlg::emplace(_paramsFloat, paramID, value).second;
+        const bool result = hashAlg::emplace(_paramsFloat, nameID, value).second;
         DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = value;
@@ -199,21 +201,21 @@ inline void ParamHandler::setParam(HashType paramID, const F32& value) {
 }
 
 template <>
-inline bool ParamHandler::isParam<F32>(HashType paramID) const {
+inline bool ParamHandler::isParam<F32>(const HashType nameID) const {
     SharedLock<SharedMutex> r_lock(_mutex);
-    return _paramsFloat.find(paramID) != std::cend(_paramsFloat);
+    return _paramsFloat.find(nameID) != std::cend(_paramsFloat);
 }
 
 template <>
-inline void ParamHandler::delParam<F32>(HashType paramID) {
-    if (isParam<F32>(paramID)) {
+inline void ParamHandler::delParam<F32>(HashType nameID) {
+    if (isParam<F32>(nameID)) {
         UniqueLock<SharedMutex> w_lock(_mutex);
-        _paramsFloat.erase(paramID);
+        _paramsFloat.erase(nameID);
         if (_logState) {
-            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), paramID);
+            Console::printfn(Locale::get(_ID("PARAM_REMOVE")), nameID);
         }
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), paramID);
+        Console::errorfn(Locale::get(_ID("ERROR_PARAM_REMOVE")), nameID);
     }
 }
 

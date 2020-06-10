@@ -35,8 +35,6 @@
 
 #include "BoundingBox.h"
 
-#include "Core/Math/Headers/Ray.h"
-
 namespace Divide {
 namespace Attorney {
     class BoundingSphereEditor;
@@ -49,22 +47,22 @@ class BoundingSphere {
    public:
     BoundingSphere() noexcept;
     BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
-    BoundingSphere(const vectorEASTL<vec3<F32>>& points) noexcept;
-    BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
+    explicit BoundingSphere(const vectorEASTL<vec3<F32>>& points) noexcept;
+    explicit BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
 
     BoundingSphere(const BoundingSphere& s) noexcept;
     void operator=(const BoundingSphere& s) noexcept;
 
-    void fromBoundingBox(const BoundingBox& bBox);
-    void fromBoundingSphere(const BoundingSphere& bSphere);
+    void fromBoundingBox(const BoundingBox& bBox) noexcept;
+    void fromBoundingSphere(const BoundingSphere& bSphere) noexcept;
     bool containsPoint(const vec3<F32>& point) const noexcept;
     bool containsBoundingBox(const BoundingBox& AABB) const noexcept;
 
     // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
-    void add(const BoundingSphere& bSphere);
-    void add(const vec3<F32>& point);
-    void addRadius(const BoundingSphere& bSphere);
-    void addRadius(const vec3<F32>& point);
+    void add(const BoundingSphere& bSphere) noexcept;
+    void add(const vec3<F32>& point) noexcept;
+    void addRadius(const BoundingSphere& bSphere) noexcept;
+    void addRadius(const vec3<F32>& point) noexcept;
 
     void createFromPoints(const vectorEASTL<vec3<F32>>& points) noexcept;
     void createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept;
@@ -76,10 +74,10 @@ class BoundingSphere {
     F32 getRadius() const noexcept;
     F32 getDiameter() const noexcept;
 
-    F32 getDistanceFromPoint(const vec3<F32>& point) const;
+    F32 getDistanceFromPoint(const vec3<F32>& point) const noexcept;
 
-    void reset();
-    vec4<F32> asVec4() const;
+    void reset() noexcept;
+    vec4<F32> asVec4() const noexcept;
 
     bool collision(const BoundingSphere& sphere2) const noexcept;
 
@@ -92,7 +90,6 @@ class BoundingSphere {
 
 namespace Attorney {
     class BoundingSphereEditor {
-        private:
         static F32* center(BoundingSphere& bs) noexcept {
             return bs._center._v;
         }

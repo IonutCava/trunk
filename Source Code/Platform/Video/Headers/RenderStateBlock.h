@@ -61,8 +61,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
        static const RenderStateBlock& get(size_t renderStateBlockHash, bool& blockFound);
        static void saveToXML(const RenderStateBlock& block, const stringImpl& entryName, boost::property_tree::ptree& pt);
 
-       //Returns true if we needed a full XML parse (block wasn't in cache)
-       static bool loadFromXML(size_t stateHash, const stringImpl& entryName, const boost::property_tree::ptree& pt);
+       static size_t loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 
        static size_t defaultHash() noexcept;
 

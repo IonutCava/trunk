@@ -3,34 +3,36 @@
 #include "config.h"
 
 #include "Headers/Kernel.h"
-#include "Headers/XMLEntryData.h"
 #include "Headers/Configuration.h"
+#include "Headers/EngineTaskPool.h"
 #include "Headers/PlatformContext.h"
+#include "Headers/XMLEntryData.h"
 
-#include "GUI/Headers/GUI.h"
-#include "GUI/Headers/GUISplash.h"
-#include "GUI/Headers/GUIConsole.h"
-#include "Editor/Headers/Editor.h"
-#include "Scripting/Headers/Script.h"
-#include "Physics/Headers/PXDevice.h"
-#include "Utility/Headers/XMLParser.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/RenderPassManager.h"
-#include "Core/Time/Headers/ProfileTimer.h"
-#include "Core/Time/Headers/ApplicationTimer.h"
-#include "Core/Networking/Headers/Server.h"
-#include "Core/Networking/Headers/LocalClient.h"
 #include "Core/Debugging/Headers/DebugInterface.h"
-#include "Rendering/Headers/Renderer.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/StringHelper.h"
+#include "Core/Networking/Headers/LocalClient.h"
+#include "Core/Networking/Headers/Server.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
+#include "Editor/Headers/Editor.h"
+#include "GUI/Headers/GUI.h"
+#include "GUI/Headers/GUIConsole.h"
+#include "GUI/Headers/GUISplash.h"
+#include "Managers/Headers/FrameListenerManager.h"
+#include "Managers/Headers/RenderPassManager.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Physics/Headers/PXDevice.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
+#include "Platform/File/Headers/FileWatcherManager.h"
 #include "Platform/Headers/SDLEventManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Managers/Headers/FrameListenerManager.h"
-#include "Platform/File/Headers/FileWatcherManager.h"
+#include "Rendering/Headers/Renderer.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
+#include "Resources/Headers/ResourceCache.h"
+#include "Scripting/Headers/Script.h"
+#include "Utility/Headers/XMLParser.h"
 
 namespace Divide {
 
@@ -43,24 +45,22 @@ namespace {
 
 };
 
-Kernel::Kernel(I32 argc, char** argv, Application& parentApp)
-    : _argc(argc),
-      _argv(argv),
-      _renderPassManager(nullptr),
-      _frameListenerMgr(),
-      _platformContext(PlatformContext(parentApp, *this)),
+Kernel::Kernel(const I32 argc, char** argv, Application& parentApp)
+    : _platformContext(PlatformContext(parentApp, *this)),
       _appLoopTimer(Time::ADD_TIMER("Main Loop Timer")),
       _frameTimer(Time::ADD_TIMER("Total Frame Timer")),
       _appIdleTimer(Time::ADD_TIMER("Loop Idle Timer")),
       _appScenePass(Time::ADD_TIMER("Loop Scene Pass Timer")),
       _physicsUpdateTimer(Time::ADD_TIMER("Physics Update Timer")),
+      _physicsProcessTimer(Time::ADD_TIMER("Physics Process Timer")),
       _sceneUpdateTimer(Time::ADD_TIMER("Scene Update Timer")),
       _sceneUpdateLoopTimer(Time::ADD_TIMER("Scene Update Loop timer")),
-      _physicsProcessTimer(Time::ADD_TIMER("Physics Process Timer")),
       _cameraMgrTimer(Time::ADD_TIMER("Camera Manager Update Timer")),
       _flushToScreenTimer(Time::ADD_TIMER("Flush To Screen Timer")),
       _preRenderTimer(Time::ADD_TIMER("Pre-render Timer")),
-      _postRenderTimer(Time::ADD_TIMER("Post-render Timer"))
+      _postRenderTimer(Time::ADD_TIMER("Post-render Timer")),
+      _argc(argc),
+      _argv(argv)
 {
     std::atomic_init(&_splashScreenUpdating, false);
     _appLoopTimer.addChildTimer(_appIdleTimer);
@@ -107,10 +107,9 @@ void Kernel::startSplashScreen() {
     _splashTask = CreateTask(_platformContext,
         [this, &splash](const Task& /*task*/) {
         U64 previousTimeUS = 0;
-        const U64 currentTimeUS = Time::App::ElapsedMicroseconds();
         while (_splashScreenUpdating) {
-            const U64 deltaTimeUS = currentTimeUS - previousTimeUS;
-            previousTimeUS = currentTimeUS;
+            const U64 deltaTimeUS = Time::App::ElapsedMicroseconds() - previousTimeUS;
+            previousTimeUS += deltaTimeUS;
             _platformContext.beginFrame(PlatformContext::SystemComponentType::GFXDevice);
             splash.render(_platformContext.gfx(), deltaTimeUS);
             _platformContext.endFrame(PlatformContext::SystemComponentType::GFXDevice);
@@ -141,14 +140,16 @@ void Kernel::stopSplashScreen() {
     SDLEventManager::pollEvents();
 }
 
-void Kernel::idle(bool fast) {
+void Kernel::idle(const bool fast) {
     OPTICK_EVENT();
 
     _platformContext.idle();
 
-    if (!fast && !Config::Build::IS_SHIPPING_BUILD) {
-        FileWatcherManager::idle();
-        Locale::idle();
+    if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
+        if (!fast) {
+            FileWatcherManager::idle();
+            Locale::idle();
+        }
     }
     _sceneManager->idle();
     Script::idle();
@@ -244,9 +245,9 @@ void Kernel::onLoop() {
     // Cap FPS
     const I16 frameLimit = _platformContext.config().runtime.frameRateLimit;
     const F32 deltaMilliseconds = Time::MicrosecondsToMilliseconds<F32>(_timingData.timeDeltaUS());
-    const F32 targetFrametime = 1000.0f / frameLimit;
+    const F32 targetFrameTime = 1000.0f / frameLimit;
 
-    if (deltaMilliseconds < targetFrametime) {
+    if (deltaMilliseconds < targetFrameTime) {
         {
             Time::ScopedTimer timer2(_appIdleTimer);
             idle(true);
@@ -254,14 +255,14 @@ void Kernel::onLoop() {
 
         if (frameLimit > 0) {
             //Sleep the remaining frame time 
-            std::this_thread::sleep_for(std::chrono::milliseconds(to_I32(std::floorf(targetFrametime - deltaMilliseconds))));
+            std::this_thread::sleep_for(std::chrono::milliseconds(to_I32(std::floorf(targetFrameTime - deltaMilliseconds))));
         }
     }
 }
 
 bool Kernel::mainLoopScene(FrameEvent& evt,
-                           const U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
-                           const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
+                           const U64 deltaTimeUS,     //Frame rate independent deltaTime. Can be paused. (e.g. used by scene updates)
+                           const U64 realDeltaTimeUS, //Frame rate dependent deltaTime. Can be paused. (e.g. used by physics)
                            const U64 appDeltaTimeUS)  //Real app delta time between frames. Can't be paused (e.g. used by editor)
 {
     OPTICK_EVENT();
@@ -483,7 +484,7 @@ bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
         }
 
         // perform time-sensitive shader tasks
-        if (!ShaderProgram::updateAll(deltaTimeUS)) {
+        if (!ShaderProgram::updateAll()) {
             return false;
         }
 
@@ -579,7 +580,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     XML::loadFromXML(entryData, entryPoint.c_str());
     XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
 
-    if (Util::findCommandLineArgument(_argc, _argv, "disableRenderAPIDebugging")) {
+    if (Util::FindCommandLineArgument(_argc, _argv, "disableRenderAPIDebugging")) {
         config.debug.enableRenderAPIDebugging = false;
     }
 
@@ -591,7 +592,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     I32 threadCount = config.runtime.maxWorkerThreads;
     if (config.runtime.maxWorkerThreads < 0) {
-        threadCount = std::max(HARDWARE_THREAD_COUNT(), to_U32(RenderStage::COUNT) + g_backupThreadPoolSize);
+        threadCount = std::max(HardwareThreadCount(), to_U32(RenderStage::COUNT) + g_backupThreadPoolSize);
     }
     totalThreadCount(threadCount);
 
@@ -605,7 +606,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         is_error ? Console::errorfn(stringImpl(msg).c_str()) : Console::printfn(stringImpl(msg).c_str());
     });
 
-    _platformContext.server().init(((Divide::U16)443), "127.0.0.1", true);
+    _platformContext.server().init(static_cast<Divide::U16>(443), "127.0.0.1", true);
 
     if (!_platformContext.client().connect(entryData.serverAddress, 443)) {
         _platformContext.client().connect("127.0.0.1", 443);
@@ -695,8 +696,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         _sceneManager->onGainFocus();
         return true;
     });
-    const vec2<U16>& drawArea = winManager.mainWindow()->getDrawableSize();
-    const Rect<U16> targetViewport(0, 0, drawArea.width, drawArea.height);
 
     // Initialize GUI with our current resolution
     _platformContext.gui().init(_platformContext, resourceCache());
@@ -831,14 +830,14 @@ bool Kernel::onKeyUp(const Input::KeyEvent& key) {
     return false;
 }
 
-vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remapedOut) const noexcept {
-    remapedOut = false;
+vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept {
+    remappedOut = false;
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _platformContext.editor();
         if (editor.running() && editor.scenePreviewFocused()) {
             const Rect<I32>& sceneRect = editor.scenePreviewRect(false);
             if (sceneRect.contains(absPositionIn)) {
-                remapedOut = true;
+                remappedOut = true;
                 const Rect<I32>& viewport = _platformContext.gfx().getCurrentViewport();
                 return COORD_REMAP(absPositionIn, sceneRect, viewport);
             }
@@ -860,9 +859,9 @@ bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
     Input::MouseMoveEvent remapArg = arg;
     //Remap coords in case we are using the Editor's scene view
     if_constexpr(Config::Build::ENABLE_EDITOR) {
-        bool remaped = false;
-        const vec2<I32> newPos = remapMouseCoords(arg.absolutePos(), remaped);
-        if (remaped) {
+        bool remapped = false;
+        const vec2<I32> newPos = remapMouseCoords(arg.absolutePos(), remapped);
+        if (remapped) {
             Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
         }
     }
@@ -888,9 +887,9 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
 
     Input::MouseButtonEvent remapArg = arg;
     if_constexpr(Config::Build::ENABLE_EDITOR) {
-        bool remaped = false;
-        const vec2<I32> newPos = remapMouseCoords(arg.absPosition(), remaped);
-        if (remaped) {
+        bool remapped = false;
+        const vec2<I32> newPos = remapMouseCoords(arg.absPosition(), remapped);
+        if (remapped) {
             Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
         }
     }
@@ -914,9 +913,9 @@ bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 
     Input::MouseButtonEvent remapArg = arg;
     if_constexpr(Config::Build::ENABLE_EDITOR) {
-        bool remaped = false;
-        const vec2<I32> newPos = remapMouseCoords(arg.absPosition(), remaped);
-        if (remaped) {
+        bool remapped = false;
+        const vec2<I32> newPos = remapMouseCoords(arg.absPosition(), remapped);
+        if (remapped) {
             Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
         }
     }

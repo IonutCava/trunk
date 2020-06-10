@@ -81,6 +81,9 @@ namespace detail {
 #endif
 
 class IXMLSerializable {
+public:
+    virtual ~IXMLSerializable() = default;
+
 protected:
     friend bool loadFromXML(IXMLSerializable& object, const char* file);
     friend bool saveToXML(const IXMLSerializable& object, const char* file);
@@ -88,8 +91,7 @@ protected:
     virtual bool fromXML(const char* xmlFile) = 0;
     virtual bool toXML(const char* xmlFile) const = 0;
 
-protected:
-    XML::detail::LoadSave LoadSave;
+    detail::LoadSave LoadSave;
 };
 
 bool loadFromXML(IXMLSerializable& object, const char* file);

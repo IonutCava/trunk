@@ -1,23 +1,24 @@
 #include "stdafx.h"
 
 #include "Headers/ShadowMap.h"
+#include "Headers/CascadedShadowMapsGenerator.h"
 #include "Headers/CubeShadowMapGenerator.h"
 #include "Headers/SingleShadowMapGenerator.h"
-#include "Headers/CascadedShadowMapsGenerator.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Scenes/Headers/SceneState.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Rendering/Lighting/Headers/LightPool.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Rendering/Lighting/Headers/LightPool.h"
 
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
 
@@ -45,6 +46,7 @@ ShadowType ShadowMap::getShadowTypeForLightType(LightType type) noexcept {
         case LightType::DIRECTIONAL: return ShadowType::LAYERED;
         case LightType::POINT: return ShadowType::CUBEMAP;
         case LightType::SPOT: return ShadowType::SINGLE;
+        default: break;
     }
 
     return ShadowType::COUNT;
@@ -55,6 +57,7 @@ LightType ShadowMap::getLightTypeForShadowType(ShadowType type) noexcept {
         case ShadowType::LAYERED: return LightType::DIRECTIONAL;
         case ShadowType::CUBEMAP: return LightType::POINT;
         case ShadowType::SINGLE: return LightType::SPOT;
+        default: break;
     }
 
     return LightType::COUNT;
@@ -99,11 +102,10 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 // Default filters, LINEAR is OK for this
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, isCSM ? GFXDataFormat::FLOAT_32 : GFXDataFormat::FLOAT_16);
                 depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * (isCSM ? Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS : 1));
-                depthMapDescriptor.samplerDescriptor(depthMapSampler);
                 depthMapDescriptor.autoMipMaps(false);
 
                 vectorEASTL<RTAttachmentDescriptor> att = {
-                    { depthMapDescriptor, RTAttachmentType::Colour },
+                    { depthMapDescriptor, depthMapSampler.getHash(), RTAttachmentType::Colour },
                 };
 
                 RenderTargetDescriptor desc = {};
@@ -127,15 +129,14 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 colourMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 depthMapSampler.minFilter(TextureFilter::LINEAR);
                 depthMapSampler.anisotropyLevel(0u);
-                colourMapDescriptor.samplerDescriptor(depthMapSampler);
+                const size_t samplerHash = depthMapSampler.getHash();
 
                 TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
                 depthDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
-                depthDescriptor.samplerDescriptor(depthMapSampler);
 
                 vectorEASTL<RTAttachmentDescriptor> att = {
-                    { colourMapDescriptor, RTAttachmentType::Colour },
-                    { depthDescriptor, RTAttachmentType::Depth },
+                    { colourMapDescriptor, samplerHash, RTAttachmentType::Colour },
+                    { depthDescriptor, samplerHash, RTAttachmentType::Depth },
                 };
 
                 RenderTargetDescriptor desc = {};
@@ -148,6 +149,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
                 s_shadowMapGenerators[i] = MemoryManager_NEW CubeShadowMapGenerator(context);
             } break;
+            default: break;
         };
         s_shadowMaps.push_back(crtTarget);
 
@@ -201,11 +203,12 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
             TextureViewEntry entry = {};
             entry._binding = bindSlot;
             entry._view._texture = shadowTexture.texture().get();
+            entry._view._samplerHash = shadowTexture.samplerHash();
             entry._view._mipLevels.set(texDescriptor.mipLevels().min, texDescriptor.mipLevels().max);
             entry._view._layerRange.set(0, useCount);
             descriptorSetCmd._set._textureViews.push_back(entry);
         } else {
-            descriptorSetCmd._set._textureData.setTexture(shadowTexture.texture()->data(), bindSlot);
+            descriptorSetCmd._set._textureData.setTexture(shadowTexture.texture()->data(), shadowTexture.samplerHash(), bindSlot);
         }
     }
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -287,6 +290,7 @@ U32 ShadowMap::getLigthLayerRequirements(const Light& light) {
         case LightType::DIRECTIONAL: return to_U32(static_cast<const DirectionalLightComponent&>(light).csmSplitCount());
         case LightType::SPOT: return 1u;
         case LightType::POINT: return 6u;
+        default: break;
     }
 
     return 0u;
@@ -360,6 +364,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 for (U8 i = 0; i < splitCount; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - splitCount + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+                    shadow->_samplerHash = ShadowMap::getDepthMap(LightType::DIRECTIONAL)._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
                     shadow->_shader = previewShader;
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, i + light->getShadowOffset());
                     shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::LAYERED)[i]->getZPlanes());
@@ -381,6 +386,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
 
                 DebugView_ptr shadow = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1));
                 shadow->_texture = ShadowMap::getDepthMap(LightType::SPOT)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+                shadow->_samplerHash = ShadowMap::getDepthMap(LightType::SPOT)._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
                 shadow->_shader = CreateResource<ShaderProgram>(context.parent().resourceCache(), shadowPreviewShader);
                 shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light->getShadowOffset());
                 shadow->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, ShadowMap::shadowCameras(ShadowType::SINGLE)[0]->getZPlanes());
@@ -405,6 +411,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 for (U32 i = 0; i < 6; ++i) {
                     DebugView_ptr shadow = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
                     shadow->_texture = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+                    shadow->_samplerHash = ShadowMap::getDepthMap(LightType::POINT)._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
                     shadow->_shader = previewShader;
                     shadow->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, light->getShadowOffset());
                     shadow->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);
@@ -414,6 +421,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                     s_debugViews.push_back(shadow);
                 }
             } break;
+            default: break;
         };
 
         for (const DebugView_ptr& view : s_debugViews) {

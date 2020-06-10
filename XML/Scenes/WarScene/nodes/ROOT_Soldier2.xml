@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <model>Testwuson.X</model>
+<MESH/>
 <TRANSFORM>
     <Transform>
         <position x="125" y="15" z="6.31866407"/>
@@ -17,4 +18,3 @@
 </RENDERING>
 <NETWORKING/>
 <SELECTION/>
-<MESH/>

@@ -3,8 +3,6 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Headers/StringHelper.h"
 #include "Environment/Water/Headers/Water.h"
-#include "Platform/File/Headers/FileManagement.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
@@ -18,7 +16,7 @@ CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
                                     DeleteResource(_cache));
 
     ptr->setState(ResourceState::RES_LOADING);
-    if (!load(ptr)) {
+    if (!Load(ptr)) {
         ptr.reset();
     }
 

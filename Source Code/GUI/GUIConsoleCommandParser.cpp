@@ -11,6 +11,7 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Math/Headers/MathHelper.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Platform/Audio/Headers/SFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"

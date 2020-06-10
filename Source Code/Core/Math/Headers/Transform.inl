@@ -97,7 +97,7 @@ inline void Transform::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> de
 
 /// Set the local orientation using the Euler system.
 /// The angles can be in either degrees(default) or radians
-inline void Transform::setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
+inline void Transform::setRotation(const Angle::DEGREES<F32> pitch, const Angle::DEGREES<F32> yaw, const Angle::DEGREES<F32> roll) {
     _dirty = true;
     _rebuild = true;
 
@@ -131,14 +131,14 @@ inline void Transform::scale(const vec3<F32>& axisFactors) {
 /// Apply the specified Axis-Angle rotation starting from the current
 /// orientation.
 /// The angles can be in either degrees(default) or radians
-inline void Transform::rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
+inline void Transform::rotate(const vec3<F32>& axis, const Angle::DEGREES<F32> degrees) {
     rotate(Quaternion<F32>(axis, degrees));
 }
 
 /// Apply the specified Euler rotation starting from the current
 /// orientation.
 /// The angles can be in either degrees(default) or radians
-inline void Transform::rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) {
+inline void Transform::rotate(const Angle::DEGREES<F32> pitch, const Angle::DEGREES<F32> yaw, const Angle::DEGREES<F32> roll) {
     rotate(Quaternion<F32>(pitch, yaw, roll));
 }
 
@@ -157,38 +157,38 @@ inline void Transform::rotateSlerp(const Quaternion<F32>& quat, const D64 deltaT
 }
 
 /// Set the scaling factor on the X axis
-inline void Transform::setScaleX(const F32 ammount) {
-    setScale(vec3<F32>(ammount, _transformValues._scale.y,
+inline void Transform::setScaleX(const F32 amount) {
+    setScale(vec3<F32>(amount, _transformValues._scale.y,
                                 _transformValues._scale.z));
 }
 /// Set the scaling factor on the Y axis
-inline void Transform::setScaleY(const F32 ammount) {
-    setScale(vec3<F32>(_transformValues._scale.x, ammount,
+inline void Transform::setScaleY(const F32 amount) {
+    setScale(vec3<F32>(_transformValues._scale.x, amount,
                                 _transformValues._scale.z));
 }
 /// Set the scaling factor on the Z axis
-inline void Transform::setScaleZ(const F32 ammount) {
+inline void Transform::setScaleZ(const F32 amount) {
     setScale(vec3<F32>(_transformValues._scale.x,
-                                _transformValues._scale.y, ammount));
+                                _transformValues._scale.y, amount));
 }
 
 /// Increase the scaling factor on the X axis by the specified factor
-inline void Transform::scaleX(const F32 ammount) {
-    scale(vec3<F32>(ammount,
+inline void Transform::scaleX(const F32 amount) {
+    scale(vec3<F32>(amount,
                     _transformValues._scale.y,
                     _transformValues._scale.z));
 }
 /// Increase the scaling factor on the Y axis by the specified factor
-inline void Transform::scaleY(const F32 ammount) {
+inline void Transform::scaleY(const F32 amount) {
     scale(vec3<F32>(_transformValues._scale.x,
-                    ammount,
+                    amount,
                     _transformValues._scale.z));
 }
 /// Increase the scaling factor on the Z axis by the specified factor
-inline void Transform::scaleZ(const F32 ammount) {
+inline void Transform::scaleZ(const F32 amount) {
     scale(vec3<F32>(_transformValues._scale.x,
                     _transformValues._scale.y,
-                    ammount));
+                    amount));
 }
 /// Rotate on the X axis (Axis-Angle used) by the specified angle (either
 /// degrees or radians)

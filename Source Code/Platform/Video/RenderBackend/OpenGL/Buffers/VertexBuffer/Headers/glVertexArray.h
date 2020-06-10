@@ -33,8 +33,6 @@
 #ifndef _GL_VERTEX_ARRAY_H_
 #define _GL_VERTEX_ARRAY_H_
 
-#include "Core/Headers/ByteBuffer.h"
-
 #include "glVAOCache.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
@@ -62,9 +60,8 @@ class glVertexArray final : public VertexBuffer,
 
     bool create(bool staticDraw = true) final;
 
-    /// Never call Refresh() just queue it and the data will update before
-    /// drawing
-    inline bool queueRefresh() final {
+    /// Never call Refresh() just queue it and the data will update before drawing
+    bool queueRefresh() final {
         _refreshQueued = true;
         return true;
     }
@@ -85,7 +82,7 @@ class glVertexArray final : public VertexBuffer,
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
     void uploadVBAttributes(GLuint VAO);
     
-    /// Calculates the aporpriate attribute offsets and returns the total size of a vertex for this buffer
+    /// Calculates the appropriate attribute offsets and returns the total size of a vertex for this buffer
     size_t populateAttributeSize();
 
     bool getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* dataOut, size_t dataOutBufferLength);

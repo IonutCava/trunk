@@ -61,10 +61,11 @@ public:
 
     const PoolEntry& get(RTAttachmentType type) const;
 
-    U8 attachmentCount(RTAttachmentType type) const;
+    U8 attachmentCount(RTAttachmentType type) const noexcept;
 
     RenderTarget& parent();
     const RenderTarget& parent() const;
+
 private:
     RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachmentType type, U8 index);
     const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachmentType type, U8 index) const;

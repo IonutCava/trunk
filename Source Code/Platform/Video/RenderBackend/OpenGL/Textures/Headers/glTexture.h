@@ -55,16 +55,13 @@ class glTexture final : public Texture,
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final;
 
-    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept final;
+    void setMipMapRange(const U16 base = 0, const U16 max = 1000) noexcept final;
 
     void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) final;
 
     void loadData(const ImageTools::ImageData& imageData) final;
 
     void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) final;
-
-
-    void setCurrentSampler(const SamplerDescriptor& descriptor) final;
 
     static void copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params);
 

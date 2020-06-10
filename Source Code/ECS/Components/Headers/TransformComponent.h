@@ -58,7 +58,7 @@ namespace Divide {
 
         public:
          TransformComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-         ~TransformComponent();
+         ~TransformComponent() = default;
 
          void reset();
 
@@ -75,14 +75,14 @@ namespace Divide {
          void translate(const vec3<F32>& axisFactors) override;
          using ITransform::setPosition;
 
-         void setScale(const vec3<F32>& ammount) override;
-         void setScaleX(const F32 ammount) override;
-         void setScaleY(const F32 ammount) override;
-         void setScaleZ(const F32 ammount) override;
+         void setScale(const vec3<F32>& amount) override;
+         void setScaleX(const F32 amount) override;
+         void setScaleY(const F32 amount) override;
+         void setScaleZ(const F32 amount) override;
          void scale(const vec3<F32>& axisFactors) override;
-         void scaleX(const F32 ammount) override;
-         void scaleY(const F32 ammount) override;
-         void scaleZ(const F32 ammount) override;
+         void scaleX(const F32 amount) override;
+         void scaleY(const F32 amount) override;
+         void scaleZ(const F32 amount) override;
          using ITransform::setScale;
 
          void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
@@ -104,53 +104,53 @@ namespace Divide {
 
          void setTransform(const TransformValues& values);
 
-         bool isUniformScaled() const;
+         [[nodiscard]] bool isUniformScaled() const;
 
          /// Return the position
-         vec3<F32> getPosition() const;
+         [[nodiscard]] vec3<F32> getPosition() const;
          /// Return the local position
-         vec3<F32> getLocalPosition() const;
+         [[nodiscard]] vec3<F32> getLocalPosition() const;
          /// Return the position
-         vec3<F32> getPosition(D64 interpolationFactor) const;
+         [[nodiscard]] vec3<F32> getPosition(D64 interpolationFactor) const;
          /// Return the local position
-         vec3<F32> getLocalPosition(D64 interpolationFactor) const;
+         [[nodiscard]] vec3<F32> getLocalPosition(D64 interpolationFactor) const;
 
-         vec3<F32> getFwdVector() const;
-         vec3<F32> getUpVector() const;
-         vec3<F32> getRightVector() const;
+         [[nodiscard]] vec3<F32> getFwdVector() const;
+         [[nodiscard]] vec3<F32> getUpVector() const;
+         [[nodiscard]] vec3<F32> getRightVector() const;
 
          /// Return the scale factor
-         vec3<F32> getScale() const;
+         [[nodiscard]] vec3<F32> getScale() const;
          /// Return the local scale factor
-         vec3<F32> getLocalScale() const;
+         [[nodiscard]] vec3<F32> getLocalScale() const;
          /// Return the scale factor
-         vec3<F32> getScale(D64 interpolationFactor) const;
+         [[nodiscard]] vec3<F32> getScale(D64 interpolationFactor) const;
          /// Return the local scale factor
-         vec3<F32> getLocalScale(D64 interpolationFactor) const;
+         [[nodiscard]] vec3<F32> getLocalScale(D64 interpolationFactor) const;
 
          /// Return the orientation quaternion
-         Quaternion<F32> getOrientation() const;
+         [[nodiscard]] Quaternion<F32> getOrientation() const;
          /// Return the local orientation quaternion
-         Quaternion<F32> getLocalOrientation() const;
+         [[nodiscard]] Quaternion<F32> getLocalOrientation() const;
          /// Return the orientation quaternion
-         Quaternion<F32> getOrientation(D64 interpolationFactor) const;
+         [[nodiscard]] Quaternion<F32> getOrientation(D64 interpolationFactor) const;
          /// Return the local orientation quaternion
-         Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
+         [[nodiscard]] Quaternion<F32> getLocalOrientation(D64 interpolationFactor) const;
 
          void setTransforms(const mat4<F32>& transform);
 
-         TransformValues getValues() const override;
+         [[nodiscard]] TransformValues getValues() const override;
 
          void pushTransforms();
          bool popTransforms();
 
          void setOffset(bool state, const mat4<F32>& offset = mat4<F32>());
 
-         bool saveCache(ByteBuffer& outputBuffer) const override;
-         bool loadCache(ByteBuffer& inputBuffer) override;
+         [[nodiscard]] bool saveCache(ByteBuffer& outputBuffer) const override;
+         [[nodiscard]] bool loadCache(ByteBuffer& inputBuffer) override;
 
-         inline void getLocalMatrix(mat4<F32>& matOut) { getMatrix(matOut); }
-         inline void getLocalMatrix(D64 interpolationFactor, mat4<F32>& matOut) const { getMatrix(interpolationFactor, matOut); }
+         void getLocalMatrix(mat4<F32>& matOut) { getMatrix(matOut); }
+         void getLocalMatrix(const D64 interpolationFactor, mat4<F32>& matOut) const { getMatrix(interpolationFactor, matOut); }
 
       protected:
          friend class TransformSystem;
@@ -171,9 +171,9 @@ namespace Divide {
          void getMatrix(D64 interpolationFactor, mat4<F32>& matOut) const;
 
          //A simple lock-unlock and mutex-free matrix calculation system //
-         vec3<F32> getLocalPositionLocked(D64 interpolationFactor) const;
-         vec3<F32> getLocalScaleLocked(D64 interpolationFactor) const;
-         Quaternion<F32> getLocalOrientationLocked(D64 interpolationFactor) const;
+         [[nodiscard]] vec3<F32> getLocalPositionLocked(D64 interpolationFactor) const;
+         [[nodiscard]] vec3<F32> getLocalScaleLocked(D64 interpolationFactor) const;
+         [[nodiscard]] Quaternion<F32> getLocalOrientationLocked(D64 interpolationFactor) const;
 
          //Called only when transformed chaged in the main update loop!
          void updateWorldMatrix(U32 updateMask);

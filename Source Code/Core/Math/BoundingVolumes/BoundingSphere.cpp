@@ -9,7 +9,7 @@ BoundingSphere::BoundingSphere() noexcept
     _center.reset();
 }
 
-BoundingSphere::BoundingSphere(const vec3<F32>& center, F32 radius) noexcept
+BoundingSphere::BoundingSphere(const vec3<F32>& center, const F32 radius) noexcept
     : _visibility(false),
       _dirty(true),
       _center(center),

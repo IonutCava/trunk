@@ -116,9 +116,8 @@ LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
 
 namespace Divide {
     //https://msdn.microsoft.com/en-us/library/windows/desktop/ms679360%28v=vs.85%29.aspx
-    static CHAR * getLastErrorText(CHAR *pBuf, LONG bufSize) noexcept {
-        DWORD retSize;
-        LPTSTR pTemp = NULL;
+    static CHAR * GetLastErrorText(CHAR *pBuf, LONG bufSize) noexcept {
+        LPTSTR pTemp = nullptr;
 
         if (bufSize < 16) {
             if (bufSize > 0) {
@@ -127,27 +126,27 @@ namespace Divide {
             return(pBuf);
         }
 
-        retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                                FORMAT_MESSAGE_FROM_SYSTEM |
-                                FORMAT_MESSAGE_ARGUMENT_ARRAY,
-                                NULL,
-                                GetLastError(),
-                                LANG_NEUTRAL,
-                                (LPTSTR)&pTemp,
-                                0,
-                                NULL);
+        const DWORD retSize = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                                            FORMAT_MESSAGE_FROM_SYSTEM |
+                                            FORMAT_MESSAGE_ARGUMENT_ARRAY,
+                                            nullptr,
+                                            GetLastError(),
+                                            LANG_NEUTRAL,
+                                            reinterpret_cast<LPTSTR>(&pTemp),
+                                            0,
+                                            nullptr);
 
-        if (!retSize || pTemp == NULL) {
+        if (!retSize || pTemp == nullptr) {
             pBuf[0] = '\0';
         } else {
             pTemp[strlen(pTemp) - 2] = '\0'; //remove cr and newline character
             sprintf(pBuf, "%0.*s (0x%x)", bufSize - 16, pTemp, GetLastError());
-            LocalFree((HLOCAL)pTemp);
+            LocalFree(static_cast<HLOCAL>(pTemp));
         }
         return(pBuf);
     }
 
-    void getWindowHandle(void* window, WindowHandle& handleOut) noexcept {
+    void GetWindowHandle(void* window, WindowHandle& handleOut) noexcept {
         SDL_SysWMinfo wmInfo = {};
         SDL_VERSION(&wmInfo.version);
         SDL_GetWindowWMInfo(static_cast<SDL_Window*>(window), &wmInfo);
@@ -175,7 +174,7 @@ namespace Divide {
             return true;
         } else {
             CHAR msgText[256];
-            getLastErrorText(msgText,sizeof(msgText));
+            GetLastErrorText(msgText,sizeof(msgText));
             std::cerr << msgText << std::endl;
         }
         return false;
@@ -194,7 +193,7 @@ namespace Divide {
     } THREADNAME_INFO;
 #pragma pack(pop)
 
-    void setThreadName(U32 threadID, const char* threadName) noexcept {
+    void SetThreadName(const U32 threadID, const char* threadName) noexcept {
         // DWORD dwThreadID = ::GetThreadId( static_cast<HANDLE>( t.native_handle() ) );
 
         THREADNAME_INFO info;
@@ -212,23 +211,23 @@ namespace Divide {
         }
     }
 
-    void setThreadName(const char* threadName) noexcept {
-        setThreadName(GetCurrentThreadId(), threadName);
+    void SetThreadName(const char* threadName) noexcept {
+        SetThreadName(GetCurrentThreadId(), threadName);
     }
 
-    void setThreadName(std::thread* thread, const char* threadName) noexcept {
+    void SetThreadName(std::thread* thread, const char* threadName) noexcept {
         const DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
-        setThreadName(threadId, threadName);
+        SetThreadName(threadId, threadName);
     }
 
-    FileWithPath getExecutableLocation(I32 argc, char** argv) {
+    FileWithPath GetExecutableLocation(I32 argc, char** argv) {
         ACKNOWLEDGE_UNUSED(argc);
 
         char buf[1024] = { 0 };
-        const DWORD ret = GetModuleFileNameA(NULL, buf, sizeof(buf));
+        const DWORD ret = GetModuleFileNameA(nullptr, buf, sizeof(buf));
         if (ret == 0 || ret == sizeof(buf))
         {
-            return getExecutableLocation(argv[0]);
+            return GetExecutableLocation(argv[0]);
         }
         return splitPathToNameAndLocation(buf);
     }
@@ -242,9 +241,9 @@ namespace Divide {
         ZeroMemory(&pi, sizeof(pi));
 
         const stringImpl commandLine = Util::StringFormat("\"%s\" %s", cmd, args);
-        char* lpCommandLine = (char*)commandLine.c_str();
+        char* lpCommandLine = const_cast<char*>(commandLine.c_str());
 
-        BOOL ret = CreateProcess(NULL, lpCommandLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+        const BOOL ret = CreateProcess(nullptr, lpCommandLine, nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
 
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);

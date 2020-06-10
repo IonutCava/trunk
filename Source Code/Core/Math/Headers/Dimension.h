@@ -43,7 +43,7 @@ namespace Divide {
     using RelativeScale2D = CEGUI::USize;
 
 
-    inline RelativePosition2D pixelPosition(I32 x, I32 y) {
+    inline RelativePosition2D pixelPosition(const I32 x, const I32 y) {
         // ToDo: Remove these and use proper offsets from the start -Ionut"
         return RelativePosition2D(RelativeValue(0.0f, to_F32(x)), RelativeValue(0.0f, to_F32(y)));
     }
@@ -52,7 +52,7 @@ namespace Divide {
         return pixelPosition(offset.x, offset.y);
     }
 
-    inline RelativeScale2D pixelScale(I32 x, I32 y) {
+    inline RelativeScale2D pixelScale(const I32 x, const I32 y) {
         return RelativeScale2D(RelativeValue(0.0f, to_F32(x)), RelativeValue(0.0f, to_F32(y)));
     }
 

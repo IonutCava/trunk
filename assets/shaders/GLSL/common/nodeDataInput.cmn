@@ -103,8 +103,11 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 
 struct WaterBodyData {
     vec4 positionW;
-    vec4 details;
+    ///length, depth, width
+    vec4 extents;
 };
+
+#define GLOBAL_WATER_BODIES 2
 
 layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneData
 {
@@ -116,7 +119,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneDa
     vec4   dvd_shadowingSettings;
     //x - elapsed time (ms), y - delta time (ms), z,w - reserved
     vec4   dvd_otherData;
-    WaterBodyData dvd_waterEntities[];
+    WaterBodyData dvd_waterEntities[GLOBAL_WATER_BODIES];
 };
 
 #define dvd_LightBleedBias dvd_shadowingSettings.x

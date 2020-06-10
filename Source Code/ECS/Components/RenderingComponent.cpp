@@ -9,7 +9,6 @@
 #include "Headers/EnvironmentProbeComponent.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 
@@ -290,13 +289,13 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
 
     if (!renderStagePass.isDepthPass()) {
         if (_reflectionTexture != nullptr && renderStagePass._stage != RenderStage::REFLECTION) {
-            textures.setTexture(_reflectionTexture->data(), _reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
+            textures.setTexture(_reflectionTexture->data(), _reflectionSampler, _reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
         } else {
             _reflectionIndex = g_invalidRefIndex;
         }
 
         if (_refractionTexture != nullptr && renderStagePass._stage != RenderStage::REFRACTION) {
-            textures.setTexture(_refractionTexture->data(), TextureUsage::REFRACTION_PLANAR);
+            textures.setTexture(_refractionTexture->data(), _refractionSampler, TextureUsage::REFRACTION_PLANAR);
         } else {
             _refractionIndex = g_invalidRefIndex;
         }
@@ -499,13 +498,14 @@ namespace Hack {
     Sky* g_skyPtr = nullptr;
 };
 
-bool RenderingComponent::updateReflection(U16 reflectionIndex,
-                                          bool inBudget,
+bool RenderingComponent::updateReflection(const U16 reflectionIndex,
+                                          const bool inBudget,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
 {
     _reflectionTexture = nullptr;
+    _reflectionSampler = 0u;
     _reflectionIndex = g_invalidRefIndex;
 
     if (_reflectorType == ReflectorType::COUNT) {
@@ -519,14 +519,25 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
         RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
         _reflectionCallback(params, bufferInOut);
 
+        const auto& targetAtt = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u);
         _reflectionIndex = reflectionIndex;
-        _reflectionTexture = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u).texture().get();
+        _reflectionTexture = targetAtt.texture().get();
+        _reflectionSampler = targetAtt.samplerHash();
         return true;
 
-    } else if (_reflectorType == ReflectorType::CUBE) {
+    }
+
+    if (_reflectorType == ReflectorType::CUBE) {
         if (!_envProbes.empty()) {
+            // We need to update this probe because we are going to use it. This will always lag one frame, but at least
+            // we keep updates separate from renders.
+            // ToDo: Investigate if we can lazy-refresh probes here? Call refresh but have a "clean" flag per frame?
+            _envProbes.front()->setDirty();
+
+            const auto& targetAtt = SceneEnvironmentProbePool::reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
             _reflectionIndex = _envProbes.front()->rtLayerIndex();
-            _reflectionTexture = SceneEnvironmentProbePool::reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
+            _reflectionTexture = targetAtt.texture().get();
+            _reflectionSampler = targetAtt.samplerHash();
         } else {
             // Need a way better way of handling this ...
             if (Hack::g_skyPtr == nullptr) {
@@ -539,6 +550,7 @@ bool RenderingComponent::updateReflection(U16 reflectionIndex,
             if (Hack::g_skyPtr != nullptr) {
                 _refractionIndex = 0;
                 _reflectionTexture = Hack::g_skyPtr->activeSkyBox().get();
+                _reflectionSampler = Hack::g_skyPtr->skyboxSampler();
             }
         }
     }
@@ -553,6 +565,7 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
                                           GFX::CommandBuffer& bufferInOut) {
     _refractionTexture = nullptr;
     _refractionIndex = g_invalidRefIndex;
+    _refractionSampler = 0u;
 
     // no default refraction system!
     if (_refractorType == RefractorType::COUNT) {
@@ -564,8 +577,10 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
         RenderCbkParams params{ _context, _parentSGN, renderState, refractRTID, refractionIndex, to_U8(_refractorType), camera };
         _refractionCallback(params, bufferInOut);
 
+        const auto& targetAtt = _context.renderTargetPool().renderTarget(refractRTID).getAttachment(RTAttachmentType::Colour, 0u);
         _refractionIndex = refractionIndex; 
-        _refractionTexture = _context.renderTargetPool().renderTarget(refractRTID).getAttachment(RTAttachmentType::Colour, 0u).texture().get();
+        _refractionTexture = targetAtt.texture().get();
+        _refractionSampler = targetAtt.samplerHash();
         return true;
     }
 
@@ -773,6 +788,7 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
             BoundsComponent* bComp = static_cast<BoundsComponent*>(data._sourceCmp);
             _boundsCenterCache = bComp->getBoundingSphere().getCenter();
         } break;
+        default: break;
     }
 }
 };

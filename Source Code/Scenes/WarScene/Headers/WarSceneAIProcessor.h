@@ -173,6 +173,8 @@ namespace Attorney {
     class WarAISceneWarAction;
 };
 
+class AudioSensor;
+class VisualSensor;
 class WarSceneAIProcessor : public AIProcessor {
     friend class Attorney::WarAISceneWarAction;
    public:

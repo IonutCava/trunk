@@ -4292,7 +4292,7 @@ static int vorbis_search_for_page_pushdata(vorb *f, uint8 *data, int data_len)
                // if the last frame on a page is continued to the next, then
                // we can't recover the sample_loc immediately
                if (data[i+27+data[i+26]-1] == 255)
-                  f->scan[n].sample_loc = ~0;
+                  f->scan[n].sample_loc = (uint32)(~0);
                else
                   f->scan[n].sample_loc = data[i+6] + (data[i+7] << 8) + (data[i+ 8]<<16) + (data[i+ 9]<<24);
                f->scan[n].bytes_done = i+j;
@@ -4597,10 +4597,10 @@ static int go_to_page_before(stb_vorbis *f, unsigned int limit_offset)
 // better).
 static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
 {
-   ProbedPage left, right, mid;
+   ProbedPage left, right, mid = {0u, 0u, 0u};
    int i, start_seg_with_known_loc, end_pos, page_start;
    uint32 delta, stream_length, padding;
-   double offset, bytes_per_sample;
+   double offset = 0, bytes_per_sample = 0;
    int probe = 0;
 
    // find the last page and validate the target sample

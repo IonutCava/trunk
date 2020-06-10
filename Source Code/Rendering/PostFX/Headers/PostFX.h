@@ -127,7 +127,7 @@ public:
     void setFadeIn(D64 durationMS, DELEGATE<void> onComplete = DELEGATE<void>());
     // fade out to specified colour and back again within the given time slice
     // if duration is 0.0, nothing happens
-    // waitDurationMS is the ammount of time to wait before fading back in
+    // waitDurationMS is the amount of time to wait before fading back in
     void setFadeOutIn(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS);
     void setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 

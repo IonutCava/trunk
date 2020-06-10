@@ -5,10 +5,11 @@
 #include "GUI/Headers/GUIButton.h"
 #include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/EngineTaskPool.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
@@ -16,7 +17,6 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
-#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 namespace Divide {
 
@@ -282,10 +282,10 @@ bool PingPongScene::load(const Str256& name) {
     _wasInFreeFly = false;
 
     // Load scene resources
-    bool loadState = SCENE_LOAD(name);
+    const bool loadState = SCENE_LOAD(name);
 
-    ResourceDescriptor minge("Ping Pong Ball");
-    _ball = CreateResource<Sphere3D>(_resCache, minge);
+    ResourceDescriptor ballDescriptor("Ping Pong Ball");
+    _ball = CreateResource<Sphere3D>(_resCache, ballDescriptor);
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
     _ball->getMaterialTpl()->shadingMode(ShadingMode::COOK_TORRANCE);

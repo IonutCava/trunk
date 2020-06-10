@@ -115,8 +115,8 @@ template<typename Engine = std::mt19937_64>
 void SeedRandom(U32 seed);
 
 template<typename Mask, typename Type>
-constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-[[nodiscard]] BitCompare(const Mask bitMask, const Type bit) noexcept;
+[[nodiscard]] constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const Mask bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
@@ -150,8 +150,8 @@ template<typename Mask>
 constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept;
 
 template<typename Mask, typename Type>
-constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-[[nodiscard]] BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept;
+[[nodiscard]] constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
+BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept;
 
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
@@ -481,6 +481,8 @@ template <typename U, typename T>
 @details The normalise uses a wrap around,
 @details so for example a yaw of 360 degrees becomes 0 degrees, and -190 degrees
 becomes 170.
+@param inputRotation rotation to normalize
+@param degrees if true, values are in degrees, otherwise we use radians
 @param normYaw If false, the yaw isn't normalized.
 @param normPitch If false, the pitch isn't normalized.
 @param normRoll If false, the roll isn't normalized.

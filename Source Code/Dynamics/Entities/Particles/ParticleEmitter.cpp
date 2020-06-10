@@ -1,14 +1,13 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/ParticleEmitter.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Scenes/Headers/Scene.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Core/Headers/EngineTaskPool.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
@@ -18,7 +17,6 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
@@ -218,10 +216,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
     }
 
     if (!_particles->_textureFileName.empty()) {
-        SamplerDescriptor textureSampler = {};
-
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
-        textureDescriptor.samplerDescriptor(textureSampler);
         textureDescriptor.srgb(true);
 
         ResourceDescriptor texture(_particles->_textureFileName);
@@ -259,7 +254,8 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(GFX::DrawCommand{ cmd });
 
     if (_particleTexture) {
-        pkgInOut.setTexture(0, _particleTexture->data(), TextureUsage::UNIT0);
+        SamplerDescriptor textureSampler = {};
+        pkgInOut.setTexture(0, _particleTexture->data(), textureSampler.getHash(), TextureUsage::UNIT0);
     }
 
     const Pipeline* pipeline = pkgInOut.pipeline(0);
@@ -279,7 +275,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
     }
 
     const vec3<F32>& eyePos = crtCamera.getEye();
-    U32 aliveCount = getAliveParticleCount();
+    const U32 aliveCount = getAliveParticleCount();
 
     vectorEASTL<vec4<F32>>& misc = _particles->_misc;
     vectorEASTL<vec4<F32>>& pos = _particles->_position;

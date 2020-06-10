@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _COMMAND_BUFFER_POOL_H_
 
 #include "CommandBuffer.h"
-#include "config.h"
 
 namespace Divide {
 namespace GFX {
@@ -56,8 +55,8 @@ class CommandBufferPool {
 class ScopedCommandBuffer {
   public:
     ~ScopedCommandBuffer();
-    inline CommandBuffer& operator()() noexcept { return *_buffer; }
-    inline const CommandBuffer& operator()() const noexcept { return *_buffer; }
+    CommandBuffer& operator()() noexcept { return *_buffer; }
+    const CommandBuffer& operator()() const noexcept { return *_buffer; }
 
   protected:
     friend ScopedCommandBuffer allocateScopedCommandBuffer();

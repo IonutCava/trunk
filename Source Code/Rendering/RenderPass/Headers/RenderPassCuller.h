@@ -100,8 +100,8 @@ class RenderPassCuller {
         void frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const;
         void toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const;
 
-        inline VisibleNodeList& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
-        inline const VisibleNodeList& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
+        VisibleNodeList& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
+        const VisibleNodeList& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
 
     protected:
         void frustumCullNode(const Task* parentTask, SceneGraphNode* node, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList& nodes) const;

@@ -33,17 +33,13 @@
 #ifndef _HASH_MAP_H_
 #define _HASH_MAP_H_
 
-#include "TemplateAllocator.h"
 #include <EASTL/unordered_map.h>
-#include <EASTL/unordered_set.h>
 #include <EASTL/intrusive_hash_map.h>
 
 #pragma warning(push)
 #pragma warning(disable: 4310)
 #pragma warning(disable: 4458)
 #include <skarupke/flat_hash_map.hpp>
-#include <skarupke/unordered_map.hpp>
-#include <skarupke/bytell_hash_map.hpp>
 #pragma warning(pop)
 
 template<class T>
@@ -65,14 +61,14 @@ using hashMapIntrusive = hashAlg::intrusive_hash_map<K, V, 37>;
 
 template<class T, bool>
 struct hasher {
-    inline size_t operator() (const T& elem) noexcept {
+    size_t operator() (const T& elem) {
         return hashAlg::hash<T>()(elem);
     }
 };
 
 template<class T>
 struct hasher<T, true> {
-    inline size_t operator() (const T& elem) {
+    size_t operator() (const T& elem) {
         using EnumType = std::underlying_type_t<T>;
         return hashAlg::hash<EnumType>()(static_cast<EnumType>(elem));
     }
@@ -80,14 +76,14 @@ struct hasher<T, true> {
 
 template<class T>
 struct EnumHash {
-    inline size_t operator()(const T& elem) const {
+    size_t operator()(const T& elem) const {
         return hasher<T, hashAlg::is_enum<T>::value>()(elem);
     }
 };
 
 template<class T>
 struct NoHash {
-    inline size_t operator()(const T& elem) const {
+    size_t operator()(const T& elem) const {
         return static_cast<size_t>(elem);
     }
 };
@@ -100,35 +96,35 @@ template <> struct hash<std::string>
     {
         const char* p = x.c_str();
         uint32_t c = 0u, result = 2166136261U;   // Intentionally uint32_t instead of size_t, so the behavior is the same regardless of size.
-        while ((c = (uint8_t)*p++) != 0)     // cast to unsigned 8 bit.
+        while ((c = static_cast<uint8_t>(*p++)) != 0)     // cast to unsigned 8 bit.
             result = (result * 16777619) ^ c;
-        return (size_t)result;
+        return static_cast<size_t>(result);
     }
 };
 
 
 template <typename K, typename V, typename ... Args, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K>>
-inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun, Predicate>& map, K key, Args&&... args) {
+hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun, Predicate>& map, K key, Args&&... args) {
     return map.try_emplace(key, eastl::forward<Args>(args)...);
 }
 
 template <typename K, typename V, typename ... Args, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K>>
-inline hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun, Predicate>& map, Args&&... args) {
+hashPairReturn<K, V, HashFun> emplace(hashMap<K, V, HashFun, Predicate>& map, Args&&... args) {
     return map.emplace(eastl::forward<Args>(args)...);
 }
 
 template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K> >
-inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, const hashAlg::pair<K, V>& valuePair) {
+hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, const hashAlg::pair<K, V>& valuePair) {
     return map.insert(valuePair);
 }
 
 template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K> >
-inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, K key, const V& value) {
+hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, K key, const V& value) {
     return map.emplace(key, value);
 }
 
 template <typename K, typename V, typename HashFun = HashType<K>, typename Predicate = eastl::equal_to<K> >
-inline hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, K key, V&& value) {
+hashPairReturn<K, V, HashFun> insert(hashMap<K, V, HashFun, Predicate>& map, K key, V&& value) {
     return map.emplace(key, eastl::move(value));
 }
 

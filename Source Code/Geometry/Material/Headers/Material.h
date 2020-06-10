@@ -36,7 +36,6 @@
 #include "MaterialEnums.h"
 
 #include "Utility/Headers/XMLParser.h"
-#include "Utility/Headers/StateTracker.h"
 
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
@@ -112,6 +111,7 @@ class Material : public CachedResource {
     bool update(const U64 deltaTimeUS);
     bool setTexture(TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
+                    const size_t samplerHash,
                     const TextureOperation& op = TextureOperation::NONE,
                     bool applyToInstances = false);
 
@@ -147,6 +147,7 @@ class Material : public CachedResource {
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;
+    size_t getSampler(TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
 
     bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
@@ -246,6 +247,7 @@ class Material : public CachedResource {
     /// use this map to add textures to the material
     mutable SharedMutex _textureLock;
     std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures = {};
+    std::array<size_t, to_base(TextureUsage::COUNT)> _samplers = {};
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
     I32 _textureKeyCache = -1;

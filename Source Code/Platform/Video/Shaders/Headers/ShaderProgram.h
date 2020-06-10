@@ -33,8 +33,6 @@
 #ifndef _SHADER_PROGRAM_H_
 #define _SHADER_PROGRAM_H_
 
-#include "config.h"
-
 #include "Core/Resources/Headers/Resource.h"
 #include "Core/Resources/Headers/ResourceDescriptor.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
@@ -116,15 +114,15 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool recompile(bool force);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    inline size_t getFunctionCount(ShaderType shader) noexcept {
+    size_t getFunctionCount(ShaderType shader) noexcept {
         return _functionIndex[to_U32(shader)].size();
     }
 
-    inline void setFunctionCount(ShaderType shader, size_t count) {
+    void setFunctionCount(const ShaderType shader, const size_t count) {
         _functionIndex[to_U32(shader)].resize(count, 0);
     }
 
-    inline void setFunctionIndex(ShaderType shader, U32 index, U32 functionEntry) {
+    void setFunctionIndex(const ShaderType shader, const U32 index, const U32 functionEntry) {
         const U32 shaderTypeValue = to_U32(shader);
 
         if (_functionIndex[shaderTypeValue].empty()) {
@@ -144,7 +142,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
         _functionIndex[shaderTypeValue][index] = _availableFunctionIndex[shaderTypeValue][functionEntry];
     }
 
-    inline U32 addFunctionIndex(ShaderType shader, U32 index) {
+    U32 addFunctionIndex(const ShaderType shader, const U32 index) {
         const U32 shaderTypeValue = to_U32(shader);
 
         _availableFunctionIndex[shaderTypeValue].push_back(index);
@@ -154,9 +152,9 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     //==================== static methods ===============================//
     static void idle();
-    static void onStartup(GFXDevice& context, ResourceCache* parentCache);
+    static void onStartup(ResourceCache* parentCache);
     static void onShutdown();
-    static bool updateAll(const U64 deltaTimeUS);
+    static bool updateAll();
     /// Queue a shaderProgram recompile request
     static bool recompileShaderProgram(const Str256& name);
     /// Remove a shaderProgram from the program cache
@@ -227,11 +225,11 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 namespace Attorney {
     class ShaderProgramKernel {
       protected:
-        static void useShaderTextCache(bool state) noexcept {
+        static void useShaderTextCache(const bool state) noexcept {
             ShaderProgram::useShaderTextCache(state);
         }
 
-        static void useShaderBinaryCache(bool state) {
+        static void useShaderBinaryCache(const bool state) {
             ShaderProgram::useShaderBinaryCache(state);
         }
 

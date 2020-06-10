@@ -12,14 +12,13 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 namespace Divide {
 
 namespace {
     constexpr bool g_disableLoadFromCache = false;
-    const char* g_materialFileExtension = ".mat.xml";
-    Str256 climatesLocation(U8 textureQuality) {
+
+    Str256 ClimatesLocation(U8 textureQuality) {
        CLAMP<U8>(textureQuality, 0u, 3u);
 
        return Paths::g_assetsLocation + Paths::g_heightmapLocation +
@@ -29,13 +28,13 @@ namespace {
     }
 
     std::pair<U8, bool> findOrInsert(U8 textureQuality, vectorEASTL<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
-        if (!fileExists((climatesLocation(textureQuality) + "/" + materialName + "/" + texture).c_str())) {
+        if (!fileExists((ClimatesLocation(textureQuality) + "/" + materialName + "/" + texture).c_str())) {
             materialName = "std_default";
         }
         const stringImpl item = materialName + "/" + texture;
-        auto it = eastl::find(eastl::cbegin(container),
-                            eastl::cend(container),
-                            item);
+        const auto it = eastl::find(eastl::cbegin(container),
+                                    eastl::cend(container),
+                                    item);
         if (it != eastl::cend(container)) {
             return std::make_pair(to_U8(eastl::distance(eastl::cbegin(container), it)), false);
         }
@@ -63,17 +62,17 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     // Albedo maps and roughness
     ResourceDescriptor textureAlbedoMaps("Terrain Albedo Maps_" + name);
-    textureAlbedoMaps.assetLocation(climatesLocation(textureQuality));
+    textureAlbedoMaps.assetLocation(ClimatesLocation(textureQuality));
     textureAlbedoMaps.flag(true);
 
     // Normals
     ResourceDescriptor textureNormalMaps("Terrain Normal Maps_" + name);
-    textureNormalMaps.assetLocation(climatesLocation(textureQuality));
+    textureNormalMaps.assetLocation(ClimatesLocation(textureQuality));
     textureNormalMaps.flag(true);
 
     // AO and displacement
     ResourceDescriptor textureExtraMaps("Terrain Extra Maps_" + name);
-    textureExtraMaps.assetLocation(climatesLocation(textureQuality));
+    textureExtraMaps.assetLocation(ClimatesLocation(textureQuality));
     textureExtraMaps.flag(true);
 
     //temp data
@@ -89,7 +88,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         {"alpha", TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL}
     };
 
-    const F32 albedoTilingFactor = terrainDescriptor->getVariablef("albedoTilingFactor");
+    
 
     vectorEASTL<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
     vectorEASTL<stringImpl> splatTextures = {};
@@ -176,36 +175,35 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapSampler.magFilter(TextureFilter::LINEAR);
     heightMapSampler.borderColour(DefaultColours::BLACK);
     heightMapSampler.anisotropyLevel(0);
+    const size_t heightSamplerHash = heightMapSampler.getHash();
 
     SamplerDescriptor blendMapSampler = {};
     blendMapSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     blendMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     blendMapSampler.magFilter(TextureFilter::LINEAR);
     blendMapSampler.anisotropyLevel(0);
+    const size_t blendMapHash = blendMapSampler.getHash();
 
     SamplerDescriptor albedoSampler = {};
     albedoSampler.wrapUVW(TextureWrap::REPEAT);
     albedoSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     albedoSampler.magFilter(TextureFilter::LINEAR);
     albedoSampler.anisotropyLevel(4);
+    const size_t albedoHash = albedoSampler.getHash();
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    blendMapDescriptor.samplerDescriptor(blendMapSampler);
     blendMapDescriptor.layerCount(to_U16(splatTextures.size()));
     blendMapDescriptor.srgb(false);
 
     TextureDescriptor albedoDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    albedoDescriptor.samplerDescriptor(albedoSampler);
     albedoDescriptor.layerCount(to_U16(textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)].size()));
     albedoDescriptor.srgb(false);
 
     TextureDescriptor normalDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    normalDescriptor.samplerDescriptor(albedoSampler);
     normalDescriptor.layerCount(to_U16(textures[to_base(TerrainTextureType::NORMAL)].size()));
     normalDescriptor.srgb(false);
 
     TextureDescriptor extraDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    extraDescriptor.samplerDescriptor(albedoSampler);
     extraDescriptor.layerCount(extraMapCount);
     extraDescriptor.srgb(false);
 
@@ -284,7 +282,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                                 terrainDescriptor->getVariable("tileNoiseTexture");
 
     TextureDescriptor helperTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
-    helperTexDescriptor.samplerDescriptor(blendMapSampler);
 
     ResourceDescriptor textureWaterCaustics("Terrain Helper Textures_" + name);
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
@@ -292,7 +289,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureWaterCaustics.propertyDescriptor(helperTexDescriptor);
 
     TextureDescriptor normalsTexDescriptor(TextureType::TEXTURE_2D);
-    normalsTexDescriptor.samplerDescriptor(blendMapSampler);
 
     ResourceDescriptor textureNormals("Terrain Normals Textures_" + name);
     textureNormals.assetLocation(terrainLocation);
@@ -305,18 +301,17 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     heightMapTexture.assetName(terrainDescriptor->getVariable("heightfieldTex"));
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_SHORT);
-    heightMapDescriptor.samplerDescriptor(heightMapSampler);
     heightMapDescriptor.autoMipMaps(false);
     heightMapTexture.propertyDescriptor(heightMapDescriptor);
     heightMapTexture.flag(true);
 
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap));
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps));
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps));
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps));
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics));
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_WORLD_NORMALS, CreateResource<Texture>(terrain->parentResourceCache(), textureNormals));
-    terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture));
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap), blendMapHash);
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::TERRAIN_WORLD_NORMALS, CreateResource<Texture>(terrain->parentResourceCache(), textureNormals), blendMapHash);
+    terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture), heightSamplerHash);
     
     terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_SPLAT, true);
     terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_NORMAL_TILE, true);
@@ -389,8 +384,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
             }
         }
 
-        const vec2<F32> uvDivisor = (terrain->tessParams().WorldScale() * TessellationParams::PATCHES_PER_TILE_EDGE) -
-                                    (TessellationParams::PATCHES_PER_TILE_EDGE * 2.f);
+        const vec2<F32> uvDivisor = (terrain->tessParams().WorldScale() * TessellationParams::PATCHES_PER_TILE_EDGE) - TessellationParams::PATCHES_PER_TILE_EDGE;
 
         shaderModule._defines.emplace_back("COMPUTE_TBN", true);
 
@@ -400,6 +394,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
         shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(terrain->tessParams().WorldScale().width) + "f", true);
         shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(terrain->tessParams().WorldScale().height) + "f", true);
+        shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(terrainDescriptor->dimensions().width), true);
+        shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(terrainDescriptor->dimensions().height), true);
         shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width) + "f", true);
         shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height) + "f", true);
         shaderModule._defines.emplace_back("NODE_STATIC", true);

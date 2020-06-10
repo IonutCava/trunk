@@ -201,7 +201,7 @@ public:
     [[nodiscard]] operator T *();
     [[nodiscard]] operator const T *() const;
 
-    [[nodiscard]] T &operator[](I32 i);
+    [[nodiscard]] T& operator[](I32 i);
     [[nodiscard]] const T operator[](I32 i) const;
 
     [[nodiscard]] T &element(I8 row, I8 column);
@@ -450,7 +450,7 @@ class mat3 {
  ***************/
 #pragma pack(push, 1)
 template <typename T>
-class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<16>, non_aligned_base>::type {
+class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16>, NonAlignedBase>::type {
     // m0  m1  m2  m3
     // m4  m5  m6  m7
     // m8  m9  m10 m11
@@ -693,7 +693,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, alligned_base<
             vec4<T> right, up, dir, position;
         } _comp;
 
-        simd_vector<T> _reg[4];
+        SimdVector<T> _reg[4];
     };
 };
 #pragma pack(pop)

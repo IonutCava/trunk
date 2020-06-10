@@ -57,7 +57,7 @@ protected:
 
     bool remove(RenderTargetHandle& handle);
 
-    inline void set(const RenderTargetHandle& handle, const std::shared_ptr<RenderTarget>& newTarget) {
+    void set(const RenderTargetHandle& handle, const std::shared_ptr<RenderTarget>& newTarget) {
         set(handle._targetID, newTarget);
     }
 
@@ -65,39 +65,39 @@ public:
     RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor);
     RenderTargetHandle allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor, U8 index);
 
-    inline RenderTarget& renderTarget(const RenderTargetHandle& handle) noexcept {
+    RenderTarget& renderTarget(const RenderTargetHandle& handle) noexcept {
         return renderTarget(handle._targetID);
     }
 
-    inline const RenderTarget& renderTarget(const RenderTargetHandle& handle) const noexcept {
+    const RenderTarget& renderTarget(const RenderTargetHandle& handle) const noexcept {
         return renderTarget(handle._targetID);
     }
 
-    inline RenderTarget& renderTarget(RenderTargetID target) noexcept {
+    RenderTarget& renderTarget(RenderTargetID target) noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    inline const RenderTarget& renderTarget(RenderTargetID target) const noexcept {
+    const RenderTarget& renderTarget(RenderTargetID target) const noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
     // Bit of a hack, but cleans up a lot of code
     const RenderTarget& screenTarget() const noexcept;
-    const RenderTargetID screenTargetID() const noexcept;
+    RenderTargetID screenTargetID() const noexcept;
 
-    inline vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
+    vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
         return _renderTargets[to_U32(target)];
     }
 
-    inline const vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
+    const vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
         return _renderTargets[to_U32(target)];
     }
 
-    inline RenderTargetHandle allocateRT(const RenderTargetDescriptor& descriptor) {
+    RenderTargetHandle allocateRT(const RenderTargetDescriptor& descriptor) {
         return allocateRT(RenderTargetUsage::OTHER, descriptor);
     }
 
-    inline bool deallocateRT(RenderTargetHandle& handle) {
+    bool deallocateRT(RenderTargetHandle& handle) {
         return remove(handle);
     }
 

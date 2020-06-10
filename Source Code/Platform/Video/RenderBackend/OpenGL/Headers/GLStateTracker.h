@@ -55,9 +55,9 @@ namespace Divide {
         /// Enable or disable primitive rasterization
         void toggleRasterization(bool state);
         /// Switch the currently active vertex array object
-        bool setActiveVAO(GLuint ID);
+        bool setActiveVAO(GLuint ID) noexcept;
         /// Switch the currently active vertex array object
-        bool setActiveVAO(GLuint ID, GLuint& previousID);
+        bool setActiveVAO(GLuint ID, GLuint& previousID) noexcept;
         /// Single place to change buffer objects for every target available
         bool setActiveBuffer(GLenum target, GLuint ID);
         /// Single place to change buffer objects for every target available

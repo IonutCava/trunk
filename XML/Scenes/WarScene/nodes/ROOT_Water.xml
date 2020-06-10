@@ -6,7 +6,7 @@
     <Blur__kernel__size>9</Blur__kernel__size>
     <Reflection__Plane__Offset>0</Reflection__Plane__Offset>
     <Refraction__Plane__Offset>1.75</Refraction__Plane__Offset>
-    <Noise__tile__factor x="30" y="30"/>
+    <Noise__tile__factor x="75" y="75"/>
     <Noise__factor x="0.100000001" y="0.100000001"/>
 </WATER>
 <TRANSFORM>
@@ -24,54 +24,19 @@
 <RENDERING>
     <Material>
         <version>1</version>
-        <shadingMode>BLINN_PHONG</shadingMode>
+        <shadingMode>COOK_TORRANCE</shadingMode>
         <colour r="1" g="1" b="1" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <metallic>0.100000001</metallic>
-        <roughness>0.00999999978</roughness>
+        <metallic>0</metallic>
+        <roughness>0.129999995</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.00999999978</parallaxFactor>
         <transparencyEnabled>true</transparencyEnabled>
         <isRefractive>true</isRefractive>
-        <SHADOW>
-            <PRE_PASS>
-                <0>
-                    <hash>18244132346642401060</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401060</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401060</hash>
-                </2>
-            </PRE_PASS>
-            <MAIN_PASS>
-                <0>
-                    <hash>18244132346642401060</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401060</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401060</hash>
-                </2>
-            </MAIN_PASS>
-            <OIT_PASS>
-                <0>
-                    <hash>18244132346642401060</hash>
-                </0>
-                <1>
-                    <hash>18244132346642401060</hash>
-                </1>
-                <2>
-                    <hash>18244132346642401060</hash>
-                </2>
-            </OIT_PASS>
-        </SHADOW>
         <RenderStates>
-            <18244132346642401060>
+            <1>
                 <colourWrite r="true" g="true" b="false" a="false"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -90,8 +55,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </18244132346642401060>
-            <11982279051139428370>
+            </1>
+            <2>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -110,8 +75,8 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </11982279051139428370>
-            <7601331381234247373>
+            </2>
+            <3>
                 <colourWrite r="true" g="true" b="true" a="true"/>
                 <zBias>0</zBias>
                 <zUnits>0</zUnits>
@@ -130,110 +95,145 @@
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
                 <stencilWriteMask>4294967295</stencilWriteMask>
-            </7601331381234247373>
+            </3>
         </RenderStates>
-        <REFLECTION>
+        <SHADOW>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>7601331381234247373</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>7601331381234247373</hash>
+                    <id>1</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>1</id>
+                </2>
+            </OIT_PASS>
+        </SHADOW>
+        <REFLECTION>
+            <PRE_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>3</id>
+                </0>
+                <1>
+                    <id>3</id>
+                </1>
+                <2>
+                    <id>3</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
                 </2>
             </OIT_PASS>
         </REFLECTION>
         <REFRACTION>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </0>
                 <1>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </1>
                 <2>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </OIT_PASS>
         </REFRACTION>
         <DISPLAY>
             <PRE_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </PRE_PASS>
             <MAIN_PASS>
                 <0>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </0>
                 <1>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </1>
                 <2>
-                    <hash>7601331381234247373</hash>
+                    <id>3</id>
                 </2>
             </MAIN_PASS>
             <OIT_PASS>
                 <0>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </0>
                 <1>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </1>
                 <2>
-                    <hash>11982279051139428370</hash>
+                    <id>2</id>
                 </2>
             </OIT_PASS>
         </DISPLAY>
@@ -243,20 +243,20 @@
                 <path>assets/misc_images/</path>
                 <flipped>true</flipped>
                 <Sampler>
-                    <hash>11091076668229635101</hash>
+                    <id>1</id>
                 </Sampler>
             </UNIT0>
             <NORMALMAP>
-                <name>terrain_water_NM.jpg</name>
+                <name>terrain_water_NM_old.jpg</name>
                 <path>assets/misc_images/</path>
                 <flipped>true</flipped>
                 <Sampler>
-                    <hash>10222214166118427337</hash>
+                    <id>1</id>
                 </Sampler>
             </NORMALMAP>
         </texture>
         <SamplerDescriptors>
-            <11091076668229635101>
+            <1>
                 <Sampler>
                     <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
                     <Map U="MIRROR_REPEAT" V="MIRROR_REPEAT" W="MIRROR_REPEAT"/>
@@ -268,20 +268,7 @@
                     <biasLOD>0</biasLOD>
                     <borderColour r="0" g="0" b="0" a="1"/>
                 </Sampler>
-            </11091076668229635101>
-            <10222214166118427337>
-                <Sampler>
-                    <Filter min="LINEAR_MIPMAP_LINEAR" mag="LINEAR"/>
-                    <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
-                    <useRefCompare>false</useRefCompare>
-                    <comparisonFunction>LEQUAL</comparisonFunction>
-                    <anisotropy>255</anisotropy>
-                    <minLOD>-1000</minLOD>
-                    <maxLOD>1000</maxLOD>
-                    <biasLOD>0</biasLOD>
-                    <borderColour r="0" g="0" b="0" a="1"/>
-                </Sampler>
-            </10222214166118427337>
+            </1>
         </SamplerDescriptors>
     </Material>
     <Lock__LoD>true</Lock__LoD>

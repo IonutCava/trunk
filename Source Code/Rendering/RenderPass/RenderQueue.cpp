@@ -3,14 +3,13 @@
 #include "Headers/RenderQueue.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Utility/Headers/Localization.h"
-#include "Graphs/Headers/SceneGraphNode.h"
-#include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Material/Headers/Material.h"
-#include "Managers/Headers/RenderPassManager.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
+#include "Graphs/Headers/SceneGraphNode.h"
+#include "Managers/Headers/RenderPassManager.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
@@ -18,7 +17,7 @@ RenderQueue::RenderQueue(Kernel& parent)
     : KernelComponent(parent),
       _renderBins{nullptr}
 {
-    for (RenderBinType rbType : RenderBinType::_values()) {
+    for (const RenderBinType rbType : RenderBinType::_values()) {
         if (rbType._value == RenderBinType::RBT_COUNT) {
             continue;
         }
@@ -34,7 +33,7 @@ RenderQueue::~RenderQueue()
     }
 }
 
-U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
+U16 RenderQueue::getRenderQueueStackSize(const RenderStage stage) const {
     U16 temp = 0;
     for (RenderBin* bin : _renderBins) {
         if (bin != nullptr) {
@@ -44,7 +43,7 @@ U16 RenderQueue::getRenderQueueStackSize(RenderStage stage) const {
     return temp;
 }
 
-RenderingOrder RenderQueue::getSortOrder(RenderStagePass stagePass, RenderBinType rbType) {
+RenderingOrder RenderQueue::getSortOrder(const RenderStagePass stagePass, const RenderBinType rbType) const {
     RenderingOrder sortOrder = RenderingOrder::BY_STATE;
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
@@ -117,6 +116,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material
 
                     case ObjectType::DECAL:
                         return _renderBins[RenderBinType::RBT_TRANSLUCENT];
+                    default: break;
                 }
             }
             // Check if the object has a material with transparency/translucency
@@ -128,6 +128,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material
             //... else add it to the general geometry bin
             return _renderBins[RenderBinType::RBT_OPAQUE];
         }
+        default: break;
     }
     return nullptr;
 }
@@ -146,7 +147,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePas
     }
 }
 
-void RenderQueue::populateRenderQueues(RenderStagePass stagePass, std::pair<RenderBinType, bool> binAndFlag, RenderQueuePackages& queueInOut) {
+void RenderQueue::populateRenderQueues(const RenderStagePass stagePass, const std::pair<RenderBinType, bool> binAndFlag, RenderQueuePackages& queueInOut) {
     OPTICK_EVENT();
     auto [binType, includeBin] = binAndFlag;
 
@@ -175,10 +176,10 @@ void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePas
     }
 }
 
-void RenderQueue::sort(RenderStagePass stagePass, RenderBinType targetBinType, RenderingOrder renderOrder) {
+void RenderQueue::sort(RenderStagePass stagePass, const RenderBinType targetBinType, const RenderingOrder renderOrder) {
 
     OPTICK_EVENT();
-    // How many elements should a renderbin contain before we decide that sorting should happen on a separate thread
+    // How many elements should a render bin contain before we decide that sorting should happen on a separate thread
     constexpr U16 threadBias = 64;
     
     if (targetBinType._value != RenderBinType::RBT_COUNT)
@@ -195,7 +196,7 @@ void RenderQueue::sort(RenderStagePass stagePass, RenderBinType targetBinType, R
                 const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
                 Start(*CreateTask(pool,
                                     sortTask,
-                                    [renderBin, targetBinType, sortOrder, stagePass](const Task& parentTask) {
+                                    [renderBin, sortOrder, stagePass](const Task& parentTask) {
                                         renderBin->sort(stagePass._stage, sortOrder);
                                     }));
             }
@@ -214,7 +215,7 @@ void RenderQueue::sort(RenderStagePass stagePass, RenderBinType targetBinType, R
     }
 }
 
-void RenderQueue::refresh(RenderStage stage, RenderBinType targetBinType) {
+void RenderQueue::refresh(const RenderStage stage, const RenderBinType targetBinType) {
     if (targetBinType._value == RenderBinType::RBT_COUNT) {
         for (RenderBin* renderBin : _renderBins) {
             renderBin->refresh(stage);
@@ -228,7 +229,7 @@ void RenderQueue::refresh(RenderStage stage, RenderBinType targetBinType) {
     }
 }
 
-U16 RenderQueue::getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut) const {
+U16 RenderQueue::getSortedQueues(const RenderStage stage, const bool isPrePass, RenderBin::SortedQueues& queuesOut) const {
     OPTICK_EVENT();
 
     U16 countOut = 0u;

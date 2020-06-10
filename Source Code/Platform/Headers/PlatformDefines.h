@@ -94,8 +94,7 @@ class function_view;
 template <typename TReturn, typename... TArgs>
 class function_view<TReturn(TArgs...)> final
 {
-private:
-    using signature_type = TReturn(void*, TArgs...);
+    typedef TReturn signature_type(void*, TArgs...);
 
     void* _ptr;
     TReturn(*_erased_fn)(void*, TArgs...);
@@ -136,11 +135,11 @@ constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcep
     return (str[0] == '\0') ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
 }
 
-constexpr U64 _ID_VIEW(const char* const str, size_t len, const U64 value = val_64_const) noexcept {
+constexpr U64 _ID_VIEW(const char* const str, const size_t len, const U64 value = val_64_const) noexcept {
     return (len == 0) ? value : _ID_VIEW(&str[1], len - 1, (value ^ U64(str[0])) * prime_64_const);
 }
 
-constexpr U64 operator ""_id(const char* str, size_t len) {
+constexpr U64 operator ""_id(const char* str, const size_t len) {
     return _ID_VIEW(str, len);
 }
 
@@ -160,17 +159,17 @@ const SysInfo& const_sysInfo() noexcept;
 void InitSysInfo(SysInfo& info, I32 argc, char** argv);
 
 struct WindowHandle;
-extern void getWindowHandle(void* window, WindowHandle& handleOut) noexcept;
+extern void GetWindowHandle(void* window, WindowHandle& handleOut) noexcept;
 
-extern void setThreadName(std::thread* thread, const char* threadName) noexcept;
-extern void setThreadName(const char* threadName) noexcept;
+extern void SetThreadName(std::thread* thread, const char* threadName) noexcept;
+extern void SetThreadName(const char* threadName) noexcept;
 
 //ref: http://stackoverflow.com/questions/1528298/get-path-of-executable
-extern FileWithPath getExecutableLocation(I32 argc, char** argv);
-FileWithPath getExecutableLocation(char* argv0);
+extern FileWithPath GetExecutableLocation(I32 argc, char** argv);
+FileWithPath GetExecutableLocation(char* argv0);
 extern bool CallSystemCmd(const char* cmd, const char* args);
 
-bool createDirectories(const char* path);
+bool CreateDirectories(const char* path);
 
 void DebugBreak() noexcept;
 
@@ -205,11 +204,11 @@ constexpr U32 powerOfTwo(U32 X) noexcept {
     return r;
 }
 
-constexpr bool isPowerOfTwo(U32 x) noexcept {
+constexpr bool isPowerOfTwo(const U32 x) noexcept {
     return !(x == 0) && !(x & (x - 1));
 }
 
-constexpr size_t realign_offset(size_t offset, size_t align) noexcept {
+constexpr size_t realign_offset(const size_t offset, const size_t align) noexcept {
     return (offset + align - 1) & ~(align - 1);
 }
 
@@ -284,19 +283,9 @@ std::enable_if_t< has_reserve< C >::value > optional_reserve(C& c, std::size_t n
     c.reserve(c.size() + n);
 }
 
-#if !defined(CPP_14_SUPPORT)
-//ref: https://stackoverflow.com/questions/18497122/how-to-initialize-stdarrayt-n-elegantly-if-t-is-not-default-constructible
-template <std::size_t ...> struct index_sequence {};
 
-template <std::size_t I, std::size_t ...Is>
-struct make_index_sequence : make_index_sequence<I - 1, I - 1, Is...> {};
-
-template <std::size_t ... Is>
-struct make_index_sequence<0, Is...> : index_sequence<Is...> {};
-#else
 using std::make_index_sequence;
 using std::index_sequence;
-#endif
 
 namespace detail
 {
@@ -334,30 +323,30 @@ http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-forma
 for the potential portability problems with the union and bit-fields below.
 */
 union Float_t {
-    explicit Float_t(F32 num = 0.0f) noexcept : f(num) {}
+    explicit Float_t(const F32 num = 0.0f) noexcept : f(num) {}
 
     // Portable extraction of components.
-    inline bool Negative() const noexcept { return (i >> 31) != 0; }
-    inline I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
-    inline I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
+    bool Negative() const noexcept { return (i >> 31) != 0; }
+    I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
+    I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
 
     I32 i;
     F32 f;
 };
 
 union Double_t {
-    explicit Double_t(D64 num = 0.0) noexcept : d(num) {}
+    explicit Double_t(const D64 num = 0.0) noexcept : d(num) {}
 
     // Portable extraction of components.
-    inline bool Negative() const noexcept { return (i >> 63) != 0; }
-    inline I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
-    inline I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
+    bool Negative() const noexcept { return (i >> 63) != 0; }
+    I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
+    I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
 
     I64 i;
     D64 d;
 };
 
-inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) noexcept {
+inline bool AlmostEqualUlpsAndAbs(const F32 A, const F32 B, const F32 maxDiff, const I32 maxUlpsDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
     const F32 absDiff = std::abs(A - B);
     if (absDiff <= maxDiff) {
@@ -376,7 +365,7 @@ inline bool AlmostEqualUlpsAndAbs(F32 A, F32 B, F32 maxDiff, I32 maxUlpsDiff) no
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
-inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) noexcept {
+inline bool AlmostEqualUlpsAndAbs(const D64 A, const D64 B, const D64 maxDiff, const I32 maxUlpsDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
     const D64 absDiff = std::abs(A - B);
     if (absDiff <= maxDiff) {
@@ -395,7 +384,7 @@ inline bool AlmostEqualUlpsAndAbs(D64 A, D64 B, D64 maxDiff, I32 maxUlpsDiff) no
     return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)  noexcept {
+inline bool AlmostEqualRelativeAndAbs(const F32 A, const F32 B, const F32 maxDiff, const F32 maxRelDiff)  noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
     const F32 diff = std::abs(A - B);
     if (diff <= maxDiff) {
@@ -406,7 +395,7 @@ inline bool AlmostEqualRelativeAndAbs(F32 A, F32 B, F32 maxDiff, F32 maxRelDiff)
     return (diff <= largest * maxRelDiff);
 }
 
-inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, D64 maxDiff, D64 maxRelDiff) noexcept {
+inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, const D64 maxDiff, const D64 maxRelDiff) noexcept {
     // Check if the numbers are really close -- needed when comparing numbers near zero.
     const D64 diff = std::abs(A - B);
     if (diff <= maxDiff) {
@@ -454,10 +443,7 @@ namespace detail {
         }
 
     protected:
-        ScopeGuardImplBase() noexcept
-            : dismissed_(false)
-        {
-        }
+        ScopeGuardImplBase() noexcept = default;
 
         ScopeGuardImplBase(const ScopeGuardImplBase& other) noexcept
             : dismissed_(other.dismissed_)
@@ -515,55 +501,55 @@ constexpr F32 EPSILON_F32 = std::numeric_limits<F32>::epsilon();
 constexpr D64 EPSILON_D64 = std::numeric_limits<D64>::epsilon();
 
 template <typename T, typename U = T>
-inline bool IS_IN_RANGE_INCLUSIVE(T x, U min, U max) noexcept {
+bool IS_IN_RANGE_INCLUSIVE(const T x, const U min, const U max) noexcept {
     return x >= min && x <= max;
 }
 template <typename T, typename U = T>
-inline bool IS_IN_RANGE_EXCLUSIVE(T x, U min, U max) noexcept {
+bool IS_IN_RANGE_EXCLUSIVE(const T x, const U min, const U max) noexcept {
     return x > min && x < max;
 }
 
 template <typename T>
-inline bool IS_ZERO(T X) noexcept {
+bool IS_ZERO(const T X) noexcept {
     return X == 0;
 }
 
 template <>
-inline bool IS_ZERO(F32 X) noexcept {
+inline bool IS_ZERO(const F32 X) noexcept {
     return (abs(X) < EPSILON_F32);
 }
 template <>
-inline bool IS_ZERO(D64 X) noexcept {
+inline bool IS_ZERO(const D64 X) noexcept {
     return (abs(X) < EPSILON_D64);
 }
 
 template <typename T>
-inline bool IS_TOLERANCE(T X, T TOLERANCE) noexcept {
+bool IS_TOLERANCE(const T X, const T TOLERANCE) noexcept {
     return (abs(X) <= TOLERANCE);
 }
 
 template<typename T, typename U = T>
-inline bool COMPARE_TOLERANCE(T X, U Y, T TOLERANCE) noexcept {
+bool COMPARE_TOLERANCE(const T X, const U Y, const T TOLERANCE) noexcept {
     return abs(X - static_cast<T>(Y)) <= TOLERANCE;
 }
 
 template<typename T, typename U = T>
-inline bool COMPARE_TOLERANCE_ACCURATE(T X, T Y, T TOLERANCE) noexcept {
+bool COMPARE_TOLERANCE_ACCURATE(const T X, const T Y, const T TOLERANCE) noexcept {
     return COMPARE_TOLERANCE(X, Y, TOLERANCE);
 }
 
 template<>
-inline bool COMPARE_TOLERANCE_ACCURATE(F32 X, F32 Y, F32 TOLERANCE) noexcept {
+inline bool COMPARE_TOLERANCE_ACCURATE(const F32 X, const F32 Y, const F32 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
 template<>
-inline bool COMPARE_TOLERANCE_ACCURATE(D64 X, D64 Y, D64 TOLERANCE) noexcept {
+inline bool COMPARE_TOLERANCE_ACCURATE(const D64 X, const D64 Y, const D64 TOLERANCE) noexcept {
     return AlmostEqualUlpsAndAbs(X, Y, TOLERANCE, 4);
 }
 
 template<typename T, typename U = T>
-inline bool COMPARE(T X, U Y) noexcept {
+bool COMPARE(T X, U Y) noexcept {
     return X == static_cast<T>(Y);
 }
 
@@ -579,11 +565,11 @@ inline bool COMPARE(D64 X, D64 Y) noexcept {
 
 /// should be fast enough as the first condition is almost always true
 template <typename T>
-inline bool IS_GEQUAL(T X, T Y) noexcept {
+bool IS_GEQUAL(T X, T Y) noexcept {
     return X > Y || COMPARE(X, Y);
 }
 template <typename T>
-inline bool IS_LEQUAL(T X, T Y) noexcept {
+bool IS_LEQUAL(T X, T Y) noexcept {
     return X < Y || COMPARE(X, Y);
 }
 
@@ -597,7 +583,7 @@ template <>
 struct safe_static_cast_helper<false, false>
 {
     template <typename TO, typename FROM>
-    static inline TO cast(FROM from)
+    static TO cast(FROM from)
     {
         assert(IS_IN_RANGE_INCLUSIVE(std::is_enum<FROM>::value 
                                          ? static_cast<U32>(to_underlying_type(from))
@@ -615,7 +601,7 @@ template <>
 struct safe_static_cast_helper<false, true>
 {
     template <typename TO, typename FROM>
-    static inline TO cast(FROM from)
+    static TO cast(FROM from)
     {
         assert(IS_IN_RANGE_INCLUSIVE(from,
                                      std::numeric_limits<TO>::lowest(),
@@ -631,7 +617,7 @@ template <>
 struct safe_static_cast_helper<true, false>
 {
     template <typename TO, typename FROM>
-    static inline TO cast(FROM from)
+    static TO cast(FROM from)
     {
         // make sure the input is not negative
         assert(from >= 0 && "Number to cast exceeds numeric limits.");
@@ -651,7 +637,7 @@ template <>
 struct safe_static_cast_helper<true, true>
 {
     template <typename TO, typename FROM>
-    static inline TO cast(FROM from)
+    static TO cast(FROM from)
     {
         assert(IS_IN_RANGE_INCLUSIVE(std::is_enum<FROM>::value ? to_underlying_type(from) : from,
                                      std::numeric_limits<TO>::lowest(),
@@ -677,13 +663,13 @@ inline TO safe_static_cast(FROM from)
 }
 
 template <typename TO>
-inline TO safe_static_cast(F32 from)
+TO safe_static_cast(F32 from)
 {
     return static_cast<TO>(from);
 }
 
 template <typename TO>
-inline TO safe_static_cast(D64 from)
+TO safe_static_cast(D64 from)
 {
     return static_cast<TO>(from);
 } 
@@ -714,7 +700,7 @@ FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED C
 template <typename Ret, typename... Args >
 using DELEGATE = std::function< Ret(Args...) >;
 
-U32 HARDWARE_THREAD_COUNT() noexcept;
+U32 HardwareThreadCount() noexcept;
 
 template<typename T, typename U>
 constexpr void assert_type(const U& ) {
@@ -758,7 +744,7 @@ namespace MemoryManager {
 void log_delete(void* p);
 
 template <typename T>
-inline void SAFE_FREE(T*& ptr) {
+void SAFE_FREE(T*& ptr) {
     if (ptr != nullptr) {
         free(ptr);
         ptr = nullptr;
@@ -767,7 +753,7 @@ inline void SAFE_FREE(T*& ptr) {
 
 /// Deletes and nullifies the specified pointer
 template <typename T>
-inline void DELETE(T*& ptr) {
+void DELETE(T*& ptr) {
     log_delete(ptr);
     delete ptr;
     ptr = nullptr;
@@ -775,7 +761,7 @@ inline void DELETE(T*& ptr) {
   
 /// Deletes and nullifies the specified pointer
 template <typename T>
-inline void SAFE_DELETE(T*& ptr) {
+void SAFE_DELETE(T*& ptr) {
     if (ptr != nullptr) {
         DELETE(ptr);
     }
@@ -783,7 +769,7 @@ inline void SAFE_DELETE(T*& ptr) {
 
 /// Deletes and nullifies the specified array pointer
 template <typename T>
-inline void DELETE_ARRAY(T*& ptr) {
+void DELETE_ARRAY(T*& ptr) {
     log_delete(ptr);
 
     delete[] ptr;
@@ -792,7 +778,7 @@ inline void DELETE_ARRAY(T*& ptr) {
 
 /// Deletes and nullifies the specified array pointer
 template <typename T>
-inline void SAFE_DELETE_ARRAY(T*& ptr) {
+void SAFE_DELETE_ARRAY(T*& ptr) {
     if (ptr != nullptr) {
         DELETE_ARRAY(ptr);
     }
@@ -821,7 +807,7 @@ inline void SAFE_DELETE_ARRAY(T*& ptr) {
 template <template <typename, typename> class Container,
     typename Value,
     typename Allocator = std::allocator<Value>>
-inline void DELETE_CONTAINER(Container<Value*, Allocator>& container) {
+void DELETE_CONTAINER(Container<Value*, Allocator>& container) {
     for (Value* iter : container) {
         log_delete(iter);
         delete iter;
@@ -838,7 +824,7 @@ inline void DELETE_CONTAINER(Container<Value*, Allocator>& container) {
 
 /// Deletes every element from the map and clears it at the end
 template <typename K, typename V, typename HashFun = hashAlg::hash<K> >
-inline void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
+void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
     if (!map.empty()) {
         for (typename hashMap<K, V, HashFun>::value_type iter : map) {
             log_delete(iter.second);
@@ -855,7 +841,7 @@ inline void DELETE_HASHMAP(hashMap<K, V, HashFun>& map) {
 /// object pointed by "NEW"
 /// "NEW" must be a derived (or same) class of OLD
 template <typename Base, typename Derived>
-inline void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
+void SAFE_UPDATE(Base*& OLD, Derived* const NEW) {
     static_assert(std::is_base_of<Base, Derived>::value,
                   "SAFE_UPDATE error: New must be a descendant of Old");
     SAFE_DELETE(OLD);
@@ -877,7 +863,7 @@ struct AtomicWrapper : private NonMovable
     std::atomic<T> _a;
 
     AtomicWrapper() : _a() {}
-    AtomicWrapper(const std::atomic<T> &a) :_a(a.load()) {}
+    explicit AtomicWrapper(const std::atomic<T> &a) :_a(a.load()) {}
     AtomicWrapper(const AtomicWrapper &other) : _a(other._a.load()) { }
 
     AtomicWrapper &operator=(const AtomicWrapper &other) {

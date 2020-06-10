@@ -33,15 +33,14 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DEBUG_INTERFACE_H_
 #define _DEBUG_INTERFACE_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/KernelComponent.h"
 
 namespace Divide {
 
-class DebugInterface : public KernelComponent {
+class DebugInterface final : public KernelComponent {
 public:
     explicit DebugInterface(Kernel& parent) noexcept;
-    ~DebugInterface();
+    ~DebugInterface() = default;
 
     const stringImpl& output() const noexcept;
     void toggle(const bool state) noexcept;
@@ -49,8 +48,8 @@ public:
     void idle();
 
 private:
-    bool _enabled;
     stringImpl _output;
+    bool _enabled = false;
 };
 
 }; //namespace Divide

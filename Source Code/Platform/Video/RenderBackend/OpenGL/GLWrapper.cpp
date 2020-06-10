@@ -3,34 +3,28 @@
 #include "Headers/GLWrapper.h"
 #include "Headers/glHardwareQuery.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/File/Headers/FileManagement.h"
 
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
-#include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferImpl.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glGenericVertexData.h"
+#include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
 
-#include "GUI/Headers/GUIText.h"
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ProfileTimer.h"
-#include "Utility/Headers/Localization.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "GUI/Headers/GUIText.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
+#include "Utility/Headers/Localization.h"
 
 #include <SDL_video.h>
 
-#include <CEGUI/CEGUI.h>
-#include <GL3Renderer.h>
 #include <Texture.h>
+#include <CEGUI/CEGUI.h>
 
 #include "Text/Headers/fontstash.h"
 
@@ -51,19 +45,21 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
 
 
 /// Prepare the GPU for rendering a frame
-void GL_API::beginFrame(DisplayWindow& window, bool global) {
+void GL_API::beginFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 
     // Start a duration query in debug builds
-    if (global && Config::ENABLE_GPU_VALIDATION) {
-        _elapsedTimeQuery->begin();
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
+        if (global) {
+            _elapsedTimeQuery->begin();
+        }
     }
 
     GLStateTracker& stateTracker = getStateTracker();
 
     // Clear our buffers
     if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-        SDL_GLContext glContext = (SDL_GLContext)window.userData();
+        SDL_GLContext glContext = static_cast<SDL_GLContext>(window.userData());
         const I64 windowGUID = window.getGUID();
 
         if (glContext != nullptr && (_currentContext.first != windowGUID || _currentContext.second != glContext)) {
@@ -95,15 +91,17 @@ void GL_API::beginFrame(DisplayWindow& window, bool global) {
 }
 
 /// Finish rendering the current frame
-void GL_API::endFrame(DisplayWindow& window, bool global) {
+void GL_API::endFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 
     // Revert back to the default OpenGL states
     //clearStates(window, global);
 
     // End the timing query started in beginFrame() in debug builds
-    if (global && Config::ENABLE_GPU_VALIDATION) {
-        _elapsedTimeQuery->end();
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
+        if (global) {
+            _elapsedTimeQuery->end();
+        }
     }
     // Swap buffers
     {
@@ -112,7 +110,7 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
 
         if (window.swapBuffers() && !window.minimized() && !window.hidden()) {
-            SDL_GLContext glContext = (SDL_GLContext)window.userData();
+            SDL_GLContext glContext = static_cast<SDL_GLContext>(window.userData());
             const I64 windowGUID = window.getGUID();
             
             if (glContext != nullptr && (_currentContext.first != windowGUID || _currentContext.second != glContext)) {
@@ -131,11 +129,13 @@ void GL_API::endFrame(DisplayWindow& window, bool global) {
         }
     }
 
-    if (global && Config::ENABLE_GPU_VALIDATION) {
-        // The returned results are 'g_performanceQueryRingLength - 1' frames old!
-        const I64 time = _elapsedTimeQuery->getResultNoWait();
-        FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
-        _elapsedTimeQuery->incQueue();
+    if_constexpr (Config::ENABLE_GPU_VALIDATION) {
+        if (global) {
+            // The returned results are 'g_performanceQueryRingLength - 1' frames old!
+            const I64 time = _elapsedTimeQuery->getResultNoWait();
+            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
+            _elapsedTimeQuery->incQueue();
+        }
     }
 }
 
@@ -197,7 +197,7 @@ bool GL_API::initGLSW(Configuration& config) {
                                               "#define float4x4 mat4\n"
                                               "#define lerp mix";
 
-    const auto getPassData = [&](ShaderType type) -> stringImpl {
+    const auto getPassData = [&](const ShaderType type) -> stringImpl {
         stringImpl baseString = "     _out.%s = _in[index].%s;";
         if (type == ShaderType::TESSELLATION_CTRL) {
             baseString = "    _out[gl_InvocationID].%s = _in[index].%s;";
@@ -638,21 +638,21 @@ bool GL_API::initGLSW(Configuration& config) {
         Util::to_string(to_base(AttribLocation::GENERIC)),
         lineOffsets);
 
-    const auto addVaryings = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+    const auto addVaryings = [&](const ShaderType type, ShaderOffsetArray& offsets) {
         for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryings[i].first, shaderVaryings[i].second), lineOffsets);
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryings[i].first, shaderVaryings[i].second), offsets);
         }
     };
 
-    const auto addVaryingsBump = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+    const auto addVaryingsBump = [&](ShaderType type, ShaderOffsetArray& offsets) {
         for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), lineOffsets);
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), offsets);
         }
     };
 
-    const auto addVaryingsVelocity = [&](ShaderType type, ShaderOffsetArray& lineOffsets) {
+    const auto addVaryingsVelocity = [&](ShaderType type, ShaderOffsetArray& offsets) {
         for (U8 i = 0; i < (sizeof(shaderVaryingsVelocity) / sizeof(shaderVaryingsVelocity[0])); ++i) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsVelocity[i].first, shaderVaryingsVelocity[i].second), lineOffsets);
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsVelocity[i].first, shaderVaryingsVelocity[i].second), offsets);
         }
     };
 
@@ -902,7 +902,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 
             idxBuffer.smallIndices = sizeof(ImDrawIdx) == 2;
             idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
-            idxBuffer.data = (Byte*)cmd_list->IdxBuffer.Data;
+            idxBuffer.data = reinterpret_cast<Byte*>(cmd_list->IdxBuffer.Data);
 
             GenericVertexData* buffer = getOrCreateIMGUIBuffer(windowGUID);
             assert(buffer != nullptr);
@@ -937,7 +937,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         clip_rect.y  = viewport.w - tempW;
 
                         stateTracker.setScissor(clip_rect);
-                        stateTracker.bindTexture(0, TextureType::TEXTURE_2D, (GLuint)((intptr_t)pcmd->TextureId));
+                        stateTracker.bindTexture(0, TextureType::TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<intptr_t>(pcmd->TextureId)));
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
                         buffer->draw(cmd, 0);
                     }
@@ -948,7 +948,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
     }
 }
 
-bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
+bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) const {
     OPTICK_EVENT();
     auto& stateTracker = GL_API::getStateTracker();
 
@@ -987,7 +987,7 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) {
     return false;
 }
 
-void GL_API::sendPushConstants(const PushConstants& pushConstants) {
+void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
     OPTICK_EVENT();
 
     assert(GL_API::getStateTracker()._activePipeline != nullptr);
@@ -1001,13 +1001,13 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) {
     static_cast<glShaderProgram*>(program)->UploadPushConstants(pushConstants);
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
+bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const {
     OPTICK_EVENT();
 
     if (cmd._sourceBuffer._id == 0) {
         getStateTracker().setActiveVAO(s_dummyVAO);
 
-        U32 indexCount = 0;
+        U32 indexCount;
         switch (cmd._primitiveType) {
             case PrimitiveType::TRIANGLES: indexCount = cmd._drawCount * 3; break;
             case PrimitiveType::API_POINTS: indexCount = cmd._drawCount; break;
@@ -1063,7 +1063,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             GFX::BeginPixelBufferCommand* crtCmd = commandBuffer.get<GFX::BeginPixelBufferCommand>(entry);
             assert(crtCmd->_buffer != nullptr);
             glPixelBuffer* buffer = static_cast<glPixelBuffer*>(crtCmd->_buffer);
-            bufferPtr data = Attorney::GLAPIPixelBuffer::begin(*buffer);
+            const bufferPtr data = Attorney::GLAPIPixelBuffer::begin(*buffer);
             if (crtCmd->_command) {
                 crtCmd->_command(data);
             }
@@ -1154,7 +1154,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 view._mipLevels.set(view._texture->descriptor().mipLevels());
 
                 const TextureDescriptor& descriptor = view._texture->descriptor();
-                const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
+                const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
 
                 const TextureData& data = view._texture->data();
                 assert(IsValid(data));
@@ -1167,10 +1167,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                         type,
                         data._textureHandle,
                         glInternalFormat,
-                        (GLuint)view._mipLevels.x,
-                        (GLuint)view._mipLevels.y,
-                        (GLuint)view._layerRange.x,
-                        (GLuint)view._layerRange.y);
+                        static_cast<GLuint>(view._mipLevels.x),
+                        static_cast<GLuint>(view._mipLevels.y),
+                        static_cast<GLuint>(view._layerRange.x),
+                        static_cast<GLuint>(view._layerRange.y));
                 }
                 if (crtCmd->_defer) {
                     queueComputeMipMap(handle);
@@ -1293,6 +1293,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                }
             }
         } break;
+        default: break;
     };
 }
 
@@ -1345,7 +1346,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     params._storageType = BufferStorageType::NORMAL;
     params._sync = true;
-    params._data = NULL;
+    params._data = nullptr;
 
     ret->setBuffer(params); //Pos, UV and Colour
     ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
@@ -1365,7 +1366,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     return ret;
 }
 
-bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {
+bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) const {
     OPTICK_EVENT();
 
     for (const Image& image : images) {
@@ -1377,15 +1378,17 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) {
     return true;
 }
 
-bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) {
+bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const {
     OPTICK_EVENT();
 
     bool bound = false;
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
+#if 0
     constexpr size_t k_textureThreshold = 3;
     const U8 texCount = textureData.count();
-    if (texCount > k_textureThreshold && false) {
+
+    if (texCount > k_textureThreshold) {
         constexpr GLushort offset = 0;
         vectorEASTL<TextureType> types;
         vectorEASTL<GLuint> handles;
@@ -1406,9 +1409,11 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
         }
 
         bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
-    } else {
+    } else
+#endif
+    {
         GLStateTracker& stateTracker = getStateTracker();
-        for (const auto&[binding, data] : textureData.textures()) {
+        for (const auto&[binding, data, samplerHash] : textureData.textures()) {
             if (binding == TextureDataContainer<>::INVALID_BINDING) {
                 continue;
             }
@@ -1416,7 +1421,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
             bound = stateTracker.bindTexture(static_cast<GLushort>(binding),
                                              data._textureType,
                                              data._textureHandle,
-                                             data._samplerHandle) || bound;
+                                             getSamplerHandle(samplerHash)) || bound;
         }
     }
 
@@ -1437,18 +1442,18 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
         if (!handle.second) {
             const TextureDescriptor& descriptor = tex->descriptor();
             const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
-            const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb());
+            const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
 
             glTextureView(handle.first,
                 type,
                 data._textureHandle,
                 glInternalFormat,
-                (GLuint)it._view._mipLevels.x,
-                (GLuint)it._view._mipLevels.y,
-                (GLuint)it._view._layerRange.x,
-                (GLuint)it._view._layerRange.y);
+                static_cast<GLuint>(it._view._mipLevels.x),
+                static_cast<GLuint>(it._view._mipLevels.y),
+                static_cast<GLuint>(it._view._layerRange.x),
+                static_cast<GLuint>(it._view._layerRange.y));
         }
-        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle.first, data._samplerHandle) || bound;
+        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle.first, getSamplerHandle(it._view._samplerHash)) || bound;
         // Self delete after 3 frames unless we use it again
         s_texturePool.deallocate(handle.first, GL_NONE, 3u);
     }
@@ -1462,37 +1467,21 @@ bool GL_API::setViewport(const Rect<I32>& viewport) {
     return getStateTracker().setViewport(viewport);
 }
 
-/// Verify if we have a sampler object created and available for the given descriptor
-U32 GL_API::getOrCreateSamplerObject(const SamplerDescriptor& descriptor) {
-    OPTICK_EVENT();
-
-    // Get the descriptor's hash value
-    const size_t hashValue = descriptor.getHash();
-    // Try to find the hash value in the sampler object map
-    GLuint sampler = getSamplerHandle(hashValue);
-    if (sampler == 0) {
-        UniqueLock<Mutex> w_lock(s_samplerMapLock);
-        // Create and store the newly created sample object. GL_API is responsible for deleting these!
-        sampler = glSamplerObject::construct(descriptor);
-        hashAlg::emplace(s_samplerMap, hashValue, sampler);
-    }
-
-    // Return the sampler object's handle
-    return to_U32(sampler);
-}
-
 /// Return the OpenGL sampler object's handle for the given hash value
 GLuint GL_API::getSamplerHandle(size_t samplerHash) {
     // If the hash value is 0, we assume the code is trying to unbind a sampler object
     if (samplerHash > 0) {
-        // If we fail to find the sampler object for the given hash, we print an
-        // error and return the default OpenGL handle
+        // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
         UniqueLock<Mutex> r_lock(s_samplerMapLock);
         const SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
             return it->second;
         }
+        // Create and store the newly created sample object. GL_API is responsible for deleting these!
+        const GLuint sampler = glSamplerObject::construct(SamplerDescriptor::get(samplerHash));
+        hashAlg::emplace(s_samplerMap, samplerHash, sampler);
+        return sampler;
     }
 
     return 0u;

@@ -1,19 +1,15 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/Material.h"
 #include "Headers/ShaderComputeQueue.h"
 
-#include "Rendering/Headers/Renderer.h"
-#include "Utility/Headers/Localization.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Utility/Headers/Localization.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
-#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/Kernel.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"
 
@@ -25,8 +21,7 @@ namespace {
     constexpr size_t g_invalidStateHash = std::numeric_limits<size_t>::max();
 
     constexpr U16 g_numMipsToKeepFromAlphaTextures = 1;
-    const char* g_PassThroughMaterialShaderName = "passThrough";
-    
+
     constexpr TextureUsage g_materialTextures[] = {
         TextureUsage::UNIT0,
         TextureUsage::UNIT1,
@@ -189,7 +184,7 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
     for (U8 i = 0; i < to_U8(base._textures.size()); ++i) {
         const Texture_ptr& tex = base._textures[i];
         if (tex) {
-            cloneMat->setTexture(static_cast<TextureUsage>(i), tex);
+            cloneMat->setTexture(static_cast<TextureUsage>(i), tex, base._samplers[i]);
         }
     }
     cloneMat->_needsNewShader = true;
@@ -212,17 +207,17 @@ bool Material::update(const U64 deltaTimeUS) {
 // bump = bump map
 bool Material::setTexture(TextureUsage textureUsageSlot,
                           const Texture_ptr& texture,
+                          const size_t samplerHash,
                           const TextureOperation& op,
                           bool applyToInstances) 
 {
     if (applyToInstances) {
         for (Material* instance : _instances) {
-            instance->setTexture(textureUsageSlot, texture, op, true);
+            instance->setTexture(textureUsageSlot, texture, samplerHash, op, true);
         }
     }
 
 
-    bool computeShaders = false;
     const U32 slot = to_U32(textureUsageSlot);
 
     if (textureUsageSlot == TextureUsage::UNIT1) {
@@ -234,12 +229,10 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
            textureUsageSlot != TextureUsage::REFLECTION_CUBE);
 
     {
+        _samplers[slot] = samplerHash;
+
         UniqueLock<SharedMutex> w_lock(_textureLock);
-        if (!_textures[slot]) {
-            // if we add a new type of texture recompute shaders
-            computeShaders = true;
-        }
-        else {
+        if (_textures[slot]) {
             // Skip adding same texture
             if (texture != nullptr && _textures[slot]->getGUID() == texture->getGUID()) {
                 return true;
@@ -441,7 +434,6 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     // At this point, only computation requests are processed
     constexpr U32 slot0 = to_base(TextureUsage::UNIT0);
     constexpr U32 slot1 = to_base(TextureUsage::UNIT1);
-    constexpr U32 slotOpacity = to_base(TextureUsage::OPACITY);
 
     DIVIDE_ASSERT(_shadingMode != ShadingMode::COUNT, "Material computeShader error: Invalid shading mode specified!");
 
@@ -659,7 +651,7 @@ bool Material::getTextureData(TextureUsage slot, TextureDataContainer<>& contain
     }
 
     if (data._textureType != TextureType::COUNT) {
-        return container.setTexture(data, slotValue) != TextureUpdateState::NOTHING;
+        return container.setTexture(data, _samplers[slotValue], slotValue) != TextureUpdateState::NOTHING;
     }
 
     return false;
@@ -731,7 +723,7 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
         if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
-                textureData.setTexture(crtTexture->data(), slot);
+                textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
                 ret = true;
             }
         }
@@ -741,7 +733,7 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
         if (!depthStage || _textureUseForDepth[slot]) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
-                textureData.setTexture(crtTexture->data(), slot);
+                textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
                 ret = true;
             }
         }
@@ -753,7 +745,7 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
         constexpr U8 normalSlot = to_base(TextureUsage::NORMALMAP);
         const Texture_ptr& crtNormalTexture = _textures[normalSlot];
         if (crtNormalTexture != nullptr) {
-            textureData.setTexture(crtNormalTexture->data(), normalSlot);
+            textureData.setTexture(crtNormalTexture->data(), _samplers[normalSlot], normalSlot);
             ret = true;
         }
     }
@@ -1050,13 +1042,11 @@ void Material::updateTransparency() {
 }
 
 size_t Material::getRenderStateBlock(const RenderStagePass& renderStagePass) const {
-    size_t ret = _context.getDefaultStateBlock(false);
-
     const StatesPerVariant& variantMap = _defaultRenderStates[to_base(renderStagePass._stage)][to_base(renderStagePass._passType)];
 
     assert(renderStagePass._variant < g_maxVariantsPerPass);
 
-    ret = variantMap[renderStagePass._variant];
+    size_t ret = variantMap[renderStagePass._variant];
     // If we haven't defined a state for this variant, use the default one
     if (ret == g_invalidStateHash) {
         ret = variantMap[0u];
@@ -1217,7 +1207,9 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
 }
 
 void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
-    std::set<size_t> previousHashValues = {};
+    hashMap<size_t, U32> previousHashValues;
+
+    U32 blockIndex = 0u;
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
             for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
@@ -1229,56 +1221,50 @@ void Material::saveRenderStatesToXML(const stringImpl& entryName, boost::propert
                         v
                     }
                 );
-                pt.put(Util::StringFormat("%s.%s.%s.%d.hash",
+                if (stateHash != g_invalidStateHash && previousHashValues.find(stateHash) == std::cend(previousHashValues)) {
+                    blockIndex++;
+                    RenderStateBlock::saveToXML(
+                        RenderStateBlock::get(stateHash),
+                        Util::StringFormat("%s.RenderStates.%u",
+                                           entryName.c_str(),
+                                           blockIndex),
+                        pt);
+                    previousHashValues[stateHash] = blockIndex;
+                }
+                pt.put(Util::StringFormat("%s.%s.%s.%d.id",
                             entryName.c_str(),
                             TypeUtil::RenderStageToString(static_cast<RenderStage>(s)),
                             TypeUtil::RenderPassTypeToString(static_cast<RenderPassType>(p)),
                             v), 
-                        stateHash);
-
-                if (stateHash != g_invalidStateHash && previousHashValues.find(stateHash) == std::cend(previousHashValues)) {
-                    RenderStateBlock::saveToXML(
-                        RenderStateBlock::get(stateHash),
-                        Util::StringFormat("%s.RenderStates.%zu",
-                                           entryName.c_str(),
-                                           stateHash),
-                        pt);
-                    previousHashValues.insert(stateHash);
-                }
+                    previousHashValues[stateHash]);
             }
         }
     }
 }
 
 void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
-    RenderStateBlock block = {};
+    hashMap<U32, size_t> previousHashValues;
 
-    std::set<size_t> loadedHashes = {};
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
         for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
             for (U8 v = 0u; v < g_maxVariantsPerPass; ++v) {
-                const size_t stateHash = pt.get<size_t>(
-                    Util::StringFormat("%s.%s.%s.%d.hash", 
+                const U32 stateIndex = pt.get<U32>(
+                    Util::StringFormat("%s.%s.%s.%d.id", 
                             entryName.c_str(),
                             TypeUtil::RenderStageToString(static_cast<RenderStage>(s)),
                             TypeUtil::RenderPassTypeToString(static_cast<RenderPassType>(p)),
                             v
                         ),
-                    g_invalidStateHash
+                    0
                 );
-
-                if (stateHash != g_invalidStateHash) {
-                    if (loadedHashes.find(stateHash) == std::cend(loadedHashes)) {
-                        if (RenderStateBlock::loadFromXML(
-                            stateHash, 
-                            Util::StringFormat("%s.RenderStates.%zu",
-                                                entryName.c_str(),
-                                                stateHash),
-                            pt))
-                        {
-                            //Cache miss
-                        }
-                        loadedHashes.insert(stateHash);
+                if (stateIndex != 0) {
+                    const auto& it = previousHashValues.find(stateIndex);
+                    if (it != eastl::cend(previousHashValues)) {
+                        _defaultRenderStates[s][p][v] = it->second;
+                    } else {
+                        const size_t stateHash = RenderStateBlock::loadFromXML(Util::StringFormat("%s.RenderStates.%u", entryName.c_str(), stateIndex), pt);
+                        _defaultRenderStates[s][p][v] = stateHash;
+                        previousHashValues[stateIndex] = stateHash;
                     }
                 }
             }
@@ -1287,13 +1273,15 @@ void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost:
 }
 
 void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const {
-    std::set<size_t> savedSamplers = {};
+    hashMap<size_t, U32> previousHashValues;
+
+    U32 samplerCount = 0u;
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         const TextureUsage usage = g_materialTextures[i];
 
         Texture_wptr tex = getTexture(usage);
         if (!tex.expired()) {
-            Texture_ptr texture = tex.lock();
+            const Texture_ptr texture = tex.lock();
 
 
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
@@ -1306,27 +1294,27 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
                 pt.put(textureNode + ".usage", TypeUtil::TextureOperationToString(_textureOperation));
             }
 
-            const SamplerDescriptor& sampler = texture->getCurrentSampler();
-            const size_t hash = sampler.getHash();
+            const size_t samplerHash = _samplers[to_base(usage)];
 
-            pt.put(textureNode + ".Sampler.hash", hash);
-
-            if (savedSamplers.find(hash) == std::cend(savedSamplers)) {
-                XMLParser::saveToXML(sampler, Util::StringFormat("%s.SamplerDescriptors.%zu", entryName.c_str(), hash), pt);
-                savedSamplers.insert(hash);
+            if (previousHashValues.find(samplerHash) == std::cend(previousHashValues)) {
+                samplerCount++;
+                XMLParser::saveToXML(SamplerDescriptor::get(samplerHash), Util::StringFormat("%s.SamplerDescriptors.%u", entryName.c_str(), samplerCount), pt);
+                previousHashValues[samplerHash] = samplerCount;
             }
+            pt.put(textureNode + ".Sampler.id", previousHashValues[samplerHash]);
         }
     }
 }
 
 void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt) {
+    hashMap<U32, size_t> previousHashValues;
+
     std::atomic_uint loadTasks = 0;
 
     for (U8 i = 0; i < g_materialTexturesCount; ++i) {
         const TextureUsage usage = g_materialTextures[i];
 
-        SamplerDescriptor sampDesc = {};
-        if (auto child = pt.get_child_optional(((entryName + ".texture.") + TypeUtil::TextureUsageToString(usage)) + ".name")) {
+        if (pt.get_child_optional(((entryName + ".texture.") + TypeUtil::TextureUsageToString(usage)) + ".name")) {
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
 
             const stringImpl texName = pt.get<stringImpl>(textureNode + ".name", "");
@@ -1334,8 +1322,16 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
             const bool flipped = pt.get(textureNode + ".flipped", false);
 
             if (!texName.empty()) {
-                const size_t hash = pt.get<size_t>(textureNode + ".Sampler.hash", 0);
-                sampDesc = XMLParser::loadFromXML(hash, Util::StringFormat("%s.SamplerDescriptors.%zu", entryName.c_str(), hash), pt);
+                const U32 index = pt.get<U32>(textureNode + ".Sampler.id", 0);
+                const auto& it = previousHashValues.find(index);
+
+                size_t hash;
+                if (it != eastl::cend(previousHashValues)) {
+                    hash = it->second;
+                } else {
+                     hash = XMLParser::loadFromXML(Util::StringFormat("%s.SamplerDescriptors.%u", entryName.c_str(), index), pt);
+                     previousHashValues[index] = hash;
+                }
 
                 TextureOperation op = TextureOperation::NONE;
                 if (usage == TextureUsage::UNIT1) {
@@ -1346,7 +1342,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                     const Texture_ptr& crtTex = _textures[to_base(usage)];
                     if (crtTex != nullptr) {
                         if (crtTex->flipped() == flipped &&
-                            crtTex->getCurrentSampler().getHash() == hash &&
+                            _samplers[to_base(usage)] == hash &&
                             crtTex->assetName() == texName &&
                             crtTex->assetLocation() == texPath)
                         {
@@ -1354,9 +1350,9 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                         }
                     }
                 }
-                TextureDescriptor texDesc(TextureType::TEXTURE_2D);
-                texDesc.samplerDescriptor(sampDesc);
+                _samplers[to_base(usage)] = hash;
 
+                TextureDescriptor texDesc(TextureType::TEXTURE_2D);
                 loadTasks.fetch_add(1u);
                 ResourceDescriptor texture(texName);
                 texture.assetName(texName);
@@ -1366,8 +1362,8 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 texture.flag(!flipped);
 
                 Texture_ptr tex =  CreateResource<Texture>(_context.parent().resourceCache(), texture);
-                tex->addStateCallback(ResourceState::RES_LOADED, [this, usage, op, &loadTasks, &tex](CachedResource* res) {
-                    setTexture(usage, tex, op);
+                tex->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource* res) {
+                    setTexture(usage, tex, hash, op);
                     loadTasks.fetch_sub(1u);
                 });
                 

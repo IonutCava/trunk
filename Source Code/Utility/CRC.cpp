@@ -68,9 +68,7 @@ void CRC32::Hash(const void* buf, size_t siz) noexcept {
     //=============================
     const U8* p = static_cast<const U8*>(buf);
 
-    //=============================
-    size_t i;
-    for (i = 0; i < siz; ++i) {
+    for (size_t i = 0; i < siz; ++i) {
         mCrc = (mCrc >> 8) ^ mTable[(mCrc & 0xFF) ^ p[i]];
     }
 }

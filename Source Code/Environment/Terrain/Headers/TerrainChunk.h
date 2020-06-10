@@ -33,8 +33,6 @@
 #ifndef _TERRAIN_CHUNK_H
 #define _TERRAIN_CHUNK_H
 
-#include "config.h"
-
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 
 namespace Divide {
@@ -61,19 +59,19 @@ class TerrainChunk {
     friend class Attorney::TerrainChunkTerrain;
 
    public:
-    TerrainChunk(GFXDevice& context, Terrain* const parentTerrain, QuadtreeNode& parentNode);
-    ~TerrainChunk();
+    TerrainChunk(GFXDevice& context, Terrain* parentTerrain, QuadtreeNode& parentNode);
+    ~TerrainChunk() = default;
 
     void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize, BoundingBox& bbInOut);
 
-    inline U32 ID() const noexcept { return _ID; }
+    U32 ID() const noexcept { return _ID; }
 
-    inline vec4<F32> getOffsetAndSize() const noexcept {
+    vec4<F32> getOffsetAndSize() const noexcept {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
 
-    inline const Terrain& parent() const noexcept { return *_parentTerrain; }
-    inline const QuadtreeNode& quadtreeNode() const noexcept { return _quadtreeNode; };
+    const Terrain& parent() const noexcept { return *_parentTerrain; }
+    const QuadtreeNode& quadtreeNode() const noexcept { return _quadtreeNode; };
 
     const BoundingBox& bounds() const;
     void drawBBox(RenderPackage& packageOut);

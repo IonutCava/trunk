@@ -48,7 +48,7 @@ namespace Font {
     const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
 };
 
-class TextLabelStyle : public Hashable {
+class TextLabelStyle final : public Hashable {
   protected:
     using TextLabelStyleMap = hashMap<size_t, TextLabelStyle>;
     static TextLabelStyleMap s_textLabelStyle;
@@ -63,33 +63,32 @@ class TextLabelStyle : public Hashable {
     static const TextLabelStyle& get(size_t textLabelStyleHash, bool& styleFound);
     static const Str64& fontName(size_t fontNameHash);
 
-  public:
    TextLabelStyle(const char* font,
                   const UColour4& colour,
                   U8 fontSize);
 
     size_t getHash() const noexcept override;
 
-    inline size_t font() const noexcept { return _font; }
-    inline U8 fontSize() const noexcept { return _fontSize; }
-    inline U8 width() const noexcept { return _width; }
-    inline F32 blurAmount() const noexcept { return _blurAmount; }
-    inline F32 spacing() const noexcept { return _spacing; }
-    inline U32 alignFlag() const noexcept { return _alignFlag; }
-    inline const UColour4& colour() const noexcept { return _colour; }
-    inline bool bold() const noexcept { return _bold; }
-    inline bool italic() const noexcept { return _italic; }
+    size_t font() const noexcept { return _font; }
+    U8 fontSize() const noexcept { return _fontSize; }
+    U8 width() const noexcept { return _width; }
+    F32 blurAmount() const noexcept { return _blurAmount; }
+    F32 spacing() const noexcept { return _spacing; }
+    U32 alignFlag() const noexcept { return _alignFlag; }
+    const UColour4& colour() const noexcept { return _colour; }
+    bool bold() const noexcept { return _bold; }
+    bool italic() const noexcept { return _italic; }
 
 
-    inline void font(size_t font) noexcept { _font = font; _dirty = true; }
-    inline void fontSize(U8 fontSize) noexcept { _fontSize = fontSize; _dirty = true; }
-    inline void width(U8 width) noexcept { _width = width; _dirty = true; }
-    inline void blurAmount(F32 blurAmount) noexcept { _blurAmount = blurAmount; _dirty = true; }
-    inline void spacing(F32 spacing) noexcept { _spacing = spacing; _dirty = true; }
-    inline void alignFlag(U32 alignFlag) noexcept { _alignFlag = alignFlag; _dirty = true; }
-    inline void colour(const UColour4& colour) noexcept { _colour.set(colour); _dirty = true; }
-    inline void bold(bool bold) noexcept { _bold = bold; _dirty = true; }
-    inline void italic(bool italic) noexcept { _italic = italic; _dirty = true; }
+    void font(const size_t font) noexcept { _font = font; _dirty = true; }
+    void fontSize(const U8 fontSize) noexcept { _fontSize = fontSize; _dirty = true; }
+    void width(const U8 width) noexcept { _width = width; _dirty = true; }
+    void blurAmount(const F32 blurAmount) noexcept { _blurAmount = blurAmount; _dirty = true; }
+    void spacing(const F32 spacing) noexcept { _spacing = spacing; _dirty = true; }
+    void alignFlag(const U32 alignFlag) noexcept { _alignFlag = alignFlag; _dirty = true; }
+    void colour(const UColour4& colour) noexcept { _colour.set(colour); _dirty = true; }
+    void bold(const bool bold) noexcept { _bold = bold; _dirty = true; }
+    void italic(const bool italic) noexcept { _italic = italic; _dirty = true; }
 
  protected:
     size_t _font;
@@ -102,8 +101,7 @@ class TextLabelStyle : public Hashable {
     bool _bold;
     bool _italic;
 
- protected:
-    mutable bool _dirty = true;
+     mutable bool _dirty = true;
 };
 
 struct TextElement {
@@ -116,7 +114,7 @@ struct TextElement {
     {
     }
 
-    TextElement(size_t textLabelStyleHash, const RelativePosition2D& position)
+    TextElement(const size_t textLabelStyleHash, const RelativePosition2D& position)
         : _textLabelStyleHash(textLabelStyleHash),
           _position(position)
     {
@@ -124,7 +122,7 @@ struct TextElement {
 
     ~TextElement() = default;
 
-    inline void text(const char* text, bool multiLine) {
+    void text(const char* text, const bool multiLine) {
         if (multiLine) {
             Util::Split(text, '\n', _text);
         } else {
@@ -132,7 +130,7 @@ struct TextElement {
         }
     }
 
-    inline const TextType& text() const noexcept { return _text; }
+    const TextType& text() const noexcept { return _text; }
 
     size_t _textLabelStyleHash = 0;
     RelativePosition2D _position ;
@@ -148,19 +146,19 @@ struct TextElementBatch {
     {
     }
 
-    TextElementBatch(size_t elementCount)
+    explicit TextElementBatch(const size_t elementCount)
     {
         _data.reserve(elementCount);
     }
 
-    TextElementBatch(const TextElement& element)
+    explicit TextElementBatch(const TextElement& element)
         : _data {element}
     {
     }
 
     const BatchType& operator()() const noexcept { return _data; }
 
-    inline bool empty() const noexcept { return _data.empty(); }
+    bool empty() const noexcept { return _data.empty(); }
 
     BatchType _data;
 };

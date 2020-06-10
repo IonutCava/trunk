@@ -24,7 +24,7 @@ TEST(TaskPoolContructionTest)
     CHECK_TRUE(init);
 
     // Double init
-    init = test.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    init = test.init(HardwareThreadCount(), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_FALSE(init);
 }
 
@@ -33,7 +33,7 @@ TEST(ParallelForTest)
     Console::toggleErrorStream(false);
 
     TaskPool test;
-    bool init = test.init(HARDWARE_THREAD_COUNT(), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    bool init = test.init(HardwareThreadCount(), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     const U32 partitionSize = 4;
@@ -62,7 +62,7 @@ TEST(ParallelForTest)
 TEST(TaskCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     std::atomic_bool testValue = false;
@@ -118,7 +118,7 @@ namespace {
 TEST(TaskClassMemberCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     ThreadedTest testObj;
@@ -141,7 +141,7 @@ TEST(TaskSpeedTest)
 {
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+        bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
         CHECK_TRUE(init);
 
         Time::ProfileTimer timer;
@@ -169,7 +169,7 @@ TEST(TaskSpeedTest)
     }
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
+        bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
         CHECK_TRUE(init);
 
         Time::ProfileTimer timer;
@@ -197,7 +197,7 @@ TEST(TaskSpeedTest)
     }
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+        bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
         CHECK_TRUE(init);
 
         const U32 partitionSize = 256;
@@ -221,7 +221,7 @@ TEST(TaskSpeedTest)
     }
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+        bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
         CHECK_TRUE(init);
 
         const U32 partitionSize = 256;
@@ -246,7 +246,7 @@ TEST(TaskSpeedTest)
     }
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
+        bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
         CHECK_TRUE(init);
 
         const U32 partitionSize = 256;
@@ -269,7 +269,7 @@ TEST(TaskSpeedTest)
     }   
     {
         TaskPool test;
-        bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
+        bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
         CHECK_TRUE(init);
 
         const U32 partitionSize = 256;
@@ -297,7 +297,7 @@ TEST(TaskSpeedTest)
 TEST(TaskPriorityTest)
 {
     TaskPool test;
-    bool init = test.init(to_U8(HARDWARE_THREAD_COUNT()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     U32 callbackValue = 0;

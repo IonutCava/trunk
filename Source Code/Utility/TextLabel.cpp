@@ -13,16 +13,15 @@ TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontName;
 TextLabelStyle::TextLabelStyle(const char* font,
                                const UColour4& colour,
                                U8 fontSize)
-  : _width(1),
-    _font(_ID(font)),
+  : _font(_ID(font)),
     _fontSize(fontSize),
-    _colour(colour),
+    _width(1),
     _blurAmount(0.0f),
     _spacing(0.0f),
     _alignFlag(0),
+    _colour(colour),
     _bold(false),
-    _italic(false),
-    _dirty(true)
+    _italic(false)
 {
     // First one found
     if (s_defaultHashValue == 0) {
@@ -65,14 +64,14 @@ size_t TextLabelStyle::getHash() const noexcept {
     return Hashable::getHash();
 }
 
-const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash) {
+const TextLabelStyle& TextLabelStyle::get(const size_t textLabelStyleHash) {
     bool styleFound = false;
     const TextLabelStyle& style = get(textLabelStyleHash, styleFound);
     // Return the state block's descriptor
     return style;
 }
 
-const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& styleFound) {
+const TextLabelStyle& TextLabelStyle::get(const size_t textLabelStyleHash, bool& styleFound) {
     styleFound = false;
 
     SharedLock<SharedMutex> r_lock(s_textLableStyleMutex);
@@ -86,7 +85,7 @@ const TextLabelStyle& TextLabelStyle::get(size_t textLabelStyleHash, bool& style
     return s_textLabelStyle.find(s_defaultHashValue)->second;
 }
 
-const Str64& TextLabelStyle::fontName(size_t fontNameHash) {
+const Str64& TextLabelStyle::fontName(const size_t fontNameHash) {
     return s_fontName[fontNameHash];
 }
 

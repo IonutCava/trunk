@@ -2,8 +2,8 @@
 
 #include "Headers/DescriptorSets.h"
 
-#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
     bool BufferCompare(const ShaderBuffer* const a, const ShaderBuffer* const b) noexcept {
@@ -24,11 +24,11 @@ namespace Divide {
         return nullptr;
     }
 
-    const TextureData* DescriptorSet::findTexture(U8 binding) const noexcept {
+    const TextureEntry* DescriptorSet::findTexture(U8 binding) const noexcept {
         auto& textures = _textureData.textures();
         for (const auto& it : textures) {
-            if (it.first == binding) {
-                return &it.second;
+            if (std::get<0>(it) == binding) {
+                return &it;
             }
         }
 
@@ -110,11 +110,11 @@ namespace Divide {
             const auto& rhsTextures = rhs._textureData.textures();
             const size_t texCount = rhsTextures.size();
             for (size_t i = 0; i < texCount; ++i) {
-                const auto& it = rhsTextures[i];
-                if (it.first != TextureDataContainer<>::INVALID_BINDING) {
-                    const TextureData* texData = lhs.findTexture(it.first);
-                    if (texData != nullptr && *texData == it.second) {
-                        partial = rhs._textureData.removeTexture(it.first) || partial;
+                const TextureEntry& it = rhsTextures[i];
+                if (std::get<0>(it) != TextureDataContainer<>::INVALID_BINDING) {
+                    const TextureEntry* texData = lhs.findTexture(std::get<0>(it));
+                    if (texData != nullptr && *texData == it) {
+                        partial = rhs._textureData.removeTexture(std::get<0>(it)) || partial;
                     }
                 }
             }

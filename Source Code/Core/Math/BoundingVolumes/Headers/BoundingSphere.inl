@@ -34,18 +34,18 @@
 
 namespace Divide {
 
-inline void BoundingSphere::fromBoundingBox(const BoundingBox& bBox) {
+inline void BoundingSphere::fromBoundingBox(const BoundingBox& bBox) noexcept {
     _center.set(bBox.getCenter());
     _radius = (bBox.getMax() - _center).length();
 }
 
-inline void BoundingSphere::fromBoundingSphere(const BoundingSphere& bSphere) {
+inline void BoundingSphere::fromBoundingSphere(const BoundingSphere& bSphere) noexcept {
     _center.set(bSphere.getCenter());
     _radius = bSphere.getRadius();
 }
 
 // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
-inline void BoundingSphere::add(const BoundingSphere& bSphere) {
+inline void BoundingSphere::add(const BoundingSphere& bSphere) noexcept {
     const F32 dist = (bSphere._center - _center).length();
 
     if (_radius >= dist + bSphere._radius) {
@@ -66,14 +66,14 @@ inline void BoundingSphere::add(const BoundingSphere& bSphere) {
     }
 }
 
-inline void BoundingSphere::addRadius(const BoundingSphere& bSphere) {
+inline void BoundingSphere::addRadius(const BoundingSphere& bSphere) noexcept {
     const F32 dist = (bSphere._center - _center).length() + bSphere._radius;
     if (_radius < dist) {
         _radius = dist;
     }
 }
 
-inline void BoundingSphere::add(const vec3<F32>& point) {
+inline void BoundingSphere::add(const vec3<F32>& point) noexcept {
     const vec3<F32> diff(point - _center);
     const F32 dist = diff.length();
     if (_radius < dist) {
@@ -83,7 +83,7 @@ inline void BoundingSphere::add(const vec3<F32>& point) {
     }
 }
 
-inline void BoundingSphere::addRadius(const vec3<F32>& point) {
+inline void BoundingSphere::addRadius(const vec3<F32>& point) noexcept {
     const F32 dist = (point - _center).length();
     if (_radius < dist) {
         _radius = dist;
@@ -123,12 +123,14 @@ inline void BoundingSphere::createFromPoints(const std::array<vec3<F32>, 8>& poi
     }
 }
 
-inline void BoundingSphere::reset() {
+inline void BoundingSphere::reset() noexcept {
     _center.reset();
     _radius = 0.0f;
 }
 
-inline void BoundingSphere::setRadius(F32 radius) noexcept { _radius = radius; }
+inline void BoundingSphere::setRadius(const F32 radius) noexcept {
+    _radius = radius;
+}
 
 inline void BoundingSphere::setCenter(const vec3<F32>& center) noexcept {
     _center = center;
@@ -140,11 +142,11 @@ inline F32 BoundingSphere::getRadius() const noexcept { return _radius; }
 
 inline F32 BoundingSphere::getDiameter() const noexcept { return _radius * 2; }
 
-inline F32 BoundingSphere::getDistanceFromPoint(const vec3<F32>& point) const {
+inline F32 BoundingSphere::getDistanceFromPoint(const vec3<F32>& point) const noexcept {
     return getCenter().distance(point) - getRadius();
 }
 
-inline vec4<F32> BoundingSphere::asVec4() const {
+inline vec4<F32> BoundingSphere::asVec4() const noexcept {
     return vec4<F32>(getCenter(), getRadius());
 }
 };  // namespace Divide

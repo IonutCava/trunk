@@ -34,7 +34,6 @@
 #define _PARTICLE_GENERATOR_H_
 
 #include "ParticleData.h"
-#include "Core/Headers/EngineTaskPool.h"
 
 namespace Divide {
 

@@ -1,14 +1,14 @@
 #include "stdafx.h"
 
 #include "Headers/SceneShaderData.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 SceneShaderData::SceneShaderData(GFXDevice& context)
     : _context(context),
-      _sceneShaderData(nullptr),
-      _dirty(true)
+      _dirty(true),
+      _sceneShaderData(nullptr)
 {
     shadowingSettings(0.25f, 0.00002f, 1000.0f, 1500.0f);
 

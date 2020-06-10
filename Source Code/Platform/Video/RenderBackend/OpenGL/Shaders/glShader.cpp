@@ -4,8 +4,8 @@
 
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
@@ -16,7 +16,7 @@ namespace {
 
     size_t g_validationBufferMaxSize = 4096 * 16;
 
-    ShaderType getShaderType(UseProgramStageMask mask) noexcept {
+    ShaderType getShaderType(const UseProgramStageMask mask) noexcept {
         if (BitCompare(to_U32(mask), UseProgramStageMask::GL_VERTEX_SHADER_BIT)) {
             return ShaderType::VERTEX;
         } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT)) {
@@ -35,7 +35,7 @@ namespace {
         return ShaderType::COUNT;
     }
 
-    UseProgramStageMask getStageMask(ShaderType type) noexcept {
+    UseProgramStageMask getStageMask(const ShaderType type) noexcept {
         switch (type) {
             case ShaderType::VERTEX: return UseProgramStageMask::GL_VERTEX_SHADER_BIT;
             case ShaderType::TESSELLATION_CTRL: return UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT;
@@ -43,13 +43,14 @@ namespace {
             case ShaderType::GEOMETRY: return UseProgramStageMask::GL_GEOMETRY_SHADER_BIT;
             case ShaderType::FRAGMENT: return UseProgramStageMask::GL_FRAGMENT_SHADER_BIT;
             case ShaderType::COMPUTE: return UseProgramStageMask::GL_COMPUTE_SHADER_BIT;
+            default: break;
         }
 
         return UseProgramStageMask::GL_NONE_BIT;
     }
 
     template<typename T_out, size_t T_out_count, typename T_in>
-    inline std::pair<GLsizei, const T_out*> convertData(const GLsizei byteCount, const Byte* const values) noexcept {
+    std::pair<GLsizei, const T_out*> convertData(const GLsizei byteCount, const Byte* const values) noexcept {
         static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
 
         const GLsizei size = byteCount / sizeof(T_in);
@@ -62,14 +63,13 @@ glShader::ShaderMap glShader::_shaderNameMap;
 
 glShader::glShader(GFXDevice& context, const Str256& name)
     : GUIDWrapper(),
-      GraphicsResource(context, GraphicsResource::Type::SHADER, getGUID(), _ID(name.c_str())),
+      GraphicsResource(context, Type::SHADER, getGUID(), _ID(name.c_str())),
       glObject(glObjectType::TYPE_SHADER, context),
-      _stageMask(UseProgramStageMask::GL_NONE_BIT),
-      _stageCount(0),
-      _valid(false),
       _loadedFromBinary(false),
       _binaryFormat(GL_NONE),
       _programHandle(GLUtil::k_invalidObjectID),
+      _stageCount(0),
+      _stageMask(UseProgramStageMask::GL_NONE_BIT),
       _name(name)
 {
     std::atomic_init(&_refCount, 0);
@@ -82,7 +82,7 @@ glShader::~glShader() {
     }
 }
 
-bool glShader::embedsType(ShaderType type) const {
+bool glShader::embedsType(const ShaderType type) const {
     return BitCompare(to_U32(stageMask()), getStageMask(type));
 }
 
@@ -109,7 +109,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                 GL_API::deleteShaderPrograms(1, &_programHandle);
             }
 
-            _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], (GLsizei)cstrings.size(), cstrings.data());
+            _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], static_cast<GLsizei>(cstrings.size()), cstrings.data());
             if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                 _valid = false;
@@ -138,7 +138,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
 
                     const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[i]);
                     if (shader != 0u) {
-                        glShaderSource(shader, (GLsizei)cstrings.size(), cstrings.data(), NULL);
+                        glShaderSource(shader, static_cast<GLsizei>(cstrings.size()), cstrings.data(), NULL);
                         glCompileShader(shader);
 
                         GLboolean compiled = 0;
@@ -196,7 +196,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
             stringImpl validationBuffer = "";
             validationBuffer.resize(logSize);
 
-            glGetProgramInfoLog(_programHandle, logSize, NULL, &validationBuffer[0]);
+            glGetProgramInfoLog(_programHandle, logSize, nullptr, &validationBuffer[0]);
             if (validationBuffer.size() > g_validationBufferMaxSize) {
                 // On some systems, the program's disassembly is printed, and that can get quite large
                 validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
@@ -252,7 +252,7 @@ bool glShader::load(const ShaderLoadData& data) {
         }
     }
 
-    if (data.empty() || !hasSourceCode) {
+    if (!hasSourceCode) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
         return false;
     }
@@ -313,7 +313,7 @@ glShader* glShader::loadShader(GFXDevice& context,
 
 glShader* glShader::loadShader(GFXDevice & context,
                               glShader * shader,
-                              bool isNew,
+                              const bool isNew,
                               const ShaderLoadData & data) {
 
     // At this stage, we have a valid Shader object, so load the source code
@@ -352,7 +352,7 @@ bool glShader::loadFromBinary() {
                 {
                     // Load binary code on the GPU
                     _programHandle = glCreateProgram();
-                    glProgramBinary(_programHandle, _binaryFormat, (bufferPtr)data.data(), (GLint)data.size());
+                    glProgramBinary(_programHandle, _binaryFormat, (bufferPtr)data.data(), static_cast<GLint>(data.size()));
                     // Check if the program linked successfully on load
                     GLboolean success = 0;
                     glGetProgramiv(_programHandle, GL_LINK_STATUS, &success);
@@ -379,16 +379,16 @@ void glShader::dumpBinary() {
     glGetProgramiv(_programHandle, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
     // allocate a big enough buffer to hold it
     char* binary = MemoryManager_NEW char[binaryLength];
-    DIVIDE_ASSERT(binary != NULL, "glShader error: could not allocate memory for the program binary!");
+    DIVIDE_ASSERT(binary != nullptr, "glShader error: could not allocate memory for the program binary!");
 
     // and fill the buffer with the binary code
-    glGetProgramBinary(_programHandle, binaryLength, NULL, &_binaryFormat, binary);
+    glGetProgramBinary(_programHandle, binaryLength, nullptr, &_binaryFormat, binary);
     if (_binaryFormat != GL_NONE) {
         // dump the buffer to file
         if (writeFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
                       (glShaderProgram::decorateFileName(_name) + ".bin").c_str(),
                       binary,
-                      (size_t)binaryLength,
+                      static_cast<size_t>(binaryLength),
                       FileType::BINARY))
         {
             // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
@@ -404,7 +404,7 @@ void glShader::dumpBinary() {
     MemoryManager::DELETE(binary);
 }
 
-I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, bool force) {
+I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, const bool force) {
     if (constant._type != GFX::PushConstantType::COUNT && constant._bindingHash > 0u &&
         _programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid())
     {
@@ -448,12 +448,12 @@ void glShader::cacheActiveUniforms() {
         vectorEASTL<GLint> values(properties.size());
 
         for (GLint attrib = 0; attrib < numActiveUniforms; ++attrib) {
-            glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, (GLsizei)properties.size(), properties.data(), (GLsizei)values.size(), NULL, &values[0]);
+            glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, static_cast<GLsizei>(properties.size()), properties.data(), static_cast<GLsizei>(values.size()), nullptr, &values[0]);
             if (values[3] != -1 || values[4] == -1) {
                 continue;
             }
             nameData.resize(values[0]); //The length of the name.
-            glGetProgramResourceName(_programHandle, GL_UNIFORM, attrib, (GLsizei)nameData.size(), NULL, &nameData[0]);
+            glGetProgramResourceName(_programHandle, GL_UNIFORM, attrib, static_cast<GLsizei>(nameData.size()), nullptr, &nameData[0]);
             std::string name((char*)&nameData[0], nameData.size() - 1);
 
             if (name.length() > 3 && Util::GetTrailingCharacters(name, 3) == "[0]") {
@@ -472,9 +472,9 @@ void glShader::cacheActiveUniforms() {
     }
 }
 
-void glShader::UploadPushConstant(const GFX::PushConstant& constant, bool force) {
+void glShader::UploadPushConstant(const GFX::PushConstant& constant, const bool force) {
     const I32 binding = cachedValueUpdate(constant, force);
-    Uniform(binding, constant._type, constant._buffer.data(), (GLsizei)constant._buffer.size(), constant._flag);
+    Uniform(binding, constant._type, constant._buffer.data(), static_cast<GLsizei>(constant._buffer.size()), constant._flag);
 }
 
 void glShader::reuploadUniforms() {
@@ -484,7 +484,7 @@ void glShader::reuploadUniforms() {
     }
 }
 
-void glShader::Uniform(I32 binding, GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, bool flag) const {
+void glShader::Uniform(const I32 binding, const GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, const bool flag) const {
     if (binding == -1) {
         return;
     }
@@ -623,7 +623,7 @@ void glShader::Uniform(I32 binding, GFX::PushConstantType type, const Byte* cons
 /// Add a define to the shader. The defined must not have been added previously
 void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
     // Find the string in the list of program defines
-    auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
+    const auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
         _definesList.emplace_back(define, appendPrefix);

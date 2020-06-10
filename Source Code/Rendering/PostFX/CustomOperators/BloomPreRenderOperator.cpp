@@ -73,9 +73,11 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
         resolutionDownscaleFactor = 4.0f;
     }
 
+    const auto& screenAtt = parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO));
     vectorEASTL<RTAttachmentDescriptor> att = {
         {
-            parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO)).texture()->descriptor(),
+            screenAtt.texture()->descriptor(),
+            screenAtt.samplerHash(),
             RTAttachmentType::Colour,
             0,
             DefaultColours::BLACK
@@ -138,11 +140,12 @@ void BloomPreRenderOperator::luminanceThreshold(F32 val) {
 bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     assert(input._targetID != output._targetID);
 
-    const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
+    const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
+    const TextureData screenTex = screenAtt.texture()->data();
 
     
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
@@ -177,10 +180,11 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
                         bufferInOut);
 
     // Step 3: apply bloom
-    const TextureData bloomTex = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
+    const auto& bloomAtt = _bloomBlurBuffer[1]._rt->getAttachment(RTAttachmentType::Colour, 0); 
+    const TextureData bloomTex = bloomAtt.texture()->data();
 
-    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
-    descriptorSetCmd._set._textureData.setTexture(bloomTex, TextureUsage::UNIT1);
+    descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(bloomTex, bloomAtt.samplerHash(),TextureUsage::UNIT1);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });

@@ -33,8 +33,6 @@
 #ifndef _STRING_H_
 #define _STRING_H_
 
-#include <EASTL/string.h>
-#include <EASTL/fixed_string.h>
 #include <boost/beast/core/static_string.hpp>
 #include <boost/utility/string_ref.hpp >
 #include "STLString.h"
@@ -81,14 +79,14 @@ namespace Divide {
             return boost::string_ref(subStr.data(), subStr.length());
         }
 
-        inline Str operator+(const char* other) const {
+        Str operator+(const char* other) const {
             Str ret(*this);
             ret.append(other);
             return ret;
         }
 
         template<size_t M>
-        inline Str operator+(const Str<M>& other) const {
+        Str operator+(const Str<M>& other) const {
             Str ret(*this);
             ret.append(other.c_str());
             return ret;
@@ -103,7 +101,7 @@ namespace Divide {
 
         template<typename T_str, typename std::enable_if_t<std::is_same<stringImpl, T_str>::value ||
                                                            std::is_same<stringImplFast, T_str>::value>::value>
-        inline operator T_str() {
+        operator T_str() {
             return T_str{ this->c_str() };
         }
 
@@ -118,13 +116,13 @@ namespace Divide {
         }
 
         template<size_t N>
-        inline Str& append(const Str<N>& other) {
+        Str& append(const Str<N>& other) {
             this->append(other.c_str());
             return *this;
         }
 
         template<size_t N>
-        inline Str append(const Str<N>& other) const {
+        Str append(const Str<N>& other) const {
             Str ret(*this);
             ret.append(other.c_str());
             return ret;
@@ -138,59 +136,59 @@ namespace Divide {
             return stringImplFast(Base::c_str());
         }
 
-        inline size_t find(char other, size_t pos = 0) const {
-            return pos + as_ref(pos).find(other, pos);
+        size_t find(const char other, const size_t pos = 0) const {
+            size_t ret = as_ref(pos).find(other);
             return ret == Str::npos ? ret : ret + pos;
         }
 
-        inline size_t find(const char* other, size_t pos = 0) const {
+        size_t find(const char* other, const size_t pos = 0) const {
             size_t ret = as_ref(pos).find(boost::string_ref(other));
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline size_t find(const Str& other, size_t pos = 0) const {
+        size_t find(const Str& other, const size_t pos = 0) const {
             size_t ret = as_ref(pos).find(other.as_ref());
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
         template<size_t N>
-        inline size_t find(const Str<N>& other, size_t pos = 0) const {
+        size_t find(const Str<N>& other, const size_t pos = 0) const {
             size_t ret = as_ref(pos).find(other.as_ref());
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline size_t rfind(char other, size_t pos = 0) const {
+        size_t rfind(const char other, const size_t pos = 0) const {
             const size_t ret = as_ref(pos).rfind(other);
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline size_t rfind(const char* other, size_t pos = 0) const {
+        size_t rfind(const char* other, const size_t pos = 0) const {
             size_t ret = as_ref(pos).rfind(boost::string_ref(other));
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline size_t rfind(const Str& other, size_t pos = 0) const {
+        size_t rfind(const Str& other, const size_t pos = 0) const {
             size_t ret = as_ref(pos).rfind(other.as_ref());
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
         template<size_t N>
-        inline size_t rfind(const Str<N>& other, size_t pos = 0) const {
+        size_t rfind(const Str<N>& other, const size_t pos = 0) const {
             size_t ret = as_ref(pos).rfind(other.as_ref());
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline size_t find_first_of(char s, size_t pos = 0) const {
+        size_t find_first_of(const char s, const size_t pos = 0) const {
             size_t ret = as_ref(pos).find_first_of(s);
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline size_t find_first_of(const char* s, size_t pos = 0) const {
+        size_t find_first_of(const char* s, const size_t pos = 0) const {
             const size_t ret = as_ref(pos).find_first_of(boost::string_ref(s));
             return ret != Str::npos ? ret + pos : Str::npos;
         }
 
-        inline Str& replace(size_t start, size_t length, const char* s) {
+        Str& replace(const size_t start, const size_t length, const char* s) {
             //Barf
             *this = stringImpl(Base::c_str()).replace(start, length, s).c_str();
             return *this;

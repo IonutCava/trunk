@@ -33,7 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GL_VAO_CACHE_H_
 #define _GL_VAO_CACHE_H_
 
-#include "glVAOPool.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 namespace Divide {
 namespace GLUtil {

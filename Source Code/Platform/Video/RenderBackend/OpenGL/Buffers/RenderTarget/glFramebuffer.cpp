@@ -4,13 +4,10 @@
 
 #include "Headers/glFramebuffer.h"
 
-#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
-#include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glSamplerObject.h"
-
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/StringHelper.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 #include "Utility/Headers/Localization.h"
@@ -30,13 +27,13 @@ bool glFramebuffer::_zWriteEnabled = true;
 glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : RenderTarget(context, descriptor),
       glObject(glObjectType::TYPE_FRAMEBUFFER, context),
-      _isLayeredDepth(false),
-      _activeDepthBuffer(false),
-      _statusCheckQueued(false),
-      _framebufferHandle(0),
-      _prevViewport(-1),
       _activeReadBuffer(GL_NONE),
-      _debugMessage(("Render Target: [ " + name() + " ]"))
+      _prevViewport(-1),
+      _debugMessage(("Render Target: [ " + name() + " ]")),
+      _framebufferHandle(0),
+      _isLayeredDepth(false),
+      _statusCheckQueued(false),
+      _activeDepthBuffer(false)
 {
     glCreateFramebuffers(1, &_framebufferHandle);
     assert(_framebufferHandle != 0 && "glFramebuffer error: Tried to bind an invalid framebuffer!");
@@ -61,7 +58,7 @@ glFramebuffer::~glFramebuffer()
     GL_API::deleteFramebuffers(1, &_framebufferHandle);
 }
 
-void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
+void glFramebuffer::initAttachment(const RTAttachmentType type, const U8 index) {
     // Avoid invalid dimensions
     assert(getWidth() != 0 && getHeight() != 0 && "glFramebuffer error: Invalid frame buffer dimensions!");
 
@@ -71,13 +68,13 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
         return;
     }   
 
-    Texture* tex = nullptr;
+    Texture* tex;
     if (!attachment->isExternal()) {
         tex = attachment->texture().get();
         // Do we need to resize the attachment?
         const bool shouldResize = tex->width() != getWidth() || tex->height() != getHeight();
         if (shouldResize) {
-            tex->resize({ NULL, 0 }, vec2<U16>(getWidth(), getHeight()));
+            tex->resize({nullptr, 0 }, vec2<U16>(getWidth(), getHeight()));
         }
         const bool updateSampleCount = tex->descriptor().msaaSamples() != _descriptor._msaaSamples;
         if (updateSampleCount) {
@@ -106,7 +103,7 @@ void glFramebuffer::initAttachment(RTAttachmentType type, U8 index) {
                            texType == TextureType::TEXTURE_CUBE_ARRAY ||
                            texType == TextureType::TEXTURE_3D);
     } else {
-        attachmentEnum = GLenum((U32)GL_COLOR_ATTACHMENT0 + index);
+        attachmentEnum = GLenum(static_cast<U32>(GL_COLOR_ATTACHMENT0) + index);
     }
 
     attachment->binding(to_U32(attachmentEnum));
@@ -283,7 +280,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
                                                 : GL_COLOR_BUFFER_BIT,
                                    GL_NEAREST);
             _context.registerDrawCall();
-            queueMipMapRecomputation(*outAtt, 0u, to_U16(outputLayer));
+            QueueMipMapRecomputation(*outAtt);
         }
     }
 
@@ -300,16 +297,16 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
                                GL_DEPTH_BUFFER_BIT,
                                GL_NEAREST);
         _context.registerDrawCall();
-        queueMipMapRecomputation(*outAtt, 0u, params._blitDepth._outputLayer);
+        QueueMipMapRecomputation(*outAtt);
     }
 }
 
-void glFramebuffer::setBlendState(const RTBlendStates& blendStates) {
+void glFramebuffer::setBlendState(const RTBlendStates& blendStates) const {
     const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
     setBlendState(blendStates, colourAttachments);
 }
 
-void glFramebuffer::setBlendState(const RTBlendStates& blendStates, const RTAttachmentPool::PoolEntry& activeAttachments) {
+void glFramebuffer::setBlendState(const RTBlendStates& blendStates, const RTAttachmentPool::PoolEntry& activeAttachments) const {
     OPTICK_EVENT();
 
     for (U8 i = 0; i < activeAttachments.size(); ++i) {
@@ -408,9 +405,7 @@ void glFramebuffer::setDefaultState(const RTDrawDescriptor& drawPolicy) {
     GL_API::getStateTracker().setDepthRange(_descriptor._depthRange.min, _descriptor._depthRange.max);
 
     /// Check that everything is valid
-    if (Config::Build::IS_DEBUG_BUILD) {
-        checkStatus();
-    }
+    checkStatus();
 }
 
 void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
@@ -420,7 +415,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     GL_API::pushDebugMessage(_debugMessage.c_str());
 
     // Activate FBO
-    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);
+    GL_API::getStateTracker().setActiveFB(RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);
 
     // Set the viewport
     if (drawPolicy.setViewport()) {
@@ -436,11 +431,11 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     _previousPolicy = drawPolicy;
 }
 
-void glFramebuffer::end(bool needsUnbind) {
+void glFramebuffer::end(const bool needsUnbind) {
     OPTICK_EVENT();
 
     if (needsUnbind) {
-        GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_WRITE_ONLY, 0);
+        GL_API::getStateTracker().setActiveFB(RenderTargetUsage::RT_WRITE_ONLY, 0);
         if (_previousPolicy.setViewport()) {
             _context.setViewport(_prevViewport);
         }
@@ -455,19 +450,19 @@ void glFramebuffer::queueMipMapRecomputation() {
     if (hasColour()) {
         const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
         for (const RTAttachment_ptr& att : colourAttachments) {
-            queueMipMapRecomputation(*att, 0u, att->descriptor()._texDescriptor.layerCount());
+            QueueMipMapRecomputation(*att);
         }
     }
 
     if (hasDepth()) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
-        queueMipMapRecomputation(*attDepth, 0u, attDepth->descriptor()._texDescriptor.layerCount());
+        QueueMipMapRecomputation(*attDepth);
     }
 }
 
-void glFramebuffer::queueMipMapRecomputation(const RTAttachment& attachment, U16 startLayer, U16 layerCount) {
+void glFramebuffer::QueueMipMapRecomputation(const RTAttachment& attachment) {
     const Texture_ptr& texture = attachment.texture(false);
-    if (attachment.used() && texture->automaticMipMapGeneration() && texture->getCurrentSampler().generateMipMaps()) {
+    if (attachment.used() && texture->automaticMipMapGeneration() && texture->hasMipMaps()) {
         GL_API::queueComputeMipMap(texture->data()._textureHandle);
     }
 }
@@ -487,21 +482,28 @@ void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmen
                 const GLint buffer = static_cast<GLint>(binding - static_cast<GLint>(GL_COLOR_ATTACHMENT0));
 
                 if (drawPolicy.clearColour(to_U8(buffer))) {
-                    switch (att->texture(false)->descriptor().dataType()) {
-                        case GFXDataFormat::FLOAT_16:
-                        case GFXDataFormat::FLOAT_32 :
-                            glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, att->clearColour()._v);
-                            break;
-                    
-                        case GFXDataFormat::SIGNED_BYTE:
-                        case GFXDataFormat::SIGNED_SHORT:
-                        case GFXDataFormat::SIGNED_INT :
-                            glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, buffer, Util::ToIntColour(att->clearColour())._v);
-                            break;
+                    const RTClearColourDescriptor* clearColour = drawPolicy.customClearColour();
 
-                        default:
-                            glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(att->clearColour())._v);
-                            break;
+                    const FColour4& colour = clearColour != nullptr ? clearColour->_customClearColour[buffer] : att->clearColour();
+                    if (att->texture(false)->descriptor().normalized()) {
+                        glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, colour._v);
+                    } else {
+                        switch (att->texture(false)->descriptor().dataType()) {
+                            case GFXDataFormat::FLOAT_16:
+                            case GFXDataFormat::FLOAT_32 :
+                                glClearNamedFramebufferfv(_framebufferHandle, GL_COLOR, buffer, colour._v);
+                                break;
+                        
+                            case GFXDataFormat::SIGNED_BYTE:
+                            case GFXDataFormat::SIGNED_SHORT:
+                            case GFXDataFormat::SIGNED_INT :
+                                glClearNamedFramebufferiv(_framebufferHandle, GL_COLOR, buffer, Util::ToIntColour(colour)._v);
+                                break;
+
+                            default:
+                                glClearNamedFramebufferuiv(_framebufferHandle, GL_COLOR, buffer, Util::ToUIntColour(colour)._v);
+                                break;
+                        }
                     }
                     _context.registerDrawCall();
                 }
@@ -513,8 +515,10 @@ void glFramebuffer::clear(const RTClearDescriptor& drawPolicy, const RTAttachmen
         if (drawPolicy.clearExternalDepth() && _attachmentPool->get(RTAttachmentType::Depth, 0)->isExternal()) {
             return;
         }
+        const RTClearColourDescriptor* clearColour = drawPolicy.customClearColour();
+        const F32 depthValue = clearColour != nullptr ? clearColour->_customClearDepth : _descriptor._depthValue;
 
-        glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &_descriptor._depthValue);
+        glClearNamedFramebufferfv(_framebufferHandle, GL_DEPTH, 0, &depthValue);
         _context.registerDrawCall();
     }
 }
@@ -555,14 +559,14 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
         }
     }
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
         checkStatus();
     } else {
         _statusCheckQueued = false;
     }
 }
 
-void glFramebuffer::setMipLevel(U16 writeLevel) {
+void glFramebuffer::setMipLevel(const U16 writeLevel) {
     OPTICK_EVENT();
 
     if (writeLevel == std::numeric_limits<U16>::max()) {
@@ -590,7 +594,7 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
         }
     }
 
-    if (Config::Build::IS_DEBUG_BUILD) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         checkStatus();
     } else {
         _statusCheckQueued = false;
@@ -598,9 +602,9 @@ void glFramebuffer::setMipLevel(U16 writeLevel) {
 }
 
 void glFramebuffer::readData(const vec4<U16>& rect,
-                             GFXImageFormat imageFormat,
-                             GFXDataFormat dataType,
-                             bufferPtr outData) const {
+                             const GFXImageFormat imageFormat,
+                             const GFXDataFormat dataType,
+                             const bufferPtr outData) const {
     OPTICK_EVENT();
 
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
@@ -611,15 +615,15 @@ void glFramebuffer::readData(const vec4<U16>& rect,
         GLUtil::glDataFormat[to_U32(dataType)], outData);
 }
 
-bool glFramebuffer::hasDepth() const {
+bool glFramebuffer::hasDepth() const noexcept {
     return _activeDepthBuffer;
 }
 
-bool glFramebuffer::hasColour() const {
+bool glFramebuffer::hasColour() const noexcept {
     return _attachmentPool->attachmentCount(RTAttachmentType::Colour) > 0;
 }
 
-void glFramebuffer::setAttachmentState(GLenum binding, BindingState state) {
+void glFramebuffer::setAttachmentState(const GLenum binding, const BindingState state) {
     _attachmentState[binding] = state;
 }
 
@@ -632,7 +636,7 @@ glFramebuffer::BindingState glFramebuffer::getAttachmentState(GLenum binding) co
     return { AttachmentState::COUNT, 0, 0 };
 }
 
-void glFramebuffer::queueCheckStatus() {
+void glFramebuffer::queueCheckStatus() noexcept {
     _statusCheckQueued = true;
 }
 
@@ -640,7 +644,7 @@ bool glFramebuffer::checkStatus() {
     OPTICK_EVENT();
 
     if (!_statusCheckQueued) {
-        return true;
+        //return true;
     }
 
     _statusCheckQueued = false;

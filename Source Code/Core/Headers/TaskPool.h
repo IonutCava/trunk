@@ -79,21 +79,21 @@ public:
     template<class Predicate>
     Task* createTask(Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle = true);
 
-    inline U32 workerThreadCount() const noexcept {
+    U32 workerThreadCount() const noexcept {
         return _workerThreadCount;
     }
 
-    inline bool operator==(const TaskPool& other) const noexcept {
+    bool operator==(const TaskPool& other) const noexcept {
         return getGUID() == other.getGUID();
     }
 
-    inline bool operator!=(const TaskPool& other) const noexcept {
+    bool operator!=(const TaskPool& other) const noexcept {
         return getGUID() != other.getGUID();
     }
 
     // Called by a task that isn't doing anything (e.g. waiting on child tasks).
     // Use this to run another task (if any) and return to the previous execution point
-    void threadWaiting();
+    void threadWaiting() const;
 
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;
@@ -126,10 +126,10 @@ public:
           using PoolImpl = ThreadPool<IsBlocking>;
           std::pair<PoolImpl<true>*, PoolImpl<false>*> _poolImpl = {nullptr, nullptr};
 
-          bool addTask(PoolTask&& job);
+          bool addTask(PoolTask&& job) const;
           bool init() const noexcept;
-          void waitAndJoin();
-          void threadWaiting();
+          void waitAndJoin() const;
+          void threadWaiting() const;
       };
 
      hashMap<U32, vectorEASTL<DELEGATE<void>>> _taskCallbacks;

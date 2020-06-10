@@ -44,12 +44,12 @@ class CRC32 {
    public:
     //=========================================
     //  ctors
-    inline CRC32()
+    CRC32()
     {
         Reset();
     }
 
-    inline CRC32(const void* buf, size_t siz)
+    CRC32(const void* buf, size_t siz)
     {
         Reset();
         Hash(buf, siz);
@@ -57,11 +57,11 @@ class CRC32 {
 
     //=========================================
     /// implicit cast, so that you can do something like foo = CRC(dat,siz);
-    inline operator U32() const { return Get(); }
+    operator U32() const { return Get(); }
 
     //=========================================
     /// getting the crc
-    inline U32 Get() const noexcept { return ~mCrc; }
+    U32 Get() const noexcept { return ~mCrc; }
 
     //=========================================
     // HashBase stuff
@@ -72,7 +72,6 @@ class CRC32 {
     U32 mCrc = 0u;
     static U32 mTable[0x100];
 
-   private:
     //=========================================
     // internal support
     static U32 Reflect(U32 v, I32 bits) noexcept;

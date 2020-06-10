@@ -95,32 +95,32 @@ namespace Divide {
     }
 
     /// Set the scaling factor on the X axis
-    void PhysXActor::setScaleX(const F32 ammount) {
+    void PhysXActor::setScaleX(const F32 amount) {
 
     }
 
     /// Set the scaling factor on the Y axis
-    void PhysXActor::setScaleY(const F32 ammount) {
+    void PhysXActor::setScaleY(const F32 amount) {
 
     }
 
     /// Set the scaling factor on the Z axis
-    void PhysXActor::setScaleZ(const F32 ammount) {
+    void PhysXActor::setScaleZ(const F32 amount) {
 
     }
 
     /// Increase the scaling factor on the X axis by the specified factor
-    void PhysXActor::scaleX(const F32 ammount) {
+    void PhysXActor::scaleX(const F32 amount) {
 
     }
 
     /// Increase the scaling factor on the Y axis by the specified factor
-    void PhysXActor::scaleY(const F32 ammount) {
+    void PhysXActor::scaleY(const F32 amount) {
 
     }
 
     /// Increase the scaling factor on the Z axis by the specified factor
-    void PhysXActor::scaleZ(const F32 ammount) {
+    void PhysXActor::scaleZ(const F32 amount) {
 
     }
 

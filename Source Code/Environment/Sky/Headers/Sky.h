@@ -82,11 +82,14 @@ class Sky : public SceneNode {
 
     PROPERTY_R(Atmosphere, defaultAtmosphere);
 
+    PROPERTY_R(size_t, skyboxSampler, 0);
+
     PROPERTY_RW(bool, useDaySkybox, true);
     PROPERTY_RW(bool, useNightSkybox, true);
     PROPERTY_RW(FColour4, nightSkyColour, DefaultColours::BLACK);
 
     const Texture_ptr& activeSkyBox() const noexcept;
+    
 
    protected:
     void postLoad(SceneGraphNode* sgn) override;

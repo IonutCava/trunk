@@ -2,15 +2,15 @@
 
 #include "Headers/RenderPassCuller.h"
 
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/EngineTaskPool.h"
-#include "Scenes/Headers/SceneState.h"
-#include "Graphs/Headers/SceneGraph.h"
-#include "Rendering/Camera/Headers/Camera.h"
-#include "Platform/Video/Headers/GFXDevice.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Core/Headers/PlatformContext.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Graphs/Headers/SceneGraph.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Rendering/Camera/Headers/Camera.h"
+#include "Scenes/Headers/SceneState.h"
 
 namespace Divide {
 
@@ -18,14 +18,14 @@ namespace {
     constexpr size_t g_maxParallelCullingRequests = 32u;
     constexpr U32 g_nodesPerCullingPartition = 32u;
 
-    [[nodiscard]] inline bool isTransformNode(SceneNodeType nodeType, ObjectType objType) noexcept {
+    [[nodiscard]] bool isTransformNode(const SceneNodeType nodeType, const ObjectType objType) noexcept {
         return nodeType == SceneNodeType::TYPE_TRANSFORM || 
                nodeType == SceneNodeType::TYPE_TRIGGER || 
                objType._value == ObjectType::MESH;
     }
 
     // Return true if this node should be removed from a shadow pass
-    [[nodiscard]] bool doesNotCastShadows(RenderStage stage, const SceneGraphNode* node, SceneNodeType sceneNodeType, ObjectType objType) {
+    [[nodiscard]] bool doesNotCastShadows(const SceneGraphNode* node, const SceneNodeType sceneNodeType, const ObjectType objType) {
         if (sceneNodeType == SceneNodeType::TYPE_SKY ||
             sceneNodeType == SceneNodeType::TYPE_WATER ||
             sceneNodeType == SceneNodeType::TYPE_INFINITEPLANE ||
@@ -39,7 +39,7 @@ namespace {
         return !rComp->renderOptionEnabled(RenderingComponent::RenderOptions::CAST_SHADOWS);
     }
 
-    [[nodiscard]] inline bool shouldCullNode(RenderStage stage, const SceneGraphNode* node, bool& isTransformNodeOut) {
+    [[nodiscard]] bool shouldCullNode(const RenderStage stage, const SceneGraphNode* node, bool& isTransformNodeOut) {
         const SceneNode& sceneNode = node->getNode();
         const SceneNodeType snType = sceneNode.type();
 
@@ -55,7 +55,7 @@ namespace {
         isTransformNodeOut = isTransformNode(snType, objectType);
         if (!isTransformNodeOut) {
             // only checks nodes and can return true for a shadow stage
-            return stage == RenderStage::SHADOW && doesNotCastShadows(stage, node, snType, objectType);
+            return stage == RenderStage::SHADOW && doesNotCastShadows(node, snType, objectType);
         }
 
         return true;
@@ -148,7 +148,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* current
         F32 distanceSqToCamera = 0.0f;
         if (isTransformNode || !Attorney::SceneGraphNodeRenderPassCuller::cullNode(currentNode, params, collisionResult, distanceSqToCamera)) {
             if (!isTransformNode) {
-                VisibleNode node = {};
+                VisibleNode node;
                 node._node = currentNode;
                 node._distanceToCameraSq = distanceSqToCamera;
                 nodes.append(node);

@@ -2,14 +2,12 @@
 
 #include "Headers/GUISplash.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Platform/Video/Headers/CommandBufferPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
@@ -18,14 +16,7 @@ GUISplash::GUISplash(ResourceCache* cache,
                      const vec2<U16>& dimensions) 
     : _dimensions(dimensions)
 {
-    SamplerDescriptor splashSampler = {};
-    splashSampler.wrapUVW(TextureWrap::CLAMP);
-    splashSampler.minFilter(TextureFilter::NEAREST);
-    splashSampler.magFilter(TextureFilter::NEAREST);
-    splashSampler.anisotropyLevel(0);
-    
     TextureDescriptor splashDescriptor(TextureType::TEXTURE_2D);
-    splashDescriptor.samplerDescriptor(splashSampler);
 
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.threaded(false);
@@ -54,12 +45,14 @@ GUISplash::GUISplash(ResourceCache* cache,
     _splashShader = CreateResource<ShaderProgram>(cache, splashShader);
 }
 
-GUISplash::~GUISplash()
-{
-}
-
-void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
+void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) const {
     static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+
+    SamplerDescriptor splashSampler = {};
+    splashSampler.wrapUVW(TextureWrap::CLAMP);
+    splashSampler.minFilter(TextureFilter::NEAREST);
+    splashSampler.magFilter(TextureFilter::NEAREST);
+    splashSampler.anisotropyLevel(0);
 
     PipelineDescriptor pipelineDescriptor;
     pipelineDescriptor._stateHash = context.get2DStateBlock();
@@ -78,7 +71,7 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) {
     GFX::EnqueueCommand(buffer, viewportCommand);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
-    descriptorSetCmd._set._textureData.setTexture(_splashImage->data(), TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(_splashImage->data(), splashSampler.getHash(), TextureUsage::UNIT0);
     GFX::EnqueueCommand(buffer, descriptorSetCmd);
 
     GFX::EnqueueCommand(buffer, drawCmd);

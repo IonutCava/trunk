@@ -75,12 +75,12 @@ struct WindowDescriptor {
 };
 
 class PlatformContext;
-class WindowManager : public SDLEventListener {
+class WindowManager final : public SDLEventListener {
 public:
     struct MonitorData {
         Rect<I16> viewport;
         Rect<I16> drawableArea;
-        float dpi = 0.f;
+        F32 dpi = 0.f;
     };
 
 public:
@@ -113,7 +113,7 @@ public:
     bool setCursorPosition(I32 x, I32 y);
     void snapCursorToCenter();
 
-    static bool SetGlobalCursorPosition(I32 x, I32 y);
+    static bool SetGlobalCursorPosition(I32 x, I32 y) noexcept;
     static vec2<I32> GetCursorPosition() noexcept;
     static vec2<I32> GetGlobalCursorPosition() noexcept;
     static U32 GetMouseState(vec2<I32>& pos, bool global) noexcept;
@@ -140,9 +140,9 @@ public:
 
     inline const vectorEASTL<MonitorData>& monitorData() const noexcept;
 
-    vec2<U16> getFullscreenResolution() const noexcept;
+    static vec2<U16> GetFullscreenResolution() noexcept;
 
-    void captureMouse(bool state) noexcept;
+    static void CaptureMouse(bool state) noexcept;
 
     static void SetCursorStyle(CursorStyle style);
 
@@ -156,10 +156,10 @@ protected:
 
 protected:
     friend class DisplayWindow;
-    U32 createAPIFlags(RenderAPI api) noexcept;
-    ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags);
-    ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags);
-    void destroyAPISettings(DisplayWindow* window) noexcept;
+    static U32 CreateAPIFlags(RenderAPI api) noexcept;
+    ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags) const;
+    ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags) const;
+    static void DestroyAPISettings(DisplayWindow* window) noexcept;
 
 protected:
     U32 _apiFlags = 0;

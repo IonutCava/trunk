@@ -48,7 +48,7 @@ class GUIDWrapper {
     GUIDWrapper(GUIDWrapper&& old) noexcept : _GUID(old._GUID) {}
     virtual ~GUIDWrapper() {}
 
-    inline I64 getGUID() const  noexcept { return _GUID; }
+    I64 getGUID() const  noexcept { return _GUID; }
 
     static I64 generateGUID() noexcept;
 

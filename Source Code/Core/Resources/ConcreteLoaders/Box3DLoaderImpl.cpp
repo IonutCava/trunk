@@ -19,7 +19,7 @@ CachedResource_ptr ImplResourceLoader<Box3D>::operator()() {
                                                          vec3<F32>(to_F32(size))),
                                   DeleteResource(_cache));
 
-    if (!load(ptr)) {
+    if (!Load(ptr)) {
         ptr.reset();
     }
 

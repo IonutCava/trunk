@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class GFXDevice;
-class GraphicsResource : private NonCopyable {
+class GraphicsResource : NonCopyable {
 public:
     enum class Type : U8 {
         PIXEL_BUFFER,
@@ -54,8 +54,8 @@ protected:
     explicit GraphicsResource(GFXDevice& context, Type type, I64 GUID, U64 nameHash);
 
 public:
-    inline GFXDevice& context() noexcept { return _context; }
-    inline U64 nameHash() const noexcept { return _nameHash; }
+    GFXDevice& context() const noexcept { return _context; }
+    U64 nameHash() const noexcept { return _nameHash; }
 
 protected:
     GFXDevice& _context;

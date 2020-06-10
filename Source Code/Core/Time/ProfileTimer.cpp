@@ -77,19 +77,20 @@ void ProfileTimer::removeChildTimer(ProfileTimer& child) {
     _children.erase(
         eastl::remove_if(eastl::begin(_children),
                        eastl::end(_children),
-                       [childID](U32 entry) {
+                       [childID](const U32 entry) {
                            return entry == childID;
                         }),
         eastl::end(_children));
     child._parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
 }
 
-bool ProfileTimer::hasChildTimer(ProfileTimer& child) {
+bool ProfileTimer::hasChildTimer(ProfileTimer& child) const
+{
     const U32 childID = child._globalIndex;
 
     return eastl::find_if(eastl::cbegin(_children),
                         eastl::cend(_children),
-                        [childID](U32 entry) {
+                        [childID](const U32 entry) {
                             return entry == childID;
             }) != eastl::cend(_children);
 }
@@ -104,7 +105,7 @@ U64 ProfileTimer::getChildTotal() const {
     return ret;
 }
 
-stringImpl ProfileTimer::print(U32 level) const {
+stringImpl ProfileTimer::print(const U32 level) const {
     stringImpl ret(Util::StringFormat("[ %s ] : [ %5.3f ms]",
                                         _name.c_str(),
                                         MicrosecondsToMilliseconds<F32>(get())));

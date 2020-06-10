@@ -42,12 +42,12 @@ namespace Divide {
 class CachedResource;
 // Used to delete resources
 struct DeleteResource {
-    DeleteResource(ResourceCache* context) noexcept
+    explicit DeleteResource(ResourceCache* context) noexcept
         : _context(context)
     {
     }
 
-    void operator()(CachedResource* res);
+    void operator()(CachedResource* res) const;
 
     ResourceCache* _context = nullptr;
 };
@@ -72,7 +72,7 @@ class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
 };
 
 template <typename ResourceType>
-class ImplResourceLoader : public ResourceLoader {
+class ImplResourceLoader final : public ResourceLoader {
    public:
     ImplResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
         : ResourceLoader(cache, context, descriptor, loadingDescriptorHash)
@@ -83,7 +83,7 @@ class ImplResourceLoader : public ResourceLoader {
 
    protected:
 
-    bool load(std::shared_ptr<ResourceType> res) {
+    static bool Load(std::shared_ptr<ResourceType> res) {
         if (res) {
             res->setState(ResourceState::RES_LOADING);
             return res->load();

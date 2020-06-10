@@ -7,10 +7,8 @@
 #include "AI/ActionInterface/Headers/AITeam.h"
 #include "AI/ActionInterface/Headers/AIProcessor.h"
 
-#include "Graphs/Headers/SceneGraphNode.h"
-#include "PathFinding/Waypoints/Headers/WaypointGraph.h"  ///< For waypoint movement
-#include "PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh movement
 #include "Dynamics/Entities/Units/Headers/NPC.h"
+#include "Sensors/Headers/AudioSensor.h"
 
 namespace Divide {
 using namespace AI;

@@ -206,7 +206,7 @@ class Kernel : public Input::InputAggregatorInterface,
     bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
     /// Update all engine components that depend on the current screen size. Returns true if the rendering viewport and the window viewport have differnt aspect ratios
     bool onSizeChange(const SizeChangeParams& params);
-    vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remapedOut) const noexcept;
+    vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept;
 
    private:
     vectorEASTL<Rect<I32>> _editorViewports;

@@ -35,7 +35,6 @@
 
 #include "ShadowMap.h"
 #include "Platform/Video/Headers/PushConstants.h"
-#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 
 namespace Divide {
 
@@ -71,7 +70,7 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
                             const mat4<F32>& projectionMatrix,
                             const vec2<F32>& nearFarPlanes,
                             U8 numSplits,
-                            const SplitDepths& splitDepths);
+                            const SplitDepths& splitDepths) const;
 
     bool useMSAA() const noexcept;
 

@@ -39,7 +39,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
                           DeleteResource(_cache));
 
 
-    if (!load(ptr)) {
+    if (!Load(ptr)) {
         ptr.reset();
     } else {
         ptr->highPriority(!_descriptor.flag());

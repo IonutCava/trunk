@@ -119,7 +119,7 @@
       <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
       <SmallerTypeCheck>false</SmallerTypeCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <DisableSpecificWarnings>4100;4267;4456;4457;4458;4505;4702;4706</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4267;4456;4457;4458;4505;4702;4706;4244</DisableSpecificWarnings>
       <SupportJustMyCode>false</SupportJustMyCode>
       <CompileAsWinRT>false</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>
@@ -172,7 +172,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointModel>Fast</FloatingPointModel>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <DisableSpecificWarnings>4100;4267;4456;4457;4458;4505;4702;4706</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4267;4456;4457;4458;4505;4702;4706;4244</DisableSpecificWarnings>
       <SupportJustMyCode>false</SupportJustMyCode>
       <CompileAsWinRT>false</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>
@@ -228,7 +228,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <FloatingPointExceptions>false</FloatingPointExceptions>
-      <DisableSpecificWarnings>4100;4267;4456;4457;4458;4505;4702;4706</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4100;4267;4456;4457;4458;4505;4702;4706;4244</DisableSpecificWarnings>
       <SupportJustMyCode>false</SupportJustMyCode>
       <CompileAsWinRT>false</CompileAsWinRT>
       <SDLCheck>true</SDLCheck>

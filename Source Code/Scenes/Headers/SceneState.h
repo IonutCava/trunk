@@ -33,11 +33,8 @@
 #ifndef _SCENE_STATE_H_
 #define _SCENE_STATE_H_
 
-#include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Audio/Headers/AudioDescriptor.h"
-#include "Platform/Video/Headers/ClipPlanes.h"
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Scenes/Headers/SceneComponent.h"
 #include "Utility/Headers/Localization.h"
 
@@ -57,6 +54,12 @@ enum class MusicType : U8 {
     COUNT
 };
 
+struct WaterBodyData
+{
+    vec4<F32> _positionW = { 0.0f };
+    ///length, depth, width
+    vec4<F32> _extents = { 0.0f };
+};
 
 struct FogDescriptor {
   public:
@@ -187,12 +190,6 @@ struct SceneStatePerPlayer {
     const F32 _headHeight = DEFAULT_PLAYER_HEIGHT;
 };
 
-struct WaterDetails {
-    F32 _heightOffset = 0.0f;
-    F32 _depth = 0.0f;
-    vec3<F32> _normal = WORLD_Y_AXIS;
-};
-
 class SceneState : public SceneComponent {
    public:
     /// Background music map : trackName - track
@@ -235,8 +232,8 @@ class SceneState : public SceneComponent {
     inline const SceneRenderState& renderState() const noexcept { return _renderState; }
     inline const MusicPlaylist& music(MusicType type) const noexcept { return _music[to_U32(type)]; }
 
-    inline vectorEASTL<WaterDetails>& globalWaterBodies() noexcept { return _globalWaterBodies; }
-    inline const vectorEASTL<WaterDetails>& globalWaterBodies() const noexcept { return _globalWaterBodies; }
+    inline vectorEASTL<WaterBodyData>& waterBodies() noexcept { return _waterBodies; }
+    inline const vectorEASTL<WaterBodyData>& waterBodies() const noexcept { return _waterBodies; }
 
     PROPERTY_RW(U8, playerPass, 0u);
     PROPERTY_RW(bool, saveLoadDisabled, false);
@@ -252,7 +249,7 @@ protected:
     SceneRenderState _renderState;
     std::array<MusicPlaylist, to_base(MusicType::COUNT)> _music;
     std::array<SceneStatePerPlayer, Config::MAX_LOCAL_PLAYER_COUNT> _playerState;
-    vectorEASTL<WaterDetails> _globalWaterBodies;
+    vectorEASTL<WaterBodyData> _waterBodies;
 };
 
 };  // namespace Divide

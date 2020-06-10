@@ -1,19 +1,16 @@
 #include "stdafx.h"
 
 #include "Headers/IMPrimitive.h"
+
+#include "Headers/CommandBufferPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
 IMPrimitive::IMPrimitive(GFXDevice& context)
     : VertexDataInterface(context),
-      _viewport(-1),
-      _forceWireframe(false),
-      _pipeline(nullptr),
-      _texture(nullptr),
-      _cmdBufferDirty(true)
+      _viewport(-1)
 {
     assert(handle()._id != 0);
     _cmdBuffer = GFX::allocateCommandBuffer();
@@ -77,7 +74,7 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     constexpr F32 dt = 1.0f / stacks;
 
     F32 t = 1.0f;
-    F32 s = 0.0f;
+    F32 s;
     U32 i, j;  // Looping variables
     // Create the object
     beginBatch(true, stacks * ((slices + 1) * 2), 1);
@@ -157,24 +154,7 @@ void IMPrimitive::fromCone(const vec3<F32>& root,
 }
 
 void IMPrimitive::fromLines(const Line* lines, const size_t count) {
-    static const vec3<F32> vertices[] = {
-        vec3<F32>(-1.0f, -1.0f,  1.0f),
-        vec3<F32>(1.0f, -1.0f,  1.0f),
-        vec3<F32>(-1.0f,  1.0f,  1.0f),
-        vec3<F32>(1.0f,  1.0f,  1.0f),
-        vec3<F32>(-1.0f, -1.0f, -1.0f),
-        vec3<F32>(1.0f, -1.0f, -1.0f),
-        vec3<F32>(-1.0f,  1.0f, -1.0f),
-        vec3<F32>(1.0f,  1.0f, -1.0f)
-    };
-
-    constexpr U16 indices[] = {
-        0, 1, 2,
-        3, 7, 1,
-        5, 4, 7,
-        6, 2, 4,
-        0, 1
-    };
+    
     // Check if we have a valid list. The list can be programmatically
     // generated, so this check is required
     if (count > 0) {
@@ -182,28 +162,14 @@ void IMPrimitive::fromLines(const Line* lines, const size_t count) {
         beginBatch(true, to_U32(count) * 2 * 14, 1);
             attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(lines[0].colourStart()));
             // Set the mode to line rendering
-            //primitive.begin(PrimitiveType::TRIANGLE_STRIP);
             begin(PrimitiveType::LINES);
-                //vec3<F32> tempVertex;
                 // Add every line in the list to the batch
                 for (size_t i = 0; i < count; ++i) {
                     const Line& line = lines[i];
                     attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourStart()));
-                    /*for (U16 idx : indices) {
-                    tempVertex.set(line._startPoint * vertices[idx]);
-                    tempVertex *= line._widthStart;
-
-                    vertex(tempVertex);
-                    }*/
                     vertex(line.positionStart());
 
                     attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(line.colourEnd()));
-                    /*for (U16 idx : indices) {
-                    tempVertex.set(line._endPoint * vertices[idx]);
-                    tempVertex *= line._widthEnd;
-
-                    vertex(tempVertex);
-                    }*/
 
                     vertex(line.positionEnd());
 
@@ -219,10 +185,10 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
     _cmdBufferDirty = true;
 }
 
-void IMPrimitive::texture(const Texture& texture) {
+void IMPrimitive::texture(const Texture& texture, size_t samplerHash) {
     _texture = &texture;
     _descriptorSet._textureData.clear();
-    _descriptorSet._textureData.setTexture(_texture->data(), TextureUsage::UNIT0);
+    _descriptorSet._textureData.setTexture(_texture->data(), samplerHash, TextureUsage::UNIT0);
     _cmdBufferDirty = true;
 }
 };

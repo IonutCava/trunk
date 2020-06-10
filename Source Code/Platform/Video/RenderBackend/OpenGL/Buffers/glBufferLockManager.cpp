@@ -2,10 +2,7 @@
 
 #include "Headers/glBufferLockManager.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
-
-#include <eastl/fixed_set.h>
 
 namespace Divide {
 
@@ -37,8 +34,8 @@ glBufferLockManager::~glBufferLockManager() {
 // --------------------------------------------------------------------------------------------------------------------
 bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
                                              size_t lockLength,
-                                             bool blockClient,
-                                             bool quickCheck) {
+                                             const bool blockClient,
+                                             const bool quickCheck) {
     OPTICK_EVENT();
     OPTICK_TAG("BlockClient", blockClient);
     OPTICK_TAG("QuickCheck", quickCheck);
@@ -70,7 +67,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void glBufferLockManager::LockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID) {
+void glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lockLength, const U32 frameID) {
     OPTICK_EVENT();
 
     {//Delete old lock entries
@@ -85,7 +82,7 @@ void glBufferLockManager::LockRange(size_t lockBeginBytes, size_t lockLength, U3
     WaitForLockedRange(lockBeginBytes, lockLength, true, true);
 
 
-    BufferLock newLock = {};
+    BufferLock newLock;
     newLock._range = { lockBeginBytes, lockLength };
     newLock._frameID = frameID;
     newLock._valid = true;

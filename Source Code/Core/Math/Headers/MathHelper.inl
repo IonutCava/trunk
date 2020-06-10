@@ -261,7 +261,7 @@ void CLAMP(T& n, const U min, const U max) noexcept {
     static_assert(std::is_arithmetic<T>::value &&
                   std::is_arithmetic<U>::value,
                   "Only arithmetic values can be clamped!");
-    n = std::min(std::max(n, (T)min), (T)max);
+    n = std::min(std::max(n, static_cast<T>(min)), static_cast<T>(max));
 }
 
 template <typename T>
@@ -416,7 +416,7 @@ constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept {
 template<typename Mask, typename Type>
 constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
 BitCompare(const std::atomic<Mask> bitMask, const Type bit) noexcept {
-    return BitCompare(bitmask, static_cast<Mask>(bit));
+    return BitCompare(bitMask, static_cast<Mask>(bit));
 }
 
 template<typename Mask, typename Type>
@@ -502,26 +502,26 @@ constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept {
 }
 
 template <typename T, typename U>
-inline T Lerp(const T v1, const T v2, const U t) {
+T Lerp(const T v1, const T v2, const U t) {
 #if defined(FAST_LERP)
     return v1 + t * (v2 - v1);
 #else
-    return (v1 * ((U)(1) - t)) + (v2 * t);
+    return (v1 * (static_cast<U>(1) - t)) + (v2 * t);
 #endif
 }
 
 template <typename T>
-inline T Sqrt(T input) noexcept {
-    return (T)std::sqrt(input);
+T Sqrt(T input) noexcept {
+    return static_cast<T>(std::sqrt(input));
 }
 
 template <typename T, typename U>
-inline T Sqrt(U input) noexcept {
-    return (T)std::sqrt(input);
+T Sqrt(U input) noexcept {
+    return static_cast<T>(std::sqrt(input));
 }
 
 template <>
-inline F32 Sqrt(__m128 input) noexcept {
+inline F32 Sqrt(const __m128 input) noexcept {
     return _mm_cvtss_f32(_mm_sqrt_ss(input));
 }
 ///(thx sqrt[-1] and canuckle of opengl.org forums)
@@ -534,7 +534,7 @@ inline F32 FRACT(const F32 floatValue) noexcept {
 ///Helper methods to go from a float [0 ... 1] to packed char and back
 inline I8 FLOAT_TO_SCHAR_SNORM(const F32 value) noexcept {
     assert(value > 0.0f);
-    return to_I8(std::min(255, (I32)(value * 256.0f)));
+    return to_I8(std::min(255, to_I32(value * 256.0f)));
 }
 
 inline I8 FLOAT_TO_SCHAR(const F32 value) noexcept {
@@ -543,7 +543,7 @@ inline I8 FLOAT_TO_SCHAR(const F32 value) noexcept {
 }
 
 constexpr U8 FLOAT_TO_CHAR_SNORM(const F32 value) noexcept {
-    return to_U8(std::min(255, (I32)(value * 256.0f)));
+    return to_U8(std::min(255, to_I32((value * 256.0f))));
 }
 
 constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept {
@@ -928,7 +928,7 @@ namespace Util {
 
 /// a la Boost
 template <typename T>
-inline void Hash_combine(size_t& seed, const T& v) noexcept {
+void Hash_combine(size_t& seed, const T& v) noexcept {
     eastl::hash<T> hasher;
     seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }

@@ -7,7 +7,7 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/FrameListenerManager.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Geometry/Material/Headers/Material.h"
 
 #include "ECS/Systems/Headers/ECSManager.h"

@@ -9,10 +9,10 @@ namespace Divide {
 vectorEASTL<AttribFlags> VertexBuffer::_attribMasks;
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
-     _format(GFXDataFormat::UNSIGNED_SHORT),
-     _primitiveRestartEnabled(false),
+     _keepDataInMemory(false),
      _staticBuffer(false),
-     _keepDataInMemory(false)
+     _format(GFXDataFormat::UNSIGNED_SHORT),
+     _primitiveRestartEnabled(false)
 {
     assert(handle()._id != 0);
     reset();

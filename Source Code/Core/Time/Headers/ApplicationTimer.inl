@@ -32,8 +32,6 @@
 #ifndef _CORE_TIME_APPLICATION_TIMER_INL_
 #define _CORE_TIME_APPLICATION_TIMER_INL_
 
-#include "Core/Math/Headers/MathHelper.h"
-
 namespace Divide {
 namespace Time {
 

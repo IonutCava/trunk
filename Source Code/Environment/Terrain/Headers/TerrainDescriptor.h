@@ -81,7 +81,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return dimensions().maxComponent() / 4;
     }
 
-    inline size_t getHash() const noexcept final {
+    size_t getHash() const noexcept final {
         _hash = PropertyDescriptor::getHash();
         for (hashMap<U64, stringImpl>::value_type it : _variables) {
             Util::Hash_combine(_hash, it.first);

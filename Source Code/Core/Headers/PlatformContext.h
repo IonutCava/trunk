@@ -149,7 +149,7 @@ class PlatformContext {
     [[nodiscard]] const DisplayWindow& mainWindow() const;
 
   protected:
-    void onThreadCreated(const std::thread::id& threadID);
+    void onThreadCreated(const std::thread::id& threadID) const;
 
   private:
     /// Main application instance

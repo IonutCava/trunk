@@ -109,9 +109,9 @@ void glVertexArray::cleanup() {
 /// Default destructor
 glVertexArray::glVertexArray(GFXDevice& context)
     : VertexBuffer(context),
+      _formatInternal(GL_NONE),
       _refreshQueued(false),
-      _uploadQueued(false),
-      _formatInternal(GL_NONE)
+      _uploadQueued(false)
 {
     // We assume everything is static draw
     _usage = GL_STATIC_DRAW;
@@ -182,8 +182,8 @@ size_t glVertexArray::populateAttributeSize() {
     return prevOffset;
 }
 
-/// Trim down the Vertex vector to only upload the minimal ammount of data to the GPU
-bool glVertexArray::getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* dataOut, size_t dataOutBufferLength) {
+/// Trim down the Vertex vector to only upload the minimal amount of data to the GPU
+bool glVertexArray::getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* dataOut, const size_t dataOutBufferLength) {
     assert(dataOut != nullptr);
 
     if (dataOutBufferLength == dataIn.size() * _effectiveEntrySize) {
@@ -202,7 +202,7 @@ bool glVertexArray::getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* data
 }
 
 /// Create a dynamic or static VB
-bool glVertexArray::create(bool staticDraw) {
+bool glVertexArray::create(const bool staticDraw) {
     // If we want a dynamic buffer, then we are doing something outdated, such
     // as software skinning, or software water rendering
     if (!staticDraw && _usage != GL_DYNAMIC_DRAW) {
@@ -377,7 +377,7 @@ bool glVertexArray::createInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::draw(const GenericDrawCommand& command, U32 cmdBufferOffset) {
+void glVertexArray::draw(const GenericDrawCommand& command, const U32 cmdBufferOffset) {
 
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
@@ -416,7 +416,7 @@ void glVertexArray::draw(const GenericDrawCommand& command, U32 cmdBufferOffset)
 }
 
 /// Activate and set all of the required vertex attributes.
-void glVertexArray::uploadVBAttributes(GLuint VAO) {
+void glVertexArray::uploadVBAttributes(const GLuint VAO) {
     // Bind the current VAO to save our attributes
     GL_API::getStateTracker().setActiveVAO(VAO);
     // Bind the vertex buffer and index buffer

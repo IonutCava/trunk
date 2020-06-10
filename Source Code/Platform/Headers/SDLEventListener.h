@@ -39,13 +39,13 @@ namespace Divide {
 
     class SDLEventListener {
     public:
-        SDLEventListener();
+        SDLEventListener() noexcept;
         virtual ~SDLEventListener();
 
         // Return true if the event was consumed!
         virtual bool onSDLEvent(SDL_Event event) = 0;
 
-        inline U64 listenerID() const noexcept { return _listenerID; }
+        U64 listenerID() const noexcept { return _listenerID; }
     private:
         U64 _listenerID = 0u;
         static std::atomic<U64> s_listenerIDCounter;

@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PUSH_CONSTANT_H_
 #define _PUSH_CONSTANT_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 namespace GFX {
     enum class PushConstantSize : U8 {
@@ -100,7 +98,7 @@ namespace GFX {
         }
 
         template<typename T>
-        inline void set(const T* data, const size_t count, bool flag = false) {
+        void set(const T* data, const size_t count, const bool flag = false) {
             _flag = flag;
             if (count > 0) {
                 _buffer.resize(count * sizeof(T));
@@ -111,19 +109,7 @@ namespace GFX {
         }
 
         template<>
-        inline void set(const bool* values, const size_t count, bool flag) {
-            assert(values != nullptr);
-
-            if (count == 1) { //fast path
-                const I32 value = (*values ? 1 : 0);
-                set(&value, 1, flag);
-            } else {
-                //Slooow. Avoid using in the rendering loop. Try caching
-                vectorEASTL<I32> temp(count);
-                std::transform(values, values + count, std::back_inserter(temp), [](bool e) noexcept { return (e ? 1 : 0); });
-                set(temp.data(), count, flag);
-            }
-        }
+        void set(const bool* values, const size_t count, const bool flag);
 
         void clear();
 
@@ -133,6 +119,23 @@ namespace GFX {
         PushConstantType  _type = PushConstantType::COUNT;
         bool _flag = false;
     };
+
+    template <>
+    inline void PushConstant::set<bool>(const bool* values, const size_t count, const bool flag) {
+        assert(values != nullptr);
+
+        if (count == 1) {
+            //fast path
+            const I32 value = (*values ? 1 : 0);
+            set(&value, 1, flag);
+        } else {
+            //Slooow. Avoid using in the rendering loop. Try caching
+            vectorEASTL<I32> temp(count);
+            std::transform(values, values + count, std::back_inserter(temp),
+                [](bool e) noexcept { return (e ? 1 : 0); });
+            set(temp.data(), count, flag);
+        }
+    }
 
     inline bool operator==(const PushConstant& lhs, const PushConstant& rhs) {
         return lhs._type == rhs._type &&

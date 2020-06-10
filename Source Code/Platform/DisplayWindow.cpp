@@ -2,29 +2,20 @@
 
 #include "Headers/DisplayWindow.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Utility/Headers/Localization.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Headers/SDLEventManager.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
 DisplayWindow::DisplayWindow(WindowManager& parent, PlatformContext& context)
  : GUIDWrapper(),
    PlatformContextComponent(context),
-   _parent(parent),
-   _opacity(255),
-   _type(WindowType::COUNT),
-   _previousType(WindowType::COUNT),
-   _queuedType(WindowType::COUNT),
-   _sdlWindow(nullptr),
-   _userData(nullptr),
-   _internalMoveEvent(false),
-   _internalResizeEvent(false),
    _clearColour(DefaultColours::BLACK),
-   _windowID(std::numeric_limits<Uint32>::max())
+   _windowID(std::numeric_limits<Uint32>::max()),
+   _parent(parent)
 {
     SetBit(_flags, WindowFlags::SWAP_BUFFER);
 
@@ -44,7 +35,7 @@ ErrorCode DisplayWindow::destroyWindow() {
             _destroyCbk();
         }
 
-        _parent.destroyAPISettings(this);
+        _parent.DestroyAPISettings(this);
         SDL_DestroyWindow(_sdlWindow);
         _sdlWindow = nullptr;
     }
@@ -52,8 +43,8 @@ ErrorCode DisplayWindow::destroyWindow() {
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode DisplayWindow::init(U32 windowFlags,
-                              WindowType initialType,
+ErrorCode DisplayWindow::init(const U32 windowFlags,
+                              const WindowType initialType,
                               const WindowDescriptor& descriptor)
 {
     const bool vsync = BitCompare(descriptor.flags, to_base(WindowDescriptor::Flags::VSYNC));
@@ -93,7 +84,7 @@ ErrorCode DisplayWindow::init(U32 windowFlags,
 WindowHandle DisplayWindow::handle() const noexcept {
     // Varies from OS to OS
     WindowHandle handle = {};
-    getWindowHandle(_sdlWindow, handle);
+    GetWindowHandle(_sdlWindow, handle);
     return handle;
 }
 
@@ -108,7 +99,7 @@ void DisplayWindow::refreshDrawableSize() {
     _drawableSize = getDrawableSizeInternal();
 }
 
-void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& args) {
+void DisplayWindow::notifyListeners(const WindowEvent event, const WindowEventArgs& args) {
     switch (event) {
         case WindowEvent::HIDDEN:
         case WindowEvent::MAXIMIZED:
@@ -131,7 +122,7 @@ void DisplayWindow::notifyListeners(WindowEvent event, const WindowEventArgs& ar
     }
 }
 
-bool DisplayWindow::onSDLEvent(SDL_Event event) {
+bool DisplayWindow::onSDLEvent(const SDL_Event event) {
     if (event.type != SDL_WINDOWEVENT) {
         return false;
     }
@@ -144,8 +135,8 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
     args._windowGUID = getGUID();
 
     if (fullscreen()) {
-        args.x = to_I32(_parent.getFullscreenResolution().width);
-        args.y = to_I32(_parent.getFullscreenResolution().height);
+        args.x = to_I32(_parent.GetFullscreenResolution().width);
+        args.y = to_I32(_parent.GetFullscreenResolution().height);
     } else {
         args.x = event.window.data1;
         args.y = event.window.data2;
@@ -228,6 +219,7 @@ bool DisplayWindow::onSDLEvent(SDL_Event event) {
             minimized(false);
             return true;
         };
+		default: break;
     };
 
     return false;
@@ -255,7 +247,7 @@ vec2<U16> DisplayWindow::getDrawableSize() const noexcept {
 
 vec2<U16> DisplayWindow::getDrawableSizeInternal() const {
     if (_type == WindowType::FULLSCREEN || _type == WindowType::FULLSCREEN_WINDOWED) {
-        return _parent.getFullscreenResolution();
+        return _parent.GetFullscreenResolution();
     }
 
     return context().gfx().getDrawableSize(*this);
@@ -269,7 +261,7 @@ void DisplayWindow::opacity(U8 opacity) noexcept {
 }
 
 /// Window positioning is handled by SDL
-void DisplayWindow::setPosition(I32 x, I32 y, bool global, bool offset) {
+void DisplayWindow::setPosition(I32 x, I32 y, const bool global, const bool offset) {
     _internalMoveEvent = true;
 
     const I32 displayIndex = currentDisplayIndex();
@@ -287,7 +279,7 @@ void DisplayWindow::setPosition(I32 x, I32 y, bool global, bool offset) {
     SDL_SetWindowPosition(_sdlWindow, x, y);
 }
 
-vec2<I32> DisplayWindow::getPosition(bool global, bool offset) const {
+vec2<I32> DisplayWindow::getPosition(const bool global, const bool offset) const {
     vec2<I32> ret;
     SDL_GetWindowPosition(_sdlWindow, &ret.x, &ret.y);
 
@@ -362,11 +354,11 @@ bool DisplayWindow::grabState() const noexcept {
     return SDL_GetWindowGrab(_sdlWindow) == SDL_TRUE;
 }
 
-void DisplayWindow::grabState(bool state) noexcept {
+void DisplayWindow::grabState(bool state) const noexcept {
     SDL_SetWindowGrab(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
 }
 
-void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
+void DisplayWindow::handleChangeWindowType(const WindowType newWindowType) {
     if (_type == newWindowType) {
         return;
     }
@@ -393,6 +385,7 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
             decorated(false);
             grabState(true);
         } break;
+        default: break;
     };
 
     centerWindowPosition();
@@ -402,7 +395,7 @@ void DisplayWindow::handleChangeWindowType(WindowType newWindowType) {
 
 vec2<U16> DisplayWindow::getPreviousDimensions() const noexcept {
     if (fullscreen()) {
-        return _parent.getFullscreenResolution();
+        return _parent.GetFullscreenResolution();
     }
     return _prevDimensions;
 }

@@ -73,12 +73,14 @@ void DoFPreRenderOperator::autoFocus(const bool state) {
 }
 
 bool DoFPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
-    const TextureData screenTex = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->data();
-    const TextureData depthTex = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0).texture()->data();
+    const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
+    const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
+    const TextureData screenTex = screenAtt.texture()->data();
+    const TextureData depthTex = depthAtt.texture()->data();
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex, TextureUsage::UNIT0);
-    descriptorSetCmd._set._textureData.setTexture(depthTex, TextureUsage::UNIT1);
+    descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.setTexture(depthTex, depthAtt.samplerHash(),TextureUsage::UNIT1);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};

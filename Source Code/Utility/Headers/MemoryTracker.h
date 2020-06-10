@@ -41,29 +41,28 @@ namespace Divide {
 namespace MemoryManager {
 /// From https://www.relisoft.com/book/tech/9new.html
 class MemoryTracker {
-   private:
     class Entry {
        public:
         Entry() : Entry(nullptr, 0, 0)
         {
         }
 
-        Entry(const char* file, size_t line, size_t size)
+        Entry(const char* file, const size_t line, const size_t size)
             : _file(file),
               _line(line),
               _size(size)
         {
         }
 
-        inline char const* File() const {
+        char const* File() const {
             return _file;
         }
 
-        inline size_t Line() const {
+        size_t Line() const {
             return _line;
         }
 
-        inline size_t Size() const {
+        size_t Size() const {
             return _size;
         }
 
@@ -104,19 +103,19 @@ class MemoryTracker {
         _allocations.clear();
     }
 
-    inline void Add(void* p, size_t size, char const* file, size_t line) {
+    void Add(void* p, size_t size, char const* file, size_t line) {
         if (!_locked) {
             UniqueLock<Mutex> w_lock(_mutex);
-            MemoryTracker::Lock lock(*this);
+            Lock lock(*this);
             hashAlg::emplace(_allocations, p, file, line, size);
         }
     }
 
-    inline void Remove(void* p) {
+    void Remove(void* p) {
         if (!_locked) {
-            if (!MemoryTracker::LogAllAllocations) {
+            if (!LogAllAllocations) {
                 UniqueLock<Mutex> w_lock(_mutex);
-                MemoryTracker::Lock lock(*this);
+                Lock lock(*this);
                 const hashMap<void*, Entry>::iterator it = _allocations.find(p);
                 if (it != std::cend(_allocations)) {
                     _allocations.erase(it);
@@ -127,16 +126,16 @@ class MemoryTracker {
         }
     }
 
-    inline stringImpl Dump(bool& leakDetected, size_t& sizeLeaked) {
+    stringImpl Dump(bool& leakDetected, size_t& sizeLeaked) {
         stringImpl output;
         sizeLeaked = 0;
         leakDetected = false;
 
-        MemoryTracker::Lock lock(*this);
+        Lock lock(*this);
         UniqueLock<Mutex> w_lock(_mutex);
         if (!_allocations.empty()) {
-            stringImpl msg = "";
-            if (MemoryTracker::LogAllAllocations) {
+            stringImpl msg;
+            if (LogAllAllocations) {
                 msg = "memory allocations detected";
             } else {
                 msg = "memory leaks detected";
@@ -160,7 +159,7 @@ class MemoryTracker {
             leakDetected = true;
             _allocations.clear();
         }
-        if (!MemoryTracker::LogAllAllocations && sizeLeaked > 0) {
+        if (!LogAllAllocations && sizeLeaked > 0) {
             output.append("Total leaked bytes: ");
             output.append(Util::to_string(sizeLeaked).c_str());
             output.append(" / MB: ");
@@ -174,11 +173,11 @@ class MemoryTracker {
     static bool LogAllAllocations;
 
    private:
-    inline void lock() {
+    void lock() {
         _locked = true;
     }
 
-    inline void unlock() {
+    void unlock() {
         _locked = false;
     }
 

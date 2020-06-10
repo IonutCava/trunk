@@ -2,35 +2,31 @@
 
 #include "Headers/Texture.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ByteBuffer.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/Configuration.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Utility/Headers/Localization.h"
-#include "Platform/Video/Headers/GFXDevice.h"
+#include "Core/Headers/StringHelper.h"
 #include "Platform/File/Headers/FileManagement.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Utility/Headers/Localization.h"
 
 namespace Divide {
 
 const char* Texture::s_missingTextureFileName = nullptr;
 
 Texture::Texture(GFXDevice& context,
-                 size_t descriptorHash,
+                 const size_t descriptorHash,
                  const Str256& name,
                  const stringImpl& assetNames,
                  const stringImpl& assetLocations,
-                 bool isFlipped,
-                 bool asyncLoad,
+                 const bool isFlipped,
+                 const bool asyncLoad,
                  const TextureDescriptor& texDescriptor)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, name, assetNames, assetLocations),
-      GraphicsResource(context, GraphicsResource::Type::TEXTURE, getGUID(), _ID(name.c_str())),
-      _data{0u, 0u, TextureType::COUNT},
+      GraphicsResource(context, Type::TEXTURE, getGUID(), _ID(name.c_str())),
       _descriptor(texDescriptor),
+      _data{0u, TextureType::COUNT},
       _numLayers(texDescriptor._layerCount),
-      _hasTransparency(false),
-      _hasTranslucency(false),
       _flipped(isFlipped),
       _asyncLoad(asyncLoad)
 {
@@ -105,8 +101,8 @@ void Texture::threadedLoad() {
         // Uploading to the GPU dependents on the rendering API
         loadData(dataStorage);
 
-        if (_descriptor.type() == TextureType::TEXTURE_CUBE_MAP ||
-            _descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_descriptor.texType() == TextureType::TEXTURE_CUBE_MAP ||
+            _descriptor.texType() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (dataStorage.layerCount() % 6 != 0) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
@@ -115,8 +111,8 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_descriptor.type() == TextureType::TEXTURE_2D_ARRAY ||
-            _descriptor.type() == TextureType::TEXTURE_2D_ARRAY_MS) {
+        if (_descriptor.texType() == TextureType::TEXTURE_2D_ARRAY ||
+            _descriptor.texType() == TextureType::TEXTURE_2D_ARRAY_MS) {
             if (dataStorage.layerCount() != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -125,7 +121,7 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_descriptor.type() == TextureType::TEXTURE_CUBE_ARRAY) {
+        if (_descriptor.texType() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (dataStorage.layerCount() / 6 != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
@@ -162,7 +158,7 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
 
     const U32 layer = to_U32(fileData.layerCount() - 1);
 
-    // Extract width, height and bitdepth
+    // Extract width, height and bit depth
     const U16 width = fileData.dimensions(layer, 0u).width;
     const U16 height = fileData.dimensions(layer, 0u).height;
     // If we have an alpha channel, we must check for translucency/transparency
@@ -223,16 +219,11 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
     return true;
 }
 
-void Texture::setCurrentSampler(const SamplerDescriptor& descriptor) {
-    // This can be called at any time
-    _descriptor.samplerDescriptor(descriptor);
-}
-
 void Texture::setSampleCount(U8 newSampleCount) noexcept { 
     CLAMP(newSampleCount, to_U8(0u), _context.gpuState().maxMSAASampleCount());
     if (_descriptor._msaaSamples != newSampleCount) {
         _descriptor._msaaSamples = newSampleCount;
-        resize({ NULL, 0 }, { width(), height() });
+        resize({nullptr, 0 }, { width(), height() });
     }
 }
 
@@ -260,10 +251,11 @@ void Texture::validateDescriptor() {
         case GFXImageFormat::COMPRESSED_RGBA_DXT5: {
             _descriptor._compressed = true;
         } break;
+        default: break;
     }
 
     if (!_descriptor._compressed) {
-        if (_descriptor._samplerDescriptor.generateMipMaps()) {
+        if (_descriptor.hasMipMaps()) {
             if (_descriptor._mipLevels.max <= 1) {
                 _descriptor._mipLevels.max = computeMipCount(_width, _height) + 1;
                 _descriptor._mipCount = _descriptor.mipLevels().max;

@@ -6,13 +6,13 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
-#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 
-#include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
@@ -22,7 +22,7 @@ namespace {
     constexpr U16 MAX_HEIGHT = 2160u;
     constexpr U16 MAX_WIDTH = 3840u;
 
-    vec2<U32> GetNumTiles(U8 threadGroupSize) noexcept {
+    vec2<U32> GetNumTiles(const U8 threadGroupSize) noexcept {
         const U8 TILE_RES = Light::GetThreadGroupSize(threadGroupSize);
 
         return
@@ -32,7 +32,7 @@ namespace {
         };
     }
 
-    U32 GetMaxNumTiles(U8 threadGroupSize) noexcept {
+    U32 GetMaxNumTiles(const U8 threadGroupSize) noexcept {
         const vec2<U32> tileCount = GetNumTiles(threadGroupSize);
         return tileCount.x * tileCount.y;
     }
@@ -113,9 +113,11 @@ Renderer::~Renderer()
 
 void Renderer::preRender(RenderStagePass stagePass,
                          const Texture_ptr& hizColourTexture,
+                         const size_t samplerHash,
                          LightPool& lightPool,
                          const Camera* camera,
-                         GFX::CommandBuffer& bufferInOut) {
+                         GFX::CommandBuffer& bufferInOut) const
+{
 
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
@@ -146,7 +148,7 @@ void Renderer::preRender(RenderStagePass stagePass,
 
         bindDescriptorSetsCmd._set._images.push_back(depthImage);
     } else {
-        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), TextureUsage::DEPTH);
+        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), samplerHash, TextureUsage::DEPTH);
     }
 
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
@@ -175,13 +177,13 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
 }
 
-void Renderer::idle() {
+void Renderer::idle() const {
     OPTICK_EVENT();
 
     _postFX->idle(_context.config());
 }
 
-void Renderer::updateResolution(U16 newWidth, U16 newHeight) {
+void Renderer::updateResolution(const U16 newWidth, const U16 newHeight) const {
     _postFX->updateResolution(newWidth, newHeight);
 }
 };

@@ -73,7 +73,11 @@ public:
     
     std::array<Camera*, 6> probeCameras() const noexcept;
 
-    PROPERTY_R_IW(U16, rtLayerIndex, 0u);
+    //Only "dirty" probes gets refreshed. A probe might get dirty if, for example, a reflective node
+    //gets rendered that has this probe as the nearest one
+    void setDirty() { _dirty = true; }
+
+PROPERTY_R_IW(U16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
 
 protected:
@@ -88,6 +92,7 @@ protected:
     ProbeType _type = ProbeType::TYPE_LOCAL;
 
 private:
+    bool _dirty = false;
     bool _drawImpostor = false;
 };
 

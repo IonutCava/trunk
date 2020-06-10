@@ -339,13 +339,13 @@ bool GLStateTracker::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint I
     return true;
 }
 
-bool GLStateTracker::setActiveVAO(GLuint ID) {
+bool GLStateTracker::setActiveVAO(const GLuint ID) noexcept {
     GLuint temp = 0;
     return setActiveVAO(ID, temp);
 }
 
 /// Switch the currently active vertex array object
-bool GLStateTracker::setActiveVAO(GLuint ID, GLuint& previousID) {
+bool GLStateTracker::setActiveVAO(const GLuint ID, GLuint& previousID) noexcept {
     previousID = _activeVAOID;
     // Prevent double bind
     if (_activeVAOID != ID) {

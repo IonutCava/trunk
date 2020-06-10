@@ -54,14 +54,14 @@ class PreRenderBatch {
     RenderTargetHandle edgesRT() const noexcept;
     RenderTargetHandle luminanceRT() const noexcept;
 
-    inline PreRenderOperator* getOperator(FilterType type) {
-        const FilterSpace fSpace = getOperatorSpace(type);
+    PreRenderOperator* getOperator(FilterType type) {
+        const FilterSpace fSpace = GetOperatorSpace(type);
         if (fSpace == FilterSpace::COUNT) {
             return nullptr;
         }
 
         const OperatorBatch& batch = _operators[to_U32(fSpace)];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
+        const auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
 
@@ -69,14 +69,14 @@ class PreRenderBatch {
         return (*it).get();
     }
 
-    inline const PreRenderOperator* getOperator(FilterType type) const {
-        const FilterSpace fSpace = getOperatorSpace(type);
+    const PreRenderOperator* getOperator(FilterType type) const {
+        const FilterSpace fSpace = GetOperatorSpace(type);
         if (fSpace == FilterSpace::COUNT) {
             return nullptr;
         }
 
-        const OperatorBatch& batch = _operators[to_U32(getOperatorSpace(type))];
-        auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
+        const OperatorBatch& batch = _operators[to_U32(GetOperatorSpace(type))];
+        const auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
         assert(it != std::cend(batch));
@@ -92,7 +92,7 @@ class PreRenderBatch {
 
    private:
 
-    inline FilterSpace getOperatorSpace(FilterType type) const noexcept {
+    static FilterSpace GetOperatorSpace(const FilterType type) noexcept {
         // ToDo: Always keep this up-to-date with every filter we add
         switch(type) {
             case FilterType::FILTER_SS_ANTIALIASING :

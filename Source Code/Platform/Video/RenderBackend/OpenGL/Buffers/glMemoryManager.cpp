@@ -11,7 +11,7 @@ namespace GLUtil {
 
 static vectorEASTL<VBO> g_globalVBOs;
 
-U32 VBO::getChunkCountForSize(size_t sizeInBytes) noexcept {
+U32 VBO::getChunkCountForSize(const size_t sizeInBytes) noexcept {
     return to_U32(std::ceil(to_F32(sizeInBytes) / MAX_VBO_CHUNK_SIZE_BYTES));
 }
 
@@ -35,11 +35,11 @@ void VBO::freeAll() {
     _usage = GL_NONE;
 }
 
-U32 VBO::handle()noexcept {
+U32 VBO::handle() const noexcept {
     return _handle;
 }
 
-bool VBO::checkChunksAvailability(size_t offset, U32 count) noexcept {
+bool VBO::checkChunksAvailability(const size_t offset, const U32 count) noexcept {
     assert(MAX_VBO_CHUNK_COUNT > offset);
 
     const std::pair<bool, U32>& chunk = _chunkUsageState[offset];
@@ -59,12 +59,12 @@ bool VBO::checkChunksAvailability(size_t offset, U32 count) noexcept {
     return freeChunkCount >= count;
 }
 
-bool VBO::allocateChunks(U32 count, GLenum usage, size_t& offsetOut) {
+bool VBO::allocateChunks(const U32 count, const GLenum usage, size_t& offsetOut) {
     if (_usage == GL_NONE || _usage == usage) {
         for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
             if (checkChunksAvailability(i, count)) {
                 if (_handle == 0) {
-                    GLUtil::createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle, NULL);
+                    GLUtil::createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle, nullptr);
                     _usage = usage;
                 }
                 offsetOut = i;
@@ -81,9 +81,9 @@ bool VBO::allocateChunks(U32 count, GLenum usage, size_t& offsetOut) {
     return false;
 }
 
-bool VBO::allocateWhole(U32 count, GLenum usage) {
+bool VBO::allocateWhole(const U32 count, const GLenum usage) {
     assert(_handle == 0);
-    GLUtil::createAndAllocBuffer((size_t)count * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, NULL);
+    GLUtil::createAndAllocBuffer(static_cast<size_t>(count) * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, nullptr);
     _usage = usage;
     _chunkUsageState.fill(std::make_pair(true, 0));
     _chunkUsageState[0].second = count;
@@ -91,7 +91,7 @@ bool VBO::allocateWhole(U32 count, GLenum usage) {
     return true;
 }
 
-void VBO::releaseChunks(size_t offset) {
+void VBO::releaseChunks(const size_t offset) {
     if (_filledManually) {
         _chunkUsageState.fill(std::make_pair(false, 0));
         return;
@@ -119,7 +119,7 @@ U32 VBO::getMemUsage() noexcept {
     return usedBlocks * MAX_VBO_CHUNK_SIZE_BYTES;
 }
 
-bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut) {
+bool commitVBO(const U32 chunkCount, const GLenum usage, GLuint& handleOut, size_t& offsetOut) {
     if (chunkCount < VBO::MAX_VBO_CHUNK_COUNT) {
         for (VBO& vbo : g_globalVBOs) {
             if (vbo.allocateChunks(chunkCount, usage, offsetOut)) {
@@ -160,7 +160,7 @@ bool releaseVBO(GLuint& handle, size_t& offset) {
     return false;
 }
 
-U32 getVBOMemUsage(GLuint handle) {
+U32 getVBOMemUsage(const GLuint handle) {
     for (VBO& vbo : g_globalVBOs) {
         if (vbo.handle() == handle) {
             return vbo.getMemUsage();
@@ -178,10 +178,10 @@ void clearVBOs() noexcept {
     g_globalVBOs.clear();
 }
 
-bufferPtr allocPersistentBuffer(GLuint bufferId,
-                                size_t bufferSize,
-                                BufferStorageMask storageMask,
-                                MapBufferAccessMask accessMask,
+bufferPtr allocPersistentBuffer(const GLuint bufferId,
+                                const size_t bufferSize,
+                                const BufferStorageMask storageMask,
+                                const MapBufferAccessMask accessMask,
                                 const bufferPtr data) {
     glNamedBufferStorage(bufferId, bufferSize, data, storageMask);
     bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
@@ -189,9 +189,9 @@ bufferPtr allocPersistentBuffer(GLuint bufferId,
     return ptr;
 }
 
-bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
-                                         BufferStorageMask storageMask,
-                                         MapBufferAccessMask accessMask,
+bufferPtr createAndAllocPersistentBuffer(const size_t bufferSize,
+                                         const BufferStorageMask storageMask,
+                                         const MapBufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data,
                                          const char* name) {
@@ -209,8 +209,8 @@ bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
     return allocPersistentBuffer(bufferIdOut, bufferSize, storageMask, accessMask, data);
 }
 
-void createAndAllocBuffer(size_t bufferSize,
-                          GLenum usageMask,
+void createAndAllocBuffer(const size_t bufferSize,
+                          const GLenum usageMask,
                           GLuint& bufferIdOut,
                           const bufferPtr data,
                           const char* name) {

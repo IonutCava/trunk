@@ -44,22 +44,32 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #endif
 
 #if defined(USE_CUSTOM_TBN)
+// Should cause compile errors if we try to use these without defining them
+// so it should be fine. Look at terrainTess.glsl for an example on how to avoid these
 mat3 getTBNWV();
 vec3 getTBNViewDir();
 #else //USE_CUSTOM_TBN
 mat3 getTBNWV() {
+#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
+    return mat3(1.0f);
+#else //PRE_PASS && !HAS_PRE_PASS_DATA
 #   if defined(COMPUTE_TBN)
     return VAR._tbnWV;
 #   else //COMPUTE_TBN
     return mat3(dvd_ViewMatrix);
 #   endif//COMPUTE_TBN
+#endif //PRE_PASS && !HAS_PRE_PASS_DATA
 }
 vec3 getTBNViewDir() {
+#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
+    return vec3(0.0f);
+#else //PRE_PASS && !HAS_PRE_PASS_DATA
 #   if defined(COMPUTE_TBN)
     return VAR._tbnViewDir;
 #   else //COMPUTE_TBN
     return vec3(0.0f);
 #   endif//COMPUTE_TBN
+#endif //PRE_PASS && !HAS_PRE_PASS_DATA
 }
 
 #endif//USE_CUSTOM_TBN
@@ -100,7 +110,7 @@ vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 #if defined(PBR_SHADING)
     return omr;
 #else
-    // Convert specular to roughness ... roughly? really wrong, but should work I guess. -Ionutsssssssss
+    // Convert specular to roughness ... roughly? really wrong, but should work I guesssssssssss. -Ionut
     return vec3(Occlusion(colourMatrix), Metallic(colourMatrix), 1.0f - omr.r);
 #endif
 #else
@@ -208,6 +218,11 @@ vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 // Computed normals are NOT normalized. Retrieved normals ARE.
 vec3 getNormalWV(in vec2 uv) {
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
+
+#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
+    return vec3(0.0f);
+#else //PRE_PASS && !HAS_PRE_PASS_DATA
+
     vec3 normalWV = VAR._normalWV;
 
 #   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
@@ -223,6 +238,7 @@ vec3 getNormalWV(in vec2 uv) {
 #   endif //USE_DOUBLE_SIDED
 
     return normalWV;
+#endif //PRE_PASS && !HAS_PRE_PASS_DATA
 #else //PRE_PASS
     return normalize(unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg));
 #endif //PRE_PASS

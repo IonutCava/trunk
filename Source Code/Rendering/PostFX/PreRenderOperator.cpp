@@ -1,8 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/PreRenderOperator.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Rendering/Camera/Headers/Camera.h"
 
 namespace Divide {
 

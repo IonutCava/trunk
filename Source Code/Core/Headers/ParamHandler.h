@@ -33,10 +33,6 @@
 #ifndef _CORE_PARAM_HANDLER_H_
 #define _CORE_PARAM_HANDLER_H_
 
-#include "Console.h"
-#include "Utility/Headers/Localization.h"
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 
 
@@ -62,16 +58,16 @@ public:
     void setDebugOutput(bool logState) noexcept;
 
     template <typename T>
-    T getParam(HashType paramID, T defaultValue = T()) const;
+    T getParam(HashType nameID, T defaultValue = T()) const;
 
     template <typename T>
-    void setParam(HashType paramID, const T& value);
+    void setParam(HashType nameID, const T& value);
 
     template <typename T>
-    void delParam(HashType paramID);
+    void delParam(HashType nameID);
 
     template <typename T>
-    bool isParam(HashType paramID) const;
+    bool isParam(HashType nameID) const;
 
   private:
     ParamMap _params;

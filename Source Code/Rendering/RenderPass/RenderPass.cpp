@@ -6,20 +6,17 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Graphs/Headers/SceneGraph.h"
-#include "Managers/Headers/SceneManager.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "Managers/Headers/SceneManager.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 
-#include "Scenes/Headers/Scene.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Scenes/Headers/Scene.h"
 
-#include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
 
-#include "Rendering/Headers/Renderer.h"
-#include "Rendering/Lighting/Headers/LightPool.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
@@ -29,19 +26,19 @@ namespace {
     namespace ReflectionUtil {
         U16 g_reflectionBudget = 0;
 
-        inline bool isInBudget() noexcept { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
-        inline void resetBudget() noexcept { g_reflectionBudget = 0; }
-        inline void updateBudget() noexcept { ++g_reflectionBudget; }
-        inline U16  currentEntry() noexcept { return g_reflectionBudget; }
+        bool isInBudget() noexcept { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
+        void resetBudget() noexcept { g_reflectionBudget = 0; }
+        void updateBudget() noexcept { ++g_reflectionBudget; }
+        U16  currentEntry() noexcept { return g_reflectionBudget; }
     };
 
     namespace RefractionUtil {
         U16 g_refractionBudget = 0;
 
-        inline bool isInBudget() noexcept { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
-        inline void resetBudget() noexcept { g_refractionBudget = 0; }
-        inline void updateBudget() noexcept { ++g_refractionBudget;  }
-        inline U16  currentEntry() noexcept { return g_refractionBudget; }
+        bool isInBudget() noexcept { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
+        void resetBudget() noexcept { g_refractionBudget = 0; }
+        void updateBudget() noexcept { ++g_refractionBudget;  }
+        U16  currentEntry() noexcept { return g_refractionBudget; }
     };
 
     U32 getBufferFactor(RenderStage stage) noexcept {
@@ -53,6 +50,7 @@ namespace {
             case RenderStage::REFRACTION: return Config::MAX_REFRACTIVE_NODES_IN_VIEW; // planar
             case RenderStage::REFLECTION: return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + // could be planar
                                                  Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6; // environment
+            default: break;
         };
 
         DIVIDE_UNEXPECTED_CALL();
@@ -61,22 +59,20 @@ namespace {
 };
 
 U8 RenderPass::DataBufferRingSize() {
-    // Size factor for command and data bufeers
+    // Size factor for command and data buffers
     constexpr U8 g_bufferSizeFactor = 3;
 
     return g_bufferSizeFactor;
 }
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, bool performanceCounters)
-    : _parent(parent),
-      _context(context),
+    : _context(context),
+      _parent(parent),
       _sortKey(sortKey),
       _dependencies(dependencies),
       _name(name),
       _stageFlag(passStageFlag),
-      _performanceCounters(performanceCounters),
-      _lastCmdCount(0u),
-      _lastNodeCount(0u)
+      _performanceCounters(performanceCounters)
 {
 }
 
@@ -157,19 +153,17 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
         default: DIVIDE_UNEXPECTED_CALL(); break;
     }
 
-    BufferData ret = {};
+    BufferData ret;
     ret._cullCounter = _cullCounter;
-
     ret._nodeData = _nodeData;
     ret._cmdBuffer = _cmdBuffer;
     ret._elementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
-
     ret._lastCommandCount = &_lastCmdCount;
     ret._lastNodeCount = &_lastNodeCount;
     return ret;
 }
 
-void RenderPass::render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) {
+void RenderPass::render(const Task& parentTask, const SceneRenderState& renderState, GFX::CommandBuffer& bufferInOut) const {
     OPTICK_EVENT();
 
     ACKNOWLEDGE_UNUSED(parentTask);
@@ -192,7 +186,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
             normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
 
-            RenderPassManager::PassParams params = {};
+            RenderPassParams params = {};
             params._stagePass = RenderStagePass{ _stageFlag, RenderPassType::COUNT };
             params._target = _context.renderTargetPool().screenTargetID();
             params._targetDescriptorPrePass = normalsAndDepthPolicy;
@@ -312,10 +306,11 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         } break;
+        default: DIVIDE_UNEXPECTED_CALL(); break;
     };
 }
 
-void RenderPass::postRender() {
+void RenderPass::postRender() const {
     OPTICK_EVENT();
 
     _nodeData->incQueue();

@@ -48,7 +48,7 @@ struct BlendingProperties {
 
     bool _enabled = false;
 
-    inline bool operator==(const BlendingProperties& rhs) const noexcept {
+    bool operator==(const BlendingProperties& rhs) const noexcept {
         return _enabled == rhs._enabled &&
                _blendSrc == rhs._blendSrc &&
                _blendDest == rhs._blendDest &&
@@ -58,7 +58,7 @@ struct BlendingProperties {
                _blendOpAlpha == rhs._blendOpAlpha;
     }
 
-    inline bool operator!=(const BlendingProperties& rhs) const noexcept {
+    bool operator!=(const BlendingProperties& rhs) const noexcept {
         return _enabled != rhs._enabled ||
                _blendSrc != rhs._blendSrc ||
                _blendDest != rhs._blendDest ||
@@ -68,11 +68,11 @@ struct BlendingProperties {
                _blendOpAlpha != rhs._blendOpAlpha;
     }
 
-    inline bool blendEnabled() const noexcept {
+    bool blendEnabled() const noexcept {
         return _enabled;
     }
 
-    inline void reset() noexcept {
+    void reset() noexcept {
         _enabled = false;
 
         _blendSrc = BlendProperty::ONE;

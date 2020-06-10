@@ -36,6 +36,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GFX {
 
+template <typename T, CommandType EnumVal>
+void Command<T, EnumVal>::addToBuffer(CommandBuffer* buffer) const {
+    buffer->add(static_cast<const T&>(*this));
+}
+
 inline void DELETE_CMD(GFX::CommandBase*& cmd) noexcept {
     assert(cmd != nullptr);
     const GFX::Deleter& deleter = cmd->getDeleter();
@@ -47,6 +52,7 @@ inline size_t RESERVE_CMD(U8 typeIndex) noexcept {
     const CommandType cmdType = static_cast<CommandType>(typeIndex);
     switch (cmdType) {
         case CommandType::DRAW_COMMANDS: return 10;
+        default: break;
     }
 
     return 5;
@@ -63,7 +69,7 @@ CommandBuffer::allocateCommand() {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::add(const T& command) {
     T* mem = allocateCommand<T>();
 
@@ -79,7 +85,7 @@ CommandBuffer::add(const T& command) {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::add(const T&& command) {
     T* mem = allocateCommand<T>();
     if (mem != nullptr) {
@@ -94,19 +100,19 @@ CommandBuffer::add(const T&& command) {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(const CommandEntry& commandEntry) noexcept {
     return static_cast<T*>(_commands.get(commandEntry));
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(const CommandEntry& commandEntry) const noexcept {
     return static_cast<T*>(_commands.get(commandEntry));
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, const CommandBuffer::Container::EntryList&>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, const CommandBuffer::Container::EntryList&>::type
 CommandBuffer::get() const noexcept {
     return _commands.get(to_base(T::EType));
 }
@@ -122,13 +128,13 @@ CommandBuffer::exists(U24 index) const noexcept {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(U24 index) noexcept {
     return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(U24 index) const noexcept {
     return get<T>({to_base(T::EType), index });
 }
@@ -138,7 +144,7 @@ inline bool CommandBuffer::exists(U8 typeIndex, U24 index) const noexcept {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
 CommandBuffer::count() const noexcept {
     return _commands.get(to_base(T::EType)).size();
 }
@@ -168,7 +174,7 @@ inline bool CommandBuffer::empty() const noexcept {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
 CommandBuffer::tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand) const {
     OPTICK_EVENT();
 

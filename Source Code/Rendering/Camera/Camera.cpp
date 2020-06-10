@@ -90,9 +90,9 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
     const F32 d3(n3.w);
 
     // Get the intersection of these 3 planes 
-    // (uisng math from RealTime Collision Detection by Christer Ericson)
+    // (using math from RealTime Collision Detection by Christer Ericson)
     const vec3<F32> n2n3 = Cross(n2.xyz(), n3.xyz());
-    const float denom = Dot(n1.xyz(), n2n3);
+    const F32 denom = Dot(n1.xyz(), n2n3);
     const vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz(), (d3*n2.xyz()) - (d2*n3.xyz()));
     return top / -denom;
 }

@@ -66,7 +66,7 @@ class Plane {
         NEGATIVE_SIDE
     };
 
-    Plane() : Plane(WORLD_Y_AXIS, (T)0)
+    Plane() : Plane(WORLD_Y_AXIS, static_cast<T>(0))
     {
     }
 
@@ -77,7 +77,7 @@ class Plane {
     }
 
     /// distance is stored as the negative of the specified value
-    Plane(const vec3<T>& normal, T distance)
+    Plane(const vec3<T>& normal, T distance) noexcept 
         : _normal(normal), _distance(distance)
     {
     }
@@ -87,7 +87,7 @@ class Plane {
     {
     }
 
-    Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w)
+    explicit Plane(const vec4<T>& plane) : Plane(plane.xyz(), plane.w)
     {
     }
 
@@ -108,13 +108,13 @@ class Plane {
         return *this;
     }
 
-    inline Side classifyPoint(const vec3<F32>& point) const {
-        F32 result = signedDistanceToPoint(point);
+    Side classifyPoint(const vec3<F32>& point) const {
+        const F32 result = signedDistanceToPoint(point);
         return (result > 0 ? Side::POSITIVE_SIDE
                            : (result < 0 ? Side::NEGATIVE_SIDE : Side::NO_SIDE));
     }
 
-    inline T signedDistanceToPoint(const vec3<T>& point) const {
+    T signedDistanceToPoint(const vec3<T>& point) const {
         return _normal.dot(point) + _distance;
     }
 
@@ -122,21 +122,21 @@ class Plane {
         return (point - signedDistanceToPoint(point)) * _normal;
     }
 
-    inline void set(const vec4<T>& equation) {
+    void set(const vec4<T>& equation) {
         set(equation.xyz(), equation.w);
     }
 
-    inline void set(const vec3<T>& normal, T distance) {
+    void set(const vec3<T>& normal, T distance) {
         _normal = normal;
         _distance = distance;
     }
 
-    inline void set(T a, T b, T c, T distance) {
+    void set(T a, T b, T c, T distance) {
         set(vec3<T>(a, b, c), distance);
     }
 
-    inline void redefine(const vec3<T>& point0, const vec3<T>& point1,
-                         const vec3<T>& point2) {
+    void redefine(const vec3<T>& point0, const vec3<T>& point1,
+                  const vec3<T>& point2) {
         vec3<T> edge1 = point1 - point0;
         vec3<T> edge2 = point2 - point0;
         _normal = edge1.cross(edge2);
@@ -144,7 +144,7 @@ class Plane {
         _distance = _normal.dot(point0);
     }
 
-    inline void redefine(const vec3<T>& normal, const vec3<T>& point) {
+    void redefine(const vec3<T>& normal, const vec3<T>& point) {
         _normal = normal;
         _distance = _normal.dot(point);
     }
@@ -162,10 +162,10 @@ class Plane {
         return COMPARE_TOLERANCE(rhs._distance, _distance, epsilon) && rhs._normal.compare(_normal, epsilon);
     }
 
-    inline T normalize() {
+    T normalize() {
         T length = _normal.length();
-        if (length > (T)0) {
-            F32 invLength = 1.0f / length;
+        if (length > static_cast<T>(0)) {
+            const F32 invLength = 1.0f / length;
             _normal *= invLength;
             _distance *= invLength;
         }

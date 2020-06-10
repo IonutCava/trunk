@@ -35,7 +35,6 @@
 
 #include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"
 
@@ -75,12 +74,12 @@ class WaterPlane : public SceneNode {
                            RenderPackage& pkgInOut) override;
 
     void postLoad(SceneGraphNode* sgn) override;
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState);
+    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
     bool prepareRender(SceneGraphNode* sgn,
                        RenderingComponent& rComp,
                        const RenderStagePass& renderStagePass,
                        const Camera& camera,
-                       bool refreshData);
+                       bool refreshData) override;
    protected:
     template <typename T>
     friend class ImplResourceLoader;
@@ -100,6 +99,7 @@ class WaterPlane : public SceneNode {
     std::shared_ptr<Quad3D> _plane = nullptr;
 
     StaticCamera* _reflectionCam = nullptr;
+    FColour3 _refractionTint;
     vec2<F32> _noiseTile;
     vec2<F32> _noiseFactor;
     U16     _blurKernelSize = 9u;

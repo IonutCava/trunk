@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Headers/Commands.h"
 
+
+#include "Headers/Pipeline.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
@@ -137,7 +139,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, U16 indent) {
         }
         ret.append(Util::StringFormat("Buffer [ %d - %d ] Range [%d - %d] ]\n", to_base(it._binding), it._buffer->getGUID(), it._elementRange.x, it._elementRange.y));
     }
-    for (const auto&[binding, data] : cmd._set._textureData.textures()) {
+    for (const auto&[binding, data, samplerHash] : cmd._set._textureData.textures()) {
         if (binding == TextureDataContainer<>::INVALID_BINDING) {
             continue;
         }
@@ -146,7 +148,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, U16 indent) {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d ]\n", binding, data._textureHandle));
+        ret.append(Util::StringFormat("Texture [ %d - %d - %d ]\n", binding, data._textureHandle, samplerHash));
     }
 
     for (auto it : cmd._set._textureViews) {
@@ -273,6 +275,7 @@ stringImpl ToString(const CommandBase& cmd, U16 indent) {
         {
             ret.append(ToString(static_cast<const SetClippingStateCommand&>(cmd), indent));
         }break;
+        default: break;
     }
     return ret;
 }

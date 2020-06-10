@@ -71,12 +71,19 @@ struct RTBlendState {
 
 using RTBlendStates = std::array<RTBlendState, MAX_RT_COLOUR_ATTACHMENTS>;
 
-class RTClearDescriptor {
-public:
+struct RTClearColourDescriptor
+{
+    RTClearColourDescriptor() noexcept;
+
+    F32 _customClearDepth = 1.0f;
+    std::array<FColour4, MAX_RT_COLOUR_ATTACHMENTS> _customClearColour;
+};
+
+struct RTClearDescriptor {
     RTClearDescriptor() noexcept;
 
-    inline void clearColour(U8 index, const bool state) noexcept { _clearColourAttachment[index] = state; }
-    inline bool clearColour(U8 index) const noexcept { return _clearColourAttachment[index]; }
+    void clearColour(const U8 index, const bool state) noexcept { _clearColourAttachment[index] = state; }
+    bool clearColour(const U8 index) const noexcept { return _clearColourAttachment[index]; }
 
     PROPERTY_RW(bool, clearDepth, true);
     PROPERTY_RW(bool, clearColours, true);
@@ -84,6 +91,7 @@ public:
     PROPERTY_RW(bool, clearExternalDepth, false);
     PROPERTY_RW(bool, resetToDefault, true);
 
+    POINTER_RW(RTClearColourDescriptor, customClearColour, nullptr);
 protected:
     std::array<bool, MAX_RT_COLOUR_ATTACHMENTS> _clearColourAttachment;
 };
@@ -92,8 +100,8 @@ class RTDrawDescriptor {
   public:
     RTDrawDescriptor() noexcept;
 
-    inline RTDrawMask& drawMask() noexcept { return _drawMask; }
-    inline const RTDrawMask& drawMask() const noexcept { return _drawMask; }
+    RTDrawMask& drawMask() noexcept { return _drawMask; }
+    const RTDrawMask& drawMask() const noexcept { return _drawMask; }
 
     inline bool operator==(const RTDrawDescriptor& other) const;
     inline bool operator!=(const RTDrawDescriptor& other) const;

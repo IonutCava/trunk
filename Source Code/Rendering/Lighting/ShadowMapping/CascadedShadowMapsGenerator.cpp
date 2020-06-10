@@ -2,11 +2,9 @@
 
 #include "Headers/CascadedShadowMapsGenerator.h"
 
-#include "Rendering/Headers/Renderer.h"
 #include "Rendering/Camera/Headers/Camera.h"
 
 #include "ECS/Components/Headers/DirectionalLightComponent.h"
-#include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 
 #include "Managers/Headers/SceneManager.h"
@@ -16,13 +14,13 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/StringHelper.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 
 namespace Divide {
 
@@ -95,6 +93,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     sampler.magFilter(TextureFilter::LINEAR);
 
     sampler.anisotropyLevel(0);
+    const size_t samplerHash = sampler.getHash();
 
     const TextureDescriptor& texDescriptor = rt.getAttachment(RTAttachmentType::Colour, 0).texture()->descriptor();
     // Draw FBO
@@ -102,17 +101,17 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         // MSAA rendering is supported
         TextureDescriptor colourDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, texDescriptor.baseFormat(), texDescriptor.dataType());
         colourDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        colourDescriptor.samplerDescriptor(sampler);
         colourDescriptor.msaaSamples(g_shadowSettings.csm.MSAASamples);
+        colourDescriptor.hasMipMaps(false);
 
         TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        depthDescriptor.samplerDescriptor(sampler);
         depthDescriptor.msaaSamples(g_shadowSettings.csm.MSAASamples);
+        depthDescriptor.hasMipMaps(false);
 
         vectorEASTL<RTAttachmentDescriptor> att = {
-            { colourDescriptor, RTAttachmentType::Colour },
-            { depthDescriptor, RTAttachmentType::Depth }
+            { colourDescriptor, samplerHash, RTAttachmentType::Colour },
+            { depthDescriptor, samplerHash, RTAttachmentType::Depth }
         };
 
         RenderTargetDescriptor desc = {};
@@ -129,10 +128,10 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     {
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, texDescriptor.baseFormat(), texDescriptor.dataType());
         blurMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        blurMapDescriptor.samplerDescriptor(sampler);
+        blurMapDescriptor.hasMipMaps(false);
 
         vectorEASTL<RTAttachmentDescriptor> att = {
-            { blurMapDescriptor, RTAttachmentType::Colour }
+            { blurMapDescriptor, samplerHash, RTAttachmentType::Colour }
         };
 
         RenderTargetDescriptor desc = {};
@@ -197,7 +196,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
                                                      const mat4<F32>& projectionMatrix,
                                                      const vec2<F32>& nearFarPlanes,
                                                      U8 numSplits,
-                                                     const SplitDepths& splitDepths)
+                                                     const SplitDepths& splitDepths) const
 {
     const mat4<F32> invViewProj = GetInverse(mat4<F32>::Multiply(viewMatrix, projectionMatrix));
 
@@ -346,7 +345,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     const SplitDepths splitDepths = calculateSplitDepths(projectionMatrix, dirLight, nearFarPlanes);
     applyFrustumSplits(dirLight, playerCamera.getViewMatrix(), projectionMatrix, nearFarPlanes, numSplits, splitDepths);
     
-    RenderPassManager::PassParams params = {};
+    RenderPassParams params = {};
     params._sourceNode = light.getSGN();
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;
@@ -371,7 +370,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     constexpr F32 minExtentsFactors[] = { 0.025f, 1.25f, 50.0f, 250.5f };
 
     I16 i = to_I16(numSplits) - 1;
-    for (i; i >= 0; i--) {
+    for (; i >= 0; i--) {
         params._layerParams._layer = i;
         params._passName = Util::StringFormat("CSM_PASS_%d", i).c_str();
         params._stagePass._pass = i;
@@ -427,8 +426,9 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
 
-        TextureData texData = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, TextureUsage::UNIT0);
+        const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
+        TextureData texData = shadowAtt.texture()->data();
+        descriptorSetCmd._set._textureData.setTexture(texData, shadowAtt.samplerHash(),TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         _shaderConstants.set(_ID("layered"), GFX::PushConstantType::BOOL, true);
@@ -444,8 +444,9 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         // Blur vertically
-        texData = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0).texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, TextureUsage::UNIT0);
+        const auto& blurAtt = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0);
+        texData = blurAtt.texture()->data();
+        descriptorSetCmd._set._textureData.setTexture(texData, blurAtt.samplerHash(),TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         beginRenderPassCmd._target = g_depthMapID;

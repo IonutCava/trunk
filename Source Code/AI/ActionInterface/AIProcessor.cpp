@@ -3,7 +3,6 @@
 #include "Headers/AIProcessor.h"
 
 #include "AI/Headers/AIManager.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 namespace AI {

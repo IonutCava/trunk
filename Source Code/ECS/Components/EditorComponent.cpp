@@ -239,6 +239,7 @@ namespace Divide {
                     data.w = pt.get((entryName + ".<xmlattr>.w").c_str(), data.w);
                 }
             }
+            field.set<T>(data);
         }
 
         template<typename T, size_t num_rows>

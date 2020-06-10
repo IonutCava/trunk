@@ -33,9 +33,8 @@
 #ifndef GL_UNIFORM_BUFFER_OBJECT_H_
 #define GL_UNIFORM_BUFFER_OBJECT_H_
 
-#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 namespace Divide {
 

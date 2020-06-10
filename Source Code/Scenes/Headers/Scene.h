@@ -150,7 +150,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void removeTask(Task& task);
     inline void addSceneGraphToLoad(XML::SceneNode& rootNode) { _xmlSceneGraphRootNode = rootNode; }
 
-    void addMusic(MusicType type, const Str64& name, const Str256& srcFile);
+    void addMusic(MusicType type, const Str64& name, const Str256& srcFile) const;
 
     SceneGraphNode* addSky(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
     SceneGraphNode* addInfPlane(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
@@ -234,7 +234,7 @@ class Scene : public Resource, public PlatformContextComponent {
     bool checkCameraUnderwater(const Camera& camera) const;
     void toggleFlashlight(PlayerIndex idx);
 
-    SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
+    SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor) const;
 
     virtual bool save(ByteBuffer& outputBuffer) const;
     virtual bool load(ByteBuffer& inputBuffer);
@@ -260,7 +260,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void clearObjects();
     /**End loading and unloading logic*/
     /// returns true if the camera was moved/rotated/etc
-    bool updateCameraControls(PlayerIndex idx);
+    bool updateCameraControls(PlayerIndex idx) const;
     /// Draw debug entities
     virtual void debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     /// Draw custom ui elements

@@ -10,8 +10,6 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
 
-#include <imgui/addons/imguifilesystem/imguifilesystem.h>
-
 #include <filesystem>
 
 namespace Divide {
@@ -295,14 +293,7 @@ namespace Divide {
     }
 
     Texture_ptr ContentExplorerWindow::getTextureForPath(const Str256& texturePath, const Str64& textureName) {
-        SamplerDescriptor texturePreviewSampler = {};
-        texturePreviewSampler.wrapUVW(TextureWrap::CLAMP);
-        texturePreviewSampler.minFilter(TextureFilter::NEAREST);
-        texturePreviewSampler.magFilter(TextureFilter::NEAREST);
-        texturePreviewSampler.anisotropyLevel(0);
-
         TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
-        texturePreviewDescriptor.samplerDescriptor(texturePreviewSampler);
 
         ResourceDescriptor textureResource(textureName);
         textureResource.flag(true);

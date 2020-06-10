@@ -56,7 +56,7 @@ namespace GLUtil {
         ~VBO();
 
         void freeAll();
-        U32 handle() noexcept;
+        U32 handle() const noexcept;
         bool checkChunksAvailability(size_t offset, U32 count) noexcept;
 
         bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);

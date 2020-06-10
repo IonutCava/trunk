@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _OBJECT_POOL_H_
 
 #include "Platform/Threading/Headers/SharedMutex.h"
-#include "Core/TemplateLibraries/Headers/Vector.h"
 
 namespace Divide {
 
@@ -43,11 +42,11 @@ struct PoolHandle {
     U16 _id = 0u;
     U8  _generation = 0u;
 
-    inline bool operator== (const PoolHandle& val) const noexcept {
+    bool operator== (const PoolHandle& val) const noexcept {
         return _generation == val._generation && _id == val._id;
     }
 
-    inline bool operator!= (const PoolHandle& val) const noexcept {
+    bool operator!= (const PoolHandle& val) const noexcept {
         return _generation != val._generation || _id != val._id;
     }
 };

@@ -5,6 +5,7 @@
 #include "Scenes/Headers/Scene.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
@@ -58,21 +59,22 @@ void SceneEnvironmentProbePool::onStartup(GFXDevice& context) {
     reflectionSampler.magFilter(TextureFilter::LINEAR);
     reflectionSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     reflectionSampler.anisotropyLevel(context.context().config().rendering.anisotropicFilteringLevel);
+    const size_t samplerHash = reflectionSampler.getHash();
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
-    environmentDescriptor.samplerDescriptor(reflectionSampler);
+    environmentDescriptor.hasMipMaps(false);
 
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
     depthDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
+    depthDescriptor.hasMipMaps(false);
 
     reflectionSampler.minFilter(TextureFilter::LINEAR);
     reflectionSampler.anisotropyLevel(0u);
-    depthDescriptor.samplerDescriptor(reflectionSampler);
 
     vectorEASTL<RTAttachmentDescriptor> att = {
-        { environmentDescriptor, RTAttachmentType::Colour },
-        { depthDescriptor, RTAttachmentType::Depth },
+        { environmentDescriptor, samplerHash, RTAttachmentType::Colour },
+        { depthDescriptor,samplerHash, RTAttachmentType::Depth },
     };
 
     RenderTargetDescriptor desc = {};
@@ -189,6 +191,7 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
         for (U32 i = 0; i < 6; ++i) {
             DebugView_ptr probeView = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
             probeView->_texture = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+            probeView->_samplerHash = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
             probeView->_shader = previewShader;
             probeView->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, probe->rtLayerIndex());
             probeView->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);

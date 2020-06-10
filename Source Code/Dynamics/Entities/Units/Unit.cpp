@@ -1,11 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/Unit.h"
-#include "Scenes/Headers/Scene.h"
-#include "Graphs/Headers/SceneGraph.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Core/Headers/Application.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/FrameListenerManager.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 

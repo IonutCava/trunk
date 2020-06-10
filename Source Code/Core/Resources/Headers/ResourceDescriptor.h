@@ -64,7 +64,7 @@ class CachedResource;
 FWD_DECLARE_MANAGED_CLASS(CachedResource);
 FWD_DECLARE_MANAGED_CLASS(PropertyDescriptor);
 
-class ResourceDescriptor : public Hashable {
+class ResourceDescriptor final : public Hashable {
    public:
        using CBK = DELEGATE<void, CachedResource_wptr>;
 
@@ -74,11 +74,11 @@ class ResourceDescriptor : public Hashable {
     ~ResourceDescriptor() = default;
 
     template <typename T>
-    inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, const std::shared_ptr<T>>::type
+    typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, const std::shared_ptr<T>>::type
     propertyDescriptor() const { return std::dynamic_pointer_cast<T>(_propertyDescriptor); }
 
     template <typename T>
-    inline typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, void>::type
+    typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, void>::type
     propertyDescriptor(const T& descriptor) { _propertyDescriptor.reset(new T(descriptor)); }
 
     size_t getHash() const noexcept final;

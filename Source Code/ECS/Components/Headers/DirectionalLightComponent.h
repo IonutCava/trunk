@@ -53,7 +53,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     void PreUpdate(const U64 deltaTime) final;
 
     // Quick hack to store previous frame's culling results
-    vectorEASTL<RenderPassManager::FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }
+    vectorEASTL<FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }
 
     PROPERTY_RW(U8, csmSplitCount, 3u);
     /// CSM extra back up distance for light position
@@ -64,12 +64,13 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     PROPERTY_RW(bool, showDirectionCone, false);
     /// Same as showDirectionCone but triggered differently (i.e. on selection in editor)
     PROPERTY_R_IW(bool,  drawImpostor, false);
+
 protected:
      void OnData(const ECS::CustomEvent& data) final;
 
 protected:
     //Used to adjust ortho-matrice's near/far planes per pass
-    vectorEASTL<RenderPassManager::FeedBackContainer> _feedbackContainers;
+    vectorEASTL<FeedBackContainer> _feedbackContainers;
 };
 
 INIT_COMPONENT(DirectionalLightComponent);

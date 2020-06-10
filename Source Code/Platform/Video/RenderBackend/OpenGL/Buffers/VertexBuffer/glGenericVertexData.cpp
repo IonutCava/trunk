@@ -1,8 +1,10 @@
 #include "stdafx.h"
 
+
 #include "Headers/glGenericVertexData.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferImpl.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 
 #include "Utility/Headers/Localization.h"
 
@@ -10,16 +12,16 @@ namespace Divide {
 
 glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name)
     : GenericVertexData(context, ringBufferLength, name)
+    , _smallIndices(false)
+    , _idxBufferDirty(false)
+    , _indexBuffer(0)
+    , _indexBufferSize(0)
+    , _indexBufferUsage(GL_NONE)
+    , _vertexArray(0)
 {
     _lastDrawCount = 0;
     _lastIndexCount = 0;
     _lastFirstIndex = 0;
-    _indexBuffer = 0;
-    _indexBufferSize = 0;
-    _indexBufferUsage = GL_NONE;
-    _smallIndices = false;
-    _idxBufferDirty = false;
-    _vertexArray = 0;
     _countData.fill(0);
 }
 
@@ -43,7 +45,7 @@ glGenericVertexData::~glGenericVertexData()
 
 /// Create the specified number of buffers and queries and attach them to this
 /// vertex data container
-void glGenericVertexData::create(U8 numBuffers) {
+void glGenericVertexData::create(const U8 numBuffers) {
     // Prevent double create
     assert(_bufferObjects.empty() && "glGenericVertexData error: create called with no buffers specified!");
     GL_API::s_vaoPool.allocate(1, &_vertexArray);
@@ -53,7 +55,7 @@ void glGenericVertexData::create(U8 numBuffers) {
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
-void glGenericVertexData::draw(const GenericDrawCommand& command, U32 cmdBufferOffset) {
+void glGenericVertexData::draw(const GenericDrawCommand& command, const U32 cmdBufferOffset) {
     // Update buffer bindings
     setBufferBindings(command);
     // Update vertex attributes if needed (e.g. if offsets changed)
@@ -76,7 +78,7 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, U32 cmdBufferO
     GL_API::lockBuffers(_context.getFrameCount());
 }
 
-void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency) {
+void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, const BufferUpdateFrequency updateFrequency) {
     GenericVertexData::setIndexBuffer(indices, updateFrequency);
 
     if (_indexBuffer != 0) {
@@ -87,7 +89,7 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, BufferUpdat
         _indexBufferUsage = glBufferImpl::GetBufferUsage(updateFrequency, BufferUpdateUsage::CPU_W_GPU_R);
 
         // Generate an "Index Buffer Object"
-        _indexBufferSize = (GLuint)(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32)));
+        _indexBufferSize = static_cast<GLuint>(indices.count * (indices.smallIndices ? sizeof(U16) : sizeof(U32)));
         _smallIndices = indices.smallIndices;
 
         GLUtil::createAndAllocBuffer(
@@ -110,7 +112,7 @@ void glGenericVertexData::updateIndexBuffer(const IndexBuffer& indices) {
     const size_t elementSize = indices.smallIndices ? sizeof(GLushort) : sizeof(GLuint);
 
     if (indices.offsetCount == 0) {
-        _indexBufferSize = (GLuint)(indices.count * elementSize);
+        _indexBufferSize = static_cast<GLuint>(indices.count * elementSize);
 
         glInvalidateBufferData(_indexBuffer);
         glNamedBufferData(_indexBuffer,
@@ -141,7 +143,7 @@ void glGenericVertexData::setBuffer(const SetBufferParams& params) {
     assert(_bufferObjects[buffer] == nullptr &&
            "glGenericVertexData::setBuffer : buffer re-purposing is not supported at the moment");
 
-    BufferParams paramsOut = {};
+    BufferParams paramsOut;
     paramsOut._usage = GL_ARRAY_BUFFER;
     paramsOut._elementCount = params._elementCount;
     paramsOut._elementSizeInBytes = params._elementSize;
@@ -160,14 +162,14 @@ void glGenericVertexData::setBuffer(const SetBufferParams& params) {
 
 /// Update the elementCount worth of data contained in the buffer starting from
 /// elementCountOffset size offset
-void glGenericVertexData::updateBuffer(U32 buffer,
-                                       U32 elementCount,
-                                       U32 elementCountOffset,
+void glGenericVertexData::updateBuffer(const U32 buffer,
+                                       const U32 elementCount,
+                                       const U32 elementCountOffset,
                                        const bufferPtr data) {
     _bufferObjects[buffer]->writeData(elementCount, elementCountOffset, queueIndex(), data);
 }
 
-void glGenericVertexData::setBufferBindOffset(U32 buffer, U32 elementCountOffset) {
+void glGenericVertexData::setBufferBindOffset(const U32 buffer, const U32 elementCountOffset) {
     _bufferObjects[buffer]->setBindOffset(elementCountOffset);
 }
 
@@ -176,11 +178,11 @@ void glGenericVertexData::setBufferBindings(const GenericDrawCommand& command) {
         return;
     }
 
-    const auto bindBuffer = [&](const U32 bufferIdx, U32 location) {
+    const auto bindBuffer = [&](const U32 bufferIdx, const  U32 location) {
         glGenericBuffer* buffer = _bufferObjects[bufferIdx];
         const size_t elementSize = buffer->bufferImpl()->elementSize();
 
-        BufferLockEntry entry = {};
+        BufferLockEntry entry;
         entry._buffer = buffer->bufferImpl();
         entry._length = buffer->elementCount() * elementSize;
         entry._offset = buffer->getBindOffset(queueIndex());
@@ -208,7 +210,7 @@ void glGenericVertexData::setAttributes(const GenericDrawCommand& command) {
 }
 
 /// Update internal attribute data
-void glGenericVertexData::setAttributeInternal(const GenericDrawCommand& command, AttributeDescriptor& descriptor) {
+void glGenericVertexData::setAttributeInternal(const GenericDrawCommand& command, AttributeDescriptor& descriptor) const {
     // Early out if the attribute didn't change
     if (!descriptor.dirty()) {
         return;

@@ -32,7 +32,6 @@
 #ifndef _AI_ENTITY_H_
 #define _AI_ENTITY_H_
 
-#include "AI/Sensors/Headers/AudioSensor.h"
 #include "AI/Sensors/Headers/VisualSensor.h"
 
 struct dtCrowdAgent;

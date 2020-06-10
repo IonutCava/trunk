@@ -52,7 +52,6 @@ bool InfinitePlane::load() {
     albedoSampler.anisotropyLevel(8);
 
     TextureDescriptor miscTexDescriptor(TextureType::TEXTURE_2D);
-    miscTexDescriptor.samplerDescriptor(albedoSampler);
     miscTexDescriptor.srgb(true);
 
     ResourceDescriptor textureWaterCaustics("Plane Water Caustics");
@@ -60,7 +59,7 @@ bool InfinitePlane::load() {
     textureWaterCaustics.assetName("terrain_water_caustics.jpg");
     textureWaterCaustics.propertyDescriptor(miscTexDescriptor);
 
-    planeMaterial->setTexture(TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics));
+    planeMaterial->setTexture(TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics), albedoSampler.getHash());
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;

@@ -11,16 +11,10 @@ Transform::Transform()
 
 Transform::Transform(const Quaternion<F32>& orientation,
                      const vec3<F32>& translation, const vec3<F32>& scale)
-    : _dirty(false),
-      _rebuild(false)
 {
     _transformValues._scale.set(scale);
     _transformValues._translation.set(translation);
     _transformValues._orientation.set(orientation);
-}
-
-Transform::~Transform()
-{
 }
 
 void Transform::getMatrix(mat4<F32>& matrix) {

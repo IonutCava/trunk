@@ -5,7 +5,6 @@
 #include "AI/Headers/AIEntity.h"
 #include "AI/Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
-#include "Dynamics/Entities/Units/Headers/NPC.h"
 
 namespace Divide {
 namespace AI {

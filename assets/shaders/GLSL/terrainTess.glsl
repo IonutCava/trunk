@@ -17,7 +17,7 @@ layout(location = 12) out flat int vtx_ringID;
 
 vec2 worldXZtoHeightUV(vec2 worldXZ) {
     // Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
-    const vec2 uv = (worldXZ - 2 * dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
+    const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
     return saturate(0.5f * uv + 0.5f);
 }
 
@@ -43,7 +43,7 @@ vec4 ReconstructPosition() {
 
     tempPos.x *= WORLD_SCALE_X;
     tempPos.y *= WORLD_SCALE_Z;
-    tempPos += dvd_tileWorldPosition;
+    tempPos += 2 * vec2(dvd_tileWorldPosition.x, -dvd_tileWorldPosition.y);
 
     VAR._texCoord = tempPos;
     const vec2 texCoords = worldXZtoHeightUV(tempPos);
@@ -91,7 +91,7 @@ layout(location = 12) out vec3[5] tcs_debugColour[];
 #endif //MAX_TESS_LEVEL
 
 vec2 worldXZtoHeightUV(vec2 worldXZ) {
-    const vec2 uv = (worldXZ - 2 * dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
+    const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
     return saturate(0.5f * uv + 0.5f);
 }
 
@@ -319,7 +319,6 @@ layout(location = 13) out float tes_PatternValue;
 #else //TOGGLE_DEBUG
 
 layout(location = 10) out flat int dvd_LoD;
-layout(location = 11) out float dvd_PatternValue;
 
 #endif //TOGGLE_DEBUG
 
@@ -351,18 +350,28 @@ vec3 LerpDebugColours(in vec3 cIn[5], vec2 uv) {
 #endif
 
 float getHeight(in vec2 tex_coord) {
+#if 1
+#if 1
+    const float h = texture(TexTerrainHeight, tex_coord).r;
+#else
     const ivec3 off = ivec3(-1, 0, 1);
-
     const float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r;
     const float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r;
     const float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
     const float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
 
-    return TERRAIN_HEIGHT * ((s01 + s21 + s10 + s12) * 0.25f) + TERRAIN_HEIGHT_OFFSET;
+    const float h = (s01 + s21 + s10 + s12) * 0.25f;
+#endif
+#else
+    const vec4 s = textureGather(TexTerrainHeight, tex_coord, 0);
+    const float h = (s.x + s.y + s.z + s.w) * 0.25f;
+#endif
+
+    return TERRAIN_HEIGHT * h + TERRAIN_HEIGHT_OFFSET;
 }
 
 vec2 worldXZtoHeightUV(in vec2 worldXZ) {
-    const vec2 uv = (worldXZ - 2 * dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
+    const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
     return saturate(0.5f * uv + 0.5f);
 }
 
@@ -378,19 +387,21 @@ void main()
 
     _out._texCoord = worldXZtoHeightUV(pos.xz);
     _out._vertexW = dvd_Matrices[DATA_IDX]._worldMatrix * vec4(pos.x, getHeight(_out._texCoord), pos.z, 1.0f);
+    setClipPlanes();
+
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
     _out._vertexWVP = dvd_ProjectionMatrix * _out._vertexWV;
 
 #if !defined(PRE_PASS) && !defined(SHADOW_PASS)
-    _out._viewDirectionWV = normalize(-_out._vertexWV.xyz);
+    _out._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - _out._vertexW.xyz);
 #endif //PRE_PASS && SHADOW_PASS
 
+#if defined(TOGGLE_DEBUG)
     const int PatchID = gl_PrimitiveID;
     ivec2 patchXY;
     patchXY.y = PatchID / PATCHES_PER_TILE_EDGE;
     patchXY.x = PatchID - patchXY.y * PATCHES_PER_TILE_EDGE;
 
-#if defined(TOGGLE_DEBUG)
     tes_tileSize = tcs_tileSize[0];
     tes_ringID = tcs_ringID[0];
     tes_debugColour = LerpDebugColours(tcs_debugColour[0], gl_TessCoord.xy);
@@ -399,9 +410,7 @@ void main()
     gl_Position = _out._vertexW;
 #else //TOGGLE_DEBUG
     dvd_LoD = tcs_ringID[0];
-    dvd_PatternValue = 0.5f * ((patchXY.x + patchXY.y) % 2);
     gl_Position = _out._vertexWVP;
-    setClipPlanes();
 #endif //TOGGLE_DEBUG
 }
 
@@ -568,9 +577,9 @@ layout(early_fragment_tests) in;
 #define USE_CUSTOM_TBN
 
 layout(location = 10) in flat int dvd_LoD;
-layout(location = 11) in float dvd_PatternValue;
 
 #if defined(TOGGLE_DEBUG)
+layout(location = 11) in float dvd_PatternValue;
 layout(location = 12) in vec3 gs_wireColor;
 layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif //TOGGLE_DEBUG
@@ -586,7 +595,6 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif //LOW_QUALITY
 
 #include "nodeBufferedInput.cmn"
-#include "waterData.cmn"
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else //PRE_PASS
@@ -617,18 +625,19 @@ void main(void)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-    const vec2 waterData = waterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
-
+   
+    const vec3 tbnViewDir = computeTBN(VAR._texCoord);
 #if defined(PRE_PASS)
     writeOutput(data, 
                 VAR._texCoord,
-                getMixedNormalWV(VAR._texCoord, 1.0f - waterData.x),
-                getTBNViewDirection());
+                getMixedNormalWV(VAR._texCoord, tbnViewDir),
+                tbnViewDir);
 #else //PRE_PASS
 
     vec4 albedo;
     vec3 normalWV;
-    BuildTerrainData(VAR._texCoord, waterData, albedo, normalWV);
+
+    BuildTerrainData(VAR._texCoord, tbnViewDir, albedo, normalWV);
 #if !defined(LOW_QUALITY)
     _private_roughness = albedo.a;
 #endif //LOW_QUALITY

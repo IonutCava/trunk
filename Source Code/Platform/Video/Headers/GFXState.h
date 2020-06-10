@@ -33,8 +33,6 @@
 #ifndef _HARDWARE_VIDEO_GFX_STATE_H_
 #define _HARDWARE_VIDEO_GFX_STATE_H_
 
-#include "Platform/Threading/Headers/Task.h"
-
 namespace Divide {
     
 struct GPUState : private NonCopyable {
@@ -63,11 +61,11 @@ struct GPUState : private NonCopyable {
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
-    inline size_t getDisplayCount() const noexcept {
+    size_t getDisplayCount() const noexcept {
         return _supportedDisplayModes.size();
     }
 
-    inline const vectorEASTL<GPUVideoMode>& getDisplayModes(size_t displayIndex) const noexcept {
+    const vectorEASTL<GPUVideoMode>& getDisplayModes(size_t displayIndex) const noexcept {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }

@@ -57,10 +57,10 @@ class BoundingBox {
     BoundingBox(const vectorEASTL<vec3<F32>>& points) noexcept;
     BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept;
     BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
-    ~BoundingBox();
+    ~BoundingBox() = default;
 
-    BoundingBox(const BoundingBox& b);
-    void operator=(const BoundingBox& b);
+    BoundingBox(const BoundingBox& b) noexcept;
+    void operator=(const BoundingBox& b) noexcept;
 
     bool containsPoint(const vec3<F32>& point) const noexcept;
     bool containsBox(const BoundingBox& AABB2) const noexcept;
@@ -90,7 +90,7 @@ class BoundingBox {
     void multiplyMax(const vec3<F32>& v) noexcept;
     void multiplyMin(const vec3<F32>& v) noexcept;
 
-    void transform(vec3<F32> initialMin, vec3<F32> initialMax, const mat4<F32>& mat);
+    void transform(vec3<F32> initialMin, vec3<F32> initialMax, const mat4<F32>& mat) noexcept;
     void transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat);
     void transform(const mat4<F32>& mat);
 

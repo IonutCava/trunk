@@ -34,6 +34,7 @@
 #define _GL_PIXEL_BUFFER_OBJECT_H
 
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
+#include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 namespace Divide {
 class GL_API;
@@ -51,7 +52,8 @@ class glPixelBuffer final : public PixelBuffer {
 
     bool create(GLushort width, GLushort height, GLushort depth = 0,
                 GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32) override;
+                GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
+                bool normalized = true) override;
 
     void updatePixels(const GLfloat* const pixels, GLuint pixelCount)  override;
 
@@ -61,7 +63,7 @@ class glPixelBuffer final : public PixelBuffer {
     void end() const;
 
    private:
-    size_t sizeOf(GLenum dataType) const noexcept;
+    static size_t SizeOf(GLenum dataType) noexcept;
 
    private:
     GLuint _bufferSize;
@@ -73,7 +75,6 @@ class glPixelBuffer final : public PixelBuffer {
 
 namespace Attorney {
     class GLAPIPixelBuffer {
-        private:
         static bufferPtr begin(glPixelBuffer& buffer) {
             return buffer.begin();
         }
