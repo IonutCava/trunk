@@ -460,6 +460,8 @@ class vec3 {
     [[nodiscard]] bool compare(const vec3<U> &v, U epsi) const noexcept;
     /// uniform vector: x = y = z
     [[nodiscard]] bool isUniform() const noexcept;
+    /// The current vector is perpendicular to the specified one within epsilon
+    [[nodiscard]] bool isPerpendicular(const vec3 other, F32 epsilon = EPSILON_F32) const noexcept;
     /// return the squared distance of the vector
     [[nodiscard]] T lengthSquared() const noexcept;
     /// calculate the dot product between this vector and the specified one
@@ -488,6 +490,8 @@ class vec3 {
     [[nodiscard]] vec3 closestPointOnSegment(const vec3 &vA, const vec3 &vB);
     /// get the direction vector to the specified point
     [[nodiscard]] vec3 direction(const vec3 &u) const;
+    /// project this vector onto the given direction
+    [[nodiscard]] vec3 projectToNorm(const vec3<T> &direction);
     /// lerp between this and the specified vector by the specified amount
     void lerp(const vec3 &v, T factor) noexcept;
     /// lerp between this and the specified vector by the specified amount for
@@ -552,8 +556,13 @@ template <typename T>
 [[nodiscard]] vec3<T> Inverse(const vec3<T> &v) noexcept;
 template <typename T>
 [[nodiscard]] vec3<T> operator*(T fl, const vec3<T> &v) noexcept;
+// project 'in' onto the given direction
+template<typename T>
+[[nodiscard]] vec3<T> ProjectToNorm(const vec3<T>& in, const vec3<T> &direction);
 template <typename T>
 void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
+template <typename T>
+void OrthoNormalize(vec3<T> &v1, vec3<T> &v2, vec3<T> &v3);
 template<typename T>
 [[nodiscard]] vec3<T> Perpendicular(const vec3<T> &v) noexcept;
 
@@ -758,6 +767,8 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     void swap(vec4 &iv) noexcept;
     /// transform the vector to unit length
     vec4& normalize();
+    /// The current vector is perpendicular to the specified one within epsilon
+    [[nodiscard]] bool isPerpendicular(const vec4 other, F32 epsilon = EPSILON_F32) const noexcept;
     /// get the smallest value of X,Y,Z or W
     [[nodiscard]] T minComponent() const noexcept;
     /// get the largest value of X,Y,Z or W
@@ -768,6 +779,8 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     [[nodiscard]] T length() const  noexcept { return Divide::Sqrt(lengthSquared()); }
     /// return the squared distance of the vector
     [[nodiscard]] T lengthSquared() const noexcept;
+    /// project this vector onto the given direction
+    [[nodiscard]] vec4 projectToNorm(const vec4<T> &direction);
     /// round all four values
     void round();
     /// lerp between this and the specified vector by the specified amount
@@ -811,7 +824,12 @@ template <typename T>
 /// multiply a vector by a value
 template <typename T>
 [[nodiscard]] vec4<T> operator*(T fl, const vec4<T> &v) noexcept;
-
+template <typename T>
+void OrthoNormalize(vec4<T> &v1, vec4<T> &v2);
+template <typename T>
+void OrthoNormalize(vec4<T> &v1, vec4<T> &v2, vec4<T> &v3);
+template<typename T>
+[[nodiscard]] vec4<T> Perpendicular(const vec4<T> &v) noexcept;
 /// Quaternion multiplications require these to be floats
 extern vec2<F32> VECTOR2_ZERO;
 extern vec3<F32> VECTOR3_ZERO;

@@ -220,8 +220,9 @@ void SceneGraph::onNetworkSend(U32 frameCount) {
     Attorney::SceneGraphNodeSceneGraph::onNetworkSend(_root, frameCount);
 }
 
-bool SceneGraph::intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRayResult>& intersections) const {
-    return _root->intersect(ray, start, end, intersections);
+bool SceneGraph::intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersectionsOut) const {
+    intersectionsOut.resize(0);
+    return _root->intersect(params, intersectionsOut);
 
     /*if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);

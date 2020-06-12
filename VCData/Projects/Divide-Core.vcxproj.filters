@@ -210,6 +210,9 @@
     <ClCompile Include="..\..\Source Code\Core\Resources\ConcreteLoaders\WaterPlaneLoaderImpl.cpp">
       <Filter>Resources\ConcreteLoaders</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\OBB.cpp">
+      <Filter>Math\BoundingVolumes</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\GUIDWrapper.h">
@@ -363,6 +366,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Core\Headers\ObjectPool.h">
       <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\OBB.h">
+      <Filter>Math\BoundingVolumes\Headers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

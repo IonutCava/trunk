@@ -757,6 +757,8 @@ void GFXDevice::closeRenderingAPI() {
     if (_axisGizmo) {
         destroyIMP(_axisGizmo);
     }
+
+    _debugLines.reset();
     _debugBoxes.reset();
     _debugFrustums.reset();
     _debugCones.reset();
@@ -1223,12 +1225,12 @@ bool GFXDevice::fitViewportInWindow(const U16 w, const U16 h) {
     if (!COMPARE(newAspectRatio, currentAspectRatio)) {
         context().mainWindow().clearFlags(true, false);
         return true;
-    } else {
-        // If the aspect ratios match, then we should auto-fit to the entire visible drawing space so 
-        // no need to keep clearing the backbuffer. This is one of the most useless micro-optimizations possible
-        // but is really easy to add -Ionut
-        context().mainWindow().clearFlags(false, false);
     }
+
+    // If the aspect ratios match, then we should auto-fit to the entire visible drawing space so 
+    // no need to keep clearing the backbuffer. This is one of the most useless micro-optimizations possible
+    // but is really easy to add -Ionut
+    context().mainWindow().clearFlags(false, false);
     return false;
 }
 #pragma endregion
@@ -1570,18 +1572,14 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
                     viewportCommand._viewport.set(0, 0, twidth, theight);
                     GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
-                    if_constexpr (GetHiZMethod() == HiZMethod::NVIDIA) {
-                        pushConstantsCommand._constants.set(_ID("depthInfo"), GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
-                    } else {
+                    if_constexpr (GetHiZMethod() != HiZMethod::NVIDIA) {
                         mipCommand._baseLevel = level - 1;
                         mipCommand._maxLevel = level - 1;
                         GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
-
-                        if (GetHiZMethod() == HiZMethod::RASTER_GRID) {
-                            pushConstantsCommand._constants.set(_ID("LastMipSize"), GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
-                        }
                     }
 
+                    pushConstantsCommand._constants.set(_ID("depthInfo"), GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+                    pushConstantsCommand._constants.set(_ID("LastMipSize"), GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
                     GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
                     // Dummy draw command as the full screen quad is generated completely in the vertex shader
@@ -2148,6 +2146,30 @@ void GFXDevice::getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, I16, b
     }
 }
 
+void GFXDevice::debugDrawLines(const Line* lines, const size_t count) {
+    _debugLines.add({ lines, count});
+}
+
+void GFXDevice::debugDrawLines(GFX::CommandBuffer& bufferInOut) {
+    const U32 lineCount = _debugLines._Id.load();
+    for (U32 f = 0; f < lineCount; ++f) {
+        IMPrimitive*& linePrimitive = _debugLines._debugPrimitives[f];
+        if (linePrimitive == nullptr) {
+            linePrimitive = newIMP();
+            linePrimitive->name(Util::StringFormat("DebugLine_%d", f));
+            linePrimitive->pipeline(*_DebugGizmoPipeline);
+            linePrimitive->skipPostFX(true);
+        }
+
+        const auto&[lines, count] = _debugLines._debugData[f];
+
+        linePrimitive->fromLines(lines, count);
+        bufferInOut.add(linePrimitive->toCommandBuffer());
+    }
+
+    _debugLines._Id.store(0u);
+}
+
 void GFXDevice::debugDrawBox(const vec3<F32>& min, const vec3<F32>& max, const FColour3& colour) {
     _debugBoxes.add({ min, max, colour });
 }
@@ -2333,6 +2355,7 @@ void GFXDevice::debugDrawFrustums(GFX::CommandBuffer& bufferInOut) {
 /// Render all of our immediate mode primitives. This isn't very optimised and most are recreated per frame!
 void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera* activeCamera, GFX::CommandBuffer& bufferInOut) {
     debugDrawFrustums(bufferInOut);
+    debugDrawLines(bufferInOut);
     debugDrawBoxes(bufferInOut);
     debugDrawSpheres(bufferInOut);
     debugDrawCones(bufferInOut);

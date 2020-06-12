@@ -41,11 +41,7 @@ namespace Attorney {
     class BoundingBoxEditor;
 };
 
-struct AABBRayResult {
-    bool hit = false;
-    F32 dist = std::numeric_limits<F32>::max();
-};
-
+class OBB;
 class PropertyWindow;
 class BoundingSphere;
 class BoundingBox {
@@ -53,6 +49,8 @@ class BoundingBox {
 
    public:
     BoundingBox() noexcept;
+    BoundingBox(const OBB& obb) noexcept;
+    BoundingBox(const BoundingSphere& bSphere) noexcept;
     BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept;
     BoundingBox(const vectorEASTL<vec3<F32>>& points) noexcept;
     BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept;
@@ -62,23 +60,26 @@ class BoundingBox {
     BoundingBox(const BoundingBox& b) noexcept;
     void operator=(const BoundingBox& b) noexcept;
 
-    bool containsPoint(const vec3<F32>& point) const noexcept;
-    bool containsBox(const BoundingBox& AABB2) const noexcept;
-    bool containsSphere(const BoundingSphere& bSphere) const noexcept;
+    [[nodiscard]] bool containsPoint(const vec3<F32>& point) const noexcept;
+    [[nodiscard]] bool containsBox(const BoundingBox& AABB2) const noexcept;
+    [[nodiscard]] bool containsSphere(const BoundingSphere& bSphere) const noexcept;
 
-    bool collision(const BoundingBox& AABB2) const  noexcept;
-    bool collision(const BoundingSphere& bSphere) const noexcept;
+    [[nodiscard]] bool collision(const BoundingBox& AABB2) const  noexcept;
+    [[nodiscard]] bool collision(const BoundingSphere& bSphere) const noexcept;
 
-    bool compare(const BoundingBox& bb) const noexcept;
-    bool operator==(const BoundingBox& B) const noexcept;
-    bool operator!=(const BoundingBox& B) const noexcept;
+    [[nodiscard]] bool compare(const BoundingBox& bb) const noexcept;
+    [[nodiscard]] bool operator==(const BoundingBox& B) const noexcept;
+    [[nodiscard]] bool operator!=(const BoundingBox& B) const noexcept;
 
     /// Optimized method
-    AABBRayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
+    [[nodiscard]] RayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
 
     void createFromPoints(const vectorEASTL<vec3<F32>>& points) noexcept;
     void createFromPoints(const std::array<vec3<F32>, 8>& points) noexcept;
+    void createFromSphere(const BoundingSphere& bSphere) noexcept;
     void createFromSphere(const vec3<F32>& center, F32 radius) noexcept;
+    void createFromCenterAndSize(const vec3<F32>& center, const vec3<F32>& size) noexcept;
+    void createFromOBB(const OBB& obb) noexcept;
 
     void add(const vec3<F32>& v) noexcept;
     void add(const BoundingBox& bb) noexcept;
@@ -94,16 +95,16 @@ class BoundingBox {
     void transform(const BoundingBox& initialBoundingBox, const mat4<F32>& mat);
     void transform(const mat4<F32>& mat);
 
-    const vec3<F32>& getMin() const noexcept;
-    const vec3<F32>& getMax() const noexcept;
+    [[nodiscard]] const vec3<F32>& getMin() const noexcept;
+    [[nodiscard]] const vec3<F32>& getMax() const noexcept;
 
-    vec3<F32> getCenter() const noexcept;
-    vec3<F32> getExtent() const noexcept;
-    vec3<F32> getHalfExtent() const noexcept;
+    [[nodiscard]] vec3<F32> getCenter() const noexcept;
+    [[nodiscard]] vec3<F32> getExtent() const noexcept;
+    [[nodiscard]] vec3<F32> getHalfExtent() const noexcept;
 
-    F32 getWidth() const noexcept;
-    F32 getHeight() const noexcept;
-    F32 getDepth() const noexcept;
+    [[nodiscard]] F32 getWidth() const noexcept;
+    [[nodiscard]] F32 getHeight() const noexcept;
+    [[nodiscard]] F32 getDepth() const noexcept;
 
     void set(const BoundingBox& bb) noexcept;
     void set(const vec3<F32>& min, const vec3<F32>& max) noexcept;
@@ -119,13 +120,14 @@ class BoundingBox {
 
     void reset() noexcept;
 
-    std::array<vec3<F32>, 8> getPoints() const noexcept;
+    [[nodiscard]] vec3<F32> cornerPoint(const U8 cornerIndex) const noexcept;
+    [[nodiscard]] std::array<vec3<F32>, 8> getPoints() const noexcept;
 
-    F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept;
-    F32 nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept;
+    [[nodiscard]] F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept;
+    [[nodiscard]] F32 nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept;
 
-    inline vec3<F32> getPVertex(const vec3<F32>& normal) const noexcept;
-    inline vec3<F32> getNVertex(const vec3<F32>& normal) const noexcept;
+    [[nodiscard]] inline vec3<F32> getPVertex(const vec3<F32>& normal) const noexcept;
+    [[nodiscard]] inline vec3<F32> getNVertex(const vec3<F32>& normal) const noexcept;
 
    private:
     vec3<F32> _min, _max;

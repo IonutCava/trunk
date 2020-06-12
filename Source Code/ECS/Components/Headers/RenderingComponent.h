@@ -191,7 +191,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void drawDebugAxis(GFX::CommandBuffer& bufferInOut);
     void drawSelectionGizmo(GFX::CommandBuffer& bufferInOut);
     void drawSkeleton(GFX::CommandBuffer& bufferInOut);
-    void drawBounds(const bool AABB, const bool Sphere, GFX::CommandBuffer& bufferInOut);
+    void drawBounds(const bool AABB, const bool OBB, const bool Sphere, GFX::CommandBuffer& bufferInOut);
     
     void prepareRender(const RenderStagePass& renderStagePass);
 
@@ -253,6 +253,9 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderCallback _refractionCallback;
     size_t _reflectionSampler = 0u;
     size_t _refractionSampler = 0u;
+
+    mutable SharedMutex _reflectionLock;
+    mutable SharedMutex _refractionLock;
     Texture* _reflectionTexture = nullptr;
     Texture* _refractionTexture = nullptr;
 
@@ -265,11 +268,13 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     mat4<F32> _worldMatrixCache;
     mat4<F32> _worldOffsetMatrixCache;
-    vec3<F32> _boundsCenterCache;
     vec2<F32> _renderRange;
+    BoundingBox _boundsCache;
+    bool _selectionGizmoDirty = true;
 
     Pipeline*    _primitivePipeline[3] = {nullptr, nullptr, nullptr};
     IMPrimitive* _boundingBoxPrimitive = nullptr;
+    IMPrimitive* _orientedBoundingBoxPrimitive = nullptr;
     IMPrimitive* _boundingSpherePrimitive = nullptr;
     IMPrimitive* _skeletonPrimitive = nullptr;
     IMPrimitive* _axisGizmo = nullptr;
@@ -281,9 +286,10 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     U32 _renderMask = 0u;
 
     bool _drawAABB = false;
+    bool _drawOBB = false;
     bool _drawBS = false;
 
-    std::array<U8, to_base(RenderStage::COUNT)> _lodLevels;
+    std::array<U8, to_base(RenderStage::COUNT)> _lodLevels{};
     ReflectorType _reflectorType = ReflectorType::CUBE;
     RefractorType _refractorType = RefractorType::COUNT;
 

@@ -39,7 +39,7 @@ namespace Divide {
 
 struct Line {
     Line() noexcept {}
-    Line(const vec3<F32>& positionStart, const vec3<F32>& positionEnd, const vec3<F32>& colourStart, const vec3<F32>& colourEnd, const F32 widthStart, const F32 widthEnd) noexcept
+    Line(const vec3<F32>& positionStart, const vec3<F32>& positionEnd, const FColour3& colourStart, const FColour3& colourEnd, const F32 widthStart, const F32 widthEnd) noexcept
         : _positionStart(positionStart),
           _positionEnd(positionEnd),
           _colourStart(colourStart),

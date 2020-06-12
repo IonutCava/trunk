@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/BoundingBox.h"
+#include "Headers/OBB.h"
 #include "Headers/BoundingSphere.h"
 
 namespace Divide {
@@ -34,18 +35,45 @@ BoundingBox::BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept
 {
     createFromPoints(points);
 }
+BoundingBox::BoundingBox(const OBB& obb) noexcept
+    : BoundingBox()
+{
+    createFromOBB(obb);
+}
 
+BoundingBox::BoundingBox(const BoundingSphere& bSphere) noexcept
+    : BoundingBox()
+{
+    createFromSphere(bSphere);
+}
 
 BoundingBox::BoundingBox(const BoundingBox& b) noexcept {
-    // Lock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
 }
 
 void BoundingBox::operator=(const BoundingBox& b) noexcept {
-    // Lock w_lock(_lock);
     this->_min.set(b._min);
     this->_max.set(b._max);
+}
+
+void BoundingBox::createFromSphere(const BoundingSphere& bSphere) noexcept {
+    createFromSphere(bSphere.getCenter(), bSphere.getRadius());
+}
+
+void BoundingBox::createFromCenterAndSize(const vec3<F32>& center, const vec3<F32>& size) noexcept {
+    const vec3<F32> halfSize = 0.5f * size;
+    setMin(center - halfSize);
+    setMax(center + halfSize);
+}
+
+void BoundingBox::createFromOBB(const OBB& obb) noexcept
+{
+    const vec3<F32> halfSize = Abs(obb.axis()[0] * obb.halfExtents()[0]) +
+                               Abs(obb.axis()[1] * obb.halfExtents()[1]) +
+                               Abs(obb.axis()[2] * obb.halfExtents()[2]);
+
+    createFromCenterAndSize(obb.position(), halfSize * 2);
 }
 
 bool BoundingBox::containsBox(const BoundingBox& AABB2) const noexcept {
@@ -65,7 +93,6 @@ bool BoundingBox::containsSphere(const BoundingSphere& bSphere) const noexcept {
 }
 
 bool BoundingBox::collision(const BoundingBox& AABB2) const noexcept {
-    // SharedLock<SharedMutex> r_lock(_lock);
     const vec3<F32>& center = this->getCenter();
     const vec3<F32>& halfWidth = this->getHalfExtent();
     const vec3<F32>& otherCenter = AABB2.getCenter();
@@ -91,14 +118,16 @@ bool BoundingBox::collision(const BoundingSphere& bSphere) const noexcept {
 }
 
 /// Optimized method: http://www.cs.utah.edu/~awilliam/box/box.pdf
-AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
-    // SharedLock<SharedMutex> r_lock(_lock);
+RayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     const vec3<F32> bounds[] = {_min, _max};
 
-    F32 t_min = (bounds[r.sign[0]].x - r.origin.x) * r.inv_direction.x;
-    F32 t_max = (bounds[1 - r.sign[0]].x - r.origin.x) * r.inv_direction.x;
-    const F32 ty_min = (bounds[r.sign[1]].y - r.origin.y) * r.inv_direction.y;
-    const F32 ty_max = (bounds[1 - r.sign[1]].y - r.origin.y) * r.inv_direction.y;
+    Ray::CollisionHelpers colHelpers = r.getCollisionHelpers();
+    const vec3<F32> origin = r._origin;
+
+    F32 t_min = (bounds[colHelpers._sign[0]].x - origin.x) * colHelpers._invDirection.x;
+    F32 t_max = (bounds[1 - colHelpers._sign[0]].x - origin.x) * colHelpers._invDirection.x;
+    const F32 ty_min = (bounds[colHelpers._sign[1]].y - origin.y) * colHelpers._invDirection.y;
+    const F32 ty_max = (bounds[1 - colHelpers._sign[1]].y - origin.y) * colHelpers._invDirection.y;
 
     if ((t_min > ty_max) || (ty_min > t_max)) {
         return { false, (t_min >= 0.0f ? t_min : t_max) };
@@ -112,8 +141,8 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
         t_max = ty_max;
     }
 
-    const F32 tz_min = (bounds[r.sign[2]].z - r.origin.z) * r.inv_direction.z;
-    const F32 tz_max = (bounds[1 - r.sign[2]].z - r.origin.z) * r.inv_direction.z;
+    const F32 tz_min = (bounds[colHelpers._sign[2]].z - origin.z) * colHelpers._invDirection.z;
+    const F32 tz_max = (bounds[1 - colHelpers._sign[2]].z - origin.z) * colHelpers._invDirection.z;
 
     if ((t_min > tz_max) || (tz_min > t_max)) {
         return { false, (t_min >= 0.0f ? t_min : t_max) };
@@ -127,12 +156,12 @@ AABBRayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcep
         t_max = tz_max;
     }
 
-    F32 t = t_min;
-    if (t < 0.0f) {
-        t = t_max;
-    }
+    const F32 t = std::max(t_min < 0.f ? t_max : t_min, 0.0f);
 
-    return { t >= 0.0f, t };
+    RayResult ret;
+    ret.dist = t;
+    ret.hit = IS_IN_RANGE_INCLUSIVE(t, t0, t1);
+    return ret;
 }
 
 void BoundingBox::transform(const mat4<F32>& mat) {
@@ -144,17 +173,15 @@ void BoundingBox::transform(const BoundingBox& initialBoundingBox, const mat4<F3
 }
 
 void BoundingBox::transform(vec3<F32> initialMin, vec3<F32> initialMax, const mat4<F32>& mat) noexcept {
-    // UpgradeToWriteLock uw_lock(ur_lock);
     _min = _max = mat.getTranslation<F32>();
 
-    F32 a = 0.0f, b = 0.0f;
     for (U8 i = 0; i < 3; ++i) {
         F32& min = _min[i];
         F32& max = _max[i];
 
         for (U8 j = 0; j < 3; ++j) {
-            a = mat.m[j][i] * initialMin[j];
-            b = mat.m[j][i] * initialMax[j];  // Transforms are usually row major
+            const F32 a = mat.m[j][i] * initialMin[j];
+            const F32 b = mat.m[j][i] * initialMax[j];  // Transforms are usually row major
 
             if (a < b) {
                 min += a;

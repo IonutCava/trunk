@@ -165,10 +165,25 @@ vec3<T> Perpendicular(const vec3<T>& v) noexcept {
     return Cross(v, cardinalAxis);
 }
 
+template<typename T>
+vec3<T> ProjectToNorm(const vec3<T>& in, const vec3<T> &direction) {
+    return direction * Dot(in, direction);
+}
+
 template <typename T>
 void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
     n.normalize();
     u.set(Cross(Normalized((Cross(n, u))), n));
+}
+
+template <typename T>
+void OrthoNormalize(vec3<T> &v1, vec3<T> &v2, vec3<T> &v3) {
+    v1.normalize();
+    v2 -= v2.projectToNorm(v1);
+    v2.normalize();
+    v3 -= v3.projectToNorm(v1);
+    v3 -= v3.projectToNorm(v2);
+    v3.normalize();
 }
 
 template <typename T>
@@ -197,6 +212,22 @@ vec4<T> Normalize(vec4<T> &vector) {
 template <typename T>
 vec4<T> Normalized(const vec4<T> &vector) {
     return vec4<T>(vector).normalize();
+}
+
+template <typename T>
+void OrthoNormalize(vec4<T> &n, vec4<T> &u) {
+    n.normalize();
+    u.set(Cross(Normalized(Cross(n, u)), n));
+}
+
+template <typename T>
+void OrthoNormalize(vec4<T> &v1, vec4<T> &v2, vec4<T> &v3) {
+    v1.normalize();
+    v2 -= v2.projectToNorm(v1);
+    v2.normalize();
+    v3 -= v3.projectToNorm(v1);
+    v3 -= v3.projectToNorm(v2);p
+    v3.normalize();
 }
 
 /// multiply a vector by a value
@@ -367,6 +398,10 @@ bool vec3<T>::isUniform() const noexcept {
     return COMPARE(this->x, this->y) && COMPARE(this->y, this->z);
 }
 
+template <typename T>
+bool vec3<T>::isPerpendicular(const vec3 other, F32 epsilon) const noexcept {
+    return SQUARED(dot(other)) <= SQUARED(epsilon) * lengthSquared() * other.lengthSquared();
+}
 /// return the squared distance of the vector
 template <typename T>
 T vec3<T>::lengthSquared() const noexcept {
@@ -443,6 +478,11 @@ T vec3<T>::angle(vec3 &v) const {
 template <typename T>
 vec3<T> vec3<T>::direction(const vec3 &u) const {
     return Normalized(vec3(u.x - this->x, u.y - this->y, u.z - this->z));
+}
+
+template <typename T>
+vec3<T> vec3<T>::projectToNorm(const vec3 &direction) {
+    return direction * dot(direction);
 }
 
 /// project this vector on the line defined by the 2 points(A, B)
@@ -772,6 +812,13 @@ template <typename T>
 T vec4<T>::lengthSquared() const noexcept {
     return Dot(*this, *this);
 }
+
+/// project this vector onto the given direction
+template <typename T>
+vec4<T> vec4<T>::projectToNorm(const vec4 &direction) {
+    direction * dot(direction);
+}
+
 /// transform the vector to unit length
 template <typename T>
 vec4<T>& vec4<T>::normalize() {
@@ -789,6 +836,12 @@ template <>
 inline vec4<F32>& vec4<F32>::normalize() {
     _reg._reg = _mm_mul_ps(_reg._reg, _mm_rsqrt_ps(AVX::SimpleDot(_reg._reg, _reg._reg)));
     return *this;
+}
+
+/// The current vector is perpendicular to the specified one within epsilon
+template <typename T>
+bool vec4<T>::isPerpendicular(const vec4 other, F32 epsilon) const noexcept {
+    return SQUARED(dot(other)) <= SQUARED(epsilon) * lengthSquared() * other.lengthSquared();
 }
 
 /// get the smallest value of X, Y, Z or W

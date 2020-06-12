@@ -22,6 +22,10 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 
+
+#include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
+#include "Core/Math/BoundingVolumes/Headers/OBB.h"
+
 namespace ImGui {
     bool InputDoubleN(const char* label, double* v, int components, const char* display_format, ImGuiInputTextFlags extra_flags)
     {
@@ -355,6 +359,16 @@ namespace Divide {
                 camField._dataSetter = [cam](const void* euler) {
                     cam->setEuler(*static_cast<const vec3<F32>*>(euler));
                 };
+                sceneChanged = processField(camField) || sceneChanged;
+            }
+            {
+                vec3<F32> fwd = cam->getForwardDir();
+                EditorComponentField camField = {};
+                camField._name = "Forward";
+                camField._basicType = GFX::PushConstantType::VEC3;
+                camField._type = EditorComponentFieldType::PUSH_TYPE;
+                camField._readOnly = true;
+                camField._data = fwd._v;
                 sceneChanged = processField(camField) || sceneChanged;
             }
             {
@@ -894,6 +908,41 @@ namespace Divide {
                         bb.setMax(*static_cast<const vec3<F32>*>(max));
                         field.set<BoundingBox>(bb);
                     };
+                    ret = processField(bbField) || ret;
+                }
+            }break;
+            case EditorComponentFieldType::ORIENTED_BOUNDING_BOX:
+            {
+                OBB obb = {};
+                field.get<OBB>(obb);
+                vec3<F32> position = obb.position();
+                vec3<F32> hExtents = obb.halfExtents();
+                OBB::OBBAxis axis = obb.axis();
+                {
+                    EditorComponentField bbField = {};
+                    bbField._name = "- Center ";
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = true;
+                    bbField._data = position._v;
+                    ret = processField(bbField) || ret;
+                }
+                {
+                    EditorComponentField bbField = {};
+                    bbField._name = "- Half Extents ";
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = true;
+                    bbField._data = hExtents._v;
+                    ret = processField(bbField) || ret;
+                }
+                for (U8 i = 0; i < 3; ++i) {
+                    EditorComponentField bbField = {};
+                    bbField._name = Util::StringFormat( "- Axis [ %d ]", i).c_str();
+                    bbField._basicType = GFX::PushConstantType::VEC3;
+                    bbField._type = EditorComponentFieldType::PUSH_TYPE;
+                    bbField._readOnly = true;
+                    bbField._data = axis[i]._v;
                     ret = processField(bbField) || ret;
                 }
             }break;

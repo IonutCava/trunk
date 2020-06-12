@@ -75,6 +75,7 @@ namespace Divide {
         DROPDOWN_TYPE,
         BOUNDING_BOX,
         BOUNDING_SPHERE,
+        ORIENTED_BOUNDING_BOX,
         TRANSFORM,
         MATERIAL,
         COUNT

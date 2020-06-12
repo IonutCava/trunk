@@ -640,6 +640,11 @@ void MenuBar::drawDebugMenu() {
                 Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), (temp ? "On" : "Off"));
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_AABB, temp);
             }
+            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_OBB);
+            if (ImGui::MenuItem("Show OBBs", "", &temp)) {
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_ORIENTED_BOUNDING_BOXES")), (temp ? "On" : "Off"));
+                renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_OBB, temp);
+            }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
             if (ImGui::MenuItem("Show bounding spheres", "", &temp)) {
                 Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), (temp ? "On" : "Off"));

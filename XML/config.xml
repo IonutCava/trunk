@@ -5,7 +5,7 @@
 	<useGeometryCache>true</useGeometryCache>
 	<useVegetationCache>true</useVegetationCache>
 	<enableTreeInstances>false</enableTreeInstances>
-	<enableGrassInstances>true</enableGrassInstances>
+	<enableGrassInstances>false</enableGrassInstances>
 	<!-- this is only taken into consideration if binary cache is disabled-->
 	<useShaderTextCache>false</useShaderTextCache>
 	<useShaderBinaryCache>false</useShaderBinaryCache>
@@ -46,7 +46,7 @@
 </runtime>
 <GUI>
 	<CEGUI>
-		<Enabled>true</Enabled>
+		<Enabled>false</Enabled>
 		<defaultGUIScheme>GWEN</defaultGUIScheme>
 	</CEGUI>
 	<IMGUI>
@@ -55,7 +55,7 @@
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
 </GUI>
 <rendering>
-	<MSAASamples>4</MSAASamples>
+	<MSAASamples>0</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
 	<reflectionResolutionFactor>2</reflectionResolutionFactor>
@@ -75,23 +75,23 @@
 		<!-- Defaults to FXAA -->
 		<PostAAType>SMAA</PostAAType>
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
-		<PostAAQualityLevel>2</PostAAQualityLevel>
-		<enableAdaptiveToneMapping>true</enableAdaptiveToneMapping>
+		<PostAAQualityLevel>0</PostAAQualityLevel>
+		<enableAdaptiveToneMapping>false</enableAdaptiveToneMapping>
 		<enableDepthOfField>false</enableDepthOfField>
-		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
+		<enablePerObjectMotionBlur>false</enablePerObjectMotionBlur>
 		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->
-		<enableCameraBlur>true</enableCameraBlur>
-		<enableBloom>true</enableBloom>
+		<enableCameraBlur>false</enableCameraBlur>
+		<enableBloom>false</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>
 		<velocityScale>1</velocityScale>
-		<enableSSAO>true</enableSSAO>
+        <enableSSAO>false</enableSSAO>
 		<ssaoRadius>0.5</ssaoRadius>
 		<ssaoPower>2</ssaoPower>
 		<!-- Kernel size = [64 = 0, 32 = 1, 16 = 2, 8 = 3]. Clamped to [0, 3]-->
 		<ssaoKernelSizeIndex>1</ssaoKernelSizeIndex>
 	</postFX>
 	<shadowMapping>
-		<enabled>true</enabled>
+		<enabled>false</enabled>
 		<!-- Softness is unused at the moment -->
 		<softness>0.5</softness>
 		<!-- Resolution will be rounded up to the next POW_2. -->

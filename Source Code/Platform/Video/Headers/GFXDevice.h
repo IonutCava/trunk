@@ -245,6 +245,7 @@ public:  // GPU interface
     void endFrame(DisplayWindow& window, bool global);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera* activeCamera, GFX::CommandBuffer& bufferInOut);
+    void debugDrawLines(const Line* lines, const size_t count);
     void debugDrawBox(const vec3<F32>& min, const vec3<F32>& max, const FColour3& colour);
     void debugDrawSphere(const vec3<F32>& center, F32 radius, const FColour3& colour);
     void debugDrawCone(const vec3<F32>& root, const vec3<F32>& direction, F32 length, F32 radius, const FColour3& colour);
@@ -407,6 +408,7 @@ protected:
     void renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
+    void debugDrawLines(GFX::CommandBuffer& bufferInOut);
     void debugDrawBoxes(GFX::CommandBuffer& bufferInOut);
     void debugDrawCones(GFX::CommandBuffer& bufferInOut);
     void debugDrawSpheres(GFX::CommandBuffer& bufferInOut);
@@ -453,6 +455,7 @@ private:
     std::array<Line, 3> _axisLines;
     IMPrimitive* _axisGizmo = nullptr;
 
+    DebugPrimitiveHandler<std::tuple<const Line* /*lines*/, size_t/*count*/>, 16u> _debugLines;
     DebugPrimitiveHandler<std::tuple<vec3<F32> /*min*/, vec3<F32> /*max*/, FColour3>, 16u> _debugBoxes;
     DebugPrimitiveHandler<std::tuple<vec3<F32> /*center*/, F32 /*radius*/, FColour3>, 16u> _debugSpheres;
     DebugPrimitiveHandler<std::tuple<vec3<F32> /*root*/, vec3<F32> /*dir*/, F32 /*length*/, F32 /*radius*/, FColour3>, 16u> _debugCones;

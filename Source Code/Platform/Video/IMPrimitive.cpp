@@ -2,6 +2,7 @@
 
 #include "Headers/IMPrimitive.h"
 
+#include "Core/Math/BoundingVolumes/Headers/OBB.h"
 #include "Headers/CommandBufferPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
@@ -28,6 +29,20 @@ void IMPrimitive::reset() {
     _cmdBufferDirty = true;
     _viewport.set(-1);
     clearBatch();
+}
+
+void IMPrimitive::fromOBB(const OBB& obb, const UColour4& colour) {
+    OBB::OOBBEdgeList edges = obb.edgeList();
+    std::array<Line, 12> lines = {};
+    for (U8 i = 0; i < 12; ++i)
+    {
+        lines[i].positionStart(edges[i].start);
+        lines[i].positionEnd(edges[i].end);
+        lines[i].colourStart(colour);
+        lines[i].colourEnd(colour);
+    }
+
+    fromLines(lines.data(), lines.size());
 }
 
 void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UColour4& colour) {

@@ -55,8 +55,8 @@ class BoundingSphere {
 
     void fromBoundingBox(const BoundingBox& bBox) noexcept;
     void fromBoundingSphere(const BoundingSphere& bSphere) noexcept;
-    bool containsPoint(const vec3<F32>& point) const noexcept;
-    bool containsBoundingBox(const BoundingBox& AABB) const noexcept;
+    [[nodiscard]] bool containsPoint(const vec3<F32>& point) const noexcept;
+    [[nodiscard]] bool containsBoundingBox(const BoundingBox& AABB) const noexcept;
 
     // https://code.google.com/p/qe3e/source/browse/trunk/src/BoundingSphere.h?r=28
     void add(const BoundingSphere& bSphere) noexcept;
@@ -70,16 +70,19 @@ class BoundingSphere {
     void setRadius(F32 radius) noexcept;
     void setCenter(const vec3<F32>& center) noexcept;
 
-    const vec3<F32>& getCenter() const noexcept;
-    F32 getRadius() const noexcept;
-    F32 getDiameter() const noexcept;
+    [[nodiscard]] const vec3<F32>& getCenter() const noexcept;
+    [[nodiscard]] F32 getRadius() const noexcept;
+    [[nodiscard]] F32 getDiameter() const noexcept;
 
-    F32 getDistanceFromPoint(const vec3<F32>& point) const noexcept;
+    [[nodiscard]] F32 getDistanceFromPoint(const vec3<F32>& point) const noexcept;
 
     void reset() noexcept;
-    vec4<F32> asVec4() const noexcept;
+    [[nodiscard]] vec4<F32> asVec4() const noexcept;
 
-    bool collision(const BoundingSphere& sphere2) const noexcept;
+    [[nodiscard]] bool collision(const BoundingSphere& sphere2) const noexcept;
+
+    [[nodiscard]] RayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
+
 
    private:
     bool _visibility, _dirty;

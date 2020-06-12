@@ -1,38 +1,37 @@
 #include "stdafx.h"
 
 #include "Headers/SceneManager.h"
-#include "Headers/RenderPassManager.h"
 #include "Headers/FrameListenerManager.h"
+#include "Headers/RenderPassManager.h"
 
+#include "AI/PathFinding/Headers/DivideRecast.h"
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/ParamHandler.h"
+#include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/StringHelper.h"
+#include "Core/Time/Headers/ApplicationTimer.h"
+#include "Core/Time/Headers/ProfileTimer.h"
 #include "GUI/Headers/GUI.h"
 #include "GUI/Headers/GUIButton.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/Configuration.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/PlatformContext.h"
-#include "Core/Time/Headers/ApplicationTimer.h"
+#include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Rendering/Headers/Renderer.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
+#include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Scenes/Headers/ScenePool.h"
 #include "Scenes/Headers/SceneShaderData.h"
-#include "Core/Headers/EngineTaskPool.h"
-#include "Core/Time/Headers/ProfileTimer.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
-#include "Rendering/Headers/Renderer.h"
-#include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "AI/PathFinding/Headers/DivideRecast.h"
 
-#include "Environment/Water/Headers/Water.h"
 #include "Environment/Vegetation/Headers/Vegetation.h"
+#include "Environment/Water/Headers/Water.h"
 
-#include "Geometry/Importer/Headers/DVDConverter.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
-#include "Core/Debugging/Headers/DebugInterface.h"
+#include "Geometry/Importer/Headers/DVDConverter.h"
 
-#include "ECS/Components/Headers/UnitComponent.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/SelectionComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "ECS/Components/Headers/UnitComponent.h"
 
 namespace Divide {
 
@@ -365,23 +364,37 @@ void SceneManager::removePlayerInternal(Scene& parentScene, SceneGraphNode* play
 
 vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const {
     OPTICK_EVENT();
+    constexpr std::array<SceneNodeType, 6> s_ignoredNodes = {
+        SceneNodeType::TYPE_TRANSFORM,
+        SceneNodeType::TYPE_WATER,
+        SceneNodeType::TYPE_SKY,
+        SceneNodeType::TYPE_PARTICLE_EMITTER,
+        SceneNodeType::TYPE_INFINITEPLANE,
+        SceneNodeType::TYPE_VEGETATION
+    };
+    static vectorEASTL<SGNRayResult> rayResults = {};
 
     const SceneGraph* sceneGraph = getActiveScene().sceneGraph();
     const vec3<F32>& eye = camera.getEye();
     const vec2<F32>& zPlanes = camera.getZPlanes();
 
-    vectorEASTL<SGNRayResult> rayResults;
+    SGNIntersectionParams intersectionParams = {};
+    intersectionParams._includeTransformNodes = false;
+    intersectionParams._ignoredTypes = s_ignoredNodes.data();
+    intersectionParams._ignoredTypesCount = s_ignoredNodes.size();
 
-    const auto CheckPointLoS = [&eye, &zPlanes, &sceneGraph](const vec3<F32>& point, I64 nodeGUID, I64 parentNodeGUID, vectorEASTL<SGNRayResult>& resultsOut) -> bool {
-        const Ray cameraRay(point, point.direction(eye));
+    const auto CheckPointLoS = [&](const vec3<F32>& point, I64 nodeGUID, I64 parentNodeGUID) -> bool {
+        intersectionParams._ray = { point, point.direction(eye) };
+        intersectionParams._range = { 0.f, zPlanes.y };
+
         const F32 distanceToPoint = eye.distance(point);
 
-        resultsOut.resize(0);
-        resultsOut.reserve(16);
+        sceneGraph->intersect(intersectionParams, rayResults);
 
-        sceneGraph->intersect(cameraRay, 0.f, zPlanes.y, resultsOut);
-        for (SGNRayResult& result : resultsOut) {
-            if (result.sgnGUID == nodeGUID || result.sgnGUID == parentNodeGUID) {
+        for (const SGNRayResult& result : rayResults) {
+            if (result.sgnGUID == nodeGUID || 
+                result.sgnGUID == parentNodeGUID)
+            {
                 continue;
             }
 
@@ -392,43 +405,27 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return true;
     };
 
-    const auto HasLoSToCamera = [&](SceneGraphNode* ignoreNode, const BoundingBox* bb, vectorEASTL<SGNRayResult>& rayResults) -> SceneGraphNode* {
-        SceneGraphNode* parent = nullptr;
+    const auto HasLoSToCamera = [&](SceneGraphNode* node, const vec3<F32>& point) {
         I64 parentNodeGUID = -1;
-
-        const I64 nodeGUID = ignoreNode->getGUID();
-        if (ignoreNode->getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
-            parent = ignoreNode->parent();
-            parentNodeGUID = parent->getGUID();
+        const I64 nodeGUID = node->getGUID();
+        if (node->getNode().type() == SceneNodeType::TYPE_OBJECT3D) {
+            parentNodeGUID = node->parent()->getGUID();
         }
-
-        // Quick raycast to camera
-        if (CheckPointLoS(bb->getCenter(), nodeGUID, parentNodeGUID, rayResults)) {
-            return parent == nullptr ? ignoreNode : parent;
-        }
-        // This is gonna hurt. The raycast failed, but the node might still be visible
-        auto points = bb->getPoints();
-        for (auto& point : points) {
-            if (CheckPointLoS(point, nodeGUID, parentNodeGUID, rayResults)) {
-                return parent == nullptr ? ignoreNode : parent;
-            }
-        }
-
-        return nullptr;
+        return CheckPointLoS(point, nodeGUID, parentNodeGUID);
     };
 
-    const auto IsNodeInRect = [&screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node)->std::pair<SceneGraphNode*, const BoundingBox*> {
+    const auto IsNodeInRect = [&screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) {
         assert(node != nullptr);
         const SceneNode& sNode = node->getNode();
         if (sNode.type() == SceneNodeType::TYPE_OBJECT3D) {
-            SelectionComponent* sComp = node->get<SelectionComponent>();
+            auto* sComp = node->get<SelectionComponent>();
             if (sComp == nullptr && 
                 (sNode.type() == SceneNodeType::TYPE_OBJECT3D && node->getNode<Object3D>().getObjectType() == to_base(ObjectType::SUBMESH)))
             {
                 if (node->parent() != nullptr) {
                     // Already selected. Skip.
                     if (node->parent()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
-                        return { nullptr, nullptr };
+                        return false;
                     }
                     sComp = node->parent()->get<SelectionComponent>();
                 }
@@ -436,30 +433,59 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
             if (sComp != nullptr && sComp->enabled()) {
                 BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
-                    const BoundingBox& bb = bComp->getBoundingBox();
-                    const vec3<F32>& center = bb.getCenter();
-                    if (screenRect.contains(camera.project(center, viewport))) {
-                        return { node, &bb };
-                    }
+                    const vec3<F32>& center = bComp->getBoundingSphere().getCenter();
+                    return screenRect.contains(camera.project(center, viewport));
                 }
             }
         }
 
-        return { nullptr, nullptr };
+        return false;
     };
 
+    //Step 1: Grab ALL nodes in rect
     vectorEASTL<SceneGraphNode*> ret = {};
-    const VisibleNodeList& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
+
+    VisibleNodeList<1024> inRectList;
+    const VisibleNodeList<>& visNodes = _renderPassCuller->getNodeCache(RenderStage::DISPLAY);
     for (size_t i = 0; i < visNodes.size(); ++i) {
         const VisibleNode& node = visNodes.node(i);
-        auto [parsedNode, bb] = IsNodeInRect(node._node);
-        if (parsedNode != nullptr) {
-            parsedNode = HasLoSToCamera(parsedNode, bb, rayResults);
-            if (parsedNode != nullptr) {
-                // submeshes will usually return their parent mesh as a result so we try and avoid having the same mesh multiple times
-                if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {
-                    ret.push_back(parsedNode);
+        if (IsNodeInRect(node._node)) {
+            inRectList.append(node);
+        }
+    }
+
+    //Step 2: Check Straight LoS to camera
+    VisibleNodeList<1024> LoSList;
+    for (size_t i = 0; i < inRectList.size(); ++i) {
+        const VisibleNode& node = inRectList.node(i);
+        if (HasLoSToCamera(node._node, node._node->get<BoundsComponent>()->getBoundingSphere().getCenter())) {
+            LoSList.append(node);
+        } else {
+            // This is gonna hurt.The raycast failed, but the node might still be visible
+            const OBB& obb = node._node->get<BoundsComponent>()->getOBB();
+            for (U8 p = 0; p < 8; ++p) {
+                if (HasLoSToCamera(node._node, obb.cornerPoint(p))) {
+                    LoSList.append(node);
                 }
+            }
+        }
+    }
+
+    //Step 3: Create list of visible nodes
+    for (size_t i = 0; i < LoSList.size(); ++i) {
+        SceneGraphNode* parsedNode = LoSList.node(i)._node;
+        if (parsedNode != nullptr) {
+            while (true) {
+                const SceneNode& node = parsedNode->getNode();
+                if (node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH) {
+                    parsedNode = parsedNode->parent();
+                } else {
+                    break;
+                }
+            }
+
+            if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {
+                ret.push_back(parsedNode);
             }
         }
     }
@@ -636,7 +662,7 @@ bool SceneManager::loadNode(SceneGraphNode* targetNode) const {
     return LoadSave::loadNodeFromXML(getActiveScene(), targetNode);
 }
 
-void SceneManager::getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
+void SceneManager::getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
@@ -661,7 +687,7 @@ void SceneManager::getSortedReflectiveNodes(const Camera* camera, RenderStage st
     }
 }
 
-void SceneManager::getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const {
+void SceneManager::getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
@@ -685,7 +711,7 @@ void SceneManager::getSortedRefractiveNodes(const Camera* camera, RenderStage st
     }
 }
 
-const VisibleNodeList& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
+const VisibleNodeList<>& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
     OPTICK_EVENT();
 
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);

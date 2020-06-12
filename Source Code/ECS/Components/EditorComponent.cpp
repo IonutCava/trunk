@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
 #include "Headers/EditorComponent.h"
+
+#include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
+#include "Core/Math/BoundingVolumes/Headers/OBB.h"
 #include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "ECS/Components/Headers/TransformComponent.h"
@@ -116,6 +119,9 @@ namespace Divide {
                     pt.put(entryName + ".aabb.max.<xmlattr>.y", bb.getMax().y);
                     pt.put(entryName + ".aabb.max.<xmlattr>.z", bb.getMax().z);
                 } break;
+                case EditorComponentFieldType::ORIENTED_BOUNDING_BOX: {
+                    // We don't save this to XML!
+                }break;
                 case EditorComponentFieldType::BOUNDING_SPHERE: {
                     BoundingSphere bs = {};
                     field.get<BoundingSphere>(bs);
@@ -194,6 +200,10 @@ namespace Divide {
                         });
                         field.set<BoundingBox>(bb);
                     } break;
+                    case EditorComponentFieldType::ORIENTED_BOUNDING_BOX:
+                    {
+                        // We don't load this from XML!
+                    }break;
                     case EditorComponentFieldType::BOUNDING_SPHERE: {
                         BoundingSphere bs = {};
                         bs.setCenter(

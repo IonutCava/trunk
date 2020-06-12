@@ -381,10 +381,9 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     const BoundsComponent* const bounds = node->get<BoundsComponent>();
-    const BoundingBox& aabb = bounds->getBoundingBox();
-    const F32 sphereRadius = bounds->getBoundingSphere().getRadius();
+    const vec4<F32> bSphere = bounds->getBoundingSphere().asVec4();
 
-    dataOut._normalMatrixW.setRow(3, vec4<F32>(aabb.getCenter(), sphereRadius));
+    dataOut._normalMatrixW.setRow(3, bSphere);
     // Get the colour matrix (base colour, metallic, etc)
     rComp.getMaterialColourMatrix(stagePass, dataOut._colourMatrix);
 
@@ -537,7 +536,7 @@ U32 RenderPassManager::buildDrawCommands(const RenderPassParams& params, const b
     return buildBufferData(stagePass, sceneRenderState, params, refresh, bufferInOut);
 }
 
-void RenderPassManager::prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, bool transparencyPass, const RenderingOrder renderOrder) {
+void RenderPassManager::prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList<>& nodes, bool refreshNodeData, bool transparencyPass, const RenderingOrder renderOrder) {
     OPTICK_EVENT();
 
     const RenderStagePass& stagePass = params._stagePass;
@@ -583,7 +582,7 @@ void RenderPassManager::prepareRenderQueues(const RenderPassParams& params, cons
                                packageQueue);
 }
 
-bool RenderPassManager::prePass(const VisibleNodeList& nodes, const RenderPassParams& params, const RenderTarget& target, U32& visibleNodeCount, GFX::CommandBuffer& bufferInOut) {
+bool RenderPassManager::prePass(const VisibleNodeList<>& nodes, const RenderPassParams& params, const RenderTarget& target, U32& visibleNodeCount, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     assert(params._stagePass._passType == RenderPassType::PRE_PASS);
@@ -630,7 +629,7 @@ bool RenderPassManager::prePass(const VisibleNodeList& nodes, const RenderPassPa
     return doPrePass;
 }
 
-bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
+bool RenderPassManager::occlusionPass(const VisibleNodeList<>& nodes,
                                       const U32 visibleNodeCount,
                                       const RenderStagePass& stagePass,
                                       const Camera& camera,
@@ -698,7 +697,7 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList& nodes,
     return true;
 }
 
-void RenderPassManager::mainPass(const VisibleNodeList& nodes, const RenderPassParams& params, RenderTarget& target, const bool prePassExecuted, const bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::mainPass(const VisibleNodeList<>& nodes, const RenderPassParams& params, RenderTarget& target, const bool prePassExecuted, const bool hasHiZ, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
     const RenderStagePass& stagePass = params._stagePass;
@@ -785,7 +784,7 @@ void RenderPassManager::mainPass(const VisibleNodeList& nodes, const RenderPassP
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void RenderPassManager::woitPass(const VisibleNodeList& nodes, const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::woitPass(const VisibleNodeList<>& nodes, const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
     const bool isMSAATarget = params._targetOIT._usage == RenderTargetUsage::OIT_MS;
 
     const RenderStagePass& stagePass = params._stagePass;
@@ -926,7 +925,7 @@ void RenderPassManager::woitPass(const VisibleNodeList& nodes, const RenderPassP
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void RenderPassManager::transparencyPass(const VisibleNodeList& nodes, const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
+void RenderPassManager::transparencyPass(const VisibleNodeList<>& nodes, const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
     if (params._stagePass._stage == RenderStage::SHADOW) {
         return;
@@ -1007,7 +1006,7 @@ void RenderPassManager::doCustomPass(RenderPassParams params, GFX::CommandBuffer
 
     // Cull the scene and grab the visible nodes
     I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
-    const VisibleNodeList& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
+    const VisibleNodeList<>& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(parent().sceneManager(), stage, *params._camera, params._minLoD, params._minExtents, &ignoreGUID, 1);
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;

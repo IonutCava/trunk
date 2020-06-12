@@ -42,9 +42,10 @@ namespace ECS {
 };
 
 namespace Divide {
-class Ray;
 class SceneState;
 class ECSManager;
+
+struct Ray;
 
 namespace Attorney {
     class SceneGraphSGN;
@@ -56,6 +57,7 @@ class SceneGraph : private NonCopyable,
 {
 
     friend class Attorney::SceneGraphSGN;
+
    public:
     explicit SceneGraph(Scene& parentScene);
     ~SceneGraph();
@@ -78,8 +80,7 @@ class SceneGraph : private NonCopyable,
     void onStartUpdateLoop(const U8 loopNumber);
     void idle();
 
-    // Return true if intersections is not empty. Just shorthand ...
-    bool intersect(const Ray& ray, F32 start, F32 end, vectorEASTL<SGNRayResult>& intersections) const;
+    bool intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersectionsOut) const;
 
     SceneGraphNode* createSceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescriptor& descriptor);
 

@@ -868,10 +868,9 @@ bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
 
     if (!_platformContext.gui().mouseMoved(remapArg)) {
         return _sceneManager->mouseMoved(remapArg);
-    } else {
-        _sceneManager->mouseMovedExternally(arg);
     }
-    
+
+    _sceneManager->mouseMovedExternally(arg);
     // InputInterface needs to know when this is completed
     return false;
 }

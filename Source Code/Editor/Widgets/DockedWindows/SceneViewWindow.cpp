@@ -164,14 +164,13 @@ namespace Divide {
                 remainingWndSize.x = wndSz.x - imageSz.x;
             }
 
-            ImVec2 uvExtension = ImVec2(1.f, 1.f);
+            const ImVec2 uvExtension = ImVec2(1.f, 1.f);
             if (remainingWndSize.x > 0) {
                 const F32 remainingSizeInUVSpace = remainingWndSize.x / imageSz.x;
                 const F32 deltaUV = uvExtension.x;
                 const F32 remainingUV = 1.f - deltaUV;
                 if (deltaUV < 1) {
                     const F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
-                    uvExtension.x += adder;
                     remainingWndSize.x -= adder * imageSz.x;
                     imageSz.x += adder * imageSz.x;
                 }
@@ -182,7 +181,6 @@ namespace Divide {
                 const F32 remainingUV = 1.f - deltaUV;
                 if (deltaUV < 1) {
                     F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
-                    uvExtension.y += adder;
                     remainingWndSize.y -= adder * imageSz.y;
                     imageSz.y += adder * imageSz.y;
                 }
@@ -198,10 +196,8 @@ namespace Divide {
             const DisplayWindow* displayWindow = static_cast<DisplayWindow*>(window->Viewport->PlatformHandle);
             // We might be dragging the window
             if (displayWindow != nullptr) {
-                const vec2<I32> windowPosition = displayWindow->getPosition();
-
-                _sceneRect.set(startPos.x, startPos.y, endPos.x, endPos.y);
-                _sceneRectLocal.set(_sceneRect - vec4<I32>(windowPosition.x, windowPosition.y, windowPosition.x, windowPosition.y));
+                _windowOffset = displayWindow->getPosition();
+                _sceneRect.set(startPos.x, startPos.y, imageSz.x, imageSz.y);
             }
         }
         
@@ -238,7 +234,11 @@ namespace Divide {
         _parent.setTransformSettings(settings);
     }
 
-    const Rect<I32>& SceneViewWindow::sceneRect(bool globalCoords) const noexcept {
-        return globalCoords ? _sceneRect : _sceneRectLocal;
+    const Rect<I32>& SceneViewWindow::sceneRect() const noexcept {
+        return  _sceneRect;
     };
+
+    const vec2<I32>& SceneViewWindow::getWindowOffset() const noexcept {
+        return _windowOffset;
+    }
 };

@@ -104,24 +104,26 @@ class RenderPass;
 class SceneRenderState : public SceneComponent {
    public:
     enum class RenderOptions : U16 {
-        /// Show/hide bounding boxes
+        /// Show/hide axis aligned bounding boxes
         RENDER_AABB = toBit(1),
+        /// Show/hide oriented bounding boxes
+        RENDER_OBB = toBit(2),
         /// Show/hide bounding spheres
-        RENDER_BSPHERES = toBit(2),
+        RENDER_BSPHERES = toBit(3),
         /// Show/hide custom IMPrimitive elements
-        RENDER_CUSTOM_PRIMITIVES = toBit(3),
+        RENDER_CUSTOM_PRIMITIVES = toBit(4),
         /// Show/hide geometry
-        RENDER_GEOMETRY = toBit(4),
+        RENDER_GEOMETRY = toBit(5),
         /// Render skeletons for animated geometry
-        RENDER_SKELETONS = toBit(5),
+        RENDER_SKELETONS = toBit(6),
         /// Render wireframe for all scene geometry
-        RENDER_WIREFRAME = toBit(6),
-        RENDER_OCTREE_REGIONS = toBit(7),
-        PLAY_ANIMATIONS = toBit(8),
-        SCENE_GIZMO = toBit(9),
-        SELECTION_GIZMO = toBit(10),
-        ALL_GIZMOS = toBit(11),
-        COUNT = 11
+        RENDER_WIREFRAME = toBit(7),
+        RENDER_OCTREE_REGIONS = toBit(8),
+        PLAY_ANIMATIONS = toBit(9),
+        SCENE_GIZMO = toBit(10),
+        SELECTION_GIZMO = toBit(11),
+        ALL_GIZMOS = toBit(12),
+        COUNT = 12
     };
 
     explicit SceneRenderState(Scene& parentScene);

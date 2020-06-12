@@ -46,11 +46,12 @@ namespace Divide {
 
         void drawInternal() final;
 
-        const Rect<I32>& sceneRect(bool globalCoords) const noexcept;
+        const Rect<I32>& sceneRect() const noexcept;
+        const vec2<I32>& getWindowOffset() const noexcept;
 
     protected:
         Rect<I32> _sceneRect;
-        Rect<I32> _sceneRectLocal;
+        vec2<I32> _windowOffset;
     };
 }; //namespace Divide
 

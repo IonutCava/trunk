@@ -93,6 +93,7 @@ struct Selections {
 };
 
 struct DragSelectData {
+    Rect<I32> _sourceViewport;
     Rect<I32> _targetViewport;
     vec2<I32> _startDragPos;
     vec2<I32> _endDragPos;
@@ -168,7 +169,7 @@ class Scene : public Resource, public PlatformContextComponent {
     }
 
     bool findSelection(PlayerIndex idx, bool clearOld);
-    void beginDragSelection(PlayerIndex idx, vec2<I32> mousePos);
+    void beginDragSelection(PlayerIndex idx, const vec2<I32>& mousePos);
     void endDragSelection(PlayerIndex idx, bool clearSelection);
 
     SceneGraphNode* addParticleEmitter(const Str64& name,

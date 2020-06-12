@@ -119,37 +119,37 @@ public:
 
 private:
     // Returns false if we skipped the pre-pass step
-    bool prePass(const VisibleNodeList& nodes,
+    bool prePass(const VisibleNodeList<>& nodes,
                  const RenderPassParams& params,
                  const RenderTarget& target,
                  U32& visibleNodeCount,
                  GFX::CommandBuffer& bufferInOut);
-    bool occlusionPass(const VisibleNodeList& nodes,
+    bool occlusionPass(const VisibleNodeList<>& nodes,
                        const U32 visibleNodeCount,
                        const RenderStagePass& stagePass,
                        const Camera& camera,
                        const RenderTargetID& sourceDepthBuffer,
                        const RenderTargetID& targetDepthBuffer,
                        GFX::CommandBuffer& bufferInOut) const;
-    void mainPass(const VisibleNodeList& nodes,
+    void mainPass(const VisibleNodeList<>& nodes,
                   const RenderPassParams& params,
                   RenderTarget& target,
                   bool prePassExecuted,
                   bool hasHiZ,
                   GFX::CommandBuffer& bufferInOut);
 
-    void transparencyPass(const VisibleNodeList& nodes,
+    void transparencyPass(const VisibleNodeList<>& nodes,
                           const RenderPassParams& params,
                           GFX::CommandBuffer& bufferInOut);
 
     
-    void woitPass(const VisibleNodeList& nodes,
+    void woitPass(const VisibleNodeList<>& nodes,
                   const RenderPassParams& params,
                   GFX::CommandBuffer& bufferInOut);
 
     [[nodiscard]] RenderPass& getPassForStage(RenderStage renderStage);
     [[nodiscard]] const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList& nodes, bool refreshNodeData, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
+    void prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList<>& nodes, bool refreshNodeData, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
     // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
     U32 buildDrawCommands(const RenderPassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU

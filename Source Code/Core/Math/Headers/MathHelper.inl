@@ -307,8 +307,8 @@ T SIGNED_SQUARED(T input) noexcept {
 
 template<typename T>
 void CLAMP_IN_RECT(T& inout_x, T& inout_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept {
-    CLAMP(inout_x, rect_x, rect_z);
-    CLAMP(inout_y, rect_y, rect_w);
+    CLAMP(inout_x, rect_x, rect_z + rect_x);
+    CLAMP(inout_y, rect_y, rect_w + rect_y);
 }
 
 template<typename T>
@@ -323,8 +323,8 @@ void CLAMP_IN_RECT(T& inout_x, T& inout_y, const vec4<T>& rect) noexcept {
 
 template <typename T>
 bool COORDS_IN_RECT(T input_x, T input_y, T rect_x, T rect_y, T rect_z, T rect_w) noexcept {
-    return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z) &&
-           IS_IN_RANGE_INCLUSIVE(input_y, rect_y, rect_w);
+    return IS_IN_RANGE_INCLUSIVE(input_x, rect_x, rect_z + rect_x) &&
+           IS_IN_RANGE_INCLUSIVE(input_y, rect_y, rect_w + rect_y);
 }
 
 template<typename T>

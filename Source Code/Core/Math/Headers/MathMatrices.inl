@@ -1415,6 +1415,12 @@ template<typename U>
 void mat3<T>::setScale(const vec3<U> &v) noexcept {
     setScale(v.x, v.y, v.z);
 }
+template<typename T>
+vec3<T> mat3<T>::getScale() const noexcept {
+    return vec3<T>(getCol(0).xyz().length(),
+                   getCol(1).xyz().length(),
+                   getCol3(2).xyz().length());
+}
 
 template<typename T>
 void mat3<T>::orthoNormalize() {
@@ -1958,7 +1964,12 @@ void mat4<T>::setCol(I32 index, const U x, const U y, const U z, const U w) noex
 
 template<typename T>
 vec4<T> mat4<T>::getCol(I32 index) const noexcept {
-    return vec4<T>(m[0][index], m[1][index], m[2][index], m[3][index]);
+    return {
+        m[0][index],
+        m[1][index],
+        m[2][index],
+        m[3][index]
+    };
 }
 
 template<typename T>
@@ -1975,6 +1986,18 @@ void mat4<T>::identity() noexcept {
 template<typename T>
 bool mat4<T>::isIdentity() const noexcept {
     return *this == MAT4_IDENTITY;
+}
+
+template<typename T>
+bool mat4<T>::isUniformScale() const noexcept {
+    return getScale().isUniform();
+}
+
+template<typename T>
+bool mat4<T>::isColOrthogonal() const noexcept {
+    return getCol(0).xyz().isPerpendicular(getCol(1).xyz()) &&
+           getCol(0).xyz().isPerpendicular(getCol(2).xyz()) &&
+           getCol(1).xyz().isPerpendicular(getCol(2).xyz());
 }
 
 template<typename T>
@@ -2231,6 +2254,13 @@ template<typename T>
 template<typename U>
 void mat4<T>::setScale(const vec3<U> &v) noexcept {
     setScale(v.x, v.y, v.z);
+}
+
+template<typename T>
+vec3<T> mat4<T>::getScale() const noexcept {
+    return vec3<T>(getCol(0).xyz().length(),
+                   getCol(1).xyz().length(),
+                   getCol(2).xyz().length());
 }
 
 template<typename T>

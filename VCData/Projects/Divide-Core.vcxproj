@@ -21,6 +21,7 @@
     <ClCompile Include="..\..\Source Code\Core\GUIDWrapper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingBox.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\BoundingSphere.cpp" />
+    <ClCompile Include="..\..\Source Code\Core\Math\BoundingVolumes\OBB.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathClasses.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\MathHelper.cpp" />
     <ClCompile Include="..\..\Source Code\Core\Math\Transform.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="../../Source Code/Core\Math\Headers\Dimension.h" />
     <ClInclude Include="../../Source Code/Core\TemplateLibraries\Headers\PolyContainer.h" />
     <ClInclude Include="..\..\Source Code\Core\Headers\ObjectPool.h" />
+    <ClInclude Include="..\..\Source Code\Core\Math\BoundingVolumes\Headers\OBB.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../Source Code/Core\Headers\ByteBuffer.inl" />

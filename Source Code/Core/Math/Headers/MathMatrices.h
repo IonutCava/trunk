@@ -431,6 +431,8 @@ class mat3 {
     template<typename U>
     void setScale(const vec3<U> &v) noexcept;
 
+    vec3<T> getScale() const noexcept;
+
     void orthoNormalize();
 
     union {
@@ -592,6 +594,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     void zero() noexcept;
     void identity() noexcept;
     [[nodiscard]] bool isIdentity() const noexcept;
+    [[nodiscard]] bool isUniformScale() const noexcept;
+    [[nodiscard]] bool isColOrthogonal() const noexcept;
     void swap(mat4 &B) noexcept;
 
     [[nodiscard]] T det() const noexcept;
@@ -632,7 +636,8 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     void setScale(U x, U y, U z) noexcept;
     template<typename U>
     void setScale(const vec3<U> &v) noexcept;
-    
+    vec3<T> getScale() const noexcept;
+
     template<typename U>
     [[nodiscard]] vec3<U> transform(const vec3<U> &v, bool homogeneous) const;
     template<typename U>

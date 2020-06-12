@@ -15,7 +15,6 @@
 namespace Divide {
 
 namespace {
-    constexpr size_t g_maxParallelCullingRequests = 32u;
     constexpr U32 g_nodesPerCullingPartition = 32u;
 
     [[nodiscard]] bool isTransformNode(const SceneNodeType nodeType, const ObjectType objType) noexcept {
@@ -62,17 +61,6 @@ namespace {
     }
 };
 
-void VisibleNodeList::append(const VisibleNodeList& other) {
-    assert(_index + other._index < _nodes.size());
-
-    std::memcpy(_nodes.data() + _index, other._nodes.data(), other._index * sizeof(VisibleNode));
-    _index += other._index;
-}
-
-void VisibleNodeList::append(const VisibleNode& node) {
-    _nodes[_index.fetch_add(1)] = node;
-}
-
 bool RenderPassCuller::onStartup() {
   
     return true;
@@ -83,17 +71,17 @@ bool RenderPassCuller::onShutdown() {
 }
 
 void RenderPassCuller::clear() noexcept {
-    for (VisibleNodeList& cache : _visibleNodes) {
+    for (VisibleNodeList<>& cache : _visibleNodes) {
         cache.reset();
     }
 }
 
-VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, const SceneGraph* sceneGraph, const SceneState* sceneState, PlatformContext& context)
+VisibleNodeList<>& RenderPassCuller::frustumCull(const NodeCullParams& params, const SceneGraph* sceneGraph, const SceneState* sceneState, PlatformContext& context)
 {
     OPTICK_EVENT();
 
     const RenderStage stage = params._stage;
-    VisibleNodeList& nodeCache = getNodeCache(stage);
+    VisibleNodeList<>& nodeCache = getNodeCache(stage);
     nodeCache.reset();
 
     if (sceneState->renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY) ||
@@ -120,7 +108,7 @@ VisibleNodeList& RenderPassCuller::frustumCull(const NodeCullParams& params, con
 }
 
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList& nodes) const {
+void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const {
     OPTICK_EVENT();
 
     // Early out for inactive nodes
@@ -179,7 +167,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* current
     }
 }
 
-void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const NodeCullParams& params, VisibleNodeList& nodes) const {
+void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const NodeCullParams& params, VisibleNodeList<>& nodes) const {
     OPTICK_EVENT();
 
     currentNode->lockChildrenForRead();
@@ -207,7 +195,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const N
     currentNode->unlockChildrenForRead();
 }
 
-void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
+void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList<>& nodesOut) const {
     OPTICK_EVENT();
 
     nodesOut.reset();
@@ -222,7 +210,7 @@ void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEAS
     }
 }
 
-void RenderPassCuller::toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const {
+void RenderPassCuller::toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList<>& nodesOut) const {
     OPTICK_EVENT();
 
     nodesOut.reset();

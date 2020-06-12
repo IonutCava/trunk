@@ -4,32 +4,31 @@
 #include "Headers/Sample.h"
 #include "Headers/UndoManager.h"
 
+#include "Editor/Widgets/Headers/EditorOptionsWindow.h"
 #include "Editor/Widgets/Headers/MenuBar.h"
 #include "Editor/Widgets/Headers/StatusBar.h"
-#include "Editor/Widgets/Headers/EditorOptionsWindow.h"
 
+#include "Editor/Widgets/DockedWindows/Headers/ContentExplorerWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/OutputWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PostFXWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/PropertyWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/SceneViewWindow.h"
-#include "Editor/Widgets/DockedWindows/Headers/ContentExplorerWindow.h"
 #include "Editor/Widgets/DockedWindows/Headers/SolutionExplorerWindow.h"
 
 #include "Editor/Widgets/Headers/ImGuiExtensions.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/FrameListenerManager.h"
 
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 #include "Rendering/Camera/Headers/Camera.h"
 
@@ -37,10 +36,10 @@
 
 #include "ECS/Components/Headers/TransformComponent.h"
 
+#include "Platform/Video/Headers/CommandBufferPool.h"
+
 #include <imgui_internal.h>
 #include <imgui/addons/imgui_memory_editor/imgui_memory_editor.h>
-
-#include "Platform/Video/Headers/CommandBufferPool.h"
 
 namespace Divide {
 
@@ -494,6 +493,8 @@ void Editor::onPreviewFocus(const bool state) {
         io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
         _context.kernel().sceneManager()->onLostFocus();
     }
+
+    Attorney::GizmoEditor::onSceneFocus(_gizmo.get(),  state);
 }
 
 void Editor::toggle(const bool state) {
@@ -559,6 +560,7 @@ void Editor::update(const U64 deltaTimeUS) {
         }else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f) {
             switch (ImGui::GetCurrentContext()->MouseCursor)
             {
+                default:
                 case ImGuiMouseCursor_Arrow:
                     WindowManager::SetCursorStyle(CursorStyle::ARROW);
                     break;
@@ -780,13 +782,21 @@ bool Editor::frameEnded(const FrameEvent& evt) {
     return true;
 }
 
-const Rect<I32>& Editor::scenePreviewRect(bool globalCoords) const {
+Rect<I32> Editor::scenePreviewRect(bool globalCoords) const {
     const SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
-    return sceneView->sceneRect(globalCoords);
+    if (globalCoords) {
+        return sceneView->sceneRect();
+    }
+
+    Rect<I32> rect = sceneView->sceneRect();
+    const vec2<I32>& offset = sceneView->getWindowOffset();
+    rect.x -= offset.x;
+    rect.y -= offset.y;
+    return rect;
 }
 
 // Needs to be rendered immediately. *IM*GUI. IMGUI::NewFrame invalidates this data
-void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut)
+void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) const
 {
     if (windowGUID == -1) {
         windowGUID = _mainWindow->getGUID();
@@ -1031,7 +1041,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
         WindowManager::SetCaptureMouse(anyDown);
         SceneViewWindow* sceneView = static_cast<SceneViewWindow*>(_dockedWindows[to_base(WindowType::SceneView)]);
         const ImVec2 editorMousePos = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO.MousePos;
-        scenePreviewHovered(sceneView->isHovered() && sceneView->sceneRect(true).contains(editorMousePos.x, editorMousePos.y));
+        scenePreviewHovered(sceneView->isHovered() && sceneView->sceneRect().contains(editorMousePos.x, editorMousePos.y));
 
         vec2<I32> gizmoMousePos(editorMousePos.x, editorMousePos.y);
         const Rect<I32>& sceneRect = scenePreviewRect(true);

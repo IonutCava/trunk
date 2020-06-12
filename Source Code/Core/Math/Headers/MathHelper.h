@@ -198,8 +198,8 @@ template <typename T>
 template <typename T>
 [[nodiscard]] vec2<T> COORD_REMAP(vec2<T> input, const Rect<T>& in_rect, const Rect<T>& out_rect) noexcept {
     return vec2<T> {
-        MAP(input.x, in_rect.x, in_rect.z, out_rect.x, out_rect.z),
-        MAP(input.y, in_rect.y, in_rect.w, out_rect.y, out_rect.w)
+        MAP(input.x, in_rect.x, in_rect.x + in_rect.z, out_rect.x, out_rect.x + out_rect.z),
+        MAP(input.y, in_rect.y, in_rect.y + in_rect.w, out_rect.y, out_rect.y + out_rect.w)
     };
 }
 

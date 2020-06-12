@@ -166,7 +166,7 @@ class Object3D : public SceneNode {
     std::array<U16, 4> _geometryPartitionIDs;
     U32 _geometryFlagMask = 0u;
     ObjectType _geometryType = ObjectType::COUNT;
-    RigidBodyShape _rigidBodyShape = RigidBodyShape::SHAPE_COUNT;
+    RigidBodyShape _rigidBodyShape;
     /// 3 indices, pointing to position values, that form a triangle in the mesh.
     /// used, for example, for cooking collision meshes
     vectorEASTL<vec3<U32> > _geometryTriangles;

@@ -53,7 +53,6 @@
 namespace Divide {
 
 namespace {
-    vec3<F32> g_PlayerExtents(1.0f, 1.82f, 0.75f);
     constexpr const char* const g_defaultPlayerName = "Player_%d";
 };
 
@@ -174,7 +173,7 @@ bool Scene::loadNodeFromXML(SceneGraphNode* node) const {
     return sceneGraph()->loadNodeFromXML(assetsFile, node);
 }
 
-bool Scene::saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const {
+bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const {
     using boost::property_tree::ptree;
     const char* assetsFile = "assets.xml";
 
@@ -874,6 +873,7 @@ U16 Scene::registerInputActions() {
                     state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);
                 }
             } break;
+            default: DIVIDE_UNEXPECTED_CALL(); break;
         }
     };
 
@@ -1254,13 +1254,17 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
             updateSelectionData(idx, data, arg.remaped());
         } else {
             bool sceneFocused = true;
+            bool sceneHovered = true;
             if_constexpr (Config::Build::ENABLE_EDITOR) {
                 const Editor& editor = _context.editor();
                 sceneFocused = !editor.running() || editor.scenePreviewFocused();
+                sceneHovered = !editor.running() || editor.scenePreviewHovered();
             }
 
-            if (sceneFocused && !state()->playerState(idx).cameraLockedToMouse()) {
+            if (sceneFocused && sceneHovered  && !state()->playerState(idx).cameraLockedToMouse()) {
                 findHoverTarget(idx, arg.absolutePos());
+            } else if (!sceneHovered) {
+                clearHoverTarget(idx);
             }
         }
     }
@@ -1496,41 +1500,46 @@ bool Scene::checkCameraUnderwater(const Camera& camera) const {
 }
 
 void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
+    constexpr std::array<SceneNodeType, 6> s_ignoredNodes = {
+     SceneNodeType::TYPE_TRANSFORM,
+     SceneNodeType::TYPE_WATER,
+     SceneNodeType::TYPE_SKY,
+     SceneNodeType::TYPE_PARTICLE_EMITTER,
+     SceneNodeType::TYPE_INFINITEPLANE,
+     SceneNodeType::TYPE_VEGETATION
+    };
+
     const Camera* crtCamera = getPlayerForIndex(idx)->camera();
 
     const vec2<F32>& zPlanes = crtCamera->getZPlanes();
     const Rect<I32>& viewport = _context.gfx().getCurrentViewport();
 
-    const F32 aimX = to_F32(aimPos.x);
-    const F32 aimY = viewport.w - to_F32(aimPos.y) - 1;
-
-    const vec3<F32> startRay = crtCamera->unProject(aimX, aimY, 0.0f, viewport);
-    const vec3<F32> endRay = crtCamera->unProject(aimX, aimY, 1.0f, viewport);
+    const vec3<F32> startRay = crtCamera->getEye();
+    const vec3<F32> direction = crtCamera->unProject(to_F32(aimPos.x), viewport.w - to_F32(aimPos.y), viewport);
 
     // see if we select another one
     _sceneSelectionCandidates.resize(0);
+
+    SGNIntersectionParams intersectionParams = {};
+    intersectionParams._ray = { startRay, direction };
+    intersectionParams._range = zPlanes;
+    intersectionParams._includeTransformNodes = true;
+    intersectionParams._ignoredTypes = s_ignoredNodes.data();
+    intersectionParams._ignoredTypesCount = s_ignoredNodes.size();
+
     // Cast the picking ray and find items between the nearPlane and far Plane
-    sceneGraph()->intersect(
-        {
-            startRay,
-            startRay.direction(endRay)
-        },
-        zPlanes.x,
-        zPlanes.y,
-        _sceneSelectionCandidates
-    );
+    sceneGraph()->intersect(intersectionParams, _sceneSelectionCandidates);
 
     if (!_sceneSelectionCandidates.empty()) {
 
-        const auto IsValidTarget = [](SceneGraphNode* sgn, bool inEditMode)
-        {
+        const auto IsValidTarget = [](SceneGraphNode* sgn, bool inEditMode) {
             if (sgn == nullptr) {
                 return false;
             }
 
             if (!inEditMode) {
                 return sgn->get<SelectionComponent>() != nullptr &&
-                       sgn->get<SelectionComponent>()->enabled();
+                    sgn->get<SelectionComponent>()->enabled();
             }
 
             SceneNodeType sType = sgn->getNode().type();
@@ -1538,8 +1547,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
                 const ObjectType oType = sgn->getNode<Object3D>().getObjectType();
 
                 if ((!inEditMode && oType._value == ObjectType::SUBMESH) ||
-                     oType._value == ObjectType::TERRAIN)
-                {
+                    oType._value == ObjectType::TERRAIN) {
                     sType = SceneNodeType::COUNT;
                 } else if (sgn->parent() != nullptr) {
                     sType = sgn->parent()->getNode().type();
@@ -1550,16 +1558,16 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             }
 
             return sType == SceneNodeType::TYPE_OBJECT3D ||
-                   sType == SceneNodeType::TYPE_TRIGGER ||
-                   sType == SceneNodeType::TYPE_PARTICLE_EMITTER;
+                sType == SceneNodeType::TYPE_TRIGGER ||
+                sType == SceneNodeType::TYPE_PARTICLE_EMITTER;
         };
 
         // If we don't force selections, remove all of the nodes that lack a SelectionComponent
         eastl::sort(eastl::begin(_sceneSelectionCandidates),
-                    eastl::end(_sceneSelectionCandidates),
-                    [](const SGNRayResult& A, const SGNRayResult& B) noexcept -> bool {
-                        return A.dist < B.dist;
-                    });
+            eastl::end(_sceneSelectionCandidates),
+            [](const SGNRayResult& A, const SGNRayResult& B) noexcept -> bool {
+            return A.dist < B.dist;
+        });
 
         SceneGraphNode* target = nullptr;
         for (const SGNRayResult& result : _sceneSelectionCandidates) {
@@ -1582,6 +1590,8 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
                 target->setFlag(SceneGraphNode::Flags::HOVERED, true);
             }
         }
+    } else {
+        clearHoverTarget(idx);
     }
 }
 
@@ -1671,13 +1681,8 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
     return false;
 }
 
-void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos) {
-    DragSelectData& data = _dragSelectData[idx];
-
-    const vec2<U16>& resolution = _context.gfx().renderingResolution();
-    data._targetViewport.set(0, 0, resolution.width, resolution.height);
-    mousePos = COORD_REMAP(mousePos, _context.gfx().getCurrentViewport(), data._targetViewport);
-
+void Scene::beginDragSelection(PlayerIndex idx, const vec2<I32>& mousePos) {
+    const bool editorRunning = !Config::Build::ENABLE_EDITOR || _context.editor().running();
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
         if (editor.running() && (!editor.scenePreviewFocused() || !editor.scenePreviewHovered())) {
@@ -1685,9 +1690,17 @@ void Scene::beginDragSelection(PlayerIndex idx, vec2<I32> mousePos) {
         }
     }
 
-    data._startDragPos = mousePos;
-    data._endDragPos = mousePos;
-    data._isDragging = true;
+    DragSelectData& data = _dragSelectData[idx];
+    data._sourceViewport = editorRunning ? _context.gfx().getCurrentViewport() : _context.mainWindow().renderingViewport();
+    if (data._sourceViewport.contains(mousePos)) {
+        const vec2<U16>& resolution = _context.gfx().renderingResolution();
+        data._targetViewport.set(0, 0, resolution.width, resolution.height);
+        data._startDragPos = COORD_REMAP(mousePos, data._sourceViewport, data._targetViewport);
+        data._endDragPos = data._startDragPos;
+        data._isDragging = true;
+    } else {
+        data._isDragging = false;
+    }
 }
 
 void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remaped) {
@@ -1704,14 +1717,16 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
             if (!editor.scenePreviewFocused()) {
                 endDragSelection(idx, false);
                 return;
-            } else if (!remaped) {
+            }
+            if (!remaped) {
                 const Rect<I32> previewRect = _context.editor().scenePreviewRect(false);
                 data._endDragPos = COORD_REMAP(previewRect.clamp(data._endDragPos), previewRect, _context.gfx().getCurrentViewport());
             }
         }
     }
+
     _parent.wantsMouse(true);
-    data._endDragPos = COORD_REMAP(data._endDragPos, _context.gfx().getCurrentViewport(), data._targetViewport);
+    data._endDragPos = COORD_REMAP(data._endDragPos, data._sourceViewport, data._targetViewport);
 
     const vec2<I32> startPos = {
         data._startDragPos.x,
@@ -1723,24 +1738,27 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
         data._targetViewport.w - data._endDragPos.y - 1
     };
 
+    const I32 startX = std::min(startPos.x, endPos.x);
+    const I32 startY = std::min(startPos.y, endPos.y);
+    
     const Rect<I32> selectionRect = {
-        std::min(startPos.x, endPos.x),
-        std::min(startPos.y, endPos.y),
-        std::max(startPos.x, endPos.x),
-        std::max(startPos.y, endPos.y)
+        startX,
+        startY,
+        std::abs(endPos.x - startPos.x),
+        std::abs(endPos.y - startPos.y)
     };
 
     //X0, Y0 -> X1, Y0
     s_lines[0].positionStart({ selectionRect.x, selectionRect.y, 0 });
-    s_lines[0].positionEnd({ selectionRect.z, selectionRect.y, 0 });
+    s_lines[0].positionEnd({ selectionRect.x + selectionRect.z, selectionRect.y, 0 });
     
     //X1 , Y0 -> X1, Y1
-    s_lines[1].positionStart({ selectionRect.z, selectionRect.y, 0 });
-    s_lines[1].positionEnd({ selectionRect.z, selectionRect.w, 0 });
+    s_lines[1].positionStart({ selectionRect.x + selectionRect.z, selectionRect.y, 0 });
+    s_lines[1].positionEnd({ selectionRect.x + selectionRect.z, selectionRect.y + selectionRect.w, 0 });
     
     //X1, Y1 -> X0, Y1
     s_lines[2].positionStart(s_lines[1].positionEnd());
-    s_lines[2].positionEnd({ selectionRect.x, selectionRect.w, 0 });
+    s_lines[2].positionEnd({ selectionRect.x, selectionRect.y + selectionRect.w, 0 });
     
     //X0, Y1 -> X0, Y0
     s_lines[3].positionStart(s_lines[2].positionEnd());
@@ -1750,7 +1768,6 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
 
     if (_context.gfx().getFrameCount() % 2 == 0) {
         clearHoverTarget(idx);
-
         _parent.resetSelection(idx);
         Camera* crtCamera = getPlayerForIndex(idx)->camera();
         vectorEASTL<SceneGraphNode*> nodes = Attorney::SceneManagerScene::getNodesInScreenRect(_parent, selectionRect, *crtCamera, data._targetViewport);

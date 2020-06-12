@@ -3,27 +3,27 @@
 #include "config.h"
 
 #include "Headers/RenderingComponent.h"
-#include "Headers/BoundsComponent.h"
 #include "Headers/AnimationComponent.h"
-#include "Headers/TransformComponent.h"
+#include "Headers/BoundsComponent.h"
 #include "Headers/EnvironmentProbeComponent.h"
+#include "Headers/TransformComponent.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 
 #include "Editor/Headers/Editor.h"
 
 #include "Managers/Headers/SceneManager.h"
 
-#include "Scenes/Headers/SceneState.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Scenes/Headers/SceneState.h"
 
-#include "Platform/Video/Headers/RenderStateBlock.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/Mesh.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 
@@ -113,7 +113,9 @@ RenderingComponent::~RenderingComponent()
     if (_boundingBoxPrimitive) {
         _context.destroyIMP(_boundingBoxPrimitive);
     }
-
+    if (_orientedBoundingBoxPrimitive) {
+        _context.destroyIMP(_orientedBoundingBoxPrimitive);
+    }
     if (_boundingSpherePrimitive) {
         _context.destroyIMP(_boundingSpherePrimitive);
     }
@@ -214,11 +216,6 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         onMaterialChanged();
     }
 
-    SceneGraphNode* parent = _parentSGN->parent();
-    if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
-        parent->clearFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
-    }
-
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
@@ -288,16 +285,21 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     }
 
     if (!renderStagePass.isDepthPass()) {
-        if (_reflectionTexture != nullptr && renderStagePass._stage != RenderStage::REFLECTION) {
-            textures.setTexture(_reflectionTexture->data(), _reflectionSampler, _reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
-        } else {
-            _reflectionIndex = g_invalidRefIndex;
+        {
+            SharedLock<SharedMutex> r_lock(_reflectionLock);
+            if (_reflectionTexture != nullptr && renderStagePass._stage != RenderStage::REFLECTION) {
+                textures.setTexture(_reflectionTexture->data(), _reflectionSampler, _reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
+            } else {
+                _reflectionIndex = g_invalidRefIndex;
+            }
         }
-
-        if (_refractionTexture != nullptr && renderStagePass._stage != RenderStage::REFRACTION) {
-            textures.setTexture(_refractionTexture->data(), _refractionSampler, TextureUsage::REFRACTION_PLANAR);
-        } else {
-            _refractionIndex = g_invalidRefIndex;
+        {
+            SharedLock<SharedMutex> r_lock(_refractionLock);
+            if (_refractionTexture != nullptr && renderStagePass._stage != RenderStage::REFRACTION) {
+                textures.setTexture(_refractionTexture->data(), _refractionSampler, TextureUsage::REFRACTION_PLANAR);
+            } else {
+                _refractionIndex = g_invalidRefIndex;
+            }
         }
     }
 }
@@ -355,6 +357,8 @@ void RenderingComponent::getMaterialColourMatrix(const RenderStagePass& stagePas
 
     if (_materialInstance != nullptr) {
         _materialInstance->getMaterialMatrix(matOut);
+
+        SharedLock<SharedMutex> r_lock(_reflectionLock);
         matOut.element(1, 3) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
     }
 }
@@ -366,9 +370,15 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
                                      renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._cullFlagValue = cullFlag();
-    propertiesOut._reflectionIndex = _reflectionIndex == g_invalidRefIndex ? 0 : _reflectionIndex;
-    propertiesOut._refractionIndex = _refractionIndex == g_invalidRefIndex ? 0 : _refractionIndex;
 
+    {
+        SharedLock<SharedMutex> r_lock(_reflectionLock);
+        propertiesOut._reflectionIndex = _reflectionIndex == g_invalidRefIndex ? 0 : _reflectionIndex;
+    }
+    {
+        SharedLock<SharedMutex> r_lock(_refractionLock);
+        propertiesOut._refractionIndex = _refractionIndex == g_invalidRefIndex ? 0 : _refractionIndex;
+    }
     if (_materialInstance != nullptr) {
         propertiesOut._texOperation = _materialInstance->textureOperation();
         propertiesOut._bumpMethod = _materialInstance->bumpMethod();
@@ -383,12 +393,13 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
 
     // Draw bounding box if needed and only in the final stage to prevent Shadow/PostFX artifacts
     const bool renderBBox = _drawAABB || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
+    const bool renderOBB = _drawOBB || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_OBB);
     const bool renderBSphere = _drawBS || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
     const bool renderSkeleton = renderOptionEnabled(RenderOptions::RENDER_SKELETON) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
     const bool renderSelection = renderOptionEnabled(RenderOptions::RENDER_SELECTION);
-    const bool renderselectionGizmo = renderOptionEnabled(RenderOptions::RENDER_AXIS) || (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED)) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
+    const bool renderSelectionGizmo = renderOptionEnabled(RenderOptions::RENDER_AXIS) || (sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO) && _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED)) || sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::ALL_GIZMOS);
 
-    if (renderselectionGizmo) {
+    if (renderSelectionGizmo) {
         drawDebugAxis(bufferInOut);
     } else if (_axisGizmo) {
         _context.destroyIMP(_axisGizmo);
@@ -399,14 +410,14 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
         _context.destroyIMP(_selectionGizmo);
     }
 
-    drawBounds(renderBBox, renderBSphere, bufferInOut);
+    drawBounds(renderBBox, renderOBB, renderBSphere, bufferInOut);
     if (renderSkeleton) {
         drawSkeleton(bufferInOut);
     }
 
     SceneGraphNode* parent = _parentSGN->parent();
-    if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::MESH_POST_RENDERED)) {
-        parent->setFlag(SceneGraphNode::Flags::MESH_POST_RENDERED);
+    if (parent != nullptr && !parent->hasFlag(SceneGraphNode::Flags::PARENT_POST_RENDERED)) {
+        parent->setFlag(SceneGraphNode::Flags::PARENT_POST_RENDERED);
         RenderingComponent* rComp = parent->get<RenderingComponent>();
         if (rComp != nullptr) {
             rComp->postRender(sceneRenderState, renderStagePass, bufferInOut);
@@ -443,7 +454,7 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
     if (refreshData) {
-        lod = getLoDLevel(_boundsCenterCache, camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
+        lod = getLoDLevel(_boundsCache.getCenter(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
     }
 
     if (canDraw(renderStagePass, lod, refreshData)) {
@@ -504,41 +515,40 @@ bool RenderingComponent::updateReflection(const U16 reflectionIndex,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut)
 {
-    _reflectionTexture = nullptr;
-    _reflectionSampler = 0u;
-    _reflectionIndex = g_invalidRefIndex;
+    if (_reflectorType != ReflectorType::COUNT) {
+        if (_reflectionCallback && inBudget) {
+            const RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
+                : RenderTargetUsage::REFLECTION_CUBE,
+                reflectionIndex);
+            RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
+            _reflectionCallback(params, bufferInOut);
 
-    if (_reflectorType == ReflectorType::COUNT) {
-        return false;
-    }
+            const auto& targetAtt = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u);
 
-    if (_reflectionCallback && inBudget) {
-        const RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR ? RenderTargetUsage::REFLECTION_PLANAR
-                                                                                 : RenderTargetUsage::REFLECTION_CUBE,
-                                         reflectionIndex);
-        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
-        _reflectionCallback(params, bufferInOut);
-
-        const auto& targetAtt = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u);
-        _reflectionIndex = reflectionIndex;
-        _reflectionTexture = targetAtt.texture().get();
-        _reflectionSampler = targetAtt.samplerHash();
-        return true;
-
-    }
-
-    if (_reflectorType == ReflectorType::CUBE) {
-        if (!_envProbes.empty()) {
-            // We need to update this probe because we are going to use it. This will always lag one frame, but at least
-            // we keep updates separate from renders.
-            // ToDo: Investigate if we can lazy-refresh probes here? Call refresh but have a "clean" flag per frame?
-            _envProbes.front()->setDirty();
-
-            const auto& targetAtt = SceneEnvironmentProbePool::reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
-            _reflectionIndex = _envProbes.front()->rtLayerIndex();
-            _reflectionTexture = targetAtt.texture().get();
+            UniqueLock<SharedMutex> w_lock(_reflectionLock);
+            _reflectionIndex = reflectionIndex;
             _reflectionSampler = targetAtt.samplerHash();
-        } else {
+            _reflectionTexture = targetAtt.texture().get();
+            return true;
+
+        }
+
+        if (_reflectorType == ReflectorType::CUBE) {
+            if (!_envProbes.empty()) {
+                // We need to update this probe because we are going to use it. This will always lag one frame, but at least
+                // we keep updates separate from renders.
+                // ToDo: Investigate if we can lazy-refresh probes here? Call refresh but have a "clean" flag per frame?
+                _envProbes.front()->setDirty();
+
+                const auto& targetAtt = SceneEnvironmentProbePool::reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
+
+                UniqueLock<SharedMutex> w_lock(_reflectionLock);
+                _reflectionIndex = _envProbes.front()->rtLayerIndex();
+                _reflectionTexture = targetAtt.texture().get();
+                _reflectionSampler = targetAtt.samplerHash();
+                return false;
+            }
+
             // Need a way better way of handling this ...
             if (Hack::g_skyPtr == nullptr) {
                 const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph()->getNodesByType(SceneNodeType::TYPE_SKY);
@@ -548,13 +558,19 @@ bool RenderingComponent::updateReflection(const U16 reflectionIndex,
             }
 
             if (Hack::g_skyPtr != nullptr) {
+                UniqueLock<SharedMutex> w_lock(_reflectionLock);
                 _refractionIndex = 0;
                 _reflectionTexture = Hack::g_skyPtr->activeSkyBox().get();
                 _reflectionSampler = Hack::g_skyPtr->skyboxSampler();
+                return false;
             }
         }
     }
 
+    UniqueLock<SharedMutex> w_lock(_reflectionLock);
+    _reflectionTexture = nullptr;
+    _reflectionSampler = 0u;
+    _reflectionIndex = g_invalidRefIndex;
     return false;
 }
 
@@ -563,27 +579,25 @@ bool RenderingComponent::updateRefraction(U16 refractionIndex,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut) {
-    _refractionTexture = nullptr;
-    _refractionIndex = g_invalidRefIndex;
-    _refractionSampler = 0u;
-
     // no default refraction system!
-    if (_refractorType == RefractorType::COUNT) {
-        return false;
-    }
-
-    if (_refractionCallback && inBudget) {
+    if (_refractorType != RefractorType::COUNT && _refractionCallback && inBudget) {
         const RenderTargetID refractRTID(RenderTargetUsage::REFRACTION_PLANAR, refractionIndex);
         RenderCbkParams params{ _context, _parentSGN, renderState, refractRTID, refractionIndex, to_U8(_refractorType), camera };
         _refractionCallback(params, bufferInOut);
 
         const auto& targetAtt = _context.renderTargetPool().renderTarget(refractRTID).getAttachment(RTAttachmentType::Colour, 0u);
+
+        UniqueLock<SharedMutex> w_lock(_refractionLock);
         _refractionIndex = refractionIndex; 
         _refractionTexture = targetAtt.texture().get();
         _refractionSampler = targetAtt.samplerHash();
         return true;
     }
 
+    UniqueLock<SharedMutex> w_lock(_refractionLock);
+    _refractionTexture = nullptr;
+    _refractionIndex = g_invalidRefIndex;
+    _refractionSampler = 0u;
     return false;
 }
 
@@ -615,25 +629,27 @@ void RenderingComponent::updateNearestProbes(const SceneEnvironmentProbePool& pr
 void RenderingComponent::drawSelectionGizmo(GFX::CommandBuffer& bufferInOut) {
     if (!_selectionGizmo) {
         _selectionGizmo = _context.newIMP();
-        _selectionGizmo->name("AxisGizmo_" + _parentSGN->name());
+        _selectionGizmo->name("SelectionGizmo_" + _parentSGN->name());
         _selectionGizmo->skipPostFX(true);
         _selectionGizmo->pipeline(*_primitivePipeline[2]);
+        _selectionGizmoDirty = true;
     }
+    
+    if (_selectionGizmoDirty) {
+        _selectionGizmoDirty = false;
 
-    const BoundingBox& bb = _parentSGN->get<BoundsComponent>()->getBoundingBox();
-    if_constexpr(Config::Build::ENABLE_EDITOR) {
-        const Editor& editor = _context.parent().platformContext().editor();
-        if (editor.inEditMode()) {
-
-            //draw something
-            _selectionGizmo->fromBox(bb.getMin(), bb.getMax(), UColour4(0, 0, 255, 255));
-            bufferInOut.add(_selectionGizmo->toCommandBuffer());
-            return;
+        UColour4 colour = UColour4(64, 255, 128, 255);
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
+            const Editor& editor = _context.parent().platformContext().editor();
+            if (editor.inEditMode()) {
+                colour = UColour4(255, 255, 255, 255);
+            }
         }
+
+        //draw something else (at some point ...)
+        _selectionGizmo->fromBox(_boundsCache.getMin(), _boundsCache.getMax(), colour);
     }
 
-    //draw something else (at some point ...)
-    _selectionGizmo->fromBox(bb.getMin(), bb.getMax(), UColour4(255, 255, 255, 255));
     bufferInOut.add(_selectionGizmo->toCommandBuffer());
 }
 
@@ -724,8 +740,8 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
     }
 }
 
-void RenderingComponent::drawBounds(const bool AABB, const bool Sphere, GFX::CommandBuffer& bufferInOut) {
-    if (!AABB && !Sphere) {
+void RenderingComponent::drawBounds(const bool AABB, const bool obb, const bool Sphere, GFX::CommandBuffer& bufferInOut) {
+    if (!AABB && !Sphere && !obb) {
         return;
     }
 
@@ -746,6 +762,21 @@ void RenderingComponent::drawBounds(const bool AABB, const bool Sphere, GFX::Com
         bufferInOut.add(_boundingBoxPrimitive->toCommandBuffer());
     } else if (_boundingBoxPrimitive != nullptr) {
         _context.destroyIMP(_boundingBoxPrimitive);
+    }
+
+    if (obb) {
+        if (_orientedBoundingBoxPrimitive == nullptr) {
+            _orientedBoundingBoxPrimitive = _context.newIMP();
+            _orientedBoundingBoxPrimitive->name("OrientedBoundingBox_" + _parentSGN->name());
+            _orientedBoundingBoxPrimitive->pipeline(*_primitivePipeline[0]);
+            _orientedBoundingBoxPrimitive->skipPostFX(true);
+        }
+
+        const OBB& bb = _parentSGN->get<BoundsComponent>()->getOBB();
+        _orientedBoundingBoxPrimitive->fromOBB(bb, isSubMesh ? UColour4(128, 0, 255, 255) : UColour4(255, 0, 128, 255));
+        bufferInOut.add(_orientedBoundingBoxPrimitive->toCommandBuffer());
+    } else if (_orientedBoundingBoxPrimitive != nullptr) {
+        _context.destroyIMP(_orientedBoundingBoxPrimitive);
     }
 
     if (Sphere) {
@@ -786,7 +817,8 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
         case ECS::CustomEvent::Type::BoundsUpdated:
         {
             BoundsComponent* bComp = static_cast<BoundsComponent*>(data._sourceCmp);
-            _boundsCenterCache = bComp->getBoundingSphere().getCenter();
+            _boundsCache = bComp->getBoundingBox();
+            _selectionGizmoDirty = true;
         } break;
         default: break;
     }

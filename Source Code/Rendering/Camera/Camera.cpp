@@ -298,19 +298,17 @@ bool Camera::updateFrustum() {
     return true;
 }
 
-vec3<F32> Camera::unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const {
-    Rect<F32> temp = {
-        (winCoordsX - F32(viewport[0])) / F32(viewport[2]),
-        (winCoordsY - F32(viewport[1])) / F32(viewport[3]),
-        winCoordsZ,
-        1.0f
-    };
+vec3<F32> Camera::unProject(const F32 winCoordsX, const F32 winCoordsY, const Rect<I32>& viewport) const {
+    const vec2<F32> ndcSpace = { (winCoordsX - viewport.x) / (viewport.z * 0.5f) - 1.0f,
+                                (winCoordsY - viewport.y) / (viewport.w * 0.5f) - 1.0f };
 
-    temp = (getViewMatrix() * getProjectionMatrix()).getInverse() * (2.0f * temp - 1.0f);
-    return (temp.xyz() / temp.w);
+    const vec4<F32> clipSpace = { ndcSpace, -1.0f, 1.0f };
+    const vec4<F32> eyeSpace = { (GetInverse(getProjectionMatrix()) * clipSpace).xy(), -1.0f, 0.0f };
+    //World Space. world matrix = inverse(view matrix)
+    return Normalized((getWorldMatrix() * eyeSpace).xyz());
 }
 
-vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const {
+vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const noexcept {
     const vec4<F32> clipSpace = getProjectionMatrix() * (getViewMatrix() * vec4<F32>(worldCoords, 1.0f));
     const vec3<F32> ndcSpace = clipSpace.xyz() / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
     const vec2<F32> winSpace = ((ndcSpace.xy() + 1.0f) * 0.5f) * viewport.zw() + viewport.xy();

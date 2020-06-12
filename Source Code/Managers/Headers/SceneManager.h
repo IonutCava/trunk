@@ -113,11 +113,11 @@ public:
     void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive);
     void onNodeDestroy(SceneGraphNode* node);
     // cull the scenegraph against the current view frustum
-    const VisibleNodeList& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount);
+    const VisibleNodeList<>& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount);
     // get the full list of reflective nodes
-    void getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const;
+    void getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const;
     // get the full list of refractive nodes
-    void getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList& nodesOut) const;
+    void getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const;
 
     void onLostFocus();
     void onGainFocus();
@@ -388,7 +388,7 @@ class SceneManagerCameraAccessor {
 
 class SceneManagerRenderPass {
    private:
-    static const VisibleNodeList& cullScene(Divide::SceneManager* mgr, RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
+    static const VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
         return mgr->cullSceneGraph(stage, camera, minLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
     }
 

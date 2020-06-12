@@ -76,7 +76,7 @@ namespace Divide {
         bool enabled() const noexcept;
         bool active() const noexcept;
 
-        void onMouseButton(bool presseed);
+        void onMouseButton(bool pressed);
         bool onKey(bool pressed, const Input::KeyEvent& key);
 
     protected:
@@ -85,6 +85,7 @@ namespace Divide {
         void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
         void setTransformSettings(const TransformSettings& settings) noexcept;
         const TransformSettings& getTransformSettings() const noexcept;
+        void onSceneFocus(const bool state) noexcept;
 
     private:
         Editor& _parent;
@@ -100,7 +101,6 @@ namespace Divide {
 
     namespace Attorney {
         class GizmoEditor {
-        private:
             static void render(Gizmo* gizmo, const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
                 gizmo->render(camera, targetViewport, bufferInOut);
             }
@@ -119,6 +119,10 @@ namespace Divide {
 
             static const TransformSettings& getTransformSettings(const Gizmo* gizmo) noexcept {
                 return gizmo->getTransformSettings();
+            }
+
+            static void onSceneFocus(Gizmo* gizmo, const bool state) noexcept  {
+                gizmo->onSceneFocus(state);
             }
             friend class Divide::Editor;
         };

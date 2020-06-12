@@ -2,11 +2,10 @@
 
 #include "Headers/Object3D.h"
 
-#include "Core/Headers/PlatformContext.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Physics/Headers/PXDevice.h"
+#include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 
 #include "ECS/Components/Headers/AnimationComponent.h"
@@ -23,8 +22,9 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descri
                 to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
 
     _context(context),
+    _geometryFlagMask(flagMask),
     _geometryType(type),
-    _geometryFlagMask(flagMask)
+    _rigidBodyShape(RigidBodyShape::SHAPE_COUNT)
 {
     _geometryPartitionIDs.fill(std::numeric_limits<U16>::max());
     _geometryPartitionIDs[0] = 0u;
@@ -298,7 +298,7 @@ void Object3D::saveToXML(boost::property_tree::ptree& pt) const {
 }
 
 void Object3D::loadFromXML(const boost::property_tree::ptree& pt) {
-    stringImpl temp = {};
+    stringImpl temp;
     if (static_cast<const Object3D*>(this)->isPrimitive()) {
         temp = pt.get("model", getObjectType()._to_string());
         assert(temp == getObjectType()._to_string());

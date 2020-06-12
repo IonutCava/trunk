@@ -42,6 +42,14 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     bsField._serialise = false;
     _editorComponent.registerField(std::move(bsField));
 
+    EditorComponentField obsField = {};
+    obsField._name = "Oriented Bouding Box";
+    obsField._data = &_obb;
+    obsField._type = EditorComponentFieldType::ORIENTED_BOUNDING_BOX;
+    obsField._readOnly = true;
+    obsField._serialise = false;
+    _editorComponent.registerField(std::move(obsField));
+
     EditorComponentField vbbField = {};
     vbbField._name = "Show AABB";
     vbbField._dataGetter = [this](void* dataOut) { *static_cast<bool*>(dataOut) = _showAABB; };
@@ -158,6 +166,7 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     }
 
     _boundingSphere.fromBoundingBox(_boundingBox);
+    _obbDirty.store(true);
 
     _parentSGN->SendEvent(
     {
@@ -166,6 +175,16 @@ const BoundingBox& BoundsComponent::updateAndGetBoundingBox() {
     });
 
     return _boundingBox;
+}
+
+const OBB& BoundsComponent::getOBB() noexcept {
+    if (_obbDirty.exchange(false)) {
+        mat4<F32> mat;
+        _tCompCache->getWorldMatrix(mat);
+        _obb.fromBoundingBox(_refBoundingBox, mat);
+    }
+
+    return _obb;
 }
 
 F32 BoundsComponent::distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept {

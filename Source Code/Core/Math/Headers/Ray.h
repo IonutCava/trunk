@@ -44,56 +44,48 @@
 #define _RAY_H_
 
 namespace Divide {
+struct RayResult
+{
+    bool hit = false;
+    F32 dist = std::numeric_limits<F32>::infinity();
+};
 
-class Ray {
-   public:
-    Ray()  noexcept : Ray(VECTOR3_ZERO, WORLD_Y_AXIS)
-    {
-    }
+struct Ray {
+    struct CollisionHelpers {
+        vec3<F32> _invDirection;
+        vec3<I32> _sign;
+    };
 
-    Ray(const vec3<F32> &o, const vec3<F32> &d) noexcept
-        : origin(o),
-          direction(d),
-          inv_direction(1.0f / d.x, 1.0f / d.y, 1.0f / d.z),
-          sign{(inv_direction.x < 0.0f),
-               (inv_direction.y < 0.0f),
-               (inv_direction.z < 0.0f)}
-    {
-    }
-
-    Ray(const Ray &r) noexcept
-    {
-        origin.set(r.origin);
-        direction.set(r.direction);
-        inv_direction.set(r.inv_direction);
-        memcpy(sign, r.sign, 3 * sizeof(I32));
-    }
-
-    Ray& operator=(const Ray &r) noexcept {
-        origin.set(r.origin);
-        direction.set(r.direction);
-        inv_direction.set(r.inv_direction);
-        memcpy(sign, r.sign, 3 * sizeof(I32));
-        return *this;
-    }
+    vec3<F32> _origin;
+    vec3<F32> _direction;
 
     void identity() {
-        set(VECTOR3_ZERO, WORLD_Y_AXIS);
+        _origin = VECTOR3_ZERO;
+        _direction = WORLD_Y_AXIS;
     }
 
-    void set(const vec3<F32> &o, const vec3<F32> &d) {
-        origin.set(o);
-        direction.set(d);
-        inv_direction.set(1.0f / d.x, 1.0f / d.y, 1.0f / d.z);
-        sign[0] = (inv_direction.x < 0.0f);
-        sign[1] = (inv_direction.y < 0.0f);
-        sign[2] = (inv_direction.z < 0.0f);
+    CollisionHelpers getCollisionHelpers() const noexcept {
+        CollisionHelpers ret = {};
+        if (!IS_ZERO(_direction.x)) {
+            ret._invDirection.x = 1.0f / _direction.x;
+        } else {
+            ret._invDirection.x = std::numeric_limits<F32>::infinity();
+        }
+        if (!IS_ZERO(_direction.y)) {
+            ret._invDirection.y = 1.0f / _direction.y;
+        } else {
+            ret._invDirection.y = std::numeric_limits<F32>::infinity();
+        }
+        if (!IS_ZERO(_direction.z)) {
+            ret._invDirection.z = 1.0f / _direction.z;
+        } else {
+            ret._invDirection.z = std::numeric_limits<F32>::infinity();
+        }
+        ret._sign.x = (ret._invDirection.x < 0.0f);
+        ret._sign.y = (ret._invDirection.y < 0.0f);
+        ret._sign.z = (ret._invDirection.z < 0.0f);
+        return ret;
     }
-
-    vec3<F32> origin;
-    vec3<F32> direction;
-    vec3<F32> inv_direction;
-    I32 sign[3];
 };
 
 };  // namespace Divide

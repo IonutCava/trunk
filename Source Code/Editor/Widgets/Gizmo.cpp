@@ -215,6 +215,14 @@ namespace Divide {
         return _transformSettings;
     }
 
+    void Gizmo::onSceneFocus(const bool state) noexcept {
+        ACKNOWLEDGE_UNUSED(state);
+
+        ImGuiIO & io = _imguiContext->IO;
+        _wasUsed = false;
+        io.KeyCtrl = io.KeyShift = io.KeyAlt = io.KeySuper = false;
+    }
+
     bool Gizmo::onKey(bool pressed, const Input::KeyEvent& key) {
         if (pressed) {
             _wasUsed = false;
@@ -264,8 +272,8 @@ namespace Divide {
         return ret;
     }
 
-    void Gizmo::onMouseButton(bool presseed) {
-        if (presseed) {
+    void Gizmo::onMouseButton(bool pressed) {
+        if (pressed) {
             _wasUsed = false;
         } else if (_wasUsed) {
             _shouldRegisterUndo = true;

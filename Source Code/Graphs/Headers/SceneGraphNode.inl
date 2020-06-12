@@ -35,11 +35,11 @@
 
 namespace Divide {
     template<class Predicate>
-    inline bool SceneGraphNode::forEachChild(U32 start, U32 end, Predicate pred) const {
+    bool SceneGraphNode::forEachChild(const U32 start, const U32 end, Predicate predicate) const {
         SharedLock<SharedMutex> r_lock(_childLock);
         for (U32 i = start; i < end; ++i) {
             //SharedLock<SharedMutex> r_lock(_childLock);
-            if (!pred(_children[i], i)) {
+            if (!predicate(_children[i], i)) {
                 return false;
             }
         }
@@ -48,9 +48,20 @@ namespace Divide {
     }
 
     template<class Predicate>
-    inline bool SceneGraphNode::forEachChild(Predicate pred) const {
-        return forEachChild(0u, getChildCount(), pred);
+    bool SceneGraphNode::forEachChild(Predicate predicate) const {
+        return forEachChild(0u, getChildCount(), predicate);
     }
+
+    template <>
+    inline TransformComponent* SceneGraphNode::get<TransformComponent>() const {
+        return Hacks._transformComponentCache;
+    }
+
+    template <>
+    inline BoundsComponent* SceneGraphNode::get<BoundsComponent>() const {
+        return Hacks._boundsComponentCache;
+    }
+
 }; //namespace Divide
 
 #endif //_SCENE_GRAPH_NODE_INL_

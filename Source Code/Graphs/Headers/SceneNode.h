@@ -34,13 +34,11 @@
 #define _SCENE_NODE_H_
 
 #include "SceneNodeRenderState.h"
-#include "Rendering/Camera/Headers/Frustum.h"
-#include "Core/Resources/Headers/Resource.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
-#include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
-#include "Physics/Headers/PhysicsAPIWrapper.h"
+#include "Core/Resources/Headers/Resource.h"
 #include "ECS/Components/Headers/EditorComponent.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
+#include "Rendering/Camera/Headers/Frustum.h"
 
 namespace Divide {
 
@@ -144,17 +142,17 @@ class SceneNode : public CachedResource {
     virtual void setMaterialTpl(const Material_ptr& material);
     const Material_ptr& getMaterialTpl() const;
 
-    inline SceneNodeRenderState& renderState() noexcept { return _renderState; }
-    inline const SceneNodeRenderState& renderState() const noexcept { return _renderState; }
+    SceneNodeRenderState& renderState() noexcept { return _renderState; }
+    const SceneNodeRenderState& renderState() const noexcept { return _renderState; }
 
     virtual const char* getTypeName() const;
 
-    inline ResourceCache* parentResourceCache() noexcept { return _parentCache; }
-    inline const ResourceCache* parentResourceCache() const noexcept { return _parentCache; }
+    ResourceCache* parentResourceCache() noexcept { return _parentCache; }
+    const ResourceCache* parentResourceCache() const noexcept { return _parentCache; }
 
-    inline const BoundingBox& getBounds() const noexcept { return _boundingBox; }
+    const BoundingBox& getBounds() const noexcept { return _boundingBox; }
 
-    inline U32 requiredComponentMask() const noexcept { return _requiredComponentMask; }
+    U32 requiredComponentMask() const noexcept { return _requiredComponentMask; }
 
     virtual void saveCache(ByteBuffer& outputBuffer) const;
     virtual void loadCache(ByteBuffer& inputBuffer);

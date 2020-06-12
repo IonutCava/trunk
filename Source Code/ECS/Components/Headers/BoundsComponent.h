@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _BOUNDS_COMPONENT_H_
 
 #include "SGNComponent.h"
+#include "Core/Math/BoundingVolumes/Headers/OBB.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
@@ -47,6 +48,8 @@ namespace Divide {
         inline const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
         inline const BoundingSphere& getBoundingSphere() const noexcept { return _boundingSphere; }
 
+        const OBB& getOBB() noexcept;
+
         const BoundingBox& updateAndGetBoundingBox();
 
         F32 distanceToBSpehereSQ(const vec3<F32>& pos) const noexcept;
@@ -56,6 +59,7 @@ namespace Divide {
 
         void showAABB(const bool state);
         void showBS(const bool state);
+
     protected:
         friend class SceneGraph;
         friend class BoundsSystem;
@@ -79,6 +83,10 @@ namespace Divide {
         BoundingBox _boundingBox;
         BoundingBox _refBoundingBox;
         BoundingSphere _boundingSphere;
+
+        OBB _obb;
+        std::atomic_bool _obbDirty = false;
+
         TransformComponent* _tCompCache = nullptr;
     };
 

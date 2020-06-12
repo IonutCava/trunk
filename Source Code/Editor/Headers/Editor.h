@@ -148,7 +148,7 @@ class Editor : public PlatformContextComponent,
     bool Redo();
     inline size_t RedoStackSize() const noexcept;
 
-    const Rect<I32>& scenePreviewRect(bool globalCoords) const;
+    Rect<I32> scenePreviewRect(bool globalCoords) const;
     bool wantsMouse() const;
     bool wantsKeyboard() const;
     bool wantsGamepad() const;
@@ -219,7 +219,7 @@ class Editor : public PlatformContextComponent,
     PROPERTY_R(Rect<I32>, targetViewport, Rect<I32>(0, 0, 1, 1));
 
   protected: // attorney
-    void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut);
+    void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) const;
 
     bool saveSceneChanges(DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
     void updateCameraSnapshot();

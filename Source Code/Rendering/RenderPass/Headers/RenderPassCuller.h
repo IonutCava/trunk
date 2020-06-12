@@ -64,18 +64,26 @@ struct VisibleNode {
     F32 _distanceToCameraSq = 0.0f;
 };
 
+template<size_t N = Config::MAX_VISIBLE_NODES>
 struct VisibleNodeList
 {
-    using Container = std::array<VisibleNode, Config::MAX_VISIBLE_NODES>;
+    using Container = std::array<VisibleNode, N>;
 
-    void append(const VisibleNode& node);
-    void append(const VisibleNodeList& other);
+    void append(const VisibleNodeList& other) {
+        assert(_index + other._index < _nodes.size());
 
-                  inline void      reset()       noexcept { _index.store(0); }
-    [[nodiscard]] inline size_t    size()  const noexcept { return _index.load(); }
-    [[nodiscard]] inline bufferPtr data()  const noexcept { return (bufferPtr)_nodes.data(); }
+        std::memcpy(_nodes.data() + _index, other._nodes.data(), other._index * sizeof(VisibleNode));
+        _index += other._index;
+    }
 
-    [[nodiscard]] inline const VisibleNode& node(size_t idx) const noexcept { 
+    void append(const VisibleNode& node) {
+        _nodes[_index.fetch_add(1)] = node;
+    }
+                  void      reset()       noexcept { _index.store(0); }
+    [[nodiscard]] size_t    size()  const noexcept { return _index.load(); }
+    [[nodiscard]] bufferPtr data()  const noexcept { return (bufferPtr)_nodes.data(); }
+
+    [[nodiscard]] const VisibleNode& node(size_t idx) const noexcept { 
         assert(idx < _index.load());
         return _nodes[idx]; 
     }
@@ -95,20 +103,20 @@ class RenderPassCuller {
 
         void clear() noexcept;
 
-        VisibleNodeList& frustumCull(const NodeCullParams& params, const SceneGraph* sceneGraph, const SceneState* sceneState, PlatformContext& context);
+        VisibleNodeList<>& frustumCull(const NodeCullParams& params, const SceneGraph* sceneGraph, const SceneState* sceneState, PlatformContext& context);
 
-        void frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const;
-        void toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList& nodesOut) const;
+        void frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList<>& nodesOut) const;
+        void toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList<>& nodesOut) const;
 
-        VisibleNodeList& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
-        const VisibleNodeList& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
-
-    protected:
-        void frustumCullNode(const Task* parentTask, SceneGraphNode* node, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList& nodes) const;
-        void addAllChildren(const SceneGraphNode* currentNode, const NodeCullParams& params,  VisibleNodeList& nodes) const;
+        VisibleNodeList<>& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
+        const VisibleNodeList<>& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
 
     protected:
-        std::array<VisibleNodeList, to_base(RenderStage::COUNT)> _visibleNodes;
+        void frustumCullNode(const Task* parentTask, SceneGraphNode* node, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const;
+        void addAllChildren(const SceneGraphNode* currentNode, const NodeCullParams& params,  VisibleNodeList<>& nodes) const;
+
+    protected:
+        std::array<VisibleNodeList<>, to_base(RenderStage::COUNT)> _visibleNodes;
 };
 
 };  // namespace Divide

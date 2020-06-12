@@ -40,8 +40,9 @@
 #include "Platform/Video/Headers/Pipeline.h"
 
 namespace Divide {
-
+class OBB;
 class Texture;
+
 namespace GFX {
     class CommandBuffer;
 };
@@ -126,6 +127,9 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     }
 
     virtual GFX::CommandBuffer& toCommandBuffer() const = 0;
+
+    void fromOBB(const OBB& obb,
+                 const UColour4& colour = DefaultColours::WHITE);
 
     void fromBox(const vec3<F32>& min,
                  const vec3<F32>& max,

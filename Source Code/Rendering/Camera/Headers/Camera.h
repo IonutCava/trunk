@@ -172,11 +172,11 @@ class Camera : public Resource {
     Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
     void lockFrustum(bool state) noexcept { _frustumLocked = state; }
 
-    /// Get the world space position from the specified screen coordinates
-    /// (use winCoords.z for depth from 0 to 1)
-    vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, F32 winCoordsZ, const Rect<I32>& viewport) const;
-    vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const { return unProject(winCoords.x, winCoords.y, winCoords.z, viewport); }
-    vec2<F32> project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const;
+    /// Returns the world space direction for the specified winCoords for this camera
+    /// Use getEye() + unProject(...) * distance for a world-space position
+    vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, const Rect<I32>& viewport) const;
+    vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const { return unProject(winCoords.x, winCoords.y, viewport); }
+    vec2<F32> project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const noexcept;
 
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
