@@ -17,9 +17,6 @@ float saturate(float v) { return clamp(v, 0.0f, 1.0f); }
 #include "vegetationData.cmn"
 #include "waterData.cmn"
 
-
-
-
 vec3 rotate_vertex_position(vec3 position, vec4 q) {
     vec3 v = position.xyz;
     return v + 2.0f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
@@ -60,7 +57,7 @@ void main(void) {
     vert = rotate_vertex_position(vert * scale, instance.orientationQuad);
     const vec3 positionW = vert + instance.positionAndScale.xyz;
 
-    const float dist = distance(positionW.xz, cameraPosition.xz);
+    const float dist = distance(positionW.xz, dvd_cameraPosition.xz);
     Data[nodeIndex].data.z = 1.0f;
     // Too far away
     if (dist > dvd_visibilityDistance) {

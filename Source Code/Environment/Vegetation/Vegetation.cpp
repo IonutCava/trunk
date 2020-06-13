@@ -375,19 +375,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     compModule._defines.emplace_back(Util::StringFormat("WORK_GROUP_SIZE %d", WORK_GROUP_SIZE), true);
     compModule._defines.emplace_back(Util::StringFormat("MAX_TREE_INSTANCES %d", s_maxTreeInstances).c_str(), true);
     compModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
-    switch (GetHiZMethod()) {
-        case HiZMethod::ARM:
-            compModule._defines.emplace_back("USE_ARM", true);
-            break;
-        case HiZMethod::NVIDIA:
-            compModule._defines.emplace_back("USE_NVIDIA", true);
-            break;
-        default:
-        case HiZMethod::RASTER_GRID:
-            compModule._defines.emplace_back("USE_RASTERGRID", true);
-            break;
-    };
-
     ShaderProgramDescriptor shaderCompDescriptor = {};
     shaderCompDescriptor._modules.push_back(compModule);
 

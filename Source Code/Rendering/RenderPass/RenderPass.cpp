@@ -103,9 +103,25 @@ void RenderPass::initBufferData() {
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         { 
-            bufferDescriptor._name = Util::StringFormat("RENDER_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            bufferDescriptor._name = Util::StringFormat("NODE_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
             _nodeData = _context.newSB(bufferDescriptor);
         }
+    }
+    {// Collision Data buffer
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementSize = sizeof(GFXDevice::CollisionData);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._ringBufferLength = DataBufferRingSize();
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+        {
+            bufferDescriptor._name = Util::StringFormat("COLLISION_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            _colData = _context.newSB(bufferDescriptor);
+        }
+
     }
     {// Indirect draw command buffer
         ShaderBufferDescriptor bufferDescriptor = {};
@@ -156,6 +172,7 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
     BufferData ret;
     ret._cullCounter = _cullCounter;
     ret._nodeData = _nodeData;
+    ret._colData = _colData;
     ret._cmdBuffer = _cmdBuffer;
     ret._elementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
     ret._lastCommandCount = &_lastCmdCount;
@@ -218,12 +235,12 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             //ToDo: remove this and change lookup code
             GFX::SetClippingStateCommand clipStateCmd = {};
             clipStateCmd._negativeOneToOneDepth = true;
-            GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+            //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
             Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
 
             clipStateCmd._negativeOneToOneDepth = false;
-            GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+            //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
@@ -314,6 +331,7 @@ void RenderPass::postRender() const {
     OPTICK_EVENT();
 
     _nodeData->incQueue();
+    _colData->incQueue();
     _cmdBuffer->incQueue();
 }
 

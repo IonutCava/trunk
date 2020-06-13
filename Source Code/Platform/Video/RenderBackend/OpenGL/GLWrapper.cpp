@@ -417,6 +417,12 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::COUNT,
+        "#define COLLISION_INFO " +
+        Util::to_string(to_base(ShaderBufferLocation::COLLISION_INFO)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
         "#define BUFFER_SCENE_DATA " +
         Util::to_string(to_base(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);

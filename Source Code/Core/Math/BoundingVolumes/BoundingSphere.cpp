@@ -92,12 +92,16 @@ RayResult BoundingSphere::intersect(const Ray& r, const F32 tMin, const F32 tMax
     };
 
     // Ray now found to intersect sphere, compute smallest t value of intersection
-    // If t is negative, ray started inside sphere so clamp t to zero 
-    const F32 t = std::max(-b - Sqrt(discr), 0.0f);
-
+    // If t is negative, ray started inside sphere so clamp t to zero
     RayResult ret;
-    ret.dist = t;
-    ret.hit = IS_IN_RANGE_INCLUSIVE(ret.dist, tMin, tMax);
+    ret.dist = -b - Sqrt(discr);
+    
+    if (ret.dist < 0.0f) {
+        ret.hit = true;
+        ret.dist = 0.0f;
+    } else {
+        ret.hit = IS_IN_RANGE_INCLUSIVE(ret.dist, tMin, tMax);
+    }
     return ret;
 }
 

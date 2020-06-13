@@ -34,6 +34,7 @@ namespace Divide {
             DrawCommandContainer drawCommands;
 
             std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> nodeData;
+            std::array<GFXDevice::CollisionData, Config::MAX_VISIBLE_NODES> collisionData;
         };
 
         std::array<PerPassData, to_base(RenderStage::COUNT)> g_passData;
@@ -346,7 +347,8 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
                                            const bool shadowMap,
                                            const D64 interpolationFactor,
                                            const bool needsInterp,
-                                           GFXDevice::NodeData& dataOut) const {
+                                           GFXDevice::NodeData& dataOut,
+                                           GFXDevice::CollisionData& collisionDataOut) const {
     OPTICK_EVENT();
 
     const SceneGraphNode* node = rComp.getSGN();
@@ -381,9 +383,9 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     const BoundsComponent* const bounds = node->get<BoundsComponent>();
-    const vec4<F32> bSphere = bounds->getBoundingSphere().asVec4();
+    collisionDataOut._boundingSphere = bounds->getBoundingSphere().asVec4();
+    collisionDataOut._boundingBoxHExt = bounds->getBoundingBox().getHalfExtent();
 
-    dataOut._normalMatrixW.setRow(3, bSphere);
     // Get the colour matrix (base colour, metallic, etc)
     rComp.getMaterialColourMatrix(stagePass, dataOut._colourMatrix);
 
@@ -468,7 +470,8 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
                     GFXDevice::NodeData& data = passData.nodeData[bufferParams._dataIndex];
-                    processVisibleNode(*rComp, stagePass, playAnimations, shadowMap, interpFactor, needsInterp, data);
+                    GFXDevice::CollisionData& colData = passData.collisionData[bufferParams._dataIndex];
+                    processVisibleNode(*rComp, stagePass, playAnimations, shadowMap, interpFactor, needsInterp, data, colData);
                     ++bufferParams._dataIndex;
                     ++nodeCount;
                 }
@@ -484,6 +487,11 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 bufferData._elementOffset,
                 *bufferData._lastNodeCount,
                 passData.nodeData.data());
+
+            bufferData._colData->writeData(
+                bufferData._elementOffset,
+                *bufferData._lastNodeCount,
+                passData.collisionData.data());
 
             bufferData._cmdBuffer->writeData(
                 bufferData._elementOffset,
@@ -501,9 +509,16 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         dataBuffer._buffer = bufferData._nodeData;
         dataBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
 
+        ShaderBufferBinding colBuffer = {};
+        colBuffer._binding = ShaderBufferLocation::COLLISION_INFO;
+        colBuffer._buffer = bufferData._colData;
+        colBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
+
+
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
         descriptorSetCmd._set.addShaderBuffer(dataBuffer);
+        descriptorSetCmd._set.addShaderBuffer(colBuffer);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
         for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
@@ -639,17 +654,19 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList<>& nodes,
 {
     OPTICK_EVENT();
 
+    //ToDo: Find a way to skip occlusion culling for low number of nodes in view but also keep
+    //light culling up and running -Ionut
+    ACKNOWLEDGE_UNUSED(visibleNodeCount);
     assert(stagePass._passType == RenderPassType::PRE_PASS);
 
-    //No HiZ
-    if (/*(stagePass._stage != RenderStage::DISPLAY && visibleNodeCount < g_minNodeCountForHiZCull) || */targetDepthBuffer._usage == RenderTargetUsage::COUNT) {
+    if (targetDepthBuffer._usage == RenderTargetUsage::COUNT) {
         return false;
     }
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "HiZ Construct & Cull" });
 
     // Update HiZ Target
-    std::pair<const Texture_ptr&, size_t> HiZTex = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
+    const std::pair<const Texture_ptr&, size_t> HiZTex = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
 
     // ToDo: This should not be needed as we unbind the render target before we dispatch the compute task anyway.
     // See if we can remove this -Ionut
@@ -662,7 +679,7 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList<>& nodes,
     // Run occlusion culling CS
     const RenderPass::BufferData& bufferData = getBufferData(stagePass);
     GFX::SendPushConstantsCommand HIZPushConstantsCMDInOut = {};
-    _context.occlusionCull(stagePass, bufferData, HiZTex.first, HiZTex.second, camera, HIZPushConstantsCMDInOut, bufferInOut);
+    _context.occlusionCull(stagePass, bufferData, HiZTex.first, HiZTex.second, HIZPushConstantsCMDInOut, bufferInOut);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Per-node HiZ Cull" });
     for (size_t i = 0; i < nodes.size(); ++i) {

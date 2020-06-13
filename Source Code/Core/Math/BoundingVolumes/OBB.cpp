@@ -205,10 +205,16 @@ namespace Divide {
             }
         }
 
-        RayResult res;
-        res.dist = std::max((tNear > 0.f) ? tNear : tFar, 0.0f);
-        res.hit = IS_IN_RANGE_INCLUSIVE(res.dist, t0In, t1In);
-        return res;
+        RayResult ret;
+        ret.dist = (tNear > 0.f) ? tNear : tFar;
+        // Ray started inside the box
+        if (ret.dist < 0.0f) {
+            ret.dist = 0.0f;
+            ret.hit = true;
+        } else {
+            ret.hit = IS_IN_RANGE_INCLUSIVE(ret.dist, t0In, t1In);
+        }
+        return ret;
     }
 
 };  // namespace Divide

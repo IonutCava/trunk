@@ -156,11 +156,17 @@ RayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
         t_max = tz_max;
     }
 
-    const F32 t = std::max(t_min < 0.f ? t_max : t_min, 0.0f);
+    const F32 t = t_min < 0.f ? t_max : t_min;
 
     RayResult ret;
     ret.dist = t;
-    ret.hit = IS_IN_RANGE_INCLUSIVE(t, t0, t1);
+    // Ray started inside the box
+    if (ret.dist < 0.0f) {
+        ret.hit = true;
+        ret.dist = 0.0f;
+    } else {
+        ret.hit = IS_IN_RANGE_INCLUSIVE(t, t0, t1);
+    }
     return ret;
 }
 

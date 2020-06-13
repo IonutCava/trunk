@@ -103,8 +103,6 @@ namespace Attorney {
     class KernelApplication;
 };
 
-constexpr HiZMethod GetHiZMethod();
-
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept;
 
@@ -210,6 +208,13 @@ public:
         // [2][3] = reserved
         // [3][3] = reserved
         mat4<F32> _prevWorldMatrix = MAT4_ZERO;
+    };
+
+    struct CollisionData {
+        /// xyz - center, w - radius
+        vec4<F32> _boundingSphere;
+        /// xyz - AABB hExtents, w - unused
+        vec4<F32> _boundingBoxHExt;
     };
 
     enum class MaterialDebugFlag : U8 {
@@ -426,7 +431,6 @@ protected:
                        const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
                        const size_t samplerHash,
-                       const Camera& camera,
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                        GFX::CommandBuffer& bufferInOut) const;
 

@@ -1,5 +1,5 @@
 //ref: https://github.com/nvpro-samples/gl_occlusion_culling
--- Fragment.Nvidia
+-- Fragment
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
 
@@ -83,54 +83,4 @@ void main() {
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     -----------------------------------------------------------------------*/
-}
-
---Fragment.RasterGrid
-
-//http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
-
-uniform ivec2 LastMipSize;
-
-void main(void)
-{
-    // texture should not be linear, so this wouldn't work
-    //vec4 texels = textureGather(LastMip, VAR._texCoord, 0);
-    vec4 texels;
-    texels.x = texture(LastMip, VAR._texCoord).x;
-    texels.y = textureOffset(LastMip, VAR._texCoord, ivec2(-1,  0)).r;
-    texels.z = textureOffset(LastMip, VAR._texCoord, ivec2(-1, -1)).r;
-    texels.w = textureOffset(LastMip, VAR._texCoord, ivec2( 0, -1)).r;
-
-    float maxZ = max(max(texels.x, texels.y), max(texels.z, texels.w));
-
-    vec3 extra;
-    // if we are reducing an odd-width texture then the edge fragments have to fetch additional texels
-    if (((LastMipSize.x & 1) != 0) && (int(gl_FragCoord.x) == LastMipSize.x - 3)) {
-        // if both edges are odd, fetch the top-left corner texel
-        if (((LastMipSize.y & 1) != 0) && (int(gl_FragCoord.y) == LastMipSize.y - 3)) {
-            extra.z = textureOffset(LastMip, VAR._texCoord, ivec2(1, 1)).x;
-            maxZ = max(maxZ, extra.z);
-        }
-        extra.x = textureOffset(LastMip, VAR._texCoord, ivec2(1,  0)).x;
-        extra.y = textureOffset(LastMip, VAR._texCoord, ivec2(1, -1)).x;
-        maxZ = max(maxZ, max(extra.x, extra.y));
-    // if we are reducing an odd-height texture then the edge fragments have to fetch additional texels
-    } else if (((LastMipSize.y & 1) != 0) && (int(gl_FragCoord.y) == LastMipSize.y - 3)) {
-        extra.x = textureOffset(LastMip, VAR._texCoord, ivec2( 0, 1)).x;
-        extra.y = textureOffset(LastMip, VAR._texCoord, ivec2(-1, 1)).x;
-        maxZ = max(maxZ, max(extra.x, extra.y));
-    }
-
-    gl_FragDepth = maxZ;
-}
-
-//ref: https://github.com/ARM-software/opengl-es-sdk-for-android/blob/master/samples/advanced_samples/OcclusionCulling/assets/depth_mip.fs
---Fragment.Arm
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D LastMip;
-
-void main()
-{
-    vec4 depths = textureGather(LastMip, VAR._texCoord, 0);
-    gl_FragDepth = max(max(depths.x, depths.y), max(depths.z, depths.w));
 }

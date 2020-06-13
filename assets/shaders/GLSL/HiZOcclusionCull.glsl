@@ -5,7 +5,7 @@
 #define INVS_SQRT_3 0.57735026919f
 
 uniform uint dvd_numEntities;
-uniform uint countCulledItems = 0u;
+uniform uint dvd_countCulledItems = 0u;
 layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
 
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/
@@ -23,13 +23,18 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
+layout(binding = COLLISION_INFO, std430) coherent buffer dvd_CollisionInfoBlock
+{
+    CollisionInfo dvd_CollisionInfo[MAX_VISIBLE_NODES];
+};
+
 layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
 {
     IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES];
 };
 
 void CullItem(in uint idx) {
-    if (countCulledItems == 1u) {
+    if (dvd_countCulledItems == 1u) {
         atomicCounterIncrement(culledCount);
     }
     dvd_drawCommands[idx].instanceCount = 0u;
@@ -58,12 +63,9 @@ void main()
         return;
     }
 
-    const vec4 bSphere = dvd_Matrices[nodeIndex]._normalMatrixW[3];
-    const vec3 center = bSphere.xyz;
-    const float radius = bSphere.w;
-    const vec3 extents = vec3(radius * INVS_SQRT_3);//dvd_Matrices[nodeIndex]._bbHalfExtents.xyz;
-
-    if (HiZCull(center, extents, radius)) {
+    const vec4 bSphere = dvd_CollisionInfo[nodeIndex]._boundingSphere;
+    const vec3 bBoxHExtents = dvd_CollisionInfo[nodeIndex]._boundingBoxHExt.xyz;
+    if (HiZCull(bSphere.xyz, bBoxHExtents, bSphere.w)) {
         CullItem(ident);
     }
 }

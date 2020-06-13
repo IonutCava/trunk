@@ -45,7 +45,6 @@
 #include "Headers/CommandBufferPool.h"
 
 namespace Divide {
-    constexpr HiZMethod GetHiZMethod() { return HiZMethod::RASTER_GRID; }
 
 namespace TypeUtil {
     const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {
@@ -264,8 +263,11 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     defaultSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     defaultSampler.minFilter(TextureFilter::NEAREST);
     defaultSampler.magFilter(TextureFilter::NEAREST);
+    defaultSampler.anisotropyLevel(0);
     const size_t samplerHash = defaultSampler.getHash();
 
+    SamplerDescriptor depthSampler = defaultSampler;
+    depthSampler.anisotropyLevel(0);
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normAndVelDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
@@ -308,25 +310,16 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     const U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+    hiZDescriptor.autoMipMaps(false);
 
     SamplerDescriptor hiZSampler = {};
     hiZSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     hiZSampler.anisotropyLevel(0u);
-
-    if_constexpr (GetHiZMethod() == HiZMethod::ARM) {
-        hiZSampler.magFilter(TextureFilter::LINEAR);
-        hiZSampler.minFilter(TextureFilter::LINEAR_MIPMAP_NEAREST);
-        hiZSampler.useRefCompare(true);
-        hiZSampler.cmpFunc(ComparisonFunction::LEQUAL);
-    } else {
-        hiZSampler.magFilter(TextureFilter::NEAREST);
-        hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
-    }
-
-    hiZDescriptor.autoMipMaps(false);
+    hiZSampler.magFilter(TextureFilter::NEAREST);
+    hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
 
     vectorEASTL<RTAttachmentDescriptor> hiZAttachments = {
-        { hiZDescriptor, hiZSampler.getHash(), RTAttachmentType::Depth, 0, VECTOR4_ZERO },
+        { hiZDescriptor, hiZSampler.getHash(), RTAttachmentType::Depth, 0, VECTOR4_UNIT },
     };
 
     {
@@ -552,18 +545,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
         fragModule._sourceFile = "HiZConstruct.glsl";
-        switch (GetHiZMethod()) {
-            case HiZMethod::NVIDIA:
-                fragModule._variant = "Nvidia";
-                break;
-            case HiZMethod::ARM:
-                fragModule._variant = "Arm";
-                break;
-            case HiZMethod::RASTER_GRID:
-            default:
-                fragModule._variant = "RasterGrid";
-                break;
-        };
 
         ShaderProgramDescriptor shaderDescriptor = {};
         shaderDescriptor._modules.push_back(vertModule);
@@ -585,19 +566,6 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         ShaderModuleDescriptor compModule = {};
         compModule._moduleType = ShaderType::COMPUTE;
         compModule._defines.emplace_back(Util::StringFormat("WORK_GROUP_SIZE %d", GROUP_SIZE_AABB), true);
-
-        switch (GetHiZMethod()) {
-            case HiZMethod::ARM:
-                compModule._defines.emplace_back("USE_ARM", true);
-                break;
-            case HiZMethod::NVIDIA:
-                compModule._defines.emplace_back("USE_NVIDIA", true);
-                break;
-            default:
-            case HiZMethod::RASTER_GRID:
-                compModule._defines.emplace_back("USE_RASTERGRID", true);
-                break;
-        };
         compModule._sourceFile = "HiZOcclusionCull.glsl";
 
         ShaderProgramDescriptor shaderDescriptor = {};
@@ -1533,89 +1501,67 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
         GFX::EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
-        if_constexpr (GetHiZMethod() == HiZMethod::COUNT) {
-            GFX::ComputeMipMapsCommand mipMapCommand = {};
-            mipMapCommand._texture = hizDepthTex.get();
-            mipMapCommand._layerRange = { 0, hizDepthTex->getMipCount() };
-            GFX::EnqueueCommand(cmdBufferInOut, mipMapCommand);
-        } else {
-            GFX::EnqueueCommand(cmdBufferInOut, GFX::BindPipelineCommand{ _HIZPipeline });
+        GFX::EnqueueCommand(cmdBufferInOut, GFX::BindPipelineCommand{ _HIZPipeline });
 
-            GFX::SetViewportCommand viewportCommand = {};
-            GFX::SendPushConstantsCommand pushConstantsCommand = {};
-            GFX::SetTextureMipLevelsCommand mipCommand = {};
-            GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
+        GFX::SetViewportCommand viewportCommand = {};
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        GFX::BeginRenderSubPassCommand beginRenderSubPassCmd = {};
 
-            mipCommand._texture = hizDepthTex.get();
+        // for i > 0, use texture views?
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+        descriptorSetCmd._set._textureData.setTexture(hizData, att.samplerHash(), TextureUsage::DEPTH);
+        GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
-            // for i > 0, use texture views?
-            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(hizData, att.samplerHash(), TextureUsage::DEPTH);
-            GFX::EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
+        // We skip the first level as that's our full resolution image
+        U16 twidth = width;
+        U16 theight = height;
+        bool wasEven = false;
+        U16 owidth = twidth;
+        U16 oheight = theight;
+        while (dim) {
+            if (level) {
+                twidth = twidth < 1 ? 1 : twidth;
+                theight = theight < 1 ? 1 : theight;
 
-            // We skip the first level as that's our full resolution image
-            U16 twidth = width;
-            U16 theight = height;
-            bool wasEven = false;
-            U16 owidth = twidth;
-            U16 oheight = theight;
-            while (dim) {
-                if (level) {
-                    twidth = twidth < 1 ? 1 : twidth;
-                    theight = theight < 1 ? 1 : theight;
+                // Bind next mip level for rendering but first restrict fetches only to previous level
+                beginRenderSubPassCmd._mipWriteLevel = level;
+                GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
 
-                    // Bind next mip level for rendering but first restrict fetches only to previous level
-                    beginRenderSubPassCmd._mipWriteLevel = level;
-                    GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
+                // Update the viewport with the new resolution
+                viewportCommand._viewport.set(0, 0, twidth, theight);
+                GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
 
-                    // Update the viewport with the new resolution
-                    viewportCommand._viewport.set(0, 0, twidth, theight);
-                    GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
+                pushConstantsCommand._constants.set(_ID("depthInfo"), GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
+                pushConstantsCommand._constants.set(_ID("LastMipSize"), GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
+                GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
-                    if_constexpr (GetHiZMethod() != HiZMethod::NVIDIA) {
-                        mipCommand._baseLevel = level - 1;
-                        mipCommand._maxLevel = level - 1;
-                        GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
-                    }
+                // Dummy draw command as the full screen quad is generated completely in the vertex shader
+                GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
 
-                    pushConstantsCommand._constants.set(_ID("depthInfo"), GFX::PushConstantType::IVEC2, vec2<I32>(level - 1, wasEven ? 1 : 0));
-                    pushConstantsCommand._constants.set(_ID("LastMipSize"), GFX::PushConstantType::IVEC2, vec2<I32>(owidth, oheight));
-                    GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
-
-                    // Dummy draw command as the full screen quad is generated completely in the vertex shader
-                    GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
-
-                    GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
-                }
-
-                // Calculate next viewport size
-                wasEven = (twidth % 2 == 0) && (theight % 2 == 0);
-                dim /= 2;
-                owidth = twidth;
-                oheight = theight;
-                twidth /= 2;
-                theight /= 2;
-                level++;
+                GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
             }
 
-            // Restore mip level
-            beginRenderSubPassCmd._mipWriteLevel = 0;
-            GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
-
-            if_constexpr (GetHiZMethod() != HiZMethod::NVIDIA) {
-                mipCommand._baseLevel = 0;
-                mipCommand._maxLevel = hizDepthTex->getMipCount() - 1;
-                GFX::EnqueueCommand(cmdBufferInOut, mipCommand);
-            }
-
-            GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
-
-            viewportCommand._viewport.set(previousViewport);
-            GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
+            // Calculate next viewport size
+            wasEven = (twidth % 2 == 0) && (theight % 2 == 0);
+            dim /= 2;
+            owidth = twidth;
+            oheight = theight;
+            twidth /= 2;
+            theight /= 2;
+            level++;
         }
-        // Unbind the render target
-        GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
+
+        // Restore mip level
+        beginRenderSubPassCmd._mipWriteLevel = 0;
+        GFX::EnqueueCommand(cmdBufferInOut, beginRenderSubPassCmd);
+
+        GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
+
+        viewportCommand._viewport.set(previousViewport);
+        GFX::EnqueueCommand(cmdBufferInOut, viewportCommand);
     }
+    // Unbind the render target
+    GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
 
     GFX::EnqueueCommand(cmdBufferInOut, GFX::EndDebugScopeCommand{});
 
@@ -1626,7 +1572,6 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
                               const RenderPass::BufferData& bufferData,
                               const Texture_ptr& depthBuffer,
                               const size_t samplerHash,
-                              const Camera& camera,
                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                               GFX::CommandBuffer& bufferInOut) const
 {
@@ -1660,19 +1605,9 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
     bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), samplerHash, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    const mat4<F32>& viewMatrix = camera.getViewMatrix();
-    const mat4<F32>& projectionMatrix = camera.getProjectionMatrix();
-
-    HIZPushConstantsCMDInOut._constants.clear();
-    HIZPushConstantsCMDInOut._constants.countHint(GetHiZMethod() == HiZMethod::ARM ? 7 : 8);
-    HIZPushConstantsCMDInOut._constants.set(_ID("countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
+    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
     HIZPushConstantsCMDInOut._constants.set(_ID("dvd_numEntities"), GFX::PushConstantType::UINT, cmdCount);
-    HIZPushConstantsCMDInOut._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, viewMatrix);
-    HIZPushConstantsCMDInOut._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, projectionMatrix);
-    HIZPushConstantsCMDInOut._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(viewMatrix, projectionMatrix));
-    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_nearPlaneDistance"), GFX::PushConstantType::FLOAT, camera.getZPlanes().x);
-    HIZPushConstantsCMDInOut._constants.set(_ID("cameraPosition"), GFX::PushConstantType::VEC3, camera.getEye());
-    HIZPushConstantsCMDInOut._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
+    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_viewSize"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
 
     GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
 

@@ -179,6 +179,7 @@ enum class ShaderBufferLocation : U8 {
     LIGHT_SHADOW,
     LIGHT_INDICES,
     NODE_INFO,
+    COLLISION_INFO,
     BONE_TRANSFORMS,
     BONE_TRANSFORMS_PREV,
     SCENE_DATA,
@@ -536,13 +537,6 @@ enum class QueryType : U8 {
     TIME = 0,
     PRIMITIVES_GENERATED,
     GPU_TIME,
-    COUNT
-};
-
-enum class HiZMethod : U8 {
-    RASTER_GRID = 0,
-    ARM,
-    NVIDIA,
     COUNT
 };
 

@@ -1,103 +1,18 @@
-#if defined(USE_ARM)
-layout(binding = TEXTURE_UNIT0) uniform sampler2DShadow HiZBuffer;
-#else
 layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
-#endif
 
-uniform float dvd_nearPlaneDistance;
-uniform vec2 viewportDimensions;
-uniform vec3 cameraPosition;
-uniform mat4 viewMatrix;
-uniform mat4 projectionMatrix;
-uniform mat4 viewProjectionMatrix;
+uniform vec2 dvd_viewSize;
 
-#if defined(USE_RASTERGRID) || defined(USE_ARM)
-vec4 BoundingBox[8];
-bool InstanceCloudReduction(const in vec3 position, const in vec3 extents) {
-    /* create the bounding box of the object */
-    BoundingBox[0] = viewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y,  extents.z), 1.0f);
-    BoundingBox[1] = viewProjectionMatrix * vec4(position + vec3(-extents.x,  extents.y,  extents.z), 1.0f);
-    BoundingBox[2] = viewProjectionMatrix * vec4(position + vec3( extents.x, -extents.y,  extents.z), 1.0f);
-    BoundingBox[3] = viewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y,  extents.z), 1.0f);
-    BoundingBox[4] = viewProjectionMatrix * vec4(position + vec3( extents.x,  extents.y, -extents.z), 1.0f);
-    BoundingBox[5] = viewProjectionMatrix * vec4(position + vec3(-extents.x,  extents.y, -extents.z), 1.0f);
-    BoundingBox[6] = viewProjectionMatrix * vec4(position + vec3( extents.x, -extents.y, -extents.z), 1.0f);
-    BoundingBox[7] = viewProjectionMatrix * vec4(position + vec3(-extents.x, -extents.y, -extents.z), 1.0f);
-
-    // check how the bounding box resides regarding to the view frustum 
-    uint outOfBound[6] = uint[](0, 0, 0, 0, 0, 0);
-    
-
-    for (int i = 0; i < 8; i++)
-    {
-        const float cmp = BoundingBox[i].w;
-        if (BoundingBox[i].x >  cmp) outOfBound[0]++;
-        if (BoundingBox[i].x < -cmp) outOfBound[1]++;
-        if (BoundingBox[i].y >  cmp) outOfBound[2]++;
-        if (BoundingBox[i].y < -cmp) outOfBound[3]++;
-        if (BoundingBox[i].z >  cmp) outOfBound[4]++;
-        if (BoundingBox[i].z < -cmp) outOfBound[5]++;
-    }
-
-    bool inFrustum = true;
-
-    for (int i = 0; i<6; i++) {
-        if (outOfBound[i] == 8) {
-            inFrustum = false;
-            break;
+bool SphereInFrustum(vec3 pos, float r) {
+    for (int i = 0; i < 6; i++) {
+        if (dot(vec4(pos, 1.f), dvd_frustumPlanes[i]) < -r) {
+            // sphere outside plane
+            return false;
         }
     }
-
-    return !inFrustum;
+    return true;
 }
-#endif
 
-#if defined(USE_ARM)
-
-bool zBufferCullARM(const in vec3 view_center, const in float radius, in float nearest_z) {
-    float az_plane_horiz_length = length(view_center.xz);
-    float az_plane_vert_length = length(view_center.yz);
-    vec2 az_plane_horiz_norm = view_center.xz / az_plane_horiz_length;
-    vec2 az_plane_vert_norm = view_center.yz / az_plane_vert_length;
-
-    vec2 t = sqrt(vec2(az_plane_horiz_length, az_plane_vert_length) * vec2(az_plane_horiz_length, az_plane_vert_length) - radius * radius);
-    vec4 w = vec4(t, radius, radius) / vec2(az_plane_horiz_length, az_plane_vert_length).xyxy;
-
-    vec4 horiz_cos_sin = az_plane_horiz_norm.xyyx * t.x * vec4(w.xx, -w.z, w.z);
-    vec4 vert_cos_sin = az_plane_vert_norm.xyyx * t.y * vec4(w.yy, -w.w, w.w);
-
-    vec2 horiz0 = horiz_cos_sin.xy + horiz_cos_sin.zw;
-    vec2 horiz1 = horiz_cos_sin.xy - horiz_cos_sin.zw;
-    vec2 vert0 = vert_cos_sin.xy + vert_cos_sin.zw;
-    vec2 vert1 = vert_cos_sin.xy - vert_cos_sin.zw;
-
-    vec4 projected = -0.5f *
-                     vec4(projectionMatrix[0][0],
-                          projectionMatrix[0][0],
-                          projectionMatrix[1][1],
-                          projectionMatrix[1][1]) *
-                     vec4(horiz0.x, horiz1.x, vert0.x, vert1.x) /
-                     vec4(horiz0.y, horiz1.y, vert0.y, vert1.y) + 0.5f;
-
-    vec2 min_xy = projected.yw;
-    vec2 max_xy = projected.xz;
-
-    vec2 zw = mat2(projectionMatrix[2].zw, projectionMatrix[3].zw) * vec2(nearest_z, 1.0);
-    nearest_z = 0.5f * zw.x / zw.y + 0.5f;
-
-    vec2 diff_pix = (max_xy - min_xy) * vec2(textureSize(HiZBuffer, 0));
-    float max_diff = max(max(diff_pix.x, diff_pix.y), 1.0f);
-    float lod = ceil(log2(max_diff));
-    vec2 mid_pix = 0.5f * (max_xy + min_xy);
-
-    return (textureLod(HiZBuffer, vec3(mid_pix, nearest_z), lod) <= 0.0f);
-}
-#endif
-
-#if defined(USE_NVIDIA)
-vec4 bboxMin;
-vec4 bboxMax;
-vec4 getBoxCorner(int n) {
+vec4 getBoxCorner(in int n, in vec4 bboxMin, in vec4 bboxMax) {
     switch (n) {
         case 0: return vec4(bboxMin.x, bboxMin.y, bboxMin.z, 1);
         case 1: return vec4(bboxMax.x, bboxMin.y, bboxMin.z, 1);
@@ -127,22 +42,35 @@ vec3 projected(vec4 pos) {
 }
 
 bool pixelCull(vec3 clipmin, vec3 clipmax) {
-    vec2 dim = (clipmax.xy - clipmin.xy) * 0.5 * viewportDimensions;
-    return  max(dim.x, dim.y) < 0.01f;
+    const vec2 dim = (clipmax.xy - clipmin.xy) * 0.5f * dvd_viewSize;
+    return  max(dim.x, dim.y) < 0.f;
 }
 
-bool zBufferCullNvidia(const in vec3 position, const in vec3 extents) {
-    bboxMin = vec4(position - extents, 1.0f);
-    bboxMax = vec4(position + extents, 1.0f);
+
+bool HiZCull(const in vec3 position, const in vec3 hextents, const in float bSphereRadius) {
+    // Basic frustum culling
+    if (!SphereInFrustum(position, bSphereRadius)) {
+        return true;
+    }
+
+    const vec3 viewCenter = (dvd_ViewMatrix * vec4(position, 1.0)).xyz;
+    const float nearestZ = viewCenter.z + bSphereRadius;
+    // Sphere clips against near plane, just assume visibility.
+    if (nearestZ >= -(dvd_renderProperties.x)) {
+        return false;
+    }
+
+    const vec4 bboxMin = vec4(position - hextents, 1.0f);
+    const vec4 bboxMax = vec4(position + hextents, 1.0f);
 
     // clipspace bbox
-    vec4 hPos0 = viewProjectionMatrix * getBoxCorner(0);
+    vec4 hPos0 = dvd_ViewProjectionMatrix * getBoxCorner(0, bboxMin, bboxMax);
     vec3 clipmin = projected(hPos0);
     vec3 clipmax = clipmin;
     uint clipbits = getCullBits(hPos0);
 
     for (int n = 1; n < 8; n++) {
-        vec4 hPos = viewProjectionMatrix * getBoxCorner(n);
+        vec4 hPos = dvd_ViewProjectionMatrix * getBoxCorner(n, bboxMin, bboxMax);
         vec3 ab = projected(hPos);
         clipmin = min(clipmin, ab);
         clipmax = max(clipmax, ab);
@@ -166,81 +94,8 @@ bool zBufferCullNvidia(const in vec3 position, const in vec3 extents) {
         float d = textureLod(HiZBuffer, vec2(clipmin.x, clipmax.y), miplevel).r;
         depth = max(depth, max(max(max(a, b), c), d));
 
-        isVisible = clipmin.z < depth;
+        isVisible = clipmin.z <= depth;
     }
 
     return !isVisible;
-}
-#endif
-
-#if defined(USE_RASTERGRID)
-bool zBufferCullRasterGrid(const in vec3 position, const in vec3 extents) {
-    /* perform perspective division for the bounding box */
-    for (uint i = 0; i < 8; i++) {
-        BoundingBox[i].xyz /= BoundingBox[i].w;
-    }
-
-    /* calculate screen space bounding rectangle */
-    vec2 BoundingRect[2] = {
-        vec2(min(min(min(BoundingBox[0].x, BoundingBox[1].x), min(BoundingBox[2].x, BoundingBox[3].x)),
-                 min(min(BoundingBox[4].x, BoundingBox[5].x), min(BoundingBox[6].x, BoundingBox[7].x))) * 0.5f + 0.5f,
-             min(min(min(BoundingBox[0].y, BoundingBox[1].y), min(BoundingBox[2].y, BoundingBox[3].y)),
-                 min(min(BoundingBox[4].y, BoundingBox[5].y), min(BoundingBox[6].y, BoundingBox[7].y))) * 0.5f + 0.5f),
-
-        vec2(max(max(max(BoundingBox[0].x, BoundingBox[1].x), max(BoundingBox[2].x, BoundingBox[3].x)),
-                 max(max(BoundingBox[4].x, BoundingBox[5].x), max(BoundingBox[6].x, BoundingBox[7].x))) * 0.5f + 0.5f,
-             max(max(max(BoundingBox[0].y, BoundingBox[1].y), max(BoundingBox[2].y, BoundingBox[3].y)),
-                 max(max(BoundingBox[4].y, BoundingBox[5].y), max(BoundingBox[6].y, BoundingBox[7].y))) * 0.5f + 0.5f)
-    };
-
-    /* then the linear depth value of the front-most point */
-    float InstanceDepth = min(min(min(BoundingBox[0].z, BoundingBox[1].z), min(BoundingBox[2].z, BoundingBox[3].z)),
-                              min(min(BoundingBox[4].z, BoundingBox[5].z), min(BoundingBox[6].z, BoundingBox[7].z)));
-
-    /* now we calculate the bounding rectangle size in viewport coordinates */
-    float ViewSizeX = (BoundingRect[1].x - BoundingRect[0].x) * viewportDimensions.x;
-    float ViewSizeY = (BoundingRect[1].y - BoundingRect[0].y) * viewportDimensions.y;
-
-    /* now we calculate the texture LOD used for lookup in the depth buffer texture */
-    float LOD = ceil(log2(max(ViewSizeX, ViewSizeY) * 0.5f));
-
-    /* finally fetch the depth texture using explicit LOD lookups */
-    vec4 Samples = {
-        textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[0].y), LOD).x,
-        textureLod(HiZBuffer, vec2(BoundingRect[0].x, BoundingRect[1].y), LOD).x,
-        textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[1].y), LOD).x,
-        textureLod(HiZBuffer, vec2(BoundingRect[1].x, BoundingRect[0].y), LOD).x
-    };
-
-    float MaxDepth = max(max(Samples.x, Samples.y), max(Samples.z, Samples.w));
-
-    /* if the instance depth is bigger than the depth in the texture discard the instance */
-    return (InstanceDepth > MaxDepth);
-}
-#endif
-
-bool HiZCull(const in vec3 position, const in vec3 extents, const in float radius) {
-    const vec3 view_center = (viewMatrix * vec4(position, 1.0)).xyz;
-    const float nearest_z = view_center.z + radius;
-    // Sphere clips against near plane, just assume visibility.
-    if (nearest_z >= -dvd_nearPlaneDistance) {
-        return false;
-    }
-
-#if !defined(USE_NVIDIA)
-    // first do instance cloud reduction
-    if (InstanceCloudReduction(position, extents)) {
-        return true;
-    }
-#endif
-
-#if defined(USE_ARM)
-    return zBufferCullARM(view_center, radius, nearest_z);
-#elif defined(USE_NVIDIA)
-    return zBufferCullNvidia(position, extents);
-#elif defined (USE_RASTERGRID)
-    return zBufferCullRasterGrid(position, extents);
-#else
-    return false;
-#endif
 }
