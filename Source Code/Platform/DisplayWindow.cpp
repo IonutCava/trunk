@@ -284,7 +284,7 @@ vec2<I32> DisplayWindow::getPosition(const bool global, const bool offset) const
     SDL_GetWindowPosition(_sdlWindow, &ret.x, &ret.y);
 
     if (!global && offset) {
-        const vec2<I32> pOffset = _parent.monitorData()[currentDisplayIndex()].viewport.xy();
+        const vec2<I32> pOffset = _parent.monitorData()[currentDisplayIndex()].viewport.xy;
         ret -= pOffset;
     }
 

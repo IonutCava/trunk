@@ -239,7 +239,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         terrainMaterial->bumpMethod(BumpMethod::NONE);
     }
 
-    terrainMaterial->baseColour(FColour4(DefaultColours::WHITE.rgb() * 0.5f, 1.0f));
+    terrainMaterial->baseColour(FColour4(DefaultColours::WHITE.rgb * 0.5f, 1.0f));
     terrainMaterial->metallic(0.0f);
     terrainMaterial->roughness(0.8f);
     terrainMaterial->parallaxFactor(terrain->parallaxHeightScale());

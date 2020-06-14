@@ -123,7 +123,7 @@ class Plane {
     }
 
     void set(const vec4<T>& equation) {
-        set(equation.xyz(), equation.w);
+        set(equation.xyz, equation.w);
     }
 
     void set(const vec3<T>& normal, T distance) {

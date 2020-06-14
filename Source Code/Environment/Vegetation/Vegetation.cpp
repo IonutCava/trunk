@@ -555,11 +555,11 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
 
         const vec3<F32>& extents = aabb.getExtent();
         _treeExtents.set(extents, bs.getRadius());
-        _grassExtents.w = _grassExtents.xyz().length();
+        _grassExtents.w = _grassExtents.xyz.length();
         _cullPushConstants.set(_ID("treeExtents"), GFX::PushConstantType::VEC4, _treeExtents);
     }
 
-    _grassExtents.w = _grassExtents.xyz().length();
+    _grassExtents.w = _grassExtents.xyz.length();
     _cullPushConstants.set(_ID("dvd_terrainChunkOffset"), GFX::PushConstantType::UINT, ID);
     _cullPushConstants.set(_ID("grassExtents"), GFX::PushConstantType::VEC4, _grassExtents);
 
@@ -751,8 +751,8 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
     } else {
         const U32 meshID = to_U32(ID % _treeMeshNames.size());
 
-        const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw();
-        const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy();
+        const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw;
+        const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy;
         const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
         auto map = treeData ? _treeMap : _grassMap;
         const U16 mapWidth = map->dimensions(0u, 0u).width;

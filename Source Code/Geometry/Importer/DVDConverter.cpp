@@ -305,10 +305,10 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
                 vb->modifyNormalValue(targetIdx, vert.normal);
 
                 if (hasTexCoord) {
-                    vb->modifyTexCoordValue(targetIdx, vert.texcoord.xy());
+                    vb->modifyTexCoordValue(targetIdx, vert.texcoord.xy);
                 }
                 if (hasTangent) {
-                    vb->modifyTangentValue(targetIdx, vert.tangent.xyz());
+                    vb->modifyTangentValue(targetIdx, vert.tangent.xyz);
                 }
                 if (lod == 0) {
                     importBB.add(vert.position);

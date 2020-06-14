@@ -26,7 +26,7 @@ void ParticleBoxGenerator::generate(Task& packagedTasksParent,
             {
                 std::for_each(from, to, [min, max](vec4<F32>& position)
                 {
-                    position.xyz(Random(min, max));
+                    position.xyz = Random(min, max);
                 });
             }));
     });

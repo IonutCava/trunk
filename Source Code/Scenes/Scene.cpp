@@ -652,7 +652,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
         flashLight = _sceneGraph->getRoot()->addChildNode(lightNodeDescriptor);
         SpotLightComponent* spotLight = flashLight->get<SpotLightComponent>();
         spotLight->castsShadows(true);
-        spotLight->setDiffuseColour(DefaultColours::WHITE.rgb());
+        spotLight->setDiffuseColour(DefaultColours::WHITE.rgb);
 
         hashAlg::insert(_flashLight, idx, flashLight);
 
@@ -1407,21 +1407,21 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             light->castsShadows(shadowCaster);
 
             if (IS_IN_RANGE_INCLUSIVE(details._intensity, 0.0f, 25.0f)) {
-                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::WHITE.rgb(), details._intensity / 25.f));
+                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::WHITE.rgb, details._intensity / 25.f));
             }
             // Early night time
             else if (IS_IN_RANGE_INCLUSIVE(details._intensity, -25.0f, 0.0f)) {
-                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::BLACK.rgb(), -details._intensity / 25.f));
+                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::BLACK.rgb, -details._intensity / 25.f));
                 light->castsShadows(false);
             }
             // Night
             else if (details._intensity < -25.f) {
-                light->setDiffuseColour(DefaultColours::BLACK.rgb());
+                light->setDiffuseColour(DefaultColours::BLACK.rgb);
                 light->enabled(false);
             }
             // Day
             else {
-                light->setDiffuseColour(DefaultColours::WHITE.rgb());
+                light->setDiffuseColour(DefaultColours::WHITE.rgb);
             }
             _dayNightData._time._hour = to_U8(timeOfDay.tm_hour);
             _dayNightData._time._minutes = to_U8(timeOfDay.tm_min);

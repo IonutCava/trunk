@@ -226,8 +226,19 @@ void OrthoNormalize(vec4<T> &v1, vec4<T> &v2, vec4<T> &v3) {
     v2 -= v2.projectToNorm(v1);
     v2.normalize();
     v3 -= v3.projectToNorm(v1);
-    v3 -= v3.projectToNorm(v2);p
+    v3 -= v3.projectToNorm(v2);
     v3.normalize();
+}
+
+template <typename T>
+vec4<T> Perpendicular(const vec4<T>& vec, const vec4<T>& hint1, const vec4<T>& hint2) noexcept
+{
+    const vec4 perp = Normalized(Cross(vec, hint1));
+    if (IS_ZERO(perp.length())) {
+        return hint2;
+    }
+
+    return perp;
 }
 
 /// multiply a vector by a value
@@ -239,6 +250,18 @@ vec4<T> operator*(T fl, const vec4<T> &v) noexcept {
 /*
 *  vec2 inline definitions
 */
+
+template <typename T>
+bool SimdVector<T, typename std::enable_if<std::is_same<T, float>::value>::type>::operator==(const SimdVector& other) const noexcept
+{
+    return !AVX::Fneq128(_reg, other._reg, EPSILON_F32);
+}
+
+template <typename T>
+bool SimdVector<T, typename std::enable_if<std::is_same<T, float>::value>::type>::operator!=(const SimdVector& other) const noexcept
+{
+    return AVX::Fneq128(_reg, other._reg, EPSILON_F32);
+}
 
 /// return the squared distance of the vector
 template <typename T>
@@ -284,7 +307,7 @@ T vec2<T>::maxComponent() const noexcept {
 
 /// compare 2 vectors
 template <typename T>
-template <typename U>
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec2<T>::compare(const vec2<U> &v) const noexcept {
     return COMPARE(this->x, v.x) &&
            COMPARE(this->y, v.y);
@@ -292,7 +315,7 @@ bool vec2<T>::compare(const vec2<U> &v) const noexcept {
 
 /// compare 2 vectors using the given tolerance
 template <typename T>
-template <typename U>
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec2<T>::compare(const vec2<U> &v, U epsi) const noexcept {
     return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
             COMPARE_TOLERANCE(this->y, v.y, epsi));
@@ -359,7 +382,7 @@ void vec2<T>::lerp(const vec2 &v, const vec2 &factor) noexcept {
 }
 
 /// linear interpolation between 2 vectors
-template <typename T, typename U>
+template <typename T, typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, U factor) noexcept {
     return { Lerp(u.x, v.x, factor), Lerp(u.y, v.y, factor) };
 }
@@ -376,7 +399,7 @@ vec2<T> Lerp(const vec2<T> &u, const vec2<T> &v, const vec2<T> &factor) noexcept
 
 /// compare 2 vectors
 template <typename T>
-template <typename U>
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec3<T>::compare(const vec3<U> &v) const noexcept {
     return COMPARE(this->x, v.x) &&
            COMPARE(this->y, v.y) &&
@@ -385,7 +408,7 @@ bool vec3<T>::compare(const vec3<U> &v) const noexcept {
 
 /// compare 2 vectors within the specified tolerance
 template <typename T>
-template <typename U>
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec3<T>::compare(const vec3<U> &v, U epsi) const noexcept {
     return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
            COMPARE_TOLERANCE(this->y, v.y, epsi) &&
@@ -585,15 +608,19 @@ template <typename T>
 vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
     const T factor = this->projectionOnLine(vA, vB);
 
-    if (factor <= 0.0f) return vA;
+    if (factor <= 0.0f) {
+        return vA;
+    }
 
-    if (factor >= 1.0f) return vB;
+    if (factor >= 1.0f) {
+        return vB;
+    }
 
     return (((vB - vA) * factor) + vA);
 }
 
 /// lerp between the 2 specified vectors by the specified amount
-template <typename T, typename U>
+template <typename T, typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 vec3<T> Lerp(const vec3<T> &u, const vec3<T> &v, U factor) noexcept {
     return { Lerp(u.x, v.x, factor), Lerp(u.y, v.y, factor), Lerp(u.z, v.z, factor) };
 }
@@ -728,7 +755,7 @@ inline vec4<F32>& vec4<F32>::operator*=(const vec4<F32>& v) noexcept {
 
 /// compare 2 vectors
 template <typename T>
-template <typename U>
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec4<T>::compare(const vec4<U> &v) const noexcept {
     return COMPARE(this->x, v.x) &&
            COMPARE(this->y, v.y) &&
@@ -746,7 +773,7 @@ inline bool vec4<F32>::compare(const vec4<F32> &v) const noexcept {
 
 /// compare this vector with the one specified and see if they match within the specified amount
 template <typename T>
-template <typename U>
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec4<T>::compare(const vec4<U> &v, const U epsi) const noexcept{
     if_constexpr(std::is_same<T, U>::value && std::is_same<U, F32>::value) {
         return !AVX::Fneq128(_reg._reg, v._reg._reg, epsi);
@@ -816,7 +843,7 @@ T vec4<T>::lengthSquared() const noexcept {
 /// project this vector onto the given direction
 template <typename T>
 vec4<T> vec4<T>::projectToNorm(const vec4 &direction) {
-    direction * dot(direction);
+    return direction * dot(direction);
 }
 
 /// transform the vector to unit length

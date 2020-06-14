@@ -316,7 +316,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
             vec4<F32> roundedOrigin = shadowOrigin; 
             roundedOrigin.round();
 
-            vec3<F32> roundOffset = (roundedOrigin - shadowOrigin).xyz() * 2.0f / g_shadowSettings.csm.shadowMapResolution;
+            vec3<F32> roundOffset = (roundedOrigin - shadowOrigin).xyz * 2.0f / g_shadowSettings.csm.shadowMapResolution;
             roundOffset.z = 0.0f;
 
             lightOrthoMatrix.translate(roundOffset);

@@ -334,7 +334,7 @@ SunDetails Sky::setDateTime(struct tm *dateTime) {
     _sun->SetDate(dateTime);
     
     const SunDetails ret = _sun->GetDetails();
-    _sunDirectionAndIntensity.xyz(ret._eulerDirection);
+    _sunDirectionAndIntensity.xyz = ret._eulerDirection;
     _sunDirectionAndIntensity.w = ret._intensity;
     return ret;
 }
@@ -377,10 +377,10 @@ bool Sky::prepareRender(SceneGraphNode* sgn,
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (!pkg.empty()) {
         PushConstants constants = pkg.pushConstants(0);
-        const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz(), WORLD_Z_NEG_AXIS);
+        const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz, WORLD_Z_NEG_AXIS);
 
         constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
-        constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());
+        constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
         if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
             constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
             constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
@@ -424,11 +424,11 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz(), WORLD_Z_NEG_AXIS);
+    const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz, WORLD_Z_NEG_AXIS);
     pushConstantsCommand._constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
     pushConstantsCommand._constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
     pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
-    pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb());
+    pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
     pushConstantsCommand._constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
     pkgInOut.add(pushConstantsCommand);
 

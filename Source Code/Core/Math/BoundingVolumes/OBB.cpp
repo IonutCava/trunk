@@ -53,9 +53,9 @@ namespace Divide {
         //assert(worldMatrix.isUniformScale());
         _position = worldMatrix * aabb.getCenter();
         _halfExtents = aabb.getHalfExtent();
-        _axis[0] = worldMatrix.getRow(0).xyz();
-        _axis[1] = worldMatrix.getRow(1).xyz();
-        _axis[2] = worldMatrix.getRow(2).xyz();
+        _axis[0] = worldMatrix.getRow(0).xyz;
+        _axis[1] = worldMatrix.getRow(1).xyz;
+        _axis[2] = worldMatrix.getRow(2).xyz;
         // If the matrix m contains scaling, propagate the scaling from the axis vectors to the half-length vectors,
         // since we want to keep the axis vectors always normalized in our representation.
         F32 matrixScale = _axis[0].length();

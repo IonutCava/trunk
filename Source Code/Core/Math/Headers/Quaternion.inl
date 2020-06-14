@@ -202,8 +202,8 @@ Quaternion<T>& Quaternion<T>::operator/=(const Quaternion& rq) {
 template <typename T>
 vec3<T> Quaternion<T>::operator*(const vec3<T>& vec) const {
     // nVidia SDK implementation
-    vec3<T> uv = Cross(_elements.xyz(), vec);
-    const vec3<T> uuv = Cross(_elements.xyz(), uv);
+    vec3<T> uv = Cross(_elements.xyz, vec);
+    const vec3<T> uuv = Cross(_elements.xyz, uv);
     uv *= (W() * 2);
 
     return vec + uv + (uuv * 2);
@@ -583,7 +583,7 @@ T Quaternion<T>::W() const noexcept {
 
 template <typename T>
 vec3<T> Quaternion<T>::XYZ() const noexcept {
-    return _elements.xyz();
+    return _elements.xyz;
 }
 
 template <typename T>

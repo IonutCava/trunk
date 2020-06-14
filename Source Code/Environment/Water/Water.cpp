@@ -278,9 +278,9 @@ void WaterPlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneSt
     };
     WaterBodyData data;
     data._positionW = sgn->get<TransformComponent>()->getPosition();
-    data._extents.xyz(to_F32(_dimensions.width),
-                      to_F32(_dimensions.depth),
-                      to_F32(_dimensions.height));
+    data._extents.xyz = { to_F32(_dimensions.width),
+                          to_F32(_dimensions.depth),
+                          to_F32(_dimensions.height) };
 
     sceneState.waterBodies().push_back(data);
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);

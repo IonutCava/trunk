@@ -39,7 +39,7 @@ inline F32 GFXShaderData::GPUData::aspectRatio() const noexcept {
 }
 
 inline vec2<F32> GFXShaderData::GPUData::cameraZPlanes() const noexcept {
-    return _renderProperties.xy();
+    return _renderProperties.xy;
 }
 
 inline F32 GFXShaderData::GPUData::FoV() const noexcept {

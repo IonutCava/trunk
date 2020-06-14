@@ -13,7 +13,7 @@ void ParticleAttractorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     size_t a = 0;
     for (U32 i = 0; i < endID; ++i) {
         for (a = 0; a < countAttractors; ++a) {
-            offset.set(_attractors[a].xyz() - p._position[i].xyz(), 0.0f);
+            offset.set(_attractors[a].xyz - p._position[i].xyz, 0.0f);
             dist = offset.dot(offset);
 
             // if (!IS_ZERO(DIST)) {

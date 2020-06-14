@@ -286,7 +286,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
     descriptor._partitionSize = 1000u;
     descriptor._cbk = [&eyePos, &misc, &pos](const Task* parent, U32 start, U32 end) {
         for (U32 i = start; i < end; ++i) {
-            misc[i].w = pos[i].xyz().distanceSquared(eyePos);
+            misc[i].w = pos[i].xyz.distanceSquared(eyePos);
         }
     };
 

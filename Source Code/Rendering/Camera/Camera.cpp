@@ -91,9 +91,9 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
 
     // Get the intersection of these 3 planes 
     // (using math from RealTime Collision Detection by Christer Ericson)
-    const vec3<F32> n2n3 = Cross(n2.xyz(), n3.xyz());
-    const F32 denom = Dot(n1.xyz(), n2n3);
-    const vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz(), (d3*n2.xyz()) - (d2*n3.xyz()));
+    const vec3<F32> n2n3 = Cross(n2.xyz, n3.xyz);
+    const F32 denom = Dot(n1.xyz, n2n3);
+    const vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz, (d3*n2.xyz) - (d2*n3.xyz));
     return top / -denom;
 }
 const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
@@ -303,15 +303,15 @@ vec3<F32> Camera::unProject(const F32 winCoordsX, const F32 winCoordsY, const Re
                                 (winCoordsY - viewport.y) / (viewport.w * 0.5f) - 1.0f };
 
     const vec4<F32> clipSpace = { ndcSpace, -1.0f, 1.0f };
-    const vec4<F32> eyeSpace = { (GetInverse(getProjectionMatrix()) * clipSpace).xy(), -1.0f, 0.0f };
+    const vec4<F32> eyeSpace = { (GetInverse(getProjectionMatrix()) * clipSpace).xy -1.0f, 0.0f };
     //World Space. world matrix = inverse(view matrix)
-    return Normalized((getWorldMatrix() * eyeSpace).xyz());
+    return Normalized((getWorldMatrix() * eyeSpace).xyz);
 }
 
 vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const noexcept {
     const vec4<F32> clipSpace = getProjectionMatrix() * (getViewMatrix() * vec4<F32>(worldCoords, 1.0f));
-    const vec3<F32> ndcSpace = clipSpace.xyz() / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
-    const vec2<F32> winSpace = ((ndcSpace.xy() + 1.0f) * 0.5f) * viewport.zw() + viewport.xy();
+    const vec3<F32> ndcSpace = clipSpace.xyz / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
+    const vec2<F32> winSpace = ((ndcSpace.xy + 1.0f) * 0.5f) * viewport.zw + viewport.xy;
     return winSpace;
 }
 

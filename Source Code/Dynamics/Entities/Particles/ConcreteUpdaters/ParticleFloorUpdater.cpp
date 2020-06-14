@@ -29,10 +29,10 @@ void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
                 if (normalFactor < 0.0f) {
                     force -= WORLD_Y_AXIS * normalFactor;
                 }
-                F32 velFactor = p._velocity[i].xyz().dot(WORLD_Y_AXIS);
+                F32 velFactor = p._velocity[i].xyz.dot(WORLD_Y_AXIS);
                 // if (velFactor < 0.0)
                 p._velocity[i] -= vec4<F32>(WORLD_Y_AXIS * (1.0f + bounce) * velFactor, 0.0f);
-                p._acceleration[i].xyz(force);
+                p._acceleration[i].xyz = force;
             }
         }
     };

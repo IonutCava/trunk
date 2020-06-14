@@ -402,7 +402,7 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
     // Temp: Make the hovered node brighter by setting emissive to something bright
     if (stagePass._stage == RenderStage::DISPLAY && properties._isHovered) {
         FColour4 matColour = dataOut._colourMatrix.getRow(2);
-        matColour.rgb({0.f, 0.25f, 0.f});
+        matColour.rgb = {0.f, 0.25f, 0.f};
         dataOut._colourMatrix.setRow(2, matColour);
     }
 

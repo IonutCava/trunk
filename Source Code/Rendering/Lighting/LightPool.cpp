@@ -278,9 +278,9 @@ U32 LightPool::uploadLightList(RenderStage stage, const LightList& lights, const
             light->getDiffuseColour(tempColour);
             temp._diffuse.set(tempColour, isSpot ? std::cos(Angle::DegreesToRadians(spot->outerConeCutoffAngle())) : 0.f);
             // Omni and spot lights have a position. Directional lights have this set to (0,0,0)
-            temp._position.set( isDir  ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->positionCache(),  1.0f)).xyz(), light->range());
-            temp._direction.set(isOmni ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz(), isSpot ? std::cos(Angle::DegreesToRadians(spot->coneCutoffAngle())) : 0.f);
-            temp._options.xyz(typeIndex, light->shadowIndex(), isSpot ? to_I32(spot->coneSlantHeight()) : 0);
+            temp._position.set( isDir  ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->positionCache(),  1.0f)).xyz, light->range());
+            temp._direction.set(isOmni ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz, isSpot ? std::cos(Angle::DegreesToRadians(spot->coneCutoffAngle())) : 0.f);
+            temp._options.xyz = {typeIndex, light->shadowIndex(), isSpot ? to_I32(spot->coneSlantHeight()) : 0};
 
             ++lightCount[typeIndex];
         }
@@ -331,7 +331,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         to_U32(_sortedShadowLights.size()));
 
     if (!sortedLights.empty()) {
-        crtData._ambientColour.rgb(0.05f * sortedLights.front()->getDiffuseColour());
+        crtData._ambientColour.rgb = { 0.05f * sortedLights.front()->getDiffuseColour() };
     } else {
         crtData._ambientColour = DefaultColours::BLACK;
     }
@@ -345,14 +345,14 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
     }
 }
 
-void LightPool::uploadLightData(RenderStage stage, GFX::CommandBuffer& bufferInOut) {
+void LightPool::uploadLightData(const RenderStage stage, GFX::CommandBuffer& bufferInOut) {
 
-    ShaderBufferBinding bufferLight = {};
+    ShaderBufferBinding bufferLight;
     bufferLight._binding = ShaderBufferLocation::LIGHT_NORMAL;
     bufferLight._buffer = _lightShaderBuffer;
     bufferLight._elementRange = { to_base(stage) - 1, 1 };
 
-    ShaderBufferBinding bufferShadow = {};
+    ShaderBufferBinding bufferShadow;
     bufferShadow._binding = ShaderBufferLocation::LIGHT_SHADOW;
     bufferShadow._buffer = _shadowBuffer;
     bufferShadow._elementRange = { 0u, Config::Lighting::MAX_SHADOW_PASSES };

@@ -130,7 +130,7 @@ void Light::updateCache(const ECS::CustomEvent& data) {
 }
 
 void Light::setDiffuseColour(const UColour3& newDiffuseColour) {
-    _colour.rgb(newDiffuseColour);
+    _colour.rgb = newDiffuseColour;
 }
 
 };

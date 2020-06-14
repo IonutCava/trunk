@@ -2,9 +2,6 @@
 
 #include "Headers/SceneState.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/Application.h"
-
 #include "Utility/Headers/Colours.h"
 
 #include "Platform/Video/Headers/RenderStagePass.h"
@@ -15,7 +12,7 @@ FogDescriptor::FogDescriptor()
    : _dirty(true),
      _active(true),
      _density(0.0f),
-     _colour(DefaultColours::WHITE.rgb())
+     _colour(DefaultColours::WHITE.rgb)
 {
 }
 
@@ -37,7 +34,7 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
 void SceneRenderState::renderMask(U16 mask) {
     constexpr bool validateRenderMask = false;
 
-    if (validateRenderMask) {
+    if_constexpr (validateRenderMask) {
         auto validateMask = [mask]() -> U16 {
             U16 validMask = 0;
             for (U16 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {

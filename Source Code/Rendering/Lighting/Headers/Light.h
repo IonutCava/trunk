@@ -77,11 +77,11 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
     /// Get light diffuse colour
     inline void getDiffuseColour(FColour3& colourOut) const noexcept {
-        Util::ToFloatColour(_colour.rgb(), colourOut);
+        Util::ToFloatColour(_colour.rgb, colourOut);
     }
 
     inline FColour3 getDiffuseColour() const noexcept {
-        return Util::ToFloatColour(_colour.rgb());
+        return Util::ToFloatColour(_colour.rgb);
     }
 
     void setDiffuseColour(const UColour3& newDiffuseColour);

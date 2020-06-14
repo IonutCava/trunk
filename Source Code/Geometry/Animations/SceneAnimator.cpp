@@ -178,8 +178,8 @@ I32 SceneAnimator::createSkeleton(Bone* piNode,
 
     if (piNode->_parent) {
         Line& line = lines.emplace_back(s_line);
-        line.positionStart(parent.getRow(3).xyz());
-        line.positionEnd(me.getRow(3).xyz());
+        line.positionStart(parent.getRow(3).xyz);
+        line.positionEnd(me.getRow(3).xyz);
     }
 
     // render all child nodes

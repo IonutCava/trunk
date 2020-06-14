@@ -574,7 +574,7 @@ bool WarScene::load(const Str256& name) {
             PointLightComponent* pointLight = lightSGN->get<PointLightComponent>();
             pointLight->castsShadows(false);
             pointLight->range(50.0f);
-            pointLight->setDiffuseColour(DefaultColours::RANDOM().rgb());
+            pointLight->setDiffuseColour(DefaultColours::RANDOM().rgb);
             TransformComponent* tComp = lightSGN->get<TransformComponent>();
             tComp->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));
             _lightNodeTransforms.push_back(tComp);
