@@ -12,8 +12,8 @@ namespace GFX {
 namespace {
     bool ShouldSkipType(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
-            case GFX::CommandType::BEGIN_DEBUG_SCOPE:
-            case GFX::CommandType::END_DEBUG_SCOPE:
+            case CommandType::BEGIN_DEBUG_SCOPE:
+            case CommandType::END_DEBUG_SCOPE:
                 return true;
             default: break;
         }
@@ -22,9 +22,9 @@ namespace {
 
     bool IsCameraCommand(const U8 typeIndex) noexcept {
         switch (static_cast<CommandType>(typeIndex)) {
-            case GFX::CommandType::PUSH_CAMERA:
-            case GFX::CommandType::POP_CAMERA:
-            case GFX::CommandType::SET_CAMERA:
+            case CommandType::PUSH_CAMERA:
+            case CommandType::POP_CAMERA:
+            case CommandType::SET_CAMERA:
                 return true;
             default: break;
         }
@@ -36,14 +36,14 @@ namespace {
             return true;
         }
         switch (static_cast<CommandType>(typeIndex)) {
-            case GFX::CommandType::SET_VIEWPORT:
-            case GFX::CommandType::PUSH_VIEWPORT:
-            case GFX::CommandType::POP_VIEWPORT:
-            case GFX::CommandType::SET_SCISSOR:
-            case GFX::CommandType::SET_CAMERA:
-            case GFX::CommandType::SET_CLIP_PLANES:
-            case GFX::CommandType::SEND_PUSH_CONSTANTS:
-            case GFX::CommandType::SET_CLIPING_STATE:
+            case CommandType::SET_VIEWPORT:
+            case CommandType::PUSH_VIEWPORT:
+            case CommandType::POP_VIEWPORT:
+            case CommandType::SET_SCISSOR:
+            case CommandType::SET_CAMERA:
+            case CommandType::SET_CLIP_PLANES:
+            case CommandType::SEND_PUSH_CONSTANTS:
+            case CommandType::SET_CLIPING_STATE:
                 return true;
             default: break;
         }
@@ -52,7 +52,7 @@ namespace {
 
     const auto RemoveEmptyDrawCommands = [](DrawCommand::CommandContainer& commands) {
         const size_t startSize = commands.size();
-        eastl::erase_if(commands, [](const GenericDrawCommand& cmd) noexcept -> bool {
+        erase_if(commands, [](const GenericDrawCommand& cmd) noexcept -> bool {
             return cmd._drawCount == 0u;
         });
         return startSize != commands.size();
@@ -71,7 +71,7 @@ void CommandBuffer::add(const CommandBuffer& other) {
     _batched = false;
 }
 
-void CommandBuffer::add(CommandBuffer** buffers, size_t count) {
+void CommandBuffer::add(CommandBuffer** buffers, const size_t count) {
     OPTICK_EVENT();
     assert(buffers != nullptr);
 
@@ -117,8 +117,8 @@ void CommandBuffer::batch() {
             prevCommand = nullptr;
             for (CommandEntry& entry : _commandOrder) {
                 if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !ShouldSkipType(entry._typeIndex)) {
-                    const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
-                    if (cmdType == GFX::CommandType::BIND_DESCRIPTOR_SETS) {
+                    const CommandType cmdType = static_cast<CommandType>(entry._typeIndex);
+                    if (cmdType == CommandType::BIND_DESCRIPTOR_SETS) {
                         CommandBase* crtCommand = get<CommandBase>(entry);
 
                         if (prevCommand != nullptr && tryMergeCommands(cmdType, prevCommand, crtCommand)) {
@@ -142,7 +142,7 @@ void CommandBuffer::batch() {
             CommandType prevType = CommandType::COUNT;
             for (CommandEntry& entry : _commandOrder) {
                 if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !ShouldSkipType(entry._typeIndex)) {
-                    const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
+                    const CommandType cmdType = static_cast<CommandType>(entry._typeIndex);
                     CommandBase* crtCommand = get<CommandBase>(entry);
 
                     if (prevCommand != nullptr && prevType == cmdType && tryMergeCommands(cmdType, prevCommand, crtCommand)) {
@@ -163,10 +163,10 @@ void CommandBuffer::batch() {
     for (const CommandEntry& entry : _commandOrder) {
         if (entry._data != PolyContainerEntry::INVALID_ENTRY_ID && !DoesNotAffectRT(entry._typeIndex)) {
             CommandBase* crtCommand = get<CommandBase>(entry);
-            if (prevCommand != nullptr && entry._typeIndex == to_base(GFX::CommandType::BEGIN_RENDER_PASS)) {
+            if (prevCommand != nullptr && entry._typeIndex == to_base(CommandType::BEGIN_RENDER_PASS)) {
                 static_cast<EndRenderPassCommand*>(prevCommand)->_setDefaultRTState = false;
                 prevCommand = nullptr;
-            } else if (entry._typeIndex == to_base(GFX::CommandType::END_RENDER_PASS)) {
+            } else if (entry._typeIndex == to_base(CommandType::END_RENDER_PASS)) {
                 prevCommand = crtCommand;
             } else {
                 prevCommand = nullptr;
@@ -181,49 +181,49 @@ void CommandBuffer::batch() {
             break;
         }
 
-        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
-            case GFX::CommandType::BEGIN_RENDER_PASS: {
+        switch (static_cast<CommandType>(cmd._typeIndex)) {
+            case CommandType::BEGIN_RENDER_PASS: {
                 // We may just wish to clear some state
                 if (get<BeginRenderPassCommand>(cmd)->_descriptor.setViewport()) {
                     hasWork = true;
                     break;
                 }
             } break;
-            case GFX::CommandType::CLEAR_RT:
-            case GFX::CommandType::READ_BUFFER_DATA:
-            case GFX::CommandType::CLEAR_BUFFER_DATA:
-            case GFX::CommandType::DISPATCH_COMPUTE:
-            case GFX::CommandType::MEMORY_BARRIER:
-            case GFX::CommandType::DRAW_TEXT:
-            case GFX::CommandType::DRAW_COMMANDS:
-            case GFX::CommandType::DRAW_IMGUI:
-            //case GFX::CommandType::BIND_DESCRIPTOR_SETS:
-            case GFX::CommandType::BLIT_RT:
-            case GFX::CommandType::RESET_RT:
-            case GFX::CommandType::SEND_PUSH_CONSTANTS:
-            case GFX::CommandType::BEGIN_PIXEL_BUFFER:
-            case GFX::CommandType::SET_CAMERA:
-            case GFX::CommandType::PUSH_CAMERA:
-            case GFX::CommandType::POP_CAMERA:
-            case GFX::CommandType::SET_CLIP_PLANES:
-            case GFX::CommandType::SET_SCISSOR:
-            case GFX::CommandType::SET_BLEND:
-            case GFX::CommandType::SET_VIEWPORT:
-            case GFX::CommandType::PUSH_VIEWPORT:
-            case GFX::CommandType::POP_VIEWPORT:
-            case GFX::CommandType::SET_CLIPING_STATE:
-            case GFX::CommandType::SWITCH_WINDOW: {
+            case CommandType::CLEAR_RT:
+            case CommandType::READ_BUFFER_DATA:
+            case CommandType::CLEAR_BUFFER_DATA:
+            case CommandType::DISPATCH_COMPUTE:
+            case CommandType::MEMORY_BARRIER:
+            case CommandType::DRAW_TEXT:
+            case CommandType::DRAW_COMMANDS:
+            case CommandType::DRAW_IMGUI:
+            //case CommandType::BIND_DESCRIPTOR_SETS:
+            case CommandType::BLIT_RT:
+            case CommandType::RESET_RT:
+            case CommandType::SEND_PUSH_CONSTANTS:
+            case CommandType::BEGIN_PIXEL_BUFFER:
+            case CommandType::SET_CAMERA:
+            case CommandType::PUSH_CAMERA:
+            case CommandType::POP_CAMERA:
+            case CommandType::SET_CLIP_PLANES:
+            case CommandType::SET_SCISSOR:
+            case CommandType::SET_BLEND:
+            case CommandType::SET_VIEWPORT:
+            case CommandType::PUSH_VIEWPORT:
+            case CommandType::POP_VIEWPORT:
+            case CommandType::SET_CLIPING_STATE:
+            case CommandType::SWITCH_WINDOW: {
                 hasWork = true;
             } break;
-            case GFX::CommandType::SET_MIP_LEVELS: {
+            case CommandType::SET_MIP_LEVELS: {
                 const SetTextureMipLevelsCommand* crtCmd = get<SetTextureMipLevelsCommand>(cmd);
                 hasWork = crtCmd->_texture != nullptr && (crtCmd->_baseLevel != crtCmd->_texture->getBaseMipLevel() || crtCmd->_maxLevel != crtCmd->_texture->getMaxMipLevel());
             } break;
-            case GFX::CommandType::COPY_TEXTURE: {
+            case CommandType::COPY_TEXTURE: {
                 const CopyTextureCommand* crtCmd = get<CopyTextureCommand>(cmd);
                 hasWork = crtCmd->_source._textureType != TextureType::COUNT && crtCmd->_destination._textureType != TextureType::COUNT;
             }break;
-            case GFX::CommandType::BIND_PIPELINE: {
+            case CommandType::BIND_PIPELINE: {
                 const BindPipelineCommand* crtCmd = get<BindPipelineCommand>(cmd);
                 hasWork = crtCmd->_pipeline != nullptr && crtCmd->_pipeline->getHash() != 0;
             }break;
@@ -233,7 +233,7 @@ void CommandBuffer::batch() {
 
     if (!hasWork) {
         _commandOrder.resize(0);
-        std::memset(_commandCount.data(), 0, sizeof(U24) * to_base(GFX::CommandType::COUNT));
+        std::memset(_commandCount.data(), 0, sizeof(U24) * to_base(CommandType::COUNT));
     }
 
     _batched = true;
@@ -255,7 +255,7 @@ void CommandBuffer::clean() {
     for (CommandEntry& cmd :_commandOrder) {
         bool erase = false;
 
-        switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
+        switch (static_cast<CommandType>(cmd._typeIndex)) {
             case CommandType::DRAW_COMMANDS :
             {
                 OPTICK_EVENT("Clean Draw Commands");
@@ -279,12 +279,12 @@ void CommandBuffer::clean() {
                     erase = true;
                 }
             }break;
-            case GFX::CommandType::SEND_PUSH_CONSTANTS: {
+            case CommandType::SEND_PUSH_CONSTANTS: {
                 OPTICK_EVENT("Clean Push Constants");
 
                 erase = get<SendPushConstantsCommand>(cmd)->_constants.empty();
             }break;
-            case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+            case CommandType::BIND_DESCRIPTOR_SETS: {
                 OPTICK_EVENT("Clean Descriptor Sets");
 
                 const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)->_set;
@@ -294,7 +294,7 @@ void CommandBuffer::clean() {
                     erase = true;
                 }
             }break;
-            case GFX::CommandType::DRAW_TEXT: {
+            case CommandType::DRAW_TEXT: {
                 OPTICK_EVENT("Clean Draw Text");
 
                 const TextElementBatch& textBatch = get<DrawTextCommand>(cmd)->_batch;
@@ -307,7 +307,7 @@ void CommandBuffer::clean() {
                     }
                 }
             }break;
-            case GFX::CommandType::SET_SCISSOR: {
+            case CommandType::SET_SCISSOR: {
                 OPTICK_EVENT("Clean Scissor");
 
                 const Rect<I32>& scissorRect = get<SetScissorCommand>(cmd)->_rect;
@@ -317,7 +317,7 @@ void CommandBuffer::clean() {
                     erase = true;
                 }
             } break;
-            case GFX::CommandType::SET_VIEWPORT: {
+            case CommandType::SET_VIEWPORT: {
                 OPTICK_EVENT("Clean Viewport");
 
                 const Rect<I32>& viewportRect = get<SetViewportCommand>(cmd)->_viewport;
@@ -328,7 +328,7 @@ void CommandBuffer::clean() {
                     erase = true;
                 }
             } break;
-            case GFX::CommandType::SET_BLEND: {
+            case CommandType::SET_BLEND: {
                 OPTICK_EVENT("Clean Viewport");
 
                 const BlendingProperties& blendProperties = get<SetBlendCommand>(cmd)->_blendProperties;
@@ -352,10 +352,10 @@ void CommandBuffer::clean() {
         OPTICK_EVENT("Remove redundant Pipelines");
         // Remove redundant pipeline changes
         auto entry = eastl::next(eastl::begin(_commandOrder));
-        for (; entry != eastl::cend(_commandOrder); ++entry) {
+        for (; entry != cend(_commandOrder); ++entry) {
             const U8 typeIndex = entry->_typeIndex;
 
-            if (static_cast<GFX::CommandType>(typeIndex) == CommandType::BIND_PIPELINE &&
+            if (static_cast<CommandType>(typeIndex) == CommandType::BIND_PIPELINE &&
                 eastl::prev(entry)->_typeIndex == typeIndex)
             {
                 --_commandCount[typeIndex];
@@ -365,7 +365,7 @@ void CommandBuffer::clean() {
     }
     {
         OPTICK_EVENT("Remove invalid draw commands");
-        eastl::erase_if(_commandOrder, [](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; });
+        erase_if(_commandOrder, [](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; });
     }
 }
 
@@ -379,85 +379,85 @@ ErrorType CommandBuffer::validate() const {
         I32 pushedDebugScope = 0, pushedCamera = 0, pushedViewport = 0;
 
         for (const CommandEntry& cmd : _commandOrder) {
-            switch (static_cast<GFX::CommandType>(cmd._typeIndex)) {
-                case GFX::CommandType::BEGIN_RENDER_PASS: {
+            switch (static_cast<CommandType>(cmd._typeIndex)) {
+                case CommandType::BEGIN_RENDER_PASS: {
                     if (pushedPass) {
                         return ErrorType::MISSING_END_RENDER_PASS;
                     }
                     pushedPass = true;
                 } break;
-                case GFX::CommandType::END_RENDER_PASS: {
+                case CommandType::END_RENDER_PASS: {
                     if (!pushedPass) {
                         return ErrorType::MISSING_BEGIN_RENDER_PASS;
                     }
                     pushedPass = false;
                 } break;
-                case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
+                case CommandType::BEGIN_RENDER_SUB_PASS: {
                     if (pushedSubPass) {
                         return ErrorType::MISSING_END_RENDER_SUB_PASS;
                     }
                     pushedSubPass = true;
                 } break;
-                case GFX::CommandType::END_RENDER_SUB_PASS: {
+                case CommandType::END_RENDER_SUB_PASS: {
                     if (!pushedSubPass) {
                         return ErrorType::MISSING_BEGIN_RENDER_SUB_PASS;
                     }
                     pushedSubPass = false;
                 } break;
-                case GFX::CommandType::SET_BLEND_STATE: {
+                case CommandType::SET_BLEND_STATE: {
                     if (!pushedPass) {
                         return ErrorType::MISSING_BEGIN_RENDER_PASS_FOR_BLEND;
                     }
 
                 }break;
-                case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
+                case CommandType::BEGIN_DEBUG_SCOPE: {
                     ++pushedDebugScope;
                 } break;
-                case GFX::CommandType::END_DEBUG_SCOPE: {
+                case CommandType::END_DEBUG_SCOPE: {
                     if (pushedDebugScope == 0) {
                         return ErrorType::MISSING_POP_DEBUG_SCOPE;
                     }
                     --pushedDebugScope;
                 } break;
-                case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
+                case CommandType::BEGIN_PIXEL_BUFFER: {
                     if (pushedPixelBuffer) {
                         return ErrorType::MISSING_END_PIXEL_BUFFER;
                     }
                     pushedPixelBuffer = true;
                 }break;
-                case GFX::CommandType::END_PIXEL_BUFFER: {
+                case CommandType::END_PIXEL_BUFFER: {
                     if (!pushedPixelBuffer) {
                         return ErrorType::MISSING_BEGIN_PIXEL_BUFFER;
                     }
                     pushedPixelBuffer = false;
                 }break;
-                case GFX::CommandType::PUSH_CAMERA: {
+                case CommandType::PUSH_CAMERA: {
                     ++pushedCamera;
                 }break;
-                case GFX::CommandType::POP_CAMERA: {
+                case CommandType::POP_CAMERA: {
                     --pushedCamera;
                 }break;
-                case GFX::CommandType::PUSH_VIEWPORT: {
+                case CommandType::PUSH_VIEWPORT: {
                     ++pushedViewport;
                 }break;
-                case GFX::CommandType::POP_VIEWPORT: {
+                case CommandType::POP_VIEWPORT: {
                     --pushedViewport;
                 }break;
-                case GFX::CommandType::BIND_PIPELINE: {
+                case CommandType::BIND_PIPELINE: {
                     hasPipeline = true;
                 } break;
-                case GFX::CommandType::DISPATCH_COMPUTE: 
-                case GFX::CommandType::DRAW_TEXT:
-                case GFX::CommandType::DRAW_IMGUI:
-                case GFX::CommandType::DRAW_COMMANDS: {
+                case CommandType::DISPATCH_COMPUTE: 
+                case CommandType::DRAW_TEXT:
+                case CommandType::DRAW_IMGUI:
+                case CommandType::DRAW_COMMANDS: {
                     if (!hasPipeline) {
                         return ErrorType::MISSING_VALID_PIPELINE;
                     }
                 }break;
-                case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+                case CommandType::BIND_DESCRIPTOR_SETS: {
                     hasDescriptorSets = true;
                 }break;
-                case GFX::CommandType::BLIT_RT: {
+                case CommandType::BLIT_RT: {
                     if (!hasDescriptorSets) {
                         return ErrorType::MISSING_BLIT_DESCRIPTOR_SET;
                     }
@@ -494,9 +494,9 @@ ErrorType CommandBuffer::validate() const {
     }
 }
 
-void CommandBuffer::ToString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out)
+void CommandBuffer::ToString(const CommandBase& cmd, const CommandType type, I32& crtIndent, stringImpl& out)
 {
-    const auto append = [](stringImpl& target, const stringImpl& text, I32 indent) {
+    const auto append = [](stringImpl& target, const stringImpl& text, const I32 indent) {
         for (I32 i = 0; i < indent; ++i) {
             target.append("    ");
         }
@@ -504,17 +504,17 @@ void CommandBuffer::ToString(const GFX::CommandBase& cmd, GFX::CommandType type,
     };
 
     switch (type) {
-        case GFX::CommandType::BEGIN_RENDER_PASS:
-        case GFX::CommandType::BEGIN_PIXEL_BUFFER:
-        case GFX::CommandType::BEGIN_RENDER_SUB_PASS: 
-        case GFX::CommandType::BEGIN_DEBUG_SCOPE : {
+        case CommandType::BEGIN_RENDER_PASS:
+        case CommandType::BEGIN_PIXEL_BUFFER:
+        case CommandType::BEGIN_RENDER_SUB_PASS: 
+        case CommandType::BEGIN_DEBUG_SCOPE : {
             append(out, GFX::ToString(cmd, to_U16(crtIndent)), crtIndent);
             ++crtIndent;
         }break;
-        case GFX::CommandType::END_RENDER_PASS:
-        case GFX::CommandType::END_PIXEL_BUFFER:
-        case GFX::CommandType::END_RENDER_SUB_PASS:
-        case GFX::CommandType::END_DEBUG_SCOPE: {
+        case CommandType::END_RENDER_PASS:
+        case CommandType::END_PIXEL_BUFFER:
+        case CommandType::END_RENDER_SUB_PASS:
+        case CommandType::END_DEBUG_SCOPE: {
             --crtIndent;
             append(out, GFX::ToString(cmd, to_U16(crtIndent)), crtIndent);
         }break;
@@ -528,7 +528,7 @@ stringImpl CommandBuffer::toString() const {
     I32 crtIndent = 0;
     stringImpl out = "\n\n\n\n";
     for (const CommandEntry& cmd : _commandOrder) {
-        ToString(*get<CommandBase>(cmd), static_cast<GFX::CommandType>(cmd._typeIndex), crtIndent, out);
+        ToString(*get<CommandBase>(cmd), static_cast<CommandType>(cmd._typeIndex), crtIndent, out);
         out.append("\n");
     }
     out.append("\n\n\n\n");
@@ -580,7 +580,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     };
 
     DrawCommand::CommandContainer& commands = prevCommand->_drawCommands;
-    commands.insert(eastl::cend(commands),
+    commands.insert(cend(commands),
                     eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
                     eastl::make_move_iterator(eastl::end(crtCommand->_drawCommands)));
     crtCommand->_drawCommands.resize(0);

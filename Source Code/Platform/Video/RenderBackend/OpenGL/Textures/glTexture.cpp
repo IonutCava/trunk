@@ -13,12 +13,12 @@
 namespace Divide {
 
 glTexture::glTexture(GFXDevice& context,
-                     size_t descriptorHash,
+                     const size_t descriptorHash,
                      const Str256& name,
                      const stringImpl& assetNames,
                      const stringImpl& assetLocations,
-                     bool isFlipped,
-                     bool asyncLoad,
+                     const bool isFlipped,
+                     const bool asyncLoad,
                      const TextureDescriptor& texDescriptor)
 
     : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor),
@@ -120,7 +120,7 @@ void glTexture::setMipMapRange(U16 base, U16 max) noexcept {
     Texture::setMipMapRange(base, max);
 }
 
-void glTexture::setMipRangeInternal(U16 base, U16 max) noexcept {
+void glTexture::setMipRangeInternal(U16 base, U16 max) const noexcept {
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, base);
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, max);
 }
@@ -149,7 +149,7 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
         if (GL_API::s_texturePool.typeSupported(oldTexType)) {
             GL_API::s_texturePool.deallocate(handle, oldTexType);
         } else {
-            Divide::GL_API::deleteTextures(1, &handle, oldTexTypeDescriptor);
+            GL_API::deleteTextures(1, &handle, oldTexTypeDescriptor);
         }
         _loadingData._textureHandle = tempHandle;
     }
@@ -169,7 +169,7 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
     _data = _loadingData;
 }
 
-void glTexture::reserveStorage() {
+void glTexture::reserveStorage() const {
     assert(
         !(_loadingData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
@@ -232,8 +232,7 @@ void glTexture::reserveStorage() {
                 _height,
                 _numLayers * numFaces);
         } break;
-        default:
-            return;
+        default: break;
     };
 }
 
@@ -281,16 +280,13 @@ void glTexture::loadData(const ImageTools::ImageData& imageData) {
 
     bool expected = false;
     if (_allocatedStorage.compare_exchange_strong(expected, true)) {
-        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         reserveStorage();
     }
     assert(_allocatedStorage);
 
     if (_descriptor.compressed()) {
-        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         loadDataCompressed(imageData);
     } else {
-        //UniqueLock<Mutex> lock(GLUtil::_driverLock);
         loadDataUncompressed(imageData);
     }
 
@@ -299,7 +295,6 @@ void glTexture::loadData(const ImageTools::ImageData& imageData) {
         _data = _loadingData;
     }
 
-    //UniqueLock<Mutex> lock(GLUtil::_driverLock);
     setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
 }
 

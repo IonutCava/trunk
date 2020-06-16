@@ -104,7 +104,7 @@ namespace Divide {
 
          void setTransform(const TransformValues& values);
 
-         [[nodiscard]] bool isUniformScaled() const;
+         [[nodiscard]] bool isUniformScaled() const noexcept;
 
          /// Return the position
          [[nodiscard]] vec3<F32> getPosition() const;

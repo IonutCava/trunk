@@ -6,7 +6,12 @@
 #endif //!PRE_PASS || !USE_DEFFERED_NORMALS
 
 void computeLightVectors(in NodeData data) {
+#if !defined(USE_MIN_SHADING)
+
+#if (!defined(PRE_PASS) && !defined(SHADOW_PASS)) || defined(COMPUTE_TBN)
     vec3 toCamera = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+#endif
+
 #if !defined(PRE_PASS) && !defined(SHADOW_PASS)
     VAR._viewDirectionWV = normalize(mat3(dvd_ViewMatrix) * toCamera);
 #endif //!PRE_PASS && !SHADOW_PASS
@@ -36,6 +41,8 @@ void computeLightVectors(in NodeData data) {
 
     VAR._normalWV = vec3(0.0f);
 #endif //COMPUTE_NORMALS
+
+#endif //USE_MIN_SHADING
 }
 
 #endif //_LIGHTING_DEFAULTS_VERT_

@@ -171,7 +171,7 @@ Scene* SceneManager::load(const Str256& sceneName) {
     return loadingScene;
 }
 
-bool SceneManager::unloadScene(Scene* scene) {
+bool SceneManager::unloadScene(Scene* scene) const {
     assert(scene != nullptr);
     if (_saveTask != nullptr) {
         Wait(*_saveTask);
@@ -201,7 +201,7 @@ void SceneManager::setActiveScene(Scene* const scene) {
     _platformContext->paramHandler().setParam(_ID("activeScene"), scene->resourceName());
 }
 
-bool SceneManager::switchScene(const Str256& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, bool threaded) {
+bool SceneManager::switchScene(const Str256& name, bool unloadPrevious, const Rect<U16>& targetRenderViewport, const bool threaded) {
     assert(!name.empty());
 
     Scene* sceneToUnload = nullptr;
@@ -268,11 +268,11 @@ bool SceneManager::switchScene(const Str256& name, bool unloadPrevious, const Re
     return true;
 }
 
-vectorEASTL<Str256> SceneManager::sceneNameList(bool sorted) const {
+vectorEASTL<Str256> SceneManager::sceneNameList(const bool sorted) const {
     return _scenePool->sceneNameList(sorted);
 }
 
-void SceneManager::initPostLoadState() {
+void SceneManager::initPostLoadState() noexcept {
     _processInput = true;
 }
 
@@ -290,7 +290,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
         const F32 fov = _platformContext->config().runtime.verticalFOV;
         const vec2<F32> zPlanes(Camera::s_minNearZ, _platformContext->config().runtime.cameraViewDistance);
 
-        for (UnitComponent* player : _players) {
+        for (const UnitComponent* player : _players) {
             if (player != nullptr) {
                 player->getUnit<Player>()->camera()->setProjection(aspectRatio, fov, zPlanes);
             }
@@ -311,7 +311,7 @@ void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, boo
 
 void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode) {
     const I64 sgnGUID = playerNode->getGUID();
-    for (UnitComponent* crtPlayer : _players) {
+    for (const UnitComponent* crtPlayer : _players) {
         if (crtPlayer && crtPlayer->getSGN()->getGUID() == sgnGUID) {
             return;
         }
@@ -431,7 +431,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
                 }
             }
             if (sComp != nullptr && sComp->enabled()) {
-                BoundsComponent* bComp = node->get<BoundsComponent>();
+                const BoundsComponent* bComp = node->get<BoundsComponent>();
                 if (bComp != nullptr) {
                     const vec3<F32>& center = bComp->getBoundingSphere().getCenter();
                     return screenRect.contains(camera.project(center, viewport));
@@ -604,7 +604,7 @@ void SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
     }
 }
 
-Camera* SceneManager::playerCamera(PlayerIndex idx) const {
+Camera* SceneManager::playerCamera(const PlayerIndex idx) const {
     if (getActivePlayerCount() <= idx) {
         return nullptr;
     }
@@ -635,13 +635,13 @@ void SceneManager::moveCameraToNode(const SceneGraphNode* targetNode) const {
     /// Root node just means a teleport to (0,0,0)
     if (targetNode->parent() != nullptr) {
         targetPos = playerCamera()->getEye();
-        BoundsComponent* bComp = targetNode->get<BoundsComponent>();
+        const BoundsComponent* bComp = targetNode->get<BoundsComponent>();
         if (bComp != nullptr) {
             const BoundingSphere& bSphere = bComp->getBoundingSphere();
             targetPos = bSphere.getCenter();
             targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
         } else {
-            TransformComponent* tComp = targetNode->get<TransformComponent>();
+            const TransformComponent* tComp = targetNode->get<TransformComponent>();
             if (tComp != nullptr) {
                 targetPos = tComp->getPosition();
                 targetPos -= playerCamera()->getForwardDir() * 3.0f;
@@ -662,17 +662,17 @@ bool SceneManager::loadNode(SceneGraphNode* targetNode) const {
     return LoadSave::loadNodeFromXML(getActiveScene(), targetNode);
 }
 
-void SceneManager::getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const {
+void SceneManager::getSortedReflectiveNodes(const Camera* camera, const RenderStage stage, const bool inView, VisibleNodeList<>& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
     getActiveScene().sceneGraph()->getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
 
-    eastl::erase_if(allNodes,
-                   [](SceneGraphNode* node) noexcept ->  bool {
-                        const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
-                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->reflective());
-                   });
+    erase_if(allNodes,
+             [](SceneGraphNode* node) noexcept ->  bool {
+                const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
+                return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->reflective());
+             });
 
     if (inView) {
         NodeCullParams cullParams = {};
@@ -687,17 +687,17 @@ void SceneManager::getSortedReflectiveNodes(const Camera* camera, RenderStage st
     }
 }
 
-void SceneManager::getSortedRefractiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const {
+void SceneManager::getSortedRefractiveNodes(const Camera* camera, const RenderStage stage, const bool inView, VisibleNodeList<>& nodesOut) const {
     OPTICK_EVENT();
 
     static vectorEASTL<SceneGraphNode*> allNodes = {};
     getActiveScene().sceneGraph()->getNodesByType({ SceneNodeType::TYPE_WATER, SceneNodeType::TYPE_OBJECT3D }, allNodes);
 
-    eastl::erase_if(allNodes,
-                   [](SceneGraphNode* node) noexcept ->  bool {
-                        const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
-                        return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->refractive());
-                   });
+    erase_if(allNodes,
+             [](SceneGraphNode* node) noexcept ->  bool {
+                  const Material_ptr& mat = node->get<RenderingComponent>()->getMaterialInstance();
+                  return node->getNode().type() != SceneNodeType::TYPE_WATER && (mat == nullptr || !mat->refractive());
+             });
     if (inView) {
         NodeCullParams cullParams = {};
         cullParams._lodThresholds = getActiveScene().state()->renderState().lodThresholds();
@@ -711,7 +711,7 @@ void SceneManager::getSortedRefractiveNodes(const Camera* camera, RenderStage st
     }
 }
 
-const VisibleNodeList<>& SceneManager::cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
+const VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const Camera& camera, const I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
     OPTICK_EVENT();
 
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
@@ -736,7 +736,7 @@ const VisibleNodeList<>& SceneManager::cullSceneGraph(RenderStage stage, const C
     return _renderPassCuller->frustumCull(cullParams, activeScene.sceneGraph(), sceneState, _parent.platformContext());
 }
 
-void SceneManager::prepareLightData(RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix) {
+void SceneManager::prepareLightData(const RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix) {
     OPTICK_EVENT();
 
     if (stage != RenderStage::SHADOW) {
@@ -760,14 +760,14 @@ void SceneManager::onGainFocus() {
     getActiveScene().onGainFocus();
 }
 
-void SceneManager::resetSelection(PlayerIndex idx) {
+void SceneManager::resetSelection(const PlayerIndex idx) {
     Attorney::SceneManager::resetSelection(getActiveScene(), idx);
     for (auto& cbk : _selectionChangeCallbacks) {
         cbk(idx, {});
     }
 }
 
-void SceneManager::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
+void SceneManager::setSelected(const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, const bool recursive) {
     Attorney::SceneManager::setSelected(getActiveScene(), idx, sgns, recursive);
     for (auto& cbk : _selectionChangeCallbacks) {
         cbk(idx, sgns);
@@ -786,7 +786,7 @@ void SceneManager::mouseMovedExternally(const Input::MouseMoveEvent& arg) {
     Attorney::SceneManager::clearHoverTarget(getActiveScene(), arg);
 }
 
-SceneNode_ptr SceneManager::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
+SceneNode_ptr SceneManager::createNode(const SceneNodeType type, const ResourceDescriptor& descriptor) {
     return Attorney::SceneManager::createNode(getActiveScene(), type, descriptor);
 }
 
@@ -942,7 +942,7 @@ bool LoadSave::loadNodeFromXML(const Scene& activeScene, SceneGraphNode* node) {
     return activeScene.loadNodeFromXML(node);
 }
 
-bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
+bool LoadSave::saveScene(const Scene& activeScene, const bool toCache, const DELEGATE<void, std::string_view> msgCallback, const DELEGATE<void, bool> finishCallback) {
     if (!toCache) {
         return activeScene.saveXML(msgCallback, finishCallback);
     }
@@ -972,7 +972,7 @@ bool LoadSave::saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, 
     return ret;
 }
 
-bool SceneManager::saveActiveScene(bool toCache, bool deferred, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
+bool SceneManager::saveActiveScene(bool toCache, const bool deferred, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
     OPTICK_EVENT();
 
     const Scene& activeScene = getActiveScene();
@@ -981,10 +981,9 @@ bool SceneManager::saveActiveScene(bool toCache, bool deferred, DELEGATE<void, s
         if (!Finished(*_saveTask)) {
             if (toCache) {
                 return false;
-            } else {
-                if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-                    DebugBreak();
-                }
+            }
+            if_constexpr(Config::Build::IS_DEBUG_BUILD) {
+                DebugBreak();
             }
         }
         Wait(*_saveTask);
@@ -1003,9 +1002,6 @@ bool SceneManager::saveActiveScene(bool toCache, bool deferred, DELEGATE<void, s
 }
 
 bool SceneManager::networkUpdate(U32 frameCount) {
-
-    getActiveScene().sceneGraph();
-
     return true;
 }
 

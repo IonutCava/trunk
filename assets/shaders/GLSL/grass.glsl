@@ -76,7 +76,6 @@ void main() {
 layout(early_fragment_tests) in;
 
 #define USE_SHADING_BLINN_PHONG
-#define USE_DEFERRED_NORMALS
 
 #include "BRDF.frag"
 
@@ -107,7 +106,6 @@ void main (void){
 #if defined(USE_ALPHA_DISCARD)
 #undef USE_ALPHA_DISCARD
 #endif
-#define USE_DEFERRED_NORMALS
 
 #include "prePass.frag"
 
@@ -117,19 +115,21 @@ layout(location = 1) in float _alphaFactor;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
 
 void main() {
-    NodeData data = dvd_Matrices[DATA_IDX];
-    prepareData(data);
-
     const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
     if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }
+
+#if defined(HAS_PRE_PASS_DATA)
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
 
     writeOutput(data,
                 VAR._texCoord,
                 VAR._normalWV,
                 getTBNViewDirection(),
                 _alphaFactor);
+#endif //HAS_PRE_PASS_DATA
 }
 
 --Fragment.Shadow.VSM

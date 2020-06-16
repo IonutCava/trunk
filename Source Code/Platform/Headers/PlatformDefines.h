@@ -674,10 +674,10 @@ TO safe_static_cast(D64 from)
     return static_cast<TO>(from);
 } 
 
-extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage);
+extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept;
 
 /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
-FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage = "UNEXPECTED CALL") {
+FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage = "UNEXPECTED CALL") noexcept {
     if_constexpr(!Config::Build::IS_RELEASE_BUILD) {
         if (!expression) {
             DIVIDE_ASSERT_MSG_BOX(failMessage);
@@ -692,7 +692,7 @@ FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage =
     }
 }
 
-FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") {
+FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") noexcept {
     DIVIDE_ASSERT(false, failMessage);
     DebugBreak();
 }

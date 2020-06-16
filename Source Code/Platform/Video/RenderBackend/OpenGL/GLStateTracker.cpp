@@ -178,8 +178,8 @@ bool GLStateTracker::bindSamplers(GLushort unitOffset,
     return false;
 }
 
-bool GLStateTracker::bindTextures(GLushort unitOffset,
-                                  GLuint textureCount,
+bool GLStateTracker::bindTextures(const GLushort unitOffset,
+                                  const GLuint textureCount,
                                   TextureType* textureTypes,
                                   GLuint* textureHandles,
                                   GLuint* samplerHandles) {

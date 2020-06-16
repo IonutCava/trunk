@@ -67,7 +67,7 @@ class glTexture final : public Texture,
 
    protected:
     void threadedLoad() final;
-    void reserveStorage();
+    void reserveStorage() const;
 
     void processTextureType() noexcept;
     void validateDescriptor() final;
@@ -75,7 +75,7 @@ class glTexture final : public Texture,
 
     void loadDataUncompressed(const ImageTools::ImageData& imageData);
 
-    void setMipRangeInternal(U16 base, U16 max) noexcept;
+    void setMipRangeInternal(U16 base, U16 max) const noexcept;
 
    private:
     GLenum _type;

@@ -69,7 +69,7 @@ void PlatformContext::terminate() {
     MemoryManager::DELETE(_gfx);
 }
 
-void PlatformContext::beginFrame(U32 componentMask) {
+void PlatformContext::beginFrame(const U32 componentMask) {
     OPTICK_EVENT();
 
     if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
@@ -81,7 +81,7 @@ void PlatformContext::beginFrame(U32 componentMask) {
     }
 }
 
-void PlatformContext::idle(U32 componentMask) {
+void PlatformContext::idle(const bool fast, const U32 componentMask) {
     OPTICK_EVENT();
 
     for (U32 i = 0; i < to_U32(TaskPoolType::COUNT); ++i) {
@@ -93,7 +93,7 @@ void PlatformContext::idle(U32 componentMask) {
     }
 
     if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {
-        _gfx->idle();
+        _gfx->idle(fast);
     }
     if (BitCompare(componentMask, SystemComponentType::SFXDevice)) {
         //_sfx->idle();
@@ -115,7 +115,7 @@ void PlatformContext::idle(U32 componentMask) {
     }
 }
 
-void PlatformContext::endFrame(U32 componentMask) {
+void PlatformContext::endFrame(const U32 componentMask) {
     OPTICK_EVENT();
 
     if (BitCompare(componentMask, SystemComponentType::GFXDevice)) {

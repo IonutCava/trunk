@@ -5,7 +5,6 @@
 
 #include "Platform/File/Headers/FileManagement.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferImpl.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
@@ -26,6 +25,8 @@
 #include <Texture.h>
 #include <CEGUI/CEGUI.h>
 
+
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Text/Headers/fontstash.h"
 
 namespace Divide {
@@ -139,8 +140,17 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
     }
 }
 
-void GL_API::idle() {
-    NOP();
+void GL_API::idle(bool fast) {
+    if (fast) {
+        NOP();
+    } else {
+        UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
+        if (!s_mipmapQueue.empty()) {
+            const auto it = s_mipmapQueue.begin();
+            glGenerateTextureMipmap(*it);
+            s_mipmapQueue.erase(it);
+        }
+    }
 }
 
 F32 GL_API::getFrameDurationGPU() const noexcept {
@@ -1303,7 +1313,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
     };
 }
 
-void GL_API::lockBuffers(U32 frameID) {
+void GL_API::lockBuffers(const U32 frameID) {
     OPTICK_EVENT();
     for (const BufferLockEntry& entry : s_bufferLockQueue) {
         entry._buffer->lockRange(entry._offset, entry._length, frameID);
@@ -1474,16 +1484,19 @@ bool GL_API::setViewport(const Rect<I32>& viewport) {
 }
 
 /// Return the OpenGL sampler object's handle for the given hash value
-GLuint GL_API::getSamplerHandle(size_t samplerHash) {
+GLuint GL_API::getSamplerHandle(const size_t samplerHash) {
+    assert(Runtime::isMainThread());
+
     // If the hash value is 0, we assume the code is trying to unbind a sampler object
     if (samplerHash > 0) {
         // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
-        UniqueLock<Mutex> r_lock(s_samplerMapLock);
         const SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
         if (it != std::cend(s_samplerMap)) {
             // Return the OpenGL handle for the sampler object matching the specified hash value
             return it->second;
         }
+
+        //Cache miss. Create the sampler object now.
         // Create and store the newly created sample object. GL_API is responsible for deleting these!
         const GLuint sampler = glSamplerObject::construct(SamplerDescriptor::get(samplerHash));
         hashAlg::emplace(s_samplerMap, samplerHash, sampler);

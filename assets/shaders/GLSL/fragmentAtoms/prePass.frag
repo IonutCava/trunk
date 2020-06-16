@@ -5,10 +5,15 @@
 #define PRE_PASS
 #endif
 
+#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
+#   define HAS_TRANSPARENCY
+#endif
 
 #if defined(USE_ALPHA_DISCARD) || defined(USE_DEFERRED_NORMALS)
 #define HAS_PRE_PASS_DATA
 #endif //USE_ALPHA_DISCARD || USE_DEFERRED_NORMALS
+
+#if defined(HAS_PRE_PASS_DATA)
 
 #include "materialData.frag"
 
@@ -62,4 +67,5 @@ void writeOutput(in NodeData nodeData,
 #endif //HAS_PRE_PASS_DATA
 }
 
+#endif //HAS_PRE_PASS_DATA
 #endif //_PRE_PASS_FRAG_

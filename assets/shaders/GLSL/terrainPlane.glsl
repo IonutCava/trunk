@@ -55,6 +55,7 @@ void main(void) {
 #include "prePass.frag"
 
 void main() {
+#if defined(HAS_PRE_PASS_DATA)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
@@ -62,4 +63,5 @@ void main() {
                 VAR._texCoord,
                 getNormalWV(VAR._texCoord),
                 vec3(0.0f));
+#endif //HAS_PRE_PASS_DATA
 }

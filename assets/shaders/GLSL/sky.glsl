@@ -241,11 +241,10 @@ void main() {
 
 --Fragment.PrePass
 
-#define USE_DEFERRED_NORMALS
-
 #include "prePass.frag"
 
 void main() {
+#if defined(HAS_PRE_PASS_DATA)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
@@ -255,4 +254,5 @@ void main() {
                 vec3(0.0f),
                 1.0f,
                 1.0f);
+#endif //HAS_PRE_PASS_DATA
 }

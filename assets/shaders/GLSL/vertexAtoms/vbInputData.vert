@@ -29,6 +29,8 @@ vec3 UNPACK_FLOAT(in float value) {
 NodeData fetchInputData() {
     dvd_Vertex = vec4(inVertexData, 1.0);
 
+#if !defined(USE_MIN_SHADING)
+
 #if defined(HAS_VELOCITY)
     dvd_PrevVertex = dvd_Vertex;
 #endif //HAS_VELOCITY
@@ -46,6 +48,7 @@ NodeData fetchInputData() {
 #endif //COMPUTE_TBN
 
     VAR._texCoord = inTexCoordData;
+#endif //USE_MIN_SHADING
 
     VAR._baseInstance = DVD_GL_BASE_INSTANCE;
 

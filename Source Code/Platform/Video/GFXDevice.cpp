@@ -784,10 +784,10 @@ void GFXDevice::closeRenderingAPI() {
 
 #pragma region Main frame loop
 /// After a swap buffer call, the CPU may be idle waiting for the GPU to draw to the screen, so we try to do some processing
-void GFXDevice::idle() const {
+void GFXDevice::idle(const bool fast) const {
     OPTICK_EVENT();
 
-    _api->idle();
+    _api->idle(fast);
 
     _shaderComputeQueue->idle();
     // Pass the idle call to the post processing system

@@ -343,9 +343,8 @@ private:
     {
         // this should be ample storage PER FRAME for events.
         static constexpr size_t EVENT_QUEUE_SIZE = 128;
-        Mutex _eventsLock;
         std::array<ECS::CustomEvent, EVENT_QUEUE_SIZE> _events;
-        std::array<bool, EVENT_QUEUE_SIZE> _eventsFreeList;
+        std::array<std::atomic_bool, EVENT_QUEUE_SIZE> _eventsFreeList;
         size_t _eventsCount = 0;
     } Events;
 

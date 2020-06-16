@@ -188,11 +188,22 @@ bool WaterPlane::load() {
 
     vertModule._defines.emplace_back("PRE_PASS", true);
     fragModule._variant = "PrePass";
-    fragModule._defines.emplace_back("PRE_PASS", true);
 
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
+    shaderDescriptor._modules.back()._defines.emplace_back("PRE_PASS", true);
+
+    ResourceDescriptor waterPrePassShaderLQ("waterPrePassLQ");
+    waterPrePassShaderLQ.propertyDescriptor(shaderDescriptor);
+    waterPrePassShaderLQ.waitForReady(false);
+    ShaderProgram_ptr waterPrePassLQ = CreateResource<ShaderProgram>(_parentCache, waterPrePassShaderLQ, loadTasks);
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+    shaderDescriptor._modules.back()._defines.emplace_back("PRE_PASS", true);
+    shaderDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
 
     ResourceDescriptor waterPrePassShader("waterPrePass");
     waterPrePassShader.propertyDescriptor(shaderDescriptor);
@@ -203,8 +214,9 @@ bool WaterPlane::load() {
 
     waterMat->setTexture(TextureUsage::UNIT0, waterDUDV, defaultSampler.getHash());
     waterMat->setTexture(TextureUsage::NORMALMAP, waterNM, defaultSampler.getHash());
-    waterMat->setShaderProgram(waterPrePass, RenderStage::COUNT, RenderPassType::PRE_PASS);
-    waterMat->setShaderProgram(waterColour,  RenderStage::COUNT, RenderPassType::MAIN_PASS);
+    waterMat->setShaderProgram(waterPrePassLQ, RenderStage::COUNT, RenderPassType::PRE_PASS);
+    waterMat->setShaderProgram(waterPrePass,   RenderStage::DISPLAY, RenderPassType::PRE_PASS);
+    waterMat->setShaderProgram(waterColour,    RenderStage::COUNT, RenderPassType::MAIN_PASS);
     waterMat->roughness(0.01f);
 
     setMaterialTpl(waterMat);

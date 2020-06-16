@@ -91,56 +91,56 @@ class PlatformContext {
     ~PlatformContext();
 
     void beginFrame(U32 mask = to_base(SystemComponentType::ALL));
-    void idle(U32 mask = to_base(SystemComponentType::ALL));
+    void idle(bool fast, U32 mask = to_base(SystemComponentType::ALL));
     void endFrame(U32 mask = to_base(SystemComponentType::ALL));
 
-    inline void beginFrame(SystemComponentType component) { beginFrame(to_base(component)); }
-    inline void idle(SystemComponentType component) { idle(to_base(component)); }
-    inline void endFrame(SystemComponentType component) { endFrame(to_base(component)); }
+    void beginFrame(const SystemComponentType component) { beginFrame(to_base(component)); }
+    void idle(const SystemComponentType component) { idle(to_base(component)); }
+    void endFrame(const SystemComponentType component) { endFrame(to_base(component)); }
 
     void terminate();
 
-    inline [[nodiscard]] Application& app()  noexcept { return _app; }
-    inline [[nodiscard]] const Application& app() const noexcept { return _app; }
+    [[nodiscard]] Application& app()  noexcept { return _app; }
+    [[nodiscard]] const Application& app() const noexcept { return _app; }
 
-    inline [[nodiscard]] GFXDevice& gfx() noexcept { return *_gfx; }
-    inline [[nodiscard]] const GFXDevice& gfx() const noexcept { return *_gfx; }
+    [[nodiscard]] GFXDevice& gfx() noexcept { return *_gfx; }
+    [[nodiscard]] const GFXDevice& gfx() const noexcept { return *_gfx; }
 
-    inline [[nodiscard]] GUI& gui() noexcept { return *_gui; }
-    inline [[nodiscard]] const GUI& gui() const noexcept { return *_gui; }
+    [[nodiscard]] GUI& gui() noexcept { return *_gui; }
+    [[nodiscard]] const GUI& gui() const noexcept { return *_gui; }
 
-    inline [[nodiscard]] SFXDevice& sfx() noexcept { return *_sfx; }
-    inline [[nodiscard]] const SFXDevice& sfx() const noexcept { return *_sfx; }
+    [[nodiscard]] SFXDevice& sfx() noexcept { return *_sfx; }
+    [[nodiscard]] const SFXDevice& sfx() const noexcept { return *_sfx; }
 
-    inline [[nodiscard]] PXDevice& pfx() noexcept { return *_pfx; }
-    inline [[nodiscard]] const PXDevice& pfx() const noexcept { return *_pfx; }
+    [[nodiscard]] PXDevice& pfx() noexcept { return *_pfx; }
+    [[nodiscard]] const PXDevice& pfx() const noexcept { return *_pfx; }
 
-    inline [[nodiscard]] XMLEntryData& entryData() noexcept { return *_entryData; }
-    inline [[nodiscard]] const XMLEntryData& entryData() const noexcept { return *_entryData; }
+    [[nodiscard]] XMLEntryData& entryData() noexcept { return *_entryData; }
+    [[nodiscard]] const XMLEntryData& entryData() const noexcept { return *_entryData; }
 
-    inline [[nodiscard]] Configuration& config() noexcept { return *_config; }
-    inline [[nodiscard]] const Configuration& config() const noexcept { return *_config; }
+    [[nodiscard]] Configuration& config() noexcept { return *_config; }
+    [[nodiscard]] const Configuration& config() const noexcept { return *_config; }
 
-    inline [[nodiscard]] LocalClient& client() noexcept { return *_client; }
-    inline [[nodiscard]] const LocalClient& client() const noexcept { return *_client; }
+    [[nodiscard]] LocalClient& client() noexcept { return *_client; }
+    [[nodiscard]] const LocalClient& client() const noexcept { return *_client; }
 
-    inline [[nodiscard]] Server& server() noexcept { return *_server; }
-    inline [[nodiscard]] const Server& server() const noexcept { return *_server; }
+    [[nodiscard]] Server& server() noexcept { return *_server; }
+    [[nodiscard]] const Server& server() const noexcept { return *_server; }
 
-    inline [[nodiscard]] DebugInterface& debug() noexcept { return *_debug; }
-    inline [[nodiscard]] const DebugInterface& debug() const noexcept { return *_debug; }
+    [[nodiscard]] DebugInterface& debug() noexcept { return *_debug; }
+    [[nodiscard]] const DebugInterface& debug() const noexcept { return *_debug; }
 
-    inline [[nodiscard]] Editor& editor() noexcept { return *_editor; }
-    inline [[nodiscard]] const Editor& editor() const noexcept { return *_editor; }
+    [[nodiscard]] Editor& editor() noexcept { return *_editor; }
+    [[nodiscard]] const Editor& editor() const noexcept { return *_editor; }
 
-    inline [[nodiscard]] TaskPool& taskPool(TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
-    inline [[nodiscard]] const TaskPool& taskPool(TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
+    [[nodiscard]] TaskPool& taskPool(TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
+    [[nodiscard]] const TaskPool& taskPool(TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
 
-    inline [[nodiscard]] Input::InputHandler& input() noexcept { return *_inputHandler; }
-    inline [[nodiscard]] const Input::InputHandler& input() const noexcept { return *_inputHandler; }
+    [[nodiscard]] Input::InputHandler& input() noexcept { return *_inputHandler; }
+    [[nodiscard]] const Input::InputHandler& input() const noexcept { return *_inputHandler; }
 
-    inline [[nodiscard]] ParamHandler& paramHandler() noexcept { return *_paramHandler; }
-    inline [[nodiscard]] const ParamHandler& paramHandler() const noexcept { return *_paramHandler; }
+    [[nodiscard]] ParamHandler& paramHandler() noexcept { return *_paramHandler; }
+    [[nodiscard]] const ParamHandler& paramHandler() const noexcept { return *_paramHandler; }
 
     [[nodiscard]] Kernel& kernel();
     [[nodiscard]] const Kernel& kernel() const;

@@ -47,7 +47,7 @@ struct BufferImplParams {
     bool _explicitFlush = true;
     bool _unsynced = true;
     const char* _name = nullptr;
-    bufferPtr _initialData = NULL;
+    bufferPtr _initialData = nullptr;
     BufferStorageType _storageType = BufferStorageType::AUTO;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
@@ -73,9 +73,9 @@ public:
     void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
     bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
 
-    void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data);
+    void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data) const;
     void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data) const;
-    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
+    void zeroMem(size_t offsetInBytes, size_t rangeInBytes) const;
 
     size_t elementSize() const noexcept;
 
@@ -89,13 +89,13 @@ protected:
     GLuint _handle = 0;
     Byte*  _mappedBuffer = nullptr;
     GFXDevice& _context;
-    const size_t _elementSize;
-    const size_t _alignedSize;
-    const GLenum _target;
-    const bool _unsynced;
-    const bool _useExplicitFlush;
-    const BufferUpdateFrequency _updateFrequency;
-    const BufferUpdateUsage _updateUsage;
+    const size_t _elementSize = 0;
+    const size_t _alignedSize = 0;
+    const GLenum _target = GL_NONE;
+    const bool _unsynced = false;
+    const bool _useExplicitFlush = false;
+    const BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
+    const BufferUpdateUsage _updateUsage = BufferUpdateUsage::COUNT;
 
     glBufferLockManager* _lockManager = nullptr;
 };

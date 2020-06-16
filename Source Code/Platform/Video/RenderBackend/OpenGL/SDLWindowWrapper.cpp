@@ -384,7 +384,6 @@ void GL_API::closeRenderingAPI() {
     }
     // Destroy sampler objects
     {
-        UniqueLock<Mutex> w_lock(s_samplerMapLock);
         for (auto sampler : s_samplerMap) {
             glSamplerObject::destruct(sampler.second);
         }

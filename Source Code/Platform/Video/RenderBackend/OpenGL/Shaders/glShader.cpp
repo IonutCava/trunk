@@ -193,7 +193,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
         if (linkStatus == GL_FALSE) {
             GLint logSize = 0;
             glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logSize);
-            stringImpl validationBuffer = "";
+            stringImpl validationBuffer;
             validationBuffer.resize(logSize);
 
             glGetProgramInfoLog(_programHandle, logSize, nullptr, &validationBuffer[0]);

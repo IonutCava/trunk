@@ -597,11 +597,14 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 #include "nodeBufferedInput.cmn"
 #if defined(PRE_PASS)
 #include "prePass.frag"
+#if defined(HAS_PRE_PASS_DATA)
+#include "terrainSplatting.frag"
+#endif  //HAS_PRE_PASS_DATA
 #else //PRE_PASS
 #include "BRDF.frag"
 #include "output.frag"
-#endif //PRE_PASS
 #include "terrainSplatting.frag"
+#endif //PRE_PASS
 
 #if !defined(PRE_PASS)
 #if defined(LOW_QUALITY)
@@ -622,17 +625,24 @@ vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 
 void main(void)
 {
+#if defined(PRE_PASS)
+#if defined(HAS_PRE_PASS_DATA)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
-
-   
     const vec3 tbnViewDir = computeTBN(VAR._texCoord);
-#if defined(PRE_PASS)
+
     writeOutput(data, 
                 VAR._texCoord,
                 getMixedNormalWV(VAR._texCoord, tbnViewDir),
                 tbnViewDir);
+#endif //HAS_PRE_PASS_DATA
 #else //PRE_PASS
+
+    NodeData data = dvd_Matrices[DATA_IDX];
+    prepareData(data);
+
+
+    const vec3 tbnViewDir = computeTBN(VAR._texCoord);
 
     vec4 albedo;
     vec3 normalWV;

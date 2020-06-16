@@ -289,7 +289,17 @@ bool Sky::load() {
 
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
+    //shaderDescriptor._modules.push_back(fragModule); <- No frag shader
+
+    ResourceDescriptor skyShaderLQPrePassDescriptor("sky_PrePass_LQ");
+    skyShaderLQPrePassDescriptor.waitForReady(false);
+    skyShaderLQPrePassDescriptor.propertyDescriptor(shaderDescriptor);
+    _skyShaderLQPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderLQPrePassDescriptor, loadTasks);
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
+    shaderDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky_PrePass");
     skyShaderPrePassDescriptor.waitForReady(false);
@@ -405,7 +415,8 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHashPrePass
                                             : _skyboxRenderStateHashPrePass);
-        pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
+        pipelineDescriptor._shaderProgramHandle = renderStagePass._stage == RenderStage::DISPLAY ? _skyShaderPrePass->getGUID()
+                                                                                                 : _skyShaderLQPrePass->getGUID();
     } else {
         WAIT_FOR_CONDITION(_skyShader->getState() == ResourceState::RES_LOADED);
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)

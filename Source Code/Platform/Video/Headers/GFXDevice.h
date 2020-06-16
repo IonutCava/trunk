@@ -245,7 +245,7 @@ public:  // GPU interface
     ErrorCode postInitRenderingAPI();
     void closeRenderingAPI();
 
-    void idle() const;
+    void idle(bool fast) const;
     void beginFrame(DisplayWindow& window, bool global);
     void endFrame(DisplayWindow& window, bool global);
 

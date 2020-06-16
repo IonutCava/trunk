@@ -57,9 +57,9 @@ struct ImageBindSettings {
     GLenum _access = GL_NONE;
     GLenum _format = GL_NONE;
 
-    void reset() {
+    void reset() noexcept {
         _texture = 0;
-         _level = 0;
+        _level = 0;
         _layered = GL_FALSE;
         _layer = 0;
         _access = GL_NONE;
@@ -138,7 +138,7 @@ class glObject {
 public:
     explicit glObject(glObjectType type, GFXDevice& context);
 
-    inline glObjectType type() const { return _type;  }
+    glObjectType type() const noexcept { return _type;  }
 
 private:
    const glObjectType _type;
@@ -214,7 +214,6 @@ extern GLuint s_lastQueryResult;
 extern const DisplayWindow* s_glMainRenderWindow;
 extern thread_local SDL_GLContext s_glSecondaryContext;
 
-extern Mutex s_driverLock;
 extern Mutex s_glSecondaryContextMutex;
 
 void submitRenderCommand(const GenericDrawCommand& drawCommand,

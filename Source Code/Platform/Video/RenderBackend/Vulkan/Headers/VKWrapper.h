@@ -45,7 +45,7 @@ class VK_API final : public RenderAPIWrapper {
     ~VK_API();
 
   protected:
-      void idle() final;
+      void idle(bool fast) final;
       void beginFrame(DisplayWindow& window, bool global = false) final;
       void endFrame(DisplayWindow& window, bool global = false) final;
 

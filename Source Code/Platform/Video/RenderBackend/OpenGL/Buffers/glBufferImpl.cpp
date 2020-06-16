@@ -113,7 +113,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
 glBufferImpl::~glBufferImpl()
 {
     if (_handle > 0) {
-        waitRange(0, _alignedSize, false);
+        (void)waitRange(0, _alignedSize, false);
         if (_mappedBuffer == nullptr) {
             glInvalidateBufferData(_handle);
         }
@@ -165,9 +165,8 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
     return bound;
 }
 
-void glBufferImpl::writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data)
-{
-    constexpr bool USE_BUFFER_ORPHANING = false;
+void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) const {
+    constexpr bool USE_BUFFER_ORPHANING = true;
 
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", bool(_mappedBuffer != nullptr));
@@ -242,7 +241,7 @@ void glBufferImpl::invalidateData(const size_t offsetInBytes, const size_t range
     }
 }
 
-void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
+void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) const {
     const vectorEASTL<Byte> newData(rangeInBytes, Byte{ 0 });
     writeData(offsetInBytes, rangeInBytes, newData.data());
 }

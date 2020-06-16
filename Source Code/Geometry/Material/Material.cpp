@@ -419,6 +419,8 @@ bool Material::canDraw(const RenderStagePass& renderStagePass) {
 bool Material::computeShader(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
+    bool hasPrePassData = false;
+
     const bool isDepthPass = renderStagePass.isDepthPass();
     const bool isShadowPass = renderStagePass._stage == RenderStage::SHADOW;
 
@@ -511,6 +513,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         if (renderStagePass._passType != RenderPassType::OIT_PASS) {
             shaderName += ".AD";
             fragDefines.emplace_back("USE_ALPHA_DISCARD", true);
+            hasPrePassData = true;
         }
 
         switch (_translucencySource) {
@@ -523,10 +526,12 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
                 } else {
                     shaderName += ".OMapA";
                 }
+                hasPrePassData = true;
             } break;
             case TranslucencySource::ALBEDO: {
                 shaderName += ".AAlpha";
                 fragDefines.emplace_back("USE_ALBEDO_ALPHA", true);
+                hasPrePassData = true;
             } break;
             default: break;
         };
@@ -592,6 +597,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         }
         fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
         shaderName += ".DNrmls";
+        hasPrePassData = true;
         if (!hasTransparency()) {
             fragDefines.emplace_back("HAS_VELOCITY", true);
             vertDefines.emplace_back("HAS_VELOCITY", true);
@@ -619,15 +625,20 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._defines = vertDefines;
 
-    ShaderModuleDescriptor fragModule = {};
-    fragModule._variant = fragVariant;
-    fragModule._sourceFile = (fragSource + ".glsl").c_str();
-    fragModule._moduleType = ShaderType::FRAGMENT;
-    fragModule._defines = fragDefines;
-
     ShaderProgramDescriptor shaderDescriptor = {};
+    if (renderStagePass._passType != RenderPassType::PRE_PASS || hasPrePassData) {
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._variant = fragVariant;
+        fragModule._sourceFile = (fragSource + ".glsl").c_str();
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._defines = fragDefines;
+
+        shaderDescriptor._modules.push_back(fragModule);
+    } else {
+        vertModule._defines.emplace_back("USE_MIN_SHADING", true);
+    }
+
     shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor shaderResDescriptor(shaderName);
     shaderResDescriptor.propertyDescriptor(shaderDescriptor);

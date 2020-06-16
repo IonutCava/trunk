@@ -3,20 +3,19 @@
 #include "Headers/GUI.h"
 #include "Headers/SceneGUIElements.h"
 
-#include "Headers/GUIFlash.h"
-#include "Headers/GUIText.h"
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
+#include "Headers/GUIFlash.h"
 #include "Headers/GUIMessageBox.h"
+#include "Headers/GUIText.h"
 
 #include "Scenes/Headers/Scene.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/XMLEntryData.h"
+#include "Core/Debugging/Headers/DebugInterface.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Core/Debugging/Headers/DebugInterface.h"
 
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -29,7 +28,7 @@ namespace {
     GUIMessageBox* g_assertMsgBox = nullptr;
 };
 
-void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
+void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept {
     const stringImpl assertMsg = Util::StringFormat("Assert: %s", failMessage);
 
     if_constexpr(Config::Assert::LOG_ASSERTS) {
@@ -49,17 +48,17 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) {
 GUI::GUI(Kernel& parent)
   : GUIInterface(*this),
     KernelComponent(parent),
-    _ceguiInput(*this),
-    _init(false),
     _rootSheet(nullptr),
-    _defaultMsgBox(nullptr),
-    _debugVarCacheCount(0),
-    _activeScene(nullptr),
-    _console(nullptr),
     _ceguiContext(nullptr),
-    _ceguiRenderer(nullptr),
     _ceguiRenderTextureTarget(nullptr),
-    _textRenderInterval(Time::MillisecondsToMicroseconds(10))
+    _init(false),
+    _ceguiInput(*this),
+    _ceguiRenderer(nullptr),
+    _console(nullptr),
+    _defaultMsgBox(nullptr),
+    _textRenderInterval(Time::MillisecondsToMicroseconds(10)),
+    _activeScene(nullptr),
+    _debugVarCacheCount(0)
 {
     // 500ms
     _ceguiInput.setInitialDelay(0.500f);

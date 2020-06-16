@@ -212,9 +212,9 @@ protected:
     bool networkUpdate(U32 frameCount);
 
 protected:
-    void initPostLoadState();
+    void initPostLoadState() noexcept;
     Scene* load(const Str256& name);
-    bool   unloadScene(Scene* scene);
+    bool   unloadScene(Scene* scene) const;
 
     // Add a new player to the simulation
     void addPlayerInternal(Scene& parentScene, SceneGraphNode* playerNode);

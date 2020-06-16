@@ -84,7 +84,7 @@ protected:
     virtual void beginFrame(DisplayWindow& window, bool global = false) = 0;
     /// Clear shaders, restore active texture units, etc
     virtual void endFrame(DisplayWindow& window, bool global = false) = 0;
-    virtual void idle() = 0;
+    virtual void idle(bool fast) = 0;
 
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;

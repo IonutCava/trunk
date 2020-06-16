@@ -40,7 +40,7 @@ namespace Divide {
 //Not thread safe!
 class Transform final : public ITransform, public GUIDWrapper, NonCopyable {
    public:
-    Transform();
+    Transform() noexcept;
     Transform(const Quaternion<F32>& orientation,
               const vec3<F32>& translation,
               const vec3<F32>& scale);

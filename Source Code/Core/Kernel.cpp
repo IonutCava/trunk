@@ -143,7 +143,7 @@ void Kernel::stopSplashScreen() {
 void Kernel::idle(const bool fast) {
     OPTICK_EVENT();
 
-    _platformContext.idle();
+    _platformContext.idle(fast);
 
     if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         if (!fast) {

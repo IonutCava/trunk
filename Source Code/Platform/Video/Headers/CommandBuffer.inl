@@ -41,9 +41,9 @@ void Command<T, EnumVal>::addToBuffer(CommandBuffer* buffer) const {
     buffer->add(static_cast<const T&>(*this));
 }
 
-inline void DELETE_CMD(GFX::CommandBase*& cmd) noexcept {
+inline void DELETE_CMD(CommandBase*& cmd) noexcept {
     assert(cmd != nullptr);
-    const GFX::Deleter& deleter = cmd->getDeleter();
+    const Deleter& deleter = cmd->getDeleter();
     deleter.del(cmd);
     assert(cmd == nullptr);
 }
@@ -175,24 +175,24 @@ inline bool CommandBuffer::empty() const noexcept {
 
 template<typename T>
 typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-CommandBuffer::tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand) const {
+CommandBuffer::tryMergeCommands(const CommandType type, T* prevCommand, T* crtCommand) const {
     OPTICK_EVENT();
 
     bool ret = false;
     assert(prevCommand != nullptr && crtCommand != nullptr);
     switch (type) {
-        case GFX::CommandType::DRAW_COMMANDS:        {
+        case CommandType::DRAW_COMMANDS:        {
             ret = Merge(static_cast<DrawCommand*>(prevCommand), static_cast<DrawCommand*>(crtCommand));
         } break;
-        case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
+        case CommandType::BIND_DESCRIPTOR_SETS: {
             bool partial = false;
             ret = Merge(reinterpret_cast<BindDescriptorSetsCommand*>(prevCommand)->_set, reinterpret_cast<BindDescriptorSetsCommand*>(crtCommand)->_set, partial);
         } break;
-        case GFX::CommandType::SEND_PUSH_CONSTANTS:  {
+        case CommandType::SEND_PUSH_CONSTANTS:  {
             bool partial = false;
             ret = Merge(reinterpret_cast<SendPushConstantsCommand*>(prevCommand)->_constants, reinterpret_cast<SendPushConstantsCommand*>(crtCommand)->_constants, partial);
         } break;
-        case GFX::CommandType::DRAW_TEXT:            {
+        case CommandType::DRAW_TEXT:            {
             const TextElementBatch::BatchType& crt = reinterpret_cast<DrawTextCommand*>(crtCommand)->_batch._data;
             if (!crt.empty()) {
                 TextElementBatch::BatchType& prev = reinterpret_cast<DrawTextCommand*>(prevCommand)->_batch._data;

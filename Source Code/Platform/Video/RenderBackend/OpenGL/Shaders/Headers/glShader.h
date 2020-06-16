@@ -57,7 +57,7 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
     template<typename T>
     struct UniformCache {
         using ShaderVarMap = hashMap<T, GFX::PushConstant>;
-        inline void clear() { _shaderVars.clear(); }
+        void clear() { _shaderVars.clear(); }
         ShaderVarMap _shaderVars;
     };
     using UniformsByNameHash = UniformCache<U64>;
@@ -81,7 +81,7 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
     void AddRef() noexcept { _refCount.fetch_add(1); }
     /// Returns true if ref count reached 0
     bool SubRef() noexcept { return _refCount.fetch_sub(1) == 1; }
-    const size_t GetRef() const { return _refCount.load(); }
+    size_t GetRef() const { return _refCount.load(); }
 
    public:
     // ======================= static data ========================= //

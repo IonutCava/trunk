@@ -38,14 +38,12 @@ uniform float _specularShininess = 200.0f;
 
 #define CUSTOM_IBL
 #define USE_SHADING_BLINN_PHONG
-#define USE_DEFERRED_NORMALS
 #define USE_PLANAR_REFLECTION
 #define USE_PLANAR_REFRACTION
 
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #include "utility.frag"
-
 #else // PRE_PASS
 #include "BRDF.frag"
 #include "output.frag"
@@ -71,6 +69,7 @@ void main()
     prepareData(data);
 
 #if defined(PRE_PASS)
+#if defined(HAS_PRE_PASS_DATA)
     const float time2 = MSToSeconds(dvd_time) * 0.05f;
     vec2 uvNormal0 = VAR._texCoord * _noiseTile;
     uvNormal0.s += time2;
@@ -87,6 +86,7 @@ void main()
                 VAR._texCoord,
                 getTBNWV() * normal,
                 vec3(0.0f));
+#endif //HAS_PRE_PASS_DATA
 #else
 
     const float kDistortion = 0.015f;

@@ -1,15 +1,10 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/GLWrapper.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/Configuration.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
-#include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 
 namespace Divide {
@@ -29,7 +24,6 @@ SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
 GL_API::SamplerObjectMap GL_API::s_samplerMap;
-Mutex GL_API::s_samplerMapLock;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;
 
@@ -42,13 +36,6 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     if (global) {
         stateTracker.bindTextures(0, s_maxTextureUnits - 1, nullptr, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
-
-        //stateTracker.setActiveBuffer(GL_TEXTURE_BUFFER, 0);
-        //stateTracker.setActiveBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-        //stateTracker.setActiveBuffer(GL_UNIFORM_BUFFER, 0);
-        //stateTracker.setActiveBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        //stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
-        //stateTracker._commandBufferOffset = 0u;
         stateTracker._activePixelBuffer = nullptr;
     }
 
@@ -97,7 +84,7 @@ bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
     return false;
 }
 
-bool GL_API::deleteVAOs(GLuint count, GLuint* vaos) {
+bool GL_API::deleteVAOs(const GLuint count, GLuint* vaos) {
     if (count > 0 && vaos != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeVAOID == vaos[i]) {
@@ -112,7 +99,7 @@ bool GL_API::deleteVAOs(GLuint count, GLuint* vaos) {
     return false;
 }
 
-bool GL_API::deleteFramebuffers(GLuint count, GLuint* framebuffers) {
+bool GL_API::deleteFramebuffers(const GLuint count, GLuint* framebuffers) {
     if (count > 0 && framebuffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             const GLuint crtFB = framebuffers[i];
@@ -129,7 +116,7 @@ bool GL_API::deleteFramebuffers(GLuint count, GLuint* framebuffers) {
     return false;
 }
 
-bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
+bool GL_API::deleteShaderPrograms(const GLuint count, GLuint* programs) {
     if (count > 0 && programs != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeShaderProgram == programs[i]) {
@@ -144,7 +131,7 @@ bool GL_API::deleteShaderPrograms(GLuint count, GLuint* programs) {
     return false;
 }
 
-bool GL_API::deleteShaderPipelines(GLuint count, GLuint* programPipelines) {
+bool GL_API::deleteShaderPipelines(const GLuint count, GLuint* programPipelines) {
     if (count > 0 && programPipelines != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeShaderPipeline == programPipelines[i]) {
@@ -159,7 +146,7 @@ bool GL_API::deleteShaderPipelines(GLuint count, GLuint* programPipelines) {
     return false;
 }
 
-bool GL_API::deleteTextures(GLuint count, GLuint* textures, TextureType texType) {
+bool GL_API::deleteTextures(const GLuint count, GLuint* textures, const TextureType texType) {
     if (count > 0 && textures != nullptr) {
         
         for (GLuint i = 0; i < count; ++i) {
@@ -189,7 +176,7 @@ bool GL_API::deleteTextures(GLuint count, GLuint* textures, TextureType texType)
     return false;
 }
 
-bool GL_API::deleteSamplers(GLuint count, GLuint* samplers) {
+bool GL_API::deleteSamplers(const GLuint count, GLuint* samplers) {
     if (count > 0 && samplers != nullptr) {
 
         for (GLuint i = 0; i < count; ++i) {

@@ -101,7 +101,7 @@ protected:
     void beginFrame(DisplayWindow& window, bool global = false) final;
     /// Finish rendering the current frame
     void endFrame(DisplayWindow& window, bool global = false) final;
-    void idle() final;
+    void idle(bool fast) final;
 
     GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
 
@@ -227,7 +227,6 @@ private:
     static GLuint s_anisoLevel;
     /// /*sampler hash value*/ /*sampler object*/
     using SamplerObjectMap = hashMap<size_t, GLuint, NoHash<size_t>>;
-    static Mutex s_samplerMapLock;
     static SamplerObjectMap s_samplerMap;
     static GLStateTracker  s_stateTracker;
 
