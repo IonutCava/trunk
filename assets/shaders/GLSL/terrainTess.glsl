@@ -575,6 +575,7 @@ layout(early_fragment_tests) in;
 #endif //PRE_ASS
 
 #define USE_CUSTOM_TBN
+#define USE_CUSTOM_POM
 
 layout(location = 10) in flat int dvd_LoD;
 
@@ -629,25 +630,23 @@ void main(void)
 #if defined(HAS_PRE_PASS_DATA)
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
-    const vec3 tbnViewDir = computeTBN(VAR._texCoord);
+    computeTBN(VAR._texCoord);
 
     writeOutput(data, 
                 VAR._texCoord,
-                getMixedNormalWV(VAR._texCoord, tbnViewDir),
-                tbnViewDir);
+                getMixedNormalWV(VAR._texCoord));
 #endif //HAS_PRE_PASS_DATA
 #else //PRE_PASS
 
     NodeData data = dvd_Matrices[DATA_IDX];
     prepareData(data);
 
-
-    const vec3 tbnViewDir = computeTBN(VAR._texCoord);
+    computeTBN(VAR._texCoord);
 
     vec4 albedo;
     vec3 normalWV;
 
-    BuildTerrainData(VAR._texCoord, tbnViewDir, albedo, normalWV);
+    BuildTerrainData(VAR._texCoord, albedo, normalWV);
 #if !defined(LOW_QUALITY)
     _private_roughness = albedo.a;
 #endif //LOW_QUALITY

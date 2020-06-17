@@ -217,6 +217,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Line smoothing should almost always be used
     glEnable(GL_LINE_SMOOTH);
 
+    // GL_FALSE causes a conflict here. Thanks glbinding ...
+    glClampColor(GL_CLAMP_READ_COLOR, GL_NONE);
+    glClampColor(GL_CLAMP_VERTEX_COLOR, GL_NONE);
+    glClampColor(GL_CLAMP_FRAGMENT_COLOR, GL_NONE);
     // Cap max anisotropic level to what the hardware supports
     CLAMP(config.rendering.anisotropicFilteringLevel,
           to_U8(0),

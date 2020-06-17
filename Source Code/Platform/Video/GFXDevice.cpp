@@ -270,8 +270,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     depthSampler.anisotropyLevel(0);
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normAndVelDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+    TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
     screenDescriptor.hasMipMaps(false);
     normAndVelDescriptor.hasMipMaps(false);
@@ -291,7 +291,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
             vectorEASTL<RTAttachmentDescriptor> attachments = {
                 { screenDescriptor,     samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
                 { normAndVelDescriptor, samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-                { gbufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 1.0f, 1.0f, 0.0f) },
+                { gbufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 0.0f, 0.0f, 0.0f) },
                 { depthDescriptor,      samplerHash, RTAttachmentType::Depth }
             };
 
@@ -640,13 +640,46 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
 
         ResourceDescriptor blur("blurGeneric");
         blur.propertyDescriptor(shaderDescriptor);
-        _blurShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
-        _blurShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        _blurBoxShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+        _blurBoxShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
             ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
-            _BlurPipeline = newPipeline(pipelineDescriptor);
+            _BlurBoxPipeline = newPipeline(pipelineDescriptor);
+        });
+    }
+    {
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
+
+        ShaderModuleDescriptor geomModule = {};
+        geomModule._moduleType = ShaderType::GEOMETRY;
+        geomModule._sourceFile = "blur.glsl";
+        geomModule._variant = "GaussBlur";
+        geomModule._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", 1).c_str(), true);
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "blur.glsl";
+        fragModule._variant = "GaussBlur";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(geomModule);
+        shaderDescriptor._modules.push_back(fragModule);
+
+        ResourceDescriptor blur(Util::StringFormat("GaussBlur_ % d_invocations", 1).c_str());
+        blur.propertyDescriptor(shaderDescriptor);
+        _blurGaussianShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+        _blurGaussianShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+            ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
+            PipelineDescriptor pipelineDescriptor;
+            pipelineDescriptor._stateHash = get2DStateBlock();
+            pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+            _BlurGaussianPipeline = newPipeline(pipelineDescriptor);
         });
     }
     {
@@ -752,7 +785,8 @@ void GFXDevice::closeRenderingAPI() {
     _displayShader = nullptr;
     _depthShader = nullptr;
     _textRenderShader = nullptr;
-    _blurShader = nullptr;
+    _blurBoxShader = nullptr;
+    _blurGaussianShader = nullptr;
 
     // Close the shader manager
     MemoryManager::DELETE(_shaderComputeQueue);
@@ -994,6 +1028,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            RTAttachmentType att,
                            U8 index,
                            I32 kernelSize,
+                           bool gaussian,
                            GFX::CommandBuffer& bufferInOut)
 {
     static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
@@ -1011,7 +1046,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.setTexture(data, sampler, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _BlurPipeline });
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ gaussian ? _BlurGaussianPipeline : _BlurBoxPipeline });
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants.countHint(4);
@@ -1777,18 +1812,6 @@ void GFXDevice::initDebugViews() {
         VelocityPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 2u);
         VelocityPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 5.0f);
 
-
-        DebugView_ptr TBNViewDirPreview = std::make_shared<DebugView>();
-        TBNViewDirPreview->_shader = _renderTargetDraw;
-        TBNViewDirPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
-        TBNViewDirPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).samplerHash();
-        TBNViewDirPreview->_name = "TBN View Direction";
-        TBNViewDirPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        TBNViewDirPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        TBNViewDirPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
-        TBNViewDirPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
-        TBNViewDirPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
-
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
@@ -1797,7 +1820,7 @@ void GFXDevice::initDebugViews() {
         SSAOPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         SSAOPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
         SSAOPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        SSAOPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 2u);
+        SSAOPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         SSAOPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr FlagPreview = std::make_shared<DebugView>();
@@ -1880,7 +1903,6 @@ void GFXDevice::initDebugViews() {
         HiZView = addDebugView(HiZ);
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
-        addDebugView(TBNViewDirPreview);
         addDebugView(VelocityPreview);
         addDebugView(SSAOPreview);
         addDebugView(FlagPreview);

@@ -437,6 +437,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
                                          RTAttachmentType::Colour,
                                          0, 
                                          _blurKernelSize,
+                                         true,
                                          bufferInOut);
     }
 }

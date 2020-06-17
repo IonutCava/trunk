@@ -127,7 +127,6 @@ void main() {
     writeOutput(data,
                 VAR._texCoord,
                 VAR._normalWV,
-                getTBNViewDirection(),
                 _alphaFactor);
 #endif //HAS_PRE_PASS_DATA
 }

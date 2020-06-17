@@ -9,8 +9,7 @@ void main() {
 
     writeOutput(data,
                 VAR._texCoord,
-                getNormalWV(VAR._texCoord),
-                getTBNViewDirection());
+                getNormalWV(VAR._texCoord));
 #endif //HAS_PRE_PASS_DATA
 }
 

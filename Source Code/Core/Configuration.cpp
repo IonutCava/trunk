@@ -68,6 +68,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.enableCameraBlur);
         GET_PARAM(rendering.postFX.enableBloom);
         GET_PARAM(rendering.postFX.bloomFactor);
+        GET_PARAM(rendering.postFX.bloomThreshold);
         GET_PARAM(rendering.postFX.velocityScale);
         GET_PARAM(rendering.postFX.enableSSAO);
         GET_PARAM(rendering.postFX.ssaoRadius);
@@ -155,6 +156,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.enablePerObjectMotionBlur);
         PUT_PARAM(rendering.postFX.enableCameraBlur);
         PUT_PARAM(rendering.postFX.enableBloom);
+        PUT_PARAM(rendering.postFX.bloomThreshold);
         PUT_PARAM(rendering.postFX.bloomFactor);
         PUT_PARAM(rendering.postFX.velocityScale);
         PUT_PARAM(rendering.postFX.enableSSAO);

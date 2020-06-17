@@ -86,12 +86,6 @@ void main() {
     }
 }
 
--- Vertex.GaussBlur
-
-void main(void)
-{
-}
-
 --Geometry.GaussBlur
 
 layout(points, invocations = MAX_CSM_SPLITS_PER_LIGHT) in;

@@ -85,13 +85,13 @@ void main(void) {
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
 
-//b - ssao
+//r - ssao
 layout(location = TARGET_EXTRA) out vec4 _output;
 
 uniform bool passThrough = false;
 
 void main() {
-#   define _colourOut (_output.b)
+#   define _colourOut (_output.r)
     if (!passThrough) {
         vec2 texelSize = 1.0 / vec2(textureSize(texSSAO, 0));
 

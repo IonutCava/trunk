@@ -43,11 +43,22 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #include "bumpMapping.frag"
 #endif
 
+#if defined(USE_CUSTOM_POM)
+vec3 getTBNViewDir();
+#else //USE_CUSTOM_POM
+vec3 getTBNViewDir() {
+#   if defined(COMPUTE_POM)
+    return VAR._tbnViewDir;
+#   else //COMPUTE_POM
+    return vec3(0.0f);
+#   endif//COMPUTE_POM
+}
+#endif //USE_CUSTOM_POM
+
 #if defined(USE_CUSTOM_TBN)
 // Should cause compile errors if we try to use these without defining them
 // so it should be fine. Look at terrainTess.glsl for an example on how to avoid these
 mat3 getTBNWV();
-vec3 getTBNViewDir();
 #else //USE_CUSTOM_TBN
 mat3 getTBNWV() {
 #if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
@@ -60,18 +71,6 @@ mat3 getTBNWV() {
 #   endif//COMPUTE_TBN
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 }
-vec3 getTBNViewDir() {
-#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
-    return vec3(0.0f);
-#else //PRE_PASS && !HAS_PRE_PASS_DATA
-#   if defined(COMPUTE_TBN)
-    return VAR._tbnViewDir;
-#   else //COMPUTE_TBN
-    return vec3(0.0f);
-#   endif//COMPUTE_TBN
-#endif //PRE_PASS && !HAS_PRE_PASS_DATA
-}
-
 #endif//USE_CUSTOM_TBN
 
 #if !defined(PRE_PASS)
@@ -95,7 +94,7 @@ float Gloss(in vec3 bump, in vec2 uv)
 
 float getSSAO() {
 #if defined(USE_SSAO)
-    return texture(texGBufferExtra, dvd_screenPositionNormalised).b;
+    return texture(texGBufferExtra, dvd_screenPositionNormalised).r;
 #else
     return 1.0f;
 #endif
@@ -241,21 +240,6 @@ vec3 getNormalWV(in vec2 uv) {
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 #else //PRE_PASS
     return normalize(unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg));
-#endif //PRE_PASS
-}
-
-// Computed directions are NOT normalized. Retrieved directions ARE.
-vec3 getTBNViewDirection() {
-#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
-
-#   if defined(COMPUTE_TBN)
-    return getTBNViewDir();
-#   else //COMPUTE_TBN
-    return vec3(0.0f);
-#   endif//COMPUTE_TBN
-
-#else //PRE_PASS
-    return normalize(unpackNormal(texture(texGBufferExtra, dvd_screenPositionNormalised).rg));
 #endif //PRE_PASS
 }
 

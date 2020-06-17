@@ -191,7 +191,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         case DEBUG_ROUGHNESS: return vec3(OMR.b);
         case DEBUG_METALLIC: return vec3(OMR.g);
         case DEBUG_NORMALS: return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
-        case DEBUG_TBN_VIEW_DIRECTION: return getTBNViewDirection();
+        case DEBUG_TBN_VIEW_DIRECTION: return getTBNViewDir();
         case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
         case DEBUG_LIGHT_TILES: return lightTileColour();
         case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
@@ -199,10 +199,9 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 
     //albedo.rgb += dvd_AmbientColour.rgb;
     albedo.rgb *= getSSAO();
-    //albedo.rgb *= OMR.r;
 
 #if defined(USE_SHADING_FLAT)
-    return albedo;
+    return getEmissive(colourMatrix) + albedo;
 #else //USE_SHADING_FLAT
 
     const uint dirLightCount = dvd_LightData.x;

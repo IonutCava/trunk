@@ -99,6 +99,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     _bloomOutput = _context.renderTargetPool().allocateRT(desc);
 
     factor(_context.context().config().rendering.postFX.bloomFactor);
+    luminanceThreshold(_context.context().config().rendering.postFX.bloomThreshold);
 }
 
 BloomPreRenderOperator::~BloomPreRenderOperator() {
@@ -134,6 +135,7 @@ void BloomPreRenderOperator::factor(F32 val) {
 void BloomPreRenderOperator::luminanceThreshold(F32 val) {
     _bloomThreshold = val;
     _bloomCalcConstants.set(_ID("luminanceThreshold"), GFX::PushConstantType::FLOAT, _bloomThreshold);
+    _context.context().config().rendering.postFX.bloomThreshold = val;
 }
 
 // Order: luminance calc -> bloom -> tonemap
@@ -177,6 +179,7 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
                         RTAttachmentType::Colour,
                         0,
                         10,
+                        true,
                         bufferInOut);
 
     // Step 3: apply bloom

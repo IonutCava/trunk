@@ -48,10 +48,10 @@ class BloomPreRenderOperator : public PreRenderOperator {
     bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
-    inline F32 factor() const { return _bloomFactor; }
+    F32 factor() const noexcept { return _bloomFactor; }
     void factor(F32 val);
 
-    inline F32 luminanceThreshold() const { return _bloomThreshold; }
+    F32 luminanceThreshold() const noexcept { return _bloomThreshold; }
     void luminanceThreshold(F32 val);
 
     bool ready() const final;

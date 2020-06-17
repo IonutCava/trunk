@@ -16,8 +16,6 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_disableLoadFromCache = false;
-
     Str256 ClimatesLocation(U8 textureQuality) {
        CLAMP<U8>(textureQuality, 0u, 3u);
 
@@ -540,8 +538,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         RenderStateBlock terrainRenderStateShadow = terrainRenderStatePrePass;
         terrainRenderStateShadow.setColourWrites(true, true, false, false);
         terrainRenderStateShadow.setZFunc(ComparisonFunction::LESS);
-        //terrainRenderStateShadow.setCullMode(CullMode::FRONT);
-        //terrainRenderStateShadow.setZBias(4.0f, 20.0f);
 
         terrainMaterial->setRenderStateBlock(terrainRenderStateShadow.getHash(), RenderStage::SHADOW, RenderPassType::COUNT);
     }
@@ -578,7 +574,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     const vec3<F32>& bMax = terrainBB.getMax();
 
     ByteBuffer terrainCache;
-    if (!g_disableLoadFromCache && terrainCache.loadFromFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str())) {
+    if (!terrainCache.loadFromFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str())) {
         terrainCache >> terrain->_physicsVerts;
     }
 

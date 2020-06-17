@@ -83,6 +83,7 @@
 		<enableCameraBlur>true</enableCameraBlur>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>
+		<bloomThreshold>0.700000012</bloomThreshold>
 		<velocityScale>1</velocityScale>
         <enableSSAO>true</enableSSAO>
 		<ssaoRadius>0.5</ssaoRadius>

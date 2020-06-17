@@ -106,7 +106,8 @@ struct Configuration final : public XML::IXMLSerializable {
             bool enablePerObjectMotionBlur = true;
             bool enableCameraBlur = true;
             bool enableBloom = false;
-            F32 bloomFactor = 0.f;
+            F32 bloomFactor = 0.8f;
+            F32 bloomThreshold = 0.75f;
             F32 velocityScale = 1.f;
             bool enableSSAO = false;
             F32 ssaoRadius = 0.5f;

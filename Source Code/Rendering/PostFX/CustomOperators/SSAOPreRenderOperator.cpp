@@ -179,7 +179,7 @@ void SSAOPreRenderOperator::kernelIndex(const U8 val) {
 void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     if (_enabled) {
         RenderStateBlock blueChannelOnly = RenderStateBlock::get(_context.get2DStateBlock());
-        blueChannelOnly.setColourWrites(false, false, true, false);
+        blueChannelOnly.setColourWrites(true, false, false, false);
 
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();

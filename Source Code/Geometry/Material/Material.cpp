@@ -501,6 +501,9 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     {
         // Bump mapping?
         globalDefines.emplace_back("COMPUTE_TBN", true);
+        if (_bumpMethod != BumpMethod::NORMAL) {
+            globalDefines.emplace_back("COMPUTE_POM", true);
+        }
     }
 
     if (!isDepthPass && _textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] != nullptr) {

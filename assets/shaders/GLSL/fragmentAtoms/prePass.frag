@@ -20,8 +20,8 @@
 #if defined(USE_DEFERRED_NORMALS)
 
 layout(location = TARGET_NORMALS_AND_VELOCITY) out vec4 _normalAndVelocityOut;
-//r,g = TBN view direction,  b - ssao, a - extra flags
-layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
+//r - ssao, b - extra flags
+layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
 
 #include "velocityCalc.frag"
 #endif
@@ -29,7 +29,6 @@ layout(location = TARGET_EXTRA) out vec4 _extraDetailsOut;
 void writeOutput(in NodeData nodeData,
                  vec2 uv,
                  vec3 normal,
-                 vec3 tbnViewDirection,
                  float alphaFactor,
                  float extraFlag)
 {
@@ -42,28 +41,25 @@ void writeOutput(in NodeData nodeData,
 #if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
     _normalAndVelocityOut.ba = velocityCalc();
-    _extraDetailsOut.rg = packNormal(normalize(tbnViewDirection));
-    _extraDetailsOut.ba = vec2(1.0f, extraFlag);
+    _extraDetailsOut.rg = vec2(1.0f, extraFlag);
 #endif
 }
 void writeOutput(in NodeData nodeData,
                 vec2 uv,
                 vec3 normal,
-                vec3 tbnViewDirection,
                 float alphaFactor)
 {
 #if defined(HAS_PRE_PASS_DATA)
-    writeOutput(nodeData, uv, normal, tbnViewDirection, alphaFactor, 0.0f);
+    writeOutput(nodeData, uv, normal, alphaFactor, 0.0f);
 #endif //HAS_PRE_PASS_DATA
 }
 
 void writeOutput(in NodeData nodeData,
                  vec2 uv,
-                 vec3 normal,
-                 vec3 tbnViewDirection) 
+                 vec3 normal) 
 {
 #if defined(HAS_PRE_PASS_DATA)
-    writeOutput(nodeData, uv, normal, tbnViewDirection, 1.0f, 0.0f);
+    writeOutput(nodeData, uv, normal, 1.0f, 0.0f);
 #endif //HAS_PRE_PASS_DATA
 }
 

@@ -251,7 +251,6 @@ void main() {
     writeOutput(data, 
                 VAR._texCoord,
                 VAR._normalWV,
-                vec3(0.0f),
                 1.0f,
                 1.0f);
 #endif //HAS_PRE_PASS_DATA

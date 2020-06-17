@@ -84,8 +84,7 @@ void main()
 
     writeOutput(data, 
                 VAR._texCoord,
-                getTBNWV() * normal,
-                vec3(0.0f));
+                getTBNWV() * normal);
 #endif //HAS_PRE_PASS_DATA
 #else
 
