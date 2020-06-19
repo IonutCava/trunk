@@ -33,10 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_WATCHER_MANAGER_H_
 #define _PLATFORM_FILE_FILE_WATCHER_MANAGER_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
-    class FileWatcher : public GUIDWrapper {
+    class FileWatcher final : public GUIDWrapper {
       public:
         FW::FileWatcher& operator()() {
             return _impl;

@@ -17,10 +17,6 @@ AttributeDescriptor::AttributeDescriptor()
 {
 }
 
-AttributeDescriptor::~AttributeDescriptor()
-{
-}
-
 void AttributeDescriptor::set(const U32 bufferIndex, const U32 componentsPerElement, const GFXDataFormat dataType) noexcept {
     set(bufferIndex, componentsPerElement, dataType, false);
 }

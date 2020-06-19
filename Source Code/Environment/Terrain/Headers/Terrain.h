@@ -122,7 +122,7 @@ class Terrain final : public Object3D {
     [[nodiscard]] Vert getVert(F32 x_clampf, F32 z_clampf) const;
     [[nodiscard]] Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
 
     void onRefreshNodeData(const SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,

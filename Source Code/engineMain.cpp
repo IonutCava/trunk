@@ -5,7 +5,6 @@
 #include "engineMain.h"
 
 #include "Core/Headers/Application.h"
-#include "Scripting/Headers/Script.h"
 #include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
@@ -21,14 +20,12 @@ namespace {
 
 class StreamBuffer {
 public:
-    StreamBuffer(const char* filename)
+    explicit StreamBuffer(const char* filename)
         : _buf(std::ofstream(filename, std::ofstream::out | std::ofstream::trunc))
     {
     }
 
-    inline std::ofstream& buffer() noexcept {
-        return _buf;
-    }
+    std::ofstream& buffer() noexcept { return _buf; }
 
 private:
     std::ofstream _buf;
@@ -53,10 +50,8 @@ Engine::~Engine()
     delete _outputStreams[1];
 }
 
-bool Engine::init(int argc, char** argv) {
-    ErrorCode err = ErrorCode::NO_ERR;
-
-    err = PlatformInit(argc, argv);
+bool Engine::init(const int argc, char** argv) {
+    ErrorCode err = PlatformInit(argc, argv);
     if (err == ErrorCode::NO_ERR) {
         // Start our application based on XML configuration.
         // If it fails to start, it should automatically clear up all of its data
@@ -83,7 +78,7 @@ void Engine::shutdown() {
     }
 }
 
-bool Engine::step() {
+bool Engine::step() const {
     assert(_errorCode == 0);
 
     return _app->step();

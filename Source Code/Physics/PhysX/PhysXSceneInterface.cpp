@@ -3,11 +3,8 @@
 #include "Headers/PhysXSceneInterface.h"
 
 #include "Scenes/Headers/Scene.h"
-#include "Graphs/Headers/SceneNode.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Managers/Headers/SceneManager.h"
 #include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 

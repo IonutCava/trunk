@@ -36,10 +36,6 @@
 #include "CommandBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
-namespace std {
-    class thread::id;
-};
-
 namespace CEGUI {
     class Texture;
 };
@@ -72,7 +68,7 @@ struct VideoModes {
 using AttribFlags = std::array<bool, to_base(AttribLocation::COUNT)>;
 
 /// Renderer Programming Interface
-class NOINITVTABLE RenderAPIWrapper : private NonCopyable {
+class NOINITVTABLE RenderAPIWrapper : NonCopyable {
 
 public:
     virtual ~RenderAPIWrapper() = default;
@@ -91,17 +87,17 @@ protected:
 
     // Returns the time in milliseconds that it took to render one frame
     // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
-    virtual F32 getFrameDurationGPU() const noexcept = 0;
+    [[nodiscard]] virtual F32 getFrameDurationGPU() const noexcept = 0;
 
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
 
     virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
 
-    virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;
+    [[nodiscard]] virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;
 
     // The definition of a hack. Feel free to quote this. -Ionut
     /// Convert a CEGUI texture handle to something that our current rendering API can use
-    virtual U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const = 0;
+    [[nodiscard]] virtual U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const = 0;
 
     virtual bool setViewport(const Rect<I32>& newViewport) = 0;
 

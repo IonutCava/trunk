@@ -16,9 +16,9 @@ namespace Divide {
 PXDevice::PXDevice(Kernel& parent)
     : KernelComponent(parent), 
       PhysicsAPIWrapper(),
+      _simulationSpeed(1.0f),
       _API_ID(PhysicsAPI::COUNT),
-      _api(nullptr),
-      _simulationSpeed(1.0f)
+      _api(nullptr)
 {
 }
 
@@ -39,7 +39,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_PFX_DEVICE_API")));
             return ErrorCode::PFX_NON_SPECIFIED;
-        } break;
+        };
     };
     _simulationSpeed = simSpeed;
     return _api->initPhysicsAPI(targetFrameRate, _simulationSpeed);
@@ -52,13 +52,13 @@ bool PXDevice::closePhysicsAPI() {
     }
 
     Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
-    bool state = _api->closePhysicsAPI();
+    const bool state = _api->closePhysicsAPI();
     _api.reset();
 
     return state;
 }
 
-void PXDevice::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
+void PXDevice::updateTimeStep(const U8 timeStepFactor, const F32 simSpeed) {
     _api->updateTimeStep(timeStepFactor, simSpeed);
 }
 

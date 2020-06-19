@@ -46,10 +46,10 @@ enum class FileUpdateEvent : U8 {
 
 using FileUpdateCbk = DELEGATE<void, std::string_view /*file*/, FileUpdateEvent>;
 
-class UpdateListener : public FW::FileWatchListener
+class UpdateListener final : public FW::FileWatchListener
 {
 public:
-    UpdateListener(const FileUpdateCbk& cbk);
+    explicit UpdateListener(FileUpdateCbk&& cbk);
 
     void addIgnoredExtension(const char* extension);
     void addIgnoredEndCharacter(char character);

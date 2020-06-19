@@ -36,11 +36,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 namespace Divide {
+class GL_API;
+
 namespace GLUtil {
 
 class glVAOPool {
 public:
-    glVAOPool() noexcept;
+    glVAOPool() = default;
     ~glVAOPool();
 
     GLuint allocate();
@@ -49,7 +51,7 @@ public:
     void   deallocate(GLuint& vao);
 
 protected:
-    friend class GL_API;
+    friend class Divide::GL_API;
     void init(U32 capacity);
     void destroy();
 

@@ -55,32 +55,32 @@ public:
 	/// Set the local X,Y and Z position
     virtual void setPosition(const vec3<F32>& position) = 0;
     /// Set the local X,Y and Z position
-    virtual void setPosition(const F32 x, const F32 y, const F32 z) = 0;
+    virtual void setPosition(F32 x, F32 y, F32 z) = 0;
     /// Set the object's position on the X axis
-    virtual void setPositionX(const F32 positionX) = 0;
+    virtual void setPositionX(F32 positionX) = 0;
     /// Set the object's position on the Y axis
-    virtual void setPositionY(const F32 positionY) = 0;
+    virtual void setPositionY(F32 positionY) = 0;
     /// Set the object's position on the Z axis
-    virtual void setPositionZ(const F32 positionZ) = 0;
+    virtual void setPositionZ(F32 positionZ) = 0;
     /// Add the specified translation factors to the current local position
     virtual void translate(const vec3<F32>& axisFactors) = 0;
 
     /// Set the local X,Y and Z scale factors
     virtual void setScale(const vec3<F32>& amount) = 0;
     /// Set the scaling factor on the X axis
-    virtual void setScaleX(const F32 amount) = 0;
+    virtual void setScaleX(F32 amount) = 0;
     /// Set the scaling factor on the Y axis
-    virtual void setScaleY(const F32 amount) = 0;
+    virtual void setScaleY(F32 amount) = 0;
     /// Set the scaling factor on the Z axis
-    virtual void setScaleZ(const F32 amount) = 0;
+    virtual void setScaleZ(F32 amount) = 0;
     /// Add the specified scale factors to the current local position
     virtual void scale(const vec3<F32>& axisFactors) = 0;
     /// Increase the scaling factor on the X axis by the specified factor
-    virtual void scaleX(const F32 amount) = 0;
+    virtual void scaleX(F32 amount) = 0;
     /// Increase the scaling factor on the Y axis by the specified factor
-    virtual void scaleY(const F32 amount) = 0;
+    virtual void scaleY(F32 amount) = 0;
     /// Increase the scaling factor on the Z axis by the specified factor
-    virtual void scaleZ(const F32 amount) = 0;
+    virtual void scaleZ(F32 amount) = 0;
 
     /// Set the local orientation using the Axis-Angle system.
     /// The angle can be in either degrees(default) or radians
@@ -92,13 +92,13 @@ public:
     virtual void setRotation(const Quaternion<F32>& quat) = 0;
     /// Set the rotation on the X axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
-    virtual void setRotationX(const Angle::DEGREES<F32> angle) = 0;
+    virtual void setRotationX(Angle::DEGREES<F32> angle) = 0;
     /// Set the rotation on the Y axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
-    virtual void setRotationY(const Angle::DEGREES<F32> angle) = 0;
+    virtual void setRotationY(Angle::DEGREES<F32> angle) = 0;
     /// Set the rotation on the Z axis (Axis-Angle used) by the specified angle
     /// (either degrees or radians)
-    virtual void setRotationZ(const Angle::DEGREES<F32> angle) = 0;
+    virtual void setRotationZ(Angle::DEGREES<F32> angle) = 0;
     /// Apply the specified Axis-Angle rotation starting from the current orientation.
     /// The angles can be in either degrees(default) or radians
     virtual void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) = 0;
@@ -108,13 +108,13 @@ public:
     /// Apply the specified Quaternion rotation starting from the current orientation.
     virtual void rotate(const Quaternion<F32>& quat) = 0;
     /// Perform a SLERP rotation towards the specified quaternion
-    virtual void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) = 0;
+    virtual void rotateSlerp(const Quaternion<F32>& quat, D64 deltaTime) = 0;
     /// Rotate on the X axis (Axis-Angle used) by the specified angle (either degrees or radians)
-    virtual void rotateX(const Angle::DEGREES<F32> angle) = 0;
+    virtual void rotateX(Angle::DEGREES<F32> angle) = 0;
     /// Rotate on the Y axis (Axis-Angle used) by the specified angle (either degrees or radians)
-    virtual void rotateY(const Angle::DEGREES<F32> angle) = 0;
+    virtual void rotateY(Angle::DEGREES<F32> angle) = 0;
     /// Rotate on the Z axis (Axis-Angle used) by the specified angle (either degrees or radians)
-    virtual void rotateZ(const Angle::DEGREES<F32> angle) = 0;
+    virtual void rotateZ(Angle::DEGREES<F32> angle) = 0;
 
     /// Set an uniform scale on all three axis
     void setScale(const F32 amount) {

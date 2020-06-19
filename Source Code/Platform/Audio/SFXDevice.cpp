@@ -41,7 +41,7 @@ ErrorCode SFXDevice::initAudioAPI(PlatformContext& context) {
         default: {
             Console::errorfn(Locale::get(_ID("ERROR_SFX_DEVICE_API")));
             return ErrorCode::SFX_NON_SPECIFIED;
-        } break;
+        };
     };
 
     return _api->initAudioAPI(context);

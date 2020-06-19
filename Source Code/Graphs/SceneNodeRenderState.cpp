@@ -14,7 +14,7 @@ bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 
     }
 
     const auto checkIndex = [&stagePass](const RenderStagePass& exclusion) noexcept {
-        const bool mainIndexMatch = exclusion._index == g_AllIndiciesID || //All Passes
+        const bool mainIndexMatch = exclusion._index == g_AllIndicesID || //All Passes
                                     exclusion._index == stagePass._index;//Same pass
 
         const bool subIndexMatch = (exclusion._pass == g_AllPassID ||

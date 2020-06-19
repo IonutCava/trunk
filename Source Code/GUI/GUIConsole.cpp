@@ -1,9 +1,9 @@
 #include "stdafx.h"
 
-#include "Headers/GUI.h"
 #include "Headers/GUIConsole.h"
-#include "Headers/GUIConsoleCommandParser.h"
 #include "CEGUIAddons/Headers/CEGUIFormattedListBox.h"
+#include "Headers/GUI.h"
+#include "Headers/GUIConsoleCommandParser.h"
 
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
@@ -25,12 +25,12 @@ GUIConsole::GUIConsole(GUI& parent, PlatformContext& context, ResourceCache* cac
       _parent(parent),
       _init(false),
       _closing(false),
-      _editBox(nullptr),
       _lastMsgType(Console::EntryType::INFO),
-      _inputHistoryIndex(0),
-      _consoleCallbackIndex(0),
+      _editBox(nullptr),
       _outputWindow(nullptr),
-      _consoleWindow(nullptr)
+      _consoleWindow(nullptr),
+      _inputHistoryIndex(0),
+      _consoleCallbackIndex(0)
 {
     // we need a default command parser, so just create it here
     _cmdParser = MemoryManager_NEW GUIConsoleCommandParser(_context, cache);

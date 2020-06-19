@@ -54,8 +54,8 @@ protected:
     explicit GraphicsResource(GFXDevice& context, Type type, I64 GUID, U64 nameHash);
 
 public:
-    GFXDevice& context() const noexcept { return _context; }
-    U64 nameHash() const noexcept { return _nameHash; }
+    [[nodiscard]] GFXDevice& context() const noexcept { return _context; }
+    [[nodiscard]] U64 nameHash() const noexcept { return _nameHash; }
 
 protected:
     GFXDevice& _context;

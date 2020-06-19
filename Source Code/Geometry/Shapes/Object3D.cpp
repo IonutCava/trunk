@@ -111,7 +111,7 @@ void Object3D::setGeometryVB(VertexBuffer* const vb) {
     _buffer = vb;
 }
 
-VertexBuffer* const Object3D::getGeometryVB() const {
+VertexBuffer* Object3D::getGeometryVB() const {
     return _buffer;
 }
 
@@ -131,10 +131,11 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
                                  const RenderStagePass& renderStagePass,
                                  const Camera& crtCamera,
                                  RenderPackage& pkgInOut) {
-    VertexBuffer* const vb = getGeometryVB();
+    VertexBuffer* vb = getGeometryVB();
     if (pkgInOut.drawCommandCount() == 0) {
         const U16 partitionID = _geometryPartitionIDs[0];
         GenericDrawCommand cmd;
+        cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._sourceBuffer = vb->handle();
         cmd._bufferIndex = renderStagePass.baseIndex();
         cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));

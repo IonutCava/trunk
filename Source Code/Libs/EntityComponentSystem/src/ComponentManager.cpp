@@ -40,7 +40,7 @@ namespace ECS {
 
 	ComponentId ComponentManager::AqcuireComponentId(IComponent* component)
 	{
-		int i = 0;
+		size_t i = 0;
 		for (; i < this->m_ComponentLUT.size(); ++i)
 		{
 			if (this->m_ComponentLUT[i] == nullptr)

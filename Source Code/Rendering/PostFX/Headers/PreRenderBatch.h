@@ -38,7 +38,7 @@ class PreRenderBatch {
     PostFX& parent() const noexcept { return _parent; }
 
     void idle(const Configuration& config);
-    void update(const U64 deltaTimeUS) noexcept;
+    void update(U64 deltaTimeUS) noexcept;
 
     void prepare(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
     void execute(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
@@ -88,7 +88,7 @@ class PreRenderBatch {
     PROPERTY_RW(F32, edgeDetectionThreshold, 0.1f);
     PROPERTY_RW(EdgeDetectionMethod, edgeDetectionMethod, EdgeDetectionMethod::Luma);
 
-    void adaptiveExposureControl(const bool state) noexcept;
+    void adaptiveExposureControl(bool state) noexcept;
 
    private:
 
@@ -110,9 +110,7 @@ class PreRenderBatch {
         return FilterSpace::COUNT;
     }
 
-    void onFilterToggle(FilterType type, const bool state);
-
-    void init();
+    void onFilterToggle(FilterType type, bool state);
 
     bool operatorsReady() const;
   private:

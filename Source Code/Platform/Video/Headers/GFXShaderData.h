@@ -41,7 +41,7 @@ enum class RenderStage : U8;
 
 class GFXShaderData {
   public:
-    GFXShaderData() noexcept;
+      GFXShaderData() = default;
 
   public:
 #pragma pack(push, 1)
@@ -64,9 +64,9 @@ class GFXShaderData {
           std::array<Plane<F32>, to_base(FrustumPlane::COUNT)> _frustumPlanes;
           std::array<Plane<F32>, to_base(FrustumPlane::COUNT)> _clipPlanes;
 
-          inline F32 aspectRatio() const noexcept;
-          inline vec2<F32> cameraZPlanes() const noexcept;
-          inline F32 FoV() const noexcept;
+          [[nodiscard]] inline F32 aspectRatio() const noexcept;
+          [[nodiscard]] inline vec2<F32> cameraZPlanes() const noexcept;
+          [[nodiscard]] inline F32 FoV() const noexcept;
       };
 #pragma pack(pop)
     GPUData _data;

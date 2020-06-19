@@ -24,7 +24,7 @@ namespace Divide {
 
         const U64 targetID = listener.listenerID();
 
-        vectorEASTLFast<SDLEventListener*>::const_iterator it = eastl::find_if(
+        const auto *const it = eastl::find_if(
             eastl::cbegin(s_eventListeners), eastl::cend(s_eventListeners), [targetID](SDLEventListener* listener)
             {
                 return listener && listener->listenerID() == targetID;

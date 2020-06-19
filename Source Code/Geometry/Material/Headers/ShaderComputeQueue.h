@@ -61,7 +61,7 @@ public:
 
 public:
     explicit ShaderComputeQueue(ResourceCache* cache);
-    ~ShaderComputeQueue();
+    ~ShaderComputeQueue() = default;
 
     // This is the main loop that steps through the queue and 
     // processes each entry

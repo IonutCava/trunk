@@ -94,7 +94,7 @@ class Sky : public SceneNode {
    protected:
     void postLoad(SceneGraphNode* sgn) override;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
 
     void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,

@@ -5,11 +5,11 @@
 
 namespace Divide {
 
-IntersectionRecord::IntersectionRecord() :
+IntersectionRecord::IntersectionRecord()
+  : _intersectedObject1(nullptr),
+    _intersectedObject2(nullptr),
     _distance(std::numeric_limits<D64>::max()),
-    _hasHit(false),
-    _intersectedObject1(nullptr),
-    _intersectedObject2(nullptr)
+    _hasHit(false)
 {
 }
 

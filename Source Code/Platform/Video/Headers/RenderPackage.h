@@ -77,27 +77,27 @@ public:
     void clear();
     void set(const RenderPackage& other);
 
-    size_t getSortKeyHash() const;
+    [[nodiscard]] size_t getSortKeyHash() const;
 
-    I32 drawCommandCount() const noexcept { return _drawCommandCount; }
+    [[nodiscard]] I32 drawCommandCount() const noexcept { return _drawCommandCount; }
 
-    const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
+    [[nodiscard]] const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
     void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd) const;
 
-    const GFX::DrawCommand& drawCommand(I32 index) const;
+    [[nodiscard]] const GFX::DrawCommand& drawCommand(I32 index) const;
 
-    const Pipeline* pipeline(I32 index) const;
+    [[nodiscard]] const Pipeline* pipeline(I32 index) const;
     void pipeline(I32 index, const Pipeline& pipeline) const;
 
-    const FrustumClipPlanes& clipPlanes(I32 index) const;
+    [[nodiscard]] const FrustumClipPlanes& clipPlanes(I32 index) const;
     void clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) const;
 
     PushConstants& pushConstants(I32 index);
-    const PushConstants& pushConstants(I32 index) const;
+    [[nodiscard]] const PushConstants& pushConstants(I32 index) const;
     void pushConstants(I32 index, const PushConstants& constants) const;
 
     DescriptorSet& descriptorSet(I32 index);
-    const DescriptorSet& descriptorSet(I32 index) const;
+    [[nodiscard]] const DescriptorSet& descriptorSet(I32 index) const;
     void descriptorSet(I32 index, const DescriptorSet& descriptorSets) const;
 
     void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
@@ -106,14 +106,11 @@ public:
     typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, void>::type
     add(const T& command) { commands()->add(command); }
 
-    template<>
-    void add(const GFX::DrawCommand& command);
-
-    const ShaderBufferBinding& getShaderBuffer(I32 descriptorSetIndex, I32 bufferIndex) const;
+    [[nodiscard]] const ShaderBufferBinding& getShaderBuffer(I32 descriptorSetIndex, I32 bufferIndex) const;
 
     void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) const;
     void setTexture(I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, U8 binding) const;
-    void setTexture(const I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, const TextureUsage binding) {
+    void setTexture(const I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, const TextureUsage binding) const {
         setTexture(descriptorSetIndex, data, samplerHash, to_U8(binding));
     }
 
@@ -121,7 +118,7 @@ public:
     void enableOptions(U16 optionMask);
     void disableOptions(U16 optionMask);
 
-    bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
+    [[nodiscard]] bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
 
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
 
@@ -143,7 +140,7 @@ protected:
 };
 
 template <>
-void RenderPackage::add<GFX::DrawCommand>(const GFX::DrawCommand& command) {
+inline void RenderPackage::add<GFX::DrawCommand>(const GFX::DrawCommand& command) {
     addDrawCommand(command);
 }
 

@@ -23,10 +23,6 @@ VBO::VBO()
     _chunkUsageState.fill(std::make_pair(false, 0));
 }
 
-VBO::~VBO()
-{
-}
-
 void VBO::freeAll() {
     if (_handle != 0) {
         GLUtil::freeBuffer(_handle);
@@ -184,7 +180,7 @@ bufferPtr allocPersistentBuffer(const GLuint bufferId,
                                 const MapBufferAccessMask accessMask,
                                 const bufferPtr data) {
     glNamedBufferStorage(bufferId, bufferSize, data, storageMask);
-    bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
+    const bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
     assert(ptr != NULL);
     return ptr;
 }

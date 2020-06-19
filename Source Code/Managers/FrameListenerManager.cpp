@@ -3,7 +3,6 @@
 #include "Headers/FrameListenerManager.h"
 
 #include "Core/Headers/StringHelper.h"
-#include "Core/Math/Headers/MathHelper.h"
 
 #include "Utility/Headers/Localization.h"
 
@@ -29,14 +28,14 @@ void FrameListenerManager::registerFrameListener(FrameListener* listener,
 void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
     assert(listener != nullptr);
 
-    I64 targetGUID = listener->getGUID();
+    const I64 targetGUID = listener->getGUID();
 
     UniqueLock<SharedMutex> lock(_listenerLock);
-    vectorEASTL<FrameListener*>::const_iterator it;
-    it = eastl::find_if(eastl::cbegin(_listeners), eastl::cend(_listeners),
+    const vectorEASTL<FrameListener*>::const_iterator it = 
+        eastl::find_if(eastl::cbegin(_listeners), eastl::cend(_listeners),
                       [targetGUID](FrameListener const* fl) -> bool
                       {
-                        return fl->getGUID() == targetGUID;
+                          return fl->getGUID() == targetGUID;
                       });
 
     if (it != eastl::cend(_listeners)) {
@@ -60,6 +59,8 @@ bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
         case FrameEventType::FRAME_POSTRENDER_END    : return framePostRenderEnded(evt);
         case FrameEventType::FRAME_EVENT_PROCESS     : return frameRenderingQueued(evt);
         case FrameEventType::FRAME_EVENT_ENDED       : return frameEnded(evt);
+        case FrameEventType::FRAME_EVENT_ANY         : return true;
+        default: break;
     };
 
     return false;

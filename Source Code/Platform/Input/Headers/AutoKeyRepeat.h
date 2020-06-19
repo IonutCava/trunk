@@ -58,6 +58,7 @@ class AutoRepeatKey {
     virtual void repeatKey(I32 inKey, U32 Char) = 0;
 
    public:
+    virtual ~AutoRepeatKey() = default;
     /// Default constructor
     AutoRepeatKey(D64 repeatDelay = 0.035, D64 initialDelay = 0.300);
     /// Called when a key is pressed
@@ -65,11 +66,11 @@ class AutoRepeatKey {
     /// Called when a key is released
     void end(const Input::KeyEvent &evt) noexcept;
     /// Update the internal time interval between frames (microseconds)
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
     /// Adjust delay between key injections
-    inline void setRepeatDelay(F32 repeatDelay) noexcept { _repeatDelay = repeatDelay; }
+    void setRepeatDelay(F32 repeatDelay) noexcept { _repeatDelay = repeatDelay; }
     /// Adjust the initial delay before we start injecting key repeats
-    inline void setInitialDelay(F32 initialDelay) noexcept { _initialDelay = initialDelay; }
+    void setInitialDelay(F32 initialDelay) noexcept { _initialDelay = initialDelay; }
 };
 };  // namespace Input
 };  // namespace Divide

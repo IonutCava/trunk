@@ -44,10 +44,10 @@ ErrorCode SDL_API::initAudioAPI(PlatformContext& context) {
 
 void SDL_API::closeAudioAPI() {
     Mix_HaltMusic();
-    for (MusicMap::value_type it : _musicMap) {
+    for (const MusicMap::value_type& it : _musicMap) {
         Mix_FreeMusic(it.second);
     }
-    for (SoundMap::value_type it : _soundMap) {
+    for (const SoundMap::value_type& it : _soundMap) {
         Mix_FreeChunk(it.second);
     }
     Mix_CloseAudio();
@@ -86,7 +86,7 @@ void SDL_API::playMusic(const AudioDescriptor_ptr& music) {
         }
         
         if(musicPtr) {
-            Mix_VolumeMusic(music->getVolume());
+            Mix_VolumeMusic(music->volume());
             if (Mix_PlayMusic(musicPtr, music->isLooping() ? -1 : 0) == -1) {
                 Console::errorfn("%s", Mix_GetError());
             }
@@ -115,8 +115,8 @@ void SDL_API::playSound(const AudioDescriptor_ptr& sound) {
         }
 
         if (soundPtr) {
-            Mix_Volume(sound->getChannel(), sound->getVolume());
-            if (Mix_PlayChannel(sound->getChannel(), soundPtr, sound->isLooping() ? -1 : 0) == -1) {
+            Mix_Volume(sound->channelID(), sound->volume());
+            if (Mix_PlayChannel(sound->channelID(), soundPtr, sound->isLooping() ? -1 : 0) == -1) {
                 Console::errorfn(Locale::get(_ID("ERROR_SDL_CANT_PLAY")), sound->resourceName().c_str(), Mix_GetError());
             }
         } else {

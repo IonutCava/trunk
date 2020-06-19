@@ -33,68 +33,42 @@
 #ifndef _AUDIO_DESCRIPTOR_H_
 #define _AUDIO_DESCRIPTOR_H_
 
-#include "Core/Headers/Application.h"
 #include "Core/Resources/Headers/Resource.h"
 #include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 
-class AudioDescriptor : public CachedResource {
+class AudioDescriptor final : public CachedResource {
    public:
-    AudioDescriptor(size_t descriptorHash, const Str256& name, const Str128& audioFileName, const stringImpl& audioFilePath)
-        : CachedResource(ResourceType::DEFAULT, descriptorHash, name, audioFileName, audioFilePath),
-          _isLooping(false),
-          _dirty(true),
-          _is3D(false),
-          _frequency(44.2f),
-          _bitDepth(16),
-          _channelID(-1),
-          _volume(100)
-   {
-   }
-
-    virtual ~AudioDescriptor()
+    AudioDescriptor(const size_t descriptorHash, const Str256& name, const Str128& audioFileName, const stringImpl& audioFilePath)
+        : CachedResource(ResourceType::DEFAULT, descriptorHash, name, audioFileName, audioFilePath)
     {
-
     }
 
-    inline bool unload() override {
+    virtual ~AudioDescriptor() = default;
+
+    bool unload() override {
         return true;
     }
 
-    inline void setAudioFile(const stringImpl& filePath) {
-        FileWithPath ret = splitPathToNameAndLocation(filePath.c_str());
+    void setAudioFile(const stringImpl& filePath) {
+        const FileWithPath ret = splitPathToNameAndLocation(filePath.c_str());
         assetName(ret._fileName);
         assetLocation(ret._path);
         _dirty = true;
     }
 
-
-    inline bool& isLooping() noexcept { return _isLooping; }
-    inline bool& is3D() noexcept { return _is3D; }
-
-    inline void setVolume(I8 value) noexcept { _volume = value; }
-    inline I32 getVolume() noexcept { return _volume; }
-
-    inline void setFrequency(F32 value) noexcept { _frequency = value; }
-    inline F32 getFrequency() noexcept { return _frequency; }
-
-    inline void setBitDepth(I8 bitDepth) noexcept { _bitDepth = bitDepth; }
-    inline I8 getBitDepth() noexcept { return _bitDepth; }
-
-    inline void setChannel(I8 ID) noexcept { _channelID = ID; }
-    inline I8 getChannel() noexcept { return _channelID; }
-
-    inline bool dirty() const noexcept { return _dirty; }
-    inline void clean() noexcept { _dirty = false; }
+    void clean() noexcept { dirty(false); }
 
     const char* getResourceTypeName() const noexcept  override { return "AudioDescriptor"; }
 
-   private:
-    bool _dirty;
-    bool _isLooping, _is3D;
-    F32 _frequency;
-    I8 _bitDepth, _channelID, _volume;
+    PROPERTY_RW(F32, frequency, 44.2f);
+    PROPERTY_RW(I8, bitDepth, 16);
+    PROPERTY_RW(I8, volume, 100);
+    PROPERTY_RW(I8, channelID, -1);
+    PROPERTY_R_IW(bool, dirty, true);
+    PROPERTY_RW(bool, isLooping, false);
+    PROPERTY_RW(bool, is3D, false);
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Frustum.h"
-#include "Headers/Camera.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
@@ -15,6 +14,8 @@ FrustumCollision Frustum::PlanePointIntersect(const Plane<F32>& frustumPlane, co
 
         case Plane<F32>::Side::NEGATIVE_SIDE:
             return FrustumCollision::FRUSTUM_OUT;
+
+        default: break;
     }
 
     return FrustumCollision::FRUSTUM_IN;
@@ -92,7 +93,7 @@ FrustumCollision Frustum::ContainsSphere(const vec3<F32>& center, F32 radius, I8
 }
 
 FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane frustumPlane,
-                                                           const BoundingBox& bbox) const noexcept {
+                                                    const BoundingBox& bbox) const noexcept {
     return PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlane)], bbox);
 }
 
@@ -123,14 +124,14 @@ FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane* frustumP
     return res;
 }
 
-FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane* frustumPlane,
-                                                     const U8 count,
-                                                     const vec3<F32>& point) const noexcept {
+FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane* frustumPlanes,
+                                              const U8 count,
+                                              const vec3<F32>& point) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     for (U8 i = 0; i < count; ++i) {
-        res = PlanePointIntersect(_frustumPlanes[to_base(frustumPlane[i])], point);
+        res = PlanePointIntersect(_frustumPlanes[to_base(frustumPlanes[i])], point);
         if (res != FrustumCollision::FRUSTUM_IN) {
             break;
         }

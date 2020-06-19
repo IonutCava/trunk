@@ -44,7 +44,7 @@ class GFXDevice;
 class ShaderProgram;
 class Texture;
 
-class PostFX : public PlatformContextComponent {
+class PostFX final : public PlatformContextComponent {
 private:
     enum class FXDisplayFunction : U8 {
         Vignette = 0,
@@ -79,11 +79,11 @@ public:
     void apply(const Camera* camera, GFX::CommandBuffer& bufferInOut);
 
     void idle(const Configuration& config);
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
 
     void updateResolution(U16 newWidth, U16 newHeight);
 
-    inline void pushFilter(FilterType filter, bool overrideScene = false) {
+    void pushFilter(const FilterType filter, const bool overrideScene = false) {
         if (!getFilterState(filter)) {
             if (overrideScene) {
                 SetBit(_overrideFilterStack, to_U32(filter));
@@ -95,7 +95,7 @@ public:
         }
     }
 
-    inline void popFilter(FilterType filter, bool overrideScene = false) {
+    void popFilter(const FilterType filter, const bool overrideScene = false) {
         if (getFilterState(filter)) {
             if (overrideScene) {
                 ClearBit(_overrideFilterStack, to_U32(filter));
@@ -107,19 +107,19 @@ public:
         }
     }
 
-    inline bool getFilterState(FilterType filter) const noexcept {
+    bool getFilterState(const FilterType filter) const noexcept {
         return BitCompare(_filterStack, to_U32(filter)) ||
                BitCompare(_overrideFilterStack, to_U32(filter));
     }
 
-    inline PreRenderBatch* getFilterBatch() const noexcept {
+    PreRenderBatch* getFilterBatch() const noexcept {
         return _preRenderBatch.get();
     }
 
     // fade the screen to the specified colour lerping over the specified time interval
     // set durationMS to instantly set fade colour
     // optionally, set a callback when fade out completes
-    // waitDurationMS = how much time to wait vefore calling the completeion callback after fade out completes
+    // waitDurationMS = how much time to wait before calling the completion callback after fade out completes
     void setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE<void> onComplete = DELEGATE<void>());
     // clear any fading effect currently active over the specified time interval
     // set durationMS to instantly clear the fade effect
@@ -163,7 +163,6 @@ private:
 
     bool _filtersDirty = true;
 
-    GenericDrawCommand _drawCommand;
     Pipeline* _drawPipeline = nullptr;
     PushConstants _drawConstants;
 };

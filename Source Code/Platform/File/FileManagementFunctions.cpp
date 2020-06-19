@@ -1,14 +1,13 @@
 #include "stdafx.h"
 
-#include "Headers/FileManagement.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/StringHelper.h"
+#include "Headers/FileManagement.h"
 
 #include <filesystem>
 
 namespace Divide {
 
-bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType) {
+bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, const size_t length, const FileType fileType) {
 
     if (!Util::IsEmptyOrNull(filePath) && content != nullptr && length > 0) {
         if (!pathExists(filePath) && !CreateDirectories(filePath)) {
@@ -39,12 +38,12 @@ stringImpl stripQuotes(const char* input) {
 }
 
 FileWithPath splitPathToNameAndLocation(const char* input) {
-    FileWithPath ret = {};
+    FileWithPath ret;
     ret._path = input;
 
     size_t pathNameSplitPoint = ret._path.find_last_of('/') + 1;
     if (pathNameSplitPoint == 0) {
-        pathNameSplitPoint = ret._path.find_last_of("\\") + 1;
+        pathNameSplitPoint = ret._path.find_last_of('\\') + 1;
     }
 
     ret._fileName = ret._path.substr(pathNameSplitPoint, stringImpl::npos),
@@ -113,7 +112,7 @@ bool deleteFile(const char* filePath, const char* fileName) {
     if (Util::IsEmptyOrNull(fileName)) {
         return false;
     }
-    std::filesystem::path file(stringImpl{ filePath } +fileName);
+    const std::filesystem::path file(stringImpl{ filePath } +fileName);
     std::filesystem::remove(file);
     return true;
 }
@@ -144,8 +143,7 @@ bool copyFile(const char* sourcePath, const char* sourceName, const char* target
 }
 
 bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath) {
-
-    std::filesystem::path dir_path(filePath);
+    const std::filesystem::path dir_path(filePath);
     std::filesystem::path file_name(fileName);
 
     const std::filesystem::recursive_directory_iterator end;
@@ -171,7 +169,7 @@ bool deleteAllFiles(const char* filePath, const char* extension) {
 
     if (pathExists(filePath)) {
         const std::filesystem::path pathIn(filePath);
-        for (auto& p : std::filesystem::directory_iterator(pathIn)) {
+        for (const auto& p : std::filesystem::directory_iterator(pathIn)) {
             try {
                 if (std::filesystem::is_regular_file(p.status())) {
                     if (!extension || (extension != nullptr && p.path().extension() == extension)) {
@@ -201,7 +199,7 @@ bool clearCache() {
     return true;
 }
 
-bool clearCache(CacheType type) {
+bool clearCache(const CacheType type) {
     switch (type) {
         case CacheType::SHADER_TEXT:
            return deleteAllFiles(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText.c_str());
@@ -217,6 +215,8 @@ bool clearCache(CacheType type) {
 
         case CacheType::TEXTURES:
             return deleteAllFiles(Paths::g_cacheLocation + Paths::Textures::g_metadataLocation.c_str());
+
+       default: break;
     }
 
     return false;

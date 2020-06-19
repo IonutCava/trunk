@@ -51,9 +51,9 @@ namespace Attorney {
     class SceneGraphSGN;
 };
 
-class SceneGraph : private NonCopyable,
-                   public FrameListener,
-                   public SceneComponent
+class SceneGraph final : NonCopyable,
+                         public FrameListener,
+                         public SceneComponent
 {
 
     friend class Attorney::SceneGraphSGN;
@@ -64,20 +64,20 @@ class SceneGraph : private NonCopyable,
 
     void unload();
 
-    inline const SceneGraphNode* getRoot() const noexcept { return _root; }
-    inline SceneGraphNode* getRoot() noexcept { return _root; }
+    const SceneGraphNode* getRoot() const noexcept { return _root; }
+    SceneGraphNode* getRoot() noexcept { return _root; }
 
     SceneGraphNode* findNode(const Str128& name, bool sceneNodeName = false) const;
-    SceneGraphNode* findNode(const U64 nameHash, bool sceneNodeName = false) const;
+    SceneGraphNode* findNode(U64 nameHash, bool sceneNodeName = false) const;
     SceneGraphNode* findNode(I64 guid) const;
 
-    inline Octree& getOctree() noexcept { return *_octree; }
+    Octree& getOctree() noexcept { return *_octree; }
 
-    inline const Octree& getOctree() const noexcept { return *_octree; }
+    const Octree& getOctree() const noexcept { return *_octree; }
 
     /// Update all nodes. Called from "updateSceneState" from class Scene
-    void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
-    void onStartUpdateLoop(const U8 loopNumber);
+    void sceneUpdate(U64 deltaTimeUS, SceneState& sceneState);
+    void onStartUpdateLoop(U8 loopNumber);
     void idle();
 
     bool intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersectionsOut) const;
@@ -95,7 +95,7 @@ class SceneGraph : private NonCopyable,
 
     const vectorEASTL<SceneGraphNode*>& getNodesByType(SceneNodeType type) const;
 
-    inline void getNodesByType(std::initializer_list<SceneNodeType> types, vectorEASTL<SceneGraphNode*>& nodesOut) const {
+    void getNodesByType(std::initializer_list<SceneNodeType> types, vectorEASTL<SceneGraphNode*>& nodesOut) const {
         nodesOut.resize(0);
         for (const SceneNodeType type : types) {
             const vectorEASTL<SceneGraphNode*>& nodes = getNodesByType(type);
@@ -126,8 +126,8 @@ class SceneGraph : private NonCopyable,
     bool saveCache(ByteBuffer& outputBuffer) const;
     bool loadCache(ByteBuffer& inputBuffer);
 
-    inline ECS::ECSEngine& GetECSEngine() noexcept { return _ecsEngine; }
-    inline const ECS::ECSEngine& GetECSEngine() const noexcept { return _ecsEngine; }
+    ECS::ECSEngine& GetECSEngine() noexcept { return _ecsEngine; }
+    const ECS::ECSEngine& GetECSEngine() const noexcept { return _ecsEngine; }
 
    protected:
     void onNodeDestroy(SceneGraphNode* oldNode);
@@ -161,7 +161,6 @@ class SceneGraph : private NonCopyable,
 
 namespace Attorney {
 class SceneGraphSGN {
-   private:
     static void onNodeAdd(SceneGraph* sceneGraph, SceneGraphNode* newNode) {
         sceneGraph->onNodeAdd(newNode);
     }

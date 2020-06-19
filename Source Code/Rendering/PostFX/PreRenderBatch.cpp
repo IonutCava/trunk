@@ -11,7 +11,7 @@
 #include "Core/Resources/Headers/ResourceCache.h"
 
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
-#include "Rendering/PostFX/CustomOperators/Headers/DofPreRenderOperator.h"
+#include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/MotionBlurPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/PostAAPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/SSAOPreRenderOperator.h"
@@ -336,7 +336,7 @@ void PreRenderBatch::onFilterDisabled(FilterType filter) {
     onFilterToggle(filter, false);
 }
 
-void PreRenderBatch::onFilterToggle(FilterType filter, const bool state) {
+void PreRenderBatch::onFilterToggle(const FilterType filter, const bool state) {
     for (OperatorBatch& batch : _operators) {
         for (auto& op : batch) {
             if (filter == op->operatorType()) {
@@ -346,7 +346,7 @@ void PreRenderBatch::onFilterToggle(FilterType filter, const bool state) {
     }
 }
 
-void PreRenderBatch::prepare(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
+void PreRenderBatch::prepare(const Camera* camera, const U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     for (OperatorBatch& batch : _operators) {
         for (auto& op : batch) {
             if (BitCompare(filterStack, to_U32(op->operatorType()))) {
@@ -358,7 +358,8 @@ void PreRenderBatch::prepare(const Camera* camera, U32 filterStack, GFX::Command
 
 void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut) {
     static Pipeline* pipelineLumCalcHistogram = nullptr, * pipelineLumCalcAverage = nullptr, * pipelineToneMap = nullptr, * pipelineToneMapAdaptive = nullptr;
-    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+    GenericDrawCommand drawCmd = {};
+    drawCmd._primitiveType = PrimitiveType::TRIANGLES;
 
     _screenRTs._swappedHDR = _screenRTs._swappedLDR = false;
 
@@ -520,7 +521,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         _toneMapConstants.set(_ID("whitePoint"), GFX::PushConstantType::FLOAT, _toneMapParams.manualWhitePoint);
         GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
 
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         _screenRTs._swappedLDR = !_screenRTs._swappedLDR;
@@ -554,7 +555,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         pushConstantsCommand._constants.set(_ID("dvd_edgeThreshold"), GFX::PushConstantType::FLOAT, edgeDetectionThreshold());
         GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
         GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
     

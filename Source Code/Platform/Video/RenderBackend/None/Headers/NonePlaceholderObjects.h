@@ -33,18 +33,16 @@
 #ifndef _NONE_PLACEHOLDER_OBJECTS_H_
 #define _NONE_PLACEHOLDER_OBJECTS_H_
 
-#include "config.h"
-
+#include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
+#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
-#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
-#include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
-#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
     class noRenderTarget final : public RenderTarget {
@@ -117,7 +115,7 @@ namespace Divide {
             return true;
         }
 
-        void updatePixels(const F32* const pixels, U32 pixelCount) final {}
+        void updatePixels(const F32* pixels, U32 pixelCount) final {}
     };
 
 
@@ -136,7 +134,7 @@ namespace Divide {
         void updateBuffer(U32 buffer,
             U32 elementCount,
             U32 elementCountOffset,
-            const bufferPtr data) final {}
+            bufferPtr data) final {}
 
         void setBufferBindOffset(U32 buffer, U32 elementCountOffset) final {}
 
@@ -183,9 +181,9 @@ namespace Divide {
         {}
 
 
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) final {}
-        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) final {}
-        void writeData(const bufferPtr data) final {}
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) final {}
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) final {}
+        void writeData(bufferPtr data) final {}
 
         void clearData(U32 offsetElementCount, U32 rangeElementCount) final {}
         void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const final {}

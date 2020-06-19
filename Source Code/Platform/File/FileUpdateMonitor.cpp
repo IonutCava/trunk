@@ -5,8 +5,8 @@
 
 namespace Divide {
 
-UpdateListener::UpdateListener(const FileUpdateCbk& cbk)
-    : _cbk(cbk)
+UpdateListener::UpdateListener(FileUpdateCbk&& cbk)
+    : _cbk(std::move(cbk))
 {
 }
 
@@ -18,13 +18,16 @@ void UpdateListener::addIgnoredEndCharacter(char character) {
     _ignoredEndingCharacters.emplace_back(character);
 }
 
-void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, FW::Action action)
+void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir, const FW::String& filename, const FW::Action action)
 {
-    // We can ignore files that end in a specific character. Many text editors, for examnple, append a '~' at the end of temp files
+    ACKNOWLEDGE_UNUSED(watchid);
+    ACKNOWLEDGE_UNUSED(dir);
+
+    // We can ignore files that end in a specific character. Many text editors, for example, append a '~' at the end of temp files
     if (!_ignoredEndingCharacters.empty()) {
         if (eastl::find_if(eastl::cbegin(_ignoredEndingCharacters),
             eastl::cend(_ignoredEndingCharacters),
-            [filename](char character) noexcept {
+            [filename](const char character) noexcept {
             return std::tolower(filename.back()) == std::tolower(character);
         }) != eastl::cend(_ignoredEndingCharacters)) {
             return;

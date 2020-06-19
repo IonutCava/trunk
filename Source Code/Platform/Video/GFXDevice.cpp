@@ -135,12 +135,11 @@ GFXDevice::GFXDevice(Kernel & parent)
     }
 }
 
-GFXDevice::~GFXDevice()
-{
+GFXDevice::~GFXDevice() {
     closeRenderingAPI();
 }
 
-ErrorCode GFXDevice::createAPIInstance(RenderAPI API) {
+ErrorCode GFXDevice::createAPIInstance(const RenderAPI API) {
     assert(_api == nullptr && "GFXDevice error: initRenderingAPI called twice!");
 
     ErrorCode err = ErrorCode::NO_ERR;
@@ -1025,13 +1024,14 @@ void GFXDevice::generateDualParaboloidMap(RenderPassParams& params,
 void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            RenderTargetHandle& blurBuffer,
                            RenderTargetHandle& blurTarget,
-                           RTAttachmentType att,
-                           U8 index,
-                           I32 kernelSize,
-                           bool gaussian,
+                           const RTAttachmentType att,
+                           const U8 index,
+                           const I32 kernelSize,
+                           const bool gaussian,
                            GFX::CommandBuffer& bufferInOut)
 {
-    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+    GenericDrawCommand drawCmd = {};
+    drawCmd._primitiveType = PrimitiveType::TRIANGLES;
 
     // Blur horizontally
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -1056,7 +1056,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
 
     GFX::EndRenderPassCommand endRenderPassCmd;
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
@@ -1076,7 +1076,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     descriptorSetCmd._set._textureData.setTexture(data2, sampler2, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
 
     GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
 }
@@ -1103,8 +1103,8 @@ void GFXDevice::stepResolution(bool increment) {
     bool found = false;
     vec2<U16> foundRes;
     if (increment) {
-        for (const GPUState::GPUVideoMode& mode : reverse(displayModes)) {
-            const vec2<U16>& res = mode._resolution;
+        for (auto it = displayModes.rbegin(); it != displayModes.rend(); ++it) {
+            const vec2<U16>& res = it->_resolution;
             if (compare(res, _renderingResolution)) {
                 found = true;
                 foundRes.set(res);
@@ -1475,7 +1475,9 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) {
     assert(depthBuffer != HiZTarget);
-    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+
+    GenericDrawCommand drawCmd = {};
+    drawCmd._primitiveType = PrimitiveType::TRIANGLES;
 
     // We use a special shader that downsamples the buffer
     // We will use a state block that disables colour writes as we will render only a depth image,
@@ -1571,7 +1573,7 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
                 GFX::EnqueueCommand(cmdBufferInOut, pushConstantsCommand);
 
                 // Dummy draw command as the full screen quad is generated completely in the vertex shader
-                GFX::EnqueueCommand(cmdBufferInOut, drawCmd);
+                GFX::EnqueueCommand(cmdBufferInOut, GFX::DrawCommand{ drawCmd });
 
                 GFX::EnqueueCommand(cmdBufferInOut, GFX::EndRenderSubPassCommand{});
             }
@@ -1698,12 +1700,14 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
     flushCommandBuffer(sBuffer());
 }
 
-void GFXDevice::drawTextureInViewport(TextureData data, const size_t samplerHash, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
-    static GFX::DrawCommand drawCmd = {{ PrimitiveType::TRIANGLES }};
+void GFXDevice::drawTextureInViewport(const TextureData data, const size_t samplerHash, const Rect<I32>& viewport, const bool convertToSrgb, const bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
     static GFX::BeginDebugScopeCommand beginDebugScopeCmd = { "Draw Texture In Viewport" };
     static GFX::PushCameraCommand push2DCameraCmd = { Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
     static GFX::SendPushConstantsCommand pushConstantsSRGBTrue = {{{_ID("convertToSRGB"), GFX::PushConstantType::UINT, 1u}}};
     static GFX::SendPushConstantsCommand pushConstantsSRGBFalse = {{{_ID("convertToSRGB"), GFX::PushConstantType::UINT, 0u}}};
+
+    GenericDrawCommand drawCmd = {};
+    drawCmd._primitiveType = PrimitiveType::TRIANGLES;
 
     GFX::EnqueueCommand(bufferInOut, beginDebugScopeCmd);
     GFX::EnqueueCommand(bufferInOut, push2DCameraCmd);
@@ -1719,7 +1723,7 @@ void GFXDevice::drawTextureInViewport(TextureData data, const size_t samplerHash
         GFX::EnqueueCommand(bufferInOut, convertToSrgb ? pushConstantsSRGBTrue : pushConstantsSRGBFalse);
     }
 
-    GFX::EnqueueCommand(bufferInOut, drawCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
     GFX::EnqueueCommand(bufferInOut, GFX::PopViewportCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -1748,7 +1752,7 @@ void GFXDevice::renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffe
 }
 
 namespace {
-    static DebugView* HiZView = nullptr;
+    DebugView* HiZView = nullptr;
 };
 
 void GFXDevice::initDebugViews() {
@@ -1918,7 +1922,9 @@ void GFXDevice::initDebugViews() {
 
 void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut) {
     static size_t labelStyleHash = TextLabelStyle(Font::DROID_SERIF_BOLD, UColour4(128), 96).getHash();
-    static GFX::DrawCommand drawCmd = { GenericDrawCommand { PrimitiveType::TRIANGLES } };
+
+    GenericDrawCommand drawCmd = {};
+    drawCmd._primitiveType = PrimitiveType::TRIANGLES;
 
     initDebugViews();
 
@@ -1932,7 +1938,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
 
     constexpr I32 maxViewportColumnCount = 10;
     I32 viewCount = to_I32(_debugViews.size());
-    for (auto view : _debugViews) {
+    for (const auto& view : _debugViews) {
         if (!view->_enabled) {
             --viewCount;
         }
@@ -1990,7 +1996,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         bindDescriptorSets._set._textureData.setTexture(view._texture->data(), view._samplerHash, view._textureBindSlot);
         GFX::EnqueueCommand(bufferInOut, bindDescriptorSets);
 
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
 
         if (!view._name.empty()) {
             labelStack.emplace_back(view._name, viewport);
@@ -2047,12 +2053,12 @@ DebugView* GFXDevice::addDebugView(const std::shared_ptr<DebugView>& view) {
 
 bool GFXDevice::removeDebugView(DebugView* view) {
     if (view != nullptr) {
-        auto it = eastl::find_if(eastl::begin(_debugViews),
-                                 eastl::end(_debugViews),
-                                 [view](const std::shared_ptr<DebugView>& entry) noexcept {
-                                    return view->getGUID() == entry->getGUID();
-                                 });
-                   
+        const auto* it = eastl::find_if(eastl::begin(_debugViews),
+                                        eastl::end(_debugViews),
+                                        [view](const std::shared_ptr<DebugView>& entry) noexcept {
+                                           return view->getGUID() == entry->getGUID();
+                                        });
+                         
         if (it != eastl::cend(_debugViews)) {
             _debugViews.erase(it);
             return true;
@@ -2083,7 +2089,7 @@ void GFXDevice::toggleDebugGroup(I16 group, const bool state) {
 
 bool GFXDevice::getDebugGroupState(I16 group) const {
     UniqueLock<Mutex> lock(_debugViewLock);
-    for (auto& view : _debugViews) {
+    for (const auto& view : _debugViews) {
         if (view->_groupID == group) {
             if (!view->_enabled) {
                 return false;
@@ -2400,9 +2406,7 @@ IMPrimitive* GFXDevice::newIMP() {
         case RenderAPI::OpenGLES: {
             return GL_API::newIMP(_imprimitiveMutex , *this);
         };
-        case RenderAPI::Vulkan: {
-            return nullptr;
-        };
+        case RenderAPI::Vulkan:
         case RenderAPI::None: {
             return nullptr;
         };
@@ -2420,9 +2424,7 @@ bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
         case RenderAPI::OpenGLES: {
             return GL_API::destroyIMP(_imprimitiveMutex , primitive);
         };
-        case RenderAPI::Vulkan: {
-            return false;
-        };
+        case RenderAPI::Vulkan:
         case RenderAPI::None: {
             return false;
         };

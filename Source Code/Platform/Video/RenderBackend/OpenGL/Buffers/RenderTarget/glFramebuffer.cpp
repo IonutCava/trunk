@@ -27,6 +27,7 @@ bool glFramebuffer::_zWriteEnabled = true;
 glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& descriptor)
     : RenderTarget(context, descriptor),
       glObject(glObjectType::TYPE_FRAMEBUFFER, context),
+      _activeColourBuffers{},
       _activeReadBuffer(GL_NONE),
       _prevViewport(-1),
       _debugMessage(("Render Target: [ " + name() + " ]")),
@@ -56,6 +57,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
 glFramebuffer::~glFramebuffer()
 {
     GL_API::deleteFramebuffers(1, &_framebufferHandle);
+    destroy();
 }
 
 void glFramebuffer::initAttachment(const RTAttachmentType type, const U8 index) {
@@ -309,7 +311,7 @@ void glFramebuffer::setBlendState(const RTBlendStates& blendStates) const {
 void glFramebuffer::setBlendState(const RTBlendStates& blendStates, const RTAttachmentPool::PoolEntry& activeAttachments) const {
     OPTICK_EVENT();
 
-    for (U8 i = 0; i < activeAttachments.size(); ++i) {
+    for (size_t i = 0; i < activeAttachments.size(); ++i) {
         const RTAttachment_ptr& colourAtt = activeAttachments[i];
         const RTBlendState& blend = blendStates[i];
 
@@ -431,7 +433,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     _previousPolicy = drawPolicy;
 }
 
-void glFramebuffer::end(const bool needsUnbind) {
+void glFramebuffer::end(const bool needsUnbind) const {
     OPTICK_EVENT();
 
     if (needsUnbind) {
@@ -446,7 +448,7 @@ void glFramebuffer::end(const bool needsUnbind) {
     GL_API::popDebugMessage();
 }
 
-void glFramebuffer::queueMipMapRecomputation() {
+void glFramebuffer::queueMipMapRecomputation() const {
     if (hasColour()) {
         const RTAttachmentPool::PoolEntry& colourAttachments = _attachmentPool->get(RTAttachmentType::Colour);
         for (const RTAttachment_ptr& att : colourAttachments) {

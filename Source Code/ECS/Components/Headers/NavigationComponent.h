@@ -56,7 +56,7 @@ class NavigationComponent final : public BaseComponentType<NavigationComponent, 
 
     void navigationContext(const NavigationContext& newContext);
 
-    void navigationDetailOverride(const bool detailOverride);
+    void navigationDetailOverride(bool detailOverride);
 
    protected:
     NavigationContext _navigationContext;

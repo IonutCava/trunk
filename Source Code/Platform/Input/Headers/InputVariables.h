@@ -33,7 +33,8 @@
 #ifndef _INPUT_VARIABLES_H_
 #define _INPUT_VARIABLES_H_
 
-#include "InputHandler.h"
+#include "Core/TemplateLibraries/Headers/STLString.h"
+#include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -44,10 +45,10 @@ namespace Input {
 class Variable {
    protected:
     D64 _dInitValue;
-    D64 _dValue;
+    D64 _dValue{};
 
    public:
-    Variable(D64 dInitValue) : _dInitValue(dInitValue)
+    Variable(const D64 dInitValue) : _dInitValue(dInitValue)
     {
         reset();
     }
@@ -56,11 +57,11 @@ class Variable {
     {
     }
 
-    D64 getValue() const { return _dValue; }
+    [[nodiscard]] D64 getValue() const { return _dValue; }
 
     void reset() { _dValue = _dInitValue; }
 
-    virtual void setValue(D64 dValue) { _dValue = dValue; }
+    virtual void setValue(const D64 dValue) { _dValue = dValue; }
 
     virtual stringImpl toString() const {
         return Util::to_string(_dValue);
@@ -69,11 +70,11 @@ class Variable {
     virtual void update(){};
 };
 
-class Constant : public Variable {
+class Constant final : public Variable {
    public:
-    Constant(D64 dInitValue) : Variable(dInitValue) {}
+    Constant(const D64 dInitValue) : Variable(dInitValue) {}
 
-    virtual void setValue(D64 dValue) {
+    void setValue(D64 dValue) override {
         ACKNOWLEDGE_UNUSED(dValue);
     }
 };
@@ -84,7 +85,7 @@ class LimitedVariable : public Variable {
     D64 _dMaxValue;
 
    public:
-    LimitedVariable(D64 dInitValue, D64 dMinValue, D64 dMaxValue)
+    LimitedVariable(const D64 dInitValue, const D64 dMinValue, const D64 dMaxValue)
         : Variable(dInitValue),
           _dMinValue(dMinValue),
           _dMaxValue(dMaxValue)
@@ -92,7 +93,7 @@ class LimitedVariable : public Variable {
 
    }
 
-    virtual void setValue(D64 dValue) {
+    void setValue(const D64 dValue) override {
         _dValue = dValue;
         if (_dValue > _dMaxValue)
             _dValue = _dMaxValue;
@@ -101,17 +102,16 @@ class LimitedVariable : public Variable {
     }
 };
 
-class TriangleVariable : public LimitedVariable {
+class TriangleVariable final : public LimitedVariable {
    protected:
     D64 _dDeltaValue;
 
    public:
-    TriangleVariable(D64 dInitValue, D64 dDeltaValue, D64 dMinValue,
-                     D64 dMaxValue)
+    TriangleVariable(const D64 dInitValue, const D64 dDeltaValue, const D64 dMinValue, const D64 dMaxValue)
         : LimitedVariable(dInitValue, dMinValue, dMaxValue),
           _dDeltaValue(dDeltaValue){};
 
-    virtual void update() {
+    void update() override {
         D64 dValue = getValue() + _dDeltaValue;
         if (dValue > _dMaxValue) {
             dValue = _dMaxValue;
@@ -140,7 +140,7 @@ class VariableEffect {
     const char* _pszDesc;
 
     // The associate OIS effect
-    OIS::Effect* _pEffect;
+    OIS::Effect* _pEffect{};
 
     // The effect variables.
     MapVariables _mapVariables;
@@ -163,27 +163,25 @@ class VariableEffect {
 
     ~VariableEffect() {
         MemoryManager::DELETE(_pEffect);
-        MapVariables::iterator iterVars;
-        for (iterVars = std::begin(_mapVariables);
+        for (MapVariables::iterator iterVars = std::begin(_mapVariables);
              iterVars != std::end(_mapVariables); ++iterVars) {
             MemoryManager::DELETE(iterVars->second);
         }
     }
 
-    inline void setActive(bool bActive = true) {
+    void setActive(const bool bActive = true) {
         reset();
         _bActive = bActive;
     }
-    inline bool isActive() { return _bActive; }
-    inline OIS::Effect* getFFEffect() { return _pEffect; }
 
-    const char* getDescription() const { return _pszDesc; }
+    [[nodiscard]] bool isActive() const noexcept { return _bActive; }
+    OIS::Effect* getFFEffect() { return _pEffect; }
+
+    [[nodiscard]] const char* getDescription() const { return _pszDesc; }
 
     void update() {
         if (isActive()) {
-            // Update the variables.
-            MapVariables::iterator iterVars;
-            for (iterVars = std::begin(_mapVariables);
+            for (MapVariables::iterator iterVars = std::begin(_mapVariables);
                  iterVars != std::end(_mapVariables); ++iterVars) {
                 iterVars->second->update();
             }
@@ -194,18 +192,16 @@ class VariableEffect {
     }
 
     void reset() {
-        MapVariables::iterator iterVars;
-        for (iterVars = std::begin(_mapVariables);
+        for (MapVariables::iterator iterVars = std::begin(_mapVariables);
              iterVars != std::end(_mapVariables); ++iterVars) {
             iterVars->second->reset();
         }
         _pfApplyVariables(_mapVariables, _pEffect);
     }
 
-    stringImpl toString() const {
+    [[nodiscard]] stringImpl toString() const {
         stringImpl str;
-        MapVariables::const_iterator iterVars;
-        for (iterVars = std::begin(_mapVariables);
+        for (MapVariables::const_iterator iterVars = std::begin(_mapVariables);
              iterVars != std::end(_mapVariables); ++iterVars) {
            str += iterVars->first + ":" + iterVars->second->toString() + " ";
         }

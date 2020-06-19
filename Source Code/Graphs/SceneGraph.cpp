@@ -1,17 +1,15 @@
 #include "stdafx.h"
 
 #include "Headers/SceneGraph.h"
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/ByteBuffer.h"
-#include "Utility/Headers/Localization.h"
-#include "Platform/Video/Headers/GFXDevice.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/FrameListenerManager.h"
 #include "Core/Headers/EngineTaskPool.h"
+#include "Core/Headers/Kernel.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Managers/Headers/FrameListenerManager.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Utility/Headers/Localization.h"
 
 #include "ECS/Systems/Headers/ECSManager.h"
-#include "ECS/Components/Headers/BoundsComponent.h"
 
 namespace Divide {
 

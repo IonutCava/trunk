@@ -169,7 +169,7 @@ void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInByt
     constexpr bool USE_BUFFER_ORPHANING = true;
 
     OPTICK_EVENT();
-    OPTICK_TAG("Mapped", bool(_mappedBuffer != nullptr));
+    OPTICK_TAG("Mapped", static_cast<bool>(_mappedBuffer != nullptr));
     OPTICK_TAG("Offset", to_U32(offsetInBytes));
     OPTICK_TAG("Range", to_U32(rangeInBytes));
 

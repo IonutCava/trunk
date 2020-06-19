@@ -5,7 +5,6 @@
 
 #include "Headers/GUIButton.h"
 #include "Headers/GUIConsole.h"
-#include "Headers/GUIFlash.h"
 #include "Headers/GUIMessageBox.h"
 #include "Headers/GUIText.h"
 

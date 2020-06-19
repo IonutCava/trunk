@@ -125,8 +125,8 @@ protected:
 
     void clear(const RTClearDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void begin(const RTDrawDescriptor& drawPolicy);
-    void end(bool needsUnbind);
-    void queueMipMapRecomputation();
+    void end(bool needsUnbind) const;
+    void queueMipMapRecomputation() const;
     static void QueueMipMapRecomputation(const RTAttachment& attachment);
 
    protected:

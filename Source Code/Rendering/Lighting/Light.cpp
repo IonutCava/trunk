@@ -3,17 +3,17 @@
 #include "Headers/Light.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
 
-#include "Graphs/Headers/SceneGraph.h"
-#include "Managers/Headers/SceneManager.h"
+#include "ECS/Components/Headers/TransformComponent.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
-#include "ECS/Components/Headers/TransformComponent.h"
+#include "Graphs/Headers/SceneGraph.h"
+#include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
 
 
 namespace TypeUtil {
-    const char* LightTypeToString(LightType lightType) noexcept {
+    const char* LightTypeToString(const LightType lightType) noexcept {
         return Names::lightType[to_base(lightType)];
     }
 
@@ -28,14 +28,15 @@ namespace TypeUtil {
     }
 };
 
-Light::Light(SceneGraphNode* sgn, const F32 range, LightType type, LightPool& parentPool)
+Light::Light(SceneGraphNode* sgn, const F32 range, const LightType type, LightPool& parentPool)
     : ECS::Event::IEventListener(sgn->sceneGraph()->GetECSEngine()),
-      _parentPool(parentPool),
-      _sgn(sgn),
-      _type(type),
       _castsShadows(false),
-      _shadowIndex(-1)
+      _sgn(sgn),
+      _parentPool(parentPool),
+      _type(type)
 {
+    ACKNOWLEDGE_UNUSED(range);
+
     _shadowProperties._lightDetails.z = 0.005f;
     _shadowProperties._lightDetails.w = 1.0f;
 

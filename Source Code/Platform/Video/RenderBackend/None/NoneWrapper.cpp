@@ -8,10 +8,6 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(context);
     }
 
-    NONE_API::~NONE_API()
-    {
-    }
-
     void NONE_API::idle(const bool fast) {
         ACKNOWLEDGE_UNUSED(fast);
     }

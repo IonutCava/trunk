@@ -130,72 +130,72 @@ public:
     ErrorCode init(U32 windowFlags,
                    WindowType initialType,
                    const WindowDescriptor& descriptor);
-    void update(const U64 deltaTimeUS) noexcept;
+    void update(U64 deltaTimeUS) noexcept;
 
     ErrorCode destroyWindow();
 
-    inline SDL_Window* getRawWindow() const noexcept;
+    [[nodiscard]] inline SDL_Window* getRawWindow() const noexcept;
 
-    I32 currentDisplayIndex() const noexcept;
+    [[nodiscard]] I32 currentDisplayIndex() const noexcept;
 
-    inline bool swapBuffers() const noexcept;
-    inline void swapBuffers(const bool state) noexcept;
+    [[nodiscard]] inline bool swapBuffers() const noexcept;
+    inline void swapBuffers(bool state) noexcept;
 
-    inline bool isHovered() const noexcept;
-    inline bool hasFocus() const noexcept;
+    [[nodiscard]] inline bool isHovered() const noexcept;
+    [[nodiscard]] inline bool hasFocus() const noexcept;
 
-    inline bool minimized() const noexcept;
-           void minimized(const bool state) noexcept;
+    [[nodiscard]] inline bool minimized() const noexcept;
+           void minimized(bool state) noexcept;
 
-    inline bool maximized() const noexcept;
-           void maximized(const bool state) noexcept;
+    [[nodiscard]] inline bool maximized() const noexcept;
+           void maximized(bool state) noexcept;
 
-    inline bool hidden() const noexcept;
-           void hidden(const bool state) noexcept;
+    [[nodiscard]] inline bool hidden() const noexcept;
+           void hidden(bool state) noexcept;
 
-    inline bool decorated() const noexcept;
-           void decorated(const bool state) noexcept;
+    [[nodiscard]] inline bool decorated() const noexcept;
+           void decorated(bool state) noexcept;
 
-    inline bool fullscreen() const noexcept;
+    [[nodiscard]] inline bool fullscreen() const noexcept;
 
-    inline WindowType type() const noexcept;
+    [[nodiscard]] inline WindowType type() const noexcept;
     inline void changeType(WindowType newType);
     inline void changeToPreviousType();
 
            void opacity(U8 opacity) noexcept;
-    inline U8   opacity() const noexcept;
-    inline U8   prevOpacity() const noexcept;
+    [[nodiscard]] inline U8   opacity() const noexcept;
+    [[nodiscard]] inline U8   prevOpacity() const noexcept;
 
     inline void clearColour(const FColour4& colour) noexcept;
     inline void clearFlags(bool clearColour, bool clearDepth) noexcept;
 
-    inline const FColour4& clearColour() const noexcept;
-    inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const noexcept;
+    [[nodiscard]] inline const FColour4& clearColour() const noexcept;
+    [[nodiscard]] inline const FColour4& clearColour(bool &clearColour, bool &clearDepth) const noexcept;
 
     /// width and height get adjusted to the closest supported value
-    bool setDimensions(U16 width, U16 height);
-    bool setDimensions(const vec2<U16>& dimensions);
+    [[nodiscard]] bool setDimensions(U16 width, U16 height);
+    [[nodiscard]] bool setDimensions(const vec2<U16>& dimensions);
 
     /// Centering is also easier via SDL
     void centerWindowPosition();
 
     void bringToFront() const noexcept;
 
-    vec2<U16> getDimensions() const noexcept;
-    vec2<U16> getPreviousDimensions() const noexcept;
+    [[nodiscard]] vec2<U16> getDimensions() const noexcept;
+    [[nodiscard]] vec2<U16> getPreviousDimensions() const noexcept;
 
-    Rect<I32> getBorderSizes() const noexcept;
-    vec2<U16> getDrawableSize() const noexcept;
-    vec2<I32> getPosition(bool global = false, bool offset = false) const;
+    [[nodiscard]] Rect<I32> getBorderSizes() const noexcept;
+    [[nodiscard]] vec2<U16> getDrawableSize() const noexcept;
+    [[nodiscard]] vec2<I32> getPosition(bool global = false, bool offset = false) const;
 
            void setPosition(I32 x, I32 y, bool global = false, bool offset = false);
     inline void setPosition(const vec2<I32>& position, bool global = false);
 
-    inline const char* title() const noexcept;
+    [[nodiscard]] inline const char* title() const noexcept;
     template<typename... Args>
     void title(const char* format, Args&& ...args);
 
-    WindowHandle handle() const noexcept;
+    [[nodiscard]] WindowHandle handle() const noexcept;
 
     inline void addEventListener(WindowEvent windowEvent, const EventListener& listener);
     inline void clearEventListeners(WindowEvent windowEvent);
@@ -206,17 +206,17 @@ public:
 
     inline void destroyCbk(const DELEGATE<void>& destroyCbk);
 
-    inline Rect<I32> windowViewport() const noexcept;
+    [[nodiscard]] inline Rect<I32> windowViewport() const noexcept;
 
-    inline const Rect<I32>& renderingViewport() const noexcept;
+    [[nodiscard]] inline const Rect<I32>& renderingViewport() const noexcept;
     void renderingViewport(const Rect<I32>& viewport);
 
-    inline void* userData() const noexcept;
+    [[nodiscard]] inline void* userData() const noexcept;
 
-    bool grabState() const noexcept;
+    [[nodiscard]] bool grabState() const noexcept;
     void grabState(bool state) const noexcept;
 
-    bool onSDLEvent(SDL_Event event) override;
+    [[nodiscard]] bool onSDLEvent(SDL_Event event) override;
 
 private:
     void restore() noexcept;
@@ -224,7 +224,8 @@ private:
     /// should also change display dimensions and position
     void handleChangeWindowType(WindowType newWindowType);
 
-    vec2<U16> getDrawableSizeInternal() const;
+    [[nodiscard]] vec2<U16> getDrawableSizeInternal() const;
+
 private:
     using EventListeners = vectorEASTL<DELEGATE<bool, WindowEventArgs>>;
     std::array<EventListeners, to_base(WindowEvent::COUNT)> _eventListeners;

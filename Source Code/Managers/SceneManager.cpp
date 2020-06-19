@@ -414,7 +414,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
         return CheckPointLoS(point, nodeGUID, parentNodeGUID);
     };
 
-    const auto IsNodeInRect = [&screenRect, &camera, &viewport, &sceneGraph](SceneGraphNode* node) {
+    const auto IsNodeInRect = [&screenRect, &camera, &viewport](SceneGraphNode* node) {
         assert(node != nullptr);
         const SceneNode& sNode = node->getNode();
         if (sNode.type() == SceneNodeType::TYPE_OBJECT3D) {

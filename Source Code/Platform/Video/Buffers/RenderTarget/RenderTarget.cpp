@@ -24,11 +24,6 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
 
 }
 
-RenderTarget::~RenderTarget()
-{
-    destroy();
-}
-
 bool RenderTarget::create() {
     if (_attachmentPool != nullptr) {
         return false;

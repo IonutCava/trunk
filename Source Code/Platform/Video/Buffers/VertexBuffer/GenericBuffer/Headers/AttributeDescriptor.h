@@ -34,13 +34,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _ATTRIBUTE_DESCRIPTOR_H_
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {
 
     struct AttributeDescriptor {
         AttributeDescriptor();
-        ~AttributeDescriptor();
+        ~AttributeDescriptor() = default;
 
         void set(U32 bufferIndex,
                  U32 componentsPerElement,
@@ -67,15 +66,15 @@ namespace Divide {
         void wasSet(bool wasSet) noexcept;
         void clean() noexcept;
 
-        inline U32 attribIndex() const noexcept { return _index; }
-        inline size_t strideInBytes() const noexcept { return _strideInBytes; }
-        inline U32 bufferIndex() const noexcept { return _parentBuffer; }
-        inline U32 componentsPerElement() const noexcept { return _componentsPerElement; }
-        inline bool normalized() const noexcept { return _normalized; }
-        inline U32 interleavedOffsetInBytes() const noexcept { return _interleavedOffset; }
-        inline GFXDataFormat dataType() const noexcept { return _type; }
-        inline bool wasSet() const noexcept { return _wasSet; }
-        inline bool dirty() const noexcept { return _dirty; }
+        [[nodiscard]] U32 attribIndex() const noexcept { return _index; }
+        [[nodiscard]] size_t strideInBytes() const noexcept { return _strideInBytes; }
+        [[nodiscard]] U32 bufferIndex() const noexcept { return _parentBuffer; }
+        [[nodiscard]] U32 componentsPerElement() const noexcept { return _componentsPerElement; }
+        [[nodiscard]] bool normalized() const noexcept { return _normalized; }
+        [[nodiscard]] U32 interleavedOffsetInBytes() const noexcept { return _interleavedOffset; }
+        [[nodiscard]] GFXDataFormat dataType() const noexcept { return _type; }
+        [[nodiscard]] bool wasSet() const noexcept { return _wasSet; }
+        [[nodiscard]] bool dirty() const noexcept { return _dirty; }
  
     protected:
         U32 _index;

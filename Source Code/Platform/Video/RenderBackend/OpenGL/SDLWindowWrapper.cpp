@@ -1,23 +1,20 @@
 ﻿#include "stdafx.h"
 
-#include "Headers/GLWrapper.h"
 #include "Headers/glHardwareQuery.h"
+#include "Headers/GLWrapper.h"
 
-#include "GUI/Headers/GUI.h"
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
+#include "GUI/Headers/GUI.h"
 
 #include "Utility/Headers/Localization.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/Video/RenderBackend/OpenGL/glsw/Headers/glsw.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
-#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 #include <CEGUI/CEGUI.h>
 #include <GL3Renderer.h>
@@ -86,14 +83,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     glbinding::Binding::initialize([](const char *proc) noexcept  { return (glbinding::ProcAddress)SDL_GL_GetProcAddress(proc); }, true);
 
-    if (SDL_GL_GetCurrentContext() == NULL) {
+    if (SDL_GL_GetCurrentContext() == nullptr) {
         return ErrorCode::GLBINGING_INIT_ERROR;
     }
 
     glbinding::Binding::useCurrentContext();
 
     // Query GPU vendor to enable/disable vendor specific features
-    GPUVendor vendor = GPUVendor::COUNT;
+    GPUVendor vendor;
     const char* gpuVendorStr = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
     if (gpuVendorStr != nullptr) {
         if (strstr(gpuVendorStr, "Intel") != nullptr) {
@@ -111,7 +108,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         gpuVendorStr = "Unknown GPU Vendor";
         vendor = GPUVendor::OTHER;
     }
-    GPURenderer renderer = GPURenderer::COUNT;
+    GPURenderer renderer;
     const char* gpuRendererStr = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (gpuRendererStr != nullptr) {
         if (strstr(gpuRendererStr, "Tegra") || strstr(gpuRendererStr, "GeForce") || strstr(gpuRendererStr, "NV")) {
@@ -160,11 +157,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         // GL_DEBUG_OUTPUT_SYNCHRONOUS is essential for debugging gl commands in the IDE
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        // hardwire our debug callback function with OpenGL's implementation
+        // hard-wire our debug callback function with OpenGL's implementation
         glDebugMessageCallback((GLDEBUGPROC)GLUtil::DebugCallback, nullptr);
         if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
             // nVidia flushes a lot of useful info about buffer allocations and shader
-            // recompiles due to state and what now, but those aren't needed until that's
+            // re-compiles due to state and what now, but those aren't needed until that's
             // what's actually causing the bottlenecks
             const U32 nvidiaBufferErrors[] = { 131185, 131218, 131186 };
             // Disable shader compiler errors (shader class handles that)
@@ -301,7 +298,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Enable all 6 clip planes, I guess
     for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
-        glEnable(GLenum((U32)GL_CLIP_DISTANCE0 + i));
+        glEnable(GLenum(static_cast<U32>(GL_CLIP_DISTANCE0) + i));
     }
 
     s_texturePool.init(
@@ -309,10 +306,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
             {GL_NONE, 256}, //Generic texture handles (created with glGen instead of glCreate)
             {GL_TEXTURE_2D, 1024}, //Used by most renderable items
             {GL_TEXTURE_2D_ARRAY, 256}, //Used mainly by shadow maps and some materials
-            {GL_TEXTURE_2D_MULTISAMPLE, 128}, //Used by render tartgets
+            {GL_TEXTURE_2D_MULTISAMPLE, 128}, //Used by render targets
             {GL_TEXTURE_CUBE_MAP, 64}, //Used for reflections and environment probes
             {GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 16}, //Used by the CSM system mostly
-            {GL_TEXTURE_3D, 8} //Will eventually be usefull for volumetric stuff
+            {GL_TEXTURE_3D, 8} //Will eventually be useful for volumetric stuff
         }
     );
 

@@ -25,10 +25,6 @@ ShaderBuffer::ShaderBuffer(GFXDevice& context,
     assert(_bufferSize > 0 && "ShaderBuffer::Create error: Invalid buffer size!");
 }
 
-ShaderBuffer::~ShaderBuffer()
-{
-}
-
 void ShaderBuffer::writeData(const bufferPtr data) {
     writeData(0, _elementCount, data);
 }

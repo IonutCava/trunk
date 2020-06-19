@@ -33,8 +33,6 @@
 #ifndef _GUI_ELEMENT_H_
 #define _GUI_ELEMENT_H_
 
-#include "Core/Math/Headers/Dimension.h"
-
 #include <CEGUI/Event.h>
 
 namespace CEGUI {
@@ -69,7 +67,7 @@ struct TypeHelper {
 class GUIElement : public GUIDWrapper {
     friend class GUI;
   public:
-    GUIElement(const stringImpl& name, CEGUI::Window* const parent);
+    GUIElement(const stringImpl& name, CEGUI::Window* parent);
     virtual ~GUIElement() = default;
     
     virtual void setTooltip(const stringImpl& tooltipText) {

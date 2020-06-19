@@ -68,38 +68,38 @@ namespace Divide {
 
          /// Component <-> Transform interface
          void setPosition(const vec3<F32>& position) override;
-         void setPosition(const F32 x, const F32 y, const F32 z) override;
-         void setPositionX(const F32 positionX) override;
-         void setPositionY(const F32 positionY) override;
-         void setPositionZ(const F32 positionZ) override;
+         void setPosition(F32 x, F32 y, F32 z) override;
+         void setPositionX(F32 positionX) override;
+         void setPositionY(F32 positionY) override;
+         void setPositionZ(F32 positionZ) override;
          void translate(const vec3<F32>& axisFactors) override;
          using ITransform::setPosition;
 
          void setScale(const vec3<F32>& amount) override;
-         void setScaleX(const F32 amount) override;
-         void setScaleY(const F32 amount) override;
-         void setScaleZ(const F32 amount) override;
+         void setScaleX(F32 amount) override;
+         void setScaleY(F32 amount) override;
+         void setScaleZ(F32 amount) override;
          void scale(const vec3<F32>& axisFactors) override;
-         void scaleX(const F32 amount) override;
-         void scaleY(const F32 amount) override;
-         void scaleZ(const F32 amount) override;
+         void scaleX(F32 amount) override;
+         void scaleY(F32 amount) override;
+         void scaleZ(F32 amount) override;
          using ITransform::setScale;
 
          void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
          void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
          void setRotation(const Quaternion<F32>& quat) override;
-         void setRotationX(const Angle::DEGREES<F32> angle) override;
-         void setRotationY(const Angle::DEGREES<F32> angle) override;
-         void setRotationZ(const Angle::DEGREES<F32> angle) override;
+         void setRotationX(Angle::DEGREES<F32> angle) override;
+         void setRotationY(Angle::DEGREES<F32> angle) override;
+         void setRotationZ(Angle::DEGREES<F32> angle) override;
          using ITransform::setRotation;
 
          void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
          void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
          void rotate(const Quaternion<F32>& quat) override;
-         void rotateSlerp(const Quaternion<F32>& quat, const D64 deltaTime) override;
-         void rotateX(const Angle::DEGREES<F32> angle) override;
-         void rotateY(const Angle::DEGREES<F32> angle) override;
-         void rotateZ(const Angle::DEGREES<F32> angle) override;
+         void rotateSlerp(const Quaternion<F32>& quat, D64 deltaTime) override;
+         void rotateX(Angle::DEGREES<F32> angle) override;
+         void rotateY(Angle::DEGREES<F32> angle) override;
+         void rotateZ(Angle::DEGREES<F32> angle) override;
          using ITransform::rotate;
 
          void setTransform(const TransformValues& values);
@@ -160,8 +160,8 @@ namespace Divide {
          void setTransformDirty(TransformType type) noexcept;
          void setTransformDirty(U32 typeMask) noexcept;
 
-         void PreUpdate(const U64 deltaTimeUS) final;
-         void Update(const U64 deltaTimeUS) final;
+         void PreUpdate(U64 deltaTimeUS) final;
+         void Update(U64 deltaTimeUS) final;
 
          void onParentTransformDirty(U32 transformMask) noexcept;
          void onParentUsageChanged(NodeUsageContext context) noexcept;

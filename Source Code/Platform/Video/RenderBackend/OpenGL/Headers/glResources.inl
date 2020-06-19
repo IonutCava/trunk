@@ -40,52 +40,52 @@ inline bool glTexturePool::typeSupported(GLenum type) const {
 }
 
 template<typename T>
-inline void getGLValue(GLenum param, T& value, GLint index) {
+void getGLValue(const GLenum param, T& value, const GLint index) {
     if (index < 0) {
         glGetIntegerv(param, static_cast<GLint*>(&value));
     } else {
-        glGetIntegeri_v(param, (GLuint)index, static_cast<GLint*>(&value));
+        glGetIntegeri_v(param, static_cast<GLuint>(index), static_cast<GLint*>(&value));
     }
 }
 
 template<>
-inline void getGLValue(GLenum param, U32& value, GLint index) {
+inline void getGLValue(const GLenum param, U32& value, const GLint index) {
     value = static_cast<U32>(getGLValueIndexed<GLint>(param, index));
 }
 
 template<>
-inline void getGLValue(GLenum param, F32& value, GLint index) {
+inline void getGLValue(const GLenum param, F32& value, const GLint index) {
     if (index < 0) {
         glGetFloatv(param, &value);
     } else {
-        glGetFloati_v(param, (GLuint)index, &value);
+        glGetFloati_v(param, static_cast<GLuint>(index), &value);
     }
 }
 
 template<>
-inline void getGLValue(GLenum param, GLboolean& value, GLint index) {
+inline void getGLValue(const GLenum param, GLboolean& value, const GLint index) {
     if (index < 0) {
         glGetBooleanv(param, &value);
     } else {
-        glGetBooleani_v(param, (GLuint)index, &value);
+        glGetBooleani_v(param, static_cast<GLuint>(index), &value);
     }
 }
 
 template<>
-inline void getGLValue(GLenum param, D64& value, GLint index) {
+inline void getGLValue(const GLenum param, D64& value, const GLint index) {
     if (index < 0) {
         glGetDoublev(param, &value);
     } else {
-        glGetDoublei_v(param, (GLuint)index, &value);
+        glGetDoublei_v(param, static_cast<GLuint>(index), &value);
     }
 }
 
 template<>
-inline void getGLValue(GLenum param, GLint64& value, GLint index) {
+inline void getGLValue(const GLenum param, GLint64& value, const GLint index) {
     if (index < 0) {
         glGetInteger64v(param, &value);
     } else {
-        glGetInteger64i_v(param, (GLuint)index, &value);
+        glGetInteger64i_v(param, static_cast<GLuint>(index), &value);
     }
 }
 

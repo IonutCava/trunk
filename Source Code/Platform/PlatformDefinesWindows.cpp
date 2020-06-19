@@ -111,12 +111,16 @@ void  malloc_free(void*& ptr) {
 }
 
 LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept {
+    ACKNOWLEDGE_UNUSED(hWnd);
+    ACKNOWLEDGE_UNUSED(uMsg);
+    ACKNOWLEDGE_UNUSED(wParam);
+    ACKNOWLEDGE_UNUSED(lParam);
     return FALSE;
 }
 
 namespace Divide {
     //https://msdn.microsoft.com/en-us/library/windows/desktop/ms679360%28v=vs.85%29.aspx
-    static CHAR * GetLastErrorText(CHAR *pBuf, LONG bufSize) noexcept {
+    static CHAR * GetLastErrorText(CHAR *pBuf, const LONG bufSize) noexcept {
         LPTSTR pTemp = nullptr;
 
         if (bufSize < 16) {

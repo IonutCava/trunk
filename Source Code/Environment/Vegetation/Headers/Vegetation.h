@@ -113,7 +113,7 @@ class Vegetation : public SceneNode {
   protected:
     static void createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_ptr& terrain, const VegetationDetails& vegDetails);
 
-    void sceneUpdate(const U64 deltaTimeUS,
+    void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
                      SceneState& sceneState) final;
 

@@ -2,10 +2,8 @@
 
 #include "Headers/GLStateTracker.h"
 
-#include "Headers/GLWrapper.h"
 #include "Headers/glLockManager.h"
-
-#include "Platform/Headers/PlatformRuntime.h"
+#include "Headers/GLWrapper.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
@@ -22,6 +20,7 @@ namespace {
             case GL_DRAW_INDIRECT_BUFFER: return 4;
             case GL_ARRAY_BUFFER: return 5;
             //case GL_ELEMENT_ARRAY_BUFFER: return -1;
+            default: break;
         };
 
         DIVIDE_UNEXPECTED_CALL();
@@ -158,7 +157,7 @@ bool GLStateTracker::bindSamplers(GLushort unitOffset,
     {
         if (samplerCount == 1) {
             GLuint& handle = _samplerBoundMap[unitOffset];
-            GLuint targetHandle = samplerHandles ? samplerHandles[0] : 0u;
+            const GLuint targetHandle = samplerHandles ? samplerHandles[0] : 0u;
             if (handle != targetHandle) {
                 glBindSampler(unitOffset, targetHandle);
                 handle = targetHandle;
@@ -429,7 +428,7 @@ void GLStateTracker::setDepthRange(F32 nearVal, F32 farVal) {
     }
 }
 
-void GLStateTracker::setClipingPlaneState(const bool lowerLeftOrigin, const bool negativeOneToOneDepth) {
+void GLStateTracker::setClippingPlaneState(const bool lowerLeftOrigin, const bool negativeOneToOneDepth) {
     if (lowerLeftOrigin != _lowerLeftOrigin || negativeOneToOneDepth != _negativeOneToOneDepth) {
 
         glClipControl(
@@ -608,13 +607,13 @@ bool GLStateTracker::setScissor(const Rect<I32>& rect) {
     return false;
 }
 
-U32 GLStateTracker::getBoundTextureHandle(U8 slot, TextureType type) {
+U32 GLStateTracker::getBoundTextureHandle(const U8 slot, const TextureType type) {
     return _textureBoundMap[slot][to_base(type)];
 }
 
 void GLStateTracker::getActiveViewport(GLint* vp) {
     if (vp != nullptr) {
-        vp = (GLint*)_activeViewport._v;
+        *vp = *_activeViewport._v;
     }
 }
 

@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/RenderingComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 
@@ -27,25 +25,25 @@ void RenderingComponent::toggleRenderOption(RenderOptions option, bool state, bo
     }
 }
 
-bool RenderingComponent::renderOptionEnabled(RenderOptions option) const {
+bool RenderingComponent::renderOptionEnabled(const RenderOptions option) const {
     return renderOptionsEnabled(to_U32(option));
 }
 
-bool RenderingComponent::renderOptionsEnabled(U32 mask) const{
+bool RenderingComponent::renderOptionsEnabled(const U32 mask) const{
     return BitCompare(_renderMask, mask);
 }
 
-void RenderingComponent::toggleBoundsDraw(bool drawAABB, bool drawBS, bool recursive) {
+void RenderingComponent::toggleBoundsDraw(bool showAABB, bool showBS, bool recursive) {
     if (recursive) {
-        _parentSGN->forEachChild([drawAABB, drawBS, recursive](const SceneGraphNode* child, I32 /*childIdx*/) {
+        _parentSGN->forEachChild([showAABB, showBS, recursive](const SceneGraphNode* child, I32 /*childIdx*/) {
             RenderingComponent* const renderable = child->get<RenderingComponent>();
             if (renderable) {
-                renderable->toggleBoundsDraw(drawAABB, drawBS, recursive);
+                renderable->toggleBoundsDraw(showAABB, showBS, recursive);
             }
             return true;
         });
     }
-    _drawAABB = drawAABB;
-    _drawBS = drawBS;
+    _drawAABB = showAABB;
+    _drawBS = showBS;
 }
 }; //namespace Divide

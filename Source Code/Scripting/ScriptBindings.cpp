@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/ScriptBindings.h"
-#include "Headers/GameScript.h"
 
 namespace Divide {
 

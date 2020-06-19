@@ -12,7 +12,6 @@
 #include "Scenes/Headers/Scene.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Platform/Headers/PlatformRuntime.h"
 
@@ -39,10 +38,10 @@ void GUIInterface::onLanguageChange(std::string_view newLanguage) {
     ACKNOWLEDGE_UNUSED(newLanguage);
 }
 
-void GUIInterface::addElement(U64 id, GUIElement* element) {
+void GUIInterface::addElement(const U64 id, GUIElement* element) {
     assert(Runtime::isMainThread());
 
-    U8 typeIndex = to_U8(element->type());
+    const U8 typeIndex = to_U8(element->type());
     GUIMap& targetMap = _guiElements[typeIndex];
 
     const GUIMap::iterator it = targetMap.find(id);
@@ -54,7 +53,7 @@ void GUIInterface::addElement(U64 id, GUIElement* element) {
     }
 }
 
-GUIElement* GUIInterface::getGUIElementImpl(U64 elementName, GUIType type) const {
+GUIElement* GUIInterface::getGUIElementImpl(const U64 elementName, const GUIType type) const {
     GUIElement* ret = nullptr;
     if (type == GUIType::COUNT) {
         for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
@@ -73,9 +72,9 @@ GUIElement* GUIInterface::getGUIElementImpl(U64 elementName, GUIType type) const
     return ret;
 }
 
-GUIElement* GUIInterface::getGUIElementImpl(I64 elementID, GUIType type) const {
+GUIElement* GUIInterface::getGUIElementImpl(const I64 elementID, const GUIType type) const {
     GUIElement* ret = nullptr;
-    GUIElement* element = nullptr;
+    GUIElement* element;
     if (type == GUIType::COUNT) {
         for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
             for (const GUIMap::value_type& guiStackIterator : _guiElements[i]) {

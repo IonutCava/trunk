@@ -137,8 +137,8 @@ namespace Time {
 };
 
 /// The kernel is the main system that connects all of our various systems: windows, gfx, sfx, input, physics, timing, etc
-class Kernel : public Input::InputAggregatorInterface,
-               private NonCopyable
+class Kernel final : public Input::InputAggregatorInterface,
+                     NonCopyable
 {
     friend class Attorney::KernelApplication;
     friend class Attorney::KernelWindowManager;
@@ -189,21 +189,21 @@ class Kernel : public Input::InputAggregatorInterface,
 
     PROPERTY_R_IW(size_t, totalThreadCount, 0);
     PROPERTY_R(FrameListenerManager, frameListenerMgr);
-    inline FrameListenerManager& frameListenerMgr() noexcept { return _frameListenerMgr; }
+    FrameListenerManager& frameListenerMgr() noexcept { return _frameListenerMgr; }
 
     PROPERTY_R(PlatformContext, platformContext);
-    inline PlatformContext& platformContext() noexcept { return _platformContext; }
+    PlatformContext& platformContext() noexcept { return _platformContext; }
    private:
     ErrorCode initialize(const stringImpl& entryPoint);
     void warmup();
     void shutdown();
     void startSplashScreen();
     void stopSplashScreen();
-    bool mainLoopScene(FrameEvent& evt, 
-                       const U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
-                       const U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
-                       const U64 appDeltaTimeUS); //Real app delta time between frames. Can't be paused (e.g. used by editor)
-    bool presentToScreen(FrameEvent& evt, const U64 deltaTimeUS);
+    bool mainLoopScene(FrameEvent& evt,
+                       U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
+                       U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
+                       U64 appDeltaTimeUS); //Real app delta time between frames. Can't be paused (e.g. used by editor)
+    bool presentToScreen(FrameEvent& evt, U64 deltaTimeUS);
     /// Update all engine components that depend on the current screen size. Returns true if the rendering viewport and the window viewport have differnt aspect ratios
     bool onSizeChange(const SizeChangeParams& params);
     vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept;

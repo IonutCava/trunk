@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCRIPTING_SCRIPT_BINDINGS_H_
 #define _SCRIPTING_SCRIPT_BINDINGS_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace chaiscript {
     class Module;
 }

@@ -2,8 +2,6 @@
 
 #include "Headers/GUIButton.h"
 
-#include "Platform/Audio/Headers/SFXDevice.h"
-
 #include <CEGUI/CEGUI.h>
 
 namespace Divide {

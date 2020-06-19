@@ -11,9 +11,9 @@ ErrorCode OpenAL_API::initAudioAPI(PlatformContext& context) {
     ACKNOWLEDGE_UNUSED(context);
 
     // Initialization
-    ALCdevice* device = alcOpenDevice(NULL);  // select the "preferred device"
+    ALCdevice* device = alcOpenDevice(nullptr);  // select the "preferred device"
     if (device) {
-        ALCcontext* alContext = alcCreateContext(device, NULL);
+        ALCcontext* alContext = alcCreateContext(device, nullptr);
         alcMakeContextCurrent(alContext);
     }
     // Check for EAX 2.0 support

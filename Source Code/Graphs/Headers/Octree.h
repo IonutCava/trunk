@@ -50,7 +50,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
 
         ~Octree() = default;
 
-        void update(const U64 deltaTimeUS);
+        void update(U64 deltaTimeUS);
         bool addNode(SceneGraphNode* node);
         bool addNodes(const vectorEASTL<SceneGraphNode*>& nodes);
         void getAllRegions(vectorEASTL<BoundingBox>& regionsOut) const;

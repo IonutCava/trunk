@@ -83,7 +83,7 @@ namespace Divide {
     }
 
     template<bool IsBlocking>
-    void ThreadPool<IsBlocking>::wait() noexcept {
+    void ThreadPool<IsBlocking>::wait() const noexcept {
         if (_isRunning) {
             // Busy wait
             while (_tasksLeft.load() > 0) {
@@ -93,12 +93,12 @@ namespace Divide {
     }
 
     template<bool IsBlocking>
-    void ThreadPool<IsBlocking>::onThreadCreate(const std::thread::id& threadID) {
+    void ThreadPool<IsBlocking>::onThreadCreate(const std::thread::id& threadID) const {
         _parent.onThreadCreate(threadID);
     }
 
     template<bool IsBlocking>
-    void ThreadPool<IsBlocking>::onThreadDestroy(const std::thread::id& threadID) {
+    void ThreadPool<IsBlocking>::onThreadDestroy(const std::thread::id& threadID) const {
         _parent.onThreadDestroy(threadID);
     }
 

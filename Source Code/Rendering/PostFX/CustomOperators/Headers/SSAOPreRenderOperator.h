@@ -46,19 +46,19 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
-    inline F32 radius() const noexcept { return _radius; }
-    void radius(const F32 val);
+    F32 radius() const noexcept { return _radius; }
+    void radius(F32 val);
 
-    inline F32 power() const noexcept { return _power; }
-    void power(const F32 val);
+    F32 power() const noexcept { return _power; }
+    void power(F32 val);
 
-    inline U8 kernelIndex(U8& minOut, U8& maxOut) const noexcept { minOut = 0u; maxOut = 3u; return _kernelIndex; }
-    void kernelIndex(const U8 val);
+    U8 kernelIndex(U8& minOut, U8& maxOut) const noexcept { minOut = 0u; maxOut = 3u; return _kernelIndex; }
+    void kernelIndex(U8 val);
 
     bool ready() const final;
 
    private:
-     void onToggle(const bool state) final;
+     void onToggle(bool state) final;
 
    private:
     PushConstants _ssaoBlurConstants;

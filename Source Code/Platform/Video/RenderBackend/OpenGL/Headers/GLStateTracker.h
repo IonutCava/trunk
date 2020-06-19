@@ -68,11 +68,9 @@ namespace Divide {
         /// Set a new depth range. Default is 0 - 1 with 0 mapping to the near plane and 1 to the far plane
         void setDepthRange(F32 nearVal, F32 farVal);
         // Just a wrapper around glClipControl
-        void setClipingPlaneState(const bool lowerLeftOrigin, const bool negativeOneToOneDepth);
+        void setClippingPlaneState(bool lowerLeftOrigin, bool negativeOneToOneDepth);
         void setBlending(const BlendingProperties& blendingProperties);
-        inline void resetBlending() {
-            setBlending(_blendPropertiesGlobal);
-        }
+        void resetBlending() { setBlending(_blendPropertiesGlobal); }
         /// Set the blending properties for the specified draw buffer
         void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties);
 
@@ -87,7 +85,7 @@ namespace Divide {
         /// Change the currently active shader program. Returns true if the program was bound
         bool setActiveProgram(GLuint programHandle);
         /// Change the currently active shader pipeline. Returns true if the pipeline was bound
-        bool setActiveShaderPipeline(GLuint ppipelineHandle);
+        bool setActiveShaderPipeline(GLuint pipelineHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
         /// Some may be redundant, so we check each one individually
         void activateStateBlock(const RenderStateBlock& newBlock);
@@ -202,14 +200,14 @@ namespace Divide {
 
         /// /*hash: texture slot  - array /*texture handle - texture type*/ hash
         using TextureBoundMapDef = std::array<std::array<U32, to_base(TextureType::COUNT)>, MAX_ACTIVE_TEXTURE_SLOTS>;
-        TextureBoundMapDef _textureBoundMap;
+        TextureBoundMapDef _textureBoundMap = {};
 
         using ImageBoundMapDef = std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS>;
-        ImageBoundMapDef _imageBoundMap;
+        ImageBoundMapDef _imageBoundMap = {};
 
         /// /*texture slot*/ /*sampler handle*/
         using SamplerBoundMapDef = std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS>;
-        SamplerBoundMapDef _samplerBoundMap;
+        SamplerBoundMapDef _samplerBoundMap = {};
 
         VAOBindings _vaoBufferData;
         bool _opengl46Supported = false;

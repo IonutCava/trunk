@@ -48,12 +48,12 @@ public:
     void create(GLenum queryType);
     void destroy();
 
-    bool isResultAvailable() const;
-    I64 getResult() const;
-    I64 getResultNoWait() const;
+    [[nodiscard]] bool isResultAvailable() const;
+    [[nodiscard]] I64 getResult() const;
+    [[nodiscard]] I64 getResultNoWait() const;
 
-    U32 getID() const noexcept { return _queryID; }
-    bool enabled() const noexcept { return _enabled; }
+    [[nodiscard]] U32 getID() const noexcept { return _queryID; }
+    [[nodiscard]] bool enabled() const noexcept { return _enabled; }
     void enabled(const bool state) noexcept { _enabled = state; }
 
 protected:

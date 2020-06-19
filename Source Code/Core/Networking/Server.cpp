@@ -10,10 +10,8 @@ using namespace boost::asio;
 namespace Divide {
 
 Server::Server()
-    : thread_(),
-     _debugOutput(false),
-      acceptor_(nullptr),
-     _channel(std::make_shared<channel>())
+    : acceptor_(nullptr),
+      _channel(std::make_shared<channel>())
 {
 }
 

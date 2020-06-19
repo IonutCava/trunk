@@ -35,9 +35,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SGNComponent.h"
 
+#include "Geometry/Material/Headers/MaterialEnums.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
-#include "Geometry/Material/Headers/MaterialEnums.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
@@ -92,16 +92,16 @@ struct RenderCbkParams {
                              const SceneGraphNode* sgn,
                              const SceneRenderState& sceneRenderState,
                              const RenderTargetID& renderTarget,
-                             U16 passIndex,
-                             U8 passVariant,
+                             const U16 passIndex,
+                             const U8 passVariant,
                              Camera* camera) noexcept
         : _context(context),
           _sgn(sgn),
           _sceneRenderState(sceneRenderState),
           _renderTarget(renderTarget),
+          _camera(camera),
           _passIndex(passIndex),
-          _passVariant(passVariant),
-          _camera(camera)
+          _passVariant(passVariant)
     {
     }
 
@@ -153,7 +153,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                                 PlatformContext& context);
     ~RenderingComponent();
 
-    void Update(const U64 deltaTimeUS) final;
+    void Update(U64 deltaTimeUS) final;
 
     void toggleRenderOption(RenderOptions option, bool state, bool recursive = true);
     bool renderOptionEnabled(RenderOptions option) const;
@@ -161,14 +161,14 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void setMinRenderRange(F32 minRange) noexcept;
     void setMaxRenderRange(F32 maxRange) noexcept;
-    inline void setRenderRange(F32 minRange, F32 maxRange) noexcept { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
-    inline const vec2<F32>& renderRange() const noexcept { return _renderRange; }
+    void setRenderRange(const F32 minRange, const F32 maxRange) noexcept { setMinRenderRange(minRange); setMaxRenderRange(maxRange); }
+    const vec2<F32>& renderRange() const noexcept { return _renderRange; }
 
-    inline void lockLoD(U8 level) { _lodLockLevels.fill({ true, level }); }
-    inline void unlockLoD() { _lodLockLevels.fill({ false, to_U8(0u) }); }
-    inline void lockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { true, level }; }
-    inline void unlockLoD(RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { false, to_U8(0u) }; }
-    inline bool lodLocked(RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
+    void lockLoD(U8 level) { _lodLockLevels.fill({ true, level }); }
+    void unlockLoD() { _lodLockLevels.fill({ false, to_U8(0u) }); }
+    void lockLoD(const RenderStage stage, U8 level) noexcept { _lodLockLevels[to_base(stage)] = { true, level }; }
+    void unlockLoD(const RenderStage stage) noexcept { _lodLockLevels[to_base(stage)] = { false, to_U8(0u) }; }
+    bool lodLocked(const RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
     void instantiateMaterial(const Material_ptr& material);
 
     void getMaterialColourMatrix(const RenderStagePass& stagePass, mat4<F32>& matOut) const;
@@ -180,13 +180,13 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
 
-    inline const Material_ptr& getMaterialInstance() const noexcept { return _materialInstance; }
+    const Material_ptr& getMaterialInstance() const noexcept { return _materialInstance; }
 
     void rebuildMaterial();
 
-    inline void setReflectionAndRefractionType(ReflectorType reflectType, RefractorType refractType) noexcept { _reflectorType = reflectType;  _refractorType = refractType; }
-    inline void setReflectionCallback(const RenderCallback& cbk) { _reflectionCallback = cbk; }
-    inline void setRefractionCallback(const RenderCallback& cbk) { _refractionCallback = cbk; }
+    void setReflectionAndRefractionType(const ReflectorType reflectType, const RefractorType refractType) noexcept { _reflectorType = reflectType;  _refractorType = refractType; }
+    void setReflectionCallback(const RenderCallback& cbk) { _reflectionCallback = cbk; }
+    void setRefractionCallback(const RenderCallback& cbk) { _refractionCallback = cbk; }
 
     void drawDebugAxis(GFX::CommandBuffer& bufferInOut);
     void drawSelectionGizmo(GFX::CommandBuffer& bufferInOut);
@@ -197,8 +197,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     U8 getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
-    inline void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
-    inline const ShaderBufferList& getShaderBuffers() const noexcept { return _externalBufferBindings; }
+    void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
+    const ShaderBufferList& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);

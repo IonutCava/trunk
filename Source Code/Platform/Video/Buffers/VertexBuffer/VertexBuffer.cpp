@@ -7,23 +7,19 @@
 namespace Divide {
 
 vectorEASTL<AttribFlags> VertexBuffer::_attribMasks;
+
 VertexBuffer::VertexBuffer(GFXDevice& context)
     : VertexDataInterface(context),
      _keepDataInMemory(false),
      _staticBuffer(false),
      _format(GFXDataFormat::UNSIGNED_SHORT),
+     _attribDirty{},
      _primitiveRestartEnabled(false)
 {
     assert(handle()._id != 0);
-    reset();
 }
 
-VertexBuffer::~VertexBuffer()
-{
-    reset();
-}
-
-bool VertexBuffer::create(bool staticDraw) {
+bool VertexBuffer::create(const bool staticDraw) {
     _staticBuffer = staticDraw;
     return true;
 }

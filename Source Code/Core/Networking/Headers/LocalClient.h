@@ -33,14 +33,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORE_NETWORK_LOCAL_CLIENT_H_
 #define _CORE_NETWORK_LOCAL_CLIENT_H_
 
-#include "OPCodesImpl.h"
 #include "Networking/Headers/ASIO.h"
 #include "Core/Headers/KernelComponent.h"
 
 namespace Divide {
     
-class LocalClient : public ASIO,
-                    public KernelComponent {
+class LocalClient final : public ASIO,
+                          public KernelComponent {
 public:
     LocalClient(Kernel& parent);
     ~LocalClient();

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/AnimationUtils.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 
 namespace Divide {
 

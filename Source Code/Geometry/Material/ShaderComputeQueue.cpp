@@ -2,18 +2,14 @@
 
 #include "Headers/ShaderComputeQueue.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Time/Headers/ProfileTimer.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
 ShaderComputeQueue::ShaderComputeQueue(ResourceCache* cache)
     : _cache(cache),
       _queueComputeTimer(Time::ADD_TIMER("Shader Queue Timer"))
-{
-}
-
-ShaderComputeQueue::~ShaderComputeQueue()
 {
 }
 

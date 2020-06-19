@@ -77,9 +77,6 @@
 #endif //NO_INLINE
 
 #include <windows.h>
-#include <limits.h>
-#include <xmmintrin.h>
-#include <string.h>
 
 #ifdef DELETE
 #undef DELETE
@@ -118,7 +115,7 @@ LRESULT DlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) noexcept;
 
 namespace Divide {
     struct WindowHandle {
-        HWND _handle = 0;
+        HWND _handle = nullptr;
     };
 }; //namespace Divide
 

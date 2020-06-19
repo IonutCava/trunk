@@ -5,8 +5,6 @@
 #include "Headers/Kernel.h"
 #include "Headers/ParamHandler.h"
 
-#include "Core/Headers/Configuration.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Platform/File/Headers/FileManagement.h"
 
@@ -18,8 +16,9 @@ bool MemoryManager::MemoryTracker::Ready = false;
 bool MemoryManager::MemoryTracker::LogAllAllocations = false;
 MemoryManager::MemoryTracker MemoryManager::AllocTracer;
 
-Application::Application() : _kernel(nullptr),
-                             _isInitialized(false)
+Application::Application()
+    : _isInitialized(false),
+      _kernel(nullptr)
 {
     _requestShutdown = false;
     _mainLoopPaused = false;

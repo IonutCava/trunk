@@ -64,9 +64,9 @@ struct SizeChangeParams;
 /// Graphical User Interface
 
 class SceneGUIElements;
-class GUI : public GUIInterface,
-            public KernelComponent,
-            public Input::InputAggregatorInterface {
+class GUI final : public GUIInterface,
+                  public KernelComponent,
+                  public Input::InputAggregatorInterface {
 public:
     using GUIMapPerScene = hashMap<I64, SceneGUIElements*>;
 
@@ -79,24 +79,23 @@ public:
     void destroy();
 
     void draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
-    void postDraw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
 
     void onSizeChange(const SizeChangeParams& params);
     void onChangeScene(Scene* newScene);
-    void onUnloadScene(Scene* const scene);
+    void onUnloadScene(Scene* scene);
 
     /// Main update call
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
 
     template <typename T>
     typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
-    getGUIElement(I64 sceneID, U64 elementName) {
+    getGUIElement(const I64 sceneID, const U64 elementName) {
         return static_cast<T*>(getGUIElementImpl(sceneID, elementName, T::Type));
     }
 
     template <typename T>
     typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
-    getGUIElement(I64 sceneID, I64 elementID) {
+    getGUIElement(const I64 sceneID, const I64 elementID) {
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
 
@@ -158,7 +157,7 @@ public:
     void setRenderer(CEGUI::Renderer& renderer);
 
     PROPERTY_R(bool, showDebugCursor, false);
-    void showDebugCursor(const bool state);
+    void showDebugCursor(bool state);
 
 protected:
     GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;

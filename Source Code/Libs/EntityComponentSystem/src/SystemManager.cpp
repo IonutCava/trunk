@@ -100,7 +100,7 @@ namespace ECS
 		{
 			VERTEX_STATE[vertex] = 1; // visited
 
-			for (int i = 0; i < VERTEX_STATE.size(); ++i)
+			for (size_t i = 0; i < VERTEX_STATE.size(); ++i)
 			{
 				if (EDGES[i][vertex] == true && VERTEX_STATE[i] == 0)
 					DFS(i, VERTEX_STATE, EDGES, output);
@@ -110,7 +110,7 @@ namespace ECS
 			output.push_back(vertex);
 		};
 
-		const size_t NUM_SYSTEMS = this->m_SystemDependencyMatrix.size();
+		const int NUM_SYSTEMS = static_cast<int>(this->m_SystemDependencyMatrix.size());
 
 
 		// create index array
@@ -141,7 +141,7 @@ namespace ECS
 				index = member.back();
 				member.pop_back();
 
-				for (int i = 0; i < INDICES.size(); ++i)
+				for (size_t i = 0; i < INDICES.size(); ++i)
 				{
 					if (INDICES[i] != -1 && (this->m_SystemDependencyMatrix[i][index] == true || this->m_SystemDependencyMatrix[index][i] == true))
 					{
@@ -169,13 +169,13 @@ namespace ECS
         eastl::multimap<SystemPriority, eastl::vector<SystemTypeId>> VERTEX_GROUPS_SORTED;
 
 
-		for (int i = 0; i < NUM_VERTEX_GROUPS; ++i)
+		for (size_t i = 0; i < NUM_VERTEX_GROUPS; ++i)
 		{
 			auto g = VERTEX_GROUPS[i];
 
             eastl::vector<SystemTypeId> order;
 
-			for (int j = 0; j < g.size(); ++j)
+			for (size_t j = 0; j < g.size(); ++j)
 			{
 				if (vertex_states[g[j]] == 0)
 					DFS(g[j], vertex_states, this->m_SystemDependencyMatrix, order);
@@ -211,7 +211,7 @@ namespace ECS
 	{
 		SystemWorkStateMask mask(this->m_SystemWorkOrder.size());
 
-		for (int i = 0; i < this->m_SystemWorkOrder.size(); ++i)
+		for (size_t i = 0; i < this->m_SystemWorkOrder.size(); ++i)
 		{
 			mask[i] = this->m_SystemWorkOrder[i]->m_Enabled;
 		}
@@ -223,7 +223,7 @@ namespace ECS
 	{
 		assert(mask.size() == this->m_SystemWorkOrder.size() && "Provided mask does not match size of current system array.");
 
-		for (int i = 0; i < this->m_SystemWorkOrder.size(); ++i)
+		for (size_t i = 0; i < this->m_SystemWorkOrder.size(); ++i)
 		{
 			this->m_SystemWorkOrder[i]->m_Enabled = mask[i];
 		}

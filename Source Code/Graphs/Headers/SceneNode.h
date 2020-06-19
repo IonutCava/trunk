@@ -162,7 +162,7 @@ class SceneNode : public CachedResource {
 
    protected:
     /// Called from SceneGraph "sceneUpdate"
-    virtual void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState);
+    virtual void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState);
 
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode* sgn);

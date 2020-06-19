@@ -97,7 +97,7 @@ public:
     explicit RenderPassManager(Kernel& parent, GFXDevice& context);
     ~RenderPassManager();
 
-    /// Call every renderqueue's render function in order
+    /// Call every render queue's render function in order
     void render(const RenderParams& params);
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const Str64& renderPassName,
@@ -105,12 +105,12 @@ public:
                               RenderStage renderStage,
                               vectorEASTL<U8> dependencies = {},
                               bool usePerformanceCounters = false);
-    /// Find a renderpass by name and remove it from the manager
+    /// Find a render pass by name and remove it from the manager
     void removeRenderPass(const Str64& name);
     [[nodiscard]] U32  getLastTotalBinSize(RenderStage renderStage) const;
-    [[nodiscard]] inline I32 drawCallCount(RenderStage stage) const noexcept { return _drawCallCount[to_base(stage)]; }
+    [[nodiscard]] I32 drawCallCount(RenderStage stage) const noexcept { return _drawCallCount[to_base(stage)]; }
 
-    [[nodiscard]] inline RenderQueue& getQueue() noexcept { return _renderQueue; }
+    [[nodiscard]] RenderQueue& getQueue() noexcept { return _renderQueue; }
 
     [[nodiscard]] RenderPass::BufferData getBufferData(const RenderStagePass& stagePass) const;
 
@@ -125,7 +125,7 @@ private:
                  U32& visibleNodeCount,
                  GFX::CommandBuffer& bufferInOut);
     bool occlusionPass(const VisibleNodeList<>& nodes,
-                       const U32 visibleNodeCount,
+                       U32 visibleNodeCount,
                        const RenderStagePass& stagePass,
                        const Camera& camera,
                        const RenderTargetID& sourceDepthBuffer,
@@ -154,7 +154,7 @@ private:
     U32 buildDrawCommands(const RenderPassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
     U32  buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const RenderPassParams& passParams, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, bool shadowMap, const D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut, GFXDevice::CollisionData& collisionDataOut) const;
+    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, bool shadowMap, D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut, GFXDevice::CollisionData& collisionDataOut) const;
 
 private: //TEMP
     friend class RenderBin;

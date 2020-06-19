@@ -3,7 +3,6 @@
 #include "Headers/XMLEntryData.h"
 
 #include "Utility/Headers/Localization.h"
-#include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 

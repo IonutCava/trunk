@@ -3,6 +3,7 @@
 #include "Headers/Pipeline.h"
 
 #include "Geometry/Material/Headers/ShaderComputeQueue.h"
+#include "Scenes/Headers/SceneShaderData.h"
 
 namespace Divide {
 
@@ -31,8 +32,8 @@ bool PipelineDescriptor::operator!=(const PipelineDescriptor &other) const {
 }
 
 Pipeline::Pipeline(const PipelineDescriptor& descriptor)
-    : _descriptor(descriptor),
-      _cachedHash(descriptor.getHash())
+    : _cachedHash(descriptor.getHash()),
+      _descriptor(descriptor)
 {
 }
 

@@ -8,10 +8,6 @@
 namespace Divide {
 namespace GLUtil {
 
-glVAOCache::glVAOCache() noexcept
-{
-}
-
 glVAOCache::~glVAOCache()
 {
     clear();

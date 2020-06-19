@@ -2,7 +2,6 @@
 
 #include "Headers/SceneAnimator.h"
 #include "Core/Headers/ByteBuffer.h"
-#include "Platform/Video/Headers/GFXDevice.h"
 
 #include "Utility/Headers/Localization.h"
 

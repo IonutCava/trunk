@@ -71,9 +71,9 @@ class SolutionExplorerWindow;
 class GUIConsoleCommandParser;
 FWD_DECLARE_MANAGED_CLASS(Player);
 
-class SceneManager : public FrameListener,
-                     public Input::InputAggregatorInterface,
-                     public KernelComponent {
+class SceneManager final : public FrameListener,
+                           public Input::InputAggregatorInterface,
+                           public KernelComponent {
 
     friend class Attorney::SceneManagerScene;
     friend class Attorney::SceneManagerEditor;
@@ -99,14 +99,14 @@ public:
     Scene& getActiveScene();
     const Scene& getActiveScene() const;
 
-    void setActiveScene(Scene* const scene);
+    void setActiveScene(Scene* scene);
 
     bool init(PlatformContext& platformContext, ResourceCache* cache);
     void destroy();
 
-    inline U8 getActivePlayerCount() const noexcept { return _activePlayerCount; }
+    U8 getActivePlayerCount() const noexcept { return _activePlayerCount; }
 
-    inline void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
+    void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
     void resetSelection(PlayerIndex idx);
@@ -123,39 +123,39 @@ public:
     void onGainFocus();
 
     /// Check if the scene was loaded properly
-    inline bool checkLoadFlag() const {
+    bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(getActiveScene());
     }
     /// Update animations, network data, sounds, triggers etc.
-    void updateSceneState(const U64 deltaTimeUS);
+    void updateSceneState(U64 deltaTimeUS);
 
     /// Gather input events and process them in the current scene
-    inline void processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+    void processInput(const PlayerIndex idx, const U64 deltaTimeUS) {
         OPTICK_EVENT();
 
         getActiveScene().processInput(idx, deltaTimeUS);
         Attorney::SceneManager::updateCameraControls(getActiveScene(), idx);
     }
 
-    inline void processTasks(const U64 deltaTimeUS) {
+    void processTasks(const U64 deltaTimeUS) {
         OPTICK_EVENT();
 
         getActiveScene().processTasks(deltaTimeUS);
     }
 
-    inline void processGUI(const U64 deltaTimeUS) {
+    void processGUI(const U64 deltaTimeUS) {
         OPTICK_EVENT();
 
         getActiveScene().processGUI(deltaTimeUS);
     }
 
-    inline void onStartUpdateLoop(const U8 loopNumber) {
+    void onStartUpdateLoop(const U8 loopNumber) {
         getActiveScene().onStartUpdateLoop(loopNumber);
     }
 
     void onSizeChange(const SizeChangeParams& params);
 
-    inline U8 playerPass() const noexcept { return _currentPlayerPass; }
+    U8 playerPass() const noexcept { return _currentPlayerPass; }
 
     template <typename T, class Factory>
     bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) {
@@ -234,7 +234,7 @@ protected:
 protected:
     bool frameStarted(const FrameEvent& evt) override;
     bool frameEnded(const FrameEvent& evt) override;
-    void preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, const size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut);
+    void preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut);
     void postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera* playerCamera);
     void postRenderAllPasses(const Camera* playerCamera);

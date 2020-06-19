@@ -59,7 +59,7 @@ inline size_t RESERVE_CMD(U8 typeIndex) noexcept {
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::allocateCommand() {
     CommandEntry& newEntry = _commandOrder.emplace_back();
     newEntry._typeIndex = static_cast<U8>(T::EType);
@@ -100,19 +100,19 @@ CommandBuffer::add(const T&& command) {
 }
 
 template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+[[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(const CommandEntry& commandEntry) noexcept {
     return static_cast<T*>(_commands.get(commandEntry));
 }
 
 template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+[[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(const CommandEntry& commandEntry) const noexcept {
     return static_cast<T*>(_commands.get(commandEntry));
 }
 
 template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, const CommandBuffer::Container::EntryList&>::type
+[[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, const CommandBuffer::Container::EntryList&>::type
 CommandBuffer::get() const noexcept {
     return _commands.get(to_base(T::EType));
 }
@@ -128,18 +128,18 @@ CommandBuffer::exists(U24 index) const noexcept {
 }
 
 template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+[[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(U24 index) noexcept {
     return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
-typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+[[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::get(U24 index) const noexcept {
     return get<T>({to_base(T::EType), index });
 }
 
-inline bool CommandBuffer::exists(U8 typeIndex, U24 index) const noexcept {
+inline bool CommandBuffer::exists(const U8 typeIndex, const U24 index) const noexcept {
     return _commands.exists({ typeIndex, index });
 }
 
@@ -157,7 +157,7 @@ inline const CommandBuffer::CommandOrderContainer& CommandBuffer::operator()() c
     return _commandOrder;
 }
 
-inline void CommandBuffer::clear(bool clearMemory) {
+inline void CommandBuffer::clear(const bool clearMemory) {
     _commandCount.fill(0u);
     if (clearMemory) {
         _commandOrder.clear();

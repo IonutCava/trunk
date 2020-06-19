@@ -53,24 +53,24 @@ public:
     explicit PXDevice(Kernel& parent);
     ~PXDevice();
 
-    inline void setAPI(PhysicsAPI API) noexcept { _API_ID = API; }
-    inline PhysicsAPI getAPI() const noexcept { return _API_ID; }
+    void setAPI(const PhysicsAPI API) noexcept { _API_ID = API; }
+    PhysicsAPI getAPI() const noexcept { return _API_ID; }
 
     ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) final;
     bool closePhysicsAPI()  final;
 
     void updateTimeStep(U8 timeStepFactor, F32 simSpeed)  final;
-    void update(const U64 deltaTimeUS) final;
-    void process(const U64 deltaTimeUS) final;
+    void update(U64 deltaTimeUS) final;
+    void process(U64 deltaTimeUS) final;
     void idle()  final;
-    void setPhysicsScene(PhysicsSceneInterface* const targetScene) final;
+    void setPhysicsScene(PhysicsSceneInterface* targetScene) final;
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene)  final;
 
     PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) final;
 
-    inline PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
-    inline const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
+    PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
+    const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
 
 private:
     F32 _simulationSpeed;

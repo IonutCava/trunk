@@ -5,21 +5,16 @@
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
-#include "Rendering/PostFX/Headers/PreRenderBatch.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
 namespace Divide {
-
-namespace {
-    F32 resolutionDownscaleFactor = 2.0f;
-};
 
 MotionBlurPreRenderOperator::MotionBlurPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_MOTION_BLUR)

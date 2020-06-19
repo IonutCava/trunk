@@ -39,7 +39,7 @@ void FormattedListboxTextItem::setFormatting(
 }
 
 //----------------------------------------------------------------------------//
-Sizef FormattedListboxTextItem::getPixelSize(void) const {
+Sizef FormattedListboxTextItem::getPixelSize() const {
     if (!d_owner) return Sizef(0, 0);
 
     // reparse text if we need to.

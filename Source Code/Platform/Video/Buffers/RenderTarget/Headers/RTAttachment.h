@@ -69,35 +69,35 @@ class RTAttachment final {
     public:
         explicit RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor);
         explicit RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt);
-        ~RTAttachment();
+        ~RTAttachment() = default;
 
-        bool used() const;
+        [[nodiscard]] bool used() const;
         
-        bool isExternal() const;
+        [[nodiscard]] bool isExternal() const;
 
-        bool changed() const;
+        [[nodiscard]] bool changed() const;
         void clearChanged();
 
         void clearColour(const FColour4& clearColour);
-        const FColour4& clearColour() const;
+        [[nodiscard]] const FColour4& clearColour() const;
 
         bool mipWriteLevel(U16 level);
-        U16  mipWriteLevel() const;
+        [[nodiscard]] U16  mipWriteLevel() const;
 
         bool writeLayer(U16 layer);
-        U16  writeLayer() const;
+        [[nodiscard]] U16  writeLayer() const;
 
-        const Texture_ptr& texture(bool autoResolve = true) const;
+        [[nodiscard]] const Texture_ptr& texture(bool autoResolve = true) const;
         void setTexture(const Texture_ptr& tex);
 
-        U16 numLayers() const;
+        [[nodiscard]] U16 numLayers() const;
 
-        const RTAttachmentDescriptor& descriptor() const;
+        [[nodiscard]] const RTAttachmentDescriptor& descriptor() const;
 
         RTAttachmentPool& parent();
-        const RTAttachmentPool& parent() const;
+        [[nodiscard]] const RTAttachmentPool& parent() const;
 
-        const RTAttachment_ptr& getExternal() const;
+        [[nodiscard]] const RTAttachment_ptr& getExternal() const;
 
         PROPERTY_RW(size_t, samplerHash, 0);
         PROPERTY_RW(U32, binding, 0u);

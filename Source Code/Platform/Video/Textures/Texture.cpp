@@ -239,15 +239,9 @@ void Texture::validateDescriptor() {
     }
 
     switch (_descriptor.baseFormat()) {
-        case GFXImageFormat::COMPRESSED_RGB_DXT1: {
-            _descriptor._compressed = true;
-        } break;
-        case GFXImageFormat::COMPRESSED_RGBA_DXT1: {
-            _descriptor._compressed = true;
-        } break;
-        case GFXImageFormat::COMPRESSED_RGBA_DXT3: {
-            _descriptor._compressed = true;
-        } break;
+        case GFXImageFormat::COMPRESSED_RGB_DXT1:
+        case GFXImageFormat::COMPRESSED_RGBA_DXT1:
+        case GFXImageFormat::COMPRESSED_RGBA_DXT3:
         case GFXImageFormat::COMPRESSED_RGBA_DXT5: {
             _descriptor._compressed = true;
         } break;
@@ -264,7 +258,7 @@ void Texture::validateDescriptor() {
     }
 }
 
-U16 Texture::computeMipCount(U16 width, U16 height) noexcept {
+U16 Texture::computeMipCount(const U16 width, const U16 height) noexcept {
     return to_U16(std::floorf(std::log2f(std::fmaxf(to_F32(width), to_F32(height)))));
 }
 

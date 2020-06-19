@@ -39,7 +39,7 @@ namespace Divide {
 
 static constexpr U8  g_AllVariantsID = std::numeric_limits<U8>::max();
 static constexpr U16 g_AllPassID = std::numeric_limits<U16>::max();
-static constexpr U16 g_AllIndiciesID = g_AllPassID;
+static constexpr U16 g_AllIndicesID = g_AllPassID;
 
 struct RenderStagePass {
     RenderStagePass() = default;
@@ -59,12 +59,12 @@ struct RenderStagePass {
     U16 _index = 0u; //usually some kind of type info (reflector/refractor index, light type, etc)
     U16 _pass = 0u; //usually some kind of actual pass index (eg. cube face we are rendering into)
 
-    inline bool isDepthPass() const noexcept {
+    [[nodiscard]] inline bool isDepthPass() const noexcept {
         return _stage == RenderStage::SHADOW || _passType == RenderPassType::PRE_PASS;
     }
 
     /// This ignores the variant and pass index flags!
-    inline U8 baseIndex() const noexcept {
+    [[nodiscard]] inline U8 baseIndex() const noexcept {
         return baseIndex(_stage, _passType);
     }
 

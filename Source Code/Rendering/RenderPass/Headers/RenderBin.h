@@ -113,7 +113,7 @@ class RenderBin {
 
     void addNodeToBin(const SceneGraphNode* sgn,
                       const RenderStagePass& renderStagePass,
-                      const F32 minDistToCameraSq);
+                      F32 minDistToCameraSq);
 
     const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 

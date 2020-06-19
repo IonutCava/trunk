@@ -144,7 +144,7 @@ bool readFile(const char* filePath, const char* fileName, T& contentOut, FileTyp
 bool openFile(const char* filePath, const char* fileName);
 bool openFile(const char* cmd, const char* filePath, const char* fileName);
 
-bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, size_t length, FileType fileType);
+bool writeFile(const char* filePath, const char* fileName, bufferPtr content, size_t length, FileType fileType);
 bool deleteFile(const char* filePath, const char* fileName);
 bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite);
 bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath);

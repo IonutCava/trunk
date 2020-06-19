@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-class Quad3D : public Object3D {
+class Quad3D final : public Object3D {
   public:
     enum class CornerLocation : U8 {
         TOP_LEFT = 0,
@@ -51,7 +51,7 @@ class Quad3D : public Object3D {
                     ResourceCache* parentCache,
                     size_t descriptorHash,
                     const Str256& name,
-                    const bool doubleSided);
+                    bool doubleSided);
 
     vec3<F32> getCorner(CornerLocation corner);
 

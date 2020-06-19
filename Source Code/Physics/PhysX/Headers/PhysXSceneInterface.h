@@ -40,7 +40,7 @@ namespace Divide {
 
 class Scene;
 
-class PhysXSceneInterface : public PhysicsSceneInterface {
+class PhysXSceneInterface final : public PhysicsSceneInterface {
     using LoadQueue = moodycamel::ConcurrentQueue<PhysXActor*>;
 
    public:
@@ -50,14 +50,15 @@ class PhysXSceneInterface : public PhysicsSceneInterface {
     virtual bool init() override;
     virtual void idle() override;
     virtual void release() override;
-    virtual void update(const U64 deltaTimeUS) override;
-    virtual void process(const U64 deltaTimeUS) override;
+    virtual void update(U64 deltaTimeUS) override;
+    virtual void process(U64 deltaTimeUS) override;
 
-    void addRigidActor(PhysXActor* const actor, bool threaded = true);
-    inline const vectorEASTL<physx::PxMaterial*> getMaterials() {
+    void addRigidActor(PhysXActor* actor, bool threaded = true);
+    vectorEASTL<physx::PxMaterial*> getMaterials() const {
         return _materials;
     }
-    inline physx::PxScene* getPhysXScene() noexcept { return _gScene; }
+
+    physx::PxScene* getPhysXScene() const noexcept { return _gScene; }
 
    protected:
     void updateActor(PhysXActor& actor);

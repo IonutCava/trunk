@@ -68,7 +68,7 @@ struct BlendingProperties {
                _blendOpAlpha != rhs._blendOpAlpha;
     }
 
-    bool blendEnabled() const noexcept {
+    [[nodiscard]] bool blendEnabled() const noexcept {
         return _enabled;
     }
 

@@ -114,13 +114,13 @@ namespace Divide {
     assert_type<bool>(yld);                                                                 \
     assert_type<D64>(timeoutMS);                                                            \
                                                                                             \
-    if (timeoutMS >= 0.0) {                                                                 \
+    if ((timeoutMS) >= 0.0) {                                                               \
         const D64 start = Time::ElapsedMilliseconds(true);                                  \
                                                                                             \
         while (!(condition)) {                                                              \
             cbk(param);                                                                     \
                                                                                             \
-            if (Time::ElapsedMilliseconds(true) - start >= timeoutMS) {                     \
+            if (Time::ElapsedMilliseconds(true) - start >= (timeoutMS)) {                   \
                 break;                                                                      \
             }                                                                               \
                                                                                             \

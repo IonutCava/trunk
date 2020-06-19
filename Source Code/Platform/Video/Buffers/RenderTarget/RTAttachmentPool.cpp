@@ -27,7 +27,8 @@ namespace {
 };
 
 RTAttachmentPool::RTAttachmentPool(RenderTarget& parent, const U8 colourAttCount)
-    : _parent(parent)
+    : _attachmentCount{},
+      _parent(parent)
 {
     _attachmentCount.fill(0);
     _attachment[to_base(RTAttachmentType::Colour)].resize(colourAttCount, nullptr);
@@ -35,18 +36,14 @@ RTAttachmentPool::RTAttachmentPool(RenderTarget& parent, const U8 colourAttCount
     _attachment[to_base(RTAttachmentType::Stencil)].resize(1, nullptr);
 }
 
-RTAttachmentPool::~RTAttachmentPool()
-{
-}
-
 void RTAttachmentPool::copy(const RTAttachmentPool& other) {
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
-        for (U8 j = 0; j < other._attachment[i].size(); ++j) {
+        for (size_t j = 0; j < other._attachment[i].size(); ++j) {
             const RTAttachment_ptr& att = other._attachment[i][j];
             if (att != nullptr) {
                 RTAttachmentDescriptor descriptor = {};
                 descriptor._clearColour = att->clearColour();
-                descriptor._index = j;
+                descriptor._index = to_U8(j);
                 descriptor._type = static_cast<RTAttachmentType>(i);
                 descriptor._texDescriptor = att->texture()->descriptor();
 
@@ -137,7 +134,7 @@ bool RTAttachmentPool::clear(const RTAttachmentType type, const U8 index) {
     return false;
 }
 
-RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, const RTAttachmentType type, const U8 index) {
+RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, const RTAttachmentType type, const U8 index) const {
     switch (type) {
         case RTAttachmentType::Colour:
         {

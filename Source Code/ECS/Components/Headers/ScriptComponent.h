@@ -41,7 +41,7 @@ class ScriptComponent final : public BaseComponentType<ScriptComponent, Componen
     explicit ScriptComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~ScriptComponent();
 
-    void Update(const U64 deltaTimeUS) final;
+    void Update(U64 deltaTimeUS) final;
 
 };
 

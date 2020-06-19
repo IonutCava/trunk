@@ -124,7 +124,7 @@ RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const Re
 }
 
 RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor, U8 index) {
-    std::shared_ptr<RenderTarget> rt(Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor), DeleteRT());
+    const std::shared_ptr<RenderTarget> rt(Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor), DeleteRT());
     return add(targetUsage, rt, index);
 }
 

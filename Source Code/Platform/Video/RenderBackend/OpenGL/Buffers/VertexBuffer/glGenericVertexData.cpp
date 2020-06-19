@@ -27,10 +27,8 @@ glGenericVertexData::glGenericVertexData(GFXDevice& context, const U32 ringBuffe
 
 glGenericVertexData::~glGenericVertexData()
 {
-    if (!_bufferObjects.empty()) {
-        for (U8 i = 0; i < _bufferObjects.size(); ++i) {
-            MemoryManager::DELETE(_bufferObjects[i]);
-        }
+    for (auto* it :_bufferObjects ) {
+        MemoryManager::DELETE(it);
     }
 
     // Make sure we don't have any of our VAOs bound
@@ -238,13 +236,13 @@ void glGenericVertexData::setAttributeInternal(const GenericDrawCommand& command
                                   descriptor.componentsPerElement(),
                                   GLUtil::glDataFormat[to_U32(format)],
                                   descriptor.normalized() ? GL_TRUE : GL_FALSE,
-                                  (GLuint)descriptor.strideInBytes());
+                                  static_cast<GLuint>(descriptor.strideInBytes()));
     } else {
         glVertexArrayAttribIFormat(_vertexArray,
                                    descriptor.attribIndex(),
                                    descriptor.componentsPerElement(),
                                    GLUtil::glDataFormat[to_U32(format)],
-                                   (GLuint)descriptor.strideInBytes());
+                                   static_cast<GLuint>(descriptor.strideInBytes()));
     }
 
     // Inform the descriptor that the data was updated

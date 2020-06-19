@@ -215,20 +215,20 @@ bool GL_API::initGLSW(Configuration& config) {
 
         stringImpl passData("void PassData(in int index) {");
         passData.append("\n");
-        for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
-            passData.append(Util::StringFormat(baseString.c_str(), shaderVaryings[i].second, shaderVaryings[i].second));
+        for (const auto& var : shaderVaryings) {
+            passData.append(Util::StringFormat(baseString.c_str(), var.second, var.second));
             passData.append("\n");
         }
         passData.append("#if defined(COMPUTE_TBN)\n");
-        for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
-            passData.append(Util::StringFormat(baseString.c_str(), shaderVaryingsBump[i].second, shaderVaryingsBump[i].second));
+        for (const auto& var : shaderVaryingsBump) {
+            passData.append(Util::StringFormat(baseString.c_str(), var.second, var.second));
             passData.append("\n");
         }
         passData.append("#endif\n");
 
         passData.append("#if defined(HAS_VELOCITY)\n");
-        for (U8 i = 0; i < (sizeof(shaderVaryingsVelocity) / sizeof(shaderVaryingsVelocity[0])); ++i) {
-            passData.append(Util::StringFormat(baseString.c_str(), shaderVaryingsVelocity[i].second, shaderVaryingsVelocity[i].second));
+        for (const auto& var : shaderVaryingsVelocity) {
+            passData.append(Util::StringFormat(baseString.c_str(), var.second, var.second));
             passData.append("\n");
         }
         passData.append("#endif\n");
@@ -655,20 +655,20 @@ bool GL_API::initGLSW(Configuration& config) {
         lineOffsets);
 
     const auto addVaryings = [&](const ShaderType type, ShaderOffsetArray& offsets) {
-        for (U8 i = 0; i < (sizeof(shaderVaryings) / sizeof(shaderVaryings[0])); ++i) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryings[i].first, shaderVaryings[i].second), offsets);
+        for (const auto& var : shaderVaryings) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", var.first, var.second), offsets);
         }
     };
 
     const auto addVaryingsBump = [&](ShaderType type, ShaderOffsetArray& offsets) {
-        for (U8 i = 0; i < (sizeof(shaderVaryingsBump) / sizeof(shaderVaryingsBump[0])); ++i) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsBump[i].first, shaderVaryingsBump[i].second), offsets);
+        for (const auto& var : shaderVaryingsBump) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", var.first, var.second), offsets);
         }
     };
 
     const auto addVaryingsVelocity = [&](ShaderType type, ShaderOffsetArray& offsets) {
-        for (U8 i = 0; i < (sizeof(shaderVaryingsVelocity) / sizeof(shaderVaryingsVelocity[0])); ++i) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", shaderVaryingsVelocity[i].first, shaderVaryingsVelocity[i].second), offsets);
+        for (const auto& var : shaderVaryingsVelocity) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", var.first, var.second), offsets);
         }
     };
 
@@ -1027,6 +1027,7 @@ bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const {
         switch (cmd._primitiveType) {
             case PrimitiveType::TRIANGLES: indexCount = cmd._drawCount * 3; break;
             case PrimitiveType::API_POINTS: indexCount = cmd._drawCount; break;
+            case PrimitiveType::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
             default: indexCount = cmd._cmd.indexCount; break;
         }
 
@@ -1238,7 +1239,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::SET_CLIPING_STATE: {
             GFX::SetClippingStateCommand* crtCmd = commandBuffer.get<GFX::SetClippingStateCommand>(entry);
-            getStateTracker().setClipingPlaneState(crtCmd->_lowerLeftOrigin, crtCmd->_negativeOneToOneDepth);
+            getStateTracker().setClippingPlaneState(crtCmd->_lowerLeftOrigin, crtCmd->_negativeOneToOneDepth);
         } break;
         case GFX::CommandType::MEMORY_BARRIER: {
             GFX::MemoryBarrierCommand* crtCmd = commandBuffer.get<GFX::MemoryBarrierCommand>(entry);
@@ -1441,7 +1442,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
         }
     }
 
-    for (auto it : textureViews) {
+    for (const auto& it : textureViews) {
         const size_t viewHash = it.getHash();
 
         std::pair<GLuint,bool> handle = s_texturePool.allocate(viewHash, GL_NONE);

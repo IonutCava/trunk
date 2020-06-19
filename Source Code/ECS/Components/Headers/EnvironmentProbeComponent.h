@@ -62,7 +62,7 @@ public:
     explicit EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
 
-    void PreUpdate(const U64 deltaTime) final;
+    void PreUpdate(U64 deltaTime) final;
 
     void refresh(GFX::CommandBuffer& bufferInOut);
     void setUpdateRate(U8 rate);
@@ -75,7 +75,7 @@ public:
 
     //Only "dirty" probes gets refreshed. A probe might get dirty if, for example, a reflective node
     //gets rendered that has this probe as the nearest one
-    void setDirty() { _dirty = true; }
+    void setDirty() noexcept { _dirty = true; }
 
 PROPERTY_R_IW(U16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);

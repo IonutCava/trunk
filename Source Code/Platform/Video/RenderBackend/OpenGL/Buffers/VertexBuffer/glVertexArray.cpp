@@ -109,23 +109,15 @@ void glVertexArray::cleanup() {
 /// Default destructor
 glVertexArray::glVertexArray(GFXDevice& context)
     : VertexBuffer(context),
-      _formatInternal(GL_NONE),
-      _refreshQueued(false),
-      _uploadQueued(false)
+     _useAttribute{},
+     _attributeOffset{},
+     _vaoCaches{}
 {
-    // We assume everything is static draw
-    _usage = GL_STATIC_DRAW;
-    _prevSize = 0;
-    _prevSizeIndices = 0;
-    _effectiveEntrySize = 0;
-    _IBid = 0;
-    _lastDrawCount = 0;
-    _lastIndexCount = 0;
-    _lastFirstIndex = 0;
-    _vaoCaches.fill(0);
     _countData.fill(0);
+    _vaoCaches.fill(0);
     _useAttribute.fill(false);
     _attributeOffset.fill(0);
+    reset();
 }
 
 glVertexArray::~glVertexArray()
@@ -291,7 +283,7 @@ bool glVertexArray::refresh() {
     // Check if we need to update the IBO (will be true for the first Refresh() call)
     if (indicesChanged) {
         if (usesLargeIndices()) {
-            bufferPtr data = static_cast<bufferPtr>(_indices.data());
+            const bufferPtr data = static_cast<bufferPtr>(_indices.data());
             // Update our IB
             glNamedBufferData(_IBid, nSizeIndices, data, GL_STATIC_DRAW);
         } else {
@@ -321,7 +313,7 @@ void glVertexArray::upload() {
 
     vectorEASTL<GLuint> vaos;
     vaos.reserve(stageCount);
-    std::array<AttribFlags, stageCount> attributesPerStage;
+    std::array<AttribFlags, stageCount> attributesPerStage = {};
 
     for (size_t i = 0; i < stageCount; ++i) {
         const AttribFlags& stageMask = _attribMasks[i];

@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Patch.h"
-#include "Utility/Headers/XMLParser.h"
-#include "Core/Resources/Headers/Resource.h"
 
 namespace Divide {
 

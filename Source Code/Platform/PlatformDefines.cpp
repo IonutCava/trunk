@@ -83,8 +83,7 @@ ErrorCode PlatformPostInit(const int argc, char** argv) {
 
 
 ErrorCode PlatformInit(const int argc, char** argv) {
-    ErrorCode err;
-    err = PlatformPreInit(argc, argv);
+    ErrorCode err = PlatformPreInit(argc, argv);
     if (err == ErrorCode::NO_ERR) {
         err = PlatformInitImpl(argc, argv);
         if (err == ErrorCode::NO_ERR) {
@@ -128,12 +127,13 @@ bool CreateDirectories(const char* path) {
         Util::Split<vectorEASTL<stringImpl>, stringImpl>(path, '\\', directories);
     }
 
-    stringImpl previousPath = ".";
+    stringImpl previousPath = "./";
     for (const stringImpl& dir : directories) {
-        if (!createDirectory((previousPath + "/" + dir).c_str())) {
+        if (!createDirectory((previousPath + dir).c_str())) {
             return false;
         }
-        previousPath += "/" + dir;
+        previousPath += dir;
+        previousPath += "/";
     }
 
     return true;

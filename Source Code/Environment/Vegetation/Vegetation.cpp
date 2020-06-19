@@ -88,7 +88,7 @@ Vegetation::Vegetation(GFXDevice& context,
     renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
     renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));
     for (U16 i = 1; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
-        renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), g_AllIndiciesID, i);
+        renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), g_AllIndicesID, i);
     }
 
     renderState().minLodLevel(2u);
@@ -357,17 +357,8 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     grassColourOITLQShader.waitForReady(false);
     ShaderProgram_ptr grassColourOITLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassColourOITLQShader, loadTasks);
 
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-    shaderDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
-
-    ResourceDescriptor grassPrePassShader("grassPrePass");
-    grassPrePassShader.propertyDescriptor(shaderDescriptor);
-    grassPrePassShader.waitForReady(false);
-    ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader, loadTasks);
-
     fragModule._variant = "PrePass";
+
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
@@ -376,6 +367,13 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     grassPrePassLQShader.propertyDescriptor(shaderDescriptor);
     grassPrePassLQShader.waitForReady(false);
     ShaderProgram_ptr grassPrePassLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassLQShader, loadTasks);
+
+    shaderDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
+
+    ResourceDescriptor grassPrePassShader("grassPrePass");
+    grassPrePassShader.propertyDescriptor(shaderDescriptor);
+    grassPrePassShader.waitForReady(false);
+    ShaderProgram_ptr grassPrePass = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassShader, loadTasks);
 
     fragModule._variant = "Shadow.VSM";
     shaderDescriptor = {};

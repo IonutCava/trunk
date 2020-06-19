@@ -76,16 +76,16 @@
 		<PostAAType>SMAA</PostAAType>
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
 		<PostAAQualityLevel>2</PostAAQualityLevel>
-		<enableAdaptiveToneMapping>true</enableAdaptiveToneMapping>
+		<enableAdaptiveToneMapping>false</enableAdaptiveToneMapping>
 		<enableDepthOfField>false</enableDepthOfField>
 		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
 		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->
 		<enableCameraBlur>true</enableCameraBlur>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>
-		<bloomThreshold>0.700000012</bloomThreshold>
+		<bloomThreshold>0.699999988</bloomThreshold>
 		<velocityScale>1</velocityScale>
-        <enableSSAO>true</enableSSAO>
+		<enableSSAO>true</enableSSAO>
 		<ssaoRadius>0.5</ssaoRadius>
 		<ssaoPower>2</ssaoPower>
 		<!-- Kernel size = [64 = 0, 32 = 1, 16 = 2, 8 = 3]. Clamped to [0, 3]-->

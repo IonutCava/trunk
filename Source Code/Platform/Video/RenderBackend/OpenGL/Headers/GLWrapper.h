@@ -87,7 +87,7 @@ class GL_API final : public RenderAPIWrapper {
     friend struct GLStateTracker;
 
 public:
-    GL_API(GFXDevice& context, const bool glES);
+    GL_API(GFXDevice& context, bool glES);
     ~GL_API() = default;
 
 protected:
@@ -133,7 +133,7 @@ protected:
     I32 getFont(const Str64& fontName);
 
     /// Reset as much of the GL default state as possible within the limitations given
-    void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global);
+    void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) const;
 
     bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const;
     bool makeImagesResident(const vectorEASTLFast<Image>& images) const;

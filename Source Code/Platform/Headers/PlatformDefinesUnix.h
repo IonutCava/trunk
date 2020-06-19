@@ -91,6 +91,4 @@ inline int _stricmp(const char* str1, const char* str2) {
     return strcasecmp(str1, str2);
 }
 
-int _vscprintf (const char * format, va_list pargs);
-
 #endif //_PLATFORM_DEFINES_UNIX_H_

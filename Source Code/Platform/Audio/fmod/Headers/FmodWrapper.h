@@ -38,7 +38,7 @@
 namespace Divide {
 
 /*****************************************************************************************/
-/*                ATENTION! FMOD is not free for commercial use!!! */
+/*                ATTENTION! FMOD is not free for commercial use!!! */
 /*    Do not include it in commercial products unless you own a license for it.
  */
 /*    Visit: http://www.fmod.org/index.php/sales  for more details -Ionut */

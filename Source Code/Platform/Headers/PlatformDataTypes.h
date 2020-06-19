@@ -118,7 +118,7 @@ struct I24
     U8 value[3] = {0u, 0u, 0u};
 
     I24(I32 val) noexcept 
-        : value{ ((U8*)&val)[0], ((U8*)&val)[1], ((U8*)&val)[2] }
+        : value{ reinterpret_cast<U8*>(&val)[0], reinterpret_cast<U8*>(&val)[1], reinterpret_cast<U8*>(&val)[2] }
     {
         assert(val < INT24_MAX && val > -INT24_MAX);
     }
@@ -129,19 +129,22 @@ struct I24
     }
 
     I24(I24&& other) noexcept
-        : value{ std::move(other.value[0]), std::move(other.value[1]), std::move(other.value[2]) }
+        : value{ other.value[0], other.value[1], other.value[2] }
     {
     }
 
+    ~I24() = default;
+
     FORCE_INLINE I24& operator= (I24&& other) noexcept {
-        value[0] = std::move(other.value[0]);
-        value[1] = std::move(other.value[1]);
-        value[2] = std::move(other.value[2]);
+        value[0] = other.value[0];
+        value[1] = other.value[1];
+        value[2] = other.value[2];
         return *this;
     }
 
     FORCE_INLINE I24& operator= (const I24& input) noexcept {
-        std::memcpy(value, input.value, sizeof(U8) * 3);
+        const I24 t = input;
+        std::memcpy(value, t.value, sizeof(U8) * 3);
         return *this;
     }
 
@@ -179,12 +182,12 @@ struct I24
 
     FORCE_INLINE operator bool()   const noexcept { return static_cast<I32>(*this) != 0; }
     FORCE_INLINE bool operator! () const noexcept { return !(static_cast<I32>(*this)); }
-    FORCE_INLINE I24  operator- ()       noexcept { return I24(-static_cast<I32>(*this)); }
+    FORCE_INLINE I24  operator- () const noexcept { return I24(-static_cast<I32>(*this)); }
     FORCE_INLINE I24& operator++ ()      noexcept { *this = *this + 1; return *this; }
     FORCE_INLINE I24& operator-- ()      noexcept { *this = *this - 1; return *this; }
 
-    FORCE_INLINE I24  operator++ (I32)                  noexcept { const I24 ret = *this; ++(*this); return ret; }
-    FORCE_INLINE I24  operator-- (I32)                  noexcept { const I24 ret = *this; --(*this); return ret; }
+    FORCE_INLINE I24  operator++ (I32)                  noexcept { I24 ret = *this; ++(*this); return ret; }
+    FORCE_INLINE I24  operator-- (I32)                  noexcept { I24 ret = *this; --(*this); return ret; }
     FORCE_INLINE bool operator== (const I24& val) const noexcept { return static_cast<I32>(*this) == static_cast<I32>(val); }
     FORCE_INLINE bool operator!= (const I24& val) const noexcept { return static_cast<I32>(*this) != static_cast<I32>(val); }
     FORCE_INLINE bool operator>= (const I24& val) const noexcept { return static_cast<I32>(*this) >= static_cast<I32>(val); }
@@ -228,7 +231,7 @@ struct U24
     }
 
     U24(U32 val) noexcept
-        : value{ ((U8*)&val)[0], ((U8*)&val)[1], ((U8*)&val)[2] }
+        : value{ reinterpret_cast<U8*>(&val)[0], reinterpret_cast<U8*>(&val)[1], reinterpret_cast<U8*>(&val)[2] }
     {
         assert(val < UINT24_MAX);
     }
@@ -239,19 +242,22 @@ struct U24
     }
 
     U24(U24&& other) noexcept
-        : value{ std::move(other.value[0]), std::move(other.value[1]), std::move(other.value[2]) }
+        : value{ other.value[0], other.value[1], other.value[2] }
     {
     }
 
+    ~U24() = default;
+
     FORCE_INLINE U24& operator= (U24&& other) noexcept {
-        value[0] = std::move(other.value[0]);
-        value[1] = std::move(other.value[1]);
-        value[2] = std::move(other.value[2]);
+        value[0] = other.value[0];
+        value[1] = other.value[1];
+        value[2] = other.value[2];
         return *this;
     }
 
     FORCE_INLINE U24& operator= (const U24& input) noexcept {
-        std::memcpy(value, input.value, sizeof(U8) * 3);
+        const U24 t = input;
+        std::memcpy(value, t.value, sizeof(U8) * 3);
         return *this;
     }
 
@@ -287,8 +293,8 @@ struct U24
     FORCE_INLINE U24& operator++ ()      noexcept { *this = *this + 1u; return *this; }
     FORCE_INLINE U24& operator-- ()      noexcept { *this = *this - 1u; return *this; }
 
-    FORCE_INLINE U24  operator++ (I32)                  noexcept { const U24 ret = *this; ++(*this); return ret; }
-    FORCE_INLINE U24  operator-- (I32)                  noexcept { const U24 ret = *this; --(*this); return ret; }
+    FORCE_INLINE U24  operator++ (I32)                  noexcept { U24 ret = *this; ++(*this); return ret; }
+    FORCE_INLINE U24  operator-- (I32)                  noexcept { U24 ret = *this; --(*this); return ret; }
     FORCE_INLINE bool operator== (const U24& val) const noexcept { return static_cast<U32>(*this) == static_cast<U32>(val); }
     FORCE_INLINE bool operator!= (const U24& val) const noexcept { return static_cast<U32>(*this) != static_cast<U32>(val); }
     FORCE_INLINE bool operator>= (const U24& val) const noexcept { return static_cast<U32>(*this) >= static_cast<U32>(val); }
@@ -415,13 +421,13 @@ constexpr char to_byte(const T value) {
 class counter {
     size_t count;
 public:
-    counter &operator=(size_t val) noexcept { count = val; return *this; }
-    counter(size_t count = 0) noexcept : count(count) {}
-    operator size_t() noexcept { return count; }
+    counter &operator=(const size_t val) noexcept { count = val; return *this; }
+    counter(const size_t count = 0) noexcept : count(count) {}
+    operator size_t() const noexcept { return count; }
     counter &operator++() noexcept { ++count; return *this; }
-    counter operator++(int) noexcept { counter ret(count); ++count; return ret; }
-    bool operator==(counter const &other) noexcept { return count == other.count; }
-    bool operator!=(counter const &other) noexcept { return count != other.count; }
+    counter operator++(int) noexcept { const counter ret(count); ++count; return ret; }
+    bool operator==(counter const &other) const noexcept { return count == other.count; }
+    bool operator!=(counter const &other) const noexcept { return count != other.count; }
 };
 
 
@@ -537,7 +543,7 @@ constexpr typename resolve_uac<A, B>::return_type add(const A& a, const B& b) no
 
 
 template <typename A, typename B>
-constexpr typename resolve_uac<A, B>::return_type substract(const A& a, const B& b) noexcept
+constexpr typename resolve_uac<A, B>::return_type subtract(const A& a, const B& b) noexcept
 {
     return a - b;
 }

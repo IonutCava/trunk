@@ -106,9 +106,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();
-
-        _drawCommand._primitiveType = PrimitiveType::TRIANGLES;
-        _drawCommand._drawCount = 1;
         _drawPipeline = context.gfx().newPipeline(pipelineDescriptor);
     });
 
@@ -200,8 +197,10 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     bindDescriptorSetsCmd._set._textureData.setTexture(data2, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
     GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    GFX::DrawCommand drawCommand = { _drawCommand };
-    GFX::EnqueueCommand(bufferInOut, drawCommand);
+    GenericDrawCommand drawCommand;
+    drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+    drawCommand._drawCount = 1;
+    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCommand });
 
     GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 

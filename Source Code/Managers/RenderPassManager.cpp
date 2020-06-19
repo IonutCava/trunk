@@ -26,7 +26,6 @@
 namespace Divide {
 
     namespace {
-        constexpr U32 g_minNodeCountForHiZCull = 32u;
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
 
         struct PerPassData {
@@ -1050,7 +1049,7 @@ void RenderPassManager::doCustomPass(RenderPassParams params, GFX::CommandBuffer
             blitScreenDepthCmd._blitColours[i - 1].set(i, i, 0u, 0u);
         }
 
-        DepthBlitEntry entry = {};
+        DepthBlitEntry entry;
         entry._inputLayer = entry._outputLayer = 0u;
         blitScreenDepthCmd._blitDepth = entry;
         GFX::EnqueueCommand(bufferInOut, blitScreenDepthCmd);

@@ -45,8 +45,8 @@ namespace Divide {
         BoundsComponent(SceneGraphNode* sgn, PlatformContext& context);
         ~BoundsComponent() = default;
 
-        inline const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
-        inline const BoundingSphere& getBoundingSphere() const noexcept { return _boundingSphere; }
+        const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
+        const BoundingSphere& getBoundingSphere() const noexcept { return _boundingSphere; }
 
         const OBB& getOBB() noexcept;
 
@@ -57,8 +57,8 @@ namespace Divide {
         PROPERTY_R(bool, showAABB, false);
         PROPERTY_R(bool, showBS, false);
 
-        void showAABB(const bool state);
-        void showBS(const bool state);
+        void showAABB(bool state);
+        void showBS(bool state);
 
     protected:
         friend class SceneGraph;
@@ -66,9 +66,9 @@ namespace Divide {
         template<typename T, typename U>
         friend class ECSSystem;
 
-        void PreUpdate(const U64 deltaTimeUS) final;
-        void Update(const U64 deltaTimeUS) final;
-        void PostUpdate(const U64 deltaTimeUS) final;
+        void PreUpdate(U64 deltaTimeUS) final;
+        void Update(U64 deltaTimeUS) final;
+        void PostUpdate(U64 deltaTimeUS) final;
 
         void OnData(const ECS::CustomEvent& data) final;
 

@@ -189,7 +189,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, const GLushort depth
         GLUtil::freeBuffer(_pixelBufferHandle);
     }
 
-    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle, NULL, _name.empty() ? nullptr : _name.c_str());
+    GLUtil::createAndAllocBuffer(_bufferSize, GL_STREAM_DRAW, _pixelBufferHandle, nullptr, _name.empty() ? nullptr : _name.c_str());
 
     return _pixelBufferHandle != 0 && _textureID != 0;
 }
@@ -197,7 +197,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, const GLushort depth
 void glPixelBuffer::updatePixels(const GLfloat* const pixels,
                                  GLuint pixelCount) {
     if (pixels && pixels[0] && pixelCount == _bufferSize / _dataSizeBytes) {
-        bufferPtr ptr = begin();
+        const bufferPtr ptr = begin();
         memcpy(ptr, pixels, _bufferSize);
         end();
     }

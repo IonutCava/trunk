@@ -48,7 +48,7 @@ JoystickElement joystickElementByName(const stringImpl& elementName) {
     vectorEASTL<stringImpl> buttonElements = Util::Split<vectorEASTL<stringImpl>, stringImpl>(elementName.c_str(), '_');
     assert(buttonElements.size() == 2 && "Invalid joystick element name!");
     assert(Util::CompareIgnoreCase(buttonElements[0], "BUTTON"));
-    ret._elementIndex = Util::ConvertData<U32, stringImpl>(buttonElements[1].c_str());
+    ret._elementIndex = Util::ConvertData<U32, stringImpl>(buttonElements[1]);
 
     return ret;
 }
@@ -109,8 +109,8 @@ void MouseMoveEvent::absolutePos(const vec2<I32>& newPos) noexcept {
     _stateIn.Y.abs = newPos.y;
 }
 
-bool MouseMoveEvent::remaped() const noexcept {
-    return _remaped;
+bool MouseMoveEvent::remapped() const noexcept {
+    return _remapped;
 }
 
 JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
@@ -118,15 +118,12 @@ JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
 {
 }
 
-KeyEvent::KeyEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
-    : InputEvent(sourceWindow, deviceIndex),
-      _key(static_cast<KeyCode>(0)),
-      _pressed(false),
-      _text(0)
+KeyEvent::KeyEvent(DisplayWindow* sourceWindow, const U8 deviceIndex)
+    : InputEvent(sourceWindow, deviceIndex)
 {
 }
 
-UTF8Event::UTF8Event(DisplayWindow* sourceWindow, U8 deviceIndex, const char* text)
+UTF8Event::UTF8Event(DisplayWindow* sourceWindow, const U8 deviceIndex, const char* text)
     : InputEvent(sourceWindow, deviceIndex),
       _text(text)
 {

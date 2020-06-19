@@ -35,7 +35,7 @@ ErrorCode DisplayWindow::destroyWindow() {
             _destroyCbk();
         }
 
-        _parent.DestroyAPISettings(this);
+        WindowManager::DestroyAPISettings(this);
         SDL_DestroyWindow(_sdlWindow);
         _sdlWindow = nullptr;
     }
@@ -115,7 +115,7 @@ void DisplayWindow::notifyListeners(const WindowEvent event, const WindowEventAr
             break;
     }
 
-    for (auto listener : _eventListeners[to_base(event)]) {
+    for (const auto& listener : _eventListeners[to_base(event)]) {
         if (!listener(args)) {
             return;
         }
@@ -135,8 +135,8 @@ bool DisplayWindow::onSDLEvent(const SDL_Event event) {
     args._windowGUID = getGUID();
 
     if (fullscreen()) {
-        args.x = to_I32(_parent.GetFullscreenResolution().width);
-        args.y = to_I32(_parent.GetFullscreenResolution().height);
+        args.x = to_I32(WindowManager::GetFullscreenResolution().width);
+        args.y = to_I32(WindowManager::GetFullscreenResolution().height);
     } else {
         args.x = event.window.data1;
         args.y = event.window.data2;
@@ -173,7 +173,9 @@ bool DisplayWindow::onSDLEvent(const SDL_Event event) {
             if (!_internalResizeEvent) {
                 const U16 width = to_U16(event.window.data1);
                 const U16 height = to_U16(event.window.data2);
-                setDimensions(width, height);
+                if (!setDimensions(width, height)) {
+                    NOP();
+                }
             }
             args._flag = fullscreen();
             notifyListeners(WindowEvent::RESIZED, args);
@@ -247,14 +249,14 @@ vec2<U16> DisplayWindow::getDrawableSize() const noexcept {
 
 vec2<U16> DisplayWindow::getDrawableSizeInternal() const {
     if (_type == WindowType::FULLSCREEN || _type == WindowType::FULLSCREEN_WINDOWED) {
-        return _parent.GetFullscreenResolution();
+        return WindowManager::GetFullscreenResolution();
     }
 
     return context().gfx().getDrawableSize(*this);
 }
 
-void DisplayWindow::opacity(U8 opacity) noexcept {
-    if (SDL_SetWindowOpacity(_sdlWindow, opacity / 255.0f) != -1) {
+void DisplayWindow::opacity(const U8 opacity) noexcept {
+    if (SDL_SetWindowOpacity(_sdlWindow, to_F32(opacity) / 255) != -1) {
         _prevOpacity = _opacity;
         _opacity = opacity;
     }
@@ -365,7 +367,7 @@ void DisplayWindow::handleChangeWindowType(const WindowType newWindowType) {
 
     _previousType = _type;
     _type = newWindowType;
-    I32 switchState = 0;
+    I32 switchState;
 
     grabState(false);
     switch (newWindowType) {
@@ -395,7 +397,7 @@ void DisplayWindow::handleChangeWindowType(const WindowType newWindowType) {
 
 vec2<U16> DisplayWindow::getPreviousDimensions() const noexcept {
     if (fullscreen()) {
-        return _parent.GetFullscreenResolution();
+        return WindowManager::GetFullscreenResolution();
     }
     return _prevDimensions;
 }

@@ -46,7 +46,7 @@ IMPLEMENT_COMMAND(ClearBufferDataCommand);
 IMPLEMENT_COMMAND(SetClippingStateCommand);
 IMPLEMENT_COMMAND(ExternalCommand);
 
-stringImpl ToString(const BindPipelineCommand& cmd, U16 indent) {
+stringImpl ToString(const BindPipelineCommand& cmd, const U16 indent) {
     assert(cmd._pipeline != nullptr);
 
     stringImpl ret = "\n";
@@ -64,10 +64,10 @@ stringImpl ToString(const BindPipelineCommand& cmd, U16 indent) {
     return ret;
 }
 
-stringImpl ToString(const SendPushConstantsCommand& cmd, U16 indent) {
+stringImpl ToString(const SendPushConstantsCommand& cmd, const U16 indent) {
     stringImpl ret = "\n";
 
-    for (auto it : cmd._constants.data()) {
+    for (const auto& it : cmd._constants.data()) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -132,7 +132,7 @@ stringImpl ToString(const SetCameraCommand& cmd, U16 indent) {
 stringImpl ToString(const BindDescriptorSetsCommand& cmd, U16 indent) {
     stringImpl ret = Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", cmd._set._shaderBuffers.size(), cmd._set._textureData.count());
 
-    for (auto it : cmd._set._shaderBuffers) {
+    for (const auto& it : cmd._set._shaderBuffers) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -151,7 +151,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, U16 indent) {
         ret.append(Util::StringFormat("Texture [ %d - %d - %d ]\n", binding, data._textureHandle, samplerHash));
     }
 
-    for (auto it : cmd._set._textureViews) {
+    for (const auto& it : cmd._set._textureViews) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -185,8 +185,8 @@ stringImpl ToString(const DrawTextCommand& cmd, U16 indent) {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        stringImpl string = "";
-        for (auto it : element.text()) {
+        stringImpl string;
+        for (const auto& it : element.text()) {
             string.append(it.c_str());
             string.append("\n");
         }

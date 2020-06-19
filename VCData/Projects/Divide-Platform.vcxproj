@@ -24,7 +24,6 @@
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileManagement.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileUpdateMonitor.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileWithPath.h" />
-    <ClInclude Include="../../Source Code/Platform\Headers\ByteConverter.h" />
     <ClInclude Include="../../Source Code/Platform\Headers\ConditionalWait.h" />
     <ClInclude Include="../../Source Code/Platform\Headers\DisplayWindow.h" />
     <ClInclude Include="../../Source Code/Platform\Headers\PlatformDataTypes.h" />

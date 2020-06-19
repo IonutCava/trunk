@@ -24,8 +24,7 @@ namespace {
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
 SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
-    : PreRenderOperator(context, parent, FilterType::FILTER_SS_AMBIENT_OCCLUSION),
-      _enabled(true)
+    : PreRenderOperator(context, parent, FilterType::FILTER_SS_AMBIENT_OCCLUSION)
 {
     _kernelIndex = context.context().config().rendering.postFX.ssaoKernelSizeIndex;
 
@@ -150,7 +149,7 @@ bool SSAOPreRenderOperator::ready() const {
     return false;
 }
 
-void SSAOPreRenderOperator::reshape(U16 width, U16 height) {
+void SSAOPreRenderOperator::reshape(const U16 width, const U16 height) {
     PreRenderOperator::reshape(width, height);
 
     _ssaoOutput._rt->resize(width, height);

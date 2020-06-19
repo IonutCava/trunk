@@ -1251,7 +1251,7 @@ bool Scene::mouseMoved(const Input::MouseMoveEvent& arg) {
         DragSelectData& data = _dragSelectData[idx];
         if (data._isDragging) {
             data._endDragPos = arg.absolutePos();
-            updateSelectionData(idx, data, arg.remaped());
+            updateSelectionData(idx, data, arg.remapped());
         } else {
             bool sceneFocused = true;
             bool sceneHovered = true;

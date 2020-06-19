@@ -45,6 +45,7 @@
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 #include "Geometry/Material/Headers/ShaderProgramInfo.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
 
@@ -76,7 +77,7 @@ namespace TypeUtil {
     BumpMethod StringToBumpMethod(const stringImpl& name);
 };
 
-class Material : public CachedResource {
+class Material final : public CachedResource {
    public:
     /// Since most variants come from different light sources, this seems like a good idea (famous last words ...)
     static const size_t g_maxVariantsPerPass = 3;
@@ -108,23 +109,23 @@ class Material : public CachedResource {
     Material_ptr clone(const Str256& nameSuffix);
     bool unload() override;
     /// Returns true if the material changed between update calls
-    bool update(const U64 deltaTimeUS);
+    bool update(U64 deltaTimeUS);
     bool setTexture(TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
-                    const size_t samplerHash,
+                    size_t samplerHash,
                     const TextureOperation& op = TextureOperation::NONE,
                     bool applyToInstances = false);
 
     void textureUseForDepth(TextureUsage slot, bool state, bool applyToInstances = false);
-    void hardwareSkinning(const bool state, bool applyToInstances = false);
+    void hardwareSkinning(bool state, bool applyToInstances = false);
     void shadingMode(ShadingMode mode, bool applyToInstances = false);
-    void doubleSided(const bool state, bool applyToInstances = false);
-    void receivesShadows(const bool state, bool applyToInstances = false);
-    void refractive(const bool state, bool applyToInstances = false);
-    void isStatic(const bool state, bool applyToInstances = false);
+    void doubleSided(bool state, bool applyToInstances = false);
+    void receivesShadows(bool state, bool applyToInstances = false);
+    void refractive(bool state, bool applyToInstances = false);
+    void isStatic(bool state, bool applyToInstances = false);
     void parallaxFactor(F32 factor, bool applyToInstances = false);
     void bumpMethod(BumpMethod newBumpMethod, bool applyToInstances = false);
-    void toggleTransparency(const bool state, bool applyToInstances = false);
+    void toggleTransparency(bool state, bool applyToInstances = false);
     void baseColour(const FColour4& colour, bool applyToInstances = false);
     void emissiveColour(const FColour3& colour, bool applyToInstances = false);
     void metallic(F32 value, bool applyToInstances = false);
@@ -147,7 +148,7 @@ class Material : public CachedResource {
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;
-    size_t getSampler(TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
+    size_t getSampler(const TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
 
     bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
@@ -184,7 +185,7 @@ class Material : public CachedResource {
     void recomputeShaders();
     void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
                                   const RenderStagePass& stage,
-                                  const bool computeOnAdd);
+                                  bool computeOnAdd);
 
     void setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                   ShaderProgramInfo& shaderInfo,

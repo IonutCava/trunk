@@ -8,10 +8,6 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(context);
     }
 
-    VK_API::~VK_API()
-    {
-    }
-
     void VK_API::idle(const bool fast) {
         ACKNOWLEDGE_UNUSED(fast);
     }

@@ -5,7 +5,8 @@
 namespace Divide {
 
 RTDrawMask::RTDrawMask() noexcept
-    : _disabledDepth(false),
+    : _disabledColours{},
+      _disabledDepth(false),
       _disabledStencil(false)
 {
     _disabledColours.fill(false);
@@ -61,6 +62,7 @@ void RTDrawMask::disableAll() noexcept {
 }
 
 RTClearDescriptor::RTClearDescriptor() noexcept
+    : _clearColourAttachment{}
 {
     _clearColourAttachment.fill(true);
     _clearExternalColour = false;

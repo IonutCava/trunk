@@ -38,8 +38,6 @@
 #include "Light.h"
 
 #include "Scenes/Headers/SceneComponent.h"
-#include "Platform/Threading/Headers/Task.h"
-#include "Platform/Video/Headers/RenderStagePass.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {

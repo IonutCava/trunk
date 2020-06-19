@@ -20,7 +20,7 @@ namespace ECS { namespace Memory {
 	template<class  OBJECT_TYPE, size_t MAX_CHUNK_OBJECTS>
 	class MemoryChunkAllocator : protected Memory::GlobalMemoryUser
 	{
-		static const size_t MAX_OBJECTS = typename MAX_CHUNK_OBJECTS;
+		static const size_t MAX_OBJECTS = MAX_CHUNK_OBJECTS;
 
 		/// Summary:	Byte size to fit approx. MAX_CHUNK_OBJECTS objects.
 		static const size_t ALLOC_SIZE = (sizeof(OBJECT_TYPE) + alignof(OBJECT_TYPE)) * MAX_OBJECTS;

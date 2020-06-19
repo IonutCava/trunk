@@ -194,7 +194,7 @@ namespace Import {
         if (!context.config().debug.useGeometryCache || !dataOut.loadFromFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut.modelName())) {
             Console::printfn(Locale::get(_ID("MESH_NOT_LOADED_FROM_FILE")), dataOut.modelName().c_str());
 
-            DVDConverter converter(context, dataOut, success);
+            const DVDConverter converter(context, dataOut, success);
             if (success) {
                 if (dataOut.saveToFile(context, Paths::g_cacheLocation + Paths::g_geometryCacheLocation, dataOut.modelName())) {
                     Console::printfn(Locale::get(_ID("MESH_SAVED_TO_FILE")), dataOut.modelName().c_str());
@@ -253,7 +253,6 @@ namespace Import {
         mesh->getGeometryVB()->fromBuffer(*dataIn.vertexBuffer());
         mesh->setGeometryVBDirty();
 
-        SubMesh_ptr tempSubMesh;
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
             ResourceDescriptor submeshdesc(subMeshData.name());
@@ -263,7 +262,7 @@ namespace Import {
                 submeshdesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
             }
 
-            tempSubMesh = CreateResource<SubMesh>(cache, submeshdesc);
+            SubMesh_ptr tempSubMesh = CreateResource<SubMesh>(cache, submeshdesc);
             if (!tempSubMesh) {
                 continue;
             }

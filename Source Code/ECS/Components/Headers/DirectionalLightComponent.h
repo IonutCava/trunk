@@ -50,7 +50,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     ~DirectionalLightComponent() = default;
 
     void setDirection(const vec3<F32>& direction);
-    void PreUpdate(const U64 deltaTime) final;
+    void PreUpdate(U64 deltaTime) final;
 
     // Quick hack to store previous frame's culling results
     vectorEASTL<FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }

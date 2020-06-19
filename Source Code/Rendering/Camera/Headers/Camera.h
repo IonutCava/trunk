@@ -89,35 +89,35 @@ class Camera : public Resource {
 
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the Euler angles
-    void setYaw(Angle::DEGREES<F32> angle) { setRotation(angle, _euler.pitch, _euler.roll); }
+    void setYaw(const Angle::DEGREES<F32> angle) { setRotation(angle, _euler.pitch, _euler.roll); }
     /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted values
-    void setPitch(Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, angle, _euler.roll); }
+    void setPitch(const Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, angle, _euler.roll); }
     /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted values
-    void setRoll(Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, _euler.pitch, angle); }
+    void setRoll(const Angle::DEGREES<F32> angle) { setRotation(_euler.yaw, _euler.pitch, angle); }
     /// Sets the camera's Yaw angle.
     /// This creates a new orientation quaternion for the camera and extracts the Euler angles
-    void setGlobalYaw(Angle::DEGREES<F32> angle) { setGlobalRotation(angle, _euler.pitch, _euler.roll); }
+    void setGlobalYaw(const Angle::DEGREES<F32> angle) { setGlobalRotation(angle, _euler.pitch, _euler.roll); }
     /// Sets the camera's Pitch angle. Yaw and Roll are previous extracted values
-    void setGlobalPitch(Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, angle, _euler.roll); }
+    void setGlobalPitch(const Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, angle, _euler.roll); }
     /// Sets the camera's Roll angle. Yaw and Pitch are previous extracted values
-    void setGlobalRoll(Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, _euler.pitch, angle); }
+    void setGlobalRoll(const Angle::DEGREES<F32> angle) { setGlobalRotation(_euler.yaw, _euler.pitch, angle); }
 
-    void setEye(F32 x, F32 y, F32 z) noexcept { _data._eye.set(x, y, z); _viewMatrixDirty = true; }
+    void setEye(const F32 x, const F32 y, const F32 z) noexcept { _data._eye.set(x, y, z); _viewMatrixDirty = true; }
     void setEye(const vec3<F32>& position) noexcept { setEye(position.x, position.y, position.z); }
 
     void setRotation(const Quaternion<F32>& q) { _data._orientation = q; _viewMatrixDirty = true; }
-    void setRotation(Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> roll = 0.0f) { setRotation(Quaternion<F32>(-pitch, -yaw, -roll)); }
+    void setRotation(const Angle::DEGREES<F32> yaw, const Angle::DEGREES<F32> pitch, const Angle::DEGREES<F32> roll = 0.0f) { setRotation(Quaternion<F32>(-pitch, -yaw, -roll)); }
 
     void setEuler(const vec3<Angle::DEGREES<F32>>& euler) { setRotation(euler.yaw, euler.pitch, euler.roll); }
 
     void setAspectRatio(F32 ratio) noexcept;
-    const F32 getAspectRatio() const noexcept { return _data._aspectRatio; }
+    F32 getAspectRatio() const noexcept { return _data._aspectRatio; }
 
     void setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept;
-    const Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
+    Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
 
     void setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept;
-    const Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
+    Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
         const Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_data._FoV) * 0.5f;
         return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _data._aspectRatio));
     }
@@ -170,7 +170,7 @@ class Camera : public Resource {
     /// Get the camera's current frustum
     const Frustum& getFrustum() const noexcept { assert(!_frustumDirty); return _frustum; }
     Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
-    void lockFrustum(bool state) noexcept { _frustumLocked = state; }
+    void lockFrustum(const bool state) noexcept { _frustumLocked = state; }
 
     /// Returns the world space direction for the specified winCoords for this camera
     /// Use getEye() + unProject(...) * distance for a world-space position
@@ -181,13 +181,13 @@ class Camera : public Resource {
     bool removeUpdateListener(U32 id);
     U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
 
-                  void flag(U8 flag)       noexcept { _data._flag = flag; }
-    [[nodiscard]] U8   flag()        const noexcept { return _data._flag; }
+                  void flag(const U8 flag)       noexcept { _data._flag = flag; }
+    [[nodiscard]] U8   flag()              const noexcept { return _data._flag; }
 
    protected:
     virtual bool updateViewMatrix();
     virtual bool updateProjection();
-    virtual void update(const F32 deltaTimeMS) noexcept;
+    virtual void update(F32 deltaTimeMS) noexcept;
 
     const char* getResourceTypeName() const noexcept override { return "Camera"; }
 
@@ -238,7 +238,7 @@ class Camera : public Resource {
 
     template <typename T = Camera>
     typename std::enable_if<std::is_base_of<Camera, T>::value, T*>::type
-    static utilityCamera(UtilityCamera type) {
+    static utilityCamera(const UtilityCamera type) {
         return static_cast<T*>(utilityCameraInternal(type));
     }
 
@@ -249,7 +249,7 @@ class Camera : public Resource {
 
     template <typename T = Camera>
     typename std::enable_if<std::is_base_of<Camera, T>::value, T*>::type
-    static findCamera(U64 nameHash) {
+    static findCamera(const U64 nameHash) {
         return static_cast<T*>(findCameraInternal(nameHash));
     }
 

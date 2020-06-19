@@ -53,10 +53,10 @@ namespace GLUtil {
         static U32 getChunkCountForSize(size_t sizeInBytes) noexcept;
 
         VBO();
-        ~VBO();
+        ~VBO() = default;
 
         void freeAll();
-        U32 handle() const noexcept;
+        [[nodiscard]] U32 handle() const noexcept;
         bool checkChunksAvailability(size_t offset, U32 count) noexcept;
 
         bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);
@@ -94,20 +94,20 @@ namespace GLUtil {
     void createAndAllocBuffer(size_t bufferSize,
                               GLenum usageMask,
                               GLuint& bufferIdOut,
-                              const bufferPtr data,
+                              bufferPtr data,
                               const char* name = nullptr);
 
     bufferPtr allocPersistentBuffer(GLuint bufferId,
                                     size_t bufferSize,
                                     BufferStorageMask storageMask,
                                     MapBufferAccessMask accessMask,
-                                    const bufferPtr data);
+                                    bufferPtr data);
 
     bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
                                              BufferStorageMask storageMask,
                                              MapBufferAccessMask accessMask,
                                              GLuint& bufferIdOut,
-                                             const bufferPtr data,
+                                             bufferPtr data,
                                              const char* name = nullptr);
 
     void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);

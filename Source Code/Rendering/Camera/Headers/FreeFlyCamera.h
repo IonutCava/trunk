@@ -43,7 +43,7 @@ class FreeFlyCamera : public Camera {
     friend class Camera;
     explicit FreeFlyCamera(const Str256& name, CameraType type = Type(), const vec3<F32>& eye = VECTOR3_ZERO);
 
-    void update(const F32 deltaTimeMS) noexcept override;
+    void update(F32 deltaTimeMS) noexcept override;
 
   public:
     void fromCamera(const Camera& camera, bool flag = false) override;
@@ -59,7 +59,7 @@ class FreeFlyCamera : public Camera {
     /// "rotate"
     /// to change
     /// the orientation
-    inline void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> angle) {
+    void rotate(const vec3<F32>& axis, const Angle::DEGREES<F32> angle) {
         rotate(Quaternion<F32>(axis, angle * _speed.turn));
     }
     /// Yaw, Pitch and Roll call "rotate" with a appropriate quaternion for  each
@@ -81,50 +81,50 @@ class FreeFlyCamera : public Camera {
     void rotate(const Quaternion<F32>& q);
 
     /// Moves the camera forward or backwards
-    inline void moveForward(F32 factor) {
+    void moveForward(const F32 factor) {
         move(0.0f, 0.0f, factor);
     }
     /// Moves the camera left or right
-    inline void moveStrafe(F32 factor) {
+    void moveStrafe(const F32 factor) {
         move(factor, 0.0f, 0.0f);
     }
     /// Moves the camera up or down
-    inline void moveUp(F32 factor) {
+    void moveUp(const F32 factor) {
         move(0.0f, factor, 0.0f);
     }
     /// Mouse sensitivity: amount of pixels per radian (this should be moved out
-   /// of the camera class)
-    inline void setMouseSensitivity(F32 sensitivity) noexcept {
+    /// of the camera class)
+    void setMouseSensitivity(const F32 sensitivity) noexcept {
         _mouseSensitivity = sensitivity;
     }
 
-    inline void setMoveSpeedFactor(F32 moveSpeedFactor) noexcept {
+    void setMoveSpeedFactor(const F32 moveSpeedFactor) noexcept {
         _speedFactor.move = moveSpeedFactor;
     }
 
-    inline void setTurnSpeedFactor(F32 turnSpeedFactor) noexcept {
+    void setTurnSpeedFactor(const F32 turnSpeedFactor) noexcept {
         _speedFactor.turn = turnSpeedFactor;
     }
 
-    inline void setZoomSpeedFactor(F32 zoomSpeedFactor) noexcept {
+    void setZoomSpeedFactor(const F32 zoomSpeedFactor) noexcept {
         _speedFactor.zoom = zoomSpeedFactor;
     }
 
     /// Exactly as in Ogre3D: locks the yaw movement to the specified axis
-    inline void setFixedYawAxis(bool useFixed, const vec3<F32>& fixedAxis = WORLD_Y_AXIS) noexcept {
+    void setFixedYawAxis(const bool useFixed, const vec3<F32>& fixedAxis = WORLD_Y_AXIS) noexcept {
         _yawFixed = useFixed;
         _fixedYawAxis = fixedAxis;
     }
 
 
-    inline F32 getTurnSpeedFactor() const noexcept { return _speedFactor.turn; }
-    inline F32 getMoveSpeedFactor() const noexcept { return _speedFactor.move; }
-    inline F32 getZoomSpeedFactor() const noexcept { return _speedFactor.zoom; }
+    F32 getTurnSpeedFactor() const noexcept { return _speedFactor.turn; }
+    F32 getMoveSpeedFactor() const noexcept { return _speedFactor.move; }
+    F32 getZoomSpeedFactor() const noexcept { return _speedFactor.zoom; }
 
 
-    inline void lockMovement(bool state) noexcept { _movementLocked = state; }
+    void lockMovement(const bool state) noexcept { _movementLocked = state; }
 
-    inline void lockRotation(bool state) noexcept { _rotationLocked = state; }
+    void lockRotation(const bool state) noexcept { _rotationLocked = state; }
 
     virtual bool moveRelative(const vec3<I32>& relMovement);
     virtual bool rotateRelative(const vec3<I32>& relRotation);

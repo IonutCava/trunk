@@ -233,7 +233,7 @@ void CommandBuffer::batch() {
 
     if (!hasWork) {
         _commandOrder.resize(0);
-        std::memset(_commandCount.data(), 0, sizeof(U24) * to_base(CommandType::COUNT));
+        _commandCount.fill(U24(0u));
     }
 
     _batched = true;
@@ -351,7 +351,7 @@ void CommandBuffer::clean() {
     {
         OPTICK_EVENT("Remove redundant Pipelines");
         // Remove redundant pipeline changes
-        auto entry = eastl::next(eastl::begin(_commandOrder));
+        auto* entry = eastl::next(eastl::begin(_commandOrder));
         for (; entry != cend(_commandOrder); ++entry) {
             const U8 typeIndex = entry->_typeIndex;
 
@@ -546,14 +546,14 @@ bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousID
         return false;
     }
 
-    // Batchable commands must share the same buffer and other various state
+    // Batch-able commands must share the same buffer and other various state
     if (compatible(previousIDC, currentIDC)) {
         const U32 diff = byBaseInstance 
                             ? (currentIDC._cmd.baseInstance - previousIDC._cmd.baseInstance) 
                             : to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
 
         if (diff == previousIDC._drawCount) {
-            // If the rendering commands are batchable, increase the draw count for the previous one
+            // If the rendering commands are batch-able, increase the draw count for the previous one
             previousIDC._drawCount += currentIDC._drawCount;
             // And set the current command's draw count to zero so it gets removed from the list later on
             currentIDC._drawCount = 0;

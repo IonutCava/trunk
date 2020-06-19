@@ -89,21 +89,19 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
     constexpr F32 dt = 1.0f / stacks;
 
     F32 t = 1.0f;
-    F32 s;
-    U32 i, j;  // Looping variables
     // Create the object
     beginBatch(true, stacks * ((slices + 1) * 2), 1);
         attribute4f(to_base(AttribLocation::COLOR), Util::ToFloatColour(colour));
         begin(PrimitiveType::LINE_LOOP);
-            for (i = 0; i < stacks; i++) {
+            for (U32 i = 0; i < stacks; i++) {
                 const F32 rho = i * drho;
                 const F32 srho = std::sin(rho);
                 const F32 crho = std::cos(rho);
                 const F32 srhodrho = std::sin(rho + drho);
                 const F32 crhodrho = std::cos(rho + drho);
 
-                s = 0.0f;
-                for (j = 0; j <= slices; j++) {
+                F32 s = 0.0f;
+                for (U32 j = 0; j <= slices; j++) {
                     const F32 theta = (j == slices) ? 0.0f : j * dtheta;
                     const F32 stheta = -std::sin(theta);
                     const F32 ctheta = std::cos(theta);
@@ -142,7 +140,7 @@ void IMPrimitive::fromCone(const vec3<F32>& root,
 
     // calculate points around directrix
     std::array<vec3<F32>, slices> pts = {};
-    for (U8 i = 0; i < pts.size(); ++i) {
+    for (size_t i = 0; i < pts.size(); ++i) {
         const F32 rad = angInc * i;
         pts[i] = c + (((e0 * std::cos(rad)) + (e1 * std::sin(rad))) * radius);
     }

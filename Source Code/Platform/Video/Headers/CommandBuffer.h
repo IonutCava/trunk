@@ -85,6 +85,7 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     CommandBuffer() = default;
     ~CommandBuffer() = default;
     CommandBuffer(CommandBuffer&& other) = default;
+    CommandBuffer& operator=(CommandBuffer&& other) = delete;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
@@ -93,7 +94,7 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     add(const T&& command);
 
-    ErrorType validate() const;
+    [[nodiscard]] ErrorType validate() const;
 
     void add(const CommandBuffer& other);
     void add(CommandBuffer** buffers, size_t count);
@@ -106,29 +107,29 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
     tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand) const;
 
-    bool exists(const CommandEntry& commandEntry) const noexcept;
+    [[nodiscard]] bool exists(const CommandEntry& commandEntry) const noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, const Container::EntryList&>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, const Container::EntryList&>::type
     get() const noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(const CommandEntry& commandEntry) const  noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(const CommandEntry& commandEntry) noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(U24 index) noexcept;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     get(U24 index) const noexcept;
 
-    bool exists(U8 typeIndex, U24 index) const noexcept;
+    [[nodiscard]] bool exists(U8 typeIndex, U24 index) const noexcept;
 
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
@@ -137,15 +138,15 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     inline CommandOrderContainer& operator()() noexcept;
     inline const CommandOrderContainer& operator()() const noexcept;
 
-    size_t size() const noexcept { return _commandOrder.size(); }
+    [[nodiscard]] size_t size() const noexcept { return _commandOrder.size(); }
     inline void clear(bool clearMemory = true);
-    inline bool empty() const noexcept;
+    [[nodiscard]] inline bool empty() const noexcept;
 
     // Multi-line. indented list of all commands (and params for some of them)
-    stringImpl toString() const;
+    [[nodiscard]] stringImpl toString() const;
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, size_t>::type
     count() const noexcept;
 
   protected:

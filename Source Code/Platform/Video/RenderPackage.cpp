@@ -104,7 +104,7 @@ void RenderPackage::setDrawOption(const CmdRenderOptions option, const bool stat
     }
 
     const auto& cmds = commands()->get<GFX::DrawCommand>();
-    for (auto& cmd : cmds) {
+    for (const auto& cmd : cmds) {
         auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
         for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
             setOption(drawCmd, option, state);
@@ -118,8 +118,8 @@ void RenderPackage::enableOptions(const U16 optionMask) {
     }
     SetBit(_drawCommandOptions, optionMask);
 
-    auto& cmds = commands()->get<GFX::DrawCommand>();
-    for (auto& cmd : cmds) {
+    const auto& cmds = commands()->get<GFX::DrawCommand>();
+    for (const auto& cmd : cmds) {
         auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
         for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
             Divide::enableOptions(drawCmd, optionMask);
@@ -133,8 +133,8 @@ void RenderPackage::disableOptions(const U16 optionMask) {
     }
     ClearBit(_drawCommandOptions, optionMask);
 
-    auto& cmds = commands()->get<GFX::DrawCommand>();
-    for (auto& cmd : cmds) {
+    const auto& cmds = commands()->get<GFX::DrawCommand>();
+    for (const auto& cmd : cmds) {
         auto& drawCommand = static_cast<GFX::DrawCommand&>(*cmd);
         for (GenericDrawCommand& drawCmd : drawCommand._drawCommands) {
             Divide::disableOptions(drawCmd, optionMask);
@@ -243,7 +243,7 @@ void RenderPackage::updateDrawCommands(const U32 dataIndex, U32 startOffset, U8 
         }
     }
     if (_isInstanced) {
-        const size_t count = _commands->count<GFX::SendPushConstantsCommand>();
+        const I32 count = to_I32(_commands->count<GFX::SendPushConstantsCommand>());
         for (I32 i = 0; i < count; ++i) {
             pushConstants(i).set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, dataIndex);
         }

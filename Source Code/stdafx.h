@@ -85,6 +85,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define TINYXML_STATIC
 #endif
 
+#include <climits>
+#include <xmmintrin.h>
+#include <cstring>
 #include <iomanip>
 #include <random>
 #include <stack>

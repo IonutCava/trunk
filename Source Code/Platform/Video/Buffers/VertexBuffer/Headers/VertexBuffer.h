@@ -78,7 +78,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     };
 
     VertexBuffer(GFXDevice& context);
-    virtual ~VertexBuffer();
+    virtual ~VertexBuffer() = default;
 
     virtual bool create(bool staticDraw = true);
 
@@ -95,11 +95,11 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _data.resize(size);
     }
 
-    size_t getVertexCount() const noexcept {
+    [[nodiscard]] size_t getVertexCount() const noexcept {
         return _data.size();
     }
 
-    const vectorEASTL<Vertex>& getVertices() const noexcept {
+    [[nodiscard]] const vectorEASTL<Vertex>& getVertices() const noexcept {
         return _data;
     }
 
@@ -111,15 +111,15 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _data.resize(size, defaultValue);
     }
 
-    const vec3<F32>& getPosition(const U32 index) const noexcept {
+    [[nodiscard]] const vec3<F32>& getPosition(const U32 index) const noexcept {
         return _data[index]._position;
     }
 
-    const vec2<F32>& getTexCoord(const U32 index) const noexcept {
+    [[nodiscard]] const vec2<F32>& getTexCoord(const U32 index) const noexcept {
         return _data[index]._texcoord;
     }
 
-    F32 getNormal(const U32 index) const noexcept {
+    [[nodiscard]] F32 getNormal(const U32 index) const noexcept {
         return _data[index]._normal;
     }
 
@@ -129,25 +129,25 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return normal;
     }
 
-    F32 getTangent(const U32 index) const noexcept {
+    [[nodiscard]] F32 getTangent(const U32 index) const noexcept {
         return _data[index]._tangent;
     }
 
-    F32 getTangent(const U32 index, vec3<F32>& tangentOut) const {
+    [[nodiscard]] F32 getTangent(const U32 index, vec3<F32>& tangentOut) const {
         const F32 tangent = getTangent(index);
         Util::UNPACK_VEC3(tangent, tangentOut.x, tangentOut.y, tangentOut.z);
         return tangent;
     }
 
-    P32 getBoneIndices(const U32 index) const noexcept {
+    [[nodiscard]] P32 getBoneIndices(const U32 index) const noexcept {
         return _data[index]._indices;
     }
 
-    P32 getBoneWeightsPacked(const U32 index) const noexcept {
+    [[nodiscard]] P32 getBoneWeightsPacked(const U32 index) const noexcept {
         return _data[index]._weights;
     }
 
-    FColour4 getBoneWeights(const U32 index) const noexcept {
+    [[nodiscard]] FColour4 getBoneWeights(const U32 index) const noexcept {
         const P32& weight = _data[index]._weights;
         return FColour4(CHAR_TO_FLOAT_SNORM(weight.b[0]),
                         CHAR_TO_FLOAT_SNORM(weight.b[1]),
@@ -157,20 +157,20 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     virtual bool queueRefresh() = 0;
 
-    bool usesLargeIndices() const noexcept {
+    [[nodiscard]] bool usesLargeIndices() const noexcept {
         return _format == GFXDataFormat::UNSIGNED_INT;
     }
 
-    size_t getIndexCount() const noexcept {
+    [[nodiscard]] size_t getIndexCount() const noexcept {
         return _indices.size();
     }
 
-    U32 getIndex(const size_t index) const {
+    [[nodiscard]] U32 getIndex(const size_t index) const {
         assert(index < getIndexCount());
         return _indices[index];
     }
 
-    const vectorEASTL<U32>& getIndices() const noexcept {
+    [[nodiscard]] const vectorEASTL<U32>& getIndices() const noexcept {
         return _indices;
     }
 
@@ -320,7 +320,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         _attribDirty[to_base(AttribLocation::BONE_WEIGHT)] = true;
     }
 
-    size_t partitionCount() const noexcept {
+    [[nodiscard]] size_t partitionCount() const noexcept {
         return _partitions.size();
     }
 
@@ -340,7 +340,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _partitions[partitionID].second;
     }
 
-    size_t getPartitionOffset(const U16 partitionID) const noexcept {
+    [[nodiscard]] size_t getPartitionOffset(const U16 partitionID) const noexcept {
         if (_partitions.empty()) {
             return 0;
         }
@@ -348,7 +348,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _partitions[partitionID].first;
     }
 
-    size_t lastPartitionOffset() const noexcept {
+    [[nodiscard]] size_t lastPartitionOffset() const noexcept {
         if (_partitions.empty()) {
             return 0;
         }
@@ -384,7 +384,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual bool refresh() = 0;
     virtual bool createInternal();
 
-    bool keepData() const noexcept {
+    [[nodiscard]] bool keepData() const noexcept {
         return _keepDataInMemory;
     }
 

@@ -131,7 +131,7 @@ namespace Input {
         return SDLK_UNKNOWN;
     }
 
-    KeyCode KeyCodeFromSDLKey(SDL_Keycode code) noexcept {
+    KeyCode KeyCodeFromSDLKey(const SDL_Keycode code) noexcept {
         for (const KeyMapEntry& entry : KeyCodeSDLMap) {
             if (entry._sdlKCode == code) {
                 return entry._kCode;
@@ -141,7 +141,7 @@ namespace Input {
         return KeyCode::KC_UNASSIGNED;
     }
 
-    KeyCode Input::keyCodeByName(const char* keyName) {
+    KeyCode keyCodeByName(const char* keyName) {
         return KeyCodeFromSDLKey(SDL_GetKeyFromName(keyName));
     }
 
@@ -158,7 +158,7 @@ namespace Input {
         I32 x = -1, y = -1;
         const U32 state = SDL_GetMouseState(&x, &y);
 
-        U32 sdlButton = 0;
+        U32 sdlButton;
         switch (button) {
         case Input::MouseButton::MB_Left:
             sdlButton = SDL_BUTTON_LEFT;

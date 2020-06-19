@@ -111,7 +111,7 @@ private:
     mutable GLuint _cachedVao = 0;
 
     hashMap<GLuint /*vao ID*/, VAOData> _bindings;
-    U32 _maxBindings;
+    U32 _maxBindings = 0u;
 };
 
 struct glVertexDataContainer {
@@ -138,7 +138,7 @@ class glObject {
 public:
     explicit glObject(glObjectType type, GFXDevice& context);
 
-    glObjectType type() const noexcept { return _type;  }
+    [[nodiscard]] glObjectType type() const noexcept { return _type;  }
 
 private:
    const glObjectType _type;

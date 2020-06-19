@@ -81,7 +81,7 @@ namespace ECS { namespace Memory { namespace Allocator {
 
 		void** p = this->freeList;
 
-		for (int i = 0; i < (numObjects - 1); ++i)
+		for (size_t i = 0; i < (numObjects - 1); ++i)
 		{
 			*p = (void*)((uptr)p + this->OBJECT_SIZE);
 

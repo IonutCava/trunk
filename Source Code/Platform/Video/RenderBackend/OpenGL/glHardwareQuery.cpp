@@ -7,8 +7,7 @@ namespace Divide {
 
 glHardwareQuery::glHardwareQuery(GFXDevice& context) 
     : glObject(glObjectType::TYPE_QUERY, context),
-      _enabled(false),
-      _queryID(0u)
+      _enabled(false)
 {
 }
 

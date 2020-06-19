@@ -3,25 +3,22 @@
 #include "Headers/Mesh.h"
 #include "Headers/SubMesh.h"
 
-#include "Managers/Headers/SceneManager.h"
 #include "Core/Headers/StringHelper.h"
-#include "Geometry/Material/Headers/Material.h"
-#include "Geometry/Animations/Headers/SceneAnimator.h"
-#include "ECS/Components/Headers/RigidBodyComponent.h"
-#include "ECS/Components/Headers/BoundsComponent.h"
-#include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
+#include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
+#include "Geometry/Material/Headers/Material.h"
+#include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
 
 Mesh::Mesh(GFXDevice& context,
            ResourceCache* parentCache,
-           size_t descriptorHash,
+           const size_t descriptorHash,
            const Str256& name,
            const Str256& resourceName,
            const stringImpl& resourceLocation)
     : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, ObjectType::MESH, 0),
-      _visibleToNetwork(true),
       _animator(nullptr)
 {
     _boundingBox.reset();

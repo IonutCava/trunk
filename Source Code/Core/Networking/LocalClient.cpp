@@ -1,11 +1,11 @@
 #include "stdafx.h"
 
 #include "Headers/LocalClient.h"
+#include "Headers/OPCodesImpl.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/StringHelper.h"
-#include "Core/Resources/Headers/Resource.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
 
 namespace Divide {

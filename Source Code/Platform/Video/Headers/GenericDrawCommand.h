@@ -71,18 +71,13 @@ enum class CmdRenderOptions : U16 {
 #pragma pack(push, 1)
 struct GenericDrawCommand {
     static constexpr U8 INVALID_BUFFER_INDEX = std::numeric_limits<U8>::max();
-
-    GenericDrawCommand() = default;
-    ~GenericDrawCommand() = default;
-    GenericDrawCommand(const PrimitiveType type) : _primitiveType(type) {}
-
-    IndirectDrawCommand _cmd = {};                                   // 32 bytes
-    PoolHandle _sourceBuffer = {};                                   // 12 bytes
-    U24 _commandOffset = 0u;                                         // 9  bytes
+    IndirectDrawCommand _cmd = {};                                        // 32 bytes
+    PoolHandle _sourceBuffer = {};                                        // 12 bytes
+    U24 _commandOffset = 0u;                                              // 9  bytes
     U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
-    U16 _drawCount = 1u;                                             // 4  bytes
-    U8  _bufferIndex  = INVALID_BUFFER_INDEX;                        // 2  bytes
-    PrimitiveType _primitiveType = PrimitiveType::TRIANGLE_STRIP;    // 1  bytes
+    U16 _drawCount = 1u;                                                  // 4  bytes
+    U8  _bufferIndex  = INVALID_BUFFER_INDEX;                             // 2  bytes
+    PrimitiveType _primitiveType = PrimitiveType::COUNT;                  // 1  bytes
 };
 #pragma pack(pop)
 
@@ -90,7 +85,7 @@ bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) noe
 void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
 void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
 void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
-void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, const bool state) noexcept;
+void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, bool state) noexcept;
 void enableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept;
 void disableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept;
 

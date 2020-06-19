@@ -13,11 +13,6 @@ namespace {
     constexpr U32 g_numWarmupVAOs = 25u;
 };
 
-glVAOPool::glVAOPool() noexcept
-{
-
-}
-
 glVAOPool::~glVAOPool()
 {
     destroy();
@@ -26,7 +21,7 @@ glVAOPool::~glVAOPool()
 void glVAOPool::init(const U32 capacity) {
     destroy();
 
-    GLuint warmupVAOs[g_numWarmupVAOs] = { { 0u } };
+    GLuint warmupVAOs[g_numWarmupVAOs];
     glCreateVertexArrays(g_numWarmupVAOs, warmupVAOs);
 
     _pool.resize(capacity, std::make_pair(0, false));

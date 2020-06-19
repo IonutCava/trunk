@@ -86,6 +86,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
                       "glIMPrimitive error: Draw call received without a valid shader defined!");
 
         GenericDrawCommand cmd;
+        cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
         cmd._sourceBuffer = handle();
 
         PushConstants pushConstants;

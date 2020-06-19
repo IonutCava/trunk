@@ -53,20 +53,20 @@ class OrbitCamera : public FreeFlyCamera {
 
     void fromCamera(const Camera& camera, bool flag = false) override;
 
-    inline void maxRadius(F32 radius) noexcept { _maxRadius = radius; }
+    void maxRadius(const F32 radius) noexcept { _maxRadius = radius; }
 
-    inline void minRadius(F32 radius) noexcept { _minRadius = radius; }
+    void minRadius(const F32 radius) noexcept { _minRadius = radius; }
 
-    inline void curRadius(F32 radius) noexcept {
+    void curRadius(const F32 radius) noexcept {
         _curRadius = radius;
         CLAMP<F32>(_curRadius, _minRadius, _maxRadius);
     }
 
-    inline F32 maxRadius() const noexcept { return _maxRadius; }
-    inline F32 minRadius() const noexcept { return _minRadius; }
-    inline F32 curRadius() const noexcept { return _curRadius; }
+    F32 maxRadius() const noexcept { return _maxRadius; }
+    F32 minRadius() const noexcept { return _minRadius; }
+    F32 curRadius() const noexcept { return _curRadius; }
 
-    void update(const F32 deltaTimeMS) noexcept override;
+    void update(F32 deltaTimeMS) noexcept override;
     bool zoom(I32 zoomFactor) noexcept override;
 
     static constexpr CameraType Type() noexcept { return CameraType::ORBIT; }

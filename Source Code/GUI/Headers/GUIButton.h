@@ -47,7 +47,7 @@ namespace Divide {
 class AudioDescriptor;
 TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
-class GUIButton : public GUIElementBase<GUIType::GUI_BUTTON> {
+class GUIButton final : public GUIElementBase<GUIType::GUI_BUTTON> {
     using ButtonCallback = DELEGATE<void, I64>;
     using AudioCallback = DELEGATE<void, AudioDescriptor_ptr>;
 

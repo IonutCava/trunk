@@ -250,7 +250,7 @@ public:  // GPU interface
     void endFrame(DisplayWindow& window, bool global);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera* activeCamera, GFX::CommandBuffer& bufferInOut);
-    void debugDrawLines(const Line* lines, const size_t count);
+    void debugDrawLines(const Line* lines, size_t count);
     void debugDrawBox(const vec3<F32>& min, const vec3<F32>& max, const FColour3& colour);
     void debugDrawSphere(const vec3<F32>& center, F32 radius, const FColour3& colour);
     void debugDrawCone(const vec3<F32>& root, const vec3<F32>& direction, F32 length, F32 radius, const FColour3& colour);
@@ -261,17 +261,17 @@ public:  // GPU interface
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
     void generateCubeMap(RenderPassParams& params,
-                         const U16 arrayOffset,
+                         U16 arrayOffset,
                          const vec3<F32>& pos,
                          const vec2<F32>& zPlanes,
                          GFX::CommandBuffer& commandsInOut,
                          std::array<Camera*, 6>& cameras);
 
     void generateDualParaboloidMap(RenderPassParams& params,
-                                   const U16 arrayOffset,
+                                   U16 arrayOffset,
                                    const vec3<F32>& pos,
                                    const vec2<F32>& zPlanes,
-                                   GFX::CommandBuffer& commandsInOut,
+                                   GFX::CommandBuffer& bufferInOut,
                                    std::array<Camera*, 2>& cameras);
 
     /// Access (Read Only) rendering data used by the GFX
@@ -323,8 +323,8 @@ public:  // Accessors and Mutators
 
     DebugView* addDebugView(const std::shared_ptr<DebugView>& view);
     bool removeDebugView(DebugView* view);
-    void toggleDebugView(I16 index, const bool state);
-    void toggleDebugGroup(I16 groupID, const bool state);
+    void toggleDebugView(I16 index, bool state);
+    void toggleDebugGroup(I16 groupID, bool state);
     bool getDebugGroupState(I16 groupID) const;
     void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, I16, bool>>& namesOut);
 
@@ -354,7 +354,7 @@ public:
     /// Create and return a new pixel buffer using the requested format.
     PixelBuffer*       newPB(PBType type = PBType::PB_TEXTURE_2D, const char* name = nullptr);
     /// Create and return a new generic vertex data object
-    GenericVertexData* newGVD(const U32 ringBufferLength, const char* name = nullptr);
+    GenericVertexData* newGVD(U32 ringBufferLength, const char* name = nullptr);
     /// Create and return a new texture.
     Texture*           newTexture(size_t descriptorHash,
                                   const Str256& resourceName,
@@ -384,7 +384,7 @@ public:
     void drawText(const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) const;
 
     // Render the texture using a custom viewport
-    void drawTextureInViewport(TextureData data, const size_t samplerHash, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut);
+    void drawTextureInViewport(TextureData data, size_t samplerHash, const Rect<I32>& viewport, bool convertToSrgb, bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut);
 
     void blurTarget(RenderTargetHandle& blurSource, 
                     RenderTargetHandle& blurBuffer,
@@ -411,7 +411,7 @@ protected:
     bool onSizeChange(const SizeChangeParams& params);
 
     void initDebugViews();
-    void renderDebugViews(Rect<I32> targetViewport, const I32 padding, GFX::CommandBuffer& bufferInOut);
+    void renderDebugViews(Rect<I32> targetViewport, I32 padding, GFX::CommandBuffer& bufferInOut);
     
     void stepResolution(bool increment);
     void debugDrawLines(GFX::CommandBuffer& bufferInOut);
@@ -431,7 +431,7 @@ protected:
     void occlusionCull(const RenderStagePass& stagePass,
                        const RenderPass::BufferData& bufferData,
                        const Texture_ptr& depthBuffer,
-                       const size_t samplerHash,
+                       size_t samplerHash,
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                        GFX::CommandBuffer& bufferInOut) const;
 
@@ -473,7 +473,7 @@ private:
 
     std::pair<vec2<U16>, bool> _resolutionChangeQueued;
 
-    /// The default render state buth with depth testing disabled
+    /// The default render state but with depth testing disabled
     size_t _defaultStateNoDepthHash = 0;
     /// Special render state for 2D rendering
     size_t _state2DRenderingHash = 0;
@@ -526,10 +526,6 @@ private:
     vectorEASTL<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;
-    GenericDrawCommand _defaultDrawCmd;
-
-    MemoryPool<GenericDrawCommand> _commandPool;
-
    
     Mutex _pipelineCacheLock;
     hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
@@ -578,9 +574,9 @@ namespace Attorney {
 
        static void onResourceDestroy(GFXDevice& device, GraphicsResource::Type type, I64 GUID, U64 nameHash) {
            UniqueLock<Mutex> w_lock(device._graphicsResourceMutex);
-           auto it = eastl::find_if(eastl::begin(device._graphicResources),
+           const auto* it = eastl::find_if(eastl::begin(device._graphicResources),
                eastl::end(device._graphicResources),
-                [type, GUID, nameHash](const std::tuple<GraphicsResource::Type, I64, U64> crtEntry) noexcept -> bool {
+                [type, GUID, nameHash](const auto& crtEntry) noexcept -> bool {
                     if (std::get<1>(crtEntry) == GUID) {
                         assert(std::get<0>(crtEntry) == type && std::get<2>(crtEntry) == nameHash);
                         return true;

@@ -33,9 +33,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ENGINE_TASK_POOL_H_
 #define _ENGINE_TASK_POOL_H_
 
-namespace Divide {
+#include "Core/Headers/PlatformContext.h"
 
-class PlatformContext;
+namespace Divide {
 
 struct Task;
 struct ParallelForDescriptor;

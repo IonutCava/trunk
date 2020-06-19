@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     class ShaderBuffer;
-    bool BufferCompare(const ShaderBuffer* const a, const ShaderBuffer* const b) noexcept;
+    bool BufferCompare(const ShaderBuffer* a, const ShaderBuffer* b) noexcept;
 
     class Texture;
     struct TextureView final : Hashable {
@@ -147,10 +147,10 @@ namespace Divide {
 
         bool addShaderBuffer(const ShaderBufferBinding& entry);
         bool addShaderBuffers(const ShaderBufferList& entries);
-        const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const noexcept;
-        const TextureEntry* findTexture(U8 binding) const noexcept;
-        const TextureView* findTextureView(U8 binding) const noexcept;
-        const Image* findImage(U8 binding) const noexcept;
+        [[nodiscard]] const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const noexcept;
+        [[nodiscard]] const TextureEntry* findTexture(U8 binding) const noexcept;
+        [[nodiscard]] const TextureView* findTextureView(U8 binding) const noexcept;
+        [[nodiscard]] const Image* findImage(U8 binding) const noexcept;
 
         bool operator==(const DescriptorSet &other) const noexcept {
             return _shaderBuffers == other._shaderBuffers &&
@@ -166,7 +166,7 @@ namespace Divide {
                    _textureData != other._textureData;
         }
 
-        bool empty() const noexcept {
+        [[nodiscard]] bool empty() const noexcept {
             return  _textureData.count() == 0 &&
                     _shaderBuffers.empty() &&
                     _textureViews.empty() &&

@@ -55,7 +55,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     public:
        static void clear();
        /// Retrieve a state block by hash value.
-       /// If the hash value doesn't exist in the state block map, return the default state block
+       /// If the hash value does not exist in the state block map, return the default state block
        static const RenderStateBlock& get(size_t renderStateBlockHash);
        /// Returns false if the specified hash is not found in the map
        static const RenderStateBlock& get(size_t renderStateBlockHash, bool& blockFound);
@@ -74,7 +74,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
     public:
         RenderStateBlock() noexcept;
         RenderStateBlock(const RenderStateBlock& other) noexcept;
-        /// Can't assing due to the GUID restrictions
+        /// Can't assign due to the GUID restrictions
         RenderStateBlock& operator=(const RenderStateBlock& b) noexcept = delete;
         /// Use "from" instead of "operator=" to bypass the GUID restrictions
         void from(const RenderStateBlock& other) noexcept;
@@ -95,14 +95,14 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         void flipFrontFace() noexcept;
         void setCullMode(CullMode mode) noexcept;
         void setFrontFaceCCW(bool state) noexcept;
-        void depthTestEnabled(const bool enable) noexcept;
-        void setScissorTest(const bool enable) noexcept;
+        void depthTestEnabled(bool enable) noexcept;
+        void setScissorTest(bool enable) noexcept;
 
         void setStencil(bool enable,
                         U32 stencilRef = 0u,
                         StencilOperation stencilFailOp  = StencilOperation::KEEP,
+                        StencilOperation stencilPassOp = StencilOperation::KEEP,
                         StencilOperation stencilZFailOp = StencilOperation::KEEP,
-                        StencilOperation stencilZPassOp  = StencilOperation::KEEP,
                         ComparisonFunction stencilFunc = ComparisonFunction::NEVER) noexcept;
 
         void setStencilReadWriteMask(U32 read, U32 write) noexcept;
@@ -124,8 +124,8 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
         PROPERTY_R(ComparisonFunction, zFunc, ComparisonFunction::LEQUAL);
         PROPERTY_R(StencilOperation, stencilFailOp, StencilOperation::KEEP);
-        PROPERTY_R(StencilOperation, stencilZFailOp, StencilOperation::KEEP);
         PROPERTY_R(StencilOperation, stencilPassOp, StencilOperation::KEEP);
+        PROPERTY_R(StencilOperation, stencilZFailOp, StencilOperation::KEEP);
         PROPERTY_R(ComparisonFunction, stencilFunc, ComparisonFunction::NEVER);
 
         PROPERTY_R(CullMode, cullMode, CullMode::BACK);
@@ -137,9 +137,6 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         PROPERTY_R(bool, stencilEnable, false);
 
         mutable bool _dirty = true;
-
-    private:
-      
 };
 
 };  // namespace Divide

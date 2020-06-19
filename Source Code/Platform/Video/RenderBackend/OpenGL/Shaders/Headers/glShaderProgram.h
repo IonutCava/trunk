@@ -36,10 +36,6 @@
 #include "glShaderProgram.h"
 #include "AI/ActionInterface/Headers/AIProcessor.h"
 #include "GLIM/Declarations.h"
-#include "GLIM/Declarations.h"
-#include "GLIM/Declarations.h"
-#include "GLIM/Declarations.h"
-#include "GLIM/Declarations.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
@@ -122,7 +118,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// present, and it's not recommended (yet)
     void threadedLoad(bool reloadExisting);
 
-    /// Returns true if at least one shader linked succesfully
+    /// Returns true if at least one shader linked successfully
     bool reloadShaders(bool reloadExisting);
 
     /// Bind this shader program (returns false if the program was ready/failed validation)

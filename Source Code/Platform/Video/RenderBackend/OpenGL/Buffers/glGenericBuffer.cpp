@@ -26,7 +26,7 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
 
     // Create sizeFactor copies of the data and store them in the buffer
     if (params._data != nullptr) {
-        for (U8 i = 1; i < _ringSizeFactor; ++i) {
+        for (GLuint i = 1; i < _ringSizeFactor; ++i) {
             _buffer->writeData(i * bufferSizeInBytes, bufferSizeInBytes, (Byte*)params._data);
         }
     }

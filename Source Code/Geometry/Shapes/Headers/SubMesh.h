@@ -74,14 +74,14 @@ class SubMesh : public Object3D {
 
     virtual ~SubMesh();
 
-    inline U32 getID() noexcept { return _ID; }
+    U32 getID() noexcept { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
     /// scene->mMeshes[n] == (SubMesh with _ID == n)
-    inline void setID(U32 ID) noexcept { _ID = ID; }
-    inline Mesh* getParentMesh() noexcept { return _parentMesh; }
+    void setID(const U32 ID) noexcept { _ID = ID; }
+    Mesh* getParentMesh() const noexcept { return _parentMesh; }
 
    protected:
-    void setParentMesh(Mesh* const parentMesh);
+    void setParentMesh(Mesh* parentMesh);
 
     void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
@@ -90,7 +90,7 @@ class SubMesh : public Object3D {
 
     virtual const char* getResourceTypeName() const noexcept override { return "SubMesh"; }
 
-    void sceneUpdate(const U64 deltaTimeUS,
+    void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
                      SceneState& sceneState) override;
     // SGN node + parent mesh
@@ -106,20 +106,18 @@ TYPEDEF_SMART_POINTERS_FOR_TYPE(SubMesh);
 
 namespace Attorney {
 class SubMeshMesh {
-   private:
-    static void setParentMesh(SubMesh& submesh, Mesh* const parentMesh) {
-        submesh.setParentMesh(parentMesh);
+    static void setParentMesh(SubMesh& subMesh, Mesh* const parentMesh) {
+        subMesh.setParentMesh(parentMesh);
     }
 
     friend class Divide::Mesh;
 };
 
 class SubMeshMeshImporter {
-   private:
-    static void setGeometryLimits(SubMesh& submesh,
+    static void setGeometryLimits(SubMesh& subMesh,
                                   const vec3<F32>& min,
                                   const vec3<F32>& max) noexcept {
-        submesh._boundingBox.set(min, max);
+        subMesh._boundingBox.set(min, max);
     }
 
     friend class Divide::MeshImporter;

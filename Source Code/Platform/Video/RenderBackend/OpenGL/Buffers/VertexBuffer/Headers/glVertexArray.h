@@ -90,18 +90,18 @@ class glVertexArray final : public VertexBuffer,
     static void cleanup();
 
    protected:
-    GLenum _formatInternal;
-    GLuint _IBid;
+    GLenum _formatInternal = GL_NONE;
+    GLuint _IBid = 0;
     // VB GL ID and Offset.
     // This could easily be a std::pair, but having names for variables makes everything clearer
     GLUtil::AllocationHandle _VBHandle;
-    GLenum _usage;
+    GLenum _usage = GL_STATIC_DRAW;
     ///< A refresh call might be called before "Create()". This should help with that
-    bool _refreshQueued;  
-    bool _uploadQueued;
-    size_t _prevSize;
-    size_t _prevSizeIndices;
-    size_t _effectiveEntrySize;
+    bool _refreshQueued = false;
+    bool _uploadQueued = false;
+    size_t _prevSize = 0;
+    size_t _prevSizeIndices = 0;
+    size_t _effectiveEntrySize = 0;
     AttribFlags _useAttribute;
     using AttribValues = std::array<GLuint, to_base(AttribLocation::COUNT)>;
     AttribValues _attributeOffset;

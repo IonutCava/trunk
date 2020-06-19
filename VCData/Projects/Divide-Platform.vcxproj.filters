@@ -112,9 +112,6 @@
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Headers\glLockManager.h">
       <Filter>Video\RenderBackend\OpenGL\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Platform\Headers\ByteConverter.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Platform\Headers\PlatformDefines.h">
       <Filter>Headers</Filter>
     </ClInclude>

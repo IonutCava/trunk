@@ -203,12 +203,12 @@ void RenderStateBlock::setStencilReadWriteMask(U32 read, U32 write)  noexcept {
     }
 }
 
-void RenderStateBlock::setStencil(bool enable,
-                                  U32 stencilRef,
-                                  StencilOperation stencilFailOp,
-                                  StencilOperation stencilZFailOp,
-                                  StencilOperation stencilPassOp,
-                                  ComparisonFunction stencilFunc)  noexcept {
+void RenderStateBlock::setStencil(const bool enable,
+                                  const U32 stencilRef,
+                                  const StencilOperation stencilFailOp,
+                                  const StencilOperation stencilPassOp,
+                                  const StencilOperation stencilZFailOp,
+                                  const ComparisonFunction stencilFunc)  noexcept {
     if (_stencilEnable != enable ||
         _stencilRef != stencilRef ||
         _stencilFailOp != stencilFailOp ||
@@ -324,8 +324,8 @@ void RenderStateBlock::saveToXML(const RenderStateBlock& block, const stringImpl
 
     pt.put(entryName + ".stencilEnable", block._stencilEnable);
     pt.put(entryName + ".stencilFailOp", TypeUtil::StencilOperationToString(block._stencilFailOp));
-    pt.put(entryName + ".stencilZFailOp", TypeUtil::StencilOperationToString(block._stencilZFailOp));
     pt.put(entryName + ".stencilPassOp", TypeUtil::StencilOperationToString(block._stencilPassOp));
+    pt.put(entryName + ".stencilZFailOp", TypeUtil::StencilOperationToString(block._stencilZFailOp));
     pt.put(entryName + ".stencilFunc", TypeUtil::ComparisonFunctionToString(block._stencilFunc));
     pt.put(entryName + ".stencilRef", block._stencilRef);
     pt.put(entryName + ".stencilMask", block._stencilMask);
@@ -354,8 +354,8 @@ size_t RenderStateBlock::loadFromXML(const stringImpl& entryName, const boost::p
     block.setStencil(pt.get(entryName + ".stencilEnable", false),
                      pt.get(entryName + ".stencilRef", 0u),
                      TypeUtil::StringToStencilOperation(pt.get(entryName + ".stencilFailOp", "KEEP").c_str()),
-                     TypeUtil::StringToStencilOperation(pt.get(entryName + ".stencilZFailOp", "KEEP").c_str()),
                      TypeUtil::StringToStencilOperation(pt.get(entryName + ".stencilPassOp", "KEEP").c_str()),
+                     TypeUtil::StringToStencilOperation(pt.get(entryName + ".stencilZFailOp", "KEEP").c_str()),
                      TypeUtil::StringToComparisonFunction(pt.get(entryName + ".stencilFunc", "NEVER").c_str()));
     
     block.setStencilReadWriteMask(pt.get(entryName + ".stencilMask", 0xFFFFFFFF),

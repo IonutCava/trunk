@@ -487,7 +487,6 @@ becomes 170.
 @param normPitch If false, the pitch isn't normalized.
 @param normRoll If false, the roll isn't normalized.
 */
-[[nodiscard]] 
 void Normalize(vec3<F32>& inputRotation, bool degrees = false,
                bool normYaw = true, bool normPitch = true,
                bool normRoll = true) noexcept;

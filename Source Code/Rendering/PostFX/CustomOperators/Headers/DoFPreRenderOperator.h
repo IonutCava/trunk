@@ -45,11 +45,11 @@ class DoFPreRenderOperator final : public PreRenderOperator {
     bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
     void reshape(U16 width, U16 height) final;
 
-    inline F32 focalDepth() const { return _focalDepth; }
-    void focalDepth(const F32 val);
+    F32 focalDepth() const { return _focalDepth; }
+    void focalDepth(F32 val);
 
-    inline bool autoFocus() const { return _autoFocus; }
-    void autoFocus(const bool state);
+    bool autoFocus() const { return _autoFocus; }
+    void autoFocus(bool state);
 
     bool ready() const final;
 

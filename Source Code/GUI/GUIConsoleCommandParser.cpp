@@ -4,21 +4,17 @@
 
 #include "Headers/GUI.h"
 
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/XMLEntryData.h"
-#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/StringHelper.h"
 #include "Core/Math/Headers/MathHelper.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
-#include "Core/Resources/Headers/ResourceCache.h"
-#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-
-#include "Geometry/Shapes/Headers/Mesh.h"
 #include "Geometry/Shapes/Predefined/Headers/Box3D.h"
-#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 
 namespace Divide {
 

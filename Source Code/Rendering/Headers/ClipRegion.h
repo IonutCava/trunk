@@ -58,6 +58,7 @@ namespace Divide {
 
 //--------------------------------------------------------------------------------------
 // Bounds computation utilities, similar to PointLightBounds.cpp
+inline
 void updateClipRegionRoot(
     F32 nc,  // Tangent plane x/y normal coordinate (view space)
     F32 lc,  // Light x/y coordinate (view space)
@@ -81,6 +82,7 @@ void updateClipRegionRoot(
     }
 }
 
+inline
 void updateClipRegion(F32 lc,  // Light x/y coordinate (view space)
                       F32 lz,  // Light z coordinate (view space)
                       F32 lightRadius,
@@ -105,6 +107,7 @@ void updateClipRegion(F32 lc,  // Light x/y coordinate (view space)
 }
 
 // Returns bounding box [min.xy, max.xy] in clip [-1, 1] space.
+inline
 vec4<F32> computeClipRegion(const vec3<F32> &lightPosView, F32 lightRadius,
                             F32 cameraNear, const mat4<F32> &projection) {
     // Early out with empty rectangle if the light is too far behind the view

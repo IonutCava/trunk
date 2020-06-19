@@ -2,7 +2,6 @@
 
 #include "Headers/glLockManager.h"
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 namespace Divide {

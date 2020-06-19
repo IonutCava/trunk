@@ -52,7 +52,6 @@ class ResourceCache;
 class ShaderProgramDescriptor;
 
 struct PushConstants;
-struct GenericDrawCommand;
 
 enum class FileUpdateEvent : U8;
 

@@ -22,11 +22,10 @@
 
 namespace ECS { namespace Event {
 
-	class ECS_API EventHandler : Memory::GlobalMemoryUser
+	class ECS_API EventHandler final : Memory::GlobalMemoryUser
 	{
 		// allow IEventListener access private methods for Add/Remove callbacks
-		friend class ECSEngine;
-	
+		friend class ECS::ECSEngine;
 
 		using EventDispatcherMap = hashMap<EventTypeId, Internal::IEventDispatcher*>;
 	
@@ -36,11 +35,10 @@ namespace ECS { namespace Event {
 	
 		DECLARE_LOGGER
 
-	private:
-		
-		EventHandler(const EventHandler&);
-		EventHandler& operator=(EventHandler&);
-	
+
+		EventHandler(const EventHandler&) = delete;
+		EventHandler& operator=(EventHandler&) = delete;
+
 		EventDispatcherMap			m_EventDispatcherMap;
 		
 	

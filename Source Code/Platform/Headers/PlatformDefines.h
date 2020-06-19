@@ -143,7 +143,6 @@ constexpr U64 operator ""_id(const char* str, const size_t len) {
     return _ID_VIEW(str, len);
 }
 
-const
 struct SysInfo {
     SysInfo();
 
@@ -305,19 +304,6 @@ constexpr std::array<T, N> create_array(const T& value)
     return detail::create_array(value, make_index_sequence<N>());
 }
 
-
-// -------------------------------------------------------------------
-// --- Reversed iterable
-// ref: https://stackoverflow.com/questions/8542591/c11-reverse-range-based-for-loop
-template <typename T>
-struct reversion_wrapper { T& iterable; };
-template <typename T>
-auto begin(reversion_wrapper<T> w) { return std::rbegin(w.iterable); }
-template <typename T>
-auto end(reversion_wrapper<T> w) { return std::rend(w.iterable); }
-template <typename T>
-reversion_wrapper<T> reverse(T&& iterable) { return { iterable }; }
-
 /* See
 http://randomascii.wordpress.com/2012/01/11/tricks-with-the-floating-point-format/
 for the potential portability problems with the union and bit-fields below.
@@ -326,9 +312,9 @@ union Float_t {
     explicit Float_t(const F32 num = 0.0f) noexcept : f(num) {}
 
     // Portable extraction of components.
-    bool Negative() const noexcept { return (i >> 31) != 0; }
-    I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
-    I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
+    [[nodiscard]] bool Negative() const noexcept { return (i >> 31) != 0; }
+    [[nodiscard]] I32 RawMantissa() const noexcept { return i & ((1 << 23) - 1); }
+    [[nodiscard]] I32 RawExponent() const noexcept { return (i >> 23) & 0xFF; }
 
     I32 i;
     F32 f;
@@ -338,9 +324,9 @@ union Double_t {
     explicit Double_t(const D64 num = 0.0) noexcept : d(num) {}
 
     // Portable extraction of components.
-    bool Negative() const noexcept { return (i >> 63) != 0; }
-    I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
-    I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
+    [[nodiscard]] bool Negative() const noexcept { return (i >> 63) != 0; }
+    [[nodiscard]] I64 RawMantissa() const noexcept { return i & ((1LL << 52) - 1); }
+    [[nodiscard]] I64 RawExponent() const noexcept { return (i >> 52) & 0x7FF; }
 
     I64 i;
     D64 d;
@@ -409,14 +395,14 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, const D64 maxDiff, const D64
     return (diff <= largest * maxRelDiff);
 }
 
-constexpr void NOP(void) noexcept {}
+constexpr void NOP() noexcept {}
 
-#define ACKNOWLEDGE_UNUSED(p) ((void)p)
+#define ACKNOWLEDGE_UNUSED(p) ((void)(p))
 
 #define CONCATENATE_IMPL(s1, s2) s1##s2
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 #ifdef __COUNTER__
-#define ANONYMOUSE_VARIABLE(str) \
+#define ANONYMOUS_VARIABLE(str) \
     CONCATENATE(str, __COUNTER__)
 #else
 #define ANONYMOUSE_VARIABLE(str) \
@@ -442,6 +428,10 @@ namespace detail {
             dismissed_ = true;
         }
 
+        // Disable assignment
+        ScopeGuardImplBase& operator=(const ScopeGuardImplBase&) = delete;
+        ScopeGuardImplBase(ScopeGuardImplBase&& other) = delete;
+        ScopeGuardImplBase& operator=(ScopeGuardImplBase && other) = delete;
     protected:
         ScopeGuardImplBase() noexcept = default;
 
@@ -451,15 +441,13 @@ namespace detail {
             other.Dismiss();
         }
 
-        ~ScopeGuardImplBase() {} // nonvirtual (see below why)
+        ~ScopeGuardImplBase() = default; // nonvirtual (see below why)
         mutable bool dismissed_ = false;
 
-        // Disable assignment
-        ScopeGuardImplBase& operator=(const ScopeGuardImplBase&) = delete;
     };
 
     template <typename Fun, typename Parm>
-    class ScopeGuardImpl1 : public ScopeGuardImplBase
+    class ScopeGuardImpl1 final : public ScopeGuardImplBase
     {
     public:
         ScopeGuardImpl1(const Fun& fun, const Parm& parm)
@@ -656,7 +644,7 @@ inline TO safe_static_cast(FROM from)
     // delegate the call to the proper helper class, depending on the signedness of both types
     return safe_static_cast_helper<std::numeric_limits<FROM>::is_signed,
                                    std::numeric_limits<TO>::is_signed>
-           ::cast<TO>(from);
+           ::template cast<TO>(from);
 #else
     return static_cast<TO>(from);
 #endif
@@ -708,7 +696,7 @@ constexpr void assert_type(const U& ) {
 }
 };  // namespace Divide
 
-void* malloc_aligned(const size_t size, size_t alignment);
+void* malloc_aligned(size_t size, size_t alignment);
 void  malloc_free(void*& ptr);
 
 void* operator new[](size_t size, const char* pName, Divide::I32 flags,
@@ -865,6 +853,7 @@ struct AtomicWrapper : private NonMovable
     AtomicWrapper() : _a() {}
     explicit AtomicWrapper(const std::atomic<T> &a) :_a(a.load()) {}
     AtomicWrapper(const AtomicWrapper &other) : _a(other._a.load()) { }
+    ~AtomicWrapper() = default;
 
     AtomicWrapper &operator=(const AtomicWrapper &other) {
         _a.store(other._a.load());

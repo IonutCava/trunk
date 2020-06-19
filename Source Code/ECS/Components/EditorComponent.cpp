@@ -3,14 +3,12 @@
 #include "Headers/EditorComponent.h"
 
 #include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
-#include "Core/Math/BoundingVolumes/Headers/OBB.h"
-#include "Core/Math/Headers/Transform.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
 namespace Divide {
     namespace {
-        inline stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
+        stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
             constexpr std::array<std::string_view, 6> InvalidXMLStrings = {
                 " ", "[", "]", "...", "..", "."
             };
@@ -598,6 +596,7 @@ namespace Divide {
                 pt.put((entryName + ".<xmlattr>.b").c_str(), data.b);
                 pt.put((entryName + ".<xmlattr>.a").c_str(), data.a);
             } break;
+            default: break;
         }
     }
 
@@ -825,6 +824,7 @@ namespace Divide {
                          pt.get((entryName + ".<xmlattr>.a").c_str(), data.a));
                 field.set<FColour4>(data);
             } break;
+            default: break;
         }
     }
 }; //namespace Divide

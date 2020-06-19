@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GUI_INTERFACE_H_
 
 #include "GUIElement.h"
+#include "Core/Math/Headers/Dimension.h"
 
 namespace CEGUI {
     class String;
@@ -57,18 +58,18 @@ public:
 
     void onLanguageChange(std::string_view newLanguage);
 
-    inline GUI& getParentContext() { return *_context; }
-    inline const GUI& getParentContext() const { return *_context; }
+    GUI& getParentContext() noexcept { return *_context; }
+    const GUI& getParentContext() const noexcept { return *_context; }
     /// Get a pointer to an element by name/id
     template <typename T>
     typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
-    getGUIElement(U64 elementName) const {
+    getGUIElement(const U64 elementName) const {
         return static_cast<T*>(getGUIElementImpl(elementName, T::Type));
     }
 
     template <typename T>
     typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
-    getGUIElement(I64 elementID) const {
+    getGUIElement(const I64 elementID) const {
         return static_cast<T*>(getGUIElementImpl(elementID, T::Type));
     }
 

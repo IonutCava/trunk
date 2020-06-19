@@ -3,29 +3,15 @@
 #include "Headers/SGNComponent.h"
 #include "Graphs/Headers/SceneGraph.h"
 
-#include "ECS/Components/Headers/AnimationComponent.h"
-#include "ECS/Components/Headers/BoundsComponent.h"
-#include "ECS/Components/Headers/DirectionalLightComponent.h"
-#include "ECS/Components/Headers/IKComponent.h"
-#include "ECS/Components/Headers/NavigationComponent.h"
 #include "ECS/Components/Headers/NetworkingComponent.h"
-#include "ECS/Components/Headers/PointLightComponent.h"
-#include "ECS/Components/Headers/RagdollComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
-#include "ECS/Components/Headers/RigidBodyComponent.h"
-#include "ECS/Components/Headers/ScriptComponent.h"
-#include "ECS/Components/Headers/SelectionComponent.h"
-#include "ECS/Components/Headers/SpotLightComponent.h"
-#include "ECS/Components/Headers/TransformComponent.h"
-#include "ECS/Components/Headers/UnitComponent.h"
-
 
 namespace Divide {
-    SGNComponent::SGNComponent(Key key, ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context)
+    SGNComponent::SGNComponent(Key key, const ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context)
         : PlatformContextComponent(context),
-          _type(type),
+          _editorComponent(type, type._to_string()),
           _parentSGN(parentSGN),
-          _editorComponent(type, type._to_string())
+          _type(type)
     {
         ACKNOWLEDGE_UNUSED(key);
         std::atomic_init(&_enabled, true);

@@ -38,10 +38,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 namespace GLUtil {
 
-class GL_API;
 class glVAOCache {
 public:
-    glVAOCache() noexcept;
+    glVAOCache() = default;
     ~glVAOCache();
 
     void clear();

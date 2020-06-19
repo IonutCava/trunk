@@ -8,7 +8,6 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/RenderPassManager.h"
-#include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
@@ -117,7 +116,7 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
             rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(false));
         }
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand({Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()}));
+        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()));
 
         vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::probeCameras();
 

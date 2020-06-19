@@ -24,7 +24,7 @@ namespace ECS { namespace Memory { namespace Internal {
 
 	class MemoryManager
 	{
-		friend class GlobalMemoryUser;
+		friend class ECS::Memory::GlobalMemoryUser;
 
 		using StackAllocator = Allocator::StackAllocator;
 		

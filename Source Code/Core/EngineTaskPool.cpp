@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/EngineTaskPool.h"
-
-#include "Headers/Kernel.h"
 #include "Headers/PlatformContext.h"
 
 namespace Divide {

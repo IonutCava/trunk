@@ -76,7 +76,7 @@ struct SamplerDescriptor final : Hashable {
 public:
     static void clear();
     /// Retrieve a sampler descriptor by hash value.
-    /// If the hash value doesn't exist in the descriptor map, return the default descriptor
+    /// If the hash value does not exist in the descriptor map, return the default descriptor
     static const SamplerDescriptor& get(size_t samplerDescriptorHash);
     /// Returns false if the specified hash is not found in the map
     static const SamplerDescriptor& get(size_t samplerDescriptorHash, bool& descriptorFound);

@@ -138,7 +138,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
 
                     const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[i]);
                     if (shader != 0u) {
-                        glShaderSource(shader, static_cast<GLsizei>(cstrings.size()), cstrings.data(), NULL);
+                        glShaderSource(shader, static_cast<GLsizei>(cstrings.size()), cstrings.data(), nullptr);
                         glCompileShader(shader);
 
                         GLboolean compiled = 0;
@@ -147,7 +147,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                             // error
                             GLint logSize = 0;
                             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-                            stringImpl validationBuffer = "";
+                            stringImpl validationBuffer;
                             validationBuffer.resize(logSize);
 
                             glGetShaderInfoLog(shader, logSize, &logSize, &validationBuffer[0]);
@@ -623,7 +623,7 @@ void glShader::Uniform(const I32 binding, const GFX::PushConstantType type, cons
 /// Add a define to the shader. The defined must not have been added previously
 void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
     // Find the string in the list of program defines
-    const auto it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
+    const auto* it = std::find(std::begin(_definesList), std::end(_definesList), std::make_pair(define, appendPrefix));
     // If we can't find it, we add it
     if (it == std::end(_definesList)) {
         _definesList.emplace_back(define, appendPrefix);
@@ -637,7 +637,7 @@ void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
 /// Remove a define from the shader. The defined must have been added previously
 void glShader::removeShaderDefine(const stringImpl& define) {
     // Find the string in the list of program defines
-    auto it = eastl::find(eastl::begin(_definesList), eastl::end(_definesList), std::make_pair(define, true));
+    const auto* it = eastl::find(eastl::begin(_definesList), eastl::end(_definesList), std::make_pair(define, true));
         if (it == eastl::end(_definesList)) {
             it = eastl::find(eastl::begin(_definesList), eastl::end(_definesList), std::make_pair(define, false));
         }

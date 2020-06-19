@@ -4,8 +4,8 @@
 
 namespace Divide {
     AnimationSystem::AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context)
-        : ECSSystem(parentEngine),
-          PlatformContextComponent(context)
+        : PlatformContextComponent(context),
+          ECSSystem(parentEngine)
     {
     }
 

@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ECS_SYSTEM_H_
 #define _ECS_SYSTEM_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
     class ByteBuffer;
     class SceneGraphNode;

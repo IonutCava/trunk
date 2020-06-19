@@ -168,17 +168,17 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
     explicit RenderTarget(GFXDevice& context, const RenderTargetDescriptor& descriptor);
 
    public:
-    virtual ~RenderTarget();
+    virtual ~RenderTarget() = default;
 
     /// Init all attachments. Returns false if already called
-    virtual bool create();
+    [[nodiscard]] virtual bool create();
     virtual void destroy();
 
-    virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
-    virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
-    virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
-    virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);
-    virtual U8 getAttachmentCount(RTAttachmentType type) const;
+    [[nodiscard]] virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
+    [[nodiscard]] virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;
+    [[nodiscard]] virtual const RTAttachment& getAttachment(RTAttachmentType type, U8 index) const;
+    [[nodiscard]] virtual RTAttachment& getAttachment(RTAttachmentType type, U8 index);
+    [[nodiscard]] virtual U8 getAttachmentCount(RTAttachmentType type) const;
 
     virtual void clear(const RTClearDescriptor& descriptor) = 0;
     virtual void setDefaultState(const RTDrawDescriptor& drawPolicy) = 0;
@@ -192,13 +192,13 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     void readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const;
 
-    U16 getWidth()  const;
-    U16 getHeight() const;
-    vec2<U16> getResolution() const;
+    [[nodiscard]] U16 getWidth()  const;
+    [[nodiscard]] U16 getHeight() const;
+    [[nodiscard]] vec2<U16> getResolution() const;
 
     F32& depthClearValue();
 
-    const Str64& name() const;
+    [[nodiscard]] const Str64& name() const;
 
    protected:
     U8 _colourAttachmentCount = 0;

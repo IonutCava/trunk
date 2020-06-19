@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/ECSManager.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 #include "ECS/Systems/Headers/TransformSystem.h"
 #include "ECS/Systems/Headers/AnimationSystem.h"
@@ -24,52 +23,52 @@
 namespace Divide {
 
 namespace {
-    struct PointLightSystem : public ECSSystem<PointLightSystem, PointLightComponent> {
-        PointLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+    struct PointLightSystem final : ECSSystem<PointLightSystem, PointLightComponent> {
+        explicit PointLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct SpotLightSystem : public ECSSystem<SpotLightSystem, SpotLightComponent>
+    struct SpotLightSystem final : ECSSystem<SpotLightSystem, SpotLightComponent>
     {
-        SpotLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit SpotLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct DirectionalLightSystem : public ECSSystem<DirectionalLightSystem, DirectionalLightComponent>
+    struct DirectionalLightSystem final : ECSSystem<DirectionalLightSystem, DirectionalLightComponent>
     {
-        DirectionalLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit DirectionalLightSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct IKSystem : public ECSSystem<IKSystem, IKComponent>
+    struct IKSystem final : ECSSystem<IKSystem, IKComponent>
     {
-        IKSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit IKSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct NavigationSystem : public ECSSystem<NavigationSystem, NavigationComponent>
+    struct NavigationSystem final : ECSSystem<NavigationSystem, NavigationComponent>
     {
-        NavigationSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit NavigationSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct NetworkingSystem : public ECSSystem<NetworkingSystem, NetworkingComponent>
+    struct NetworkingSystem final : ECSSystem<NetworkingSystem, NetworkingComponent>
     {
-        NetworkingSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit NetworkingSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct RagdollSystem : public ECSSystem<RagdollSystem, RagdollComponent>
+    struct RagdollSystem final : ECSSystem<RagdollSystem, RagdollComponent>
     {
-        RagdollSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit RagdollSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct RigidBodySystem : public ECSSystem<RigidBodySystem, RigidBodyComponent>
+    struct RigidBodySystem final : ECSSystem<RigidBodySystem, RigidBodyComponent>
     {
-        RigidBodySystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit RigidBodySystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct ScriptSystem : public ECSSystem<ScriptSystem, ScriptComponent>
+    struct ScriptSystem final : ECSSystem<ScriptSystem, ScriptComponent>
     {
-        ScriptSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit ScriptSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct SelectionSystem : public ECSSystem<SelectionSystem, SelectionComponent>
+    struct SelectionSystem final : ECSSystem<SelectionSystem, SelectionComponent>
     {
-        SelectionSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit SelectionSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct UnitSystem : public ECSSystem<UnitSystem, UnitComponent>
+    struct UnitSystem final : ECSSystem<UnitSystem, UnitComponent>
     {
-        UnitSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit UnitSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-    struct EnvProbeSystem : public ECSSystem<EnvProbeSystem, EnvironmentProbeComponent>
+    struct EnvProbeSystem final : ECSSystem<EnvProbeSystem, EnvironmentProbeComponent>
     {
-        EnvProbeSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
+        explicit EnvProbeSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
 };
 
@@ -142,7 +141,7 @@ bool ECSManager::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) 
     return true;
 }
 
-bool ECSManager::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) {
+bool ECSManager::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) const {
     TransformSystem* tSys = _ecsEngine.GetSystemManager()->GetSystem<TransformSystem>();
     if (tSys != nullptr) {
         if (!tSys->loadCache(sgn, inputBuffer)) {

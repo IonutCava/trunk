@@ -56,9 +56,9 @@ class glGenericBuffer {
       glGenericBuffer(GFXDevice& context, const BufferParams& params);
       ~glGenericBuffer();
 
-      GLuint elementCount() const noexcept { return _elementCount; }
+      [[nodiscard]] GLuint elementCount() const noexcept { return _elementCount; }
 
-      GLuint bufferHandle() const;
+      [[nodiscard]] GLuint bufferHandle() const;
 
       void clearData(GLuint elementOffset,
                      GLuint ringWriteOffset) const;
@@ -66,18 +66,18 @@ class glGenericBuffer {
       void writeData(GLuint elementCount,
                      GLuint elementOffset,
                      GLuint ringWriteOffset,
-                     const bufferPtr data) const;
+                     bufferPtr data) const;
 
       void readData(GLuint elementCount,
                     GLuint elementOffset,
                     GLuint ringReadOffset,
                     bufferPtr dataOut) const;
 
-      size_t getBindOffset(GLuint ringReadOffset) const;
+      [[nodiscard]] size_t getBindOffset(GLuint ringReadOffset) const;
 
       void setBindOffset(GLuint elementCountOffset) noexcept;
 
-      glBufferImpl* bufferImpl() const noexcept;
+      [[nodiscard]] glBufferImpl* bufferImpl() const noexcept;
 
   protected:
       GLuint _elementCount;

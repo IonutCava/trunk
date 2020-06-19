@@ -158,7 +158,7 @@ GFXDevice::renderingAspectRatio() const noexcept {
 }
 
 inline bool
-GFXDevice::setViewport(I32 x, I32 y, I32 width, I32 height) {
+GFXDevice::setViewport(const I32 x, const I32 y, const I32 width, const I32 height) {
     return setViewport({ x, y, width, height });
 }
 

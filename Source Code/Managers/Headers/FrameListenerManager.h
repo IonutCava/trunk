@@ -33,11 +33,10 @@
 #ifndef _FRAME_LISTENER_MANAGER_H_
 #define _FRAME_LISTENER_MANAGER_H_
 
-/// Add this include here so that any FrameListner derived class only needs to
+/// Add this include here so that any FrameListener derived class only needs to
 /// include the manager
 
 #include "Rendering/Headers/FrameListener.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
@@ -50,16 +49,16 @@ class FrameListenerManager {
     ~FrameListenerManager() = default;
 
     void registerFrameListener(FrameListener* listener, U32 callOrder);
-    void removeFrameListener(FrameListener* const listener);
+    void removeFrameListener(FrameListener* listener);
     void idle();
 
     bool frameEvent(const FrameEvent& evt);
 
     /// pass the current time in microseconds as the first parameter
-    void createEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
+    void createEvent(U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
 
     /// Calls createEvent and frameEvent
-    bool createAndProcessEvent(const U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
+    bool createAndProcessEvent(U64 currentTimeUS, FrameEventType type, FrameEvent& evt);
 
   private:
 
@@ -75,7 +74,7 @@ class FrameListenerManager {
 
     /// pass the current time in microseconds as the first parameter
     /// returns the event time in microseconds
-    U64 calculateEventTime(const U64 currentTimeUS, FrameEventType type);
+    U64 calculateEventTime(U64 currentTimeUS, FrameEventType type);
 
    private:
     mutable SharedMutex _listenerLock;

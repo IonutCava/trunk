@@ -48,8 +48,8 @@ class PhysX;
 class PhysXSceneInterface;
 
 
-class PxDefaultAllocator : public physx::PxAllocatorCallback {
-    void* allocate(size_t size, const char*, const char*, int)  override {
+class PxDefaultAllocator final : public physx::PxAllocatorCallback {
+    void* allocate(const size_t size, const char*, const char*, int)  override {
     	return malloc_aligned(size, 16);
     }
 
@@ -69,16 +69,16 @@ public:
 public:
     ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) final;
     bool closePhysicsAPI() final;
-    void update(const U64 deltaTimeUS) final;
-    void process(const U64 deltaTimeUS) final;
+    void update(U64 deltaTimeUS) final;
+    void process(U64 deltaTimeUS) final;
     void idle() final;
 
     void updateTimeStep(U8 timeStepFactor, F32 simSpeed) final;
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene) final;
 
-    inline physx::PxPhysics* const getSDK() noexcept { return _gPhysicsSDK; }
-    void setPhysicsScene(PhysicsSceneInterface* const targetScene) final;
+    physx::PxPhysics* getSDK() const noexcept { return _gPhysicsSDK; }
+    void setPhysicsScene(PhysicsSceneInterface* targetScene) final;
 
     PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) final;
 

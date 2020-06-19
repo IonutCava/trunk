@@ -47,6 +47,7 @@ void Scale(physx::PxShape &shape, const physx::PxVec3 &scaling) {
             Scale(geom, pose, scaling);
             shape.setGeometry(geom);
         } break;
+        default: break;
     }
 
     shape.setLocalPose(pose);
@@ -79,6 +80,7 @@ void Scale(physx::PxGeometry &geometry, physx::PxTransform &pose,
             Scale(static_cast<physx::PxTriangleMeshGeometry &>(geometry), pose,
                   scaling);
             break;
+        default: break;
     }
 }
 

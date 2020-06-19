@@ -54,8 +54,8 @@ class glUniformBuffer final : public ShaderBuffer {
 
         void clearData(U32 offsetElementCount, U32 rangeElementCount) final;
         void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const final;
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, const bufferPtr data) final;
-        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, const bufferPtr data) final;
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) final;
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) final;
         bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) final;
         bool bind(U8 bindIndex) final;
 
@@ -63,7 +63,7 @@ class glUniformBuffer final : public ShaderBuffer {
 
     protected:
         glBufferImpl* _buffer;
-        size_t _allignedBufferSize;
+        size_t _alignedBufferSize;
 };
 
 };  // namespace Divide

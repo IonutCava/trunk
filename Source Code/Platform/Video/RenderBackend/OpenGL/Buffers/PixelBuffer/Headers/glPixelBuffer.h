@@ -55,11 +55,11 @@ class glPixelBuffer final : public PixelBuffer {
                 GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
                 bool normalized = true) override;
 
-    void updatePixels(const GLfloat* const pixels, GLuint pixelCount)  override;
+    void updatePixels(const GLfloat* pixels, GLuint pixelCount)  override;
 
    protected:
     friend class GL_API;
-    bufferPtr begin() const;
+    [[nodiscard]] bufferPtr begin() const;
     void end() const;
 
    private:

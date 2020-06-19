@@ -77,12 +77,12 @@ inline void Transform::setPositionZ(const F32 positionZ) {
                 positionZ);
 }
 
-/// Set the local X,Y and Z scale factors
-inline void Transform::setScale(const vec3<F32>& scale) {
+/// Set the local X,Y and Z amount factors
+inline void Transform::setScale(const vec3<F32>& amount) {
     _dirty = true;
     _rebuild = true;
 
-    _transformValues._scale.set(scale);
+    _transformValues._scale.set(amount);
 }
 
 /// Set the local orientation using the Axis-Angle system.

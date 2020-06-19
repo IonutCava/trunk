@@ -25,7 +25,7 @@ namespace Divide {
     }
 
     const TextureEntry* DescriptorSet::findTexture(U8 binding) const noexcept {
-        auto& textures = _textureData.textures();
+        const auto& textures = _textureData.textures();
         for (const auto& it : textures) {
             if (std::get<0>(it) == binding) {
                 return &it;
@@ -36,7 +36,7 @@ namespace Divide {
     }
 
     const TextureView* DescriptorSet::findTextureView(U8 binding) const noexcept {
-        for (auto& it : _textureViews) {
+        for (const auto& it : _textureViews) {
             if (it._binding == binding) {
                 return &it._view;
             }
@@ -46,7 +46,7 @@ namespace Divide {
     }
 
     const Image* DescriptorSet::findImage(U8 binding) const noexcept {
-        for (auto& it : _images) {
+        for (const auto& it : _images) {
             if (it._binding == binding) {
                 return &it;
             }
@@ -57,7 +57,7 @@ namespace Divide {
 
     bool DescriptorSet::addShaderBuffers(const ShaderBufferList& entries) {
         bool ret = false;
-        for (auto entry : entries) {
+        for (const auto& entry : entries) {
             ret = addShaderBuffer(entry) || ret;
         }
 
@@ -122,7 +122,7 @@ namespace Divide {
 
         TextureViews& otherViewList = rhs._textureViews;
         if (!otherViewList.empty()) {
-            for (auto it = eastl::begin(otherViewList); it != eastl::end(otherViewList);) {
+            for (auto* it = eastl::begin(otherViewList); it != eastl::end(otherViewList);) {
                 const TextureView* texViewData = lhs.findTextureView(it->_binding);
                 if (texViewData != nullptr && *texViewData == it->_view) {
                     it = otherViewList.erase(it);
@@ -135,7 +135,7 @@ namespace Divide {
 
         Images& otherImageList = rhs._images;
         if (!otherImageList.empty()) {
-            for (auto it = eastl::begin(otherImageList); it != eastl::end(otherImageList);) {
+            for (auto* it = eastl::begin(otherImageList); it != eastl::end(otherImageList);) {
                 const Image* image = lhs.findImage(it->_binding);
                 if (image != nullptr && *image == *it) {
                     it = otherImageList.erase(it);
@@ -148,7 +148,7 @@ namespace Divide {
 
         ShaderBufferList& otherShaderBuffers = rhs._shaderBuffers;
         if (!otherShaderBuffers.empty()) {
-            for (auto it = eastl::begin(otherShaderBuffers); it != eastl::end(otherShaderBuffers);) {
+            for (auto* it = eastl::begin(otherShaderBuffers); it != eastl::end(otherShaderBuffers);) {
                 const ShaderBufferBinding* binding = lhs.findBinding(it->_binding);
                 if (binding != nullptr && *binding == *it) {
                     it = otherShaderBuffers.erase(it);

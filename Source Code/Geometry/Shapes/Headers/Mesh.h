@@ -56,7 +56,7 @@ namespace Divide {
 FWD_DECLARE_MANAGED_CLASS(SubMesh);
 
 class SceneAnimator;
-class Mesh : public Object3D {
+class Mesh final : public Object3D {
    public:
     explicit Mesh(GFXDevice& context,
                   ResourceCache* parentCache,
@@ -73,7 +73,7 @@ class Mesh : public Object3D {
 
     void addSubMesh(SubMesh_ptr subMesh);
 
-    void sceneUpdate(const U64 deltaTimeUS,
+    void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
                      SceneState& sceneState) final;
 
@@ -82,16 +82,16 @@ class Mesh : public Object3D {
         _animator = animator;
     }
 
-    inline std::shared_ptr<SceneAnimator> getAnimator() { 
+    std::shared_ptr<SceneAnimator> getAnimator() const { 
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         return _animator; 
     }
 
-    inline const vectorEASTL<SubMesh_ptr>& subMeshList() const {
+    const vectorEASTL<SubMesh_ptr>& subMeshList() const {
         return _subMeshList;
     }
 
-    inline void queueRecomputeBB() noexcept { _recomputeBBQueued = true; }
+    void queueRecomputeBB() noexcept { _recomputeBBQueued = true; }
 
    protected:
     const char* getResourceTypeName() const noexcept override { return "Mesh"; }

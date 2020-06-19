@@ -57,7 +57,7 @@ class glIMPrimitive final : public IMPrimitive {
     void endBatch() final;
     /// Resets the batch so that the primitive has nothing left to draw
     void clearBatch() final;
-    /// Return true if this primitive contains drawwable geometry data
+    /// Return true if this primitive contains drawable geometry data
     bool hasBatch() const final;
     /// Begins gathering information about the given type of primitives.
     void begin(PrimitiveType type) final;

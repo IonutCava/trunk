@@ -45,7 +45,7 @@ public:
     // see the ErrorCode enum in Application.h for the returned value
     bool init(int argc, char **argv);
     void shutdown();
-    bool step();
+    bool step() const;
 
     int errorCode() const;
 

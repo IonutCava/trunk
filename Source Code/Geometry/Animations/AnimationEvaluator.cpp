@@ -126,17 +126,17 @@ AnimEvaluator::FrameIndex AnimEvaluator::frameIndexAt(const D64 elapsedTime) con
 // ------------------------------------------------------------------------------------------------
 // Evaluates the animation tracks for a given time stamp.
 void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
-    D64 pTime = dt * ticksPerSecond();
+    const D64 pTime = dt * ticksPerSecond();
 
     D64 time = 0.0f;
     if (duration() > 0.0) {
         time = std::fmod(pTime, duration());
     }
 
-    frameIndexAt(pTime);
+    const aiQuaternion presentRotationDefault(1, 0, 0, 0);
+
     aiVector3D presentPosition(0, 0, 0);
     aiQuaternion presentRotation(1, 0, 0, 0);
-    aiQuaternion presentRotationDefault(1, 0, 0, 0);
     aiVector3D presentScaling(1, 1, 1);
     
     // calculate the transformations for each animation channel
@@ -165,14 +165,14 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             }
 
             // interpolate between this frame's value and next frame's value
-            U32 nextFrame = (frame + 1) % channel->_positionKeys.size();
+            const U32 nextFrame = (frame + 1) % channel->_positionKeys.size();
 
             const aiVectorKey& key = channel->_positionKeys[frame];
             const aiVectorKey& nextKey = channel->_positionKeys[nextFrame];
             D64 diffTime = nextKey.mTime - key.mTime;
             if (diffTime < 0.0) diffTime += duration();
             if (diffTime > 0) {
-                F32 factor = F32((time - key.mTime) / diffTime);
+                const F32 factor = F32((time - key.mTime) / diffTime);
                 presentPosition =
                     key.mValue + (nextKey.mValue - key.mValue) * factor;
             } else {
@@ -192,14 +192,14 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             }
 
             // interpolate between this frame's value and next frame's value
-            U32 nextFrame = (frame + 1) % channel->_rotationKeys.size();
+            const U32 nextFrame = (frame + 1) % channel->_rotationKeys.size();
 
             const aiQuatKey& key = channel->_rotationKeys[frame];
             const aiQuatKey& nextKey = channel->_rotationKeys[nextFrame];
             D64 diffTime = nextKey.mTime - key.mTime;
             if (diffTime < 0.0) diffTime += duration();
             if (diffTime > 0) {
-                F32 factor = F32((time - key.mTime) / diffTime);
+                const F32 factor = F32((time - key.mTime) / diffTime);
                 presentRotation = presentRotationDefault;
                 aiQuaternion::Interpolate(presentRotation, key.mValue,
                                           nextKey.mValue, factor);

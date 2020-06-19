@@ -146,10 +146,10 @@ struct CommandBase
     virtual ~CommandBase() = default;
 
     virtual void addToBuffer(CommandBuffer* buffer) const = 0;
-    virtual Deleter& getDeleter() const noexcept = 0;
+    [[nodiscard]] virtual Deleter& getDeleter() const noexcept = 0;
 
-    const char* Name() const noexcept { return Names::commandType[to_base(EType)]; }
-    CommandType Type() const noexcept { return EType; }
+    [[nodiscard]] const char* Name() const noexcept { return Names::commandType[to_base(EType)]; }
+    [[nodiscard]] CommandType Type() const noexcept { return EType; }
 
 protected:
     CommandType EType = CommandType::COUNT;
@@ -168,7 +168,7 @@ struct Command : CommandBase {
 protected:
     void DELETE_CMD(GFX::CommandBase*& cmd) noexcept;
 
-    Deleter& getDeleter() const noexcept final {
+    [[nodiscard]] Deleter& getDeleter() const noexcept final {
         static DeleterImpl<T> s_deleter;
         return s_deleter; 
     }
@@ -340,6 +340,7 @@ BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);
 END_COMMAND(EndDebugScopeCommand);
 
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
+    DrawTextCommand(TextElementBatch&& batch) noexcept : _batch(std::move(batch)) {}
     DrawTextCommand(const TextElementBatch& batch) noexcept : _batch(batch) {}
 
     TextElementBatch _batch;

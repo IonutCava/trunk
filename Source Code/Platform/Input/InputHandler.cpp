@@ -4,14 +4,13 @@
 #include "Headers/InputAggregatorInterface.h"
 
 #include "Core/Headers/Kernel.h"
-#include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
 namespace Input {
 
 InputHandler::InputHandler(InputAggregatorInterface& eventListener, Application& app)
-    : _eventListener(eventListener),
-      _app(app)
+    : _app(app),
+      _eventListener(eventListener)
 {
     //Note: We only pass input events to a single listeners. Listeners should forward events where needed instead of doing a loop
     //over all, because where and how we pass input events is very context sensitive: does the SceneManager consume the input or does it pass
@@ -19,7 +18,7 @@ InputHandler::InputHandler(InputAggregatorInterface& eventListener, Application&
 }
 
 namespace {
-    Uint32 GetEventWindowID(SDL_Event event) noexcept {
+    Uint32 GetEventWindowID(const SDL_Event event) noexcept {
         switch (event.type) {
             case SDL_KEYDOWN :
             case SDL_KEYUP   :
@@ -40,6 +39,7 @@ namespace {
 
             case SDL_TEXTINPUT :
                 return event.text.windowID;
+            default: break;
         }
 
         return 0;
@@ -139,6 +139,7 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
                 case 8:
                     arg.button(Input::MouseButton::MB_Button7);
                     break;
+                default: break;
             };
             arg.numCliks(to_U8(event.button.clicks));
             arg.absPosition({ event.button.x, event.button.y });
@@ -236,6 +237,7 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
                     PovMask = to_base(Input::JoystickPovDirection::LEFT) |
                               to_base(Input::JoystickPovDirection::DOWN);
                     break;
+                default: break;
             };
 
             Input::JoystickData jData = {};
@@ -311,7 +313,8 @@ bool InputHandler::onSDLEvent(SDL_Event event) {
             _eventListener.joystickRemap(arg);
             return true;
         };
-    }
+        default: break;
+     }
 
     return false;
 }

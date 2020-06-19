@@ -43,14 +43,14 @@ class ResourceCache;
 class PlatformContext;
 
 /// TiledForwardShading
-class Renderer : public PlatformContextComponent {
+class Renderer final : public PlatformContextComponent {
    public:
     Renderer(PlatformContext& context, ResourceCache* cache);
     ~Renderer();
 
     void preRender(RenderStagePass stagePass,
                    const Texture_ptr& hizColourTexture,
-                   const size_t samplerHash,
+                   size_t samplerHash,
                    LightPool& lightPool,
                    const Camera* camera,
                    GFX::CommandBuffer& bufferInOut) const;
@@ -64,8 +64,6 @@ class Renderer : public PlatformContextComponent {
     const PostFX& postFX() const noexcept { return *_postFX; }
 
   private:
-    ResourceCache* _resCache = nullptr;
-
     ShaderProgram_ptr _lightCullComputeShader = nullptr;
     ShaderBuffer*     _perTileLightIndexBuffer = nullptr;
     Pipeline*         _lightCullPipeline = nullptr;

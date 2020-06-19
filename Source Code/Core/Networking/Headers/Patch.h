@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PATCH_H_
 #define _PATCH_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 
 struct FileData {

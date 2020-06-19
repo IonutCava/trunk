@@ -5,8 +5,6 @@
 #include <CEGUI/CEGUI.h>
 
 #include "GUI/Headers/GUI.h"
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/PlatformContext.h"
 
 namespace Divide {
 
@@ -16,7 +14,7 @@ CEGUIInput::CEGUIInput(GUI& parent)
 }
 
 // return true if the input was consumed
-bool CEGUIInput::injectKey(bool pressed, const Input::KeyEvent& inKey) {
+bool CEGUIInput::injectKey(const bool pressed, const Input::KeyEvent& inKey) {
     
     bool consumed = false;
     if (pressed) {
@@ -36,7 +34,7 @@ bool CEGUIInput::injectKey(bool pressed, const Input::KeyEvent& inKey) {
     return consumed;
 }
 
-void CEGUIInput::repeatKey(I32 inKey, U32 Char) {
+void CEGUIInput::repeatKey(I32 inKey, const U32 Char) {
     // Now remember the key is still down, so we need to simulate the key being
     // released, and then repressed immediatly
     _parent.getCEGUIContext().injectKeyUp((CEGUI::Key::Scan)inKey);    // Key UP
@@ -60,7 +58,7 @@ bool CEGUIInput::mouseMoved(const Input::MouseMoveEvent& arg) {
         return _parent.getCEGUIContext().injectMouseWheelChange(to_F32(arg.WheelV()));
     }
 
-    vec2<F32> mousePos(to_F32(arg.X().abs), to_F32(arg.Y().abs));
+    const vec2<F32> mousePos(to_F32(arg.X().abs), to_F32(arg.Y().abs));
     return _parent.getCEGUIContext().injectMousePosition(mousePos.x, mousePos.y);
 }
 

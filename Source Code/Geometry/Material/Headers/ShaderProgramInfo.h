@@ -33,9 +33,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SHADER_PROGRAM_INFO_H_
 #define _SHADER_PROGRAM_INFO_H_
 
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-
 namespace Divide {
+
+FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 enum class ShaderBuildStage : U8 {
     QUEUED = 0,

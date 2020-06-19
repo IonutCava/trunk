@@ -12,8 +12,7 @@ namespace Divide {
 
 DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_DEPTH_OF_FIELD),
-    _focalDepth(0.5f),
-    _autoFocus(true)
+    _focalDepth(0.5f)
 {
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -57,7 +56,7 @@ bool DoFPreRenderOperator::ready() const {
     return false;
 }
 
-void DoFPreRenderOperator::reshape(U16 width, U16 height) {
+void DoFPreRenderOperator::reshape(const U16 width, const U16 height) {
     PreRenderOperator::reshape(width, height);
     _constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(width, height));
 }
@@ -73,6 +72,8 @@ void DoFPreRenderOperator::autoFocus(const bool state) {
 }
 
 bool DoFPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+    ACKNOWLEDGE_UNUSED(camera);
+
     const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
     const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
     const TextureData screenTex = screenAtt.texture()->data();

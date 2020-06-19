@@ -33,7 +33,6 @@
 #ifndef _VK_WRAPPER_H_
 #define _VK_WRAPPER_H_
 
-#include "config.h"
 #include "vkPlaceholderObjects.h"
 
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
@@ -42,7 +41,7 @@ namespace Divide {
 class VK_API final : public RenderAPIWrapper {
   public:
     VK_API(GFXDevice& context);
-    ~VK_API();
+    ~VK_API() = default;
 
   protected:
       void idle(bool fast) final;
@@ -51,11 +50,11 @@ class VK_API final : public RenderAPIWrapper {
 
       ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
       void closeRenderingAPI() final;
-      F32 getFrameDurationGPU() const noexcept final;
+      [[nodiscard]] F32 getFrameDurationGPU() const noexcept final;
       void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
       void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
-      vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
-      U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
+      [[nodiscard]] vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
+      [[nodiscard]] U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
       bool setViewport(const Rect<I32>& newViewport) final;
       void onThreadCreated(const std::thread::id& threadID) final;
 };

@@ -33,8 +33,6 @@
 #ifndef _DIVIDE_LIGHT_COMPONENT_H_
 #define _DIVIDE_LIGHT_COMPONENT_H_
 
-#include "config.h"
-
 #include "ECS/Components/Headers/SGNComponent.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
@@ -57,7 +55,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
 
-    static U8 GetThreadGroupSize(U8 optionIn) noexcept {
+    static U8 GetThreadGroupSize(const U8 optionIn) noexcept {
         return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
     }
 
@@ -72,89 +70,89 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     };
 
     /// Create a new light assigned to the specified slot with the specified range
-    explicit Light(SceneGraphNode* sgn, const F32 range, LightType type, LightPool& parentPool);
+    explicit Light(SceneGraphNode* sgn, F32 range, LightType type, LightPool& parentPool);
     virtual ~Light();
 
     /// Get light diffuse colour
-    inline void getDiffuseColour(FColour3& colourOut) const noexcept {
+    void getDiffuseColour(FColour3& colourOut) const noexcept {
         Util::ToFloatColour(_colour.rgb, colourOut);
     }
 
-    inline FColour3 getDiffuseColour() const noexcept {
+    FColour3 getDiffuseColour() const noexcept {
         return Util::ToFloatColour(_colour.rgb);
     }
 
     void setDiffuseColour(const UColour3& newDiffuseColour);
 
-    inline void setDiffuseColour(const FColour3& newDiffuseColour) {
+    void setDiffuseColour(const FColour3& newDiffuseColour) {
         setDiffuseColour(Util::ToByteColour(newDiffuseColour));
     }
 
     /// Light state (on/off)
-    inline void toggleEnabled() noexcept { enabled(!enabled()); }
+    void toggleEnabled() noexcept { enabled(!enabled()); }
 
     /// Get the light type. (see LightType enum)
-    inline const LightType& getLightType() const noexcept { return _type; }
+    const LightType& getLightType() const noexcept { return _type; }
 
     /// Get the distance squared from this light to the specified position
-    inline F32 distanceSquared(const vec3<F32>& pos) const noexcept { return positionCache().distanceSquared(pos); }
+    F32 distanceSquared(const vec3<F32>& pos) const noexcept { return positionCache().distanceSquared(pos); }
 
     /*----------- Shadow Mapping-------------------*/
-     inline const ShadowProperties& getShadowProperties() const noexcept {
+    const ShadowProperties& getShadowProperties() const noexcept {
         return _shadowProperties;
     }
 
-    inline const mat4<F32>& getShadowVPMatrix(U8 index) const noexcept {
+    const mat4<F32>& getShadowVPMatrix(const U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
-    inline mat4<F32>& getShadowVPMatrix(U8 index) noexcept {
+    mat4<F32>& getShadowVPMatrix(const U8 index) noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
-    inline F32 getShadowFloatValues(U8 index) const noexcept {
+    F32 getShadowFloatValues(const U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightPosition[index].w;
     }
 
-    inline const vec4<F32>& getShadowLightPos(U8 index) const noexcept {
+    const vec4<F32>& getShadowLightPos(const U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightPosition[index];
     }
 
-    inline U16 getShadowOffset() const noexcept {
+    U16 getShadowOffset() const noexcept {
         return to_U16(_shadowProperties._lightDetails.y);
     }
 
-    inline void setShadowVPMatrix(U8 index, const mat4<F32>& newValue) {
+    void setShadowVPMatrix(const U8 index, const mat4<F32>& newValue) {
         assert(index < 6);
 
         _shadowProperties._lightVP[index].set(newValue);
     }
 
-    inline void setShadowFloatValue(U8 index, F32 newValue) noexcept {
+    void setShadowFloatValue(const U8 index, const F32 newValue) noexcept {
         assert(index < 6);
 
         _shadowProperties._lightPosition[index].w = newValue;
     }
 
-    inline void setShadowLightPos(U8 index, const vec3<F32>& newValue) {
+    void setShadowLightPos(const U8 index, const vec3<F32>& newValue) {
         vec4<F32>& lightPos = _shadowProperties._lightPosition[index];
         lightPos.set(newValue, lightPos.w);
     }
 
-    inline void setShadowOffset(U16 offset) noexcept {
+    void setShadowOffset(const U16 offset) noexcept {
         _shadowProperties._lightDetails.y = to_F32(offset);
     }
 
-    inline       SceneGraphNode* getSGN()       noexcept { return _sgn; }
-    inline const SceneGraphNode* getSGN() const noexcept { return _sgn; }
+          SceneGraphNode* getSGN()       noexcept { return _sgn; }
+    const SceneGraphNode* getSGN() const noexcept { return _sgn; }
 
     PROPERTY_R(vec3<F32>, positionCache);
     PROPERTY_R(vec3<F32>, directionCache);

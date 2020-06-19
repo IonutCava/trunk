@@ -2,23 +2,16 @@
 
 #include "Headers/LightPool.h"
 
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Graphs/Headers/SceneGraphNode.h"
-#include "Platform/Video/Headers/GFXDevice.h"
-#include "Core/Resources/Headers/ResourceCache.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
+#include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
-#include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/SpotLightComponent.h"
 
 #include <execution>
@@ -33,11 +26,12 @@ std::array<TextureUsage, to_base(ShadowType::COUNT)> LightPool::_shadowLocation 
 
 namespace {
     LightPool::LightList g_sortedLightsContainer = {};
-    const auto MaxLights = [](LightType type) noexcept -> U32 {
+    const auto MaxLights = [](const LightType type) noexcept -> U32 {
         switch (type) {
             case LightType::DIRECTIONAL: return Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS;
             case LightType::POINT: return Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS;
             case LightType::SPOT: return Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS;
+            default: break;
         };
         return 0u;
     };
@@ -224,6 +218,7 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                     std::memcpy(propsTarget._position.data(), propsSource._lightPosition.data(), sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
                     std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP.data(), sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
                 }break;
+                default: break;
             };
         }
 

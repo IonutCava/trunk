@@ -108,9 +108,6 @@ namespace GFX {
             }
         }
 
-        template<>
-        void set(const bool* values, const size_t count, const bool flag);
-
         void clear();
 
         // Most often than not, data will be the size of a mat4 or lower, otherwise we'd just use shader storage buffers
@@ -121,18 +118,18 @@ namespace GFX {
     };
 
     template <>
-    inline void PushConstant::set<bool>(const bool* values, const size_t count, const bool flag) {
-        assert(values != nullptr);
+    inline void PushConstant::set<bool>(const bool* data, const size_t count, const bool flag) {
+        assert(data != nullptr);
 
         if (count == 1) {
             //fast path
-            const I32 value = (*values ? 1 : 0);
+            const I32 value = (*data ? 1 : 0);
             set(&value, 1, flag);
         } else {
             //Slooow. Avoid using in the rendering loop. Try caching
             vectorEASTL<I32> temp(count);
-            std::transform(values, values + count, std::back_inserter(temp),
-                [](bool e) noexcept { return (e ? 1 : 0); });
+            std::transform(data, data + count, std::back_inserter(temp),
+                [](const bool e) noexcept { return (e ? 1 : 0); });
             set(temp.data(), count, flag);
         }
     }

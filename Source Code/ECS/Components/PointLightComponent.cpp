@@ -3,16 +3,14 @@
 #include "Headers/PointLightComponent.h"
 
 #include "Core/Headers/PlatformContext.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Platform/Video/Headers/GFXDevice.h"
-#include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/SceneManager.h"
 
 namespace Divide {
 
 PointLightComponent::PointLightComponent(SceneGraphNode* sgn, PlatformContext& context)
-     : Light(sgn, 20.0f, LightType::POINT, sgn->sceneGraph()->parentScene().lightPool()),
-       BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>(sgn, context)
+     : BaseComponentType<PointLightComponent, ComponentType::POINT_LIGHT>(sgn, context),
+       Light(sgn, 20.0f, LightType::POINT, sgn->sceneGraph()->parentScene().lightPool())
 {
     _shadowProperties._lightDetails.z = 0.025f;
 

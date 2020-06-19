@@ -233,7 +233,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
 
             //ToDo: remove this and change lookup code
-            GFX::SetClippingStateCommand clipStateCmd = {};
+            GFX::SetClippingStateCommand clipStateCmd;
             clipStateCmd._negativeOneToOneDepth = true;
             //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 

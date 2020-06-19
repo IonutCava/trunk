@@ -61,15 +61,15 @@ class NOINITVTABLE PixelBuffer : public GUIDWrapper, public GraphicsResource {
         GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
         bool normalized = true) = 0;
 
-    virtual void updatePixels(const F32* const pixels, U32 pixelCount) = 0;
+    virtual void updatePixels(const F32* pixels, U32 pixelCount) = 0;
 
-    U32 getTextureHandle() const noexcept { return _textureID; }
-    U16 getWidth() const noexcept { return _width; }
-    U16 getHeight() const noexcept { return _height; }
-    U16 getDepth() const noexcept { return _depth; }
-    PBType getType() const noexcept { return _pbtype; }
+    [[nodiscard]] U32 getTextureHandle() const noexcept { return _textureID; }
+    [[nodiscard]] U16 getWidth() const noexcept { return _width; }
+    [[nodiscard]] U16 getHeight() const noexcept { return _height; }
+    [[nodiscard]] U16 getDepth() const noexcept { return _depth; }
+    [[nodiscard]] PBType getType() const noexcept { return _pbtype; }
 
-    TextureData getData() const noexcept { return TextureData{ _textureID,  _textureType }; }
+    [[nodiscard]] TextureData getData() const noexcept { return TextureData{ _textureID,  _textureType }; }
 
    protected:
     PBType _pbtype = PBType::COUNT;

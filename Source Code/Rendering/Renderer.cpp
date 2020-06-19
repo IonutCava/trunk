@@ -39,8 +39,7 @@ namespace {
 };
 
 Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
-    : PlatformContextComponent(context),
-      _resCache(cache)
+    : PlatformContextComponent(context)
 {
     Configuration& config = context.config();
 
@@ -129,7 +128,6 @@ void Renderer::preRender(RenderStagePass stagePass,
     }
 
     const vec2<U16> renderTargetRes(hizColourTexture->width(), hizColourTexture->height());
-    const Rect<I32> viewport(0u, 0u, renderTargetRes.x, renderTargetRes.y);
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer PrePass" });
 

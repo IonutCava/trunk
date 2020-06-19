@@ -101,7 +101,7 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
                                 const ShaderLoadData& data);
    private:
     void UploadPushConstant(const GFX::PushConstant& constant, bool force = false);
-    void Uniform(I32 binding, GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, bool flag) const;
+    void Uniform(I32 binding, GFX::PushConstantType type, const Byte* values, GLsizei byteCount, bool flag) const;
 
     friend class glShaderProgram;
     void dumpBinary();

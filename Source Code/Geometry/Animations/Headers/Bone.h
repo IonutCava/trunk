@@ -37,8 +37,6 @@
 #ifndef BONE_H_
 #define BONE_H_
 
-#include "AnimationUtils.h"
-
 namespace Divide {
 
 class Bone {
@@ -59,8 +57,8 @@ class Bone {
     Bone(const stringImpl& name) noexcept
         : _name(name),
           _nameKey(_ID(name.c_str())),
-          _parent(nullptr),
-          _boneID(-1)
+          _boneID(-1),
+          _parent(nullptr)
     {
     }
 

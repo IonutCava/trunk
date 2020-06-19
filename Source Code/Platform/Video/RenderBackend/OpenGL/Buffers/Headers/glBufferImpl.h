@@ -67,17 +67,17 @@ public:
     explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
 
-    GLuint bufferID() const noexcept;
+    [[nodiscard]] GLuint bufferID() const noexcept;
 
-    bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) const;
+    [[nodiscard]] bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) const;
     void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
-    bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
+    [[nodiscard]] bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data) const;
     void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data) const;
     void zeroMem(size_t offsetInBytes, size_t rangeInBytes) const;
 
-    size_t elementSize() const noexcept;
+    [[nodiscard]] size_t elementSize() const noexcept;
 
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
 

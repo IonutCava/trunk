@@ -15,13 +15,13 @@ namespace Divide {
 glTexture::glTexture(GFXDevice& context,
                      const size_t descriptorHash,
                      const Str256& name,
-                     const stringImpl& assetNames,
-                     const stringImpl& assetLocations,
+                     const stringImpl& resourceName,
+                     const stringImpl& resourceLocation,
                      const bool isFlipped,
                      const bool asyncLoad,
                      const TextureDescriptor& texDescriptor)
 
-    : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor),
+    : Texture(context, descriptorHash, name, resourceName, resourceLocation, isFlipped, asyncLoad, texDescriptor),
       glObject(glObjectType::TYPE_TEXTURE, context),
      _loadingData(_data),
      _lockManager(MemoryManager_NEW glLockManager())
@@ -369,7 +369,7 @@ void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
     }
 }
 
-void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) {
+void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) const {
     const GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
     const GLenum glType = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
     const U32 numLayers = imageData.layerCount();
@@ -391,7 +391,7 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) {
                         mip->_dimensions.width,
                         glFormat,
                         glType,
-                        mip->_size == 0 ? NULL : mip->data());
+                        mip->_size == 0 ? nullptr : mip->data());
                 } break;
                 case TextureType::TEXTURE_2D:
                 case TextureType::TEXTURE_2D_MS: {
@@ -405,7 +405,7 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) {
                         mip->_dimensions.height,
                         glFormat,
                         glType,
-                        mip->_size == 0 ? NULL : mip->data());
+                        mip->_size == 0 ? nullptr : mip->data());
                 } break;
 
                 case TextureType::TEXTURE_3D:
@@ -424,7 +424,7 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) {
                         mip->_dimensions.depth,
                         glFormat,
                         glType,
-                        mip->_size == 0 ? NULL : mip->data());
+                        mip->_size == 0 ? nullptr : mip->data());
                 } break;
                 default: break;
             }

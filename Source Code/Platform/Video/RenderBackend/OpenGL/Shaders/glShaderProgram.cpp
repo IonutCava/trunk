@@ -40,7 +40,7 @@ namespace {
 
             using iterator_type = typename ContainerT::const_iterator;
             iterator_type it = line.begin();
-            wave::token_id id = wave::util::impl::skip_whitespace(it, line.end());
+            const wave::token_id id = wave::util::impl::skip_whitespace(it, line.end());
 
             if (id != wave::T_IDENTIFIER) {
                 return false;       // nothing we could do
@@ -74,12 +74,12 @@ namespace {
         context_type::iterator_type first = ctx.begin();
         const context_type::iterator_type last = ctx.end();
 
-        stringImpl ret = "";
+        stringImpl ret;
         while (first != last) {
             ret.append((*first).get_value().c_str());
             ++first;
         }
-        return ret.c_str();
+        return ret;
     }
     size_t g_validationBufferMaxSize = 4096 * 16;
     UpdateListener s_fileWatcherListener([](std::string_view atomName, FileUpdateEvent evt) {
@@ -124,7 +124,7 @@ void glShaderProgram::destroyStaticData() {
 }
 
 void glShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) {
-    if (!Config::Build::IS_SHIPPING_BUILD) {
+    if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         FileWatcher& watcher = FileWatcherManager::allocateWatcher();
         s_shaderFileWatcherID = watcher.getGUID();
         s_fileWatcherListener.addIgnoredEndCharacter('~');
@@ -241,9 +241,9 @@ void glShaderProgram::validatePostBind() {
 
                 // If we actually have something in the validation log
                 if (length > 1) {
-                    stringImpl validationBuffer = "";
+                    stringImpl validationBuffer;
                     validationBuffer.resize(length);
-                    glGetProgramPipelineInfoLog(_handle, length, NULL, &validationBuffer[0]);
+                    glGetProgramPipelineInfoLog(_handle, length, nullptr, &validationBuffer[0]);
 
                     // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
                     if (validationBuffer.size() > g_validationBufferMaxSize) {
@@ -369,7 +369,7 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
         modules.push_back(shaderDescriptor);
     }
 
-    for (auto it : modulesByFile) {
+    for (const auto& it : modulesByFile) {
         const vectorEASTL<ShaderModuleDescriptor>& modules = it.second;
         assert(!modules.empty());
 
@@ -386,13 +386,13 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
             const size_t definesHash = ShaderProgram::definesHash(shaderDescriptor._defines);
 
             const U8 shaderIdx = to_U8(type);
-            stringImpl header = "";
-            for (auto define : shaderDescriptor._defines) {
+            stringImpl header;
+            for (const auto& define : shaderDescriptor._defines) {
                 // Placeholders are ignored
-                if (define.first.compare("DEFINE_PLACEHOLDER") != 0) {
+                if (define.first != "DEFINE_PLACEHOLDER") {
                     // We manually add define dressing if needed
                     header.append((define.second ? "#define " : ""));
-                    header.append((define.first + "\n").c_str());
+                    header.append(define.first + "\n");
                 }
             }
 
@@ -681,7 +681,7 @@ void glShaderProgram::onAtomChange(std::string_view atomName, FileUpdateEvent ev
 
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     SharedLock<SharedMutex> r_lock(s_programLock);
-    for (auto it : s_shaderPrograms) {
+    for (const auto& it : s_shaderPrograms) {
 
         glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(it.second.first);
 

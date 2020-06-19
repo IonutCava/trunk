@@ -35,7 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "SGNComponent.h"
 #include "Core/Math/Headers/Line.h"
-#include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
 #include "Geometry/Animations/Headers/AnimationEvaluator.h"
 
 namespace Divide {
@@ -73,7 +72,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     bool frameTicked() const noexcept;
 
     Bone* getBoneByName(const stringImpl& bname) const;
-    mat4<F32> getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name);
+    mat4<F32> getBoneTransform(U32 animationID, D64 timeStamp, const stringImpl& name);
     const vectorEASTL<Line>& skeletonLines() const;
     AnimData getAnimationData() const;
     
@@ -81,17 +80,17 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
 
     void resetTimers() noexcept;
-    void incParentTimeStamp(const U64 timestamp) noexcept;
-    void setParentTimeStamp(const U64 timestamp) noexcept;
+    void incParentTimeStamp(U64 timestamp) noexcept;
+    void setParentTimeStamp(U64 timestamp) noexcept;
 
-    inline U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
-    inline AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
-    inline I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
+    U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
+    AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
+    I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
 
-    inline const BoneTransform& transformsByIndex(U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
-    inline AnimEvaluator& getCurrentAnimation() const { return getAnimationByIndex(animationIndex()); }
-    inline void updateAnimator(const SceneAnimator_ptr& animator) noexcept { _animator = animator; }
-    inline I32 animationIndex() const noexcept { return _currentAnimIndex; }
+    const BoneTransform& transformsByIndex(const U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
+    AnimEvaluator& getCurrentAnimation() const { return getAnimationByIndex(animationIndex()); }
+    void updateAnimator(const SceneAnimator_ptr& animator) noexcept { _animator = animator; }
+    I32 animationIndex() const noexcept { return _currentAnimIndex; }
 
     PROPERTY_R(bool, showSkeleton, false);
     PROPERTY_RW(bool, playAnimations, true);
@@ -100,7 +99,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     friend class AnimationSystem;
     template<typename T, typename U>
     friend class ECSSystem;
-    void Update(const U64 deltaTimeUS) final;
+    void Update(U64 deltaTimeUS) final;
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!

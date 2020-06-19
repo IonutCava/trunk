@@ -1311,7 +1311,7 @@ namespace Divide {
                 RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilRef(), stencilRef, "Stencil reference mask", [material, stateHash, tempPass, stencilEnabled, stencilReadMask, sFailOp, sZFailOp, sPassOp, sFunc](const U32& oldVal) {
                     RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setStencil(stencilEnabled, oldVal, sFailOp, sZFailOp, sPassOp, sFunc);
+                    block.setStencil(stencilEnabled, oldVal, sFailOp, sPassOp, sZFailOp, sFunc);
                     material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
                 stencilDirty = true;
@@ -1366,7 +1366,7 @@ namespace Divide {
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sZFailOp, sPassOp, sFunc](const I32& data) {
                                 RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, static_cast<StencilOperation>(data), sZFailOp, sPassOp, sFunc);
+                                block.setStencil(stencilEnabled, stencilRef, static_cast<StencilOperation>(data), sPassOp, sZFailOp, sFunc);
                                 material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
@@ -1397,7 +1397,7 @@ namespace Divide {
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sPassOp, sFunc](const I32& data) {
                                 RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, sFailOp, static_cast<StencilOperation>(data), sPassOp, sFunc);
+                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, static_cast<StencilOperation>(data), sFunc);
                                 material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
@@ -1429,7 +1429,7 @@ namespace Divide {
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sZFailOp, sFunc](const I32& data) {
                                 RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, static_cast<StencilOperation>(data), sFunc);
+                                block.setStencil(stencilEnabled, stencilRef, sFailOp, static_cast<StencilOperation>(data), sZFailOp, sFunc);
                                 material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
@@ -1461,7 +1461,7 @@ namespace Divide {
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp](const I32& data) {
                                 RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp, static_cast<ComparisonFunction>(data));
+                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, sZFailOp,  static_cast<ComparisonFunction>(data));
                                 material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
@@ -1520,7 +1520,7 @@ namespace Divide {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !stencilEnabled, stencilEnabled, "Stencil test", [material, stateHash, tempPass, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc](const bool& oldVal) {
                     RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setStencil(oldVal, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc);
+                    block.setStencil(oldVal, stencilRef, sFailOp, sPassOp, sZFailOp,  sFunc);
                     material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
@@ -1528,7 +1528,7 @@ namespace Divide {
             }
 
             if (stencilDirty) {
-                block.setStencil(stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc);
+                block.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, sZFailOp, sFunc);
                 changed = true;
             }
 

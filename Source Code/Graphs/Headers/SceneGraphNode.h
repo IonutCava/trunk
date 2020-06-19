@@ -128,7 +128,7 @@ public:
     bool removeChildNode(const SceneGraphNode* node, bool recursive = true, bool deleteNode = true);
 
     /// Find a child Node using the given name (either SGN name or SceneNode name)
-    SceneGraphNode* findChild(const U64 nameHash, bool sceneNodeName = false, bool recursive = false) const;
+    SceneGraphNode* findChild(U64 nameHash, bool sceneNodeName = false, bool recursive = false) const;
 
     /// Find a child using the given SGN or SceneNode GUID
     SceneGraphNode* findChild(I64 GUID, bool sceneNodeGuid = false, bool recursive = false) const;
@@ -182,7 +182,7 @@ public:
     }
 
     /// Called from parent SceneGraph
-    void sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState);
+    void sceneUpdate(U64 deltaTimeUS, SceneState& sceneState);
 
     /// Invoked by the contained SceneNode when it finishes all of its internal loading and is ready for processing
     void postLoad();

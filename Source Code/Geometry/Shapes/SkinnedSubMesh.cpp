@@ -4,18 +4,17 @@
 #include "Headers/Mesh.h"
 
 #include "Core/Headers/EngineTaskPool.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Geometry/Animations/Headers/SceneAnimator.h"
 #include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
 
-SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
+SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : SubMesh(context, parentCache, descriptorHash, name),
      _parentAnimatorPtr(nullptr)
 {
-    Object3D::setObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED);
+    setObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED);
 }
 
 SkinnedSubMesh::~SkinnedSubMesh()

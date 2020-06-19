@@ -75,11 +75,11 @@ struct PushConstants {
     }
 
     void clear() noexcept { _data.clear(); }
-    bool empty() const noexcept { return _data.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return _data.empty(); }
     void countHint(const size_t count) { _data.reserve(count); }
 
     vectorEASTL<GFX::PushConstant>& data() noexcept { return _data; }
-    const vectorEASTL<GFX::PushConstant>& data() const noexcept { return _data; }
+    [[nodiscard]] const vectorEASTL<GFX::PushConstant>& data() const noexcept { return _data; }
 };
 
 bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial);

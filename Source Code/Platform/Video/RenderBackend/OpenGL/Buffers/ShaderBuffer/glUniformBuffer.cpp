@@ -19,10 +19,10 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
 {
     _maxSize = (_usage != Usage::CONSTANT_BUFFER) ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
 
-    _allignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
+    _alignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
 
     BufferImplParams implParams;
-    implParams._dataSize = _allignedBufferSize * queueLength();
+    implParams._dataSize = _alignedBufferSize * queueLength();
     implParams._elementSize = _elementSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
@@ -68,12 +68,12 @@ void glUniformBuffer::clearData(const U32 offsetElementCount,
         const size_t rangeInBytes = rangeElementCount * _elementSize;
         size_t offsetInBytes = offsetElementCount * _elementSize;
 
-        assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
+        assert(offsetInBytes + rangeInBytes <= _alignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
         if (queueLength() > 1) {
-            offsetInBytes += queueWriteIndex() * _allignedBufferSize;
+            offsetInBytes += queueWriteIndex() * _alignedBufferSize;
         }
 
         const size_t req = alignmentRequirement(_usage);
@@ -93,12 +93,12 @@ void glUniformBuffer::readData(const U32 offsetElementCount,
         const size_t rangeInBytes = rangeElementCount * _elementSize;
         size_t offsetInBytes = offsetElementCount * _elementSize;
 
-        assert(offsetInBytes + rangeInBytes <= _allignedBufferSize &&
+        assert(offsetInBytes + rangeInBytes <= _alignedBufferSize &&
             "glUniformBuffer::UpdateData error: was called with an "
             "invalid range (buffer overflow)!");
 
         if (queueLength() > 1) {
-            offsetInBytes += queueReadIndex() * _allignedBufferSize;
+            offsetInBytes += queueReadIndex() * _alignedBufferSize;
         }
 
         const size_t req = alignmentRequirement(_usage);
@@ -131,15 +131,15 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
 
     const ptrdiff_t writeRange = rangeInBytes;
     if (rangeInBytes == static_cast<ptrdiff_t>(_elementCount * _elementSize)) {
-        rangeInBytes = _allignedBufferSize;
+        rangeInBytes = _alignedBufferSize;
     }
 
-    DIVIDE_ASSERT(offsetInBytes + rangeInBytes <= (ptrdiff_t)_allignedBufferSize,
+    DIVIDE_ASSERT(offsetInBytes + rangeInBytes <= (ptrdiff_t)_alignedBufferSize,
         "glUniformBuffer::UpdateData error: was called with an "
         "invalid range (buffer overflow)!");
 
     if (queueLength() > 1) {
-        offsetInBytes += queueWriteIndex() * _allignedBufferSize;
+        offsetInBytes += queueWriteIndex() * _alignedBufferSize;
     }
 
     const size_t req = alignmentRequirement(_usage);
@@ -147,11 +147,11 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
         offsetInBytes = (offsetInBytes + req - 1) / req * req;
     }
 
-    bufferImpl()->writeData(offsetInBytes, writeRange, reinterpret_cast<Byte*>(data));
+    bufferImpl()->writeData(offsetInBytes, writeRange, static_cast<Byte*>(data));
 }
 
 bool glUniformBuffer::bindRange(const U8 bindIndex, const U32 offsetElementCount, U32 rangeElementCount) {
-    BufferLockEntry data = {};
+    BufferLockEntry data;
     data._buffer = bufferImpl();
     data._flush = BitCompare(_flags, Flags::ALLOW_THREADED_WRITES);
 
@@ -162,7 +162,7 @@ bool glUniformBuffer::bindRange(const U8 bindIndex, const U32 offsetElementCount
     data._length = to_size(rangeElementCount * _elementSize);
     data._offset = to_size(offsetElementCount * _elementSize);
     if (queueLength() > 1) {
-        data._offset += to_size(queueReadIndex() * _allignedBufferSize);
+        data._offset += to_size(queueReadIndex() * _alignedBufferSize);
     }
     const size_t req = alignmentRequirement(_usage);
     if (data._offset % req != 0) {

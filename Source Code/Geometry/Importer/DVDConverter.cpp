@@ -5,28 +5,24 @@
 #include "Headers/DVDConverter.h"
 #include "Headers/MeshImporter.h"
 
-#include "Utility/Headers/XMLParser.h"
-#include "Core/Headers/StringHelper.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Utility/Headers/Localization.h"
-#include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/File/Headers/FileManagement.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
-#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
-#include "Geometry/Animations/Headers/SceneAnimator.h"
+#include "Core/Headers/StringHelper.h"
 #include "Geometry/Animations/Headers/AnimationUtils.h"
+#include "Geometry/Animations/Headers/SceneAnimator.h"
+#include "Geometry/Shapes/Headers/SkinnedSubMesh.h"
+#include "Platform/File/Headers/FileManagement.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Platform/Video/Headers/GFXDevice.h"
+#include "Utility/Headers/Localization.h"
 
-
-#include <assimp/types.h>
-#include <assimp/scene.h>
-#include <assimp/Logger.hpp>
-#include <assimp/Importer.hpp>
-#include <assimp/Exporter.hpp>
-#include <assimp/LogStream.hpp>
-#include <assimp/postprocess.h>
 #include <assimp/DefaultLogger.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/Logger.hpp>
+#include <assimp/LogStream.hpp>
 #include <assimp/pbrmaterial.h>
+#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/types.h>
 
 #include <meshoptimizer/src/meshoptimizer.h>
 

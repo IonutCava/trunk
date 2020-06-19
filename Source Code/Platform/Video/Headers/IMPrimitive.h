@@ -144,7 +144,7 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
                   F32 length, F32 radius,
                   const UColour4& colour = DefaultColours::WHITE);
 
-    void fromLines(const Line* lines, const size_t count);
+    void fromLines(const Line* lines, size_t count);
 
     PROPERTY_RW(bool, skipPostFX, false);
 

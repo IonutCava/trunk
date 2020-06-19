@@ -1,13 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Configuration.h"
-
-#include "Core/Headers/WindowManager.h"
-
 #include "Utility/Headers/Localization.h"
-
-#include "Platform/Video/Headers/RenderAPIEnums.h"
-#include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 
@@ -191,8 +185,7 @@ bool Configuration::toXML(const char* xmlFile) const {
 }
 
 void Configuration::save() {
-    if (changed()) {
-        toXML(LoadSave._loadPath.c_str());
+    if (changed() && toXML(LoadSave._loadPath.c_str())) {
         changed(false);
     }
 }

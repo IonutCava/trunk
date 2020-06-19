@@ -2,11 +2,9 @@
 
 #include "Headers/SceneNode.h"
 
-#include "Managers/Headers/SceneManager.h"
-#include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
-#include "Geometry/Shapes/Headers/SubMesh.h"
 #include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
+#include "Managers/Headers/SceneManager.h"
 
 #include "ECS/Components/Headers/BoundsComponent.h"
 
@@ -27,11 +25,11 @@ namespace {
     }
 };
 
-SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask)
+SceneNode::SceneNode(ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, const SceneNodeType type, const U32 requiredComponentMask)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
-     _parentCache(parentCache),
      _type(type),
-     _editorComponent("")
+     _editorComponent(""),
+     _parentCache(parentCache)
 {
     std::atomic_init(&_sgnParentCount, 0);
     _requiredComponentMask |= requiredComponentMask;
@@ -40,7 +38,7 @@ SceneNode::SceneNode(ResourceCache* parentCache, size_t descriptorHash, const St
     _boundingBox.setMax(1.0f);
 
     getEditorComponent().name(getTypeName());
-    getEditorComponent().onChangedCbk([this](std::string_view field) {
+    getEditorComponent().onChangedCbk([this](const std::string_view field) {
         editorFieldChanged(field);
     });
 

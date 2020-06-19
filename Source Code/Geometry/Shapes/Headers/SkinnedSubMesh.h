@@ -38,7 +38,7 @@
 namespace Divide {
 
 class AnimationComponent;
-class SkinnedSubMesh : public SubMesh {
+class SkinnedSubMesh final : public SubMesh {
     enum class BoundingBoxState : U8 {
         Computing = 0,
         Computed,
@@ -59,14 +59,14 @@ class SkinnedSubMesh : public SubMesh {
     void onAnimationChange(SceneGraphNode* sgn, I32 newIndex) override;
     const char* getResourceTypeName() const noexcept override { return "SkinnedSubMesh"; }
 
-    void sceneUpdate(const U64 deltaTimeUS,
+    void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
                      SceneState& sceneState) final;
    private:
     void computeBBForAnimation(SceneGraphNode* sgn, I32 animIndex);
     void buildBoundingBoxesForAnim(const Task& parentTask,
                                    I32 animIndex,
-                                   AnimationComponent* const animComp);
+                                   AnimationComponent* animComp);
 
     void updateBB(I32 animIndex);
 

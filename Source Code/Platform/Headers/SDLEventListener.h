@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    class SDLEventListener {
+    class SDLEventListener : NonMovable{
     public:
         SDLEventListener() noexcept;
         virtual ~SDLEventListener();
@@ -45,7 +45,8 @@ namespace Divide {
         // Return true if the event was consumed!
         virtual bool onSDLEvent(SDL_Event event) = 0;
 
-        U64 listenerID() const noexcept { return _listenerID; }
+        [[nodiscard]] U64 listenerID() const noexcept { return _listenerID; }
+
     private:
         U64 _listenerID = 0u;
         static std::atomic<U64> s_listenerIDCounter;

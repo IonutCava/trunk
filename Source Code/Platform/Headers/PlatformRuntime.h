@@ -33,10 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_RUNTIME_H_
 #define _PLATFORM_RUNTIME_H_
 
-namespace std {
-    class thread::id;
-};
-
 namespace Divide {
 namespace Runtime {
 

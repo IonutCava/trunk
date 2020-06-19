@@ -51,7 +51,7 @@ struct InputEvent {
     DisplayWindow* _sourceWindow = nullptr;
 };
 
-struct MouseButtonEvent : public InputEvent {
+struct MouseButtonEvent : InputEvent {
     friend class Attorney::MouseEventKernel;
 
     explicit MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
@@ -62,34 +62,34 @@ struct MouseButtonEvent : public InputEvent {
     PROPERTY_RW(vec2<I32>, absPosition, vec2<I32>(-1));
 
 protected:
-    bool _remaped = false;
+    bool _remapped = false;
 };
 
-struct MouseMoveEvent : public InputEvent {
+struct MouseMoveEvent : InputEvent {
     friend class Attorney::MouseEventKernel;
 
     explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn, bool wheelEvent);
 
-    MouseAxis X() const noexcept;
-    MouseAxis Y() const noexcept;
+    [[nodiscard]] MouseAxis X() const noexcept;
+    [[nodiscard]] MouseAxis Y() const noexcept;
 
-    I32 WheelV() const noexcept;
-    I32 WheelH() const noexcept;
+    [[nodiscard]] I32 WheelV() const noexcept;
+    [[nodiscard]] I32 WheelH() const noexcept;
 
-    vec2<I32> relativePos() const noexcept;
-    vec2<I32> absolutePos() const noexcept;
-    bool remaped() const noexcept;
+    [[nodiscard]] vec2<I32> relativePos() const noexcept;
+    [[nodiscard]] vec2<I32> absolutePos() const noexcept;
+    [[nodiscard]] bool remapped() const noexcept;
 
-    const MouseState& state() const noexcept;
+    [[nodiscard]] const MouseState& state() const noexcept;
     
-    bool wheelEvent() const noexcept;
+    [[nodiscard]] bool wheelEvent() const noexcept;
 
 protected:
     void absolutePos(const vec2<I32>& newPos) noexcept;
 
  private:
     MouseState _stateIn;
-    bool _remaped = false;
+    bool _remapped = false;
     const bool _wheelEvent = false;
 };
 namespace Attorney {
@@ -97,12 +97,12 @@ namespace Attorney {
         private:
             static void absolutePos(MouseMoveEvent& evt, const vec2<I32>& newPos) noexcept {
                 evt.absolutePos(newPos);
-                evt._remaped = true;
+                evt._remapped = true;
             }
 
             static void absolutePos(MouseButtonEvent& evt, const vec2<I32>& pos) noexcept {
                 evt.absPosition(pos);
-                evt._remaped = true;
+                evt._remapped = true;
             }
         friend class Kernel;
     };
@@ -132,6 +132,7 @@ struct KeyEvent : public InputEvent {
 
 class InputAggregatorInterface {
    public:
+    virtual ~InputAggregatorInterface() = default;
     /// Keyboard: return true if input was consumed
     virtual bool onKeyDown(const KeyEvent &arg) = 0;
     virtual bool onKeyUp(const KeyEvent &arg) = 0;

@@ -40,7 +40,7 @@ namespace GFX {
 
 class CommandBufferPool {
  public:
-    static constexpr size_t BuferSize = 8192 * 2;
+    static constexpr size_t BufferSize = 8192 * 2;
 
     CommandBuffer* allocateBuffer();
     void deallocateBuffer(CommandBuffer*& buffer);
@@ -49,10 +49,10 @@ class CommandBufferPool {
 
  private:
     Mutex _mutex;
-    MemoryPool<CommandBuffer, BuferSize> _pool;
+    MemoryPool<CommandBuffer, BufferSize> _pool;
 };
 
-class ScopedCommandBuffer {
+class ScopedCommandBuffer : NonCopyable, NonMovable {
   public:
     ~ScopedCommandBuffer();
     CommandBuffer& operator()() noexcept { return *_buffer; }

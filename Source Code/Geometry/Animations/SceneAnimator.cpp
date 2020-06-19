@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/SceneAnimator.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Headers/AnimationUtils.h"
@@ -27,9 +25,9 @@ void calculateBoneToWorldTransform(Bone* child) {
 }
 
 SceneAnimator::SceneAnimator()
-    : _skeleton(nullptr),
-    _skeletonDepthCache(-1),
-    _maximumAnimationFrames(0)
+    : _maximumAnimationFrames(0),
+      _skeleton(nullptr),
+      _skeletonDepthCache(-1)
 {
 }
 

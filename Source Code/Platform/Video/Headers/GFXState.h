@@ -52,7 +52,7 @@ struct GPUState : private NonCopyable {
             return _resolution == other._resolution &&
                    _bitDepth == other._bitDepth &&
                    _refreshRate == other._refreshRate &&
-                   _formatName.compare(other._formatName) == 0;
+                   _formatName == other._formatName;
         }
     };
 
@@ -61,11 +61,11 @@ struct GPUState : private NonCopyable {
     /// register a new display mode (resolution, bitdepth, etc).
     void registerDisplayMode(U8 displayIndex, const GPUVideoMode& mode);
 
-    size_t getDisplayCount() const noexcept {
+    [[nodiscard]] size_t getDisplayCount() const noexcept {
         return _supportedDisplayModes.size();
     }
 
-    const vectorEASTL<GPUVideoMode>& getDisplayModes(size_t displayIndex) const noexcept {
+    [[nodiscard]] const vectorEASTL<GPUVideoMode>& getDisplayModes(size_t displayIndex) const noexcept {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }

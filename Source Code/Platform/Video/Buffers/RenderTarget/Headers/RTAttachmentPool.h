@@ -45,7 +45,7 @@ public:
 
 public:
     explicit RTAttachmentPool(RenderTarget& parent, U8 colourAttCount);
-    ~RTAttachmentPool();
+    ~RTAttachmentPool() = default;
 
     void copy(const RTAttachmentPool& other);
 
@@ -55,20 +55,20 @@ public:
     // Return true if the attachment was used. False if the call had no effect
     bool clear(RTAttachmentType type, U8 index);
 
-    bool exists(RTAttachmentType type, U8 index) const;
+    [[nodiscard]] bool exists(RTAttachmentType type, U8 index) const;
     RTAttachment_ptr& get(RTAttachmentType type, U8 index);
-    const RTAttachment_ptr& get(RTAttachmentType type, U8 index) const;
+    [[nodiscard]] const RTAttachment_ptr& get(RTAttachmentType type, U8 index) const;
 
-    const PoolEntry& get(RTAttachmentType type) const;
+    [[nodiscard]] const PoolEntry& get(RTAttachmentType type) const;
 
-    U8 attachmentCount(RTAttachmentType type) const noexcept;
+    [[nodiscard]] U8 attachmentCount(RTAttachmentType type) const noexcept;
 
     RenderTarget& parent();
-    const RenderTarget& parent() const;
+    [[nodiscard]] const RenderTarget& parent() const;
 
 private:
-    RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachmentType type, U8 index);
-    const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachmentType type, U8 index) const;
+    RTAttachment_ptr& getInternal(AttachmentPool& pool, RTAttachmentType type, U8 index) const;
+    [[nodiscard]] const RTAttachment_ptr& getInternal(const AttachmentPool& pool, RTAttachmentType type, U8 index) const;
     RTAttachment_ptr& checkAndRemoveExistingAttachment(RTAttachmentType type, U8 index);
 
 private:
@@ -76,7 +76,6 @@ private:
     std::array<U8, to_base(RTAttachmentType::COUNT)> _attachmentCount;
 
     AttachmentPool _attachmentCache;
-    bool _isFrameListener = false;
     RenderTarget& _parent;
 };
 }; //namespace Divide

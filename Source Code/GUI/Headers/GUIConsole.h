@@ -37,7 +37,6 @@
 
 #include <CEGUI/CEGUI.h>
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace CEGUI {
@@ -51,7 +50,7 @@ class ResourceCache;
 class PlatformContext;
 class GUIConsoleCommandParser;
 /// GUIConsole implementation, CEGUI based, as in the practical tutorial series
-class GUIConsole : public PlatformContextComponent {
+class GUIConsole final : public PlatformContextComponent {
    public:
     explicit GUIConsole(GUI& parent, PlatformContext& context, ResourceCache* cache);
     ~GUIConsole();
@@ -61,7 +60,7 @@ class GUIConsole : public PlatformContextComponent {
     /// Return true if console is visible, false if is hidden
     bool isVisible();
 
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
 
     /// Add text to the console Window. Uses a text buffer if the console isn't ready for display yet
     void printText(const Console::OutputEntry& entry);

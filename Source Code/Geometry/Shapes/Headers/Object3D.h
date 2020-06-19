@@ -65,23 +65,24 @@ class Object3D : public SceneNode {
 
     virtual ~Object3D();
 
-    virtual VertexBuffer* const getGeometryVB() const;
-    inline void setGeometryVBDirty() noexcept { _geometryDirty = true; }
+    virtual VertexBuffer* getGeometryVB() const;
+    void setGeometryVBDirty() noexcept { _geometryDirty = true; }
 
-    inline ObjectType getObjectType() const noexcept { return _geometryType; }
+    ObjectType getObjectType() const noexcept { return _geometryType; }
 
-    inline void setObjectFlag(ObjectFlag flag) noexcept {
+    void setObjectFlag(const ObjectFlag flag) noexcept {
         SetBit(_geometryFlagMask, to_U32(flag));
     }
-    inline void clearObjectFlag(ObjectFlag flag) noexcept {
+
+    void clearObjectFlag(const ObjectFlag flag) noexcept {
         ClearBit(_geometryFlagMask, to_U32(flag));
     }
 
-    inline bool getObjectFlag(ObjectFlag flag) const noexcept {
+    bool getObjectFlag(const ObjectFlag flag) const noexcept {
         return BitCompare(_geometryFlagMask, to_U32(flag));
     }
 
-    inline U32 getObjectFlagMask() const noexcept {
+    U32 getObjectFlagMask() const noexcept {
         return _geometryFlagMask;
     }
 
@@ -101,30 +102,30 @@ class Object3D : public SceneNode {
     /// (and all subobjects) on or off
     virtual void playAnimations(const SceneGraphNode* sgn, const bool state);
 
-    inline void setGeometryPartitionID(U8 lodIndex, U16 ID) {
+    void setGeometryPartitionID(const U8 lodIndex, const U16 ID) {
         if (lodIndex < _geometryPartitionIDs.size()) {
             _geometryPartitionIDs[lodIndex] = ID;
         }
     }
 
-    // Procedural geometry deformation support?
-    inline vectorEASTL<vec3<U32> >& getTriangles() noexcept {
+    /// Procedural geometry deformation support?
+    vectorEASTL<vec3<U32> >& getTriangles() noexcept {
         return _geometryTriangles;
     }
 
-    inline const vectorEASTL<vec3<U32> >& getTriangles() const noexcept {
+    const vectorEASTL<vec3<U32> >& getTriangles() const noexcept {
         return _geometryTriangles;
     }
 
-    inline void reserveTriangleCount(U32 size) {
+    void reserveTriangleCount(const U32 size) {
         _geometryTriangles.reserve(size);
     }
 
-    inline void addTriangle(const vec3<U32>& triangle) {
+    void addTriangle(const vec3<U32>& triangle) {
         _geometryTriangles.push_back(triangle);
     }
 
-    inline void addTriangles(const vectorEASTL<vec3<U32>>& triangles) {
+    void addTriangles(const vectorEASTL<vec3<U32>>& triangles) {
         reserveTriangleCount(to_U32(triangles.size() + _geometryTriangles.size()));
         _geometryTriangles.insert(eastl::cend(_geometryTriangles),
                                   eastl::cbegin(triangles),

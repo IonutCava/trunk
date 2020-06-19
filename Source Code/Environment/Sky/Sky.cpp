@@ -444,6 +444,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
+    cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
     cmd._sourceBuffer = _sky->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.baseIndex();
     cmd._cmd.indexCount = to_U32(_sky->getGeometryVB()->getIndexCount());

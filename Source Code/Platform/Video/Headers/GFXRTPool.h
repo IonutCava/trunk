@@ -69,7 +69,7 @@ public:
         return renderTarget(handle._targetID);
     }
 
-    const RenderTarget& renderTarget(const RenderTargetHandle& handle) const noexcept {
+    [[nodiscard]] const RenderTarget& renderTarget(const RenderTargetHandle& handle) const noexcept {
         return renderTarget(handle._targetID);
     }
 
@@ -77,19 +77,19 @@ public:
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    const RenderTarget& renderTarget(RenderTargetID target) const noexcept {
+    [[nodiscard]] const RenderTarget& renderTarget(RenderTargetID target) const noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
     // Bit of a hack, but cleans up a lot of code
-    const RenderTarget& screenTarget() const noexcept;
-    RenderTargetID screenTargetID() const noexcept;
+    [[nodiscard]] const RenderTarget& screenTarget() const noexcept;
+    [[nodiscard]] RenderTargetID screenTargetID() const noexcept;
 
     vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
         return _renderTargets[to_U32(target)];
     }
 
-    const vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
+    [[nodiscard]] const vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
         return _renderTargets[to_U32(target)];
     }
 

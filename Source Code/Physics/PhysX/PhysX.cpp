@@ -1,23 +1,16 @@
 #include "stdafx.h"
 
 #include "Headers/PhysX.h"
-#include "Headers/PhysXSceneInterface.h"
-#include "Utility/Headers/Localization.h"
-#include "Core/Headers/Application.h"
 #include "Graphs/Headers/SceneGraphNode.h"
-#include "Geometry/Shapes/Headers/Object3D.h"
-#include "Geometry/Shapes/Headers/Mesh.h"
-#include "Geometry/Shapes/Headers/SubMesh.h"
+#include "Headers/PhysXSceneInterface.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
+#include "Utility/Headers/Localization.h"
 
 // Connecting the SDK to Visual Debugger
-#include <pvd/PxPvd.h>
-#include <extensions/PxDefaultErrorCallback.h>
 #include <extensions/PxDefaultAllocator.h>
-#include <foundation/PxAllocatorCallback.h>
+#include <extensions/PxDefaultErrorCallback.h>
+#include <pvd/PxPvd.h>
 // PhysX includes //
-
-#include <cstddef>
 
 namespace Divide {
 
@@ -33,16 +26,16 @@ hashMap<stringImpl, physx::PxTriangleMesh*> PhysX::_gMeshCache;
 
 
 PhysX::PhysX()
-    : _gPhysicsSDK(nullptr),
-      _foundation(nullptr),
+    : _targetScene(nullptr),
+      _simulationSpeed(1.0f),
+      _gPhysicsSDK(nullptr),
       _cooking(nullptr),
-      _targetScene(nullptr),
-      _transport(nullptr),
-      _pvd(nullptr),
-      _accumulator(0.0f),
-      _timeStepFactor(0),
+      _foundation(nullptr),
       _timeStep(0.0f),
-      _simulationSpeed(1.0f)
+      _timeStepFactor(0),
+      _accumulator(0.0f),
+      _pvd(nullptr),
+      _transport(nullptr)
 {
 }
 
@@ -51,7 +44,7 @@ PhysX::~PhysX()
     assert(_gPhysicsSDK == nullptr);
 }
 
-ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
+ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
     Console::printfn(Locale::get(_ID("START_PHYSX_API")));
 
     _simulationSpeed = simSpeed;
@@ -61,7 +54,7 @@ ErrorCode PhysX::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
                                      _gDefaultErrorCallback);
     assert(_foundation != nullptr);
 
-    bool recordMemoryAllocations = false;
+    bool recordMemoryAllocations;
 
     if_constexpr(Config::Build::IS_DEBUG_BUILD || Config::Build::IS_PROFILE_BUILD) {
 

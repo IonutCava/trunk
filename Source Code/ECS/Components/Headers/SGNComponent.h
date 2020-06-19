@@ -93,8 +93,8 @@ struct Factory {
     }
 
     template <typename T, ComponentType::_enumerated C>
-    struct Registrar : public ECS::Component<T>,
-                       public Base
+    struct Registrar : ECS::Component<T>,
+                       Base
     {
         template<typename... InnerArgs>
         Registrar(InnerArgs&&... args)
@@ -162,14 +162,14 @@ class SGNComponent : protected PlatformContextComponent,
         explicit SGNComponent(Key key, ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context);
         virtual ~SGNComponent();
 
-        virtual void PreUpdate(const U64 deltaTime);
-        virtual void Update(const U64 deltaTime);
-        virtual void PostUpdate(const U64 deltaTime);
+        virtual void PreUpdate(U64 deltaTime);
+        virtual void Update(U64 deltaTime);
+        virtual void PostUpdate(U64 deltaTime);
 
         virtual void OnData(const ECS::CustomEvent& data);
 
-        inline SceneGraphNode* getSGN() const noexcept { return _parentSGN; }
-        inline ComponentType type() const noexcept { return _type; }
+        SceneGraphNode* getSGN() const noexcept { return _parentSGN; }
+        ComponentType type() const noexcept { return _type; }
 
         EditorComponent& getEditorComponent() noexcept { return _editorComponent; }
         const EditorComponent& getEditorComponent() const noexcept { return _editorComponent; }

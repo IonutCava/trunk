@@ -33,12 +33,10 @@
 #ifndef _GENERIC_VERTEX_DATA_H
 #define _GENERIC_VERTEX_DATA_H
 
-#include "config.h"
-
 #include "AttributeDescriptor.h"
 #include "Core/Headers/RingBuffer.h"
-#include "Platform/Video/Headers/RenderAPIWrapper.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
+#include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 /// This class is used to upload generic VB data to the GPU that can be rendered directly or instanced.
 /// Use this class to create precise VB data with specific usage (such as particle systems)
@@ -71,7 +69,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
      };
 
    public:
-    GenericVertexData(GFXDevice& context, const U32 ringBufferLength, const char* name = nullptr);
+    GenericVertexData(GFXDevice& context, U32 ringBufferLength, const char* name = nullptr);
     virtual ~GenericVertexData();
 
     virtual void setIndexBuffer(const IndexBuffer& indices, BufferUpdateFrequency updateFrequency);
@@ -88,7 +86,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     virtual void updateBuffer(U32 buffer,
                               U32 elementCount,
                               U32 elementCountOffset,
-                              const bufferPtr data) = 0;
+                              bufferPtr data) = 0;
 
     virtual void setBufferBindOffset(U32 buffer, U32 elementCountOffset) = 0;
     

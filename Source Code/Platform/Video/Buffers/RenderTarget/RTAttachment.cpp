@@ -23,10 +23,6 @@ RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescripto
 {
 }
 
-RTAttachment::~RTAttachment()
-{
-}
-
 const Texture_ptr& RTAttachment::texture(const bool autoResolve) const {
     return (autoResolve && isExternal()) ? _externalAttachment->texture() : _texture;
 }

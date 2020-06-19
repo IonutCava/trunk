@@ -57,7 +57,7 @@ class ThreadPool
 {
 public:
 
-    explicit ThreadPool(TaskPool& parent, const U32 threadCount);
+    explicit ThreadPool(TaskPool& parent, U32 threadCount);
     ~ThreadPool();
 
     // Add a new task to the pool's queue
@@ -67,7 +67,7 @@ public:
     void join();
 
     // Wait for all running jobs to finish
-    void wait() noexcept;
+    void wait() const noexcept;
 
     void executeOneTask(bool waitForTask);
 
@@ -75,8 +75,8 @@ public:
 
 protected:
     bool dequeTask(bool waitForTask, PoolTask& taskOut);
-    void onThreadCreate(const std::thread::id& threadID);
-    void onThreadDestroy(const std::thread::id& threadID);
+    void onThreadCreate(const std::thread::id& threadID) const;
+    void onThreadDestroy(const std::thread::id& threadID) const;
 
 protected:
     TaskPool& _parent;
