@@ -24,10 +24,6 @@ Mesh::Mesh(GFXDevice& context,
     _boundingBox.reset();
 }
 
-Mesh::~Mesh()
-{
-}
-
 void Mesh::postImport() {
     recomputeBB();
 }
@@ -114,7 +110,7 @@ void Mesh::postLoad(SceneGraphNode* sgn) {
         RenderingComponent* rComp = sgn->get<RenderingComponent>();
         if (rComp != nullptr) {
             RenderingComponent* subRComp = subSGN->get<RenderingComponent>();
-            for (auto it : rComp->getShaderBuffers()) {
+            for (const auto& it : rComp->getShaderBuffers()) {
                 subRComp->addShaderBuffer(it);
             }
         }

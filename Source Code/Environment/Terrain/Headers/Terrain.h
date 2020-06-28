@@ -91,6 +91,21 @@ class Terrain final : public Object3D {
 
 
    public:
+       enum class WireframeMode : U8
+       {
+           NONE = 0,
+           EDGES,
+           NORMALS,
+           COUNT
+       };
+
+       enum class ParallaxMode : U8
+       {
+           NONE = 0,
+           NORMAL,
+           OCCLUSION
+       };
+
        struct Vert {
            vec3<F32> _position;
            vec3<F32> _normal;
@@ -173,8 +188,8 @@ class Terrain final : public Object3D {
     std::shared_ptr<TerrainDescriptor> _descriptor;
 
     //0 - normal, 1 - wireframe, 2 - normals
-    std::array<ShaderProgram_ptr, to_base(TerrainDescriptor::WireframeMode::COUNT)> _terrainColourShader;
-    std::array<ShaderProgram_ptr, to_base(TerrainDescriptor::WireframeMode::COUNT)> _terrainPrePassShader;
+    std::array<ShaderProgram_ptr, to_base(WireframeMode::COUNT)> _terrainColourShader;
+    std::array<ShaderProgram_ptr, to_base(WireframeMode::COUNT)> _terrainPrePassShader;
 };
 
 namespace Attorney {
@@ -210,7 +225,7 @@ class TerrainLoader {
         terrain._tessParams.fromDescriptor(descriptor);
     }
 
-    static void setShaderProgram(Terrain& terrain, const ShaderProgram_ptr& shader, bool prePass, TerrainDescriptor::WireframeMode mode) noexcept {
+    static void setShaderProgram(Terrain& terrain, const ShaderProgram_ptr& shader, const bool prePass, const Terrain::WireframeMode mode) noexcept {
         if (!prePass) {
             terrain._terrainColourShader[to_base(mode)] = shader;
         } else {
@@ -218,7 +233,7 @@ class TerrainLoader {
         }
     }
 
-    [[nodiscard]] static const ShaderProgram_ptr& getShaderProgram(Terrain& terrain, bool prePass, TerrainDescriptor::WireframeMode mode) noexcept {
+    [[nodiscard]] static const ShaderProgram_ptr& getShaderProgram(Terrain& terrain, const bool prePass, const Terrain::WireframeMode mode) noexcept {
         if (!prePass) {
             return terrain._terrainColourShader[to_base(mode)];
         }

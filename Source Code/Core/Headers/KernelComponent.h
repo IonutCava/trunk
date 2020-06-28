@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Kernel;
-class KernelComponent : public NonCopyable, private NonMovable {
+class KernelComponent : public NonCopyable, NonMovable {
 
 public:
     KernelComponent(Kernel& parent) noexcept : _parent(parent)
@@ -45,8 +45,8 @@ public:
 
     virtual ~KernelComponent() = default;
 
-    inline Kernel& parent()  noexcept { return _parent; }
-    inline const Kernel& parent() const  noexcept { return _parent; }
+    [[nodiscard]] Kernel& parent()  noexcept { return _parent; }
+    [[nodiscard]] const Kernel& parent() const  noexcept { return _parent; }
 
 protected:
     Kernel& _parent;

@@ -29,13 +29,11 @@ namespace {
         TextureUsage::OPACITY,
         TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
     };
-
-    constexpr U32 g_materialTexturesCount = sizeof(g_materialTextures) / sizeof(g_materialTextures[0]);
 };
 
 
 namespace TypeUtil {
-    const char* TextureUsageToString(TextureUsage texUsage) noexcept {
+    const char* TextureUsageToString(const TextureUsage texUsage) noexcept {
         return Names::textureUsage[to_base(texUsage)];
     }
 
@@ -49,7 +47,7 @@ namespace TypeUtil {
         return TextureUsage::COUNT;
     }
 
-    const char* BumpMethodToString(BumpMethod bumpMethod) noexcept {
+    const char* BumpMethodToString(const BumpMethod bumpMethod) noexcept {
         return Names::bumpMethod[to_base(bumpMethod)];
     }
 
@@ -63,7 +61,7 @@ namespace TypeUtil {
         return BumpMethod::COUNT;
     }
 
-    const char* ShadingModeToString(ShadingMode shadingMode) noexcept {
+    const char* ShadingModeToString(const ShadingMode shadingMode) noexcept {
         return Names::shadingMode[to_base(shadingMode)];
     }
 
@@ -77,7 +75,7 @@ namespace TypeUtil {
         return ShadingMode::COUNT;
     }
 
-    const char* TextureOperationToString(TextureOperation textureOp) noexcept {
+    const char* TextureOperationToString(const TextureOperation textureOp) noexcept {
         return Names::textureOperation[to_base(textureOp)];
     }
 
@@ -121,7 +119,8 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
-      _parentCache(parentCache)
+      _parentCache(parentCache),
+      _defaultRenderStates{}
 {
     const ShaderProgramInfo defaultShaderInfo = {};
     // Could just direct copy the arrays, but this looks cool
@@ -1290,9 +1289,7 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
     hashMap<size_t, U32> previousHashValues;
 
     U32 samplerCount = 0u;
-    for (U8 i = 0; i < g_materialTexturesCount; ++i) {
-        const TextureUsage usage = g_materialTextures[i];
-
+    for (const TextureUsage usage : g_materialTextures) {
         Texture_wptr tex = getTexture(usage);
         if (!tex.expired()) {
             const Texture_ptr texture = tex.lock();
@@ -1325,8 +1322,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
 
     std::atomic_uint loadTasks = 0;
 
-    for (U8 i = 0; i < g_materialTexturesCount; ++i) {
-        const TextureUsage usage = g_materialTextures[i];
+    for (const TextureUsage usage : g_materialTextures) {
 
         if (pt.get_child_optional(((entryName + ".texture.") + TypeUtil::TextureUsageToString(usage)) + ".name")) {
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);

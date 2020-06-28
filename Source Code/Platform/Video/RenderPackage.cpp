@@ -38,7 +38,7 @@ void RenderPackage::set(const RenderPackage& other) {
     _isInstanced = other._isInstanced;
 }
 
-void RenderPackage::setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept {
+void RenderPackage::setLoDIndexOffset(const U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept {
     if (lodIndex < _lodIndexOffsets.size()) {
         _lodIndexOffsets[lodIndex] = std::make_pair(indexOffset, indexCount);
     }

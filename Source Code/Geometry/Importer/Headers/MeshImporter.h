@@ -108,15 +108,15 @@ namespace Divide {
 
         struct ImportData {
             ImportData(const Str256& modelPath, const Str64& modelName)
-                : _modelPath(modelPath),
-                  _modelName(modelName)
+                : _modelName(modelName),
+                  _modelPath(modelPath)
             {
                 _vertexBuffer = nullptr;
                 _hasAnimations = false;
                 _skeleton = nullptr;
                 _loadedFromFile = false;
             }
-            ~ImportData();
+            ~ImportData() = default;
 
             bool saveToFile(PlatformContext& context, const Str256& path, const Str64& fileName);
             bool loadFromFile(PlatformContext& context, const Str256& path, const Str64& fileName);
@@ -147,7 +147,7 @@ namespace Divide {
     {
         public:
             static bool loadMeshDataFromFile(PlatformContext& context, ResourceCache* cache, Import::ImportData& dataOut);
-            static bool loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn);
+            static bool loadMesh(const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn);
 
         protected:
             static Material_ptr loadSubMeshMaterial(PlatformContext& context, ResourceCache* cache, const Import::MaterialData& importData, bool skinned);

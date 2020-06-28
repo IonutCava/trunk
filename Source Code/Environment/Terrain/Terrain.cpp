@@ -547,13 +547,11 @@ void Terrain::getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) 
 
 void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
     pt.put("descriptor", _descriptor->getVariable("descriptor"));
-    pt.put("wireframeDebugMode", to_base(_descriptor->wireframeDebug()));
-    pt.put("parallaxMappingMode", to_base(_descriptor->parallaxMode()));
     pt.put("waterCaustics", _descriptor->getVariable("waterCaustics"));
     pt.put("underwaterAlbedoTexture", _descriptor->getVariable("underwaterAlbedoTexture"));
     pt.put("underwaterDetailTexture", _descriptor->getVariable("underwaterDetailTexture"));
-    pt.put("tileNoiseTexture", _descriptor->getVariable("tileNoiseTexture"));
     pt.put("underwaterTileScale", _descriptor->getVariablef("underwaterTileScale"));
+    pt.put("tileNoiseTexture", _descriptor->getVariable("tileNoiseTexture"));
     Object3D::saveToXML(pt);
 }
 

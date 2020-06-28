@@ -228,7 +228,6 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiScenePointer,
                             to_U16(currentMesh->mMaterialIndex),
                             Str128(subMeshTemp.name()) + "_material",
-                            subMeshTemp.boneCount() > 0,
                             true);
 
 
@@ -386,7 +385,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
             indices.i = 0;
             weights.reset();
             // guaranteed to be max 4 thanks to aiProcess_LimitBoneWeights 
-            for (U8 a = 0; a < weightsPerVertex[j].size(); ++a) {
+            for (size_t a = 0; a < weightsPerVertex[j].size(); ++a) {
                 indices.b[a] = to_U8(weightsPerVertex[j][a]._boneID);
                 weights[a] = weightsPerVertex[j][a]._boneWeight;
             }
@@ -495,9 +494,9 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
 void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
                                        const aiScene* source,
                                        const U16 materialIndex,
-                                       Str128 materialName,
-                                       bool skinned,
-                                       bool convertHeightToBumpMap) {
+                                       const Str128& materialName,
+                                       bool convertHeightToBumpMap) const
+{
 
     const aiMaterial* mat = source->mMaterials[materialIndex];
 

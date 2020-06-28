@@ -42,7 +42,7 @@ class LocalClient final : public ASIO,
                           public KernelComponent {
 public:
     LocalClient(Kernel& parent);
-    ~LocalClient();
+    ~LocalClient() = default;
 
 private:
     /// Define this functions to implement various packet handling (a switch

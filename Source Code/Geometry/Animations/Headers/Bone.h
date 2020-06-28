@@ -71,7 +71,7 @@ class Bone {
         MemoryManager::DELETE_CONTAINER(_children);
     }
 
-    inline size_t hierarchyDepth() const {
+    [[nodiscard]] size_t hierarchyDepth() const {
         size_t size = _children.size();
         for (const Bone* child : _children) {
             size += child->hierarchyDepth();
@@ -80,11 +80,11 @@ class Bone {
         return size;
     }
 
-    inline Bone* find(const stringImpl& name) {
+    [[nodiscard]] Bone* find(const stringImpl& name) {
         return find(_ID(name.c_str()));
     }
 
-    inline Bone* find(U64 nameKey) {
+    [[nodiscard]] Bone* find(const U64 nameKey) {
         if (_nameKey == nameKey) {
             return this;
         }
@@ -99,18 +99,18 @@ class Bone {
         return nullptr;
     }
 
-    inline void createBoneList(vectorEASTL<Bone*>& boneList) {
+    void createBoneList(vectorEASTL<Bone*>& boneList) {
         boneList.push_back(this);
         for (Bone* child : _children) {
             child->createBoneList(boneList);
         }
     }
 
-    inline const stringImpl& name() const noexcept {
+    [[nodiscard]] const stringImpl& name() const noexcept {
         return _name;
     }
 
-    inline void name(const stringImpl& name) {
+    void name(const stringImpl& name) {
         _name = name;
         _nameKey = _ID(name.c_str());
     }

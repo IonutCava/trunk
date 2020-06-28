@@ -160,7 +160,7 @@ class SGNComponent : protected PlatformContextComponent,
 {
     public:
         explicit SGNComponent(Key key, ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context);
-        virtual ~SGNComponent();
+        virtual ~SGNComponent() = default;
 
         virtual void PreUpdate(U64 deltaTime);
         virtual void Update(U64 deltaTime);

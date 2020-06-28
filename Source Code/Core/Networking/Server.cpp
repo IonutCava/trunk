@@ -63,7 +63,7 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
     }
 }
 
-void Server::handle_accept(tcp_session_ptr session, const boost::system::error_code& ec) {
+void Server::handle_accept(const tcp_session_ptr& session, const boost::system::error_code& ec) {
     if (!ec) {
         if (_debugOutput) {
             ASIO::LOG_PRINT("New TCP session accepted");

@@ -14,10 +14,6 @@ LocalClient::LocalClient(Kernel& parent) : ASIO(), KernelComponent(parent)
 {
 }
 
-LocalClient::~LocalClient()
-{
-}
-
 void LocalClient::handlePacket(WorldPacket& p) {
     switch (p.opcode()) {
     case OPCodes::MSG_HEARTBEAT:

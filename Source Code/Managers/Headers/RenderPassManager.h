@@ -103,7 +103,7 @@ public:
     RenderPass& addRenderPass(const Str64& renderPassName,
                               U8 orderKey,
                               RenderStage renderStage,
-                              vectorEASTL<U8> dependencies = {},
+                              const vectorEASTL<U8>& dependencies = {},
                               bool usePerformanceCounters = false);
     /// Find a render pass by name and remove it from the manager
     void removeRenderPass(const Str64& name);

@@ -37,7 +37,7 @@ void ShaderComputeQueue::idle() {
 }
 
 // Processes a queue element on the spot
-void ShaderComputeQueue::process(ShaderQueueElement& element) {
+void ShaderComputeQueue::process(ShaderQueueElement& element) const {
     element._shaderDescriptor.waitForReady(false);
     element._shaderRef = CreateResource<ShaderProgram>(_cache, element._shaderDescriptor);
 }

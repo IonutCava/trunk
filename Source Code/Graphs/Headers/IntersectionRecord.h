@@ -79,7 +79,7 @@ class IntersectionRecord
     /// check the object identities between the two intersection records. If they match in either order, we have a duplicate.
     bool operator==(const IntersectionRecord& otherRecord);
 
-    inline bool isEmpty() const {
+    [[nodiscard]] bool isEmpty() const noexcept {
         return _intersectedObject1 == nullptr && _intersectedObject2 == nullptr;
     }
 };

@@ -41,7 +41,7 @@ namespace Divide {
 class LoadSave {
 public:
     static bool loadScene(Scene& activeScene);
-    static bool saveScene(const Scene& activeScene, bool toCache, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback);
+    static bool saveScene(const Scene& activeScene, bool toCache, const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback);
 
     static bool saveNodeToXML(const Scene& activeScene, const SceneGraphNode* node);
     static bool loadNodeFromXML(const Scene& activeScene, SceneGraphNode* node);
@@ -94,17 +94,17 @@ public:
 
     void idle();
 
-    vectorEASTL<Str256> sceneNameList(bool sorted = true) const;
+    [[nodiscard]] vectorEASTL<Str256> sceneNameList(bool sorted = true) const;
 
     Scene& getActiveScene();
-    const Scene& getActiveScene() const;
+    [[nodiscard]] const Scene& getActiveScene() const;
 
     void setActiveScene(Scene* scene);
 
     bool init(PlatformContext& platformContext, ResourceCache* cache);
     void destroy();
 
-    U8 getActivePlayerCount() const noexcept { return _activePlayerCount; }
+    [[nodiscard]] U8 getActivePlayerCount() const noexcept { return _activePlayerCount; }
 
     void addSelectionCallback(const DELEGATE<void, U8, const vectorEASTL<SceneGraphNode*>&>& selectionCallback) {
         _selectionChangeCallbacks.push_back(selectionCallback);
@@ -123,7 +123,7 @@ public:
     void onGainFocus();
 
     /// Check if the scene was loaded properly
-    bool checkLoadFlag() const {
+    [[nodiscard]] bool checkLoadFlag() const {
         return Attorney::SceneManager::checkLoadFlag(getActiveScene());
     }
     /// Update animations, network data, sounds, triggers etc.
@@ -155,49 +155,49 @@ public:
 
     void onSizeChange(const SizeChangeParams& params);
 
-    U8 playerPass() const noexcept { return _currentPlayerPass; }
+    [[nodiscard]] U8 playerPass() const noexcept { return _currentPlayerPass; }
 
     template <typename T, class Factory>
     bool register_new_ptr(Factory& factory, BOOST_DEDUCED_TYPENAME Factory::id_param_type id) {
         return factory.register_creator(id, new_ptr<T>());
     }
 
-    bool saveActiveScene(bool toCache, bool deferred, DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
+    bool saveActiveScene(bool toCache, bool deferred, const DELEGATE<void, std::string_view>& msgCallback = {}, const DELEGATE<void, bool>& finishCallback = {});
 
-    AI::Navigation::DivideRecast* recast() const noexcept { return _recast.get(); }
+    [[nodiscard]] AI::Navigation::DivideRecast* recast() const noexcept { return _recast.get(); }
 
-    SceneEnvironmentProbePool* getEnvProbes() const;
+    [[nodiscard]] SceneEnvironmentProbePool* getEnvProbes() const;
 
 public:  /// Input
   /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key) override;
+    [[nodiscard]] bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key) override;
+    [[nodiscard]] bool onKeyUp(const Input::KeyEvent& key) override;
     /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
     /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickPovMoved(const Input::JoystickEvent& arg) override;
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
-    bool joystickBallMoved(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickBallMoved(const Input::JoystickEvent& arg) override;
     // return true if input was consumed
-    bool joystickAddRemove(const Input::JoystickEvent& arg) override;
-    bool joystickRemap(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickAddRemove(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
+    [[nodiscard]] bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
+    [[nodiscard]] bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
+    [[nodiscard]] bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
-    bool onUTF8(const Input::UTF8Event& arg) override;
+    [[nodiscard]] bool onUTF8(const Input::UTF8Event& arg) override;
 
-    bool switchScene(const Str256& name,
-                     bool unloadPrevious,
-                     const Rect<U16>& targetRenderViewport,
-                     bool threaded = true);
+    [[nodiscard]] bool switchScene(const Str256& name,
+                                   bool unloadPrevious,
+                                   const Rect<U16>& targetRenderViewport,
+                                   bool threaded = true);
 
 
     /// Called if a mouse move event was captured by a different system (editor, gui, etc).
@@ -229,11 +229,11 @@ protected:
     // Returns true if the player was previously registered
     // On success, player pointer will be reset
     void removePlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue);
-    vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const;
+    [[nodiscard]] vectorEASTL<SceneGraphNode*> getNodesInScreenRect(const Rect<I32>& screenRect, const Camera& camera, const Rect<I32>& viewport) const;
 
 protected:
-    bool frameStarted(const FrameEvent& evt) override;
-    bool frameEnded(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameStarted(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameEnded(const FrameEvent& evt) override;
     void preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut);
     void postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut);
     void preRenderAllPasses(const Camera* playerCamera);
@@ -243,8 +243,8 @@ protected:
     void prepareLightData(RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix);
     void generateShadowMaps(GFX::CommandBuffer& bufferInOut);
 
-    Camera* playerCamera() const;
-    Camera* playerCamera(PlayerIndex idx) const;
+    [[nodiscard]] Camera* playerCamera() const;
+    [[nodiscard]] Camera* playerCamera(PlayerIndex idx) const;
     void currentPlayerPass(PlayerIndex idx);
     void moveCameraToNode(const SceneGraphNode* targetNode) const;
     bool saveNode(const SceneGraphNode* targetNode) const;

@@ -20,8 +20,8 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descri
                 resourceLocation,
                 SceneNodeType::TYPE_OBJECT3D,
                 to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
-
     _context(context),
+    _geometryPartitionIDs{},
     _geometryFlagMask(flagMask),
     _geometryType(type),
     _rigidBodyShape(RigidBodyShape::SHAPE_COUNT)
@@ -64,10 +64,6 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descri
     };
 
     _editorComponent.name(getTypeName());
-}
-
-Object3D::~Object3D()
-{
 }
 
 
@@ -148,7 +144,7 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
 
     if (pkgInOut.autoIndexBuffer()) {
         U16 prevID = 0;
-        for (U8 i = 0; i < _geometryPartitionIDs.size(); ++i) {
+        for (U8 i = 0; i < to_U8(_geometryPartitionIDs.size()); ++i) {
             U16 id = _geometryPartitionIDs[i];
             if (id == std::numeric_limits<U16>::max()) {
                 assert(i > 0);

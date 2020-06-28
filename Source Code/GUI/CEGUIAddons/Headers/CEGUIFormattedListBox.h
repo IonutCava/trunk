@@ -42,7 +42,7 @@ class FormattedListboxTextItem : public ListboxTextItem {
    public:
     ///! Constructor
     FormattedListboxTextItem(
-        const String& text, Colour col,
+        const String& text, const Colour& col,
         const HorizontalTextFormatting format = HTF_LEFT_ALIGNED,
         const uint item_id = 0, void* const item_data = 0,
         const bool disabled = false, const bool auto_delete = true);

@@ -9,8 +9,4 @@ namespace Divide {
     {
     }
 
-    BoundsSystem::~BoundsSystem()
-    {
-    }
-
 }; //namespace Divide

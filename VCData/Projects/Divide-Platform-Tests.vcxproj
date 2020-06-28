@@ -150,14 +150,13 @@
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <EnableModules>false</EnableModules>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <SDLCheck>true</SDLCheck>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch_d.pch</PrecompiledHeaderOutputFile>
       <SupportJustMyCode>false</SupportJustMyCode>
@@ -208,12 +207,11 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <StringPooling>true</StringPooling>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <SDLCheck>true</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <AdditionalOptions> /Zc:twoPhase-</AdditionalOptions>
@@ -221,7 +219,7 @@ $(OutDir)Test-Engine_d.exe nopause</Command>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>false</SupportJustMyCode>
       <CompileAsWinRT>false</CompileAsWinRT>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch.pch</PrecompiledHeaderOutputFile>
     </ClCompile>
@@ -269,12 +267,11 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <SDLCheck>true</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <EnableModules>false</EnableModules>
       <AdditionalOptions> /Zc:twoPhase- /Zc:twoPhase- /d2cgsummary</AdditionalOptions>
@@ -284,6 +281,7 @@ $(OutDir)Test-Engine.exe nopause</Command>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch_p.pch</PrecompiledHeaderOutputFile>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

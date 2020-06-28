@@ -17,10 +17,6 @@ SkinnedSubMesh::SkinnedSubMesh(GFXDevice& context, ResourceCache* parentCache, c
     setObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED);
 }
 
-SkinnedSubMesh::~SkinnedSubMesh()
-{
-}
-
 /// After we loaded our mesh, we need to add submeshes as children nodes
 void SkinnedSubMesh::postLoad(SceneGraphNode* sgn) {
     if (_parentAnimatorPtr == nullptr) {
@@ -46,15 +42,17 @@ void SkinnedSubMesh::sceneUpdate(const U64 deltaTimeUS,
 }
 
 /// update possible animations
-void SkinnedSubMesh::onAnimationChange(SceneGraphNode* sgn, I32 newIndex) {
+void SkinnedSubMesh::onAnimationChange(SceneGraphNode* sgn, const I32 newIndex) {
     computeBBForAnimation(sgn, newIndex);
 
     Object3D::onAnimationChange(sgn, newIndex);
 }
 
 void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
-                                               I32 animationIndex,
+                                               const I32 animationIndex,
                                                AnimationComponent* const animComp) {
+    ACKNOWLEDGE_UNUSED(parentTask);
+
     if (animationIndex < 0) {
         return;
     }

@@ -9,11 +9,6 @@ namespace Divide {
     {
     }
 
-    RenderingSystem::~RenderingSystem()
-    {
-
-    }
-
     bool RenderingSystem::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
         RenderingComponent* rComp = sgn->GetComponent<RenderingComponent>();
         if (rComp != nullptr && !rComp->saveCache(outputBuffer)) {

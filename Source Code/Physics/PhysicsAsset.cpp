@@ -8,8 +8,4 @@ PhysicsAsset::PhysicsAsset(RigidBodyComponent& parent)
 {
 }
 
-PhysicsAsset::~PhysicsAsset()
-{
-}
-
 }; //namespace Divide

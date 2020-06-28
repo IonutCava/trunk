@@ -44,10 +44,6 @@ SceneNode::SceneNode(ResourceCache* parentCache, const size_t descriptorHash, co
 
 }
 
-SceneNode::~SceneNode()
-{
-}
-
 const char* SceneNode::getTypeName() const {
     return Names::sceneNodeType[to_base(_type)];
 }

@@ -39,7 +39,7 @@ namespace Divide {
 class ScriptComponent final : public BaseComponentType<ScriptComponent, ComponentType::SCRIPT> {
    public:
     explicit ScriptComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-    ~ScriptComponent();
+    ~ScriptComponent() = default;
 
     void Update(U64 deltaTimeUS) final;
 

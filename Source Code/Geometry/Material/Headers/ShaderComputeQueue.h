@@ -67,7 +67,7 @@ public:
     // processes each entry
     void idle();
     // Processes a queue element on the spot
-    void process(ShaderQueueElement& element);
+    void process(ShaderQueueElement& element) const;
     // Push a process request at the front of the queue
     void addToQueueFront(const ShaderQueueElement& element);
     // Push a process request at the end of the queue

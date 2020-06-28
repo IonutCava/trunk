@@ -151,7 +151,9 @@ void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
         _GUI->modifyText("globalMessage",
                          Util::StringFormat("Please wait while scene [ %s ] is loading", _sceneToLoad.c_str()),
                          false);
-        _parent.switchScene(_sceneToLoad, false, Rect<U16>(0, 0, drawSize.width, drawSize.height));
+        if (!_parent.switchScene(_sceneToLoad, false, Rect<U16>(0, 0, drawSize.width, drawSize.height))) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _sceneToLoad.clear();
     }
 

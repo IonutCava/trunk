@@ -12,11 +12,7 @@ UnitComponent::UnitComponent(SceneGraphNode* parentSGN, PlatformContext& context
 {
 }
 
-UnitComponent::~UnitComponent()
-{
-}
-
-bool UnitComponent::setUnit(Unit_ptr unit) {
+bool UnitComponent::setUnit(const Unit_ptr unit) {
     if (!_unit) {
         _unit = unit;
         Attorney::UnitComponent::setParentNode(_unit.get(), _parentSGN);

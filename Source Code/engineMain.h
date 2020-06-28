@@ -37,7 +37,7 @@ namespace Divide {
 
 class Application;
 class StreamBuffer;
-class Engine {
+class Engine : NonCopyable, NonMovable {
 public:
     Engine();
     ~Engine();
@@ -47,14 +47,10 @@ public:
     void shutdown();
     bool step() const;
 
-    int errorCode() const;
+    [[nodiscard]] I32 errorCode() const;
 
 private:
-    Engine(const Engine&) = delete;
-    Engine& operator=(const Engine&) = delete;
-
-private:
-    int _errorCode;
+    I32 _errorCode = 0;
     eastl::unique_ptr<Application> _app;
     StreamBuffer* _outputStreams[2];
 };

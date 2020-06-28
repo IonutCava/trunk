@@ -69,9 +69,9 @@ public:
     void setBounds(const vec3<F32>& min, const vec3<F32>& max);
     void setBounds(const vec3<F32>& center, F32 radius);
 
-    F32 distanceSqTo(const vec3<F32>& pos) const;
+    [[nodiscard]] F32 distanceSqTo(const vec3<F32>& pos) const;
     
-    std::array<Camera*, 6> probeCameras() const noexcept;
+    [[nodiscard]] std::array<Camera*, 6> probeCameras() const noexcept;
 
     //Only "dirty" probes gets refreshed. A probe might get dirty if, for example, a reflective node
     //gets rendered that has this probe as the nearest one
@@ -83,7 +83,7 @@ PROPERTY_R_IW(U16, rtLayerIndex, 0u);
 protected:
     void OnData(const ECS::CustomEvent& data) final;
 
-    SceneGraphNode* findNodeToIgnore() const noexcept;
+    [[nodiscard]] SceneGraphNode* findNodeToIgnore() const noexcept;
 
 protected:
     BoundingBox _aabb, _refaabb;

@@ -334,11 +334,11 @@ public:  // Accessors and Mutators
     inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
     inline void onThreadCreated(const std::thread::id& threadID) const;
 
-    static void setFrameInterpolationFactor(const D64 interpolation) noexcept { s_interpolationFactor = interpolation; }
-    static D64 getFrameInterpolationFactor() noexcept { return s_interpolationFactor; }
-    static void setGPUVendor(GPUVendor gpuVendor) noexcept { s_GPUVendor = gpuVendor; }
+    static void FrameInterpolationFactor(const D64 interpolation) noexcept { s_interpolationFactor = interpolation; }
+    static D64 FrameInterpolationFactor() noexcept { return s_interpolationFactor; }
+    static void setGPUVendor(const GPUVendor gpuVendor) noexcept { s_GPUVendor = gpuVendor; }
     static GPUVendor getGPUVendor() noexcept { return s_GPUVendor; }
-    static void setGPURenderer(GPURenderer gpuRenderer) noexcept { s_GPURenderer = gpuRenderer; }
+    static void setGPURenderer(const GPURenderer gpuRenderer) noexcept { s_GPURenderer = gpuRenderer; }
     static GPURenderer getGPURenderer() noexcept { return s_GPURenderer; }
 
 public:

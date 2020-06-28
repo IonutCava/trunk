@@ -8,7 +8,7 @@
 
 namespace Divide {
     namespace {
-        stringImpl GetFullFieldName(const char* componentName, Str32 fieldName) {
+        stringImpl GetFullFieldName(const char* componentName, const Str32& fieldName) {
             constexpr std::array<std::string_view, 6> InvalidXMLStrings = {
                 " ", "[", "]", "...", "..", "."
             };
@@ -176,9 +176,7 @@ namespace Divide {
                         mat->loadFromXML(entryName, pt);
                     }break;
                     default:
-                    case EditorComponentFieldType::DROPDOWN_TYPE: {
-
-                    }break;
+                    case EditorComponentFieldType::DROPDOWN_TYPE:
                     case EditorComponentFieldType::BUTTON: {
                         // Skip
                     }  break;

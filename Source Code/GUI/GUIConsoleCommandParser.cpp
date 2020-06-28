@@ -45,25 +45,21 @@ GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, Resou
     _commandHelp[_ID("invalidhelp")] = Locale::get(_ID("CONSOLE_INVALID_HELP_ARGUMENT"));
 }
 
-GUIConsoleCommandParser::~GUIConsoleCommandParser()
-{
-}
-
 bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
     // Be sure we have a string longer than 0
     if (commandString.length() >= 1) {
         // Check if the first letter is a 'command' operator
         if (commandString.at(0) == '/') {
-            stringImpl::size_type commandEnd = commandString.find(" ", 1);
+            stringImpl::size_type commandEnd = commandString.find(' ', 1);
             stringImpl command = commandString.substr(1, commandEnd - 1);
             stringImpl commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
 
-            if (commandString.compare(commandArgs) == 0) {
+            if (commandString != commandArgs) {
                 commandArgs.clear();
             }
             // convert command to lower case
-            for (stringImpl::size_type i = 0; i < command.length(); i++) {
-                command[i] = static_cast<char>(tolower(command[i]));
+            for (auto& it : command) {
+                it = static_cast<char>(tolower(it));
             }
             if (_commands.find(_ID(command.c_str())) != std::end(_commands)) {
                 // we have a valid command

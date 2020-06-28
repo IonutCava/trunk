@@ -44,7 +44,7 @@ namespace Divide {
     class ECSManager : public PlatformContextComponent {
         public:
             ECSManager(PlatformContext& context, ECS::ECSEngine& engine);
-            ~ECSManager();
+            ~ECSManager() = default;
 
             bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) const;
             bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) const;

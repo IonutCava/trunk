@@ -39,11 +39,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-    class BoundsSystem : public PlatformContextComponent,
-                         public ECSSystem<BoundsSystem, BoundsComponent> {
+    class BoundsSystem final : public PlatformContextComponent,
+                               public ECSSystem<BoundsSystem, BoundsComponent> {
        public:
         BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
-        virtual ~BoundsSystem();
+        virtual ~BoundsSystem() = default;
     };
 };
 

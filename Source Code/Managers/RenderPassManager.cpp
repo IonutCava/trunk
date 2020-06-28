@@ -47,7 +47,8 @@ namespace Divide {
           _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
           _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer")),
           _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
-          _blitToDisplayTimer(&Time::ADD_TIMER("Flush Buffers Timer"))
+          _blitToDisplayTimer(&Time::ADD_TIMER("Flush Buffers Timer")),
+          _drawCallCount{}
     {
         _buildCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
@@ -273,7 +274,7 @@ namespace Divide {
 RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
                                              const U8 orderKey,
                                              const RenderStage renderStage,
-                                             const vectorEASTL<U8> dependencies,
+                                             const vectorEASTL<U8>& dependencies,
                                              const bool usePerformanceCounters) {
     assert(!renderPassName.empty());
 
@@ -443,7 +444,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
 
         params._drawCommandsInOut->clear();
 
-        const D64 interpFactor = _context.getFrameInterpolationFactor();
+        const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
 
         bufferParams._writeIndex = bufferData._cmdBuffer->queueWriteIndex();

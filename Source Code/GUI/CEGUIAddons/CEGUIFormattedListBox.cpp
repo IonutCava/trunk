@@ -5,7 +5,7 @@
 namespace CEGUI {
 //----------------------------------------------------------------------------//
 FormattedListboxTextItem::FormattedListboxTextItem(
-    const String& text, Colour col, const HorizontalTextFormatting format,
+    const String& text, const Colour& col, const HorizontalTextFormatting format,
     const uint item_id, void* const item_data, const bool disabled,
     const bool auto_delete)
     :  // initialise base class

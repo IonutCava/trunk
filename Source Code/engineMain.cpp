@@ -32,8 +32,8 @@ private:
 };
 
 Engine::Engine() 
-    : _errorCode(0),
-      _app(eastl::make_unique<Application>())
+    : _app(eastl::make_unique<Application>()),
+      _outputStreams{}
 {
     std::set_new_handler(out_of_memory);
     _outputStreams[0] = new StreamBuffer((Paths::g_logPath + OUTPUT_LOG_FILE).c_str());

@@ -65,6 +65,8 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _DIVIDE_FORMAT_CONVERTER_H_
 
 #include "Geometry/Material/Headers/Material.h"
+#include "GLIM/Declarations.h"
+#include "GLIM/Declarations.h"
 
 struct aiMesh;
 struct aiScene;
@@ -98,9 +100,8 @@ class DVDConverter {
     void loadSubMeshMaterial(Import::MaterialData& material,
                              const aiScene* source,
                              U16 materialIndex,
-                             Str128 materialName,
-                             bool skinned,
-                             bool convertHeightToBumpMap);
+                             const Str128& materialName,
+                             bool convertHeightToBumpMap) const;
 
   private:
     void   buildGeometryBuffers(PlatformContext& context, Import::ImportData& target);

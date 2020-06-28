@@ -51,7 +51,7 @@ class GUIText : public GUIElementBase<GUIType::GUI_TEXT>, public TextElement {
             CEGUI::Window* parent,
             U8 fontSize = 16u);
 
-    const RelativePosition2D& getPosition() const;
+    [[nodiscard]] const RelativePosition2D& getPosition() const;
 };
 
 };  // namespace Divide

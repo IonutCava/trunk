@@ -41,7 +41,7 @@ FWD_DECLARE_MANAGED_CLASS(Unit);
 class UnitComponent final : public BaseComponentType<UnitComponent, ComponentType::UNIT> {
 public:
     UnitComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-    ~UnitComponent();
+    ~UnitComponent() = default;
 
     // This call will take ownership of the specified pointer!
     bool setUnit(Unit_ptr unit);

@@ -129,7 +129,7 @@ void Octree::update(const U64 deltaTimeUS) {
 
         updateIntersectionCache(s_intersectionsObjectCache, _nodeMask);
 
-        for(IntersectionRecord ir : _intersectionsCache) {
+        for(const IntersectionRecord& ir : _intersectionsCache) {
             handleIntersection(ir);
         }
     }
@@ -259,8 +259,8 @@ void Octree::buildTree() {
 
     //This will contain all of our objects which fit within each respective octant.
     vectorEASTL<SceneGraphNode*> octList[8];
-    for (U8 i = 0; i < 8; ++i) {
-        octList[i].reserve(8);
+    for (auto& list : octList) {
+        list.reserve(8);
     }
 
     //this list contains all of the objects which got moved down the tree and can be delisted from this node.

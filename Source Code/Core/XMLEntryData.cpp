@@ -16,10 +16,6 @@ XMLEntryData::XMLEntryData() : XML::IXMLSerializable()
     serverAddress = "192.168.0.2";
 }
 
-XMLEntryData::~XMLEntryData()
-{
-}
-
 bool XMLEntryData::fromXML(const char* xmlFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
 

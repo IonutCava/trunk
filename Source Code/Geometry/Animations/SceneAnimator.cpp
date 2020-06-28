@@ -72,7 +72,7 @@ bool SceneAnimator::init(PlatformContext& context) {
         D64 dt = 0;
         for (D64 ticks = 0; ticks < duration; ticks += tickStep) {
             dt += timestep;
-            calculate((I32)i, dt);
+            calculate(to_I32(i), dt);
             transforms.resize(_skeletonDepthCache, MAT4_IDENTITY);
             for (I32 a = 0; a < _skeletonDepthCache; ++a) {
                 Bone* bone = _bones[a];

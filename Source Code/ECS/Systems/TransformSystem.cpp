@@ -11,10 +11,6 @@ namespace Divide {
     {
     }
 
-    TransformSystem::~TransformSystem()
-    {
-    }
-
     bool TransformSystem::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) {
         TransformComponent* tComp = sgn->GetComponent<TransformComponent>();
         if (tComp != nullptr && !tComp->saveCache(outputBuffer)) {

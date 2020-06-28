@@ -41,8 +41,9 @@ class RigidBodyComponent;
 class PhysicsAsset : public ITransform {
 public:
     explicit PhysicsAsset(RigidBodyComponent& parent);
-    virtual ~PhysicsAsset();
-    RigidBodyComponent& getParent() { return _parentComponent; }
+    virtual ~PhysicsAsset() = default;
+
+    [[nodiscard]] RigidBodyComponent& getParent() const { return _parentComponent; }
 
 protected:
     RigidBodyComponent & _parentComponent;

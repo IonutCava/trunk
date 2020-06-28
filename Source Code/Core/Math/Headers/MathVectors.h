@@ -213,8 +213,14 @@ class vec2 {
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
     vec2 &operator/=(const vec2<U> &v) noexcept { this->set(*this / v); return *this; }
 
-    [[nodiscard]]       T &operator[](I32 i)       noexcept { return this->_v[i]; }
-    [[nodiscard]] const T &operator[](I32 i) const noexcept { return this->_v[i]; }
+    template<typename U,
+        typename = typename std::enable_if<std::is_integral<U>::value>::type,
+        typename = typename std::enable_if<std::is_unsigned<U>::value>::type>
+    [[nodiscard]]       T &operator[](U i)       noexcept { return this->_v[i]; }
+    template<typename U,
+        typename = typename std::enable_if<std::is_integral<U>::value>::type,
+        typename = typename std::enable_if<std::is_unsigned<U>::value>::type>
+    [[nodiscard]] const T &operator[](U i) const noexcept { return this->_v[i]; }
 
     [[nodiscard]] vec2 operator/(const vec2 &v) const noexcept {
         return vec2(IS_ZERO(v.x) ? this->x : this->x / v.x,
@@ -400,7 +406,14 @@ class vec3 {
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
     vec3 &operator/=(const vec3<U> &v) noexcept { this->set(*this / v); return *this; }
 
-    [[nodiscard]] T &operator[](const I32 i) noexcept { return this->_v[i]; }
+    template<typename U,
+        typename = typename std::enable_if<std::is_integral<U>::value>::type,
+        typename = typename std::enable_if<std::is_unsigned<U>::value>::type>
+    [[nodiscard]] T &operator[](const U i) noexcept { return this->_v[i]; }
+    template<typename U,
+        typename = typename std::enable_if<std::is_integral<U>::value>::type,
+        typename = typename std::enable_if<std::is_unsigned<U>::value>::type>
+    [[nodiscard]] const T &operator[](const U i) const noexcept { return this->_v[i]; }
 
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
     [[nodiscard]] vec3 operator/(const vec3<U> &v) const noexcept {
@@ -668,8 +681,14 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     [[nodiscard]] operator T *() { return this->_v; }
     [[nodiscard]] operator const T *() const { return this->_v; }
 
-    [[nodiscard]] T &operator[](I32 i) noexcept { return this->_v[i]; }
-    [[nodiscard]] const T &operator[](I32 _i) const noexcept { return this->_v[_i]; }
+    template<typename U,
+        typename = typename std::enable_if<std::is_integral<U>::value>::type,
+        typename = typename std::enable_if<std::is_unsigned<U>::value>::type>
+    [[nodiscard]] T &operator[](U i) noexcept { return this->_v[i]; }
+    template<typename U,
+        typename = typename std::enable_if<std::is_integral<U>::value>::type,
+        typename = typename std::enable_if<std::is_unsigned<U>::value>::type>
+    [[nodiscard]] const T &operator[](U _i) const noexcept { return this->_v[_i]; }
 
     /// GLSL like accessors (const to prevent erroneous usage like .xyz() += n)
     [[nodiscard]] vec2<T> rb()  const noexcept { return vec2<T>(this->r, this->b); }

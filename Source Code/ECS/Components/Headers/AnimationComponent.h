@@ -66,31 +66,31 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     /// Select previous available animation
     bool playPreviousAnimation();
 
-    I32 frameCount(U32 animationID) const;
+    [[nodiscard]] I32 frameCount(U32 animationID) const;
 
-    U32 boneCount() const;
-    bool frameTicked() const noexcept;
+    [[nodiscard]] U32 boneCount() const;
+    [[nodiscard]] bool frameTicked() const noexcept;
 
-    Bone* getBoneByName(const stringImpl& bname) const;
-    mat4<F32> getBoneTransform(U32 animationID, D64 timeStamp, const stringImpl& name);
-    const vectorEASTL<Line>& skeletonLines() const;
-    AnimData getAnimationData() const;
+    [[nodiscard]] Bone* getBoneByName(const stringImpl& bname) const;
+    [[nodiscard]] mat4<F32> getBoneTransform(U32 animationID, D64 timeStamp, const stringImpl& name) const;
+    [[nodiscard]] const vectorEASTL<Line>& skeletonLines() const;
+    [[nodiscard]] AnimData getAnimationData() const;
     
-    AnimEvaluator& getAnimationByIndex(I32 animationID) const;
-    const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
+    [[nodiscard]] AnimEvaluator& getAnimationByIndex(I32 animationID) const;
+    [[nodiscard]] const BoneTransform& transformsByIndex(U32 animationID, U32 index) const;
 
     void resetTimers() noexcept;
     void incParentTimeStamp(U64 timestamp) noexcept;
     void setParentTimeStamp(U64 timestamp) noexcept;
 
-    U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
-    AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
-    I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
+    [[nodiscard]] U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
+    [[nodiscard]] AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
+    [[nodiscard]] I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
 
-    const BoneTransform& transformsByIndex(const U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
-    AnimEvaluator& getCurrentAnimation() const { return getAnimationByIndex(animationIndex()); }
+    [[nodiscard]] const BoneTransform& transformsByIndex(const U32 index) const { return transformsByIndex(_currentAnimIndex, index); }
+    [[nodiscard]] AnimEvaluator& getCurrentAnimation() const { return getAnimationByIndex(animationIndex()); }
     void updateAnimator(const SceneAnimator_ptr& animator) noexcept { _animator = animator; }
-    I32 animationIndex() const noexcept { return _currentAnimIndex; }
+    [[nodiscard]] I32 animationIndex() const noexcept { return _currentAnimIndex; }
 
     PROPERTY_R(bool, showSkeleton, false);
     PROPERTY_RW(bool, playAnimations, true);

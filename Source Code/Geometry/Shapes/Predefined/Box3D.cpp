@@ -37,8 +37,8 @@ Box3D::Box3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHa
         vb->modifyNormalValue(i, vertices[i]);
     }
 
-    for (U8 i = 0; i < 14; i++) {
-        vb->addIndex(indices[i]);
+    for (const U16 idx : indices) {
+        vb->addIndex(idx);
     }
 
     vb->create(false);

@@ -44,7 +44,7 @@ class PhysicsSceneInterface : public SceneComponent,
    public:
     explicit PhysicsSceneInterface(Scene& parentScene);
 
-    virtual ~PhysicsSceneInterface() {}
+    virtual ~PhysicsSceneInterface() = default;
     /// Pre PHYSICS_DEVICE initialisation call
     virtual bool init() = 0;
     /// Called on interface destruction

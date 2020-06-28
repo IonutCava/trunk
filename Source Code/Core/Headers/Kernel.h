@@ -121,7 +121,7 @@ struct LoopTimingData {
     }
 
     /// Returns 0 if the loop is frozen
-    inline U64 timeDeltaUS() const noexcept {
+    [[nodiscard]] U64 timeDeltaUS() const noexcept {
         return _freezeLoopTime ? 0ULL : _currentTimeDeltaUS;
     }
 };

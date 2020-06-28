@@ -81,7 +81,7 @@ class GUIElement : public GUIDWrapper {
 
     static constexpr GUIType Type = GUIType::COUNT;
 
-    virtual GUIType type() const noexcept { return Type; }
+    [[nodiscard]] virtual GUIType type() const noexcept { return Type; }
 
   protected:
     CEGUI::Window* _parent;
@@ -98,7 +98,7 @@ struct GUIElementBase : public GUIElement {
 
     static constexpr GUIType Type = EnumVal;
 
-    GUIType type() const noexcept override { return Type; }
+    [[nodiscard]] GUIType type() const noexcept override { return Type; }
 };
 
 };  // namespace Divide

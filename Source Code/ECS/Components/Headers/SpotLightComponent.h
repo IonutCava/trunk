@@ -49,13 +49,13 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
     /// If this is true, we render a cone narrow cone to approximate the light's direction
     PROPERTY_RW(bool, showDirectionCone, false);
 
-    F32 outerConeRadius() const noexcept;
-    F32 innerConeRadius() const noexcept;
-    F32 coneSlantHeight() const noexcept;
+    [[nodiscard]] F32 outerConeRadius() const noexcept;
+    [[nodiscard]] F32 innerConeRadius() const noexcept;
+    [[nodiscard]] F32 coneSlantHeight() const noexcept;
 
    protected:
     void OnData(const ECS::CustomEvent& data) final;
-    void setDirection(const vec3<F32>& direction);
+    void setDirection(const vec3<F32>& direction) const;
 
    private:
      bool _drawImpostor = false;

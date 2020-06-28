@@ -350,30 +350,51 @@ vec3 LerpDebugColours(in vec3 cIn[5], vec2 uv) {
 #endif
 
 float getHeight(in vec2 tex_coord) {
-#if 1
-#if 1
-    const float h = texture(TexTerrainHeight, tex_coord).r;
-#else
-    const ivec3 off = ivec3(-1, 0, 1);
-    const float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r;
-    const float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r;
-    const float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r;
-    const float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r;
-
-    const float h = (s01 + s21 + s10 + s12) * 0.25f;
-#endif
-#else
-    const vec4 s = textureGather(TexTerrainHeight, tex_coord, 0);
-    const float h = (s.x + s.y + s.z + s.w) * 0.25f;
-#endif
-
-    return TERRAIN_HEIGHT * h + TERRAIN_HEIGHT_OFFSET;
+    return TERRAIN_HEIGHT * texture(TexTerrainHeight, tex_coord).r + TERRAIN_HEIGHT_OFFSET;
 }
 
 vec2 worldXZtoHeightUV(in vec2 worldXZ) {
     const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
     return saturate(0.5f * uv + 0.5f);
 }
+
+#if !defined(PER_PIXEL_NORMALS)
+vec3 getVertNormal(in vec2 tex_coord) {
+    const ivec3 off = ivec3(-1, 0, 1);
+
+    const float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r; //-1,  0
+    const float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r; // 1,  0
+    const float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r; // 0, -1
+    const float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r; // 0,  1
+
+    const float hL = TERRAIN_HEIGHT * s01 + TERRAIN_HEIGHT_OFFSET;
+    const float hR = TERRAIN_HEIGHT * s21 + TERRAIN_HEIGHT_OFFSET;
+    const float hD = TERRAIN_HEIGHT * s10 + TERRAIN_HEIGHT_OFFSET;
+    const float hU = TERRAIN_HEIGHT * s12 + TERRAIN_HEIGHT_OFFSET;
+
+    // deduce terrain normal
+    return normalize(vec3(hL - hR, 2.0f, hD - hU));
+}
+
+void computeNormalData(in vec2 uv) {
+    const vec3 N = getVertNormal(uv);
+    _out._normalWV = mat3(dvd_ViewMatrix) * N;
+
+#if !defined(USE_DEFERRED_NORMALS)
+    _out._tbnViewDir = vec3(0.0f);
+#else //!USE_DEFERRED_NORMALS
+    const mat3 normalMatrix = mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
+
+    const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
+    const vec3 T = cross(N, B);
+
+    const mat3 TBN = mat3(normalMatrix * T, normalMatrix * B, normalMatrix * N);
+    _out._tbnWV = mat3(dvd_ViewMatrix) * TBN;
+    _out._tbnViewDir = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - _out._vertexW.xyz));
+#endif//!USE_DEFERRED_NORMALS
+}
+
+#endif //PER_PIXEL_NORMALS
 
 void main()
 {
@@ -388,9 +409,13 @@ void main()
     _out._texCoord = worldXZtoHeightUV(pos.xz);
     _out._vertexW = dvd_Matrices[DATA_IDX]._worldMatrix * vec4(pos.x, getHeight(_out._texCoord), pos.z, 1.0f);
     setClipPlanes();
-
+    
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
     _out._vertexWVP = dvd_ProjectionMatrix * _out._vertexWV;
+
+#if !defined(PER_PIXEL_NORMALS)
+    computeNormalData(_out._texCoord);
+#endif //PER_PIXEL_NORMALS
 
 #if !defined(PRE_PASS) && !defined(SHADOW_PASS)
     _out._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - _out._vertexW.xyz);

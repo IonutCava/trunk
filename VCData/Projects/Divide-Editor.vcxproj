@@ -166,15 +166,14 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <EnableModules>false</EnableModules>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/bigobj /Zc:twoPhase- /Zc:twoPhase-</AdditionalOptions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SupportJustMyCode>false</SupportJustMyCode>
-      <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch_d.pch</PrecompiledHeaderOutputFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
@@ -202,7 +201,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -216,7 +215,6 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <CompileAsWinRT>false</CompileAsWinRT>
       <FloatingPointExceptions>false</FloatingPointExceptions>
@@ -227,7 +225,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>false</SupportJustMyCode>
@@ -268,7 +266,6 @@
       <OpenMPSupport>true</OpenMPSupport>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
-      <SDLCheck>true</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <CompileAsWinRT>false</CompileAsWinRT>
       <FloatingPointExceptions>false</FloatingPointExceptions>
@@ -277,13 +274,14 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalOptions>/bigobj /Zc:twoPhase-  /Zc:twoPhase-   /d2cgsummary</AdditionalOptions>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>false</SupportJustMyCode>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch_p.pch</PrecompiledHeaderOutputFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Lib>
       <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>

@@ -343,7 +343,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         CLAMP_01(interpolationFactor);
     }
 
-    GFXDevice::setFrameInterpolationFactor(interpolationFactor);
+    GFXDevice::FrameInterpolationFactor(interpolationFactor);
     
     // Update windows and get input events
     SDLEventManager::pollEvents();

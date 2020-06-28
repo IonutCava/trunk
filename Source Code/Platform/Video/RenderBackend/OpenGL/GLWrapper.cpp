@@ -1017,13 +1017,13 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
     static_cast<glShaderProgram*>(program)->UploadPushConstants(pushConstants);
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const {
+bool GL_API::draw(const GenericDrawCommand& cmd, const U32 cmdBufferOffset) const {
     OPTICK_EVENT();
 
     if (cmd._sourceBuffer._id == 0) {
         getStateTracker().setActiveVAO(s_dummyVAO);
 
-        U32 indexCount;
+        U32 indexCount = 0u;
         switch (cmd._primitiveType) {
             case PrimitiveType::TRIANGLES: indexCount = cmd._drawCount * 3; break;
             case PrimitiveType::API_POINTS: indexCount = cmd._drawCount; break;

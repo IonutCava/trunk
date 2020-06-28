@@ -72,9 +72,9 @@ class SubMesh : public Object3D {
                      const Str256& name,
                      ObjectFlag flag = ObjectFlag::OBJECT_FLAG_NO_VB);
 
-    virtual ~SubMesh();
+    virtual ~SubMesh() = default;
 
-    U32 getID() noexcept { return _ID; }
+    U32 getID() const noexcept { return _ID; }
     /// When loading a submesh, the ID is the node index from the imported scene
     /// scene->mMeshes[n] == (SubMesh with _ID == n)
     void setID(const U32 ID) noexcept { _ID = ID; }

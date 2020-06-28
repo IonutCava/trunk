@@ -200,7 +200,7 @@ const BoneTransform& AnimationComponent::transformsByIndex(U32 animationID, U32 
     return _animator->transforms(animationID, index);
 }
 
-mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name) {
+mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeStamp, const stringImpl& name) const {
     const Object3D& node = _parentSGN->getNode<Object3D>();
     assert(_animator != nullptr);
 

@@ -44,10 +44,10 @@ TYPEDEF_SMART_POINTERS_FOR_TYPE(AudioDescriptor);
 
 class ResourceCache;
 class PlatformContext;
-class GUIConsoleCommandParser : public CommandParser, public PlatformContextComponent {
+class GUIConsoleCommandParser final : public CommandParser, public PlatformContextComponent {
    public:
     GUIConsoleCommandParser(PlatformContext& context, ResourceCache* cache);
-    ~GUIConsoleCommandParser();
+    ~GUIConsoleCommandParser() = default;
 
     bool processCommand(const stringImpl& commandString) override;
 

@@ -95,7 +95,6 @@ public:
                                  const stringImpl& rootSheetID = "");
 
     virtual GUIFlash* addFlash(const char* name,
-                               stringImpl movie,
                                const RelativePosition2D& position,
                                const RelativeScale2D& size);
 

@@ -43,7 +43,7 @@ namespace Divide {
                                   public ECSSystem<TransformSystem, TransformComponent> {
       public:
         TransformSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
-        virtual ~TransformSystem();
+        virtual ~TransformSystem() = default;
 
         bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
         bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;

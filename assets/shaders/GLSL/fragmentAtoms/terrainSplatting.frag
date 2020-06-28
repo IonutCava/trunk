@@ -69,7 +69,7 @@ float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
 vec2 scaledTextureCoords(in vec2 uv) {
     return scaledTextureCoords(uv, TEXTURE_TILE_SIZE * tiling[dvd_LoD]);
 }
-
+#if defined(PER_PIXEL_NORMALS)
 vec3 getVertNormal(in vec2 tex_coord) {
     const ivec3 off = ivec3(-1, 0, 1);
 
@@ -85,6 +85,10 @@ vec3 getVertNormal(in vec2 tex_coord) {
 
     // deduce terrain normal
     return normalize(vec3(hL - hR, 2.0f, hD - hU));
+}
+
+vec3 getVertNormalWV(in vec2 tex_coord) {
+    return mat3(dvd_ViewMatrix) * getVertNormal(tex_coord);
 }
 
 mat3 dvd_TBNWV;
@@ -131,6 +135,20 @@ void computeTBN(in vec2 uv) {
 
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 }
+#else //PER_PIXEL_NORMALS
+mat3 getTBNWV() {
+    return VAR._tbnWV;
+}
+
+vec3 getTBNViewDir() {
+    return VAR._tbnViewDir;
+}
+void computeTBN(in vec2 uv) {
+}
+vec3 getVertNormalWV(in vec2 tex_coord) {
+    return VAR._normalWV;
+}
+#endif //PER_PIXEL_NORMALS
 
 #if defined(HAS_PARALLAX)
 float getDisplacementValueFromCoords(in vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
@@ -212,7 +230,7 @@ vec3 getMixedNormalWV(in vec2 uv) {
     return vec3(0.0f);
 #else //PRE_PASS && !HAS_PRE_PASS_DATA
 #if defined(LOW_QUALITY)
-    return mat3(dvd_ViewMatrix) * getVertNormal(uv);
+    return getVertNormalWV(uv);
 #else //LOW_QUALITY
     const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
     const vec3 normalTBN = mix(texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
@@ -244,8 +262,6 @@ vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
 }
 
 vec4 getTerrainAlbedo(in vec2 uv) {
-    computeTBN(uv);
-
     float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(uv);
     const vec2 scaledUV = getScaledCoords(uv, blendAmount);
 
@@ -260,7 +276,7 @@ vec4 getTerrainAlbedo(in vec2 uv) {
 
 void BuildTerrainData(in vec2 uv, out vec4 albedo, out vec3 normalWV) {
 #if defined(LOW_QUALITY)
-    normalWV = mat3(dvd_ViewMatrix) * getVertNormal(uv);
+    normalWV = getVertNormalWV(uv);
 #else //LOW_QUALITY
     normalWV = getNormalWV(uv);
 #endif //LOW_QUALITY

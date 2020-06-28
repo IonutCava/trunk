@@ -20,7 +20,7 @@
 	<!-- 0 = NULL, 1 - OpenGL4, 2 - GLES3, 3 - Vulkan-->
 	<targetRenderingAPI>1</targetRenderingAPI>
 	<!-- The maximum number of worker threads that we want to spawn. -1 = (CPU thread count - 1). We will always spawn a minimum of 5 threads-->
-	<maxWorkerThreads>16</maxWorkerThreads>
+	<maxWorkerThreads>-1</maxWorkerThreads>
 	<!-- 0 = windowed, 1 = borderless window, 2 = fullscreen (has some issues)-->
 	<windowedMode>0</windowedMode>
 	<!-- do we allow window resizing if running in windowed mode? -->
@@ -54,15 +54,21 @@
 	</IMGUI>
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
 </GUI>
+<terrain>
+    <!-- 0 - low, 1 - med, 2 - high -->
+    <textureQuality>1</textureQuality>
+    <!-- higher => better (less tilling, more parallax effects, etc) -->
+    <detailLevel>2</detailLevel>
+	<!-- higher => better. 0,1 or 2 -->
+    <parallaxMode>0</parallaxMode>
+    <perPixelNormals>false</perPixelNormals>
+    <wireframe>false</wireframe>
+</terrain>
 <rendering>
 	<MSAASamples>2</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
 	<reflectionResolutionFactor>2</reflectionResolutionFactor>
-	<!-- higher => better (less tilling, more parallax effects, etc) -->
-	<terrainDetailLevel>2</terrainDetailLevel>
-	<!-- 0 - low, 1 - med, 2 - high -->
-	<terrainTextureQuality>0</terrainTextureQuality>
 	<numLightsPerScreenTile>512</numLightsPerScreenTile>
 	<!-- 0 - 8x8, 1 - 16x16, 2 - 32x32 -->
 	<lightThreadGroupSize>1</lightThreadGroupSize>
@@ -76,7 +82,7 @@
 		<PostAAType>SMAA</PostAAType>
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
 		<PostAAQualityLevel>2</PostAAQualityLevel>
-		<enableAdaptiveToneMapping>false</enableAdaptiveToneMapping>
+		<enableAdaptiveToneMapping>true</enableAdaptiveToneMapping>
 		<enableDepthOfField>false</enableDepthOfField>
 		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
 		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->

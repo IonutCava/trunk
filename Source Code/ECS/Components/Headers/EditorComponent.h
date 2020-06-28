@@ -141,7 +141,7 @@ namespace Divide {
             }
         }
 
-        inline bool supportsByteCount() const noexcept {
+        [[nodiscard]] bool supportsByteCount() const noexcept {
             return _basicType == GFX::PushConstantType::INT ||
                    _basicType == GFX::PushConstantType::UINT ||
                    _basicType == GFX::PushConstantType::IVEC2 ||
@@ -158,7 +158,7 @@ namespace Divide {
                    _basicType == GFX::PushConstantType::UMAT4;
         }
 
-        inline bool isMatrix() const noexcept {
+        [[nodiscard]] bool isMatrix() const noexcept {
             return _basicType == GFX::PushConstantType::IMAT2 ||
                    _basicType == GFX::PushConstantType::IMAT3 ||
                    _basicType == GFX::PushConstantType::IMAT4 ||
@@ -174,7 +174,7 @@ namespace Divide {
         }
     };
 
-    class EditorComponent : public GUIDWrapper
+    class EditorComponent final : public GUIDWrapper
     {
         friend class Attorney::EditorComponentEditor;
         friend class Attorney::EditorComponentSceneGraphNode;
@@ -186,7 +186,7 @@ namespace Divide {
 
         virtual ~EditorComponent() = default;
 
-        inline void addHeader(const Str32& name) {
+        void addHeader(const Str32& name) {
             EditorComponentField field = {};
             field._name = name;
             field._type = EditorComponentFieldType::PUSH_TYPE;
@@ -196,11 +196,11 @@ namespace Divide {
 
         void registerField(EditorComponentField&& field);
 
-        inline vectorEASTL<EditorComponentField>& fields() noexcept { return _fields; }
-        inline const vectorEASTL<EditorComponentField>& fields() const noexcept { return _fields; }
+        [[nodiscard]] vectorEASTL<EditorComponentField>& fields() noexcept { return _fields; }
+        [[nodiscard]] const vectorEASTL<EditorComponentField>& fields() const noexcept { return _fields; }
 
-        inline void onChangedCbk(const DELEGATE<void, std::string_view>& cbk) { _onChangedCbk = cbk; }
-        inline void onChangedCbk(DELEGATE<void, std::string_view>&& cbk) { _onChangedCbk = std::move(cbk); }
+        void onChangedCbk(const DELEGATE<void, std::string_view>& cbk) { _onChangedCbk = cbk; }
+        void onChangedCbk(DELEGATE<void, std::string_view>&& cbk) { _onChangedCbk = std::move(cbk); }
 
         bool saveCache(ByteBuffer& outputBuffer) const;
         bool loadCache(ByteBuffer& inputBuffer);

@@ -69,14 +69,14 @@ class GUIButton final : public GUIElementBase<GUIType::GUI_BUTTON> {
 
    public:
     void setTooltip(const stringImpl& tooltipText) override;
-    void setText(const stringImpl& text);
-    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size);
+    void setText(const stringImpl& text) const;
+    void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size) const;
     void active(const bool& active) noexcept override;
     void visible(const bool& visible) noexcept override;
 
-    void setEventCallback(Event event, ButtonCallback callback);
-    void setEventSound(Event event, AudioDescriptor_ptr sound);
-    void setEventCallback(Event event, ButtonCallback callback, AudioDescriptor_ptr sound);
+    void setEventCallback(Event event, const ButtonCallback& callback);
+    void setEventSound(Event event, const AudioDescriptor_ptr& sound);
+    void setEventCallback(Event event, const ButtonCallback& callback, const AudioDescriptor_ptr& sound);
 
     // return false if we replace an existing callback
     static bool soundCallback(const AudioCallback& cbk);

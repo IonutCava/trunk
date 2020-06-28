@@ -77,7 +77,7 @@ struct Configuration final : public XML::IXMLSerializable {
             bool dontMergeFloatingWindows = true;
         } imgui = {};
         stringImpl consoleLayoutFile = "console.layout";
-    } gui = {};
+    } gui;
 
     struct ShadowSettings {
         U32 shadowMapResolution = 512u;
@@ -86,12 +86,19 @@ struct Configuration final : public XML::IXMLSerializable {
         bool enableBlurring = false;
     };
 
+    struct Terrain
+    {
+        U8 detailLevel = 0;
+        U8 textureQuality = 0;
+        U8 parallaxMode = 0;
+        bool wireframe = false;
+        bool perPixelNormals = false;
+    } terrain;
+
     struct Rendering {
         U8 MSAASamples = 0u;
         U8 anisotropicFilteringLevel = 16;
         U8 reflectionResolutionFactor = 1;
-        I32 terrainDetailLevel = 0;
-        I32 terrainTextureQuality = 0;
         I32 numLightsPerScreenTile = -1;
         U8 lightThreadGroupSize = 1;
         bool enableFog = true;

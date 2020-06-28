@@ -125,7 +125,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/ReCast\;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/Chaiscript/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
@@ -144,11 +144,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <EnableModules>false</EnableModules>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <SupportJustMyCode>false</SupportJustMyCode>
-      <SDLCheck>true</SDLCheck>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch_d.pch</PrecompiledHeaderOutputFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
@@ -193,13 +192,12 @@
       </UndefinePreprocessorDefinitions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
       <OmitFramePointers>true</OmitFramePointers>
       <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/ReCast\;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/Chaiscript/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <SDLCheck>true</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <CompileAsWinRT>false</CompileAsWinRT>
       <FloatingPointExceptions>false</FloatingPointExceptions>
@@ -209,7 +207,7 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>false</SupportJustMyCode>
@@ -266,7 +264,6 @@
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <SDLCheck>true</SDLCheck>
       <EnforceTypeConversionRules>true</EnforceTypeConversionRules>
       <CompileAsWinRT>false</CompileAsWinRT>
       <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -277,12 +274,13 @@
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableModules>false</EnableModules>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <CompileAs>CompileAsCpp</CompileAs>
       <SupportJustMyCode>false</SupportJustMyCode>
       <PrecompiledHeaderOutputFile>$(IntDir)..\pch_p.pch</PrecompiledHeaderOutputFile>
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <AdditionalDependencies>Divide-Platform_p.lib;Divide-Networking_p.lib;Divide-ReCast_p.lib;Divide-Game_p.lib;IL.lib;ILU.lib;SDL2.lib;SDL2_mixer.lib;assimp.lib;glu32.lib;opengl32.lib;glfw3.lib;glsl_optimizer.lib;OIS_static.lib;CEGUIBase.lib;CEGUIDevILImageCodec.lib;CEGUICoreWindowRendererSet.lib;CEGUIExpatParser.lib;libexpat.lib;freetype.lib;jpeg.lib;libpng.lib;libmng.lib;libtiff.lib;pcre.lib;lua.lib;zlib.lib;imagehlp.lib;Winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>

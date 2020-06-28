@@ -7,7 +7,7 @@
 
 namespace Divide {
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
-        : PropertyDescriptor(PropertyDescriptor::DescriptorType::DESCRIPTOR_TERRAIN_INFO)
+        : PropertyDescriptor(DescriptorType::DESCRIPTOR_TERRAIN_INFO)
         , _altitudeRange(0.f, 1.f)
         , _chunkSize(256)
     {
@@ -24,13 +24,8 @@ namespace Divide {
             return false;
         }
         
-        ParallaxMode pMode = static_cast<ParallaxMode>(CLAMPED(to_I32(to_U8(pt.get<I32>("parallaxMappingMode", 0))), 0, 2));
-        WireframeMode wMode = static_cast<WireframeMode>(CLAMPED(to_I32(to_U8(pt.get<I32>("wireframeDebugMode", 0))), 0, 2));
-
         addVariable("terrainName", name.c_str());
         addVariable("descriptor", terrainDescriptor.c_str());
-        wireframeDebug(wMode);
-        parallaxMode(pMode);
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
         addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
         addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));
@@ -43,9 +38,6 @@ namespace Divide {
 
             addVariable("heightfield", descTree.get<stringImpl>("heightfield", ""));
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
-            addVariable("normalTex", descTree.get<stringImpl>("normalMap", ""));
-            addVariable("horizontalScale", descTree.get<F32>("horizontalScale", 1.0f));
-            addVariable("albedoTilingFactor", descTree.get<F32>("albedoTilingFactor", 4.0f));
             dimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
             altitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
             chunkSize(descTree.get<U16>("chunkSize", 256));

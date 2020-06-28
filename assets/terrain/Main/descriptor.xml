@@ -3,11 +3,7 @@
 <heightfieldTex>heightfield.png</heightfieldTex>
 <heightfieldResolution x="2048" y="2048"/>
 <altitudeRange min="-39.02" max="75.13"/>
-<horizontalScale>1</horizontalScale>
-<albedoTilingFactor>1</albedoTilingFactor>
 <chunkSize>256</chunkSize>
-<normalMap>normalsSmall.png</normalMap>
-<textureMap>texture.png</textureMap>
 <alphaMaps>alpha_maps.xml</alphaMaps>
 
 <vegetation>

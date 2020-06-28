@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <static>true</static>
 <descriptor>Main</descriptor>
-<wireframeDebugMode>0</wireframeDebugMode>
-<parallaxMappingMode>0</parallaxMappingMode>
 <waterCaustics>terrain_water_caustics.jpg</waterCaustics>
 <underwaterAlbedoTexture>sandfloor009a.jpg</underwaterAlbedoTexture>
 <underwaterDetailTexture>terrain_detail_NM.png</underwaterDetailTexture>
-<tileNoiseTexture>bruit_gaussien_2.jpg</tileNoiseTexture>
 <underwaterTileScale>100</underwaterTileScale>
+<tileNoiseTexture>bruit_gaussien_2.jpg</tileNoiseTexture>
 <model>Terrain</model>
 <TERRAIN>
     <Tessellated__Triangle__Width>32</Tessellated__Triangle__Width>

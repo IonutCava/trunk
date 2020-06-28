@@ -53,7 +53,7 @@ class Server {
     void close();
 
   private:
-    void handle_accept(tcp_session_tpl_ptr session,
+    void handle_accept(const tcp_session_tpl_ptr& session,
                        const boost::system::error_code& ec);
 
   private:

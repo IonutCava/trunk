@@ -54,7 +54,7 @@ public:
     ~PXDevice();
 
     void setAPI(const PhysicsAPI API) noexcept { _API_ID = API; }
-    PhysicsAPI getAPI() const noexcept { return _API_ID; }
+    [[nodiscard]] PhysicsAPI getAPI() const noexcept { return _API_ID; }
 
     ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) final;
     bool closePhysicsAPI()  final;
@@ -69,8 +69,8 @@ public:
 
     PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) final;
 
-    PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
-    const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
+    [[nodiscard]] PhysicsAPIWrapper& getImpl() noexcept { assert(_api != nullptr); return *_api; }
+    [[nodiscard]] const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
 
 private:
     F32 _simulationSpeed;

@@ -65,7 +65,7 @@ struct BoneTransform
     using Container = vectorEASTL<mat4<F32>>;
     PROPERTY_RW(Container, matrices);
 
-    size_t count() const noexcept { return matrices().size(); }
+    [[nodiscard]] size_t count() const noexcept { return matrices().size(); }
 };
 
 class GFXDevice;
@@ -85,40 +85,40 @@ class AnimEvaluator {
 
     void evaluate(D64 dt, Bone* skeleton);
 
-    FrameIndex frameIndexAt(const D64 elapsedTime) const noexcept;
+    [[nodiscard]] FrameIndex frameIndexAt(D64 elapsedTime) const noexcept;
 
-    U32 frameCount() const noexcept { return to_U32(_transforms.size()); }
+    [[nodiscard]] U32 frameCount() const noexcept { return to_U32(_transforms.size()); }
 
-    vectorEASTL<BoneTransform>& transforms() noexcept { return _transforms; }
+    [[nodiscard]] vectorEASTL<BoneTransform>& transforms() noexcept { return _transforms; }
     
-    const vectorEASTL<BoneTransform>& transforms() const noexcept { return _transforms; }
+    [[nodiscard]] const vectorEASTL<BoneTransform>& transforms() const noexcept { return _transforms; }
 
-    BoneTransform& transforms(const U32 frameIndex) {
+    [[nodiscard]] BoneTransform& transforms(const U32 frameIndex) {
         assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    const BoneTransform& transforms(const U32 frameIndex) const {
+    [[nodiscard]] const BoneTransform& transforms(const U32 frameIndex) const {
         assert(frameIndex < to_U32(_transforms.size()));
         return _transforms[frameIndex];
     }
 
-    BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) {
+    [[nodiscard]] BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) {
         resultingFrameIndex = frameIndexAt(elapsedTime)._curr;
         return transforms(to_U32(resultingFrameIndex));
     }
 
-    BoneTransform& transforms(const D64 elapsedTime) {
+    [[nodiscard]] BoneTransform& transforms(const D64 elapsedTime) {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }
 
-    const BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) const {
+    [[nodiscard]] const BoneTransform& transforms(const D64 elapsedTime, I32& resultingFrameIndex) const {
         resultingFrameIndex = frameIndexAt(elapsedTime)._curr;
         return transforms(to_U32(resultingFrameIndex));
     }
 
-    const BoneTransform& transforms(const D64 elapsedTime) const {
+    [[nodiscard]] const BoneTransform& transforms(const D64 elapsedTime) const {
         I32 resultingFrameIndex = 0;
         return transforms(elapsedTime, resultingFrameIndex);
     }

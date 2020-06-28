@@ -52,7 +52,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
 
     Attorney::TerrainLoader::descriptor(*terrain, terrainDescriptor);
-    const U8 textureQuality = to_U8(context.config().rendering.terrainTextureQuality);
+    const U8 textureQuality = context.config().terrain.textureQuality;
     // Blend maps
     ResourceDescriptor textureBlendMap("Terrain Blend Map_" + name);
     textureBlendMap.assetLocation(terrainLocation);
@@ -229,9 +229,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->shadingMode(ShadingMode::COOK_TORRANCE);
 
-    if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::NORMAL) {
+    const Terrain::ParallaxMode pMode = static_cast<Terrain::ParallaxMode>(CLAMPED(to_I32(to_U8(context.config().terrain.parallaxMode)), 0, 2));
+    if (pMode == Terrain::ParallaxMode::NORMAL) {
         terrainMaterial->bumpMethod(BumpMethod::PARALLAX);
-    } else if (terrainDescriptor->parallaxMode() == TerrainDescriptor::ParallaxMode::OCCLUSION) {
+    } else if (pMode == Terrain::ParallaxMode::OCCLUSION) {
         terrainMaterial->bumpMethod(BumpMethod::PARALLAX_OCCLUSION);
     } else {
         terrainMaterial->bumpMethod(BumpMethod::NONE);
@@ -286,14 +287,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     textureWaterCaustics.assetName(helperTextures);
     textureWaterCaustics.propertyDescriptor(helperTexDescriptor);
 
-    TextureDescriptor normalsTexDescriptor(TextureType::TEXTURE_2D);
-
-    ResourceDescriptor textureNormals("Terrain Normals Textures_" + name);
-    textureNormals.assetLocation(terrainLocation);
-    textureNormals.assetName(terrainDescriptor->getVariable("normalTex"));
-    textureNormals.propertyDescriptor(normalsTexDescriptor);
-    textureNormals.flag(true);
-
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.assetLocation(terrainLocation);
     heightMapTexture.assetName(terrainDescriptor->getVariable("heightfieldTex"));
@@ -308,13 +301,11 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->setTexture(TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), albedoHash);
     terrainMaterial->setTexture(TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps), albedoHash);
     terrainMaterial->setTexture(TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_WORLD_NORMALS, CreateResource<Texture>(terrain->parentResourceCache(), textureNormals), blendMapHash);
     terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture), heightSamplerHash);
     
     terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_SPLAT, true);
     terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_NORMAL_TILE, true);
     terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_HELPER_TEXTURES, true);
-    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_WORLD_NORMALS, true);
     terrainMaterial->textureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
     ShaderModuleDescriptor vertModule = {};
@@ -342,7 +333,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(tescModule);
     shaderDescriptor._modules.push_back(teseModule);
-    if (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE) {
+
+    const Terrain::WireframeMode wMode = static_cast<Terrain::WireframeMode>(CLAMPED(to_I32(to_U8(context.config().terrain.wireframe)), 0, 2));
+    if (wMode != Terrain::WireframeMode::NONE) {
         shaderDescriptor._modules.push_back(geomModule);
     }
     shaderDescriptor._modules.push_back(fragModule);
@@ -353,12 +346,12 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     const U16 tileMapSize = albedoTile->width();
     bool hasGeometryPass = false;
     for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
-        if (terrainDescriptor->wireframeDebug() != TerrainDescriptor::WireframeMode::NONE) {
+        if (wMode != Terrain::WireframeMode::NONE) {
             hasGeometryPass = true;
             shaderModule._defines.emplace_back("TOGGLE_DEBUG", true);
-            if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::EDGES) {
+            if (wMode == Terrain::WireframeMode::EDGES) {
                 shaderModule._defines.emplace_back("TOGGLE_WIREFRAME", true);
-            } else if (terrainDescriptor->wireframeDebug() == TerrainDescriptor::WireframeMode::NORMALS) {
+            } else if (wMode == Terrain::WireframeMode::NORMALS) {
                 shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
                 hasGeometryPass = true;
             }
@@ -367,21 +360,23 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
         shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", TessellationParams::VTX_PER_TILE_EDGE), true);
 
-        if (context.config().rendering.terrainDetailLevel > 0) {
-            if (terrainDescriptor->parallaxMode() != TerrainDescriptor::ParallaxMode::NONE) {
+        if (context.config().terrain.detailLevel > 0) {
+            if (pMode != Terrain::ParallaxMode::NONE) {
                 shaderModule._defines.emplace_back("HAS_PARALLAX", true);
             }
-            if (context.config().rendering.terrainDetailLevel > 1) {
+            if (context.config().terrain.detailLevel > 1) {
                 shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT", true);
-                if (context.config().rendering.terrainDetailLevel > 2) {
+                if (context.config().terrain.detailLevel > 2) {
                     shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS", true);
-                    if (context.config().rendering.terrainDetailLevel > 3) {
+                    if (context.config().terrain.detailLevel > 3) {
                         shaderModule._defines.emplace_back("HIGH_QUALITY_TILE_ARTIFACT_REDUCTION", true);
                     }
                 }
             }
         }
-
+        if (context.config().terrain.perPixelNormals) {
+            shaderModule._defines.emplace_back("PER_PIXEL_NORMALS", true);
+        } 
         const vec2<F32> uvDivisor = (terrain->tessParams().WorldScale() * TessellationParams::PATCHES_PER_TILE_EDGE) - TessellationParams::PATCHES_PER_TILE_EDGE;
 
         shaderModule._defines.emplace_back("COMPUTE_TBN", true);
@@ -404,7 +399,6 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(TextureUsage::TERRAIN_NORMAL_TILE)), true);
         shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(TextureUsage::TERRAIN_EXTRA_TILE)), true);
         shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_WORLD_NORMALS %d", to_base(TextureUsage::TERRAIN_WORLD_NORMALS)), true);
 
         if (shaderModule._moduleType == ShaderType::FRAGMENT) {
             shaderModule._defines.emplace_back(blendAmntStr, true);

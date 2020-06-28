@@ -151,7 +151,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
         }
 
         // ******** Position *****
-        if (channel->_positionKeys.size() > 0) {
+        if (!channel->_positionKeys.empty()) {
             // Look for present frame number. Search from last position if time
             // is after the last time, else from beginning
             // Should be much quicker than always looking from start for the
@@ -184,7 +184,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
         }
 
         // ******** Rotation *********
-        if (channel->_rotationKeys.size() > 0) {
+        if (!channel->_rotationKeys.empty()) {
             U32 frame = (time >= _lastTime) ? _lastPositions[a].y : 0;
             while (frame < channel->_rotationKeys.size() - 1) {
                 if (time < channel->_rotationKeys[frame + 1].mTime) break;
@@ -212,7 +212,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
         }
 
         // ******** Scaling **********
-        if (channel->_scalingKeys.size() > 0) {
+        if (!channel->_scalingKeys.empty()) {
             U32 frame = (time >= _lastTime) ? _lastPositions[a].z : 0;
             while (frame < channel->_scalingKeys.size() - 1) {
                 if (time < channel->_scalingKeys[frame + 1].mTime) break;

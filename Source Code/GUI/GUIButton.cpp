@@ -88,21 +88,21 @@ GUIButton::~GUIButton()
     _parent->removeChild(_btnWindow);
 }
 
-void GUIButton::active(const bool& state) noexcept {
-    if (GUIElement::active() != state) {
-        GUIElement::active(state);
-        _btnWindow->setEnabled(state);
+void GUIButton::active(const bool& active) noexcept {
+    if (GUIElement::active() != active) {
+        GUIElement::active(active);
+        _btnWindow->setEnabled(active);
     }
 }
 
-void GUIButton::visible(const bool& state) noexcept {
-    if (GUIElement::visible() != state) {
-        GUIElement::visible(state);
-        _btnWindow->setVisible(state);
+void GUIButton::visible(const bool& visible) noexcept {
+    if (GUIElement::visible() != visible) {
+        GUIElement::visible(visible);
+        _btnWindow->setVisible(visible);
     }
 }
 
-void GUIButton::setText(const stringImpl& text) {
+void GUIButton::setText(const stringImpl& text) const {
     _btnWindow->setText(text.c_str());
 }
 
@@ -111,7 +111,8 @@ void GUIButton::setTooltip(const stringImpl& tooltipText) {
 }
 
 void GUIButton::setFont(const stringImpl& fontName,
-                        const stringImpl& fontFileName, U32 size) {
+                        const stringImpl& fontFileName, const U32 size) const
+{
     if (!fontName.empty()) {
         if (!CEGUI::FontManager::getSingleton().isDefined(fontName.c_str())) {
              CEGUI::FontManager::getSingleton().createFreeTypeFont(
@@ -125,13 +126,13 @@ void GUIButton::setFont(const stringImpl& fontName,
 }
 
 bool GUIButton::soundCallback(const AudioCallback& cbk) {
-    bool hasCbk = s_soundCallback ? true : false;
+    const bool hasCbk = s_soundCallback ? true : false;
     s_soundCallback = cbk;
 
     return hasCbk;
 }
 
-bool GUIButton::onEvent(Event event, const CEGUI::EventArgs& /*e*/) {
+bool GUIButton::onEvent(const Event event, const CEGUI::EventArgs& /*e*/) {
     if (_callbackFunction[to_base(event)]) {
         _callbackFunction[to_base(event)](getGUID());
         if (_eventSound[to_base(event)] && s_soundCallback) {
@@ -142,15 +143,15 @@ bool GUIButton::onEvent(Event event, const CEGUI::EventArgs& /*e*/) {
     return false;
 }
 
-void GUIButton::setEventCallback(Event event, ButtonCallback callback) {
+void GUIButton::setEventCallback(const Event event, const ButtonCallback& callback) {
     _callbackFunction[to_base(event)] = callback;
 }
 
-void GUIButton::setEventSound(Event event, AudioDescriptor_ptr sound) {
+void GUIButton::setEventSound(const Event event, const AudioDescriptor_ptr& sound) {
     _eventSound[to_base(event)] = sound;
 }
 
-void GUIButton::setEventCallback(Event event, ButtonCallback callback, AudioDescriptor_ptr sound) {
+void GUIButton::setEventCallback(const Event event, const ButtonCallback& callback, const AudioDescriptor_ptr& sound) {
     setEventCallback(event, callback);
     setEventSound(event, sound);
 }

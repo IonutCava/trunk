@@ -38,11 +38,11 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ECS/Components/Headers/RenderingComponent.h"
 
 namespace Divide {
-    class RenderingSystem : public PlatformContextComponent,
-                            public ECSSystem<RenderingSystem, RenderingComponent> {
+    class RenderingSystem final : public PlatformContextComponent,
+                                  public ECSSystem<RenderingSystem, RenderingComponent> {
         public:
         RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
-        virtual ~RenderingSystem();
+        virtual ~RenderingSystem() = default;
 
         bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
         bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;

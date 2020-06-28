@@ -65,7 +65,7 @@ class Mesh final : public Object3D {
                   const Str256& resourceName,
                   const stringImpl& resourceLocation);
 
-    virtual ~Mesh();
+    virtual ~Mesh() = default;
 
     void postLoad(SceneGraphNode* sgn) override;
 
@@ -77,17 +77,17 @@ class Mesh final : public Object3D {
                      SceneGraphNode* sgn,
                      SceneState& sceneState) final;
 
-    void setAnimator(const std::shared_ptr<SceneAnimator>& animator) {
+    void setAnimator(const std::shared_ptr<SceneAnimator>& animator) noexcept {
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         _animator = animator;
     }
 
-    std::shared_ptr<SceneAnimator> getAnimator() const { 
+    std::shared_ptr<SceneAnimator> getAnimator() const noexcept {
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
         return _animator; 
     }
 
-    const vectorEASTL<SubMesh_ptr>& subMeshList() const {
+    const vectorEASTL<SubMesh_ptr>& subMeshList() const noexcept {
         return _subMeshList;
     }
 

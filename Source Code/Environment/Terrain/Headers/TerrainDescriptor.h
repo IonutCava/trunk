@@ -40,19 +40,6 @@ namespace Divide {
 
 class TerrainDescriptor final : public PropertyDescriptor {
    public:
-        enum class WireframeMode : U8 {
-            NONE = 0,
-            EDGES,
-            NORMALS,
-            COUNT
-        };
-
-        enum class ParallaxMode : U8 {
-            NONE = 0,
-            NORMAL,
-            OCCLUSION
-        };
-   public:
     explicit TerrainDescriptor(const stringImpl& name) noexcept;
     virtual ~TerrainDescriptor();
 
@@ -98,8 +85,6 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(_hash, _chunkSize);
         Util::Hash_combine(_hash, _dimensions.x);
         Util::Hash_combine(_hash, _dimensions.y);
-        Util::Hash_combine(_hash, to_base(_wireframeDebug));
-        Util::Hash_combine(_hash, to_base(_parallaxMode));
 
         return _hash;
     }
@@ -115,8 +100,6 @@ protected:
     PROPERTY_RW(vec2<F32>, altitudeRange);
     PROPERTY_RW(vec2<U16>, dimensions, { 1 });
     PROPERTY_RW(U16, chunkSize);
-    PROPERTY_RW(WireframeMode, wireframeDebug, WireframeMode::NONE);
-    PROPERTY_RW(ParallaxMode, parallaxMode, ParallaxMode::NONE);
     PROPERTY_RW(U8, textureLayers, 1u);
     PROPERTY_RW(bool, active, false);
 

@@ -19,48 +19,48 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
     // number of animation channels,
     dataOut << static_cast<uint32_t>(evaluator._channels.size());  
     // for each channel
-    for (size_t j = 0; j < evaluator._channels.size(); j++) {
+    for (const auto& channel : evaluator._channels) {
         // the channel name
-        dataOut << evaluator._channels[j]._name;
-        dataOut << evaluator._channels[j]._nameKey;
+        dataOut << channel._name;
+        dataOut << channel._nameKey;
         // the number of position keys
-        uint32_t nsize = static_cast<uint32_t>(evaluator._channels[j]._positionKeys.size());
+        uint32_t nsize = static_cast<uint32_t>(channel._positionKeys.size());
         dataOut << nsize;
         // for each position key;
         for (size_t i = 0; i < nsize; i++) {
             // position key
-            dataOut << evaluator._channels[j]._positionKeys[i].mTime;
+            dataOut << channel._positionKeys[i].mTime;
             // position key
-            dataOut << evaluator._channels[j]._positionKeys[i].mValue.x;
-            dataOut << evaluator._channels[j]._positionKeys[i].mValue.y;
-            dataOut << evaluator._channels[j]._positionKeys[i].mValue.z;
+            dataOut << channel._positionKeys[i].mValue.x;
+            dataOut << channel._positionKeys[i].mValue.y;
+            dataOut << channel._positionKeys[i].mValue.z;
         }
 
-        nsize = static_cast<uint32_t>(evaluator._channels[j]._rotationKeys.size());
+        nsize = static_cast<uint32_t>(channel._rotationKeys.size());
         // the number of rotation keys
         dataOut << nsize;
         // for each channel
         for (size_t i = 0; i < nsize; i++) {
             // rotation key
-            dataOut << evaluator._channels[j]._rotationKeys[i].mTime;
+            dataOut << channel._rotationKeys[i].mTime;
             // rotation key
-            dataOut << evaluator._channels[j]._rotationKeys[i].mValue.x;
-            dataOut << evaluator._channels[j]._rotationKeys[i].mValue.y;
-            dataOut << evaluator._channels[j]._rotationKeys[i].mValue.z;
-            dataOut << evaluator._channels[j]._rotationKeys[i].mValue.w;
+            dataOut << channel._rotationKeys[i].mValue.x;
+            dataOut << channel._rotationKeys[i].mValue.y;
+            dataOut << channel._rotationKeys[i].mValue.z;
+            dataOut << channel._rotationKeys[i].mValue.w;
         }
 
-        nsize = static_cast<uint32_t>(evaluator._channels[j]._scalingKeys.size());
+        nsize = static_cast<uint32_t>(channel._scalingKeys.size());
         // the number of scaling keys
         dataOut << nsize;
         // for each channel
         for (size_t i = 0; i < nsize; i++) {
             // scale key
-            dataOut << evaluator._channels[j]._scalingKeys[i].mTime;
+            dataOut << channel._scalingKeys[i].mTime;
             // scale key
-            dataOut << evaluator._channels[j]._scalingKeys[i].mValue.x;
-            dataOut << evaluator._channels[j]._scalingKeys[i].mValue.y;
-            dataOut << evaluator._channels[j]._scalingKeys[i].mValue.z;
+            dataOut << channel._scalingKeys[i].mValue.x;
+            dataOut << channel._scalingKeys[i].mValue.y;
+            dataOut << channel._scalingKeys[i].mValue.z;
         }
     }
 }
@@ -79,8 +79,7 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
     evaluator._channels.resize(nsize);
     evaluator._lastPositions.resize(nsize, vec3<U32>());
     // for each channel
-    for (size_t j = 0; j < evaluator._channels.size(); j++) {
-        AnimationChannel& channel = evaluator._channels[j];
+    for (AnimationChannel& channel : evaluator._channels) {
         //the channel name
         dataIn >> channel._name;
         dataIn >> channel._nameKey;
@@ -116,7 +115,7 @@ void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
         // the number of scaling keys
         dataIn >> nsize;
         channel._scalingKeys.resize(nsize);
-        // for each skaling key
+        // for each scaling key
         for (size_t i = 0; i < nsize; i++) {
             aiVectorKey& scale = channel._scalingKeys[i]; 
             // scale key

@@ -116,7 +116,7 @@ class SceneNode : public CachedResource {
 
   public:
     explicit SceneNode(ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, SceneNodeType type, U32 requiredComponentMask);
-    virtual ~SceneNode();
+    virtual ~SceneNode() = default;
 
     /// Perform any pre-draw operations POST-command build
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false

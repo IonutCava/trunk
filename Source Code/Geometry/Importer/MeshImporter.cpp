@@ -24,10 +24,6 @@ namespace {
 };
 
 namespace Import {
-    ImportData::~ImportData()
-    {
-    }
-
     bool ImportData::saveToFile(PlatformContext& context, const Str256& path, const Str64& fileName) {
         ACKNOWLEDGE_UNUSED(context);
 
@@ -215,7 +211,7 @@ namespace Import {
         return success;
     }
 
-    bool MeshImporter::loadMesh(Mesh_ptr mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn) {
+    bool MeshImporter::loadMesh(const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn) {
         Time::ProfileTimer importTimer;
         importTimer.start();
 

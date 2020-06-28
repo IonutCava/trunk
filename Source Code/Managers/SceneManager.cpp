@@ -74,10 +74,13 @@ const Scene& SceneManager::getActiveScene() const {
 void SceneManager::idle() {
     if (_sceneSwitchTarget._isSet) {
         parent().platformContext().gfx().getRenderer().postFX().setFadeOut(UColour3(0), 1000.0, 0.0);
-        switchScene(_sceneSwitchTarget._targetSceneName,
-                    _sceneSwitchTarget._unloadPreviousScene,
-                    _sceneSwitchTarget._targetViewRect,
-                    _sceneSwitchTarget._loadInSeparateThread);
+        if (!switchScene(_sceneSwitchTarget._targetSceneName,
+                         _sceneSwitchTarget._unloadPreviousScene,
+                         _sceneSwitchTarget._targetViewRect,
+                         _sceneSwitchTarget._loadInSeparateThread))
+        {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         WaitForAllTasks(getActiveScene().context(), true, true);
         parent().platformContext().gfx().getRenderer().postFX().setFadeIn(2750.0);
     } else {
@@ -942,7 +945,7 @@ bool LoadSave::loadNodeFromXML(const Scene& activeScene, SceneGraphNode* node) {
     return activeScene.loadNodeFromXML(node);
 }
 
-bool LoadSave::saveScene(const Scene& activeScene, const bool toCache, const DELEGATE<void, std::string_view> msgCallback, const DELEGATE<void, bool> finishCallback) {
+bool LoadSave::saveScene(const Scene& activeScene, const bool toCache, const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) {
     if (!toCache) {
         return activeScene.saveXML(msgCallback, finishCallback);
     }
@@ -972,7 +975,7 @@ bool LoadSave::saveScene(const Scene& activeScene, const bool toCache, const DEL
     return ret;
 }
 
-bool SceneManager::saveActiveScene(bool toCache, const bool deferred, DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
+bool SceneManager::saveActiveScene(bool toCache, const bool deferred, const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) {
     OPTICK_EVENT();
 
     const Scene& activeScene = getActiveScene();

@@ -52,12 +52,12 @@ namespace Divide {
     class RigidBodyComponent final : public BaseComponentType<RigidBodyComponent, ComponentType::RIGID_BODY> {
       public:
         RigidBodyComponent(SceneGraphNode* parentSGN, PlatformContext& context);
-        ~RigidBodyComponent();
+        ~RigidBodyComponent() = default;
 
 
-        inline void physicsGroup(PhysicsGroup physicsGroup) noexcept { _physicsCollisionGroup = physicsGroup; }
+        void physicsGroup(const PhysicsGroup physicsGroup) noexcept { _physicsCollisionGroup = physicsGroup; }
 
-        inline const PhysicsGroup& physicsGroup() const noexcept { return _physicsCollisionGroup; }
+        [[nodiscard]] const PhysicsGroup& physicsGroup() const noexcept { return _physicsCollisionGroup; }
 
         void cookCollisionMesh(const char* sceneName);
 

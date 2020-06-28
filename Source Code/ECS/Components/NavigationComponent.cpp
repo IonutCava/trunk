@@ -12,8 +12,6 @@ NavigationComponent::NavigationComponent(SceneGraphNode* parentSGN, PlatformCont
 {
 }
 
-NavigationComponent::~NavigationComponent() {}
-
 void NavigationComponent::navigationContext(const NavigationContext& newContext) {
     _navigationContext = newContext;
     

@@ -26,10 +26,6 @@ SubMesh::SubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descript
 {
 }
 
-SubMesh::~SubMesh()
-{
-}
-
 void SubMesh::buildDrawCommands(SceneGraphNode* sgn,
                                 const RenderStagePass& renderStagePass,
                                 const Camera& crtCamera,

@@ -102,7 +102,7 @@ void SpotLightComponent::OnData(const ECS::CustomEvent& data) {
     }
 }
 
-void SpotLightComponent::setDirection(const vec3<F32>& direction) {
+void SpotLightComponent::setDirection(const vec3<F32>& direction) const {
     TransformComponent* tComp = _parentSGN->get<TransformComponent>();
     if (tComp) {
         Quaternion<F32> rot = tComp->getOrientation();

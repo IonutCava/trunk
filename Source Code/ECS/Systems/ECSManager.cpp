@@ -76,23 +76,23 @@ ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     : PlatformContextComponent(context),
       _ecsEngine(engine)
 {
-    auto TSys = _ecsEngine.GetSystemManager()->AddSystem<TransformSystem>(_ecsEngine, _context);
-    auto ASys = _ecsEngine.GetSystemManager()->AddSystem<AnimationSystem>(_ecsEngine, _context);
-    auto RSys = _ecsEngine.GetSystemManager()->AddSystem<RenderingSystem>(_ecsEngine, _context);
-    auto BSys = _ecsEngine.GetSystemManager()->AddSystem<BoundsSystem>(_ecsEngine, _context);
-    auto PlSys = _ecsEngine.GetSystemManager()->AddSystem<PointLightSystem>(_ecsEngine);
-    auto SlSys = _ecsEngine.GetSystemManager()->AddSystem<SpotLightSystem>(_ecsEngine);
-    auto DlSys = _ecsEngine.GetSystemManager()->AddSystem<DirectionalLightSystem>(_ecsEngine);
+    auto* TSys = _ecsEngine.GetSystemManager()->AddSystem<TransformSystem>(_ecsEngine, _context);
+    auto* ASys = _ecsEngine.GetSystemManager()->AddSystem<AnimationSystem>(_ecsEngine, _context);
+    auto* RSys = _ecsEngine.GetSystemManager()->AddSystem<RenderingSystem>(_ecsEngine, _context);
+    auto* BSys = _ecsEngine.GetSystemManager()->AddSystem<BoundsSystem>(_ecsEngine, _context);
+    auto* PlSys = _ecsEngine.GetSystemManager()->AddSystem<PointLightSystem>(_ecsEngine);
+    auto* SlSys = _ecsEngine.GetSystemManager()->AddSystem<SpotLightSystem>(_ecsEngine);
+    auto* DlSys = _ecsEngine.GetSystemManager()->AddSystem<DirectionalLightSystem>(_ecsEngine);
 
-    auto IKSys = _ecsEngine.GetSystemManager()->AddSystem<IKSystem>(_ecsEngine);
-    auto NavSys = _ecsEngine.GetSystemManager()->AddSystem<NavigationSystem>(_ecsEngine);
-    auto NetSys = _ecsEngine.GetSystemManager()->AddSystem<NetworkingSystem>(_ecsEngine);
-    auto RagSys = _ecsEngine.GetSystemManager()->AddSystem<RagdollSystem>(_ecsEngine);
-    auto RBSys = _ecsEngine.GetSystemManager()->AddSystem<RigidBodySystem>(_ecsEngine);
-    auto ScpSys = _ecsEngine.GetSystemManager()->AddSystem<ScriptSystem>(_ecsEngine);
-    auto SelSys = _ecsEngine.GetSystemManager()->AddSystem<SelectionSystem>(_ecsEngine);
-    auto UnitSys = _ecsEngine.GetSystemManager()->AddSystem<UnitSystem>(_ecsEngine);
-    auto ProbeSys = _ecsEngine.GetSystemManager()->AddSystem<EnvProbeSystem>(_ecsEngine);
+    auto* IKSys = _ecsEngine.GetSystemManager()->AddSystem<IKSystem>(_ecsEngine);
+    auto* NavSys = _ecsEngine.GetSystemManager()->AddSystem<NavigationSystem>(_ecsEngine);
+    auto* NetSys = _ecsEngine.GetSystemManager()->AddSystem<NetworkingSystem>(_ecsEngine);
+    auto* RagSys = _ecsEngine.GetSystemManager()->AddSystem<RagdollSystem>(_ecsEngine);
+    auto* RBSys = _ecsEngine.GetSystemManager()->AddSystem<RigidBodySystem>(_ecsEngine);
+    auto* ScpSys = _ecsEngine.GetSystemManager()->AddSystem<ScriptSystem>(_ecsEngine);
+    auto* SelSys = _ecsEngine.GetSystemManager()->AddSystem<SelectionSystem>(_ecsEngine);
+    auto* UnitSys = _ecsEngine.GetSystemManager()->AddSystem<UnitSystem>(_ecsEngine);
+    auto* ProbeSys = _ecsEngine.GetSystemManager()->AddSystem<EnvProbeSystem>(_ecsEngine);
     
     ASys->AddDependencies(TSys);
     BSys->AddDependencies(ASys);
@@ -112,11 +112,6 @@ ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     ProbeSys->AddDependencies(UnitSys);
 
     _ecsEngine.GetSystemManager()->UpdateSystemWorkOrder();
-}
-
-ECSManager::~ECSManager()
-{
-
 }
 
 bool ECSManager::saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) const {

@@ -11,7 +11,7 @@ struct RenderStagePass;
 
 struct SceneNodeRenderState {
 
-    bool drawState(const RenderStagePass& stagePass, U8 LoD) const;
+    [[nodiscard]] bool drawState(const RenderStagePass& stagePass, U8 LoD) const;
     /// variant = -1 => all variants
     void addToDrawExclusionMask(RenderStage stage, RenderPassType passType = RenderPassType::COUNT, U8 variant = g_AllVariantsID, U16 index = g_AllIndicesID, U16 pass = g_AllPassID);
 

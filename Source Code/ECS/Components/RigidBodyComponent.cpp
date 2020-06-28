@@ -14,11 +14,6 @@ namespace Divide {
         _rigidBody.reset(context.pfx().createRigidActor(parentSGN, *this));
     }
 
-    RigidBodyComponent::~RigidBodyComponent()
-    {
-
-    }
-
     void RigidBodyComponent::cookCollisionMesh(const char* sceneName) {
         ACKNOWLEDGE_UNUSED(sceneName);
     }

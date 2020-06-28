@@ -23,7 +23,8 @@ SceneGraph::SceneGraph(Scene& parentScene)
       SceneComponent(parentScene),
      _loadComplete(false),
      _octreeChanged(false),
-     _nodeListChanged(false)
+     _nodeListChanged(false),
+     _root(nullptr)
 {
     _ecsManager = eastl::make_unique<ECSManager>(parentScene.context(), GetECSEngine());
 
@@ -430,7 +431,7 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
 
     ptree pt = {};
-    XML::readXML(file.c_str(), pt);
+    XML::readXML(file, pt);
     if (pt.get("version", g_sceneGraphVersion) != g_sceneGraphVersion) {
         // ToDo: Scene graph version mismatch. Handle condition - Ionut
         NOP();

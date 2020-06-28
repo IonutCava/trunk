@@ -18,10 +18,6 @@ namespace Divide {
         std::atomic_init(&_hasChanged, false);
     }
 
-    SGNComponent::~SGNComponent()
-    {
-    }
-
     bool SGNComponent::saveCache(ByteBuffer& outputBuffer) const {
         outputBuffer << uniqueID();
         return true;

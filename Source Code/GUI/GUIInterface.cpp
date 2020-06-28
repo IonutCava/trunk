@@ -103,7 +103,7 @@ GUIElement* GUIInterface::getGUIElementImpl(const I64 elementID, const GUIType t
 
 GUIButton* GUIInterface::addButton(const char* name,
                                    const stringImpl& text,
-                                   const RelativePosition2D& position,
+                                   const RelativePosition2D& offset,
                                    const RelativeScale2D& size,
                                    const stringImpl& rootSheetID) {
     const U64 guiID = _ID(name);
@@ -123,7 +123,7 @@ GUIButton* GUIInterface::addButton(const char* name,
     GUIButton* btn = MemoryManager_NEW GUIButton(name,
                                                  text,
                                                  _context->guiScheme(),
-                                                 position,
+                                                 offset,
                                                  size,
                                                  parent);
 
@@ -177,7 +177,6 @@ GUIText* GUIInterface::addText(const char* name,
 }
 
 GUIFlash* GUIInterface::addFlash(const char* name,
-                                 stringImpl movie,
                                  const RelativePosition2D& position,
                                  const RelativeScale2D& size) {
     ACKNOWLEDGE_UNUSED(position);

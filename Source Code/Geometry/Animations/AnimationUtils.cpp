@@ -2,9 +2,8 @@
 
 #include "Headers/AnimationUtils.h"
 
-namespace Divide {
+namespace Divide::AnimUtils {
 
-namespace AnimUtils {
 /// there is some type of alignment issue with my mat4 and the aimatrix4x4
 /// class, so the copy must be done manually
 void TransformMatrix(const aiMatrix4x4& in, mat4<F32>& out, bool rowMajor) {
@@ -36,4 +35,3 @@ void TransformMatrix(const mat4<F32>& in, aiMatrix4x4& out, bool rowMajor) {
 }
 
 }
-};

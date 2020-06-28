@@ -57,8 +57,8 @@ private:
     void onNetworkReceive(WorldPacket& dataIn);
 
 private:
-    WorldPacket deltaCompress(const WorldPacket& crt, const WorldPacket& previous) const;
-    WorldPacket deltaDecompress(const WorldPacket& crt, const WorldPacket& previous) const;
+    [[nodiscard]] WorldPacket deltaCompress(const WorldPacket& crt, const WorldPacket& previous) const;
+    [[nodiscard]] WorldPacket deltaDecompress(const WorldPacket& crt, const WorldPacket& previous) const;
 
 private:
     LocalClient& _parentClient;

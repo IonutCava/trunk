@@ -37,10 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class XMLEntryData : public XML::IXMLSerializable {
+class XMLEntryData final : public XML::IXMLSerializable {
 public:
     XMLEntryData();
-    ~XMLEntryData();
+    ~XMLEntryData() = default;
 
 protected:
     bool fromXML(const char* xmlFile) override;

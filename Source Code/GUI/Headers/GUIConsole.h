@@ -33,7 +33,7 @@
 #ifndef _GUI_CONSOLE_H_
 #define _GUI_CONSOLE_H_
 
-#define CEGUI_MAX_INPUT_HISTORY 5
+constexpr size_t CEGUI_MAX_INPUT_HISTORY = 5;
 
 #include <CEGUI/CEGUI.h>
 

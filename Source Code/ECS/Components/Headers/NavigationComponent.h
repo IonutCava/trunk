@@ -46,13 +46,13 @@ class NavigationComponent final : public BaseComponentType<NavigationComponent, 
     };
 
     NavigationComponent(SceneGraphNode* sgn, PlatformContext& context);
-    ~NavigationComponent();
+    ~NavigationComponent() = default;
 
-    inline const NavigationContext& navigationContext() const {
+    [[nodiscard]] const NavigationContext& navigationContext() const {
         return _navigationContext;
     }
 
-    inline bool navMeshDetailOverride() const { return _overrideNavMeshDetail; }
+    [[nodiscard]] bool navMeshDetailOverride() const { return _overrideNavMeshDetail; }
 
     void navigationContext(const NavigationContext& newContext);
 

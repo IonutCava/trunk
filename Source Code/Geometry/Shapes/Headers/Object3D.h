@@ -63,7 +63,7 @@ class Object3D : public SceneNode {
 
     explicit Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask);
 
-    virtual ~Object3D();
+    virtual ~Object3D() = default;
 
     virtual VertexBuffer* getGeometryVB() const;
     void setGeometryVBDirty() noexcept { _geometryDirty = true; }
