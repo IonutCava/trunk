@@ -37,7 +37,6 @@
 
 #include <EASTL/sort.h>
 #include <EASTL/vector.h>
-#include <EASTL/fixed_allocator.h>
 
 template <typename Type, typename Allocator = EASTLAllocatorType>
 using vectorEASTL = eastl::vector<Type, Allocator>;

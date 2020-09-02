@@ -42,11 +42,11 @@ namespace Attorney {
     class AudioSensorConstructor;
 };
 
-class AudioSensor : public Sensor {
+class AudioSensor final : public Sensor {
     friend class Attorney::AudioSensorConstructor;
 
    public:
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
     ~AudioSensor();
 
    protected:

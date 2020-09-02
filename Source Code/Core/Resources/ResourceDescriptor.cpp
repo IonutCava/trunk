@@ -23,7 +23,7 @@ size_t ResourceDescriptor::getHash() const noexcept {
     _hash = 9999991;
     stringImpl fullPath = _assetLocation;
     fullPath.append("/");
-    fullPath.append(_assetName.c_str());
+    fullPath.append(_assetName);
 
     Util::Hash_combine(_hash, Util::ReplaceString(fullPath, "//", "/", true));
     Util::Hash_combine(_hash, _flag);

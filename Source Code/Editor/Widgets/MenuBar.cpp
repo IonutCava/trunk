@@ -36,7 +36,7 @@ namespace {
         bool _closePopup = false;
     } g_saveSceneParams;
 
-    const char* UsageToString(RenderTargetUsage usage) noexcept {
+    const char* UsageToString(const RenderTargetUsage usage) noexcept {
         switch (usage) {
             case RenderTargetUsage::EDITOR: return "Editor";
             case RenderTargetUsage::ENVIRONMENT: return "Environment";
@@ -53,31 +53,27 @@ namespace {
             case RenderTargetUsage::SCREEN: return "Screen";
             case RenderTargetUsage::SCREEN_MS: return "Screen_MS";
             case RenderTargetUsage::SHADOW: return "Shadow";
+            default: break;
         };
 
         return "Unknown";
     }
 
-    const char* EdgeMethodName(PreRenderBatch::EdgeDetectionMethod method) noexcept {
+    const char* EdgeMethodName(const PreRenderBatch::EdgeDetectionMethod method) noexcept {
         switch (method) {
             case PreRenderBatch::EdgeDetectionMethod::Depth: return "Depth";
             case PreRenderBatch::EdgeDetectionMethod::Luma: return "Luma";
             case PreRenderBatch::EdgeDetectionMethod::Colour: return "Colour";
+            default: break;
         };
         return "Unknown";
     }
 };
 
 
-MenuBar::MenuBar(PlatformContext& context, bool mainMenu)
+MenuBar::MenuBar(PlatformContext& context, const bool mainMenu)
     : PlatformContextComponent(context),
-      _isMainMenu(mainMenu),
-      _quitPopup(false),
-      _closePopup(false)
-{
-}
-
-MenuBar::~MenuBar()
+      _isMainMenu(mainMenu)
 {
 }
 
@@ -107,7 +103,7 @@ void MenuBar::draw() {
         if (_closePopup) {
             ImGui::OpenPopup("Confirm Close");
 
-            if (ImGui::BeginPopupModal("Confirm Close", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::BeginPopupModal("Confirm Close", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("Are you sure you want to close the editor? You have unsaved items!");
                 ImGui::Separator();
 
@@ -129,7 +125,7 @@ void MenuBar::draw() {
 
         if (!_errorMsg.empty()) {
             ImGui::OpenPopup("Error!");
-            if (ImGui::BeginPopupModal("Error!", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiViewportFlags_TopMost)) {
+            if (ImGui::BeginPopupModal("Error!", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text(_errorMsg.c_str());
                 if (ImGui::Button("Ok")) {
                     ImGui::CloseCurrentPopup();
@@ -141,7 +137,7 @@ void MenuBar::draw() {
 
         if (_quitPopup) {
             ImGui::OpenPopup("Confirm Quit");
-            if (ImGui::BeginPopupModal("Confirm Quit", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiViewportFlags_TopMost)) {
+            if (ImGui::BeginPopupModal("Confirm Quit", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("Are you sure you want to quit?");
                 ImGui::Separator();
 
@@ -161,7 +157,7 @@ void MenuBar::draw() {
         }
         if (_savePopup) {
             ImGui::OpenPopup("Saving Scene");
-            if (ImGui::BeginPopupModal("Saving Scene", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiViewportFlags_TopMost))
+            if (ImGui::BeginPopupModal("Saving Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 constexpr U32 maxSize = 40u;
                 const U32 ident = MAP(g_saveSceneParams._saveProgress, 0u, g_saveSceneParams._saveElementCount, 0u, maxSize - 5u /*overestimate a bit*/);
@@ -169,7 +165,7 @@ void MenuBar::draw() {
                 ImGui::Text("Saving Scene!\n\n%s", g_saveSceneParams._saveMessage.c_str());
                 ImGui::Separator();
 
-                stringImpl progress = "";
+                stringImpl progress;
                 for (U32 i = 0; i < maxSize; ++i) {
                     progress.append(i < ident ? "=" : " ");
                 }
@@ -210,12 +206,12 @@ void MenuBar::drawFileMenu() {
             g_saveSceneParams._saveProgress = 0u;
             g_saveSceneParams._saveElementCount = Attorney::EditorGeneralWidget::saveItemCount(_context.editor());
 
-            const auto messageCbk = [](std::string_view msg) {
+            const auto messageCbk = [](const std::string_view msg) {
                 g_saveSceneParams._saveMessage = msg;
                 ++g_saveSceneParams._saveProgress;
             };
 
-            const auto closeDialog = [this](bool success) {
+            const auto closeDialog = [this](const bool success) {
                 Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), s_messages[success ? 1 : 2], Time::SecondsToMilliseconds<F32>(6));
                 g_saveSceneParams._closePopup = true;
             };
@@ -302,17 +298,21 @@ void MenuBar::drawFileMenu() {
     }
 }
 
-void MenuBar::drawEditMenu() {
+void MenuBar::drawEditMenu() const {
     if (ImGui::BeginMenu("Edit"))
     {
         if (ImGui::MenuItem("Undo", "CTRL+Z", false, _context.editor().UndoStackSize() > 0))
         {
-            _context.editor().Undo();
+            if (!_context.editor().Undo()) {
+                Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Undo failed!", Time::SecondsToMilliseconds<F32>(3.0f));
+            }
         }
 
         if (ImGui::MenuItem("Redo", "CTRL+Y", false, _context.editor().RedoStackSize() > 0))
         {
-            _context.editor().Redo();
+            if (!_context.editor().Redo()) {
+                Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Redo failed!", Time::SecondsToMilliseconds<F32>(3.0f));
+            }
         }
 
         ImGui::Separator();
@@ -334,7 +334,7 @@ void MenuBar::drawEditMenu() {
     }
 }
 
-void MenuBar::drawProjectMenu() {
+void MenuBar::drawProjectMenu() const {
     if (ImGui::BeginMenu("Project"))
     {
         if(ImGui::MenuItem("Configuration", "", false, false))
@@ -344,7 +344,7 @@ void MenuBar::drawProjectMenu() {
         ImGui::EndMenu();
     }
 }
-void MenuBar::drawObjectMenu() {
+void MenuBar::drawObjectMenu() const {
     if (ImGui::BeginMenu("Object"))
     {
         if(ImGui::MenuItem("New Node", "", false, false))
@@ -358,10 +358,12 @@ void MenuBar::drawObjectMenu() {
 void MenuBar::drawToolsMenu() {
     if (ImGui::BeginMenu("Tools"))
     {
-        bool memEditorEnabled = Attorney::EditorMenuBar::memoryEditorEnabled(_context.editor());
-        if (ImGui::MenuItem("Memory Editor", NULL, memEditorEnabled)) {
+        const bool memEditorEnabled = Attorney::EditorMenuBar::memoryEditorEnabled(_context.editor());
+        if (ImGui::MenuItem("Memory Editor", nullptr, memEditorEnabled)) {
             Attorney::EditorMenuBar::toggleMemoryEditor(_context.editor(), !memEditorEnabled);
-            _context.editor().saveToXML();
+            if (!_context.editor().saveToXML()) {
+                Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Save failed!", Time::SecondsToMilliseconds<F32>(3.0f));
+            }
         }
 
         if (ImGui::BeginMenu("Render Targets"))
@@ -416,11 +418,11 @@ void MenuBar::drawToolsMenu() {
     }
 }
 
-void MenuBar::drawWindowsMenu() {
+void MenuBar::drawWindowsMenu() const {
     if (ImGui::BeginMenu("Window"))
     {
         bool& sampleWindowEnabled = Attorney::EditorMenuBar::sampleWindowEnabled(_context.editor());
-        if (ImGui::MenuItem("Sample Window", NULL, &sampleWindowEnabled)) {
+        if (ImGui::MenuItem("Sample Window", nullptr, &sampleWindowEnabled)) {
             
         }
         ImGui::EndMenu();
@@ -428,16 +430,15 @@ void MenuBar::drawWindowsMenu() {
 
 }
 
-void MenuBar::drawPostFXMenu() {
+void MenuBar::drawPostFXMenu() const {
     if (ImGui::BeginMenu("PostFX"))
     {
         PostFX& postFX = _context.gfx().getRenderer().postFX();
         for (U16 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
             const FilterType f = static_cast<FilterType>(toBit(i));
 
-            const bool filterEnabled = postFX.getFilterState(f);
-            if (ImGui::MenuItem(PostFX::FilterName(f), NULL, &filterEnabled))
-            {
+            bool filterEnabled = postFX.getFilterState(f);
+            if (ImGui::MenuItem(PostFX::FilterName(f), nullptr, &filterEnabled)) {
                 if (filterEnabled) {
                     postFX.pushFilter(f, true);
                 } else {
@@ -596,8 +597,7 @@ void MenuBar::drawDebugMenu() {
                 for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
                     const LightType type = static_cast<LightType>(i);
                     const LightPool::LightList& lights = pool.getLights(type);
-                    for (U16 j = 0; j < lights.size(); ++j) {
-                        Light* crtLight = lights[j];
+                    for (Light* crtLight : lights)  {
                         if (crtLight->castsShadows()) {
                             bool selected = pool.debugLight() == crtLight;
                             if (ImGui::MenuItem(crtLight->getSGN()->name().c_str(), "", &selected)) {
@@ -748,11 +748,11 @@ void MenuBar::drawDebugMenu() {
     }
 }
 
-void MenuBar::drawHelpMenu() {
+void MenuBar::drawHelpMenu() const {
     if (ImGui::BeginMenu("Help"))
     {
         bool& sampleWindowEnabled = Attorney::EditorMenuBar::sampleWindowEnabled(_context.editor());
-        if (ImGui::MenuItem("Sample Window", NULL, &sampleWindowEnabled)) {
+        if (ImGui::MenuItem("Sample Window", nullptr, &sampleWindowEnabled)) {
 
         }
         ImGui::Separator();

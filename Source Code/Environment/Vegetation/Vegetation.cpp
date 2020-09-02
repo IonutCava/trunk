@@ -804,7 +804,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
             const UColour4 colour = map->getColour(to_I32(mapCoord.x), to_I32(mapCoord.y));
             const U8 index = bestIndex(colour);
             const F32 colourVal = colour[index];
-            if (colourVal <= EPSILON_F32) {
+            if (colourVal <= std::numeric_limits<F32>::epsilon()) {
                 continue;
             }
 
@@ -816,7 +816,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
             const F32 scale = CLAMPED(((colour[index] + 1) / 256.0f) * xmlScale, minXmlScale, maxXmlScale);
 
-            assert(scale > EPSILON_F32);
+            assert(scale > std::numeric_limits<F32>::epsilon());
 
             //vert._position.y = (((0.0f*heightExtent) + vert._position.y) - ((0.0f*scale) + vert._position.y)) + vert._position.y;
             VegetationData entry = {};
@@ -842,7 +842,9 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
         container.shrink_to_fit();
         chunkCache << container.size();
         chunkCache.append(container.data(), container.size());
-        chunkCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), cacheFileName.c_str());
+        if (!chunkCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), cacheFileName.c_str())) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
     }
     Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
 }

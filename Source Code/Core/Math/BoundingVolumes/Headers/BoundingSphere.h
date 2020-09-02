@@ -51,7 +51,7 @@ class BoundingSphere {
     explicit BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
 
     BoundingSphere(const BoundingSphere& s) noexcept;
-    void operator=(const BoundingSphere& s) noexcept;
+    BoundingSphere& operator=(const BoundingSphere& s) noexcept;
 
     void fromBoundingBox(const BoundingBox& bBox) noexcept;
     void fromBoundingSphere(const BoundingSphere& bSphere) noexcept;

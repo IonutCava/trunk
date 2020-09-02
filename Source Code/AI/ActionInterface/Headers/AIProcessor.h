@@ -211,9 +211,9 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     virtual const stringImpl& printActionStats(const GOAPAction& planStep) const;
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
     virtual bool performAction(const GOAPAction& planStep) = 0;
-    virtual bool processData(const U64 deltaTimeUS) = 0;
-    virtual bool processInput(const U64 deltaTimeUS) = 0;
-    virtual bool update(const U64 deltaTimeUS, NPC* unitRef = nullptr) = 0;
+    virtual bool processData(U64 deltaTimeUS) = 0;
+    virtual bool processInput(U64 deltaTimeUS) = 0;
+    virtual bool update(U64 deltaTimeUS, NPC* unitRef = nullptr) = 0;
     virtual void processMessage(AIEntity& sender, AIMsg msg, const std::any& msg_content) = 0;
     void init() {
         if (_init) {

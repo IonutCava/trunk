@@ -9,6 +9,32 @@ float ToLinearDepth(in float depthIn, in vec2 depthRange);
 float ToLinearPreviewDepth(in float depthIn);
 float ToLinearPreviewDepth(in float depthIn, in vec2 depthRange);
 
+vec3 ray_dir_from_uv(vec2 uv) {
+    const float x = sin(M_PI * uv.y);
+    const float f = 2.0f * M_PI * (0.5f - uv.x);
+
+    return vec3(x * sin(f), cos(M_PI * uv.y), x * cos(f));
+}
+
+vec2 uv_from_ray_dir(vec3 dir) {
+    vec2 uv;
+
+    uv.y = acos(dir.y) / M_PI;
+
+    dir.y = 0.0f;
+    dir = normalize(dir);
+    uv.x = acos(dir.z) / (2.0f * M_PI);
+    if (dir.x < 0.0f) {
+        uv.x = 1.0f - uv.x;
+    }
+    uv.x = 0.5f - uv.x;
+    if (uv.x < 0.0f) {
+        uv.x += 1.0f;
+    }
+
+    return uv;
+}
+
 float overlay(float x, float y)
 {
     if (x < 0.5)

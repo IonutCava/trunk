@@ -76,7 +76,7 @@ class StateTracker {
         return *this;
     }
 
-    bool isTrackedValueInitialized(State state) const {
+    [[nodiscard]] bool isTrackedValueInitialized(State state) const {
         return _trackedValues[to_U32(state)].initialized;
     }
 

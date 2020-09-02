@@ -198,7 +198,7 @@ TEST(TestStringSplit) {
 TEST(TestFilePathSplit) {
     const char* input = "/path/path2/path4/file.test";
     const stringImpl result1("file.test");
-    const stringImpl result2("/path/path2/path4/");
+    const stringImpl result2("/path/path2/path4");
 
     FileWithPath fileResult = splitPathToNameAndLocation(input);
     CHECK_EQUAL(fileResult._path, result2);

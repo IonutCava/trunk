@@ -1,6 +1,19 @@
 #ifndef _UTILITY_CMN_
 #define _UTILITY_CMN_
 
+#ifndef M_EPSILON
+#define M_EPSILON 0.0000001
+#endif //M_EPSILON
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#define INV_M_PI 0.31830988618
+#endif //M_PI
+
+#ifndef F0
+#define F0 vec3(0.04f)
+#endif
+
 //ref: http://theorangeduck.com/page/avoiding-shader-conditionals
 #define when_eq(x, y) (1.0f - abs(sign(x - y)))
 #define when_neq(x, y) abs(sign(x - y))

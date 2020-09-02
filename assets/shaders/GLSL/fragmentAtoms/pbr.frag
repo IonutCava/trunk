@@ -3,20 +3,8 @@
 // Following BRDF methods are based upon research Frostbite EA
 //[Lagrade et al. 2014, "Moving Frostbite to Physically Based Rendering"]
 
-#ifndef M_EPSILON
-#define M_EPSILON 0.0000001
-#endif //M_EPSILON
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#define INV_M_PI 0.31830988618
-#endif //M_PI
-
 #include "IBL.frag"
 
-#ifndef F0
-#define F0 vec3(0.04f)
-#endif
 
 // Smith GGX corrected Visibility
 // NdotL        = the dot product of the normal and direction to the light

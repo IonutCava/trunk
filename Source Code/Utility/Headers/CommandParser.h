@@ -33,15 +33,13 @@
 #ifndef _COMMAND_PARSER_H_
 #define _COMMAND_PARSER_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 
 /// A utility class used to process a string input
 class NOINITVTABLE CommandParser {
    public:
-    CommandParser() noexcept;  //< Constructor
-    virtual ~CommandParser();  //< Destructor
+    CommandParser() = default;
+    virtual ~CommandParser();
     /// If we need a parser , just override this
     virtual bool processCommand(const stringImpl& commandString) = 0;
 

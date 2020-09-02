@@ -58,7 +58,7 @@ class BoundingBox {
     ~BoundingBox() = default;
 
     BoundingBox(const BoundingBox& b) noexcept;
-    void operator=(const BoundingBox& b) noexcept;
+    BoundingBox& operator=(const BoundingBox& b) noexcept;
 
     [[nodiscard]] bool containsPoint(const vec3<F32>& point) const noexcept;
     [[nodiscard]] bool containsBox(const BoundingBox& AABB2) const noexcept;
@@ -120,7 +120,7 @@ class BoundingBox {
 
     void reset() noexcept;
 
-    [[nodiscard]] vec3<F32> cornerPoint(const U8 cornerIndex) const noexcept;
+    [[nodiscard]] vec3<F32> cornerPoint(U8 cornerIndex) const noexcept;
     [[nodiscard]] std::array<vec3<F32>, 8> getPoints() const noexcept;
 
     [[nodiscard]] F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept;

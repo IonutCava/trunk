@@ -2,20 +2,13 @@
 
 #include "Headers/XMLParser.h"
 
-#include "Core/Headers/Application.h"
-#include "Core/Headers/ParamHandler.h"
-#include "Core/Headers/StringHelper.h"
-#include "Core/Headers/XMLEntryData.h"
 #include "Core/Headers/Configuration.h"
-#include "Core/Headers/PlatformContext.h"
-#include "Scenes/Headers/SceneInput.h"
-#include "Rendering/Headers/Renderer.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Platform/Video/Headers/GFXDevice.h"
-#include "Platform/File/Headers/FileManagement.h"
-#include "Geometry/Material/Headers/Material.h"
+#include "Core/Headers/StringHelper.h"
 #include "Environment/Terrain/Headers/Terrain.h"
-#include "Environment/Terrain/Headers/TerrainDescriptor.h"
+#include "Geometry/Material/Headers/Material.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Platform/File/Headers/FileManagement.h"
+#include "Scenes/Headers/SceneInput.h"
 
 #include <boost/property_tree/xml_parser.hpp>
 
@@ -39,7 +32,7 @@ namespace {
 namespace detail {
     bool LoadSave::read(const stringImpl& path) {
         _loadPath = path;
-        read_xml(_loadPath.c_str(), XmlTree, boost::property_tree::xml_parser::trim_whitespace);
+        read_xml(_loadPath, XmlTree, boost::property_tree::xml_parser::trim_whitespace);
         return !XmlTree.empty();
     }
 
@@ -49,7 +42,7 @@ namespace detail {
     }
 
     void LoadSave::write() const {
-        write_xml(_savePath.c_str(),
+        write_xml(_savePath,
             XmlTree,
             std::locale(),
             boost::property_tree::xml_writer_make_settings<boost::property_tree::iptree::key_type>('\t', 1));
@@ -111,7 +104,7 @@ void populatePressRelease(const ptree & attributes, PressReleaseActions::Entry& 
 void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     ptree pt;
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
-    read_xml(file.c_str(), pt);
+    read_xml(file, pt);
 
     for(const ptree::value_type & f : pt.get_child("actions", g_emptyPtree))
     {
@@ -122,7 +115,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     PressReleaseActions::Entry entry = {};
     for (const ptree::value_type & f : pt.get_child("keys", g_emptyPtree))
     {
-        if (f.first.compare("<xmlcomment>") == 0) {
+        if (f.first == "<xmlcomment>") {
             continue;
         }
 
@@ -136,14 +129,14 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
 
     for (const ptree::value_type & f : pt.get_child("mouseButtons", g_emptyPtree))
     {
-        if (f.first.compare("<xmlcomment>") == 0) {
+        if (f.first == "<xmlcomment>") {
             continue;
         }
 
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(attributes, entry);
 
-        const Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()).c_str());
+        const Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()));
 
         scene->input()->addMouseMapping(btn, entry);
     }
@@ -154,14 +147,14 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
         
         for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), g_emptyPtree))
         {
-            if (f.first.compare("<xmlcomment>") == 0) {
+            if (f.first == "<xmlcomment>") {
                 continue;
             }
 
             const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
             populatePressRelease(attributes, entry);
 
-            const Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()).c_str());
+            const Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()));
 
             scene->input()->addJoystickMapping(joystick, element._type, element._elementIndex, entry);
         }
@@ -176,7 +169,7 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
     }
     Console::printfn(Locale::get(_ID("XML_LOAD_MUSIC")), file.c_str());
     ptree pt;
-    read_xml(file.c_str(), pt);
+    read_xml(file, pt);
 
     for (const ptree::value_type & f : pt.get_child("backgroundThemes", g_emptyPtree))
     {

@@ -25,7 +25,7 @@ namespace {
                                                           : Paths::g_climatesLowResLocation);
     }
 
-    std::pair<U8, bool> findOrInsert(U8 textureQuality, vectorEASTL<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
+    std::pair<U8, bool> findOrInsert(const U8 textureQuality, vectorEASTL<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
         if (!fileExists((ClimatesLocation(textureQuality) + "/" + materialName + "/" + texture).c_str())) {
             materialName = "std_default";
         }
@@ -607,9 +607,9 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
                 //#pragma omp critical
                 //Surely the id is unique and memory has also been allocated beforehand
-                vertexData.set(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),       //X
-                                yOffset,                                                      //Y
-                                bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1)); //Z
+                vertexData.set(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),         //X
+                               yOffset,                                                         //Y
+                               bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1));    //Z
             }
         }
 
@@ -672,7 +672,9 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
             }
         }
         terrainCache << terrain->_physicsVerts;
-        terrainCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str());
+        if (!terrainCache.dumpToFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str())) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
     }
 
     // Do this first in case we have any threaded loads
@@ -749,7 +751,7 @@ VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Te
     vegDetails.name = terrain->resourceName() + "_vegetation";
     vegDetails.parentTerrain = terrain;
 
-    stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
+    const stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
 
     vegDetails.grassMap.reset(new ImageTools::ImageData);
     ImageTools::ImageDataInterface::CreateImageData(terrainLocation + "/" + terrainDescriptor->getVariable("grassMap"),
@@ -768,8 +770,4 @@ bool TerrainLoader::Save(const char* fileName) { return true; }
 
 bool TerrainLoader::Load(const char* filename) { return true; }
 
-const boost::property_tree::ptree& empty_ptree() {
-    static boost::property_tree::ptree t;
-    return t;
-}
 };

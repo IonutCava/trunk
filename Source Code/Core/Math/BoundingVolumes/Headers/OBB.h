@@ -51,7 +51,7 @@ public:
     using OBBAxis = std::array<vec3<F32>, 3>;
     using OOBBEdgeList = std::array<LineSegment, 12>;
 
-    OBB()  noexcept;
+    OBB() = default;
     OBB(const vec3<F32>& pos, const vec3<F32>& hExtents, const OBBAxis& axis)  noexcept;
     OBB(const BoundingBox &aabb)  noexcept;
     OBB(const BoundingSphere &bSphere)  noexcept;
@@ -68,11 +68,11 @@ public:
 
     [[nodiscard]] F32 distance(const vec3<F32>& point) const noexcept;
     [[nodiscard]] vec3<F32> closestPoint(const vec3<F32>& point) const noexcept;
-    [[nodiscard]] vec3<F32> cornerPoint(const U8 cornerIndex) const noexcept;
+    [[nodiscard]] vec3<F32> cornerPoint(U8 cornerIndex) const noexcept;
     [[nodiscard]] vec3<F32> size() const noexcept;
     [[nodiscard]] vec3<F32> diagonal() const noexcept;
     [[nodiscard]] vec3<F32> halfDiagonal() const noexcept;
-    [[nodiscard]] LineSegment edge(const U8 edgeIndex) const noexcept;
+    [[nodiscard]] LineSegment edge(U8 edgeIndex) const noexcept;
     [[nodiscard]] OOBBEdgeList edgeList() const noexcept;
 
     [[nodiscard]] bool containsPoint(const vec3<F32>& point) const noexcept;

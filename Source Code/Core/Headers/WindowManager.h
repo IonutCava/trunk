@@ -75,7 +75,7 @@ struct WindowDescriptor {
 };
 
 class PlatformContext;
-class WindowManager final : public SDLEventListener {
+class WindowManager final : public SDLEventListener, NonCopyable {
 public:
     struct MonitorData {
         Rect<I16> viewport;
@@ -100,9 +100,9 @@ public:
     void close();
     void hideAll() noexcept;
 
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
 
-    bool anyWindowFocus() const noexcept;
+    [[nodiscard]] bool anyWindowFocus() const noexcept;
 
     inline DisplayWindow* createWindow(const WindowDescriptor& descriptor);
     inline DisplayWindow* createWindow(const WindowDescriptor& descriptor, ErrorCode& err);
@@ -121,24 +121,24 @@ public:
 
     //Returns null if no window is currently focused
     inline DisplayWindow* getFocusedWindow() noexcept;
-    inline const DisplayWindow* getFocusedWindow() const noexcept;
+    [[nodiscard]] inline const DisplayWindow* getFocusedWindow() const noexcept;
 
     //Returns null if no window is currently hovered
     inline DisplayWindow* getHoveredWindow() noexcept;
-    inline const DisplayWindow* getHoveredWindow() const noexcept;
+    [[nodiscard]] inline const DisplayWindow* getHoveredWindow() const noexcept;
 
     inline DisplayWindow& getWindow(I64 guid);
-    inline const DisplayWindow& getWindow(I64 guid) const;
+    [[nodiscard]] inline const DisplayWindow& getWindow(I64 guid) const;
 
     inline DisplayWindow& getWindow(U32 index);
-    inline const DisplayWindow& getWindow(U32 index) const;
+    [[nodiscard]] inline const DisplayWindow& getWindow(U32 index) const;
 
     inline DisplayWindow* getWindowByID(U32 ID) noexcept;
-    inline const DisplayWindow* getWindowByID(U32 ID) const noexcept;
+    [[nodiscard]] inline const DisplayWindow* getWindowByID(U32 ID) const noexcept;
 
-    inline U32 getWindowCount() const noexcept;
+    [[nodiscard]] inline U32 getWindowCount() const noexcept;
 
-    inline const vectorEASTL<MonitorData>& monitorData() const noexcept;
+    [[nodiscard]] inline const vectorEASTL<MonitorData>& monitorData() const noexcept;
 
     static vec2<U16> GetFullscreenResolution() noexcept;
 
@@ -156,9 +156,9 @@ protected:
 
 protected:
     friend class DisplayWindow;
-    static U32 CreateAPIFlags(RenderAPI api) noexcept;
-    ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags) const;
-    ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags) const;
+    [[nodiscard]] static U32 CreateAPIFlags(RenderAPI api) noexcept;
+    [[nodiscard]] ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags) const;
+    [[nodiscard]] ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags) const;
     static void DestroyAPISettings(DisplayWindow* window) noexcept;
 
 protected:

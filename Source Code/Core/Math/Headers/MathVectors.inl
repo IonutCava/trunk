@@ -254,13 +254,13 @@ vec4<T> operator*(T fl, const vec4<T> &v) noexcept {
 template <typename T>
 bool SimdVector<T, typename std::enable_if<std::is_same<T, float>::value>::type>::operator==(const SimdVector& other) const noexcept
 {
-    return !AVX::Fneq128(_reg, other._reg, EPSILON_F32);
+    return !AVX::Fneq128(_reg, other._reg, std::numeric_limits<F32>::epsilon());
 }
 
 template <typename T>
 bool SimdVector<T, typename std::enable_if<std::is_same<T, float>::value>::type>::operator!=(const SimdVector& other) const noexcept
 {
-    return AVX::Fneq128(_reg, other._reg, EPSILON_F32);
+    return AVX::Fneq128(_reg, other._reg, std::numeric_limits<F32>::epsilon());
 }
 
 /// return the squared distance of the vector
@@ -287,7 +287,7 @@ template <typename T>
 vec2<T>& vec2<T>::normalize() {
     const T l = this->length();
 
-    if (l >= EPSILON_F32) {
+    if (l >= std::numeric_limits<F32>::epsilon()) {
         *this *= 1.0f / l;
     }
 
@@ -422,7 +422,8 @@ bool vec3<T>::isUniform() const noexcept {
 }
 
 template <typename T>
-bool vec3<T>::isPerpendicular(const vec3 other, F32 epsilon) const noexcept {
+template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
+bool vec3<T>::isPerpendicular(const vec3<U>& other, F32 epsilon) const noexcept {
     return SQUARED(dot(other)) <= SQUARED(epsilon) * lengthSquared() * other.lengthSquared();
 }
 /// return the squared distance of the vector
@@ -436,7 +437,7 @@ template <typename T>
 vec3<T>& vec3<T>::normalize() {
     const T l = this->length();
 
-    if (l >= EPSILON_F32) {
+    if (l >= std::numeric_limits<F32>::epsilon()) {
         // multiply by the inverse length
         *this *= (1.0f / l);
     }
@@ -494,7 +495,7 @@ T vec3<T>::distanceSquared(const vec3 &v) const noexcept {
 template <typename T>
 T vec3<T>::angle(vec3 &v) const {
     const T angle = static_cast<T>(std::abs(std::acos(this->dot(v) / (this->length() * v.length()))));
-    return std::max(angle, EPSILON_F32);
+    return std::max(angle, std::numeric_limits<F32>::epsilon());
 }
 
 /// get the direction vector to the specified point
@@ -768,7 +769,7 @@ template <>
 inline bool vec4<F32>::compare(const vec4<F32> &v) const noexcept {
     // returns true if at least one element in a is not equal to 
     // the corresponding element in b
-    return compare(v, EPSILON_F32);
+    return compare(v, std::numeric_limits<F32>::epsilon());
 }
 
 /// compare this vector with the one specified and see if they match within the specified amount
@@ -851,7 +852,7 @@ template <typename T>
 vec4<T>& vec4<T>::normalize() {
     const T l = this->length();
 
-    if (l >= EPSILON_F32) {
+    if (l >= std::numeric_limits<F32>::epsilon()) {
         // multiply by the inverse length
         *this *= (1.0f / l);
     }
@@ -867,7 +868,8 @@ inline vec4<F32>& vec4<F32>::normalize() {
 
 /// The current vector is perpendicular to the specified one within epsilon
 template <typename T>
-bool vec4<T>::isPerpendicular(const vec4 other, F32 epsilon) const noexcept {
+template<typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
+bool vec4<T>::isPerpendicular(const vec4<U>& other, F32 epsilon) const noexcept {
     return SQUARED(dot(other)) <= SQUARED(epsilon) * lengthSquared() * other.lengthSquared();
 }
 

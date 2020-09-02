@@ -42,12 +42,12 @@ namespace Divide {
     class SceneViewWindow final : public DockedWindow {
     public:
         SceneViewWindow(Editor& parent, const Descriptor& descriptor);
-        ~SceneViewWindow();
+        ~SceneViewWindow() = default;
 
         void drawInternal() final;
 
-        const Rect<I32>& sceneRect() const noexcept;
-        const vec2<I32>& getWindowOffset() const noexcept;
+        [[nodiscard]] const Rect<I32>& sceneRect() const noexcept;
+        [[nodiscard]] const vec2<I32>& getWindowOffset() const noexcept;
 
     protected:
         Rect<I32> _sceneRect;

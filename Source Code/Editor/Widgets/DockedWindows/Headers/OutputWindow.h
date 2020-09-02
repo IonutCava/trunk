@@ -34,7 +34,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_OUTPUT_WINDOW_H_
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
-#include <CircularBuffer/CircularBuffer.h>
 
 namespace Divide {
 

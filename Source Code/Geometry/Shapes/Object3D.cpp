@@ -127,34 +127,35 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
                                  const RenderStagePass& renderStagePass,
                                  const Camera& crtCamera,
                                  RenderPackage& pkgInOut) {
-    VertexBuffer* vb = getGeometryVB();
-    if (pkgInOut.drawCommandCount() == 0) {
-        const U16 partitionID = _geometryPartitionIDs[0];
-        GenericDrawCommand cmd;
-        cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-        cmd._sourceBuffer = vb->handle();
-        cmd._bufferIndex = renderStagePass.baseIndex();
-        cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));
-        cmd._cmd.firstIndex = to_U32(vb->getPartitionOffset(partitionID));
-        cmd._cmd.primCount = sgn->instanceCount();
-        enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
+    if (!getObjectFlag(ObjectFlag::OBJECT_FLAG_NO_VB)) {
+        VertexBuffer* vb = getGeometryVB();
+        if (pkgInOut.drawCommandCount() == 0) {
+            const U16 partitionID = _geometryPartitionIDs[0];
+            GenericDrawCommand cmd;
+            cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
+            cmd._sourceBuffer = vb->handle();
+            cmd._bufferIndex = renderStagePass.baseIndex();
+            cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));
+            cmd._cmd.firstIndex = to_U32(vb->getPartitionOffset(partitionID));
+            cmd._cmd.primCount = sgn->instanceCount();
+            enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
-        pkgInOut.add(GFX::DrawCommand{ cmd });
-    }
+            pkgInOut.add(GFX::DrawCommand{ cmd });
+        }
 
-    if (pkgInOut.autoIndexBuffer()) {
-        U16 prevID = 0;
-        for (U8 i = 0; i < to_U8(_geometryPartitionIDs.size()); ++i) {
-            U16 id = _geometryPartitionIDs[i];
-            if (id == std::numeric_limits<U16>::max()) {
-                assert(i > 0);
-                id = prevID;
+        if (pkgInOut.autoIndexBuffer()) {
+            U16 prevID = 0;
+            for (U8 i = 0; i < to_U8(_geometryPartitionIDs.size()); ++i) {
+                U16 id = _geometryPartitionIDs[i];
+                if (id == std::numeric_limits<U16>::max()) {
+                    assert(i > 0);
+                    id = prevID;
+                }
+                pkgInOut.setLoDIndexOffset(i, vb->getPartitionOffset(id), vb->getPartitionIndexCount(id));
+                prevID = id;
             }
-            pkgInOut.setLoDIndexOffset(i, vb->getPartitionOffset(id), vb->getPartitionIndexCount(id));
-            prevID = id;
         }
     }
-
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 

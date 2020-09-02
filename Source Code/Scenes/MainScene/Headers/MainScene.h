@@ -52,9 +52,9 @@ class MainScene : public Scene {
    private:
     /*Specific Scene Requirement*/
     void updateLights();
-    void processInput(PlayerIndex idx, const U64 deltaTimeUS)override;
-    void processTasks(const U64 deltaTimeUS)override;
-    void processGUI(const U64 deltaTimeUS)override;
+    void processInput(PlayerIndex idx, U64 deltaTimeUS)override;
+    void processTasks(U64 deltaTimeUS)override;
+    void processGUI(U64 deltaTimeUS)override;
     void test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size);
     U16 registerInputActions() override;
 

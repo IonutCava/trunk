@@ -569,7 +569,7 @@ T& mat2<T>::operator[](I32 i) {
 }
 
 template<typename T>
-const T mat2<T>::operator[](I32 i) const {
+T mat2<T>::operator[](I32 i) const {
     return mat[i];
 }
 
@@ -1095,7 +1095,7 @@ T& mat3<T>::operator[](I32 i) noexcept {
 }
 
 template<typename T>
-const T mat3<T>::operator[](I32 i) const noexcept {
+T mat3<T>::operator[](I32 i) const noexcept {
     return mat[i];
 }
 
@@ -1419,7 +1419,7 @@ template<typename T>
 vec3<T> mat3<T>::getScale() const noexcept {
     return vec3<T>(getCol(0).xyz().length(),
                    getCol(1).xyz().length(),
-                   getCol3(2).xyz().length());
+                   getCol(2).xyz().length());
 }
 
 template<typename T>

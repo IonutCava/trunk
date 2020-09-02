@@ -109,7 +109,7 @@ class Character : public Unit {
       *clipping
       * and collision testing).
       **/
-    virtual void update(const U64 deltaTimeUS);
+    virtual void update(U64 deltaTimeUS);
     /// Set the curent position of this charater
     virtual void setPosition(const vec3<F32>& newPosition);
     /// Update character velocity

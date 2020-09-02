@@ -110,7 +110,7 @@ struct SceneNode {
     vectorEASTL<SceneNode> children;
 };
 
-void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config);
+void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* scene, const Configuration& config);
 
 };  // namespace XML
 };  // namespace Divide

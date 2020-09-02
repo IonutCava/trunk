@@ -42,7 +42,7 @@ struct ParticleVelocityFromPositionGenerator final : public ParticleGenerator {
     F32 _maxScale = 0.f;
 
     void generate(Task& packagedTasksParent,
-                  const U64 deltaTimeUS,
+                  U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,
                   U32 endIndex) override;

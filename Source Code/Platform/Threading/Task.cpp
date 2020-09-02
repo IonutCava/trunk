@@ -26,32 +26,36 @@ void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction)
     task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
 };
 
-Task& Start(Task& task, const TaskPriority priority, DELEGATE<void>&& onCompletionFunction) {
+Task& Start(Task& task, const TaskPriority priority, const DELEGATE<void>& onCompletionFunction) {
     const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
 
-    const auto run = [&task, hasOnCompletionFunction](const bool threadWaitingCall) {
-        while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
-            if (threadWaitingCall) {
-                TaskYield(task);
-            } else {
-                return false;
-            }
-        }
-
-        if (!threadWaitingCall || task._runWhileIdle) {
-            if (task._callback) {
-                task._callback(task);
+    if (!task._parentPool->enqueue(
+        [&task, hasOnCompletionFunction](const bool threadWaitingCall)
+        {
+            while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
+                if (threadWaitingCall) {
+                    TaskYield(task);
+                } else {
+                    return false;
+                }
             }
 
-            finish(task);
-            task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
-            return true;
-        }
+            if (!threadWaitingCall || task._runWhileIdle) {
+                if (task._callback) {
+                    task._callback(task);
+                }
 
-        return false;
-    };
+                finish(task);
+                task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
+                return true;
+            }
 
-    if (!task._parentPool->enqueue(std::move(run), priority, task._id, std::move(onCompletionFunction))) {
+            return false;
+        }, 
+        priority, 
+        task._id,
+        onCompletionFunction)) 
+    {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
         runLocally(task, priority, hasOnCompletionFunction);
         task._parentPool->flushCallbackQueue();

@@ -127,9 +127,9 @@ inline void ByteBuffer::read_skip<stringImpl>() {
     read_skip<char *>();
 }
 
-inline void ByteBuffer::read_skip(size_t skip) {
+inline void ByteBuffer::read_skip(const size_t skip) {
     if (_rpos + skip > size()) {
-        throw ByteBufferException(false, _rpos, skip, size());
+        DIVIDE_UNEXPECTED_CALL();
     }
     _rpos += skip;
 }
@@ -142,9 +142,9 @@ T ByteBuffer::read() {
 }
 
 template <typename T>
-T ByteBuffer::read(size_t pos) const {
+T ByteBuffer::read(const size_t pos) const {
     if (pos + sizeof(T) > size()) {
-        throw ByteBufferException(false, pos, sizeof(T), size());
+        DIVIDE_UNEXPECTED_CALL();
     }
 
     T val = *((T const *)&_storage[pos]);
@@ -152,9 +152,9 @@ T ByteBuffer::read(size_t pos) const {
     return val;
 }
 
-inline void ByteBuffer::read(Byte *dest, size_t len) {
+inline void ByteBuffer::read(Byte *dest, const size_t len) {
     if (_rpos + len > size()) {
-        throw ByteBufferException(false, _rpos, len, size());
+        DIVIDE_UNEXPECTED_CALL();
     }
 
     memcpy(dest, &_storage[_rpos], len);
@@ -273,7 +273,7 @@ inline const Byte* ByteBuffer::contents() const noexcept {
 
 inline void ByteBuffer::put(const size_t pos, const Byte *src, const size_t cnt) {
     if (pos + cnt > size()) {
-        throw ByteBufferException(true, pos, cnt, size());
+        DIVIDE_UNEXPECTED_CALL();
     }
     memcpy(&_storage[pos], src, cnt);
 }

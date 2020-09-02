@@ -40,16 +40,16 @@ class ApplicationTimer;
 class ProfileTimer {
    public:
     ProfileTimer() noexcept;
-    ~ProfileTimer();
+    ~ProfileTimer() = default;
 
     void start();
     void stop();
     void reset() noexcept;
-    stringImpl print(U32 level = 0) const;
+    [[nodiscard]] stringImpl print(U32 level = 0) const;
 
-    U64 get() const;
-    U64 getChildTotal() const;
-    const stringImpl& name() const noexcept;
+    [[nodiscard]] U64 get() const;
+    [[nodiscard]] U64 getChildTotal() const;
+    [[nodiscard]] const stringImpl& name() const noexcept;
 
     static stringImpl printAll();
     static ProfileTimer& getNewTimer(const char* timerName);

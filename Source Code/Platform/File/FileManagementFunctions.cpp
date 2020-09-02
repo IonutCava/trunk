@@ -38,42 +38,33 @@ stringImpl stripQuotes(const char* input) {
 }
 
 FileWithPath splitPathToNameAndLocation(const char* input) {
+    const auto targetPath = std::filesystem::path(input).lexically_normal();
     FileWithPath ret;
-    ret._path = input;
-
-    size_t pathNameSplitPoint = ret._path.find_last_of('/') + 1;
-    if (pathNameSplitPoint == 0) {
-        pathNameSplitPoint = ret._path.find_last_of('\\') + 1;
-    }
-
-    ret._fileName = ret._path.substr(pathNameSplitPoint, stringImpl::npos),
-    ret._path = ret._path.substr(0, pathNameSplitPoint);
+    ret._fileName = targetPath.filename().generic_string();
+    ret._path = targetPath.parent_path().generic_string();
     return ret;
 }
 
 bool pathExists(const char* filePath) {
-    const auto targetPath = std::filesystem::path(filePath);
-    return std::filesystem::is_directory(targetPath);
+    return is_directory(std::filesystem::path(filePath));
 }
 
 bool createDirectory(const char* path) {
     if (!pathExists(path)) {
         const auto targetPath = std::filesystem::path(path);
         std::error_code ec = {};
-        return std::filesystem::create_directory(targetPath, ec);
+        return create_directory(targetPath, ec);
     }
 
     return true;
 }
 
 bool fileExists(const char* filePathAndName) {
-    const auto targetPath = std::filesystem::path(filePathAndName);
-    return std::filesystem::is_regular_file(targetPath);
+    return is_regular_file(std::filesystem::path(filePathAndName));
 }
 
 bool fileExists(const char* filePath, const char* fileName) {
-    const auto targetPath = std::filesystem::path(stringImpl{ filePath } +fileName);
-    return std::filesystem::is_regular_file(targetPath);
+    return is_regular_file(std::filesystem::path(stringImpl{ filePath } + fileName));
 }
 
 bool createFile(const char* filePathAndName, bool overwriteExisting) {
@@ -200,26 +191,18 @@ bool clearCache() {
 }
 
 bool clearCache(const CacheType type) {
+    Str64 cache;
     switch (type) {
-        case CacheType::SHADER_TEXT:
-           return deleteAllFiles(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText.c_str());
-       
-        case CacheType::SHADER_BIN:
-            return deleteAllFiles(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin.c_str());
+        case CacheType::SHADER_TEXT: cache = Paths::Shaders::g_cacheLocationText; break;
+        case CacheType::SHADER_BIN : cache = Paths::Shaders::g_cacheLocationBin; break;
+        case CacheType::TERRAIN    : cache = Paths::g_terrainCacheLocation; break;
+        case CacheType::MODELS     : cache = Paths::g_geometryCacheLocation; break;
+        case CacheType::TEXTURES   : cache = Paths::Textures::g_metadataLocation; break;
 
-        case CacheType::TERRAIN:
-            return deleteAllFiles(Paths::g_cacheLocation + Paths::g_terrainCacheLocation.c_str());
-
-        case CacheType::MODELS:
-            return deleteAllFiles(Paths::g_cacheLocation + Paths::g_geometryCacheLocation.c_str());
-
-        case CacheType::TEXTURES:
-            return deleteAllFiles(Paths::g_cacheLocation + Paths::Textures::g_metadataLocation.c_str());
-
-       default: break;
+        default: return false;
     }
 
-    return false;
+    return deleteAllFiles(Paths::g_cacheLocation + cache.c_str());
 }
 
 std::string extractFilePathAndName(char* argv0) {

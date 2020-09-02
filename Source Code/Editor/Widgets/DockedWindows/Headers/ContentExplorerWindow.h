@@ -54,7 +54,7 @@ namespace Divide {
             MD2,
             MD5,
             OBJ,
-            X, //DirectX foramt
+            X, //DirectX format
             COUNT
         };
 
@@ -63,14 +63,14 @@ namespace Divide {
 
         void drawInternal() final;
         void init();
-        void update(const U64 deltaTimeUS);
+        void update(U64 deltaTimeUS);
 
     private:
-        void getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut);
+        void getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) const;
         void printDirectoryStructure(const Directory& dir, bool open) const;
 
-        Texture_ptr getTextureForPath(const Str256& texturePath, const Str64& textureName);
-        Mesh_ptr getModelForPath(const Str256& modelPath, const Str64& modelName);
+        Texture_ptr getTextureForPath(const Str256& texturePath, const Str64& textureName) const;
+        Mesh_ptr getModelForPath(const Str256& modelPath, const Str64& modelName) const;
         
     private:
         Texture_ptr _fileIcon = nullptr;

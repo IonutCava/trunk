@@ -34,16 +34,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_OPTIONS_WINDOW_H
 
 #include "Core/Headers/PlatformContextComponent.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
-class EditorOptionsWindow : public PlatformContextComponent {
+class EditorOptionsWindow final : public PlatformContextComponent, NonMovable {
  public:
     explicit EditorOptionsWindow(PlatformContext& context);
-    ~EditorOptionsWindow();
+    ~EditorOptionsWindow() = default;
 
     void draw(bool& open);
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
 
  private:
     ImGuiFs::Dialog _fileOpenDialog;

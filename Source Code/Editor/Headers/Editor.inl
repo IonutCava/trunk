@@ -42,7 +42,7 @@ inline bool Editor::inEditMode() const noexcept {
     return running() && simulationPauseRequested();
 }
 
-inline void Editor::setTransformSettings(const TransformSettings& settings) noexcept {
+inline void Editor::setTransformSettings(const TransformSettings& settings) const noexcept {
     Attorney::GizmoEditor::setTransformSettings(_gizmo.get(), settings);
 }
 
@@ -55,7 +55,7 @@ inline bool Editor::simulationPauseRequested() const noexcept {
 }
 
 template<typename T>
-inline void Editor::registerUndoEntry(const UndoEntry<T>& entry) {
+void Editor::registerUndoEntry(const UndoEntry<T>& entry) {
     _undoManager->registerUndoEntry(entry);
 }
 

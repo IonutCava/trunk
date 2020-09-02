@@ -130,7 +130,7 @@ struct TextElement {
         }
     }
 
-    const TextType& text() const noexcept { return _text; }
+    [[nodiscard]] const TextType& text() const noexcept { return _text; }
 
     size_t _textLabelStyleHash = 0;
     RelativePosition2D _position ;
@@ -142,9 +142,7 @@ struct TextElement {
 struct TextElementBatch {
     using BatchType = vectorEASTLFast<TextElement>;
 
-    TextElementBatch() noexcept
-    {
-    }
+    TextElementBatch() = default;
 
     explicit TextElementBatch(const size_t elementCount)
     {
@@ -158,7 +156,7 @@ struct TextElementBatch {
 
     const BatchType& operator()() const noexcept { return _data; }
 
-    bool empty() const noexcept { return _data.empty(); }
+    [[nodiscard]] bool empty() const noexcept { return _data.empty(); }
 
     BatchType _data;
 };

@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SCENE_SHADER_DATA_H_
 
 #include "Scenes/Headers/SceneState.h"
+#include "Utility/Headers/Colours.h"
 
 namespace Divide {
 
@@ -45,6 +46,14 @@ constexpr U8 GLOBAL_WATER_BODIES = 2;
 class SceneShaderData {
   private:
     struct SceneShaderBufferData {
+        // w - reserved
+        vec4<F32> _sunDirection = { 0.0f };
+        // w - reserved
+        FColour4 _sunColour = DefaultColours::WHITE;
+        // w - reserved
+        FColour4 _zenithColour = { 0.025f, 0.1f, 0.5f, 1.0f};
+        // w - reserved
+        FColour4 _horizonColour = { 0.6f, 0.7f, 1.0f, 0.0f};
         // x,y,z - colour, w - density
         vec4<F32> _fogDetails = { 0.0f};
         // x,y,z - direction, w - speed
@@ -64,6 +73,18 @@ class SceneShaderData {
 
     ShaderBuffer* buffer() const noexcept {
         return _sceneShaderData;
+    }
+
+    void sunDetails(const vec3<F32>& direction, const FColour3& colour) noexcept {
+        _bufferData._sunDirection.set(direction);
+        _bufferData._sunColour.set(colour);
+        _dirty = true;
+    }
+
+    void skyColour(const FColour4& horizon, const FColour4& zenith) noexcept {
+        _bufferData._horizonColour = horizon;
+        _bufferData._zenithColour = zenith;
+        _dirty = true;
     }
 
     void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) noexcept {

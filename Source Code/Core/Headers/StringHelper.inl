@@ -29,12 +29,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
 
-#ifndef FMT_EXCEPTIONS
-#define FMT_EXCEPTIONS 0
-#endif
 
 #ifndef _CORE_STRING_HELPER_INL_
 #define _CORE_STRING_HELPER_INL_
+
+#ifndef FMT_EXCEPTIONS
+#define FMT_EXCEPTIONS 0
+#endif
 
 namespace Divide {
 namespace Util {
@@ -45,9 +46,11 @@ typename std::enable_if<std::is_same<T_vec, vectorEASTL<T_str>>::value ||
 Split(const char* input, const char delimiter, T_vec& elems) {
     if (input != nullptr) {
         {
-            size_t i = 0;
+            size_t i;
             const char* o = input;
-            for (i = 0; input[i]; input[i] == delimiter ? i++ : *(input++));
+            for (i = 0; input[i]; input[i] == delimiter ? i++ : *(input++)) {
+                NOP();
+            }
             elems.resize(i + 1);
             input = o;
         }
@@ -72,9 +75,11 @@ vectorEASTL<T_str>& Split(const char* input, char delimiter, vectorEASTL<T_str>&
     const T_str original(input);
     if (!original.empty()) {
         {
-            size_t i = 0;
+            size_t i;
             const char* o = input;
-            for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++);
+            for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++) {
+                NOP();
+            }
             elems.resize(i + 1);
             input = o;
         }
@@ -234,7 +239,7 @@ bool CompareIgnoreCase(const T_strA& a, std::string_view b) noexcept {
 }
 
 template<>
-inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
+inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) noexcept {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b),
                           std::cend(b),

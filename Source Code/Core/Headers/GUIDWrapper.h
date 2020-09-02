@@ -46,13 +46,12 @@ class GUIDWrapper {
     GUIDWrapper() noexcept : _GUID(generateGUID()) {}
     GUIDWrapper(const GUIDWrapper& old) noexcept : _GUID(generateGUID()) { (void)old; }
     GUIDWrapper(GUIDWrapper&& old) noexcept : _GUID(old._GUID) {}
-    virtual ~GUIDWrapper() {}
+    virtual ~GUIDWrapper() = default;
 
-    I64 getGUID() const  noexcept { return _GUID; }
+    [[nodiscard]] I64 getGUID() const  noexcept { return _GUID; }
 
     static I64 generateGUID() noexcept;
 
-   private:
     GUIDWrapper& operator=(const GUIDWrapper& old) = delete;
     GUIDWrapper& operator=(GUIDWrapper&& other) = delete;
 

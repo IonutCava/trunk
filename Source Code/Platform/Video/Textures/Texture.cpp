@@ -49,6 +49,11 @@ bool Texture::load() {
 void Texture::threadedLoad() {
     OPTICK_EVENT();
 
+    constexpr std::array<std::string_view, 2> searchPattern = {
+     "//", "\\"
+    };
+
+
     // Each texture face/layer must be in a comma separated list
     stringstreamImpl textureLocationList(assetLocation());
     stringstreamImpl textureFileList(assetName().c_str());
@@ -77,7 +82,7 @@ void Texture::threadedLoad() {
 
             currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation.c_str() : currentTextureLocation);
             currentTextureFullPath.append("/" + currentTextureFile);
-
+            Util::ReplaceStringInPlace(currentTextureFullPath, searchPattern, "/");
             _descriptor._sourceFileList.push_back(currentTextureFile);
 
             // Attempt to load the current entry
@@ -207,7 +212,9 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
 
             metadataCache << _hasTransparency;
             metadataCache << _hasTranslucency;
-            metadataCache.dumpToFile(cachePath.c_str(), cacheName.c_str());
+            if (!metadataCache.dumpToFile(cachePath.c_str(), cacheName.c_str())) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
         }
     }
 

@@ -46,11 +46,11 @@ FWD_DECLARE_MANAGED_CLASS(SceneNode);
 class SolutionExplorerWindow final : public DockedWindow, public PlatformContextComponent {
   public:
       SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
-      ~SolutionExplorerWindow();
+      ~SolutionExplorerWindow() = default;
 
       void drawInternal() final;
   protected:
-      void drawTransformSettings();
+      void drawTransformSettings() const;
       void drawRemoveNodeDialog();
       void drawReparentNodeDialog();
       void drawAddNodeDialog();
@@ -58,7 +58,7 @@ class SolutionExplorerWindow final : public DockedWindow, public PlatformContext
       void drawChangeParentWindow();
       void drawContextMenu(SceneGraphNode* sgn);
 
-      void printCameraNode(SceneManager* sceneManager, Camera* camera);
+      void printCameraNode(SceneManager* sceneManager, Camera* camera) const;
       void printSceneGraphNode(SceneManager* sceneManager, SceneGraphNode* sgn, I32 nodeIDX, bool open, bool secondaryView);
 
       void goToNode(const SceneGraphNode* sgn) const;

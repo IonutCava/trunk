@@ -238,14 +238,6 @@
             </OIT_PASS>
         </DISPLAY>
         <texture>
-            <UNIT0>
-                <name>water_dudv.jpg</name>
-                <path>assets/misc_images/</path>
-                <flipped>true</flipped>
-                <Sampler>
-                    <id>1</id>
-                </Sampler>
-            </UNIT0>
             <NORMALMAP>
                 <name>terrain_water_NM_old.jpg</name>
                 <path>assets/misc_images/</path>

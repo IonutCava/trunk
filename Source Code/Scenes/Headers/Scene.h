@@ -117,6 +117,18 @@ class Scene : public Resource, public PlatformContextComponent {
     static bool onShutdown();
 
    public:
+       struct DayNightData
+       {
+           Sky* _skyInstance = nullptr;
+           DirectionalLightComponent* _dirLight = nullptr;
+           F32 _speedFactor = 1.0f;
+           F32 _timeAccumulator = 0.0f;
+           SimpleTime _time = { 14u, 30u };
+           bool _resetTime = true;
+       };
+
+   public:
+
     explicit Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
     virtual ~Scene();
 
@@ -124,8 +136,8 @@ class Scene : public Resource, public PlatformContextComponent {
     /// Get all input commands from the user
     virtual void processInput(PlayerIndex idx, const U64 deltaTimeUS);
     /// Update the scene based on the inputs
-    virtual void processTasks(const U64 deltaTimeUS);
-    virtual void processGUI(const U64 deltaTimeUS);
+    virtual void processTasks(U64 deltaTimeUS);
+    virtual void processGUI(U64 deltaTimeUS);
     /// Scene is rendering, so add intensive tasks here to save CPU cycles
     bool idle();  
     /// The application has lost focus
@@ -134,22 +146,22 @@ class Scene : public Resource, public PlatformContextComponent {
     /**End scene logic loop*/
 
     /// Update animations, network data, sounds, triggers etc.
-    void updateSceneState(const U64 deltaTimeUS);
-    void onStartUpdateLoop(const U8 loopNumber);
+    void updateSceneState(U64 deltaTimeUS);
+    void onStartUpdateLoop(U8 loopNumber);
     /// Override this for Scene specific updates
-    virtual void updateSceneStateInternal(const U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
-    
-    inline SceneRenderState& renderState() { return _sceneState->renderState(); }
-    inline const SceneRenderState& renderState() const { return _sceneState->renderState(); }
+    virtual void updateSceneStateInternal(U64 deltaTimeUS) { ACKNOWLEDGE_UNUSED(deltaTimeUS); }
 
-    inline SceneState* state()      const noexcept { return _sceneState; }
-    inline SceneInput* input()      const noexcept { return _input; }
-    inline SceneGraph* sceneGraph() const noexcept { return _sceneGraph; }
+    SceneRenderState& renderState() { return _sceneState->renderState(); }
+    const SceneRenderState& renderState() const { return _sceneState->renderState(); }
+
+    SceneState* state()      const noexcept { return _sceneState; }
+    SceneInput* input()      const noexcept { return _input; }
+    SceneGraph* sceneGraph() const noexcept { return _sceneGraph; }
 
     void registerTask(Task& taskItem, bool start = true, TaskPriority priority = TaskPriority::DONT_CARE);
     void clearTasks();
     void removeTask(Task& task);
-    inline void addSceneGraphToLoad(XML::SceneNode& rootNode) { _xmlSceneGraphRootNode = rootNode; }
+    void addSceneGraphToLoad(XML::SceneNode& rootNode) { _xmlSceneGraphRootNode = rootNode; }
 
     void addMusic(MusicType type, const Str64& name, const Str256& srcFile) const;
 
@@ -159,7 +171,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void addTerrain(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
 
     /// Object picking
-    inline Selections getCurrentSelection(PlayerIndex index = 0) const {
+    Selections getCurrentSelection(const PlayerIndex index = 0) const {
         const auto it = _currentSelection.find(index);
         if (it != eastl::cend(_currentSelection)) {
             return it->second;
@@ -208,18 +220,9 @@ class Scene : public Resource, public PlatformContextComponent {
     void setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) noexcept;
 
     PROPERTY_RW(bool, dayNightCycleEnabled, true);
+    PROPERTY_R_IW(DayNightData, dayNightData);
 
    protected:
-    struct DayNightData
-    {
-        Sky* _skyInstance = nullptr;
-        DirectionalLightComponent* _dirLight = nullptr;
-        F32 _speedFactor = 1.0f;
-        F32 _timeAccumulator = 0.0f;
-        SimpleTime _time = { 14u, 30u };
-        bool _resetTime = true;
-    } _dayNightData = {};
-
     virtual void rebuildShaders();
     virtual void onSetActive();
     virtual void onRemoveActive();

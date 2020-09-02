@@ -55,14 +55,14 @@
 	<consoleLayoutFile>console.layout</consoleLayoutFile>
 </GUI>
 <terrain>
-    <!-- 0 - low, 1 - med, 2 - high -->
-    <textureQuality>1</textureQuality>
-    <!-- higher => better (less tilling, more parallax effects, etc) -->
-    <detailLevel>2</detailLevel>
+	<!-- 0 - low, 1 - med, 2 - high -->
+	<textureQuality>1</textureQuality>
+	<!-- higher => better (less tilling, more parallax effects, etc) -->
+	<detailLevel>2</detailLevel>
 	<!-- higher => better. 0,1 or 2 -->
-    <parallaxMode>0</parallaxMode>
-    <perPixelNormals>false</perPixelNormals>
-    <wireframe>false</wireframe>
+	<parallaxMode>0</parallaxMode>
+	<perPixelNormals>false</perPixelNormals>
+	<wireframe>false</wireframe>
 </terrain>
 <rendering>
 	<MSAASamples>2</MSAASamples>

@@ -39,24 +39,24 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     FWD_DECLARE_MANAGED_CLASS(Texture);
 
-    class MenuBar : public PlatformContextComponent {
+    class MenuBar final : public PlatformContextComponent, NonMovable {
       public:
 
         explicit MenuBar(PlatformContext& context, bool mainMenu);
-        ~MenuBar();
+        ~MenuBar() = default;
 
         void draw();
 
       protected:
           void drawFileMenu();
-          void drawEditMenu();
-          void drawProjectMenu();
-          void drawObjectMenu();
+          void drawEditMenu() const;
+          void drawProjectMenu() const;
+          void drawObjectMenu() const;
           void drawToolsMenu();
-          void drawWindowsMenu();
-          void drawPostFXMenu();
+          void drawWindowsMenu() const;
+          void drawPostFXMenu() const;
           void drawDebugMenu();
-          void drawHelpMenu();
+          void drawHelpMenu() const;
 
       protected:
         bool _isMainMenu = true;

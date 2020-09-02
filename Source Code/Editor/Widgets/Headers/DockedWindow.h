@@ -38,7 +38,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class Editor;
-class DockedWindow {
+class DockedWindow : NonCopyable, NonMovable {
     public:
         struct Descriptor {
             ImVec2 size;
@@ -51,19 +51,19 @@ class DockedWindow {
 
     public:
         explicit DockedWindow(Editor& parent, const Descriptor& descriptor);
-        virtual ~DockedWindow();
+        virtual ~DockedWindow() = default;
 
         // Called when the editor is visible
         void draw();
         // Always called, even if the editor is not visible
         void backgroundUpdate();
 
-        virtual const char* name() const noexcept { return _descriptor.name.c_str(); }
+        [[nodiscard]] virtual const char* name() const noexcept { return _descriptor.name.c_str(); }
         
-        virtual bool hasFocus() const noexcept { return _focused; }
-        virtual bool isHovered() const noexcept { return _isHovered; }
+        [[nodiscard]] virtual bool hasFocus() const noexcept { return _focused; }
+        [[nodiscard]] virtual bool isHovered() const noexcept { return _isHovered; }
 
-        inline const Descriptor& descriptor() const noexcept { return _descriptor; }
+        [[nodiscard]] const Descriptor& descriptor() const noexcept { return _descriptor; }
 
         PROPERTY_RW(ImGuiWindowFlags, windowFlags, 0);
 

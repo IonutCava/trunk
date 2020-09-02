@@ -52,10 +52,10 @@ struct NOINITVTABLE GraphPlot {
     virtual ~GraphPlot() = default;
 
     stringImpl _plotName;
-    virtual bool empty() const noexcept = 0;
+    [[nodiscard]] virtual bool empty() const noexcept = 0;
 };
 
-struct GraphPlot2D : public GraphPlot {
+struct GraphPlot2D final : GraphPlot {
     GraphPlot2D() noexcept : GraphPlot2D("UNNAMED_PLOT_2D")
     {
     }
@@ -66,12 +66,12 @@ struct GraphPlot2D : public GraphPlot {
 
     vectorEASTL<vec2<F32>> _coords;
      
-    bool empty() const noexcept override {
+    [[nodiscard]] bool empty() const noexcept override {
         return _coords.empty();
     }
 };
 
-struct GraphPlot3D : public GraphPlot {
+struct GraphPlot3D final : GraphPlot {
     GraphPlot3D() noexcept : GraphPlot3D("UNNAMED_PLOT_3D")
     {
     }
@@ -81,7 +81,7 @@ struct GraphPlot3D : public GraphPlot {
 
     vectorEASTL<vec3<F32>> _coords;
 
-    bool empty() const noexcept override {
+    [[nodiscard]] bool empty() const noexcept override {
         return _coords.empty();
     }
 };

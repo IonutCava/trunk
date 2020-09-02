@@ -55,7 +55,7 @@ struct ParallelForDescriptor {
     bool _allowRunInIdle = true;
 };
 
-class TaskPool : public GUIDWrapper {
+class TaskPool final : public GUIDWrapper {
 public:
     enum class TaskPoolType : U8 {
         TYPE_LOCKFREE = 0,
@@ -68,6 +68,8 @@ public:
   public:
 
     explicit TaskPool();
+    explicit TaskPool(U32 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
+
     ~TaskPool();
     
     bool init(U32 threadCount, TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate = {}, const stringImpl& workerName = "DVD_WORKER");
@@ -101,14 +103,14 @@ public:
     friend void Wait(const Task& task);
     friend void TaskYield(const Task& task);
 
-    friend Task& Start(Task& task, TaskPriority prio, DELEGATE<void>&& onCompletionFunction);
+    friend Task& Start(Task& task, TaskPriority priority, const DELEGATE<void>& onCompletionFunction);
 
     friend void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor);
     friend void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction);
 
     void taskCompleted(U32 taskIndex, bool hasOnCompletionFunction);
     
-    bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, DELEGATE<void>&& onCompletionFunction);
+    bool enqueue(PoolTask&& task, TaskPriority priority, U32 taskIndex, const DELEGATE<void>& onCompletionFunction);
 
     void runCbkAndClearTask(U32 taskIdentifier);
 
@@ -126,8 +128,8 @@ public:
           using PoolImpl = ThreadPool<IsBlocking>;
           std::pair<PoolImpl<true>*, PoolImpl<false>*> _poolImpl = {nullptr, nullptr};
 
-          bool addTask(PoolTask&& job) const;
-          bool init() const noexcept;
+          [[nodiscard]] bool addTask(PoolTask&& job) const;
+          [[nodiscard]] bool init() const noexcept;
           void waitAndJoin() const;
           void threadWaiting() const;
       };

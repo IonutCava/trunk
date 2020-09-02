@@ -111,6 +111,14 @@ struct WaterBodyData {
 
 layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneData
 {
+    // w - reserved
+    vec4 dvd_sunDirection;
+    // w - reserved
+    vec4 dvd_sunColour;
+    // w - reserved
+    vec4 dvd_zenithColour;
+    // w - reserved
+    vec4 dvd_horizonColour;
     // x,y,z - colour, w - density
     vec4   dvd_fogDetails;
     // x,y,z - direction, w - speed

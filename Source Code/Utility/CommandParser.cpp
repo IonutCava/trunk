@@ -4,10 +4,6 @@
 
 namespace Divide {
 
-CommandParser::CommandParser() noexcept
-{
-}
-
 CommandParser::~CommandParser()
 {
     _commands.clear();

@@ -64,7 +64,7 @@ struct Ray {
         _direction = WORLD_Y_AXIS;
     }
 
-    CollisionHelpers getCollisionHelpers() const noexcept {
+    [[nodiscard]] CollisionHelpers getCollisionHelpers() const noexcept {
         CollisionHelpers ret = {};
         if (!IS_ZERO(_direction.x)) {
             ret._invDirection.x = 1.0f / _direction.x;

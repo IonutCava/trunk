@@ -109,7 +109,7 @@ void ResourceCache::clear() {
     _resDB.clear();
 }
 
-void ResourceCache::add(CachedResource_wptr resource, bool overwriteEntry) {
+void ResourceCache::add(const CachedResource_wptr& resource, const bool overwriteEntry) {
     DIVIDE_ASSERT(!resource.expired(), Locale::get(_ID("ERROR_RESOURCE_CACHE_LOAD_RES")));
 
     const CachedResource_ptr res = resource.lock();
@@ -154,9 +154,6 @@ void ResourceCache::remove(CachedResource* resource) {
         SharedLock<SharedMutex> r_lock(_creationMutex);
         resDBEmpty = _resDB.empty();
         const auto& it = _resDB.find(resourceHash);
-        const auto& huh= it->second;
-
-        const bool expired = huh.expired();
         DIVIDE_ASSERT(!resDBEmpty &&  it != std::end(_resDB), Locale::get(_ID("ERROR_RESOURCE_CACHE_UNKNOWN_RESOURCE")));
     }
 

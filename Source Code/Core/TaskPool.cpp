@@ -19,6 +19,14 @@ TaskPool::TaskPool()
     _threadCount = 0u;
 }
 
+TaskPool::TaskPool(const U32 threadCount, const TaskPoolType poolType, const DELEGATE<void, const std::thread::id&>& onThreadCreate, const stringImpl& workerName)
+    : TaskPool()
+{
+    if (!init(threadCount, poolType, onThreadCreate, workerName)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
+}
+
 TaskPool::~TaskPool()
 {
     shutdown();
@@ -48,8 +56,10 @@ bool TaskPool::init(const U32 threadCount, const TaskPoolType poolType, const DE
 
 void TaskPool::shutdown() {
     waitForAllTasks(true, true);
-    MemoryManager::SAFE_DELETE(std::get<0>(_poolImpl._poolImpl));
-    MemoryManager::SAFE_DELETE(std::get<1>(_poolImpl._poolImpl));
+    if (_poolImpl.init()) {
+        MemoryManager::SAFE_DELETE(std::get<0>(_poolImpl._poolImpl));
+        MemoryManager::SAFE_DELETE(std::get<1>(_poolImpl._poolImpl));
+    }
 }
 
 void TaskPool::onThreadCreate(const std::thread::id& threadID) {
@@ -72,7 +82,7 @@ void TaskPool::onThreadDestroy(const std::thread::id& threadID) {
     }
 }
 
-bool TaskPool::enqueue(PoolTask&& task, const TaskPriority priority, const U32 taskIndex, DELEGATE<void>&& onCompletionFunction) {
+bool TaskPool::enqueue(PoolTask&& task, const TaskPriority priority, const U32 taskIndex, const DELEGATE<void>& onCompletionFunction) {
     _runningTaskCount.fetch_add(1);
 
     if (priority == TaskPriority::REALTIME) {
@@ -95,7 +105,6 @@ void TaskPool::runCbkAndClearTask(const U32 taskIdentifier) {
     for (auto& cbk : cbks) {
         if (cbk) {
             cbk();
-            cbk = nullptr;
         }
     }
     cbks.resize(0);
@@ -108,10 +117,10 @@ void TaskPool::flushCallbackQueue() {
 
     constexpr I32 maxDequeueItems = 10;
     
-    U32 taskIndex[maxDequeueItems] = { 0 };
+    std::array<U32, maxDequeueItems> taskIndex = {};
     size_t count;
     do {
-        count = _threadedCallbackBuffer.try_dequeue_bulk(taskIndex, maxDequeueItems);
+        count = _threadedCallbackBuffer.try_dequeue_bulk(std::begin(taskIndex), maxDequeueItems);
         for (size_t i = 0; i < count; ++i) {
             runCbkAndClearTask(taskIndex[i]);
         }

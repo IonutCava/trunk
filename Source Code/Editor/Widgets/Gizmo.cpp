@@ -2,7 +2,6 @@
 
 #include "Headers/Gizmo.h"
 #include "Editor/Headers/Editor.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Managers/Headers/SceneManager.h"
 
 #include <imgui_internal.h>
@@ -10,7 +9,6 @@
 namespace Divide {
     namespace {
         constexpr U8 g_maxSelectedNodes = 12;
-        constexpr F32 g_maxScaleFactor = 0.1f;
         using TransformCache = std::array<TransformValues, g_maxSelectedNodes>;
         using NodeCache = std::array<SceneGraphNode*, g_maxSelectedNodes>;
 
@@ -21,11 +19,7 @@ namespace Divide {
 
     Gizmo::Gizmo(Editor& parent, ImGuiContext* targetContext)
         : _parent(parent),
-          _imguiContext(targetContext),
-          _visible(false),
-          _enabled(false),
-          _wasUsed(false),
-          _shouldRegisterUndo(false)
+          _imguiContext(targetContext)
     {
         g_undoEntry._name = "Gizmo Manipulation";
     }
@@ -45,7 +39,7 @@ namespace Divide {
         return *_imguiContext;
     }
 
-    void Gizmo::enable(bool state) noexcept {
+    void Gizmo::enable(const bool state) noexcept {
         _enabled = state;
     }
 
@@ -80,8 +74,6 @@ namespace Divide {
         if (transform == nullptr) {
             return;
         }
-
-        const bool multiNodeEdit = _selectedNodes.size() > 1;
 
         bool hasScale = false;
         vec3<F32> startScale = {};
@@ -119,13 +111,13 @@ namespace Divide {
         const vec2<U16> size = mainWindow->getDrawableSize();
         ImGuizmo::SetRect(0.f, 0.f, to_F32(size.width), to_F32(size.height));
 
-        ImGuizmo::Manipulate(camera->getViewMatrix(),
-                             camera->getProjectionMatrix(),
-                             _transformSettings.currentGizmoOperation,
-                             _transformSettings.currentGizmoMode,
-                             matrix,
-                             NULL,
-                             _transformSettings.useSnap ? &_transformSettings.snap[0] : NULL);
+        Manipulate(camera->getViewMatrix(),
+                   camera->getProjectionMatrix(),
+                   _transformSettings.currentGizmoOperation,
+                   _transformSettings.currentGizmoMode,
+                   matrix,
+                   nullptr,
+                   _transformSettings.useSnap ? &_transformSettings.snap[0] : nullptr);
 
         if (ImGuizmo::IsUsing()) {
             if (!_wasUsed) {
@@ -223,7 +215,7 @@ namespace Divide {
         io.KeyCtrl = io.KeyShift = io.KeyAlt = io.KeySuper = false;
     }
 
-    bool Gizmo::onKey(bool pressed, const Input::KeyEvent& key) {
+    bool Gizmo::onKey(const bool pressed, const Input::KeyEvent& key) {
         if (pressed) {
             _wasUsed = false;
         } else if (_wasUsed) {
@@ -272,7 +264,7 @@ namespace Divide {
         return ret;
     }
 
-    void Gizmo::onMouseButton(bool pressed) {
+    void Gizmo::onMouseButton(const bool pressed) {
         if (pressed) {
             _wasUsed = false;
         } else if (_wasUsed) {
@@ -297,7 +289,10 @@ namespace Divide {
         if (active()) {
             const ImGuizmo::GizmoBounds& bounds = ImGuizmo::GetBounds();
             const ImGuiIO& io = _imguiContext->IO;
-            vec2<F32> deltaScreen = { io.MousePos.x - bounds.mScreenSquareCenter.x, io.MousePos.y - bounds.mScreenSquareCenter.y };
+            const vec2<F32> deltaScreen = {
+                io.MousePos.x - bounds.mScreenSquareCenter.x,
+                io.MousePos.y - bounds.mScreenSquareCenter.y
+            };
             const F32 dist = deltaScreen.length();
             return dist < (bounds.mRadiusSquareCenter + 5.0f);
         }

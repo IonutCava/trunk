@@ -2,9 +2,8 @@
 
 #include "Platform/Headers/PlatformDefines.h"
 
-#include <assert.h>
 
-void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
+void* operator new[](const size_t size, size_t alignment, size_t alignmentOffset,
                      const char* pName, int flags, unsigned int debugFlags,
                      const char* file, int line) {
     ACKNOWLEDGE_UNUSED(alignmentOffset);
@@ -21,7 +20,7 @@ void* operator new[](size_t size, size_t alignment, size_t alignmentOffset,
     return malloc(size);
 }
 
-void* operator new[](size_t size, const char* pName, int flags,
+void* operator new[](const size_t size, const char* pName, int flags,
                      unsigned int debugFlags, const char* file, int line) {
     ACKNOWLEDGE_UNUSED(pName);
     ACKNOWLEDGE_UNUSED(flags);
@@ -32,6 +31,6 @@ void* operator new[](size_t size, const char* pName, int flags,
     return malloc(size);
 }
 
-int Vsnprintf8(char* pDestination, size_t n, const char* pFormat, va_list arguments) {
+int Vsnprintf8(char* pDestination, const size_t n, const char* pFormat, const va_list arguments) {
     return vsnprintf(pDestination, n, pFormat, arguments);
 }

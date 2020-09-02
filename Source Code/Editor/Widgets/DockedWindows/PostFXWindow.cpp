@@ -1,26 +1,21 @@
 #include "stdafx.h"
 
 #include "Headers/PostFXWindow.h"
-#include "Editor/Headers/Editor.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Core/Headers/StringHelper.h"
+#include "Editor/Headers/Editor.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Rendering/Headers/Renderer.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
-#include "Rendering/PostFX/CustomOperators/Headers/SSAOPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
-#include "Rendering/PostFX/CustomOperators/Headers/MotionBlurPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"
+#include "Rendering/PostFX/CustomOperators/Headers/MotionBlurPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/PostAAPreRenderOperator.h"
-
-#undef IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui_internal.h>
+#include "Rendering/PostFX/CustomOperators/Headers/SSAOPreRenderOperator.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 
 namespace Divide {
     PostFXWindow::PostFXWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
-        : PlatformContextComponent(context),
-          DockedWindow(parent, descriptor),
+        : DockedWindow(parent, descriptor),
+          PlatformContextComponent(context),
           _postFX(context.gfx().getRenderer().postFX())
     {
     }

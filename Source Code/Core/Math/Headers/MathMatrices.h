@@ -202,7 +202,7 @@ public:
     [[nodiscard]] operator const T *() const;
 
     [[nodiscard]] T& operator[](I32 i);
-    [[nodiscard]] const T operator[](I32 i) const;
+    [[nodiscard]] T  operator[](I32 i) const;
 
     [[nodiscard]] T &element(I8 row, I8 column);
     [[nodiscard]] const T &element(I8 row, I8 column) const;
@@ -219,19 +219,19 @@ public:
     void set(const mat4<U> &matrix) noexcept;
 
     template<typename U>
-    void setRow(I32 index, const U value) noexcept;
+    void setRow(I32 index, U value) noexcept;
     template<typename U>
     void setRow(I32 index, const vec2<U> &value) noexcept;
     template<typename U>
-    void setRow(I32 index, const U x, const U y) noexcept;
+    void setRow(I32 index, U x, U y) noexcept;
     [[nodiscard]] const vec2<T>& getRow(I32 index) const noexcept;
 
     template<typename U>
     void setCol(I32 index, const vec2<U> &value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U value) noexcept;
+    void setCol(I32 index, U value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U x, const U y) noexcept;
+    void setCol(I32 index, U x, U y) noexcept;
 
     [[nodiscard]] vec2<T> getCol(I32 index) const noexcept;
 
@@ -360,7 +360,7 @@ class mat3 {
     [[nodiscard]] operator const T *() const noexcept;
 
     [[nodiscard]] T &operator[](I32 i) noexcept;
-    [[nodiscard]] const T operator[](I32 i) const noexcept;
+    [[nodiscard]] T operator[](I32 i) const noexcept;
 
     [[nodiscard]] T &element(I8 row, I8 column) noexcept;
     [[nodiscard]] const T &element(I8 row, I8 column) const;
@@ -377,20 +377,20 @@ class mat3 {
     void set(const mat4<U> &matrix) noexcept;
 
     template<typename U>
-    void setRow(I32 index, const U value) noexcept;
+    void setRow(I32 index, U value) noexcept;
     template<typename U>
     void setRow(I32 index, const vec3<U> &value) noexcept;
     template<typename U>
-    void setRow(I32 index, const U x, const U y, const U z) noexcept;
+    void setRow(I32 index, U x, U y, U z) noexcept;
 
     [[nodiscard]] const vec3<T>& getRow(I32 index) const noexcept;
 
     template<typename U>
     void setCol(I32 index, const vec3<U> &value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U value) noexcept;
+    void setCol(I32 index, U value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U x, const U y, const U z) noexcept;
+    void setCol(I32 index, U x, U y, U z) noexcept;
 
     [[nodiscard]] vec3<T> getCol(I32 index) const noexcept;
 
@@ -464,7 +464,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     mat4() noexcept;
     mat4(std::initializer_list<T> matrix) noexcept;
     template<typename U>
-    mat4(U m) noexcept;
+    mat4(U value) noexcept;
     template<typename U>
     mat4(const U *values) noexcept;
     template<typename U>
@@ -574,20 +574,20 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     void set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept;
 
     template<typename U>
-    void setRow(I32 index, const U value) noexcept;
+    void setRow(I32 index, U value) noexcept;
     template<typename U>
     void setRow(I32 index, const vec4<U> &value) noexcept;
     template<typename U>
-    void setRow(I32 index, const U x, const U y, const U z, const U w) noexcept;
+    void setRow(I32 index, U x, U y, U z, U w) noexcept;
 
     [[nodiscard]] const vec4<T>& getRow(I32 index) const noexcept;
 
     template<typename U>
     void setCol(I32 index, const vec4<U> &value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U value) noexcept;
+    void setCol(I32 index, U value) noexcept;
     template<typename U>
-    void setCol(I32 index, const U x, const U y, const U z, const U w) noexcept;
+    void setCol(I32 index, U x, U y, U z, U w) noexcept;
 
     [[nodiscard]] vec4<T> getCol(I32 index) const noexcept;
 
@@ -636,7 +636,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     void setScale(U x, U y, U z) noexcept;
     template<typename U>
     void setScale(const vec3<U> &v) noexcept;
-    vec3<T> getScale() const noexcept;
+    [[nodiscard]] vec3<T> getScale() const noexcept;
 
     template<typename U>
     [[nodiscard]] vec3<U> transform(const vec3<U> &v, bool homogeneous) const;
@@ -657,7 +657,7 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
 
     template<typename U>
     [[nodiscard]] vec3<U> getTranslation() const noexcept;
-    [[nodiscard]] mat4 getRotation(void) const;
+    [[nodiscard]] mat4 getRotation() const;
 
     template<typename U>
     const mat4& reflect(U x, U y, U z, U w);

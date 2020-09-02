@@ -15,7 +15,7 @@ struct MeshLoadData {
     explicit MeshLoadData(Mesh_ptr mesh,
                           ResourceCache* cache,
                           PlatformContext* context,
-                          ResourceDescriptor descriptor)
+                          const ResourceDescriptor& descriptor)
         : _mesh(mesh),
           _cache(cache),
           _context(context),

@@ -43,14 +43,9 @@ ImageData::ImageData() noexcept
     _compressedTextureType = TextureType::COUNT;
 }
 
-ImageData::~ImageData()
-{
-}
-
 bool ImageData::addLayer(Byte* data, const size_t size, const U16 width, const U16 height, const U16 depth) {
     ImageLayer& layer = _layers.emplace_back();
-    layer.allocateMip(data, size, width, height, depth);
-    return true;
+    return layer.allocateMip(data, size, width, height, depth);
 }
 
 bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeight, const stringImpl& fileName) {
@@ -145,18 +140,19 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
     // most formats do not have an alpha channel
     _alpha = comp % 2 == 0;
     _compressed = false;
+    bool ret = false;
     if (data != nullptr) {
         if (_isHDR) {
-            layer.allocateMip(static_cast<F32*>(data), baseSize / 4, to_U16(width), to_U16(height), 1u);
+            ret = layer.allocateMip(static_cast<F32*>(data), baseSize / 4, to_U16(width), to_U16(height), 1u);
         } else if (is16Bit()) {
-            layer.allocateMip(static_cast<U16*>(data), baseSize / 2, to_U16(width), to_U16(height), 1u);
+            ret = layer.allocateMip(static_cast<U16*>(data), baseSize / 2, to_U16(width), to_U16(height), 1u);
         } else {
-            layer.allocateMip(static_cast<U8*>(data), baseSize / 1, to_U16(width), to_U16(height), 1u);
+            ret = layer.allocateMip(static_cast<U8*>(data), baseSize / 1, to_U16(width), to_U16(height), 1u);
         }
         stbi_image_free(data);
     }
 
-    return true;
+    return ret;
 }
 
 bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHeight, const stringImpl& filename) {
@@ -164,9 +160,10 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
     ACKNOWLEDGE_UNUSED(refHeight);
 
     const auto CheckError = []() {
-        const ILenum error = ilGetError();
+        ILenum error = ilGetError();
         while (error != IL_NO_ERROR) {
             DebugBreak();
+            error = ilGetError();
         }
     };
 
@@ -331,7 +328,7 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
     ACKNOWLEDGE_UNUSED(refHeight);
 
     nv_dds::CDDSImage image;
-    image.load(filename.c_str(), _flip);
+    image.load(filename, _flip);
     _alpha = image.get_components() == 4;
     switch(image.get_type()) {
         case nv_dds::TextureFlat:
@@ -389,15 +386,20 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
 
     const U32 numMips = image.get_num_mipmaps();
     ImageLayer& layer = _layers.emplace_back();
-    layer.allocateMip<U8>(static_cast<U8*>(image), image.get_size(), to_U16(image.get_width()), to_U16(image.get_height()), to_U16(image.get_depth()));
+    if (layer.allocateMip<U8>(static_cast<U8*>(image), image.get_size(), to_U16(image.get_width()), to_U16(image.get_height()), to_U16(image.get_depth()))) {
 
-    for (U8 i = 0; i < numMips; ++i) {
-        const nv_dds::CSurface& mipMap = image.get_mipmap(i);
-        layer.allocateMip<U8>(static_cast<U8*>(mipMap), mipMap.get_size(), to_U16(mipMap.get_width()), to_U16(mipMap.get_height()), to_U16(mipMap.get_depth()));
+        for (U8 i = 0; i < numMips; ++i) {
+            const nv_dds::CSurface& mipMap = image.get_mipmap(i);
+            if (!layer.allocateMip<U8>(static_cast<U8*>(mipMap), mipMap.get_size(), to_U16(mipMap.get_width()), to_U16(mipMap.get_height()), to_U16(mipMap.get_depth()))) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
+        }
+
+        image.clear();
+        return true;
     }
 
-    image.clear();
-    return true;
+    return false;
 }
 
 UColour4 ImageData::getColour(const I32 x, const I32 y, U32 layer, const U8 mipLevel) const {

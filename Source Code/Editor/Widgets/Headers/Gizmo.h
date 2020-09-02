@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _EDITOR_GIZMO_H_
 #define _EDITOR_GIZMO_H_
 
-#include "Editor/Headers/UndoManager.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "Platform/Input/Headers/InputAggregatorInterface.h"
 
@@ -67,30 +66,29 @@ namespace Divide {
         explicit Gizmo(Editor& parent, ImGuiContext* targetContext);
         ~Gizmo();
 
-        ImGuiContext& getContext() noexcept;
-        const ImGuiContext& getContext() const noexcept;
+        [[nodiscard]] ImGuiContext& getContext() noexcept;
+        [[nodiscard]] const ImGuiContext& getContext() const noexcept;
 
-        bool needsMouse() const;
-        bool hovered() const;
+        [[nodiscard]] bool needsMouse() const;
+        [[nodiscard]] bool hovered() const;
         void enable(bool state) noexcept;
-        bool enabled() const noexcept;
-        bool active() const noexcept;
+        [[nodiscard]] bool enabled() const noexcept;
+        [[nodiscard]] bool active() const noexcept;
 
         void onMouseButton(bool pressed);
-        bool onKey(bool pressed, const Input::KeyEvent& key);
+        [[nodiscard]] bool onKey(bool pressed, const Input::KeyEvent& key);
 
     protected:
-        void update(const U64 deltaTimeUS);
+        void update(U64 deltaTimeUS);
         void render(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
-        void updateSelections(const vectorEASTL<SceneGraphNode*>& node);
+        void updateSelections(const vectorEASTL<SceneGraphNode*>& nodes);
         void setTransformSettings(const TransformSettings& settings) noexcept;
-        const TransformSettings& getTransformSettings() const noexcept;
-        void onSceneFocus(const bool state) noexcept;
+        [[nodiscard]] const TransformSettings& getTransformSettings() const noexcept;
+        void onSceneFocus(bool state) noexcept;
 
     private:
         Editor& _parent;
         bool _enabled = false;
-        bool _visible = false;
         bool _wasUsed = false;
         bool _shouldRegisterUndo = false;
         vectorEASTL<SceneGraphNode*> _selectedNodes;
@@ -109,7 +107,7 @@ namespace Divide {
                 gizmo->updateSelections(nodes);
             }
 
-            static void update(Gizmo* gizmo, const U64 deltaTimeUS) {
+            static void update(Gizmo* gizmo, U64 deltaTimeUS) {
                 gizmo->update(deltaTimeUS);
             }
 

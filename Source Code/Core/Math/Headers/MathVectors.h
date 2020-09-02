@@ -56,6 +56,7 @@
 #define _MATH_VECTORS_H_
 
 #include "MathHelper.h"
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
@@ -461,7 +462,8 @@ class vec3 {
     /// uniform vector: x = y = z
     [[nodiscard]] bool isUniform() const noexcept;
     /// The current vector is perpendicular to the specified one within epsilon
-    [[nodiscard]] bool isPerpendicular(const vec3 other, F32 epsilon = EPSILON_F32) const noexcept;
+    template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
+    [[nodiscard]] bool isPerpendicular(const vec3<U>& other, F32 epsilon = EPSILON_F32) const noexcept;
     /// return the squared distance of the vector
     [[nodiscard]] T lengthSquared() const noexcept;
     /// calculate the dot product between this vector and the specified one
@@ -743,7 +745,7 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     [[nodiscard]] bool compare(const vec4<U> &v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    [[nodiscard]] bool compare(const vec4<U> &v, const U epsi) const noexcept;
+    [[nodiscard]] bool compare(const vec4<U> &v, U epsi) const noexcept;
     /// swap the components  of this vector with that of the specified one
     void swap(vec4 *iv) noexcept;
     /// swap the components  of this vector with that of the specified one
@@ -751,7 +753,8 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     /// transform the vector to unit length
     vec4& normalize();
     /// The current vector is perpendicular to the specified one within epsilon
-    [[nodiscard]] bool isPerpendicular(const vec4 other, F32 epsilon = EPSILON_F32) const noexcept;
+    template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
+    [[nodiscard]] bool isPerpendicular(const vec4<U>& other, F32 epsilon = EPSILON_F32) const noexcept;
     /// get the smallest value of X,Y,Z or W
     [[nodiscard]] T minComponent() const noexcept;
     /// get the largest value of X,Y,Z or W

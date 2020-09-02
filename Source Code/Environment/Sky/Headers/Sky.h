@@ -119,11 +119,9 @@ class Sky : public SceneNode {
   
     GFXDevice& _context;
     eastl::unique_ptr<Sun> _sun = nullptr;
-    vec4<F32> _sunDirectionAndIntensity;
     Texture_ptr  _skybox[2] = { nullptr, nullptr };
     Sphere3D_ptr _sky = nullptr;
     ShaderProgram_ptr _skyShader = nullptr;
-    ShaderProgram_ptr _skyShaderLQPrePass = nullptr;
     ShaderProgram_ptr _skyShaderPrePass = nullptr;
     size_t _skyboxRenderStateHash = 0;
     size_t _skyboxRenderStateHashPrePass = 0;

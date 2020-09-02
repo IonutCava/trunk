@@ -42,7 +42,7 @@ namespace ImageTools {
 
 struct LayerData {
     virtual ~LayerData() = default;
-    virtual bufferPtr data() const = 0;
+    [[nodiscard]] virtual bufferPtr data() const = 0;
 
     /// the image data as it was read from the file / memory.
     size_t _size = 0u;
@@ -66,7 +66,7 @@ struct ImageMip final : LayerData {
 
     ~ImageMip() = default;
 
-    bufferPtr data() const final { return (bufferPtr)(_data.data()); }
+    [[nodiscard]] bufferPtr data() const final { return (bufferPtr)(_data.data()); }
 
 protected:
     vectorEASTL<T> _data;
@@ -74,7 +74,7 @@ protected:
 
 struct ImageLayer {
     template<typename T>
-    T* allocateMip(T* data, size_t len, U16 width, U16 height, U16 depth) {
+    [[nodiscard]] T* allocateMip(T* data, size_t len, U16 width, U16 height, U16 depth) {
         assert(_mips.size() < std::numeric_limits<U8>::max() - 1);
 
         _mips.emplace_back(eastl::make_unique<ImageMip<T>>(data, len, width, height, depth));
@@ -82,11 +82,11 @@ struct ImageLayer {
     }
 
     template<typename T>
-     T* allocateMip(const size_t len, const U16 width, const U16 height, const U16 depth) {
+    [[nodiscard]] T* allocateMip(const size_t len, const U16 width, const U16 height, const U16 depth) {
         return allocateMip<T>(nullptr, len, width, height, depth);
     }
 
-    bufferPtr data(const U8 mip) const { 
+     [[nodiscard]] bufferPtr data(const U8 mip) const {
         if (_mips.size() <= mip) {
             return nullptr;
         }
@@ -94,7 +94,7 @@ struct ImageLayer {
         return _mips[mip]->data();
     }
 
-    LayerData* getMip(const U8 mip) const noexcept {
+     [[nodiscard]] LayerData* getMip(const U8 mip) const noexcept {
         if (mip < _mips.size()) {
             return _mips[mip].get();
         }
@@ -102,7 +102,7 @@ struct ImageLayer {
         return nullptr;
     }
 
-    U8 mipCount() const noexcept {
+     [[nodiscard]] U8 mipCount() const noexcept {
         return to_U8(_mips.size());
     }
 
@@ -113,19 +113,19 @@ private:
 class ImageData : NonCopyable {
    public:
      ImageData() noexcept;
-    ~ImageData();
+     ~ImageData() = default;
 
     /// image origin information
     void flip(const bool state) noexcept { _flip = state; }
-    bool flip() const noexcept { return _flip; }
+    [[nodiscard]] bool flip() const noexcept { return _flip; }
 
     void set16Bit(const bool state) noexcept { _16Bit = state; }
-    bool is16Bit() const noexcept { return _16Bit; }
+    [[nodiscard]] bool is16Bit() const noexcept { return _16Bit; }
 
-    bool isHDR() const noexcept { return _isHDR; }
+    [[nodiscard]] bool isHDR() const noexcept { return _isHDR; }
 
     /// set and get the image's actual data 
-    bufferPtr data(const U32 layer, const U8 mipLevel) const { 
+    [[nodiscard]] bufferPtr data(const U32 layer, const U8 mipLevel) const {
         if (layer < _layers.size() &&  mipLevel < mipCount()) {
             // triple data-ception
             return _layers[layer].data(mipLevel);
@@ -134,11 +134,11 @@ class ImageData : NonCopyable {
         return nullptr;
     }
 
-    const vectorEASTL<ImageLayer>& imageLayers() const noexcept {
+    [[nodiscard]] const vectorEASTL<ImageLayer>& imageLayers() const noexcept {
         return _layers;
     }
     /// image width, height and depth
-    const vec3<U16>& dimensions(const U32 layer, const U8 mipLevel = 0u) const { 
+    [[nodiscard]] const vec3<U16>& dimensions(const U32 layer, const U8 mipLevel = 0u) const {
         assert(mipLevel < mipCount());
         assert(layer < _layers.size());
 
@@ -146,23 +146,23 @@ class ImageData : NonCopyable {
     }
 
     /// set and get the image's compression state
-    bool compressed() const noexcept { return _compressed; }
+    [[nodiscard]] bool compressed() const noexcept { return _compressed; }
     /// get the number of pre-loaded mip maps (same number for each layer)
-    U8 mipCount() const { return _layers.empty() ? 0u : _layers.front().mipCount(); }
+    [[nodiscard]] U8 mipCount() const { return _layers.empty() ? 0u : _layers.front().mipCount(); }
     /// get the total number of image layers
-    U32 layerCount() const noexcept { return to_U32(_layers.size()); }
+    [[nodiscard]] U32 layerCount() const noexcept { return to_U32(_layers.size()); }
     /// image transparency information
-    bool alpha() const noexcept { return _alpha; }
+    [[nodiscard]] bool alpha() const noexcept { return _alpha; }
     /// image depth information
-    U8 bpp() const noexcept { return _bpp; }
+    [[nodiscard]] U8 bpp() const noexcept { return _bpp; }
     /// the filename from which the image is created
-    const stringImpl& name() const noexcept { return _name; }
+    [[nodiscard]] const stringImpl& name() const noexcept { return _name; }
     /// the image format as given by STB/NV_DDS
-    GFXImageFormat format() const noexcept { return _format; }
+    [[nodiscard]] GFXImageFormat format() const noexcept { return _format; }
 
-    GFXDataFormat dataType() const noexcept { return _dataType; }
+    [[nodiscard]] GFXDataFormat dataType() const noexcept { return _dataType; }
     /// get the texel colour at the specified offset from the origin
-    UColour4 getColour(I32 x, I32 y, U32 layer = 0u, U8 mipLevel = 0u) const;
+    [[nodiscard]] UColour4 getColour(I32 x, I32 y, U32 layer = 0u, U8 mipLevel = 0u) const;
     void getColour(I32 x, I32 y, U8& r, U8& g, U8& b, U8& a, U32 layer = 0u, U8 mipLevel = 0u) const;
 
     void getRed(I32 x, I32 y, U8& r, U32 layer = 0u, U8 mipLevel = 0u) const;
@@ -170,16 +170,16 @@ class ImageData : NonCopyable {
     void getBlue(I32 x, I32 y, U8& b, U32 layer = 0u, U8 mipLevel = 0u) const;
     void getAlpha(I32 x, I32 y, U8& a, U32 layer = 0u, U8 mipLevel = 0u) const;
 
-    TextureType compressedTextureType() const noexcept { return _compressedTextureType; }
+    [[nodiscard]] TextureType compressedTextureType() const noexcept { return _compressedTextureType; }
 
-    bool addLayer(Byte* data, size_t size, U16 width, U16 height, U16 depth);
+    [[nodiscard]] bool addLayer(Byte* data, size_t size, U16 width, U16 height, U16 depth);
     /// creates this image instance from the specified data
-    bool addLayer(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& fileName);
+    [[nodiscard]] bool addLayer(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& fileName);
 
   protected:
     friend class ImageDataInterface;
-    bool loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename);
-    bool loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename);
+    [[nodiscard]] bool loadDDS_IL(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename);
+    [[nodiscard]] bool loadDDS_NV(bool srgb, U16 refWidth, U16 refHeight, const stringImpl& filename);
 
    private:
     //Each entry is a separate mip map.

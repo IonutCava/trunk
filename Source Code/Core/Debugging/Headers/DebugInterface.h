@@ -42,9 +42,9 @@ public:
     explicit DebugInterface(Kernel& parent) noexcept;
     ~DebugInterface() = default;
 
-    const stringImpl& output() const noexcept;
-    void toggle(const bool state) noexcept;
-    bool enabled() const noexcept;
+    [[nodiscard]] const stringImpl& output() const noexcept;
+    void toggle(bool state) noexcept;
+    [[nodiscard]] bool enabled() const noexcept;
     void idle();
 
 private:

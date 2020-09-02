@@ -14,10 +14,6 @@ namespace Divide {
         //ImGuiFs::Dialog::ExtraWindowFlags |= ImGuiWindowFlags_Tooltip;
     }
 
-    EditorOptionsWindow::~EditorOptionsWindow()
-    {
-    }
-
     void EditorOptionsWindow::update(const U64 deltaTimeUS) {
         ACKNOWLEDGE_UNUSED(deltaTimeUS);
     }
@@ -40,7 +36,7 @@ namespace Divide {
             flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
         }
 
-        if (!ImGui::Begin("Editor options", NULL, flags))
+        if (!ImGui::Begin("Editor options", nullptr, flags))
         {
             ImGui::End();
             return;
@@ -49,7 +45,6 @@ namespace Divide {
         static UndoEntry<I32> undo = {};
         const I32 crtThemeIdx = to_I32(Attorney::EditorOptionsWindow::getTheme(_context.editor()));
         I32 selection = crtThemeIdx;
-        bool openDialog = false;
         if (ImGui::Combo("Editor Theme", &selection, ImGui::GetDefaultStyleNames(), ImGuiStyle_Count)) {
 
             ImGui::ResetStyle(static_cast<ImGuiStyleEnum>(selection));
@@ -73,7 +68,7 @@ namespace Divide {
         stringImpl externalTextEditorPath = Attorney::EditorOptionsWindow::externalTextEditorPath(_context.editor());
         ImGui::InputText("Text Editor", externalTextEditorPath.data(), externalTextEditorPath.size(), ImGuiInputTextFlags_ReadOnly);
         ImGui::SameLine();
-        openDialog = ImGui::Button("Select");
+        const bool openDialog = ImGui::Button("Select");
         if (openDialog) {
             ImGuiFs::Dialog::WindowLTRBOffsets.x = FileDialogPos.x;
             ImGuiFs::Dialog::WindowLTRBOffsets.y = FileDialogPos.y;
@@ -86,7 +81,9 @@ namespace Divide {
             open = false;
             assert(_changeCount < _context.editor().UndoStackSize());
             for (U16 i = 0; i < _changeCount; ++i) {
-                _context.editor().Undo();
+                if (!_context.editor().Undo()) {
+                    NOP();
+                }
             }
             _changeCount = 0u;
         }
@@ -95,7 +92,9 @@ namespace Divide {
         if (ImGui::Button("Save", ImVec2(120, 0))) {
             open = false;
             _changeCount = 0u;
-            _context.editor().saveToXML();
+            if (!_context.editor().saveToXML()) {
+                Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "Save failed!", Time::SecondsToMilliseconds<F32>(3.0f));
+            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Defaults", ImVec2(120, 0))) {
@@ -106,7 +105,7 @@ namespace Divide {
         ImGui::End();
 
         if (_openDialog) {
-            const char* chosenPath = _fileOpenDialog.chooseFileDialog(openDialog, NULL, NULL, "Choose text editor", ImVec2(-1, -1), FileDialogPos);
+            const char* chosenPath = _fileOpenDialog.chooseFileDialog(openDialog, nullptr, nullptr, "Choose text editor", ImVec2(-1, -1), FileDialogPos);
             if (strlen(chosenPath) > 0) {
                 Attorney::EditorOptionsWindow::externalTextEditorPath(_context.editor(), chosenPath);
             }

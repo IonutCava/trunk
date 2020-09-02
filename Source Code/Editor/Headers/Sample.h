@@ -33,10 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DIVIDE_EDITOR_SAMPLE_H_
 #define _DIVIDE_EDITOR_SAMPLE_H_
 
-#include "Core/Headers/NonCopyable.h"
-#include "Platform/Headers/PlatformDefines.h"
-#include "Rendering/Headers/FrameListener.h"
-
 namespace Divide {
 
     void Init(ImTextureID texture1, ImTextureID texture2, ImTextureID dockTexture);

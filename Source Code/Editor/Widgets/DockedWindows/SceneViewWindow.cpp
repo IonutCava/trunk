@@ -19,18 +19,13 @@ namespace Divide {
     {
     }
 
-    SceneViewWindow::~SceneViewWindow()
-    {
-    }
-
     void SceneViewWindow::drawInternal() {
 
-        const auto button = [](bool disabled, const char* label, const char* tooltip, bool small = false) -> bool {
-            bool ret = false;
+        const auto button = [](const bool disabled, const char* label, const char* tooltip, const bool small = false) -> bool {
             if (disabled) {
                 PushReadOnly();
             }
-            ret = small ? ImGui::SmallButton(label) : ImGui::Button(label);
+            const bool ret = small ? ImGui::SmallButton(label) : ImGui::Button(label);
 
             if (disabled) {
                 PopReadOnly();
@@ -180,13 +175,13 @@ namespace Divide {
                 const F32 deltaUV = uvExtension.y;
                 const F32 remainingUV = 1.f - deltaUV;
                 if (deltaUV < 1) {
-                    F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
+                    const F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
                     remainingWndSize.y -= adder * imageSz.y;
                     imageSz.y += adder * imageSz.y;
                 }
             }
 
-            ImVec2 startPos = bb.Min, endPos = bb.Max;
+            ImVec2 startPos = bb.Min, endPos;
             startPos.x += remainingWndSize.x*.5f;
             startPos.y += remainingWndSize.y*.5f;
             endPos.x = startPos.x + imageSz.x;
@@ -227,6 +222,8 @@ namespace Divide {
                 case ImGuizmo::SCALE:
                     ImGui::InputFloat("Scale", &settings.snap[0]);
                     break;
+                default:
+                case ImGuizmo::BOUNDS: break;
             }
             ImGui::PopItemWidth();
         }

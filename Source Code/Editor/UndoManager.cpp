@@ -12,7 +12,7 @@ UndoManager::UndoManager(U32 maxSize)
 bool UndoManager::Undo() {
     if (!_undoStack.empty()) {
         auto entry = _undoStack.back();
-        bool ret = apply(entry);
+        const bool ret = apply(entry);
         _undoStack.pop_back();
         if (ret) {
             entry->swapValues();
@@ -27,7 +27,7 @@ bool UndoManager::Undo() {
 bool UndoManager::Redo() {
     if (!_redoStack.empty()) {
         auto entry = _redoStack.back();
-        bool ret = apply(entry);
+        const bool ret = apply(entry);
         _redoStack.pop_back();
         if (ret) {
             entry->swapValues();

@@ -2,10 +2,8 @@
 
 #include "Headers/StatusBar.h"
 
-#include "Editor/Headers/Editor.h"
-#include "Core/Headers/Kernel.h"
-#include "Core/Headers/Application.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Editor/Headers/Editor.h"
 
 #include <imgui_internal.h>
 
@@ -25,7 +23,7 @@ namespace {
 
         // We don't clip with current window clipping rectangle as it is already set to the area below. However we clip with window full rect.
         // We remove 1 worth of rounding to Max.x to that text in long menus and small windows don't tend to display over the lower-right rounded area, which looks particularly glitchy.
-        ImRect bar_rect = window->MenuBarRect();
+        const ImRect bar_rect = window->MenuBarRect();
         ImRect clip_rect(ImFloor(bar_rect.Min.x + window->WindowBorderSize + 0.5f), ImFloor(bar_rect.Min.y + window->WindowBorderSize + 0.5f), ImFloor(ImMax(bar_rect.Min.x, bar_rect.Max.x - ImMax(window->WindowRounding, window->WindowBorderSize)) + 0.5f), ImFloor(bar_rect.Max.y + 0.5f));
         clip_rect.ClipWith(window->OuterRectClipped);
         ImGui::PushClipRect(clip_rect.Min, clip_rect.Max, false);
@@ -85,14 +83,14 @@ namespace {
         ImGuiContext& g = *GImGui;
         ImGuiViewport* viewport = g.Viewports[0];
         g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
-        F32 height = g.NextWindowData.MenuBarOffsetMinVal.y + g.FontBaseSize + g.Style.FramePadding.y;
+        const F32 height = g.NextWindowData.MenuBarOffsetMinVal.y + g.FontBaseSize + g.Style.FramePadding.y;
         ImGui::SetNextWindowPos(viewport->Pos + ImVec2(0.0f, g.IO.DisplaySize.y - height));
         ImGui::SetNextWindowSize(ImVec2(viewport->Size.x, height));
         ImGui::SetNextWindowViewport(viewport->ID); // Enforce viewport so we don't create our onw viewport when ImGuiConfigFlags_ViewportsNoMerge is set.
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0, 0));
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
-        bool is_open = ImGui::Begin("##StatusBar", NULL, window_flags) && BeginBar();
+        const ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+        const bool is_open = ImGui::Begin("##StatusBar", nullptr, window_flags) && BeginBar();
         ImGui::PopStyleVar(2);
         g.NextWindowData.MenuBarOffsetMinVal = ImVec2(0.0f, 0.0f);
         if (!is_open)
@@ -110,7 +108,7 @@ namespace {
         // FIXME: With this strategy we won't be able to restore a NULL focus.
         ImGuiContext& g = *GImGui;
         if (g.CurrentWindow == g.NavWindow && g.NavLayer == 0 && !g.NavAnyRequest) {
-            ImGui::FocusTopMostWindowUnderOne(g.NavWindow, NULL);
+            ImGui::FocusTopMostWindowUnderOne(g.NavWindow, nullptr);
         }
 
         ImGui::End();
@@ -125,12 +123,7 @@ StatusBar::StatusBar(PlatformContext& context)
 
 }
 
-StatusBar::~StatusBar()
-{
-
-}
-
-void StatusBar::draw() {
+void StatusBar::draw() const {
     if (BeginStatusBar())
     {
         if (!_lastMessage.empty()) {

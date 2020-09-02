@@ -2,7 +2,6 @@
 
 #include "Headers/Editor.h"
 #include "Headers/Sample.h"
-#include "Headers/UndoManager.h"
 
 #include "Editor/Widgets/Headers/EditorOptionsWindow.h"
 #include "Editor/Widgets/Headers/MenuBar.h"
@@ -108,9 +107,9 @@ std::array<Input::MouseButton, 5> Editor::g_oisButtons = {
 Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme)
     : PlatformContextComponent(context),
       FrameListener("Editor", context.kernel().frameListenerMgr(), 9999),
-      _currentTheme(theme),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
-      _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer"))
+      _editorRenderTimer(Time::ADD_TIMER("Editor Render Timer")),
+      _currentTheme(theme)
 {
     _menuBar = eastl::make_unique<MenuBar>(context, true);
     _statusBar = eastl::make_unique<StatusBar>(context);
@@ -455,9 +454,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     descriptor.flags = 0;
     _dockedWindows[to_base(WindowType::SceneView)] = MemoryManager_NEW SceneViewWindow(*this, descriptor);
 
-    loadFromXML();
-
-    return true;
+    return loadFromXML();
 }
 
 void Editor::close() {
@@ -484,7 +481,7 @@ void Editor::updateCameraSnapshot() {
     }
 }
 
-void Editor::onPreviewFocus(const bool state) {
+void Editor::onPreviewFocus(const bool state) const {
     ImGuiIO& io = ImGui::GetIO();
     if (state) {
         io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
@@ -532,7 +529,7 @@ void Editor::toggle(const bool state) {
         activeScene.state()->renderState().enableOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);
         updateCameraSnapshot();
         static_cast<ContentExplorerWindow*>(_dockedWindows[to_base(WindowType::ContentExplorer)])->init();
-        Selections selections = activeScene.getCurrentSelection();
+        const Selections selections = activeScene.getCurrentSelection();
         if (selections._selectionCount == 0) {
             //SceneGraphNode* root = activeScene.sceneGraph().getRoot();
             //_context.kernel().sceneManager()->setSelected(0, { &root });
@@ -668,7 +665,7 @@ bool Editor::render(const U64 deltaTime) {
         windowFlags |= ImGuiWindowFlags_NoBackground;
     }
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-    ImGui::Begin("Editor", NULL, windowFlags);
+    ImGui::Begin("Editor", nullptr, windowFlags);
     ImGui::PopStyleVar();
     ImGui::PopStyleVar(2);
 
@@ -709,7 +706,7 @@ bool Editor::render(const U64 deltaTime) {
     return true;
 }
 
-void Editor::drawScreenOverlay(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
+void Editor::drawScreenOverlay(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) const {
     Attorney::GizmoEditor::render(_gizmo.get(), camera, targetViewport, bufferInOut);
 }
 
@@ -736,7 +733,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
         ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
         for (I32 n = 0; n < platform_io.Viewports.Size; n++) {
             ImGuiViewport* viewport = platform_io.Viewports[n];
-            const DisplayWindow* window = (DisplayWindow*)viewport->PlatformHandle;
+            const DisplayWindow* window = static_cast<DisplayWindow*>(viewport->PlatformHandle);
             if (window != nullptr && window->isHovered() && !(viewport->Flags & ImGuiViewportFlags_NoInputs)) {
                 ImGui::GetIO().MouseHoveredViewport = viewport->ID;
             }
@@ -879,7 +876,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
     GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) {
+void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) const {
     if (idx != 0) {
         return;
     }
@@ -887,7 +884,7 @@ void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGra
     Attorney::GizmoEditor::updateSelection(_gizmo.get(), nodes);
 }
 
-bool Editor::Undo() {
+bool Editor::Undo() const {
     if (_undoManager->Undo()) {
         showStatusMessage(Util::StringFormat("Undo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
         return true;
@@ -896,7 +893,7 @@ bool Editor::Undo() {
     return false;
 }
 
-bool Editor::Redo() {
+bool Editor::Redo() const {
     if (_undoManager->Redo()) {
         showStatusMessage(Util::StringFormat("Redo: %s", _undoManager->lasActionName().c_str()), Time::SecondsToMilliseconds<F32>(2.0f));
         return true;
@@ -947,9 +944,13 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
     ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
     if (io.KeyCtrl) {
         if (key._key == Input::KeyCode::KC_Z) {
-            Undo();
+            if (Undo()) {
+                return true;
+            }
         } else if (key._key == Input::KeyCode::KC_Y) {
-            Redo();
+            if (Redo()) {
+                return true;
+            }
         }
     }
 
@@ -981,7 +982,7 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
     if (window != nullptr) {
         for (I32 i = 0; i != context->Viewports.Size; i++) {
-            DisplayWindow* it = (DisplayWindow*)context->Viewports[i]->PlatformHandle;
+            DisplayWindow* it = static_cast<DisplayWindow*>(context->Viewports[i]->PlatformHandle);
 
             if (it != nullptr && it->getGUID() == window->getGUID()) {
                 return context->Viewports[i];
@@ -1026,13 +1027,13 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
             ImGuiIO& io = _imguiContexts[i]->IO;
 
             if (io.WantSetMousePos) {
-                WindowManager::SetGlobalCursorPosition((I32)io.MousePos.x, (I32)io.MousePos.y);
+                WindowManager::SetGlobalCursorPosition(to_I32(io.MousePos.x), to_I32(io.MousePos.y));
             } else {
-                io.MousePos = ImVec2((F32)mPosGlobal.x, (F32)mPosGlobal.y);
+                io.MousePos = ImVec2(to_F32(mPosGlobal.x), to_F32(mPosGlobal.y));
             }
 
-            for (size_t j = 0; j < 5; ++j) {
-                if (io.MouseDown[j]) {
+            for (bool down : io.MouseDown) {
+                if (down) {
                     anyDown = true;
                     break;
                 }
@@ -1274,15 +1275,15 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
 
         for (U8 i = 0; i < to_U8(ImGuiContextType::COUNT); ++i) {
             ImGuiIO& io = _imguiContexts[i]->IO;
-            io.DisplaySize.x = (F32)params.width;
-            io.DisplaySize.y = (F32)params.height;
-            io.DisplayFramebufferScale = ImVec2(params.width > 0 ? ((F32)displaySize.width / params.width) : 0.f,
-                                                params.height > 0 ? ((F32)displaySize.height / params.height) : 0.f);
+            io.DisplaySize.x = to_F32(params.width);
+            io.DisplaySize.y = to_F32(params.height);
+            io.DisplayFramebufferScale = ImVec2(params.width > 0 ? (to_F32(displaySize.width) / params.width) : 0.f,
+                                                params.height > 0 ? (to_F32(displaySize.height) / params.height) : 0.f);
         }
     }
 }
 
-bool Editor::saveSceneChanges(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) {
+bool Editor::saveSceneChanges(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) {
     if (_context.kernel().sceneManager()->saveActiveScene(false, true, msgCallback, finishCallback)) {
         if (saveToXML()) {
             _context.config().save();
@@ -1302,13 +1303,13 @@ U32 Editor::saveItemCount() const noexcept {
     return ret;
 }
 
-bool Editor::modalTextureView(const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
+bool Editor::modalTextureView(const char* modalName, const Texture* tex, const vec2<F32>& dimensions, const bool preserveAspect, const bool useModal) const {
 
     if (tex == nullptr) {
         return false;
     }
 
-    ImDrawCallback toggleColours { [](const ImDrawList* parent_list, const ImDrawCmd* cmd) -> void {
+    const ImDrawCallback toggleColours { [](const ImDrawList* parent_list, const ImDrawCmd* cmd) -> void {
         ACKNOWLEDGE_UNUSED(parent_list);
 
         TextureCallbackData  data = *static_cast<TextureCallbackData*>(cmd->UserCallbackData);
@@ -1328,13 +1329,13 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         data._gfxDevice->flushCommandBuffer(buffer);
     } };
 
-    bool opened,  closed = false;
-
+    bool closed = false;
+    bool opened;
     if (useModal) {
         ImGui::OpenPopup(modalName);
-        opened = ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+        opened = ImGui::BeginPopupModal(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     } else {
-        opened = ImGui::Begin(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize);
+        opened = ImGui::Begin(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     }
 
     if (opened) {
@@ -1439,7 +1440,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
     bool closed = false;
 
     ImGui::OpenPopup(modalName);
-    if (ImGui::BeginPopupModal(modalName, NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (ImGui::BeginPopupModal(modalName, nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
         assert(mesh != nullptr);
         if (Util::IsEmptyOrNull(inputBuf)) {
             strcpy_s(&inputBuf[0], std::min(to_size(254), mesh->resourceName().length()) + 1, mesh->resourceName().c_str());
@@ -1467,7 +1468,9 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
         if (ImGui::Button("Yes", ImVec2(120, 0))) {
             ImGui::CloseCurrentPopup();
             closed = true;
-            spawnGeometry(mesh, scale, inputBuf);
+            if (!spawnGeometry(mesh, scale, inputBuf)) {
+                
+            }
             scale.set(1.0f);
             inputBuf[0] = '\0';
         }
@@ -1481,7 +1484,7 @@ void Editor::showStatusMessage(const stringImpl& message, F32 durationMS) const 
     _statusBar->showMessage(message, durationMS);
 }
 
-bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) {
+bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) const {
     constexpr U32 normalMask = to_base(ComponentType::TRANSFORM) |
                                to_base(ComponentType::BOUNDS) |
                                to_base(ComponentType::NETWORKING) |
@@ -1508,7 +1511,7 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     return false;
 }
 
-LightPool& Editor::getActiveLightPool() {
+LightPool& Editor::getActiveLightPool() const {
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     return activeScene.lightPool();
 }
@@ -1534,7 +1537,7 @@ void Editor::loadNode(SceneGraphNode* sgn) const {
     }
 }
 
-void Editor::queueRemoveNode(I64 nodeGUID) {
+void Editor::queueRemoveNode(I64 nodeGUID) const {
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     activeScene.sceneGraph()->removeNode(nodeGUID);
 }

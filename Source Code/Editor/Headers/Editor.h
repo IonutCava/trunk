@@ -33,6 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _DIVIDE_EDITOR_H_
 #define _DIVIDE_EDITOR_H_
 
+#include "UndoManager.h"
+
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Core/Headers/PlatformContextComponent.h"
 
@@ -95,9 +97,10 @@ struct UndoEntry;
 
 void InitBasicImGUIState(ImGuiIO& io) noexcept;
 
-class Editor : public PlatformContextComponent,
-               public FrameListener,
-               public Input::InputAggregatorInterface {
+class Editor final : public PlatformContextComponent,
+                     public FrameListener,
+                     public Input::InputAggregatorInterface,
+                     NonMovable {
 
     friend class Attorney::EditorGizmo;
     friend class Attorney::EditorMenuBar;
@@ -128,88 +131,89 @@ class Editor : public PlatformContextComponent,
           COUNT
     };
   public:
-    explicit Editor(PlatformContext& context, ImGuiStyleEnum theme = ImGuiStyleEnum::ImGuiStyle_DarkCodz01);
+    explicit Editor(PlatformContext& context, ImGuiStyleEnum theme = ImGuiStyle_DarkCodz01);
     ~Editor();
 
-    bool init(const vec2<U16>& renderResolution);
+    [[nodiscard]] bool init(const vec2<U16>& renderResolution);
     void close();
     void idle();
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
     /// Render any editor specific element that needs to be part of the scene (e.g. Control Gizmo)
-    void drawScreenOverlay(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
+    void drawScreenOverlay(const Camera* camera, const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) const;
 
-    void toggle(const bool state);
+    void toggle(bool state);
     void onSizeChange(const SizeChangeParams& params);
-    void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node);
+    void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node) const;
 
-    bool Undo();
-    inline size_t UndoStackSize() const noexcept;
+    [[nodiscard]] bool Undo() const;
+    [[nodiscard]] inline size_t UndoStackSize() const noexcept;
 
-    bool Redo();
-    inline size_t RedoStackSize() const noexcept;
+    [[nodiscard]] bool Redo() const;
+    [[nodiscard]] inline size_t RedoStackSize() const noexcept;
 
-    Rect<I32> scenePreviewRect(bool globalCoords) const;
-    bool wantsMouse() const;
-    bool wantsKeyboard() const;
-    bool wantsGamepad() const;
-    bool usingGizmo() const;
+    [[nodiscard]] Rect<I32> scenePreviewRect(bool globalCoords) const;
+    [[nodiscard]] bool wantsMouse() const;
+    [[nodiscard]] bool wantsKeyboard() const;
+    [[nodiscard]] bool wantsGamepad() const;
+    [[nodiscard]] bool usingGizmo() const;
 
     template<typename T>
-    inline void registerUndoEntry(const UndoEntry<T>& entry);
+    void registerUndoEntry(const UndoEntry<T>& entry);
 
-    inline bool simulationPauseRequested() const noexcept;
-    inline void setTransformSettings(const TransformSettings& settings) noexcept;
-    inline const TransformSettings& getTransformSettings() const noexcept;
-    inline bool inEditMode() const noexcept;
+    [[nodiscard]] inline bool inEditMode() const noexcept;
+    [[nodiscard]] inline bool simulationPauseRequested() const noexcept;
+    [[nodiscard]] inline const TransformSettings& getTransformSettings() const noexcept;
+    inline void setTransformSettings(const TransformSettings& settings) const noexcept;
 
     void showStatusMessage(const stringImpl& message, F32 durationMS) const;
 
   protected: //frame listener
-    bool frameStarted(const FrameEvent& evt) override;
-    bool framePreRenderStarted(const FrameEvent& evt) override;
-    bool framePreRenderEnded(const FrameEvent& evt) override;
-    bool frameSceneRenderEnded(const FrameEvent& evt) override;
-    bool frameRenderingQueued(const FrameEvent& evt) override;
-    bool framePostRenderStarted(const FrameEvent& evt) override;
-    bool framePostRenderEnded(const FrameEvent& evt) override;
-    bool frameEnded(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameStarted(const FrameEvent& evt) override;
+    [[nodiscard]] bool framePreRenderStarted(const FrameEvent& evt) override;
+    [[nodiscard]] bool framePreRenderEnded(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameSceneRenderEnded(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameRenderingQueued(const FrameEvent& evt) override;
+    [[nodiscard]] bool framePostRenderStarted(const FrameEvent& evt) override;
+    [[nodiscard]] bool framePostRenderEnded(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameEnded(const FrameEvent& evt) override;
 
   public: // input
     /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key) override;
+    [[nodiscard]] bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key) override;
+    [[nodiscard]] bool onKeyUp(const Input::KeyEvent& key) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
+    [[nodiscard]] bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
+    [[nodiscard]] bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
+    [[nodiscard]] bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
-    bool joystickButtonPressed(const Input::JoystickEvent &arg) override;
-    bool joystickButtonReleased(const Input::JoystickEvent &arg) override;
-    bool joystickAxisMoved(const Input::JoystickEvent &arg) override;
-    bool joystickPovMoved(const Input::JoystickEvent &arg) override;
-    bool joystickBallMoved(const Input::JoystickEvent &arg) override;
-    bool joystickAddRemove(const Input::JoystickEvent &arg) override;
-    bool joystickRemap(const Input::JoystickEvent &arg) override;
-    bool onUTF8(const Input::UTF8Event& arg) override;
+    [[nodiscard]] bool joystickButtonPressed(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickButtonReleased(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickAxisMoved(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickPovMoved(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickBallMoved(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickAddRemove(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickRemap(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool onUTF8(const Input::UTF8Event& arg) override;
         
-    bool saveToXML() const;
-    bool loadFromXML();
+    [[nodiscard]] bool saveToXML() const;
+    [[nodiscard]] bool loadFromXML();
 
   protected:
-    inline bool isInit() const noexcept;
-    bool render(const U64 deltaTime);
+    [[nodiscard]] inline bool isInit() const noexcept;
+    [[nodiscard]] bool render(U64 deltaTime);
+
     void teleportToNode(const SceneGraphNode* sgn) const;
     void saveNode(const SceneGraphNode* sgn) const;
     void loadNode(SceneGraphNode* sgn) const;
-    void queueRemoveNode(I64 nodeGUID);
-    void onPreviewFocus(const bool state);
+    void queueRemoveNode(I64 nodeGUID) const;
+    void onPreviewFocus(bool state) const;
 
-    ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
+    [[nodiscard]] ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
 
-    U32 saveItemCount() const  noexcept;
+    [[nodiscard]] U32 saveItemCount() const  noexcept;
 
     PROPERTY_R_IW(bool, running, false);
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
@@ -221,25 +225,25 @@ class Editor : public PlatformContextComponent,
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) const;
 
-    bool saveSceneChanges(DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {});
+    [[nodiscard]] bool saveSceneChanges(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback);
     void updateCameraSnapshot();
     // Returns true if the window was closed
-    bool modalTextureView(const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal);
+    [[nodiscard]] bool modalTextureView(const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) const;
     // Returns true if the modal window was closed
-    bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
+    [[nodiscard]] bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
     // Return true if the model was spawned as a scene node
-    bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name);
+    [[nodiscard]] bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) const;
 
-    LightPool& getActiveLightPool();
-    SceneEnvironmentProbePool* getActiveEnvProbePool() const;
+    [[nodiscard]] LightPool& getActiveLightPool() const;
+    [[nodiscard]] SceneEnvironmentProbePool* getActiveEnvProbePool() const;
 
     inline void toggleMemoryEditor(bool state) noexcept;
 
-    bool addComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
-    bool addComponent(const Selections& selections, ComponentType newComponentType) const;
-    bool removeComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
-    bool removeComponent(const Selections& selections, ComponentType newComponentType) const;
-    SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
+    [[nodiscard]] bool addComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
+    [[nodiscard]] bool addComponent(const Selections& selections, ComponentType newComponentType) const;
+    [[nodiscard]] bool removeComponent(SceneGraphNode* selection, ComponentType newComponentType) const;
+    [[nodiscard]] bool removeComponent(const Selections& selections, ComponentType newComponentType) const;
+    [[nodiscard]] SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
 
   private:
     Time::ProfileTimer& _editorUpdateTimer;
@@ -274,12 +278,11 @@ class Editor : public PlatformContextComponent,
 
 namespace Attorney {
     class EditorGizmo {
-    private:
-        static void renderDrawList(Editor& editor, ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) {
+        static void renderDrawList(const Editor& editor, ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) {
             editor.renderDrawList(pDrawData, targetViewport, windowGUID, bufferInOut);
         }
 
-        static ImGuiViewport* findViewportByPlatformHandle(Editor& editor, ImGuiContext* context, DisplayWindow* window) {
+        [[nodiscard]] static ImGuiViewport* findViewportByPlatformHandle(Editor& editor, ImGuiContext* context, DisplayWindow* window) {
             return editor.findViewportByPlatformHandle(context, window);
         }
 
@@ -287,12 +290,11 @@ namespace Attorney {
     };
 
     class EditorSceneViewWindow {
-    private:
-        static bool editorEnabledGizmo(const Editor& editor) {
+        [[nodiscard]] static bool editorEnabledGizmo(const Editor& editor) noexcept {
             return editor._gizmo->enabled();
         }
 
-        static void editorEnableGizmo(const Editor& editor, bool state) {
+        static void editorEnableGizmo(const Editor& editor, const bool state) {
             editor._gizmo->enable(state);
         }
 
@@ -304,7 +306,7 @@ namespace Attorney {
             editor._stepQueue = steps;
         }
 
-        static bool autoSaveCamera(const Editor& editor) noexcept {
+        [[nodiscard]] static bool autoSaveCamera(const Editor& editor) noexcept {
             return editor._autoSaveCamera;
         }
 
@@ -312,7 +314,7 @@ namespace Attorney {
             editor._autoSaveCamera = state;
         } 
         
-        static bool autoFocusEditor(const Editor& editor) noexcept {
+        [[nodiscard]] static bool autoFocusEditor(const Editor& editor) noexcept {
             return editor._autoFocusEditor;
         }
 
@@ -324,20 +326,19 @@ namespace Attorney {
     };
 
     class EditorSolutionExplorerWindow {
-    private :
         static void setSelectedCamera(Editor& editor, Camera* camera)  noexcept {
             editor.selectedCamera(camera);
         }
 
-        static Camera* getSelectedCamera(const Editor& editor)  noexcept {
+        [[nodiscard]] static Camera* getSelectedCamera(const Editor& editor)  noexcept {
             return editor.selectedCamera();
         }
 
-        static bool editorEnableGizmo(const Editor& editor) noexcept {
+        [[nodiscard]] static bool editorEnableGizmo(const Editor& editor) noexcept {
             return editor._gizmo->enabled();
         }
 
-        static void editorEnableGizmo(const Editor& editor, bool state) noexcept {
+        static void editorEnableGizmo(const Editor& editor, const bool state) noexcept {
             editor._gizmo->enable(state);
         }
 
@@ -353,11 +354,11 @@ namespace Attorney {
             editor.loadNode(targetNode);
         }
 
-        static void queueRemoveNode(Editor& editor, I64 nodeGUID) {
+        static void queueRemoveNode(Editor& editor, const I64 nodeGUID) {
             editor.queueRemoveNode(nodeGUID);
         }
 
-        static SceneNode_ptr createNode(Editor& editor, SceneNodeType type, const ResourceDescriptor& descriptor) {
+        [[nodiscard]] static SceneNode_ptr createNode(Editor& editor, const SceneNodeType type, const ResourceDescriptor& descriptor) {
             return editor.createNode(type, descriptor);
         }
 
@@ -365,13 +366,11 @@ namespace Attorney {
     };
 
     class EditorPropertyWindow {
-    private :
-
         static void setSelectedCamera(Editor& editor, Camera* camera)  noexcept {
             editor.selectedCamera(camera);
         }
 
-        static Camera* getSelectedCamera(const Editor& editor)  noexcept {
+        [[nodiscard]] static Camera* getSelectedCamera(const Editor& editor)  noexcept {
             return editor.selectedCamera();
         }
 
@@ -380,8 +379,7 @@ namespace Attorney {
 
 
     class EditorOptionsWindow {
-    private :
-        static ImGuiStyleEnum getTheme(const Editor& editor) noexcept {
+        [[nodiscard]] static ImGuiStyleEnum getTheme(const Editor& editor) noexcept {
             return editor._currentTheme;
         }
 
@@ -389,11 +387,11 @@ namespace Attorney {
             editor._currentTheme = newTheme;
         }
 
-        static const stringImpl& externalTextEditorPath(Editor& editor) noexcept {
+        [[nodiscard]] static const stringImpl& externalTextEditorPath(const Editor& editor) noexcept {
             return editor._externalTextEditorPath;
         }
 
-        static void externalTextEditorPath(Editor& editor, const stringImpl& path) noexcept {
+        static void externalTextEditorPath(Editor& editor, const stringImpl& path) {
             editor._externalTextEditorPath = path;
         }
 
@@ -401,58 +399,55 @@ namespace Attorney {
     };
 
     class EditorMenuBar {
-    private:
-        static void toggleMemoryEditor(Editor& editor, bool state)  noexcept {
+        static void toggleMemoryEditor(Editor& editor, const bool state)  noexcept {
             editor.toggleMemoryEditor(state);
         }
 
-        static bool memoryEditorEnabled(const Editor& editor) noexcept {
+        [[nodiscard]] static bool memoryEditorEnabled(const Editor& editor) noexcept {
             return editor._showMemoryEditor;
         }
 
-        static bool& sampleWindowEnabled(Editor& editor) noexcept {
+        [[nodiscard]] static bool& sampleWindowEnabled(Editor& editor) noexcept {
             return editor._showSampleWindow;
         }
 
-        static bool& optionWindowEnabled(Editor& editor) noexcept {
+        [[nodiscard]] static bool& optionWindowEnabled(Editor& editor) noexcept {
             return editor._showOptionsWindow;
         }
-        
-       
+
         friend class Divide::MenuBar;
     };
 
     class EditorGeneralWidget {
-      private:
-        static void setTransformSettings(Editor& editor, const TransformSettings& settings) {
+        static void setTransformSettings(Editor& editor, const TransformSettings& settings) noexcept {
             editor.setTransformSettings(settings);
         }
 
-        static const TransformSettings& getTransformSettings(const Editor& editor) {
+        [[nodiscard]] static const TransformSettings& getTransformSettings(const Editor& editor) noexcept {
             return editor.getTransformSettings();
         }
 
-        static LightPool& getActiveLightPool(Editor& editor) {
+        [[nodiscard]] static LightPool& getActiveLightPool(Editor& editor) {
             return editor.getActiveLightPool();
         }
 
-        static SceneEnvironmentProbePool* getActiveEnvProbePool(const Editor& editor) {
+        [[nodiscard]] static SceneEnvironmentProbePool* getActiveEnvProbePool(const Editor& editor) {
             return editor.getActiveEnvProbePool();
         }
 
-        static void enableGizmo(const Editor& editor, bool state) {
+        static void enableGizmo(const Editor& editor, const bool state) noexcept {
             return editor._gizmo->enable(state);
         }
       
-        static bool enableGizmo(const Editor& editor) {
+        [[nodiscard]] static bool enableGizmo(const Editor& editor) noexcept {
             return editor._gizmo->enabled();
         }
 
-        static U32 saveItemCount(const Editor& editor) noexcept {
+        [[nodiscard]] static U32 saveItemCount(const Editor& editor) noexcept {
             return editor.saveItemCount();
         }
 
-        static bool hasUnsavedSceneChanges(const Editor& editor) noexcept {
+        [[nodiscard]] static bool hasUnsavedSceneChanges(const Editor& editor) noexcept {
             return editor.unsavedSceneChanges();
         }
 
@@ -460,47 +455,47 @@ namespace Attorney {
             editor.unsavedSceneChanges(true);
         }
 
-        static bool saveSceneChanges(Editor& editor, DELEGATE<void, std::string_view> msgCallback = {}, DELEGATE<void, bool> finishCallback = {}) {
+        [[nodiscard]] static bool saveSceneChanges(Editor& editor, const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) {
             return editor.saveSceneChanges(msgCallback, finishCallback);
         }
 
-        static void inspectMemory(Editor& editor, std::pair<bufferPtr, size_t> data) noexcept {
+        static void inspectMemory(Editor& editor, const std::pair<bufferPtr, size_t> data) noexcept {
             editor._memoryEditorData = data;
         }
 
-        static bool modalTextureView(Editor& editor, const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
+        [[nodiscard]] static bool modalTextureView(Editor& editor, const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
             return editor.modalTextureView(modalName, tex, dimensions, preserveAspect, useModal);
         }
 
-        static bool modalModelSpawn(Editor& editor, const char* modalName, const Mesh_ptr& mesh) {
+        [[nodiscard]] static bool modalModelSpawn(Editor& editor, const char* modalName, const Mesh_ptr& mesh) {
             return editor.modalModelSpawn(modalName, mesh);
         }
 
-        static ImGuiContext& getImGuiContext(Editor& editor, Editor::ImGuiContextType type) noexcept {
+        [[nodiscard]] static ImGuiContext& getImGuiContext(Editor& editor, const Editor::ImGuiContextType type) noexcept {
             return *editor._imguiContexts[to_base(type)];
         }
 
-        static ImGuiContext& imguizmoContext(Editor& editor, Editor::ImGuiContextType type) noexcept {
+        [[nodiscard]] static ImGuiContext& imguizmoContext(Editor& editor, const Editor::ImGuiContextType type) noexcept {
             return *editor._imguiContexts[to_base(type)];
         }
 
-        static bool addComponent(const Editor& editor, const Selections& selections, ComponentType newComponentType) {
+        [[nodiscard]] static bool addComponent(const Editor& editor, const Selections& selections, const ComponentType newComponentType) {
             return editor.addComponent(selections, newComponentType);
         }
 
-        static bool removeComponent(const Editor& editor, SceneGraphNode* selection, ComponentType newComponentType) {
+        [[nodiscard]] static bool removeComponent(const Editor& editor, SceneGraphNode* selection, const ComponentType newComponentType) {
             return editor.removeComponent(selection, newComponentType);
         }
 
-        static bool removeComponent(const Editor& editor, const Selections& selections, ComponentType newComponentType) {
+        [[nodiscard]] static bool removeComponent(const Editor& editor, const Selections& selections, const ComponentType newComponentType) {
             return editor.removeComponent(selections, newComponentType);
         }
 
-        static void showStatusMessage(Editor& editor, const stringImpl& message, F32 durationMS) {
+        static void showStatusMessage(const Editor& editor, const stringImpl& message, const F32 durationMS) {
             editor.showStatusMessage(message, durationMS);
         }
 
-        static const stringImpl& externalTextEditorPath(Editor& editor) noexcept {
+        [[nodiscard]] static const stringImpl& externalTextEditorPath(const Editor& editor) noexcept {
             return editor._externalTextEditorPath;
         }
 

@@ -54,9 +54,9 @@ class WarScene : public Scene {
     bool load(const Str256& name) override;
     bool unload() override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
-    void processTasks(const U64 deltaTimeUS) override;
-    void processGUI(const U64 deltaTimeUS) override;
-    void updateSceneStateInternal(const U64 deltaTimeUS);
+    void processTasks(U64 deltaTimeUS) override;
+    void processGUI(U64 deltaTimeUS) override;
+    void updateSceneStateInternal(U64 deltaTimeUS);
     U16 registerInputActions() override;
 
     void registerPoint(U16 teamID, const stringImpl& unitName);

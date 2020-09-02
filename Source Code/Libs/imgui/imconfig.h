@@ -74,12 +74,12 @@ class vec4;
 };
 
 #define IM_VEC2_CLASS_EXTRA                 \
-        ImVec2 operator=(const Divide::vec2<Divide::F32>& f); \
+        ImVec2& operator=(const Divide::vec2<Divide::F32>& f); \
         //inline ImVec2 operator+(const ImVec2& rhs) const { return ImVec2(x + rhs.x, y + rhs.y); } \
         //inline ImVec2 operator-(const ImVec2& rhs) const { return ImVec2(x - rhs.x, y - rhs.y); }
 
 #define IM_VEC4_CLASS_EXTRA       \
-        ImVec4 operator=(const Divide::vec4<Divide::F32>& f); \
+        ImVec4& operator=(const Divide::vec4<Divide::F32>& f); \
         //inline ImVec4 operator+(const ImVec4& rhs) const { return ImVec4(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w); } \
         //inline ImVec4 operator-(const ImVec4& rhs) const { return ImVec4(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w); }
 

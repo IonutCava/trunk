@@ -52,9 +52,10 @@ BoundingBox::BoundingBox(const BoundingBox& b) noexcept {
     this->_max.set(b._max);
 }
 
-void BoundingBox::operator=(const BoundingBox& b) noexcept {
+BoundingBox& BoundingBox::operator=(const BoundingBox& b) noexcept {
     this->_min.set(b._min);
     this->_max.set(b._max);
+    return *this;
 }
 
 void BoundingBox::createFromSphere(const BoundingSphere& bSphere) noexcept {
@@ -110,8 +111,11 @@ bool BoundingBox::collision(const BoundingSphere& bSphere) const noexcept {
 
     F32 dmin = 0;
     for (U8 i = 0; i < 3; ++i) {
-             if (center[i] < min[i]) dmin += SQUARED(center[i] - min[i]);
-        else if (center[i] > max[i]) dmin += SQUARED(center[i] - max[i]);
+        if (center[i] < min[i]) {
+            dmin += SQUARED(center[i] - min[i]);
+        } else if (center[i] > max[i]) {
+            dmin += SQUARED(center[i] - max[i]);
+        }
     }
 
     return dmin <= SQUARED(bSphere.getRadius());

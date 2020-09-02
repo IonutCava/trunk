@@ -22,7 +22,7 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
                                     DeleteResource(_cache));
 
     if (!_descriptor.flag()) {
-        ResourceDescriptor matDesc("Material_" + _descriptor.resourceName());
+        const ResourceDescriptor matDesc("Material_" + _descriptor.resourceName());
         Material_ptr matTemp = CreateResource<Material>(_cache, matDesc);
         matTemp->shadingMode(ShadingMode::BLINN_PHONG);
         ptr->setMaterialTpl(matTemp);

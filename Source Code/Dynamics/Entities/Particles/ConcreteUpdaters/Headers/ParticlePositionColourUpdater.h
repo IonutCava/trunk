@@ -49,7 +49,7 @@ class ParticlePositionColourUpdater final : public ParticleUpdater {
 
     ~ParticlePositionColourUpdater() = default;
 
-    void update(const U64 deltaTimeUS, ParticleData& p) override;
+    void update(U64 deltaTimeUS, ParticleData& p) override;
 };
 };
 #endif

@@ -175,7 +175,7 @@ class DivideDtCrowd : public NonCopyable {
       * that some agents will only start to move after a few frames, when their
       *paths are calculated.
       **/
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
     /// The height of agents in this crowd. All agents in a crowd have the same
     /// height, and height is
     /// determined by the agent height parameter with which the navmesh is

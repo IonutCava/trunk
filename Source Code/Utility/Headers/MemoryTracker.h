@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _MEMORY_TRACKER_H_
 #define _MEMORY_TRACKER_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Core/Headers/StringHelper.h"
 
 namespace Divide {
@@ -54,15 +53,15 @@ class MemoryTracker {
         {
         }
 
-        char const* File() const {
+        [[nodiscard]] char const* File() const {
             return _file;
         }
 
-        size_t Line() const {
+        [[nodiscard]] size_t Line() const {
             return _line;
         }
 
-        size_t Size() const {
+        [[nodiscard]] size_t Size() const {
             return _size;
         }
 
@@ -152,7 +151,7 @@ class MemoryTracker {
 
                 output.append(entry.File());
                 output.append(", ");
-                output.append(Util::to_string(entry.Line()).c_str());
+                output.append(Util::to_string(entry.Line()));
                 output.append(Util::StringFormat("( %d bytes / %d bytes (%5.2f Mb)) \n", crtSize, totalUsage, (totalUsage / 1024.0f) / 1024));
                 sizeLeaked += entry.Size();
             }
@@ -161,9 +160,9 @@ class MemoryTracker {
         }
         if (!LogAllAllocations && sizeLeaked > 0) {
             output.append("Total leaked bytes: ");
-            output.append(Util::to_string(sizeLeaked).c_str());
+            output.append(Util::to_string(sizeLeaked));
             output.append(" / MB: ");
-            output.append(Util::to_string((sizeLeaked / 1024.0f) / 1024).c_str());
+            output.append(Util::to_string((sizeLeaked / 1024.0f) / 1024));
             output.append("\n");
         } 
         return output;

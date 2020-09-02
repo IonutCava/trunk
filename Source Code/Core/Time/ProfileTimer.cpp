@@ -39,10 +39,6 @@ ProfileTimer::ProfileTimer() noexcept
 {
 }
 
-ProfileTimer::~ProfileTimer()
-{
-}
-
 void ProfileTimer::start() {
     if (timersEnabled()) {
         _timer = Time::App::ElapsedMicroseconds();

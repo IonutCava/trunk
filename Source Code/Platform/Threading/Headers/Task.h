@@ -58,7 +58,7 @@ struct alignas(64) Task {
     bool _runWhileIdle = true;
 };
 
-Task& Start(Task& task, TaskPriority prio = TaskPriority::DONT_CARE, DELEGATE<void>&& onCompletionFunction = {});
+Task& Start(Task& task, TaskPriority priority = TaskPriority::DONT_CARE, const DELEGATE<void>& onCompletionFunction = {});
 void Wait(const Task& task);
 bool Finished(const Task& task) noexcept;
 void TaskYield(const Task& task);

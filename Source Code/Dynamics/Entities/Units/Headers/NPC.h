@@ -48,7 +48,7 @@ class NPC final : public Character {
     /// NPCs don't need AI by default
     explicit NPC(AI::AIEntity* const aiEntity, FrameListenerManager& parent, U32 callOrder);
     ~NPC();
-    void update(const U64 deltaTimeUS) final;
+    void update(U64 deltaTimeUS) final;
     
     AI::AIEntity* getAIEntity() const;
 

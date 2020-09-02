@@ -169,7 +169,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
         GPUState& gState = _context->gfx().gpuState();
         // Query available display modes (resolution, bit depth per channel and refresh rates)
         I32 numberOfDisplayModes[GPUState::maxDisplayCount()] = {};
-        const I32 numDisplays = std::min(SDL_GetNumVideoDisplays(), to_I32(gState.maxDisplayCount()));
+        const I32 numDisplays = std::min(SDL_GetNumVideoDisplays(), to_I32(GPUState::maxDisplayCount()));
 
         for (I32 display = 0; display < numDisplays; ++display) {
             numberOfDisplayModes[display] = SDL_GetNumDisplayModes(display);
@@ -213,7 +213,7 @@ void WindowManager::close() {
     }
     MemoryManager::DELETE_CONTAINER(_windows);
 
-    for (const auto it : s_cursors) {
+    for (const auto& it : s_cursors) {
         SDL_FreeCursor(it.second);
     }
     s_cursors.clear();

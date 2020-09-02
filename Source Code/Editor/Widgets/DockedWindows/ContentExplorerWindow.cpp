@@ -14,8 +14,6 @@
 
 namespace Divide {
     namespace {
-        constexpr size_t MAX_TEXTURE_LOADS_PER_FRAME = 1;
-
         const char* const g_extensions[] = {
             "glsl", "cmn", "frag", "vert", "cmp", "geom", "tesc", "tese",  //Shaders
             "ogg", "wav", //Sounds
@@ -122,8 +120,8 @@ namespace Divide {
         _modelLoadQueueLocked = false;
     }
 
-    void ContentExplorerWindow::getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) {
-        std::filesystem::path p(directoryPath.c_str());
+    void ContentExplorerWindow::getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) const {
+        const std::filesystem::path p(directoryPath.c_str());
         if (is_directory(p)) {
             directoryOut._path = p.filename().generic_string();
             for (auto&& x : std::filesystem::directory_iterator(p)) {
@@ -292,8 +290,8 @@ namespace Divide {
         ImGui::PopStyleVar();
     }
 
-    Texture_ptr ContentExplorerWindow::getTextureForPath(const Str256& texturePath, const Str64& textureName) {
-        TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
+    Texture_ptr ContentExplorerWindow::getTextureForPath(const Str256& texturePath, const Str64& textureName) const {
+        const TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
 
         ResourceDescriptor textureResource(textureName);
         textureResource.flag(true);
@@ -304,7 +302,7 @@ namespace Divide {
         return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);
     }
 
-    Mesh_ptr ContentExplorerWindow::getModelForPath(const Str256& modelPath, const Str64& modelName) {
+    Mesh_ptr ContentExplorerWindow::getModelForPath(const Str256& modelPath, const Str64& modelName) const {
         ResourceDescriptor model(modelName);
         model.assetLocation(Paths::g_assetsLocation + modelPath);
         model.assetName(modelName);

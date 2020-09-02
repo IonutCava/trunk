@@ -50,28 +50,29 @@ struct EditorComponentField;
 class PropertyWindow final : public DockedWindow, public PlatformContextComponent {
     public:
         PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
-        ~PropertyWindow();
+        ~PropertyWindow() = default;
 
         void drawInternal() final;
         void backgroundUpdateInternal() final;
 
-        const char* name() const noexcept final;
+        [[nodiscard]] const char* name() const noexcept final;
     protected:
 
-     bool drawCamera(Camera* cam);
+        [[nodiscard]] bool drawCamera(Camera* cam);
 
-     const Selections& selections() const;
-     SceneGraphNode* node(I64 guid) const;
+        [[nodiscard]] const Selections& selections() const;
+        [[nodiscard]] SceneGraphNode* node(I64 guid) const;
 
-     //return true if the field has been modified
-     bool processField(EditorComponentField& field);
-     bool processBasicField(EditorComponentField& field);
-     bool processTransform(TransformComponent* transform, bool readOnly);
-     bool processMaterial(Material* material, bool readOnly);
+        //return true if the field has been modified
+        [[nodiscard]] bool processField(EditorComponentField& field);
+        [[nodiscard]] bool processBasicField(EditorComponentField& field) const;
+        [[nodiscard]] bool processTransform(TransformComponent* transform, bool readOnly) const;
+        [[nodiscard]] bool processMaterial(Material* material, bool readOnly);
 
-private:
-    Texture* _previewTexture = nullptr;
+    private:
+        Texture* _previewTexture = nullptr;
 };
+
 void NewFunction(Divide::I32 &id, Divide::Material * material, bool fromTexture, bool readOnly);
 }; //namespace Divide
 

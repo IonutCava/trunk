@@ -89,7 +89,7 @@ void Console::output(const char* text, const bool newline, const EntryType type)
         stringstreamImplFast outStream;
         decorate(outStream, text, newline, type);
 
-        OutputEntry entry = {};
+        OutputEntry entry;
         entry._text = outStream.str();
         entry._type = type;
         if (_immediateMode) {
@@ -119,7 +119,7 @@ void Console::printAll() {
         return;
     }
 
-    size_t count = 0;
+    size_t count;
     do {
         count = outBuffer().try_dequeue_bulk(std::begin(g_outputCache), g_outputCache.size());
 

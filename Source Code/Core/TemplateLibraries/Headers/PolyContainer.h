@@ -41,7 +41,7 @@ struct PolyContainerEntry
     static constexpr U32 INVALID_ENTRY_ID = std::numeric_limits<U32>::max();
 
     PolyContainerEntry() noexcept : PolyContainerEntry(0u, 0u) {}
-    PolyContainerEntry(U8 typeIndex, U24 elementIndex) noexcept : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
+    PolyContainerEntry(U8 typeIndex, const U24 elementIndex) noexcept : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
     PolyContainerEntry(const PolyContainerEntry& other) noexcept : _data(other._data) {}
     PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(std::move(other._data)) {}
     PolyContainerEntry& operator= (PolyContainerEntry&& other) noexcept {
@@ -109,11 +109,11 @@ struct PolyContainer {
         return _collection[index].emplace_back();
     }
 
-    const EntryList& get(U8 index) const noexcept {
+    [[nodiscard]] const EntryList& get(U8 index) const noexcept {
         return  _collection[index];
     }
 
-    T* get(const PolyContainerEntry& entry) const noexcept {
+    [[nodiscard]] T* get(const PolyContainerEntry& entry) const noexcept {
         const EntryList& collection = _collection[entry._typeIndex];
         const U32 elementIndex = to_U32(entry._elementIndex);
         if (elementIndex < collection.size()) {
@@ -123,7 +123,7 @@ struct PolyContainer {
         return nullptr;
     }
 
-    bool exists(const PolyContainerEntry& entry) const noexcept {
+    [[nodiscard]] bool exists(const PolyContainerEntry& entry) const noexcept {
         return entry._typeIndex < N && entry._elementIndex < _collection[entry._typeIndex].size();
     }
 
@@ -148,7 +148,7 @@ struct PolyContainer {
         col.clear();
     }
 
-    bool empty() const noexcept {
+    [[nodiscard]] bool empty() const noexcept {
         for (const EntryList& col : _collection) {
             if (!col.empty()) {
                 return false;

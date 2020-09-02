@@ -43,9 +43,9 @@ public:
 
     bool load(const Str256& name) override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
-    void processInput(PlayerIndex idx, const U64 deltaTimeUS) override;
-    void processTasks(const U64 deltaTimeUS) override;
-    void processGUI(const U64 deltaTimeUS) override;
+    void processInput(PlayerIndex idx, U64 deltaTimeUS) override;
+    void processTasks(U64 deltaTimeUS) override;
+    void processGUI(U64 deltaTimeUS) override;
 
     void onSetActive() override;
 private:

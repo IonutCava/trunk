@@ -29,6 +29,7 @@
 #include "Geometry/Importer/Headers/DVDConverter.h"
 
 #include "ECS/Components/Headers/BoundsComponent.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
 #include "ECS/Components/Headers/SelectionComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/UnitComponent.h"
@@ -531,6 +532,21 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
         fog.clean();
         fog.active(fogEnabled);
     }
+
+    vec3<F32> sunDirection = {0.0f, -0.75f, -0.75f};
+    FColour3 sunColour = DefaultColours::WHITE;
+
+    const Scene::DayNightData& dayNightData = activeScene.dayNightData();
+    if (dayNightData._skyInstance != nullptr) {
+        sunDirection = dayNightData._skyInstance->getCurrentDetails()._eulerDirection;
+        sunDirection = DirectionFromEuler(sunDirection, WORLD_Z_NEG_AXIS);
+    }
+    if (dayNightData._dirLight != nullptr) {
+        sunColour = dayNightData._dirLight->getDiffuseColour();
+    }
+    _sceneData->sunDetails(sunDirection, sunColour);
+
+    //_sceneData->skyColour(horizonColour, zenithColour);
 
     const SceneState* activeSceneState = activeScene.state();
     _sceneData->windDetails(activeSceneState->windDirX(),

@@ -6,22 +6,20 @@
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
-#include "Managers/Headers/SceneManager.h"
-#include "Managers/Headers/RenderPassManager.h"
-#include "Rendering/Camera/Headers/Camera.h"
 #include "Geometry/Shapes/Headers/Object3D.h"
-#include "Dynamics/Entities/Units/Headers/Player.h"
+#include "Managers/Headers/RenderPassManager.h"
+#include "Managers/Headers/SceneManager.h"
+#include "Rendering/Camera/Headers/Camera.h"
 
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleBoxGenerator.h"
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleColourGenerator.h"
-#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityGenerator.h"
 #include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleTimeGenerator.h"
-#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
+#include "Dynamics/Entities/Particles/ConcreteGenerators/Headers/ParticleVelocityGenerator.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicColourUpdater.h"
+#include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleBasicTimeUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleEulerUpdater.h"
 #include "Dynamics/Entities/Particles/ConcreteUpdaters/Headers/ParticleFloorUpdater.h"
 
-#include <imgui/imgui_internal.h>
 #include <EASTL/deque.h>
 
 namespace Divide {
@@ -46,17 +44,12 @@ namespace Divide {
         g_framerateBufferCont.reserve(g_maxEntryCount);
     }
 
-    SolutionExplorerWindow::~SolutionExplorerWindow()
-    {
-
-    }
-
-    void SolutionExplorerWindow::printCameraNode(SceneManager* sceneManager, Camera* camera) {
+    void SolutionExplorerWindow::printCameraNode(SceneManager* sceneManager, Camera* camera) const {
         if (camera == nullptr) {
             return;
         }
 
-        ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
+        const ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_Leaf;
         if (_filter.PassFilter(camera->resourceName().c_str())) {
             if (ImGui::TreeNodeEx((void*)(intptr_t)camera->getGUID(), node_flags, camera->resourceName().c_str())) {
                 if (ImGui::IsItemClicked()) {
@@ -79,7 +72,6 @@ namespace Divide {
             const bool isSubMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
             const bool isRoot = sgn->parent() == nullptr;
 
-            static F32 value = 0.0f;
             ImGui::Text(sgn->name().c_str());
             ImGui::Separator();
             if (isSubMesh) {
@@ -368,8 +360,8 @@ namespace Divide {
 
         ImGui::OpenPopup("Confirm Remove");
 
-        if (ImGui::BeginPopupModal("Confirm Remove", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("Are you sure you want remove the selected node [ %d ]?", _nodeToRemove);
+        if (ImGui::BeginPopupModal("Confirm Remove", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Are you sure you want remove the selected node [ %zu ]?", _nodeToRemove);
             ImGui::Separator();
 
             if (ImGui::Button("Cancel", ImVec2(120, 0))) {
@@ -395,7 +387,7 @@ namespace Divide {
 
         ImGui::OpenPopup("Confirm Re-parent");
 
-        if (ImGui::BeginPopupModal("Confirm Re-parent", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("Confirm Re-parent", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("Are you sure you want change the selected node's [ %s ] parent?", _childNode->name().c_str());
             ImGui::Text("Old Parent [ %s ] | New Parent [ %s ]", _childNode->parent()->name().c_str(), _tempParent->name().c_str());
             ImGui::Separator();
@@ -425,7 +417,7 @@ namespace Divide {
 
         ImGui::OpenPopup("Create New Node");
 
-        if (ImGui::BeginPopupModal("Create New Node", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+        if (ImGui::BeginPopupModal("Create New Node", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
             ImGui::Text("Creating a child node for SGN [ %d ][ %s ]?", _parentNode->getGUID(), _parentNode->name().c_str());
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
             ImGui::BeginChild("Node Properties", ImVec2(0, 400), true, 0);
@@ -478,9 +470,9 @@ namespace Divide {
                     required = required || componentBit == to_U32(ComponentType::RENDERING);
                 }
 
-                bool invalid = componentBit == to_U32(ComponentType::INVERSE_KINEMATICS) ||
-                               componentBit == to_U32(ComponentType::ANIMATION) ||
-                               componentBit == to_U32(ComponentType::RAGDOLL);
+                const bool invalid = componentBit == to_U32(ComponentType::INVERSE_KINEMATICS) ||
+                                     componentBit == to_U32(ComponentType::ANIMATION) ||
+                                     componentBit == to_U32(ComponentType::RAGDOLL);
                 if (required || invalid) {
                     PushReadOnly();
                 }
@@ -571,7 +563,7 @@ namespace Divide {
                 velGenerator->_maxStartVel = { 1.0f, 3.45f, 1.0f };
                 g_particleSource->addGenerator(velGenerator);
 
-                std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
+                const std::shared_ptr<ParticleTimeGenerator> timeGenerator = std::make_shared<ParticleTimeGenerator>();
                 timeGenerator->_minTime = 8.5f;
                 timeGenerator->_maxTime = 20.5f;
                 g_particleSource->addGenerator(timeGenerator);
@@ -613,7 +605,7 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::drawTransformSettings() {
+    void SolutionExplorerWindow::drawTransformSettings() const {
          bool enableGizmo = Attorney::EditorSolutionExplorerWindow::editorEnableGizmo(_parent);
          ImGui::Checkbox("Transform Gizmo", &enableGizmo);
          Attorney::EditorSolutionExplorerWindow::editorEnableGizmo(_parent, enableGizmo);
@@ -632,7 +624,7 @@ namespace Divide {
     }
 
     SceneNode_ptr SolutionExplorerWindow::createNode() {
-        ResourceDescriptor descriptor(Util::StringFormat("%s_node", g_nodeDescriptor._name.c_str()));
+        const ResourceDescriptor descriptor(Util::StringFormat("%s_node", g_nodeDescriptor._name.c_str()));
         SceneNode_ptr ptr =  Attorney::EditorSolutionExplorerWindow::createNode(_parent, g_currentNodeType, descriptor);
         if (ptr) {
             if (g_currentNodeType == SceneNodeType::TYPE_PARTICLE_EMITTER) {
@@ -643,7 +635,7 @@ namespace Divide {
                 std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(context());
                 eulerUpdater->_globalAcceleration.set(g_particleAcceleration);
                 emitter->addUpdater(eulerUpdater);
-                std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(context());
+                const std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(context());
                 floorUpdater->_bounceFactor = g_particleBounceFactor;
                 emitter->addUpdater(floorUpdater);
                 emitter->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(context()));
@@ -651,8 +643,6 @@ namespace Divide {
 
                 g_particleEmitterData.reset();
                 g_particleSource.reset();
-            } else if (false) {
-
             }
         }
         return ptr;
@@ -662,7 +652,7 @@ namespace Divide {
         if (_reparentSelectRequested) {
             ImGui::OpenPopup("Select New Parent");
 
-            if (ImGui::BeginPopupModal("Select New Parent", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::BeginPopupModal("Select New Parent", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 SceneManager* sceneManager = context().kernel().sceneManager();
                 Scene& activeScene = sceneManager->getActiveScene();
                 SceneGraphNode* root = activeScene.sceneGraph()->getRoot();

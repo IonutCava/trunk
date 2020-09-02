@@ -1,9 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/OutputWindow.h"
-#include "Editor/Headers/Editor.h"
-#include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/StringHelper.h"
+#include "Editor/Headers/Editor.h"
 
 namespace Divide {
     constexpr U16 g_maxLogEntries = 512;
@@ -44,7 +43,7 @@ namespace Divide {
         }
         ImGui::SameLine();
 
-        bool copy_to_clipboard = ImGui::SmallButton("Copy");
+        const bool copy_to_clipboard = ImGui::SmallButton("Copy");
         ImGui::SameLine();
         if (ImGui::Checkbox("Scroll to bottom", &_scrollToBottom)) {
             
@@ -106,7 +105,7 @@ namespace Divide {
                              IM_ARRAYSIZE(_inputBuf),
                              ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
                              [](ImGuiTextEditCallbackData* data){
-                                OutputWindow* console = (OutputWindow*)data->UserData;
+                                OutputWindow* console = static_cast<OutputWindow*>(data->UserData);
                                 return console->textEditCallback(data);
                              },
                              (void*)this))
@@ -137,7 +136,7 @@ namespace Divide {
     void OutputWindow::executeCommand(const char* command_line) {
         printText(
             {
-                Util::StringFormat("# %s\n", command_line).c_str(),
+                Util::StringFormat("# %s\n", command_line),
                 Console::EntryType::COMMAND
             }
         );
@@ -147,9 +146,8 @@ namespace Divide {
         switch (data->EventFlag)
         {
             case ImGuiInputTextFlags_CallbackCompletion:
-                break;
             case ImGuiInputTextFlags_CallbackHistory:
-                break;
+            default: break;
         };
 
         return -1;

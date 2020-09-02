@@ -54,18 +54,19 @@ using NodePositions = hashMap<I64, vec3<F32> >;
 /// Container ID, NodePositions
 using NodePositionsMap = hashMap<U32, NodePositions>;
 
-class VisualSensor : public Sensor {
+class VisualSensor final : public Sensor {
     friend class Attorney::VisualSensorConstructor;
    public:
      ~VisualSensor();
 
-    void update(const U64 deltaTimeUS);
+    void update(U64 deltaTimeUS);
 
     void followSceneGraphNode(U32 containerID, SceneGraphNode* node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
 
     F32 getDistanceToNodeSq(U32 containerID, U64 nodeGUID);
-    inline F32 getDistanceToNode(U32 containerID, U64 nodeGUID) {
+
+    F32 getDistanceToNode(U32 containerID, U64 nodeGUID) {
         const F32 distanceSq = getDistanceToNodeSq(containerID, nodeGUID);
         if (distanceSq < std::numeric_limits<F32>::max() - 1.0f) {
             return Divide::Sqrt(distanceSq);
@@ -77,7 +78,7 @@ class VisualSensor : public Sensor {
     SceneGraphNode* getClosestNode(U32 containerID);
 
    protected:
-    VisualSensor(AIEntity* const parentEntity);
+    explicit VisualSensor(AIEntity* const parentEntity);
 
 
    protected:
@@ -87,7 +88,6 @@ class VisualSensor : public Sensor {
 
 namespace Attorney {
 class VisualSensorConstructor {
-   private:
     static VisualSensor* construct(AIEntity* const parentEntity) {
         return MemoryManager_NEW VisualSensor(parentEntity);
     }

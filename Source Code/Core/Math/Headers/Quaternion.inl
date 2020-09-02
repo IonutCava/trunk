@@ -133,7 +133,7 @@ T Quaternion<T>::magnituteSQ() const {
 
 template <typename T>
 bool Quaternion<T>::compare(const Quaternion<T>& rq, Angle::DEGREES<T> tolerance) const {
-    T angleRad = Angle::to_RADIANS((T)std::acosf(to_F32(dot(rq))));
+    T angleRad = Angle::to_RADIANS(static_cast<T>(std::acosf(to_F32(dot(rq)))));
     const F32 toleranceRad = Angle::to_RADIANS(tolerance);
 
     return IS_TOLERANCE(angleRad, toleranceRad) || COMPARE_TOLERANCE(angleRad, to_F32(M_PI), toleranceRad);

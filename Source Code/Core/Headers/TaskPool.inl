@@ -35,20 +35,20 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     template<class Predicate>
-    Task* TaskPool::createTask(Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle) {
+    Task* TaskPool::createTask(Task* parentTask, Predicate&& threadedFunction, const bool allowedInIdle) {
         Task* task = allocateTask(parentTask, allowedInIdle);
-        task->_callback = std::move(threadedFunction);
+        task->_callback = threadedFunction;
         return task;
     }
 
     template<class Predicate>
-    Task* CreateTask(TaskPool& pool, Predicate&& threadedFunction, bool allowedInIdle) {
-        return CreateTask(pool, nullptr, std::move(threadedFunction), allowedInIdle);
+    Task* CreateTask(TaskPool& pool, Predicate&& threadedFunction, const bool allowedInIdle) {
+        return CreateTask(pool, nullptr, threadedFunction, allowedInIdle);
     }
 
     template<class Predicate>
-    Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle) {
-        return pool.createTask(parentTask, std::move(threadedFunction), allowedInIdle);
+    Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction, const bool allowedInIdle) {
+        return pool.createTask(parentTask, threadedFunction, allowedInIdle);
     }
 }; //namespace Divide
 

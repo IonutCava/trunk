@@ -41,13 +41,13 @@ class FrameRateHandler {
     static constexpr U32 FRAME_AVG_RESET_COUNT = 60 * 5;
 
 public:
-    void tick(const U64 deltaTimeUS) noexcept;
+    void tick(U64 deltaTimeUS) noexcept;
 
-    inline F32 minFrameRate() const noexcept;
-    inline F32 maxFrameRate() const noexcept;
-    inline F32 frameRate() const noexcept;
-    inline F32 frameTime() const noexcept;
-    inline F32 averageFrameRate() const noexcept;
+    [[nodiscard]] inline F32 minFrameRate() const noexcept;
+    [[nodiscard]] inline F32 maxFrameRate() const noexcept;
+    [[nodiscard]] inline F32 frameRate() const noexcept;
+    [[nodiscard]] inline F32 frameTime() const noexcept;
+    [[nodiscard]] inline F32 averageFrameRate() const noexcept;
     inline void frameRateAndTime(F32& fpsOut, F32& frameTimeOut) const noexcept;
     inline void frameStates(F32& avgFPSOut, F32& minFPSOut, F32& maxFPSOut) const noexcept;
 

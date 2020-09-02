@@ -3,7 +3,6 @@
 #include "config.h"
 
 #include "Headers/ApplicationTimer.h"
-#include "Headers/ProfileTimer.h"
 
 #include "Utility/Headers/Localization.h"
 

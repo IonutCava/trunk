@@ -60,7 +60,7 @@ namespace Divide {
     void ECSSystem<T, U>::PreUpdate(F32 dt) {
         OPTICK_EVENT();
 
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
         const size_t compCount = _container->size();
 
         // Keep memory in order to avoid mid-frame allocs
@@ -83,7 +83,7 @@ namespace Divide {
     void ECSSystem<T, U>::Update(F32 dt) {
         OPTICK_EVENT();
 
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (U* comp : _componentCache) {
             comp->Update(microSec);
@@ -94,7 +94,7 @@ namespace Divide {
     void ECSSystem<T, U>::PostUpdate(F32 dt) {
         OPTICK_EVENT();
 
-        const U64 microSec = Time::MillisecondsToMicroseconds(dt);
+        U64 microSec = Time::MillisecondsToMicroseconds(dt);
 
         for (U* comp : _componentCache) {
             comp->PostUpdate(microSec);

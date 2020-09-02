@@ -289,17 +289,6 @@ bool Sky::load() {
 
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
-    //shaderDescriptor._modules.push_back(fragModule); <- No frag shader
-
-    ResourceDescriptor skyShaderLQPrePassDescriptor("sky_PrePass_LQ");
-    skyShaderLQPrePassDescriptor.waitForReady(false);
-    skyShaderLQPrePassDescriptor.propertyDescriptor(shaderDescriptor);
-    _skyShaderLQPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderLQPrePassDescriptor, loadTasks);
-
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
-    shaderDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky_PrePass");
     skyShaderPrePassDescriptor.waitForReady(false);
@@ -342,11 +331,7 @@ void Sky::postLoad(SceneGraphNode* sgn) {
 
 SunDetails Sky::setDateTime(struct tm *dateTime) {
     _sun->SetDate(dateTime);
-    
-    const SunDetails ret = _sun->GetDetails();
-    _sunDirectionAndIntensity.xyz = ret._eulerDirection;
-    _sunDirectionAndIntensity.w = ret._intensity;
-    return ret;
+    return getCurrentDetails();
 }
 
 SunDetails Sky::getCurrentDetails() const noexcept {
@@ -359,10 +344,7 @@ void Sky::setAtmosphere(const Atmosphere& atmosphere) noexcept {
 }
 
 const Texture_ptr& Sky::activeSkyBox() const noexcept {
-    if (_sun->GetDetails()._intensity <= 0.0f) {
-        return _skybox[1];
-    }
-    return _skybox[0];
+    return _skybox[getCurrentDetails()._intensity <= 0.0f ? 1 : 0];
 }
 
 void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
@@ -377,19 +359,16 @@ void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sc
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 };
 
-
 bool Sky::prepareRender(SceneGraphNode* sgn,
                 RenderingComponent& rComp,
                 const RenderStagePass& renderStagePass,
                 const Camera& camera,
-                bool refreshData)  {
+                const bool refreshData)  {
 
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (!pkg.empty()) {
         PushConstants constants = pkg.pushConstants(0);
-        const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz, WORLD_Z_NEG_AXIS);
 
-        constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
         constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
         if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
             constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
@@ -415,8 +394,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHashPrePass
                                             : _skyboxRenderStateHashPrePass);
-        pipelineDescriptor._shaderProgramHandle = renderStagePass._stage == RenderStage::DISPLAY ? _skyShaderPrePass->getGUID()
-                                                                                                 : _skyShaderLQPrePass->getGUID();
+        pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
     } else {
         WAIT_FOR_CONDITION(_skyShader->getState() == ResourceState::RES_LOADED);
         pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
@@ -435,9 +413,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    const vec3<F32> direction = DirectionFromEuler(_sunDirectionAndIntensity.xyz, WORLD_Z_NEG_AXIS);
     pushConstantsCommand._constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
-    pushConstantsCommand._constants.set(_ID("dvd_sunDirection"), GFX::PushConstantType::VEC3, direction);
     pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
     pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
     pushConstantsCommand._constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));

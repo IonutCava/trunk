@@ -36,7 +36,7 @@
 namespace Divide {
 
 
-class ParamHandler  {
+class ParamHandler : NonCopyable, NonMovable {
 
 public:
     using HashType = U64;
@@ -58,7 +58,7 @@ public:
     void setDebugOutput(bool logState) noexcept;
 
     template <typename T>
-    T getParam(HashType nameID, T defaultValue = T()) const;
+    [[nodiscard]] T getParam(HashType nameID, T defaultValue = T()) const;
 
     template <typename T>
     void setParam(HashType nameID, const T& value);
@@ -67,7 +67,7 @@ public:
     void delParam(HashType nameID);
 
     template <typename T>
-    bool isParam(HashType nameID) const;
+    [[nodiscard]] bool isParam(HashType nameID) const;
 
   private:
     ParamMap _params;

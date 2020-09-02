@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "Core/Headers/StringHelper.h"
-#include "Core/Headers/XMLEntryData.h"
-#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceLoader.h"
 #include "Core/Resources/Headers/ResourceCache.h"

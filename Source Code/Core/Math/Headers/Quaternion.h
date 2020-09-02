@@ -61,11 +61,11 @@ class Quaternion {
 
     Quaternion& operator=(const Quaternion& q);
 
-    T dot(const Quaternion& rq) const;
-    T magnitude() const;
-    T magnituteSQ() const;
+    [[nodiscard]] T dot(const Quaternion& rq) const;
+    [[nodiscard]] T magnitude() const;
+    [[nodiscard]] T magnituteSQ() const;
 
-    bool compare(const Quaternion& rq, Angle::DEGREES<T> tolerance = 1e-3f) const;
+    [[nodiscard]] bool compare(const Quaternion& rq, Angle::DEGREES<T> tolerance = 1e-3f) const;
 
     void set(const vec4<T>& values);
     void set(T x, T y, T z, T w);
@@ -75,13 +75,13 @@ class Quaternion {
     //do anything
     //! if the quaternion is close enough to being unit-length.
     void normalize();
-    Quaternion inverse() const;
+    [[nodiscard]] Quaternion inverse() const;
 
     //! We need to get the inverse of a quaternion to properly apply a
     //quaternion-rotation to a vector
     //! The conjugate of a quaternion is the same as the inverse, as long as the
     //quaternion is unit-length
-    Quaternion getConjugate() const;
+    [[nodiscard]] Quaternion getConjugate() const;
 
     //! Multiplying q1 with q2 applies the rotation q2 to q1
     //! the constructor takes its arguments as (x, y, z, w)
@@ -149,16 +149,16 @@ class Quaternion {
     void fromAxes(const vec3<T>& xAxis, const vec3<T>& yAxis, const vec3<T>& zAxis);
     void toAxes(vec3<T>* axis) const;
     void toAxes(vec3<T>& xAxis, vec3<T>& yAxis, vec3<T>& zAxis) const;
-    vec3<T> xAxis() const;
-    vec3<T> yAxis() const;
-    vec3<T> zAxis() const;
+    [[nodiscard]] vec3<T> xAxis() const;
+    [[nodiscard]] vec3<T> yAxis() const;
+    [[nodiscard]] vec3<T> zAxis() const;
 
-    T X() const noexcept;
-    T Y() const noexcept;
-    T Z() const noexcept;
-    T W() const noexcept;
+    [[nodiscard]] T X() const noexcept;
+    [[nodiscard]] T Y() const noexcept;
+    [[nodiscard]] T Z() const noexcept;
+    [[nodiscard]] T W() const noexcept;
 
-    vec3<T> XYZ() const noexcept;
+    [[nodiscard]] vec3<T> XYZ() const noexcept;
 
     template<typename U>
     void X(U x) noexcept;
@@ -171,7 +171,7 @@ class Quaternion {
 
     void identity();
 
-    const vec4<T>& asVec4() const;
+    [[nodiscard]] const vec4<T>& asVec4() const;
 
    private:
     vec4<T> _elements;

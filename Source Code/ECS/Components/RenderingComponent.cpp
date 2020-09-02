@@ -434,7 +434,7 @@ U8 RenderingComponent::getLoDLevel(const vec3<F32>& center, const vec3<F32>& cam
         return CLAMPED(level, to_U8(0u), MAX_LOD_LEVEL);
     }
 
-    const F32 distSQtoCenter = std::max(center.distanceSquared(cameraEye), EPSILON_F32);
+    const F32 distSQtoCenter = std::max(center.distanceSquared(cameraEye), std::numeric_limits<F32>::epsilon());
 
     if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.x))) {
         return 0u;

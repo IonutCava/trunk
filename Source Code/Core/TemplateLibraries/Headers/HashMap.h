@@ -36,12 +36,6 @@
 #include <EASTL/unordered_map.h>
 #include <EASTL/intrusive_hash_map.h>
 
-#pragma warning(push)
-#pragma warning(disable: 4310)
-#pragma warning(disable: 4458)
-#include <skarupke/flat_hash_map.hpp>
-#pragma warning(pop)
-
 template<class T>
 struct EnumHash;
 
@@ -95,7 +89,7 @@ template <> struct hash<std::string>
     size_t operator()(const std::string& x) const
     {
         const char* p = x.c_str();
-        uint32_t c = 0u, result = 2166136261U;   // Intentionally uint32_t instead of size_t, so the behavior is the same regardless of size.
+        uint32_t c, result = 2166136261U;   // Intentionally uint32_t instead of size_t, so the behavior is the same regardless of size.
         while ((c = static_cast<uint8_t>(*p++)) != 0)     // cast to unsigned 8 bit.
             result = (result * 16777619) ^ c;
         return static_cast<size_t>(result);

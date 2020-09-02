@@ -111,7 +111,7 @@ public:
     virtual bool load();
     virtual bool unload();
 
-    stringImpl assetPath() const { return stringImpl(assetLocation().c_str()) + "/" + assetName().c_str(); }
+    stringImpl assetPath() const { return assetLocation() + "/" + assetName(); }
     void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);
 
 protected:

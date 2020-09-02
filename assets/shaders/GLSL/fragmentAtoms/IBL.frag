@@ -1,6 +1,8 @@
 #ifndef _IMAGE_BASED_LIGHTING_FRAG_
 #define _IMAGE_BASED_LIGHTING_FRAG_
 
+#include "utility.cmn"
+
 #if defined(USE_PLANAR_REFLECTION)
 layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
 #else //USE_PLANAR_REFLECTION

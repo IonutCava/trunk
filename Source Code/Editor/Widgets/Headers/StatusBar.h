@@ -34,19 +34,18 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_STATUS_BAR_H_
 
 #include "Core/Headers/PlatformContextComponent.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
-    class StatusBar : public PlatformContextComponent {
+    class StatusBar final : public PlatformContextComponent {
     public:
 
         explicit StatusBar(PlatformContext& context);
-        ~StatusBar();
+        ~StatusBar() = default;
 
-        void draw();
-        void update(const U64 deltaTimeUS);
+        void draw() const;
+        void update(U64 deltaTimeUS);
 
-        F32 height() const;
+        [[nodiscard]] F32 height() const;
 
         void showMessage(const stringImpl& message, F32 durationMS);
 

@@ -175,7 +175,7 @@ public:
     virtual void getMatrix(mat4<F32>& matrix) = 0;
 
     /// Get the current position, rotation and scale as a "TransformValues" package
-    virtual TransformValues getValues() const = 0;
+    [[nodiscard]] virtual TransformValues getValues() const = 0;
 };
 
 

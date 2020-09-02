@@ -6,10 +6,6 @@
 #include "Headers/BoundingSphere.h"
 
 namespace Divide {
-    OBB::OBB()  noexcept
-    {
-    }
-
     OBB::OBB(const vec3<F32>& pos, const vec3<F32>& hExtents, const OBBAxis& axis)  noexcept
         : _position(pos),
           _halfExtents(hExtents),
@@ -177,7 +173,7 @@ namespace Divide {
         F32 tNear = -std::numeric_limits<F32>::max();
         F32 tFar  =  std::numeric_limits<F32>::max();
         for (U8 i = 0; i < 3; ++i) {
-            if (std::abs(Dot(ray._direction, _axis[i])) < EPSILON_F32)
+            if (std::abs(Dot(ray._direction, _axis[i])) < std::numeric_limits<F32>::epsilon())
             {
                 // Ray parallel to planes
                 const F32 r = Dot(_axis[i], _position - ray._origin);

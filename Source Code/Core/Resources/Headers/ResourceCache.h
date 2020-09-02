@@ -42,7 +42,7 @@
 
 namespace Divide {
 
-class ResourceLoadLock : NonMovable {
+class ResourceLoadLock : NonCopyable, NonMovable {
 public:
     explicit ResourceLoadLock(size_t hash, PlatformContext& context);
     ~ResourceLoadLock();
@@ -62,7 +62,7 @@ private:
 /// - keep track of already loaded resources
 /// - load new resources using appropriate resource loader and store them in cache
 /// - remove resources by name / pointer or remove all
-class ResourceCache final : public PlatformContextComponent {
+class ResourceCache final : public PlatformContextComponent, NonMovable {
 public:
     explicit ResourceCache(PlatformContext& context);
     ~ResourceCache();
@@ -137,8 +137,8 @@ public:
         return ptr;
     }
 
-    CachedResource_ptr find(const size_t descriptorHash, bool& entryInMap);
-    void add(CachedResource_wptr resource, bool overwriteEntry);
+    CachedResource_ptr find(size_t descriptorHash, bool& entryInMap);
+    void add(const CachedResource_wptr& resource, bool overwriteEntry);
     /// Empty the entire cache of resources
     void clear();
 

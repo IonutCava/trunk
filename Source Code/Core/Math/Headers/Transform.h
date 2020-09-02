@@ -90,7 +90,7 @@ class Transform final : public ITransform, public GUIDWrapper, NonCopyable {
     void setTransforms(const mat4<F32>& transform);
 
     /// Set all of the internal values to match those of the specified transform
-    void clone(const Transform* const transform);
+    void clone(const Transform* transform);
 
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
     [[nodiscard]] TransformValues getValues() const final;

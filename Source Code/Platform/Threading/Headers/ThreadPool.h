@@ -33,6 +33,8 @@
 #ifndef _PLATFORM_TASK_POOL_H_
 #define _PLATFORM_TASK_POOL_H_
 
+#include "Platform/Headers/PlatformDefines.h"
+
 namespace Divide {
 
 using PoolTask = std::function<bool(bool/*threadWaitingCall*/)>;

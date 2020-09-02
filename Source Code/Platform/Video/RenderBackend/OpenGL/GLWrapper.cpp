@@ -132,7 +132,6 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
 
     if_constexpr (Config::ENABLE_GPU_VALIDATION) {
         if (global) {
-            // The returned results are 'g_performanceQueryRingLength - 1' frames old!
             const I64 time = _elapsedTimeQuery->getResultNoWait();
             FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
             _elapsedTimeQuery->incQueue();
@@ -140,7 +139,7 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
     }
 }
 
-void GL_API::idle(bool fast) {
+void GL_API::idle(const bool fast) {
     if (fast) {
         NOP();
     } else {

@@ -43,7 +43,7 @@ class Hashable {
         return _hash;
     }
 
-    virtual Hashable& operator=(Hashable const& old) noexcept;
+    Hashable& operator=(Hashable const& old) noexcept;
 
   protected:
     mutable size_t _hash = 9999991;

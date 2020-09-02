@@ -141,9 +141,9 @@ class Console : NonCopyable {
     }
    protected:
     static const char* formatText(const char* format, ...) noexcept;
-    static void output(const char* text, const bool newline, const EntryType type);
-    static void output(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
-    static void decorate(std::ostream& outStream, const char* text, const bool newline, const EntryType type);
+    static void output(const char* text, bool newline, EntryType type);
+    static void output(std::ostream& outStream, const char* text, bool newline, EntryType type);
+    static void decorate(std::ostream& outStream, const char* text, bool newline, EntryType type);
     static void printToFile(const OutputEntry& entry);
 
    private:

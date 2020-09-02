@@ -100,22 +100,22 @@ class ByteBuffer {
     void appendPackXYZ(F32 x, F32 y, F32 z);
     void appendPackGUID(U64 guid);
 
-    Byte operator[](size_t pos) const;
-    size_t rpos() const noexcept;
-    size_t rpos(size_t rpos_) noexcept;
-    size_t wpos() const noexcept;
-    size_t wpos(size_t wpos_) noexcept;
-    size_t size() const noexcept;
-    bool empty() const noexcept;
+    [[nodiscard]] Byte operator[](size_t pos) const;
+    [[nodiscard]] size_t rpos() const noexcept;
+    [[nodiscard]] size_t rpos(size_t rpos_) noexcept;
+    [[nodiscard]] size_t wpos() const noexcept;
+    [[nodiscard]] size_t wpos(size_t wpos_) noexcept;
+    [[nodiscard]] size_t size() const noexcept;
+    [[nodiscard]] bool empty() const noexcept;
     void resize(size_t newsize);
     void reserve(size_t ressize);
 
-    const Byte* contents() const noexcept;
+    [[nodiscard]] const Byte* contents() const noexcept;
 
     void put(size_t pos, const Byte *src, size_t cnt);
 
-    bool dumpToFile(const char* path, const char* fileName);
-    bool loadFromFile(const char* path, const char* fileName);
+    [[nodiscard]] bool dumpToFile(const char* path, const char* fileName);
+    [[nodiscard]] bool loadFromFile(const char* path, const char* fileName);
 
    private:
     /// limited for internal use because can "append" any unexpected type (like

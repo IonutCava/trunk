@@ -57,8 +57,8 @@ class ApplicationTimer {
     void reset();
 
     void resetFPSCounter() noexcept;
-    F32 getFps() const noexcept;
-    F32 getFrameTime() const noexcept;
+    [[nodiscard]] F32 getFps() const noexcept;
+    [[nodiscard]] F32 getFrameTime() const noexcept;
     void getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut) const noexcept;
 
     PROPERTY_R(F32, speedfactor, 1.0f);

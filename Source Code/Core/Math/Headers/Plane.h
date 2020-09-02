@@ -108,17 +108,17 @@ class Plane {
         return *this;
     }
 
-    Side classifyPoint(const vec3<F32>& point) const {
+    [[nodiscard]] Side classifyPoint(const vec3<F32>& point) const {
         const F32 result = signedDistanceToPoint(point);
         return (result > 0 ? Side::POSITIVE_SIDE
                            : (result < 0 ? Side::NEGATIVE_SIDE : Side::NO_SIDE));
     }
 
-    T signedDistanceToPoint(const vec3<T>& point) const {
+    [[nodiscard]] T signedDistanceToPoint(const vec3<T>& point) const {
         return _normal.dot(point) + _distance;
     }
 
-    vec3<T> closestPointOnPlaneToPoint(const vec3<T>& point) const  {
+    [[nodiscard]] vec3<T> closestPointOnPlaneToPoint(const vec3<T>& point) const  {
         return (point - signedDistanceToPoint(point)) * _normal;
     }
 

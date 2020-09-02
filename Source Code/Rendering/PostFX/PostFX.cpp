@@ -237,7 +237,7 @@ void PostFX::update(const U64 deltaTimeUS) {
         }
 
         if (fadeStrength > 0.99) {
-            if (_fadeWaitDurationMS < EPSILON_D64) {
+            if (_fadeWaitDurationMS < std::numeric_limits<D64>::epsilon()) {
                 if (_fadeOutComplete) {
                     _fadeOutComplete();
                     _fadeOutComplete = DELEGATE<void>();
@@ -249,7 +249,7 @@ void PostFX::update(const U64 deltaTimeUS) {
 
         _drawConstants.set(_ID("_fadeStrength"), GFX::PushConstantType::FLOAT, fadeStrength);
         
-        _fadeActive = fadeStrength > EPSILON_D64;
+        _fadeActive = fadeStrength > std::numeric_limits<D64>::epsilon();
         if (!_fadeActive) {
             _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
             if (_fadeInComplete) {

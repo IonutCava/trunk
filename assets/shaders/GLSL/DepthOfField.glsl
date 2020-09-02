@@ -1,6 +1,6 @@
 -- Fragment
 
-#define PI  3.14159265
+#include "utility.cmn"
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;

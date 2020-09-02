@@ -37,6 +37,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     struct IUndoEntry {
+        virtual ~IUndoEntry() = default;
+
         GFX::PushConstantType _type = GFX::PushConstantType::COUNT;
         stringImpl _name = "";
         DELEGATE<void, std::string_view> _onChangedCbk;
@@ -46,7 +48,7 @@ namespace Divide {
     };
 
     template<typename T>
-    struct UndoEntry : public IUndoEntry {
+    struct UndoEntry final : IUndoEntry {
         T _oldVal = {};
         T _newVal = {};
         std::function<void(const T&)> _dataSetter = {};
@@ -70,16 +72,16 @@ namespace Divide {
         using UndoStack = std::deque<std::shared_ptr<IUndoEntry>>;
 
     public:
-        UndoManager(U32 maxSize);
+        explicit UndoManager(U32 maxSize);
         ~UndoManager() = default;
 
-        bool Undo();
-        bool Redo();
+        [[nodiscard]] bool Undo();
+        [[nodiscard]] bool Redo();
 
-        inline size_t UndoStackSize() const noexcept { return _undoStack.size(); }
-        inline size_t RedoStackSize() const noexcept { return _redoStack.size(); }
+        [[nodiscard]] size_t UndoStackSize() const noexcept { return _undoStack.size(); }
+        [[nodiscard]] size_t RedoStackSize() const noexcept { return _redoStack.size(); }
 
-        const stringImpl& lasActionName() const;
+        [[nodiscard]] const stringImpl& lasActionName() const;
 
         template<typename T>
         void registerUndoEntry(const UndoEntry<T>& entry) {
@@ -91,7 +93,7 @@ namespace Divide {
         }
 
     private:
-        bool apply(const std::shared_ptr<IUndoEntry>& entry);
+        [[nodiscard]] bool apply(const std::shared_ptr<IUndoEntry>& entry);
 
     private:
         const U32 _maxSize = 10;

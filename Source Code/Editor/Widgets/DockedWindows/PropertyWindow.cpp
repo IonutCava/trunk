@@ -72,7 +72,7 @@ namespace ImGui {
 
 namespace Divide {
     namespace {
-        // Separate activate is used for stuff that do continous value changes, e.g. colour selectors, but you only want to register the old val once
+        // Separate activate is used for stuff that do continuous value changes, e.g. colour selectors, but you only want to register the old val once
         template<typename T, bool SeparateActivate, typename Pred>
         void RegisterUndo(Editor& editor, GFX::PushConstantType Type, const T& oldVal, const T& newVal, const char* name, Pred&& dataSetter) {
             static hashMap<U64, UndoEntry<T>> _undoEntries;
@@ -106,11 +106,10 @@ namespace Divide {
         }
 
         template<typename Pred>
-        bool colourInput4(Editor& parent, const char* name, FColour4& col, bool readOnly, Pred&& dataSetter) {
-            FColour4 oldVal = col;
+        bool colourInput4(Editor& parent, const char* name, FColour4& col, const bool readOnly, Pred&& dataSetter) {
             const bool ret = ImGui::ColorEdit4(name, col._v, ImGuiColorEditFlags__OptionsDefault);
             if (!readOnly) {
-                RegisterUndo<FColour4, true>(parent, GFX::PushConstantType::FCOLOUR4, oldVal, col, name, [dataSetter](const FColour4& oldColour) {
+                RegisterUndo<FColour4, true>(parent, GFX::PushConstantType::FCOLOUR4, col, col, name, [dataSetter](const FColour4& oldColour) {
                     dataSetter(oldColour._v);
                 });
             }
@@ -119,11 +118,10 @@ namespace Divide {
         }
 
         template<typename Pred>
-        bool colourInput3(Editor& parent, const char* name, FColour3& col, bool readOnly, Pred&& dataSetter) {
-            FColour3 oldVal = col;
+        bool colourInput3(Editor& parent, const char* name, FColour3& col, const bool readOnly, Pred&& dataSetter) {
             const bool ret =  ImGui::ColorEdit3(name, col._v, ImGuiColorEditFlags__OptionsDefault);
             if (!readOnly) {
-                RegisterUndo<FColour3, true>(parent, GFX::PushConstantType::FCOLOUR3, oldVal, col, name, [dataSetter](const FColour4& oldColour) {
+                RegisterUndo<FColour3, true>(parent, GFX::PushConstantType::FCOLOUR3, col, col, name, [dataSetter](const FColour4& oldColour) {
                     dataSetter(oldColour._v);
                 });
             }
@@ -179,7 +177,7 @@ namespace Divide {
             const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
             const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
 
-            bool ret = false;
+            bool ret;
             if_constexpr (num_comp == 1) {
                 const T min = static_cast<T>(field._range.min);
                 T max = static_cast<T>(field._range.max);
@@ -211,7 +209,7 @@ namespace Divide {
                 }
             }
             if (IsSlider || ret) {
-                auto tempData = field._data;
+                auto* tempData = field._data;
                 auto tempSetter = field._dataSetter;
                 RegisterUndo<T, IsSlider>(parent, field._basicType, field.get<T>(), val, name, [tempData, tempSetter](const T& oldVal) {
                     if (tempSetter != nullptr) {
@@ -250,7 +248,7 @@ namespace Divide {
             }
 
             if (ret && !field._readOnly && mat != field.get<T>()) {
-                auto tempData = field._data;
+                auto* tempData = field._data;
                 auto tempSetter = field._dataSetter;
                 RegisterUndo<T, false>(parent, field._basicType, field.get<T>(), mat, name, [tempData, tempSetter](const T& oldVal) {
                     if (tempSetter != nullptr) {
@@ -315,11 +313,6 @@ namespace Divide {
     PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
             PlatformContextComponent(context)
-    {
-
-    }
-
-    PropertyWindow::~PropertyWindow()
     {
 
     }
@@ -406,7 +399,7 @@ namespace Divide {
                 camField._readOnly = false;
                 camField._data = zPlanes._v;
                 camField._dataSetter = [cam](const void* planes) {
-                    vec2<F32> zPlanes = *static_cast<const vec2<F32>*>(planes);
+                    const vec2<F32> zPlanes = *static_cast<const vec2<F32>*>(planes);
                     if (cam->isOrthoProjected()) {
                         cam->setProjection(cam->orthoRect(), zPlanes);
                     } else {
@@ -438,7 +431,9 @@ namespace Divide {
                 worldMatrixField._type = EditorComponentFieldType::PUSH_TYPE;
                 worldMatrixField._readOnly = true;
                 worldMatrixField._data = &viewMatrix;
-                processBasicField(worldMatrixField);
+                if (!processBasicField(worldMatrixField)) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
             {
                 ImGui::Text("Projection Matrix");
@@ -450,7 +445,9 @@ namespace Divide {
                 projMatrixField._readOnly = true;
                 projMatrixField._name = "Projection Matrix";
                 projMatrixField._data = &projMatrix;
-                processBasicField(projMatrixField);
+                if (!processBasicField(projMatrixField)) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
             {
                 ImGui::Separator();
@@ -499,10 +496,9 @@ namespace Divide {
         if (selectedCamera != nullptr) {
             sceneChanged = drawCamera(selectedCamera);
         } else if (hasSelections) {
-            const F32 smallButtonWidth = 60.0f;
+            constexpr F32 smallButtonWidth = 60.0f;
             F32 xOffset = ImGui::GetWindowSize().x * 0.5f - smallButtonWidth;
 
-            static bool closed = false;
             for (U8 i = 0u; i < crtSelections._selectionCount; ++i) {
                 SceneGraphNode* sgnNode = node(crtSelections._selections[i]);
                 ImGui::PushID(sgnNode->name().c_str());
@@ -783,7 +779,7 @@ namespace Divide {
                 ImGui::OpenPopup("Add new component");
             }
 
-            if (ImGui::BeginPopupModal("Add new component", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+            if (ImGui::BeginPopupModal("Add new component", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
                 ImGui::Text("Add new %s component?", selectedType._to_string());
                 ImGui::Separator();
 
@@ -836,8 +832,6 @@ namespace Divide {
     }
 
     bool PropertyWindow::processField(EditorComponentField& field) {
-        const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
-
         ImGui::Text(field._name.c_str());
 
         if (field._readOnly) {
@@ -861,7 +855,6 @@ namespace Divide {
                 ret = processBasicField(field);
             }break;
             case EditorComponentFieldType::DROPDOWN_TYPE: {
-                const U32 crtIndex = to_U32(field._range.x);
                 const U32 entryCount = to_U32(field._range.y);
 
                 if (field._dataSetter && field._dataGetter && entryCount > 0) {
@@ -991,6 +984,7 @@ namespace Divide {
                 assert(!field._dataSetter && "Need direct access to memory");
                 ret = processMaterial(field.getPtr<Material>(), field._readOnly);
             }break;
+            default: break;
         };
         if (field._readOnly) {
             PopReadOnly();
@@ -1001,7 +995,7 @@ namespace Divide {
         return ret;
     }
 
-    bool PropertyWindow::processTransform(TransformComponent* transform, bool readOnly) {
+    bool PropertyWindow::processTransform(TransformComponent* transform, bool readOnly) const {
         if (transform == nullptr) {
             return false;
         }
@@ -1040,7 +1034,7 @@ namespace Divide {
                 ret = true;
                 // Scale is tricky as it may invalidate everything if it's set wrong!
                 for (U8 i = 0; i < 3; ++i) {
-                    scale[i] = std::max(EPSILON_F32, scale[i]);
+                    scale[i] = std::max(std::numeric_limits<F32>::epsilon(), scale[i]);
                 }
                 RegisterUndo<vec3<F32>, false>(_parent, GFX::PushConstantType::VEC3, transformValues._scale, scale, "Transform scale", [transform](const vec3<F32>& val) {
                     transform->setScale(val);
@@ -1098,7 +1092,7 @@ namespace Divide {
             if (program != nullptr) {
                 const ShaderProgramDescriptor& descriptor = program->descriptor();
                 for (const ShaderModuleDescriptor& module : descriptor._modules) {
-                    const char* stages[] = { "PS", "VS", "GS" "HS", "DS","CS" };
+                    const char* stages[] = { "PS", "VS", "GS", "HS", "DS","CS" };
                     if (ImGui::CollapsingHeader(Util::StringFormat("%s: File [ %s ] Variant [ %s ]",
                                                                 stages[to_base(module._moduleType)],
                                                                 module._sourceFile.data(),
@@ -1107,7 +1101,7 @@ namespace Divide {
                         ImGui::Text("Defines: ");
                         ImGui::Separator();
                         for (const auto& define : module._defines) {
-                        ImGui::Text(define.first.c_str());
+                            ImGui::Text(define.first.c_str());
                         }
                         if (ImGui::Button("Open Source File")) {
                             const stringImpl& textEditor = Attorney::EditorGeneralWidget::externalTextEditorPath(_context.editor());
@@ -1275,8 +1269,8 @@ namespace Divide {
 
             U32 stencilReadMask = block.stencilMask();
             U32 stencilWriteMask = block.stencilWriteMask();
-            if (ImGui::InputScalar("Stencil mask", ImGuiDataType_U32, &stencilReadMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
-                RenderStagePass tempPass = currentStagePass;
+            if (ImGui::InputScalar("Stencil mask", ImGuiDataType_U32, &stencilReadMask, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilMask(), stencilReadMask, "Stencil mask", [material, stateHash, stencilWriteMask, tempPass](const U32& oldVal) {
                     RenderStateBlock block = RenderStateBlock::get(stateHash);
                     block.setStencilReadWriteMask(oldVal, stencilWriteMask);
@@ -1287,8 +1281,8 @@ namespace Divide {
                 changed = true;
             }
 
-            if (ImGui::InputScalar("Stencil write mask", ImGuiDataType_U32, &stencilWriteMask, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
-                RenderStagePass tempPass = currentStagePass;
+            if (ImGui::InputScalar("Stencil write mask", ImGuiDataType_U32, &stencilWriteMask, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilWriteMask(), stencilWriteMask, "Stencil write mask", [material, stateHash, stencilReadMask, tempPass](const U32& oldVal) {
                     RenderStateBlock block = RenderStateBlock::get(stateHash);
                     block.setStencilReadWriteMask(stencilReadMask, oldVal);
@@ -1307,9 +1301,9 @@ namespace Divide {
             StencilOperation sPassOp = block.stencilPassOp();
             ComparisonFunction sFunc = block.stencilFunc();
 
-            if (ImGui::InputScalar("Stencil reference mask", ImGuiDataType_U32, &stencilRef, NULL, NULL, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
-                RenderStagePass tempPass = currentStagePass;
-                RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilRef(), stencilRef, "Stencil reference mask", [material, stateHash, tempPass, stencilEnabled, stencilReadMask, sFailOp, sZFailOp, sPassOp, sFunc](const U32& oldVal) {
+            if (ImGui::InputScalar("Stencil reference mask", ImGuiDataType_U32, &stencilRef, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
+                const RenderStagePass tempPass = currentStagePass;
+                RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilRef(), stencilRef, "Stencil reference mask", [material, stateHash, tempPass, stencilEnabled, sFailOp, sZFailOp, sPassOp, sFunc](const U32& oldVal) {
                     RenderStateBlock block = RenderStateBlock::get(stateHash);
                     block.setStencil(stencilEnabled, oldVal, sFailOp, sPassOp, sZFailOp, sFunc);
                     material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
@@ -1769,7 +1763,7 @@ namespace Divide {
     }
 
 
-        bool PropertyWindow::processBasicField(EditorComponentField& field) {
+        bool PropertyWindow::processBasicField(EditorComponentField& field) const {
             const bool isSlider = field._type == EditorComponentFieldType::SLIDER_TYPE &&
                                 field._basicType != GFX::PushConstantType::BOOL &&
                                 !field.isMatrix();

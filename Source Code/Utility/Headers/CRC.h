@@ -42,6 +42,7 @@ namespace Divide {
 namespace Util {
 class CRC32 {
    public:
+    virtual ~CRC32() = default;
     //=========================================
     //  ctors
     CRC32()
@@ -61,7 +62,7 @@ class CRC32 {
 
     //=========================================
     /// getting the crc
-    U32 Get() const noexcept { return ~mCrc; }
+    [[nodiscard]] U32 Get() const noexcept { return ~mCrc; }
 
     //=========================================
     // HashBase stuff
