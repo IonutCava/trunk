@@ -99,20 +99,18 @@
 	</postFX>
 	<shadowMapping>
 		<enabled>true</enabled>
-		<!-- Softness is unused at the moment -->
-		<softness>0.5</softness>
 		<!-- Resolution will be rounded up to the next POW_2. -->
 		<csm>
-			<shadowMapResolution>1024</shadowMapResolution>
+			<shadowMapResolution>512</shadowMapResolution>
 			<MSAASamples>2</MSAASamples>
 			<enableBlurring>true</enableBlurring>
-			<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
+			<anisotropicFilteringLevel>2</anisotropicFilteringLevel>
 			<splitLambda>0.899999976</splitLambda>
 			<splitCount>3</splitCount>
 		</csm>
 		<spot>
 			<shadowMapResolution>512</shadowMapResolution>
-			<MSAASamples>2</MSAASamples>
+			<MSAASamples>0</MSAASamples>
 			<enableBlurring>false</enableBlurring>
 			<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 		</spot>

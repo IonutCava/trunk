@@ -55,7 +55,7 @@ bool ASIO::init(const stringImpl& address, U16 port) {
         _connected = true;
     } catch (std::exception& e) {
         if (_debugOutput) {
-            LOG_PRINT((stringImpl("ASIO Exception: ") + e.what()).c_str(), true);
+            LOG_PRINT((stringImpl("[ASIO] Exception: ") + e.what()).c_str(), true);
         }
         _connected = false;
     }
@@ -87,7 +87,7 @@ bool ASIO::sendPacket(WorldPacket& p) const {
     if (_localClient->sendPacket(p)) {
 
         if (_debugOutput) {
-            LOG_PRINT(("ASIO: sent opcode [ 0x" + Util::to_string(p.opcode()) + "]").c_str());
+            LOG_PRINT(("[ASIO]: sent opcode [ 0x" + Util::to_string(p.opcode()) + "]").c_str());
         }
         return true;
     }

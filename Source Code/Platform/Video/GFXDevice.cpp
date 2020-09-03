@@ -191,17 +191,19 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     const size_t displayCount = gpuState().getDisplayCount();
     for (size_t idx = 0; idx < displayCount; ++idx) {
         const vectorEASTL<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
-        Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
+        if (!registeredModes.empty()) {
+            Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
-        for (const GPUState::GPUVideoMode& mode : registeredModes) {
-            // Optionally, output to console/file each display mode
-            refreshRates = Util::StringFormat("%d", mode._refreshRate);
-            Console::printfn(Locale::get(_ID("CURRENT_DISPLAY_MODE")),
-                mode._resolution.width,
-                mode._resolution.height,
-                mode._bitDepth,
-                mode._formatName.c_str(),
-                refreshRates.c_str());
+            for (const GPUState::GPUVideoMode& mode : registeredModes) {
+                // Optionally, output to console/file each display mode
+                refreshRates = Util::StringFormat("%d", mode._refreshRate);
+                Console::printfn(Locale::get(_ID("CURRENT_DISPLAY_MODE")),
+                    mode._resolution.width,
+                    mode._resolution.height,
+                    mode._bitDepth,
+                    mode._formatName.c_str(),
+                    refreshRates.c_str());
+            }
         }
     }
 

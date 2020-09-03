@@ -72,7 +72,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.ssaoKernelSizeIndex);
         GET_PARAM(rendering.postFX.ssaoPower);
         GET_PARAM(rendering.shadowMapping.enabled);
-        GET_PARAM(rendering.shadowMapping.softness);
         GET_PARAM(rendering.shadowMapping.csm.shadowMapResolution);
         GET_PARAM(rendering.shadowMapping.csm.MSAASamples);
         GET_PARAM(rendering.shadowMapping.csm.enableBlurring);
@@ -164,7 +163,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.ssaoPower);
         PUT_PARAM(rendering.postFX.ssaoKernelSizeIndex);
         PUT_PARAM(rendering.shadowMapping.enabled);
-        PUT_PARAM(rendering.shadowMapping.softness);
         PUT_PARAM(rendering.shadowMapping.csm.shadowMapResolution);
         PUT_PARAM(rendering.shadowMapping.csm.MSAASamples);
         PUT_PARAM(rendering.shadowMapping.csm.enableBlurring);

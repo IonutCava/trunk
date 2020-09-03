@@ -123,7 +123,6 @@ struct Configuration final : public XML::IXMLSerializable {
         } postFX = {};
         struct ShadowMapping {
             bool enabled = true;
-            F32 softness = 0.f;
             struct CSMSettings : public ShadowSettings
             {
                 F32 splitLambda = 0.95f;

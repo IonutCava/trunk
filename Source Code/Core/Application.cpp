@@ -45,9 +45,9 @@ ErrorCode Application::start(const stringImpl& entryPoint, const I32 argc, char*
 
     Console::toggleImmediateMode(true);
     Console::printfn(Locale::get(_ID("START_APPLICATION")));
+    Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
     for (I32 i = 1; i < argc; ++i) {
-        Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
-        Console::printfn(" -- %s", argv[i]);
+        Console::printfn("%s", argv[i]);
     }
     // Create a new kernel
     assert(_kernel == nullptr);
