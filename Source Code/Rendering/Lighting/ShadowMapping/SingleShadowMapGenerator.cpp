@@ -107,7 +107,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         depthDescriptor.msaaSamples(g_shadowSettings.spot.MSAASamples);
         depthDescriptor.hasMipMaps(false);
 
-        vectorEASTL<RTAttachmentDescriptor> att = {
+        RTAttachmentDescriptors att = {
             { colourDescriptor, samplerHash, RTAttachmentType::Colour },
             { depthDescriptor, samplerHash, RTAttachmentType::Depth }
         };
@@ -125,7 +125,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D, texDescriptor.baseFormat(), texDescriptor.dataType());
         blurMapDescriptor.layerCount(1);
 
-        vectorEASTL<RTAttachmentDescriptor> att = {
+        RTAttachmentDescriptors att = {
             { blurMapDescriptor, samplerHash, RTAttachmentType::Colour }
         };
 
@@ -269,7 +269,7 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
     GFX::EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }
 
-void SingleShadowMapGenerator::updateMSAASampleCount(U8 sampleCount) {
+void SingleShadowMapGenerator::updateMSAASampleCount(const U8 sampleCount) {
     if (_context.context().config().rendering.shadowMapping.spot.MSAASamples != sampleCount) {
         _context.context().config().rendering.shadowMapping.spot.MSAASamples = sampleCount;
         _drawBufferDepth._rt->updateSampleCount(sampleCount);

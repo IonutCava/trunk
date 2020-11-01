@@ -12,77 +12,103 @@
 
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
-
-namespace {
-    constexpr bool g_useImageLoadStore = false;
-
-    constexpr U16 MAX_HEIGHT = 2160u;
-    constexpr U16 MAX_WIDTH = 3840u;
-
-    vec2<U32> GetNumTiles(const U8 threadGroupSize) noexcept {
-        const U8 TILE_RES = Light::GetThreadGroupSize(threadGroupSize);
-
-        return
-        {
-            (MAX_WIDTH + (MAX_WIDTH % TILE_RES)) / TILE_RES,
-            (MAX_HEIGHT + (MAX_HEIGHT % TILE_RES)) / TILE_RES 
-        };
-    }
-
-    U32 GetMaxNumTiles(const U8 threadGroupSize) noexcept {
-        const vec2<U32> tileCount = GetNumTiles(threadGroupSize);
-        return tileCount.x * tileCount.y;
-    }
-};
 
 Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     : PlatformContextComponent(context)
 {
-    Configuration& config = context.config();
+    const Configuration& config = context.config();
+    const U32 numClusters = to_U32(config.rendering.lightClusteredSizes.x) *
+                            to_U32(config.rendering.lightClusteredSizes.y) *
+                            to_U32(config.rendering.lightClusteredSizes.z);
 
     ShaderModuleDescriptor computeDescriptor = {};
     computeDescriptor._moduleType = ShaderType::COMPUTE;
-    computeDescriptor._sourceFile = "lightCull.glsl";
-    if (g_useImageLoadStore) {
-        computeDescriptor._defines.emplace_back("USE_IMAGE_LOAD_STORE", true);
+
+    {
+        computeDescriptor._sourceFile = "lightCull.glsl";
+        ShaderProgramDescriptor cullDescritpor = {};
+        cullDescritpor._modules.push_back(computeDescriptor);
+
+        ResourceDescriptor cullShaderDesc("lightCull");
+        cullShaderDesc.propertyDescriptor(cullDescritpor);
+        _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
+        _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
     }
+    {
+        computeDescriptor._sourceFile = "lightBuildClusteredAABBs.glsl";
+        ShaderProgramDescriptor buildDescritpor = {};
+        buildDescritpor._modules.push_back(computeDescriptor);
+        ResourceDescriptor buildShaderDesc("lightBuildClusteredAABBs");
+        buildShaderDesc.propertyDescriptor(buildDescritpor);
+        _lightBuildClusteredAABBsComputeShader = CreateResource<ShaderProgram>(cache, buildShaderDesc);
 
-    ShaderProgramDescriptor cullDescritpor = {};
-    cullDescritpor._modules.push_back(computeDescriptor);
-
-    ResourceDescriptor cullShaderDesc("lightCull");
-    cullShaderDesc.propertyDescriptor(cullDescritpor);
-    _lightCullComputeShader = CreateResource<ShaderProgram>(cache, cullShaderDesc);
-    PipelineDescriptor pipelineDescriptor = {};
-    pipelineDescriptor._shaderProgramHandle = _lightCullComputeShader->getGUID();
-    _lightCullPipeline = _context.gfx().newPipeline(pipelineDescriptor);
-
-    U32 totalLights = static_cast<U32>(context.config().rendering.numLightsPerScreenTile);
-    totalLights *= GetMaxNumTiles(config.rendering.lightThreadGroupSize);
-    I32* bufferData = MemoryManager_NEW I32[totalLights];
-    std::memset(bufferData, -1, totalLights * sizeof(I32));
-
-    ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._elementCount = totalLights;
-    bufferDescriptor._elementSize = sizeof(I32);
-    bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
-    bufferDescriptor._name = "PER_TILE_LIGHT_INDEX";
-    bufferDescriptor._initialData = bufferData;
-    _perTileLightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
-    _perTileLightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
-    MemoryManager::DELETE_ARRAY(bufferData);
+        PipelineDescriptor pipelineDescriptor = {};
+        pipelineDescriptor._shaderProgramHandle = _lightBuildClusteredAABBsComputeShader->getGUID();
+        _lightBuildClusteredAABBsPipeline = _context.gfx().newPipeline(pipelineDescriptor);
+    }
+    { //Light Index Buffer
+        const U32 totalLights = numClusters * to_U32(config.rendering.numLightsPerCluster);
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = totalLights;
+        bufferDescriptor._elementSize = sizeof(U32);
+        bufferDescriptor._ringBufferLength = 1;
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._name = "LIGHT_INDEX_SSBO";
+        bufferDescriptor._initialData = nullptr;
+        _lightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
+        _lightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
+    }
+    { // Light Grid Buffer
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = numClusters;
+        bufferDescriptor._ringBufferLength = 1;
+        bufferDescriptor._elementSize = 2 * sizeof(U32);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._name = "LIGHT_GRID_SSBO";
+        bufferDescriptor._initialData = nullptr;
+        _lightGridBuffer = _context.gfx().newSB(bufferDescriptor);
+        _lightGridBuffer->bind(ShaderBufferLocation::LIGHT_GRID);
+    }
+    { // Global Index Count
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = 1;
+        bufferDescriptor._ringBufferLength = 1;
+        bufferDescriptor._elementSize = sizeof(U32);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._name = "GLOBAL_INDEX_COUNT_SSBO";
+        bufferDescriptor._initialData = nullptr;
+        _globalIndexCountBuffer = _context.gfx().newSB(bufferDescriptor);
+        _globalIndexCountBuffer->bind(ShaderBufferLocation::LIGHT_INDEX_COUNT);
+    }
+    { // Cluster AABBs
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = numClusters;
+        bufferDescriptor._ringBufferLength = 1;
+        bufferDescriptor._elementSize = 2 * (4 * sizeof(F32));
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._name = "LIGHT_CLUSTER_AABBs_SSBO";
+        bufferDescriptor._initialData = nullptr;
+        _lightClusterAABBsBuffer = _context.gfx().newSB(bufferDescriptor);
+        _lightClusterAABBsBuffer->bind(ShaderBufferLocation::LIGHT_CLUSTER_AABBS);
+    }
 
     _postFX = eastl::make_unique<PostFX>(context, cache);
     if (config.rendering.postFX.PostAAQualityLevel > 0) {
         _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
-    if (false) {
+    if_constexpr (false) {
         _postFX->pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
     if (config.rendering.postFX.enableSSAO) {
@@ -97,10 +123,11 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     if (config.rendering.postFX.enableBloom) {
         _postFX->pushFilter(FilterType::FILTER_BLOOM);
     }
-    if (false) {
+    if_constexpr(false) {
         _postFX->pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
 
+    WAIT_FOR_CONDITION(_lightBuildClusteredAABBsPipeline != nullptr);
     WAIT_FOR_CONDITION(_lightCullPipeline != nullptr);
 }
 
@@ -115,9 +142,8 @@ void Renderer::preRender(RenderStagePass stagePass,
                          const size_t samplerHash,
                          LightPool& lightPool,
                          const Camera* camera,
-                         GFX::CommandBuffer& bufferInOut) const
+                         GFX::CommandBuffer& bufferInOut)
 {
-
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
     }
@@ -127,52 +153,48 @@ void Renderer::preRender(RenderStagePass stagePass,
         return;
     }
 
-    const vec2<U16> renderTargetRes(hizColourTexture->width(), hizColourTexture->height());
-
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer PrePass" });
+    const Configuration& config = _context.config();
+    const U32 gridSizeZ = to_U32(config.rendering.lightClusteredSizes.z);
+    const U32 zThreads = gridSizeZ / Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS;
 
     GFX::BindPipelineCommand bindPipelineCmd = {};
+    GFX::DispatchComputeCommand computeCmd = {};
+    GFX::MemoryBarrierCommand memCmd = {};
+
+    const mat4<F32>& projectionMatrix = camera->getProjectionMatrix();
+    if (_previousProjMatrix != projectionMatrix) {
+        _previousProjMatrix = projectionMatrix;
+
+        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Rebuild Light Grid" });
+
+        bindPipelineCmd._pipeline = _lightBuildClusteredAABBsPipeline;
+        GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+
+        computeCmd._computeGroupSize.set(1, 1, zThreads);
+        GFX::EnqueueCommand(bufferInOut, computeCmd);
+
+        memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_STORAGE);
+        GFX::EnqueueCommand(bufferInOut, memCmd);
+
+        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    }
+
+    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Cull Lights" });
+
+    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
+    bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), samplerHash, TextureUsage::DEPTH);
+    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
     bindPipelineCmd._pipeline = _lightCullPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
 
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    if (g_useImageLoadStore) {
-        Image depthImage = {};
-        depthImage._texture = hizColourTexture.get();
-        depthImage._flag = Image::Flag::READ;
-        depthImage._binding = to_U8(TextureUsage::DEPTH);
-        depthImage._layer = 0u;
-        depthImage._level = 0u;
-
-        bindDescriptorSetsCmd._set._images.push_back(depthImage);
-    } else {
-        bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), samplerHash, TextureUsage::DEPTH);
-    }
-
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
-
-    GFX::SendPushConstantsCommand preRenderPushConstantsCmd;
-    preRenderPushConstantsCmd._constants.countHint(4);
-    preRenderPushConstantsCmd._constants.set(_ID("viewMatrix"), GFX::PushConstantType::MAT4, camera->getViewMatrix());
-    preRenderPushConstantsCmd._constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera->getProjectionMatrix());
-    preRenderPushConstantsCmd._constants.set(_ID("viewProjectionMatrix"), GFX::PushConstantType::MAT4, mat4<F32>::Multiply(camera->getViewMatrix(), camera->getProjectionMatrix()));
-    preRenderPushConstantsCmd._constants.set(_ID("viewportDimensions"), GFX::PushConstantType::VEC2, vec2<F32>(renderTargetRes));
-    GFX::EnqueueCommand(bufferInOut, preRenderPushConstantsCmd);
-
-    const U8  tileRes = Light::GetThreadGroupSize(_context.config().rendering.lightThreadGroupSize);
-    const U32 workGroupsX = (renderTargetRes.x + (renderTargetRes.x % tileRes)) / tileRes;
-    const U32 workGroupsY = (renderTargetRes.y + (renderTargetRes.y % tileRes)) / tileRes;
-
-    GFX::DispatchComputeCommand computeCmd = {};
-    computeCmd._computeGroupSize.set(workGroupsX, workGroupsY, 1);
+    computeCmd._computeGroupSize.set(1, 1, zThreads);
     GFX::EnqueueCommand(bufferInOut, computeCmd);
 
-    GFX::MemoryBarrierCommand memCmd = {};
     memCmd._barrierMask = to_base(MemoryBarrierType::BUFFER_UPDATE);
     GFX::EnqueueCommand(bufferInOut, memCmd);
 
-    GFX::EndDebugScopeCommand endDebugScopeCmd;
-    GFX::EnqueueCommand(bufferInOut, endDebugScopeCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void Renderer::idle() const {

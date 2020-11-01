@@ -64,6 +64,8 @@ struct RTAttachmentDescriptor {
     FColour4 _clearColour = DefaultColours::WHITE;
 };
 
+using RTAttachmentDescriptors = vectorEASTL<RTAttachmentDescriptor>;
+
 class RTAttachmentPool;
 class RTAttachment final {
     public:

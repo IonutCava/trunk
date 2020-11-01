@@ -106,13 +106,13 @@ namespace ECS
 		template<class E, class... ARGS>
 		void SendEvent(ARGS&&... eventArgs)
 		{
-			ECS_EventHandler->Send<E>(this, std::forward<ARGS>(eventArgs)...);
+			ECS_EventHandler->Send<E>(this, FWD(eventArgs)...);
 		}
 
         template<class E, class... ARGS>
         void SendEventAndDispatch(ARGS&&... eventArgs)
         {
-            ECS_EventHandler->SendAndDispatchEvent<E>(this, std::forward<ARGS>(eventArgs)...);
+            ECS_EventHandler->SendAndDispatchEvent<E>(this, FWD(eventArgs)...);
         }
 		///-------------------------------------------------------------------------------------------------
 		/// Fn:	void ECSEngine::Update(f32 tick_ms);

@@ -59,7 +59,7 @@ Split(const char* input, const char delimiter, T_vec& elems) {
         istringstreamImpl ss(input);
         size_t idx = 0;
         while (std::getline(ss, item, delimiter)) {
-            elems[idx++] = std::move(item);
+            elems[idx++] = MOV(item);
         }
     } else {
         elems.clear();

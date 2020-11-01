@@ -84,11 +84,10 @@ class RenderPass : private NonCopyable {
 
     void initBufferData();
 
-    static U8 DataBufferRingSize();
-
    private:
-    GFXDevice & _context;
+    GFXDevice& _context;
     RenderPassManager& _parent;
+    Configuration& _config;
 
     mutable U32 _lastCmdCount = 0u;
     mutable U32 _lastNodeCount = 0u;

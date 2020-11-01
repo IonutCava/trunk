@@ -157,7 +157,7 @@ FMT_CONSTEXPR make_index_sequence<std::tuple_size<T>::value> get_indexes(
 
 template <class Tuple, class F> void for_each(Tuple&& tup, F&& f) {
   const auto indexes = get_indexes(tup);
-  for_each(indexes, std::forward<Tuple>(tup), std::forward<F>(f));
+  for_each(indexes, FWD(tup), FWD(f));
 }
 
 template <typename Arg, FMT_ENABLE_IF(!is_like_std_string<

@@ -221,17 +221,17 @@ public:
 
     /// Sends a global event but dispatched is handled between update steps
     template<class E, class... ARGS>
-    void SendEvent(ARGS&&... eventArgs) { GetECSEngine().SendEvent<E>(std::forward<ARGS>(eventArgs)...); }
+    void SendEvent(ARGS&&... eventArgs) { GetECSEngine().SendEvent<E>(FWD(eventArgs)...); }
     /// Sends a global event with dispatched happening immediately. Avoid using often. Bad for performance.
     template<class E, class... ARGS>
-    void SendAndDispatchEvent(ARGS&&... eventArgs) { GetECSEngine().SendEventAndDispatch<E>(std::forward<ARGS>(eventArgs)...); }
+    void SendAndDispatchEvent(ARGS&&... eventArgs) { GetECSEngine().SendEventAndDispatch<E>(FWD(eventArgs)...); }
 
     /// Emplacement call for an ECS component. Pass in the component's constructor parameters. Can only add one component of a single type. 
     /// This may be bad for scripts, but there are workarounds
     template<class T, class ...P>
     typename std::enable_if<std::is_base_of<SGNComponent, T>::value, T*>::type
     AddSGNComponent(P&&... param) {
-        SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(this, this->context(), std::forward<P>(param)...));
+        SGNComponent* comp = static_cast<SGNComponent*>(AddComponent<T>(this, this->context(), FWD(param)...));
 
         Hacks._editorComponents.emplace_back(&comp->getEditorComponent());
 

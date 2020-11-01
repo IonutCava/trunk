@@ -60,7 +60,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     EditorComponentField separatorField = {};
     separatorField._name = "Atmosphere";
     separatorField._type = EditorComponentFieldType::SEPARATOR;
-    getEditorComponent().registerField(std::move(separatorField));
+    getEditorComponent().registerField(MOV(separatorField));
 
     EditorComponentField sunIntensityField = {};
     sunIntensityField._name = "Sun Intensity";
@@ -70,7 +70,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     sunIntensityField._readOnly = false;
     sunIntensityField._range = { 0.01f, 100.0f };
     sunIntensityField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(sunIntensityField));
+    getEditorComponent().registerField(MOV(sunIntensityField));
 
     EditorComponentField distanceMultiplierField = {};
     distanceMultiplierField._name = "Distance Multplier x10";
@@ -80,7 +80,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     distanceMultiplierField._readOnly = false;
     distanceMultiplierField._range = { 10, 2000 };
     distanceMultiplierField._basicType = GFX::PushConstantType::INT;
-    getEditorComponent().registerField(std::move(distanceMultiplierField));
+    getEditorComponent().registerField(MOV(distanceMultiplierField));
 
     EditorComponentField rayOffsetField = {};
     rayOffsetField._name = "Ray Offset: [-10...10]m";
@@ -90,7 +90,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     rayOffsetField._readOnly = false;
     rayOffsetField._range = { -10.f, 10.f };
     rayOffsetField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(rayOffsetField));
+    getEditorComponent().registerField(MOV(rayOffsetField));
 
     EditorComponentField planetRadiusField = {};
     planetRadiusField._name = "Planet Radius [0.1...100]x";
@@ -100,7 +100,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     planetRadiusField._readOnly = false;
     planetRadiusField._range = { 0.1f, 10.f };
     planetRadiusField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(planetRadiusField));
+    getEditorComponent().registerField(MOV(planetRadiusField));
 
     EditorComponentField atmosphereOffsetField = {};
     atmosphereOffsetField._name = "Atmosphere Offset [1m - 1000m]";
@@ -110,7 +110,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     atmosphereOffsetField._readOnly = false;
     atmosphereOffsetField._range = { 1.f, 1000.f };
     atmosphereOffsetField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(atmosphereOffsetField));
+    getEditorComponent().registerField(MOV(atmosphereOffsetField));
 
     EditorComponentField rayleighCoeffField = {};
     rayleighCoeffField._name = "Rayleigh Coefficients";
@@ -120,7 +120,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     rayleighCoeffField._readOnly = false;
     rayleighCoeffField._range = { 0.01f, 100.0f };
     rayleighCoeffField._basicType = GFX::PushConstantType::VEC3;
-    getEditorComponent().registerField(std::move(rayleighCoeffField));
+    getEditorComponent().registerField(MOV(rayleighCoeffField));
 
     EditorComponentField rayleighScaleField = {};
     rayleighScaleField._name = "Rayleigh Scale Field";
@@ -130,7 +130,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     rayleighScaleField._range = { 0.01f, 12.f };
     rayleighScaleField._readOnly = true;
     rayleighScaleField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(rayleighScaleField));
+    getEditorComponent().registerField(MOV(rayleighScaleField));
 
     EditorComponentField mieCoeffField = {};
     mieCoeffField._name = "Mie Coefficients";
@@ -140,7 +140,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     mieCoeffField._readOnly = true;
     mieCoeffField._range = { 0.01f, 100.0f };
     mieCoeffField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(rayleighCoeffField));
+    getEditorComponent().registerField(MOV(rayleighCoeffField));
 
     EditorComponentField mieScaleField = {};
     mieScaleField._name = "Mie Scale Height";
@@ -150,7 +150,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     mieScaleField._readOnly = false;
     mieScaleField._range = { 0.01f, 10.0f };
     mieScaleField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(std::move(mieScaleField));
+    getEditorComponent().registerField(MOV(mieScaleField));
 
     EditorComponentField mieScatterDir = {};
     mieScatterDir._name = "Mie Scater Direction";
@@ -160,17 +160,17 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     mieScatterDir._format = "%e";
     mieScatterDir._basicType = GFX::PushConstantType::FLOAT;
 
-    getEditorComponent().registerField(std::move(mieScaleField));
+    getEditorComponent().registerField(MOV(mieScaleField));
     EditorComponentField resetField = {};
     resetField._name = "Reset To Default";
     resetField._tooltip = "Default = whatever value was set at load time";
     resetField._type = EditorComponentFieldType::BUTTON;
-    getEditorComponent().registerField(std::move(resetField));
+    getEditorComponent().registerField(MOV(resetField));
 
     EditorComponentField separatorField2 = {};
     separatorField2._name = "Skybox";
     separatorField2._type = EditorComponentFieldType::SEPARATOR;
-    getEditorComponent().registerField(std::move(separatorField2));
+    getEditorComponent().registerField(MOV(separatorField2));
 
     EditorComponentField useDaySkyboxField = {};
     useDaySkyboxField._name = "Use Day Skybox";
@@ -178,7 +178,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     useDaySkyboxField._type = EditorComponentFieldType::PUSH_TYPE;
     useDaySkyboxField._readOnly = false;
     useDaySkyboxField._basicType = GFX::PushConstantType::BOOL;
-    getEditorComponent().registerField(std::move(useDaySkyboxField));
+    getEditorComponent().registerField(MOV(useDaySkyboxField));
 
     EditorComponentField useNightSkyboxField = {};
     useNightSkyboxField._name = "Use Night Skybox";
@@ -186,7 +186,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     useNightSkyboxField._type = EditorComponentFieldType::PUSH_TYPE;
     useNightSkyboxField._readOnly = false;
     useNightSkyboxField._basicType = GFX::PushConstantType::BOOL;
-    getEditorComponent().registerField(std::move(useNightSkyboxField));
+    getEditorComponent().registerField(MOV(useNightSkyboxField));
 
     EditorComponentField nightColourField = {};
     nightColourField._name = "Night Colour";
@@ -194,7 +194,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     nightColourField._type = EditorComponentFieldType::PUSH_TYPE;
     nightColourField._readOnly = false;
     nightColourField._basicType = GFX::PushConstantType::FCOLOUR4;
-    getEditorComponent().registerField(std::move(nightColourField));
+    getEditorComponent().registerField(MOV(nightColourField));
 }
 
 Sky::~Sky()

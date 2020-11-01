@@ -43,7 +43,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     blurReflectionField._readOnly = false;
     blurReflectionField._basicType = GFX::PushConstantType::BOOL;
 
-    getEditorComponent().registerField(std::move(blurReflectionField));
+    getEditorComponent().registerField(MOV(blurReflectionField));
     
     EditorComponentField blurKernelSizeField = {};
     blurKernelSizeField._name = "Blur kernel size";
@@ -55,7 +55,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     blurKernelSizeField._range = { 2.f, 20.f };
     blurKernelSizeField._step = 1.f;
 
-    getEditorComponent().registerField(std::move(blurKernelSizeField));
+    getEditorComponent().registerField(MOV(blurKernelSizeField));
 
     EditorComponentField reflPlaneOffsetField = {};
     reflPlaneOffsetField._name = "Reflection Plane Offset";
@@ -65,7 +65,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     reflPlaneOffsetField._readOnly = false;
     reflPlaneOffsetField._basicType = GFX::PushConstantType::FLOAT;
 
-    getEditorComponent().registerField(std::move(reflPlaneOffsetField));
+    getEditorComponent().registerField(MOV(reflPlaneOffsetField));
 
     EditorComponentField refrPlaneOffsetField = {};
     refrPlaneOffsetField._name = "Refraction Plane Offset";
@@ -75,7 +75,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     refrPlaneOffsetField._readOnly = false;
     refrPlaneOffsetField._basicType = GFX::PushConstantType::FLOAT;
 
-    getEditorComponent().registerField(std::move(refrPlaneOffsetField));
+    getEditorComponent().registerField(MOV(refrPlaneOffsetField));
 
     EditorComponentField noiseTileSizeField = {};
     noiseTileSizeField._name = "Noise tile factor";
@@ -85,7 +85,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     noiseTileSizeField._readOnly = false;
     noiseTileSizeField._basicType = GFX::PushConstantType::VEC2;
 
-    getEditorComponent().registerField(std::move(noiseTileSizeField));
+    getEditorComponent().registerField(MOV(noiseTileSizeField));
 
     EditorComponentField noiseFactorField = {};
     noiseFactorField._name = "Noise factor";
@@ -95,7 +95,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     noiseFactorField._readOnly = false;
     noiseFactorField._basicType = GFX::PushConstantType::VEC2;
 
-    getEditorComponent().registerField(std::move(noiseFactorField));
+    getEditorComponent().registerField(MOV(noiseFactorField));
 
     EditorComponentField refractionTintField = {};
     refractionTintField._name = "Refraction tint";
@@ -104,7 +104,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     refractionTintField._readOnly = false;
     refractionTintField._basicType = GFX::PushConstantType::FCOLOUR3;
 
-    getEditorComponent().registerField(std::move(refractionTintField));
+    getEditorComponent().registerField(MOV(refractionTintField));
 
     
     getEditorComponent().onChangedCbk([this](const std::string_view field) {onEditorChange(field); });

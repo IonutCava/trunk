@@ -6,7 +6,7 @@
 namespace Divide {
 
 UpdateListener::UpdateListener(FileUpdateCbk&& cbk)
-    : _cbk(std::move(cbk))
+    : _cbk(MOV(cbk))
 {
 }
 

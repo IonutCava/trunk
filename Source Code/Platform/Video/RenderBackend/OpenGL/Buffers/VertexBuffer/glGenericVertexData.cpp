@@ -187,7 +187,7 @@ void glGenericVertexData::setBufferBindings(const GenericDrawCommand& command) {
         entry._flush = true;
 
         GL_API::getStateTracker().bindActiveBuffer(_vertexArray, location, buffer->bufferHandle(), _instanceDivisor[bufferIdx], entry._offset, elementSize);
-        GL_API::registerBufferBind(std::move(entry));
+        GL_API::registerBufferBind(MOV(entry));
     };
 
     if (command._bufferIndex == GenericDrawCommand::INVALID_BUFFER_INDEX) {

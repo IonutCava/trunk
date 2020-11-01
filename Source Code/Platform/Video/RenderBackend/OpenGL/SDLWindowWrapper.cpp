@@ -232,7 +232,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     config.rendering.shadowMapping.csm.MSAASamples = std::min(config.rendering.shadowMapping.csm.MSAASamples, maxGLSamples);
     config.rendering.shadowMapping.spot.MSAASamples = std::min(config.rendering.shadowMapping.spot.MSAASamples, maxGLSamples);
-    config.rendering.shadowMapping.point.MSAASamples = std::min(config.rendering.shadowMapping.point.MSAASamples, maxGLSamples);
     _context.gpuState().maxMSAASampleCount(maxGLSamples);
 
     if (s_stateTracker._opengl46Supported) {
@@ -416,15 +415,14 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
     return vec2<U16>(w, h);
 }
 
-void GL_API::queueComputeMipMap(GLuint textureHandle) {
+void GL_API::queueComputeMipMap(const GLuint textureHandle) {
     UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
-    if (s_mipmapQueue.find(textureHandle) != std::cend(s_mipmapQueue)) {
-        return;
+    if (s_mipmapQueue.find(textureHandle) == std::cend(s_mipmapQueue)) {
+        s_mipmapQueue.insert(textureHandle);
     }
-    s_mipmapQueue.insert(textureHandle);
 }
 
-void GL_API::dequeueComputeMipMap(GLuint textureHandle) {
+void GL_API::dequeueComputeMipMap(const GLuint textureHandle) {
     UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
     const auto it = s_mipmapQueue.find(textureHandle);
     if (it != std::cend(s_mipmapQueue)) {

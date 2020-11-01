@@ -5,6 +5,7 @@
 #include "Headers/RenderPass.h"
 
 #include "Core/Headers/Kernel.h"
+#include "Core/Headers/Configuration.h"
 #include "Graphs/Headers/SceneGraph.h"
 #include "Managers/Headers/RenderPassManager.h"
 #include "Managers/Headers/SceneManager.h"
@@ -41,7 +42,7 @@ namespace {
         U16  currentEntry() noexcept { return g_refractionBudget; }
     };
 
-    U32 getBufferFactor(RenderStage stage) noexcept {
+    U32 getBufferFactor(const RenderStage stage) noexcept {
         //We only care about the first parameter as it will determine the properties for the rest of the stages
         switch (stage) {
             // PrePass, MainPass and OitPass should share buffers
@@ -56,18 +57,17 @@ namespace {
         DIVIDE_UNEXPECTED_CALL();
         return 0u;
     }
+
+    // Size factor for command and data buffers
+    constexpr U8 DataBufferRingSize = 3;
+
 };
 
-U8 RenderPass::DataBufferRingSize() {
-    // Size factor for command and data buffers
-    constexpr U8 g_bufferSizeFactor = 3;
-
-    return g_bufferSizeFactor;
-}
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, bool performanceCounters)
     : _context(context),
       _parent(parent),
+      _config(context.context().config()),
       _sortKey(sortKey),
       _dependencies(dependencies),
       _name(name),
@@ -99,7 +99,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = DataBufferRingSize();
+        bufferDescriptor._ringBufferLength = DataBufferRingSize;
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         { 
@@ -114,7 +114,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._elementSize = sizeof(GFXDevice::CollisionData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = DataBufferRingSize();
+        bufferDescriptor._ringBufferLength = DataBufferRingSize;
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         {
@@ -130,7 +130,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = DataBufferRingSize();
+        bufferDescriptor._ringBufferLength = DataBufferRingSize;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         bufferDescriptor._separateReadWrite = false;
         {
@@ -188,40 +188,46 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
     switch(_stageFlag) {
         case RenderStage::DISPLAY: {
             OPTICK_EVENT("RenderPass - Main");
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Main Display Pass" });
 
-            RTClearDescriptor clearDescriptor = {};
-            clearDescriptor.clearColours(true);
-            clearDescriptor.clearDepth(true);
-            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
-            clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+            static GFX::ClearRenderTargetCommand clearMainTarget = {};
+            static RenderPassParams params = {};
 
-            RTDrawDescriptor normalsAndDepthPolicy = {};
-            normalsAndDepthPolicy.drawMask().disableAll();
-            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
-            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
-            normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+            static bool initDrawCommands = false;
+            if (!initDrawCommands) {
+                RTClearDescriptor clearDescriptor = {};
+                clearDescriptor.clearColours(true);
+                clearDescriptor.clearDepth(true);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+                clearMainTarget._descriptor = clearDescriptor;
 
-            RenderPassParams params = {};
-            params._stagePass = RenderStagePass{ _stageFlag, RenderPassType::COUNT };
-            params._target = _context.renderTargetPool().screenTargetID();
-            params._targetDescriptorPrePass = normalsAndDepthPolicy;
+                RTDrawDescriptor normalsAndDepthPolicy = {};
+                normalsAndDepthPolicy.drawMask().disableAll();
+                normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+                normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
+                normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
 
-            RTDrawDescriptor mainPassPolicy = {};
-            mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-            mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
-            mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
-            params._targetDescriptorMainPass = mainPassPolicy;
+                RTDrawDescriptor mainPassPolicy = {};
+                mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+                mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
+                mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
 
-            params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
+                params._passName = "MainRenderPass";
+                params._stagePass = RenderStagePass{ _stageFlag, RenderPassType::COUNT };
+                params._targetDescriptorPrePass = normalsAndDepthPolicy;
+                params._targetDescriptorMainPass = mainPassPolicy;
+                params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
+
+                initDrawCommands = true;
+            }
+
             params._targetOIT = params._target._usage == RenderTargetUsage::SCREEN_MS ? RenderTargetID(RenderTargetUsage::OIT_MS) : RenderTargetID(RenderTargetUsage::OIT);
             params._camera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent.parent().sceneManager());
-            params._passName = "MainRenderPass";
-
-            GFX::ClearRenderTargetCommand clearMainTarget = {};
+            params._target = _context.renderTargetPool().screenTargetID();
             clearMainTarget._target = params._target;
-            clearMainTarget._descriptor = clearDescriptor;
+
+            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Main Display Pass" });
             GFX::EnqueueCommand(bufferInOut, clearMainTarget);
 
             _parent.doCustomPass(params, bufferInOut);
@@ -230,20 +236,26 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         } break;
         case RenderStage::SHADOW: {
             OPTICK_EVENT("RenderPass - Shadow");
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
+            if (_config.rendering.shadowMapping.enabled) {
+                SceneManager* mgr = _parent.parent().sceneManager();
+                const Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
 
-            //ToDo: remove this and change lookup code
-            GFX::SetClippingStateCommand clipStateCmd;
-            clipStateCmd._negativeOneToOneDepth = true;
-            //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+                LightPool& lightPool = Attorney::SceneManagerRenderPass::lightPool(mgr);
 
-            Attorney::SceneManagerRenderPass::generateShadowMaps(_parent.parent().sceneManager(), bufferInOut);
+                GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
 
-            clipStateCmd._negativeOneToOneDepth = false;
-            //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+                //ToDo: remove this and change lookup code
+                GFX::SetClippingStateCommand clipStateCmd;
+                clipStateCmd._negativeOneToOneDepth = true;
+                //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+               lightPool.generateShadowMaps(*camera, bufferInOut);
 
+                clipStateCmd._negativeOneToOneDepth = false;
+                //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+
+                GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            }
         } break;
         case RenderStage::REFLECTION: {
             static VisibleNodeList s_Nodes;
@@ -283,8 +295,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                                                                             ReflectionUtil::isInBudget(),
                                                                             camera,
                                                                             renderState,
-                                                                            bufferInOut)) {
-
+                                                                            bufferInOut))
+                    {
                         ReflectionUtil::updateBudget();
                     }
                 }
@@ -299,7 +311,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
             OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
-            SceneManager* mgr = _parent.parent().sceneManager();
+            const SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
             {
                 mgr->getSortedRefractiveNodes(camera, RenderStage::REFRACTION, true, s_Nodes);

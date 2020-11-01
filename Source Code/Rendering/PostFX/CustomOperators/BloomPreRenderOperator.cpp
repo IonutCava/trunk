@@ -73,7 +73,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     }
 
     const auto& screenAtt = parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO));
-    vectorEASTL<RTAttachmentDescriptor> att = {
+    RTAttachmentDescriptors att = {
         {
             screenAtt.texture()->descriptor(),
             screenAtt.samplerHash(),

@@ -59,7 +59,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     vaxisField._type = EditorComponentFieldType::PUSH_TYPE;
     vaxisField._basicType = GFX::PushConstantType::BOOL;
     vaxisField._readOnly = false;
-    _editorComponent.registerField(std::move(vaxisField));
+    _editorComponent.registerField(MOV(vaxisField));
 
     _editorComponent.onChangedCbk([this](std::string_view field) {
         if (field == "Show Axis") {
@@ -148,7 +148,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
         materialField._type = EditorComponentFieldType::MATERIAL;
         materialField._readOnly = false;
         // should override any existing entry
-        _editorComponent.registerField(std::move(materialField));
+        _editorComponent.registerField(MOV(materialField));
 
         EditorComponentField lockLodField = {};
         lockLodField._name = "Rendered LOD Level";
@@ -158,7 +158,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
         lockLodField._data = &_lodLevels[to_base(RenderStage::DISPLAY)];
         lockLodField._readOnly = true;
         lockLodField._serialise = false;
-        _editorComponent.registerField(std::move(lockLodField));
+        _editorComponent.registerField(MOV(lockLodField));
 
         EditorComponentField renderLodField = {};
         renderLodField._name = "Lock LoD";
@@ -166,7 +166,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
         renderLodField._basicType = GFX::PushConstantType::BOOL;
         renderLodField._data = &_lodLockLevels[to_base(RenderStage::DISPLAY)].first;
         renderLodField._readOnly = false;
-        _editorComponent.registerField(std::move(renderLodField));
+        _editorComponent.registerField(MOV(renderLodField));
 
         EditorComponentField lockLodLevelField = {};
         lockLodLevelField._name = "Lock LoD Level";
@@ -176,7 +176,7 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
         lockLodLevelField._basicTypeSize = GFX::PushConstantSize::BYTE;
         lockLodLevelField._data = &_lodLockLevels[to_base(RenderStage::DISPLAY)].second;
         lockLodLevelField._readOnly = false;
-        _editorComponent.registerField(std::move(lockLodLevelField));
+        _editorComponent.registerField(MOV(lockLodLevelField));
 
         _materialInstance->isStatic(_parentSGN->usageContext() == NodeUsageContext::NODE_STATIC);
     }

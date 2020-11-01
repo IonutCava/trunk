@@ -275,7 +275,7 @@ class WarSceneAIProcessor : public AIProcessor {
 template <typename... Args>
 void WarSceneAIProcessor::PRINT(const char* format, Args&&... args) const {
     #if defined(PRINT_AI_TO_FILE)
-    Console::d_printfn(_WarAIOutputStream, format, std::forward<Args>(args)...);
+    Console::d_printfn(_WarAIOutputStream, format, FWD(args)...);
     #endif
 }
 

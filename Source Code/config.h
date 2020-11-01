@@ -163,8 +163,9 @@ constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
 
 static_assert(MAX_CSM_SPLITS_PER_LIGHT < 6, "Maximum splits per light can't be more than 6 (cube shadows). Consider moving to a different system for CSM!");
 
-namespace ForwardPlus {
-    constexpr unsigned short MAX_LIGHTS_PER_TILE = 512u;
+namespace ClusteredForward {
+    constexpr unsigned short MAX_LIGHTS_PER_CLUSTER = 100u;
+    constexpr unsigned short CLUSTER_Z_THREADS = 4u;
 };
 
 };  // namespace Lighting

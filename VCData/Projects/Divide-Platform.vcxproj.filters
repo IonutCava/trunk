@@ -681,9 +681,6 @@
     <None Include="../../assets\shaders\GLSL\depthPass.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\DepthRangesConstruct.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="../../assets\shaders\GLSL\fbPreview.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
@@ -894,6 +891,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl">
+      <Filter>Video\ShaderSource\GLSL</Filter>
+    </Text>
+    <Text Include="..\..\assets\shaders\GLSL\lightBuildClusteredAABBs.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </Text>
   </ItemGroup>

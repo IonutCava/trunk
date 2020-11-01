@@ -72,9 +72,9 @@ void SceneEnvironmentProbePool::onStartup(GFXDevice& context) {
     reflectionSampler.minFilter(TextureFilter::LINEAR);
     reflectionSampler.anisotropyLevel(0u);
 
-    vectorEASTL<RTAttachmentDescriptor> att = {
+    RTAttachmentDescriptors att = {
         { environmentDescriptor, samplerHash, RTAttachmentType::Colour },
-        { depthDescriptor,samplerHash, RTAttachmentType::Depth },
+        { depthDescriptor, samplerHash, RTAttachmentType::Depth },
     };
 
     RenderTargetDescriptor desc = {};

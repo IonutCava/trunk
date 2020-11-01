@@ -58,10 +58,6 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
         light.setShadowVPMatrix(i, mat4<F32>::Multiply(matVP, MAT4_BIAS));
     }
 
-    if (g_shadowSettings.point.enableBlurring) {
-        NOP();
-    }
-
     const RenderTarget& shadowMapRT = _context.renderTargetPool().renderTarget(g_depthMapID);
     const I32 layerCount = 1;
 
@@ -75,8 +71,6 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
 }
 
 void CubeShadowMapGenerator::updateMSAASampleCount(const U8 sampleCount) {
-    if (_context.context().config().rendering.shadowMapping.point.MSAASamples != sampleCount) {
-        _context.context().config().rendering.shadowMapping.point.MSAASamples = sampleCount;
-    }
+    DIVIDE_UNEXPECTED_CALL();
 }
 };

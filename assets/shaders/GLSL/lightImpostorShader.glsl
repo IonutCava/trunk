@@ -9,7 +9,7 @@ layout(location = 2) out flat vec2 texCoordOffset;
 void main()
 {
     Light light = dvd_LightSource[gl_VertexID];
-    int lightType = int(light._options.x);
+    const int lightType = int(light._TYPE);
 
     texCoordOffset.x = lightType == LIGHT_SPOT ? 1 : 0;
     texCoordOffset.y = lightType == LIGHT_DIRECTIONAL ? 0 : 1;

@@ -191,7 +191,7 @@ namespace Divide {
             field._name = name;
             field._type = EditorComponentFieldType::PUSH_TYPE;
             field._readOnly = true;
-            registerField(std::move(field));
+            registerField(MOV(field));
         }
 
         void registerField(EditorComponentField&& field);
@@ -200,7 +200,7 @@ namespace Divide {
         [[nodiscard]] const vectorEASTL<EditorComponentField>& fields() const noexcept { return _fields; }
 
         void onChangedCbk(const DELEGATE<void, std::string_view>& cbk) { _onChangedCbk = cbk; }
-        void onChangedCbk(DELEGATE<void, std::string_view>&& cbk) { _onChangedCbk = std::move(cbk); }
+        void onChangedCbk(DELEGATE<void, std::string_view>&& cbk) { _onChangedCbk = MOV(cbk); }
 
         bool saveCache(ByteBuffer& outputBuffer) const;
         bool loadCache(ByteBuffer& inputBuffer);

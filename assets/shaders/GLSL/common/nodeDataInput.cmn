@@ -59,8 +59,10 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
     vec4  dvd_ViewPort;
-    //x - nearPlane, y - farPlane, z - FoV, w - lightTilesX
+    //x - nearPlane, y - farPlane, z - FoV, w - reserved
     vec4  dvd_renderProperties;
+    //x - cluster size X, y - cluster size Y, z - scale, w - bias
+    vec4  dvd_lightingProperties;
     //x - material debug flag, y - CSM splits view index, z - camera flag, w - clip plane count
     vec4  dvd_otherProperties;
     vec4  dvd_frustumPlanes[6];
@@ -76,9 +78,10 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define DEBUG_NORMALS 6
 #define DEBUG_TBN_VIEW_DIRECTION 7
 #define DEBUG_SHADOW_MAPS 8
-#define DEBUG_LIGHT_TILES 9
-#define DEBUG_REFLECTIONS 10
-#define DEBUG_NONE 11
+#define DEBUG_LIGHT_HEATMAP 9
+#define DEBUG_LIGHT_DEPTH_CLUSTERS 10
+#define DEBUG_REFLECTIONS 11
+#define DEBUG_NONE 12
 
 #define SHADOW_PASS_NORMAL 0
 #define SHADOW_PASS_ORTHO 1
@@ -87,10 +90,15 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define SHADOW_PASS_TYPE int(dvd_otherProperties.z)
 #define CAMERA_FLAG SHADOW_PASS_TYPE
 
-#define dvd_numTilesX uint(dvd_renderProperties.w)
+#define dvd_ClusterSizeX dvd_lightingProperties.x
+#define dvd_ClusterSizeY dvd_lightingProperties.y
+#define dvd_LightScale dvd_lightingProperties.z
+#define dvd_LightBias dvd_lightingProperties.w
 #define dvd_cameraForward vec3(dvd_ViewMatrix[3].xyz)
 #define windowWidth int(dvd_ViewPort.z)
 #define windowHeight int(dvd_ViewPort.w)
+
+#define dvd_ClusterSizes vec2(dvd_ClusterSizeX, dvd_ClusterSizeY)
 
 #define dvd_invScreenDimensions (1.0f / dvd_ViewPort.zw)
 #define dvd_zPlanes vec2(dvd_renderProperties.xy)

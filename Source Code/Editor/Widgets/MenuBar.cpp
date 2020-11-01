@@ -245,14 +245,13 @@ void MenuBar::drawFileMenu() {
             }
 
             for (U8 type = 0; type < to_U8(ShadowType::COUNT); ++type) {
-                if (ImGui::BeginMenu(Util::StringFormat("%s ShadowMap MSAA", Names::shadowType[type]).c_str())) {
-                    const ShadowType sType = static_cast<ShadowType>(type);
-
+                const ShadowType sType = static_cast<ShadowType>(type);
+                if (sType != ShadowType::CUBEMAP && 
+                    ImGui::BeginMenu(Util::StringFormat("%s ShadowMap MSAA", Names::shadowType[type]).c_str()))
+                {
                     const U8 currentCount = sType == ShadowType::LAYERED
                                                         ? config.rendering.shadowMapping.csm.MSAASamples
-                                                        : sType == ShadowType::CUBEMAP
-                                                                ? config.rendering.shadowMapping.point.MSAASamples
-                                                                : config.rendering.shadowMapping.spot.MSAASamples;
+                                                        : config.rendering.shadowMapping.spot.MSAASamples;
 
                     for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
                         const U8 sampleCount = i == 0u ? 0u : 1 << i;
@@ -491,9 +490,13 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug shadow maps", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS : GFXDevice::MaterialDebugFlag::COUNT);
             }
-            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_TILES;
-            if (ImGui::MenuItem("Debug Fwd+ Tiles", "", &debug)) {
-                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_TILES : GFXDevice::MaterialDebugFlag::COUNT);
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP;
+            if (ImGui::MenuItem("Debug Light Heatmap", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP : GFXDevice::MaterialDebugFlag::COUNT);
+            }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_DEPTH_CLUSTERS;
+            if (ImGui::MenuItem("Debug Light Depth Clusters", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_DEPTH_CLUSTERS : GFXDevice::MaterialDebugFlag::COUNT);
             }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS;
             if (ImGui::MenuItem("Debug Reflections", "", &debug)) {

@@ -33,7 +33,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, Platfo
     directionField._readOnly = true;
     directionField._basicType = GFX::PushConstantType::VEC3;
 
-    getEditorComponent().registerField(std::move(directionField));
+    getEditorComponent().registerField(MOV(directionField));
 
     EditorComponentField sceneFitField = {};
     sceneFitField._name = "Fit CSM To AABB";
@@ -42,7 +42,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, Platfo
     sceneFitField._readOnly = false;
     sceneFitField._basicType = GFX::PushConstantType::BOOL;
 
-    getEditorComponent().registerField(std::move(sceneFitField));
+    getEditorComponent().registerField(MOV(sceneFitField));
 
     EditorComponentField csmNearClipField = {};
     csmNearClipField._name = "CSM Near Clip Offset";
@@ -52,7 +52,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, Platfo
     csmNearClipField._readOnly = false;
     csmNearClipField._basicType = GFX::PushConstantType::FLOAT;
 
-    getEditorComponent().registerField(std::move(csmNearClipField));
+    getEditorComponent().registerField(MOV(csmNearClipField));
 
     EditorComponentField showConeField = {};
     showConeField._name = "Show direction cone";
@@ -61,7 +61,7 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, Platfo
     showConeField._readOnly = false;
     showConeField._basicType = GFX::PushConstantType::BOOL;
 
-    getEditorComponent().registerField(std::move(showConeField));
+    getEditorComponent().registerField(MOV(showConeField));
 
     registerFields(getEditorComponent());
 

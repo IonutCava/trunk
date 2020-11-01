@@ -522,11 +522,12 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
         }
         _types.push_back(it.first);
 
-        hashAlg::insert(_pools, it.first, std::move(pool));
+        hashAlg::insert(_pools, it.first, MOV(pool));
     }
 }
 
 void glTexturePool::onFrameEnd() {
+    OPTICK_EVENT("Texture Pool: onFrameEnd");
     for (auto& it : _pools) {
         OnFrameEndInternal(it.second);
     }

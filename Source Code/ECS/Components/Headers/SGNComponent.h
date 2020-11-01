@@ -85,7 +85,7 @@ struct Factory {
 
     template <typename... ConstructArgs>
     static void construct(ComponentType type, SceneGraphNode* node, ConstructArgs&&... args) {
-        constructData().at(type)(node, std::forward<ConstructArgs>(args)...);
+        constructData().at(type)(node, FWD(args)...);
     }
 
     static void destruct(ComponentType type, SceneGraphNode* node) {
@@ -98,7 +98,7 @@ struct Factory {
     {
         template<typename... InnerArgs>
         Registrar(InnerArgs&&... args)
-            : Base(Key{ s_registered }, C, std::forward<InnerArgs>(args)...)
+            : Base(Key{ s_registered }, C, FWD(args)...)
         {
             ACKNOWLEDGE_UNUSED(s_registered);
         }
@@ -109,7 +109,7 @@ struct Factory {
 
         static bool RegisterComponentType() {
             Factory::constructData().emplace(C, [](SceneGraphNode* node, Args... args) -> void {
-                node->AddSGNComponent<T>(std::forward<Args>(args)...);
+                node->AddSGNComponent<T>(FWD(args)...);
             });
 
             Factory::destructData().emplace(C, [](SceneGraphNode* node) -> void {

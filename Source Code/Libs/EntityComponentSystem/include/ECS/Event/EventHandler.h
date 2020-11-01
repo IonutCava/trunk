@@ -113,7 +113,7 @@ namespace ECS { namespace Event {
 			// add new event to buffer and event storage
 			if (pMem != nullptr)
 			{
-				this->m_EventStorage.push_back(new (pMem)E(engine, std::forward<ARGS>(eventArgs)...));
+				this->m_EventStorage.push_back(new (pMem)E(engine, FWD(eventArgs)...));
 
 				LogInfo("\'%s\' event buffered.", typeid(E).name());
 			}
@@ -127,7 +127,7 @@ namespace ECS { namespace Event {
         void SendAndDispatchEvent(ECSEngine* engine, ARGS&&... eventArgs)
         {
             void* pMem = this->m_EventMemoryAllocator->allocate(sizeof(E), alignof(E));
-            auto event = new (pMem)E(engine, std::forward<ARGS>(eventArgs)...);
+            auto event = new (pMem)E(engine, FWD(eventArgs)...);
             auto it = this->m_EventDispatcherMap.find(event->GetEventTypeID());
             if (it != eastl::cend(this->m_EventDispatcherMap)) {
                 it->second->Dispatch(event);

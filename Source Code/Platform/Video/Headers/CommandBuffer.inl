@@ -89,9 +89,9 @@ typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
 CommandBuffer::add(const T&& command) {
     T* mem = allocateCommand<T>();
     if (mem != nullptr) {
-        *mem = std::move(command);
+        *mem = MOV(command);
     } else {
-        mem = CmdAllocator<T>::allocate(std::move(command));
+        mem = CmdAllocator<T>::allocate(MOV(command));
         _commands.insert<T>(to_base(T::EType), mem);
     }
 

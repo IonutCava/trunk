@@ -46,8 +46,10 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.MSAASamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
         GET_PARAM(rendering.reflectionResolutionFactor);
-        GET_PARAM(rendering.numLightsPerScreenTile);
-        GET_PARAM(rendering.lightThreadGroupSize);
+        GET_PARAM(rendering.numLightsPerCluster);
+        GET_PARAM_ATTRIB(rendering.lightClusteredSizes, width);
+        GET_PARAM_ATTRIB(rendering.lightClusteredSizes, height);
+        GET_PARAM_ATTRIB(rendering.lightClusteredSizes, depth);
         GET_PARAM(rendering.enableFog);
         GET_PARAM(rendering.fogDensity);
         GET_PARAM_ATTRIB(rendering.fogColour, r);
@@ -83,9 +85,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.shadowMapping.spot.enableBlurring);
         GET_PARAM(rendering.shadowMapping.spot.anisotropicFilteringLevel);
         GET_PARAM(rendering.shadowMapping.point.shadowMapResolution);
-        GET_PARAM(rendering.shadowMapping.point.MSAASamples);
-        GET_PARAM(rendering.shadowMapping.point.enableBlurring);
-        GET_PARAM(rendering.shadowMapping.point.anisotropicFilteringLevel);
 
         GET_PARAM(title);
         GET_PARAM(defaultTextureLocation);
@@ -137,8 +136,10 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.MSAASamples);
         PUT_PARAM(rendering.anisotropicFilteringLevel);
         PUT_PARAM(rendering.reflectionResolutionFactor);
-        PUT_PARAM(rendering.numLightsPerScreenTile);
-        PUT_PARAM(rendering.lightThreadGroupSize);
+        PUT_PARAM(rendering.numLightsPerCluster);
+        PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, width);
+        PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, height);
+        PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, depth);
         PUT_PARAM(rendering.enableFog);
         PUT_PARAM(rendering.fogDensity);
         PUT_PARAM_ATTRIB(rendering.fogColour, r);
@@ -174,9 +175,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.shadowMapping.spot.enableBlurring);
         PUT_PARAM(rendering.shadowMapping.spot.anisotropicFilteringLevel);
         PUT_PARAM(rendering.shadowMapping.point.shadowMapResolution);
-        PUT_PARAM(rendering.shadowMapping.point.MSAASamples);
-        PUT_PARAM(rendering.shadowMapping.point.enableBlurring);
-        PUT_PARAM(rendering.shadowMapping.point.anisotropicFilteringLevel);
 
         PUT_PARAM(title);
         PUT_PARAM(defaultTextureLocation);

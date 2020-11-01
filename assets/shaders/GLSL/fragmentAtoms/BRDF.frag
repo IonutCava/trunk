@@ -22,14 +22,6 @@
 #endif
 #endif
 
-#if !defined(MAX_LIGHTS_PER_PASS)
-#define MAX_LIGHTS_PER_PASS MAX_LIGHTS_PER_TILE
-#endif
-
-uint GetTileIndex() {
-    ivec2 tileID = ivec2(gl_FragCoord.xy) / ivec2(FORWARD_PLUS_TILE_RES, FORWARD_PLUS_TILE_RES);
-    return uint(tileID.y * dvd_numTilesX + tileID.x);
-}
 
 float TanAcosNdL(in float ndl) {
 #if 0
@@ -77,7 +69,7 @@ float getSpotAttenuation(in Light light, in vec3 lightDirectionWV, in vec3 light
     const float theta = dot(lightDirectionWVNorm, normalize(-spotDirectionWV));
     const float intensity = saturate((theta - cosOuterConeAngle) / (cosInnerConeAngle - cosOuterConeAngle));
 
-    const float radiusSpot = mix(float(light._options.z), light._positionWV.w, 1.0f - intensity);
+    const float radiusSpot = mix(float(light._SPOT_CONE_SLANT_HEIGHT), light._positionWV.w, 1.0f - intensity);
 
     const float dist = length(lightDirectionWV);
     const float att = saturate(1.0f - ((dist * dist) / (radiusSpot * radiusSpot)));
@@ -85,14 +77,13 @@ float getSpotAttenuation(in Light light, in vec3 lightDirectionWV, in vec3 light
 }
 
 vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
-    const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
+    const uint cluster = GetClusterIndex(gl_FragCoord);
+    const uint lightCount = lightGrid[cluster].count;
+    const uint lightIndexOffset = lightGrid[cluster].offset;
 
     vec3 ret = vec3(0.0);
-    for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
-        const int lightIdx = perTileLightIndices[offset + i];
-        if (lightIdx == -1) {
-            break;
-        }
+    for (uint i = 0; i < lightCount; i++) {
+        const uint lightIdx = globalLightIndexList[lightIndexOffset + i];
 
         const Light light = dvd_LightSource[lightIdx + dirLightCount];
         const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
@@ -103,7 +94,7 @@ vec3 getOtherLightContribution(in uint dirLightCount, in vec3 albedo, in vec3 oc
         const float shadowFactor = getShadowFactor(light._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
 
         float att = 0.0f;
-        if (light._options.x == 1) {
+        if (light._TYPE == LIGHT_OMNIDIRECTIONAL) {
             att = getPointAttenuation(light, lightDirectionWV);
         } else {
             att = getSpotAttenuation(light, lightDirectionWV, lightDirectionWVNorm);
@@ -130,12 +121,14 @@ float getShadowFactor(in vec3 normalWV, in bool receivesShadows, in int lodLevel
             ret *= getShadowFactor(dvd_LightSource[lightIdx]._options, TanAcosNdL(ndl), receivesShadows, lodLevel);
         }
 
-        const uint offset = GetTileIndex() * MAX_LIGHTS_PER_TILE;
-        for (uint i = 0; i < MAX_LIGHTS_PER_PASS; ++i) {
-            const int lightIdx = perTileLightIndices[offset + i];
-            if (lightIdx == -1) {
-                break;
-            }
+        const uint cluster = GetClusterIndex(gl_FragCoord);
+        const uint lightCount = lightGrid[cluster].count;
+        const uint lightIndexOffset = lightGrid[cluster].offset;
+
+        vec3 ret = vec3(0.0);
+        for (uint i = 0; i < lightCount; i++) {
+            const uint lightIdx = globalLightIndexList[lightIndexOffset + i];
+
             const Light light = dvd_LightSource[lightIdx + dirLightCount];
 
             const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
@@ -147,22 +140,39 @@ float getShadowFactor(in vec3 normalWV, in bool receivesShadows, in int lodLevel
     return ret;
 }
 
-vec3 lightTileColour() {
-    ivec2 loc = ivec2(gl_FragCoord.xy);
-    ivec2 tileID = loc / ivec2(FORWARD_PLUS_TILE_RES, FORWARD_PLUS_TILE_RES);
-    uint index = tileID.y * dvd_numTilesX + tileID.x;
-    uint offset = index * MAX_LIGHTS_PER_TILE;
+vec3 lightClusterColours(const bool debugDepthClusters) {
+    if (debugDepthClusters) {
+        const uint zTile = GetClusterZIndex(gl_FragCoord.z);
 
-    uint count = 0;
-    for (uint i = 0; i < MAX_LIGHTS_PER_TILE; i++) {
-        if (perTileLightIndices[offset + i] == -1) {
-            break;
+        switch (zTile % 8) {
+            case 0:  return vec3(1.0f, 0.0f, 0.0f);
+            case 1:  return vec3(0.0f, 1.0f, 0.0f);
+            case 2:  return vec3(0.0f, 0.0f, 1.0f);
+            case 3:  return vec3(1.0f, 1.0f, 0.0f);
+
+            case 4:  return vec3(1.0f, 0.0f, 1.0f);
+            case 5:  return vec3(1.0f, 1.0f, 1.0f);
+            case 6:  return vec3(1.0f, 0.5f, 0.5f);
+            case 7:  return vec3(0.0f, 0.0f, 0.0f);
         }
 
-        count++;
+        return vec3(0.5f, 0.25f, 0.75f);
     }
-    float shade = float(count) / float(MAX_LIGHTS_PER_TILE * 2);
-    return vec3(shade);
+
+    const uint cluster = GetClusterIndex(gl_FragCoord);
+
+    uint lights = lightGrid[cluster].count;
+
+    // show possible clipping
+    if (lights == 0) {
+        lights--;
+    } else if (lights == MAX_LIGHTS_PER_CLUSTER) {
+        lights++;
+    }
+
+    const vec3 colour = turboColormap(float(lights) / MAX_LIGHTS_PER_CLUSTER);
+
+    return colour;
 }
 
 #ifdef CUSTOM_IBL
@@ -193,7 +203,8 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         case DEBUG_NORMALS: return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
         case DEBUG_TBN_VIEW_DIRECTION: return getTBNViewDir();
         case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
-        case DEBUG_LIGHT_TILES: return lightTileColour();
+        case DEBUG_LIGHT_HEATMAP: return lightClusterColours(false);
+        case DEBUG_LIGHT_DEPTH_CLUSTERS: return lightClusterColours(true);
         case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
     }
 

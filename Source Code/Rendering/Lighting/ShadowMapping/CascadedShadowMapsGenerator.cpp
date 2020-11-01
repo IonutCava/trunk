@@ -109,7 +109,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         depthDescriptor.msaaSamples(g_shadowSettings.csm.MSAASamples);
         depthDescriptor.hasMipMaps(false);
 
-        vectorEASTL<RTAttachmentDescriptor> att = {
+        RTAttachmentDescriptors att = {
             { colourDescriptor, samplerHash, RTAttachmentType::Colour },
             { depthDescriptor, samplerHash, RTAttachmentType::Depth }
         };
@@ -130,7 +130,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         blurMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         blurMapDescriptor.hasMipMaps(false);
 
-        vectorEASTL<RTAttachmentDescriptor> att = {
+        RTAttachmentDescriptors att = {
             { blurMapDescriptor, samplerHash, RTAttachmentType::Colour }
         };
 
@@ -472,7 +472,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
     GFX::EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }
 
-void CascadedShadowMapsGenerator::updateMSAASampleCount(U8 sampleCount) {
+void CascadedShadowMapsGenerator::updateMSAASampleCount(const U8 sampleCount) {
     if (_context.context().config().rendering.shadowMapping.csm.MSAASamples != sampleCount) {
         _context.context().config().rendering.shadowMapping.csm.MSAASamples = sampleCount;
         _drawBufferDepth._rt->updateSampleCount(sampleCount);

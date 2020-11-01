@@ -48,7 +48,7 @@ T* ObjectPool<T, N>::find(PoolHandle handle) const {
 template<typename T, size_t N>
 template<typename... Args>
 PoolHandle ObjectPool<T, N>::allocate(Args... args) {
-    T* obj = new T(std::forward<Args>(args)...);
+    T* obj = new T(FWD(args)...);
     return registerExisting(*obj);
 }
 
@@ -62,7 +62,7 @@ void ObjectPool<T, N>::deallocate(const PoolHandle handle) {
 template<typename T, size_t N>
 template<typename... Args>
 PoolHandle ObjectPool<T, N>::allocate(void* mem, Args... args) {
-    T* obj = new(mem) T(std::forward<Args>(args)...);
+    T* obj = new(mem) T(FWD(args)...);
     return registerExisting(*obj);
 }
 

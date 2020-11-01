@@ -158,7 +158,7 @@ struct DebugPrimitiveHandler
             return;
         }
 
-        _debugData[_Id.fetch_add(1)] = std::move(data);
+        _debugData[_Id.fetch_add(1)] = MOV(data);
     }
 
     std::array<IMPrimitive*, N>  _debugPrimitives;
@@ -227,7 +227,8 @@ public:
         DEBUG_NORMALS,
         DEBUG_TBN_VIEW_DIRECTION, //Used for parallax occlusion mapping
         DEBUG_SHADOW_MAPS,
-        DEBUG_LIGHT_TILES,
+        DEBUG_LIGHT_HEATMAP,
+        DEBUG_LIGHT_DEPTH_CLUSTERS,
         DEBUG_REFLECTIONS,
         COUNT
     };

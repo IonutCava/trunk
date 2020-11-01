@@ -95,7 +95,7 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         tessTriangleWidthField._range = { 1.0f, 150.0f };
         tessTriangleWidthField._step = 1.0f;
 
-        _editorComponent.registerField(std::move(tessTriangleWidthField));
+        _editorComponent.registerField(MOV(tessTriangleWidthField));
 
         EditorComponentField parallaxHeightField = {};
         parallaxHeightField._name = "Parallax Height";
@@ -106,14 +106,14 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         parallaxHeightField._basicType = GFX::PushConstantType::FLOAT;
         parallaxHeightField._range = { 0.01f, 10.0f };
 
-        _editorComponent.registerField(std::move(parallaxHeightField));
+        _editorComponent.registerField(MOV(parallaxHeightField));
 
         EditorComponentField toggleBoundsField = {};
         toggleBoundsField._name = "Toggle Quadtree Bounds";
         toggleBoundsField._range = { toggleBoundsField._name.length() * 10.0f, 20.0f };//dimensions
         toggleBoundsField._type = EditorComponentFieldType::BUTTON;
         toggleBoundsField._readOnly = false; //disabled/enabled
-        _editorComponent.registerField(std::move(toggleBoundsField));
+        _editorComponent.registerField(MOV(toggleBoundsField));
 
         PlatformContext& pContext = sgn->context();
         SceneManager* sMgr = pContext.kernel().sceneManager();
@@ -133,7 +133,7 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         grassVisibilityDistanceField._type = EditorComponentFieldType::PUSH_TYPE;
         grassVisibilityDistanceField._basicType = GFX::PushConstantType::FLOAT;
         grassVisibilityDistanceField._readOnly = false;
-        _editorComponent.registerField(std::move(grassVisibilityDistanceField));
+        _editorComponent.registerField(MOV(grassVisibilityDistanceField));
 
         EditorComponentField treeVisibilityDistanceField = {};
         treeVisibilityDistanceField._name = "Tree visibility distance";
@@ -150,7 +150,7 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         treeVisibilityDistanceField._type = EditorComponentFieldType::PUSH_TYPE;
         treeVisibilityDistanceField._basicType = GFX::PushConstantType::FLOAT;
         treeVisibilityDistanceField._readOnly = false;
-        _editorComponent.registerField(std::move(treeVisibilityDistanceField));
+        _editorComponent.registerField(MOV(treeVisibilityDistanceField));
         _initialSetupDone = true;
     }
 

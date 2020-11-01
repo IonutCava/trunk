@@ -55,10 +55,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 {
    public:
 
-    static U8 GetThreadGroupSize(const U8 optionIn) noexcept {
-        return (optionIn == 0 ? 8 : optionIn == 1 ? 16 : 32);
-    }
-
     // Worst case scenario: cube shadows = 6 passes
     struct ShadowProperties {
         // x = light type, y = arrayOffset, z - bias, w - strength

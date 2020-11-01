@@ -31,6 +31,10 @@ struct Light {
     ivec4  _options;
 };
 
+#define _TYPE _options.x
+#define _SHADOW_INDEX _options.y
+#define _SPOT_CONE_SLANT_HEIGHT _options.z
+
 layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
 {
     // x = directional light count, y = point light count, z = spot light count, w = shadow light count
@@ -41,10 +45,59 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
 };
 
 #if defined(FRAG_SHADER) || defined(COMPUTE_SHADER)
-layout(binding = BUFFER_LIGHT_INDICES, std430) coherent COMP_RW buffer perTileLightIndexBuffer
+struct LightGrid
 {
-    int perTileLightIndices[];
+    uint offset;
+    uint count;
 };
-#endif
+
+layout(binding = BUFFER_LIGHT_GRID, std430) ACCESS buffer lightGridSSBO
+{
+    LightGrid lightGrid[];
+};
+
+layout(binding = BUFFER_LIGHT_INDICES, std430) ACCESS buffer lightIndexSSBO {
+    uint globalLightIndexList[];
+};
+
+#if defined(COMPUTE_SHADER)
+struct VolumeTileAABB
+{
+    vec4 minPoint;
+    vec4 maxPoint;
+};
+
+layout(binding = BUFFER_LIGHT_CLUSTER_AABBS, std430) ACCESS buffer lightClusterAABBs
+{
+    VolumeTileAABB cluster[GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z];
+};
+
+layout(binding = BUFFER_LIGHT_INDEX_COUNT, std430) ACCESS buffer globalIndexCountSSBO {
+    uint globalIndexCount;
+};
+#else //COMPUTE_SHADER
+
+float ToLinearDepth(in float depthIn);
+
+// cluster depth index from depth in screen coordinates (gl_FragCoord.z)
+uint GetClusterZIndex(float screenDepth) {
+    const float eyeDepth = ToLinearDepth(screenDepth);
+
+    //return uint(max(log(eyeDepth) * dvd_LightScale + dvd_LightBias, 0.0));
+    return uint(max(log2(eyeDepth) * dvd_LightScale + dvd_LightBias, 0));
+}
+
+uint GetClusterIndex(vec4 fragCoord) {
+    const uint zIndex = GetClusterZIndex(fragCoord.z);
+    uvec3 indices = uvec3(uvec2(fragCoord.xy / dvd_ClusterSizes), zIndex);
+
+    return (GRID_SIZE_X * GRID_SIZE_Y) * indices.z +
+            GRID_SIZE_X * indices.y +
+            indices.x;
+}
+
+#endif //COMPUTE_SHADER
+
+#endif //FRAG_SHADER || COMPUTE_SHADER
 
 #endif //_LIGHT_INPUT_CMN_

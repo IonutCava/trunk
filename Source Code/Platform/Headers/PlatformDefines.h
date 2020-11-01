@@ -80,11 +80,21 @@ do {                                                \
 #endif
 #endif
 
+ //ref: https://foonathan.net/2020/09/move-forward/
+ // static_cast to rvalue reference
+#define MOV(...) \
+static_cast<std::remove_reference_t<decltype(__VA_ARGS__)>&&>(__VA_ARGS__)
+
+// static_cast to identity
+// The extra && aren't necessary as discussed above, but make it more robust in case it's used with a non-reference.
+#define FWD(...) \
+  static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)
+
 #define ALIAS_TEMPLATE_FUNCTION(highLevelF, lowLevelF) \
 template<typename... Args> \
-inline auto highLevelF(Args&&... args) -> decltype(lowLevelF(std::forward<Args>(args)...)) \
+inline auto highLevelF(Args&&... args) -> decltype(lowLevelF(FWD(args)...)) \
 { \
-    return lowLevelF(std::forward<Args>(args)...); \
+    return lowLevelF(FWD(args)...); \
 }
 
 //ref: https://vittorioromeo.info/index/blog/passing_functions_to_functions.html
@@ -106,13 +116,13 @@ public:
         function_view(T&& x) noexcept : _ptr{ (void*)std::addressof(x) } {
         _erased_fn = [](void* ptr, TArgs... xs) -> TReturn {
             return (*reinterpret_cast<std::add_pointer_t<T>>(ptr))(
-                std::forward<TArgs>(xs)...);
+                FWD(xs)...);
         };
     }
 
     decltype(auto) operator()(TArgs... xs) const
-        noexcept(noexcept(_erased_fn(_ptr, std::forward<TArgs>(xs)...))) {
-        return _erased_fn(_ptr, std::forward<TArgs>(xs)...);
+        noexcept(noexcept(_erased_fn(_ptr, FWD(xs)...))) {
+        return _erased_fn(_ptr, FWD(xs)...);
     }
 };
 
@@ -419,7 +429,6 @@ constexpr void NOP() noexcept {}
 #define _FUNCTION_NAME_AND_SIG_ __FUNCTION__
 #endif
 
-
 namespace detail {
     class ScopeGuardImplBase
     {
@@ -478,7 +487,7 @@ namespace detail {
 
     template <typename Fun>
     ScopeGuard operator+(ScopeGuardOnExit, Fun&& fn) {
-        return ScopeGuard<Fun>(std::forward<Fun>(fn));
+        return ScopeGuard<Fun>(FWD(fn));
     }
 };
 

@@ -289,7 +289,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         gbufferDescriptor.msaaSamples(sampleCount);
 
         {
-            vectorEASTL<RTAttachmentDescriptor> attachments = {
+            RTAttachmentDescriptors attachments = {
                 { screenDescriptor,     samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
                 { normAndVelDescriptor, samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
                 { gbufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 0.0f, 0.0f, 0.0f) },
@@ -319,7 +319,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     hiZSampler.magFilter(TextureFilter::NEAREST);
     hiZSampler.minFilter(TextureFilter::NEAREST_MIPMAP_NEAREST);
 
-    vectorEASTL<RTAttachmentDescriptor> hiZAttachments = {
+    RTAttachmentDescriptors hiZAttachments = {
         { hiZDescriptor, hiZSampler.getHash(), RTAttachmentType::Depth, 0, VECTOR4_UNIT },
     };
 
@@ -346,7 +346,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         editorDescriptor.hasMipMaps(false);
 
-        vectorEASTL<RTAttachmentDescriptor> attachments = {
+        RTAttachmentDescriptors attachments = {
             { editorDescriptor, editorSampler.getHash(), RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
         };
 
@@ -378,7 +378,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hizRTDesc._attachments = hiZAttachments.data();
 
         {
-            vectorEASTL<RTAttachmentDescriptor> attachments = {
+            RTAttachmentDescriptors attachments = {
                 { environmentDescriptorPlanar, reflectionSamplerHash, RTAttachmentType::Colour },
                 { depthDescriptorPlanar,       reflectionSamplerHash, RTAttachmentType::Depth },
             };
@@ -417,7 +417,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
     revealageDescriptor.hasMipMaps(false);
 
-    vectorEASTL<RTAttachmentDescriptor> oitAttachments = {
+    RTAttachmentDescriptors oitAttachments = {
         { accumulationDescriptor, accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
         { revealageDescriptor,    accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
     };
@@ -490,7 +490,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         environmentDescriptorCube.hasMipMaps(false);
         depthDescriptorCube.hasMipMaps(false);
 
-        vectorEASTL<RTAttachmentDescriptor> attachments = {
+        RTAttachmentDescriptors attachments = {
             { environmentDescriptorCube, reflectionSamplerHash, RTAttachmentType::Colour },
             { depthDescriptorCube,       reflectionSamplerHash, RTAttachmentType::Depth },
         };
@@ -1307,6 +1307,17 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     const vec4<F32> cameraProperties(cameraSnapshot._zPlanes, cameraSnapshot._FoV, data._renderProperties.w);
     if (data._renderProperties != cameraProperties) {
         data._renderProperties.set(cameraProperties);
+
+        const U32 gridSizeZ = to_U32(_context.config().rendering.lightClusteredSizes.z);
+        const F32 zFar = cameraSnapshot._zPlanes.max;
+        const F32 zNear = cameraSnapshot._zPlanes.min;
+
+        //scale
+        data._lightingProperties.z = to_F32(gridSizeZ) / std::log2f(zFar / zNear);
+
+        //bias
+        data._lightingProperties.w = -((to_F32(gridSizeZ) * std::log2f(zNear)) / std::log2f(zFar / zNear));
+
         needsUpdate = true;
     }
 
@@ -1335,10 +1346,14 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
     if (_api->setViewport(viewport)) {
     // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
-        const U8 tileRes = Light::GetThreadGroupSize(context().config().rendering.lightThreadGroupSize);
-        const U32 viewportWidth = to_U32(viewport.z);
-        const U32 workGroupsX = (viewportWidth + (viewportWidth % tileRes)) / tileRes;
-        _gpuBlock._data._renderProperties.w = to_F32(workGroupsX);
+        const F32 viewportWidth = to_F32(viewport.z);
+        const F32 viewportHeight= to_F32(viewport.w);
+        const U32 gridSizeX = to_U32(context().config().rendering.lightClusteredSizes.x);
+        const U32 gridSizeY = to_U32(context().config().rendering.lightClusteredSizes.y);
+        const F32 clusterSizeX = std::ceil(viewportWidth  / gridSizeX);
+        const F32 clusterSizeY = std::ceil(viewportHeight / gridSizeY);
+        _gpuBlock._data._lightingProperties.x = clusterSizeX;
+        _gpuBlock._data._lightingProperties.y = clusterSizeY;
         _gpuBlock._needsUpload = true;
         _viewport.set(viewport);
 
@@ -1356,8 +1371,8 @@ void GFXDevice::setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>
 #pragma endregion
 
 #pragma region Command buffers, occlusion culling, etc
-void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, bool batch) {
-    OPTICK_EVENT();
+void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool batch) {
+    OPTICK_EVENT("FLUSHING COMMAND BUFFER");
 
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         DIVIDE_ASSERT(Runtime::isMainThread(), "GFXDevice::flushCommandBuffer called from worker thread!");

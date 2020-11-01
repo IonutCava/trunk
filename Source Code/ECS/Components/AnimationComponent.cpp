@@ -22,7 +22,7 @@ AnimationComponent::AnimationComponent(SceneGraphNode* parentSGN, PlatformContex
     vskelField._type = EditorComponentFieldType::PUSH_TYPE;
     vskelField._basicType = GFX::PushConstantType::BOOL;
     vskelField._readOnly = false;
-    _editorComponent.registerField(std::move(vskelField));
+    _editorComponent.registerField(MOV(vskelField));
 
     _editorComponent.onChangedCbk([this](std::string_view field) {
         ACKNOWLEDGE_UNUSED(field);

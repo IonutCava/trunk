@@ -93,7 +93,7 @@ void GL_API::beginFrame(DisplayWindow& window, const bool global) {
 
 /// Finish rendering the current frame
 void GL_API::endFrame(DisplayWindow& window, const bool global) {
-    OPTICK_EVENT();
+    OPTICK_EVENT("GL_API: endFrame");
 
     // Revert back to the default OpenGL states
     //clearStates(window, global);
@@ -115,11 +115,12 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
             const I64 windowGUID = window.getGUID();
             
             if (glContext != nullptr && (_currentContext.first != windowGUID || _currentContext.second != glContext)) {
+                OPTICK_EVENT("GL_API: Swap Context");
                 SDL_GL_MakeCurrent(window.getRawWindow(), glContext);
                 _currentContext = std::make_pair(windowGUID, glContext);
             }
             {
-                OPTICK_EVENT("Swap Buffers");
+                OPTICK_EVENT("GL_API: Swap Buffers");
                 SDL_GL_SwapWindow(window.getRawWindow());
             }
         }
@@ -132,6 +133,7 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
 
     if_constexpr (Config::ENABLE_GPU_VALIDATION) {
         if (global) {
+            OPTICK_EVENT("GL_API: Time Query");
             const I64 time = _elapsedTimeQuery->getResultNoWait();
             FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
             _elapsedTimeQuery->incQueue();
@@ -141,8 +143,10 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
 
 void GL_API::idle(const bool fast) {
     if (fast) {
+        OPTICK_EVENT("GL_API: fast idle");
         NOP();
     } else {
+        OPTICK_EVENT("GL_API: slow idle");
         UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
         if (!s_mipmapQueue.empty()) {
             const auto it = s_mipmapQueue.begin();
@@ -244,16 +248,26 @@ bool GL_API::initGLSW(Configuration& config) {
         DIVIDE_ASSERT(glswState == 1);
     }
 
-    I32 numLightsPerTile = config.rendering.numLightsPerScreenTile;
-    if (numLightsPerTile < 0) {
-        numLightsPerTile = to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE);
+    I32 numLightsPerCluster = config.rendering.numLightsPerCluster;
+    if (numLightsPerCluster < 0) {
+        numLightsPerCluster = to_I32(Config::Lighting::ClusteredForward::MAX_LIGHTS_PER_CLUSTER);
     } else {
-        numLightsPerTile = std::min(numLightsPerTile, to_I32(Config::Lighting::ForwardPlus::MAX_LIGHTS_PER_TILE));
+        numLightsPerCluster = std::min(numLightsPerCluster, to_I32(Config::Lighting::ClusteredForward::MAX_LIGHTS_PER_CLUSTER));
     }
-    config.rendering.numLightsPerScreenTile = numLightsPerTile;
+    if (numLightsPerCluster != config.rendering.numLightsPerCluster) {
+        config.rendering.numLightsPerCluster = numLightsPerCluster;
+        config.changed(true);
+    }
 
-    CLAMP(config.rendering.lightThreadGroupSize, to_U8(0), to_U8(2));
-    const U8 tileSize = Light::GetThreadGroupSize(config.rendering.lightThreadGroupSize);
+    vec3<U8> gridSize = config.rendering.lightClusteredSizes;
+    CLAMP(gridSize.x, to_U8(1), to_U8(255));
+    CLAMP(gridSize.y, to_U8(1), to_U8(255));
+    CLAMP(gridSize.z, to_U8(Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS), to_U8(255));
+
+    if (gridSize != config.rendering.lightClusteredSizes) {
+        config.rendering.lightClusteredSizes = gridSize;
+        config.changed(true);
+    }  
 
     ShaderOffsetArray lineOffsets = { 0 };
 
@@ -418,6 +432,24 @@ bool GL_API::initGLSW(Configuration& config) {
         Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDICES)),
         lineOffsets);
 
+  appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_GRID " +
+        Util::to_string(to_base(ShaderBufferLocation::LIGHT_GRID)),
+        lineOffsets);
+
+  appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_INDEX_COUNT " +
+        Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDEX_COUNT)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_LIGHT_CLUSTER_AABBS " +
+        Util::to_string(to_base(ShaderBufferLocation::LIGHT_CLUSTER_AABBS)),
+        lineOffsets);
+
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_NODE_INFO " +
@@ -462,14 +494,44 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define FORWARD_PLUS_TILE_RES " + 
-        Util::to_string(tileSize),
+        "#define GRID_SIZE_X " + 
+        Util::to_string(gridSize.x),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define MAX_LIGHTS_PER_TILE " + 
-        Util::to_string(numLightsPerTile),
+        "#define GRID_SIZE_Y " +
+        Util::to_string(gridSize.y),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COMPUTE,
+        "#define GRID_SIZE_Z " +
+        Util::to_string(gridSize.z),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COMPUTE,
+        "#define GRID_SIZE_X_THREADS " +
+        Util::to_string(gridSize.x),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COMPUTE,
+        "#define GRID_SIZE_Y_THREADS " +
+        Util::to_string(gridSize.y),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define GRID_SIZE_Z_THREADS " +
+        Util::to_string(Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define MAX_LIGHTS_PER_CLUSTER " + 
+        Util::to_string(numLightsPerCluster),
         lineOffsets);
 
     appendToShaderHeader(
@@ -1157,13 +1219,16 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             OPTICK_EVENT("GL: Compute MipMaps");
             GFX::ComputeMipMapsCommand* crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
-            if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y <= 1) {
+            if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y == crtCmd->_texture->descriptor().layerCount()) {
                 if (crtCmd->_defer) {
+                    OPTICK_EVENT("GL: Deferred computation");
                     queueComputeMipMap(crtCmd->_texture->data()._textureHandle);
                 } else {
+                    OPTICK_EVENT("GL: In-place computation");
                     glGenerateTextureMipmap(crtCmd->_texture->data()._textureHandle);
                 }
             } else {
+                OPTICK_EVENT("GL: View-based computation");
                 TextureView view = {};
                 view._texture = crtCmd->_texture;
                 view._layerRange.set(crtCmd->_layerRange.x, crtCmd->_layerRange.y);
@@ -1179,6 +1244,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
                 auto[handle, cacheHit] = s_texturePool.allocate(view.getHash(), GL_NONE);
                 if (!cacheHit) {
+                    OPTICK_EVENT("GL: View cache miss");
                     glTextureView(handle,
                         type,
                         data._textureHandle,
@@ -1189,8 +1255,10 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                         static_cast<GLuint>(view._layerRange.y));
                 }
                 if (crtCmd->_defer) {
+                    OPTICK_EVENT("GL: Deferred computation");
                     queueComputeMipMap(handle);
                 } else {
+                    OPTICK_EVENT("GL: In-place computation");
                     glGenerateTextureMipmap(handle);
                 }
                 s_texturePool.deallocate(handle, GL_NONE, 3);

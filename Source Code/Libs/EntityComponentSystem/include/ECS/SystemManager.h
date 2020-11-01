@@ -112,7 +112,7 @@ namespace ECS
 				((T*)pSystemMem)->m_SystemManagerInstance = this;
 
 				// create new system
-				system = new (pSystemMem)T(engine, std::forward<ARGS>(systemArgs)...);
+				system = new (pSystemMem)T(engine, FWD(systemArgs)...);
 				this->m_Systems[STID] = system;
 
 				LogInfo("System \'%s\' (%d bytes) created.", typeid(T).name(), sizeof(T));
@@ -183,7 +183,7 @@ namespace ECS
 				LogInfo("added '%s' as dependency to '%s'", dependency->GetSystemTypeName(), target->GetSystemTypeName())
 			}
 
-			this->AddSystemDependency(target, std::forward<Dependencies>(dependencies)...);
+			this->AddSystemDependency(target, FWD(dependencies)...);
 		}
 
 		///-------------------------------------------------------------------------------------------------

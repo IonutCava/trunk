@@ -809,7 +809,7 @@ void SceneGraphNode::setFlag(Flags flag, bool recursive) noexcept {
         evt._dataFirst = 1u;
         evt._dataSecond = recursive ? 1u : 0u;
 
-        SendEvent(std::move(evt));
+        SendEvent(MOV(evt));
     }
 }
 
@@ -835,7 +835,7 @@ void SceneGraphNode::clearFlag(Flags flag, bool recursive) noexcept {
         evt._dataFirst = 0u;
         evt._dataSecond = recursive ? 1u : 0u;
 
-        SendEvent(std::move(evt));
+        SendEvent(MOV(evt));
     }
 }
 
@@ -849,7 +849,7 @@ void SceneGraphNode::SendEvent(ECS::CustomEvent&& event) {
         bool flush = false;
         {
             if (Events._eventsFreeList[idx].exchange(false)) {
-                Events._events[idx] = std::move(event);
+                Events._events[idx] = MOV(event);
                 return;
             }
 

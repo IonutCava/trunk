@@ -74,7 +74,7 @@ protected:
     friend class ShadowMap;
     virtual void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) = 0;
 
-    virtual void updateMSAASampleCount(U8 sampleCount) { ACKNOWLEDGE_UNUSED(sampleCount); }
+    virtual void updateMSAASampleCount(const U8 sampleCount) { ACKNOWLEDGE_UNUSED(sampleCount); }
 
 protected:
     GFXDevice& _context;

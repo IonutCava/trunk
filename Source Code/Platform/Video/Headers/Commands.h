@@ -64,7 +64,7 @@ struct CmdAllocator {
 
     template <class... Args>
     static T* allocate(Args&&... args) {
-        return s_Pool.newElement(s_PoolMutex, std::forward<Args>(args)...);
+        return s_Pool.newElement(s_PoolMutex, FWD(args)...);
     }
 
     static void deallocate(T*& ptr) {
@@ -340,7 +340,7 @@ BEGIN_COMMAND(EndDebugScopeCommand, CommandType::END_DEBUG_SCOPE);
 END_COMMAND(EndDebugScopeCommand);
 
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
-    DrawTextCommand(TextElementBatch&& batch) noexcept : _batch(std::move(batch)) {}
+    DrawTextCommand(TextElementBatch&& batch) noexcept : _batch(MOV(batch)) {}
     DrawTextCommand(const TextElementBatch& batch) noexcept : _batch(batch) {}
 
     TextElementBatch _batch;

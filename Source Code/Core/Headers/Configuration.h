@@ -99,8 +99,8 @@ struct Configuration final : public XML::IXMLSerializable {
         U8 MSAASamples = 0u;
         U8 anisotropicFilteringLevel = 16;
         U8 reflectionResolutionFactor = 1;
-        I32 numLightsPerScreenTile = -1;
-        U8 lightThreadGroupSize = 1;
+        I32 numLightsPerCluster = -1;
+        vec3<U8> lightClusteredSizes = { 16, 9, 24 };
         bool enableFog = true;
         F32 fogDensity = 1.0f;
         vec3<F32> fogColour = { 0.2f, 0.2f, 0.2f };

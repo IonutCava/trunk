@@ -19,7 +19,7 @@ namespace Divide {
         transformField._type = EditorComponentFieldType::TRANSFORM;
         transformField._readOnly = false;
 
-        _editorComponent.registerField(std::move(transformField));
+        _editorComponent.registerField(MOV(transformField));
 
         EditorComponentField worldMatField = {};
         worldMatField._name = "WorldMat";
@@ -29,7 +29,7 @@ namespace Divide {
         worldMatField._serialise = false;
         worldMatField._basicType = GFX::PushConstantType::MAT4;
 
-        _editorComponent.registerField(std::move(worldMatField));
+        _editorComponent.registerField(MOV(worldMatField));
 
         if (_transformOffset.first) {
             EditorComponentField transformOffsetField = {};
@@ -39,7 +39,7 @@ namespace Divide {
             transformOffsetField._readOnly = true;
             transformOffsetField._basicType = GFX::PushConstantType::MAT4;
 
-            _editorComponent.registerField(std::move(transformOffsetField));
+            _editorComponent.registerField(MOV(transformOffsetField));
         }
 
         EditorComponentField recomputeMatrixField = {};
@@ -47,7 +47,7 @@ namespace Divide {
         recomputeMatrixField._range = { recomputeMatrixField._name.length() * 10.0f, 20.0f };//dimensions
         recomputeMatrixField._type = EditorComponentFieldType::BUTTON;
         recomputeMatrixField._readOnly = false; //disabled/enabled
-        _editorComponent.registerField(std::move(recomputeMatrixField));
+        _editorComponent.registerField(MOV(recomputeMatrixField));
 
         _editorComponent.onChangedCbk([this](std::string_view field) {
             if (field == "Transform") {

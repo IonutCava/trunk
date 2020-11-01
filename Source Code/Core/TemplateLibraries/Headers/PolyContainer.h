@@ -43,9 +43,9 @@ struct PolyContainerEntry
     PolyContainerEntry() noexcept : PolyContainerEntry(0u, 0u) {}
     PolyContainerEntry(U8 typeIndex, const U24 elementIndex) noexcept : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
     PolyContainerEntry(const PolyContainerEntry& other) noexcept : _data(other._data) {}
-    PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(std::move(other._data)) {}
+    PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(MOV(other._data)) {}
     PolyContainerEntry& operator= (PolyContainerEntry&& other) noexcept {
-        _data = std::move(other._data);
+        _data = MOV(other._data);
         return *this;
     }
 

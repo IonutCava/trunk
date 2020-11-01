@@ -109,12 +109,16 @@ namespace Divide {
 
         GFXDevice& gfx = _context;
         PlatformContext& context = parent().platformContext();
+        SceneManager* sceneManager = parent().sceneManager();
+
         const SceneRenderState& sceneRenderState = *params._sceneRenderState;
-        const Camera* cam = Attorney::SceneManagerRenderPass::playerCamera(parent().sceneManager());
-        const SceneStatePerPlayer& playerState = Attorney::SceneManagerRenderPass::playerState(parent().sceneManager());
+        const Camera* cam = Attorney::SceneManagerRenderPass::playerCamera(sceneManager);
+        const SceneStatePerPlayer& playerState = Attorney::SceneManagerRenderPass::playerState(sceneManager);
         gfx.setPreviousViewProjection(playerState.previousViewMatrix(), playerState.previousProjectionMatrix());
 
-        Attorney::SceneManagerRenderPass::preRenderAllPasses(parent().sceneManager(), cam);
+        LightPool& activeLightPool = Attorney::SceneManagerRenderPass::lightPool(sceneManager);
+
+        activeLightPool.preRenderAllPasses(cam);
 
         TaskPool& pool = context.taskPool(TaskPoolType::HIGH_PRIORITY);
         RenderTarget& resolvedScreenTarget = gfx.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
@@ -182,7 +186,7 @@ namespace Divide {
            const TextureData texData = screenAtt.texture()->data();
            const Rect<I32>& targetViewport = params._targetViewport;
            gfx.drawTextureInViewport(texData, screenAtt.samplerHash(), targetViewport, true, false, buf);
-           Attorney::SceneManagerRenderPass::drawCustomUI(_parent.sceneManager(), targetViewport, buf);
+           Attorney::SceneManagerRenderPass::drawCustomUI(sceneManager, targetViewport, buf);
            if_constexpr(Config::Build::ENABLE_EDITOR) {
                context.editor().drawScreenOverlay(cam, targetViewport, buf);
            }
@@ -202,7 +206,7 @@ namespace Divide {
             {
                 OPTICK_EVENT("FLUSH_PASSES_WHEN_READY");
                 U8 idleCount = 0u;
-                while (!eastl::all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), [](bool v) { return v; })) {
+                while (!eastl::all_of(eastl::cbegin(_completedPasses), eastl::cend(_completedPasses), [](const bool v) { return v; })) {
 
                     // For every render pass
                     bool finished = true;
@@ -265,7 +269,7 @@ namespace Divide {
             _renderPasses[i]->postRender();
         }
 
-        Attorney::SceneManagerRenderPass::postRenderAllPasses(parent().sceneManager(), cam);
+        activeLightPool.postRenderAllPasses(cam);
 
         Time::ScopedTimer time(*_blitToDisplayTimer);
         gfx.flushCommandBuffer(*_postRenderBuffer);
@@ -278,8 +282,8 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
                                              const bool usePerformanceCounters) {
     assert(!renderPassName.empty());
 
-    _renderPasses.push_back(MemoryManager_NEW RenderPass(*this, _context, renderPassName, orderKey, renderStage, dependencies, usePerformanceCounters));
-    RenderPass* item = _renderPasses.back();
+    RenderPass* item = MemoryManager_NEW RenderPass(*this, _context, renderPassName, orderKey, renderStage, dependencies, usePerformanceCounters);
+    _renderPasses.push_back(item);
 
     item->initBufferData();
 
@@ -601,6 +605,7 @@ bool RenderPassManager::prePass(const VisibleNodeList<>& nodes, const RenderPass
     OPTICK_EVENT();
 
     assert(params._stagePass._passType == RenderPassType::PRE_PASS);
+    const SceneRenderState& activeSceneRenderState = Attorney::SceneManagerRenderPass::renderState(parent().sceneManager());
 
     // PrePass requires a depth buffer
     const bool doPrePass = params._stagePass._stage != RenderStage::SHADOW &&
@@ -630,8 +635,8 @@ bool RenderPassManager::prePass(const VisibleNodeList<>& nodes, const RenderPass
 
         renderQueueToSubPasses(params._stagePass._stage, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::postRender(parent().sceneManager(), params._stagePass, params._camera, bufferInOut);
-
+        getQueue().postRender(activeSceneRenderState, params._stagePass, bufferInOut);
+        
         if (layeredRendering) {
             GFX::EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
         }
@@ -727,6 +732,8 @@ void RenderPassManager::mainPass(const VisibleNodeList<>& nodes, const RenderPas
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
         SceneManager* sceneManager = parent().sceneManager();
+        const SceneRenderState& activeSceneRenderState = Attorney::SceneManagerRenderPass::renderState(sceneManager);
+        LightPool& activeLightPool = Attorney::SceneManagerRenderPass::lightPool(sceneManager);
 
         Texture_ptr hizTex = nullptr;
         size_t hizSampler = 0;
@@ -739,7 +746,7 @@ void RenderPassManager::mainPass(const VisibleNodeList<>& nodes, const RenderPas
 
         const RenderTarget& nonMSTarget = _context.renderTargetPool().renderTarget(RenderTargetUsage::SCREEN);
 
-        Attorney::SceneManagerRenderPass::preRenderMainPass(sceneManager, stagePass, params._camera, hizTex, hizSampler, bufferInOut);
+        _context.getRenderer().preRender(stagePass, hizTex, hizSampler, activeLightPool, params._camera, bufferInOut);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         if (stagePass._stage == RenderStage::DISPLAY) {
@@ -784,7 +791,7 @@ void RenderPassManager::mainPass(const VisibleNodeList<>& nodes, const RenderPas
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(stagePass._stage, bufferInOut);
 
-        Attorney::SceneManagerRenderPass::postRender(sceneManager, stagePass, params._camera, bufferInOut);
+        getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
 
         if (stagePass._stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency

@@ -30,7 +30,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     layerField._basicType = GFX::PushConstantType::UINT;
     layerField._basicTypeSize = GFX::PushConstantSize::WORD;
 
-    getEditorComponent().registerField(std::move(layerField));
+    getEditorComponent().registerField(MOV(layerField));
 
     EditorComponentField typeField = {};
     typeField._name = "Is Local";
@@ -44,14 +44,14 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     typeField._readOnly = false;
     typeField._basicType = GFX::PushConstantType::BOOL;
 
-    getEditorComponent().registerField(std::move(typeField));
+    getEditorComponent().registerField(MOV(typeField));
 
     EditorComponentField bbField = {};
     bbField._name = "Bounding Box";
     bbField._data = &_refaabb;
     bbField._type = EditorComponentFieldType::BOUNDING_BOX;
     bbField._readOnly = false;
-    getEditorComponent().registerField(std::move(bbField));
+    getEditorComponent().registerField(MOV(bbField));
 
     EditorComponentField updateRateField = {};
     updateRateField._name = "Update Rate";
@@ -63,7 +63,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     updateRateField._basicType = GFX::PushConstantType::UINT;
     updateRateField._basicTypeSize = GFX::PushConstantSize::BYTE;
 
-    getEditorComponent().registerField(std::move(updateRateField));
+    getEditorComponent().registerField(MOV(updateRateField));
 
     EditorComponentField showBoxField = {};
     showBoxField._name = "Show parallax correction AABB";
@@ -72,7 +72,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     showBoxField._readOnly = false;
     showBoxField._basicType = GFX::PushConstantType::BOOL;
 
-    getEditorComponent().registerField(std::move(showBoxField));
+    getEditorComponent().registerField(MOV(showBoxField));
 
     getEditorComponent().onChangedCbk([this](std::string_view) {
         _aabb.set(_refaabb.getMin(), _refaabb.getMax());

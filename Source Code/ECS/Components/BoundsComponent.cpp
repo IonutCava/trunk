@@ -24,7 +24,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     bbField._type = EditorComponentFieldType::BOUNDING_BOX;
     bbField._readOnly = true;
     bbField._serialise = false;
-    _editorComponent.registerField(std::move(bbField));
+    _editorComponent.registerField(MOV(bbField));
 
     EditorComponentField rbbField = {};
     rbbField._name = "Ref Bounding Box";
@@ -32,7 +32,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     rbbField._type = EditorComponentFieldType::BOUNDING_BOX;
     rbbField._readOnly = true;
     rbbField._serialise = false;
-    _editorComponent.registerField(std::move(rbbField));
+    _editorComponent.registerField(MOV(rbbField));
 
     EditorComponentField bsField = {};
     bsField._name = "Bounding Sphere";
@@ -40,7 +40,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     bsField._type = EditorComponentFieldType::BOUNDING_SPHERE;
     bsField._readOnly = true;
     bsField._serialise = false;
-    _editorComponent.registerField(std::move(bsField));
+    _editorComponent.registerField(MOV(bsField));
 
     EditorComponentField obsField = {};
     obsField._name = "Oriented Bouding Box";
@@ -48,7 +48,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     obsField._type = EditorComponentFieldType::ORIENTED_BOUNDING_BOX;
     obsField._readOnly = true;
     obsField._serialise = false;
-    _editorComponent.registerField(std::move(obsField));
+    _editorComponent.registerField(MOV(obsField));
 
     EditorComponentField vbbField = {};
     vbbField._name = "Show AABB";
@@ -58,7 +58,7 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     vbbField._basicType = GFX::PushConstantType::BOOL;
     vbbField._readOnly = false;
 
-    _editorComponent.registerField(std::move(vbbField));
+    _editorComponent.registerField(MOV(vbbField));
 
     EditorComponentField vbsField = {};
     vbsField._name = "Show Bounding Sphere";
@@ -67,16 +67,16 @@ BoundsComponent::BoundsComponent(SceneGraphNode* sgn, PlatformContext& context)
     vbsField._type = EditorComponentFieldType::PUSH_TYPE;
     vbsField._basicType = GFX::PushConstantType::BOOL;
     vbsField._readOnly = false;
-    _editorComponent.registerField(std::move(vbsField));
+    _editorComponent.registerField(MOV(vbsField));
 
     EditorComponentField recomputeBoundsField = {};
     recomputeBoundsField._name = "Recompute Bounds";
     recomputeBoundsField._range = { recomputeBoundsField._name.length() * 10.0f, 20.0f };//dimensions
     recomputeBoundsField._type = EditorComponentFieldType::BUTTON;
     recomputeBoundsField._readOnly = false; //disabled/enabled
-    _editorComponent.registerField(std::move(recomputeBoundsField));
+    _editorComponent.registerField(MOV(recomputeBoundsField));
 
-    _editorComponent.onChangedCbk([this](std::string_view field) {
+    _editorComponent.onChangedCbk([this](const std::string_view field) {
         if (field == "Recompute Bounds") {
             flagBoundingBoxDirty(to_base(TransformType::ALL), true);
         }

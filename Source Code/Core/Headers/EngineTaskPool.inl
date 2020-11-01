@@ -36,12 +36,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     template<class Predicate>
     Task* CreateTask(PlatformContext& context, Predicate&& threadedFunction, bool allowedInIdle) {
-        return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), std::move(threadedFunction), allowedInIdle);
+        return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), MOV(threadedFunction), allowedInIdle);
     }
 
     template<class Predicate>
     Task* CreateTask(PlatformContext& context, Task* parentTask, Predicate&& threadedFunction, bool allowedInIdle) {
-        return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, std::move(threadedFunction), allowedInIdle);
+        return CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), parentTask, MOV(threadedFunction), allowedInIdle);
     }
 
 }; //namespace Divide

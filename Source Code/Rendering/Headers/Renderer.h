@@ -53,7 +53,7 @@ class Renderer final : public PlatformContextComponent {
                    size_t samplerHash,
                    LightPool& lightPool,
                    const Camera* camera,
-                   GFX::CommandBuffer& bufferInOut) const;
+                   GFX::CommandBuffer& bufferInOut);
 
     void idle() const;
 
@@ -64,9 +64,15 @@ class Renderer final : public PlatformContextComponent {
     const PostFX& postFX() const noexcept { return *_postFX; }
 
   private:
+    mat4<F32>         _previousProjMatrix;
     ShaderProgram_ptr _lightCullComputeShader = nullptr;
-    ShaderBuffer*     _perTileLightIndexBuffer = nullptr;
+    ShaderProgram_ptr _lightBuildClusteredAABBsComputeShader = nullptr;
+    ShaderBuffer*     _lightIndexBuffer = nullptr;
+    ShaderBuffer*     _lightGridBuffer = nullptr;
+    ShaderBuffer*     _globalIndexCountBuffer = nullptr;
+    ShaderBuffer*     _lightClusterAABBsBuffer = nullptr;
     Pipeline*         _lightCullPipeline = nullptr;
+    Pipeline*         _lightBuildClusteredAABBsPipeline = nullptr;
     eastl::unique_ptr<PostFX> _postFX = nullptr;
 };
 

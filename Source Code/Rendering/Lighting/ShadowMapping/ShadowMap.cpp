@@ -104,7 +104,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * (isCSM ? Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS : 1));
                 depthMapDescriptor.autoMipMaps(false);
 
-                vectorEASTL<RTAttachmentDescriptor> att = {
+                RTAttachmentDescriptors att = {
                     { depthMapDescriptor, depthMapSampler.getHash(), RTAttachmentType::Colour },
                 };
 
@@ -123,18 +123,18 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 }
             } break;
             case ShadowType::CUBEMAP: {
-                depthMapSampler.anisotropyLevel(settings.point.anisotropicFilteringLevel);
-
                 TextureDescriptor colourMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
                 colourMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                colourMapDescriptor.autoMipMaps(false);
                 depthMapSampler.minFilter(TextureFilter::LINEAR);
-                depthMapSampler.anisotropyLevel(0u);
+                depthMapSampler.anisotropyLevel(0);
                 const size_t samplerHash = depthMapSampler.getHash();
 
                 TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
                 depthDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+                depthDescriptor.autoMipMaps(false);
 
-                vectorEASTL<RTAttachmentDescriptor> att = {
+                RTAttachmentDescriptors att = {
                     { colourMapDescriptor, samplerHash, RTAttachmentType::Colour },
                     { depthDescriptor, samplerHash, RTAttachmentType::Depth },
                 };

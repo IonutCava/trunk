@@ -47,7 +47,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 
     TextureDescriptor outputDescriptor = _screenRTs._hdr._screenRef._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->descriptor();
     {
-        vectorEASTL<RTAttachmentDescriptor> att = { { outputDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
+        RTAttachmentDescriptors att = { { outputDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
         desc._name = "PostFX Output HDR";
         desc._attachments = att.data();
 
@@ -56,7 +56,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     {
         outputDescriptor.dataType(GFXDataFormat::UNSIGNED_BYTE);
         //Colour0 holds the LDR screen texture
-        vectorEASTL<RTAttachmentDescriptor> att = { { outputDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
+        RTAttachmentDescriptors att = { { outputDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
 
         desc._name = "PostFX Output LDR 0";
         desc._attachments = att.data();
@@ -68,7 +68,9 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     }
     {
         TextureDescriptor edgeDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
-        vectorEASTL<RTAttachmentDescriptor> att = { { edgeDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
+        edgeDescriptor.hasMipMaps(false);
+
+        RTAttachmentDescriptors att = { { edgeDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
 
         desc._name = "SceneEdges";
         desc._attachments = att.data();
@@ -77,12 +79,12 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     {
         SamplerDescriptor lumaSampler = {};
         lumaSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
-        lumaSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-        lumaSampler.magFilter(TextureFilter::LINEAR);
+        lumaSampler.minFilter(TextureFilter::NEAREST);
+        lumaSampler.magFilter(TextureFilter::NEAREST);
 
         TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-        lumaDescriptor.autoMipMaps(true);
-        vectorEASTL<RTAttachmentDescriptor> att = { { lumaDescriptor, lumaSampler.getHash(), RTAttachmentType::Colour }, };
+        lumaDescriptor.hasMipMaps(false);
+        RTAttachmentDescriptors att = { { lumaDescriptor, lumaSampler.getHash(), RTAttachmentType::Colour }, };
 
         desc._name = "Luminance";
         desc._resolution = vec2<U16>(1);

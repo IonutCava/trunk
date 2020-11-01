@@ -74,7 +74,7 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
 
     bool useMSAA() const noexcept;
 
-    void updateMSAASampleCount(U8 sampleCount) final;
+    void updateMSAASampleCount(const U8 sampleCount) final;
 
   protected:
     Pipeline* _blurPipeline = nullptr;

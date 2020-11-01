@@ -98,37 +98,36 @@ class LightPool : public SceneComponent,
 #pragma pack(pop)
 
   public:
+    struct ShadowLightList
+    {
+        U16 count = 0;
+        Light* entries[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS];
+    };
+
     using LightList = vectorEASTL<Light*>;
 
     explicit LightPool(Scene& parentScene, PlatformContext& context);
     ~LightPool();
 
     /// Add a new light to the manager
-    bool addLight(Light& light);
+    [[nodiscard]] bool addLight(Light& light);
     /// remove a light from the manager
-    bool removeLight(Light& light);
+    [[nodiscard]] bool removeLight(Light& light);
     /// disable or enable a specific light type
-    inline void toggleLightType(LightType type) noexcept {
-        toggleLightType(type, !lightTypeEnabled(type));
-    }
-    inline void toggleLightType(LightType type, const bool state) noexcept {
-        _lightTypeState[to_U32(type)] = state;
-    }
-    inline bool lightTypeEnabled(LightType type) const noexcept {
-        return _lightTypeState[to_U32(type)];
-    }
+    void toggleLightType(const LightType type)                   noexcept { toggleLightType(type, !lightTypeEnabled(type)); }
+    void toggleLightType(const LightType type, const bool state) noexcept { _lightTypeState[to_U32(type)] = state; }
+
+    [[nodiscard]] bool lightTypeEnabled(const LightType type) const noexcept { return _lightTypeState[to_U32(type)]; }
     /// Retrieve the number of active lights in the scene;
-    inline const U32 getActiveLightCount(RenderStage stage, LightType type) const noexcept {
-        return _activeLightCount[to_base(stage)][to_U32(type)];
-    }
+    [[nodiscard]] U32 getActiveLightCount(const RenderStage stage, const LightType type) const noexcept { return _activeLightCount[to_base(stage)][to_U32(type)]; }
 
     bool clear();
-    inline LightList& getLights(LightType type) { 
+    [[nodiscard]] LightList& getLights(const LightType type) {
         SharedLock<SharedMutex> r_lock(_lightLock); 
         return _lights[to_U32(type)];
     }
 
-    Light* getLight(I64 lightGUID, LightType type);
+    [[nodiscard]] Light* getLight(I64 lightGUID, LightType type);
 
     void prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
 
@@ -143,23 +142,24 @@ class LightPool : public SceneComponent,
     void debugLight(Light* light);
 
     static void idle();
-    
 
     /// Get the appropriate shadow bind slot for every light's shadow
-    static U8 getShadowBindSlotOffset(ShadowType type) noexcept {
+    [[nodiscard]] static U8 getShadowBindSlotOffset(const ShadowType type) noexcept {
         return to_U8(_shadowLocation[to_U32(type)]);
     }
 
     /// Get the appropriate shadow bind slot offset for every light's shadow
-    static U8 getShadowBindSlotOffset(LightType lightType) noexcept {
+    [[nodiscard]] static U8 getShadowBindSlotOffset(const LightType lightType) noexcept {
         switch (lightType) {
-            default:
             case LightType::SPOT:
                 return getShadowBindSlotOffset(ShadowType::SINGLE);
             case LightType::POINT:
                 return getShadowBindSlotOffset(ShadowType::CUBEMAP);
             case LightType::DIRECTIONAL:
                 return getShadowBindSlotOffset(ShadowType::LAYERED);
+            default:
+                DIVIDE_UNEXPECTED_CALL();
+                return 0u;
         };
     }
     
@@ -169,15 +169,16 @@ class LightPool : public SceneComponent,
   protected:
     using LightShadowProperties = std::array<Light::ShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS>;
 
-    friend class SceneManager;
+    friend class RenderPass;
     void generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffer& bufferInOut);
 
-    inline LightList::const_iterator findLight(I64 GUID, LightType type) const {
+    friend class SceneManager;
+    [[nodiscard]] LightList::const_iterator findLight(const I64 GUID, const LightType type) const {
         SharedLock<SharedMutex> r_lock(_lightLock);
         return findLightLocked(GUID, type);
     }
 
-    inline LightList::const_iterator findLightLocked(I64 GUID, LightType type) const {
+    [[nodiscard]] LightList::const_iterator findLightLocked(I64 GUID, const LightType type) const {
         return eastl::find_if(eastl::cbegin(_lights[to_U32(type)]), eastl::cend(_lights[to_U32(type)]),
                              [&GUID](Light* const light) noexcept {
                                  return (light && light->getGUID() == GUID);
@@ -205,7 +206,7 @@ class LightPool : public SceneComponent,
     std::array<LightList, to_base(LightType::COUNT)> _lights;
     std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
 
-    LightList _sortedShadowLights;
+    ShadowLightList _sortedShadowLights = {};
     ShadowProperties _shadowBufferData;
 
     mutable SharedMutex _lightLock;

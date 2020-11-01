@@ -66,7 +66,9 @@ Light::Light(SceneGraphNode* sgn, const F32 range, const LightType type, LightPo
 Light::~Light()
 {
     UnregisterAllEventCallbacks();
-    _parentPool.removeLight(*this);
+    if (!_parentPool.removeLight(*this)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 }
 
 void Light::registerFields(EditorComponent& comp) {
@@ -77,7 +79,7 @@ void Light::registerFields(EditorComponent& comp) {
     rangeField._readOnly = false;
     rangeField._range = { std::numeric_limits<F32>::epsilon(), 10000.f };
     rangeField._basicType = GFX::PushConstantType::FLOAT;
-    comp.registerField(std::move(rangeField));
+    comp.registerField(MOV(rangeField));
 
     EditorComponentField colourField = {};
     colourField._name = "Colour";
@@ -86,7 +88,7 @@ void Light::registerFields(EditorComponent& comp) {
     colourField._type = EditorComponentFieldType::PUSH_TYPE;
     colourField._readOnly = false;
     colourField._basicType = GFX::PushConstantType::FCOLOUR3;
-    comp.registerField(std::move(colourField));
+    comp.registerField(MOV(colourField));
 
     EditorComponentField castsShadowsField = {};
     castsShadowsField._name = "Is Shadow Caster";
@@ -94,7 +96,7 @@ void Light::registerFields(EditorComponent& comp) {
     castsShadowsField._type = EditorComponentFieldType::PUSH_TYPE;
     castsShadowsField._readOnly = false;
     castsShadowsField._basicType = GFX::PushConstantType::BOOL;
-    comp.registerField(std::move(castsShadowsField));
+    comp.registerField(MOV(castsShadowsField));
 
     EditorComponentField shadowBiasField = {};
     shadowBiasField._name = "Shadow Bias";
@@ -103,7 +105,7 @@ void Light::registerFields(EditorComponent& comp) {
     shadowBiasField._readOnly = false;
     shadowBiasField._range = { std::numeric_limits<F32>::epsilon(), 1.0f };
     shadowBiasField._basicType = GFX::PushConstantType::FLOAT;
-    comp.registerField(std::move(shadowBiasField));
+    comp.registerField(MOV(shadowBiasField));
 
     EditorComponentField shadowStrengthField = {};
     shadowStrengthField._name = "Shadow Strength";
@@ -112,7 +114,7 @@ void Light::registerFields(EditorComponent& comp) {
     shadowStrengthField._readOnly = false;
     shadowStrengthField._range = { std::numeric_limits<F32>::epsilon(), 10.0f };
     shadowStrengthField._basicType = GFX::PushConstantType::FLOAT;
-    comp.registerField(std::move(shadowStrengthField));
+    comp.registerField(MOV(shadowStrengthField));
 }
 
 void Light::updateCache(const ECS::CustomEvent& data) {

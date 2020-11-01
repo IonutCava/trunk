@@ -97,7 +97,7 @@ bool TaskPool::enqueue(PoolTask&& task, const TaskPriority priority, const U32 t
         _taskCallbacks[taskIndex].push_back(onCompletionFunction);
     }
 
-    return _poolImpl.addTask(std::move(task));
+    return _poolImpl.addTask(MOV(task));
 }
 
 void TaskPool::runCbkAndClearTask(const U32 taskIdentifier) {
@@ -213,10 +213,10 @@ void TaskPool::PoolHolder::threadWaiting() const {
 
 bool TaskPool::PoolHolder::addTask(PoolTask&& job) const {
     if (_poolImpl.first != nullptr) {
-        return _poolImpl.first->addTask(std::move(job));
+        return _poolImpl.first->addTask(MOV(job));
     }
 
-    return _poolImpl.second->addTask(std::move(job));
+    return _poolImpl.second->addTask(MOV(job));
 }
 
 void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor) {

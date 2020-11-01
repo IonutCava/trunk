@@ -187,41 +187,44 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     std::array<U32, to_base(LightType::COUNT)> indexCounter;
     indexCounter.fill(0u);
 
-    if (!_sortedShadowLights.empty()) {
-        for (Light* light : _sortedShadowLights) {
-            const LightType lType = light->getLightType();
-            const U32 lTypeIndex = to_U32(lType);
-            if (indexCounter[lTypeIndex] == MaxLights(lType)) {
-                continue;
-            }
+    bool dirty = false;
+    for (U16 i = 0; i < _sortedShadowLights.count; ++i) {
+        Light* light = _sortedShadowLights.entries[i];
 
-            ShadowMap::generateShadowMaps(_context, playerCamera, *light, bufferInOut);
-            const Light::ShadowProperties& propsSource = light->getShadowProperties();
-
-            const U32 shadowIndex = indexCounter[lTypeIndex]++;
-            switch (lType) {
-                case LightType::POINT: {
-                    PointShadowProperties& propsTarget = _shadowBufferData._pointLights[shadowIndex];
-                    propsTarget._details = propsSource._lightDetails;
-                    propsTarget._position = propsSource._lightPosition[0];
-                }break;
-                case LightType::SPOT: {
-                    SpotShadowProperties& propsTarget = _shadowBufferData._spotLights[shadowIndex];
-                    propsTarget._details = propsSource._lightDetails;
-                    propsTarget._vpMatrix = propsSource._lightVP[0];
-                    propsTarget._position = propsSource._lightPosition[0];
-                }break;
-                case LightType::DIRECTIONAL:
-                {
-                    CSMShadowProperties& propsTarget = _shadowBufferData._dirLights[shadowIndex];
-                    propsTarget._details = propsSource._lightDetails;
-                    std::memcpy(propsTarget._position.data(), propsSource._lightPosition.data(), sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-                    std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP.data(), sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-                }break;
-                default: break;
-            };
+        const LightType lType = light->getLightType();
+        const U32 lTypeIndex = to_U32(lType);
+        if (indexCounter[lTypeIndex] == MaxLights(lType)) {
+            continue;
         }
+        dirty = true;
 
+        ShadowMap::generateShadowMaps(_context, playerCamera, *light, bufferInOut);
+        const Light::ShadowProperties& propsSource = light->getShadowProperties();
+
+        const U32 shadowIndex = indexCounter[lTypeIndex]++;
+        switch (lType) {
+            case LightType::POINT: {
+                PointShadowProperties& propsTarget = _shadowBufferData._pointLights[shadowIndex];
+                propsTarget._details = propsSource._lightDetails;
+                propsTarget._position = propsSource._lightPosition[0];
+            }break;
+            case LightType::SPOT: {
+                SpotShadowProperties& propsTarget = _shadowBufferData._spotLights[shadowIndex];
+                propsTarget._details = propsSource._lightDetails;
+                propsTarget._vpMatrix = propsSource._lightVP[0];
+                propsTarget._position = propsSource._lightPosition[0];
+            }break;
+            case LightType::DIRECTIONAL: {
+                CSMShadowProperties& propsTarget = _shadowBufferData._dirLights[shadowIndex];
+                propsTarget._details = propsSource._lightDetails;
+                std::memcpy(propsTarget._position.data(), propsSource._lightPosition.data(), sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+                std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP.data(), sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+            }break;
+            default: break;
+        };
+    }
+
+    if (dirty) {
         _shadowBuffer->writeData(_shadowBufferData.data());
     }
 
@@ -323,7 +326,7 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
         _activeLightCount[stageIndex][to_base(LightType::POINT)],
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
-        to_U32(_sortedShadowLights.size()));
+        to_U32(_sortedShadowLights.count));
 
     if (!sortedLights.empty()) {
         crtData._ambientColour.rgb = { 0.05f * sortedLights.front()->getDiffuseColour() };
@@ -364,9 +367,9 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
     OPTICK_EVENT();
 
     const vec3<F32>& eyePos = playerCamera->getEye();
+    const Frustum& camFrustum = playerCamera->getFrustum();
 
-    _sortedShadowLights.resize(0);
-    _sortedShadowLights.reserve(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
+    _sortedShadowLights.count = 0;
 
     g_sortedLightsContainer.resize(0);
     {
@@ -398,20 +401,44 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
         eastl::sort(eastl::begin(g_sortedLightsContainer), eastl::end(g_sortedLightsContainer), sortPredicate);
     }
 
+    const auto isInViewFrustum = [](const Frustum& frustum, Light* light) {
+        const LightType lType = light->getLightType();
 
-    std::array<U32, to_base(LightType::COUNT)> indexCounter;
+        if (lType != LightType::DIRECTIONAL) {
+            vec3<F32> position = light->positionCache();
+            F32 radius = 0.f;
+
+            if (lType == LightType::POINT) {
+                radius = light->range();
+            } else if (lType == LightType::SPOT) {
+                const F32 range = light->range();
+                const Angle::RADIANS<F32> angle = Angle::DegreesToRadians(static_cast<SpotLightComponent*>(light)->outerConeCutoffAngle());
+                radius = (angle > M_PI_4) ? (range * tan(angle)) : range * 0.5f / pow(cos(angle), 2.0f);
+                position += light->directionCache() * radius;
+            } else {
+                DIVIDE_UNEXPECTED_CALL();
+            }
+
+            return frustum.ContainsSphere(position, radius) != FrustumCollision::FRUSTUM_OUT;
+        }
+
+        return true;
+    };
+
+    std::array<U32, to_base(LightType::COUNT)> indexCounter = {};
     indexCounter.fill(0u);
     for (Light* light : g_sortedLightsContainer) {
         light->shadowIndex(-1);
         if (light->enabled() && light->castsShadows() && _lightTypeState[to_base(light->getLightType())]) {
-            if (_sortedShadowLights.size() < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+            if (_sortedShadowLights.count < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
                 const LightType lType = light->getLightType();
                 const U32 lTypeIndex = to_U32(lType);
-                if (indexCounter[lTypeIndex] == MaxLights(lType)) {
+                if (indexCounter[lTypeIndex] == MaxLights(lType) || !isInViewFrustum(camFrustum, light)) {
                     continue;
                 }
+
                 light->shadowIndex(to_I32(indexCounter[lTypeIndex]++));
-                _sortedShadowLights.push_back(light);
+                _sortedShadowLights.entries[_sortedShadowLights.count++] = light;
             }
         }
     }
@@ -440,7 +467,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         s_samplerHash = iconSampler.getHash();
     }
 
-    U8 stageIndex = to_U8(stage);
+    const U8 stageIndex = to_U8(stage);
 
     assert(_lightImpostorShader);
 

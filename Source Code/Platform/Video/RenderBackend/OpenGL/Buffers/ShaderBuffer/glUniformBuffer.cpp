@@ -173,7 +173,7 @@ bool glUniformBuffer::bindRange(const U8 bindIndex, const U32 offsetElementCount
            "glUniformBuffer::bindRange: attempted to bind a larger shader block than is allowed on the current platform");
 
     const bool wasBound = data._buffer->bindRange(bindIndex, data._offset, data._length);
-    GL_API::registerBufferBind(std::move(data));
+    GL_API::registerBufferBind(MOV(data));
 
     return wasBound;
 }

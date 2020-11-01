@@ -104,7 +104,7 @@ namespace Divide {
 
     template<bool IsBlocking>
     bool ThreadPool<IsBlocking>::addTask(PoolTask&& job) {
-        if (_queue._container.enqueue(std::move(job))) {
+        if (_queue._container.enqueue(MOV(job))) {
             _tasksLeft.fetch_add(1);
             return true;
         }
@@ -117,7 +117,7 @@ namespace Divide {
         PoolTask task = {};
         if (dequeTask(waitForTask, task)) {
             if (!task(IsBlocking && !waitForTask)) {
-                addTask(std::move(task));
+                addTask(MOV(task));
             }
             _tasksLeft.fetch_sub(1);
         }

@@ -48,7 +48,7 @@ class SingleShadowMapGenerator : public ShadowMapGenerator {
 
     void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) final;
 
-    void updateMSAASampleCount(U8 sampleCount) final;
+    void updateMSAASampleCount(const U8 sampleCount) final;
 
   protected:
     void postRender(const SpotLightComponent& light, GFX::CommandBuffer& bufferInOut);

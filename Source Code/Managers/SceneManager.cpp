@@ -18,7 +18,6 @@
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
-#include "Rendering/RenderPass/Headers/RenderQueue.h"
 #include "Scenes/Headers/ScenePool.h"
 #include "Scenes/Headers/SceneShaderData.h"
 
@@ -329,7 +328,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
     }
 
     if (i < Config::MAX_LOCAL_PLAYER_COUNT) {
-        Player_ptr player = std::make_shared<Player>(to_U8(i), parent().frameListenerMgr(), 666 + i);
+        const Player_ptr player = std::make_shared<Player>(to_U8(i), parent().frameListenerMgr(), 666 + i);
         player->camera()->fromCamera(*Camera::utilityCamera(Camera::UtilityCamera::DEFAULT));
         player->camera()->setFixedYawAxis(true);
         _players[i] = playerNode->get<UnitComponent>();
@@ -574,31 +573,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     }
 }
 
-void SceneManager::preRender(const RenderStagePass& stagePass, const Camera* camera, const Texture_ptr& hizColourTexture, const size_t hizTextureSampler, GFX::CommandBuffer& bufferInOut) {
-    OPTICK_EVENT();
-
-    _platformContext->gfx().getRenderer().preRender(stagePass, hizColourTexture, hizTextureSampler , getActiveScene().lightPool(), camera, bufferInOut);
-}
-
-void SceneManager::postRender(const RenderStagePass& stagePass, const Camera* camera, GFX::CommandBuffer& bufferInOut) {
-    OPTICK_EVENT();
-
-    const SceneRenderState& activeSceneRenderState = getActiveScene().renderState();
-    parent().renderPassManager()->getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
-}
-
-void SceneManager::preRenderAllPasses(const Camera* playerCamera) {
-    OPTICK_EVENT();
-
-    getActiveScene().lightPool().preRenderAllPasses(playerCamera);
-}
-
-void SceneManager::postRenderAllPasses(const Camera* playerCamera) {
-    OPTICK_EVENT();
-
-    getActiveScene().lightPool().postRenderAllPasses(playerCamera);
-}
-
 void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     //Set a 2D camera for rendering
     GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
@@ -615,12 +589,6 @@ void SceneManager::debugDraw(const RenderStagePass& stagePass, const Camera* cam
     Attorney::SceneManager::debugDraw(activeScene, camera, stagePass, bufferInOut);
     // Draw bounding boxes, skeletons, axis gizmo, etc.
     _platformContext->gfx().debugDraw(activeScene.renderState(), camera, bufferInOut);
-}
-
-void SceneManager::generateShadowMaps(GFX::CommandBuffer& bufferInOut) {
-    if (_platformContext->config().rendering.shadowMapping.enabled) {
-        getActiveScene().lightPool().generateShadowMaps(*playerCamera(), bufferInOut);
-    }
 }
 
 Camera* SceneManager::playerCamera(const PlayerIndex idx) const {
@@ -640,7 +608,7 @@ Camera* SceneManager::playerCamera() const {
     return playerCamera(_currentPlayerPass);
 }
 
-void SceneManager::currentPlayerPass(PlayerIndex idx) {
+void SceneManager::currentPlayerPass(const PlayerIndex idx) {
     OPTICK_EVENT();
 
     _currentPlayerPass = idx;
@@ -667,8 +635,6 @@ void SceneManager::moveCameraToNode(const SceneGraphNode* targetNode) const {
             }
         }
     }
-    
-
 
     playerCamera()->setEye(targetPos);
 }
@@ -1021,6 +987,8 @@ bool SceneManager::saveActiveScene(bool toCache, const bool deferred, const DELE
 }
 
 bool SceneManager::networkUpdate(U32 frameCount) {
+    ACKNOWLEDGE_UNUSED(frameCount);
+
     return true;
 }
 

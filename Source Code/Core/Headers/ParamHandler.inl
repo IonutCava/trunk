@@ -65,15 +65,9 @@ T ParamHandler::getParam(HashType nameID, T defaultValue) const {
 }
 
 template <typename T>
-void ParamHandler::setParam(HashType nameID, const T& value) {
+void ParamHandler::setParam(HashType nameID, T&& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
-    ParamMap::iterator it = _params.find(nameID);
-    if (it == std::end(_params)) {
-        const bool result = hashAlg::emplace(_params, nameID, value).second;
-        DIVIDE_ASSERT(result,"ParamHandler error: can't add specified value to map!");
-    } else {
-        it->second = value;
-    }
+    _params.insert_or_assign(nameID, MOV(value));
 }
 
 template <typename T>
@@ -102,14 +96,14 @@ inline stringImpl ParamHandler::getParam(HashType nameID, stringImpl defaultValu
 }
 
 template <>
-inline void ParamHandler::setParam(const HashType nameID, const stringImpl& value) {
+inline void ParamHandler::setParam(const HashType nameID, stringImpl&& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
     const ParamStringMap::iterator it = _paramsStr.find(nameID);
     if (it == std::end(_paramsStr)) {
-        const bool result = hashAlg::insert(_paramsStr, nameID, value).second;
+        const bool result = hashAlg::insert(_paramsStr, nameID, MOV(value)).second;
         DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
-        it->second = value;
+        it->second = MOV(value);
     }
 }
 
@@ -146,15 +140,9 @@ inline bool ParamHandler::getParam(HashType nameID, const bool defaultValue) con
 }
 
 template <>
-inline void ParamHandler::setParam(const HashType nameID, const bool& value) {
+inline void ParamHandler::setParam(const HashType nameID, bool&& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
-    const ParamBoolMap::iterator it = _paramBool.find(nameID);
-    if (it == std::end(_paramBool)) {
-        const bool result = hashAlg::emplace(_paramBool, nameID, value).second;
-        DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
-    } else {
-        it->second = value;
-    }
+    _paramBool.insert_or_assign(nameID, MOV(value));
 }
 
 template <>
@@ -189,15 +177,9 @@ inline F32 ParamHandler::getParam(HashType nameID, const F32 defaultValue) const
 }
 
 template <>
-inline void ParamHandler::setParam(const HashType nameID, const F32& value) {
+inline void ParamHandler::setParam(const HashType nameID, F32&& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
-    const ParamFloatMap::iterator it = _paramsFloat.find(nameID);
-    if (it == std::end(_paramsFloat)) {
-        const bool result = hashAlg::emplace(_paramsFloat, nameID, value).second;
-        DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
-    } else {
-        it->second = value;
-    }
+    _paramsFloat.insert_or_assign(nameID, MOV(value));
 }
 
 template <>

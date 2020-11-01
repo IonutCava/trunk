@@ -61,7 +61,7 @@ public:
     [[nodiscard]] T getParam(HashType nameID, T defaultValue = T()) const;
 
     template <typename T>
-    void setParam(HashType nameID, const T& value);
+    void setParam(HashType nameID, T&& value);
 
     template <typename T>
     void delParam(HashType nameID);

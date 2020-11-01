@@ -89,7 +89,7 @@ void CommandBuffer::add(CommandBuffer** buffers, const size_t count) {
 }
 
 void CommandBuffer::batch() {
-    OPTICK_EVENT();
+    OPTICK_EVENT("BATCHING COMMANDS");
 
     if (_batched) {
         return;

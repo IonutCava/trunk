@@ -195,7 +195,6 @@
     <None Include="../../assets\shaders\GLSL\deferredPreview.glsl" />
     <None Include="../../assets\shaders\GLSL\DepthOfField.glsl" />
     <None Include="../../assets\shaders\GLSL\depthPass.glsl" />
-    <None Include="../../assets\shaders\GLSL\DepthRangesConstruct.glsl" />
     <None Include="../../assets\shaders\GLSL\fbPreview.glsl" />
     <None Include="../../assets\shaders\GLSL\FXAA.glsl" />
     <None Include="../../assets\shaders\GLSL\grass.glsl" />
@@ -263,6 +262,7 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl" />
+    <Text Include="..\..\assets\shaders\GLSL\lightBuildClusteredAABBs.glsl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{CE681ABE-38E0-4445-92A0-0F17EE225473}</ProjectGuid>
