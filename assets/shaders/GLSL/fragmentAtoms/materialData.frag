@@ -74,22 +74,20 @@ mat3 getTBNWV() {
 #endif//USE_CUSTOM_TBN
 
 #if !defined(PRE_PASS)
-float Gloss(in vec3 bump, in vec2 uv)
-{
-    #if defined(USE_TOKSVIG)
-        // Compute the "Toksvig Factor"
-        float rlen = 1.0/saturate(length(bump));
-        return 1.0/(1.0 + power*(rlen - 1.0));
-    #elif defined(USE_TOKSVIG_MAP)
-        float baked_power = 100.0;
-        // Fetch pre-computed "Toksvig Factor"
-        // and adjust for specified power
-        float gloss = texture2D(texOcclusionMetallicRoughness, uv).a;
-        gloss /= mix(power/baked_power, 1.0, gloss);
-        return gloss;
-    #else
-        return 1.0;
-    #endif
+// Reduce specular aliasing by producing a modified roughness value
+// Tokuyoshi et al. 2019. Improved Geometric Specular Antialiasing.
+// http://www.jp.square-enix.com/tech/library/pdf/ImprovedGeometricSpecularAA.pdf
+float specularAntiAliasing(vec3 N, float a) {
+    // normal-based isotropic filtering
+    // this is originally meant for deferred rendering but is a bit simpler to implement than the forward version
+    // saves us from calculating uv offsets and sampling textures for every light
+    const float SIGMA2 = 0.25; // squared std dev of pixel filter kernel (in pixels)
+    const float KAPPA = 0.18; // clamping threshold
+    vec3 dndu = dFdx(N);
+    vec3 dndv = dFdy(N);
+    float variance = SIGMA2 * (dot(dndu, dndu) + dot(dndv, dndv));
+    float kernelRoughness2 = min(2.0 * variance, KAPPA);
+    return saturate(a + kernelRoughness2);
 }
 
 float getSSAO() {

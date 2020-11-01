@@ -88,38 +88,41 @@ float detail_getShadowFactorPoint(in uint shadowIndex, in float TanAcosNdotL) {
     return saturate(ret * crtDetails.w);
 }
 
-bool CanReceiveShadows(in int shadowIndex, in bool receivesShadows, in int lodLevel) {
-    return receivesShadows &&
-           shadowIndex >= 0 &&
-           shadowIndex < MAX_SHADOW_CASTING_LIGHTS &&
-           lodLevel <= 2;
+#define CAN_CAST_SHADOWS(IDX, LOD) (IDX >= 0 && IDX < MAX_SHADOW_CASTING_LIGHTS && LOD <= 2)
+
+float getShadowFactorDirectional(in int shadowIndex, in float TanAcosNdotL, in int lodLevel) {
+    return CAN_CAST_SHADOWS(shadowIndex, lodLevel) 
+                ? detail_getShadowFactorDirectional(shadowIndex, TanAcosNdotL)
+                : 1.0f;
 }
+
+float getShadowFactorPoint(in int shadowIndex, in float TanAcosNdotL, in int lodLevel) {
+    return CAN_CAST_SHADOWS(shadowIndex, lodLevel)
+                ? detail_getShadowFactorPoint(shadowIndex, TanAcosNdotL)
+                : 1.0f;
+}
+
+float getShadowFactorSpot(in int shadowIndex, in float TanAcosNdotL, in int lodLevel) {
+    return CAN_CAST_SHADOWS(shadowIndex, lodLevel)
+                ? detail_getShadowFactorSpot(shadowIndex, TanAcosNdotL)
+                : 1.0f;
+}
+
 #else //DISABLE_SHADOW_MAPPING
+
 int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
     return 0;
 }
+
+float getShadowFactorDirectional(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
+    return 1.0f;
+}
+float getShadowFactorPoint(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
+    return 1.0f;
+}
+float getShadowFactorSpot(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
+    return 1.0f;
+}
 #endif //DISABLE_SHADOW_MAPPING
 
-float getShadowFactor(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
-    float ret = 1.0f;
-
-#if !defined(DISABLE_SHADOW_MAPPING)
-    const int shadowIndex = lightOptions.y;
-    if (CanReceiveShadows(shadowIndex, receivesShadows, lodLevel)) {
-        switch (lightOptions.x) {
-            case 0:  {
-                ret = detail_getShadowFactorDirectional(shadowIndex, TanAcosNdotL);
-            } break;
-            case 1: {
-                ret = detail_getShadowFactorPoint(shadowIndex, TanAcosNdotL);
-            } break;
-            case 2 : {
-                ret = detail_getShadowFactorSpot(shadowIndex, TanAcosNdotL);
-            } break;
-        }
-    }
-#endif
-    return ret;
-
-}
 #endif //_SHADOW_MAPPING_FRAG_

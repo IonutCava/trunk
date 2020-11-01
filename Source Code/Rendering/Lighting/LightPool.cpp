@@ -25,6 +25,8 @@ std::array<TextureUsage, to_base(ShadowType::COUNT)> LightPool::_shadowLocation 
 }};
 
 namespace {
+    constexpr bool g_GroupSortedLightsByType = true;
+
     LightPool::LightList g_sortedLightsContainer = {};
     const auto MaxLights = [](const LightType type) noexcept -> U32 {
         switch (type) {
@@ -236,16 +238,16 @@ void LightPool::debugLight(Light* light) {
     ShadowMap::setDebugViewLight(context().gfx(), _debugLight);
 }
 
-Light* LightPool::getLight(I64 lightGUID, LightType type) {
+Light* LightPool::getLight(const I64 lightGUID, const LightType type) const {
     SharedLock<SharedMutex> r_lock(_lightLock);
 
-    LightList::const_iterator it = findLight(lightGUID, type);
+    const LightList::const_iterator it = findLight(lightGUID, type);
     assert(it != eastl::end(_lights[to_U32(type)]));
 
     return *it;
 }
 
-U32 LightPool::uploadLightList(RenderStage stage, const LightList& lights, const mat4<F32>& viewMatrix) {
+U32 LightPool::uploadLightList(const RenderStage stage, const LightList& lights, const mat4<F32>& viewMatrix) {
     const U8 stageIndex = to_U8(stage);
     U32 ret = 0u;
 
@@ -261,7 +263,7 @@ U32 LightPool::uploadLightList(RenderStage stage, const LightList& lights, const
         const U32 typeIndex = to_U32(type);
 
         if (_lightTypeState[typeIndex] && light->enabled()) {
-            if (ret++ >= Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+            if (++ret > Config::Lighting::MAX_POSSIBLE_LIGHTS) {
                 break;
             }
 
@@ -288,7 +290,7 @@ U32 LightPool::uploadLightList(RenderStage stage, const LightList& lights, const
 }
 
 // This should be called in a separate thread for each RenderStage
-void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
+void LightPool::prepareLightData(const RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix) {
     const U8 stageIndex = to_U8(stage);
 
     LightList& sortedLights = _sortedLights[stageIndex];
@@ -310,7 +312,12 @@ void LightPool::prepareLightData(RenderStage stage, const vec3<F32>& eyePos, con
         eastl::sort(eastl::begin(sortedLights),
                     eastl::end(sortedLights),
                     [&eyePos](Light* a, Light* b) noexcept {
-                        return a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
+                        if_constexpr(g_GroupSortedLightsByType) {
+                            return  a->getLightType() < b->getLightType() ||
+                                (a->getLightType() == b->getLightType() && a->distanceSquared(eyePos) < b->distanceSquared(eyePos));
+                        } else {
+                            return a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
+                        }
                     });
     }
     {

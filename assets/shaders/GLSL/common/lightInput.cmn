@@ -48,7 +48,8 @@ layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBl
 struct LightGrid
 {
     uint offset;
-    uint count;
+    uint countPoint;
+    uint countSpot;
 };
 
 layout(binding = BUFFER_LIGHT_GRID, std430) ACCESS buffer lightGridSSBO
@@ -83,7 +84,6 @@ float ToLinearDepth(in float depthIn);
 uint GetClusterZIndex(float screenDepth) {
     const float eyeDepth = ToLinearDepth(screenDepth);
 
-    //return uint(max(log(eyeDepth) * dvd_LightScale + dvd_LightBias, 0.0));
     return uint(max(log2(eyeDepth) * dvd_LightScale + dvd_LightBias, 0));
 }
 

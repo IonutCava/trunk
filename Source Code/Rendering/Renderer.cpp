@@ -69,7 +69,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
         bufferDescriptor._elementCount = numClusters;
         bufferDescriptor._ringBufferLength = 1;
-        bufferDescriptor._elementSize = 2 * sizeof(U32);
+        bufferDescriptor._elementSize = 3 * sizeof(U32);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
         bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "LIGHT_GRID_SSBO";
@@ -144,6 +144,8 @@ void Renderer::preRender(RenderStagePass stagePass,
                          const Camera* camera,
                          GFX::CommandBuffer& bufferInOut)
 {
+    ACKNOWLEDGE_UNUSED(samplerHash);
+
     if (stagePass._stage == RenderStage::SHADOW) {
         return;
     }
@@ -180,10 +182,6 @@ void Renderer::preRender(RenderStagePass stagePass,
     }
 
     GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Cull Lights" });
-
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set._textureData.setTexture(hizColourTexture->data(), samplerHash, TextureUsage::DEPTH);
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     bindPipelineCmd._pipeline = _lightCullPipeline;
     GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);

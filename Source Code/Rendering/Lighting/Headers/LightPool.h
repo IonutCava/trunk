@@ -127,7 +127,7 @@ class LightPool : public SceneComponent,
         return _lights[to_U32(type)];
     }
 
-    [[nodiscard]] Light* getLight(I64 lightGUID, LightType type);
+    [[nodiscard]] Light* getLight(const I64 lightGUID, const LightType type) const;
 
     void prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
 
