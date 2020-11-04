@@ -193,9 +193,6 @@
     <ClInclude Include="../../Source Code/Platform\Video\Headers\Pipeline.h">
       <Filter>Video\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="../../Source Code/Platform\File\Headers\FileWithPath.h">
-      <Filter>File\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="../../Source Code/Platform\Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers\glVAOCache.h">
       <Filter>Video\RenderBackend\OpenGL\Buffers\VertexBuffer\Headers</Filter>
     </ClInclude>
@@ -270,6 +267,9 @@
     </ClInclude>
     <ClInclude Include="../../Source Code\Platform\Input\Headers\InputHandler.h">
       <Filter>Input\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\ResourcePath.h">
+      <Filter>File\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -484,6 +484,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\Textures\TextureDescriptor.cpp">
       <Filter>Video\Textures</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\File\ResourcePath.cpp">
+      <Filter>File</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

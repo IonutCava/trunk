@@ -15,7 +15,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/Editor\ImguiExtras.cpp" />
     <ClCompile Include="../../Source Code/Editor\Widgets\DockedWindow.cpp" />
     <ClCompile Include="../../Source Code/Editor\Widgets\DockedWindows\OutputWindow.cpp" />
     <ClCompile Include="../../Source Code/Editor\Widgets\DockedWindows\PropertyWindow.cpp" />

@@ -200,9 +200,9 @@ TEST(TestFilePathSplit) {
     const stringImpl result1("file.test");
     const stringImpl result2("/path/path2/path4");
 
-    FileWithPath fileResult = splitPathToNameAndLocation(input);
-    CHECK_EQUAL(fileResult._path, result2);
-    CHECK_EQUAL(fileResult._fileName, result1);
+    const auto[name, path] = splitPathToNameAndLocation(input);
+    CHECK_EQUAL(path, result2);
+    CHECK_EQUAL(name, result1);
 }
 
 TEST(TestLineCount) {

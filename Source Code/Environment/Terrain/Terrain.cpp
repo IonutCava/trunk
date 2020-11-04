@@ -68,7 +68,7 @@ void TessellationParams::fromDescriptor(const std::shared_ptr<TerrainDescriptor>
 }
 
 Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
-    : Object3D(context, parentCache, descriptorHash, name, name, "", ObjectType::TERRAIN, to_U32(ObjectFlag::OBJECT_FLAG_NO_VB)),
+    : Object3D(context, parentCache, descriptorHash, name, ResourcePath{ name }, {}, ObjectType::TERRAIN, to_U32(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _terrainQuadtree(context)
 {
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::SPOT));

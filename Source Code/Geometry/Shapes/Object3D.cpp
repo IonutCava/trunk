@@ -12,7 +12,7 @@
 
 namespace Divide {
 
-Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, ObjectType type, U32 flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const ResourcePath& resourceName, const ResourcePath& resourceLocation, ObjectType type, U32 flagMask)
     : SceneNode(parentCache,
                 descriptorHash,
                 name,

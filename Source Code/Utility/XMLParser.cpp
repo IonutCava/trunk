@@ -162,7 +162,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
 }
 
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config) {
-    const stringImpl file = scenePath + "/" + fileName.c_str();
+    const stringImpl file = (scenePath + "/" + fileName).c_str();
 
     if (!fileExists(file.c_str())) {
         return;
@@ -176,7 +176,7 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
         const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
         scene->addMusic(MusicType::TYPE_BACKGROUND,
                         attributes.get<stringImpl>("name", "").c_str(),
-                        Paths::g_assetsLocation + attributes.get<stringImpl>("src", "").c_str());
+                        Paths::g_assetsLocation + attributes.get<stringImpl>("src", ""));
     }
 }
 

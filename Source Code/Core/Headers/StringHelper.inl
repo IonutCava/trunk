@@ -180,6 +180,17 @@ bool ReplaceStringInPlace(T_str& subject,
     return ret;
 }
 
+template<>
+inline bool ReplaceStringInPlace(ResourcePath& subject,
+                                 const std::string_view search,
+                                 const std::string_view replace,
+                                 const bool recursive) {
+    auto temp = subject.str();
+    const bool ret = ReplaceStringInPlace(temp, search, replace, recursive);
+    subject = ResourcePath(temp);
+    return ret;
+}
+
 template<typename T_str>
 T_str ReplaceString(std::string_view subject,
                     std::string_view search,

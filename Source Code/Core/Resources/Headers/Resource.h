@@ -32,6 +32,7 @@
 #pragma once
 #ifndef _RESOURCE_H_
 #define _RESOURCE_H_
+#include "Core/Headers/ObjectPool.h"
 
 namespace Divide {
 
@@ -53,8 +54,8 @@ enum class ResourceState : U8 {
     RES_UNKNOWN = 0,  //<The resource exists, but it's state is undefined
     RES_CREATED = 1,  //<The pointer has been created and instantiated, but no data has been loaded
     RES_LOADING = 2,  //<The resource is loading, creating data, parsing scripts, etc
-    RES_UNLOADING = 3,  //<The resource is unloading, deleting data, etc
-    RES_LOADED  = 4,  //<The resource is loaded and available
+    RES_LOADED  = 3,  //<The resource is loaded and available
+    RES_UNLOADING = 4,  //<The resource is unloading, deleting data, etc
     COUNT
 };
 
@@ -100,18 +101,18 @@ public:
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
                             const Str256& resourceName,
-                            const stringImpl& assetName);
+                            const ResourcePath& assetName);
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
                             const Str256& resourceName,
-                            const stringImpl& assetName,
-                            const stringImpl& assetLocation);
+                            const ResourcePath& assetName,
+                            const ResourcePath& assetLocation);
 
     /// Loading and unloading interface
     virtual bool load();
     virtual bool unload();
 
-    stringImpl assetPath() const { return assetLocation() + "/" + assetName(); }
+    stringImpl assetPath() const { return assetLocation().str() + "/" + assetName().str(); }
     void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);
 
 protected:
@@ -123,8 +124,8 @@ protected:
     using CallbackList = vectorEASTL<DELEGATE<void, CachedResource*>>;
     std::array<CallbackList, to_base(ResourceState::COUNT)> _loadingCallbacks;
     mutable Mutex _callbackLock;
-    PROPERTY_RW(stringImpl, assetLocation);
-    PROPERTY_RW(stringImpl, assetName);
+    PROPERTY_RW(ResourcePath, assetLocation);
+    PROPERTY_RW(ResourcePath, assetName);
     PROPERTY_R(size_t, descriptorHash);
 };
 

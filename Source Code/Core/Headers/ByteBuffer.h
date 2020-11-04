@@ -62,6 +62,8 @@ class ByteBuffer {
     ByteBuffer& operator<<(const bool& value);
     template <> 
     ByteBuffer& operator<<(const stringImpl& value);
+    template <>
+    ByteBuffer& operator<<(const ResourcePath& value);
 
     /// read_noskip calls don't move the read head
     template <typename T>
@@ -70,6 +72,8 @@ class ByteBuffer {
     void read_noskip(bool& value) const;
     template <typename T>
     void read_noskip(stringImpl& value);
+    template <typename T>
+    void read_noskip(ResourcePath& value);
 
     template <typename T>
     ByteBuffer& operator>>(T& value);
@@ -77,8 +81,10 @@ class ByteBuffer {
     ByteBuffer& operator>>(bool& value);
     template<>
     ByteBuffer& operator>>(stringImpl& value);
-    template <typename T>
-    ByteBuffer& operator>>(Unused<T>& value);
+    template<>
+    ByteBuffer& operator>>(ResourcePath& value);
+    template <typename U>
+    ByteBuffer& operator>>(Unused<U>& value);
 
     template <typename T>
     void read_skip();
@@ -96,6 +102,7 @@ class ByteBuffer {
     void append(const T *src, size_t cnt);
     void append(const Byte *src, size_t cnt);
     void append(const stringImpl& str);
+    void append(const ResourcePath& str);
     void append(const ByteBuffer &buffer);
     void appendPackXYZ(F32 x, F32 y, F32 z);
     void appendPackGUID(U64 guid);

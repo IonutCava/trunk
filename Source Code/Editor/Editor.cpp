@@ -1399,7 +1399,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
 
         static F32 zoom = 1.0f;
         static ImVec2 zoomCenter(0.5f, 0.5f);
-        ImGui::ImageZoomAndPan((void*)(intptr_t)tex->data()._textureHandle, ImVec2(dimensions.width, dimensions.height / aspect), aspect, zoom, zoomCenter, 2, 3);
+        ImGui::ImageZoomAndPan((ImTextureID)(intptr_t)tex->data()._textureHandle, ImVec2(dimensions.width, dimensions.height / aspect), aspect, zoom, zoomCenter, 2, 3);
 
         if (nonDefaultColours) {
             ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
@@ -1594,7 +1594,7 @@ SceneNode_ptr Editor::createNode(SceneNodeType type, const ResourceDescriptor& d
 
 bool Editor::saveToXML() const {
     boost::property_tree::ptree pt;
-    const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
+    const ResourcePath editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
 
     pt.put("showMemEditor", _showMemoryEditor);
     pt.put("showSampleWindow", _showSampleWindow);
@@ -1605,7 +1605,7 @@ bool Editor::saveToXML() const {
 
     if (createDirectory(editorPath.c_str())) {
         if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true)) {
-            XML::writeXML(editorPath + g_editorSaveFile, pt);
+            XML::writeXML((editorPath + g_editorSaveFile).str(), pt);
             return true;
         }
     }
@@ -1615,7 +1615,7 @@ bool Editor::saveToXML() const {
 
 bool Editor::loadFromXML() {
     boost::property_tree::ptree pt;
-    const Str256& editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
+    const ResourcePath editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     if (!fileExists((editorPath + g_editorSaveFile).c_str())) {
         if (fileExists((editorPath + g_editorSaveFileBak).c_str())) {
             if (!copyFile(editorPath.c_str(), g_editorSaveFileBak, editorPath.c_str(), g_editorSaveFile, true)) {
@@ -1625,7 +1625,7 @@ bool Editor::loadFromXML() {
     }
 
     if (fileExists((editorPath + g_editorSaveFile).c_str())) {
-        XML::readXML(editorPath + g_editorSaveFile, pt);
+        XML::readXML((editorPath + g_editorSaveFile).str(), pt);
         _showMemoryEditor = pt.get("showMemEditor", false);
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);

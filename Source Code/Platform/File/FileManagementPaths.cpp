@@ -7,43 +7,43 @@
 
 namespace Divide {
 
-Str64 Paths::g_logPath = "logs/";
+ResourcePath Paths::g_logPath = ResourcePath("logs/");
 
-Str128 Paths::g_exePath;
-Str64 Paths::g_assetsLocation;
-Str64 Paths::g_shadersLocation;
-Str64 Paths::g_texturesLocation;
-Str64 Paths::g_heightmapLocation;
-Str64 Paths::g_climatesLowResLocation;
-Str64 Paths::g_climatesMedResLocation;
-Str64 Paths::g_climatesHighResLocation;
-Str64 Paths::g_xmlDataLocation;
-Str64 Paths::g_scenesLocation;
+ResourcePath Paths::g_exePath;
+ResourcePath Paths::g_assetsLocation;
+ResourcePath Paths::g_shadersLocation;
+ResourcePath Paths::g_texturesLocation;
+ResourcePath Paths::g_heightmapLocation;
+ResourcePath Paths::g_climatesLowResLocation;
+ResourcePath Paths::g_climatesMedResLocation;
+ResourcePath Paths::g_climatesHighResLocation;
+ResourcePath Paths::g_xmlDataLocation;
+ResourcePath Paths::g_scenesLocation;
 
-Str64 Paths::g_saveLocation;
-Str64 Paths::g_imagesLocation;
-Str64 Paths::g_materialsLocation;
-Str64 Paths::g_navMeshesLocation;
-Str64 Paths::g_GUILocation;
-Str64 Paths::g_fontsPath;
-Str64 Paths::g_soundsLocation;
-Str64 Paths::g_localisationPath;
-Str64 Paths::g_cacheLocation;
-Str64 Paths::g_terrainCacheLocation;
-Str64 Paths::g_geometryCacheLocation;
+ResourcePath Paths::g_saveLocation;
+ResourcePath Paths::g_imagesLocation;
+ResourcePath Paths::g_materialsLocation;
+ResourcePath Paths::g_navMeshesLocation;
+ResourcePath Paths::g_GUILocation;
+ResourcePath Paths::g_fontsPath;
+ResourcePath Paths::g_soundsLocation;
+ResourcePath Paths::g_localisationPath;
+ResourcePath Paths::g_cacheLocation;
+ResourcePath Paths::g_terrainCacheLocation;
+ResourcePath Paths::g_geometryCacheLocation;
 
-Str64 Paths::Editor::g_saveLocation;
-Str64 Paths::Editor::g_tabLayoutFile;
-Str64 Paths::Editor::g_panelLayoutFile;
+ResourcePath Paths::Editor::g_saveLocation;
+ResourcePath Paths::Editor::g_tabLayoutFile;
+ResourcePath Paths::Editor::g_panelLayoutFile;
 
-Str64 Paths::Scripts::g_scriptsLocation;
-Str64 Paths::Scripts::g_scriptsAtomsLocation;
+ResourcePath Paths::Scripts::g_scriptsLocation;
+ResourcePath Paths::Scripts::g_scriptsAtomsLocation;
 
-Str64 Paths::Textures::g_metadataLocation;
+ResourcePath Paths::Textures::g_metadataLocation;
 
-Str64 Paths::Shaders::g_cacheLocation;
-Str64 Paths::Shaders::g_cacheLocationText;
-Str64 Paths::Shaders::g_cacheLocationBin;
+ResourcePath Paths::Shaders::g_cacheLocation;
+ResourcePath Paths::Shaders::g_cacheLocationText;
+ResourcePath Paths::Shaders::g_cacheLocationBin;
 
 // these must match the last 4 characters of the atom file
 Str8 Paths::Shaders::GLSL::g_fragAtomExt;
@@ -55,58 +55,58 @@ Str8 Paths::Shaders::GLSL::g_compAtomExt;
 Str8 Paths::Shaders::GLSL::g_comnAtomExt;
 
 // Shader subfolder name that contains shader files for OpenGL
-Str64 Paths::Shaders::GLSL::g_parentShaderLoc;
+ResourcePath Paths::Shaders::GLSL::g_parentShaderLoc;
 // Atom folder names in parent shader folder
-Str64 Paths::Shaders::GLSL::g_fragAtomLoc;
-Str64 Paths::Shaders::GLSL::g_vertAtomLoc;
-Str64 Paths::Shaders::GLSL::g_geomAtomLoc;
-Str64 Paths::Shaders::GLSL::g_tescAtomLoc;
-Str64 Paths::Shaders::GLSL::g_teseAtomLoc;
-Str64 Paths::Shaders::GLSL::g_compAtomLoc;
-Str64 Paths::Shaders::GLSL::g_comnAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_fragAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_vertAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_geomAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_tescAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_teseAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_compAtomLoc;
+ResourcePath Paths::Shaders::GLSL::g_comnAtomLoc;
 
-Str64 Paths::Shaders::HLSL::g_parentShaderLoc;
+ResourcePath Paths::Shaders::HLSL::g_parentShaderLoc;
 
 boost::regex Paths::g_includePattern;
 boost::regex Paths::g_definePattern;
 boost::regex Paths::g_usePattern;
 
 void Paths::initPaths(const SysInfo& info) {
-    g_exePath.assign(info._pathAndFilename._path + "/");
-    g_logPath = "logs/";
+    g_exePath = info._fileAndPath.second + "/";
+    g_logPath = ResourcePath("logs/");
 
-    g_assetsLocation = "assets/";
-    g_shadersLocation = "shaders/";
-    g_texturesLocation = "textures/";
-    g_heightmapLocation = "terrain/";
-    g_climatesLowResLocation = "climates_05k/";
-    g_climatesMedResLocation = "climates_1k/";
-    g_climatesHighResLocation = "climates_4k/";
-    g_xmlDataLocation = "XML/";
-    g_scenesLocation = "Scenes/";
+    g_assetsLocation = ResourcePath("assets/");
+    g_shadersLocation = ResourcePath("shaders/");
+    g_texturesLocation = ResourcePath("textures/");
+    g_heightmapLocation = ResourcePath("terrain/");
+    g_climatesLowResLocation = ResourcePath("climates_05k/");
+    g_climatesMedResLocation = ResourcePath("climates_1k/");
+    g_climatesHighResLocation = ResourcePath("climates_4k/");
+    g_xmlDataLocation = ResourcePath("XML/");
+    g_scenesLocation = ResourcePath("Scenes/");
 
-    g_saveLocation = "SaveData/";
-    g_imagesLocation = "misc_images/";
-    g_materialsLocation = "materials/";
-    g_navMeshesLocation = "navMeshes/";
-    g_GUILocation = "GUI/";
-    g_fontsPath = "fonts/";
-    g_soundsLocation = "sounds/";
-    g_localisationPath = "localisation/";
-    g_cacheLocation = "cache/";
-    g_terrainCacheLocation = "terrain/";
-    g_geometryCacheLocation = "geometry/";
+    g_saveLocation = ResourcePath("SaveData/");
+    g_imagesLocation = ResourcePath("misc_images/");
+    g_materialsLocation = ResourcePath("materials/");
+    g_navMeshesLocation = ResourcePath("navMeshes/");
+    g_GUILocation = ResourcePath("GUI/");
+    g_fontsPath = ResourcePath("fonts/");
+    g_soundsLocation = ResourcePath("sounds/");
+    g_localisationPath = ResourcePath("localisation/");
+    g_cacheLocation = ResourcePath("cache/");
+    g_terrainCacheLocation = ResourcePath("terrain/");
+    g_geometryCacheLocation = ResourcePath("geometry/");
 
-    Editor::g_saveLocation = "Editor/";
-    Editor::g_tabLayoutFile = "Tabs.layout";
-    Editor::g_panelLayoutFile = "Panels.layout";
+    Editor::g_saveLocation = ResourcePath("Editor/");
+    Editor::g_tabLayoutFile = ResourcePath("Tabs.layout");
+    Editor::g_panelLayoutFile = ResourcePath("Panels.layout");
 
     Scripts::g_scriptsLocation = Paths::g_assetsLocation + "scripts/";
     Scripts::g_scriptsAtomsLocation = Paths::Scripts::g_scriptsLocation + "atoms/";
 
-    Textures::g_metadataLocation = "textureData/";
+    Textures::g_metadataLocation = ResourcePath("textureData/");
 
-    Shaders::g_cacheLocation = "shaders/";
+    Shaders::g_cacheLocation = ResourcePath("shaders/");
     Shaders::g_cacheLocationText = Paths::Shaders::g_cacheLocation + "Text/";
     Shaders::g_cacheLocationBin = Paths::Shaders::g_cacheLocation + "Binary/";
 
@@ -120,17 +120,17 @@ void Paths::initPaths(const SysInfo& info) {
     Shaders::GLSL::g_comnAtomExt = ".cmn";
 
     // Shader subfolder name that contains shader files for OpenGL
-    Shaders::GLSL::g_parentShaderLoc = "GLSL/";
+    Shaders::GLSL::g_parentShaderLoc = ResourcePath("GLSL/");
     // Atom folder names in parent shader folder
-    Shaders::GLSL::g_fragAtomLoc = "fragmentAtoms/";
-    Shaders::GLSL::g_vertAtomLoc = "vertexAtoms/";
-    Shaders::GLSL::g_geomAtomLoc = "geometryAtoms/";
-    Shaders::GLSL::g_tescAtomLoc = "tessellationCAtoms/";
-    Shaders::GLSL::g_teseAtomLoc = "tessellationEAtoms/";
-    Shaders::GLSL::g_compAtomLoc = "computeAtoms/";
-    Shaders::GLSL::g_comnAtomLoc = "common/";
+    Shaders::GLSL::g_fragAtomLoc = ResourcePath("fragmentAtoms/");
+    Shaders::GLSL::g_vertAtomLoc = ResourcePath("vertexAtoms/");
+    Shaders::GLSL::g_geomAtomLoc = ResourcePath("geometryAtoms/");
+    Shaders::GLSL::g_tescAtomLoc = ResourcePath("tessellationCAtoms/");
+    Shaders::GLSL::g_teseAtomLoc = ResourcePath("tessellationEAtoms/");
+    Shaders::GLSL::g_compAtomLoc = ResourcePath("computeAtoms/");
+    Shaders::GLSL::g_comnAtomLoc = ResourcePath("common/");
 
-    Shaders::HLSL::g_parentShaderLoc = "HLSL/";
+    Shaders::HLSL::g_parentShaderLoc = ResourcePath("HLSL/");
 
     g_includePattern = boost::regex(R"(^\s*#\s*include\s+["<]([^">]+)*[">])");
     g_definePattern = boost::regex(R"(([#!][A-z]{2,}[\s]{1,}?([A-z]{2,}[\s]{1,}?)?)([\\(]?[^\s\\)]{1,}[\\)]?)?)");
@@ -141,13 +141,13 @@ void Paths::updatePaths(const PlatformContext& context) {
     const Configuration& config = context.config();
     const XMLEntryData& entryData = context.entryData();
         
-    g_assetsLocation = (entryData.assetsLocation + "/").c_str();
-    g_shadersLocation = (config.defaultShadersLocation + "/").c_str();
-    g_texturesLocation = (config.defaultTextureLocation + "/").c_str();
-    g_xmlDataLocation = (entryData.scriptLocation + "/").c_str();
-    g_scenesLocation = (entryData.scenesLocation + "/").c_str();
-    Scripts::g_scriptsLocation = (g_assetsLocation + "scripts/");
-    Scripts::g_scriptsAtomsLocation = (Scripts::g_scriptsLocation + "atoms/");
+    g_assetsLocation = ResourcePath(entryData.assetsLocation + "/");
+    g_shadersLocation = ResourcePath(config.defaultShadersLocation + "/");
+    g_texturesLocation = ResourcePath(config.defaultTextureLocation + "/");
+    g_xmlDataLocation = ResourcePath(entryData.scriptLocation + "/");
+    g_scenesLocation = ResourcePath(entryData.scenesLocation + "/");
+    Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";
+    Scripts::g_scriptsAtomsLocation = Scripts::g_scriptsLocation + "atoms/";
 }
 
 }; //namespace Divide

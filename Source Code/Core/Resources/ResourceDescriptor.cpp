@@ -14,18 +14,17 @@ size_t PropertyDescriptor::getHash() const noexcept {
 }
 
 ResourceDescriptor::ResourceDescriptor(const Str256& resourceName)
-    : _assetName(resourceName),
-      _resourceName(resourceName)
+    : _resourceName(resourceName)
 {
 }
 
 size_t ResourceDescriptor::getHash() const noexcept {
     _hash = 9999991;
-    stringImpl fullPath = _assetLocation;
-    fullPath.append("/");
-    fullPath.append(_assetName);
+    const std::string fullPath = _assetName.empty()
+                                    ? resourceName().c_str()
+                                    : Util::ReplaceString((_assetLocation + "/" + _assetName).str(), "//", "/", true);
 
-    Util::Hash_combine(_hash, Util::ReplaceString(fullPath, "//", "/", true));
+    Util::Hash_combine(_hash, fullPath);
     Util::Hash_combine(_hash, _flag);
     Util::Hash_combine(_hash, _ID);
     Util::Hash_combine(_hash, _mask.i);

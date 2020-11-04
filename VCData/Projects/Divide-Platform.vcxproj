@@ -23,7 +23,7 @@
     <ClInclude Include="../../Source Code/Platform\Audio\sdl_mixer\Headers\SDLWrapper.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileManagement.h" />
     <ClInclude Include="../../Source Code/Platform\File\Headers\FileUpdateMonitor.h" />
-    <ClInclude Include="../../Source Code/Platform\File\Headers\FileWithPath.h" />
+    <ClInclude Include="..\..\Source Code\Platform\File\Headers\ResourcePath.h" />
     <ClInclude Include="../../Source Code/Platform\Headers\ConditionalWait.h" />
     <ClInclude Include="../../Source Code/Platform\Headers\DisplayWindow.h" />
     <ClInclude Include="../../Source Code/Platform\Headers\PlatformDataTypes.h" />
@@ -182,6 +182,7 @@
     <ClCompile Include="../../Source Code\Platform\SDLEventManager.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\Commands.cpp" />
     <ClCompile Include="../../Source Code\Platform\Video\RenderBackend\OpenGL\GLStateTracker.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\File\ResourcePath.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\Textures\TextureDescriptor.cpp" />
   </ItemGroup>
   <ItemGroup>

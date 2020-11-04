@@ -31,7 +31,6 @@
     <ClCompile Include="../../Source Code\Editor\Widgets\DockedWindows\ContentExplorerWindow.cpp">
       <Filter>Widgets\DockedWindows</Filter>
     </ClCompile>
-    <ClCompile Include="../../Source Code/Editor\ImguiExtras.cpp" />
     <ClCompile Include="../../Source Code/Editor\Editor.cpp" />
     <ClCompile Include="..\..\Source Code\Editor\UndoManager.cpp" />
     <ClCompile Include="../../Source Code/Editor\Widgets\DockedWindows\SolutionExplorerWindow.cpp">

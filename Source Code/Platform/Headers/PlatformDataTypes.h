@@ -567,6 +567,334 @@ constexpr void check_size() {
     static_assert(ExpectedSize == RealSize, "Wrong data size!");
 }
 
+#pragma region PROPERTY_SETTERS_GETTERS
+
+#if !defined(EXP)
+#define EXP( x ) x
+
+#define GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
+#define GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
+#define GET_5TH_ARG(arg1, arg2, arg3, arg4, arg5, ...) arg5
+#define GET_6TH_ARG(arg1, arg2, arg3, arg4, arg5, arg6, ...) arg6
+#endif //EXP
+
+#define PROPERTY_GET_SET(Type, Name) \
+public: \
+    FORCE_INLINE void Name(const Type& val) noexcept { _##Name = val; } \
+    [[nodiscard]] FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+
+#define PROPERTY_GET(Type, Name) \
+public: \
+    [[nodiscard]] FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+
+#define VIRTUAL_PROPERTY_GET_SET(Type, Name) \
+public: \
+    virtual void Name(const Type& val) noexcept { _##Name = val; } \
+    [[nodiscard]] virtual const Type& Name() const noexcept { return _##Name; }
+
+#define VIRTUAL_PROPERTY_GET(Type, Name) \
+public: \
+    [[nodiscard]] virtual const Type& Name() const noexcept { return _##Name; }
+
+#define POINTER_GET_SET(Type, Name) \
+public: \
+    FORCE_INLINE void Name(Type* const val) noexcept { _##Name = val; } \
+    [[nodiscard]] FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+
+#define POINTER_GET(Type, Name) \
+public: \
+   [[nodiscard]] FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+
+
+#define PROPERTY_GET_INTERNAL(Type, Name) \
+protected: \
+    [[nodiscard]] FORCE_INLINE const Type& Name() const noexcept { return _##Name; }
+
+#define VIRTUAL_PROPERTY_GET_INTERNAL(Type, Name) \
+protected: \
+    [[nodiscard]] virtual const Type& Name() const noexcept { return _##Name; }
+
+#define POINTER_GET_INTERNAL(Type, Name) \
+protected: \
+    [[nodiscard]] FORCE_INLINE Type* const Name() const noexcept { return _##Name; }
+
+#define PROPERTY_SET_INTERNAL(Type, Name) \
+protected: \
+    FORCE_INLINE void Name(const Type& val) noexcept { _##Name = val; } \
+
+#define VIRTUAL_PROPERTY_SET_INTERNAL(Type, Name) \
+protected: \
+    virtual void Name(const Type& val) noexcept { _##Name = val; } \
+
+#define POINTER_SET_INTERNAL(Type, Name) \
+protected: \
+    FORCE_INLINE void Name(Type* const val) noexcept { _##Name = val; } \
+
+#define PROPERTY_GET_SET_INTERNAL(Type, Name) \
+protected: \
+    PROPERTY_SET_INTERNAL(Type, Name) \
+    PROPERTY_GET_INTERNAL(Type, Name)
+
+#define VIRTUAL_PROPERTY_GET_SET_INTERNAL(Type, Name) \
+protected: \
+    VIRTUAL_PROPERTY_SET_INTERNAL(Type, Name) \
+    VIRTUAL_PROPERTY_GET_INTERNAL(Type, Name)
+
+#define POINTER_GET_SET_INTERNAL(Type, Name) \
+protected: \
+    POINTER_SET_INTERNAL(Type, Name) \
+    POINTER_GET_INTERNAL(Type, Name)
+
+#define PROPERTY_R_1_ARGS(Type)
+#define PROPERTY_RW_1_ARGS(Type)
+#define PROPERTY_R_IW_1_ARGS(Type)
+#define VIRTUAL_PROPERTY_R_1_ARGS(Type)
+#define VIRTUAL_PROPERTY_R_IW_1_ARGS(Type)
+#define POINTER_R_1_ARGS(Type)
+#define POINTER_RW_1_ARGS(Type)
+#define POINTER_R_IW_1_ARGS(Type)
+#define REFERENCE_R_1_ARGS(Type)
+#define REFERENCE_RW_1_ARGS(Type)
+
+#define PROPERTY_RW_1_ARGS_INTERNAL(Type)
+#define VIRTUAL_PROPERTY_RW_1_ARGS(Type)
+#define VIRTUAL_PROPERTY_RW_1_ARGS_INTERNAL(Type)
+#define POINTER_RW_1_ARGS_INTERNAL(Type)
+#define REFERENCE_RW_1_ARGS_INTERNAL(Type)
+
+//------------- PROPERTY_RW
+#define PROPERTY_R_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    PROPERTY_GET(Type, Name) \
+
+#define PROPERTY_R_IW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    PROPERTY_GET(Type, Name) \
+    PROPERTY_SET_INTERNAL(Type, Name)
+
+#define PROPERTY_RW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    PROPERTY_GET_SET(Type, Name)
+
+#define PROPERTY_R_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    PROPERTY_GET(Type, Name) \
+
+#define PROPERTY_R_IW_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    PROPERTY_GET(Type, Name) \
+    PROPERTY_SET_INTERNAL(Type, Name)
+
+#define PROPERTY_RW_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    PROPERTY_GET_SET(Type, Name)
+
+//------------- PROPERTY_RW_INTERNAL
+#define PROPERTY_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define PROPERTY_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type _##Name; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+
+//------------------- VIRTUAL_PROPERTY_RW
+#define VIRTUAL_PROPERTY_R_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET(Type, Name) \
+
+#define VIRTUAL_PROPERTY_R_IW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET(Type, Name) \
+    VIRTUAL_PROPERTY_SET_INTERNAL(Type, Name)
+
+#define VIRTUAL_PROPERTY_RW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET_SET(Type, Name)
+
+
+#define VIRTUAL_PROPERTY_R_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET(Type, Name) \
+
+#define VIRTUAL_PROPERTY_R_IW_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET(Type, Name) \
+    VIRTUAL_PROPERTY_SET_INTERNAL(Type, Name)
+
+#define VIRTUAL_PROPERTY_RW_2_ARGS(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET_SET(Type, Name)
+
+//------------------- VIRTUAL_PROPERTY_RW_INTERNAL
+#define VIRTUAL_PROPERTY_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type _##Name = Val; \
+    VIRTUAL_PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define VIRTUAL_PROPERTY_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type _##Name; \
+    VIRTUAL_PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+//-------------------- POINTER_RW
+#define POINTER_R_3_ARGS(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET(Type, Name) \
+
+#define POINTER_R_IW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET(Type, Name) \
+    POINTER_SET_INTERNAL(Type, Name)
+
+#define POINTER_RW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET_SET(Type, Name)
+
+
+#define POINTER_R_2_ARGS(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET(Type, Name) \
+
+#define POINTER_R_IW_2_ARGS(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET(Type, Name) \
+    POINTER_SET_INTERNAL(Type, Name)
+
+#define POINTER_RW_2_ARGS(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET_SET(Type, Name)
+
+//-------------------- POINTER_RW_INTERNAL
+#define POINTER_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type* _##Name = Val; \
+    POINTER_GET_SET_INTERNAL(Type, Name)
+
+#define POINTER_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type* _##Name; \
+    POINTER_GET_SET_INTERNAL(Type, Name)
+
+//-------------------- REFERENCE_RW
+#define REFERENCE_R_3_ARGS(Type, Name, Val) \
+protected: \
+    Type& _##Name = Val; \
+    PROPERTY_GET(Type, Name) \
+
+#define REFERENCE_RW_3_ARGS(Type, Name, Val) \
+protected: \
+    Type& _##Name = Val; \
+    PROPERTY_GET_SET(Type, Name)
+
+
+#define REFERENCE_R_2_ARGS(Type, Name) \
+protected: \
+    Type& _##Name; \
+    PROPERTY_GET(Type, Name) \
+
+#define REFERENCE_RW_2_ARGS(Type, Name) \
+protected: \
+    Type& _##Name; \
+    PROPERTY_GET_SET(Type, Name)
+
+//-------------------- REFERENCE_RW_INTERNAL
+#define REFERENCE_RW_3_ARGS_INTERNAL(Type, Name, Val) \
+protected: \
+    Type& _##Name = Val; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define REFERENCE_RW_2_ARGS_INTERNAL(Type, Name) \
+protected: \
+    Type& _##Name; \
+    PROPERTY_GET_SET_INTERNAL(Type, Name)
+
+#define ___DETAIL_PROPERTY_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_RW_3_ARGS_INTERNAL, PROPERTY_RW_2_ARGS_INTERNAL, PROPERTY_RW_1_ARGS_INTERNAL, ))
+#define ___DETAIL_VIRTUAL_PROPERTY_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_RW_3_ARGS_INTERNAL, VIRTUAL_PROPERTY_RW_2_ARGS_INTERNAL, VIRTUAL_PROPERTY_RW_1_ARGS_INTERNAL, ))
+#define ___DETAIL_POINTER_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_RW_3_ARGS_INTERNAL, POINTER_RW_2_ARGS_INTERNAL, POINTER_RW_1_ARGS_INTERNAL, ))
+#define ___DETAIL_REFERENCE_RW_INTERNAL(...) EXP(GET_4TH_ARG(__VA_ARGS__, REFERENCE_RW_3_ARGS_INTERNAL, REFERENCE_RW_2_ARGS_INTERNAL, REFERENCE_RW_1_ARGS_INTERNAL, ))
+
+#define ___DETAIL_PROPERTY_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_R_3_ARGS, PROPERTY_R_2_ARGS, PROPERTY_R_1_ARGS, ))
+#define ___DETAIL_PROPERTY_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_RW_3_ARGS, PROPERTY_RW_2_ARGS, PROPERTY_RW_1_ARGS, ))
+#define ___DETAIL_PROPERTY_R_IW(...) EXP(GET_4TH_ARG(__VA_ARGS__, PROPERTY_R_IW_3_ARGS, PROPERTY_R_IW_2_ARGS, PROPERTY_R_IW_1_ARGS, ))
+
+#define ___DETAIL_VIRTUAL_PROPERTY_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_R_3_ARGS, VIRTUAL_PROPERTY_R_2_ARGS, VIRTUAL_PROPERTY_R_1_ARGS, ))
+#define ___DETAIL_VIRTUAL_PROPERTY_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_RW_3_ARGS, VIRTUAL_PROPERTY_RW_2_ARGS, VIRTUAL_PROPERTY_RW_1_ARGS, ))
+#define ___DETAIL_VIRTUAL_PROPERTY_R_IW(...) EXP(GET_4TH_ARG(__VA_ARGS__, VIRTUAL_PROPERTY_R_IW_3_ARGS, VIRTUAL_PROPERTY_R_IW_2_ARGS, VIRTUAL_PROPERTY_R_IW_1_ARGS, ))
+
+#define ___DETAIL_POINTER_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_R_3_ARGS, POINTER_R_2_ARGS, POINTER_R_1_ARGS, ))
+#define ___DETAIL_POINTER_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_RW_3_ARGS, POINTER_RW_2_ARGS, POINTER_RW_1_ARGS, ))
+#define ___DETAIL_POINTER_R_IW(...) EXP(GET_4TH_ARG(__VA_ARGS__, POINTER_R_IW_3_ARGS, POINTER_R_IW_2_ARGS, POINTER_R_IW_1_ARGS, ))
+
+#define ___DETAIL_REFERENCE_R(...) EXP(GET_4TH_ARG(__VA_ARGS__, REFERENCE_R_3_ARGS, REFERENCE_R_2_ARGS, REFERENCE_R_1_ARGS, ))
+#define ___DETAIL_REFERENCE_RW(...) EXP(GET_4TH_ARG(__VA_ARGS__, REFERENCE_RW_3_ARGS, REFERENCE_RW_2_ARGS, REFERENCE_RW_1_ARGS, ))
+
+/// Convenience method to add a class member with public read access but protected write access
+#define PROPERTY_R(...) EXP(___DETAIL_PROPERTY_R(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access and write access
+#define PROPERTY_RW(...) EXP(___DETAIL_PROPERTY_RW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access including a protected accessor
+#define PROPERTY_R_IW(...) EXP(___DETAIL_PROPERTY_R_IW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access
+#define VIRTUAL_PROPERTY_R(...) EXP(___DETAIL_VIRTUAL_PROPERTY_R(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access and write access
+#define VIRTUAL_PROPERTY_RW(...) EXP(___DETAIL_VIRTUAL_PROPERTY_RW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access including a protected accessor
+#define VIRTUAL_PROPERTY_R_IW(...) EXP(___DETAIL_VIRTUAL_PROPERTY_R_IW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access
+#define POINTER_R(...) EXP(___DETAIL_POINTER_R(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access and write access
+#define POINTER_RW(...) EXP(___DETAIL_POINTER_RW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access including a protected accessor
+#define POINTER_R_IW(...) EXP(___DETAIL_POINTER_R_IW(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access but protected write access
+#define REFERENCE_R(...) EXP(___DETAIL_REFERENCE_R(__VA_ARGS__)(__VA_ARGS__))
+
+/// Convenience method to add a class member with public read access and write access
+#define REFERENCE_RW(...) EXP(___DETAIL_REFERENCE_RW(__VA_ARGS__)(__VA_ARGS__))
+
+/// This will only set properties internal to the actual class
+#define PROPERTY_INTERNAL(...) EXP(___DETAIL_PROPERTY_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+
+/// This will only set properties internal to the actual class
+#define VIRTUAL_PROPERTY_INTERNAL(...) EXP(___DETAIL_VIRTUAL_PROPERTY_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+
+/// This will only set properties internal to the actual class
+#define POINTER_INTERNAL(...) EXP(___DETAIL_POINTER_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+
+/// This will only set properties internal to the actual class
+#define REFERENCE_INTERNAL(...) EXP(___DETAIL_REFERENCE_RW_INTERNAL(__VA_ARGS__)(__VA_ARGS__))
+#pragma endregion
 }; //namespace Divide;
 
 #endif //_PLATFORM_DATA_TYPES_H_

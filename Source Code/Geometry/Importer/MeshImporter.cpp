@@ -24,7 +24,7 @@ namespace {
 };
 
 namespace Import {
-    bool ImportData::saveToFile(PlatformContext& context, const Str256& path, const Str64& fileName) {
+    bool ImportData::saveToFile(PlatformContext& context, const ResourcePath& path, const ResourcePath& fileName) {
         ACKNOWLEDGE_UNUSED(context);
 
         ByteBuffer tempBuffer;
@@ -41,15 +41,15 @@ namespace Import {
             }
             tempBuffer << _hasAnimations;
             // Animations are handled by the SceneAnimator I/O
-            return tempBuffer.dumpToFile(path.c_str(), (fileName + "." + g_parsedAssetGeometryExt).c_str());
+            return tempBuffer.dumpToFile(path.c_str(), (fileName.str() + "." + g_parsedAssetGeometryExt).c_str());
         }
 
         return false;
     }
 
-    bool ImportData::loadFromFile(PlatformContext& context, const Str256& path, const Str64& fileName) {
+    bool ImportData::loadFromFile(PlatformContext& context, const ResourcePath& path, const ResourcePath& fileName) {
         ByteBuffer tempBuffer;
-        if (tempBuffer.loadFromFile(path.c_str(), (fileName + "." + g_parsedAssetGeometryExt).c_str())) {
+        if (tempBuffer.loadFromFile(path.c_str(), (fileName.str() + "." + g_parsedAssetGeometryExt).c_str())) {
             U64 signature;
             tempBuffer >> signature;
             if (signature != _ID("BufferEntryPoint")) {
@@ -327,7 +327,7 @@ namespace Import {
 
                 textureDescriptor.srgb(tex.srgb());
 
-                ResourceDescriptor texture(tex.textureName());
+                ResourceDescriptor texture(tex.textureName().str());
                 texture.assetName(tex.textureName());
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);

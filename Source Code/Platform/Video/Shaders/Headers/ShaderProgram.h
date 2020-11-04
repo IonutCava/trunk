@@ -91,7 +91,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
     using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
     using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
-    using AtomInclusionMap = ska::bytell_hash_map<U64 /*name hash*/, vectorEASTL<Str64>>;
+    using AtomInclusionMap = ska::bytell_hash_map<U64 /*name hash*/, vectorEASTL<ResourcePath>>;
     using ShaderQueue = eastl::stack<ShaderProgram*, vectorEASTLFast<ShaderProgram*> >;
 
 
@@ -100,7 +100,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
                            size_t descriptorHash,
                            const Str256& shaderName,
                            const Str256& shaderFileName,
-                           const stringImpl& shaderFileLocation,
+                           const ResourcePath& shaderFileLocation,
                            const ShaderProgramDescriptor& descriptor,
                            bool asyncLoad);
     virtual ~ShaderProgram();
@@ -172,7 +172,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     static void rebuildAllShaders();
 
-    static vectorEASTL<Str256> getAllAtomLocations();
+    static vectorEASTL<ResourcePath> getAllAtomLocations();
 
     static bool useShaderTexCache() noexcept { return s_useShaderTextCache; }
     static bool useShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }

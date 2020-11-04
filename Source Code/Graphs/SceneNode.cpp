@@ -25,7 +25,7 @@ namespace {
     }
 };
 
-SceneNode::SceneNode(ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const Str256& resourceName, const stringImpl& resourceLocation, const SceneNodeType type, const U32 requiredComponentMask)
+SceneNode::SceneNode(ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const ResourcePath& resourceName, const ResourcePath& resourceLocation, const SceneNodeType type, const U32 requiredComponentMask)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
      _type(type),
      _editorComponent(""),

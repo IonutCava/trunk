@@ -15,7 +15,7 @@
 namespace Divide {
 
 InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const vec2<U16>& dimensions)
-    : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_INFINITEPLANE, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
+    : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_INFINITEPLANE, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
       _planeRenderStateHash(0),
       _planeRenderStateHashPrePass(0),
       _context(context),
@@ -56,7 +56,7 @@ bool InfinitePlane::load() {
 
     ResourceDescriptor textureWaterCaustics("Plane Water Caustics");
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    textureWaterCaustics.assetName("terrain_water_caustics.jpg");
+    textureWaterCaustics.assetName(ResourcePath{ "terrain_water_caustics.jpg" });
     textureWaterCaustics.propertyDescriptor(miscTexDescriptor);
 
     planeMaterial->setTexture(TextureUsage::UNIT0, CreateResource<Texture>(_parentCache, textureWaterCaustics), albedoSampler.getHash());

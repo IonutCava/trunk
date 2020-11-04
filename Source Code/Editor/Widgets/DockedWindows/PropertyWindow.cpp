@@ -1108,7 +1108,7 @@ namespace Divide {
                             if (textEditor.empty()) {
                                 Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: No text editor specified!", Time::SecondsToMilliseconds<F32>(3));
                             } else {
-                                if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), module._sourceFile.data())) {
+                                if (!openFile(textEditor.c_str(), (program->assetLocation() + Paths::Shaders::GLSL::g_parentShaderLoc).c_str(), module._sourceFile.data())) {
                                     Attorney::EditorGeneralWidget::showStatusMessage(_context.editor(), "ERROR: Couldn't open specified source file!", Time::SecondsToMilliseconds<F32>(3));
                                 }
                             }

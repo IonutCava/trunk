@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _PLATFORM_FILE_FILE_MANAGEMENT_H_
 #define _PLATFORM_FILE_FILE_MANAGEMENT_H_
 
-#include "FileWithPath.h"
-
 namespace Divide {
 
 enum class CacheType : U8 {
@@ -49,48 +47,48 @@ enum class CacheType : U8 {
 struct SysInfo;
 class PlatformContext;
 struct Paths {
-    static Str128 g_exePath;
-    static Str64 g_logPath;
-    static Str64 g_assetsLocation;
-    static Str64 g_shadersLocation;
-    static Str64 g_texturesLocation;
-    static Str64 g_heightmapLocation;
-    static Str64 g_climatesLowResLocation;
-    static Str64 g_climatesMedResLocation;
-    static Str64 g_climatesHighResLocation;
-    static Str64 g_imagesLocation;
-    static Str64 g_materialsLocation;
-    static Str64 g_soundsLocation;
-    static Str64 g_xmlDataLocation;
-    static Str64 g_navMeshesLocation;
-    static Str64 g_scenesLocation;
-    static Str64 g_saveLocation;
-    static Str64 g_GUILocation;
-    static Str64 g_fontsPath;
-    static Str64 g_localisationPath;
-    static Str64 g_cacheLocation;
-    static Str64 g_terrainCacheLocation;
-    static Str64 g_geometryCacheLocation;
+    static ResourcePath g_exePath;
+    static ResourcePath g_logPath;
+    static ResourcePath g_assetsLocation;
+    static ResourcePath g_shadersLocation;
+    static ResourcePath g_texturesLocation;
+    static ResourcePath g_heightmapLocation;
+    static ResourcePath g_climatesLowResLocation;
+    static ResourcePath g_climatesMedResLocation;
+    static ResourcePath g_climatesHighResLocation;
+    static ResourcePath g_imagesLocation;
+    static ResourcePath g_materialsLocation;
+    static ResourcePath g_soundsLocation;
+    static ResourcePath g_xmlDataLocation;
+    static ResourcePath g_navMeshesLocation;
+    static ResourcePath g_scenesLocation;
+    static ResourcePath g_saveLocation;
+    static ResourcePath g_GUILocation;
+    static ResourcePath g_fontsPath;
+    static ResourcePath g_localisationPath;
+    static ResourcePath g_cacheLocation;
+    static ResourcePath g_terrainCacheLocation;
+    static ResourcePath g_geometryCacheLocation;
 
     struct Editor {
-        static Str64 g_saveLocation;
-        static Str64 g_tabLayoutFile;
-        static Str64 g_panelLayoutFile;
+        static ResourcePath g_saveLocation;
+        static ResourcePath g_tabLayoutFile;
+        static ResourcePath g_panelLayoutFile;
     };
 
     struct Scripts {
-        static Str64 g_scriptsLocation;
-        static Str64 g_scriptsAtomsLocation;
+        static ResourcePath g_scriptsLocation;
+        static ResourcePath g_scriptsAtomsLocation;
     };
 
     struct Textures {
-        static Str64 g_metadataLocation;
+        static ResourcePath g_metadataLocation;
     };
 
     struct Shaders {
-        static Str64 g_cacheLocation;
-        static Str64 g_cacheLocationText;
-        static Str64 g_cacheLocationBin;
+        static ResourcePath g_cacheLocation;
+        static ResourcePath g_cacheLocationText;
+        static ResourcePath g_cacheLocationBin;
 
         struct GLSL {
             // these must match the last 4 characters of the atom file
@@ -103,18 +101,18 @@ struct Paths {
             static Str8 g_comnAtomExt;
 
             // Shader subfolder name that contains shader files for OpenGL
-            static Str64 g_parentShaderLoc;
+            static ResourcePath g_parentShaderLoc;
             // Atom folder names in parent shader folder
-            static Str64 g_fragAtomLoc;
-            static Str64 g_vertAtomLoc;
-            static Str64 g_geomAtomLoc;
-            static Str64 g_tescAtomLoc;
-            static Str64 g_teseAtomLoc;
-            static Str64 g_compAtomLoc;
-            static Str64 g_comnAtomLoc;
+            static ResourcePath g_fragAtomLoc;
+            static ResourcePath g_vertAtomLoc;
+            static ResourcePath g_geomAtomLoc;
+            static ResourcePath g_tescAtomLoc;
+            static ResourcePath g_teseAtomLoc;
+            static ResourcePath g_compAtomLoc;
+            static ResourcePath g_comnAtomLoc;
         }; //class GLSL
         struct HLSL {
-            static Str64 g_parentShaderLoc;
+            static ResourcePath g_parentShaderLoc;
         }; //class HLSL
     }; //class Shaders
 
@@ -131,35 +129,59 @@ struct Paths {
 }; //class Paths
 
 
-bool pathExists(const char* filePath);
-bool fileExists(const char* filePathAndName);
-bool fileExists(const char* filePath, const char* filename);
-bool createDirectory(const char* path);
-bool createFile(const char* filePathAndName, bool overwriteExisting);
-bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
+//returns true if both paths are identical regardless of number of slashes and capitalization
+[[nodiscard]] std::filesystem::path asPath(const char* filePath);
+[[nodiscard]] std::filesystem::path asPath(const std::string_view& filePath);
+[[nodiscard]] bool pathCompare(const char* filePathA, const char* filePathB);
+[[nodiscard]] bool pathExists(const char* filePath);
+[[nodiscard]] bool pathExists(const ResourcePath& filePath);
+[[nodiscard]] bool fileExists(const char* filePathAndName);
+[[nodiscard]] bool fileExists(const ResourcePath& filePathAndName);
+[[nodiscard]] bool fileExists(const char* filePath, const char* filename);
+[[nodiscard]] bool createDirectory(const char* path);
+[[nodiscard]] bool createDirectory(const ResourcePath& path);
+[[nodiscard]] bool createFile(const char* filePathAndName, bool overwriteExisting);
+[[nodiscard]] bool deleteAllFiles(const char* filePath, const char* extension = nullptr);
+[[nodiscard]] bool deleteAllFiles(const ResourcePath& filePath, const char* extension = nullptr);
 
 template<typename T,
          typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
-bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
-bool openFile(const char* filePath, const char* fileName);
-bool openFile(const char* cmd, const char* filePath, const char* fileName);
+[[nodiscard]] bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
+template<typename T,
+    typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
+    [[nodiscard]] bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType);
 
-bool writeFile(const char* filePath, const char* fileName, bufferPtr content, size_t length, FileType fileType);
-bool deleteFile(const char* filePath, const char* fileName);
-bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite);
-bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath);
+[[nodiscard]] bool openFile(const char* filePath, const char* fileName);
+[[nodiscard]] bool openFile(const ResourcePath& filePath, const ResourcePath& fileName);
+
+[[nodiscard]] bool openFile(const char* cmd, const char* filePath, const char* fileName);
+[[nodiscard]] bool openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName);
+
+[[nodiscard]] bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, bufferPtr content, size_t length, FileType fileType);
+[[nodiscard]] bool writeFile(const char* filePath, const char* fileName, bufferPtr content, size_t length, FileType fileType);
+
+[[nodiscard]] bool deleteFile(const char* filePath, const char* fileName);
+[[nodiscard]] bool deleteFile(const ResourcePath& filePath, const ResourcePath& fileName);
+
+[[nodiscard]] bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite);
+[[nodiscard]] bool copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, bool overwrite);
+
+[[nodiscard]] bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath);
+[[nodiscard]] bool findFile(const ResourcePath& filePath, const char* fileName, stringImpl& foundPath);
 
 /// will add '.' automatically at the start of 'extension'
-bool hasExtension(const char* filePath, const Str16& extension);
+[[nodiscard]] bool hasExtension(const char* filePath, const Str16& extension);
+[[nodiscard]] bool hasExtension(const ResourcePath& filePath, const Str16& extension);
 
-stringImpl stripQuotes(const char* input);
+[[nodiscard]] stringImpl stripQuotes(const char* input);
 
-FileWithPath splitPathToNameAndLocation(const char* input);
+[[nodiscard]] FileAndPath splitPathToNameAndLocation(const char* input);
+[[nodiscard]] FileAndPath splitPathToNameAndLocation(const ResourcePath& input);
 
-bool clearCache();
-bool clearCache(CacheType type);
+[[nodiscard]] bool clearCache();
+[[nodiscard]] bool clearCache(CacheType type);
 
-std::string extractFilePathAndName(char* argv0);
+[[nodiscard]] std::string extractFilePathAndName(char* argv0);
 
 }; //namespace Divide
 

@@ -31,7 +31,6 @@ namespace {
         window->DC.CursorPos = ImVec2(bar_rect.Min.x + window->DC.MenuBarOffset.x, bar_rect.Min.y + window->DC.MenuBarOffset.y);
         window->DC.LayoutType = ImGuiLayoutType_Horizontal;
         window->DC.NavLayerCurrent = ImGuiNavLayer_Menu;
-        window->DC.NavLayerCurrentMask = (1 << ImGuiNavLayer_Menu);
         window->DC.MenuBarAppending = true;
         ImGui::AlignTextToFramePadding();
         return true;
@@ -75,7 +74,6 @@ namespace {
         ImGui::EndGroup(); // Restore position on layer 0
         window->DC.LayoutType = ImGuiLayoutType_Vertical;
         window->DC.NavLayerCurrent = ImGuiNavLayer_Main;
-        window->DC.NavLayerCurrentMask = (1 << ImGuiNavLayer_Main);
         window->DC.MenuBarAppending = false;
     }
 

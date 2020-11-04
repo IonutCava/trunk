@@ -18,7 +18,6 @@
 #include "Geometry/Material/Headers/Material.h"
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Environment/Terrain/Headers/TerrainChunk.h"
-#include "Environment/Terrain/Quadtree/Headers/QuadtreeNode.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
@@ -61,20 +60,20 @@ Vegetation::Vegetation(GFXDevice& context,
     : SceneNode(context.parent().resourceCache(), 
                 parentChunk.parent().descriptorHash() + parentChunk.ID(),
                 details.name,
-                details.name + "_" + Util::to_string(parentChunk.ID()),
-                "",
+                ResourcePath{ details.name + "_" + Util::to_string(parentChunk.ID()) },
+                {},
                 SceneNodeType::TYPE_VEGETATION,
                 to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
 
       _context(context),
       _terrainChunk(parentChunk),
-      _billboardCount(details.billboardCount),
       _terrain(details.parentTerrain),
+      _billboardCount(details.billboardCount),
       _grassScales(details.grassScales),
       _treeScales(details.treeScales),
       _treeRotations(details.treeRotations),
-      _treeMap(details.treeMap),
-      _grassMap(details.grassMap)
+      _grassMap(details.grassMap),
+      _treeMap(details.treeMap)
 {
     _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
 
@@ -287,7 +286,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ResourceDescriptor textureDetailMaps("Vegetation Billboards");
     textureDetailMaps.assetLocation(Paths::g_assetsLocation + terrain->descriptor()->getVariable("vegetationTextureLocation"));
-    textureDetailMaps.assetName(vegDetails.billboardTextureArray);
+    textureDetailMaps.assetName(ResourcePath{ vegDetails.billboardTextureArray });
     textureDetailMaps.propertyDescriptor(grassTexDescriptor);
     textureDetailMaps.waitForReady(false);
     Texture_ptr grassBillboardArray = CreateResource<Texture>(terrain->parentResourceCache(), textureDetailMaps, loadTasks);
@@ -507,7 +506,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
         {
             UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
             if (s_treeMeshes.empty()) {
-                for (const stringImpl& meshName : _treeMeshNames) {
+                for (const ResourcePath& meshName : _treeMeshNames) {
                     if (eastl::find_if(eastl::cbegin(s_treeMeshes), eastl::cend(s_treeMeshes),
                         [&meshName](const Mesh_ptr& ptr) {
                         return Util::CompareIgnoreCase(ptr->assetName(), meshName);
@@ -535,9 +534,9 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
         {
             SharedLock<SharedMutex> r_lock(g_treeMeshLock);
             crtMesh = s_treeMeshes.front();
-            const stringImpl& meshName = _treeMeshNames[meshID];
+            const ResourcePath& meshName = _treeMeshNames[meshID];
             for (const Mesh_ptr& mesh : s_treeMeshes) {
-                if (Util::CompareIgnoreCase(mesh->assetName(), meshName)) {
+                if (mesh->assetName() == meshName) {
                     crtMesh = mesh;
                     break;
                 }
@@ -774,8 +773,8 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
         const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw;
         const vec2<F32>& chunkPos = _terrainChunk.getOffsetAndSize().xy;
-        const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
-        auto map = treeData ? _treeMap : _grassMap;
+        //const F32 waterLevel = 0.0f;// ToDo: make this dynamic! (cull underwater points later on?)
+        auto& map = treeData ? _treeMap : _grassMap;
         const U16 mapWidth = map->dimensions(0u, 0u).width;
         const U16 mapHeight = map->dimensions(0u, 0u).height;
         const auto& positions = treeData ? s_treePositions : s_grassPositions;

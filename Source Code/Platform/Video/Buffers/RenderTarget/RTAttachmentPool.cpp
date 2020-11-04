@@ -86,7 +86,7 @@ RTAttachment_ptr& RTAttachmentPool::update(const RTAttachmentDescriptor& descrip
     const Str64 texName = Util::StringFormat("FBO_%s_Att_%s_%d_%d", _parent.name().c_str(), getAttachmentName(type), descriptor._index, _parent.getGUID()).c_str();
 
     ResourceDescriptor textureAttachment(texName);
-    textureAttachment.assetName(texName);
+    textureAttachment.assetName(ResourcePath(texName));
     textureAttachment.threaded(false);
     textureAttachment.waitForReady(true);
     textureAttachment.propertyDescriptor(descriptor._texDescriptor);

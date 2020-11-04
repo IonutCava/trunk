@@ -2,6 +2,7 @@
 
 #include "Headers/Resource.h"
 #include "Headers/ResourceCache.h"
+#include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
 
@@ -26,23 +27,23 @@ void Resource::setState(const ResourceState currentState) noexcept {
 CachedResource::CachedResource(const ResourceType type,
                                const size_t descriptorHash,
                                const Str256& resourceName)
-    : CachedResource(type, descriptorHash, resourceName, "", "")
+    : CachedResource(type, descriptorHash, resourceName, {}, {})
 {
 }
 
 CachedResource::CachedResource(const ResourceType type,
                                const size_t descriptorHash,
                                const Str256& resourceName,
-                               const stringImpl& assetName)
-    : CachedResource(type, descriptorHash, resourceName, assetName, "")
+                               const ResourcePath& assetName)
+    : CachedResource(type, descriptorHash, resourceName, assetName, {})
 {
 }
 
 CachedResource::CachedResource(const ResourceType type,
                                const size_t descriptorHash,
                                const Str256& resourceName,
-                               const stringImpl& assetName,
-                               const stringImpl& assetLocation)
+                               const ResourcePath& assetName,
+                               const ResourcePath& assetLocation)
     : Resource(type, resourceName),
       _assetLocation(assetLocation),
       _assetName(assetName),
@@ -57,6 +58,8 @@ bool CachedResource::load() {
 }
 
 bool CachedResource::unload() {
+    flushStateCallbacks();
+
     return true;
 }
 

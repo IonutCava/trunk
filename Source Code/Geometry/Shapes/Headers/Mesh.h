@@ -62,8 +62,8 @@ class Mesh final : public Object3D {
                   ResourceCache* parentCache,
                   size_t descriptorHash,
                   const Str256& name,
-                  const Str256& resourceName,
-                  const stringImpl& resourceLocation);
+                  const ResourcePath& resourceName,
+                  const ResourcePath& resourceLocation);
 
     virtual ~Mesh() = default;
 

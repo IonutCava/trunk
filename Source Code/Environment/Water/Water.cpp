@@ -25,7 +25,7 @@ namespace {
 };
 
 WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
-    : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
+    : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
 {
     _noiseTile = { 15.0f, 15.0f };
     _noiseFactor = { 0.1f, 0.1f };
@@ -141,7 +141,7 @@ bool WaterPlane::load() {
     std::atomic_uint loadTasks = 0u;
 
     ResourceDescriptor waterTexture("waterTexture_" + name);
-    waterTexture.assetName("terrain_water_NM_old.jpg");
+    waterTexture.assetName(ResourcePath{ "terrain_water_NM_old.jpg" });
     waterTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     waterTexture.propertyDescriptor(texDescriptor);
     waterTexture.waitForReady(false);

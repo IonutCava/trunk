@@ -31,13 +31,13 @@ NavigationMesh::NavigationMesh(PlatformContext& context, DivideRecast& recastInt
       _recastInterface(recastInterface)
 {
     ParamHandler& par = context.paramHandler();
-    Str256 path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
+    ResourcePath path(Paths::g_xmlDataLocation + Paths::g_scenesLocation);
     path.append(par.getParam<stringImpl>(_ID("currentScene")));
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
-    _filePath = path + "/" + Paths::g_navMeshesLocation;
+    _filePath = path.str() + "/" + Paths::g_navMeshesLocation.str();
     
-    _configFile.append(path.c_str());
+    _configFile.append(path.str());
     _configFile.append("/navMeshConfig.ini");
     _buildThreaded = true;
     _debugDraw = false;

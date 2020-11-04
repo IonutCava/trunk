@@ -38,7 +38,7 @@ namespace Divide {
 
 template<typename T,
          typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
-inline bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType) {
+bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType) {
     size_t fileSize = 0;
     if (!Util::IsEmptyOrNull(filePath) && !Util::IsEmptyOrNull(fileName) && pathExists(filePath)) {
         std::ifstream streamIn(stringImpl{ filePath } +fileName,
@@ -62,6 +62,12 @@ inline bool readFile(const char* filePath, const char* fileName, T& contentOut, 
     };
 
     return fileSize > 0;
+}
+
+template<typename T,
+    typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
+bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType) {
+    return readFile(filePath.c_str(), fileName.c_str(), contentOut, fileType);
 }
 
 //Optimized variant for vectors

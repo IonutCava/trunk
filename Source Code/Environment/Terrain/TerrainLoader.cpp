@@ -16,7 +16,7 @@
 namespace Divide {
 
 namespace {
-    Str256 ClimatesLocation(U8 textureQuality) {
+    ResourcePath ClimatesLocation(U8 textureQuality) {
        CLAMP<U8>(textureQuality, 0u, 3u);
 
        return Paths::g_assetsLocation + Paths::g_heightmapLocation +
@@ -49,7 +49,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
     
-    stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
+    ResourcePath terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation;
+    terrainLocation += terrainDescriptor->getVariable("descriptor");
 
     Attorney::TerrainLoader::descriptor(*terrain, terrainDescriptor);
     const U8 textureQuality = context.config().terrain.textureQuality;
@@ -134,38 +135,34 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         indices[k].resize(idx);
     }
 
-    stringImpl blendMapArray = "";
-    stringImpl albedoMapArray = "";
-    stringImpl normalMapArray = "";
-    stringImpl extraMapArray = "";
+    ResourcePath blendMapArray = {};
+    ResourcePath albedoMapArray = {};
+    ResourcePath normalMapArray = {};
+    ResourcePath extraMapArray = {};
 
     U16 extraMapCount = 0;
     for (const stringImpl& tex : textures[to_base(TerrainTextureType::ALBEDO_ROUGHNESS)]) {
-        albedoMapArray += tex + ",";
+        albedoMapArray.append(tex + ",");
     }
     for (const stringImpl& tex : textures[to_base(TerrainTextureType::NORMAL)]) {
-        normalMapArray += tex + ",";
+        normalMapArray.append(tex + ",");
     }
 
     for (U8 i = to_U8(TerrainTextureType::DISPLACEMENT_AO); i < to_U8(TerrainTextureType::COUNT); ++i) {
         for (const stringImpl& tex : textures[i]) {
-            extraMapArray += tex + ",";
+            extraMapArray.append(tex + ",");
             ++extraMapCount;
         }
     }
 
     for (const stringImpl& tex : splatTextures) {
-        blendMapArray += tex + ",";
+        blendMapArray.append(tex + ",");
     }
     
-    auto removeLastChar = [](stringImpl& strIn) {
-        strIn = strIn.substr(0, strIn.length() - 1);
-    };
-
-    removeLastChar(blendMapArray);
-    removeLastChar(albedoMapArray);
-    removeLastChar(normalMapArray);
-    removeLastChar(extraMapArray);
+    blendMapArray.pop_back();
+    albedoMapArray.pop_back();
+    normalMapArray.pop_back();
+    extraMapArray.pop_back();
 
     SamplerDescriptor heightMapSampler = {};
     heightMapSampler.wrapUVW(TextureWrap::CLAMP_TO_BORDER);
@@ -254,10 +251,10 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         }
         totalLayerCount += channelCountPerLayer[i];
     }
-    removeLastChar(layerCountData);
+    layerCountData.pop_back();
     layerCountData.append("};");
 
-    removeLastChar(blendAmntStr);
+    blendAmntStr.pop_back();
     blendAmntStr.append("};");
 
     const char* idxNames[to_base(TerrainTextureType::COUNT)] = {
@@ -271,14 +268,14 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         for (size_t j = 0; j < indices[i].size(); ++j) {
             dataStr.append(Util::StringFormat("%d,", indices[i][j]));
         }
-        removeLastChar(dataStr);
+        dataStr.pop_back();
         dataStr.append("};");
     }
 
-    stringImpl helperTextures = terrainDescriptor->getVariable("waterCaustics") + "," +
-                                terrainDescriptor->getVariable("underwaterAlbedoTexture") + "," + 
-                                terrainDescriptor->getVariable("underwaterDetailTexture") + "," +
-                                terrainDescriptor->getVariable("tileNoiseTexture");
+    ResourcePath helperTextures { terrainDescriptor->getVariable("waterCaustics") + "," +
+                                  terrainDescriptor->getVariable("underwaterAlbedoTexture") + "," +
+                                  terrainDescriptor->getVariable("underwaterDetailTexture") + "," +
+                                  terrainDescriptor->getVariable("tileNoiseTexture") };
 
     TextureDescriptor helperTexDescriptor(TextureType::TEXTURE_2D_ARRAY);
 
@@ -289,7 +286,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     ResourceDescriptor heightMapTexture("Terrain Heightmap_" + name);
     heightMapTexture.assetLocation(terrainLocation);
-    heightMapTexture.assetName(terrainDescriptor->getVariable("heightfieldTex"));
+    heightMapTexture.assetName(ResourcePath{ terrainDescriptor->getVariable("heightfieldTex") });
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_SHORT);
     heightMapDescriptor.autoMipMaps(false);
@@ -553,8 +550,8 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
                                           PlatformContext& context,
                                           const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
 
-    stringImpl terrainMapLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
-    stringImpl terrainRawFile(terrainDescriptor->getVariable("heightfield"));
+    ResourcePath terrainMapLocation{ Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor") };
+    ResourcePath terrainRawFile{ terrainDescriptor->getVariable("heightfield") };
 
     const vec2<U16>& terrainDimensions = terrainDescriptor->dimensions();
     
@@ -568,7 +565,7 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     const vec3<F32>& bMax = terrainBB.getMax();
 
     ByteBuffer terrainCache;
-    if (!terrainCache.loadFromFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str())) {
+    if (terrainCache.loadFromFile((Paths::g_cacheLocation + Paths::g_terrainCacheLocation).c_str(), (terrainRawFile + ".cache").c_str())) {
         terrainCache >> terrain->_physicsVerts;
     }
 
@@ -702,7 +699,7 @@ VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Te
     for (I32 i = 1; i < 5; ++i) {
         stringImpl currentMesh = terrainDescriptor->getVariable(Util::StringFormat("treeMesh%d", i));
         if (!currentMesh.empty()) {
-            vegDetails.treeMeshes.push_back(currentMesh);
+            vegDetails.treeMeshes.push_back(ResourcePath{ currentMesh });
         }
 
         vegDetails.treeRotations[i - 1].set(
@@ -751,7 +748,7 @@ VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Te
     vegDetails.name = terrain->resourceName() + "_vegetation";
     vegDetails.parentTerrain = terrain;
 
-    const stringImpl terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor");
+    const ResourcePath terrainLocation{ Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor") };
 
     vegDetails.grassMap.reset(new ImageTools::ImageData);
     ImageTools::ImageDataInterface::CreateImageData(terrainLocation + "/" + terrainDescriptor->getVariable("grassMap"),

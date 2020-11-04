@@ -86,15 +86,15 @@ namespace Divide {
         getDirectoryStructureForPath(Paths::g_xmlDataLocation, _currentDirectories[1]);
         _currentDirectories[1]._path = "XML";
 
-        _fileIcon = getTextureForPath("icons", "file_icon.png");
+        _fileIcon = getTextureForPath(ResourcePath("icons"), ResourcePath("file_icon.png"));
 
-        _geometryIcons[to_base(GeometryFormat::_3DS)] = getTextureForPath("icons", "3ds_icon.png");
-        _geometryIcons[to_base(GeometryFormat::ASE)]  = getTextureForPath("icons", "ase_icon.png");
-        _geometryIcons[to_base(GeometryFormat::FBX)]  = getTextureForPath("icons", "fbx_icon.png");
-        _geometryIcons[to_base(GeometryFormat::MD2)]  = getTextureForPath("icons", "md2_icon.png");
-        _geometryIcons[to_base(GeometryFormat::MD5)]  = getTextureForPath("icons", "md5_icon.png");
-        _geometryIcons[to_base(GeometryFormat::OBJ)]  = getTextureForPath("icons", "obj_icon.png");
-        _geometryIcons[to_base(GeometryFormat::X)]    = getTextureForPath("icons", "x_icon.png");
+        _geometryIcons[to_base(GeometryFormat::_3DS)] = getTextureForPath(ResourcePath("icons"), ResourcePath("3ds_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::ASE)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("ase_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::FBX)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("fbx_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::MD2)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("md2_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::MD5)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("md5_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::OBJ)]  = getTextureForPath(ResourcePath("icons"), ResourcePath("obj_icon.png"));
+        _geometryIcons[to_base(GeometryFormat::X)]    = getTextureForPath(ResourcePath("icons"), ResourcePath("x_icon.png"));
     }
 
     void ContentExplorerWindow::update(const U64 deltaTimeUS) {
@@ -105,14 +105,14 @@ namespace Divide {
             if (!_textureLoadQueue.empty()) {
                 auto file = _textureLoadQueue.top();
                 _textureLoadQueue.pop();
-                _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(file.first, file.second);
+                _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(ResourcePath(file.first), ResourcePath(file.second));
             }
 
 
             if (!_modelLoadQueue.empty()) {
                 auto file = _modelLoadQueue.top();
                 _modelLoadQueue.pop();
-                _loadedModels[_ID((file.first + "/" + file.second).c_str())] = getModelForPath(file.first, file.second);
+                _loadedModels[_ID((file.first + "/" + file.second).c_str())] = getModelForPath(ResourcePath(file.first), ResourcePath(file.second));
             }
         }
 
@@ -120,7 +120,7 @@ namespace Divide {
         _modelLoadQueueLocked = false;
     }
 
-    void ContentExplorerWindow::getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) const {
+    void ContentExplorerWindow::getDirectoryStructureForPath(const ResourcePath& directoryPath, Directory& directoryOut) const {
         const std::filesystem::path p(directoryPath.c_str());
         if (is_directory(p)) {
             directoryOut._path = p.filename().generic_string();
@@ -132,7 +132,7 @@ namespace Divide {
                     }
                 } else if (std::filesystem::is_directory(x.path())) {
                     directoryOut._children.push_back(std::make_shared<Directory>());
-                    getDirectoryStructureForPath(x.path().generic_string().c_str(), *directoryOut._children.back());
+                    getDirectoryStructureForPath(ResourcePath(x.path().generic_string()), *directoryOut._children.back());
                 }
             }
         }
@@ -202,7 +202,7 @@ namespace Divide {
                     GeometryFormat format = GeometryFormat::COUNT;
                     { // Textures
                         for (const char* extension : g_imageExtensions) {
-                            if (hasExtension(file.second, extension)) {
+                            if (hasExtension(file.second.c_str(), extension)) {
                                 auto it = _loadedTextures.find(_ID((file.first + "/" + file.second).c_str()));
                                 if (it == std::cend(_loadedTextures) || it->second == nullptr) {
                                     if (!_textureLoadQueueLocked) {
@@ -218,7 +218,7 @@ namespace Divide {
                     }
                     { //Geometry
                         for (const char* extension : g_geometryExtensions) {
-                            if (hasExtension(file.second, extension)) {
+                            if (hasExtension(file.second.c_str(), extension)) {
                                 auto it = _loadedModels.find(_ID((file.first + "/" + file.second).c_str()));
                                 if (it == std::cend(_loadedModels) || it->second == nullptr) {
                                     if (!_modelLoadQueueLocked) {
@@ -290,10 +290,10 @@ namespace Divide {
         ImGui::PopStyleVar();
     }
 
-    Texture_ptr ContentExplorerWindow::getTextureForPath(const Str256& texturePath, const Str64& textureName) const {
+    Texture_ptr ContentExplorerWindow::getTextureForPath(const ResourcePath& texturePath, const ResourcePath& textureName) const {
         const TextureDescriptor texturePreviewDescriptor(TextureType::TEXTURE_2D);
 
-        ResourceDescriptor textureResource(textureName);
+        ResourceDescriptor textureResource(textureName.str());
         textureResource.flag(true);
         textureResource.assetName(textureName);
         textureResource.assetLocation(Paths::g_assetsLocation + texturePath);
@@ -302,8 +302,8 @@ namespace Divide {
         return CreateResource<Texture>(_parent.context().kernel().resourceCache(), textureResource);
     }
 
-    Mesh_ptr ContentExplorerWindow::getModelForPath(const Str256& modelPath, const Str64& modelName) const {
-        ResourceDescriptor model(modelName);
+    Mesh_ptr ContentExplorerWindow::getModelForPath(const ResourcePath& modelPath, const ResourcePath& modelName) const {
+        ResourceDescriptor model(modelName.str());
         model.assetLocation(Paths::g_assetsLocation + modelPath);
         model.assetName(modelName);
         model.flag(true);

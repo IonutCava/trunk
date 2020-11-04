@@ -27,7 +27,8 @@
 #include <meshoptimizer/src/meshoptimizer.h>
 
 namespace Divide {
-    namespace {
+
+namespace {
         constexpr bool g_useSloppyMeshSimplification = false;
         constexpr U8 g_SloppyTrianglePercentPerLoD = 80;
         constexpr U8 g_PreciseTrianglePercentPerLoD = 70;
@@ -128,8 +129,8 @@ DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target,
 }
 
 bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
-    const Str256& filePath = target.modelPath();
-    const Str64& fileName = target.modelName();
+    const ResourcePath& filePath = target.modelPath();
+    const ResourcePath& fileName = target.modelName();
 
     Assimp::Importer importer;
 
@@ -156,7 +157,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiProcess_OptimizeMeshes |
                             aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
-    const aiScene* aiScenePointer = importer.ReadFile(((filePath + "/") + fileName).c_str(), ppsteps);
+    const aiScene* aiScenePointer = importer.ReadFile(((filePath.str() + "/") + fileName.str()).c_str(), ppsteps);
 
     if (!aiScenePointer) {
         Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), fileName.c_str(), importer.GetErrorString());
@@ -207,7 +208,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
 
         Str64 name = fullName.c_str();
         if (Util::CompareIgnoreCase(name, "defaultobject")) {
-            name.append("_" + fileName);
+            name.append("_" + fileName.str());
         }
 
         Import::SubMeshData subMeshTemp = {};
@@ -614,14 +615,12 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         }*/
 
         // get full path
-        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
-        FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
-        const Str64& img_name = fileResult._fileName.c_str();
-        const Str256& img_path = fileResult._path.c_str();
+        auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
         // if we have a name and an extension
-        if (!img_name.substr(img_name.find_first_of("."), Str64::npos).empty()) {
+        if (!img_name.str().substr(img_name.str().find_first_of("."), Str64::npos).empty()) {
 
             const TextureUsage usage = count == 1 ? TextureUsage::UNIT1
                                                                  : TextureUsage::UNIT0;
@@ -660,15 +659,13 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     bool hasNormalMap = false;
     result = mat->GetTexture(aiTextureType_NORMALS, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
     if (result == AI_SUCCESS) {
-        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
-        FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
-        const Str64& img_name = fileResult._fileName.c_str();
-        const Str256& img_path = fileResult._path.c_str();
+        auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
         Import::TextureEntry& texture = material._textures[to_base(TextureUsage::NORMALMAP)];
 
-        if (img_name.rfind('.') != Str64::npos) {
+        if (img_name.str().rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
@@ -691,14 +688,12 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     result = mat->GetTexture(aiTextureType_HEIGHT, 0, &tName, &mapping,&uvInd, &blend, &op, mode);
 
     if (result == AI_SUCCESS) {
-        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
-        FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
-        const Str64& img_name = fileResult._fileName.c_str();
-        const Str256& img_path = fileResult._path.c_str();
+        auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
         Import::TextureEntry& texture = material._textures[to_base(TextureUsage::HEIGHTMAP)];
-        if (img_name.rfind('.') != Str64::npos) {
+        if (img_name.str().rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
@@ -729,15 +724,13 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (!material.ignoreAlpha()) {
         result = mat->GetTexture(aiTextureType_OPACITY, 0, &tName, &mapping, &uvInd, &blend, &op, mode);
         if (result == AI_SUCCESS) {
-            const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+            const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
-            FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
-            const Str64& img_name = fileResult._fileName.c_str();
-            const Str256& img_path = fileResult._path.c_str();
+            auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
             Import::TextureEntry& texture = material._textures[to_base(TextureUsage::OPACITY)];
 
-            if (img_name.rfind('.') != Str64::npos) {
+            if (img_name.str().rfind('.') != Str64::npos) {
                 if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                     IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                     IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal))
@@ -773,14 +766,12 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         }
     }
     if (result == AI_SUCCESS) {
-        const Str256 path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
+        const ResourcePath path(Paths::g_assetsLocation + Paths::g_texturesLocation + tName.C_Str());
 
-        FileWithPath fileResult = splitPathToNameAndLocation(path.c_str());
-        const Str64& img_name = fileResult._fileName.c_str();
-        const Str256& img_path = fileResult._path.c_str();
+        auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
         Import::TextureEntry& texture = material._textures[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-        if (img_name.rfind('.') != Str64::npos) {
+        if (img_name.str().rfind('.') != Str64::npos) {
             if (IS_IN_RANGE_INCLUSIVE(mode[0], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[1], aiTextureMapMode_Wrap, aiTextureMapMode_Decal) &&
                 IS_IN_RANGE_INCLUSIVE(mode[2], aiTextureMapMode_Wrap, aiTextureMapMode_Decal)) {

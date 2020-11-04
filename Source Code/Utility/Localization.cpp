@@ -45,7 +45,7 @@ ErrorCode LanguageData::changeLanguage(std::string_view newLanguage) {
     detail::g_localeFile = { newLanguage.data(), newLanguage.length() };
     assert(!detail::g_localeFile.empty());
 
-    const Str256 file = (Paths::g_localisationPath + detail::g_localeFile.c_str()) + g_languageFileExtension;
+    const ResourcePath file = Paths::g_localisationPath + (detail::g_localeFile + g_languageFileExtension);
 
     if (languageFile.LoadFile(file.c_str()) != SI_OK) {
         return ErrorCode::NO_LANGUAGE_INI;
@@ -89,7 +89,7 @@ ErrorCode init(const char* newLanguage) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
             detail::g_fileWatcherListener.addIgnoredEndCharacter('~');
             detail::g_fileWatcherListener.addIgnoredExtension("tmp");
-            detail::g_LanguageFileWatcher->addWatch(FW::String(Paths::g_exePath.c_str()) + Paths::g_localisationPath.c_str(), &detail::g_fileWatcherListener);
+            detail::g_LanguageFileWatcher->addWatch(FW::String((Paths::g_exePath + Paths::g_localisationPath).str()), &detail::g_fileWatcherListener);
         }
     }
 

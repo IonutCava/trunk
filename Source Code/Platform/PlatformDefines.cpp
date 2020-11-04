@@ -61,8 +61,8 @@ ErrorCode PlatformPostInit(const int argc, char** argv) {
     SeedRandom();
     Paths::initPaths(sysInfo());
 
-    ErrorCode err;
-    if (pathExists((Paths::g_exePath + Paths::g_assetsLocation).c_str())) {
+    ErrorCode err = ErrorCode::WRONG_WORKING_DIRECTORY;
+    if (pathExists((Paths::g_exePath + Paths::g_assetsLocation))) {
         // Read language table
         err = Locale::init();
         if (err == ErrorCode::NO_ERR) {
@@ -74,13 +74,10 @@ ErrorCode PlatformPostInit(const int argc, char** argv) {
             Console::toggleTimeStamps(true);
             Console::togglethreadID(true);
         }
-    } else {
-        err = ErrorCode::WRONG_WORKING_DIRECTORY;
     }
 
     return err;
 }
-
 
 ErrorCode PlatformInit(const int argc, char** argv) {
     ErrorCode err = PlatformPreInit(argc, argv);
@@ -107,14 +104,17 @@ bool PlatformClose() {
 
 void InitSysInfo(SysInfo& info, const I32 argc, char** argv) {
     GetAvailableMemory(info);
-    info._pathAndFilename = GetExecutableLocation(argc, argv);
-    info._pathAndFilename._path.append("/");
+    info._fileAndPath = GetExecutableLocation(argc, argv);
+    info._fileAndPath.second.append("/");
 }
 
 U32 HardwareThreadCount() noexcept {
     return std::max(std::thread::hardware_concurrency(), 2u);
 }
 
+bool CreateDirectories(const ResourcePath& path) {
+    return CreateDirectories(path.c_str());
+}
 
 bool CreateDirectories(const char* path) {
     assert(path != nullptr && strlen(path) > 0);
@@ -139,9 +139,9 @@ bool CreateDirectories(const char* path) {
     return true;
 }
 
-FileWithPath GetExecutableLocation(char* argv0) {
+FileAndPath GetExecutableLocation(char* argv0) {
     if (argv0 == nullptr || argv0[0] == 0) {
-        return FileWithPath();
+        return {};
     }
 
     return splitPathToNameAndLocation(extractFilePathAndName(argv0).c_str());

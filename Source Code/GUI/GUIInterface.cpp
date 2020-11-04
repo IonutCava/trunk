@@ -116,7 +116,7 @@ GUIButton* GUIInterface::addButton(const char* name,
     }
 
     ResourceDescriptor beepSound("buttonClick");
-    beepSound.assetName("beep.wav");
+    beepSound.assetName(ResourcePath("beep.wav"));
     beepSound.assetLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
     AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 

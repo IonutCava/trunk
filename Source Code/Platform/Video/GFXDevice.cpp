@@ -2539,8 +2539,8 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
 
 Texture* GFXDevice::newTexture(size_t descriptorHash,
                                const Str256& resourceName,
-                               const stringImpl& assetNames,
-                               const stringImpl& assetLocations,
+                               const ResourcePath& assetNames,
+                               const ResourcePath& assetLocations,
                                bool isFlipped,
                                bool asyncLoad,
                                const TextureDescriptor& texDescriptor) {
@@ -2590,7 +2590,7 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) {
 ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
                                            const Str256& resourceName,
                                            const Str256& assetName,
-                                           const stringImpl& assetLocation,
+                                           const ResourcePath& assetLocation,
                                            const ShaderProgramDescriptor& descriptor,
                                            bool asyncLoad) {
 

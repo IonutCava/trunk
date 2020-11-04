@@ -66,11 +66,11 @@ namespace Divide {
         void update(U64 deltaTimeUS);
 
     private:
-        void getDirectoryStructureForPath(const Str256& directoryPath, Directory& directoryOut) const;
+        void getDirectoryStructureForPath(const ResourcePath& directoryPath, Directory& directoryOut) const;
         void printDirectoryStructure(const Directory& dir, bool open) const;
 
-        Texture_ptr getTextureForPath(const Str256& texturePath, const Str64& textureName) const;
-        Mesh_ptr getModelForPath(const Str256& modelPath, const Str64& modelName) const;
+        Texture_ptr getTextureForPath(const ResourcePath& texturePath, const ResourcePath& textureName) const;
+        Mesh_ptr getModelForPath(const ResourcePath& modelPath, const ResourcePath& modelName) const;
         
     private:
         Texture_ptr _fileIcon = nullptr;

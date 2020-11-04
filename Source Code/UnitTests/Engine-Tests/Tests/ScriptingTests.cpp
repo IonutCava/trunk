@@ -10,7 +10,7 @@ TEST_MEMBER_FUNCTION(ScriptTestClass, eval, Simple)
 {
     if (PreparePlatform()) {
         Script input("5.3 + 2.1");
-        double result = 7.4;
+        const double result = 7.4;
 
         CHECK_EQUAL(input.eval<double>(), result);
     }

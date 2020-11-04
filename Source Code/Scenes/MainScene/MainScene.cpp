@@ -170,7 +170,7 @@ bool MainScene::load(const Str256& name) {
         registerTask(*g_boxMoveTaskID);
 
         ResourceDescriptor beepSound("beep sound");
-        beepSound.assetName("beep.wav");
+        beepSound.assetName(ResourcePath{ "beep.wav" });
         beepSound.assetLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
         _beep = CreateResource<AudioDescriptor>(_resCache, beepSound);
 

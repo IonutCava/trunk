@@ -48,8 +48,8 @@ namespace Divide {
             bool serialize(ByteBuffer& dataOut) const;
             bool deserialize(ByteBuffer& dataIn);
 
-            PROPERTY_RW(Str64, textureName);
-            PROPERTY_RW(Str256, texturePath);
+            PROPERTY_RW(ResourcePath, textureName);
+            PROPERTY_RW(ResourcePath, texturePath);
 
             // Only Albedo/Diffuse should be sRGB
             // Normals, specular, etc should be in linear space
@@ -107,7 +107,7 @@ namespace Divide {
         };
 
         struct ImportData {
-            ImportData(const Str256& modelPath, const Str64& modelName)
+            ImportData(const ResourcePath& modelPath, const ResourcePath& modelName)
                 : _modelName(modelName),
                   _modelPath(modelPath)
             {
@@ -118,8 +118,8 @@ namespace Divide {
             }
             ~ImportData() = default;
 
-            bool saveToFile(PlatformContext& context, const Str256& path, const Str64& fileName);
-            bool loadFromFile(PlatformContext& context, const Str256& path, const Str64& fileName);
+            bool saveToFile(PlatformContext& context, const ResourcePath& path, const ResourcePath& fileName);
+            bool loadFromFile(PlatformContext& context, const ResourcePath& path, const ResourcePath& fileName);
 
             // Was it loaded from file, or just created?
             PROPERTY_RW(bool, loadedFromFile, false);
@@ -130,8 +130,8 @@ namespace Divide {
             PROPERTY_RW(bool, hasAnimations, false);
 
             // Name and path
-            PROPERTY_RW(Str64, modelName);
-            PROPERTY_RW(Str256, modelPath);
+            PROPERTY_RW(ResourcePath, modelName);
+            PROPERTY_RW(ResourcePath, modelPath);
 
             vectorEASTL<Bone*> _bones;
             vectorEASTL<SubMeshData> _subMeshData;

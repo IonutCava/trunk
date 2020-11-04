@@ -146,8 +146,8 @@ namespace Divide {
         noTexture(GFXDevice& context,
                   size_t descriptorHash,
                   const Str256& name,
-                  const stringImpl& assetNames,
-                  const stringImpl& assetLocations,
+                  const ResourcePath& assetNames,
+                  const ResourcePath& assetLocations,
                   bool isFlipped,
                   bool asyncLoad,
                   const TextureDescriptor& texDescriptor)
@@ -165,7 +165,7 @@ namespace Divide {
         noShaderProgram(GFXDevice& context, size_t descriptorHash,
                         const Str256& name,
                         const Str256& assetName,
-                        const stringImpl& assetLocation,
+                        const ResourcePath& assetLocation,
                         const ShaderProgramDescriptor& descriptor,
                         bool asyncLoad)
             : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad)

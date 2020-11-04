@@ -77,10 +77,10 @@ protected:
 protected:
     //ToDo: Move this somewhere else to avoid having the include in this file -Ionut
     eastl::unique_ptr<chaiscript::ChaiScript> _script;
-    stringImpl _scriptSource;
-    FileWithPath _scriptFile;
-    FileType     _scriptFileType;
-    vectorEASTL<Str64> _usedAtoms;
+    stringImpl  _scriptSource;
+    FileAndPath _scriptFile;
+    FileType    _scriptFileType;
+    vectorEASTL<ResourcePath> _usedAtoms;
 
     static I64 s_scriptFileWatcher;
 

@@ -92,12 +92,12 @@ ShaderProgram::AtomMap glShaderProgram::s_atoms;
 ShaderProgram::AtomInclusionMap glShaderProgram::s_atomIncludes;
 I64 glShaderProgram::s_shaderFileWatcherID = -1;
 std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
-Str256 glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+ResourcePath glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
 U64 glShaderProgram::shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 Str8 glShaderProgram::shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
 
 void glShaderProgram::initStaticData() {
-    const Str256 locPrefix = Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc;
+    const ResourcePath locPrefix = Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc;
 
     shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
     shaderAtomLocationPrefix[to_base(ShaderType::VERTEX)] = locPrefix + Paths::Shaders::GLSL::g_vertAtomLoc;
@@ -130,9 +130,9 @@ void glShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) 
         s_fileWatcherListener.addIgnoredEndCharacter('~');
         s_fileWatcherListener.addIgnoredExtension("tmp");
 
-        const vectorEASTL<Str256> atomLocations = getAllAtomLocations();
-        for (const Str256& loc : atomLocations) {
-            CreateDirectories(loc.c_str());
+        const vectorEASTL<ResourcePath> atomLocations = getAllAtomLocations();
+        for (const ResourcePath& loc : atomLocations) {
+            CreateDirectories(loc);
             watcher().addWatch(loc.c_str(), &s_fileWatcherListener);
         }
     }
@@ -147,7 +147,7 @@ glShaderProgram::glShaderProgram(GFXDevice& context,
                                  const size_t descriptorHash,
                                  const Str256& name,
                                  const Str256& assetName,
-                                 const stringImpl& assetLocation,
+                                 const ResourcePath& assetLocation,
                                  const ShaderProgramDescriptor& descriptor,
                                  const bool asyncLoad)
     : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad),
@@ -291,16 +291,16 @@ void glShaderProgram::threadedLoad(const bool reloadExisting) {
     }
 }
 
-vectorEASTL<Str64> glShaderProgram::loadSourceCode(const Str128& stageName,
-                                                   const Str8& extension,
-                                                   const stringImpl& header,
-                                                   size_t definesHash,
-                                                   U32 lineOffset,
-                                                   const bool reloadExisting,
-                                                   std::pair<bool, stringImpl>& sourceCodeOut) const
+vectorEASTL<ResourcePath> glShaderProgram::loadSourceCode(const Str128& stageName,
+                                                          const Str8& extension,
+                                                          const stringImpl& header,
+                                                          size_t definesHash,
+                                                          U32 lineOffset,
+                                                          const bool reloadExisting,
+                                                          std::pair<bool, stringImpl>& sourceCodeOut) const
 {
                                              
-    vectorEASTL<Str64> atoms = {};
+    vectorEASTL<ResourcePath> atoms = {};
     const stringImpl fileName = (definesHash != 0
                                         ? Util::StringFormat("%s.%zu.%s", stageName.c_str(), definesHash, extension.c_str())
                                         : Util::StringFormat("%s.%s", stageName.c_str(), extension.c_str()));
@@ -309,8 +309,8 @@ vectorEASTL<Str64> glShaderProgram::loadSourceCode(const Str128& stageName,
     sourceCodeOut.first = false;
     sourceCodeOut.second.resize(0);
     if (s_useShaderTextCache && !reloadExisting) {
-        shaderFileRead((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str(),
-                       fileName.c_str(),
+        shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                ResourcePath(fileName),
                        sourceCodeOut.second);
     }
 
@@ -326,7 +326,7 @@ vectorEASTL<Str64> glShaderProgram::loadSourceCode(const Str128& stageName,
             Util::ReplaceStringInPlace(sourceCodeOut.second, "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
         }
 
-        stringImpl srcTemp = preprocessIncludes(resourceName(), sourceCodeOut.second, 0, atoms, true);
+        stringImpl srcTemp = preprocessIncludes(ResourcePath(resourceName()), sourceCodeOut.second, 0, atoms, true);
         if (!srcTemp.empty()) {
             sourceCodeOut.first = true;
             if_constexpr(Config::Build::IS_DEBUG_BUILD) {
@@ -334,8 +334,8 @@ vectorEASTL<Str64> glShaderProgram::loadSourceCode(const Str128& stageName,
             } else {
                 sourceCodeOut.second = preProcess(srcTemp, fileName.c_str());
             }
-            shaderFileWrite((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText).c_str(),
-                            fileName.c_str(),
+            shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                            ResourcePath(fileName),
                             sourceCodeOut.second.c_str());
         }
     }
@@ -359,7 +359,7 @@ bool glShaderProgram::load() {
 
 bool glShaderProgram::reloadShaders(const bool reloadExisting) {
     //glswClearCurrentContext();
-    glswSetPath((assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc.c_str()).c_str(), ".glsl");
+    glswSetPath((assetLocation() + "/" + Paths::Shaders::GLSL::g_parentShaderLoc).c_str(), ".glsl");
 
     U64 batchCounter = 0;
     hashMap<U64, vectorEASTL<ShaderModuleDescriptor>> modulesByFile;
@@ -418,13 +418,13 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
             }
 
             std::pair<bool, stringImpl> sourceCode;
-            vectorEASTL<Str64> atomsTemp = loadSourceCode(stageData._name, 
-                                                          shaderAtomExtensionName[shaderIdx],
-                                                          header,
-                                                          definesHash,
-                                                          _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u,
-                                                          reloadExisting,
-                                                          sourceCode);
+            vectorEASTL<ResourcePath> atomsTemp = loadSourceCode(stageData._name,
+                                                                 shaderAtomExtensionName[shaderIdx],
+                                                                 header,
+                                                                 definesHash,
+                                                                 _lineOffset[shaderIdx] + to_U32(shaderDescriptor._defines.size()) - 1u,
+                                                                 reloadExisting,
+                                                                 sourceCode);
 
             if (!sourceCode.first) {
                 continue;
@@ -549,10 +549,10 @@ void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
     }
 }
 
-stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
+stringImpl glShaderProgram::preprocessIncludes(const ResourcePath& name,
                                                const stringImpl& source,
                                                GLint level,
-                                               vectorEASTL<Str64>& foundAtoms,
+                                               vectorEASTL<ResourcePath>& foundAtoms,
                                                bool lock) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
@@ -562,7 +562,7 @@ stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
     boost::smatch matches;
 
     stringImpl output, line, include_string;
-    Str64 include_file;
+    ResourcePath include_file;
 
     istringstreamImpl input(source);
 
@@ -570,13 +570,13 @@ stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
         if (!boost::regex_search(line, matches, Paths::g_includePattern)) {
             output.append(line);
         } else {
-            include_file = Util::Trim(matches[1].str()).c_str();
+            include_file = ResourcePath(Util::Trim(matches[1].str()));
             foundAtoms.push_back(include_file);
 
             ShaderType typeIndex = ShaderType::COUNT;
             bool found = false;
             // switch will throw warnings due to promotion to int
-            const U64 extHash = _ID(Util::GetTrailingCharacters(include_file, 4).c_str());
+            const U64 extHash = _ID(Util::GetTrailingCharacters(include_file.str(), 4).c_str());
             for (U8 i = 0; i < to_base(ShaderType::COUNT) + 1; ++i) {
                 if (extHash == shaderAtomExtensionHash[i]) {
                     typeIndex = static_cast<ShaderType>(i);
@@ -612,13 +612,13 @@ stringImpl glShaderProgram::preprocessIncludes(const Str256& name,
     return output;
 }
 
-const stringImpl& glShaderProgram::ShaderFileRead(const Str256& filePath, const Str64& atomName, const bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
+const stringImpl& glShaderProgram::ShaderFileRead(const ResourcePath& filePath, const ResourcePath& atomName, const bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed) {
     UniqueLock<SharedMutex> w_lock(s_atomLock);
     return ShaderFileReadLocked(filePath, atomName, recurse, foundAtoms, wasParsed);
 }
 
 /// Open the file found at 'filePath' matching 'atomName' and return it's source code
-const stringImpl& glShaderProgram::ShaderFileReadLocked(const Str256& filePath, const Str64& atomName, const bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed) {
+const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& filePath, const ResourcePath& atomName, const bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed) {
     const U64 atomNameHash = _ID(atomName.c_str());
     // See if the atom was previously loaded and still in cache
     const AtomMap::iterator it = s_atoms.find(atomNameHash);
@@ -637,9 +637,9 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const Str256& filePath, 
 
     // Open the atom file and add the code to the atom cache for future reference
     stringImpl output;
-    readFile(filePath.c_str(), atomName.c_str(), output, FileType::TEXT);
+    readFile(filePath, atomName, output, FileType::TEXT);
 
-    vectorEASTL<Str64> atoms = {};
+    vectorEASTL<ResourcePath> atoms = {};
     if (recurse) {
         output = preprocessIncludes(atomName, output, 0, atoms, false);
     }
@@ -652,13 +652,17 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const Str256& filePath, 
     return result.first->second;
 }
 
-void glShaderProgram::shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut) {
-    readFile(filePath.c_str(), decorateFileName(fileName).c_str(), sourceCodeOut, FileType::TEXT);
+void glShaderProgram::shaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut) {
+    if (!readFile(filePath, ResourcePath(decorateFileName(fileName.str())), sourceCodeOut, FileType::TEXT)) {
+        NOP();
+    }
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
-void glShaderProgram::shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode) {
-    writeFile(filePath.c_str(), decorateFileName(fileName).c_str(), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT);
+void glShaderProgram::shaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode) {
+    if (!writeFile(filePath, ResourcePath(decorateFileName(fileName.str())), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT)) {
+        NOP();
+    }
 }
 
 void glShaderProgram::onAtomChange(std::string_view atomName, FileUpdateEvent evt) {

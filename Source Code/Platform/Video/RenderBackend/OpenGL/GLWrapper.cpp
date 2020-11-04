@@ -170,9 +170,9 @@ void GL_API::appendToShaderHeader(ShaderType type,
     if (entry.find("#include") == stringImpl::npos) {
         inOutOffset[index] += Util::LineCount(entry);
     } else {
-        vectorEASTL<Str64> tempAtoms;
+        vectorEASTL<ResourcePath> tempAtoms;
         tempAtoms.reserve(10);
-        inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes("header", entry, 0, tempAtoms, true));
+        inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes(ResourcePath("header"), entry, 0, tempAtoms, true));
     }
 }
 
@@ -865,7 +865,7 @@ I32 GL_API::getFont(const Str64& fontName) {
         if (it == std::cend(_fonts)) {
             // Fonts are stored in the general asset directory -> in the GUI
             // subfolder -> in the fonts subfolder
-            Str256 fontPath(Paths::g_assetsLocation + Paths::g_GUILocation + Paths::g_fontsPath);
+            ResourcePath fontPath(Paths::g_assetsLocation + Paths::g_GUILocation + Paths::g_fontsPath);
             fontPath += fontName.c_str();
             // We use FontStash to load the font file
             _fontCache.second = fonsAddFont(_fonsContext, fontName.c_str(), fontPath.c_str());

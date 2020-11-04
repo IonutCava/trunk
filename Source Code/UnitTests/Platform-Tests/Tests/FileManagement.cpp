@@ -11,7 +11,7 @@ TEST(FileExistanceCheck)
 
     if (PreparePlatform()) {
         const Divide::SysInfo& systemInfo = Divide::const_sysInfo();
-        const char* exeName = systemInfo._pathAndFilename._fileName.c_str();
+        const char* exeName = systemInfo._fileAndPath.first.c_str();
 
         CHECK_TRUE(Divide::fileExists(exeName));
         CHECK_FALSE(Divide::fileExists(invalidFileName));
@@ -23,7 +23,7 @@ TEST(PathExistanceCheck)
     const char* invalidPath = "abccba";
 
     if (PreparePlatform()) {
-        CHECK_TRUE(Divide::pathExists((Divide::Paths::g_exePath + Divide::Paths::g_assetsLocation).c_str()));
+        CHECK_TRUE(Divide::pathExists(Divide::Paths::g_exePath + Divide::Paths::g_assetsLocation));
         CHECK_FALSE(Divide::pathExists(invalidPath));
     }
 }
@@ -42,4 +42,17 @@ TEST(ExtensionCheck)
         CHECK_FALSE(Divide::hasExtension(file1, ext2));
         CHECK_FALSE(Divide::hasExtension(file3, ext2));
     }
+}
+
+TEST(LexicallyNormalPathCompare)
+{
+    const char* path1_in = "foo/./bar/..";
+    const char* path2_in = "foo\\/./bar/../";
+
+    const char* path_out = "foo/";
+
+    CHECK_TRUE(Divide::pathCompare(path1_in, path_out));
+    CHECK_TRUE(Divide::pathCompare(path2_in, path_out));
+    CHECK_EQUAL(Divide::ResourcePath(path1_in), Divide::ResourcePath(path_out));
+    CHECK_EQUAL(Divide::ResourcePath(path2_in), Divide::ResourcePath(path_out));
 }

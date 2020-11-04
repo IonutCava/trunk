@@ -150,10 +150,8 @@ bool Scene::idle() {  // Called when application is idle
     return true;
 }
 
-void Scene::addMusic(MusicType type, const Str64& name, const Str256& srcFile) const {
-    const FileWithPath fileResult = splitPathToNameAndLocation(srcFile.c_str());
-    const stringImpl& musicFile = fileResult._fileName;
-    const stringImpl& musicFilePath = fileResult._path;
+void Scene::addMusic(MusicType type, const Str64& name, const ResourcePath& srcFile) const {
+    const auto[musicFile, musicFilePath] = splitPathToNameAndLocation(srcFile);
 
     ResourceDescriptor music(name);
     music.assetName(musicFile);
@@ -179,18 +177,24 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
 
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
 
-    const Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
-    const Str256 sceneDataFile(sceneLocation + ".xml");
+    const ResourcePath sceneLocation(scenePath + "/" + resourceName().c_str());
+    const ResourcePath sceneDataFile(sceneLocation + ".xml");
 
     if (msgCallback) {
         msgCallback("Validating directory structure ...");
     }
 
-    createDirectory((sceneLocation + "/collisionMeshes/").c_str());
-    createDirectory((sceneLocation + "/navMeshes/").c_str());
-    createDirectory((sceneLocation + "/nodes/").c_str());
+    if (!createDirectory(sceneLocation + "/collisionMeshes/")) {
+        NOP();
+    }
+    if (!createDirectory(sceneLocation + "/navMeshes/")) {
+        NOP();
+    }
+    if (!createDirectory(sceneLocation + "/nodes/")) {
+        NOP();
+    }
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
@@ -237,8 +241,9 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
         pt.put("dayNight.timeOfDay.<xmlattr>.minute", _dayNightData._time._minutes);
         pt.put("dayNight.timeOfDay.<xmlattr>.timeFactor", _dayNightData._speedFactor);
 
-        copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true);
-        XML::writeXML(sceneDataFile.c_str(), pt);
+        if (copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true)) {
+            XML::writeXML(sceneDataFile.c_str(), pt);
+        }
     }
 
     if (msgCallback) {
@@ -252,8 +257,9 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
             msgCallback("Saving music data ...");
         }
         ptree pt;
-        copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true);
-        XML::writeXML((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt);
+        if (copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true)) {
+            XML::writeXML((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt);
+        }
     }
 
     Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
@@ -265,7 +271,7 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
 }
 
 bool Scene::loadXML(const Str256& name) {
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     Configuration& config = _context.config();
 
     ParamHandler& par = _context.paramHandler();
@@ -273,14 +279,14 @@ bool Scene::loadXML(const Str256& name) {
     boost::property_tree::ptree pt;
 
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), name.c_str());
-    const Str256 sceneLocation(scenePath + "/" + name.c_str());
-    const Str256 sceneDataFile(sceneLocation + ".xml");
+    const ResourcePath sceneLocation(scenePath + "/" + name.c_str());
+    const ResourcePath sceneDataFile(sceneLocation + ".xml");
 
     // A scene does not necessarily need external data files
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
         sceneGraph()->loadFromXML("assets.xml");
-        XML::loadMusicPlaylist(sceneLocation, "musicPlaylist.xml", this, config);
+        XML::loadMusicPlaylist(sceneLocation.str(), "musicPlaylist.xml", this, config);
         return true;
     }
 
@@ -350,7 +356,7 @@ bool Scene::loadXML(const Str256& name) {
     }
     state()->renderState().lodThresholds().set(lodThresholds);
     sceneGraph()->loadFromXML(pt.get("assets", "assets.xml").c_str());
-    XML::loadMusicPlaylist(sceneLocation, pt.get("musicPlaylist", ""), this, config);
+    XML::loadMusicPlaylist(sceneLocation.str(), pt.get("musicPlaylist", ""), this, config);
 
     return true;
 }
@@ -404,12 +410,12 @@ SceneNode_ptr Scene::createNode(const SceneNodeType type, const ResourceDescript
 void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, SceneGraphNode* parent) {
     assert(parent != nullptr);
 
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    const Str256 sceneLocation(scenePath + "/" + resourceName().c_str());
-    const stringImpl nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const ResourcePath sceneLocation(scenePath + "/" + resourceName().c_str());
+    const ResourcePath nodePath = sceneLocation + "/nodes/" + parent->name() + "_" + sceneNode.name + ".xml";
 
     SceneGraphNode* crtNode = parent;
-    if (fileExists(nodePath.c_str())) {
+    if (fileExists(nodePath)) {
 
         U32 normalMask = to_base(ComponentType::TRANSFORM) |
                          to_base(ComponentType::BOUNDS) |
@@ -417,14 +423,14 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
 
 
         boost::property_tree::ptree nodeTree = {};
-        XML::readXML(nodePath, nodeTree);
+        XML::readXML(nodePath.str(), nodeTree);
 
         const auto loadModelComplete = [this, &nodeTree](CachedResource* res) {
             static_cast<SceneNode*>(res)->loadFromXML(nodeTree);
             _loadingTasks.fetch_sub(1);
         };
 
-        stringImpl modelName = nodeTree.get("model", "");
+        ResourcePath modelName{ nodeTree.get("model", "") };
 
         SceneNode_ptr ret = nullptr;
 
@@ -491,7 +497,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                     //normalMask |= to_base(ComponentType::RENDERING);
                     if (!modelName.empty()) {
                         _loadingTasks.fetch_add(1);
-                        ResourceDescriptor model(modelName);
+                        ResourceDescriptor model(modelName.str());
                         model.assetLocation(Paths::g_assetsLocation + "models");
                         model.assetName(modelName);
                         model.flag(true);
@@ -942,7 +948,7 @@ U16 Scene::registerInputActions() {
 }
 
 void Scene::loadKeyBindings() {
-    XML::loadDefaultKeyBindings(Paths::g_xmlDataLocation + "keyBindings.xml", this);
+    XML::loadDefaultKeyBindings((Paths::g_xmlDataLocation + "keyBindings.xml").str(), this);
 }
 
 bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
@@ -1175,7 +1181,7 @@ void Scene::addPlayerInternal(bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, playerName, "", SceneNodeType::TYPE_TRANSFORM, 0u);
+        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, ResourcePath{ playerName }, ResourcePath{}, SceneNodeType::TYPE_TRANSFORM, 0u);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |

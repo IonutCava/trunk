@@ -126,7 +126,7 @@ void LightPool::init() {
 
     ResourceDescriptor iconImage("LightIconTexture");
     iconImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
-    iconImage.assetName("lightIcons.png");
+    iconImage.assetName(ResourcePath("lightIcons.png"));
     iconImage.propertyDescriptor(iconDescriptor);
     iconImage.waitForReady(false);
 

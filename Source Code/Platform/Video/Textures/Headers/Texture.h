@@ -64,8 +64,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     explicit Texture(GFXDevice& context,
                      size_t descriptorHash,
                      const Str256& name,
-                     const stringImpl& assetNames,
-                     const stringImpl& assetLocations,
+                     const ResourcePath& assetNames,
+                     const ResourcePath& assetLocations,
                      bool isFlipped,
                      bool asyncLoad,
                      const TextureDescriptor& texDescriptor);
@@ -114,8 +114,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
-    bool loadFile(const stringImpl& name, ImageTools::ImageData& fileData);
-    bool checkTransparency(const stringImpl& name, ImageTools::ImageData& fileData);
+    bool loadFile(const ResourcePath& name, ImageTools::ImageData& fileData);
+    bool checkTransparency(const ResourcePath& name, ImageTools::ImageData& fileData);
     /// Load texture data using the specified file name
     virtual bool load() override;
     virtual void threadedLoad();

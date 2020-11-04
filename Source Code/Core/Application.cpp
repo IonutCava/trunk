@@ -93,7 +93,7 @@ void Application::stop() {
                 Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")), to_I32(std::ceil(sizeLeaked / 1024.0f)));
             }
             std::ofstream memLog;
-            memLog.open((Paths::g_logPath + _memLogBuffer).c_str());
+            memLog.open((Paths::g_logPath + _memLogBuffer).str());
             memLog << allocLog;
             memLog.close();
         }

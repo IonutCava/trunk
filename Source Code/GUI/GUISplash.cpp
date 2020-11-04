@@ -20,7 +20,7 @@ GUISplash::GUISplash(ResourceCache* cache,
 
     ResourceDescriptor splashImage("SplashScreen Texture");
     splashImage.threaded(false);
-    splashImage.assetName(splashImageName);
+    splashImage.assetName(ResourcePath(splashImageName));
     splashImage.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     splashImage.propertyDescriptor(splashDescriptor);
 

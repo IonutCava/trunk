@@ -110,6 +110,10 @@ class Material final : public CachedResource {
     bool unload() override;
     /// Returns true if the material changed between update calls
     bool update(U64 deltaTimeUS);
+    bool setSampler(TextureUsage textureUsageSlot,
+                    size_t samplerHash,
+                    bool applyToInstances = false);
+
     bool setTexture(TextureUsage textureUsageSlot,
                     const Texture_ptr& tex,
                     size_t samplerHash,

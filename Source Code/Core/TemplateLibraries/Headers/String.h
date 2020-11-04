@@ -70,6 +70,8 @@ namespace Divide {
 
         ~Str() = default;
 
+        operator std::string_view() const { return std::string_view{c_str()}; }
+
         [[nodiscard]] boost::string_ref as_ref(size_t pos = 0) const {
             if (pos == 0) {
                 return boost::string_ref(Base::c_str(), Base::size());
@@ -99,14 +101,6 @@ namespace Divide {
             return *this + other.c_str();
         }
 
-        template<typename T_str, typename std::enable_if_t<std::is_same<stringImpl, T_str>::value ||
-                                                           std::is_same<stringImplFast, T_str>::value>::value>
-        operator T_str() {
-            return T_str{ this->c_str() };
-        }
-
-        operator const char* () { return this->c_str(); }
-
         template<typename T_str>
         typename std::enable_if<std::is_same<stringImpl, T_str>::value ||
                                 std::is_same<stringImplFast, T_str>::value, Str&>::type
@@ -126,14 +120,6 @@ namespace Divide {
             Str ret(*this);
             ret.append(other.c_str());
             return ret;
-        }
-
-        operator stringImpl() const {
-            return stringImpl(Base::c_str());
-        }
-
-        operator stringImplFast() const {
-            return stringImplFast(Base::c_str());
         }
 
         [[nodiscard]] size_t find(const char other, const size_t pos = 0) const {

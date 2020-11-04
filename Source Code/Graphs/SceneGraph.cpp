@@ -30,7 +30,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
 
     SceneGraphNodeDescriptor rootDescriptor = {};
     rootDescriptor._name = "ROOT";
-    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", "ROOT", "", SceneNodeType::TYPE_TRANSFORM, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
+    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", ResourcePath{ "ROOT" }, ResourcePath{ "" }, SceneNodeType::TYPE_TRANSFORM, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
@@ -396,20 +396,23 @@ namespace {
 };
 
 void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, std::string_view> msgCallback) const {
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    ResourcePath sceneLocation(scenePath + "/" + parentScene().resourceName());
 
     {
         boost::property_tree::ptree pt;
         pt.put("version", g_sceneGraphVersion);
         pt.add_child("entities.node", dumpSGNtoAssets(getRoot()));
 
-        copyFile((sceneLocation + "/").c_str(), assetsFile, (sceneLocation + "/").c_str(), "assets.xml.bak", true);
-        XML::writeXML((sceneLocation + "/" + assetsFile).c_str(), pt);
+        if (copyFile(sceneLocation + "/", ResourcePath(assetsFile), sceneLocation + "/", ResourcePath("assets.xml.bak"), true)) {
+            XML::writeXML((sceneLocation + "/" + assetsFile).str(), pt);
+        } else {
+            DIVIDE_UNEXPECTED_CALL();
+        }
     }
 
     getRoot()->forEachChild([&sceneLocation, &msgCallback](const SceneGraphNode* child, I32 /*childIdx*/) {
-        child->saveToXML(sceneLocation, msgCallback);
+        child->saveToXML(sceneLocation.str(), msgCallback);
         return true;
     });
 }
@@ -422,16 +425,16 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
     using boost::property_tree::ptree;
     static const auto& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
 
-    const stringImpl file = (scenePath + "/" + parentScene().resourceName()) + "/" + assetsFile;
+    const ResourcePath file = scenePath + "/" + parentScene().resourceName() + "/" + assetsFile;
 
-    if (!fileExists(file.c_str())) {
+    if (!fileExists(file)) {
         return;
     }
 
     Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
 
     ptree pt = {};
-    XML::readXML(file, pt);
+    XML::readXML(file.str(), pt);
     if (pt.get("version", g_sceneGraphVersion) != g_sceneGraphVersion) {
         // ToDo: Scene graph version mismatch. Handle condition - Ionut
         NOP();
@@ -470,18 +473,18 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
 }
 
 bool SceneGraph::saveNodeToXML(const SceneGraphNode* node) const {
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
-    node->saveToXML(sceneLocation);
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const ResourcePath sceneLocation(scenePath + "/" + parentScene().resourceName());
+    node->saveToXML(sceneLocation.str());
     return true;
 }
 
 bool SceneGraph::loadNodeFromXML(const char* assetsFile, SceneGraphNode* node) const {
     ACKNOWLEDGE_UNUSED(assetsFile);
 
-    const Str256& scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
-    Str256 sceneLocation(scenePath + "/" + parentScene().resourceName());
-    node->loadFromXML(sceneLocation);
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
+    const ResourcePath sceneLocation(scenePath + "/" + parentScene().resourceName());
+    node->loadFromXML(sceneLocation.str());
     return true;
 }
 

@@ -16,8 +16,8 @@ Mesh::Mesh(GFXDevice& context,
            ResourceCache* parentCache,
            const size_t descriptorHash,
            const Str256& name,
-           const Str256& resourceName,
-           const stringImpl& resourceLocation)
+           const ResourcePath& resourceName,
+           const ResourcePath& resourceLocation)
     : Object3D(context, parentCache, descriptorHash, name, resourceName, resourceLocation, ObjectType::MESH, 0),
       _animator(nullptr)
 {

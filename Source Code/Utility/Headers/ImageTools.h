@@ -210,7 +210,7 @@ class ImageData : NonCopyable {
 class ImageDataInterface {
 public:
     //refWidth/Height = if not 0, we will attempt to resize the texture to the specified dimensions
-    static bool CreateImageData(const stringImpl& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut);
+    static bool CreateImageData(const ResourcePath& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut);
 protected:
     friend class ImageData;
     /// used to lock image loader in a sequential operating mode in a multithreaded environment

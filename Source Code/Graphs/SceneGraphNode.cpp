@@ -66,8 +66,8 @@ SceneGraphNode::SceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescr
         _node = std::make_shared<SceneNode>(sceneGraph->parentScene().resourceCache(),
                                               generateGUID(),
                                               "EMPTY",
-                                              "EMPTY",
-                                              "",
+                                              ResourcePath{"EMPTY"},
+                                              ResourcePath{},
                                               SceneNodeType::TYPE_TRANSFORM,
                                               to_base(ComponentType::TRANSFORM));
     }
@@ -738,7 +738,7 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, std::
         Attorney::EditorComponentSceneGraphNode::saveToXML(*editorComponent, pt);
     }
 
-    stringImpl targetFile = sceneLocation + "/nodes/";
+    auto targetFile = sceneLocation + "/nodes/";
     targetFile.append(parent()->name());
     targetFile.append("_");
     targetFile.append(name());
@@ -753,7 +753,7 @@ void SceneGraphNode::saveToXML(const Str256& sceneLocation, DELEGATE<void, std::
 
 void SceneGraphNode::loadFromXML(const Str256& sceneLocation) {
     boost::property_tree::ptree pt;
-    stringImpl targetFile = sceneLocation + "/nodes/";
+    auto targetFile = sceneLocation + "/nodes/";
     targetFile.append(parent()->name());
     targetFile.append("_");
     targetFile.append(name());

@@ -69,7 +69,7 @@ class GUIButton final : public GUIElementBase<GUIType::GUI_BUTTON> {
 
    public:
     void setTooltip(const stringImpl& tooltipText) override;
-    void setText(const stringImpl& text) const;
+    void setText(const std::string_view& text) const;
     void setFont(const stringImpl& fontName, const stringImpl& fontFileName, U32 size) const;
     void active(const bool& active) noexcept override;
     void visible(const bool& visible) noexcept override;

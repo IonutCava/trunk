@@ -14,7 +14,6 @@
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
-#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
 
 namespace Divide {
 
@@ -117,9 +116,9 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    Str256 filename(Paths::g_assetsLocation + args.c_str());
+    ResourcePath filename(Paths::g_assetsLocation + args);
 
-    std::ifstream soundfile(filename.c_str());
+    std::ifstream soundfile(filename.str());
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)
@@ -130,16 +129,14 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
             return;
         }
 
-        FileWithPath fileResult = splitPathToNameAndLocation(filename.c_str());
-        const Str64& name = fileResult._fileName.c_str();
-        const stringImpl& path = fileResult._path;
+        auto[name, path] = splitPathToNameAndLocation(filename);
 
         // The file is valid, so create a descriptor for it
         ResourceDescriptor sound("consoleFilePlayback");
         sound.assetName(name);
         sound.assetLocation(path);
         _sound = CreateResource<AudioDescriptor>(_resCache, sound);
-        if (filename.find("music") != stringImpl::npos) {
+        if (filename.str().find("music") != stringImpl::npos) {
             // play music
             _context.sfx().playMusic(_sound);
         } else {

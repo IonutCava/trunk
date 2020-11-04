@@ -54,7 +54,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                              size_t descriptorHash,
                              const Str256& name,
                              const Str256& assetName,
-                             const stringImpl& assetLocation,
+                             const ResourcePath& assetLocation,
                              const ShaderProgramDescriptor& descriptor,
                              bool asyncLoad);
     ~glShaderProgram();
@@ -64,8 +64,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static void onStartup(GFXDevice& context, ResourceCache* parentCache);
     static void onShutdown();
 
-    template<size_t N>
-    static Str<N> decorateFileName(const Str<N>& name) {
+    template<typename StringType> 
+    static StringType decorateFileName(const StringType& name) {
         if_constexpr(Config::Build::IS_DEBUG_BUILD) {
             return "DEBUG." + name;
         } else if_constexpr(Config::Build::IS_PROFILE_BUILD) {
@@ -84,19 +84,19 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void UploadPushConstants(const PushConstants& constants);
 
     static void onAtomChange(std::string_view atomName, FileUpdateEvent evt);
-    static const stringImpl& ShaderFileRead(const Str256& filePath, const Str64& atomName, bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed);
-    static const stringImpl& ShaderFileReadLocked(const Str256& filePath, const Str64& atomName, bool recurse, vectorEASTL<Str64>& foundAtoms, bool& wasParsed);
+    static const stringImpl& ShaderFileRead(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);
+    static const stringImpl& ShaderFileReadLocked(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);
 
-    static void shaderFileRead(const Str256& filePath, const Str128& fileName, stringImpl& sourceCodeOut);
-    static void shaderFileWrite(const Str256& filePath, const Str128& fileName, const char* sourceCode);
-    static stringImpl preprocessIncludes(const Str256& name,
+    static void shaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut);
+    static void shaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode);
+    static stringImpl preprocessIncludes(const ResourcePath& name,
                                          const stringImpl& source,
                                          GLint level,
-                                         vectorEASTL<Str64>& foundAtoms,
+                                         vectorEASTL<ResourcePath>& foundAtoms,
                                          bool lock);
    protected:
     /// return a list of atom names
-    vectorEASTL<Str64> loadSourceCode(
+    vectorEASTL<ResourcePath> loadSourceCode(
         const Str128& stageName,
         const Str8& extension,
         const stringImpl& header,
@@ -143,7 +143,7 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     static AtomInclusionMap s_atomIncludes;
 
     //extra entry for "common" location
-    static Str256 shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
+    static ResourcePath shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
     static Str8 shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
     static U64 shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
 };

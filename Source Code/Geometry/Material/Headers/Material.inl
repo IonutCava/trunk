@@ -81,7 +81,7 @@ inline void Material::addShaderDefine(ShaderType type, const Str128& define, boo
     }
 }
 
-inline void Material::addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix) {
+inline void Material::addShaderDefineInternal(const ShaderType type, const Str128& define, bool addPrefix) {
     ModuleDefines& defines = _extraShaderDefines[to_base(type)];
 
     if (eastl::find_if(eastl::cbegin(defines),
@@ -91,11 +91,11 @@ inline void Material::addShaderDefineInternal(ShaderType type, const Str128& def
                                    it.first.compare(define.c_str()) == 0;
                         }) == eastl::cend(defines))
     {
-        defines.emplace_back(define, addPrefix);
+        defines.emplace_back(define.c_str(), addPrefix);
     }
 }
 
-inline const ModuleDefines& Material::shaderDefines(ShaderType type) const {
+inline const ModuleDefines& Material::shaderDefines(const ShaderType type) const {
     assert(type != ShaderType::COUNT);
 
     return _extraShaderDefines[to_base(type)];

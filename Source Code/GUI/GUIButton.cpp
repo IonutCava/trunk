@@ -102,8 +102,8 @@ void GUIButton::visible(const bool& visible) noexcept {
     }
 }
 
-void GUIButton::setText(const stringImpl& text) const {
-    _btnWindow->setText(text.c_str());
+void GUIButton::setText(const std::string_view& text) const {
+    _btnWindow->setText(CEGUI::String{ text.data(), text.length() });
 }
 
 void GUIButton::setTooltip(const stringImpl& tooltipText) {

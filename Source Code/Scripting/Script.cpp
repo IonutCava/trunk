@@ -12,7 +12,7 @@
 namespace Divide {
 
 namespace {
-    UpdateListener s_fileWatcherListener([](std::string_view atomName, FileUpdateEvent evt) {
+    UpdateListener s_fileWatcherListener([](const std::string_view atomName, FileUpdateEvent evt) {
         Script::onScriptModify(atomName, evt);
     });
 };
@@ -22,7 +22,7 @@ I64 Script::s_scriptFileWatcher = -1;
 Script::ScriptMap Script::s_scripts;
 bool Script::s_scriptsReady = false;
 
-Script::Script(const stringImpl& scriptPathOrCode, FileType fileType)
+Script::Script(const stringImpl& scriptPathOrCode, const FileType fileType)
     : GUIDWrapper(),
       _script(nullptr),
       _scriptFileType(fileType)
@@ -46,7 +46,7 @@ Script::Script(const stringImpl& scriptPathOrCode, FileType fileType)
 Script::~Script()
 {
     if (s_scriptsReady) {
-        ScriptMap::iterator it = s_scripts.find(getGUID());
+      const ScriptMap::iterator it = s_scripts.find(getGUID());
         if (it != std::cend(s_scripts)) {
             s_scripts.erase(it);
         }
@@ -60,7 +60,7 @@ bool Script::onStartup() {
     s_scripts.reserve(100);
     s_scriptsReady = true;
 
-    if (!Config::Build::IS_SHIPPING_BUILD) {
+    if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         FileWatcher& scriptFileWatcher = FileWatcherManager::allocateWatcher();
         s_scriptFileWatcher = scriptFileWatcher.getGUID();
 
@@ -76,7 +76,7 @@ bool Script::onStartup() {
 bool Script::onShutdown() {
     s_scriptsReady = false;
 
-    if (!Config::Build::IS_SHIPPING_BUILD) {
+    if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         FileWatcherManager::deallocateWatcher(s_scriptFileWatcher);
         s_scriptFileWatcher = -1;
     }
@@ -87,21 +87,23 @@ bool Script::onShutdown() {
 }
 
 void Script::compile() {
-    if (!_scriptFile._fileName.empty()) {
-        readFile(_scriptFile._path.c_str(), _scriptFile._fileName.c_str(), _scriptSource, _scriptFileType);
+    if (!_scriptFile.first.empty()) {
+        if (!readFile(_scriptFile.second.c_str(), _scriptFile.first.c_str(), _scriptSource, _scriptFileType)) {
+            NOP();
+        }
     }
 }
 
 void Script::bootstrap() {
     const SysInfo& systemInfo = const_sysInfo();
-    const std::string& path = systemInfo._pathAndFilename._path;
+    const std::string& path = systemInfo._fileAndPath.second.str();
 
-    std::vector<std::string> scriptpath{ path + Paths::Scripts::g_scriptsLocation.c_str(),
-                                         path + Paths::Scripts::g_scriptsAtomsLocation.c_str() };
+    std::vector<std::string> scriptPath{ path + Paths::Scripts::g_scriptsLocation.str(),
+                                         path + Paths::Scripts::g_scriptsAtomsLocation.str() };
 
     _script = 
-        eastl::make_unique<chaiscript::ChaiScript>(scriptpath,
-                                                   scriptpath,
+        eastl::make_unique<chaiscript::ChaiScript>(scriptPath,
+                                                   scriptPath,
                                                    std::vector<chaiscript::Options> 
                                                    {
                                                       chaiscript::Options::Load_Modules,
@@ -113,25 +115,28 @@ void Script::bootstrap() {
     _script->add(chaiscript::fun(&Script::handleOutput), "handle_output");
 }
 
-void Script::preprocessIncludes(const stringImpl& source, I32 level /*= 0 */) {
+void Script::preprocessIncludes(const stringImpl& source, const I32 level /*= 0 */) {
     if (level > 32) {
         Console::errorfn(Locale::get(_ID("ERROR_SCRIPT_INCLUD_LIMIT")));
     }
 
     boost::smatch matches;
     stringImpl line, include_string;
-    Str64 include_file;
 
     istringstreamImpl input(source);
     while (std::getline(input, line)) {
         if (boost::regex_search(line, matches, Paths::g_usePattern)) {
-            include_file = Util::Trim(matches[1].str()).c_str();
+            ResourcePath include_file = ResourcePath{ Util::Trim(matches[1].str()).c_str() };
             _usedAtoms.push_back(include_file);
 
             // Open the atom file and add the code to the atom cache for future reference
-            readFile(Paths::Scripts::g_scriptsLocation.c_str(), include_file.c_str(), include_string, FileType::TEXT);
+            if (!readFile(Paths::Scripts::g_scriptsLocation, include_file, include_string, FileType::TEXT)) {
+                NOP();
+            }
             if (include_string.empty()) {
-                readFile(Paths::Scripts::g_scriptsAtomsLocation.c_str(), include_file.c_str(), include_string, FileType::TEXT);
+                if (!readFile(Paths::Scripts::g_scriptsAtomsLocation, include_file, include_string, FileType::TEXT)) {
+                    NOP();
+                }
             }
             if (!include_string.empty()) {
                 preprocessIncludes(include_string, level + 1);
@@ -142,8 +147,8 @@ void Script::preprocessIncludes(const stringImpl& source, I32 level /*= 0 */) {
 
 void Script::extractAtoms() {
     _usedAtoms.clear();
-    if (!_scriptFile._fileName.empty()) {
-        _usedAtoms.emplace_back(_scriptFile._fileName);
+    if (!_scriptFile.first.empty()) {
+        _usedAtoms.emplace_back(_scriptFile.first.str());
     }
     if (!_scriptSource.empty()) {
         preprocessIncludes(_scriptSource, 0);
@@ -154,12 +159,12 @@ void Script::handleOutput(const std::string &msg) {
     Console::printfn(Locale::get(_ID("SCRIPT_CONSOLE_OUTPUT")), msg.c_str());
 }
 
-void Script::onScriptModify(std::string_view script, FileUpdateEvent& evt) {
+void Script::onScriptModify(const std::string_view script, FileUpdateEvent& evt) {
     vectorEASTL<Script*> scriptsToReload;
 
     for (ScriptMap::value_type it : s_scripts) {
-        for (const Str64& atom : it.second->_usedAtoms) {
-            if (Util::CompareIgnoreCase(atom, script)) {
+        for (const ResourcePath& atom : it.second->_usedAtoms) {
+            if (Util::CompareIgnoreCase(atom.str(), script)) {
                 scriptsToReload.push_back(it.second);
                 break;
             }
@@ -172,7 +177,7 @@ void Script::onScriptModify(std::string_view script, FileUpdateEvent& evt) {
     }
 }
 
-void Script::caughtException(const char* message, bool isEvalException) const {
+void Script::caughtException(const char* message, const bool isEvalException) const {
     Console::printfn(Locale::get(isEvalException ? _ID("SCRIPT_EVAL_EXCEPTION")
                                                  : _ID("SCRIPT_OTHER_EXCEPTION")),
                      message);

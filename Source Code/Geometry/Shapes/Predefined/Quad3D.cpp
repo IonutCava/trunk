@@ -13,8 +13,8 @@ Quad3D::Quad3D(GFXDevice& context,
                 parentCache,
                 descriptorHash,
                 name,
-                "",
-                "",
+                {},
+                {},
                 ObjectType::QUAD_3D,
                 0u)
 {

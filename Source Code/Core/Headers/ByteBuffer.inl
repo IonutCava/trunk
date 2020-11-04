@@ -45,6 +45,13 @@ inline ByteBuffer& ByteBuffer::operator<<(const stringImpl &value) {
     return *this;
 }
 
+template <>
+inline ByteBuffer& ByteBuffer::operator<<(const ResourcePath& value) {
+    append(value.c_str(), value.str().length());
+    append(to_U8(0));
+    return *this;
+}
+
 template <typename T>
 ByteBuffer& ByteBuffer::operator>>(T& value) {
     value = read<T>();
@@ -71,6 +78,15 @@ inline ByteBuffer& ByteBuffer::operator>>(stringImpl& value) {
     return *this;
 }
 
+template<>
+inline ByteBuffer& ByteBuffer::operator>>(ResourcePath& value) {
+    stringImpl temp{};
+
+    *this >> temp;
+     value = ResourcePath(temp);
+
+    return *this;
+}
 
 template <typename T>
 void ByteBuffer::read_noskip(T& value) {
@@ -99,10 +115,17 @@ void ByteBuffer::read_noskip(stringImpl& value) {
 }
 
 template <typename T>
-ByteBuffer& ByteBuffer::operator>>(Unused<T>& value) {
+void ByteBuffer::read_noskip(ResourcePath& value) {
+    stringImpl temp{};
+    read_noskip(temp);
+    value = ResourcePath(temp);
+}
+
+template <typename U>
+ByteBuffer& ByteBuffer::operator>>(Unused<U>& value) {
     ACKNOWLEDGE_UNUSED(value);
 
-    read_skip<T>();
+    read_skip<U>();
     return *this;
 }
 
@@ -191,7 +214,11 @@ void ByteBuffer::append(const T *src, size_t cnt) {
 }
 
 inline void ByteBuffer::append(const stringImpl& str) {
-    append(reinterpret_cast<Byte const*>(str.c_str()), str.size() + 1);
+    append(reinterpret_cast<Byte const*>(str.c_str()), str.length() + 1);
+}
+
+inline void ByteBuffer::append(const ResourcePath& str) {
+    append(reinterpret_cast<Byte const*>(str.c_str()), str.str().length() + 1);
 }
 
 inline void ByteBuffer::append(const ByteBuffer &buffer) {
@@ -261,9 +288,9 @@ inline void ByteBuffer::resize(const size_t newsize) {
     _wpos = size();
 }
 
-inline void ByteBuffer::reserve(const size_t ressize) {
-    if (ressize > size()) {
-        _storage.reserve(ressize);
+inline void ByteBuffer::reserve(const size_t resize) {
+    if (resize > size()) {
+        _storage.reserve(resize);
     }
 }
 

@@ -143,7 +143,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #pragma warning(pop)
 
 #include "Platform/Headers/PlatformDataTypes.h"
-#include "Platform/File/Headers/FileWithPath.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/ConditionalWait.h"
 #include "Core/Headers/NonCopyable.h"
@@ -152,6 +151,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/TemplateLibraries/Headers/HashMap.h"
 #include "Core/TemplateLibraries/Headers/Vector.h"
 #include "Core/TemplateLibraries/Headers/String.h"
+#include "Platform/File/Headers/ResourcePath.h"
 #include "Core/Math/Headers/MathMatrices.h"
 #include "Core/Math/Headers/Quaternion.h"
 #include "Core/Headers/TaskPool.h"

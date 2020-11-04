@@ -16,11 +16,11 @@ namespace Divide {
 template<>
 CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     if (_descriptor.assetName().empty()) {
-        _descriptor.assetName(_descriptor.resourceName());
+        _descriptor.assetName(ResourcePath{ _descriptor.resourceName() });
     }
 
     if (_descriptor.assetLocation().empty()) {
-        _descriptor.assetLocation(stringImpl(Paths::g_assetsLocation.c_str()) + Paths::g_shadersLocation.c_str());
+        _descriptor.assetLocation(Paths::g_assetsLocation + Paths::g_shadersLocation);
     }
 
     const std::shared_ptr<ShaderProgramDescriptor>& shaderDescriptor = _descriptor.propertyDescriptor<ShaderProgramDescriptor>();
@@ -28,7 +28,7 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
 
     ShaderProgram_ptr ptr(_context.gfx().newShaderProgram(_loadingDescriptorHash,
                                                           _descriptor.resourceName(),
-                                                          _descriptor.assetName(),
+                                                          _descriptor.assetName().str(),
                                                           _descriptor.assetLocation(),
                                                           *shaderDescriptor,
                                                           USE_THREADED_SHADER_LOAD ? _descriptor.threaded()

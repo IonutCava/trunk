@@ -224,7 +224,7 @@ namespace Divide {
         SetThreadName(threadId, threadName);
     }
 
-    FileWithPath GetExecutableLocation(I32 argc, char** argv) {
+    FileAndPath GetExecutableLocation(I32 argc, char** argv) {
         ACKNOWLEDGE_UNUSED(argc);
 
         char buf[1024] = { 0 };

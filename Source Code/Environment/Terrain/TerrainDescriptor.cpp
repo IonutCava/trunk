@@ -63,7 +63,7 @@ namespace Divide {
         }
         {
             boost::property_tree::ptree alphaTree = {};
-            XML::readXML(Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/" + alphaMapDescriptor, alphaTree);
+            XML::readXML((Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor + "/" + alphaMapDescriptor).str(), alphaTree);
 
             const U8 numLayers = alphaTree.get<U8>("AlphaData.nImages");
             const U8 numImages = alphaTree.get<U8>("AlphaData.nLayers");

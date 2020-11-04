@@ -88,7 +88,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui/addons/;$(SolutionDir)/../Source Code/Libs/imgui/addons/log/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../Source Code/Libs/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -144,7 +144,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui/addons/;$(SolutionDir)/../Source Code/Libs/imgui/addons/log/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../Source Code/Libs/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -196,7 +196,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui/addons/;$(SolutionDir)/../Source Code/Libs/imgui/addons/log/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../Source Code/Libs/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Profile/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -298,13 +298,6 @@
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\IconsKenney_c.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\IconsMaterialDesign_c.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\imguial_fonts.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\edtaa3func.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\imguibindings.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Direct3D9.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Glfw3.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_Glut.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_SDL2.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguibindings\ImImpl_Binding_WinAPI.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\utf8helper.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.h" />
@@ -314,6 +307,8 @@
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImCurveEdit.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGradient.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.h" />
@@ -324,38 +319,37 @@
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiemscriptenpersistentfolder.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguifreetype.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\nanosvg.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\nanosvgrast.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_resize.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_write.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_ico.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_jpeg.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguipdfviewer.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisdf.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisoloud.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguisqlite3.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_freetype\imgui_freetype.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_memory_editor\imgui_memory_editor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_user.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\log\imguial_log.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\countof.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\perf_timer.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\snprintf.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\addons\msgbox\imguial_msgbox.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Include\imgui_node_editor.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\crude_json.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_bezier_math.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_canvas.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_extra_math.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_internal.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\imconfig.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\imgui.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_internal.h" />
     <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_user.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\..\Source Code\Libs\imgui\imstb_truetype.h" />
     <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\src\meshoptimizer.h" />
     <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\tools\cgltf.h" />
     <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\tools\fast_obj.h" />
@@ -490,20 +484,183 @@
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\glimD3D11.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.c" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\fonts\imguial_fonts.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImCurveEdit.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGradient.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\log\imguial_log.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\ProggyTiny.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_demo.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\msgbox\imguial_msgbox.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\crude_json.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_canvas.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_api.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_demo.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_widgets.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\allocator.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -630,7 +787,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\RenderTarget.inl" />
-    <None Include="..\..\Source Code\Libs\imgui\addons\imgui_user.inl" />
+    <None Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguimodplug.cpp.inl" />
+    <None Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_bezier_math.inl" />
+    <None Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_extra_math.inl" />
+    <None Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_internal.inl" />
     <None Include="..\..\Source Code\Libs\imgui\imgui_user.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

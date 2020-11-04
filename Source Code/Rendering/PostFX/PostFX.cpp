@@ -72,21 +72,21 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
 
     ResourceDescriptor textureWaterCaustics("Underwater Caustics");
-    textureWaterCaustics.assetName("terrain_water_NM.jpg");
+    textureWaterCaustics.assetName(ResourcePath("terrain_water_NM.jpg"));
     textureWaterCaustics.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     textureWaterCaustics.propertyDescriptor(texDescriptor);
     textureWaterCaustics.waitForReady(false);
     _underwaterTexture = CreateResource<Texture>(cache, textureWaterCaustics, loadTasks);
 
     ResourceDescriptor noiseTexture("noiseTexture");
-    noiseTexture.assetName("bruit_gaussien.jpg");
+    noiseTexture.assetName(ResourcePath("bruit_gaussien.jpg"));
     noiseTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     noiseTexture.propertyDescriptor(texDescriptor);
     noiseTexture.waitForReady(false);
     _noise = CreateResource<Texture>(cache, noiseTexture, loadTasks);
 
     ResourceDescriptor borderTexture("borderTexture");
-    borderTexture.assetName("vignette.jpeg");
+    borderTexture.assetName(ResourcePath("vignette.jpeg"));
     borderTexture.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
     borderTexture.propertyDescriptor(texDescriptor);
     borderTexture.waitForReady(false);

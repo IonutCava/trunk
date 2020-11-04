@@ -359,8 +359,8 @@ public:
     /// Create and return a new texture.
     Texture*           newTexture(size_t descriptorHash,
                                   const Str256& resourceName,
-                                  const stringImpl& assetNames,
-                                  const stringImpl& assetLocations,
+                                  const ResourcePath& assetNames,
+                                  const ResourcePath& assetLocations,
                                   bool isFlipped,
                                   bool asyncLoad,
                                   const TextureDescriptor& texDescriptor);
@@ -369,7 +369,7 @@ public:
     ShaderProgram*     newShaderProgram(size_t descriptorHash,
                                         const Str256& resourceName,
                                         const Str256& assetName,
-                                        const stringImpl& assetLocation,
+                                        const ResourcePath& assetLocation,
                                         const ShaderProgramDescriptor& descriptor,
                                         bool asyncLoad);
     /// Create and return a new shader buffer. 

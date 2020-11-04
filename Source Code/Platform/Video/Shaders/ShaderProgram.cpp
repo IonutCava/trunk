@@ -2,7 +2,6 @@
 
 #include "Headers/ShaderProgram.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
@@ -38,16 +37,16 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
                              const size_t descriptorHash,
                              const Str256& shaderName,
                              const Str256& shaderFileName,
-                             const stringImpl& shaderFileLocation,
+                             const ResourcePath& shaderFileLocation,
                              const ShaderProgramDescriptor& descriptor,
                              const bool asyncLoad)
-    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, shaderFileName, shaderFileLocation),
+    : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, ResourcePath(shaderFileName), shaderFileLocation),
       GraphicsResource(context, Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
       _descriptor(descriptor),
       _asyncLoad(asyncLoad)
 {
     if (shaderFileName.empty()) {
-        assetName(resourceName());
+        assetName(ResourcePath(resourceName().c_str()));
     }
     s_shaderCount.fetch_add(1, std::memory_order_relaxed);
 }
@@ -246,8 +245,8 @@ void ShaderProgram::rebuildAllShaders() {
     }
 }
 
-vectorEASTL<Str256> ShaderProgram::getAllAtomLocations() {
-    static vectorEASTL<Str256> atomLocations;
+vectorEASTL<ResourcePath> ShaderProgram::getAllAtomLocations() {
+    static vectorEASTL<ResourcePath> atomLocations;
     if (atomLocations.empty()) {
         // General
         atomLocations.emplace_back(Paths::g_assetsLocation +

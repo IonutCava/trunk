@@ -455,9 +455,9 @@ void ImageData::getColour(const I32 x, const I32 y, U8& r, U8& g, U8& b, U8& a, 
     r = src[idx + 0]; g = src[idx + 1]; b = src[idx + 2]; a = _alpha ? src[idx + 3] : 255;
 }
 
-bool ImageDataInterface::CreateImageData(const stringImpl& filename, const U16 refWidth, const U16 refHeight, const bool srgb, ImageData& imgOut) {
-    if (fileExists(filename.c_str())) {
-        return imgOut.addLayer(srgb, refWidth, refHeight, filename);
+bool ImageDataInterface::CreateImageData(const ResourcePath& filename, const U16 refWidth, const U16 refHeight, const bool srgb, ImageData& imgOut) {
+    if (fileExists(filename)) {
+        return imgOut.addLayer(srgb, refWidth, refHeight, filename.str());
     }
 
     return false;

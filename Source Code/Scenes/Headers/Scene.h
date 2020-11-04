@@ -163,7 +163,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void removeTask(Task& task);
     void addSceneGraphToLoad(XML::SceneNode& rootNode) { _xmlSceneGraphRootNode = rootNode; }
 
-    void addMusic(MusicType type, const Str64& name, const Str256& srcFile) const;
+    void addMusic(MusicType type, const Str64& name, const ResourcePath& srcFile) const;
 
     SceneGraphNode* addSky(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
     SceneGraphNode* addInfPlane(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");

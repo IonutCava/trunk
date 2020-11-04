@@ -65,7 +65,7 @@ namespace Divide {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);
     }
 
-    FileWithPath getExecutableLocation(I32 argc, char** argv) {
+    FileAndPath getExecutableLocation(I32 argc, char** argv) {
         ACKNOWLEDGE_UNUSED(argc);
         char buf[1024] = { 0 };
         uint32_t size = sizeof(buf);

@@ -17,8 +17,8 @@ const char* Texture::s_missingTextureFileName = nullptr;
 Texture::Texture(GFXDevice& context,
                  const size_t descriptorHash,
                  const Str256& name,
-                 const stringImpl& assetNames,
-                 const stringImpl& assetLocations,
+                 const ResourcePath& assetNames,
+                 const ResourcePath& assetLocations,
                  const bool isFlipped,
                  const bool asyncLoad,
                  const TextureDescriptor& texDescriptor)
@@ -55,7 +55,7 @@ void Texture::threadedLoad() {
 
 
     // Each texture face/layer must be in a comma separated list
-    stringstreamImpl textureLocationList(assetLocation());
+    stringstreamImpl textureLocationList(assetLocation().str());
     stringstreamImpl textureFileList(assetName().c_str());
 
     _descriptor._sourceFileList.reserve(6);
@@ -71,7 +71,7 @@ void Texture::threadedLoad() {
     // We loop over every texture in the above list and store it in this temporary string
     stringImpl currentTextureFile;
     stringImpl currentTextureLocation;
-    stringImpl currentTextureFullPath;
+    ResourcePath currentTextureFullPath;
     while (std::getline(textureLocationList, currentTextureLocation, ',') &&
            std::getline(textureFileList, currentTextureFile, ','))
     {
@@ -80,7 +80,7 @@ void Texture::threadedLoad() {
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
 
-            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation.c_str() : currentTextureLocation);
+            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation : ResourcePath{currentTextureLocation});
             currentTextureFullPath.append("/" + currentTextureFile);
             Util::ReplaceStringInPlace(currentTextureFullPath, searchPattern, "/");
             _descriptor._sourceFileList.push_back(currentTextureFile);
@@ -137,7 +137,7 @@ void Texture::threadedLoad() {
     }
 }
 
-bool Texture::loadFile(const stringImpl& name, ImageTools::ImageData& fileData) {
+bool Texture::loadFile(const ResourcePath& name, ImageTools::ImageData& fileData) {
 
     if (!ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData)) {
         if (fileData.layerCount() > 0) {
@@ -148,7 +148,7 @@ bool Texture::loadFile(const stringImpl& name, ImageTools::ImageData& fileData) 
         // Missing texture fallback.
         fileData.flip(false);
         // missing_texture.jpg must be something that really stands out
-        ImageTools::ImageDataInterface::CreateImageData(((Paths::g_assetsLocation + Paths::g_texturesLocation) + s_missingTextureFileName).c_str(), _width, _height, _descriptor.srgb(), fileData);
+        ImageTools::ImageDataInterface::CreateImageData(Paths::g_assetsLocation + Paths::g_texturesLocation + s_missingTextureFileName, _width, _height, _descriptor.srgb(), fileData);
     } else {
         return checkTransparency(name, fileData);
     }
@@ -156,7 +156,7 @@ bool Texture::loadFile(const stringImpl& name, ImageTools::ImageData& fileData) 
     return true;
 }
 
-bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& fileData) {
+bool Texture::checkTransparency(const ResourcePath& name, ImageTools::ImageData& fileData) {
     constexpr std::array<std::string_view, 2> searchPattern = {
         "//", "\\"
     };
@@ -168,14 +168,14 @@ bool Texture::checkTransparency(const stringImpl& name, ImageTools::ImageData& f
     const U16 height = fileData.dimensions(layer, 0u).height;
     // If we have an alpha channel, we must check for translucency/transparency
 
-    FileWithPath fwp = splitPathToNameAndLocation(name.c_str());
-    Util::ReplaceStringInPlace(fwp._path, searchPattern, "/");
-    Util::ReplaceStringInPlace(fwp._path, "/", "_");
-    if (fwp._path.back() == '_') {
-        fwp._path.pop_back();
+    auto[file, path] = splitPathToNameAndLocation(name.c_str());
+    Util::ReplaceStringInPlace(path, searchPattern, "/");
+    Util::ReplaceStringInPlace(path, "/", "_");
+    if (path.str().back() == '_') {
+        path.pop_back();
     }
-    const Str256 cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + fwp._path + "/";
-    const Str64 cacheName = (fwp._fileName + ".cache");
+    const ResourcePath cachePath = Paths::g_cacheLocation + Paths::Textures::g_metadataLocation + path + "/" ;
+    const ResourcePath cacheName = file + ".cache";
 
     ByteBuffer metadataCache = {};
     if (metadataCache.loadFromFile(cachePath.c_str(), cacheName.c_str())) {

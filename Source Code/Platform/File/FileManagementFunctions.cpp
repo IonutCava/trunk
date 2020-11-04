@@ -2,10 +2,16 @@
 
 #include "Core/Headers/StringHelper.h"
 #include "Headers/FileManagement.h"
+#include "Headers/ResourcePath.h"
 
 #include <filesystem>
 
 namespace Divide {
+
+
+bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, bufferPtr content, size_t length, FileType fileType) {
+    return writeFile(filePath.c_str(), fileName.c_str(), content, length, fileType);
+}
 
 bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, const size_t length, const FileType fileType) {
 
@@ -37,48 +43,126 @@ stringImpl stripQuotes(const char* input) {
     return ret;
 }
 
-FileWithPath splitPathToNameAndLocation(const char* input) {
+FileAndPath splitPathToNameAndLocation(const ResourcePath& input) {
+    FileAndPath ret = splitPathToNameAndLocation(input.c_str());
+    return ret;
+}
+
+FileAndPath splitPathToNameAndLocation(const char* input) {
     const auto targetPath = std::filesystem::path(input).lexically_normal();
-    FileWithPath ret;
-    ret._fileName = targetPath.filename().generic_string();
-    ret._path = targetPath.parent_path().generic_string();
+
+    FileAndPath ret = {
+      ResourcePath(targetPath.filename().generic_string()),
+      ResourcePath(targetPath.parent_path().generic_string())
+    };
+
+    return ret;
+}
+
+std::filesystem::path asPath(const char* filePath) {
+    auto path = std::filesystem::path(filePath);
+    return path;
+}
+
+std::filesystem::path asPath(const std::string_view& filePath) {
+    auto path = std::filesystem::path(filePath);
+    return path;
+}
+
+bool pathCompare(const char* filePathA, const char* filePathB) {
+    auto pathA = asPath(filePathA).lexically_normal();
+    auto pathB = asPath(filePathB).lexically_normal();
+
+    const bool ret = pathA.compare(pathB) == 0;
+    if (!ret) {
+        if (pathA.empty() || pathB.empty()) {
+            return pathA.empty() == pathB.empty();
+        }
+
+        const bool pathATrailingSlash = filePathA[strlen(filePathA) - 1] == '/';
+        const bool pathBTrailingSlash = filePathB[strlen(filePathB) - 1] == '/';
+        if (pathATrailingSlash != pathBTrailingSlash) {
+           if (pathATrailingSlash) {
+               pathB += '/';
+           } else {
+               pathA += '/';
+           }
+
+           return pathA.compare(pathB) == 0;
+        }
+
+        return false;
+    }
+    
+    return true;
+}
+
+bool pathExists(const ResourcePath& filePath) {
+    const bool ret = pathExists(filePath.c_str());
     return ret;
 }
 
 bool pathExists(const char* filePath) {
-    return is_directory(std::filesystem::path(filePath));
+    const bool ret = is_directory(std::filesystem::path(filePath));
+    return ret;
+}
+
+bool createDirectory(const ResourcePath& path) {
+    const bool ret = createDirectory(path.c_str());
+    return ret;
 }
 
 bool createDirectory(const char* path) {
     if (!pathExists(path)) {
         const auto targetPath = std::filesystem::path(path);
         std::error_code ec = {};
-        return create_directory(targetPath, ec);
+        const bool ret = create_directory(targetPath, ec);
+        return ret;
     }
 
     return true;
 }
 
+bool fileExists(const ResourcePath& filePathAndName) {
+    const bool ret = fileExists(filePathAndName.c_str());
+    return ret;
+}
+
 bool fileExists(const char* filePathAndName) {
-    return is_regular_file(std::filesystem::path(filePathAndName));
+    const bool ret = is_regular_file(std::filesystem::path(filePathAndName));
+    return ret;
 }
 
 bool fileExists(const char* filePath, const char* fileName) {
-    return is_regular_file(std::filesystem::path(stringImpl{ filePath } + fileName));
+    const bool ret = is_regular_file(std::filesystem::path(stringImpl{ filePath } + fileName));
+    return ret;
 }
 
 bool createFile(const char* filePathAndName, bool overwriteExisting) {
     if (overwriteExisting && fileExists(filePathAndName)) {
-        return std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
+        const bool ret = std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
+        return ret;
     }
 
-    CreateDirectories((const_sysInfo()._pathAndFilename._path + "/" + splitPathToNameAndLocation(filePathAndName)._path).c_str());
+    CreateDirectories((const_sysInfo()._fileAndPath.second.str() + "/" + splitPathToNameAndLocation(filePathAndName).second.str()).c_str());
 
-    return std::ifstream(filePathAndName, std::fstream::in).good();
+    const bool ret = std::ifstream(filePathAndName, std::fstream::in).good();
+    return ret;
+}
+
+bool openFile(const ResourcePath& filePath, const ResourcePath& fileName) {
+    const bool ret = openFile(filePath.c_str(), fileName.c_str());
+    return ret;
 }
 
 bool openFile(const char* filePath, const char* fileName) {
-    return openFile("", filePath, fileName);
+    const bool ret = openFile("", filePath, fileName);
+    return ret;
+}
+
+bool openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName) {
+    const bool ret = openFile(cmd, filePath.c_str(), fileName.c_str());
+    return ret;
 }
 
 bool openFile(const char* cmd, const char* filePath, const char* fileName) {
@@ -90,13 +174,24 @@ bool openFile(const char* cmd, const char* filePath, const char* fileName) {
         "//", "\\"
     };
 
-    const stringImpl file = "\"" + Util::ReplaceString({ const_sysInfo()._pathAndFilename._path + "/" + filePath + fileName }, searchPattern, "/", true) + "\"";
+    const stringImpl file = "\"" + Util::ReplaceString(
+        ResourcePath{ const_sysInfo()._fileAndPath.second + "/" + filePath + fileName }.str(), 
+        searchPattern, 
+        "/", 
+        true) + "\"";
 
     if (strlen(cmd) == 0) {
-        return CallSystemCmd(file.c_str(), "");
+        const bool ret = CallSystemCmd(file.c_str(), "");
+        return ret;
     }
 
-    return CallSystemCmd(cmd, file.c_str());
+    const bool ret = CallSystemCmd(cmd, file.c_str());
+    return ret;
+}
+
+bool deleteFile(const ResourcePath& filePath, const ResourcePath& fileName) {
+    const bool ret = deleteFile(filePath.c_str(), fileName.c_str());
+    return ret;
 }
 
 bool deleteFile(const char* filePath, const char* fileName) {
@@ -106,6 +201,11 @@ bool deleteFile(const char* filePath, const char* fileName) {
     const std::filesystem::path file(stringImpl{ filePath } +fileName);
     std::filesystem::remove(file);
     return true;
+}
+
+bool copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, bool overwrite) {
+    const bool ret = copyFile(sourcePath.c_str(), sourceName.c_str(), targetPath.c_str(), targetName.c_str(), overwrite);
+    return ret;
 }
 
 bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite) {
@@ -133,6 +233,11 @@ bool copyFile(const char* sourcePath, const char* sourceName, const char* target
     return true;
 }
 
+bool findFile(const ResourcePath& filePath, const char* fileName, stringImpl& foundPath) {
+    const bool ret = findFile(filePath.c_str(), fileName, foundPath);
+    return ret;
+}
+
 bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath) {
     const std::filesystem::path dir_path(filePath);
     std::filesystem::path file_name(fileName);
@@ -140,7 +245,8 @@ bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath)
     const std::filesystem::recursive_directory_iterator end;
     const auto it = std::find_if(std::filesystem::recursive_directory_iterator(dir_path), end,
         [&file_name](const std::filesystem::directory_entry& e) {
-        return e.path().filename() == file_name;
+        const bool ret = e.path().filename() == file_name;
+        return ret;
     });
     if (it == end) {
         return false;
@@ -150,9 +256,20 @@ bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath)
     }
 }
 
+bool hasExtension(const ResourcePath& filePath, const Str16& extension) {
+    const bool ret = hasExtension(filePath.c_str(), extension);
+    return ret;
+}
+
 bool hasExtension(const char* filePath, const Str16& extension) {
     const Str16 ext("." + extension);
-    return Util::CompareIgnoreCase(Util::GetTrailingCharacters(stringImplFast{ filePath }, ext.length()), ext);
+    const bool ret = Util::CompareIgnoreCase(Util::GetTrailingCharacters(stringImplFast{ filePath }, ext.length()), ext);
+    return ret;
+}
+
+bool deleteAllFiles(const ResourcePath& filePath, const char* extension) {
+    const bool ret = deleteAllFiles(filePath.c_str(), extension);
+    return ret;
 }
 
 bool deleteAllFiles(const char* filePath, const char* extension) {
@@ -170,7 +287,9 @@ bool deleteAllFiles(const char* filePath, const char* extension) {
                     }
                 } else {
                     //ToDo: check if this recurse in subfolders actually works
-                    deleteAllFiles(p.path().string().c_str(), extension);
+                    if (!deleteAllFiles(p.path().string().c_str(), extension)) {
+                        NOP();
+                    }
                 }
             } catch (const std::exception &ex) {
                 ACKNOWLEDGE_UNUSED(ex);
@@ -191,7 +310,7 @@ bool clearCache() {
 }
 
 bool clearCache(const CacheType type) {
-    Str64 cache;
+    ResourcePath cache;
     switch (type) {
         case CacheType::SHADER_TEXT: cache = Paths::Shaders::g_cacheLocationText; break;
         case CacheType::SHADER_BIN : cache = Paths::Shaders::g_cacheLocationBin; break;
@@ -199,10 +318,12 @@ bool clearCache(const CacheType type) {
         case CacheType::MODELS     : cache = Paths::g_geometryCacheLocation; break;
         case CacheType::TEXTURES   : cache = Paths::Textures::g_metadataLocation; break;
 
+        case CacheType::COUNT:
         default: return false;
     }
 
-    return deleteAllFiles(Paths::g_cacheLocation + cache.c_str());
+    const bool ret = deleteAllFiles(Paths::g_cacheLocation + cache);
+    return ret;
 }
 
 std::string extractFilePathAndName(char* argv0) {
@@ -210,7 +331,9 @@ std::string extractFilePathAndName(char* argv0) {
     auto currentPath = std::filesystem::current_path();
     currentPath.append(argv0);
     std::filesystem::path p(std::filesystem::canonical(currentPath, ec));
-    return p.make_preferred().string();
+
+    std::string ret = p.make_preferred().string();
+    return ret;
 }
 
 }; //namespace Divide

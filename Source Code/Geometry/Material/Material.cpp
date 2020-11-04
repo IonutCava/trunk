@@ -201,6 +201,22 @@ bool Material::update(const U64 deltaTimeUS) {
     return false;
 }
 
+bool Material::setSampler(TextureUsage textureUsageSlot,
+                          size_t samplerHash,
+                          bool applyToInstances)
+{
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->setSampler(textureUsageSlot, samplerHash, true);
+        }
+    }
+
+    const U32 slot = to_U32(textureUsageSlot);
+    _samplers[slot] = samplerHash;
+
+    return true;
+}
+
 // base = base texture
 // second = second texture used for multitexturing
 // bump = bump map
@@ -210,6 +226,8 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
                           const TextureOperation& op,
                           bool applyToInstances) 
 {
+    setSampler(textureUsageSlot, samplerHash, applyToInstances);
+
     if (applyToInstances) {
         for (Material* instance : _instances) {
             instance->setTexture(textureUsageSlot, texture, samplerHash, op, true);
@@ -228,8 +246,6 @@ bool Material::setTexture(TextureUsage textureUsageSlot,
            textureUsageSlot != TextureUsage::REFLECTION_CUBE);
 
     {
-        _samplers[slot] = samplerHash;
-
         UniqueLock<SharedMutex> w_lock(_textureLock);
         if (_textures[slot]) {
             // Skip adding same texture
@@ -1297,8 +1313,8 @@ void Material::saveTextureDataToXML(const stringImpl& entryName, boost::property
 
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
 
-            pt.put(textureNode + ".name", texture->assetName());
-            pt.put(textureNode + ".path", texture->assetLocation());
+            pt.put(textureNode + ".name", texture->assetName().str());
+            pt.put(textureNode + ".path", texture->assetLocation().str());
             pt.put(textureNode + ".flipped", texture->flipped());
 
             if (usage == TextureUsage::UNIT1) {
@@ -1327,8 +1343,8 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
         if (pt.get_child_optional(((entryName + ".texture.") + TypeUtil::TextureUsageToString(usage)) + ".name")) {
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
 
-            const stringImpl texName = pt.get<stringImpl>(textureNode + ".name", "");
-            const stringImpl texPath = pt.get<stringImpl>(textureNode + ".path", "");
+            const ResourcePath texName = ResourcePath(pt.get<stringImpl>(textureNode + ".name", ""));
+            const ResourcePath texPath = ResourcePath(pt.get<stringImpl>(textureNode + ".path", ""));
             const bool flipped = pt.get(textureNode + ".flipped", false);
 
             if (!texName.empty()) {
@@ -1343,6 +1359,10 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                      previousHashValues[index] = hash;
                 }
 
+                if (_samplers[to_base(usage)] != hash) {
+                    setSampler(usage, hash);
+                }
+
                 TextureOperation op = TextureOperation::NONE;
                 if (usage == TextureUsage::UNIT1) {
                     _textureOperation = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", "REPLACE"));
@@ -1350,21 +1370,17 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 {
                     UniqueLock<SharedMutex> w_lock(_textureLock);
                     const Texture_ptr& crtTex = _textures[to_base(usage)];
-                    if (crtTex != nullptr) {
-                        if (crtTex->flipped() == flipped &&
-                            _samplers[to_base(usage)] == hash &&
-                            crtTex->assetName() == texName &&
-                            crtTex->assetLocation() == texPath)
-                        {
-                            continue;
-                        }
+                    if (crtTex != nullptr &&
+                        crtTex->flipped() == flipped &&
+                        crtTex->assetLocation() + crtTex->assetName() == texPath + texName)
+                    {
+                      continue;
                     }
                 }
-                _samplers[to_base(usage)] = hash;
 
                 TextureDescriptor texDesc(TextureType::TEXTURE_2D);
                 loadTasks.fetch_add(1u);
-                ResourceDescriptor texture(texName);
+                ResourceDescriptor texture(texName.str());
                 texture.assetName(texName);
                 texture.assetLocation(texPath);
                 texture.propertyDescriptor(texDesc);
@@ -1376,7 +1392,6 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                     setTexture(usage, tex, hash, op);
                     loadTasks.fetch_sub(1u);
                 });
-                
             }
         }
 

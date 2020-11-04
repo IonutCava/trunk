@@ -335,8 +335,8 @@ bool glShader::loadFromBinary() {
     if (ShaderProgram::useShaderBinaryCache()) {
         // Load the program's binary format from file
         vectorEASTL<Byte> data;
-        if (readFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
-                     (glShaderProgram::decorateFileName(_name) + ".fmt").c_str(),
+        if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+                     ResourcePath((glShaderProgram::decorateFileName(_name) + ".fmt").c_str()),
                      data,
                      FileType::BINARY) && 
             !data.empty())
@@ -344,8 +344,8 @@ bool glShader::loadFromBinary() {
             _binaryFormat = *reinterpret_cast<GLenum*>(data.data());
             if (_binaryFormat != GL_NONE) {
                 data.resize(0);
-                if (readFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
-                             (glShaderProgram::decorateFileName(_name) + ".bin").c_str(),
+                if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+                    ResourcePath((glShaderProgram::decorateFileName(_name) + ".bin").c_str()),
                              data,
                              FileType::BINARY) &&
                     !data.empty())
@@ -385,18 +385,21 @@ void glShader::dumpBinary() {
     glGetProgramBinary(_programHandle, binaryLength, nullptr, &_binaryFormat, binary);
     if (_binaryFormat != GL_NONE) {
         // dump the buffer to file
-        if (writeFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
-                      (glShaderProgram::decorateFileName(_name) + ".bin").c_str(),
+        if (writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+            ResourcePath((glShaderProgram::decorateFileName(_name) + ".bin").c_str()),
                       binary,
                       static_cast<size_t>(binaryLength),
                       FileType::BINARY))
         {
             // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
-            writeFile((Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin).c_str(),
-                      (glShaderProgram::decorateFileName(_name) + ".fmt").c_str(),
-                      &_binaryFormat,
-                      sizeof(GLenum),
-                      FileType::BINARY);
+            if (!writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+                ResourcePath((glShaderProgram::decorateFileName(_name) + ".fmt").c_str()),
+                          &_binaryFormat,
+                          sizeof(GLenum),
+                          FileType::BINARY)) 
+            {
+                NOP();
+            }
         }
     }
 

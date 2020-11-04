@@ -18,7 +18,7 @@
 namespace Divide {
 
 Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, U32 diameter)
-    : SceneNode(parentCache, descriptorHash, name, name, "", SceneNodeType::TYPE_SKY, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::SCRIPT)),
+    : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_SKY, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::SCRIPT)),
       _context(context),
       _diameter(diameter)
 {
@@ -242,14 +242,14 @@ bool Sky::load() {
     skyboxTexture.srgb(true);
     {
         ResourceDescriptor skyboxTextures("DayTextures");
-        skyboxTextures.assetName("skyboxDay_FRONT.jpg, skyboxDay_BACK.jpg, skyboxDay_UP.jpg, skyboxDay_DOWN.jpg, skyboxDay_LEFT.jpg, skyboxDay_RIGHT.jpg");
+        skyboxTextures.assetName(ResourcePath{ "skyboxDay_FRONT.jpg, skyboxDay_BACK.jpg, skyboxDay_UP.jpg, skyboxDay_DOWN.jpg, skyboxDay_LEFT.jpg, skyboxDay_RIGHT.jpg" });
         skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation + "/SkyBoxes/");
         skyboxTextures.propertyDescriptor(skyboxTexture);
         skyboxTextures.waitForReady(false);
         _skybox[0] = CreateResource<Texture>(_parentCache, skyboxTextures, loadTasks);
 
         ResourceDescriptor nightTextures("NightTextures");
-        nightTextures.assetName("Milkyway_posx.jpg, Milkyway_negx.jpg, Milkyway_posy.jpg, Milkyway_negy.jpg, Milkyway_posz.jpg, Milkyway_negz.jpg");
+        nightTextures.assetName(ResourcePath{ "Milkyway_posx.jpg, Milkyway_negx.jpg, Milkyway_posy.jpg, Milkyway_negy.jpg, Milkyway_posz.jpg, Milkyway_negz.jpg" });
         nightTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation + "/SkyBoxes/");
         nightTextures.propertyDescriptor(skyboxTexture);
         nightTextures.waitForReady(false);
