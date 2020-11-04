@@ -51,7 +51,6 @@
 #   else //__APPLE
 #       include <GL/glut.h>
 #   endif //__APPLE
-#pragma once
 #ifndef __EMSCRIPTEN__
 #   ifdef __FREEGLUT_STD_H__
 #       ifdef __APPLE__   // or __MACOSX__ ?

@@ -13,6 +13,10 @@
 #define ImVectorEx std::vector
 #endif //IMGUISTRING_STL_FALLBACK
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 #ifndef IMGUI_FORCE_INLINE
 #	ifdef _MSC_VER
 #		define IMGUI_FORCE_INLINE __forceinline

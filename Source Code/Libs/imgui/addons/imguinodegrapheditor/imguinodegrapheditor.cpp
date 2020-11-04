@@ -9,7 +9,7 @@
 
 
 #if !defined(alloca)
-#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__) || defined(__APPLE__)
+#	if defined(__GLIBC__) || defined(__sun) || defined(__APPLE__) || defined(__NEWLIB__)
 #		include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
 #	elif defined(_WIN32)
 #       include <malloc.h>     // alloca
@@ -578,7 +578,7 @@ void NodeGraphEditor::render()
                 ImGui::Separator();
 #if             (defined(IMGUIHELPER_H_) && !defined(NO_IMGUIHELPER_SERIALIZATION))
                 const char* saveName = "nodeGraphEditor.nge.style";
-                //const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
+                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge.style";
                 const char* pSaveName = saveName;
 #               ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNEStyle")) {
@@ -617,7 +617,7 @@ void NodeGraphEditor::render()
             if (ImGui::CollapsingHeader("Serialization##serialization",NULL,false))   {
                 ImGui::Separator();
                 const char* saveName = "nodeGraphEditor.nge";
-                //const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
+                const char* saveNamePersistent = "/persistent_folder/nodeGraphEditor.nge";
                 const char* pSaveName = saveName;
 #       ifndef NO_IMGUIHELPER_SERIALIZATION_SAVE
                 if (ImGui::SmallButton("Save##saveGNE")) {
@@ -2219,7 +2219,7 @@ bool FieldInfo::render(int nodeWidth)   {
     ImGui::PushID((const void*) &f);
     static const int precisionStrSize = 16;
     static char precisionStr[precisionStrSize];
-    int precisionLastCharIndex = 0;
+    int precisionLastCharIndex;
     const char* label = (/*f.label &&*/ f.label[0]!='\0') ? &f.label[0] : "##DummyLabel";
     if (f.type!=FT_UNSIGNED && f.type!=FT_INT)  {
         if (f.precision>0) {

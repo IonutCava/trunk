@@ -492,42 +492,6 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems) return false;
 
-    /*typedef struct _ImGuiCppDuply {
-        // The meaning of this struct is to expose some internal imgui.cpp methods (not exposed by imgui_internal.h),
-        // so that this .cpp file can be used directly (even without the IMGUI_INCLUDE_IMGUI_USER_H / IMGUI_INCLUDE_IMGUI_USER_INL mechanism).
-
-        // I know it's a bit crazy... but this addon is huge and it's a pity to prevent free usage just because of ColorCombo()...
-
-        static bool IsPopupOpen(ImGuiID id) {
-            ImGuiContext& g = *GImGui;
-            return g.OpenPopupStack.Size > g.BeginPopupStack.Size && g.OpenPopupStack[g.BeginPopupStack.Size].PopupId == id;
-        }
-        static void ClosePopupToLevel(int remaining)    {
-            ImGuiContext& g = *GImGui;
-            if (remaining > 0)
-                ImGui::FocusWindow(g.OpenPopupStack[remaining-1].Window);
-            else
-                ImGui::FocusWindow(g.OpenPopupStack[0].ParentWindow);
-            g.OpenPopupStack.resize(remaining);
-        }
-        static void ClosePopup(ImGuiID id)  {
-            if (!IsPopupOpen(id))
-                return;
-            ImGuiContext& g = *GImGui;
-            ClosePopupToLevel(g.OpenPopupStack.Size - 1);
-        }
-        static bool BeginPopupEx(const char* str_id, ImGuiWindowFlags extra_flags)  {
-            ImGuiContext& g = *GImGui;
-            if (g.OpenPopupStack.Size <= g.BeginPopupStack.Size) // Early out for performance
-            {
-                g.NextWindowData.Clear(); // We behave like Begin() and need to consume those values
-                return false;
-            }
-            ImGuiWindowFlags flags = extra_flags|ImGuiWindowFlags_Popup|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_AlwaysAutoResize;
-            return ImGui::BeginPopupEx(g.CurrentWindow->GetID(str_id), flags);
-        }
-    } ImGuiCppDuply;*/
-
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
@@ -568,7 +532,7 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
         if (g.IO.MouseClicked[0])
         {
             ClearActiveID();
-            if (ImGui::IsPopupOpen(id))
+            if (ImGui::IsPopupOpen(id,0))
             {
                 ClosePopupToLevel(g.OpenPopupStack.Size - 1,true);
             }
@@ -596,7 +560,7 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
     }
 
     bool value_changed = false;
-    if (ImGui::IsPopupOpen(id))
+    if (ImGui::IsPopupOpen(id,0))
     {
         ImRect popup_rect(ImVec2(frame_bb.Min.x, frame_bb.Max.y), ImVec2(frame_bb.Max.x, frame_bb.Max.y));
         //popup_rect.Max.y = ImMin(popup_rect.Max.y, g.IO.DisplaySize.y - style.DisplaySafeAreaPadding.y); // Adhoc height limit for Combo. Ideally should be handled in Begin() along with other popups size, we want to have the possibility of moving the popup above as well.
@@ -628,7 +592,7 @@ bool ColorCombo(const char* label,ImVec4 *pColorOut,bool supportsAlpha,float wid
             }
             ImGui::EndPopup();
         }
-        if (mustCloseCombo && ImGui::IsPopupOpen(id)) {
+        if (mustCloseCombo && ImGui::IsPopupOpen(id,0)) {
             ClosePopupToLevel(g.OpenPopupStack.Size - 1,true);
         }
         ImGui::PopStyleVar(3);
@@ -3922,8 +3886,8 @@ unsigned int CheckboxFlags(const char* label,unsigned int* flags,int numFlags,in
     unsigned int j=0;int groupItemCnt = 0, groupCnt = 0;
     const bool buttonPressed = ImGui::IsMouseClicked(0);
 
-    ImU32 annColor = 0u; int annSegments = 0;
-    float annThickness = 0.f ,annCenter = 0.f,annRadius = 0.f;
+    ImU32 annColor;int annSegments;
+    float annThickness,annCenter,annRadius;
     if (flagAnnotations)    {
         annColor = GetColorU32(ImGuiCol_Button);
         annSegments = (int) (checkSize.x * 0.4f);if (annSegments<3) annSegments=3;
@@ -4297,7 +4261,7 @@ void LoadingIndicatorCircle2(const char* label,float indicatorRadiusFactor, floa
 
     int num_segments = 30;
 
-    int start = abs(ImSin(g.Time*1.8f)*(num_segments-5));
+    int start = abs((int)ImSin(g.Time*1.8f)*(num_segments-5));
 
     const float a_min = IM_PI*2.0f * ((float)start) / (float)num_segments;
     const float a_max = IM_PI*2.0f * ((float)num_segments-3) / (float)num_segments;

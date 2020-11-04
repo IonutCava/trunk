@@ -701,7 +701,7 @@ void InitImGuiFontTexture(const ImImpl_InitParams* pOptionalInitParams) {
 
 
     bool minFilterNearest = false,magFilterNearest=false;
-#   if ((!defined(IMIMPL_USE_SDF_SHADER) && !defined(IMIMPL_USE_ALPHA_SHARPENER_SHADER) && !defined(IMIMPL_USE_FONT_TEXTURE_LINEAR_FILTERING)) || defined(IMIMPL_USE_FONT_TEXTURE_NEAREST_FILTERING))
+#   if (!defined(IMIMPL_USE_SDF_SHADER) && !defined(IMIMPL_USE_ALPHA_SHARPENER_SHADER) && defined(IMIMPL_USE_FONT_TEXTURE_NEAREST_FILTERING))
     magFilterNearest = true;
     //printf("Using nearest filtering for ImGui Font Texture\n");
 #   endif // (!defined(IMGUI_USE_SDL_SHADER) && ! !defined(IMGUI_USE_ALPHA_SHARPENER_SHADER))

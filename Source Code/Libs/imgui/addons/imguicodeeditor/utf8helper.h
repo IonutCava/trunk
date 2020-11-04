@@ -13,6 +13,8 @@
 
 #ifndef UTF8HELPER_H_
 #define UTF8HELPER_H_
+#include <cstdint>
+#include <cstdio>
 
 //#include <sys/types.h> //uint8_t,uint32_t
 

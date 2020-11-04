@@ -52,6 +52,10 @@ bzip2/libbzip2 version 1.0.5 of 10 December 2007
 
 #define BZ_NO_STDIO // Tweakable, but we currently don't expose it anyway
 
+#ifndef BZ_REGISTER
+//#   define BZ_REGISTER register   // modern C/C++ gives a warning here that this keyword is obsolete
+#   define BZ_REGISTER /*no-op*/
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -2389,15 +2393,15 @@ void generateMTFValues ( EState* s )
             zPend = 0;
          }
          {
-            register UChar  rtmp;
-            register UChar* ryy_j;
-            register UChar  rll_i;
+            BZ_REGISTER UChar  rtmp;
+            BZ_REGISTER UChar* ryy_j;
+            BZ_REGISTER UChar  rll_i;
             rtmp  = yy[1];
             yy[1] = yy[0];
             ryy_j = &(yy[1]);
             rll_i = ll_i;
             while ( rll_i != rtmp ) {
-               register UChar rtmp2;
+               BZ_REGISTER UChar rtmp2;
                ryy_j++;
                rtmp2  = rtmp;
                rtmp   = *ryy_j;
@@ -2559,8 +2563,8 @@ void sendMTFValues ( EState* s )
 
          if (nGroups == 6 && 50 == ge-gs+1) {
             /*--- fast track the common case ---*/
-            register UInt32 cost01, cost23, cost45;
-            register UInt16 icv;
+            BZ_REGISTER UInt32 cost01, cost23, cost45;
+            BZ_REGISTER UInt16 icv;
             cost01 = cost23 = cost45 = 0;
 
 #           define BZ_ITER(nn)                \

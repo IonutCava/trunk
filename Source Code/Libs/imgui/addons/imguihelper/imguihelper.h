@@ -13,10 +13,6 @@ IMGUI_API bool OpenWithDefaultApplication(const char* url,bool exploreModeForWin
 
 IMGUI_API void CloseAllPopupMenus();  // Never Tested
 
-IMGUI_API bool IsItemActiveLastFrame();
-IMGUI_API bool IsItemJustReleased();
-
-
 #ifndef NO_IMGUIHELPER_FONT_METHODS
 IMGUI_API const ImFont* GetFont(int fntIndex);
 IMGUI_API void PushFont(int fntIndex);    // using the index of the font instead of a ImFont* is easier (you can set up an enum).

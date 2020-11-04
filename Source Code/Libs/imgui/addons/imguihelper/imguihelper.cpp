@@ -1,6 +1,3 @@
-#pragma warning(disable:4244) //conversion from X to Y possible loss of data
-#pragma warning(disable:4267) //conversion from X to Y possible loss of data
-
 //- Common Code For All Addons needed just to ease inclusion as separate files in user code ----------------------
 #include <imgui.h>
 #undef IMGUI_DEFINE_MATH_OPERATORS
@@ -11,6 +8,7 @@
 #include "imguihelper.h"
 
 #ifdef _WIN32
+#include <windows.h>
 #include <shellapi.h>	// ShellExecuteA(...) - Shell32.lib
 #include <objbase.h>    // CoInitializeEx(...)  - ole32.lib
 #else //_WIN32
@@ -22,7 +20,7 @@
 
 #ifndef NO_IMGUIHELPER_DRAW_METHODS
 #if !defined(alloca)
-#	if defined(__GLIBC__) || defined(__sun) || defined(__CYGWIN__) || defined(__APPLE__)
+#	if defined(__GLIBC__) || defined(__sun) || defined(__APPLE__) || defined(__NEWLIB__)
 #		include <alloca.h>     // alloca (glibc uses <alloca.h>. Note that Cygwin may have _WIN32 defined, so the order matters here)
 #	elif defined(_WIN32)
 #       include <malloc.h>     // alloca
@@ -36,7 +34,6 @@
 #   endif
 #endif //alloca
 #endif //NO_IMGUIHELPER_DRAW_METHODS
-
 
 namespace ImGui {
 
@@ -80,18 +77,6 @@ void CloseAllPopupMenus()   {
     ImGuiContext& g = *GImGui;
     while (g.OpenPopupStack.size() > 0) g.OpenPopupStack.pop_back();
 }
-
-// Posted by Omar in one post. It might turn useful...
-bool IsItemActiveLastFrame()    {
-    ImGuiContext& g = *GImGui;
-    if (g.ActiveIdPreviousFrame)
-        return g.ActiveIdPreviousFrame== GImGui->CurrentWindow->DC.LastItemId;
-    return false;
-}
-bool IsItemJustReleased()   {
-    return IsItemActiveLastFrame() && !ImGui::IsItemActive();
-}
-
 
 #ifndef NO_IMGUIHELPER_FONT_METHODS
 const ImFont *GetFont(int fntIndex) {return (fntIndex>=0 && fntIndex<ImGui::GetIO().Fonts->Fonts.size()) ? ImGui::GetIO().Fonts->Fonts[fntIndex] : NULL;}

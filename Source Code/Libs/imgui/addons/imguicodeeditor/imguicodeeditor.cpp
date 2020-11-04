@@ -49,12 +49,14 @@ int  stb_textedit_paste(STB_TEXTEDIT_STRING *str, ImGuiStb::STB_TexteditState *s
 #if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
 #define _CRT_SECURE_NO_WARNINGS
 #endif
+
 #include <imgui.h>
 #undef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui_internal.h>
 // ---------------------------------------------------------------------------------------------
 #endif //IMGUIEDITOR_STANDALONE
+
 
 namespace ImGui {
 
@@ -188,8 +190,8 @@ static inline void ImDrawListRenderTextLine(ImDrawList* draw_list,const ImFont* 
     }
 
     // Align to be pixel perfect
-    pos.x += font->DisplayOffset.x; // don't cast pos.x to int! It looks better whan scaled, but then we lose alignment with the caret position!
-    pos.y = (float)(int)pos.y + font->DisplayOffset.y;  // Not sure this is correct
+    //pos.x += font->DisplayOffset.x; //  [+ImFontConfig::GlyphOffset.x?] don't cast pos.x to int! It looks better whan scaled, but then we lose alignment with the caret position!
+    pos.y = (float)(int)pos.y;// + font->DisplayOffset.y;  //  [+ImFontConfig::GlyphOffset.y?] Not sure this is correct
     float& x = pos.x;
     float& y = pos.y;
 
@@ -312,8 +314,8 @@ static inline void ImDrawListRenderTextLine(ImDrawList* draw_list,const ImFont* 
 
 
     // restore pos
-    pos.x -= font->DisplayOffset.x;
-    pos.y -= font->DisplayOffset.y;
+    //pos.x -= font->DisplayOffset.x;  //  [-ImFontConfig::GlyphOffset.x?]
+    //pos.y -= font->DisplayOffset.y;  //  [-ImFontConfig::GlyphOffset.x?]
 
 }
 static inline void ImDrawListAddTextLine(ImDrawList* draw_list,const ImFont* font, float font_size, ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end, const ImVec4* cpu_fine_clip_rect = NULL)
@@ -1365,7 +1367,7 @@ static void InitFoldingStringVectors() {
             }
             {
                 const SyntaxHighlightingType sht = SH_KEYWORD_TYPE;
-                static const char* vars[] = {"void","bool","byte","char","decimal","double","float","int","long","sbyte"
+                static const char* vars[] = {"void","bool","byte","char","decimal","double","float","int","long","sbyte",
                                              "short","uint","ushort","ulong","object","string","var","dynamic"};
                 const int varsSize = (int)sizeof(vars)/sizeof(vars[0]);foldingStrings.keywords[sht].reserve(foldingStrings.keywords[sht].size()+varsSize);for (int i=0;i<varsSize;i++) foldingStrings.keywords[sht].push_back(vars[i]);
             }
@@ -1484,8 +1486,8 @@ static void InitFoldingStringVectors() {
             "textureSize","textureOffset","texelFetch","texelFetchOffset","textureProjOffset","textureLodOffset","textureProjLodOffset","textureGrad",
             "textureGradOffset","textureProjGrad",
             "textureProjGradOffset",
-            "abs","ceil","clamp","floor","fract","max","min","mix","mod","sign","smoothstep","step","ftrasform","cross","distance","dot","faceforward"
-            "length","normalize","reflect","refract","dFdx","dFdy","fwidth","matrixCompMult","all","any","equal","greaterThan","greaterThanEqual","lessThan","lessThanEqual","not","notEqual"
+            "abs","ceil","clamp","floor","fract","max","min","mix","mod","sign","smoothstep","step","ftrasform","cross","distance","dot","faceforward",
+            "length","normalize","reflect","refract","dFdx","dFdy","fwidth","matrixCompMult","all","any","equal","greaterThan","greaterThanEqual","lessThan","lessThanEqual","not","notEqual",
             "texture","texture1D","texture2D","texture3D","textureCube",
             "textureProj","texture1DProj","texture2DProj","texture3DProj",
             "shadow","shadow1D","shadow2D","shadow1DProj","shadow2DProj",
@@ -3588,107 +3590,122 @@ static ImVec2 InputTextCalcTextSizeW(const ImWchar* text_begin, const ImWchar* t
     return text_size;
 }
 
+
 // Wrapper for stb_textedit.h to edit text (our wrapper is for: statically sized buffer, single-line, wchar characters. InputText converts between UTF-8 and wchar)
-namespace ImGuiStb
-{
+namespace ImStb {
 
-static int     STB_TEXTEDIT_STRINGLEN(const STB_TEXTEDIT_STRING* obj)                             { return obj->CurLenW; }
-static ImWchar STB_TEXTEDIT_GETCHAR(const STB_TEXTEDIT_STRING* obj, int idx)                      { return obj->TextW[idx]; }
-static float   STB_TEXTEDIT_GETWIDTH(STB_TEXTEDIT_STRING* obj, int line_start_idx, int char_idx)  { ImWchar c = obj->TextW[line_start_idx+char_idx]; if (c == '\n') return STB_TEXTEDIT_GETWIDTH_NEWLINE; return GImGui->Font->GetCharAdvance(c) * (GImGui->FontSize / GImGui->Font->FontSize); }
-static int     STB_TEXTEDIT_KEYTOTEXT(int key)                                                    { return key >= 0x10000 ? 0 : key; }
-static ImWchar STB_TEXTEDIT_NEWLINE = L'\n';
-static void    STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* r, STB_TEXTEDIT_STRING* obj, int line_start_idx)
-{
-    const ImWchar* text = obj->TextW.Data;
-    const ImWchar* text_remaining = NULL;
-    const ImVec2 size = InputTextCalcTextSizeW(text + line_start_idx, text + obj->CurLenW, &text_remaining, NULL, true);
-    r->x0 = 0.0f;
-    r->x1 = size.x;
-    r->baseline_y_delta = size.y;
-    r->ymin = 0.0f;
-    r->ymax = size.y;
-    r->num_chars = (int)(text_remaining - (text + line_start_idx));
-}
+    static int     STB_TEXTEDIT_STRINGLEN(const STB_TEXTEDIT_STRING* obj) { return obj->CurLenW; }
+    static ImWchar STB_TEXTEDIT_GETCHAR(const STB_TEXTEDIT_STRING* obj, int idx) { return obj->TextW[idx]; }
+    static float   STB_TEXTEDIT_GETWIDTH(STB_TEXTEDIT_STRING* obj, int line_start_idx, int char_idx) { ImWchar c = obj->TextW[line_start_idx + char_idx]; if (c == '\n') return STB_TEXTEDIT_GETWIDTH_NEWLINE; ImGuiContext& g = *GImGui; return g.Font->GetCharAdvance(c) * (g.FontSize / g.Font->FontSize); }
+    static int     STB_TEXTEDIT_KEYTOTEXT(int key) { return key >= 0x200000 ? 0 : key; }
+    static ImWchar STB_TEXTEDIT_NEWLINE = '\n';
+    static void    STB_TEXTEDIT_LAYOUTROW(StbTexteditRow* r, STB_TEXTEDIT_STRING* obj, int line_start_idx) {
+        const ImWchar* text = obj->TextW.Data;
+        const ImWchar* text_remaining = NULL;
+        const ImVec2 size = InputTextCalcTextSizeW(text + line_start_idx, text + obj->CurLenW, &text_remaining, NULL, true);
+        r->x0 = 0.0f;
+        r->x1 = size.x;
+        r->baseline_y_delta = size.y;
+        r->ymin = 0.0f;
+        r->ymax = size.y;
+        r->num_chars = (int)(text_remaining - (text + line_start_idx));
+    }
 
-static bool is_separator(unsigned int c)                                        { return ImCharIsBlankW(c) || c==',' || c==';' || c=='(' || c==')' || c=='{' || c=='}' || c=='[' || c==']' || c=='|'; }
-static int  is_word_boundary_from_right(STB_TEXTEDIT_STRING* obj, int idx)      { return idx > 0 ? (is_separator( obj->TextW[idx-1] ) && !is_separator( obj->TextW[idx] ) ) : 1; }
-static int  STB_TEXTEDIT_MOVEWORDLEFT_IMPL(STB_TEXTEDIT_STRING* obj, int idx)   { idx--; while (idx >= 0 && !is_word_boundary_from_right(obj, idx)) idx--; return idx < 0 ? 0 : idx; }
+    static bool is_separator(unsigned int c) { return ImCharIsBlankW(c) || c == ',' || c == ';' || c == '(' || c == ')' || c == '{' || c == '}' || c == '[' || c == ']' || c == '|'; }
+    static int  is_word_boundary_from_right(STB_TEXTEDIT_STRING* obj, int idx) { return idx > 0 ? (is_separator(obj->TextW[idx - 1]) && !is_separator(obj->TextW[idx])) : 1; }
+    static int  STB_TEXTEDIT_MOVEWORDLEFT_IMPL(STB_TEXTEDIT_STRING* obj, int idx) { idx--; while (idx >= 0 && !is_word_boundary_from_right(obj, idx)) idx--; return idx < 0 ? 0 : idx; }
 #ifdef __APPLE__    // FIXME: Move setting to IO structure
-static int  is_word_boundary_from_left(STB_TEXTEDIT_STRING* obj, int idx)       { return idx > 0 ? (!is_separator( obj->TextW[idx-1] ) && is_separator( obj->TextW[idx] ) ) : 1; }
-static int  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL(STB_TEXTEDIT_STRING* obj, int idx)  { idx++; int len = obj->CurLenW; while (idx < len && !is_word_boundary_from_left(obj, idx)) idx++; return idx > len ? len : idx; }
+    static int  is_word_boundary_from_left(STB_TEXTEDIT_STRING* obj, int idx) { return idx > 0 ? (!is_separator(obj->TextW[idx - 1]) && is_separator(obj->TextW[idx])) : 1; }
+    static int  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL(STB_TEXTEDIT_STRING* obj, int idx) { idx++; int len = obj->CurLenW; while (idx < len && !is_word_boundary_from_left(obj, idx)) idx++; return idx > len ? len : idx; }
 #else
-static int  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL(STB_TEXTEDIT_STRING* obj, int idx)  { idx++; int len = obj->CurLenW; while (idx < len && !is_word_boundary_from_right(obj, idx)) idx++; return idx > len ? len : idx; }
+    static int  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL(STB_TEXTEDIT_STRING* obj, int idx) { idx++; int len = obj->CurLenW; while (idx < len && !is_word_boundary_from_right(obj, idx)) idx++; return idx > len ? len : idx; }
 #endif
 #define STB_TEXTEDIT_MOVEWORDLEFT   STB_TEXTEDIT_MOVEWORDLEFT_IMPL    // They need to be #define for stb_textedit.h
 #define STB_TEXTEDIT_MOVEWORDRIGHT  STB_TEXTEDIT_MOVEWORDRIGHT_IMPL
 
-static void STB_TEXTEDIT_DELETECHARS(STB_TEXTEDIT_STRING* obj, int pos, int n)
-{
-    ImWchar* dst = obj->TextW.Data + pos;
+    static void STB_TEXTEDIT_DELETECHARS(STB_TEXTEDIT_STRING* obj, int pos, int n) {
+        ImWchar* dst = obj->TextW.Data + pos;
 
-    // We maintain our buffer length in both UTF-8 and wchar formats
-    obj->CurLenA -= ImTextCountUtf8BytesFromStr(dst, dst + n);
-    obj->CurLenW -= n;
+        // We maintain our buffer length in both UTF-8 and wchar formats
+        obj->Edited = true;
+        obj->CurLenA -= ImTextCountUtf8BytesFromStr(dst, dst + n);
+        obj->CurLenW -= n;
 
-    // Offset remaining text (FIXME-OPT: Use memmove)
-    const ImWchar* src = obj->TextW.Data + pos + n;
-    while (ImWchar c = *src++)
-        *dst++ = c;
-    *dst = '\0';
-}
-
-static bool STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* obj, int pos, const ImWchar* new_text, int new_text_len)
-{
-    const bool is_resizable = (obj->UserFlags & ImGuiInputTextFlags_CallbackResize) != 0;
-    const int text_len = obj->CurLenW;
-    IM_ASSERT(pos <= text_len);
-
-    const int new_text_len_utf8 = ImTextCountUtf8BytesFromStr(new_text, new_text + new_text_len);
-    if (!is_resizable && (new_text_len_utf8 + obj->CurLenA + 1 > obj->BufCapacityA))
-        return false;
-
-    // Grow internal buffer if needed
-    if (new_text_len + text_len + 1 > obj->TextW.Size)
-    {
-        if (!is_resizable)
-            return false;
-        IM_ASSERT(text_len < obj->TextW.Size);
-        obj->TextW.resize(text_len + ImClamp(new_text_len * 4, 32, ImMax(256, new_text_len)) + 1);
+        // Offset remaining text (FIXME-OPT: Use memmove)
+        const ImWchar* src = obj->TextW.Data + pos + n;
+        while (ImWchar c = *src++)
+            *dst++ = c;
+        *dst = '\0';
     }
 
-    ImWchar* text = obj->TextW.Data;
-    if (pos != text_len)
-        memmove(text + pos + new_text_len, text + pos, (size_t)(text_len - pos) * sizeof(ImWchar));
-    memcpy(text + pos, new_text, (size_t)new_text_len * sizeof(ImWchar));
+    static bool STB_TEXTEDIT_INSERTCHARS(STB_TEXTEDIT_STRING* obj, int pos, const ImWchar* new_text, int new_text_len) {
+        const bool is_resizable = (obj->UserFlags & ImGuiInputTextFlags_CallbackResize) != 0;
+        const int text_len = obj->CurLenW;
+        IM_ASSERT(pos <= text_len);
 
-    obj->CurLenW += new_text_len;
-    obj->CurLenA += new_text_len_utf8;
-    obj->TextW[obj->CurLenW] = '\0';
+        const int new_text_len_utf8 = ImTextCountUtf8BytesFromStr(new_text, new_text + new_text_len);
+        if (!is_resizable && (new_text_len_utf8 + obj->CurLenA + 1 > obj->BufCapacityA))
+            return false;
 
-    return true;
-}
+        // Grow internal buffer if needed
+        if (new_text_len + text_len + 1 > obj->TextW.Size) {
+            if (!is_resizable)
+                return false;
+            IM_ASSERT(text_len < obj->TextW.Size);
+            obj->TextW.resize(text_len + ImClamp(new_text_len * 4, 32, ImMax(256, new_text_len)) + 1);
+        }
 
-// We don't use an enum so we can build even with conflicting symbols (if another user of stb_textedit.h leak their STB_TEXTEDIT_K_* symbols)
-#define STB_TEXTEDIT_K_LEFT         0x10000 // keyboard input to move cursor left
-#define STB_TEXTEDIT_K_RIGHT        0x10001 // keyboard input to move cursor right
-#define STB_TEXTEDIT_K_UP           0x10002 // keyboard input to move cursor up
-#define STB_TEXTEDIT_K_DOWN         0x10003 // keyboard input to move cursor down
-#define STB_TEXTEDIT_K_LINESTART    0x10004 // keyboard input to move cursor to start of line
-#define STB_TEXTEDIT_K_LINEEND      0x10005 // keyboard input to move cursor to end of line
-#define STB_TEXTEDIT_K_TEXTSTART    0x10006 // keyboard input to move cursor to start of text
-#define STB_TEXTEDIT_K_TEXTEND      0x10007 // keyboard input to move cursor to end of text
-#define STB_TEXTEDIT_K_DELETE       0x10008 // keyboard input to delete selection or character under cursor
-#define STB_TEXTEDIT_K_BACKSPACE    0x10009 // keyboard input to delete selection or character left of cursor
-#define STB_TEXTEDIT_K_UNDO         0x1000A // keyboard input to perform undo
-#define STB_TEXTEDIT_K_REDO         0x1000B // keyboard input to perform redo
-#define STB_TEXTEDIT_K_WORDLEFT     0x1000C // keyboard input to move cursor left one word
-#define STB_TEXTEDIT_K_WORDRIGHT    0x1000D // keyboard input to move cursor right one word
-#define STB_TEXTEDIT_K_SHIFT        0x20000
+        ImWchar* text = obj->TextW.Data;
+        if (pos != text_len)
+            memmove(text + pos + new_text_len, text + pos, (size_t)(text_len - pos) * sizeof(ImWchar));
+        memcpy(text + pos, new_text, (size_t)new_text_len * sizeof(ImWchar));
+
+        obj->Edited = true;
+        obj->CurLenW += new_text_len;
+        obj->CurLenA += new_text_len_utf8;
+        obj->TextW[obj->CurLenW] = '\0';
+
+        return true;
+    }
+
+    // We don't use an enum so we can build even with conflicting symbols (if another user of stb_textedit.h leak their STB_TEXTEDIT_K_* symbols)
+#define STB_TEXTEDIT_K_LEFT         0x200000 // keyboard input to move cursor left
+#define STB_TEXTEDIT_K_RIGHT        0x200001 // keyboard input to move cursor right
+#define STB_TEXTEDIT_K_UP           0x200002 // keyboard input to move cursor up
+#define STB_TEXTEDIT_K_DOWN         0x200003 // keyboard input to move cursor down
+#define STB_TEXTEDIT_K_LINESTART    0x200004 // keyboard input to move cursor to start of line
+#define STB_TEXTEDIT_K_LINEEND      0x200005 // keyboard input to move cursor to end of line
+#define STB_TEXTEDIT_K_TEXTSTART    0x200006 // keyboard input to move cursor to start of text
+#define STB_TEXTEDIT_K_TEXTEND      0x200007 // keyboard input to move cursor to end of text
+#define STB_TEXTEDIT_K_DELETE       0x200008 // keyboard input to delete selection or character under cursor
+#define STB_TEXTEDIT_K_BACKSPACE    0x200009 // keyboard input to delete selection or character left of cursor
+#define STB_TEXTEDIT_K_UNDO         0x20000A // keyboard input to perform undo
+#define STB_TEXTEDIT_K_REDO         0x20000B // keyboard input to perform redo
+#define STB_TEXTEDIT_K_WORDLEFT     0x20000C // keyboard input to move cursor left one word
+#define STB_TEXTEDIT_K_WORDRIGHT    0x20000D // keyboard input to move cursor right one word
+#define STB_TEXTEDIT_K_PGUP         0x20000E // keyboard input to move cursor up a page
+#define STB_TEXTEDIT_K_PGDOWN       0x20000F // keyboard input to move cursor down a page
+#define STB_TEXTEDIT_K_SHIFT        0x400000
 
 #define STB_TEXTEDIT_IMPLEMENTATION
-#include <imstb_textedit.h>
+#include "imstb_textedit.h"
 
-} // ImGuiStb
+// stb_textedit internally allows for a single undo record to do addition and deletion, but somehow, calling
+// the stb_textedit_paste() function creates two separate records, so we perform it manually. (FIXME: Report to nothings/stb?)
+    static void stb_textedit_replace(STB_TEXTEDIT_STRING* str, STB_TexteditState* state, const STB_TEXTEDIT_CHARTYPE* text, int text_len) {
+        stb_text_makeundo_replace(str, state, 0, str->CurLenW, text_len);
+        ImStb::STB_TEXTEDIT_DELETECHARS(str, 0, str->CurLenW);
+        if (text_len <= 0)
+            return;
+        if (ImStb::STB_TEXTEDIT_INSERTCHARS(str, 0, text, text_len)) {
+            state->cursor = text_len;
+            state->has_preferred_x = 0;
+            return;
+        }
+        IM_ASSERT(0); // Failed to insert character, normally shouldn't happen because of how we currently use stb_textedit_replace()
+    }
+
+} // namespace ImStb
 
 // ============================================================================
 // END COPYING DEFINITIONS AND METHODS BURIED INTO imgui_widgets.cpp
@@ -3846,8 +3863,7 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
     textLineHeight = ImGui::GetTextLineHeight();
 
     // NB: we are only allowed to access 'edit_state' if we are the active widget.
-    ImGuiInputTextState* state = NULL;
-    if (g.InputTextState.ID == id)  state = &g.InputTextState;
+    ImGuiInputTextState* state = ImGui::GetInputTextState(id);
 
     const bool is_ctrl_down = io.KeyCtrl;
     const bool is_shift_down = io.KeyShift;
@@ -4150,8 +4166,16 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
             // Restore initial value. Only return true if restoring to the initial value changes the current buffer contents.
             if (!is_readonly && strcmp(buf, state->InitialTextA.Data) != 0)
             {
+                // Push records into the undo stack so we can CTRL+Z the revert operation itself
                 apply_new_text = state->InitialTextA.Data;
                 apply_new_text_length = state->InitialTextA.Size - 1;
+                ImVector<ImWchar> w_text;
+                if (apply_new_text_length > 0)
+                {
+                    w_text.resize(ImTextCountCharsFromUtf8(apply_new_text, apply_new_text + apply_new_text_length) + 1);
+                    ImTextStrFromUtf8(w_text.Data, w_text.Size, apply_new_text, apply_new_text + apply_new_text_length);
+                }
+                stb_textedit_replace(state, &state->Stb, w_text.Data, (apply_new_text_length > 0) ? (w_text.Size - 1) : 0);
             }
         }
 
@@ -4249,8 +4273,11 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
         // Copy result to user buffer
         if (apply_new_text)
         {
+            // We cannot test for 'backup_current_text_length != apply_new_text_length' here because we have no guarantee that the size
+            // of our owned buffer matches the size of the string object held by the user, and by design we allow InputText() to be used
+            // without any storage on user's side.
             IM_ASSERT(apply_new_text_length >= 0);
-            if (backup_current_text_length != apply_new_text_length && is_resizable)
+            if (is_resizable)
             {
                 ImGuiInputTextCallbackData callback_data;
                 callback_data.EventFlag = ImGuiInputTextFlags_CallbackResize;
@@ -4265,10 +4292,10 @@ bool BadCodeEditor(const char* label, char* buf, size_t buf_size,ImGuiCe::Langua
                 apply_new_text_length = (int)callback_data.BufTextLen<((int)buf_size-1)?(int)callback_data.BufTextLen:((int)buf_size-1);
                 IM_ASSERT(apply_new_text_length <= (int)buf_size);
             }
+            //IMGUI_DEBUG_LOG("InputText(\"%s\"): apply_new_text length %d\n", label, apply_new_text_length);
 
             // If the underlying buffer resize was denied or not carried to the next frame, apply_new_text_length+1 may be >= buf_size.
             ImStrncpy(buf, state->TextA.Data, apply_new_text_length+1<(int)buf_size?apply_new_text_length+1:(int)buf_size);
-            //ImStrncpy(buf, apply_new_text,  apply_new_text_length+1<(int)buf_size?apply_new_text_length+1:(int)buf_size);    // with this replacement, ESC undos edit changes
                 value_changed = true;
             }
 

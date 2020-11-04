@@ -15,7 +15,6 @@ static ImVec2 mousePosScale(1.0f, 1.0f);
 static const int specialCharMapAddend = 128;    // to prevent some special chars from clashing into ImGui normal chars
 
 // NB: ImGui already provide OS clipboard support for Windows so this isn't needed if you are using Windows only.
-#pragma once
 #ifndef _WIN32
 // If somebody implements these, in InitImGui(...) these callbacks MUST be set (they're currently detached).
 // The default fallback on non-Windows OS is a "private" clipboard.

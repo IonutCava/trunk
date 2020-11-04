@@ -22,6 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 //- Common Code For All Addons needed just to ease inclusion as separate files in user code ----------------------
 #include <imgui.h>
 #undef IMGUI_DEFINE_MATH_OPERATORS
@@ -69,7 +73,7 @@ SOFTWARE.
 #define STB_IMAGE_IMPLEMENTATION
 #endif //IMGUIIMAGEEDITOR_NO_STB_IMAGE_IMPLEMENTATION
 #ifndef IMGUIIMAGEEDITOR_STBIMAGE_PATH
-#define IMGUIIMAGEEDITOR_STBIMAGE_PATH "./addons/imguibindings/stb_image.h"
+#define IMGUIIMAGEEDITOR_STBIMAGE_PATH "Libs/STB/stb_image.h"
 #endif //IMGUIIMAGEEDITOR_STBIMAGE_PATH
 #include IMGUIIMAGEEDITOR_STBIMAGE_PATH
 #endif //STBI_INCLUDE_STB_IMAGE_H
@@ -5583,7 +5587,6 @@ struct StbImage {
 
     void renderLeftPanel(MyRenderStruct& mrs) {
         const ImGui::ImageEditor::Style& ies(ImGui::ImageEditor::Style::Get());
-        const ImGuiStyle& style(ImGui::GetStyle());
 
 #       ifdef IMGUI_FILESYSTEM_H_
         if (ie->allowBrowsingInsideFolder && filePathsIndex>=0 && filePathsIndex<filePaths.size() && filePaths.size()>1)   {

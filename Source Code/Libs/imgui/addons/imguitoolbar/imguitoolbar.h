@@ -104,6 +104,9 @@ Inside a ImGui::Window:
 
 */
 
+#pragma warning(push)
+#pragma warning(disable : 4996)
+
 namespace ImGui {
 class Toolbar {
 public:
@@ -382,6 +385,7 @@ typedef Toolbar::Button Toolbutton;
 
 } // namespace Imgui
 
+#pragma warning(pop)
 
 #endif //IMGUITOOLBAR_H_
 

@@ -26,6 +26,12 @@ SOFTWARE.
 #include <stdlib.h>
 #include <stdio.h>
 
+namespace ImGui {
+    IMGUI_API void PushStyleColor(ImGuiCol idx, const ImColor& col) {
+        ImGui::PushStyleColor(idx, (ImU32)col);
+    }
+};
+
 ImGuiAl::Log::~Log()
 {
 }
@@ -286,7 +292,7 @@ int ImGuiAl::Log::Draw()
   snprintf( id, sizeof( id ), "console_%p", this );
   id[ sizeof( id ) - 1 ] = 0;
   
-  ImGui::BeginChild( id, ImVec2( 0, -ImGui::GetItemsLineHeightWithSpacing() ), false, ImGuiWindowFlags_HorizontalScrollbar );
+  ImGui::BeginChild( id, ImVec2( 0, -ImGui::GetFrameHeightWithSpacing() ), false, ImGuiWindowFlags_HorizontalScrollbar );
   ImGui::PushStyleVar( ImGuiStyleVar_ItemSpacing, ImVec2( 4, 1 ) );
   
   struct Iterator

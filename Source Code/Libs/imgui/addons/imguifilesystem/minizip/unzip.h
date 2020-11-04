@@ -40,7 +40,6 @@
 
 */
 
-#pragma once
 #ifndef _unz64_H
 #define _unz64_H
 
