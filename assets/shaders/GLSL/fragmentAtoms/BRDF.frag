@@ -25,7 +25,7 @@ float GetNdotL(in vec3 N, in vec3 L) {
     return ndl;
 }
 
-vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in bool receivesShadows, in int lodLevel)
+vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in int lodLevel)
 {
     vec3 ret = vec3(0.0);
     float specularFactor = 0.0f;
@@ -43,7 +43,7 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in bool
 
         const float ndl = GetNdotL(normalWV, lightVec);
 
-        const float shadowFactor = receivesShadows ? getShadowFactorDirectional(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        const float shadowFactor = getShadowFactorDirectional(light._options.y, TanAcosNdL(ndl), lodLevel);
         if (shadowFactor > M_EPSILON) {
             float tempSpecularFactor = 0.0f;
             vec3 BRDF = GetBRDF(lightDir,
@@ -75,7 +75,7 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in bool
 
         const float ndl = GetNdotL(normalWV, lightVec);
 
-        const float shadowFactor = receivesShadows ? getShadowFactorPoint(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        const float shadowFactor = getShadowFactorPoint(light._options.y, TanAcosNdL(ndl), lodLevel);
         if (shadowFactor > M_EPSILON) {
             const float radiusSQ = SQUARED(light._positionWV.w);
             const float dist = length(lightDir);
@@ -109,7 +109,7 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in bool
 
         const float ndl = GetNdotL(normalWV, lightVec);
 
-        const float shadowFactor = receivesShadows ? getShadowFactorSpot(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        const float shadowFactor = getShadowFactorSpot(light._options.y, TanAcosNdL(ndl), lodLevel);
         if (shadowFactor > M_EPSILON) {
             const vec3  spotDirectionWV = normalize(light._directionWV.xyz);
             const float cosOuterConeAngle = light._colour.w;
@@ -143,11 +143,7 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in bool
     return ret;
 }
 
-float getShadowFactor(in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
-    if (!receivesShadows) {
-        return 1.0f;
-    }
-
+float getShadowFactor(in vec3 normalWV, in int lodLevel) {
     float ret = 1.0f;
     const uint dirLightCount = dvd_LightData.x;
 
@@ -244,7 +240,7 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 }
 #endif
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv, in bool receivesShadows, in int lodLevel) {
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv, in int lodLevel) {
     const vec3 OMR = getOcclusionMetallicRoughness(colourMatrix, uv);
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:               return albedo;
@@ -256,7 +252,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
         case DEBUG_METALLIC:             return vec3(OMR.g);
         case DEBUG_NORMALS:              return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
         case DEBUG_TBN_VIEW_DIRECTION:   return getTBNViewDir();
-        case DEBUG_SHADOW_MAPS:          return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
+        case DEBUG_SHADOW_MAPS:          return vec3(getShadowFactor(normalWV, lodLevel));
         case DEBUG_LIGHT_HEATMAP:        return lightClusterColours(false);
         case DEBUG_LIGHT_DEPTH_CLUSTERS: return lightClusterColours(true);
         case DEBUG_REFLECTIONS:          return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
@@ -265,7 +261,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 #if defined(USE_SHADING_FLAT)
     vec3 oColour = albedo;
 #else //USE_SHADING_FLAT
-    vec3 oColour = getLightContribution(albedo, OMR, normalWV, receivesShadows, lodLevel);
+    vec3 oColour = getLightContribution(albedo, OMR, normalWV, lodLevel);
 #endif //USE_SHADING_FLAT
 
     oColour = ImageBasedLighting(oColour, normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
@@ -277,9 +273,8 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 vec4 getPixelColour(in vec4 albedo, in NodeData data, in vec3 normalWV, in vec2 uv) {
     const mat4 colourMatrix = data._colourMatrix;
     const int lodLevel = dvd_lodLevel(data);
-    const bool receivesShadows = dvd_receivesShadow(data);
 
-    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv, receivesShadows, lodLevel), albedo.a);
+    vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv, lodLevel), albedo.a);
 #if !defined(DISABLE_SHADOW_MAPPING)
     // CSM Info
     if (dvd_CSMSplitsViewIndex > -1) {

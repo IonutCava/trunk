@@ -16,7 +16,7 @@ struct NodeData {
     // [0].rgba = base colour
     // [1].a = occlusion, [1].g = metallic, [1].b = roughness, [1].a = IBL texture size
     // [2].rgb = emissive
-    // [2].a = receives shadows;
+    // [2].a = reserved
     // [3].r = texture operation
     // [3].g = parallax factor
     // [3].b = lod level

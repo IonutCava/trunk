@@ -155,7 +155,7 @@ vec3 Fresnel(in vec3 specular, in float VdotH, in float LdotH) {
 float Distribution(float NdotH, float roughness) {
 #if defined(PBR_SHADING)
     return GGXDistribution(NdotH, roughness);
-#elif defined(USE_SHADING_PHONG) || defined(USE_SHADING_BLINN_PHONG)
+#else
     return BlinnPhongDistribution(NdotH, roughness);
 #endif
 }

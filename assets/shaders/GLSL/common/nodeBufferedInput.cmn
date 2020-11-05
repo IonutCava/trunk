@@ -26,7 +26,6 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBl
 #define dvd_dataFlag int(buffer_matProperties.w)
 
 #if defined(FRAG_SHADER)
-#define dvd_receivesShadow(nodeData) (int(nodeData._colourMatrix[2][3]) != 0)
 
 uint dvd_texOperation = 0;
 uint dvd_bumpMethod = 0;

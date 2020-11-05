@@ -398,7 +398,6 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     dataOut._normalMatrixW.element(1, 3) = to_F32(properties._reflectionIndex);
     dataOut._normalMatrixW.element(2, 3) = to_F32(properties._refractionIndex);
-    dataOut._colourMatrix.element(2, 3) = (shadowMap && properties._receivesShadows) ? 1.0f : 0.0f;
     dataOut._colourMatrix.element(3, 2) = to_F32(properties._lod);
     //set properties.w to negative value to skip occlusion culling for the node
     dataOut._colourMatrix.element(3, 3) = properties._cullFlagValue;

@@ -305,202 +305,237 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_HELPER_TEXTURES, true);
     terrainMaterial->textureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
-    ShaderModuleDescriptor vertModule = {};
-    vertModule._moduleType = ShaderType::VERTEX;
-    vertModule._sourceFile = "terrainTess.glsl";
-
-    ShaderModuleDescriptor tescModule = {};
-    tescModule._moduleType = ShaderType::TESSELLATION_CTRL;
-    tescModule._sourceFile = "terrainTess.glsl";
-
-    ShaderModuleDescriptor teseModule = {};
-    teseModule._moduleType = ShaderType::TESSELLATION_EVAL;
-    teseModule._sourceFile = "terrainTess.glsl";
-
-    ShaderModuleDescriptor geomModule = {};
-    geomModule._moduleType = ShaderType::GEOMETRY;
-    geomModule._sourceFile = "terrainTess.glsl";
-
-    ShaderModuleDescriptor fragModule = {};
-    fragModule._batchSameFile = false;
-    fragModule._moduleType = ShaderType::FRAGMENT;
-    fragModule._sourceFile = "terrainTess.glsl";
-
-    ShaderProgramDescriptor shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(tescModule);
-    shaderDescriptor._modules.push_back(teseModule);
-
-    const Terrain::WireframeMode wMode = static_cast<Terrain::WireframeMode>(CLAMPED(to_I32(to_U8(context.config().terrain.wireframe)), 0, 2));
-    if (wMode != Terrain::WireframeMode::NONE) {
-        shaderDescriptor._modules.push_back(geomModule);
-    }
-    shaderDescriptor._modules.push_back(fragModule);
-
+    const Configuration::Terrain terrainConfig = context.config().terrain;
+    ResourceCache* resCache = terrain->parentResourceCache();
+    const vec2<F32> WorldScale = terrain->tessParams().WorldScale();
+    const vec2<F32> TerDim = terrainDescriptor->dimensions().width;
     Texture_ptr albedoTile = terrainMaterial->getTexture(TextureUsage::TERRAIN_ALBEDO_TILE).lock();
     WAIT_FOR_CONDITION(albedoTile->getState() == ResourceState::RES_LOADED);
 
     const U16 tileMapSize = albedoTile->width();
-    bool hasGeometryPass = false;
-    for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
+
+    const auto buildShaders = [=](Material* matInstance) {
+        assert(matInstance != nullptr);
+        
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "terrainTess.glsl";
+
+        ShaderModuleDescriptor tescModule = {};
+        tescModule._moduleType = ShaderType::TESSELLATION_CTRL;
+        tescModule._sourceFile = "terrainTess.glsl";
+
+        ShaderModuleDescriptor teseModule = {};
+        teseModule._moduleType = ShaderType::TESSELLATION_EVAL;
+        teseModule._sourceFile = "terrainTess.glsl";
+
+        ShaderModuleDescriptor geomModule = {};
+        geomModule._moduleType = ShaderType::GEOMETRY;
+        geomModule._sourceFile = "terrainTess.glsl";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._batchSameFile = false;
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "terrainTess.glsl";
+
+        ShaderProgramDescriptor shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.push_back(tescModule);
+        shaderDescriptor._modules.push_back(teseModule);
+
+        const Terrain::WireframeMode wMode = static_cast<Terrain::WireframeMode>(CLAMPED(to_I32(to_U8(terrainConfig.wireframe)), 0, 2));
         if (wMode != Terrain::WireframeMode::NONE) {
-            hasGeometryPass = true;
-            shaderModule._defines.emplace_back("TOGGLE_DEBUG", true);
-            if (wMode == Terrain::WireframeMode::EDGES) {
-                shaderModule._defines.emplace_back("TOGGLE_WIREFRAME", true);
-            } else if (wMode == Terrain::WireframeMode::NORMALS) {
-                shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
-                hasGeometryPass = true;
-            }
+            shaderDescriptor._modules.push_back(geomModule);
         }
+        shaderDescriptor._modules.push_back(fragModule);
 
-        shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", TessellationParams::VTX_PER_TILE_EDGE), true);
+        bool hasGeometryPass = false;
 
-        if (context.config().terrain.detailLevel > 0) {
-            if (pMode != Terrain::ParallaxMode::NONE) {
-                shaderModule._defines.emplace_back("HAS_PARALLAX", true);
+        stringImpl propName = "";
+        for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
+            stringImpl shaderPropName = "";
+
+            if (wMode != Terrain::WireframeMode::NONE) {
+                hasGeometryPass = true;
+                shaderPropName += ".DebugView";
+                shaderModule._defines.emplace_back("TOGGLE_DEBUG", true);
+                if (wMode == Terrain::WireframeMode::EDGES) {
+                    shaderPropName += ".WireframeView";
+                    shaderModule._defines.emplace_back("TOGGLE_WIREFRAME", true);
+                } else if (wMode == Terrain::WireframeMode::NORMALS) {
+                    shaderPropName += ".PreviewNormals";
+                    shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
+                    hasGeometryPass = true;
+                }
             }
-            if (context.config().terrain.detailLevel > 1) {
-                shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT", true);
-                if (context.config().terrain.detailLevel > 2) {
-                    shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS", true);
-                    if (context.config().terrain.detailLevel > 3) {
-                        shaderModule._defines.emplace_back("HIGH_QUALITY_TILE_ARTIFACT_REDUCTION", true);
+
+            shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", TessellationParams::VTX_PER_TILE_EDGE), true);
+
+            if (terrainConfig.detailLevel > 0) {
+                if (pMode != Terrain::ParallaxMode::NONE) {
+                    shaderPropName += ".Parallax";
+                    shaderModule._defines.emplace_back("HAS_PARALLAX", true);
+                }
+                if (terrainConfig.detailLevel > 1) {
+                    shaderPropName += ".NoTile";
+                    shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT", true);
+                    if (terrainConfig.detailLevel > 2) {
+                        shaderPropName += "AllLODs";
+                        shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS", true);
+                        if (terrainConfig.detailLevel > 3) {
+                            shaderPropName += "High";
+                            shaderModule._defines.emplace_back("HIGH_QUALITY_TILE_ARTIFACT_REDUCTION", true);
+                        }
                     }
                 }
             }
-        }
-        if (context.config().terrain.perPixelNormals) {
-            shaderModule._defines.emplace_back("PER_PIXEL_NORMALS", true);
-        } 
-        const vec2<F32> uvDivisor = (terrain->tessParams().WorldScale() * TessellationParams::PATCHES_PER_TILE_EDGE) - TessellationParams::PATCHES_PER_TILE_EDGE;
+            if (terrainConfig.perPixelNormals) {
+                shaderPropName += ".PerPixelNormals";
+                shaderModule._defines.emplace_back("PER_PIXEL_NORMALS", true);
+            }
+            const vec2<F32> uvDivisor = (WorldScale * TessellationParams::PATCHES_PER_TILE_EDGE) - TessellationParams::PATCHES_PER_TILE_EDGE;
 
-        shaderModule._defines.emplace_back("COMPUTE_TBN", true);
+            shaderModule._defines.emplace_back("COMPUTE_TBN", true);
 
-        shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
-        shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
-        shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x) + "f", true);
-        shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
-        shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(terrain->tessParams().WorldScale().width) + "f", true);
-        shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(terrain->tessParams().WorldScale().height) + "f", true);
-        shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(terrainDescriptor->dimensions().width), true);
-        shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(terrainDescriptor->dimensions().height), true);
-        shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width) + "f", true);
-        shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height) + "f", true);
-        shaderModule._defines.emplace_back("NODE_STATIC", true);
+            shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
+            shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
+            shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x) + "f", true);
+            shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(WorldScale.width) + "f", true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(WorldScale.height) + "f", true);
+            shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(TerDim.width), true);
+            shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(TerDim.height), true);
+            shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width) + "f", true);
+            shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height) + "f", true);
+            shaderModule._defines.emplace_back("NODE_STATIC", true);
 
-        shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_SPLAT %d", to_base(TextureUsage::TERRAIN_SPLAT)), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(TextureUsage::TERRAIN_ALBEDO_TILE)), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(TextureUsage::TERRAIN_NORMAL_TILE)), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(TextureUsage::TERRAIN_EXTRA_TILE)), true);
-        shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_SPLAT %d", to_base(TextureUsage::TERRAIN_SPLAT)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(TextureUsage::TERRAIN_ALBEDO_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(TextureUsage::TERRAIN_NORMAL_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(TextureUsage::TERRAIN_EXTRA_TILE)), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
 
-        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            shaderModule._defines.emplace_back(blendAmntStr, true);
+            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+                shaderModule._defines.emplace_back(blendAmntStr, true);
 
-            if (!context.config().rendering.shadowMapping.enabled) {
-                shaderModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
+                if (!matInstance->receivesShadows()) {
+                    shaderPropName += ".NoShadows";
+                    shaderModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
+                }
+
+                shaderModule._defines.emplace_back("SKIP_TEX0", true);
+                shaderModule._defines.emplace_back("USE_SHADING_COOK_TORRANCE", true);
+                shaderModule._defines.emplace_back(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true);
+                shaderModule._defines.emplace_back(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true);
+                shaderModule._defines.emplace_back(layerCountData, false);
+                for (const stringImpl& str : indexData) {
+                    shaderModule._defines.emplace_back(str, false);
+                }
+
+            } else if ((hasGeometryPass && shaderModule._moduleType == ShaderType::GEOMETRY) ||
+                (!hasGeometryPass && shaderModule._moduleType == ShaderType::TESSELLATION_EVAL)) {
+                shaderModule._defines.emplace_back("HAS_CLIPPING_OUT", true);
             }
 
-            shaderModule._defines.emplace_back("SKIP_TEX0", true);
-            shaderModule._defines.emplace_back("USE_SHADING_COOK_TORRANCE", true);
-            shaderModule._defines.emplace_back(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true);
-            shaderModule._defines.emplace_back(layerCountData, false);
-            for (const stringImpl& str : indexData) {
-                shaderModule._defines.emplace_back(str, false);
+            if (shaderPropName.length() > propName.length()) {
+                propName = shaderPropName;
+            }
+        }
+
+        // SHADOW
+        ShaderProgramDescriptor shadowDescriptorVSM = {}; ;
+        for (const ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
+            shadowDescriptorVSM._modules.push_back(shaderModule);
+            ShaderModuleDescriptor& tempModule = shadowDescriptorVSM._modules.back();
+
+            if (tempModule._moduleType == ShaderType::FRAGMENT) {
+                tempModule._sourceFile = "depthPass";
+                tempModule._variant = "Shadow.VSM";
+            }
+            tempModule._defines.emplace_back("SHADOW_PASS", true);
+            tempModule._defines.emplace_back("MAX_TESS_LEVEL 32.f", true);
+        }
+
+        ResourceDescriptor terrainShaderShadowVSM("Terrain_ShadowVSM-" + name + propName);
+        terrainShaderShadowVSM.propertyDescriptor(shadowDescriptorVSM);
+
+        ShaderProgram_ptr terrainShadowShaderVSM = CreateResource<ShaderProgram>(resCache, terrainShaderShadowVSM);
+
+        // MAIN PASS
+        ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
+        for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
+            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+                shaderModule._variant = "MainPass";
+            }
+            shaderModule._defines.emplace_back("USE_SSAO", true);
+            shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
+        }
+
+        ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name + propName);
+        terrainShaderColour.propertyDescriptor(colourDescriptor);
+
+        ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(resCache, terrainShaderColour);
+
+        // PRE PASS
+        ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
+        for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
+            shaderModule._defines.emplace_back("PRE_PASS", true);
+        }
+
+        ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name + propName);
+        terrainShaderPrePass.propertyDescriptor(prePassDescriptor);
+
+        ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(resCache, terrainShaderPrePass);
+
+        // PRE PASS LQ
+        ShaderProgramDescriptor prePassDescriptorLQ = shaderDescriptor;
+        for (ShaderModuleDescriptor& shaderModule : prePassDescriptorLQ._modules) {
+            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+                shaderModule._variant = "";
+            }
+            shaderModule._defines.emplace_back("PRE_PASS", true);
+            shaderModule._defines.emplace_back("LOW_QUALITY", true);
+            shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
+        }
+
+        ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name + propName);
+        terrainShaderPrePassLQ.propertyDescriptor(prePassDescriptorLQ);
+
+        ShaderProgram_ptr terrainPrePassShaderLQ = CreateResource<ShaderProgram>(resCache, terrainShaderPrePassLQ);
+
+        // MAIN PASS LQ
+        ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
+        for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
+            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+                shaderModule._variant = "LQPass";
             }
 
-        } else if ((hasGeometryPass && shaderModule._moduleType == ShaderType::GEOMETRY) ||
-                   (!hasGeometryPass && shaderModule._moduleType == ShaderType::TESSELLATION_EVAL)) {
-            shaderModule._defines.emplace_back("HAS_CLIPPING_OUT", true);
-        }
-    }
-
-    // SHADOW
-    ShaderProgramDescriptor shadowDescriptorVSM = {}; ;
-    for (const ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
-        shadowDescriptorVSM._modules.push_back(shaderModule);
-        ShaderModuleDescriptor& tempModule = shadowDescriptorVSM._modules.back();
-
-        if (tempModule._moduleType == ShaderType::FRAGMENT) {
-            tempModule._sourceFile = "depthPass";
-            tempModule._variant = "Shadow.VSM";
-        }
-        tempModule._defines.emplace_back("SHADOW_PASS", true);
-        tempModule._defines.emplace_back("MAX_TESS_LEVEL 32.f", true);
-    }
-
-    ResourceDescriptor terrainShaderShadowVSM("Terrain_ShadowVSM-" + name);
-    terrainShaderShadowVSM.propertyDescriptor(shadowDescriptorVSM);
-
-    ShaderProgram_ptr terrainShadowShaderVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderShadowVSM);
-
-    // MAIN PASS
-    ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
-    for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
-        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            shaderModule._variant = "MainPass";
-        }
-        shaderModule._defines.emplace_back("USE_SSAO", true);
-        shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
-    }
-
-    ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name);
-    terrainShaderColour.propertyDescriptor(colourDescriptor);
-
-    ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColour);
-
-    // PRE PASS
-    ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
-    for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
-        shaderModule._defines.emplace_back("PRE_PASS", true);
-    }
-
-    ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name);
-    terrainShaderPrePass.propertyDescriptor(prePassDescriptor);
-
-    ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePass);
-
-    // PRE PASS LQ
-    ShaderProgramDescriptor prePassDescriptorLQ = shaderDescriptor;
-    for (ShaderModuleDescriptor& shaderModule : prePassDescriptorLQ._modules) {
-        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            shaderModule._variant = "";
-        }
-        shaderModule._defines.emplace_back("PRE_PASS", true);
-        shaderModule._defines.emplace_back("LOW_QUALITY", true);
-        shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
-    }
-
-    ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name);
-    terrainShaderPrePassLQ.propertyDescriptor(prePassDescriptorLQ);
-
-    ShaderProgram_ptr terrainPrePassShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderPrePassLQ);
-
-    // MAIN PASS LQ
-    ShaderProgramDescriptor lowQualityDescriptor = shaderDescriptor;
-    for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptor._modules) {
-        if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-            shaderModule._variant = "LQPass";
+            shaderModule._defines.emplace_back("LOW_QUALITY", true);
+            shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
         }
 
-        shaderModule._defines.emplace_back("LOW_QUALITY", true);
-        shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
-    }
+        ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name + propName);
+        terrainShaderColourLQ.propertyDescriptor(lowQualityDescriptor);
 
-    ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name);
-    terrainShaderColourLQ.propertyDescriptor(lowQualityDescriptor);
+        ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(resCache, terrainShaderColourLQ);
 
-    ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), terrainShaderColourLQ);
+        matInstance->setShaderProgram(terrainPrePassShaderLQ, RenderStage::COUNT,   RenderPassType::PRE_PASS);
+        matInstance->setShaderProgram(terrainColourShaderLQ,  RenderStage::COUNT,   RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainPrePassShader,   RenderStage::DISPLAY, RenderPassType::PRE_PASS);
+        matInstance->setShaderProgram(terrainColourShader,    RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainShadowShaderVSM, RenderStage::SHADOW,  RenderPassType::COUNT);
+    };
 
-    terrainMaterial->setShaderProgram(terrainPrePassShaderLQ, RenderStage::COUNT,   RenderPassType::PRE_PASS);
-    terrainMaterial->setShaderProgram(terrainColourShaderLQ,  RenderStage::COUNT,   RenderPassType::MAIN_PASS);
-    terrainMaterial->setShaderProgram(terrainPrePassShader,   RenderStage::DISPLAY, RenderPassType::PRE_PASS);
-    terrainMaterial->setShaderProgram(terrainColourShader,    RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
-    terrainMaterial->setShaderProgram(terrainShadowShaderVSM, RenderStage::SHADOW,  RenderPassType::COUNT);
+    buildShaders(terrainMaterial.get());
+
+    terrainMaterial->customShaderCBK([=](Material& material, RenderStagePass stagePass) {
+        ACKNOWLEDGE_UNUSED(stagePass);
+
+        buildShaders(&material);
+        return true;
+    });
 
     RenderStateBlock terrainRenderState = {};
     terrainRenderState.setTessControlPoints(4);
@@ -572,7 +607,9 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     if (terrain->_physicsVerts.empty()) {
 
         vectorEASTL<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), Byte{0});
-        readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY);
+        if (!readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY)) {
+            NOP();
+        }
 
         constexpr F32 ushortMax = std::numeric_limits<U16>::max() + 1.0f;
 

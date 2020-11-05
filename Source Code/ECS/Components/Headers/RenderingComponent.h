@@ -143,7 +143,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
            U8 _lod = 0u;
            TextureOperation _texOperation = TextureOperation::REPLACE;
            BumpMethod _bumpMethod = BumpMethod::NONE;
-           bool _receivesShadows = false;
            bool _isHovered = false;
            bool _isSelected = false;
        };
@@ -178,6 +177,9 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
     const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
 
+    bool& getRebuildFlag(const RenderStagePass& renderStagePass);
+    const bool& getRebuildFlag(const RenderStagePass& renderStagePass) const;
+
     size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
 
     const Material_ptr& getMaterialInstance() const noexcept { return _materialInstance; }
@@ -204,7 +206,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick);
-
+    void onRenderOptionChanged(const RenderOptions option, const bool state);
     bool canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData);
 
     /// Called after the parent node was rendered
@@ -233,6 +235,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position);
 
     PROPERTY_R(bool, showAxis, false);
+    PROPERTY_R(bool, receiveShadows, false);
+    PROPERTY_R(bool, castsShadows, false);
     // If the new value is negative, this disables occlusion culling!
     PROPERTY_RW(F32, cullFlag, 1.0f);
 
@@ -248,6 +252,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     using PackagesPerPassType = std::array<PackagesPerIndex, to_base(RenderPassType::COUNT)>;
     using PackagesPerStage = std::array<PackagesPerPassType, to_base(RenderStage::COUNT)>;
     PackagesPerStage _renderPackages;
+
+    using FlagsPerIndex = std::array<bool, 255>;
+    using FlagsPerPassType = std::array<FlagsPerIndex, to_base(RenderPassType::COUNT)>;
+    using FlagsPerStage = std::array<FlagsPerPassType, to_base(RenderStage::COUNT)>;
+    FlagsPerStage _rebuildDrawCommandsFlags;
 
     RenderCallback _reflectionCallback;
     RenderCallback _refractionCallback;

@@ -97,6 +97,8 @@ class Material final : public CachedResource {
         Str32 _colourShaderFragVariant = "";
     };
 
+    using CustomShaderUpdateCBK = std::function<bool(Material&, RenderStagePass)>;
+
    public:
     explicit Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~Material() = default;
@@ -213,7 +215,6 @@ class Material final : public CachedResource {
     PROPERTY_RW(ShaderData, baseShaderData);
     POINTER_R_IW(Material, baseMaterial, nullptr);
 
-   private:
     PROPERTY_R(FColour4, baseColour, DefaultColours::WHITE);
     PROPERTY_R(FColour3, emissive, DefaultColours::BLACK);
     PROPERTY_R(F32, metallic, 0.0f);
@@ -231,9 +232,11 @@ class Material final : public CachedResource {
     PROPERTY_R(bool, isStatic, false);
     /// Use shaders that have bone transforms implemented
     PROPERTY_R(bool, hardwareSkinning, false);
+    PROPERTY_RW(CustomShaderUpdateCBK, customShaderCBK);
 
-    bool _isRefractive = false;
    private:
+    bool _isRefractive = false;
+
     GFXDevice& _context;
     ResourceCache* _parentCache = nullptr;
 
@@ -243,6 +246,7 @@ class Material final : public CachedResource {
     using ShaderVariantsPerPass = eastl::array<ShaderPerVariant, to_base(RenderPassType::COUNT)>;
     using ShaderPassesPerStage = eastl::array<ShaderVariantsPerPass, to_base(RenderStage::COUNT)>;
     ShaderPassesPerStage _shaderInfo;
+    
 
     using StatesPerVariant = std::array<size_t, g_maxVariantsPerPass>;
     using StateVariantsPerPass = eastl::array<StatesPerVariant, to_base(RenderPassType::COUNT)>;

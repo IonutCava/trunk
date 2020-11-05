@@ -2,6 +2,8 @@
 
 #include "Headers/RenderingComponent.h"
 #include "Graphs/Headers/SceneGraphNode.h"
+#include "Core/Headers/Configuration.h"
+#include "Geometry/Material/Headers/Material.h"
 
 namespace Divide {
 
@@ -22,6 +24,7 @@ void RenderingComponent::toggleRenderOption(RenderOptions option, bool state, bo
         } else {
             ClearBit(_renderMask, to_U32(option));
         }
+        onRenderOptionChanged(option, state);
     }
 }
 
@@ -45,5 +48,21 @@ void RenderingComponent::toggleBoundsDraw(bool showAABB, bool showBS, bool recur
     }
     _drawAABB = showAABB;
     _drawBS = showBS;
+}
+
+void RenderingComponent::onRenderOptionChanged(const RenderOptions option, const bool state) {
+    switch (option) {
+      case RenderOptions::RECEIVE_SHADOWS:
+      {
+          if (state && !_config.rendering.shadowMapping.enabled) {
+              toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, false);
+              return;
+          }
+          if (_materialInstance != nullptr) {
+              _materialInstance->receivesShadows(state);
+          }
+      } break;
+      default: break;
+    };
 }
 }; //namespace Divide

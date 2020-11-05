@@ -8,7 +8,6 @@
 #include "Headers/EnvironmentProbeComponent.h"
 #include "Headers/TransformComponent.h"
 
-#include "Core/Headers/Configuration.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 
@@ -53,17 +52,44 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, true);
     toggleRenderOption(RenderOptions::IS_VISIBLE, true);
 
-    EditorComponentField vaxisField = {};
-    vaxisField._name = "Show Axis";
-    vaxisField._data = &_showAxis;
-    vaxisField._type = EditorComponentFieldType::PUSH_TYPE;
-    vaxisField._basicType = GFX::PushConstantType::BOOL;
-    vaxisField._readOnly = false;
-    _editorComponent.registerField(MOV(vaxisField));
+    _showAxis       = renderOptionEnabled(RenderOptions::RENDER_AXIS);
+    _receiveShadows = renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
+    _castsShadows   = renderOptionEnabled(RenderOptions::CAST_SHADOWS);
 
-    _editorComponent.onChangedCbk([this](std::string_view field) {
+    {
+        EditorComponentField vaxisField = {};
+        vaxisField._name = "Show Axis";
+        vaxisField._data = &_showAxis;
+        vaxisField._type = EditorComponentFieldType::PUSH_TYPE;
+        vaxisField._basicType = GFX::PushConstantType::BOOL;
+        vaxisField._readOnly = false;
+        _editorComponent.registerField(MOV(vaxisField));
+    }
+    {
+        EditorComponentField receivesShadowsField = {};
+        receivesShadowsField._name = "Receives Shadows";
+        receivesShadowsField._data = &_receiveShadows;
+        receivesShadowsField._type = EditorComponentFieldType::PUSH_TYPE;
+        receivesShadowsField._basicType = GFX::PushConstantType::BOOL;
+        receivesShadowsField._readOnly = false;
+        _editorComponent.registerField(MOV(receivesShadowsField));
+    }
+    {
+        EditorComponentField castsShadowsField = {};
+        castsShadowsField._name = "Casts Shadows";
+        castsShadowsField._data = &_castsShadows;
+        castsShadowsField._type = EditorComponentFieldType::PUSH_TYPE;
+        castsShadowsField._basicType = GFX::PushConstantType::BOOL;
+        castsShadowsField._readOnly = false;
+        _editorComponent.registerField(MOV(castsShadowsField));
+    }
+    _editorComponent.onChangedCbk([this](const std::string_view field) {
         if (field == "Show Axis") {
-            toggleRenderOption(RenderingComponent::RenderOptions::RENDER_AXIS, _showAxis);
+            toggleRenderOption(RenderOptions::RENDER_AXIS, _showAxis);
+        } else if (field == "Receives Shadows") {
+            toggleRenderOption(RenderOptions::RECEIVE_SHADOWS, _receiveShadows);
+        } else if (field == "Casts Shadows") {
+            toggleRenderOption(RenderOptions::CAST_SHADOWS, _castsShadows);
         }
     });
 
@@ -99,10 +125,13 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
         const U8 count = RenderStagePass::passCountForStage(static_cast<RenderStage>(s));
         if (s == to_U8(RenderStage::SHADOW)) {
             _renderPackages[s][to_base(RenderPassType::MAIN_PASS)].resize(count);
+            _rebuildDrawCommandsFlags[s][to_base(RenderPassType::MAIN_PASS)].fill(true);
         } else {
             PackagesPerPassType & perPassPkgs = _renderPackages[s];
+            FlagsPerPassType & perPassFlags = _rebuildDrawCommandsFlags[s];
             for (U8 p = 0; p < to_U8(RenderPassType::COUNT); ++p) {
                 perPassPkgs[p].resize(count);
+                perPassFlags[p].fill(true);
             }
         }
     }
@@ -216,6 +245,17 @@ void RenderingComponent::Update(const U64 deltaTimeUS) {
         onMaterialChanged();
     }
 
+    if (_parentSGN->getNode().rebuildDrawCommands()) {
+        for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
+            FlagsPerPassType& perPassFlags = _rebuildDrawCommandsFlags[s];
+            for (U8 p = 0u; p < to_U8(RenderPassType::COUNT); ++p) {
+                FlagsPerIndex& perIndexFlags = perPassFlags[p];
+                perIndexFlags.fill(true);
+            }
+        }
+        _parentSGN->getNode().rebuildDrawCommands(false);
+    }
+
     BaseComponentType<RenderingComponent, ComponentType::RENDERING>::Update(deltaTimeUS);
 }
 
@@ -234,6 +274,7 @@ void RenderingComponent::onMaterialChanged() {
             }
         }
     }
+    _parentSGN->getNode().rebuildDrawCommands(true);
 }
 
 bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData) {
@@ -366,8 +407,6 @@ void RenderingComponent::getMaterialColourMatrix(const RenderStagePass& stagePas
 void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {
     propertiesOut._isHovered = _parentSGN->hasFlag(SceneGraphNode::Flags::HOVERED);
     propertiesOut._isSelected = _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED);
-    propertiesOut._receivesShadows = _config.rendering.shadowMapping.enabled &&
-                                     renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._cullFlagValue = cullFlag();
 
@@ -460,9 +499,9 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     if (canDraw(renderStagePass, lod, refreshData)) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
 
-        if (pkg.empty() || _parentSGN->getNode().rebuildDrawCommands()) {
+        if (pkg.empty() || getRebuildFlag(renderStagePass)) {
             rebuildDrawCommands(renderStagePass, camera, pkg);
-            _parentSGN->getNode().rebuildDrawCommands(false);
+            getRebuildFlag(renderStagePass) = false;
         }
 
         if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
@@ -499,6 +538,21 @@ const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& r
     return _renderPackages[s][p][i];
 }
 
+bool& RenderingComponent::getRebuildFlag(const RenderStagePass& renderStagePass) {
+    const U8 s = to_U8(renderStagePass._stage);
+    const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
+    const U16 i = RenderStagePass::indexForStage(renderStagePass);
+
+    return _rebuildDrawCommandsFlags[s][p][i];
+}
+
+const bool& RenderingComponent::getRebuildFlag(const RenderStagePass& renderStagePass) const {
+    const U8 s = to_U8(renderStagePass._stage);
+    const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
+    const U16 i = RenderStagePass::indexForStage(renderStagePass);
+
+    return _rebuildDrawCommandsFlags[s][p][i];
+}
 size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
     const RenderPackage& pkg = getDrawPackage(renderStagePass);
     return (pkg.empty() ? 0 : pkg.getSortKeyHash());

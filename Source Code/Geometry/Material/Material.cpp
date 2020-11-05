@@ -122,6 +122,8 @@ Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descri
       _parentCache(parentCache),
       _defaultRenderStates{}
 {
+    receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
+
     const ShaderProgramInfo defaultShaderInfo = {};
     // Could just direct copy the arrays, but this looks cool
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
@@ -166,6 +168,7 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
     cloneMat->_isRefractive = base._isRefractive;
     cloneMat->_textureUseForDepth = _textureUseForDepth;
     cloneMat->_extraShaderDefines = base._extraShaderDefines;
+    cloneMat->_customShaderCBK = base._customShaderCBK;
 
     cloneMat->baseShaderData(base.baseShaderData());
     cloneMat->ignoreXMLData(base.ignoreXMLData());
@@ -304,7 +307,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                         U8 variant)
 {
     if (shader != nullptr) {
-        ShaderProgram* oldShader = shaderInfo._shaderRef.get();
+        const ShaderProgram* oldShader = shaderInfo._shaderRef.get();
         if (oldShader != nullptr) {
             const char* newShaderName = shader == nullptr ? nullptr : shader->resourceName().c_str();
 
@@ -323,7 +326,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
 
     shaderInfo._shaderRef = shader;
     shaderInfo._shaderCompStage = (shader == nullptr || shader->getState() == ResourceState::RES_LOADED)
-                                                     ? ShaderBuildStage::READY
+                                                     ? (shaderInfo._customShader ? ShaderBuildStage::COMPUTED : ShaderBuildStage::READY)
                                                      : ShaderBuildStage::COMPUTED;
 }
 
@@ -366,10 +369,20 @@ void Material::recomputeShaders() {
 
             for (U8 v = 0; v < g_maxVariantsPerPass; ++v) {
                 ShaderProgramInfo& shaderInfo = variantMap[v];
-                if (!shaderInfo._customShader && shaderInfo._shaderCompStage != ShaderBuildStage::COUNT) {
-                    stagePass._variant = v;
+                if (shaderInfo._shaderCompStage == ShaderBuildStage::COUNT) {
+                    continue;
+                }
+
+                stagePass._variant = v;
+                if (!shaderInfo._customShader) {
                     shaderInfo._shaderCompStage = ShaderBuildStage::REQUESTED;
                     computeShader(stagePass);
+                } else {
+                    if (shaderInfo._shaderCompStage == ShaderBuildStage::COMPUTED) {
+                        shaderInfo._shaderCompStage = ShaderBuildStage::READY;
+                    } else if (shaderInfo._shaderCompStage == ShaderBuildStage::READY && _customShaderCBK) {
+                        _customShaderCBK(*this, stagePass);
+                    }
                 }
             }
         }
@@ -398,7 +411,8 @@ I64 Material::getProgramGUID(const RenderStagePass& renderStagePass) const {
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
 
-    if (info._shaderRef != nullptr && info._shaderRef->getState() == ResourceState::RES_LOADED) {
+    if (info._shaderRef != nullptr) {
+        WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
         return info._shaderRef->getGUID();
     }
     DIVIDE_UNEXPECTED_CALL();

@@ -114,13 +114,13 @@ int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
     return 0;
 }
 
-float getShadowFactorDirectional(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
+float getShadowFactorDirectional(in int shadowIndex, in float TanAcosNdotL, in int lodLevel) {
     return 1.0f;
 }
-float getShadowFactorPoint(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
+float getShadowFactorPoint(in int shadowIndex, in float TanAcosNdotL, in int lodLevel) {
     return 1.0f;
 }
-float getShadowFactorSpot(in ivec4 lightOptions, in float TanAcosNdotL, in bool receivesShadows, in int lodLevel) {
+float getShadowFactorSpot(in int shadowIndex, in float TanAcosNdotL,  in int lodLevel) {
     return 1.0f;
 }
 #endif //DISABLE_SHADOW_MAPPING
