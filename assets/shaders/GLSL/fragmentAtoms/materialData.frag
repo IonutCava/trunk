@@ -98,20 +98,26 @@ float getSSAO() {
 #endif
 }
 
+vec3 getSpecular(in vec3 diffColour, in float metallic) {
+    return mix(F0, diffColour, metallic);
+}
+
 #if defined(USE_CUSTOM_ROUGHNESS)
 vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv);
 #else //USE_CUSTOM_ROUGHNESS
 vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
 #if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
-    vec3 omr = texture(texOcclusionMetallicRoughness, uv).rgb;
+    vec3 omr = saturate(texture(texOcclusionMetallicRoughness, uv).rgb);
 #if defined(PBR_SHADING)
     return omr;
 #else
     // Convert specular to roughness ... roughly? really wrong, but should work I guesssssssssss. -Ionut
-    return vec3(Occlusion(colourMatrix), Metallic(colourMatrix), 1.0f - omr.r);
+    return saturate(vec3(Occlusion(colourMatrix), Metallic(colourMatrix), 1.0f - omr.r));
 #endif
 #else
-    return vec3(Occlusion(colourMatrix), Metallic(colourMatrix), Roughness(colourMatrix));
+    return saturate(vec3(Occlusion(colourMatrix),
+                         Metallic(colourMatrix),
+                         Roughness(colourMatrix)));
 #endif
 }
 #endif //USE_CUSTOM_ROUGHNESS

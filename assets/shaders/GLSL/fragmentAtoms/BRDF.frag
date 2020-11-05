@@ -10,18 +10,6 @@
 
 #define DISABLE_SSR
 
-#if defined(PBR_SHADING)
-#define getBRDFFactors(LDir, LCol, OMR, Albedo, N, NdotL) PBR(LDir, LCol, OMR, Albedo, N, NdotL);
-#elif defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-#define getBRDFFactors(LDir, LCol, OMR, Albedo, N, NdotL) Phong(LDir, LCol, OMR, Albedo, N, NdotL)
-#else
-#if defined(USE_SHADING_TOON) // ToDo
-#   define getBRDFFactors(LDir, LCol, Data, Albedo, N, NdotL) vec4(0.6f, 0.2f, 0.9f, 0.0f); //obvious pink
-#else
-#   define getBRDFFactors(LDir, LCol, Data, Albedo, N, NdotL) vec4(0.6f, 1.0f, 0.7f, 0.0f); //obvious lime-green
-#endif
-#endif
-
 
 float TanAcosNdL(in float ndl) {
 #if 0
@@ -32,86 +20,127 @@ float TanAcosNdL(in float ndl) {
 #endif
 }
 
-vec3 getLightContribution(in vec3 albedo, in vec3 occlusionMetallicRoughness, in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
-    const uint dirLightCount = dvd_LightData.x;
+float GetNdotL(in vec3 N, in vec3 L) {
+    const float ndl = clamp(dot(N, L), M_EPSILON, 1.0f);
+    return ndl;
+}
 
-    vec4 ret = vec4(0.0);
+vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in bool receivesShadows, in int lodLevel)
+{
+    vec3 ret = vec3(0.0);
+    float specularFactor = 0.0f;
+
+    const vec3 specColour = getSpecular(albedo, OMR.g);
+    const vec3 toCamera = normalize(VAR._viewDirectionWV);
+    const float roughness = OMR.b;
+
+    const uint dirLightCount = dvd_LightData.x;
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
 
-        const vec3 lightDirectionWV = -light._directionWV.xyz;
-        const float ndl = saturate((dot(normalWV, normalize(lightDirectionWV))));
-        const float shadowFactor = receivesShadows ? getShadowFactorDirectional(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        const vec3 lightDir = -light._directionWV.xyz;
+        const vec3 lightVec = lightDir;
 
-        ret += getBRDFFactors(lightDirectionWV,
-                              vec4(light._colour.rgb, 1.f),
-                              occlusionMetallicRoughness,
-                              vec4(albedo, shadowFactor), 
-                              normalWV,
-                              ndl);
+        const float ndl = GetNdotL(normalWV, lightVec);
+
+        const float shadowFactor = receivesShadows ? getShadowFactorDirectional(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        if (shadowFactor > M_EPSILON) {
+            float tempSpecularFactor = 0.0f;
+            vec3 BRDF = GetBRDF(lightDir,
+                                lightVec,
+                                toCamera,
+                                normalWV,
+                                albedo, 
+                                specColour,
+                                ndl,
+                                roughness,
+                                tempSpecularFactor);
+
+            ret += BRDF * light._colour.rgb * shadowFactor;
+
+            specularFactor = max(specularFactor, tempSpecularFactor);
+        }
     }
 
     LightGrid grid = lightGrid[GetClusterIndex(gl_FragCoord)];
 
-          uint lightIndexOffset = grid.offset;
-    const uint lightCountPoint  = grid.countPoint;
-    const uint lightCountSpot   = grid.countSpot;
-
-    for (uint i = 0; i < lightCountPoint; ++i) {
+    uint lightIndexOffset = grid.offset;
+    uint lightCount  = grid.countPoint;
+    for (uint i = 0; i < lightCount; ++i) {
         const uint lightIdx = globalLightIndexList[lightIndexOffset + i] + dirLightCount;
 
         const Light light = dvd_LightSource[lightIdx];
-        const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
-        const vec3 lightDirectionWVNorm = normalize(lightDirectionWV);
+        const vec3 lightDir = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const vec3 lightVec = normalize(lightDir);
 
-        const float ndl = saturate(dot(normalWV, lightDirectionWVNorm));
-
-        const float radius = light._positionWV.w;
-        const float dist = length(lightDirectionWV);
-        const float att = saturate(1.0f - ((dist * dist) / (radius * radius)));
+        const float ndl = GetNdotL(normalWV, lightVec);
 
         const float shadowFactor = receivesShadows ? getShadowFactorPoint(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        if (shadowFactor > M_EPSILON) {
+            const float radiusSQ = SQUARED(light._positionWV.w);
+            const float dist = length(lightDir);
+            const float att = saturate(1.0f - (SQUARED(dist) / radiusSQ));
 
-        ret += getBRDFFactors(lightDirectionWV, 
-                              vec4(light._colour.rgb, att * att),
-                              occlusionMetallicRoughness,
-                              vec4(albedo, shadowFactor),
-                              normalWV,
-                              ndl);
+            float tempSpecularFactor = 0.0f;
+            vec3 BRDF = GetBRDF(lightDir,
+                                lightVec,
+                                toCamera,
+                                normalWV,
+                                albedo,
+                                specColour,
+                                ndl,
+                                roughness,
+                                tempSpecularFactor);
+
+            ret += BRDF * light._colour.rgb * SQUARED(att) * shadowFactor;
+
+            specularFactor = max(specularFactor, tempSpecularFactor);
+        }
     }
 
-    lightIndexOffset += lightCountPoint;
-    for (uint i = 0; i < lightCountSpot; ++i) {
+    lightIndexOffset += lightCount;
+    lightCount = grid.countSpot;
+    for (uint i = 0; i < lightCount; ++i) {
         const uint lightIdx = globalLightIndexList[lightIndexOffset + i] + dirLightCount;
 
         const Light light = dvd_LightSource[lightIdx];
-        const vec3 lightDirectionWV = light._positionWV.xyz - VAR._vertexWV.xyz;
-        const vec3 lightDirectionWVNorm = normalize(lightDirectionWV);
+        const vec3 lightDir = light._positionWV.xyz - VAR._vertexWV.xyz;
+        const vec3 lightVec = normalize(lightDir);
 
-        const float ndl               = saturate(dot(normalWV, lightDirectionWVNorm));
-        const vec3  spotDirectionWV   = normalize(light._directionWV.xyz);
-        const float cosOuterConeAngle = light._colour.w;
-        const float cosInnerConeAngle = light._directionWV.w;
-
-        const float theta = dot(lightDirectionWVNorm, normalize(-spotDirectionWV));
-        const float intensity = saturate((theta - cosOuterConeAngle) / (cosInnerConeAngle - cosOuterConeAngle));
-
-        const float radius = mix(float(light._SPOT_CONE_SLANT_HEIGHT), light._positionWV.w, 1.0f - intensity);
-
-        const float dist = length(lightDirectionWV);
-        const float att = saturate(1.0f - ((dist * dist) / (radius * radius))) * intensity;
+        const float ndl = GetNdotL(normalWV, lightVec);
 
         const float shadowFactor = receivesShadows ? getShadowFactorSpot(light._options.y, TanAcosNdL(ndl), lodLevel) : 1.0f;
+        if (shadowFactor > M_EPSILON) {
+            const vec3  spotDirectionWV = normalize(light._directionWV.xyz);
+            const float cosOuterConeAngle = light._colour.w;
+            const float cosInnerConeAngle = light._directionWV.w;
 
-        ret += getBRDFFactors(lightDirectionWV,
-                              vec4(light._colour.rgb, att),
-                              occlusionMetallicRoughness,
-                              vec4(albedo, shadowFactor),
-                              normalWV,
-                              ndl);
+            const float theta = dot(lightVec, normalize(-spotDirectionWV));
+            const float intensity = saturate((theta - cosOuterConeAngle) / (cosInnerConeAngle - cosOuterConeAngle));
+
+            const float dist = length(lightDir);
+            const float radius = mix(float(light._SPOT_CONE_SLANT_HEIGHT), light._positionWV.w, 1.0f - intensity);
+            float att = saturate(1.0f - (SQUARED(dist) / SQUARED(radius)));
+            att = att * intensity;
+
+            float tempSpecularFactor = 0.0f;
+            vec3 BRDF = GetBRDF(lightDir,
+                                lightVec,
+                                toCamera,
+                                normalWV,
+                                albedo,
+                                specColour,
+                                ndl,
+                                roughness,
+                                tempSpecularFactor);
+
+            ret += BRDF * light._colour.rgb * att * shadowFactor;
+
+            specularFactor = max(specularFactor, tempSpecularFactor);
+        }
     }
 
-    return ret.rgb;
+    return ret;
 }
 
 float getShadowFactor(in vec3 normalWV, in bool receivesShadows, in int lodLevel) {
@@ -132,7 +161,7 @@ float getShadowFactor(in vec3 normalWV, in bool receivesShadows, in int lodLevel
 
     const uint cluster = GetClusterIndex(gl_FragCoord);
 
-            uint lightIndexOffset = lightGrid[cluster].offset;
+          uint lightIndexOffset = lightGrid[cluster].offset;
     const uint lightCountPoint  = lightGrid[cluster].countPoint;
     const uint lightCountSpot   = lightGrid[cluster].countSpot;
 
@@ -203,48 +232,46 @@ vec3 CubeLookup(in vec3 normalWV, in float roughness, in int textureSize) {
     const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
     const vec3 reflection = normalize(reflect(toCamera, normal));
 
-    return  ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize);
+    return ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize);
 }
 
 vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
+#if defined(USE_PLANAR_REFLECTION) || defined(NO_IBL)
+    return colour; 
+#else
     return mix(colour, CubeLookup(normalWV, roughness, textureSize), metallic);
+#endif
 }
 #endif
 
 vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv, in bool receivesShadows, in int lodLevel) {
     const vec3 OMR = getOcclusionMetallicRoughness(colourMatrix, uv);
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO: return albedo;
-        case DEBUG_UV: return vec3(fract(uv), 0.0f);
-        case DEBUG_SSAO: return vec3(getSSAO());
-        case DEBUG_EMISSIVE: return getEmissive(colourMatrix);
-        case DEBUG_ROUGHNESS: return vec3(OMR.b);
-        case DEBUG_METALLIC: return vec3(OMR.g);
-        case DEBUG_NORMALS: return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
-        case DEBUG_TBN_VIEW_DIRECTION: return getTBNViewDir();
-        case DEBUG_SHADOW_MAPS: return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
-        case DEBUG_LIGHT_HEATMAP: return lightClusterColours(false);
+        case DEBUG_ALBEDO:               return albedo;
+        case DEBUG_SPECULAR:             return getSpecular(albedo, OMR.g);
+        case DEBUG_UV:                   return vec3(fract(uv), 0.0f);
+        case DEBUG_SSAO:                 return vec3(getSSAO());
+        case DEBUG_EMISSIVE:             return getEmissive(colourMatrix);
+        case DEBUG_ROUGHNESS:            return vec3(OMR.b);
+        case DEBUG_METALLIC:             return vec3(OMR.g);
+        case DEBUG_NORMALS:              return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
+        case DEBUG_TBN_VIEW_DIRECTION:   return getTBNViewDir();
+        case DEBUG_SHADOW_MAPS:          return vec3(getShadowFactor(normalWV, receivesShadows, lodLevel));
+        case DEBUG_LIGHT_HEATMAP:        return lightClusterColours(false);
         case DEBUG_LIGHT_DEPTH_CLUSTERS: return lightClusterColours(true);
-        case DEBUG_REFLECTIONS: return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
+        case DEBUG_REFLECTIONS:          return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
     }
 
-    //albedo.rgb += dvd_AmbientColour.rgb;
-    albedo.rgb *= getSSAO();
-
 #if defined(USE_SHADING_FLAT)
-    return getEmissive(colourMatrix) + albedo;
+    vec3 oColour = albedo;
 #else //USE_SHADING_FLAT
-
-    vec3 lightColour =
-        getEmissive(colourMatrix) +
-        getLightContribution(albedo, OMR, normalWV, receivesShadows, lodLevel);
-
-#if !defined(USE_PLANAR_REFLECTION)
-    lightColour.rgb = ImageBasedLighting(lightColour.rgb, normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
-#endif //USE_PLANAR_REFLECTION
-
-    return lightColour;
+    vec3 oColour = getLightContribution(albedo, OMR, normalWV, receivesShadows, lodLevel);
 #endif //USE_SHADING_FLAT
+
+    oColour = ImageBasedLighting(oColour, normalWV, OMR.g, OMR.b, IBLSize(colourMatrix));
+    oColour *= getSSAO();
+    oColour += getEmissive(colourMatrix);
+    return oColour;
 }
 
 vec4 getPixelColour(in vec4 albedo, in NodeData data, in vec3 normalWV, in vec2 uv) {

@@ -458,6 +458,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug albedo", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SPECULAR;
+            if (ImGui::MenuItem("Debug specular", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SPECULAR : GFXDevice::MaterialDebugFlag::COUNT);
+            }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_UV;
             if (ImGui::MenuItem("Debug tex coords", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_UV : GFXDevice::MaterialDebugFlag::COUNT);
@@ -490,6 +494,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug shadow maps", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS;
+            if (ImGui::MenuItem("Debug Reflections", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS : GFXDevice::MaterialDebugFlag::COUNT);
+            }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP;
             if (ImGui::MenuItem("Debug Light Heatmap", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP : GFXDevice::MaterialDebugFlag::COUNT);
@@ -497,10 +505,6 @@ void MenuBar::drawDebugMenu() {
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_DEPTH_CLUSTERS;
             if (ImGui::MenuItem("Debug Light Depth Clusters", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_DEPTH_CLUSTERS : GFXDevice::MaterialDebugFlag::COUNT);
-            }
-            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS;
-            if (ImGui::MenuItem("Debug Reflections", "", &debug)) {
-                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS : GFXDevice::MaterialDebugFlag::COUNT);
             }
             ImGui::EndMenu();
         }

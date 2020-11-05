@@ -219,6 +219,7 @@ public:
 
     enum class MaterialDebugFlag : U8 {
         DEBUG_ALBEDO = 0,
+        DEBUG_SPECULAR,
         DEBUG_UV,
         DEBUG_SSAO,
         DEBUG_EMISSIVE,
