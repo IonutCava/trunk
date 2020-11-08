@@ -78,7 +78,7 @@ public:
 
     }
 
-    size_t getHash() const noexcept final;
+    size_t getHash() const noexcept override;
 
     vectorEASTL<ShaderModuleDescriptor> _modules;
 };

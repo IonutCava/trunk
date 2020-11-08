@@ -58,27 +58,27 @@ class glVertexArray final : public VertexBuffer,
     explicit glVertexArray(GFXDevice& context);
     ~glVertexArray();
 
-    bool create(bool staticDraw = true) final;
+    bool create(bool staticDraw = true) override;
 
     /// Never call Refresh() just queue it and the data will update before drawing
-    bool queueRefresh() final {
+    bool queueRefresh() override {
         _refreshQueued = true;
         return true;
     }
 
    protected:
     friend class GFXDevice;
-    void draw(const GenericDrawCommand& commands, U32 cmdBufferOffset) final;
+    void draw(const GenericDrawCommand& commands, U32 cmdBufferOffset) override;
 
    protected:
     friend class GL_API;
-    void reset() final;
+    void reset() override;
     /// Prepare data for upload
-    bool refresh() final;
+    bool refresh() override;
     /// Create vao objects
     void upload();
     /// Internally create the VB
-    bool createInternal() final;
+    bool createInternal() override;
     /// Enable full VAO based VB (all pointers are tracked by VAO's)
     void uploadVBAttributes(GLuint VAO);
     

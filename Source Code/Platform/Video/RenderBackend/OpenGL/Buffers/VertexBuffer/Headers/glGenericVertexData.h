@@ -43,13 +43,13 @@ namespace Divide {
 class glGenericVertexData final : public GenericVertexData,
                                   public glVertexDataContainer {
     struct BufferBindConfig {
-        BufferBindConfig() : BufferBindConfig(0, 0, 0)
+        BufferBindConfig() noexcept : BufferBindConfig(0, 0, 0)
         {
         }
 
         BufferBindConfig(const GLuint buffer,
                          const size_t offset,
-                         const size_t stride)
+                         const size_t stride) noexcept 
             : _stride(stride),
               _offset(offset),
               _buffer(buffer)

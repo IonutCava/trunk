@@ -695,8 +695,7 @@ bool glFramebuffer::checkStatus() {
             }
             default: {
                 Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
-                return false;
-            }
+            } break;
         };
     }
 

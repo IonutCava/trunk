@@ -71,13 +71,13 @@ namespace detail {
     TEMP = LoadSave.XmlTree.get(TO_STRING(X), TEMP)
 
 #define GET_PARAM_ATTRIB(X, Y) \
-    X.Y = LoadSave.XmlTree.get(CONCAT(CONCAT(TO_STRING(X), ".<xmlattr>."), TO_STRING(Y)), X.Y)
+    X.Y = LoadSave.XmlTree.get(CONCAT(CONCAT(TO_STRING(X), ".<xmlattr>."), TO_STRING(Y)), (X.Y))
 
 #define PUT_PARAM(X) PUT_TEMP_PARAM(X, X)
 #define PUT_TEMP_PARAM(X, TEMP) \
     LoadSave.XmlTree.put(TO_STRING(X), TEMP);
 #define PUT_PARAM_ATTRIB(X, Y) \
-    LoadSave.XmlTree.put(CONCAT(CONCAT(TO_STRING(X), ".<xmlattr>."), TO_STRING(Y)), X.Y)
+    LoadSave.XmlTree.put(CONCAT(CONCAT(TO_STRING(X), ".<xmlattr>."), TO_STRING(Y)), (X.Y))
 #endif
 
 class IXMLSerializable {

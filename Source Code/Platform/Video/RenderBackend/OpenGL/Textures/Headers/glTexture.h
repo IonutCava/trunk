@@ -51,26 +51,26 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
-    bool unload() final;
+    bool unload() override;
 
-    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final;
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
 
-    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept final;
+    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept override;
 
-    void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) final;
+    void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override;
 
-    void loadData(const ImageTools::ImageData& imageData) final;
+    void loadData(const ImageTools::ImageData& imageData) override;
 
-    void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) final;
+    void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override;
 
     static void copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params);
 
    protected:
-    void threadedLoad() final;
+    void threadedLoad() override;
     void reserveStorage() const;
 
     void processTextureType() noexcept;
-    void validateDescriptor() final;
+    void validateDescriptor() override;
     void loadDataCompressed(const ImageTools::ImageData& imageData);
 
     void loadDataUncompressed(const ImageTools::ImageData& imageData) const;

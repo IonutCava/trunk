@@ -91,12 +91,12 @@ class glFramebuffer final : public RenderTarget,
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
                   GFXDataFormat dataType,
-                  bufferPtr outData) const final;
+                  bufferPtr outData) const override;
 
-    void blitFrom(const RTBlitParams& params) final;
+    void blitFrom(const RTBlitParams& params) override;
 
     /// Bake in all settings and attachments to prepare it for rendering
-    bool create() final;
+    bool create() override;
 
     BindingState getAttachmentState(GLenum binding) const;
     void toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering);
@@ -116,8 +116,8 @@ protected:
 
     void setAttachmentState(GLenum binding, BindingState state);
 
-    void clear(const RTClearDescriptor& descriptor) final;
-    void setDefaultState(const RTDrawDescriptor& drawPolicy) final;
+    void clear(const RTClearDescriptor& descriptor) override;
+    void setDefaultState(const RTDrawDescriptor& drawPolicy) override;
 
     void toggleAttachments();
 

@@ -66,7 +66,7 @@ class Plane {
         NEGATIVE_SIDE
     };
 
-    Plane() : Plane(WORLD_Y_AXIS, static_cast<T>(0))
+    Plane() : Plane(Divide::WORLD_Y_AXIS, static_cast<T>(0))
     {
     }
 
@@ -187,7 +187,7 @@ template<size_t N>
 using PlaneList = std::array<Plane<F32>, N>;
 using PlaneDynamicList = vectorEASTL<Plane<F32>>;
 
-static const Plane<F32> DEFAULT_PLANE = { WORLD_Y_AXIS, 0.0f };
+static const Plane<F32> DEFAULT_PLANE = {Divide::WORLD_Y_AXIS, 0.0f };
 };  // namespace Divide
 
 #endif

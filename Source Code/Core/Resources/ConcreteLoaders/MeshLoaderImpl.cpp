@@ -12,7 +12,7 @@
 namespace Divide {
 
 struct MeshLoadData {
-    explicit MeshLoadData(Mesh_ptr mesh,
+    explicit MeshLoadData(const Mesh_ptr& mesh,
                           ResourceCache* cache,
                           PlatformContext* context,
                           const ResourceDescriptor& descriptor)

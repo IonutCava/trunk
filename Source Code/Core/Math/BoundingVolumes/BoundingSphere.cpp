@@ -4,15 +4,13 @@
 
 namespace Divide {
 BoundingSphere::BoundingSphere() noexcept
-    : _visibility(false), _dirty(true), _radius(0.0f)
+    : _radius(0.0f)
 {
     _center.reset();
 }
 
 BoundingSphere::BoundingSphere(const vec3<F32>& center, const F32 radius) noexcept
-    : _visibility(false),
-      _dirty(true),
-      _center(center),
+    : _center(center),
       _radius(radius)
 {
 }
@@ -27,24 +25,6 @@ BoundingSphere::BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept
     : BoundingSphere()
 {
     createFromPoints(points);
-}
-
-BoundingSphere::BoundingSphere(const BoundingSphere& s) noexcept {
-    // Lock w_lock(_lock);
-    this->_visibility = s._visibility;
-    this->_dirty = s._dirty;
-    this->_center = s._center;
-    this->_radius = s._radius;
-}
-
-BoundingSphere& BoundingSphere::operator=(const BoundingSphere& s) noexcept {
-    // Lock w_lock(_lock);
-    this->_visibility = s._visibility;
-    this->_dirty = s._dirty;
-    this->_center = s._center;
-    this->_radius = s._radius;
-
-    return *this;
 }
 
 bool BoundingSphere::containsBoundingBox(const BoundingBox& AABB) const noexcept {

@@ -34,13 +34,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORE_NON_MOVABLE_H_
 
 namespace Divide {
-    /// Inherit from this class to avoid any form of object moving.
-    /// This isn't needed, generraly, but helps with being specific with certain code
-    class NonMovable {
-    protected:
-        NonMovable(NonMovable&&) = delete;
-        NonMovable& operator=(NonMovable&&) = delete;
-    };
+
+/// Inherit from this class to avoid any form of object moving.
+/// This isn't needed, generally, but helps with being specific with certain code
+struct NonMovable
+{
+    NonMovable(NonMovable&&) = delete;
+    NonMovable& operator = (NonMovable&&) = delete;
+
+    NonMovable(const NonMovable&) = default;
+    NonMovable& operator=(const NonMovable&) = default;
+
+protected:
+    /*constexpr */ NonMovable() = default;
+    /*virtual*/ ~NonMovable() = default;
+};
 
 };  // namespace Divide
 

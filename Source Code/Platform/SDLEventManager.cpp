@@ -25,9 +25,9 @@ namespace Divide {
         const U64 targetID = listener.listenerID();
 
         const auto *const it = eastl::find_if(
-            eastl::cbegin(s_eventListeners), eastl::cend(s_eventListeners), [targetID](SDLEventListener* listener)
+            cbegin(s_eventListeners), cend(s_eventListeners), [targetID](SDLEventListener* l)
             {
-                return listener && listener->listenerID() == targetID;
+                return l && l->listenerID() == targetID;
             });
         assert(it != eastl::cend(s_eventListeners));
 

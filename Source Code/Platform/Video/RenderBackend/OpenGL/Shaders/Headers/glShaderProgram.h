@@ -76,9 +76,9 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     }
 
     /// Make sure this program is ready for deletion
-    bool unload() final;
+    bool unload() override;
     /// Check every possible combination of flags to make sure this program can be used for rendering
-    bool isValid() const final;
+    bool isValid() const override;
 
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
@@ -110,10 +110,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void validatePostBind();
 
     bool shouldRecompile() const;
-    bool recompile(bool force) final;
+    bool recompile(bool force) override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
     /// load the corresponding effects
-    bool load() final;
+    bool load() override;
     /// This should be called in the loading thread, but some issues are still
     /// present, and it's not recommended (yet)
     void threadedLoad(bool reloadExisting);

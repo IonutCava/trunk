@@ -33,7 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SDL_EVENT_LISTENER_H_
 #define _SDL_EVENT_LISTENER_H_
 
-#include <SDL/include/SDL_events.h>
+#include <sdl/include/SDL_events.h>
 
 namespace Divide {
 

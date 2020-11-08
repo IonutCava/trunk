@@ -17,7 +17,6 @@
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "GUI/Headers/GUIText.h"
-#include "Rendering/Lighting/Headers/LightPool.h"
 #include "Utility/Headers/Localization.h"
 
 #include <SDL_video.h>

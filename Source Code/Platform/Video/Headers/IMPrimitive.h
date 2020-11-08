@@ -65,8 +65,6 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
 
     void texture(const Texture& texture, size_t samplerHash);
 
-    virtual void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) = 0;
-
     virtual void beginBatch(bool reserveBuffers, 
                             U32 vertexCount,
                             U32 attributeCount) = 0;

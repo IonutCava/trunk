@@ -33,8 +33,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _CORE_MATH_DIMENSION_H
 #define _CORE_MATH_DIMENSION_H
 
-#include <cegui/Vector.h>
-#include <cegui/Size.h>
+#include <CEGUI/Vector.h>
+#include <CEGUI/Size.h>
 
 namespace Divide {
     // ToDo: We need our own ... -Ionut

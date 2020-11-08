@@ -308,7 +308,7 @@ inline void ByteBuffer::put(const size_t pos, const Byte *src, const size_t cnt)
 //private:
 template <typename T>
 void ByteBuffer::append(const T& value) {
-    append((Byte*)(&value), sizeof(T));
+    append((const Byte*)(&value), sizeof(T));
 }
 
 //specializations

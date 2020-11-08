@@ -111,8 +111,9 @@ bool Scene::onShutdown() {
 }
 
 bool Scene::frameStarted() {
-    //UniqueLock<Mutex> lk(_perFrameArenaMutex);
-    //_perFrameArena.clear();
+    UniqueLock<Mutex> lk(_perFrameArenaMutex);
+    _perFrameArena.clear();
+
     return true;
 }
 
@@ -130,7 +131,7 @@ bool Scene::idle() {  // Called when application is idle
         }
     }
 
-    _lightPool->idle();
+    LightPool::idle();
 
     {
         SharedLock<SharedMutex> r_lock(_tasksMutex);
@@ -140,26 +141,25 @@ bool Scene::idle() {  // Called when application is idle
     }
 
     UniqueLock<SharedMutex> r_lock(_tasksMutex);
-    _tasks.erase(std::remove_if(eastl::begin(_tasks),
-                                eastl::end(_tasks),
-                                [](Task* handle) -> bool { 
-                                    return handle != nullptr && Finished(*handle);
-                                }),
-                eastl::end(_tasks));
+    _tasks.erase(std::remove_if(begin(_tasks),
+                                     end(_tasks),
+                                     [](Task* handle) -> bool { 
+                                              return handle != nullptr && Finished(*handle);
+                                          }),
+                 end(_tasks));
 
     return true;
 }
 
-void Scene::addMusic(MusicType type, const Str64& name, const ResourcePath& srcFile) const {
+void Scene::addMusic(const MusicType type, const Str64& name, const ResourcePath& srcFile) const {
     const auto[musicFile, musicFilePath] = splitPathToNameAndLocation(srcFile);
 
     ResourceDescriptor music(name);
     music.assetName(musicFile);
     music.assetLocation(musicFilePath);
     music.flag(true);
-    hashAlg::insert(state()->music(type),
-                    _ID(name.c_str()),
-                    CreateResource<AudioDescriptor>(_resCache, music));
+
+    insert(state()->music(type), _ID(name.c_str()), CreateResource<AudioDescriptor>(_resCache, music));
 }
 
 bool Scene::saveNodeToXML(const SceneGraphNode* node) const {
@@ -171,7 +171,7 @@ bool Scene::loadNodeFromXML(SceneGraphNode* node) const {
     return sceneGraph()->loadNodeFromXML(assetsFile, node);
 }
 
-bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const {
+bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) const {
     using boost::property_tree::ptree;
     const char* assetsFile = "assets.xml";
 
@@ -196,8 +196,7 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
         NOP();
     }
 
-    // A scene does not necessarily need external data files
-    // Data can be added in code for simple scenes
+    // A scene does not necessarily need external data files. Data can be added in code for simple scenes
     {
         if (msgCallback) {
             msgCallback("Saving scene settings ...");
@@ -243,6 +242,10 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
 
         if (copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true)) {
             XML::writeXML(sceneDataFile.c_str(), pt);
+        } else {
+            if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
         }
     }
 
@@ -256,9 +259,17 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
         if (msgCallback) {
             msgCallback("Saving music data ...");
         }
-        ptree pt;
+
+        ptree pt = {};
+        ACKNOWLEDGE_UNUSED(pt); //ToDo: Save music data :)
+
+
         if (copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true)) {
             XML::writeXML((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt);
+        } else {
+            if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
         }
     }
 
@@ -267,16 +278,15 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view> msgCallback, DELEGATE
     if (finishCallback) {
         finishCallback(true);
     }
+
     return true;
 }
 
 bool Scene::loadXML(const Str256& name) {
-    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
     Configuration& config = _context.config();
-
     ParamHandler& par = _context.paramHandler();
 
-    boost::property_tree::ptree pt;
+    const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
 
     Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), name.c_str());
     const ResourcePath sceneLocation(scenePath + "/" + name.c_str());
@@ -290,6 +300,7 @@ bool Scene::loadXML(const Str256& name) {
         return true;
     }
 
+    boost::property_tree::ptree pt;
     XML::readXML(sceneDataFile.c_str(), pt);
 
     state()->renderState().grassVisibility(pt.get("vegetation.grassVisibility", 1000.0f));
@@ -354,6 +365,7 @@ bool Scene::loadXML(const Str256& name) {
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.z", lodThresholds.z),
                           pt.get<U16>("lod.lodThresholds.<xmlattr>.w", lodThresholds.w));
     }
+
     state()->renderState().lodThresholds().set(lodThresholds);
     sceneGraph()->loadFromXML(pt.get("assets", "assets.xml").c_str());
     XML::loadMusicPlaylist(sceneLocation.str(), pt.get("musicPlaylist", ""), this, config);
@@ -361,46 +373,13 @@ bool Scene::loadXML(const Str256& name) {
     return true;
 }
 
-namespace {
-    inline bool IsPrimitive(U64 nameHash) {
-        constexpr std::array<U64, 3> pritimiveNames = {
-            _ID("BOX_3D"),
-            _ID("QUAD_3D"),
-            _ID("SPHERE_3D")
-        };
-
-        for (U64 it : pritimiveNames) {
-            if (nameHash ==  it) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-};
-
 SceneNode_ptr Scene::createNode(const SceneNodeType type, const ResourceDescriptor& descriptor) const {
     switch (type) {
-        case SceneNodeType::TYPE_TRANSFORM: 
-        {
-            return nullptr;
-        };
-        case SceneNodeType::TYPE_WATER:
-        {
-            return CreateResource<WaterPlane>(_resCache, descriptor);
-        };
-        case SceneNodeType::TYPE_TRIGGER:
-        {
-            return CreateResource<Trigger>(_resCache, descriptor);
-        };
-        case SceneNodeType::TYPE_PARTICLE_EMITTER:
-        {
-            return CreateResource<ParticleEmitter>(_resCache, descriptor);
-        };
-        case SceneNodeType::TYPE_INFINITEPLANE:
-        {
-            return CreateResource<InfinitePlane>(_resCache, descriptor);
-        };
+        case SceneNodeType::TYPE_TRANSFORM:        return nullptr;
+        case SceneNodeType::TYPE_WATER:            return CreateResource<WaterPlane>(_resCache, descriptor);
+        case SceneNodeType::TYPE_TRIGGER:          return CreateResource<Trigger>(_resCache, descriptor);
+        case SceneNodeType::TYPE_PARTICLE_EMITTER: return CreateResource<ParticleEmitter>(_resCache, descriptor);
+        case SceneNodeType::TYPE_INFINITEPLANE:    return CreateResource<InfinitePlane>(_resCache, descriptor);
         default: break;
     }
     // Warning?
@@ -430,18 +409,36 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
             _loadingTasks.fetch_sub(1);
         };
 
-        ResourcePath modelName{ nodeTree.get("model", "") };
+        const auto IsPrimitive = [](const U64 nameHash) {
+            constexpr std::array<U64, 3> primitiveNames = {
+                _ID("BOX_3D"),
+                _ID("QUAD_3D"),
+                _ID("SPHERE_3D")
+            };
+
+            for (const U64 it : primitiveNames) {
+                if (nameHash == it) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        const ResourcePath modelName { nodeTree.get("model", "") };
 
         SceneNode_ptr ret = nullptr;
-
         bool skipAdd = true;
+
         if (IsPrimitive(sceneNode.typeHash)) {// Primitive types (only top level)
             normalMask |= to_base(ComponentType::RENDERING);
 
             if (!modelName.empty()) {
                 _loadingTasks.fetch_add(1);
+
                 ResourceDescriptor item(sceneNode.name);
                 item.assetName(modelName);
+
                 if (Util::CompareIgnoreCase(modelName, "BOX_3D")) {
                     ret = CreateResource<Box3D>(_resCache, item);
                 } else if (Util::CompareIgnoreCase(modelName, "SPHERE_3D")) {
@@ -452,10 +449,12 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                     quadMask.b[0] = 1;
                     item.mask(quadMask);
                     ret = CreateResource<Quad3D>(_resCache, item);
-                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
-                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
-                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
-                    static_cast<Quad3D*>(ret.get())->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
+
+                    Quad3D* quad = static_cast<Quad3D*>(ret.get());
+                    quad->setCorner(Quad3D::CornerLocation::TOP_LEFT,     vec3<F32>(0, 1, 0));
+                    quad->setCorner(Quad3D::CornerLocation::TOP_RIGHT,    vec3<F32>(1, 1, 0));
+                    quad->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,  vec3<F32>(0, 0, 0));
+                    quad->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
                 } else {
                     Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), sceneNode.name.c_str());
                 }
@@ -480,20 +479,20 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                 } break;
                 case _ID("VEGETATION_GRASS"): {
                     normalMask |= to_base(ComponentType::RENDERING);
-                    NOP(); //we rebuild grass everytime
+                    NOP(); //we rebuild grass every time
                 } break;
                 case _ID("INFINITE_PLANE"): {
                     _loadingTasks.fetch_add(1);
                     normalMask |= to_base(ComponentType::RENDERING);
                     addInfPlane(parent, nodeTree, sceneNode.name);
-                }  break;
+                } break;
                 case _ID("WATER"): {
                     _loadingTasks.fetch_add(1);
                     normalMask |= to_base(ComponentType::RENDERING);
                     addWater(parent, nodeTree, sceneNode.name);
                 } break;
                 case _ID("MESH"): {
-                    // No rendering component for meshes. Only for submeshes
+                    // No rendering component for meshes. Only for SubMeshes
                     //normalMask |= to_base(ComponentType::RENDERING);
                     if (!modelName.empty()) {
                         _loadingTasks.fetch_add(1);
@@ -509,7 +508,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
 
                     skipAdd = false;
                 } break;
-                // Submesh (change component properties, as the meshes should already be loaded)
+                // SubMesh (change component properties, as the meshes should already be loaded)
                 case _ID("SUBMESH"): {
                     while (parent->getNode().getState() != ResourceState::RES_LOADED) {
                         if (parentTask != nullptr) {
@@ -542,7 +541,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
             nodeDescriptor._node = ret;
 
             for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
-                ComponentType type = ComponentType::_from_integral(1u << i);
+                const ComponentType type = ComponentType::_from_integral(1u << i);
                 if (nodeTree.count(type._to_string()) != 0) {
                     nodeDescriptor._componentMask |= 1 << i;
                 }
@@ -564,9 +563,9 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
         descriptor._partitionSize = 3u;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
-        descriptor._cbk = [this, &sceneNode, &crtNode](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [this, &sceneNode, &crtNode](const Task* innerTask, const U32 start, const U32 end) {
                                 for (U32 i = start; i < end; ++i) {
-                                    loadAsset(parentTask, sceneNode.children[i], crtNode);
+                                    loadAsset(innerTask, sceneNode.children[i], crtNode);
                                 }
                             };
         parallel_for(_context, descriptor);
@@ -575,11 +574,12 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
 
 SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                                           std::shared_ptr<ParticleData> data,
-                                          SceneGraphNode* parentNode) {
+                                          SceneGraphNode* parentNode) const
+{
     DIVIDE_ASSERT(!name.empty(),
                   "Scene::addParticleEmitter error: invalid name specified!");
 
-    ResourceDescriptor particleEmitter(name);
+    const ResourceDescriptor particleEmitter(name);
     std::shared_ptr<ParticleEmitter> emitter = CreateResource<ParticleEmitter>(_resCache, particleEmitter);
 
     DIVIDE_ASSERT(emitter != nullptr,
@@ -603,18 +603,18 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
     return parentNode->addChildNode(particleNodeDescriptor);
 }
 
-void Scene::addTerrain(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& name) {
-    Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), name.c_str());
+void Scene::addTerrain(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
+    Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), nodeName.c_str());
 
     // Load the rest of the terrain
-    std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((name + "_descriptor").c_str());
-    if (!ter->loadFromXML(pt, name.c_str())) {
+    std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((nodeName + "_descriptor").c_str());
+    if (!ter->loadFromXML(pt, nodeName.c_str())) {
         return;
     }
 
-    const auto registerTerrain = [this, name, &parentNode, pt](CachedResource* res) {
+    const auto registerTerrain = [this, nodeName, &parentNode, pt](CachedResource* res) {
         SceneGraphNodeDescriptor terrainNodeDescriptor;
-        terrainNodeDescriptor._name = name;
+        terrainNodeDescriptor._name = nodeName;
         terrainNodeDescriptor._node = std::static_pointer_cast<Terrain>(res->shared_from_this());
         terrainNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
         terrainNodeDescriptor._componentMask = to_base(ComponentType::NAVIGATION) |
@@ -644,7 +644,7 @@ void Scene::addTerrain(SceneGraphNode* parentNode, boost::property_tree::ptree p
     ret->addStateCallback(ResourceState::RES_LOADED, registerTerrain);
 }
 
-void Scene::toggleFlashlight(PlayerIndex idx) {
+void Scene::toggleFlashlight(const PlayerIndex idx) {
     SceneGraphNode*& flashLight = _flashLight[idx];
     if (!flashLight) {
         SceneGraphNodeDescriptor lightNodeDescriptor;
@@ -676,7 +676,7 @@ void Scene::toggleFlashlight(PlayerIndex idx) {
     flashLight->get<SpotLightComponent>()->toggleEnabled();
 }
 
-SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
+SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
@@ -700,7 +700,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, boost::property_tree::
     return skyNode;
 }
 
-void Scene::addWater(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
+void Scene::addWater(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
     auto registerWater = [this, nodeName, &parentNode, pt](CachedResource* res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
@@ -726,7 +726,7 @@ void Scene::addWater(SceneGraphNode* parentNode, boost::property_tree::ptree pt,
     ret->addStateCallback(ResourceState::RES_LOADED, registerWater);
 }
 
-SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName) {
+SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
     ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
 
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
@@ -734,6 +734,7 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, boost::property_t
     planeDescriptor.ID(to_U32(baseCamera->getZPlanes().max));
 
     auto planeItem = CreateResource<InfinitePlane>(_resCache, planeDescriptor);
+
     DIVIDE_ASSERT(planeItem != nullptr, "Scene::addInfPlane error: Could not create infinite plane resource!");
     planeItem->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) noexcept {
         ACKNOWLEDGE_UNUSED(res);
@@ -757,9 +758,10 @@ SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, boost::property_t
 U16 Scene::registerInputActions() {
     _input->flushCache();
 
-    const auto none = [](InputParams param) noexcept {};
-    const auto deleteSelection = [this](InputParams param) {
-        PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
+    const auto none = [](const InputParams param) noexcept { ACKNOWLEDGE_UNUSED(param); };
+
+    const auto deleteSelection = [this](const InputParams param) {
+        const PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
         Selections& playerSelections = _currentSelection[idx];
         for (U8 i = 0u; i < playerSelections._selectionCount; ++i) {
             _sceneGraph->removeNode(playerSelections._selections[i]);
@@ -768,54 +770,72 @@ U16 Scene::registerInputActions() {
         playerSelections._selections.fill(-1);
     };
 
-    const auto increaseCameraSpeed = [this](InputParams param){
+    const auto increaseCameraSpeed = [this](const InputParams param){
         FreeFlyCamera* cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->camera();
 
-        F32 currentCamMoveSpeedFactor = cam->getMoveSpeedFactor();
+        const F32 currentCamMoveSpeedFactor = cam->getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor < 50) {
             cam->setMoveSpeedFactor(currentCamMoveSpeedFactor + 1.0f);
             cam->setTurnSpeedFactor(cam->getTurnSpeedFactor() + 1.0f);
         }
     };
 
-    const auto decreaseCameraSpeed = [this](InputParams param) {
+    const auto decreaseCameraSpeed = [this](const InputParams param) {
         FreeFlyCamera* cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->camera();
 
-        F32 currentCamMoveSpeedFactor = cam->getMoveSpeedFactor();
+        const F32 currentCamMoveSpeedFactor = cam->getMoveSpeedFactor();
         if (currentCamMoveSpeedFactor > 1.0f) {
             cam->setMoveSpeedFactor(currentCamMoveSpeedFactor - 1.0f);
             cam->setTurnSpeedFactor(cam->getTurnSpeedFactor() - 1.0f);
         }
     };
 
-    const auto increaseResolution = [this](InputParams param) {_context.gfx().increaseResolution();};
-    const auto decreaseResolution = [this](InputParams param) {_context.gfx().decreaseResolution();};
-    const auto moveForward = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);};
-    const auto moveBackwards = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE);};
-    const auto stopMoveFWDBCK = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE);};
-    const auto strafeLeft = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE);};
-    const auto strafeRight = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE);};
-    const auto stopStrafeLeftRight = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE);};
-    const auto rollCCW = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE);};
-    const auto rollCW = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE);};
-    const auto stopRollCCWCW = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE);};
-    const auto turnLeft = [this](InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE);};
-    const auto turnRight = [this](InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE);};
-    const auto stopTurnLeftRight = [this](InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE);};
-    const auto turnUp = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE);};
-    const auto turnDown = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE);};
-    const auto stopTurnUpDown = [this](InputParams param) {state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE);};
-    const auto togglePauseState = [this](InputParams param){
-        _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false));
+    const auto increaseResolution = [this](const InputParams param) { ACKNOWLEDGE_UNUSED(param); _context.gfx().increaseResolution(); };
+    const auto decreaseResolution = [this](const InputParams param) { ACKNOWLEDGE_UNUSED(param); _context.gfx().decreaseResolution(); };
+
+    const auto moveForward    = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE); };
+    const auto moveBackwards  = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NEGATIVE); };
+    const auto stopMoveFWDBCK = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::NONE); };
+
+    const auto strafeLeft          = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NEGATIVE); };
+    const auto strafeRight         = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE); };
+    const auto stopStrafeLeftRight = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE); };
+
+    const auto rollCCW       = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE); };
+    const auto rollCW        = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE); };
+    const auto stopRollCCWCW = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE); };
+
+    const auto turnLeft          = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE); };
+    const auto turnRight         = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::POSITIVE); };
+    const auto stopTurnLeftRight = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NONE); };
+
+    const auto turnUp         = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NEGATIVE); };
+    const auto turnDown       = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE); };
+    const auto stopTurnUpDown = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE); };
+
+    const auto togglePauseState = [this](const InputParams param){ _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false)); };
+
+    const auto takeScreenShot = [this](const InputParams param) { ACKNOWLEDGE_UNUSED(param); _context.gfx().screenshot("screenshot_"); };
+
+    const auto toggleFullScreen = [this](const InputParams param) { ACKNOWLEDGE_UNUSED(param); _context.gfx().toggleFullScreen(); };
+
+    const auto toggleFlashLight = [this](const InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
+
+    const auto lockCameraToMouse      = [this](const InputParams  param) {
+        if (!lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true)) {
+            NOP();
+        }
     };
-    const auto takeScreenshot = [this](InputParams param) { _context.gfx().screenshot("screenshot_"); };
-    const auto toggleFullScreen = [this](InputParams param) { _context.gfx().toggleFullScreen(); };
-    const auto toggleFlashLight = [this](InputParams param) { toggleFlashlight(getPlayerIndexForDevice(param._deviceIndex)); };
-    const auto lockCameraToMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), true); };
-    const auto releaseCameraFromMouse = [this](InputParams  param) { lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false); };
-    const auto shutdown = [this](InputParams param) noexcept { _context.app().RequestShutdown();};
-    const auto povNavigation = [this](InputParams param) {
-        U32 povMask = param._var[0];
+    const auto releaseCameraFromMouse = [this](const InputParams  param) {
+        if (!lockCameraToPlayerMouse(getPlayerIndexForDevice(param._deviceIndex), false)) {
+            NOP();
+        }
+    };
+
+    const auto shutdown = [this](const InputParams param) noexcept { ACKNOWLEDGE_UNUSED(param); _context.app().RequestShutdown();};
+
+    const auto povNavigation = [this](const InputParams param) {
+        const U32 povMask = param._var[0];
 
         if (povMask & to_base(Input::JoystickPovDirection::UP)) {  // Going up
             state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveFB(MoveDirection::POSITIVE);
@@ -835,11 +855,11 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    const auto axisNavigation = [this](InputParams param) {
-        I32 axisABS = param._var[0];
-        I32 axis = param._var[1];
-        //bool isGamepad = param._var[2] == 1;
-        I32 deadZone = param._var[3];
+    const auto axisNavigation = [this](const InputParams param) {
+        const I32 axisABS = param._var[0];
+        const I32 axis = param._var[1];
+        //const bool isGamePad = param._var[2] == 1;
+        const I32 deadZone = param._var[3];
 
         switch (axis) {
             case 0: {
@@ -883,75 +903,78 @@ U16 Scene::registerInputActions() {
         }
     };
 
-    const auto toggleDebugInterface = [this](InputParams param) noexcept {
+    const auto toggleDebugInterface = [this](const InputParams param) noexcept {
+        ACKNOWLEDGE_UNUSED(param);
+
         _context.debug().toggle(!_context.debug().enabled());
     };
 
-    const auto toggleEditor = [this](InputParams param) {
+    const auto toggleEditor = [this](const InputParams param) {
+        ACKNOWLEDGE_UNUSED(param);
+
         if_constexpr(Config::Build::ENABLE_EDITOR) {
             _context.editor().toggle(!_context.editor().running());
         }
     };
 
-    const auto toggleConsole = [this](InputParams param) {
+    const auto toggleConsole = [this](const InputParams param) {
+        ACKNOWLEDGE_UNUSED(param);
+
         if_constexpr(Config::Build::ENABLE_EDITOR) {
             _context.gui().getConsole().setVisible(!_context.gui().getConsole().isVisible());
         }
     };
 
-    const auto dragSelectBegin = [this](InputParams param) {
-        beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), vec2<I32>(param._var[2], param._var[3]));
-    };
-
-    const auto dragSelectEnd = [this](InputParams param) {
-        endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true);
-    };
+    const auto dragSelectBegin = [this](const InputParams param) { beginDragSelection(getPlayerIndexForDevice(param._deviceIndex), vec2<I32>(param._var[2], param._var[3])); };
+    const auto dragSelectEnd   = [this](const InputParams param) { endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true); };
 
     InputActionList& actions = _input->actionList();
-    actions.registerInputAction(0,  none);
-    actions.registerInputAction(1,  deleteSelection);
-    actions.registerInputAction(2,  increaseCameraSpeed);
-    actions.registerInputAction(3,  decreaseCameraSpeed);
-    actions.registerInputAction(4,  increaseResolution);
-    actions.registerInputAction(5,  decreaseResolution);
-    actions.registerInputAction(6,  moveForward);
-    actions.registerInputAction(7,  moveBackwards);
-    actions.registerInputAction(8,  stopMoveFWDBCK);
-    actions.registerInputAction(9,  strafeLeft);
-    actions.registerInputAction(10, strafeRight);
-    actions.registerInputAction(11, stopStrafeLeftRight);
-    actions.registerInputAction(12, rollCCW);
-    actions.registerInputAction(13, rollCW);
-    actions.registerInputAction(14, stopRollCCWCW);
-    actions.registerInputAction(15, turnLeft);
-    actions.registerInputAction(16, turnRight);
-    actions.registerInputAction(17, stopTurnLeftRight);
-    actions.registerInputAction(18, turnUp);
-    actions.registerInputAction(19, turnDown);
-    actions.registerInputAction(20, stopTurnUpDown);
-    actions.registerInputAction(21, togglePauseState);
-    actions.registerInputAction(22, takeScreenshot);
-    actions.registerInputAction(23, toggleFullScreen);
-    actions.registerInputAction(24, toggleFlashLight);
-    actions.registerInputAction(25, lockCameraToMouse);
-    actions.registerInputAction(26, releaseCameraFromMouse);
-    actions.registerInputAction(27, shutdown);
-    actions.registerInputAction(28, povNavigation);
-    actions.registerInputAction(29, axisNavigation);
-    actions.registerInputAction(30, toggleDebugInterface);
-    actions.registerInputAction(31, toggleEditor);
-    actions.registerInputAction(32, toggleConsole);
-    actions.registerInputAction(33, dragSelectBegin);
-    actions.registerInputAction(34, dragSelectEnd);
+    U16 actionID = 0;
+    actions.registerInputAction(actionID++, none);                   // 0
+    actions.registerInputAction(actionID++, deleteSelection);        // 1
+    actions.registerInputAction(actionID++, increaseCameraSpeed);    // 2
+    actions.registerInputAction(actionID++, decreaseCameraSpeed);    // 3
+    actions.registerInputAction(actionID++, increaseResolution);     // 4
+    actions.registerInputAction(actionID++, decreaseResolution);     // 5
+    actions.registerInputAction(actionID++, moveForward);            // 6
+    actions.registerInputAction(actionID++, moveBackwards);          // 7
+    actions.registerInputAction(actionID++, stopMoveFWDBCK);         // 8
+    actions.registerInputAction(actionID++, strafeLeft);             // 9
+    actions.registerInputAction(actionID++, strafeRight);            // 10
+    actions.registerInputAction(actionID++, stopStrafeLeftRight);    // 11
+    actions.registerInputAction(actionID++, rollCCW);                // 12
+    actions.registerInputAction(actionID++, rollCW);                 // 13
+    actions.registerInputAction(actionID++, stopRollCCWCW);          // 14
+    actions.registerInputAction(actionID++, turnLeft);               // 15
+    actions.registerInputAction(actionID++, turnRight);              // 16
+    actions.registerInputAction(actionID++, stopTurnLeftRight);      // 17
+    actions.registerInputAction(actionID++, turnUp);                 // 18
+    actions.registerInputAction(actionID++, turnDown);               // 19
+    actions.registerInputAction(actionID++, stopTurnUpDown);         // 20
+    actions.registerInputAction(actionID++, togglePauseState);       // 21
+    actions.registerInputAction(actionID++, takeScreenShot);         // 22
+    actions.registerInputAction(actionID++, toggleFullScreen);       // 23
+    actions.registerInputAction(actionID++, toggleFlashLight);       // 24
+    actions.registerInputAction(actionID++, lockCameraToMouse);      // 25
+    actions.registerInputAction(actionID++, releaseCameraFromMouse); // 26
+    actions.registerInputAction(actionID++, shutdown);               // 27
+    actions.registerInputAction(actionID++, povNavigation);          // 28
+    actions.registerInputAction(actionID++, axisNavigation);         // 29
+    actions.registerInputAction(actionID++, toggleDebugInterface);   // 30
+    actions.registerInputAction(actionID++, toggleEditor);           // 31
+    actions.registerInputAction(actionID++, toggleConsole);          // 32
+    actions.registerInputAction(actionID++, dragSelectBegin);        // 33
+    actions.registerInputAction(actionID++, dragSelectEnd);          // 34
 
-    return 37;
+    return actionID;
 }
 
 void Scene::loadKeyBindings() {
     XML::loadDefaultKeyBindings((Paths::g_xmlDataLocation + "keyBindings.xml").str(), this);
 }
 
-bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
+bool Scene::lockCameraToPlayerMouse(const PlayerIndex index, const bool lockState) const
+{
     static bool hadWindowGrab = false;
     static vec2<I32> lastMousePosition;
 
@@ -977,30 +1000,32 @@ bool Scene::lockCameraToPlayerMouse(PlayerIndex index, bool lockState) {
 }
 
 void Scene::loadDefaultCamera() {
-    FreeFlyCamera* baseCamera = Camera::utilityCamera<FreeFlyCamera>(Camera::UtilityCamera::DEFAULT);
-    
+    const ParamHandler& par = _context.paramHandler();
     
     // Camera position is overridden in the scene's XML configuration file
-    if (!_context.paramHandler().isParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+    if (!par.isParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
         return;
     }
 
-    if (_context.paramHandler().getParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
-        baseCamera->setEye(vec3<F32>(
-            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.x").c_str())),
-            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.y").c_str())),
-            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.z").c_str()))));
-        vec2<F32> camOrientation(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())),
-            _context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str())));
-        baseCamera->setGlobalRotation(camOrientation.y /*yaw*/, camOrientation.x /*pitch*/);
+    FreeFlyCamera* baseCamera = Camera::utilityCamera<FreeFlyCamera>(Camera::UtilityCamera::DEFAULT);
+    if (par.getParam<bool>(_ID((resourceName() + ".options.cameraStartPositionOverride").c_str()))) {
+        baseCamera->setEye(
+            par.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.x").c_str())),
+            par.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.y").c_str())),
+            par.getParam<F32>(_ID((resourceName() + ".options.cameraStartPosition.z").c_str()))
+        );
+
+        baseCamera->setGlobalRotation(
+            par.getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.xOffsetDegrees").c_str())), //yaw
+            par.getParam<F32>(_ID((resourceName() + ".options.cameraStartOrientation.yOffsetDegrees").c_str()))  //pitch
+        );
     } else {
-        baseCamera->setEye(vec3<F32>(0, 50, 0));
+        baseCamera->setEye(0.f, 50.f, 0.f);
     }
 
-    baseCamera->setMoveSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
-    baseCamera->setTurnSpeedFactor(_context.paramHandler().getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-    baseCamera->setProjection(_context.config().runtime.verticalFOV, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
-
+    baseCamera->setMoveSpeedFactor(par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
+    baseCamera->setTurnSpeedFactor(par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
+    baseCamera->setProjection(_context.config().runtime.verticalFOV, { Camera::s_minNearZ, _context.config().runtime.cameraViewDistance });
 }
 
 bool Scene::load(const Str256& name) {
@@ -1030,7 +1055,7 @@ bool Scene::load(const Str256& name) {
                         };
     parallel_for(_context, descriptor);
 
-    WAIT_FOR_CONDITION(_loadingTasks.load() == 0u);
+    WAIT_FOR_CONDITION(_loadingTasks.load() == 0u)
 
     // We always add a sky
     const auto& skies = sceneGraph()->getNodesByType(SceneNodeType::TYPE_SKY);
@@ -1053,7 +1078,7 @@ bool Scene::load(const Str256& name) {
 
 bool Scene::unload() {
     _aiManager->stop();
-    WAIT_FOR_CONDITION(!_aiManager->running());
+    WAIT_FOR_CONDITION(!_aiManager->running())
 
     U32 totalLoadingTasks = _loadingTasks.load();
     while (totalLoadingTasks > 0) {
@@ -1116,11 +1141,11 @@ void Scene::rebuildShaders() {
     }
 }
 
-stringImpl Scene::getPlayerSGNName(PlayerIndex idx) {
+stringImpl Scene::GetPlayerSGNName(const PlayerIndex idx) {
     return Util::StringFormat(g_defaultPlayerName, idx + 1);
 }
 
-void Scene::currentPlayerPass(PlayerIndex idx) {
+void Scene::currentPlayerPass(const PlayerIndex idx) {
     //ToDo: These don't necessarily need to match -Ionut
     renderState().renderPass(idx);
     state()->playerPass(idx);
@@ -1153,8 +1178,7 @@ void Scene::onSetActive() {
     assert(_parent.getActivePlayerCount() == 0);
     addPlayerInternal(false);
 
-    static stringImpl originalTitle = _context.mainWindow().title();
-    _context.mainWindow().title("%s - %s", originalTitle.c_str(), resourceName().c_str());
+    _context.mainWindow().title("%s - %s", _context.mainWindow().title(), resourceName().c_str());
 }
 
 void Scene::onRemoveActive() {
@@ -1167,13 +1191,13 @@ void Scene::onRemoveActive() {
     input()->onRemoveActive();
 }
 
-void Scene::addPlayerInternal(bool queue) {
+void Scene::addPlayerInternal(const bool queue) {
     // Limit max player count
     if (_parent.getActivePlayerCount() == Config::MAX_LOCAL_PLAYER_COUNT) {
         return;
     }
 
-    stringImpl playerName = getPlayerSGNName(static_cast<PlayerIndex>(_parent.getActivePlayerCount()));
+    const stringImpl playerName = GetPlayerSGNName(static_cast<PlayerIndex>(_parent.getActivePlayerCount()));
     
     SceneGraphNode* playerSGN(_sceneGraph->findNode(playerName));
     if (!playerSGN) {
@@ -1209,7 +1233,7 @@ void Scene::onPlayerAdd(const Player_ptr& player) {
 }
 
 void Scene::onPlayerRemove(const Player_ptr& player) {
-    PlayerIndex idx = player->index();
+    const PlayerIndex idx = player->index();
 
     input()->onPlayerRemove(idx);
     state()->onPlayerRemove(idx);
@@ -1305,7 +1329,7 @@ bool Scene::updateCameraControls(const PlayerIndex idx) const {
 }
 
 void Scene::updateSceneState(const U64 deltaTimeUS) {
-    OPTICK_EVENT();
+    OPTICK_EVENT()
 
     _sceneTimerUS += deltaTimeUS;
     updateSceneStateInternal(deltaTimeUS);
@@ -1315,7 +1339,7 @@ void Scene::updateSceneState(const U64 deltaTimeUS) {
 }
 
 void Scene::onStartUpdateLoop(const U8 loopNumber) {
-    OPTICK_EVENT();
+    OPTICK_EVENT()
 
     _sceneGraph->onStartUpdateLoop(loopNumber);
 }
@@ -1335,9 +1359,11 @@ void Scene::onGainFocus() {
     //Add a focus flag and ignore redundant calls
 }
 
-void Scene::registerTask(Task& taskItem, bool start, TaskPriority priority) {
-    UniqueLock<SharedMutex> w_lock(_tasksMutex);
-    _tasks.push_back(&taskItem);
+void Scene::registerTask(Task& taskItem, const bool start, const TaskPriority priority) {
+    {
+        UniqueLock<SharedMutex> w_lock(_tasksMutex);
+        _tasks.push_back(&taskItem);
+    }
     if (start) {
         Start(taskItem, priority);
     }
@@ -1356,8 +1382,7 @@ void Scene::clearTasks() {
 
 void Scene::removeTask(Task& task) {
     UniqueLock<SharedMutex> w_lock(_tasksMutex);
-    vectorEASTL<Task*>::iterator it;
-    for (it = eastl::begin(_tasks); it != eastl::end(_tasks); ++it) {
+    for (vectorEASTL<Task*>::iterator it = begin(_tasks); it != end(_tasks); ++it) {
         if ((*it)->_id == task._id) {
             Wait(*(*it));
             _tasks.erase(it);
@@ -1367,28 +1392,25 @@ void Scene::removeTask(Task& task) {
 }
 
 void Scene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+    ACKNOWLEDGE_UNUSED(idx);
+    ACKNOWLEDGE_UNUSED(deltaTimeUS);
 }
 
 void Scene::processGUI(const U64 deltaTimeUS) {
     const D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
-    eastl::transform(eastl::begin(_guiTimersMS), eastl::end(_guiTimersMS), eastl::begin(_guiTimersMS),
-                    [delta](D64 timer) { return timer + delta; });
+    eastl::transform(begin(_guiTimersMS), end(_guiTimersMS), begin(_guiTimersMS), [delta](const D64 timer) { return timer + delta; });
 }
 
 void Scene::processTasks(const U64 deltaTimeUS) {
     const D64 delta = Time::MicrosecondsToMilliseconds<D64>(deltaTimeUS);
 
-    eastl::for_each(eastl::begin(_taskTimers),
-                    eastl::end(_taskTimers),
-                    [delta](D64& timer) {
-                        timer += delta;
-                    });
+    eastl::for_each(begin(_taskTimers), end(_taskTimers), [delta](D64& timer) { timer += delta; });
 
     if (_dayNightData._skyInstance != nullptr) {
-        static struct tm timeOfDay = { 0 };
+        static struct tm timeOfDay = {};
         if (_dayNightData._resetTime) {
-            time_t t = time(NULL);
+            time_t t = time(nullptr);
             timeOfDay = *localtime(&t);
             timeOfDay.tm_hour = _dayNightData._time._hour;
             timeOfDay.tm_min = _dayNightData._time._minutes;
@@ -1396,7 +1418,10 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             _dayNightData._timeAccumulator = Time::Seconds(1.1f);
         }
 
-        _dayNightData._timeAccumulator += Time::MillisecondsToSeconds<F32>(delta) * dayNightCycleEnabled() ? _dayNightData._speedFactor : 0.0f;
+        const F32 speedFactor = dayNightCycleEnabled() ? _dayNightData._speedFactor : 0.f;
+
+        _dayNightData._timeAccumulator += speedFactor * Time::MillisecondsToSeconds<F32>(delta);
+
         if (std::abs(_dayNightData._timeAccumulator) > Time::Seconds(1.f)) {
             timeOfDay.tm_sec += to_I32(_dayNightData._timeAccumulator);
             const time_t now = mktime(&timeOfDay); // normalize it
@@ -1412,6 +1437,7 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             light->enabled(true);
             light->castsShadows(shadowCaster);
 
+            // Morning
             if (IS_IN_RANGE_INCLUSIVE(details._intensity, 0.0f, 25.0f)) {
                 light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::WHITE.rgb, details._intensity / 25.f));
             }
@@ -1444,7 +1470,7 @@ void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bu
 }
 
 void Scene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    if (!Config::Build::IS_SHIPPING_BUILD) {
+    if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
             _octreeBoundingBoxes.resize(0);
             sceneGraph()->getOctree().getAllRegions(_octreeBoundingBoxes);
@@ -1452,9 +1478,8 @@ void Scene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX
             const size_t primitiveCount = _octreePrimitives.size();
             const size_t regionCount = _octreeBoundingBoxes.size();
             if (regionCount > primitiveCount) {
-                RenderStateBlock primitiveDescriptor;
                 PipelineDescriptor pipeDesc;
-                pipeDesc._stateHash = primitiveDescriptor.getHash();
+                pipeDesc._stateHash = RenderStateBlock::defaultHash();
                 pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
                 Pipeline* pipeline = _context.gfx().newPipeline(pipeDesc);
 
@@ -1480,7 +1505,7 @@ void Scene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX
     _lightPool->drawLightImpostors(stagePass._stage, bufferInOut);
 }
 
-bool Scene::checkCameraUnderwater(PlayerIndex idx) const {
+bool Scene::checkCameraUnderwater(const PlayerIndex idx) const {
     const Camera* crtCamera = Attorney::SceneManagerCameraAccessor::playerCamera(_parent, idx);
     return checkCameraUnderwater(*crtCamera);
 }
@@ -1634,9 +1659,11 @@ void Scene::onNodeDestroy(SceneGraphNode* node) {
     _parent.onNodeDestroy(node);
 }
 
-void Scene::resetSelection(PlayerIndex idx) {
+void Scene::resetSelection(const PlayerIndex idx) {
     Selections& playerSelections = _currentSelection[idx];
-    for (I8 i = 0; i < playerSelections._selectionCount; ++i) {
+    const U8 selectionCount = playerSelections._selectionCount;
+
+    for (U8 i = 0; i < selectionCount; ++i) {
         SceneGraphNode* node = sceneGraph()->findNode(playerSelections._selections[i]);
         if (node != nullptr) {
             node->clearFlag(SceneGraphNode::Flags::HOVERED, true);
@@ -1647,10 +1674,10 @@ void Scene::resetSelection(PlayerIndex idx) {
     playerSelections.reset();
 }
 
-void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
+void Scene::setSelected(const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& SGNs, const bool recursive) {
     Selections& playerSelections = _currentSelection[idx];
 
-    for (SceneGraphNode* sgn : sgns) {
+    for (SceneGraphNode* sgn : SGNs) {
         if (!sgn->hasFlag(SceneGraphNode::Flags::SELECTED)) {
             playerSelections._selections[playerSelections._selectionCount++] = sgn->getGUID();
             sgn->setFlag(SceneGraphNode::Flags::SELECTED, recursive);
@@ -1658,7 +1685,7 @@ void Scene::setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgn
     }
 }
 
-bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
+bool Scene::findSelection(const PlayerIndex idx, const bool clearOld) {
     // Clear old selection
     if (clearOld) {
         _parent.resetSelection(idx);
@@ -1687,8 +1714,9 @@ bool Scene::findSelection(PlayerIndex idx, bool clearOld) {
     return false;
 }
 
-void Scene::beginDragSelection(PlayerIndex idx, const vec2<I32>& mousePos) {
-    const bool editorRunning = !Config::Build::ENABLE_EDITOR || _context.editor().running();
+void Scene::beginDragSelection(const PlayerIndex idx, const vec2<I32>& mousePos) {
+    const bool editorRunning = Config::Build::ENABLE_EDITOR ? _context.editor().running() : false;
+
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         const Editor& editor = _context.editor();
         if (editor.running() && (!editor.scenePreviewFocused() || !editor.scenePreviewHovered())) {
@@ -1709,7 +1737,7 @@ void Scene::beginDragSelection(PlayerIndex idx, const vec2<I32>& mousePos) {
     }
 }
 
-void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remaped) {
+void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remapped) {
     static std::array<Line, 4> s_lines = {
         Line{VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
         Line{VECTOR3_ZERO, VECTOR3_UNIT, DefaultColours::GREEN_U8, DefaultColours::GREEN_U8, 2.0f, 1.0f},
@@ -1724,7 +1752,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
                 endDragSelection(idx, false);
                 return;
             }
-            if (!remaped) {
+            if (!remapped) {
                 const Rect<I32> previewRect = _context.editor().scenePreviewRect(false);
                 data._endDragPos = COORD_REMAP(previewRect.clamp(data._endDragPos), previewRect, _context.gfx().getCurrentViewport());
             }
@@ -1833,7 +1861,7 @@ Sky::Atmosphere Scene::getCurrentAtmosphere() const noexcept {
     return {};
 }
 
-void Scene::setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) noexcept {
+void Scene::setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) const noexcept {
     if (_dayNightData._skyInstance != nullptr) {
         return _dayNightData._skyInstance->setAtmosphere(atmosphere);
     }

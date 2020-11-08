@@ -5,8 +5,6 @@
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
-#include "Core/Headers/Application.h"
-
 #include <GLIM/glim.h>
 
 namespace Divide {

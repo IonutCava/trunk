@@ -81,18 +81,18 @@ class ResourceDescriptor final : public Hashable {
     typename std::enable_if<std::is_base_of<PropertyDescriptor, T>::value, void>::type
     propertyDescriptor(const T& descriptor) { _propertyDescriptor.reset(new T(descriptor)); }
 
-    size_t getHash() const noexcept final;
+    size_t getHash() const noexcept override;
 
-    PROPERTY_RW(ResourcePath, assetLocation); //<Can't be fixed size due to the need to handle array textures, cube maps, etc
-    PROPERTY_RW(ResourcePath, assetName); //< Resource instance name (for lookup)
+    PROPERTY_RW(ResourcePath, assetLocation); ///< Can't be fixed size due to the need to handle array textures, cube maps, etc
+    PROPERTY_RW(ResourcePath, assetName); ///< Resource instance name (for lookup)
     PROPERTY_RW(Str256, resourceName);
     PROPERTY_RW(bool, flag, false);
     PROPERTY_RW(bool, threaded, true);
     PROPERTY_RW(bool, waitForReady, true);
     PROPERTY_RW(U32, enumValue, 0u);
     PROPERTY_RW(U32, ID, 0u);
-    PROPERTY_RW(P32, mask); //< 4 bool values representing  ... anything ...
-    PROPERTY_RW(vec3<U16>, data, VECTOR3_ZERO); //< general data
+    PROPERTY_RW(P32, mask); ///< 4 bool values representing  ... anything ...
+    PROPERTY_RW(vec3<U16>, data, VECTOR3_ZERO); ///< general data
 
    private:
     /// Use for extra resource properties: textures, samplers, terrain etc.

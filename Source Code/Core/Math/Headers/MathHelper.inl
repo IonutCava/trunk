@@ -612,9 +612,19 @@ constexpr RADIANS<T> to_RADIANS(const DEGREES<T> angle) noexcept {
     return static_cast<RADIANS<T>>(angle * M_PIDIV180);
 }
 
+template <>
+constexpr RADIANS<F32> to_RADIANS(const DEGREES<F32> angle) noexcept {
+    return static_cast<RADIANS<F32>>(angle * M_PIDIV180_f);
+}
+
 template <typename T>
 constexpr DEGREES<T> to_DEGREES(const RADIANS<T> angle) noexcept {
     return static_cast<DEGREES<T>>(angle * M_180DIVPI);
+}
+
+template <>
+constexpr DEGREES<F32> to_DEGREES(const RADIANS<F32> angle) noexcept {
+    return static_cast<DEGREES<F32>>(angle * M_180DIVPI_f);
 }
 
 template <typename T>

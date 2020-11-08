@@ -255,8 +255,8 @@ inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) noexcept
         return std::equal(std::cbegin(b),
                           std::cend(b),
                           std::cbegin(a),
-            [](const unsigned char a, const unsigned char b) noexcept {
-                return a == b || std::tolower(a) == std::tolower(b);
+            [](const unsigned char aa, const unsigned char bb) noexcept {
+                return aa == bb || std::tolower(aa) == std::tolower(bb);
             });
     }
 
@@ -269,8 +269,8 @@ inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) 
         return std::equal(std::cbegin(b),
                           std::cend(b),
                           std::cbegin(a),
-            [](const unsigned char a, const unsigned char b) noexcept {
-                return a == b || std::tolower(a) == std::tolower(b);
+            [](const unsigned char aa, const unsigned char bb) noexcept {
+                return aa == bb || std::tolower(aa) == std::tolower(bb);
             });
     }
 

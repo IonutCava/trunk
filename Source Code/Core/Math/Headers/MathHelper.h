@@ -75,8 +75,18 @@ using FColour4 = vec4<F32>;
     constexpr D64 M_PIDIV180 = 0.01745329251994329576;
     constexpr D64 M_180DIVPI = 57.29577951308232087679;
     constexpr D64 M_PIDIV360 = 0.00872664625997164788;
-    constexpr F32 INV_RAND_MAX = 0.0000305185094f;
     constexpr D64 M_PI2 = M_2PI;
+
+    constexpr F32 M_PI_f = to_F32(M_PI);
+    constexpr F32 M_PI_2_f = to_F32(M_PI_2);
+    constexpr F32 M_PI_4_f = M_PI_f / 4;
+    constexpr F32 M_2PI_f = to_F32(M_2PI);
+    constexpr F32 M_PIDIV180_f = to_F32(M_PIDIV180);
+    constexpr F32 M_180DIVPI_f = to_F32(M_180DIVPI);
+    constexpr F32 M_PIDIV360_f = to_F32(M_PIDIV360);
+    constexpr F32 M_PI2_f = M_2PI_f;
+
+    constexpr F32 INV_RAND_MAX = 0.0000305185094f;
 
 template<typename T>
 using SignedIntegerBasedOnSize = typename std::conditional<sizeof(T) == 8, I64, I32>::type;
@@ -265,18 +275,30 @@ void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b) noexcept;
 void UNPACK_11_11_10(U32 src, F32& x, F32& y, F32& z) noexcept;
 
 // bit manipulation
-#define BitSet(arg, posn) (arg |= 1 << posn)
-#define BitClr(arg, posn) (arg &= ~(1 << (posn)))
-#define BitTst(arg, posn) ((arg & 1 << (posn)) != 0)
+template<typename T1, typename T2>
+constexpr auto BitSet(T1& arg, const T2 pos) { return (arg |= 1 << pos); }
 
-#define BitDiff(arg1, arg2) (arg1 ^ arg2)
-#define BitCmp(arg1, arg2, posn) ((arg1 << posn) == (arg2 << posn))
+template<typename T1, typename T2>
+constexpr auto BitClr(T1& arg, const T2 pos) { return arg &= ~(1 << (pos)); }
+
+template<typename T1, typename T2>
+constexpr bool BitTst(const T1 arg, const T2 pos) { return (arg & 1 << (pos)) != 0; }
+
+template<typename T1, typename T2>
+constexpr bool BitDiff(const T1 arg1, const T2 arg2) { return (arg1 ^ arg2); }
+
+template<typename T1, typename T2, typename T3>
+constexpr bool BitCmp(const T1 arg1, const T2 arg2, const T3 pos) { return (arg1 << pos) == (arg2 << pos); }
 
 // bitmask manipulation
-#define BitMaskSet(arg, mask) ((arg) |= (mask))
-#define BitMaskClear(arg, mask) ((arg) &= (~(mask)))
-#define BitMaskFlip(arg, mask) ((arg) ^= (mask))
-#define BitMaskCheck(arg, mask) ((arg) & (mask))
+template<typename T1, typename T2>
+constexpr auto BitMaskSet(T1& arg, const T2 mask) { return ((arg) |= (mask)); }
+template<typename T1, typename T2>
+constexpr auto BitMaskClear(T1& arg, const T2 mask) { return ((arg) &= (~(mask))); }
+template<typename T1, typename T2>
+constexpr auto BitMaskFlip(T1& arg, const T2 mask) { return ((arg) ^= (mask)); }
+template<typename T1, typename T2>
+constexpr auto BitMaskCheck(T1& arg, const T2 mask) { return ((arg) & (mask)); }
 
 namespace Angle {
 
@@ -474,6 +496,8 @@ void Hash_combine(size_t& seed, const T& v) noexcept;
 template <typename U, typename T>
 [[nodiscard]] U ConvertData(const T& data);
 
+template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
+void InsertionSort(FwdIt first, FwdIt last, Compare cmp = Compare());
 
 /** Ogre3D
 @brief Normalise the selected rotations to be within the +/-180 degree range.
@@ -539,10 +563,10 @@ inline U32 PACK_VEC2(F32 x, F32 y) noexcept {
 [[nodiscard]] U32 PACK_VEC2(const vec2<F32>& value) noexcept;
 
 [[nodiscard]] U32 PACK_HALF2x16(const vec2<F32>& value);
-void UNPACK_HALF2x16(const U32 src, vec2<F32>& value);
+void UNPACK_HALF2x16(U32 src, vec2<F32>& value);
 
 [[nodiscard]] U32 PACK_UNORM4x8(const vec4<U8>& value);
-void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value);
+void UNPACK_UNORM4x8(U32 src, vec4<U8>& value);
 
 inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) noexcept {
     UNPACK_FLOAT(src, x, y, z);

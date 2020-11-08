@@ -335,8 +335,8 @@ bool WindowManager::destroyWindow(DisplayWindow*& window) {
     if (window->destroyWindow() == ErrorCode::NO_ERR) {
         _windows.erase(
             std::remove_if(std::begin(_windows), std::end(_windows),
-                           [&targetGUID](DisplayWindow* window) noexcept
-                               -> bool { return window->getGUID() == targetGUID;}),
+                           [&targetGUID](DisplayWindow* win) noexcept
+                               -> bool { return win->getGUID() == targetGUID;}),
             std::end(_windows));
         MemoryManager::SAFE_DELETE(window);
         return true;

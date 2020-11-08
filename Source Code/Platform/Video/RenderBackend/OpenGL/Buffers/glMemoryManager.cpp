@@ -181,7 +181,7 @@ bufferPtr allocPersistentBuffer(const GLuint bufferId,
                                 const bufferPtr data) {
     glNamedBufferStorage(bufferId, bufferSize, data, storageMask);
     const bufferPtr ptr = glMapNamedBufferRange(bufferId, 0, bufferSize, accessMask);
-    assert(ptr != NULL);
+    assert(ptr != nullptr);
     return ptr;
 }
 

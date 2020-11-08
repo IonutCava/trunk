@@ -33,7 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TEMPLATE_ALLOCATOR_H_
 #define _TEMPLATE_ALLOCATOR_H_
 
-#include "config.h"
 #include <EASTL/allocator.h>
 #include <Allocator/stl_allocator.h>
 template <typename Type>
@@ -45,7 +44,7 @@ namespace eastl {
         dvd_eastl_allocator() = default;
         dvd_eastl_allocator(const char* pName) noexcept { (void)pName; };
         dvd_eastl_allocator(const allocator& x, const char* pName) noexcept { (void)pName; };
-        dvd_eastl_allocator& operator=(const dvd_eastl_allocator& EASTL_NAME(x)) { return *this; }
+        dvd_eastl_allocator& operator=(const dvd_eastl_allocator& EASTL_NAME(x)) = default;
 
         [[nodiscard]] void* allocate(const size_t n, int flags = 0)
         {

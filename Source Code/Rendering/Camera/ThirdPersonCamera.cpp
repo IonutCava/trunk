@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/ThirdPersonCamera.h"
-#include "Graphs/Headers/SceneGraphNode.h"
 
 namespace Divide {
 
@@ -11,9 +10,9 @@ ThirdPersonCamera::ThirdPersonCamera(const Str256& name, const vec3<F32>& eye)
 }
 
 bool ThirdPersonCamera::rotateRelative(const vec3<I32>& relRotation) {
-    constexpr F32 rotationLimitRollLower = to_F32(M_PI) * 0.30f - Angle::to_RADIANS(1);
-    constexpr F32 rotationLimitRollUpper = to_F32(M_PI) * 0.175f - Angle::to_RADIANS(1);
-    constexpr F32 rotationLimitPitch = to_F32(M_PI) - Angle::to_RADIANS(1);
+    constexpr F32 rotationLimitRollLower = M_PI_f * 0.30f - Angle::to_RADIANS(1);
+    constexpr F32 rotationLimitRollUpper = M_PI_f * 0.175f - Angle::to_RADIANS(1);
+    constexpr F32 rotationLimitPitch = M_PI_f - Angle::to_RADIANS(1);
 
     if (relRotation.lengthSquared() != 0) {
         vec3<F32> rotation(relRotation.pitch, relRotation.yaw, relRotation.roll);

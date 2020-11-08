@@ -12,7 +12,7 @@ void ParticleRoundGenerator::generate(Task& packagedTasksParent,
 
     vec3<F32> center(_center + _sourcePosition);
     for (U32 i = startIndex; i < endIndex; i++) {
-        F32 ang = Random(0.0f, to_F32(M_2PI));
+        F32 ang = Random(0.0f, M_2PI_f);
         p._position[i].xyz = center + vec3<F32>(_radX * std::sin(ang),
                                                 _radY * std::cos(ang), 
                                                 0.0f);

@@ -142,6 +142,11 @@ class vec2 {
     static_assert(std::is_arithmetic<T>::value || std::is_same<T, bool>::value, "non-arithmetic vector type");
 
    public:
+    ~vec2() = default;
+    vec2(vec2&&) noexcept = default;
+    vec2 &operator=(vec2 && other) noexcept = default;
+    vec2 &operator=(const vec2 & other) noexcept = default;
+
     vec2() noexcept : vec2(static_cast<T>(0)) {}
     vec2(T value) noexcept : vec2(value, value) {}
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
@@ -317,7 +322,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] T Dot(const vec2<T> &a, const vec2<T> &b) noexcept;
 template <typename T>
-[[nodiscard]] void OrthoNormalize(vec2<T> &v1, vec2<T> &v2);
+[[nodiscard]] void OrthoNormalize(vec2<T> &n, vec2<T> &u);
 /// multiply a vector by a value
 template <typename T>
 [[nodiscard]] vec2<T> operator*(T fl, const vec2<T> &v) noexcept;
@@ -331,6 +336,11 @@ template <typename T>
 class vec3 {
     static_assert(std::is_arithmetic<T>::value || std::is_same<T, bool>::value, "non-arithmetic vector type");
    public:
+    ~vec3() = default;
+    vec3(vec3&&) noexcept = default;
+    vec3 &operator=(vec3 && other) noexcept = default;
+    vec3 &operator=(const vec3 & other) noexcept = default;
+
     vec3() noexcept : vec3(static_cast<T>(0)) {}
     vec3(T value) noexcept : vec3(value, value, value) {}
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
@@ -565,7 +575,7 @@ template <typename T>
 template<typename T>
 [[nodiscard]] vec3<T> ProjectToNorm(const vec3<T>& in, const vec3<T> &direction);
 template <typename T>
-void OrthoNormalize(vec3<T> &v1, vec3<T> &v2);
+void OrthoNormalize(vec3<T> &n, vec3<T> &u);
 template <typename T>
 void OrthoNormalize(vec3<T> &v1, vec3<T> &v2, vec3<T> &v3);
 template<typename T>
@@ -584,6 +594,11 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     static_assert(std::is_arithmetic<T>::value || std::is_same<T, bool>::value, "non-arithmetic vector type");
 
    public:
+    ~vec4() = default;
+    vec4(vec4&&) noexcept = default;
+    vec4 &operator=(vec4 && other) noexcept = default;
+    vec4 &operator=(const vec4 & other) noexcept = default;
+
     vec4() noexcept : x(0), y(0), z(0), w(1) {}
     vec4(T xIn, T yIn, T zIn, T wIn) noexcept  : x(xIn), y(yIn), z(zIn), w(wIn) {}
     vec4(T xIn, T yIn, T zIn) noexcept : x(xIn), y(yIn), z(zIn), w(static_cast<T>(1)) {}
@@ -622,11 +637,10 @@ class vec4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     [[nodiscard]] bool operator==(const vec4<U> &v) const noexcept { return this->compare(v); }
 
     vec4 &operator=(T _f) noexcept { this->set(_f); return *this; }
-    vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
     vec4 &operator=(U _f) noexcept { this->set(_f); return *this; }
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    vec4 &operator=(const vec4& other) noexcept { this->set(other); return *this; }
+    vec4 &operator=(const vec4<U>& other) noexcept { this->set(other); return *this; }
 
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
     [[nodiscard]] vec4 operator-(U _f) const noexcept { return vec4(this->x - _f, this->y - _f, this->z - _f, this->w - _f); }
@@ -820,7 +834,7 @@ template <typename T>
 template <typename T>
 [[nodiscard]] vec4<T> operator*(T fl, const vec4<T> &v) noexcept;
 template <typename T>
-void OrthoNormalize(vec4<T> &v1, vec4<T> &v2);
+void OrthoNormalize(vec4<T> &n, vec4<T> &u);
 template <typename T>
 void OrthoNormalize(vec4<T> &v1, vec4<T> &v2, vec4<T> &v3);
 template<typename T>

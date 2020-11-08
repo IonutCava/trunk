@@ -73,14 +73,6 @@ RenderStateBlock::RenderStateBlock() noexcept
     }
 }
 
-RenderStateBlock::RenderStateBlock(const RenderStateBlock& other) noexcept
-    : GUIDWrapper(other)
-{
-    // We pay the cost of double init of variables and hope the compiler can optimise it, 
-    // but we do need a single point where we copy values across to make it more maintainable
-    from(other);
-}
-
 void RenderStateBlock::from(const RenderStateBlock& other) noexcept {
     _colourWrite = other._colourWrite;
     _zBias = other._zBias;
@@ -118,7 +110,7 @@ void RenderStateBlock::flipCullMode()  noexcept {
     _dirty = true;
 }
 
-void RenderStateBlock::setCullMode(CullMode mode)  noexcept {
+void RenderStateBlock::setCullMode(const CullMode mode)  noexcept {
     if (cullMode() != mode) {
         _cullMode = mode;
         _dirty = true;
@@ -130,7 +122,7 @@ void RenderStateBlock::flipFrontFace()  noexcept {
     _dirty = true;
 }
 
-void RenderStateBlock::setFrontFaceCCW(bool state) noexcept {
+void RenderStateBlock::setFrontFaceCCW(const bool state) noexcept {
     if (_frontFaceCCW != state) {
         _frontFaceCCW = state;
         _dirty = true;
@@ -143,10 +135,10 @@ void RenderStateBlock::depthTestEnabled(const bool enable)  noexcept {
     }
 }
 
-void RenderStateBlock::setColourWrites(bool red,
-                                       bool green,
-                                       bool blue,
-                                       bool alpha)  noexcept {
+void RenderStateBlock::setColourWrites(const bool red,
+                                       const bool green,
+                                       const bool blue,
+                                       const bool alpha)  noexcept {
     P32 rgba = {};
     rgba.b[0] = (red ? 1 : 0);
     rgba.b[1] = (green ? 1 : 0);
@@ -166,7 +158,7 @@ void RenderStateBlock::setScissorTest(const bool enable)  noexcept {
     }
 }
 
-void RenderStateBlock::setZBias(F32 zBias, F32 zUnits)  noexcept {
+void RenderStateBlock::setZBias(const F32 zBias, const F32 zUnits)  noexcept {
     if (!COMPARE(_zBias, zBias) || !COMPARE(_zUnits, zUnits)) {
         _zBias = zBias;
         _zUnits = zUnits;
@@ -174,28 +166,28 @@ void RenderStateBlock::setZBias(F32 zBias, F32 zUnits)  noexcept {
     }
 }
 
-void RenderStateBlock::setZFunc(ComparisonFunction zFunc)  noexcept {
+void RenderStateBlock::setZFunc(const ComparisonFunction zFunc)  noexcept {
     if (_zFunc != zFunc) {
         _zFunc = zFunc;
         _dirty = true;
     }
 }
 
-void RenderStateBlock::setFillMode(FillMode mode)  noexcept {
+void RenderStateBlock::setFillMode(const FillMode mode)  noexcept {
     if (_fillMode != mode) {
         _fillMode = mode;
         _dirty = true;
     }
 }
 
-void RenderStateBlock::setTessControlPoints(U32 count) noexcept {
+void RenderStateBlock::setTessControlPoints(const U32 count) noexcept {
     if (_tessControlPoints != count) {
         _tessControlPoints = count;
         _dirty = true;
     }
 }
 
-void RenderStateBlock::setStencilReadWriteMask(U32 read, U32 write)  noexcept {
+void RenderStateBlock::setStencilReadWriteMask(const U32 read, const U32 write)  noexcept {
     if (_stencilMask != read || _stencilWriteMask != write) {
         _stencilMask = read;
         _stencilWriteMask = write;
@@ -236,7 +228,7 @@ size_t RenderStateBlock::defaultHash() noexcept {
 }
 
 /// Return the render state block defined by the specified hash value.
-const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
+const RenderStateBlock& RenderStateBlock::get(const size_t renderStateBlockHash) {
     bool blockFound = false;
     const RenderStateBlock& block = get(renderStateBlockHash, blockFound);
     // Assert if it doesn't exist. Avoids programming errors.
@@ -245,7 +237,7 @@ const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash) {
     return block;
 }
 
-const RenderStateBlock& RenderStateBlock::get(size_t renderStateBlockHash, bool& blockFound) {
+const RenderStateBlock& RenderStateBlock::get(const size_t renderStateBlockHash, bool& blockFound) {
     blockFound = false;
 
     SharedLock<SharedMutex> r_lock(s_stateBlockMapMutex);

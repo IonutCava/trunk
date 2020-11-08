@@ -154,7 +154,7 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     const vectorEASTL<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
 
-    size_t getHash() const noexcept final;
+    size_t getHash() const noexcept override;
 
     PROPERTY_RW(U16, layerCount, 1);
     PROPERTY_RW(vec2<U16>, mipLevels);

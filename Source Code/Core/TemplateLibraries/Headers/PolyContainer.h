@@ -41,7 +41,7 @@ struct PolyContainerEntry
     static constexpr U32 INVALID_ENTRY_ID = std::numeric_limits<U32>::max();
 
     PolyContainerEntry() noexcept : PolyContainerEntry(0u, 0u) {}
-    PolyContainerEntry(U8 typeIndex, const U24 elementIndex) noexcept : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
+    PolyContainerEntry(const U8 typeIndex, const U24 elementIndex) noexcept : _typeIndex(typeIndex), _elementIndex(elementIndex) {}
     PolyContainerEntry(const PolyContainerEntry& other) noexcept : _data(other._data) {}
     PolyContainerEntry(PolyContainerEntry&& other) noexcept : _data(MOV(other._data)) {}
     PolyContainerEntry& operator= (PolyContainerEntry&& other) noexcept {

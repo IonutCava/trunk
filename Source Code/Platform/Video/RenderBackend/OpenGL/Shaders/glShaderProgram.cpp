@@ -430,7 +430,7 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
                 continue;
             }
             stageData.atoms.insert(_ID(shaderDescriptor._sourceFile.data()));
-            for (auto atomIt : atomsTemp) {
+            for (const auto& atomIt : atomsTemp) {
                 stageData.atoms.insert(_ID(atomIt.c_str()));
             }
             stageData.sourceCode.push_back(sourceCode.second);
@@ -637,7 +637,9 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
 
     // Open the atom file and add the code to the atom cache for future reference
     stringImpl output;
-    readFile(filePath, atomName, output, FileType::TEXT);
+    if (!readFile(filePath, atomName, output, FileType::TEXT)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 
     vectorEASTL<ResourcePath> atoms = {};
     if (recurse) {

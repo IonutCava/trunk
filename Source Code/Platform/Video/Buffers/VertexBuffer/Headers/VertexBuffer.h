@@ -58,8 +58,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
         bool operator==(const Vertex& other) const noexcept {
             return _position == other._position &&
-                   _normal == other._normal &&
-                   _tangent == other._tangent &&
+                   COMPARE(_normal, other._normal) &&
+                   COMPARE(_tangent, other._tangent) &&
                    _colour == other._colour &&
                    _texcoord == other._texcoord &&
                    _weights.i  == other._weights.i &&
@@ -68,8 +68,8 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
         bool operator!=(const Vertex& other) const noexcept {
             return _position != other._position ||
-                   _normal != other._normal ||
-                   _tangent != other._tangent ||
+                   !COMPARE(_normal, other._normal) ||
+                   !COMPARE(_tangent, other._tangent) ||
                    _colour != other._colour ||
                    _texcoord != other._texcoord ||
                    _weights.i != other._weights.i ||
@@ -81,8 +81,6 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     virtual ~VertexBuffer() = default;
 
     virtual bool create(bool staticDraw = true);
-
-    virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
 
     void useLargeIndices(const bool state = true) noexcept {
         assert(_indices.empty() && "VertexBuffer error: Index format type specified before buffer creation!");

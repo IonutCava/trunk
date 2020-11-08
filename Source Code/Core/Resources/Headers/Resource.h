@@ -51,17 +51,17 @@ namespace Divide {
 /// RES_UNKNOWN and RES_CREATED are safe to delete
 
 enum class ResourceState : U8 {
-    RES_UNKNOWN = 0,  //<The resource exists, but it's state is undefined
-    RES_CREATED = 1,  //<The pointer has been created and instantiated, but no data has been loaded
-    RES_LOADING = 2,  //<The resource is loading, creating data, parsing scripts, etc
-    RES_LOADED  = 3,  //<The resource is loaded and available
-    RES_UNLOADING = 4,  //<The resource is unloading, deleting data, etc
+    RES_UNKNOWN = 0,   ///< The resource exists, but it's state is undefined
+    RES_CREATED = 1,   ///< The pointer has been created and instantiated, but no data has been loaded
+    RES_LOADING = 2,   ///< The resource is loading, creating data, parsing scripts, etc
+    RES_LOADED  = 3,   ///< The resource is loaded and available
+    RES_UNLOADING = 4, ///< The resource is unloading, deleting data, etc
     COUNT
 };
 
 enum class ResourceType : U8 {
     DEFAULT = 0,
-    GPU_OBJECT = 1, //< Textures, Render targets, shaders, etc
+    GPU_OBJECT = 1, ///< Textures, Render targets, shaders, etc
     COUNT
 };
 

@@ -115,6 +115,7 @@ class Scene : public Resource, public PlatformContextComponent {
    protected:
     static bool onStartup();
     static bool onShutdown();
+    static stringImpl GetPlayerSGNName(PlayerIndex idx);
 
    public:
        struct DayNightData
@@ -186,7 +187,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     SceneGraphNode* addParticleEmitter(const Str64& name,
                                        std::shared_ptr<ParticleData> data,
-                                       SceneGraphNode* parentNode);
+                                       SceneGraphNode* parentNode) const;
 
     inline AI::AIManager& aiManager() noexcept { return *_aiManager; }
     inline const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
@@ -201,7 +202,7 @@ class Scene : public Resource, public PlatformContextComponent {
     inline const LightPool& lightPool() const noexcept { return *_lightPool; }
 
     // can save at any time, I guess?
-    virtual bool saveXML(DELEGATE<void, std::string_view> msgCallback, DELEGATE<void, bool> finishCallback) const;
+    virtual bool saveXML(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) const;
 
     bool saveNodeToXML(const SceneGraphNode* node) const;
     bool loadNodeFromXML(SceneGraphNode* node) const;
@@ -217,7 +218,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     SunDetails getCurrentSunDetails() const noexcept;
     Sky::Atmosphere getCurrentAtmosphere() const noexcept;
-    void setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) noexcept;
+    void setCurrentAtmosphere(const Sky::Atmosphere& atmosphere) const noexcept;
 
     PROPERTY_RW(bool, dayNightCycleEnabled, true);
     PROPERTY_R_IW(DayNightData, dayNightData);
@@ -296,19 +297,16 @@ class Scene : public Resource, public PlatformContextComponent {
         return true;
     }
 
-    stringImpl getPlayerSGNName(PlayerIndex idx);
-
     void currentPlayerPass(PlayerIndex idx);
 
     void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgn, bool recursive);
+    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& SGNs, bool recursive);
 
-    bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState);
+    bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState) const;
 
     const char* getResourceTypeName() const noexcept override { return "Scene"; }
 
-
-    void updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remaped);
+    void updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remapped);
 
    protected:
        /// Global info
@@ -358,8 +356,8 @@ class Scene : public Resource, public PlatformContextComponent {
        vectorEASTL<IMPrimitive*> _octreePrimitives;
        vectorEASTL<BoundingBox> _octreeBoundingBoxes;
 
-       //mutable Mutex _perFrameArenaMutex;
-       //mutable MyArena<Config::REQUIRED_RAM_SIZE / 3> _perFrameArena;
+       mutable Mutex _perFrameArenaMutex;
+       mutable MyArena<Config::REQUIRED_RAM_SIZE / 3> _perFrameArena;
 };
 
 namespace Attorney {

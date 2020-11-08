@@ -209,12 +209,7 @@ constexpr bool ENABLE_LOCALE_FILE_WATCHER = false;
 #endif
 
 /// Please enter the desired log file name
-#ifndef OUTPUT_LOG_FILE
-#define OUTPUT_LOG_FILE "console.log"
-#endif  // OUTPUT_LOG_FILE
-
-#ifndef ERROR_LOG_FILE
-#define ERROR_LOG_FILE "errors.log"
-#endif  // ERROR_LOG_FILE
+constexpr auto OUTPUT_LOG_FILE = "console.log";
+constexpr auto ERROR_LOG_FILE = "errors.log";
 
 #endif  //_DIVIDE_CONFIG_H_

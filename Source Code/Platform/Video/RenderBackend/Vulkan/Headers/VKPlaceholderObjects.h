@@ -51,10 +51,10 @@ namespace Divide {
             : RenderTarget(context, descriptor)
         {}
 
-        void clear(const RTClearDescriptor& descriptor) final {}
-        void setDefaultState(const RTDrawDescriptor& drawPolicy) final {}
-        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const final {}
-        void blitFrom(const RTBlitParams& params) final {}
+        void clear(const RTClearDescriptor& descriptor) override {}
+        void setDefaultState(const RTDrawDescriptor& drawPolicy) override {}
+        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const override {}
+        void blitFrom(const RTBlitParams& params) override {}
     };
 
     class vkIMPrimitive final : public IMPrimitive {
@@ -63,24 +63,24 @@ namespace Divide {
             : IMPrimitive(context)
         {}
 
-        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) final {}
+        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override {}
 
-        void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) final {}
+        void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override {}
 
-        void begin(PrimitiveType type) final {}
-        void vertex(F32 x, F32 y, F32 z) final {}
+        void begin(PrimitiveType type) override {}
+        void vertex(F32 x, F32 y, F32 z) override {}
 
-        void attribute1i(U32 attribLocation, I32 value) final {}
-        void attribute1f(U32 attribLocation, F32 value) final {}
-        void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) final {}
-        void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) final {}
+        void attribute1i(U32 attribLocation, I32 value) override {}
+        void attribute1f(U32 attribLocation, F32 value) override {}
+        void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) override {}
+        void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) override {}
 
-        void end() final {}
-        void endBatch() final {}
-        void clearBatch() final {}
-        bool hasBatch() const final { return false; }
+        void end() override {}
+        void endBatch() override {}
+        void clearBatch() override {}
+        bool hasBatch() const override { return false; }
 
-        GFX::CommandBuffer& toCommandBuffer() const final { return *_cmdBuffer; }
+        GFX::CommandBuffer& toCommandBuffer() const override { return *_cmdBuffer; }
 
     private:
         GFX::CommandBuffer* _cmdBuffer = nullptr;
@@ -92,11 +92,11 @@ namespace Divide {
             : VertexBuffer(context)
         {}
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) final {}
-        bool queueRefresh() final { return refresh(); }
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
+        bool queueRefresh() override { return refresh(); }
 
       protected:
-        bool refresh() final { return true; }
+        bool refresh() override { return true; }
     };
 
 
@@ -110,12 +110,12 @@ namespace Divide {
             U16 width, U16 height, U16 depth = 0,
             GFXImageFormat formatEnum = GFXImageFormat::RGBA,
             GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
-            bool normalized = true) final
+            bool normalized = true) override
         {
             return true;
         }
 
-        void updatePixels(const F32* pixels, U32 pixelCount) final {}
+        void updatePixels(const F32* pixels, U32 pixelCount) override {}
     };
 
 
@@ -125,18 +125,18 @@ namespace Divide {
             : GenericVertexData(context, ringBufferLength, name)
         {}
 
-        void create(U8 numBuffers = 1) final {}
+        void create(U8 numBuffers = 1) override {}
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) final {}
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
 
-        void setBuffer(const SetBufferParams& params) final {}
+        void setBuffer(const SetBufferParams& params) override {}
 
         void updateBuffer(U32 buffer,
             U32 elementCount,
             U32 elementCountOffset,
-            bufferPtr data) final {}
+            bufferPtr data) override {}
 
-        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) final {}
+        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override {}
 
 
         void incQueryQueue() {}
@@ -155,10 +155,10 @@ namespace Divide {
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
 
-        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) final {}
-        void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) final {}
-        void loadData(const ImageTools::ImageData& imageLayers) final {}
-        void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) final {}
+        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override {}
+        void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override {}
+        void loadData(const ImageTools::ImageData& imageLayers) override {}
+        void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override {}
     };
 
     class vkShaderProgram final : public ShaderProgram {
@@ -172,7 +172,7 @@ namespace Divide {
             : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad)
         {}
 
-        bool isValid() const final { return true; }
+        bool isValid() const override { return true; }
     };
 
 
@@ -183,17 +183,17 @@ namespace Divide {
         {}
 
 
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) final {}
-        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) final {}
-        void writeData(bufferPtr data) final {}
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) override {}
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) override {}
+        void writeData(bufferPtr data) override {}
 
-        void clearData(U32 offsetElementCount, U32 rangeElementCount) final {}
+        void clearData(U32 offsetElementCount, U32 rangeElementCount) override {}
 
-        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const final {}
+        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override {}
 
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) final { return true; }
+        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { return true; }
 
-        bool bind(U8 bindIndex) final { return true; }
+        bool bind(U8 bindIndex) override { return true; }
     };
 };  // namespace Divide
 #endif //_VK_PLACEHOLDER_OBJECTS_H_

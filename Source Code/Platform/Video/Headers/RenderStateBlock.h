@@ -35,7 +35,6 @@
 
 #include "RenderAPIEnums.h"
 #include "Core/Headers/Hashable.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
@@ -73,7 +72,7 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
 
     public:
         RenderStateBlock() noexcept;
-        RenderStateBlock(const RenderStateBlock& other) noexcept;
+        RenderStateBlock(const RenderStateBlock& other) noexcept = default;
         /// Can't assign due to the GUID restrictions
         RenderStateBlock& operator=(const RenderStateBlock& b) noexcept = delete;
         /// Use "from" instead of "operator=" to bypass the GUID restrictions

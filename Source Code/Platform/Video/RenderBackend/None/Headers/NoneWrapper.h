@@ -45,19 +45,19 @@ class NONE_API final : public RenderAPIWrapper {
     ~NONE_API() = default;
 
   protected:
-      void idle(bool fast) final;
-      void beginFrame(DisplayWindow& window, bool global = false) final;
-      void endFrame(DisplayWindow& window, bool global = false) final;
+      void idle(bool fast) override;
+      void beginFrame(DisplayWindow& window, bool global = false) override;
+      void endFrame(DisplayWindow& window, bool global = false) override;
 
-      ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
-      void closeRenderingAPI() final;
-      [[nodiscard]] F32 getFrameDurationGPU() const noexcept final;
-      void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
-      void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
-      [[nodiscard]] vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
-      [[nodiscard]] U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
-      bool setViewport(const Rect<I32>& newViewport) final;
-      void onThreadCreated(const std::thread::id& threadID) final;
+      ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
+      void closeRenderingAPI() override;
+      [[nodiscard]] F32 getFrameDurationGPU() const noexcept override;
+      void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
+      void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
+      [[nodiscard]] vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
+      [[nodiscard]] U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
+      bool setViewport(const Rect<I32>& newViewport) override;
+      void onThreadCreated(const std::thread::id& threadID) override;
 };
 
 };  // namespace Divide

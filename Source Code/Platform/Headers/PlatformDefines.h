@@ -33,6 +33,7 @@
 #ifndef _PLATFORM_DEFINES_H_
 #define _PLATFORM_DEFINES_H_
 
+#include "config.h"
 #include "Core/Headers/ErrorCodes.h"
 
 #if defined(_DEBUG)
@@ -127,6 +128,8 @@ public:
 };
 
 namespace Divide {
+
+constexpr bool DEBUG_ALL_NOP_CALLS = false;
 
 using PlayerIndex = U8;
 
@@ -406,7 +409,11 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, const D64 maxDiff, const D64
     return (diff <= largest * maxRelDiff);
 }
 
-constexpr void NOP() noexcept {}
+constexpr void NOP() noexcept {
+    if_constexpr (DEBUG_ALL_NOP_CALLS) {
+        DebugBreak();
+    }
+}
 
 #define ACKNOWLEDGE_UNUSED(p) ((void)(p))
 

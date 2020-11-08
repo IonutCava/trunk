@@ -36,8 +36,8 @@ void Sphere3D::rebuildVB() {
     VertexBuffer* const vb = getGeometryVB();
 
     vb->reset();
-    const F32 drho = to_F32(M_PI) / stacks;
-    const F32 dtheta = 2.0f * to_F32(M_PI) / slices;
+    const F32 drho = M_PI_f / stacks;
+    const F32 dtheta = 2.0f * M_PI_f / slices;
     const F32 ds = 1.0f / slices;
     const F32 dt = 1.0f / stacks;
     F32 t = 1.0f;

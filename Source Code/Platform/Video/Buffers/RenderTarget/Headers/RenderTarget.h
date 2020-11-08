@@ -172,7 +172,7 @@ class NOINITVTABLE RenderTarget : public GUIDWrapper, public GraphicsResource {
 
     /// Init all attachments. Returns false if already called
     [[nodiscard]] virtual bool create();
-    virtual void destroy();
+                  void destroy();
 
     [[nodiscard]] virtual bool hasAttachment(RTAttachmentType type, U8 index) const;
     [[nodiscard]] virtual const RTAttachment_ptr& getAttachmentPtr(RTAttachmentType type, U8 index) const;

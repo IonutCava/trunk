@@ -85,7 +85,7 @@ struct TextureDataContainer {
     static constexpr U8 INVALID_BINDING = std::numeric_limits<U8>::max();
     static constexpr TextureEntry DefaultEntry = { INVALID_BINDING, {}, 0 };
     using DataEntries = std::array<TextureEntry, Size>;
-    constexpr size_t ContainerSize() noexcept { return Size; }
+    static constexpr size_t ContainerSize() noexcept { return Size; }
 
     bool set(const TextureDataContainer& other);
     TextureUpdateState setTextures(const TextureDataContainer& textureEntries);

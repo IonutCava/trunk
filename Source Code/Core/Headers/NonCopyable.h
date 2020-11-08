@@ -34,31 +34,22 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CORE_NON_COPYABLE_H_
 
 namespace Divide {
+
 /// Inherit from this class to avoid any form of object copying.
 /// (deletes the copy constructor and assignment operator)
-class NonCopyable {
-   protected:
-    /*constexpr */ NonCopyable() = default;
-    /*virtual*/ ~NonCopyable() = default;
-
+struct NonCopyable
+{
     NonCopyable(const NonCopyable&) = delete;
     NonCopyable& operator=(const NonCopyable&) = delete;
 
     NonCopyable(NonCopyable&&) = default;
     NonCopyable& operator = (NonCopyable&&) = default;
-};
 
-class NonMovable {
 protected:
-    /*constexpr */ NonMovable() = default;
-    /*virtual*/ ~NonMovable() = default;
-
-    NonMovable(NonMovable&&) = delete;
-    NonMovable& operator = (NonMovable&&) = delete;
-
-    NonMovable(const NonMovable&) = default;
-    NonMovable& operator=(const NonMovable&) = default;
+    /*constexpr */ NonCopyable() = default;
+    /*virtual*/ ~NonCopyable() = default;
 };
+
 };  // namespace Divide
 
 #endif  //_CORE_NON_COPYABLE_H_

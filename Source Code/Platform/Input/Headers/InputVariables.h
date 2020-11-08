@@ -48,14 +48,13 @@ class Variable {
     D64 _dValue{};
 
    public:
-    Variable(const D64 dInitValue) : _dInitValue(dInitValue)
+    Variable(const D64 dInitValue)
+       : _dInitValue(dInitValue),
+         _dValue(dInitValue)
     {
-        reset();
     }
 
-    virtual ~Variable()
-    {
-    }
+    virtual ~Variable() = default;
 
     [[nodiscard]] D64 getValue() const { return _dValue; }
 
@@ -63,7 +62,7 @@ class Variable {
 
     virtual void setValue(const D64 dValue) { _dValue = dValue; }
 
-    virtual stringImpl toString() const {
+    [[nodiscard]] virtual stringImpl toString() const {
         return Util::to_string(_dValue);
     }
 

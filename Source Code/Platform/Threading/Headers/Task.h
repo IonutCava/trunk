@@ -43,7 +43,7 @@ class TaskPool;
 
 enum class TaskPriority : U8 {
     DONT_CARE = 0,
-    REALTIME = 1, //<= not threaded
+    REALTIME = 1, ///< not threaded
     COUNT
 };
 

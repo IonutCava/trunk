@@ -57,7 +57,7 @@ void OrbitCamera::update(const F32 deltaTimeMS) noexcept {
 
     if (/*trans->changedLastFrame() || */ _rotationDirty || true) {
         trans->getOrientation().getEuler(newTargetOrientation);
-        newTargetOrientation.yaw = to_F32(M_PI) - newTargetOrientation.yaw;
+        newTargetOrientation.yaw = M_PI_f - newTargetOrientation.yaw;
         newTargetOrientation += _cameraRotation;
         Util::Normalize(newTargetOrientation, false);
         _rotationDirty = false;

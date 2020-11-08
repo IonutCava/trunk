@@ -347,39 +347,39 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
     };
 
     _compressed = image.is_compressed();
-    if (_compressed) {
-        _bpp = image.get_format() == nv_dds::Format::DXT1 ? 8 : 16;
-        switch(image.get_format()) {
-            case nv_dds::Format::DXT1:
-                _format = GFXImageFormat::COMPRESSED_RGB_DXT1;
-                break;
-            case nv_dds::Format::DXT3:
-                _format = GFXImageFormat::COMPRESSED_RGBA_DXT3;
-                break;
-            case nv_dds::Format::DXT5:
-                _format = GFXImageFormat::COMPRESSED_RGBA_DXT5;
-                break;
-            default: break;
-        };
-    } else {
-        switch(image.get_format()) {
-            case nv_dds::Format::BGR:
-            case nv_dds::Format::RGB: {
-                _bpp = 24;
-                _format = GFXImageFormat::RGB;
-            } break;
-            case nv_dds::Format::BGRA:
-            case nv_dds::Format::RGBA: {
-                _format = GFXImageFormat::RGBA;
-                _bpp = 32;
-            } break;
-            case nv_dds::Format::LUMINANCE: {
-                assert(false && "LUMINANCE image format is no longer supported!");
-            } break;
-            default:
-                DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
-                break;
-        };
+    _bpp = image.get_format() == nv_dds::Format::DXT1 ? 8 : 16;
+    switch(image.get_format()) {
+      case nv_dds::Format::DXT1:
+          assert(_compressed);
+          _format = GFXImageFormat::COMPRESSED_RGB_DXT1;
+          break;
+      case nv_dds::Format::DXT3:
+          assert(_compressed);
+          _format = GFXImageFormat::COMPRESSED_RGBA_DXT3;
+          break;
+      case nv_dds::Format::DXT5:
+          assert(_compressed);
+          _format = GFXImageFormat::COMPRESSED_RGBA_DXT5;
+          break;
+      case nv_dds::Format::BGR:
+      case nv_dds::Format::RGB: {
+          assert(!_compressed);
+          _bpp = 24;
+          _format = GFXImageFormat::RGB;
+      } break;
+      case nv_dds::Format::BGRA:
+      case nv_dds::Format::RGBA: {
+          assert(!_compressed);
+          _format = GFXImageFormat::RGBA;
+          _bpp = 32;
+      } break;
+      case nv_dds::Format::LUMINANCE: {
+          assert(!_compressed);
+          assert(false && "LUMINANCE image format is no longer supported!");
+      } break;
+      default:
+          DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
+          break;
     }
 
     _dataType = GFXDataFormat::UNSIGNED_BYTE;

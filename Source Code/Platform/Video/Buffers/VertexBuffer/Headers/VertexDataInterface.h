@@ -35,7 +35,6 @@
 
 #include "Core/Headers/ObjectPool.h"
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
 namespace Divide {

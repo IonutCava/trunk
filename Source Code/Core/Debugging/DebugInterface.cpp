@@ -47,7 +47,7 @@ void DebugInterface::idle() {
         }
 
         Arena::Statistics stats = gfx.getObjectAllocStats();
-        F32 gpuAllocatedKB = stats.bytes_allocated_ / 1024.0f;
+        const F32 gpuAllocatedKB = to_F32(stats.bytes_allocated_) / 1024.0f;
 
         _output.append("\n");
         _output.append(Util::StringFormat("GPU Objects: %5.2f Kb (%5.2f Mb),\n"

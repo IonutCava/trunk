@@ -390,7 +390,7 @@ public:
 
     void blurTarget(RenderTargetHandle& blurSource, 
                     RenderTargetHandle& blurBuffer,
-                    RenderTargetHandle& blurTarget, //< can be the same as source
+                    RenderTargetHandle& blurTarget, ///< can be the same as source
                     RTAttachmentType att,
                     U8 index,
                     I32 kernelSize,

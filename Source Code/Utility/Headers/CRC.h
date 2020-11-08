@@ -40,38 +40,31 @@
 
 namespace Divide {
 namespace Util {
-class CRC32 {
-   public:
-    virtual ~CRC32() = default;
-    //=========================================
-    //  ctors
-    CRC32()
+    class CRC32 final
     {
-        Reset();
-    }
+    public:
+        CRC32() = default;
+        explicit CRC32(const void* buf, size_t size)
+        {
+            Hash(buf, size);
+        }
 
-    CRC32(const void* buf, size_t siz)
-    {
-        Reset();
-        Hash(buf, siz);
-    }
+        //=========================================
+        /// implicit cast, so that you can do something like foo = CRC(dat,siz);
+        operator U32() const { return Get(); }
 
-    //=========================================
-    /// implicit cast, so that you can do something like foo = CRC(dat,siz);
-    operator U32() const { return Get(); }
+        //=========================================
+        /// getting the crc
+        [[nodiscard]] U32 Get() const noexcept { return ~mCrc; }
 
-    //=========================================
-    /// getting the crc
-    [[nodiscard]] U32 Get() const noexcept { return ~mCrc; }
+        //=========================================
+        // HashBase stuff
+        void Reset() noexcept { mCrc = to_U32(~0); }
+        void Hash(const void* buf, size_t siz) noexcept;
 
-    //=========================================
-    // HashBase stuff
-    virtual void Reset() noexcept { mCrc = to_U32(~0); }
-    virtual void Hash(const void* buf, size_t siz) noexcept;
-
-   private:
-    U32 mCrc = 0u;
-    static U32 mTable[0x100];
+    private:
+        U32 mCrc = to_U32(~0u);
+        static U32 mTable[0x100];
 
     //=========================================
     // internal support

@@ -254,16 +254,16 @@ void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw,
     if (normYaw) {
         F32 yaw = degrees ? Angle::to_RADIANS(inputRotation.yaw)
                           : inputRotation.yaw;
-        if (yaw < -M_PI) {
-            yaw = fmod(yaw, to_F32(M_PI) * 2.0f);
-            if (yaw < -M_PI) {
-                yaw += to_F32(M_PI) * 2.0f;
+        if (yaw < -M_PI_f) {
+            yaw = fmod(yaw, M_PI_f * 2.0f);
+            if (yaw < -M_PI_f) {
+                yaw += M_PI_f * 2.0f;
             }
             inputRotation.yaw = Angle::to_DEGREES(yaw);
-        } else if (yaw > M_PI) {
-            yaw = fmod(yaw, to_F32(M_PI) * 2.0f);
-            if (yaw > M_PI) {
-                yaw -= to_F32(M_PI) * 2.0f;
+        } else if (yaw > M_PI_f) {
+            yaw = fmod(yaw, M_PI_f * 2.0f);
+            if (yaw > M_PI_f) {
+                yaw -= M_PI_f * 2.0f;
             }
             inputRotation.yaw = degrees ? Angle::to_DEGREES(yaw) : yaw;
         }
@@ -271,16 +271,16 @@ void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw,
     if (normPitch) {
         F32 pitch = degrees ? Angle::to_RADIANS(inputRotation.pitch)
                             : inputRotation.pitch;
-        if (pitch < -M_PI) {
-            pitch = fmod(pitch, to_F32(M_PI) * 2.0f);
-            if (pitch < -M_PI) {
-                pitch += to_F32(M_PI) * 2.0f;
+        if (pitch < -M_PI_f) {
+            pitch = fmod(pitch, M_PI_f * 2.0f);
+            if (pitch < -M_PI_f) {
+                pitch += M_PI_f * 2.0f;
             }
             inputRotation.pitch = Angle::to_DEGREES(pitch);
-        } else if (pitch > M_PI) {
-            pitch = fmod(pitch, to_F32(M_PI) * 2.0f);
-            if (pitch > M_PI) {
-                pitch -= to_F32(M_PI) * 2.0f;
+        } else if (pitch > M_PI_f) {
+            pitch = fmod(pitch, M_PI_f * 2.0f);
+            if (pitch > M_PI_f) {
+                pitch -= M_PI_f * 2.0f;
             }
             inputRotation.pitch =
                 degrees ? Angle::to_DEGREES(pitch) : pitch;
@@ -289,16 +289,16 @@ void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw,
     if (normRoll) {
         F32 roll = degrees ? Angle::to_RADIANS(inputRotation.roll)
                            : inputRotation.roll;
-        if (roll < -M_PI) {
-            roll = fmod(roll, to_F32(M_PI) * 2.0f);
-            if (roll < -M_PI) {
-                roll += to_F32(M_PI) * 2.0f;
+        if (roll < -M_PI_f) {
+            roll = fmod(roll, M_PI_f * 2.0f);
+            if (roll < -M_PI_f) {
+                roll += M_PI_f * 2.0f;
             }
             inputRotation.roll = Angle::to_DEGREES(roll);
-        } else if (roll > M_PI) {
-            roll = fmod(roll, to_F32(M_PI) * 2.0f);
-            if (roll > M_PI) {
-                roll -= to_F32(M_PI) * 2.0f;
+        } else if (roll > M_PI_f) {
+            roll = fmod(roll, M_PI_f * 2.0f);
+            if (roll > M_PI_f) {
+                roll -= M_PI_f * 2.0f;
             }
             inputRotation.roll = degrees ? Angle::to_DEGREES(roll) : roll;
         }

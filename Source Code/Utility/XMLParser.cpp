@@ -4,7 +4,6 @@
 
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/StringHelper.h"
-#include "Environment/Terrain/Headers/Terrain.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Platform/File/Headers/FileManagement.h"
@@ -145,16 +144,16 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     for (U32 i = 0 ; i < to_base(Input::Joystick::COUNT); ++i) {
         const Input::Joystick joystick = static_cast<Input::Joystick>(i);
         
-        for (const ptree::value_type & f : pt.get_child(label + std::to_string(i + 1), g_emptyPtree))
+        for (const auto & [tag, value] : pt.get_child(label + std::to_string(i + 1), g_emptyPtree))
         {
-            if (f.first == "<xmlcomment>") {
+            if (tag == "<xmlcomment>") {
                 continue;
             }
 
-            const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
+            const ptree & attributes = value.get_child("<xmlattr>", g_emptyPtree);
             populatePressRelease(attributes, entry);
 
-            const Input::JoystickElement element = Input::joystickElementByName(Util::Trim(f.second.data()));
+            const Input::JoystickElement element = Input::joystickElementByName(Util::Trim(value.data()));
 
             scene->input()->addJoystickMapping(joystick, element._type, element._elementIndex, entry);
         }
@@ -190,10 +189,7 @@ void readXML(const stringImpl& path, boost::property_tree::ptree& tree) {
     try {
         boost::property_tree::read_xml(path, tree);
     } catch (const boost::property_tree::xml_parser_error& e) {
-        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_FILE")), path.c_str());
-        stringImpl error(e.what());
-        error += " [check error log!]";
-        throw error.c_str();
+        Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_FILE")), path.c_str(), e.what());
     }
 }
 };  // namespace XML

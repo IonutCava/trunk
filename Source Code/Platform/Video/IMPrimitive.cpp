@@ -83,8 +83,8 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
                              F32 radius,
                              const UColour4& colour) {
     constexpr U32 slices = 8, stacks = 8;
-    constexpr F32 drho = to_F32(M_PI) / stacks;
-    constexpr F32 dtheta = 2.0f * to_F32(M_PI) / slices;
+    constexpr F32 drho = M_PI_f / stacks;
+    constexpr F32 dtheta = 2.0f * M_PI_f / slices;
     constexpr F32 ds = 1.0f / slices;
     constexpr F32 dt = 1.0f / stacks;
 

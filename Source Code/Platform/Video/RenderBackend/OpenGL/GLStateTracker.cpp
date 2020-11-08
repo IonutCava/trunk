@@ -504,10 +504,10 @@ void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
     }
 }
 
-void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& blendingProperties) {
+void GLStateTracker::setBlending(const GLuint drawBufferIdx,const BlendingProperties& blendingProperties) {
     const bool enable = blendingProperties.blendEnabled();
 
-    assert(drawBufferIdx < (GLuint)(GL_API::s_maxFBOAttachments));
+    assert(drawBufferIdx < static_cast<GLuint>(GL_API::s_maxFBOAttachments));
 
     if ((_blendEnabled[drawBufferIdx] == GL_TRUE) != enable) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
@@ -527,10 +527,10 @@ void GLStateTracker::setBlending(GLuint drawBufferIdx,const BlendingProperties& 
                 blendingProperties._blendDestAlpha != crtProperties._blendDestAlpha)
             {
                     glBlendFuncSeparatei(drawBufferIdx,
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
-                                            GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
+                                         GLUtil::glBlendTable[to_base(blendingProperties._blendSrc)],
+                                         GLUtil::glBlendTable[to_base(blendingProperties._blendDest)],
+                                         GLUtil::glBlendTable[to_base(blendingProperties._blendSrcAlpha)],
+                                         GLUtil::glBlendTable[to_base(blendingProperties._blendDestAlpha)]);
 
                     _blendPropertiesGlobal._blendSrc = blendingProperties._blendSrc;
                     _blendPropertiesGlobal._blendDest = blendingProperties._blendDest;

@@ -47,43 +47,43 @@ class Transform final : public ITransform, public GUIDWrapper, NonCopyable {
 
     ~Transform() = default;
 
-    void setPosition(const vec3<F32>& position) final;
-    void setPosition(F32 x, F32 y, F32 z) final;
-    void setPositionX(F32 positionX) final;
-    void setPositionY(F32 positionY) final;
-    void setPositionZ(F32 positionZ) final;
-    void translate(const vec3<F32>& axisFactors) final;
+    void setPosition(const vec3<F32>& position) override;
+    void setPosition(F32 x, F32 y, F32 z) override;
+    void setPositionX(F32 positionX) override;
+    void setPositionY(F32 positionY) override;
+    void setPositionZ(F32 positionZ) override;
+    void translate(const vec3<F32>& axisFactors) override;
 
-    void setScale(const vec3<F32>& amount) final;
-    void setScaleX(F32 amount) final;
-    void setScaleY(F32 amount) final;
-    void setScaleZ(F32 amount) final;
-    void scale(const vec3<F32>& axisFactors) final;
-    void scaleX(F32 amount) final;
-    void scaleY(F32 amount) final;
-    void scaleZ(F32 amount) final;
+    void setScale(const vec3<F32>& amount) override;
+    void setScaleX(F32 amount) override;
+    void setScaleY(F32 amount) override;
+    void setScaleZ(F32 amount) override;
+    void scale(const vec3<F32>& axisFactors) override;
+    void scaleX(F32 amount) override;
+    void scaleY(F32 amount) override;
+    void scaleZ(F32 amount) override;
 
-    void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) final;
-    void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) final;
-    void setRotation(const Quaternion<F32>& quat) final;
-    void setRotationX(Angle::DEGREES<F32> angle) final;
-    void setRotationY(Angle::DEGREES<F32> angle) final;
-    void setRotationZ(Angle::DEGREES<F32> angle) final;
-    void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) final;
-    void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) final;
-    void rotate(const Quaternion<F32>& quat) final;
-    void rotateSlerp(const Quaternion<F32>& quat, D64 deltaTime) final;
-    void rotateX(Angle::DEGREES<F32> angle) final;
-    void rotateY(Angle::DEGREES<F32> angle) final;
-    void rotateZ(Angle::DEGREES<F32> angle) final;
+    void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
+    void setRotation(const Quaternion<F32>& quat) override;
+    void setRotationX(Angle::DEGREES<F32> angle) override;
+    void setRotationY(Angle::DEGREES<F32> angle) override;
+    void setRotationZ(Angle::DEGREES<F32> angle) override;
+    void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
+    void rotate(const Quaternion<F32>& quat) override;
+    void rotateSlerp(const Quaternion<F32>& quat, D64 deltaTime) override;
+    void rotateX(Angle::DEGREES<F32> angle) override;
+    void rotateY(Angle::DEGREES<F32> angle) override;
+    void rotateZ(Angle::DEGREES<F32> angle) override;
 
-    void getScale(vec3<F32>& scaleOut) const final;
-    void getPosition(vec3<F32>& posOut) const final;
-    void getOrientation(Quaternion<F32>& quatOut) const final;
+    void getScale(vec3<F32>& scaleOut) const override;
+    void getPosition(vec3<F32>& posOut) const override;
+    void getOrientation(Quaternion<F32>& quatOut) const override;
 
     [[nodiscard]] bool isUniformScale() const;
 
-    void getMatrix(mat4<F32>& matrix) final;
+    void getMatrix(mat4<F32>& matrix) override;
 
     /// Sets the transform to match a certain transformation matrix.
     /// Scale, orientation and translation are extracted from the specified matrix
@@ -93,7 +93,7 @@ class Transform final : public ITransform, public GUIDWrapper, NonCopyable {
     void clone(const Transform* transform);
 
     /// Extract the 3 transform values (position, scale, rotation) from the current instance
-    [[nodiscard]] TransformValues getValues() const final;
+    [[nodiscard]] TransformValues getValues() const override;
     /// Set position, scale and rotation based on the specified transform values
     void setValues(const TransformValues& values);
 

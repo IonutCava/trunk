@@ -56,11 +56,11 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
        enum class Flags : U8 {
            NONE = 0,
-           IMMUTABLE_STORAGE = toBit(1),                         //< Persistent mapped buffers
-           ALLOW_THREADED_WRITES = toBit(2) | IMMUTABLE_STORAGE, //< Makes sure reads and writes are properly synced between threads (e.g. With glFlush() after glFenceSync() in OpenGL). Will force IMMUTABLE_STORAGE to on
-           AUTO_STORAGE = toBit(3),                              //< Overrides Immutable flag
-           AUTO_RANGE_FLUSH = toBit(4),                          //< Flush the entire buffer after a write as opposed to just the affected region
-           NO_SYNC = toBit(5),                                   //< Skip any kind of sync between reads and writes. Useful if using stuff that auto-syncs like glBufferSubData in OpenGL
+           IMMUTABLE_STORAGE = toBit(1),                         ///< Persistent mapped buffers
+           ALLOW_THREADED_WRITES = toBit(2) | IMMUTABLE_STORAGE, ///< Makes sure reads and writes are properly synced between threads (e.g. With glFlush() after glFenceSync() in OpenGL). Will force IMMUTABLE_STORAGE to on
+           AUTO_STORAGE = toBit(3),                              ///< Overrides Immutable flag
+           AUTO_RANGE_FLUSH = toBit(4),                          ///< Flush the entire buffer after a write as opposed to just the affected region
+           NO_SYNC = toBit(5),                                   ///< Skip any kind of sync between reads and writes. Useful if using stuff that auto-syncs like glBufferSubData in OpenGL
            COUNT = 6
        };
 
@@ -129,7 +129,7 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
 
 struct ShaderBufferDescriptor {
     stringImpl _name = "";
-    size_t _elementSize = 0; //< Primitive size in bytes
+    size_t _elementSize = 0; ///< Primitive size in bytes
     bufferPtr _initialData = nullptr;
     U32 _flags = 0u;
     U32 _ringBufferLength = 1u;
@@ -137,7 +137,7 @@ struct ShaderBufferDescriptor {
     BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::ONCE;
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     ShaderBuffer::Usage _usage = ShaderBuffer::Usage::COUNT;
-    bool _separateReadWrite = false; //< Use a separate read/write index based on queue length
+    bool _separateReadWrite = false; ///< Use a separate read/write index based on queue length
 };
 };  // namespace Divide
 #endif //_SHADER_BUFFER_H_

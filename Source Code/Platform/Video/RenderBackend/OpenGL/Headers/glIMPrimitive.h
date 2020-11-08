@@ -51,34 +51,34 @@ class glIMPrimitive final : public IMPrimitive {
    public:
     /// Begins defining one piece of geometry that can later be rendered with
     /// one set of states.
-    void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) final;
+    void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override;
     /// Ends defining the batch. After this call "RenderBatch" can be called to
     /// actually render it.
-    void endBatch() final;
+    void endBatch() override;
     /// Resets the batch so that the primitive has nothing left to draw
-    void clearBatch() final;
+    void clearBatch() override;
     /// Return true if this primitive contains drawable geometry data
-    bool hasBatch() const final;
+    bool hasBatch() const override;
     /// Begins gathering information about the given type of primitives.
-    void begin(PrimitiveType type) final;
+    void begin(PrimitiveType type) override;
     /// Ends gathering information about the primitives.
-    void end() final;
+    void end() override;
     /// Specify the position of a vertex belonging to this primitive
-    void vertex(F32 x, F32 y, F32 z) final;
+    void vertex(F32 x, F32 y, F32 z) override;
     /// Specify each attribute at least once(even with dummy values) before
     /// calling begin!
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute1i(U32 attribLocation, I32 value) final;
-    void attribute1f(U32 attribLocation, F32 value) final;
+    void attribute1i(U32 attribLocation, I32 value) override;
+    void attribute1f(U32 attribLocation, F32 value) override;
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) final;
+    void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) override;
     /// Specify an attribute that will be applied to all vertex calls after this
-    void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) final;
+    void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) override;
     /// Submit the created batch to the GPU for rendering
-    void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) final;
-    void pipeline(const Pipeline& pipeline) noexcept final;
+    void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override;
+    void pipeline(const Pipeline& pipeline) noexcept override;
 
-    GFX::CommandBuffer& toCommandBuffer() const final;
+    GFX::CommandBuffer& toCommandBuffer() const override;
    protected:
     /// Rendering API specific implementation
     NS_GLIM::GLIM_BATCH* _imInterface;

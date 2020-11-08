@@ -52,12 +52,12 @@ class glUniformBuffer final : public ShaderBuffer {
         glUniformBuffer(GFXDevice& context, const ShaderBufferDescriptor& descriptor);
         ~glUniformBuffer();
 
-        void clearData(U32 offsetElementCount, U32 rangeElementCount) final;
-        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const final;
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) final;
-        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) final;
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) final;
-        bool bind(U8 bindIndex) final;
+        void clearData(U32 offsetElementCount, U32 rangeElementCount) override;
+        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override;
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) override;
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) override;
+        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override;
+        bool bind(U8 bindIndex) override;
 
         glBufferImpl* bufferImpl() const;
 

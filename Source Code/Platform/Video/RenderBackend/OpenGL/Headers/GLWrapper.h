@@ -93,15 +93,15 @@ public:
 protected:
 
     /// Try and create a valid OpenGL context taking in account the specified command line arguments
-    ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) final;
+    ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
     /// Clear everything that was setup in initRenderingAPI()
-    void closeRenderingAPI() final;
+    void closeRenderingAPI() override;
 
     /// Prepare the GPU for rendering a frame
-    void beginFrame(DisplayWindow& window, bool global = false) final;
+    void beginFrame(DisplayWindow& window, bool global = false) override;
     /// Finish rendering the current frame
-    void endFrame(DisplayWindow& window, bool global = false) final;
-    void idle(bool fast) final;
+    void endFrame(DisplayWindow& window, bool global = false) override;
+    void idle(bool fast) override;
 
     GenericVertexData* getOrCreateIMGUIBuffer(I64 windowGUID);
 
@@ -114,20 +114,20 @@ protected:
 
     bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const;
 
-    void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) final;
+    void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
-    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) final;
+    void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
 
     /// Return the time it took to render a single frame (in nanoseconds). Only
     /// works in GPU validation builds
-    F32 getFrameDurationGPU() const noexcept final;
+    F32 getFrameDurationGPU() const noexcept override;
 
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
-    vec2<U16> getDrawableSize(const DisplayWindow& window) const final;
+    vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
 
-    U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const final;
+    U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const override;
 
-    void onThreadCreated(const std::thread::id& threadID) final;
+    void onThreadCreated(const std::thread::id& threadID) override;
 
     /// Try to find the requested font in the font cache. Load on cache miss.
     I32 getFont(const Str64& fontName);
@@ -138,7 +138,7 @@ protected:
     bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const;
     bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
 
-    bool setViewport(const Rect<I32>& viewport) final;
+    bool setViewport(const Rect<I32>& viewport) override;
     bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady) const;
     void sendPushConstants(const PushConstants & pushConstants) const;
 

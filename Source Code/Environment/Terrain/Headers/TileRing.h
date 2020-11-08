@@ -54,8 +54,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _TILE_RING_H_
 #define _TILE_RING_H_
 
-#include "Core/Headers/NonCopyable.h"
-
 namespace Divide {
 
 // Int dimensions specified to the ctor are in numbers of tiles.  It's symmetrical in

@@ -37,7 +37,8 @@ namespace Divide {
 #define USE_AVX
 #endif
 
-#define MakeShuffleMask(x,y,z,w)           (x | (y<<2) | (z<<4) | (w<<6))
+template<typename T1, typename T2, typename T3, typename T4>
+constexpr auto MakeShuffleMask(T1 x, T2 y, T3 z, T4 w) { return (x | (y<<2) | (z<<4) | (w<<6)); }
 
     // vec(0, 1, 2, 3) -> (vec[x], vec[y], vec[z], vec[w])
 #define VecSwizzle(vec, x,y,z,w)           _mm_shuffle_ps(vec, vec, MakeShuffleMask(x,y,z,w))
@@ -54,7 +55,7 @@ namespace Divide {
 #define VecShuffle_0101(vec1, vec2)        _mm_movelh_ps(vec1, vec2)
 #define VecShuffle_2323(vec1, vec2)        _mm_movehl_ps(vec2, vec1)
 
-#define SMALL_NUMBER		(1.e-8f)
+constexpr F32 SMALL_NUMBER = 1.e-8f;
 
 namespace AVX {
     //Ref: http://stackoverflow.com/questions/18499971/efficient-4x4-matrix-multiplication-c-vs-assembly
@@ -340,12 +341,6 @@ mat2<T>::mat2(const mat4<U> &B) noexcept
     : mat2(B[0], B[1],
            B[4], B[5])
 {
-}
-
-template<typename T>
-mat2<T>& mat2<T>::operator=(const mat2& other) noexcept {
-    set(other);
-    return *this;
 }
 
 template<typename T>
@@ -858,12 +853,6 @@ mat3<T>::mat3(const vec3<U>& rotStart, const vec3<U>& rotEnd) noexcept
     set(v.x * v.x * k + c, v.y * v.x * k - v.z, v.z * v.x * k + v.y,
         v.x * v.y * k + v.z, v.y * v.y * k + c, v.z * v.y * k - v.x,
         v.x * v.z * k - v.y, v.y * v.z * k + v.x, v.z * v.z * k + c);
-}
-
-template<typename T>
-mat3<T>& mat3<T>::operator=(const mat3& other) noexcept {
-    set(other);
-    return *this;
 }
 
 template<typename T>
@@ -1585,12 +1574,6 @@ mat4<T>::mat4(const Plane<U>& reflectionPlane) noexcept
     : mat4()
 {
     reflect(reflectionPlane);
-}
-
-template<typename T>
-mat4<T>& mat4<T>::operator=(const mat4& other) noexcept {
-    set(other);
-    return *this;
 }
 
 template<typename T>

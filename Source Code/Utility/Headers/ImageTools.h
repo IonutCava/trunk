@@ -66,7 +66,7 @@ struct ImageMip final : LayerData {
 
     ~ImageMip() = default;
 
-    [[nodiscard]] bufferPtr data() const final { return (bufferPtr)(_data.data()); }
+    [[nodiscard]] bufferPtr data() const override { return (bufferPtr)(_data.data()); }
 
 protected:
     vectorEASTL<T> _data;

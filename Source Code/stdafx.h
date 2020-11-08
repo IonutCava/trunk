@@ -85,6 +85,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define TINYXML_STATIC
 #endif
 
+
 #include <climits>
 #include <xmmintrin.h>
 #include <cstring>
@@ -126,9 +127,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <ArenaAllocator/arena_allocator.h>
 
-#include <chaiscript/include/chaiscript/chaiscript.hpp>
-#include <chaiscript/include/chaiscript/chaiscript_stdlib.hpp>
-#include <chaiscript/include/chaiscript/utility/utility.hpp>
+#include <ChaiScript/include/chaiscript/chaiscript.hpp>
+#include <ChaiScript/include/chaiscript/chaiscript_stdlib.hpp>
+#include <ChaiScript/include/chaiscript/utility/utility.hpp>
 
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>
@@ -146,6 +147,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Threading/Headers/SharedMutex.h"
 #include "Platform/Headers/ConditionalWait.h"
 #include "Core/Headers/NonCopyable.h"
+#include "Core/Headers/NonMovable.h"
 #include "Core/Headers/GUIDWrapper.h"
 
 #include "Core/TemplateLibraries/Headers/HashMap.h"

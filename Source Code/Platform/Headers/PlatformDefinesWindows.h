@@ -33,10 +33,10 @@
 #ifndef _PLATFORM_DEFINES_WINDOWS_H_
 #define _PLATFORM_DEFINES_WINDOWS_H_
 
-#pragma warning(disable : 4127)  //< constant conditional expressions
-#pragma warning(disable : 4201)  //< nameless struct
-#pragma warning(disable : 4522)  //< multiple assignment operators specified (MSVC 14)
-#pragma warning(disable : 4324)  //< structure was padded due to alignment specifier
+#pragma warning(disable : 4127)  ///< constant conditional expressions
+#pragma warning(disable : 4201)  ///< nameless struct
+#pragma warning(disable : 4522)  ///< multiple assignment operators specified (MSVC 14)
+#pragma warning(disable : 4324)  ///< structure was padded due to alignment specifier
 
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -76,7 +76,7 @@
 #define NO_INLINE __declspec(noinline)
 #endif //NO_INLINE
 
-#include <windows.h>
+#include <Windows.h>
 
 #ifdef DELETE
 #undef DELETE

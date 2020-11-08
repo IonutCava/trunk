@@ -50,8 +50,8 @@ class BoundingSphere {
     explicit BoundingSphere(const vectorEASTL<vec3<F32>>& points) noexcept;
     explicit BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
 
-    BoundingSphere(const BoundingSphere& s) noexcept;
-    BoundingSphere& operator=(const BoundingSphere& s) noexcept;
+    BoundingSphere(const BoundingSphere& s) noexcept = default;
+    BoundingSphere& operator=(const BoundingSphere& s) = default;
 
     void fromBoundingBox(const BoundingBox& bBox) noexcept;
     void fromBoundingSphere(const BoundingSphere& bSphere) noexcept;
@@ -81,14 +81,12 @@ class BoundingSphere {
 
     [[nodiscard]] bool collision(const BoundingSphere& sphere2) const noexcept;
 
-    [[nodiscard]] RayResult intersect(const Ray& r, F32 t0, F32 t1) const noexcept;
+    [[nodiscard]] RayResult intersect(const Ray& r, F32 tMin, F32 tMax) const noexcept;
 
 
    private:
-    bool _visibility, _dirty;
     vec3<F32> _center;
     F32 _radius;
-    //mutable SharedMutex _lock;
 };
 
 namespace Attorney {

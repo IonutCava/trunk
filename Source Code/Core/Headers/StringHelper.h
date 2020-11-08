@@ -65,9 +65,6 @@ namespace Divide {
         template<typename T_str = stringImpl>
         T_str GetStartingCharacters(const T_str& input, size_t count);
 
-        template<class FwdIt, class Compare = std::less<typename std::iterator_traits<FwdIt>::value_type>>
-        void InsertionSort(FwdIt first, FwdIt last, Compare cmp = Compare());
-
         template<typename T_strA = stringImpl, typename T_strB = stringImpl>
         bool CompareIgnoreCase(const T_strA& a, const T_strB& b) noexcept;
 

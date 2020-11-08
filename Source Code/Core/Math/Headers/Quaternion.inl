@@ -136,7 +136,7 @@ bool Quaternion<T>::compare(const Quaternion<T>& rq, Angle::DEGREES<T> tolerance
     T angleRad = Angle::to_RADIANS(static_cast<T>(std::acosf(to_F32(dot(rq)))));
     const F32 toleranceRad = Angle::to_RADIANS(tolerance);
 
-    return IS_TOLERANCE(angleRad, toleranceRad) || COMPARE_TOLERANCE(angleRad, to_F32(M_PI), toleranceRad);
+    return IS_TOLERANCE(angleRad, toleranceRad) || COMPARE_TOLERANCE(angleRad, M_PI_f, toleranceRad);
 }
 
 template <typename T>
@@ -639,7 +639,7 @@ Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T>
     } else if (d < (1e-6f - 1.0f)) {
         if (!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
-            q.fromAxisAngle(fallbackAxis, to_F32(M_PI));
+            q.fromAxisAngle(fallbackAxis, M_PI_f);
         } else {
             // Generate an axis
             vec3<T> axis;
@@ -649,7 +649,7 @@ Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T>
                 axis.cross(WORLD_Y_AXIS, v);
 
             axis.normalize();
-            q.fromAxisAngle(axis, to_F32(M_PI));
+            q.fromAxisAngle(axis, M_PI_f);
         }
     } else {
         const F32 s = Divide::Sqrt((1 + d) * 2.0f);
