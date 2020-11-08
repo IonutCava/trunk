@@ -2,7 +2,7 @@
 #define _UTILITY_CMN_
 
 #ifndef M_EPSILON
-#define M_EPSILON 0.0000001
+#define M_EPSILON 1e-5f
 #endif //M_EPSILON
 
 #ifndef M_PI

@@ -208,7 +208,7 @@ vec3 GetBRDF(in vec3 lightDir,
     const vec3  Hn  = normalize(toCamera + lightDir);
     const float vdh = clamp((dot(toCamera, Hn)), M_EPSILON, 1.0f);
     const float ndh = clamp((dot(normal, Hn)), M_EPSILON, 1.0f);
-    const float ndv = clamp((dot(normal, toCamera)), M_EPSILON, 1.0f);
+    const float ndv = abs(dot(normal, toCamera)) + M_EPSILON;
     const float ldh = clamp((dot(lightVec, Hn)), M_EPSILON, 1.0);
 
     // Material data

@@ -166,7 +166,6 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
 }
 
 void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) const {
-    constexpr bool USE_BUFFER_ORPHANING = true;
 
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", static_cast<bool>(_mappedBuffer != nullptr));
@@ -184,14 +183,16 @@ void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInByt
             std::memcpy(dest, data, rangeInBytes);
             if (_useExplicitFlush) {
                 glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
-            } else if (g_issueMemBarrierForCoherentBuffers) {
-                glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+            } else {
+                if_constexpr(g_issueMemBarrierForCoherentBuffers) {
+                    glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+                }
             }
         } else {
             DIVIDE_UNEXPECTED_CALL();
         }
     } else {
-        if (USE_BUFFER_ORPHANING && offsetInBytes == 0 && rangeInBytes == _alignedSize) {
+        if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
             glNamedBufferData(_handle, _alignedSize, data, _usage);
         } else {
             glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);

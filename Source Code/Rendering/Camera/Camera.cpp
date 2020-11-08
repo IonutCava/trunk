@@ -299,20 +299,55 @@ bool Camera::updateFrustum() {
 }
 
 vec3<F32> Camera::unProject(const F32 winCoordsX, const F32 winCoordsY, const Rect<I32>& viewport) const {
-    const vec2<F32> ndcSpace = { (winCoordsX - viewport.x) / (viewport.z * 0.5f) - 1.0f,
-                                (winCoordsY - viewport.y) / (viewport.w * 0.5f) - 1.0f };
+    const F32 offsetWinCoordsX = winCoordsX - viewport.x;
+    const F32 offsetWinCoordsY = winCoordsY - viewport.y;
+    const I32 winWidth = viewport.z;
+    const I32 winHeight = viewport.w;
 
-    const vec4<F32> clipSpace = { ndcSpace, -1.0f, 1.0f };
-    const vec4<F32> eyeSpace = { (GetInverse(getProjectionMatrix()) * clipSpace).xy -1.0f, 0.0f };
-    //World Space. world matrix = inverse(view matrix)
-    return Normalized((getWorldMatrix() * eyeSpace).xyz);
+    const vec2<F32> ndcSpace = {
+        offsetWinCoordsX / (winWidth * 0.5f) - 1.0f,
+        offsetWinCoordsY / (winHeight * 0.5f) - 1.0f
+    };
+
+    const vec4<F32> clipSpace = {
+        ndcSpace.x,
+        ndcSpace.y,
+        -1.0f, //z
+        1.0f   //w
+    };
+
+    const mat4<F32> invProjMatrix = GetInverse(getProjectionMatrix());
+
+    const vec2<F32> tempEyeSpace = (invProjMatrix * clipSpace).xy;
+
+    const vec4<F32> eyeSpace = {
+        tempEyeSpace.x,
+        tempEyeSpace.y,
+        -1.0f,    // z
+        0.0f      // w
+    };
+
+    const vec3<F32> worldSpace = (getWorldMatrix() * eyeSpace).xyz;
+    
+    return Normalized(worldSpace);
 }
 
 vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const noexcept {
-    const vec4<F32> clipSpace = getProjectionMatrix() * (getViewMatrix() * vec4<F32>(worldCoords, 1.0f));
-    const vec3<F32> ndcSpace = clipSpace.xyz / std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
-    const vec2<F32> winSpace = ((ndcSpace.xy + 1.0f) * 0.5f) * viewport.zw + viewport.xy;
-    return winSpace;
+    const vec2<F32> winOffset = viewport.xy;
+
+    const vec2<F32> winSize = viewport.zw;
+
+    const vec4<F32> viewSpace = getViewMatrix() * vec4<F32>(worldCoords, 1.0f);
+
+    const vec4<F32> clipSpace = getProjectionMatrix() * viewSpace;
+
+    const F32 clampedClipW = std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
+
+    const vec2<F32> ndcSpace = clipSpace.xy / clampedClipW;
+
+    const vec2<F32> winSpace = ((ndcSpace + 1.0f) * 0.5f) * winSize;
+
+    return winOffset + winSpace;
 }
 
 };
