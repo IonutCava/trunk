@@ -321,9 +321,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
     fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
     fragModule._defines.emplace_back("NODE_DYNAMIC", true);
-    if (!gfxDevice.context().config().rendering.shadowMapping.enabled) {
-        fragModule._defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
-    }
+    ProcessShadowMappingDefines(gfxDevice.context().config(), fragModule._defines);
     fragModule._variant = "Colour";
 
     ShaderProgramDescriptor shaderDescriptor = {};

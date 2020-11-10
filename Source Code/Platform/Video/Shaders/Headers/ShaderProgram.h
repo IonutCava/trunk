@@ -52,6 +52,7 @@ class ResourceCache;
 class ShaderProgramDescriptor;
 
 struct PushConstants;
+struct Configuration;
 
 enum class FileUpdateEvent : U8;
 
@@ -63,6 +64,7 @@ namespace Attorney {
 
 using ModuleDefines = vectorEASTL<std::pair<stringImpl, bool>>;
 
+
 struct ShaderModuleDescriptor {
     ModuleDefines _defines;
     Str64 _sourceFile;
@@ -70,6 +72,8 @@ struct ShaderModuleDescriptor {
     ShaderType _moduleType = ShaderType::COUNT;
     bool _batchSameFile = true;
 };
+
+void ProcessShadowMappingDefines(const Configuration& config, ModuleDefines& defines);
 
 class ShaderProgramDescriptor final : public PropertyDescriptor {
 public:

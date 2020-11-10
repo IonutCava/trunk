@@ -248,6 +248,8 @@ void RenderPackage::updateDrawCommands(const U32 dataIndex, U32 startOffset, U8 
             pushConstants(i).set(_ID("DATA_IDX"), GFX::PushConstantType::UINT, dataIndex);
         }
     }
+
+    lastDataIndex(dataIndex);
 }
 
 GFX::CommandBuffer* RenderPackage::commands() {

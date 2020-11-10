@@ -329,14 +329,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GL_API::s_hardwareQueryPool->init(
         {
             { GL_TIME_ELAPSED, 9 },
-            { GL_TRANSFORM_FEEDBACK_OVERFLOW, 6 },
+            //{ GL_TRANSFORM_FEEDBACK_OVERFLOW, 6 },
             { GL_VERTICES_SUBMITTED, 6 },
             { GL_PRIMITIVES_SUBMITTED, 6 },
             { GL_VERTEX_SHADER_INVOCATIONS, 6 },
             { GL_SAMPLES_PASSED, 6 },
             { GL_ANY_SAMPLES_PASSED, 6 },
             { GL_PRIMITIVES_GENERATED, 6 },
-            { GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, 6 },
+            //{ GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, 6 },
             { GL_ANY_SAMPLES_PASSED_CONSERVATIVE, 6 },
         }
     );

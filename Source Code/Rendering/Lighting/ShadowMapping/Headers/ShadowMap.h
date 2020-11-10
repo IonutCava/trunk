@@ -95,11 +95,11 @@ class NOINITVTABLE ShadowMap {
     static void bindShadowMaps(GFX::CommandBuffer& bufferInOut);
     static U16  lastUsedDepthMapOffset(ShadowType shadowType);
     static U16  findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount);
-    static U32  getLigthLayerRequirements(const Light& light);
+    static U32  getLightLayerRequirements(const Light& light);
     static void commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static bool freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
-    static void generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut);
+    static void generateShadowMaps(const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut);
 
     static ShadowType getShadowTypeForLightType(LightType type) noexcept;
     static LightType getLightTypeForShadowType(ShadowType type) noexcept;
@@ -118,7 +118,7 @@ class NOINITVTABLE ShadowMap {
     static std::array<LayerUsageMask, to_base(ShadowType::COUNT)> s_depthMapUsage;
     static std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> s_shadowMapGenerators;
 
-    static vectorEASTL<RenderTargetHandle> s_shadowMaps;
+    static std::array<RenderTargetHandle, to_base(ShadowType::COUNT)> s_shadowMaps;
     static vectorEASTL<DebugView_ptr> s_debugViews;
 
     static Light* s_shadowPreviewLight;

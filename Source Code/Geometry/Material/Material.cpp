@@ -577,6 +577,8 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     if (!receivesShadows()) {
         shaderName += ".NSHDW";
         fragDefines.emplace_back("DISABLE_SHADOW_MAPPING", true);
+    } else {
+        ProcessShadowMappingDefines(_parentCache->context().config(), fragDefines);
     }
 
     if (!_isStatic) {

@@ -119,7 +119,7 @@ struct RenderTargetHandle {
     {
     }
 
-    RenderTarget* _rt;
+    RenderTarget* _rt = nullptr;
     RenderTargetID _targetID;
 };
 

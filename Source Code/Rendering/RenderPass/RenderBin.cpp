@@ -55,7 +55,11 @@ void RenderBin::sort(const RenderStage stage, const RenderingOrder renderOrder) 
                             if (a._sortKeyB != b._sortKeyB) {
                                 return a._sortKeyB < b._sortKeyB;
                             }
-                            // Final fallback is front to back
+                            // If the data indices aren't consecutive, handle that first ...
+                            /*if (a._dataIndex != 0u && a._dataIndex != b._dataIndex + 1) {
+                                return a._dataIndex < b._dataIndex;
+                            }*/
+                            // ... and then finally fallback is front to back
                             return a._distanceToCameraSq < b._distanceToCameraSq;
                         });
         } break;
@@ -109,7 +113,7 @@ void RenderBin::refresh(RenderStage stage) {
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderStagePass& stagePass, const F32 minDistToCameraSq) {
+void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderPackage& pkg, const RenderStagePass& stagePass, const F32 minDistToCameraSq) {
     RenderingComponent* const rComp = sgn->get<RenderingComponent>();
 
     const U8 stageIndex = to_U8(stagePass._stage);
@@ -129,6 +133,9 @@ void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderStagePass& s
         item._sortKeyA = to_I64(_renderBinStack[stageIndex].size() + 1);
         item._sortKeyB = to_I32(item._sortKeyA);
     }
+
+    item._dataIndex = pkg.lastDataIndex();
+
     _renderBinStack[stageIndex].push_back(item);
 }
 

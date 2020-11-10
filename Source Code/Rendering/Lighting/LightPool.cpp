@@ -200,7 +200,7 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
         }
         dirty = true;
 
-        ShadowMap::generateShadowMaps(_context, playerCamera, *light, bufferInOut);
+        ShadowMap::generateShadowMaps(playerCamera, *light, bufferInOut);
         const Light::ShadowProperties& propsSource = light->getShadowProperties();
 
         const U32 shadowIndex = indexCounter[lTypeIndex]++;

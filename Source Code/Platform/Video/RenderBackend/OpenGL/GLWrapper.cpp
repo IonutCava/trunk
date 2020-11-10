@@ -1238,7 +1238,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
                 const TextureData& data = view._texture->data();
                 assert(IsValid(data));
-
+                if (data._textureType == TextureType::TEXTURE_CUBE_MAP) {
+                    view._layerRange.max *= 6;
+                } else if (data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+                    view._layerRange.min *= 6; //offset
+                    view._layerRange.max *= 6; //count
+                }
                 const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
 
                 auto[handle, cacheHit] = s_texturePool.allocate(view.getHash(), GL_NONE);
@@ -1527,14 +1532,21 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
             const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
             const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
 
+            vec2<GLuint> layerRange = it._view._layerRange;
+            if (data._textureType == TextureType::TEXTURE_CUBE_MAP) {
+                layerRange.max *= 6;
+            } else if (data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+                layerRange.min *= 6; //offset
+                layerRange.max *= 6; //count
+            }
             glTextureView(handle.first,
                 type,
                 data._textureHandle,
                 glInternalFormat,
                 static_cast<GLuint>(it._view._mipLevels.x),
                 static_cast<GLuint>(it._view._mipLevels.y),
-                static_cast<GLuint>(it._view._layerRange.x),
-                static_cast<GLuint>(it._view._layerRange.y));
+                layerRange.min,
+                layerRange.max);
         }
         bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle.first, getSamplerHandle(it._view._samplerHash)) || bound;
         // Self delete after 3 frames unless we use it again

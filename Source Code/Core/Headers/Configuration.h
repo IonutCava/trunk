@@ -84,6 +84,7 @@ struct Configuration final : public XML::IXMLSerializable {
         U8 MSAASamples = 0u;
         U8 anisotropicFilteringLevel = 0u;
         bool enableBlurring = false;
+        bool enabled = true;
     };
 
     struct Terrain

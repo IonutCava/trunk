@@ -98,10 +98,10 @@ void main()
     const vec3 incident = normalize(worldToEye);
     const vec3 normalWV = getNormalWV(VAR._texCoord);
 
-    const vec4 texColour = _underwater ? refractionColour
-                                       : mix(refractionColour,
-                                             reflectionColour,
-                                             Fresnel(incident, mat3(dvd_InverseViewMatrix) * normalWV));
+    const vec4 texColour = (_underwater == 1) ? refractionColour
+                                              : mix(refractionColour,
+                                                    reflectionColour,
+                                                    Fresnel(incident, mat3(dvd_InverseViewMatrix) * normalWV));
     
     vec4 outColour = getPixelColour(vec4(texColour.rgb, 1.0f), data, normalWV, VAR._texCoord);
 

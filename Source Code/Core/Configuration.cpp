@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "Headers/Configuration.h"
+
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
@@ -74,22 +75,39 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.ssaoKernelSizeIndex);
         GET_PARAM(rendering.postFX.ssaoPower);
         GET_PARAM(rendering.shadowMapping.enabled);
+        GET_PARAM(rendering.shadowMapping.csm.enabled);
         GET_PARAM(rendering.shadowMapping.csm.shadowMapResolution);
         GET_PARAM(rendering.shadowMapping.csm.MSAASamples);
         GET_PARAM(rendering.shadowMapping.csm.enableBlurring);
         GET_PARAM(rendering.shadowMapping.csm.splitLambda);
         GET_PARAM(rendering.shadowMapping.csm.splitCount);
         GET_PARAM(rendering.shadowMapping.csm.anisotropicFilteringLevel);
+        GET_PARAM(rendering.shadowMapping.spot.enabled);
         GET_PARAM(rendering.shadowMapping.spot.shadowMapResolution);
         GET_PARAM(rendering.shadowMapping.spot.MSAASamples);
         GET_PARAM(rendering.shadowMapping.spot.enableBlurring);
         GET_PARAM(rendering.shadowMapping.spot.anisotropicFilteringLevel);
+        GET_PARAM(rendering.shadowMapping.point.enabled);
         GET_PARAM(rendering.shadowMapping.point.shadowMapResolution);
 
         GET_PARAM(title);
         GET_PARAM(defaultTextureLocation);
         GET_PARAM(defaultShadersLocation);
 
+        if (rendering.shadowMapping.enabled) {
+            if (!rendering.shadowMapping.csm.enabled &&
+                !rendering.shadowMapping.spot.enabled &&
+                !rendering.shadowMapping.point.enabled)
+            {
+                rendering.shadowMapping.enabled = false;
+            }
+        } else {
+            if (rendering.shadowMapping.csm.enabled ||
+                rendering.shadowMapping.spot.enabled ||
+                rendering.shadowMapping.point.enabled) {
+                rendering.shadowMapping.enabled = true;
+            }
+        }
         return true;
     }
 
@@ -164,16 +182,19 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.ssaoPower);
         PUT_PARAM(rendering.postFX.ssaoKernelSizeIndex);
         PUT_PARAM(rendering.shadowMapping.enabled);
+        PUT_PARAM(rendering.shadowMapping.csm.enabled);
         PUT_PARAM(rendering.shadowMapping.csm.shadowMapResolution);
         PUT_PARAM(rendering.shadowMapping.csm.MSAASamples);
         PUT_PARAM(rendering.shadowMapping.csm.enableBlurring);
         PUT_PARAM(rendering.shadowMapping.csm.splitLambda);
         PUT_PARAM(rendering.shadowMapping.csm.splitCount);
         PUT_PARAM(rendering.shadowMapping.csm.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.shadowMapping.spot.enabled);
         PUT_PARAM(rendering.shadowMapping.spot.shadowMapResolution);
         PUT_PARAM(rendering.shadowMapping.spot.MSAASamples);
         PUT_PARAM(rendering.shadowMapping.spot.enableBlurring);
         PUT_PARAM(rendering.shadowMapping.spot.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.shadowMapping.point.enabled);
         PUT_PARAM(rendering.shadowMapping.point.shadowMapResolution);
 
         PUT_PARAM(title);

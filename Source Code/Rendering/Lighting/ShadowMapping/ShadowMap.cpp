@@ -29,19 +29,19 @@ std::array<ShadowMap::LayerUsageMask, to_base(ShadowType::COUNT)> ShadowMap::s_d
 std::array<ShadowMapGenerator*, to_base(ShadowType::COUNT)> ShadowMap::s_shadowMapGenerators;
 
 vectorEASTL<DebugView_ptr> ShadowMap::s_debugViews;
-vectorEASTL<RenderTargetHandle> ShadowMap::s_shadowMaps;
+std::array<RenderTargetHandle, to_base(ShadowType::COUNT)> ShadowMap::s_shadowMaps;
 Light* ShadowMap::s_shadowPreviewLight = nullptr;
 
 std::array<U16, to_base(ShadowType::COUNT)> ShadowMap::s_shadowPassIndex;
 std::array<ShadowMap::ShadowCameraPool, to_base(ShadowType::COUNT)> ShadowMap::s_shadowCameras;
 
-ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, ShadowType type) noexcept
+ShadowMapGenerator::ShadowMapGenerator(GFXDevice& context, const ShadowType type) noexcept
     : _context(context),
       _type(type)
 {
 }
 
-ShadowType ShadowMap::getShadowTypeForLightType(LightType type) noexcept {
+ShadowType ShadowMap::getShadowTypeForLightType(const LightType type) noexcept {
     switch (type) {
         case LightType::DIRECTIONAL: return ShadowType::LAYERED;
         case LightType::POINT: return ShadowType::CUBEMAP;
@@ -52,7 +52,7 @@ ShadowType ShadowMap::getShadowTypeForLightType(LightType type) noexcept {
     return ShadowType::COUNT;
 }
 
-LightType ShadowMap::getLightTypeForShadowType(ShadowType type) noexcept {
+LightType ShadowMap::getLightTypeForShadowType(const ShadowType type) noexcept {
     switch (type) {
         case ShadowType::LAYERED: return LightType::DIRECTIONAL;
         case ShadowType::CUBEMAP: return LightType::POINT;
@@ -93,10 +93,19 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
     RenderTargetHandle crtTarget;
     for (U8 i = 0; i < to_U8(ShadowType::COUNT); ++i) {
+        s_depthMapUsage[i].resize(0);
+
         switch (static_cast<ShadowType>(i)) {
             case ShadowType::LAYERED:
             case ShadowType::SINGLE: {
                 const bool isCSM = i == to_U8(ShadowType::LAYERED);
+                if (isCSM && !settings.csm.enabled) {
+                    continue;
+                }
+                if (!isCSM && !settings.spot.enabled) {
+                    continue;
+                }
+
                 depthMapSampler.anisotropyLevel(isCSM ? settings.csm.anisotropicFilteringLevel : settings.spot.anisotropicFilteringLevel);
 
                 // Default filters, LINEAR is OK for this
@@ -123,6 +132,10 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                 }
             } break;
             case ShadowType::CUBEMAP: {
+                if (!settings.point.enabled) {
+                    continue;
+                }
+
                 TextureDescriptor colourMapDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
                 colourMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS);
                 colourMapDescriptor.autoMipMaps(false);
@@ -151,9 +164,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
             } break;
             default: break;
         };
-        s_shadowMaps.push_back(crtTarget);
-
-        s_depthMapUsage[i].resize(0);
+        s_shadowMaps[i] = crtTarget;
     }
 }
 
@@ -169,11 +180,11 @@ void ShadowMap::destroyShadowMaps(GFXDevice& context) {
 
     for (RenderTargetHandle& handle : s_shadowMaps) {
         context.renderTargetPool().deallocateRT(handle);
+        handle._rt = nullptr;
     }
-    s_shadowMaps.clear();
 
     for (ShadowMapGenerator* smg : s_shadowMapGenerators) {
-        MemoryManager::DELETE(smg);
+        MemoryManager::SAFE_DELETE(smg);
     }
 
     s_shadowMapGenerators.fill(nullptr);
@@ -190,13 +201,16 @@ void ShadowMap::resetShadowMaps() {
 void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
-        const ShadowType shadowType = static_cast<ShadowType>(i);
-        const LightType lightType = getLightTypeForShadowType(shadowType);
+        RenderTargetHandle& sm = s_shadowMaps[i];
+        if (sm._rt == nullptr) {
+            continue;
+        }
 
+        const ShadowType shadowType = static_cast<ShadowType>(i);
         const U16 useCount = lastUsedDepthMapOffset(shadowType);
 
         const U8 bindSlot = LightPool::getShadowBindSlotOffset(static_cast<ShadowType>(i));
-        const RTAttachment& shadowTexture = getDepthMap(lightType)._rt->getAttachment(RTAttachmentType::Colour, 0);
+        const RTAttachment& shadowTexture = sm._rt->getAttachment(RTAttachmentType::Colour, 0);
         const TextureDescriptor& texDescriptor = shadowTexture.descriptor()._texDescriptor;
 
         if (IS_IN_RANGE_EXCLUSIVE(useCount, to_U16(0u), texDescriptor.layerCount())) {
@@ -218,7 +232,7 @@ void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
     GFX::ResetAndClearRenderTargetCommand resetRenderTargetCommand;
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         // no need to clear layered FBO as we will just blit into it anyway
-        if (i == to_base(ShadowType::LAYERED)) {
+        if (i == to_base(ShadowType::LAYERED) || s_shadowMaps[i]._rt == nullptr) {
             continue;
         }
         resetRenderTargetCommand._source = RenderTargetID(RenderTargetUsage::SHADOW, i);
@@ -231,7 +245,7 @@ void ShadowMap::clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut) {
     resetShadowMaps();
 }
 
-U16 ShadowMap::lastUsedDepthMapOffset(ShadowType shadowType) {
+U16 ShadowMap::lastUsedDepthMapOffset(const ShadowType shadowType) {
     UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
     const LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
 
@@ -244,7 +258,7 @@ U16 ShadowMap::lastUsedDepthMapOffset(ShadowType shadowType) {
     return to_U16(usageMask.size());
 }
 
-U16 ShadowMap::findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount) {
+U16 ShadowMap::findFreeDepthMapOffset(const ShadowType shadowType, const U32 layerCount) {
     UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
 
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
@@ -265,7 +279,7 @@ U16 ShadowMap::findFreeDepthMapOffset(ShadowType shadowType, U32 layerCount) {
     return layer;
 }
 
-void ShadowMap::commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount) {
+void ShadowMap::commitDepthMapOffset(const ShadowType shadowType, const U32 layerOffest, const U32 layerCount) {
     UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
 
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
@@ -274,7 +288,7 @@ void ShadowMap::commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32
     }
 }
 
-bool ShadowMap::freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount) {
+bool ShadowMap::freeDepthMapOffset(const ShadowType shadowType, const U32 layerOffest, const U32 layerCount) {
     UniqueLock<Mutex> w_lock(s_depthMapUsageLock);
 
     LayerUsageMask& usageMask = s_depthMapUsage[to_U32(shadowType)];
@@ -285,24 +299,24 @@ bool ShadowMap::freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 l
     return true;
 }
 
-U32 ShadowMap::getLigthLayerRequirements(const Light& light) {
+U32 ShadowMap::getLightLayerRequirements(const Light& light) {
     switch (light.getLightType()) {
         case LightType::DIRECTIONAL: return to_U32(static_cast<const DirectionalLightComponent&>(light).csmSplitCount());
         case LightType::SPOT: return 1u;
         case LightType::POINT: return 6u;
+        case LightType::COUNT:
         default: break;
     }
 
     return 0u;
 }
 
-void ShadowMap::generateShadowMaps(PlatformContext& context, const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut) {
-    const U32 layerRequirement = getLigthLayerRequirements(light);
-    if (layerRequirement == 0u) {
+void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut) {
+    const U32 layerRequirement = getLightLayerRequirements(light);
+    const ShadowType sType = getShadowTypeForLightType(light.getLightType());
+    if (layerRequirement == 0u || s_shadowMapGenerators[to_base(sType)] == nullptr) {
         return;
     }
-
-    const ShadowType sType = getShadowTypeForLightType(light.getLightType());
 
     const U16 offset = findFreeDepthMapOffset(sType, layerRequirement);
     light.setShadowOffset(offset);
@@ -311,12 +325,14 @@ void ShadowMap::generateShadowMaps(PlatformContext& context, const Camera& playe
     bindShadowMaps(bufferInOut);
 }
 
-const RenderTargetHandle& ShadowMap::getDepthMap(LightType type) {
+const RenderTargetHandle& ShadowMap::getDepthMap(const LightType type) {
     return s_shadowMaps[to_base(getShadowTypeForLightType(type))];
 }
 
-void ShadowMap::setMSAASampleCount(ShadowType type, U8 sampleCount) {
-    s_shadowMapGenerators[to_base(type)]->updateMSAASampleCount(sampleCount);
+void ShadowMap::setMSAASampleCount(const ShadowType type, const U8 sampleCount) {
+    if (s_shadowMapGenerators[to_base(type)] != nullptr) {
+        s_shadowMapGenerators[to_base(type)]->updateMSAASampleCount(sampleCount);
+    }
 }
 
 void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
@@ -422,7 +438,7 @@ void ShadowMap::setDebugViewLight(GFXDevice& context, Light* light) {
                 }
             } break;
             default: break;
-        };
+        }
 
         for (const DebugView_ptr& view : s_debugViews) {
             context.addDebugView(view);

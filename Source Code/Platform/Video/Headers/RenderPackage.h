@@ -125,6 +125,7 @@ public:
     PROPERTY_RW(bool, autoIndexBuffer,  false);
     PROPERTY_RW(bool, textureDataDirty, true);
     PROPERTY_RW(MinQuality, qualityRequirement, MinQuality::FULL);
+    PROPERTY_RW(U32, lastDataIndex, 0u);
 
 protected:
     void updateDrawCommands(U32 dataIndex, U32 startOffset, U8 lodLevel);

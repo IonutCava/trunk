@@ -2,6 +2,8 @@
 
 #include "Headers/ShaderProgram.h"
 
+
+#include "Core/Headers/Configuration.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
@@ -20,6 +22,22 @@ ShaderProgram::ShaderProgramMap ShaderProgram::s_shaderPrograms;
 
 SharedMutex ShaderProgram::s_programLock;
 std::atomic_int ShaderProgram::s_shaderCount;
+
+void ProcessShadowMappingDefines(const Configuration& config, ModuleDefines& defines) {
+    if (!config.rendering.shadowMapping.enabled) {
+        defines.emplace_back("DISABLE_SHADOW_MAPPING", true);
+    } else {
+        if (!config.rendering.shadowMapping.csm.enabled) {
+            defines.emplace_back("DISABLE_SHADOW_MAPPING_CSM", true);
+        }
+        if (!config.rendering.shadowMapping.spot.enabled) {
+            defines.emplace_back("DISABLE_SHADOW_MAPPING_SPOT", true);
+        }
+        if (!config.rendering.shadowMapping.point.enabled) {
+            defines.emplace_back("DISABLE_SHADOW_MAPPING_POINT", true);
+        }
+    }
+}
 
 size_t ShaderProgramDescriptor::getHash() const noexcept {
     _hash = PropertyDescriptor::getHash();

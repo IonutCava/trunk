@@ -137,12 +137,13 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePas
     RenderingComponent* const renderingCmp = sgn->get<RenderingComponent>();
     // We need a rendering component to render the node
     assert(renderingCmp != nullptr);
-    if (!renderingCmp->getDrawPackage(stagePass).empty()) {
+    const RenderPackage& pkg = renderingCmp->getDrawPackage(stagePass);
+    if (!pkg.empty()) {
         RenderBin* rb = getBinForNode(sgn, renderingCmp->getMaterialInstance());
         assert(rb != nullptr);
 
         if (targetBinType._value == RenderBinType::RBT_COUNT || rb->getType() == targetBinType) {
-            rb->addNodeToBin(sgn, stagePass, minDistToCameraSq);
+            rb->addNodeToBin(sgn, pkg, stagePass, minDistToCameraSq);
         }
     }
 }

@@ -56,8 +56,9 @@ namespace GFX {
 struct RenderBinItem {
     RenderingComponent* _renderable = nullptr;
     size_t _stateHash = 0;
-    I64 _sortKeyA = -1;
-    I32 _sortKeyB = -1;
+    I64 _sortKeyA = -1; ///< Shader key
+    I32 _sortKeyB = -1; ///< Texture key
+    U32 _dataIndex = 0u;///< Node Data entry
     F32 _distanceToCameraSq = 0.0f;
 };
 
@@ -112,6 +113,7 @@ class RenderBin {
     void refresh(RenderStage stage);
 
     void addNodeToBin(const SceneGraphNode* sgn,
+                      const RenderPackage& pkg,
                       const RenderStagePass& renderStagePass,
                       F32 minDistToCameraSq);
 

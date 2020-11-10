@@ -156,9 +156,8 @@ bool WaterPlane::load() {
     ModuleDefines globalDefines = {};
     globalDefines.emplace_back("COMPUTE_TBN", true);
     globalDefines.emplace_back("NODE_STATIC", true);
-    if (!_parentCache->context().config().rendering.shadowMapping.enabled) {
-        globalDefines.emplace_back("DISABLE_SHADOW_MAPPING", true);
-    }
+
+    ProcessShadowMappingDefines(_parentCache->context().config(), globalDefines);
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;

@@ -137,18 +137,53 @@ float luminance(in vec3 rgb) {
     return max(dot(rgb, kLum), 0.0001); // prevent zero result
 }
 
-const float gamma = 2.2;
-const float invGamma = 1.0 / gamma;
-const vec3 invGammaVec = vec3(invGamma);
-const vec3 gammaVec = vec3(gamma);
+// ----------------- LINEAR <-> SRGB -------------------------
+// Accurate variants from Frostbite notes: https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 
-float ToLinear(float v) { return pow(v, gamma); }
-vec3  ToLinear(vec3 v)  { return pow(v, gammaVec); }
-vec4  ToLinear(vec4 v)  { return vec4(pow(v.rgb, gammaVec), v.a); }
+#define detail__gamma 2.2f
 
-float ToSRGB(float v) { return pow(v, invGamma); }
-vec3  ToSRGB(vec3 v)  { return pow(v, invGammaVec); }
-vec4  ToSRGB(vec4 v)  { return vec4(pow(v.rgb, invGammaVec), v.a);}
+vec3 ToLinear(in vec3 sRGBCol)  {
+    return pow(sRGBCol, vec3(detail__gamma));
+}
+
+vec4 ToLinear(in vec4 sRGBCol)  {
+    return vec4(ToLinear(sRGBCol.rgb), sRGBCol.a);
+}
+
+vec3 ToLinearAccurate(in vec3 sRGBCol) {
+    vec3 linearRGBLo = sRGBCol / 12.92f; 
+    vec3 linearRGBHi = pow((sRGBCol + 0.055f) / 1.055f, vec3(2.4f));
+    
+    return vec3((sRGBCol.r <= 0.04045f) ? linearRGBLo.r : linearRGBHi.r,
+                (sRGBCol.g <= 0.04045f) ? linearRGBLo.g : linearRGBHi.g,
+                (sRGBCol.b <= 0.04045f) ? linearRGBLo.b : linearRGBHi.b);
+}
+
+vec4 ToLinearAccurate(in vec4 sRGBCol) {
+    return vec4(ToLinearAccurate(sRGBCol.rgb), sRGBCol.a);
+}
+
+vec3  ToSRGB(vec3 linearCol)  {
+    return pow(linearCol, vec3(1.0f / detail__gamma));
+}
+
+vec4  ToSRGB(vec4 linearCol)  {
+    return vec4(ToSRGB(linearCol.rgb), linearCol.a);
+}
+
+vec3  ToSRGBAccurate(vec3 linearCol) {
+    vec3  sRGBLo = linearCol * 12.92f;
+    vec3  sRGBHi = (pow(abs(linearCol), vec3(1.0f / 2.4f)) * 1.055f) - 0.055f;
+
+    return vec3((linearCol.r <= 0.0031308f) ? sRGBLo.r : sRGBHi.r,
+                (linearCol.g <= 0.0031308f) ? sRGBLo.g : sRGBHi.g,
+                (linearCol.b <= 0.0031308f) ? sRGBLo.b : sRGBHi.b);
+}
+
+vec4  ToSRGBAccurate(vec4 linearCol) {
+    return vec4(ToSRGBAccurate(linearCol.rgb), linearCol.a);
+}
+// ---------------------------------------------------------------------
 
 #define dvd_screenPositionNormalised (gl_FragCoord.xy / dvd_ViewPort.zw)
 
