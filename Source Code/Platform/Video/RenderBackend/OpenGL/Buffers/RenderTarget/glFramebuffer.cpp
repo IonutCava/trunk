@@ -94,10 +94,11 @@ void glFramebuffer::initAttachment(const RTAttachmentType type, const U8 index) 
         tex = attachment->texture(false).get();
     }
     assert(IsValid(tex->data()));
+
     // Find the appropriate binding point
-    GLenum attachmentEnum;
     if (type == RTAttachmentType::Depth) {
-        attachmentEnum = GL_DEPTH_ATTACHMENT;
+        attachment->binding(to_U32(GL_DEPTH_ATTACHMENT));
+
         const TextureType texType = tex->data()._textureType;
         _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
                            texType == TextureType::TEXTURE_2D_ARRAY_MS ||
@@ -105,38 +106,43 @@ void glFramebuffer::initAttachment(const RTAttachmentType type, const U8 index) 
                            texType == TextureType::TEXTURE_CUBE_ARRAY ||
                            texType == TextureType::TEXTURE_3D);
     } else {
-        attachmentEnum = GLenum(static_cast<U32>(GL_COLOR_ATTACHMENT0) + index);
+        attachment->binding(to_U32(GL_COLOR_ATTACHMENT0) + index);
     }
 
-    attachment->binding(to_U32(attachmentEnum));
     attachment->clearChanged();
 }
 
-void glFramebuffer::toggleAttachment(const RTAttachment& attachment, AttachmentState state, bool layeredRendering) {
-    OPTICK_EVENT();
+void glFramebuffer::toggleAttachment(const RTAttachment& attachment, const AttachmentState state, bool layeredRendering) {
+    OPTICK_EVENT()
+
+    if (!attachment.used()) {
+        return;
+    }
 
     const Texture_ptr& tex = attachment.texture(false);
     if (layeredRendering && tex->numLayers() == 1 && !tex->descriptor().isCubeTexture()) {
         layeredRendering = false;
     }
 
-    if(attachment.used() && state != AttachmentState::STATE_DISABLED) {
-        const GLenum binding = static_cast<GLenum>(attachment.binding());
-        const BindingState bState{ state,
-                                   attachment.mipWriteLevel(),
-                                   attachment.writeLayer(),
-                                   layeredRendering };
-        // Compare with old state
-        if (bState != getAttachmentState(binding)) {
+    const GLenum binding = static_cast<GLenum>(attachment.binding());
+    const BindingState bState{ state,
+                               attachment.mipWriteLevel(),
+                               attachment.writeLayer(),
+                               layeredRendering };
+    // Compare with old state
+    if (bState != getAttachmentState(binding)) {
+        if (state == AttachmentState::STATE_DISABLED) {
+            glNamedFramebufferTexture(_framebufferHandle, binding, 0u, 0);
+        } else {
             const GLuint handle = tex->data()._textureHandle;
             if (layeredRendering) {
                 glNamedFramebufferTextureLayer(_framebufferHandle, binding, handle, bState._writeLevel, bState._writeLayer);
             } else {
                 glNamedFramebufferTexture(_framebufferHandle, binding, handle, bState._writeLevel);
             }
-            queueCheckStatus();
-            setAttachmentState(binding, bState);
         }
+        queueCheckStatus();
+        setAttachmentState(binding, bState);
     }
 }
 
@@ -161,7 +167,7 @@ bool glFramebuffer::create() {
 }
 
 namespace BlitHelpers {
-    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, U16 layer) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const U16 layer) {
         const bool layerChanged = att->writeLayer(layer);
         if (layerChanged || att->numLayers() > 0) {
             const glFramebuffer::BindingState& state = fbo->getAttachmentState(static_cast<GLenum>(att->binding()));
@@ -170,20 +176,20 @@ namespace BlitHelpers {
         return att;
     };
 
-    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const ColourBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const ColourBlitEntry& entry, const bool isInput) {
         return prepareAttachments(fbo, att, isInput ? entry.input()._layer : entry.output()._layer);
     };
 
-    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const DepthBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, RTAttachment* att, const DepthBlitEntry& entry, const bool isInput) {
         return prepareAttachments(fbo, att, isInput ? entry._inputLayer : entry._outputLayer);
     };
 
-    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const ColourBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const ColourBlitEntry& entry, const bool isInput) {
         RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Colour, to_U8(entry.input()._index)).get();
         return prepareAttachments(fbo, att, entry, isInput);
     };
 
-    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const DepthBlitEntry& entry, bool isInput) {
+    inline RTAttachment* prepareAttachments(glFramebuffer* fbo, const DepthBlitEntry& entry, const bool isInput) {
         RTAttachment* att = fbo->getAttachmentPtr(RTAttachmentType::Depth, 0u).get();
         return prepareAttachments(fbo, att, entry, isInput);
     };
@@ -202,6 +208,20 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
     const vec2<U16>& outputDim = output->_descriptor._resolution;
 
     bool blittedDepth = false;
+
+    const bool depthMisMatch = input->hasDepth() != output->hasDepth();
+    if (depthMisMatch) {
+        if (input->hasDepth()) {
+            RTAttachment* att = input->getAttachmentPtr(RTAttachmentType::Depth, 0u).get();
+            input->toggleAttachment(*att, AttachmentState::STATE_DISABLED, false);
+        }
+
+        if (output->hasDepth()) {
+            RTAttachment* att = output->getAttachmentPtr(RTAttachmentType::Depth, 0u).get();
+            output->toggleAttachment(*att, AttachmentState::STATE_DISABLED, false);
+        }
+    }
+
     // Multiple attachments, multiple layers, multiple everything ... what a mess ... -Ionut
     if (params.hasBlitColours() && hasColour()) {
 
@@ -260,18 +280,22 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
             BlitHelpers::prepareAttachments(output, outAtt.get(), entry, false);
 
             // If we change layers, then the depth buffer should match that ... I guess ... this sucks!
-            if (input->hasDepth()) {
-                BlitHelpers::prepareAttachments(input, entry, true);
-            }
+            if (!depthMisMatch) {
+                if (input->hasDepth()) {
+                    BlitHelpers::prepareAttachments(input, entry, true);
+                }
 
-            if (output->hasDepth()) {
-                BlitHelpers::prepareAttachments(output, entry, false);
+                if (output->hasDepth()) {
+                    BlitHelpers::prepareAttachments(output, entry, false);
+                }
             }
 
             blittedDepth = (!blittedDepth &&
+                            !depthMisMatch &&
                             params._blitDepth._inputLayer == inputLayer &&
                             params._blitDepth._outputLayer == outputLayer);
-            
+            checkStatus();
+
             glBlitNamedFramebuffer(input->_framebufferHandle,
                                    output->_framebufferHandle,
                                    0, 0,
@@ -286,9 +310,10 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
         }
     }
 
-    if (!blittedDepth && hasDepth() && IsValid(params._blitDepth)) {
+    if (!depthMisMatch && !blittedDepth && IsValid(params._blitDepth)) {
                                BlitHelpers::prepareAttachments(input, params._blitDepth, true);
         RTAttachment* outAtt = BlitHelpers::prepareAttachments(output,  params._blitDepth, false);
+        checkStatus();
 
         glBlitNamedFramebuffer(input->_framebufferHandle,
                                output->_framebufferHandle,
@@ -646,7 +671,7 @@ bool glFramebuffer::checkStatus() {
     OPTICK_EVENT();
 
     if (!_statusCheckQueued) {
-        //return true;
+        return true;
     }
 
     _statusCheckQueued = false;
