@@ -182,7 +182,7 @@ void main()
          
         for (int j = 0 ; j < ringsamples ; j += 1)   
         {
-            float step = PI*2.0 / float(ringsamples);
+            float step = M_PI *2.0f / float(ringsamples);
             float pw = (cos(float(j)*step)*float(i));
             float ph = (sin(float(j)*step)*float(i));
             float p = 1.0;

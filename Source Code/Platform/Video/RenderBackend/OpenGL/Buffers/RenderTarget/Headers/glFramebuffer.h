@@ -86,7 +86,7 @@ class glFramebuffer final : public RenderTarget,
 
     void setMipLevel(U16 writeLevel);
 
-    void setBlendState(const RTBlendStates& blendState) const;
+    void setBlendState(const RTBlendStates& blendStates) const;
 
     void readData(const vec4<U16>& rect,
                   GFXImageFormat imageFormat,
@@ -105,7 +105,7 @@ protected:
     void queueCheckStatus() noexcept;
     bool checkStatus();
 
-    void setBlendState(const RTBlendStates& blendState, const RTAttachmentPool::PoolEntry& activeAttachments) const;
+    void setBlendState(const RTBlendStates& blendStates, const RTAttachmentPool::PoolEntry& activeAttachments) const;
     void prepareBuffers(const RTDrawDescriptor& drawPolicy, const RTAttachmentPool::PoolEntry& activeAttachments);
 
     void initAttachment(RTAttachmentType type, U8 index);

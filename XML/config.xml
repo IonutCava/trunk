@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- DEBUG: General purpose settings needed while the application is loading -->
 <debug>
-	<enableRenderAPIDebugging>false</enableRenderAPIDebugging>
+	<enableRenderAPIDebugging>true</enableRenderAPIDebugging>
 	<useGeometryCache>true</useGeometryCache>
 	<useVegetationCache>true</useVegetationCache>
 	<enableTreeInstances>false</enableTreeInstances>
@@ -82,7 +82,7 @@
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
 		<PostAAQualityLevel>2</PostAAQualityLevel>
 		<enableAdaptiveToneMapping>true</enableAdaptiveToneMapping>
-		<enableDepthOfField>false</enableDepthOfField>
+		<enableDepthOfField>true</enableDepthOfField>
 		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
 		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->
 		<enableCameraBlur>true</enableCameraBlur>
@@ -100,7 +100,8 @@
 		<enabled>true</enabled>
 		<!-- Resolution will be rounded up to the next POW_2. -->
 		<csm>
-			<shadowMapResolution>512</shadowMapResolution>
+            <enabled>true</enabled>
+            <shadowMapResolution>512</shadowMapResolution>
 			<MSAASamples>2</MSAASamples>
 			<enableBlurring>true</enableBlurring>
 			<anisotropicFilteringLevel>2</anisotropicFilteringLevel>
@@ -108,13 +109,15 @@
 			<splitCount>3</splitCount>
 		</csm>
 		<spot>
-			<shadowMapResolution>512</shadowMapResolution>
+            <enabled>true</enabled>
+            <shadowMapResolution>512</shadowMapResolution>
 			<MSAASamples>0</MSAASamples>
 			<enableBlurring>false</enableBlurring>
 			<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 		</spot>
 		<point>
-			<shadowMapResolution>512</shadowMapResolution>
+            <enabled>true</enabled>
+            <shadowMapResolution>512</shadowMapResolution>
 			<enableBlurring>false</enableBlurring>
 			<anisotropicFilteringLevel>4</anisotropicFilteringLevel>
 		</point>
