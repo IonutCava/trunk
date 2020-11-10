@@ -82,6 +82,7 @@ namespace TypeUtil {
 
 namespace {
     constexpr U32 GROUP_SIZE_AABB = 64;
+    constexpr U32 MAX_INVOCATIONS_BLUR_SHADER_LAYERED = 4;
 };
 
 D64 GFXDevice::s_interpolationFactor = 1.0;
@@ -624,64 +625,101 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
         previewReflectionRefractionDepth.propertyDescriptor(shaderDescriptor);
         _previewRenderTargetDepth = CreateResource<ShaderProgram>(cache, previewReflectionRefractionDepth, loadTasks);
     }
+    ShaderModuleDescriptor blurVertModule = {};
+    blurVertModule._moduleType = ShaderType::VERTEX;
+    blurVertModule._sourceFile = "baseVertexShaders.glsl";
+    blurVertModule._variant = "FullScreenQuad";
     {
-        ShaderModuleDescriptor vertModule = {};
-        vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "baseVertexShaders.glsl";
-        vertModule._variant = "FullScreenQuad";
-
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
         fragModule._sourceFile = "blur.glsl";
         fragModule._variant = "Generic";
 
-        ShaderProgramDescriptor shaderDescriptor = {};
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.push_back(fragModule);
+        {
+            ShaderProgramDescriptor shaderDescriptorSingle = {};
+            shaderDescriptorSingle._modules.push_back(blurVertModule);
+            shaderDescriptorSingle._modules.push_back(fragModule);
 
-        ResourceDescriptor blur("blurGeneric");
-        blur.propertyDescriptor(shaderDescriptor);
-        _blurBoxShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
-        _blurBoxShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
-            ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
-            PipelineDescriptor pipelineDescriptor;
-            pipelineDescriptor._stateHash = get2DStateBlock();
-            pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
-            _BlurBoxPipeline = newPipeline(pipelineDescriptor);
-        });
+            ResourceDescriptor blur("BoxBlur_Single");
+            blur.propertyDescriptor(shaderDescriptorSingle);
+            _blurBoxShaderSingle = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+            _blurBoxShaderSingle->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+                ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
+                PipelineDescriptor pipelineDescriptor;
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+                _BlurBoxPipelineSingle = newPipeline(pipelineDescriptor);
+            });
+        }
+        {
+            ShaderProgramDescriptor shaderDescriptorLayered = {};
+            shaderDescriptorLayered._modules.push_back(blurVertModule);
+            shaderDescriptorLayered._modules.push_back(fragModule);
+            shaderDescriptorLayered._modules.back()._variant += ".Layered";
+            shaderDescriptorLayered._modules.back()._defines.emplace_back("LAYERED", true);
+
+            ResourceDescriptor blur("BoxBlur_Layered");
+            blur.propertyDescriptor(shaderDescriptorLayered);
+            _blurBoxShaderLayered = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+            _blurBoxShaderLayered->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+                ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
+                PipelineDescriptor pipelineDescriptor;
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+                _BlurBoxPipelineLayered = newPipeline(pipelineDescriptor);
+            });
+        }
     }
     {
-        ShaderModuleDescriptor vertModule = {};
-        vertModule._moduleType = ShaderType::VERTEX;
-        vertModule._sourceFile = "baseVertexShaders.glsl";
-        vertModule._variant = "FullScreenQuad";
-
         ShaderModuleDescriptor geomModule = {};
         geomModule._moduleType = ShaderType::GEOMETRY;
         geomModule._sourceFile = "blur.glsl";
         geomModule._variant = "GaussBlur";
-        geomModule._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", 1).c_str(), true);
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
         fragModule._sourceFile = "blur.glsl";
         fragModule._variant = "GaussBlur";
 
-        ShaderProgramDescriptor shaderDescriptor = {};
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.push_back(geomModule);
-        shaderDescriptor._modules.push_back(fragModule);
+        {
+            ShaderProgramDescriptor shaderDescriptorSingle = {};
+            shaderDescriptorSingle._modules.push_back(blurVertModule);
+            shaderDescriptorSingle._modules.push_back(geomModule);
+            shaderDescriptorSingle._modules.back()._defines.emplace_back("GS_MAX_INVOCATIONS 1", true);
+            shaderDescriptorSingle._modules.push_back(fragModule);
 
-        ResourceDescriptor blur(Util::StringFormat("GaussBlur_ % d_invocations", 1).c_str());
-        blur.propertyDescriptor(shaderDescriptor);
-        _blurGaussianShader = CreateResource<ShaderProgram>(cache, blur, loadTasks);
-        _blurGaussianShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
-            ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
-            PipelineDescriptor pipelineDescriptor;
-            pipelineDescriptor._stateHash = get2DStateBlock();
-            pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
-            _BlurGaussianPipeline = newPipeline(pipelineDescriptor);
-        });
+
+            ResourceDescriptor blur("GaussBlur_Single");
+            blur.propertyDescriptor(shaderDescriptorSingle);
+            _blurGaussianShaderSingle = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+            _blurGaussianShaderSingle->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+                ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
+                PipelineDescriptor pipelineDescriptor;
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+                _BlurGaussianPipelineSingle = newPipeline(pipelineDescriptor);
+            });
+        }
+        {
+            ShaderProgramDescriptor shaderDescriptorLayered = {};
+            shaderDescriptorLayered._modules.push_back(blurVertModule);
+            shaderDescriptorLayered._modules.push_back(geomModule);
+            shaderDescriptorLayered._modules.back()._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", MAX_INVOCATIONS_BLUR_SHADER_LAYERED), true);
+            shaderDescriptorLayered._modules.push_back(fragModule);
+            shaderDescriptorLayered._modules.back()._variant += ".Layered";
+            shaderDescriptorLayered._modules.back()._defines.emplace_back("LAYERED", true);
+
+            ResourceDescriptor blur("GaussBlur_Layered");
+            blur.propertyDescriptor(shaderDescriptorLayered);
+            _blurGaussianShaderLayered = CreateResource<ShaderProgram>(cache, blur, loadTasks);
+            _blurGaussianShaderLayered->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+                ShaderProgram* blurShader = static_cast<ShaderProgram*>(res);
+                PipelineDescriptor pipelineDescriptor;
+                pipelineDescriptor._stateHash = get2DStateBlock();
+                pipelineDescriptor._shaderProgramHandle = blurShader->getGUID();
+                _BlurGaussianPipelineLayered = newPipeline(pipelineDescriptor);
+            });
+        }
     }
     {
         ShaderModuleDescriptor vertModule = {};
@@ -786,8 +824,10 @@ void GFXDevice::closeRenderingAPI() {
     _displayShader = nullptr;
     _depthShader = nullptr;
     _textRenderShader = nullptr;
-    _blurBoxShader = nullptr;
-    _blurGaussianShader = nullptr;
+    _blurBoxShaderSingle = nullptr;
+    _blurBoxShaderLayered = nullptr;
+    _blurGaussianShaderSingle = nullptr;
+    _blurGaussianShaderLayered = nullptr;
 
     // Close the shader manager
     MemoryManager::DELETE(_shaderComputeQueue);
@@ -1030,10 +1070,11 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            const U8 index,
                            const I32 kernelSize,
                            const bool gaussian,
+                           const U8 layerCount,
                            GFX::CommandBuffer& bufferInOut)
 {
     GenericDrawCommand drawCmd = {};
-    drawCmd._primitiveType = PrimitiveType::TRIANGLES;
+    drawCmd._primitiveType = gaussian ? PrimitiveType::API_POINTS : PrimitiveType::TRIANGLES;
 
     // Blur horizontally
     GFX::BeginRenderPassCommand beginRenderPassCmd;
@@ -1048,20 +1089,41 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.setTexture(data, sampler, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ gaussian ? _BlurGaussianPipeline : _BlurBoxPipeline });
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
     pushConstantsCommand._constants.countHint(4);
-    pushConstantsCommand._constants.set(_ID("layered"), GFX::PushConstantType::BOOL, false);
     pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, false);
-    pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
-    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
+    if (gaussian) {
+        pushConstantsCommand._constants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, vec2<F32>(1.0f / blurBuffer._rt->getResolution().width, 1.0f / blurBuffer._rt->getResolution().height));
+        pushConstantsCommand._constants.set(_ID("layerCount"), GFX::PushConstantType::INT, to_I32(layerCount));
+        pushConstantsCommand._constants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
+        pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);
+    } else {
+        pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
+        pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
+        if (layerCount > 1) {
+            pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, 0);
+        }
+    }
+
+    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand {
+        gaussian ? (layerCount > 1 ? _BlurGaussianPipelineLayered : _BlurGaussianPipelineSingle)
+                 : (layerCount > 1 ? _BlurBoxPipelineLayered : _BlurBoxPipelineSingle)
+    });
+
     GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+    const U8 loopCount = gaussian ? 1u : layerCount;
 
-    GFX::EndRenderPassCommand endRenderPassCmd;
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    for (U8 loop = 0u; loop < loopCount; ++loop) {
+        if (!gaussian && loop > 0u) {
+            pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, to_I32(loop));
+            GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        }
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+    }
+
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     // Blur vertically
     beginRenderPassCmd._target = blurTarget._targetID;
@@ -1069,8 +1131,11 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, true);
-    pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+    if (gaussian) {
+        pushConstantsCommand._constants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, vec2<F32>(1.0f / blurTarget._rt->getResolution().width, 1.0f / blurTarget._rt->getResolution().height));
+    } else {
+        pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
+    }
 
     const auto& attachment2 = blurSource._rt->getAttachment(att, index);
     const TextureData data2 = attachment2.texture()->data();
@@ -1078,9 +1143,16 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     descriptorSetCmd._set._textureData.setTexture(data2, sampler2, TextureUsage::UNIT0);
     GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+    for (U8 loop = 0u; loop < loopCount; ++loop) {
+        if (!gaussian && loop > 0u) {
+            pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, to_I32(loop));
+            GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        }
+        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+    }
 
-    GFX::EnqueueCommand(bufferInOut, endRenderPassCmd);
+    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 }
 #pragma endregion
 

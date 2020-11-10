@@ -1105,12 +1105,14 @@ bool GL_API::draw(const GenericDrawCommand& cmd, const U32 cmdBufferOffset) cons
 void GL_API::pushDebugMessage(const char* message) {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, static_cast<GLuint>(_ID(message)), -1, message);
+        GL_API::getStateTracker()._debugScope = message;
     }
 }
 
 void GL_API::popDebugMessage() {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPopDebugGroup();
+        GL_API::getStateTracker()._debugScope = "";
     }
 }
 

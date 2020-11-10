@@ -110,7 +110,8 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
 
                 // Default filters, LINEAR is OK for this
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, isCSM ? GFXDataFormat::FLOAT_32 : GFXDataFormat::FLOAT_16);
-                depthMapDescriptor.layerCount(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS * (isCSM ? Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS : 1));
+                depthMapDescriptor.layerCount(isCSM ? Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT
+                                                    : Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS);
                 depthMapDescriptor.autoMipMaps(false);
 
                 RTAttachmentDescriptors att = {

@@ -1,97 +1,14 @@
--- Fragment.Generic
-
-out vec4 _colourOut;
-
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-uniform vec2 size;
-uniform int kernelSize;
-uniform int layer;
-
-uniform bool layered = false;
-uniform bool verticalBlur = false;
-
-vec3 blurHorizontal(){
-    vec2 pass = 1.0 / size;
-    vec3 colour = vec3(0.0);
-    vec3 value;
-    int sum = 0;
-    int factor = 0;
-    for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, VAR._texCoord + vec2(pass.x*i, 0.0)).rgb;
-        factor = kernelSize + 1 - abs(i);
-        colour += value * factor;
-        sum += factor;
-    }
-    return colour / sum;
-}
-
-vec3 blurVertical(){
-    vec2 pass = 1.0 / size;
-    vec3 colour = vec3(0.0);
-    vec3 value;
-    int sum = 0;
-    int factor = 0;
-    for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y*i)).rgb;
-        factor = kernelSize + 1 - abs(i);
-        colour += value * factor;
-        sum += factor;
-    }
-    return colour / sum;
-}
-
-vec3 blurHorizontalLayered(){
-    vec2 pass = 1.0 / size;
-    vec3 colour = vec3(0.0);
-    vec3 value;
-    int sum = 0;
-    int factor = 0;
-    for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, VAR._texCoord + vec2(pass.x*i, 0.0), layer).rgb;
-        factor = kernelSize + 1 - abs(i);
-        colour += value * factor;
-        sum += factor;
-    }
-    return colour / sum;
-}
-
-vec3 blurVerticalLayered(){
-    vec2 pass = 1.0 / size;
-    vec3 colour = vec3(0.0);
-    vec3 value;
-    int sum = 0;
-    int factor = 0;
-    for (int i = -kernelSize; i <= kernelSize; i++) {
-        value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y*i), layer).rgb;
-        factor = kernelSize + 1 - abs(i);
-        colour += value * factor;
-        sum += factor;
-    }
-    return colour / sum;
-}
-
-void main() {
-    if (layered) {
-        if (verticalBlur) {
-            _colourOut = vec4(blurVerticalLayered(), 1.0);
-        } else {
-            _colourOut = vec4(blurHorizontalLayered(), 1.0);
-        }
-    } else {
-        if (verticalBlur) {
-            _colourOut = vec4(blurVertical(), 1.0);
-        } else {
-            _colourOut = vec4(blurHorizontal(), 1.0);
-        }
-    }
-}
-
 --Geometry.GaussBlur
 
-layout(points, invocations = MAX_CSM_SPLITS_PER_LIGHT) in;
+layout(points, invocations = GS_MAX_INVOCATIONS) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform vec2 blurSizes[MAX_CSM_SPLITS_PER_LIGHT];
+#if GS_MAX_INVOCATIONS > 1
+uniform vec2 blurSizes[GS_MAX_INVOCATIONS];
+#else
+uniform vec2 blurSizes;
+#endif
+
 uniform int layerCount;
 uniform int layerOffsetRead;
 uniform int layerOffsetWrite;
@@ -99,33 +16,60 @@ uniform int layerOffsetWrite;
 uniform bool verticalBlur = false;
 
 layout(location = 0) out flat int _blurred;
+#if GS_MAX_INVOCATIONS > 1
 layout(location = 1) out vec3 _blurCoords[7];
+#else
+layout(location = 1) out vec2 _blurCoords[7];
+#endif
 
 void computeCoordsH(in float texCoordX, in float texCoordY, in int layer){
+#if GS_MAX_INVOCATIONS > 1
     vec2 blurSize = blurSizes[layer];
     _blurCoords[0] = vec3(texCoordX, texCoordY - 3.0 * blurSize.y, layer);
     _blurCoords[1] = vec3(texCoordX, texCoordY - 2.0 * blurSize.y, layer);
     _blurCoords[2] = vec3(texCoordX, texCoordY - 1.0 * blurSize.y, layer);
-    _blurCoords[3] = vec3(texCoordX, texCoordY,                    layer);
+    _blurCoords[3] = vec3(texCoordX, texCoordY, layer);
     _blurCoords[4] = vec3(texCoordX, texCoordY + 1.0 * blurSize.y, layer);
     _blurCoords[5] = vec3(texCoordX, texCoordY + 2.0 * blurSize.y, layer);
     _blurCoords[6] = vec3(texCoordX, texCoordY + 3.0 * blurSize.y, layer);
+#else
+    _blurCoords[0] = vec2(texCoordX, texCoordY - 3.0 * blurSizes.y);
+    _blurCoords[1] = vec2(texCoordX, texCoordY - 2.0 * blurSizes.y);
+    _blurCoords[2] = vec2(texCoordX, texCoordY - 1.0 * blurSizes.y);
+    _blurCoords[3] = vec2(texCoordX, texCoordY);
+    _blurCoords[4] = vec2(texCoordX, texCoordY + 1.0 * blurSizes.y);
+    _blurCoords[5] = vec2(texCoordX, texCoordY + 2.0 * blurSizes.y);
+    _blurCoords[6] = vec2(texCoordX, texCoordY + 3.0 * blurSizes.y);
+#endif
+    
     _blurred = 1;
 }
 
 void computeCoordsV(in float texCoordX, in float texCoordY, in int layer){
+#if GS_MAX_INVOCATIONS > 1
     vec2 blurSize = blurSizes[layer];
     _blurCoords[0] = vec3(texCoordX - 3.0 * blurSize.x, texCoordY, layer);
     _blurCoords[1] = vec3(texCoordX - 2.0 * blurSize.x, texCoordY, layer);
     _blurCoords[2] = vec3(texCoordX - 1.0 * blurSize.x, texCoordY, layer);
-    _blurCoords[3] = vec3(texCoordX,                    texCoordY, layer);
+    _blurCoords[3] = vec3(texCoordX, texCoordY, layer);
     _blurCoords[4] = vec3(texCoordX + 1.0 * blurSize.x, texCoordY, layer);
     _blurCoords[5] = vec3(texCoordX + 2.0 * blurSize.x, texCoordY, layer);
     _blurCoords[6] = vec3(texCoordX + 3.0 * blurSize.x, texCoordY, layer);
+#else
+    _blurCoords[0] = vec2(texCoordX - 3.0 * blurSizes.x, texCoordY);
+    _blurCoords[1] = vec2(texCoordX - 2.0 * blurSizes.x, texCoordY);
+    _blurCoords[2] = vec2(texCoordX - 1.0 * blurSizes.x, texCoordY);
+    _blurCoords[3] = vec2(texCoordX,                     texCoordY);
+    _blurCoords[4] = vec2(texCoordX + 1.0 * blurSizes.x, texCoordY);
+    _blurCoords[5] = vec2(texCoordX + 2.0 * blurSizes.x, texCoordY);
+    _blurCoords[6] = vec2(texCoordX + 3.0 * blurSizes.x, texCoordY);
+#endif
+
     _blurred = 1;
 }
 
 void passThrough(in float texCoordX, in float texCoordY, in int layer) {
+#if GS_MAX_INVOCATIONS > 1
     _blurCoords[0] = vec3(texCoordX, texCoordY, layer);
     _blurCoords[1] = vec3(1.0, 1.0, layer);
     _blurCoords[2] = vec3(1.0, 1.0, layer);
@@ -133,6 +77,15 @@ void passThrough(in float texCoordX, in float texCoordY, in int layer) {
     _blurCoords[4] = vec3(1.0, 1.0, layer);
     _blurCoords[5] = vec3(1.0, 1.0, layer);
     _blurCoords[6] = vec3(1.0, 1.0, layer);
+#else
+    _blurCoords[0] = vec2(texCoordX, texCoordY);
+    _blurCoords[1] = vec2(1.0, 1.0);
+    _blurCoords[2] = vec2(1.0, 1.0);
+    _blurCoords[3] = vec2(1.0, 1.0);
+    _blurCoords[4] = vec2(1.0, 1.0);
+    _blurCoords[5] = vec2(1.0, 1.0);
+    _blurCoords[6] = vec2(1.0, 1.0);
+#endif
     _blurred = 0;
 }
 
@@ -195,27 +148,117 @@ void main() {
 --Fragment.GaussBlur
 
 layout(location = 0) in flat int _blurred;
+
+#if defined(LAYERED)
 layout(location = 1) in vec3 _blurCoords[7];
-
-out vec2 _outColour;
-
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;
+#else
+layout(location = 1) in vec2 _blurCoords[7];
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+#endif
+
+out vec4 _outColour;
 
 void main(void)
 {
     if (_blurred == 1) {
-        _outColour  = texture(texScreen, _blurCoords[0]).rg * 0.015625f; //(1.0  / 64.0);
-        _outColour += texture(texScreen, _blurCoords[1]).rg * 0.09375f;  //(6.0  / 64.0);
-        _outColour += texture(texScreen, _blurCoords[2]).rg * 0.234375f; //(15.0 / 64.0);
-        _outColour += texture(texScreen, _blurCoords[3]).rg * 0.3125f;   //(20.0 / 64.0);
-        _outColour += texture(texScreen, _blurCoords[4]).rg * 0.234375f; //(15.0 / 64.0);
-        _outColour += texture(texScreen, _blurCoords[5]).rg * 0.09375f;  //(6.0  / 64.0);
-        _outColour += texture(texScreen, _blurCoords[6]).rg * 0.015625f; //(1.0  / 64.0);
+        _outColour  = texture(texScreen, _blurCoords[0]) * 0.015625f; //(1.0  / 64.0);
+        _outColour += texture(texScreen, _blurCoords[1]) * 0.09375f;  //(6.0  / 64.0);
+        _outColour += texture(texScreen, _blurCoords[2]) * 0.234375f; //(15.0 / 64.0);
+        _outColour += texture(texScreen, _blurCoords[3]) * 0.3125f;   //(20.0 / 64.0);
+        _outColour += texture(texScreen, _blurCoords[4]) * 0.234375f; //(15.0 / 64.0);
+        _outColour += texture(texScreen, _blurCoords[5]) * 0.09375f;  //(6.0  / 64.0);
+        _outColour += texture(texScreen, _blurCoords[6]) * 0.015625f; //(1.0  / 64.0);
     } else {
-        _outColour = texture(texScreen, _blurCoords[0]).rg;
+        _outColour = texture(texScreen, _blurCoords[0]);
     }
 }
 
+--Fragment.Generic
+
+out vec4 _colourOut;
+
+#if defined(LAYERED)
+uniform int layer;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;
+#else
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+#endif
+
+uniform vec2 size;
+uniform int kernelSize;
+uniform bool verticalBlur = false;
+
+#if defined(LAYERED)
+vec3 blurHorizontal() {
+    vec2 pass = 1.0 / size;
+    vec3 colour = vec3(0.0);
+    vec3 value;
+    int sum = 0;
+    int factor = 0;
+    for (int i = -kernelSize; i <= kernelSize; i++) {
+        value = texture(texScreen, VAR._texCoord + vec2(pass.x * i, 0.0), layer).rgb;
+        factor = kernelSize + 1 - abs(i);
+        colour += value * factor;
+        sum += factor;
+    }
+    return colour / sum;
+}
+
+vec3 blurVertical() {
+    vec2 pass = 1.0 / size;
+    vec3 colour = vec3(0.0);
+    vec3 value;
+    int sum = 0;
+    int factor = 0;
+    for (int i = -kernelSize; i <= kernelSize; i++) {
+        value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y * i), layer).rgb;
+        factor = kernelSize + 1 - abs(i);
+        colour += value * factor;
+        sum += factor;
+    }
+    return colour / sum;
+}
+
+#else
+vec3 blurHorizontal() {
+    vec2 pass = 1.0 / size;
+    vec3 colour = vec3(0.0);
+    vec3 value;
+    int sum = 0;
+    int factor = 0;
+    for (int i = -kernelSize; i <= kernelSize; i++) {
+        value = texture(texScreen, VAR._texCoord + vec2(pass.x * i, 0.0)).rgb;
+        factor = kernelSize + 1 - abs(i);
+        colour += value * factor;
+        sum += factor;
+    }
+    return colour / sum;
+}
+
+vec3 blurVertical() {
+    vec2 pass = 1.0 / size;
+    vec3 colour = vec3(0.0);
+    vec3 value;
+    int sum = 0;
+    int factor = 0;
+    for (int i = -kernelSize; i <= kernelSize; i++) {
+        value = texture(texScreen, VAR._texCoord + vec2(0.0, pass.y * i)).rgb;
+        factor = kernelSize + 1 - abs(i);
+        colour += value * factor;
+        sum += factor;
+    }
+    return colour / sum;
+}
+#endif
+
+void main() {
+    if (verticalBlur) {
+        _colourOut = vec4(blurVertical(), 1.0);
+    } else {
+        _colourOut = vec4(blurHorizontal(), 1.0);
+    }
+}
 
 --Fragment.ObjectMotionBlur
 

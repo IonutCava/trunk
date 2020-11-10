@@ -82,9 +82,9 @@ namespace Divide {
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
         /// buffer or write buffer
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID);
-        /// Change the currently active shader program. Returns true if the program was bound
+        /// Change the currently active shader program. Returns false if the program was already bound
         bool setActiveProgram(GLuint programHandle);
-        /// Change the currently active shader pipeline. Returns true if the pipeline was bound
+        /// Change the currently active shader pipeline. Returns false if the pipeline was already bound
         bool setActiveShaderPipeline(GLuint pipelineHandle);
         /// A state block should contain all rendering state changes needed for the next draw call.
         /// Some may be redundant, so we check each one individually
@@ -150,6 +150,8 @@ namespace Divide {
 
       public:
         RenderStateBlock _activeState = {};
+
+        Str64 _debugScope = "";
         Pipeline const* _activePipeline = nullptr;
         glFramebuffer*  _activeRenderTarget = nullptr;
         glPixelBuffer*  _activePixelBuffer = nullptr;

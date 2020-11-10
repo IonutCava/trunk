@@ -179,6 +179,7 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
                         0,
                         10,
                         true,
+                        1,
                         bufferInOut);
 
     // Step 3: apply bloom

@@ -431,7 +431,6 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         descriptorSetCmd._set._textureData.setTexture(texData, shadowAtt.samplerHash(),TextureUsage::UNIT0);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-        _shaderConstants.set(_ID("layered"), GFX::PushConstantType::BOOL, true);
         _shaderConstants.set(_ID("verticalBlur"), GFX::PushConstantType::BOOL, false);
         _shaderConstants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, layerOffset);
         _shaderConstants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);

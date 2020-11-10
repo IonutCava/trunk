@@ -522,9 +522,9 @@ std::pair<bool/*success*/, bool/*was bound*/>  glShaderProgram::bind() {
     // If the shader isn't ready or failed to link, stop here
     if (_validated || _validationQueued) {
         // Set this program as the currently active one
-        bool wasBound = GL_API::getStateTracker().setActiveShaderPipeline(_handle);
+        const bool wasNotAlreadyBound = GL_API::getStateTracker().setActiveShaderPipeline(_handle);
         validatePostBind();
-        return { true, wasBound };
+        return { true, !wasNotAlreadyBound };
     }
 
     return { false, false };

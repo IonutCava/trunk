@@ -395,6 +395,7 @@ public:
                     U8 index,
                     I32 kernelSize,
                     bool gaussian,
+                    U8 layerCount,
                     GFX::CommandBuffer& bufferInOut);
 
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
@@ -501,8 +502,10 @@ private:
     ShaderProgram_ptr _displayShader = nullptr;
     ShaderProgram_ptr _depthShader = nullptr;
     ShaderProgram_ptr _textRenderShader = nullptr;
-    ShaderProgram_ptr _blurBoxShader = nullptr;
-    ShaderProgram_ptr _blurGaussianShader = nullptr;
+    ShaderProgram_ptr _blurBoxShaderSingle = nullptr;
+    ShaderProgram_ptr _blurBoxShaderLayered = nullptr;
+    ShaderProgram_ptr _blurGaussianShaderSingle = nullptr;
+    ShaderProgram_ptr _blurGaussianShaderLayered = nullptr;
     
     Pipeline* _HIZPipeline = nullptr;
     Pipeline* _HIZCullPipeline = nullptr;
@@ -510,8 +513,10 @@ private:
     Pipeline* _DrawFSDepthPipeline = nullptr;
     Pipeline* _AxisGizmoPipeline = nullptr;
     Pipeline* _DebugGizmoPipeline = nullptr;
-    Pipeline* _BlurBoxPipeline = nullptr;
-    Pipeline* _BlurGaussianPipeline = nullptr;
+    Pipeline* _BlurBoxPipelineSingle = nullptr;
+    Pipeline* _BlurBoxPipelineLayered = nullptr;
+    Pipeline* _BlurGaussianPipelineSingle = nullptr;
+    Pipeline* _BlurGaussianPipelineLayered = nullptr;
 
     PushConstants _textRenderConstants;
     Pipeline* _textRenderPipeline = nullptr;

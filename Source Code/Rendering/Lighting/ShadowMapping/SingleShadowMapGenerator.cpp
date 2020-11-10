@@ -44,7 +44,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         geomModule._moduleType = ShaderType::GEOMETRY;
         geomModule._sourceFile = "blur.glsl";
         geomModule._variant = "GaussBlur";
-        geomModule._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", 1).c_str(), true);
+        geomModule._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), true);
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
@@ -56,7 +56,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         shaderDescriptor._modules.push_back(geomModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", 1).c_str());
+        ResourceDescriptor blurDepthMapShader(Util::StringFormat("GaussBlur_%d_invocations", Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS).c_str());
         blurDepthMapShader.waitForReady(true);
         blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 
@@ -78,7 +78,6 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
 
     std::array<vec2<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> blurSizes;
     blurSizes.fill(vec2<F32>(1.0f / g_shadowSettings.spot.shadowMapResolution));
-
     for (U8 i = 1; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
         blurSizes[i] = blurSizes[i - 1] / 2;
     }
