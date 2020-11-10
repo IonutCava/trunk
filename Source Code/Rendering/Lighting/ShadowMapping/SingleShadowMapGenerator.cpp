@@ -49,7 +49,8 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
         fragModule._sourceFile = "blur.glsl";
-        fragModule._variant = "GaussBlur";
+        fragModule._variant = "GaussBlur.Layered";
+        fragModule._defines.emplace_back("LAYERED", true);
 
         ShaderProgramDescriptor shaderDescriptor = {};
         shaderDescriptor._modules.push_back(vertModule);
