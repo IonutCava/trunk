@@ -127,10 +127,15 @@ class NOINITVTABLE ShaderBuffer : public GUIDWrapper,
     stringImpl _name;
 };
 
+/// If initialData is NULL, the buffer contents are undefined (good for CPU -> GPU transfers),
+/// however for GPU->GPU buffers, we may want a sane initial state to work with.
+/// To achieve this, initToZero can be set to true
+/// If _initialData is not NULL, we zero out whatever empty space is left available
+/// determined by comparing the data size to the buffer size
 struct ShaderBufferDescriptor {
     stringImpl _name = "";
     size_t _elementSize = 0; ///< Primitive size in bytes
-    bufferPtr _initialData = nullptr;
+    std::pair<bufferPtr, size_t> _initialData = { nullptr, 0 };
     U32 _flags = 0u;
     U32 _ringBufferLength = 1u;
     U32 _elementCount = 0u;
@@ -138,6 +143,7 @@ struct ShaderBufferDescriptor {
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     ShaderBuffer::Usage _usage = ShaderBuffer::Usage::COUNT;
     bool _separateReadWrite = false; ///< Use a separate read/write index based on queue length
+    bool _initToZero = false; 
 };
 };  // namespace Divide
 #endif //_SHADER_BUFFER_H_

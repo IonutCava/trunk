@@ -72,16 +72,15 @@ void LightPool::init() {
     }
 
     ShaderBufferDescriptor bufferDescriptor = {};
-    {
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._ringBufferLength = 6;
-        bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
-                                  to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+    bufferDescriptor._ringBufferLength = 6;
+    bufferDescriptor._separateReadWrite = false;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) |
+                              to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
 
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    }
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    
     {
         bufferDescriptor._name = "LIGHT_BUFFER";
         bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows

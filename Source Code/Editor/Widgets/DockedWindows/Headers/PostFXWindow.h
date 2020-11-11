@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Core/Headers/PlatformContextComponent.h"
 
 namespace Divide {
+class Texture;
 
 class PostFX;
 class PostFXWindow final : public DockedWindow, public PlatformContextComponent {
@@ -47,6 +48,7 @@ public:
     void drawInternal() final;
 private:
     PostFX& _postFX;
+    Texture* _previewTexture = nullptr;
 };
 }; //namespace Divide
 

@@ -2,8 +2,12 @@
 
 //Most of the stuff is from here:https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/ComputeShaders/clusterCullLightShader.comp
 //With a lot of : https://github.com/pezcode/Cluster
-
+#define USE_LIGHT_CLUSTERS
 #include "lightInput.cmn"
+
+layout(binding = BUFFER_LIGHT_INDEX_COUNT, std430) COMP_ONLY_RW buffer globalIndexCountSSBO {
+    uint globalIndexCount;
+};
 
 #define DIRECTIONAL_LIGHT_COUNT dvd_LightData.x
 #define POINT_LIGHT_COUNT       dvd_LightData.y

@@ -53,7 +53,7 @@ class glTexture final : public Texture,
 
     bool unload() override;
 
-    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override;
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override;
 
     void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept override;
 
@@ -64,6 +64,8 @@ class glTexture final : public Texture,
     void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override;
 
     static void copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params);
+
+    std::pair<std::shared_ptr<Byte[]>, size_t> readData(U16 mipLevel, GFXDataFormat desiredFormat) const override;
 
    protected:
     void threadedLoad() override;

@@ -19,10 +19,6 @@ void main(void)
 
 -- Fragment
 
-#define SHADOW_INTENSITY_FACTOR 0.5f
-
-#define F0 vec3(0.02)
-
 layout(location = 0) in flat int _underwater;
 
 uniform vec2 _noiseTile;
@@ -38,6 +34,8 @@ uniform float _specularShininess = 200.0f;
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #else // PRE_PASS
+#define SHADOW_INTENSITY_FACTOR 0.5f
+#define F0 vec3(0.02)
 #include "environment.frag"
 #include "BRDF.frag"
 #include "output.frag"

@@ -73,7 +73,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     virtual ~Texture() = default;
 
     /// Bind a single level
-    virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) = 0;
+    virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) = 0;
     /// Change the texture's mip levels. This can be called at any time
     virtual void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
@@ -94,6 +94,9 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     U16 getMipCount() const noexcept { return _descriptor._mipCount; }
     bool automaticMipMapGeneration() const noexcept { return _descriptor.autoMipMaps(); }
     bool hasMipMaps() const noexcept { return _descriptor.hasMipMaps(); }
+
+    // MipLevel will automatically clamped to the texture's internal limits
+    virtual std::pair<std::shared_ptr<Byte[]>, size_t> readData(U16 mipLevel, GFXDataFormat desiredFormat = GFXDataFormat::COUNT) const = 0;
 
     PROPERTY_R(TextureDescriptor, descriptor);
     PROPERTY_R(TextureData, data);

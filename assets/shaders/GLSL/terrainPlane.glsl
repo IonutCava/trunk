@@ -11,7 +11,6 @@ void main(void) {
 -- Vertex.Colour
 
 #include "vbInputData.vert"
-#include "utility.cmn"
 
 layout(location = 0) out vec4 _scrollingUV;
 

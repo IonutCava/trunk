@@ -72,7 +72,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     }
 
     if (!usePersistentMapping) {
-        GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData, params._name);
+        GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData.first, params._initialData.second, true, params._name);
     } else {
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
         MapBufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
@@ -100,9 +100,14 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
             } break;
         };
   
-        _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData, params._name);
+        _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData.first, params._initialData.second, params._name);
 
         assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
+
+        if (params._initToZero && params._initialData.second < _alignedSize) {
+            const size_t sizeDiff = _alignedSize - params._initialData.second;
+            zeroMem(_alignedSize - sizeDiff, sizeDiff);
+        }
     }
 
     if (_mappedBuffer != nullptr && !_unsynced) {

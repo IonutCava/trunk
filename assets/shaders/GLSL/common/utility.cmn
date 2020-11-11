@@ -1,6 +1,20 @@
 #ifndef _UTILITY_CMN_
 #define _UTILITY_CMN_
 
+#define ACCESS_RW
+#define ACCESS_R readonly
+#define ACCESS_W writeonly
+
+#if defined(COMPUTE_SHADER)
+#define COMP_ONLY_W ACCESS_W
+#define COMP_ONLY_R ACCESS_R
+#define COMP_ONLY_RW ACCESS_RW
+#else //COMPUTE_SHADER
+#define COMP_ONLY_W readonly
+#define COMP_ONLY_R 
+#define COMP_ONLY_RW readonly
+#endif //COMPUTE_SHADER
+
 #ifndef M_EPSILON
 #define M_EPSILON 1e-5f
 #endif //M_EPSILON
@@ -9,10 +23,6 @@
 #define M_PI 3.14159265358979323846
 #define INV_M_PI 0.31830988618
 #endif //M_PI
-
-#ifndef F0
-#define F0 vec3(0.04f)
-#endif
 
 //ref: http://theorangeduck.com/page/avoiding-shader-conditionals
 #define when_eq(x, y) (1.0f - abs(sign(x - y)))
@@ -25,19 +35,18 @@
 #define OR(a, b) min(a + b, 1.0f)
 #define XOR(a, b) ((a + b) % 2.0f)
 #define NOT(a) (1.0f - a)
-
 #define SQUARED(X) (X * X)
+#define ROUND(v) floor((v) + .5)
 
-float saturate(in float v) { return clamp(v, 0.0, 1.0); }
-vec2  saturate(in vec2 v)  { return clamp(v, 0.0, 1.0); }
-vec3  saturate(in vec3 v)  { return clamp(v, 0.0, 1.0); }
-vec4  saturate(in vec4 v)  { return clamp(v, 0.0, 1.0); }
+#define saturate(X) clamp(X, 0.f, 1.f)
+#define mad(a, b, c) (a * b + c)
+
+#define MSToSeconds(ms) (ms * 0.001f)
 
 float maxComponent(in vec2 v) { return max(v.x, v.y); }
 float maxComponent(in vec3 v) { return max(max(v.x, v.y), v.z); }
 float maxComponent(in vec4 v) { return max(max(max(v.x, v.y),v.z), v.w); }
 
-float MSToSeconds(in int ms) { return ms * 0.001f; }
 
 //ref: https://aras-p.info/texts/CompactNormalStorage.html#method08ppview
 vec3 unpackNormal(in vec2 enc)
@@ -64,46 +73,5 @@ vec2 packNormal(in vec3 n)
     return n.xy * 0.5f + 0.5f;
 #endif
 }
-
-#ifndef COLORMAP_SH_HEADER_GUARD
-#define COLORMAP_SH_HEADER_GUARD
-
-// Copyright 2019 Google LLC.
-// SPDX-License-Identifier: Apache-2.0
-
-// Polynomial approximation in GLSL for the Turbo colormap
-// Original LUT: https://gist.github.com/mikhailov-work/ee72ba4191942acecc03fe6da94fc73f
-
-// Authors:
-//   Colormap Design: Anton Mikhailov (mikhailov@google.com)
-//   GLSL Approximation: Ruofei Du (ruofei@google.com)
-
-// See also: https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
-
-vec3 turboColormap(float x) {
-    // show clipping
-    if (x < 0.0)
-        return vec3(0.0);
-    else if (x > 1.0)
-        return vec3(1.0);
-
-    const vec4 kRedVec4 = vec4(0.13572138, 4.61539260, -42.66032258, 132.13108234);
-    const vec4 kGreenVec4 = vec4(0.09140261, 2.19418839, 4.84296658, -14.18503333);
-    const vec4 kBlueVec4 = vec4(0.10667330, 12.64194608, -60.58204836, 110.36276771);
-    const vec2 kRedVec2 = vec2(-152.94239396, 59.28637943);
-    const vec2 kGreenVec2 = vec2(4.27729857, 2.82956604);
-    const vec2 kBlueVec2 = vec2(-89.90310912, 27.34824973);
-
-    x = saturate(x);
-    vec4 v4 = vec4(1.0, x, x * x, x * x * x);
-    vec2 v2 = v4.zw * v4.z;
-    return vec3(
-        dot(v4, kRedVec4) + dot(v2, kRedVec2),
-        dot(v4, kGreenVec4) + dot(v2, kGreenVec2),
-        dot(v4, kBlueVec4) + dot(v2, kBlueVec2)
-    );
-}
-
-#endif // COLORMAP_SH_HEADER_GUARD
 
 #endif //_UTILITY_CMN_

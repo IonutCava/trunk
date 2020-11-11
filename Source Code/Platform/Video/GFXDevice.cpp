@@ -228,7 +228,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._initialData = &_gpuBlock._data;
+    bufferDescriptor._initialData = { &_gpuBlock._data, bufferDescriptor._elementSize };
     bufferDescriptor._name = "DVD_GPU_DATA";
     bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
     bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
@@ -1971,10 +1971,16 @@ void GFXDevice::initDebugViews() {
         //AlphaRevealageLow->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         //AlphaRevealageLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
+        SamplerDescriptor lumanSampler = {};
+        lumanSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
+        lumanSampler.minFilter(TextureFilter::NEAREST);
+        lumanSampler.magFilter(TextureFilter::NEAREST);
+        lumanSampler.anisotropyLevel(0);
+
         DebugView_ptr Luminance = std::make_shared<DebugView>();
         Luminance->_shader = _renderTargetDraw;
-        Luminance->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->luminanceRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
-        Luminance->_samplerHash = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->luminanceRT()).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
+        Luminance->_texture = getRenderer().postFX().getFilterBatch()->luminanceTex();
+        Luminance->_samplerHash = lumanSampler.getHash();
         Luminance->_name = "Luminance";
         Luminance->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         Luminance->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);

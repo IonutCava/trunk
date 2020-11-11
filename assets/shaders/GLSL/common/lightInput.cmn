@@ -1,14 +1,6 @@
 #ifndef _LIGHT_INPUT_CMN_
 #define _LIGHT_INPUT_CMN_
 
-#if defined(COMPUTE_SHADER)
-#   define ACCESS
-#   define COMP_RW writeonly
-#else
-#   define ACCESS readonly
-#   define COMP_RW readonly
-#endif
-
 const int LIGHT_DIRECTIONAL = 0;
 const int LIGHT_OMNIDIRECTIONAL = 1;
 const int LIGHT_SPOT = 2;
@@ -35,7 +27,7 @@ struct Light {
 #define _SHADOW_INDEX _options.y
 #define _SPOT_CONE_SLANT_HEIGHT _options.z
 
-layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS buffer dvd_LightBlock
+layout(binding = BUFFER_LIGHT_NORMAL, std430) coherent ACCESS_R buffer dvd_LightBlock
 {
     // x = directional light count, y = point light count, z = spot light count, w = shadow light count
     uvec4 dvd_LightData;
@@ -52,12 +44,12 @@ struct LightGrid
     uint countSpot;
 };
 
-layout(binding = BUFFER_LIGHT_GRID, std430) ACCESS buffer lightGridSSBO
+layout(binding = BUFFER_LIGHT_GRID, std430) COMP_ONLY_RW buffer lightGridSSBO
 {
     LightGrid lightGrid[];
 };
 
-layout(binding = BUFFER_LIGHT_INDICES, std430) ACCESS buffer lightIndexSSBO {
+layout(binding = BUFFER_LIGHT_INDICES, std430) COMP_ONLY_RW buffer lightIndexSSBO {
     uint globalLightIndexList[];
 };
 
@@ -68,13 +60,14 @@ struct VolumeTileAABB
     vec4 maxPoint;
 };
 
-layout(binding = BUFFER_LIGHT_CLUSTER_AABBS, std430) ACCESS buffer lightClusterAABBs
+#if defined(COMPUTE_LIGHT_CLUSTERS)
+#define LIGHT_CLUSTER_ACCESS COMP_ONLY_RW
+#else //COMPUTE_LIGHT_CLUSTERS
+#define LIGHT_CLUSTER_ACCESS COMP_ONLY_R
+#endif
+layout(binding = BUFFER_LIGHT_CLUSTER_AABBS, std430) LIGHT_CLUSTER_ACCESS buffer lightClusterAABBs
 {
     VolumeTileAABB cluster[GRID_SIZE_X * GRID_SIZE_Y * GRID_SIZE_Z];
-};
-
-layout(binding = BUFFER_LIGHT_INDEX_COUNT, std430) ACCESS buffer globalIndexCountSSBO {
-    uint globalIndexCount;
 };
 #else //COMPUTE_SHADER
 

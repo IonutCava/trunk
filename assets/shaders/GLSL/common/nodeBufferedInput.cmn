@@ -9,7 +9,7 @@ uniform uint DATA_IDX = 0u;
 #define DATA_IDX VAR._baseInstance
 #endif
 
-layout(binding = BUFFER_NODE_INFO, std430) coherent readonly buffer dvd_MatrixBlock
+layout(binding = BUFFER_NODE_INFO, std430) coherent ACCESS_R buffer dvd_MatrixBlock
 {
     NodeData dvd_Matrices[];
 };

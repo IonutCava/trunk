@@ -3,7 +3,6 @@
 #include "vbInputData.vert"
 #include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
-#include "utility.cmn"
 
 layout(location = 0) flat out int _arrayLayerFrag;
 layout(location = 1) out float _alphaFactor;

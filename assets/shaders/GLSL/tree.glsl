@@ -2,7 +2,6 @@
 
 #include "vbInputData.vert"
 #include "vegetationData.cmn"
-#include "utility.cmn"
 #include "lightingDefaults.vert"
 
 vec3 rotate_vertex_position(vec3 position, vec4 q) {

@@ -21,6 +21,19 @@ namespace {
     }
 };
 
+bool operator==(const glFramebuffer::BindingState& lhs, const glFramebuffer::BindingState& rhs) noexcept {
+    return lhs._attState == rhs._attState &&
+        lhs._writeLevel == rhs._writeLevel &&
+        lhs._writeLayer == rhs._writeLayer &&
+        lhs._layeredRendering == rhs._layeredRendering;
+}
+
+bool operator!=(const glFramebuffer::BindingState& lhs, const glFramebuffer::BindingState& rhs) noexcept {
+    return lhs._attState != rhs._attState ||
+        lhs._writeLevel != rhs._writeLevel ||
+        lhs._writeLayer != rhs._writeLayer ||
+        lhs._layeredRendering != rhs._layeredRendering;
+}
 
 bool glFramebuffer::_zWriteEnabled = true;
 

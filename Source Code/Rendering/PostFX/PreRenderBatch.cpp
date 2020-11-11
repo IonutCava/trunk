@@ -77,19 +77,18 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         _sceneEdges = _context.renderTargetPool().allocateRT(desc);
     }
     {
-        SamplerDescriptor lumaSampler = {};
-        lumaSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
-        lumaSampler.minFilter(TextureFilter::NEAREST);
-        lumaSampler.magFilter(TextureFilter::NEAREST);
-
         TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         lumaDescriptor.hasMipMaps(false);
-        RTAttachmentDescriptors att = { { lumaDescriptor, lumaSampler.getHash(), RTAttachmentType::Colour }, };
+        lumaDescriptor.srgb(false);
 
-        desc._name = "Luminance";
-        desc._resolution = vec2<U16>(1);
-        desc._attachments = att.data();
-        _currentLuminance = _context.renderTargetPool().allocateRT(desc);
+        ResourceDescriptor texture("Luminance Texture");
+        texture.propertyDescriptor(lumaDescriptor);
+        texture.threaded(false);
+        texture.waitForReady(true);
+        _currentLuminance = CreateResource<Texture>(cache, texture);
+
+        const F32 val = 1.0f;
+        _currentLuminance->loadData({ (Byte*)&val, 1 * sizeof(F32) }, vec2<U16>(1u));
     }
 
     // Order is very important!
@@ -254,6 +253,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
     bufferDescriptor._ringBufferLength = 0;
     bufferDescriptor._separateReadWrite = false;
+    bufferDescriptor._initToZero = true;
 
     _histogramBuffer = _context.newSB(bufferDescriptor);
 
@@ -263,7 +263,6 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 
 PreRenderBatch::~PreRenderBatch()
 {
-    _context.renderTargetPool().deallocateRT(_currentLuminance);
     _context.renderTargetPool().deallocateRT(_screenRTs._hdr._screenCopy);
     _context.renderTargetPool().deallocateRT(_screenRTs._ldr._temp[0]);
     _context.renderTargetPool().deallocateRT(_screenRTs._ldr._temp[1]);
@@ -294,7 +293,9 @@ RenderTargetHandle PreRenderBatch::getInput(bool hdr) const {
 RenderTargetHandle PreRenderBatch::getOutput(bool hdr) const {
     if (hdr && _screenRTs._swappedHDR) {
         return _screenRTs._hdr._screenRef;
-    } else if (hdr) {
+    }
+
+    if (!_screenRTs._swappedHDR) {
         return _screenRTs._hdr._screenCopy;
     }
 
@@ -314,6 +315,18 @@ void PreRenderBatch::adaptiveExposureControl(const bool state) noexcept {
     _context.context().config().rendering.postFX.enableAdaptiveToneMapping = state;
 }
 
+F32 PreRenderBatch::adaptiveExposureValue() const {
+    if (adaptiveExposureControl()) {
+        const auto[data, size] = _currentLuminance->readData(0, GFXDataFormat::FLOAT_32);
+        if (size > 0) {
+            F32* value = reinterpret_cast<F32*>(data.get());
+            return *value;
+        }
+    }
+
+    return 1.0f;
+}
+
 void PreRenderBatch::update(const U64 deltaTimeUS) noexcept {
     _lastDeltaTimeUS = deltaTimeUS;
 }
@@ -326,7 +339,7 @@ RenderTargetHandle PreRenderBatch::edgesRT() const noexcept {
     return _sceneEdges;
 }
 
-RenderTargetHandle PreRenderBatch::luminanceRT() const noexcept {
+Texture_ptr PreRenderBatch::luminanceTex() const noexcept {
     return _currentLuminance;
 }
 
@@ -393,7 +406,6 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     _toneMapParams.width = screenRT()._rt->getWidth();
     _toneMapParams.height = screenRT()._rt->getHeight();
 
-    const auto& luminanceAtt = _currentLuminance._rt->getAttachment(RTAttachmentType::Colour, 0);
     const auto& screenDepthAtt = screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
 
     const Texture_ptr& screenColour = screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture();
@@ -416,11 +428,11 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         shaderBuffer._buffer = _histogramBuffer;
         shaderBuffer._elementRange = { 0u, _histogramBuffer->getPrimitiveCount() };
 
-        {
+        { // Histogram Pass
             Image screenImage = {};
             screenImage._texture = screenColour.get();
             screenImage._flag = Image::Flag::READ;
-            screenImage._binding = 0u;
+            screenImage._binding = to_base(TextureUsage::UNIT0);
             screenImage._layer = 0u;
             screenImage._level = 0u;
 
@@ -449,7 +461,8 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         GFX::MemoryBarrierCommand memCmd = {};
         memCmd._barrierMask = to_base(MemoryBarrierType::BUFFER_UPDATE);
         GFX::EnqueueCommand(bufferInOut, memCmd);
-        {
+
+        { // Averaging pass
             const F32 deltaTime = Time::MicrosecondsToSeconds<F32>(_lastDeltaTimeUS);
             const F32 timeCoeff = CLAMPED_01(1.0f - std::exp(-deltaTime * _toneMapParams.tau));
 
@@ -457,13 +470,13 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
                 _toneMapParams.minLogLuminance,
                 logLumRange,
                 timeCoeff,
-                to_F32(to_U32(_toneMapParams.width) * _toneMapParams.height),
+                to_F32(_toneMapParams.width) * _toneMapParams.height,
             };
 
             Image luminanceImage = {};
-            luminanceImage._texture = luminanceAtt.texture().get();
+            luminanceImage._texture = _currentLuminance.get();
             luminanceImage._flag = Image::Flag::READ_WRITE;
-            luminanceImage._binding = 0u;
+            luminanceImage._binding = to_base(TextureUsage::UNIT0);
             luminanceImage._layer = 0u;
             luminanceImage._level = 0u;
 
@@ -481,7 +494,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
             GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
 
             GFX::DispatchComputeCommand computeCmd = {};
-            computeCmd._computeGroupSize.set(groupsX, groupsY, 1);
+            computeCmd._computeGroupSize.set(1, 1, 1);
             GFX::EnqueueCommand(bufferInOut, computeCmd);
 
             GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -506,9 +519,15 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         const TextureData screenTex = screenAtt.texture()->data();
 
+        SamplerDescriptor lumanSampler = {};
+        lumanSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
+        lumanSampler.minFilter(TextureFilter::NEAREST);
+        lumanSampler.magFilter(TextureFilter::NEAREST);
+        lumanSampler.anisotropyLevel(0);
+
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
-        descriptorSetCmd._set._textureData.setTexture(luminanceAtt.texture()->data(), luminanceAtt.samplerHash(), TextureUsage::UNIT1);
+        descriptorSetCmd._set._textureData.setTexture(_currentLuminance->data(), lumanSampler.getHash(), TextureUsage::UNIT1);
         descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), screenDepthAtt.samplerHash(),TextureUsage::DEPTH);
         GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
 

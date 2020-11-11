@@ -1,6 +1,8 @@
 #ifndef _NODE_DATA_INPUT_CMN_
 #define _NODE_DATA_INPUT_CMN_
 
+#include "utility.cmn"
+
 #if defined(PRE_PASS) || defined(SHADOW_PASS)
 #define DEPTH_PASS
 #endif
@@ -118,7 +120,7 @@ struct WaterBodyData {
 
 #define GLOBAL_WATER_BODIES 2
 
-layout(binding = BUFFER_SCENE_DATA, std430) coherent readonly buffer dvd_SceneData
+layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneData
 {
     // w - reserved
     vec4 dvd_sunDirection;

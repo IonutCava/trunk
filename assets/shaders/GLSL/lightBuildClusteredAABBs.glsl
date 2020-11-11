@@ -3,6 +3,7 @@
 // Ref:https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/ComputeShaders/clusterCullLightShader.comp
 // From blog post: http://www.aortiz.me/2018/12/21/CG.html#tiled-shading--forward
 
+#define COMPUTE_LIGHT_CLUSTERS
 #include "lightInput.cmn"
 
 //Function prototypes

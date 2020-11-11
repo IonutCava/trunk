@@ -46,8 +46,9 @@ struct BufferImplParams {
     size_t _elementSize = 0;
     bool _explicitFlush = true;
     bool _unsynced = true;
+    bool _initToZero = false;
     const char* _name = nullptr;
-    bufferPtr _initialData = nullptr;
+    std::pair<bufferPtr, size_t> _initialData = { nullptr, 0 };
     BufferStorageType _storageType = BufferStorageType::AUTO;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;

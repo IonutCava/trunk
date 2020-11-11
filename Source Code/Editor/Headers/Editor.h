@@ -73,6 +73,7 @@ class UndoManager;
 class DockedWindow;
 class OutputWindow;
 class PanelManager;
+class PostFXWindow;
 class DisplayWindow;
 class PropertyWindow;
 class SceneGraphNode;
@@ -502,6 +503,7 @@ namespace Attorney {
         friend class Divide::Gizmo;
         friend class Divide::MenuBar;
         friend class Divide::PropertyWindow;
+        friend class Divide::PostFXWindow;
         friend class Divide::EditorOptionsWindow;
         friend class Divide::ContentExplorerWindow;
         friend class Divide::SolutionExplorerWindow;

@@ -62,20 +62,6 @@ class glFramebuffer final : public RenderTarget,
         U16 _writeLevel = 0;
         U16 _writeLayer = 0;
         bool _layeredRendering = false;
-
-        bool operator==(const BindingState& other) const noexcept {
-            return _attState == other._attState &&
-                   _writeLevel == other._writeLevel &&
-                   _writeLayer == other._writeLayer &&
-                   _layeredRendering == other._layeredRendering;
-        }
-
-        bool operator!=(const BindingState& other) const noexcept {
-            return _attState != other._attState ||
-                   _writeLevel != other._writeLevel ||
-                   _writeLayer != other._writeLayer ||
-                   _layeredRendering != other._layeredRendering;
-        }
     };
 
    public:
@@ -146,6 +132,10 @@ protected:
     bool _activeDepthBuffer;
     static bool _zWriteEnabled;
 };
+
+
+bool operator==(const glFramebuffer::BindingState& lhs, const glFramebuffer::BindingState& rhs) noexcept;
+bool operator!=(const glFramebuffer::BindingState& lhs, const glFramebuffer::BindingState& rhs) noexcept;
 
 namespace Attorney {
     class GLAPIRenderTarget {

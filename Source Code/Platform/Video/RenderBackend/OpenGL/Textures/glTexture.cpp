@@ -432,14 +432,23 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
     }
 }
 
-void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) {
+void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) {
     assert(_data._textureType != TextureType::COUNT);
 
-    const GLenum access = read ? (write ? GL_READ_WRITE : GL_READ_ONLY)
-                               : (write ? GL_WRITE_ONLY : GL_NONE);
+    GLenum access = GL_NONE;
+    switch (rw_flag) {
+        case Image::Flag::READ       : access = GL_READ_ONLY; break;
+        case Image::Flag::WRITE      : access = GL_WRITE_ONLY; break;
+        case Image::Flag::READ_WRITE : access = GL_READ_WRITE; break;
+        default: break;
+    }
 
-    const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
-    GL_API::getStateTracker().bindTextureImage(slot, _descriptor.texType(), _data._textureHandle, level, layered, layer, access, glInternalFormat);
+    if (access != GL_NONE) {
+        const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
+        GL_API::getStateTracker().bindTextureImage(slot, _descriptor.texType(), _data._textureHandle, level, layered, layer, access, glInternalFormat);
+    } else {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 }
 
 
@@ -474,6 +483,60 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, 
             params._dimensions.y,
             params._dimensions.z * numFaces);
     }
+}
+
+std::pair<std::shared_ptr<Byte[]>, size_t> glTexture::readData(U16 mipLevel, const GFXDataFormat desiredFormat) const {
+    if (_descriptor.compressed()) {
+        DIVIDE_ASSERT("glTexture::readData: Compressed textures not supported!");
+        return {nullptr, 0};
+    }
+
+    CLAMP(mipLevel, to_U16(0u), _descriptor.mipLevels().max);
+
+    GLint texWidth = _width, texHeight = _height;
+    glGetTextureLevelParameteriv(_data._textureHandle, static_cast<GLint>(mipLevel), GL_TEXTURE_WIDTH, &texWidth);
+    glGetTextureLevelParameteriv(_data._textureHandle, static_cast<GLint>(mipLevel), GL_TEXTURE_HEIGHT, &texHeight);
+
+    /** Always assume 4 channels as per GL spec:
+      * If the selected texture image does not contain four components, the following mappings are applied.
+      * Single-component textures are treated as RGBA buffers with red set to the single-component value, green set to 0, blue set to 0, and alpha set to 1.
+      * Two-component textures are treated as RGBA buffers with red set to the value of component zero, alpha set to the value of component one, and green and blue set to 0.
+      * Finally, three-component textures are treated as RGBA buffers with red set to component zero, green set to component one, blue set to component two, and alpha set to 1.
+      **/
+      
+    const auto GetSizeFactor = [](const GFXDataFormat format) {
+        switch (format) {
+            default:
+            case GFXDataFormat::UNSIGNED_BYTE: 
+            case GFXDataFormat::SIGNED_BYTE: return 1;
+
+            case GFXDataFormat::UNSIGNED_SHORT:
+            case GFXDataFormat::SIGNED_SHORT:
+            case GFXDataFormat::FLOAT_16: return 2;
+
+            case GFXDataFormat::UNSIGNED_INT:
+            case GFXDataFormat::SIGNED_INT:
+            case GFXDataFormat::FLOAT_32: return 4;
+        }
+    };
+
+    const GFXDataFormat dataFormat = desiredFormat == GFXDataFormat::COUNT ? _descriptor.dataType() : desiredFormat;
+    const size_t sizeFactor = GetSizeFactor(dataFormat);
+
+    const GLsizei size = texWidth * texHeight * 4 * static_cast<GLsizei>(sizeFactor);
+
+    std::shared_ptr<Byte[]> grabData(new Byte[size]);
+
+    GL_API::getStateTracker().setPixelPackAlignment(1);
+    glGetTextureImage(_data._textureHandle,
+                      0,
+                      GLUtil::glImageFormatTable[to_base(_descriptor.baseFormat())],
+                      GLUtil::glDataFormat[to_base(dataFormat)],
+                      size,
+                      (bufferPtr)grabData.get());
+    GL_API::getStateTracker().setPixelPackAlignment();
+
+    return { grabData, to_size( size) };
 }
 
 };

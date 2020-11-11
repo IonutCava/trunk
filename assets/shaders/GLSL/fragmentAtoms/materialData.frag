@@ -43,6 +43,10 @@ layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #include "bumpMapping.frag"
 #endif
 
+#ifndef F0
+#define F0 vec3(0.04f)
+#endif
+
 #if defined(USE_CUSTOM_POM)
 vec3 getTBNViewDir();
 #else //USE_CUSTOM_POM

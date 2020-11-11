@@ -17,7 +17,7 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     bufferDescriptor._elementCount = 1;
     bufferDescriptor._elementSize = sizeof(SceneShaderBufferData);
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._initialData = &_bufferData;
+    bufferDescriptor._initialData = { &_bufferData, bufferDescriptor._elementSize };
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     // No need to use threaded writes as we manually update the buffer at the end of the frame. Let the API decide what's best based on data size

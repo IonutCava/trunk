@@ -1,6 +1,6 @@
 --Compute.Create
 
-#define EPSILON 0.000001f
+#define EPSILON 0.005f
 // Taken from RTR vol 4 pg. 278
 #define RGB_TO_LUM vec3(0.2125f, 0.7154f, 0.0721f)
 
@@ -10,8 +10,8 @@ uniform vec4 u_params;
 // u_params.y = inverse of the log_2 luminance range
 
 // Our two inputs, the read-only HDR color image, and the histogramBuffer
-layout(binding = 0, rgba16f) readonly uniform image2D s_texColor;
-layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent buffer histogramBuffer
+layout(binding = 0, rgba16f) uniform ACCESS_R image2D s_texColor;
+layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent ACCESS_W buffer histogramBuffer
 {
     uint histogram[];
 };
@@ -74,16 +74,16 @@ uniform vec4 u_params;
 #define numPixels u_params.w
 
 // We'll be writing our average to s_target
-layout(binding = 0, r16f) uniform image2D s_target;
+layout(binding = 0, r16f) uniform ACCESS_RW image2D s_target;
 
-layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent buffer histogramBuffer
+layout(std430, binding = BUFFER_LUMINANCE_HISTOGRAM) coherent ACCESS_RW buffer histogramBuffer
 {
     uint histogram[];
 };
 
-shared  uint histogramShared[GROUP_SIZE];
+shared uint histogramShared[GROUP_SIZE];
 
-layout(local_size_x = THREADS_X, local_size_y = THREADS_X, local_size_z = 1) in;
+layout(local_size_x = GROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 void main() {
     // Get the count from the histogram buffer
     uint countForThisBin = histogram[gl_LocalInvocationIndex];
@@ -111,7 +111,7 @@ void main() {
         float weightedLogAverage = (histogramShared[0] / max(numPixels - float(countForThisBin), 1.0f)) - 1.0f;
 
         // Map from our histogram space to actual luminance
-        float weightedAvgLum = exp2(weightedLogAverage / 254.0f * logLumRange + minLogLum);
+        float weightedAvgLum = exp2(((weightedLogAverage / 254.0f) * logLumRange) + minLogLum);
 
 
         // The new stored value will be interpolated using the last frames value

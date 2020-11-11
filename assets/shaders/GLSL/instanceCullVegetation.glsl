@@ -11,7 +11,6 @@ uniform vec4 grassExtents;
 #endif
 
 uniform uint  dvd_terrainChunkOffset;
-float saturate(float v) { return clamp(v, 0.0f, 1.0f); }
 
 #include "HiZCullingAlgorithm.cmn";
 #include "vegetationData.cmn"

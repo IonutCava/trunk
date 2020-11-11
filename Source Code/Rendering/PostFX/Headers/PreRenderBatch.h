@@ -52,7 +52,7 @@ class PreRenderBatch {
 
     RenderTargetHandle screenRT() const noexcept;
     RenderTargetHandle edgesRT() const noexcept;
-    RenderTargetHandle luminanceRT() const noexcept;
+    Texture_ptr luminanceTex() const noexcept;
 
     PreRenderOperator* getOperator(FilterType type) {
         const FilterSpace fSpace = GetOperatorSpace(type);
@@ -89,6 +89,7 @@ class PreRenderBatch {
     PROPERTY_RW(EdgeDetectionMethod, edgeDetectionMethod, EdgeDetectionMethod::Luma);
 
     void adaptiveExposureControl(bool state) noexcept;
+    F32  adaptiveExposureValue() const;
 
    private:
 
@@ -141,7 +142,7 @@ class PreRenderBatch {
     ScreenTargets _screenRTs;
 
     RenderTargetHandle _sceneEdges;
-    RenderTargetHandle _currentLuminance;
+    Texture_ptr _currentLuminance;
     ShaderProgram_ptr _toneMap = nullptr;
     ShaderProgram_ptr _toneMapAdaptive = nullptr;
     ShaderProgram_ptr _createHistogram = nullptr;

@@ -1,7 +1,6 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
-#include "utility.cmn"
 #include "lightInput.cmn"
 
 #include "materialData.frag"

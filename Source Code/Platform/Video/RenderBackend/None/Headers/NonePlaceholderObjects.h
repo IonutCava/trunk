@@ -151,10 +151,11 @@ namespace Divide {
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
 
-        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, bool read, bool write) override {}
+        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override {}
         void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override {}
         void loadData(const ImageTools::ImageData& imageData) override {}
         void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override {}
+        std::pair<std::shared_ptr<Byte[]>, size_t> readData(U16 mipLevel, GFXDataFormat desiredFormat) const override { ACKNOWLEDGE_UNUSED(mipLevel); ACKNOWLEDGE_UNUSED(desiredFormat); return { nullptr, 0 }; }
     };
 
     class noShaderProgram final : public ShaderProgram {

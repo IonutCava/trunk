@@ -13,6 +13,30 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 
 namespace Divide {
+namespace {
+    bool PreviewTextureButton(I32 &id, Texture* tex, bool readOnly) {
+        bool ret = false;
+        ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 15);
+        ImGui::PushID(4321234 + id++);
+        if (readOnly) {
+            PushReadOnly();
+        }
+        if (ImGui::SmallButton("T")) {
+            ret = true;
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip(Util::StringFormat("Preview texture : %s", tex->assetName().c_str()).c_str());
+        }
+        if (readOnly) {
+            PopReadOnly();
+        }
+        ImGui::PopID();
+        return ret;
+    };
+
+    constexpr I32 g_exposureRefreshFrameCount = 3;
+
+}
     PostFXWindow::PostFXWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
           PlatformContextComponent(context),
@@ -23,7 +47,7 @@ namespace Divide {
     void PostFXWindow::drawInternal() {
         PreRenderBatch* batch = _postFX.getFilterBatch();
 
-        const auto checkBox = [this](FilterType filter, bool overrideScene = false, const char* label = "Enabled") {
+        const auto checkBox = [this](FilterType filter, const char* label = "Enabled", bool overrideScene = false) {
             bool filterEnabled = _postFX.getFilterState(filter);
             ImGui::PushID(to_base(filter));
             if (ImGui::Checkbox(label, &filterEnabled)) {
@@ -153,6 +177,19 @@ namespace Divide {
                 if (ImGui::SliderFloat("Exposure", &params.manualExposureAdaptive, 0.01f, 1.99f)) {
                     batch->toneMapParams(params);
                 }
+
+                static I32 exposureRefreshFrameCount = 1;
+                static F32 exposure = 1.0f;
+                if (--exposureRefreshFrameCount == 0) {
+                    exposure = batch->adaptiveExposureValue();
+                    exposureRefreshFrameCount = g_exposureRefreshFrameCount;
+                }
+
+                ImGui::Text("Current exposure value: %5.2f", exposure);
+                I32 id = 32132131;
+                if (PreviewTextureButton(id, batch->luminanceTex().get(), false)) {
+                    _previewTexture = batch->luminanceTex().get();
+                }
             } else {
                 if (ImGui::SliderFloat("Exposure", &params.manualExposure, 0.01f, 1.99f)) {
                     batch->toneMapParams(params);
@@ -161,12 +198,13 @@ namespace Divide {
             if (ImGui::SliderFloat("White Balance", &params.manualWhitePoint, 0.01f, 1.99f)) {
                 batch->toneMapParams(params);
             }
-            checkBox(FilterType::FILTER_LUT_CORECTION);
+            
+            checkBox(FilterType::FILTER_LUT_CORECTION, PostFX::FilterName(FilterType::FILTER_LUT_CORECTION), false);
         }
         if (ImGui::CollapsingHeader("Test Effects")) {
-            checkBox(FilterType::FILTER_NOISE, true, PostFX::FilterName(FilterType::FILTER_NOISE));
-            checkBox(FilterType::FILTER_VIGNETTE, true, PostFX::FilterName(FilterType::FILTER_VIGNETTE));
-            checkBox(FilterType::FILTER_UNDERWATER, true, PostFX::FilterName(FilterType::FILTER_UNDERWATER));
+            checkBox(FilterType::FILTER_NOISE, PostFX::FilterName(FilterType::FILTER_NOISE), true);
+            checkBox(FilterType::FILTER_VIGNETTE, PostFX::FilterName(FilterType::FILTER_VIGNETTE), true);
+            checkBox(FilterType::FILTER_UNDERWATER, PostFX::FilterName(FilterType::FILTER_UNDERWATER), true);
         }
 
         PushReadOnly();
@@ -174,5 +212,11 @@ namespace Divide {
             checkBox(FilterType::FILTER_SS_REFLECTIONS);
         }
         PopReadOnly();
+
+        if (_previewTexture != nullptr) {
+            if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", _previewTexture->resourceName().c_str()).c_str(), _previewTexture, vec2<F32>(512, 512), true, false)) {
+                _previewTexture = nullptr;
+            }
+        }
     }
 };

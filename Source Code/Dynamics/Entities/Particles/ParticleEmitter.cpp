@@ -88,7 +88,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
             params._updateFrequency = BufferUpdateFrequency::ONCE;
             params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
             params._sync = false;
-            params._data = (bufferPtr)geometry.data();
+            params._initialData = { (bufferPtr)geometry.data(), geometry.size() * params._elementSize};
 
             buffer.setBuffer(params);
 
@@ -185,7 +185,7 @@ bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleDa
             params._updateFrequency = BufferUpdateFrequency::OFTEN;
             params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
             params._sync = true;
-            params._data = NULL;
+            params._initialData = { nullptr, 0 };
             params._instanceDivisor = 1;
 
             buffer.setBuffer(params);

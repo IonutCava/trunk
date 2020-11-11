@@ -26,6 +26,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._elementSize = _elementSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
+    implParams._initToZero = descriptor._initToZero;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._updateUsage = descriptor._updateUsage;
     implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);

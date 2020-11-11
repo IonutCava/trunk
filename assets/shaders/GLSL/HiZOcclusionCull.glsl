@@ -18,17 +18,17 @@ struct IndirectDrawCommand {
     uint baseInstance;
 };
 
-layout(binding = BUFFER_NODE_INFO, std430) coherent buffer dvd_MatrixBlock
+layout(binding = BUFFER_NODE_INFO, std430) coherent COMP_ONLY_R buffer dvd_MatrixBlock
 {
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
-layout(binding = COLLISION_INFO, std430) coherent buffer dvd_CollisionInfoBlock
+layout(binding = COLLISION_INFO, std430) coherent COMP_ONLY_R buffer dvd_CollisionInfoBlock
 {
     CollisionInfo dvd_CollisionInfo[MAX_VISIBLE_NODES];
 };
 
-layout(binding = BUFFER_GPU_COMMANDS, std430) coherent buffer dvd_GPUCmds
+layout(binding = BUFFER_GPU_COMMANDS, std430) coherent COMP_ONLY_RW buffer dvd_GPUCmds
 {
     IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES];
 };

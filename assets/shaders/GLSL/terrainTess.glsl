@@ -1,6 +1,5 @@
 --Vertex
 
-#include "utility.cmn"
 #include "nodeBufferedInput.cmn"
 
 layout(location = ATTRIB_POSITION) in vec4 inVertexData;
@@ -60,8 +59,6 @@ void main(void)
 }
 
 --TessellationC
-
-#include "utility.cmn"
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
 uniform float dvd_tessTriangleWidth;
@@ -301,7 +298,6 @@ layout(quads, fractional_even_spacing, cw) in;
 #endif
 
 #include "nodeBufferedInput.cmn"
-#include "utility.cmn"
 
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 

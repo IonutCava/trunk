@@ -1436,7 +1436,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     params._storageType = BufferStorageType::NORMAL;
     params._sync = true;
-    params._data = nullptr;
+    params._initialData = { nullptr, 0 };
 
     ret->setBuffer(params); //Pos, UV and Colour
     ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
@@ -1461,7 +1461,7 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) const {
 
     for (const Image& image : images) {
         if (image._texture != nullptr) {
-            image._texture->bindLayer(image._binding, image._level, image._layer, false, image._flag != Image::Flag::WRITE ? true : false, image._flag != Image::Flag::READ ? true : false);
+            image._texture->bindLayer(image._binding, image._level, image._layer, false, image._flag );
         }
     }
 

@@ -52,12 +52,12 @@ namespace GLUtil {
 
         static U32 getChunkCountForSize(size_t sizeInBytes) noexcept;
 
-        VBO();
+        VBO() noexcept;
         ~VBO() = default;
 
         void freeAll();
         [[nodiscard]] U32 handle() const noexcept;
-        bool checkChunksAvailability(size_t offset, U32 count) noexcept;
+        bool checkChunksAvailability(size_t offset, U32 count, U32& chunksUsedTotal) noexcept;
 
         bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);
 
@@ -65,7 +65,7 @@ namespace GLUtil {
 
         void releaseChunks(size_t offset);
 
-        U32 getMemUsage() noexcept;
+        size_t getMemUsage() noexcept;
 
     private:
         GLuint _handle;
@@ -86,7 +86,7 @@ namespace GLUtil {
 
     bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut);
     bool releaseVBO(GLuint& handle, size_t& offset);
-    U32 getVBOMemUsage(GLuint handle);
+    size_t getVBOMemUsage(GLuint handle);
     U32 getVBOCount() noexcept;
 
     void clearVBOs() noexcept;
@@ -95,19 +95,16 @@ namespace GLUtil {
                               GLenum usageMask,
                               GLuint& bufferIdOut,
                               bufferPtr data,
+                              size_t dataSize,
+                              bool initToZeroFreeSpace,
                               const char* name = nullptr);
-
-    bufferPtr allocPersistentBuffer(GLuint bufferId,
-                                    size_t bufferSize,
-                                    BufferStorageMask storageMask,
-                                    MapBufferAccessMask accessMask,
-                                    bufferPtr data);
 
     bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
                                              BufferStorageMask storageMask,
                                              MapBufferAccessMask accessMask,
                                              GLuint& bufferIdOut,
                                              bufferPtr data,
+                                             size_t dataSize,
                                              const char* name = nullptr);
 
     void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);

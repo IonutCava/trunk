@@ -1,16 +1,6 @@
 #ifndef _VEGETATION_DATA_CMN_
 #define _VEGETATION_DATA_CMN_
 
-#if !defined(ACCESS)
-#   if defined(COMPUTE_SHADER)
-#       define ACCESS
-#       define COMP_RW writeonly
-#   else //COMPUTE_SHADER
-#       define ACCESS readonly
-#       define COMP_RW readonly
-#   endif //COMPUTE_SHADER
-#endif //ACCESS
-
 struct VegetationData {
     vec4 positionAndScale;
     vec4 orientationQuad;
@@ -18,8 +8,8 @@ struct VegetationData {
     vec4 data;
 };
 
-#if defined(MAX_TREE_INSTANCES)
-layout(std430, binding = BUFFER_TREE_DATA) coherent ACCESS buffer dvd_treeTransformBlock {
+#if defined(MAX_TREE_INSTANCES) && defined(CULL_TREES)
+layout(std430, binding = BUFFER_TREE_DATA) coherent COMP_ONLY_RW buffer dvd_treeTransformBlock {
     VegetationData treeData[];
 };
 
@@ -30,7 +20,7 @@ VegetationData TreeData(in uint instanceID) {
 #endif //MAX_TREE_INSTANCES
 
 #if defined(MAX_GRASS_INSTANCES)
-layout(std430, binding = BUFFER_GRASS_DATA) coherent ACCESS buffer dvd_grassTransformBlock {
+layout(std430, binding = BUFFER_GRASS_DATA) coherent COMP_ONLY_RW buffer dvd_grassTransformBlock {
     VegetationData grassData[];
 };
 

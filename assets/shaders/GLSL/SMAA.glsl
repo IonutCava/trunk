@@ -103,10 +103,7 @@ layout(binding = (TEXTURE_UNIT1 + 1)) uniform sampler2D searchTex;
 
 out vec4 _colourOut;
 
-#define mad(a, b, c) (a * b + c)
-#define saturate(a) clamp(a, 0.0, 1.0)
-
-#define SMAARound(v) floor((v) + .5)
+#define SMAARound(v) ROUND(v)
 #define SMAAOffset(x,y) vec2(x,y)
 #define SMAASampleLevelZeroOffset(tex, coord, offset) texture(tex, coord + offset * SMAA_RT_METRICS.xy)
 
