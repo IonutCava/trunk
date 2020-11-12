@@ -167,7 +167,7 @@ void Renderer::preRender(RenderStagePass stagePass,
     GFX::DispatchComputeCommand computeCmd = {};
     GFX::MemoryBarrierCommand memCmd = {};
 
-    const mat4<F32>& projectionMatrix = camera->getProjectionMatrix();
+    const mat4<F32>& projectionMatrix = camera->projectionMatrix();
     if (_previousProjMatrix != projectionMatrix) {
         _previousProjMatrix = projectionMatrix;
 

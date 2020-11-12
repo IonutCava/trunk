@@ -1306,8 +1306,8 @@ bool Scene::updateCameraControls(const PlayerIndex idx) const {
     
     SceneStatePerPlayer& playerState = state()->playerState(idx);
 
-    playerState.previousViewMatrix(cam->getViewMatrix());
-    playerState.previousProjectionMatrix(cam->getProjectionMatrix());
+    playerState.previousViewMatrix(cam->viewMatrix());
+    playerState.previousProjectionMatrix(cam->projectionMatrix());
 
     bool updated = false;
     updated = cam->moveRelative(vec3<I32>(to_I32(playerState.moveFB()),

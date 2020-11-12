@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace GLUtil {
-    class VBO {
+    class VBO final {
     public:
         // Allocate VBOs in 16K chunks. This will HIGHLY depend on actual data usage and requires testing.
         static constexpr U32 MAX_VBO_CHUNK_SIZE_BYTES = 16 * 1024;

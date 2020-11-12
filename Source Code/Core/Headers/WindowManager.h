@@ -158,7 +158,7 @@ protected:
     friend class DisplayWindow;
     [[nodiscard]] static U32 CreateAPIFlags(RenderAPI api) noexcept;
     [[nodiscard]] ErrorCode configureAPISettings(RenderAPI api, U16 descriptorFlags) const;
-    [[nodiscard]] ErrorCode applyAPISettings(DisplayWindow* window, U32 descriptorFlags) const;
+    [[nodiscard]] ErrorCode applyAPISettings(DisplayWindow* window) const;
     static void DestroyAPISettings(DisplayWindow* window) noexcept;
 
 protected:

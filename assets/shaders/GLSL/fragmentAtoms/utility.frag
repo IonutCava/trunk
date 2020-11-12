@@ -254,4 +254,29 @@ vec3 turboColormap(float x) {
 
 #endif // COLORMAP_SH_HEADER_GUARD
 
+
+//ref: https://aras-p.info/texts/CompactNormalStorage.html#method08ppview
+vec3 unpackNormal(in vec2 enc) {
+#if 1
+    const vec2 fenc = enc * 4 - 2;
+    const float f = dot(fenc, fenc);
+    const float g = sqrt(1 - f * 0.25f);
+    return vec3(fenc * g, 1 - f * 0.5f);
+#else
+    vec3 ret;
+    ret.xy = enc * 2 - 1;
+    ret.z = sqrt(1 - dot(ret.xy, ret.xy));
+    return ret;
+#endif
+}
+
+vec2 packNormal(in vec3 n) {
+#if 1
+    const float f = sqrt(8 * n.z + 8);
+    return n.xy / f + 0.5f;
+#else
+    return n.xy * 0.5f + 0.5f;
+#endif
+}
+
 #endif //_UTILITY_FRAG_

@@ -131,30 +131,30 @@ class Camera : public Resource {
     bool isOrthoProjected() const noexcept { return _data._isOrthoCamera; }
 
     vec3<F32> getUpDir() const noexcept {
-        const mat4<F32>& viewMat = getViewMatrix();
+        const mat4<F32>& viewMat = viewMatrix();
         return vec3<F32>(viewMat.m[0][1], viewMat.m[1][1], viewMat.m[2][1]);
     }
 
     vec3<F32> getRightDir() const noexcept {
-        const mat4<F32>& viewMat = getViewMatrix();
+        const mat4<F32>& viewMat = viewMatrix();
         return vec3<F32>(viewMat.m[0][0], viewMat.m[1][0], viewMat.m[2][0]);
     }
 
     vec3<F32> getForwardDir() const noexcept {
-        const mat4<F32>& viewMat = getViewMatrix();
+        const mat4<F32>& viewMat = viewMatrix();
         return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
 
-    const mat4<F32>& getViewMatrix() const noexcept { return _data._viewMatrix; }
-    const mat4<F32>& getViewMatrix() { updateViewMatrix(); return _data._viewMatrix; }
+    const mat4<F32>& viewMatrix() const noexcept { return _data._viewMatrix; }
+    const mat4<F32>& viewMatrix()                { updateViewMatrix(); return _data._viewMatrix; }
 
-    const mat4<F32>& getProjectionMatrix() const noexcept { return _data._projectionMatrix; }
-    const mat4<F32>& getProjectionMatrix() { updateProjection(); return _data._projectionMatrix; }
+    const mat4<F32>& projectionMatrix() const noexcept { return _data._projectionMatrix; }
+    const mat4<F32>& projectionMatrix()                { updateProjection(); return _data._projectionMatrix; }
 
-    mat4<F32> getWorldMatrix() { return getViewMatrix().getInverse(); }
-    mat4<F32> getWorldMatrix() const noexcept { return getViewMatrix().getInverse(); }
-    void getWorldMatrix(mat4<F32>& worldMatOut) { getViewMatrix().getInverse(worldMatOut); }
-    void getWorldMatrix(mat4<F32>& worldMatOut) const noexcept { getViewMatrix().getInverse(worldMatOut); }
+    mat4<F32> worldMatrix()                                      { return GetInverse(viewMatrix()); }
+    mat4<F32> worldMatrix()                       const noexcept { return GetInverse(viewMatrix()); }
+    void      worldMatrix(mat4<F32>& worldMatOut)                { viewMatrix().getInverse(worldMatOut); }
+    void      worldMatrix(mat4<F32>& worldMatOut) const noexcept { viewMatrix().getInverse(worldMatOut); }
 
     /// Nothing really to unload
     virtual bool unload() noexcept { return true; }
@@ -183,6 +183,8 @@ class Camera : public Resource {
 
                   void flag(const U8 flag)       noexcept { _data._flag = flag; }
     [[nodiscard]] U8   flag()              const noexcept { return _data._flag; }
+
+    PROPERTY_R_IW(mat4<F32>, viewProjectionMatrix);
 
    protected:
     virtual bool updateViewMatrix();

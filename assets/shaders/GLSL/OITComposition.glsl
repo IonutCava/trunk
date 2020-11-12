@@ -9,6 +9,8 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D revealageTexture;
 
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
 
+float maxComponent(in vec4 v) { return max(max(max(v.x, v.y), v.z), v.w); }
+
 void main() {
     ivec2 C = ivec2(gl_FragCoord.xy);
 

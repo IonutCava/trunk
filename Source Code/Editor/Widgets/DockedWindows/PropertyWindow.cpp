@@ -424,7 +424,7 @@ namespace Divide {
             {
                 ImGui::Text("View Matrix");
                 ImGui::Spacing();
-                mat4<F32> viewMatrix = cam->getViewMatrix();
+                mat4<F32> viewMatrix = cam->viewMatrix();
                 EditorComponentField worldMatrixField = {};
                 worldMatrixField._name = "View Matrix";
                 worldMatrixField._basicType = GFX::PushConstantType::MAT4;
@@ -438,7 +438,7 @@ namespace Divide {
             {
                 ImGui::Text("Projection Matrix");
                 ImGui::Spacing();
-                mat4<F32> projMatrix = cam->getProjectionMatrix();
+                mat4<F32> projMatrix = cam->projectionMatrix();
                 EditorComponentField projMatrixField;
                 projMatrixField._basicType = GFX::PushConstantType::MAT4;
                 projMatrixField._type = EditorComponentFieldType::PUSH_TYPE;

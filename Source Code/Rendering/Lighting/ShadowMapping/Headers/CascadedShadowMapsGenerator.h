@@ -33,6 +33,9 @@
 #ifndef _CSM_GENERATOR_H_
 #define _CSM_GENERATOR_H_
 
+#include <array>
+#include <array>
+
 #include "ShadowMap.h"
 #include "Platform/Video/Headers/PushConstants.h"
 
@@ -51,7 +54,7 @@ FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
 /// Directional lights can't deliver good quality shadows using a single shadow map.
 /// This technique offers an implementation of the CSM method
-class CascadedShadowMapsGenerator : public ShadowMapGenerator {
+class CascadedShadowMapsGenerator final : public ShadowMapGenerator {
    public:
     explicit CascadedShadowMapsGenerator(GFXDevice& context);
     ~CascadedShadowMapsGenerator();
@@ -62,19 +65,12 @@ class CascadedShadowMapsGenerator : public ShadowMapGenerator {
     using SplitDepths = std::array<F32, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT>;
 
     void postRender(const DirectionalLightComponent& light, GFX::CommandBuffer& bufferInOut);
-    SplitDepths calculateSplitDepths(const mat4<F32>& projMatrix,
-                                     DirectionalLightComponent& light,
-                                     const vec2<F32>& nearFarPlanes) noexcept;
-    void applyFrustumSplits(DirectionalLightComponent& light,
-                            const mat4<F32>& viewMatrix,
-                            const mat4<F32>& projectionMatrix,
-                            const vec2<F32>& nearFarPlanes,
-                            U8 numSplits,
-                            const SplitDepths& splitDepths) const;
 
-    bool useMSAA() const noexcept;
+    SplitDepths calculateSplitDepths( DirectionalLightComponent& light, const vec2<F32>& nearFarPlanes) const noexcept;
 
-    void updateMSAASampleCount(const U8 sampleCount) final;
+    void applyFrustumSplits(DirectionalLightComponent& light, const Camera& shadowCamera, U8 numSplits) const;
+
+    void updateMSAASampleCount(const U8 sampleCount) override;
 
   protected:
     Pipeline* _blurPipeline = nullptr;

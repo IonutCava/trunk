@@ -338,7 +338,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
     } //lod
 }
 
-void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData& subMeshData) {
+void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData& subMeshData) const {
     vectorEASTL<U32> input_indices;
     input_indices.reserve(source->mNumFaces * 3);
     for (U32 k = 0; k < source->mNumFaces; k++) {
@@ -441,7 +441,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
                 const size_t target_index_count = std::min(source_indices.size(), to_size(index_count * threshold) / 3 * 3);
 
                 lod_indices.resize(source_indices.size());
-                if (g_useSloppyMeshSimplification) {
+                if_constexpr (g_useSloppyMeshSimplification) {
                     lod_indices.resize(meshopt_simplifySloppy(lod_indices.data(),
                                                               source_indices.data(),
                                                               source_indices.size(),

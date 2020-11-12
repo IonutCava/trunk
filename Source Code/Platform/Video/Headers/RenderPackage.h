@@ -122,7 +122,6 @@ public:
 
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
 
-    PROPERTY_RW(bool, autoIndexBuffer,  false);
     PROPERTY_RW(bool, textureDataDirty, true);
     PROPERTY_RW(MinQuality, qualityRequirement, MinQuality::FULL);
     PROPERTY_RW(U32, lastDataIndex, 0u);

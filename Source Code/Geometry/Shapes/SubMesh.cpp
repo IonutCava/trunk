@@ -31,9 +31,6 @@ void SubMesh::buildDrawCommands(SceneGraphNode* sgn,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
-    pkgInOut.autoIndexBuffer(true);
-
-
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLES,
     cmd._sourceBuffer = getGeometryVB()->handle();

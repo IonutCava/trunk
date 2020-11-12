@@ -8,9 +8,8 @@
 
 namespace Divide {
 namespace {
-
-    constexpr bool g_issueMemBarrierForCoherentBuffers = false;
     constexpr size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
+    constexpr I32 g_maxFlushQueueLength = 16;
 
     struct BindConfigEntry {
         U32 _handle = 0;
@@ -52,6 +51,9 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
       _updateFrequency(params._frequency),
       _updateUsage(params._updateUsage)
 {
+
+    std::atomic_init(&_flushQueueSize, 0);
+
     if (_target == GL_ATOMIC_COUNTER_BUFFER) {
         _usage = GL_STREAM_READ;
     } else {
@@ -149,7 +151,7 @@ GLuint glBufferImpl::bufferID() const noexcept {
     return _handle;
 }
 
-bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) const {
+bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) {
     assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool bound = false;
@@ -167,10 +169,24 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
         bound = true;
     }
 
+    if (_useExplicitFlush) {
+        MapRange range;
+        size_t minOffset = std::numeric_limits<size_t>::max();
+        size_t maxRange = 0;
+        while (_flushQueue.try_dequeue(range)) {
+            minOffset = std::min(minOffset, range.offset);
+            maxRange = std::max(maxRange, range.range);
+            _flushQueueSize.fetch_sub(1);
+        }
+        if (minOffset < maxRange) {
+            glFlushMappedNamedBufferRange(_handle, minOffset, maxRange);
+        }
+    }
+
     return bound;
 }
 
-void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) const {
+void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) {
 
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", static_cast<bool>(_mappedBuffer != nullptr));
@@ -187,10 +203,12 @@ void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInByt
 
             std::memcpy(dest, data, rangeInBytes);
             if (_useExplicitFlush) {
-                glFlushMappedNamedBufferRange(_handle, offsetInBytes, rangeInBytes);
-            } else {
-                if_constexpr(g_issueMemBarrierForCoherentBuffers) {
-                    glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+                if (_flushQueue.enqueue(MapRange{offsetInBytes, rangeInBytes})) {
+                    const I32 size = _flushQueueSize.fetch_add(1) + 1;
+                    if (size > g_maxFlushQueueLength) {
+                        MapRange temp;
+                        _flushQueue.try_dequeue(temp);
+                    }
                 }
             }
         } else {
@@ -247,7 +265,7 @@ void glBufferImpl::invalidateData(const size_t offsetInBytes, const size_t range
     }
 }
 
-void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) const {
+void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
     const vectorEASTL<Byte> newData(rangeInBytes, Byte{ 0 });
     writeData(offsetInBytes, rangeInBytes, newData.data());
 }

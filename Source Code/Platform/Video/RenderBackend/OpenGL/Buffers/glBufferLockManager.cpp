@@ -70,17 +70,18 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 void glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lockLength, const U32 frameID) {
     OPTICK_EVENT();
 
+    const BufferRange testRange{ lockBeginBytes, lockLength };
+
     {//Delete old lock entries
         UniqueLock<Mutex> w_lock(_lock);
         for (BufferLock& lock : _bufferLocks) {
-            if (frameID - lock._frameID >= g_LockFrameLifetime) {
+            if (frameID - lock._frameID >= g_LockFrameLifetime || testRange.Overlaps(lock._range)) {
                 lock._valid = false;
             }
         }
     }
 
     WaitForLockedRange(lockBeginBytes, lockLength, true, true);
-
 
     BufferLock newLock;
     newLock._range = { lockBeginBytes, lockLength };

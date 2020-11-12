@@ -35,14 +35,16 @@ DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, Platfo
 
     getEditorComponent().registerField(MOV(directionField));
 
-    EditorComponentField sceneFitField = {};
-    sceneFitField._name = "Fit CSM To AABB";
-    sceneFitField._data = &_csmUseSceneAABBFit;
-    sceneFitField._type = EditorComponentFieldType::PUSH_TYPE;
-    sceneFitField._readOnly = false;
-    sceneFitField._basicType = GFX::PushConstantType::BOOL;
+    for (U8 cascade = 0; cascade < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++cascade) {
+        EditorComponentField sceneFitField = {};
+        sceneFitField._name = Util::StringFormat("Fit CSM To AABB [ %d ]", cascade);
+        sceneFitField._data = &_csmUseSceneAABBFit[cascade];
+        sceneFitField._type = EditorComponentFieldType::PUSH_TYPE;
+        sceneFitField._readOnly = cascade >= csmSplitCount();
+        sceneFitField._basicType = GFX::PushConstantType::BOOL;
 
-    getEditorComponent().registerField(MOV(sceneFitField));
+        getEditorComponent().registerField(MOV(sceneFitField));
+    }
 
     EditorComponentField csmNearClipField = {};
     csmNearClipField._name = "CSM Near Clip Offset";

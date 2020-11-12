@@ -96,6 +96,7 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
     const vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz, (d3*n2.xyz) - (d2*n3.xyz));
     return top / -denom;
 }
+
 const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
     _data._eye.set(ExtractCameraPos2(viewMatrix));
     _data._orientation.fromMatrix(viewMatrix);
@@ -103,7 +104,7 @@ const mat4<F32>& Camera::lookAt(const mat4<F32>& viewMatrix) {
     _frustumDirty = true;
     updateViewMatrix();
 
-    return getViewMatrix();
+    return _data._viewMatrix;
 }
 
 const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
@@ -116,7 +117,7 @@ const mat4<F32>& Camera::lookAt(const vec3<F32>& eye,
 
     updateViewMatrix();
 
-    return getViewMatrix();
+    return _data._viewMatrix;
 }
 
 /// Tell the rendering API to set up our desired PoV
@@ -128,6 +129,8 @@ bool Camera::updateLookAt() {
     cameraUpdated = updateFrustum() || cameraUpdated;
     
     if (cameraUpdated) {
+        viewProjectionMatrix(mat4<F32>::Multiply(viewMatrix(), projectionMatrix()));
+
         for (ListenerMap::value_type it : _updateCameraListeners) {
             it.second(*this);
         }
@@ -214,7 +217,7 @@ const mat4<F32>& Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const v
     _projectionDirty = true;
     updateProjection();
 
-    return getProjectionMatrix();
+    return projectionMatrix();
 }
 
 const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& zPlanes) {
@@ -224,7 +227,7 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
     _projectionDirty = true;
     updateProjection();
 
-    return getProjectionMatrix();
+    return projectionMatrix();
 }
 
 const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) noexcept {
@@ -291,7 +294,7 @@ bool Camera::updateFrustum() {
         return false;
     }
 
-    _frustum.Extract(getViewMatrix(), getProjectionMatrix());
+    _frustum.Extract(viewMatrix(), projectionMatrix());
     _data._frustumPlanes = _frustum.planes();
     _frustumDirty = false;
 
@@ -316,7 +319,7 @@ vec3<F32> Camera::unProject(const F32 winCoordsX, const F32 winCoordsY, const Re
         1.0f   //w
     };
 
-    const mat4<F32> invProjMatrix = GetInverse(getProjectionMatrix());
+    const mat4<F32> invProjMatrix = GetInverse(projectionMatrix());
 
     const vec2<F32> tempEyeSpace = (invProjMatrix * clipSpace).xy;
 
@@ -327,7 +330,7 @@ vec3<F32> Camera::unProject(const F32 winCoordsX, const F32 winCoordsY, const Re
         0.0f      // w
     };
 
-    const vec3<F32> worldSpace = (getWorldMatrix() * eyeSpace).xyz;
+    const vec3<F32> worldSpace = (worldMatrix() * eyeSpace).xyz;
     
     return Normalized(worldSpace);
 }
@@ -337,9 +340,9 @@ vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewpor
 
     const vec2<F32> winSize = viewport.zw;
 
-    const vec4<F32> viewSpace = getViewMatrix() * vec4<F32>(worldCoords, 1.0f);
+    const vec4<F32> viewSpace = viewMatrix() * vec4<F32>(worldCoords, 1.0f);
 
-    const vec4<F32> clipSpace = getProjectionMatrix() * viewSpace;
+    const vec4<F32> clipSpace = projectionMatrix() * viewSpace;
 
     const F32 clampedClipW = std::max(clipSpace.w, std::numeric_limits<F32>::epsilon());
 

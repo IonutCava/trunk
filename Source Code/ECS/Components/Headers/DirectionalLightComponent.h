@@ -43,6 +43,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
 {
    public:
     using Light::getSGN;
+    using PerSplitToggle = std::array<bool, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT>;
 
    public:
 
@@ -59,7 +60,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     /// CSM extra back up distance for light position
     PROPERTY_RW(F32, csmNearClipOffset, 0.0f);
     /// If this is true, we use the combined AABB of culled shadow casters to "correct" each split frustum to avoid near-clipping/culling artefacts.
-    PROPERTY_RW(bool, csmUseSceneAABBFit, true);
+    PROPERTY_RW(PerSplitToggle, csmUseSceneAABBFit, create_array<Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT>(true));
     /// If this is true, we render a cone narrow cone to approximate the light's direction
     PROPERTY_RW(bool, showDirectionCone, false);
     /// Same as showDirectionCone but triggered differently (i.e. on selection in editor)

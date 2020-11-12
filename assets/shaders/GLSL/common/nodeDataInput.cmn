@@ -163,21 +163,21 @@ void setClipPlanes() {
 #if defined(HAS_CLIPPING_OUT) && MAX_CLIP_PLANES > 0
     const int count = dvd_ClipPlaneCount;
     CLIP_INDEX(0);
-#   if MAX_CLIP_PLANES > 1
-        CLIP_INDEX(1);
-#       if MAX_CLIP_PLANES > 2
-            CLIP_INDEX(2);
-#           if MAX_CLIP_PLANES > 3
-                CLIP_INDEX(3);
-#               if MAX_CLIP_PLANES > 4
-                    CLIP_INDEX(4);
-#                   if MAX_CLIP_PLANES > 5
-                        CLIP_INDEX(5);
-#                   endif
-#               endif
-#           endif
-#       endif
-#   endif
+#if MAX_CLIP_PLANES > 1
+    CLIP_INDEX(1);
+#if MAX_CLIP_PLANES > 2
+    CLIP_INDEX(2);
+#if MAX_CLIP_PLANES > 3
+    CLIP_INDEX(3);
+#if MAX_CLIP_PLANES > 4
+    CLIP_INDEX(4);
+#if MAX_CLIP_PLANES > 5
+    CLIP_INDEX(5);
+#endif 
+#endif
+#endif
+#endif
+#endif
 #endif
 }
 #endif //!COMPUTE_SHADER && !FRAG_SHADER

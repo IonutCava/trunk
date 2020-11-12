@@ -23,6 +23,14 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent COMP_ONLY_R buffer dvd_Matri
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
+struct CollisionInfo
+{
+    /// xyz - center, w - radius
+    vec4 _boundingSphere;
+    /// xyz - hExtents
+    vec4 _boundingBoxHExt;
+};
+
 layout(binding = COLLISION_INFO, std430) coherent COMP_ONLY_R buffer dvd_CollisionInfoBlock
 {
     CollisionInfo dvd_CollisionInfo[MAX_VISIBLE_NODES];

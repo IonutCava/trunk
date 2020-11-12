@@ -478,7 +478,7 @@ void SceneGraphNode::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) 
                 Camera* cam = Camera::findCamera(_lockToCamera);
                 if (cam) {
                     cam->updateLookAt();
-                    tComp->setOffset(true, cam->getWorldMatrix());
+                    tComp->setOffset(true, cam->worldMatrix());
                 }
             }
         }

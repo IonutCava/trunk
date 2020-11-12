@@ -70,13 +70,13 @@ public:
 
     [[nodiscard]] GLuint bufferID() const noexcept;
 
-    [[nodiscard]] bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes) const;
+    [[nodiscard]] bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
     void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
     [[nodiscard]] bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
 
-    void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data) const;
+    void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data);
     void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data) const;
-    void zeroMem(size_t offsetInBytes, size_t rangeInBytes) const;
+    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
 
     [[nodiscard]] size_t elementSize() const noexcept;
 
@@ -97,6 +97,13 @@ protected:
     const bool _useExplicitFlush = false;
     const BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
     const BufferUpdateUsage _updateUsage = BufferUpdateUsage::COUNT;
+
+    struct MapRange {
+        size_t offset = 0;
+        size_t range = 0;
+    };
+    moodycamel::BlockingConcurrentQueue<MapRange> _flushQueue;
+    std::atomic_int _flushQueueSize;
 
     glBufferLockManager* _lockManager = nullptr;
 };

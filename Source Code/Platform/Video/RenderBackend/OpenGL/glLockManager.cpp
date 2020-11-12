@@ -50,7 +50,7 @@ void glLockManager::Lock(bool flush) {
     }
 }
 
-bool glLockManager::wait(GLsync syncObj, bool blockClient, bool quickCheck, U8& retryCount) {
+bool glLockManager::wait(const GLsync syncObj, const bool blockClient, const bool quickCheck, U8& retryCount) {
     OPTICK_EVENT();
     OPTICK_TAG("Blocking", blockClient);
     OPTICK_TAG("QuickCheck", quickCheck);

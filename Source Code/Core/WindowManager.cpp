@@ -278,7 +278,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
         window->clearFlags(BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_COLOUR),
                            BitCompare(descriptor.flags, WindowDescriptor::Flags::CLEAR_DEPTH));
 
-        err = applyAPISettings(window, descriptor.flags);
+        err = applyAPISettings(window);
     }
 
     if (err != ErrorCode::NO_ERR) {
@@ -432,7 +432,7 @@ ErrorCode WindowManager::configureAPISettings(const RenderAPI api, const U16 des
     return ErrorCode::NO_ERR;
 }
 
-ErrorCode WindowManager::applyAPISettings(DisplayWindow* window, U32 descriptorFlags) const
+ErrorCode WindowManager::applyAPISettings(DisplayWindow* window) const
 {
     // Create a context and make it current
     if (BitCompare(window->_flags, WindowFlags::OWNS_RENDER_CONTEXT)) {

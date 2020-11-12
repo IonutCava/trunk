@@ -37,12 +37,4 @@ struct NodeData {
 #define Roughness(X) X[1].b
 #define IBLSize(X) int(X[1].a)
 
-
-struct CollisionInfo
-{
-    /// xyz - center, w - radius
-    vec4 _boundingSphere;
-    /// xyz - hExtents
-    vec4 _boundingBoxHExt;
-};
 #endif //_NODE_DATA_DEFINITION_CMN_

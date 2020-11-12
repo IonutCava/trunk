@@ -2442,7 +2442,7 @@ void GFXDevice::debugDraw(const SceneRenderState& sceneRenderState, const Camera
             // backed up from the camera's view direction
             _axisGizmo->worldMatrix(mat4<F32>(-activeCamera->getForwardDir() * 2,
                                                VECTOR3_ZERO,
-                                               activeCamera->getUpDir()) * activeCamera->getWorldMatrix());
+                                               activeCamera->getUpDir()) * activeCamera->worldMatrix());
             bufferInOut.add(_axisGizmo->toCommandBuffer());
         } else if (_axisGizmo) {
             destroyIMP(_axisGizmo);

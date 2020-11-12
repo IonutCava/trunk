@@ -345,7 +345,7 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     }
 }
 
-bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick) {
+bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, const bool quick) {
     OPTICK_EVENT();
 
     Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *bufferParams._camera, !quick, *bufferParams._targetBuffer);
@@ -464,25 +464,20 @@ void RenderingComponent::postRender(const SceneRenderState& sceneRenderState, co
     }
 }
 
-U8 RenderingComponent::getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds) {
+U8 RenderingComponent::getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, const RenderStage renderStage, const vec4<U16>& lodThresholds) {
     OPTICK_EVENT();
 
-    const auto[state, level] = _lodLockLevels[to_base(renderStage)];
+    const auto&[state, level] = _lodLockLevels[to_base(renderStage)];
 
     if (state) {
         return CLAMPED(level, to_U8(0u), MAX_LOD_LEVEL);
     }
 
     const F32 distSQtoCenter = std::max(center.distanceSquared(cameraEye), std::numeric_limits<F32>::epsilon());
-
-    if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.x))) {
-        return 0u;
-    } else if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.y))) {
-        return 1u;
-    } else if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.z))) {
-        return 2u;
-    } else if (distSQtoCenter <= to_F32(SQUARED(lodThresholds.w))) {
-        return 3u;
+    for (U8 i = 0; i < MAX_LOD_LEVEL; ++i) {
+        if (distSQtoCenter <= to_F32(SQUARED(lodThresholds[i]))) {
+            return i;
+        }
     }
 
     return MAX_LOD_LEVEL;
