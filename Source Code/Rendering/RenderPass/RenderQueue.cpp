@@ -44,7 +44,7 @@ U16 RenderQueue::getRenderQueueStackSize(const RenderStage stage) const {
 }
 
 RenderingOrder RenderQueue::getSortOrder(const RenderStagePass stagePass, const RenderBinType rbType) const {
-    RenderingOrder sortOrder = RenderingOrder::BY_STATE;
+    RenderingOrder sortOrder = RenderingOrder::COUNT;
     switch (rbType) {
         case RenderBinType::RBT_OPAQUE: {
             // Opaque items should be rendered front to back in depth passes for early-Z reasons
@@ -67,7 +67,7 @@ RenderingOrder RenderQueue::getSortOrder(const RenderStagePass stagePass, const 
             // Use an override one level up from this if we need a regular forward-style pass
             sortOrder = RenderingOrder::BY_STATE;
         } break;
-        default: {
+        case RenderBinType::RBT_COUNT: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
         } break;
     };
@@ -128,7 +128,7 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material
             //... else add it to the general geometry bin
             return _renderBins[RenderBinType::RBT_OPAQUE];
         }
-        default: break;
+        case SceneNodeType::TYPE_TRIGGER: break;
     }
     return nullptr;
 }
@@ -164,7 +164,7 @@ void RenderQueue::populateRenderQueues(const RenderStagePass stagePass, const st
     } else {
         // Everything except the specified type or just the specified type
         for (RenderBin* renderBin : _renderBins) {
-            if ((renderBin->getType() == binType) == includeBin) {
+            if (renderBin->getType() == binType == includeBin) {
                 renderBin->populateRenderQueue(stagePass, queueInOut);
             }
         }

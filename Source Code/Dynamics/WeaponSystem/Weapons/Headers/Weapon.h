@@ -60,16 +60,16 @@ class Weapon {
     };
 
     Weapon(WeaponType type);
-    ~Weapon();
+    ~Weapon() = default;
 
     /// Add a specific property to this weapon
-    bool addProperty(WeaponProperty propertyMask);
+    [[nodiscard]] bool addProperty(WeaponProperty property);
 
    private:
     WeaponType _type;
     U32 _properyMask;  ///< weapon properties
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

@@ -29,9 +29,9 @@ namespace {
     constexpr U32 g_particleColourBuffer = g_particlePositionBuffer* + 2;
 
     constexpr U64 g_updateInterval = Time::MillisecondsToMicroseconds(33);
-};
+}
 
-ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
+ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : SceneNode(parentCache,
                 descriptorHash,
                 name,
@@ -39,15 +39,8 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache,
                 {},
                 SceneNodeType::TYPE_PARTICLE_EMITTER,
                 to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
-      _particleGPUBuffers{nullptr},
       _context(context),
-      _drawImpostor(false),
-      _particleStateBlockHash(0),
-      _particleStateBlockHashDepth(0),
-      _enabled(false),
-      _particleTexture(nullptr),
-      _particleShader(nullptr),
-      _particleDepthShader(nullptr)
+      _buffersDirty{}
 {
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
@@ -60,16 +53,16 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache,
 
 ParticleEmitter::~ParticleEmitter()
 { 
-    unload(); 
+    assert(_particles == nullptr);
 }
 
-GenericVertexData& ParticleEmitter::getDataBuffer(RenderStage stage, PlayerIndex idx) {
+GenericVertexData& ParticleEmitter::getDataBuffer(const RenderStage stage, const PlayerIndex idx) {
     return *_particleGPUBuffers[idx % s_MaxPlayerBuffers][to_U32(stage)];
 }
 
 bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData) {
     // assert if double init!
-    DIVIDE_ASSERT(particleData.get() != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
+    DIVIDE_ASSERT(particleData != nullptr, "ParticleEmitter::updateData error: Invalid particle data!");
     _particles = particleData;
     const vectorEASTL<vec3<F32>>& geometry = particleData->particleGeometryVertices();
     const vectorEASTL<U32>& indices = particleData->particleGeometryIndices();
@@ -96,7 +89,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                 GenericVertexData::IndexBuffer idxBuff;
                 idxBuff.smallIndices = false;
                 idxBuff.count = to_U32(indices.size());
-                idxBuff.data = (bufferPtr)(indices.data());
+                idxBuff.data = (bufferPtr)indices.data();
 
                 buffer.setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
             }
@@ -106,7 +99,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
         }
     }
 
-    updateData(particleData);
+    updateData();
 
     // Generate a render state
     RenderStateBlock particleRenderState;
@@ -167,11 +160,11 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     return false;
 }
 
-bool ParticleEmitter::updateData(const std::shared_ptr<ParticleData>& particleData) {
+bool ParticleEmitter::updateData() {
     constexpr U32 positionAttribLocation = 13;
     constexpr U32 colourAttribLocation = to_base(AttribLocation::COLOR);
 
-    U32 particleCount = _particles->totalCount();
+    const U32 particleCount = _particles->totalCount();
 
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
@@ -284,7 +277,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = aliveCount;
     descriptor._partitionSize = 1000u;
-    descriptor._cbk = [&eyePos, &misc, &pos](const Task* parent, U32 start, U32 end) {
+    descriptor._cbk = [&eyePos, &misc, &pos](const Task*, const U32 start, const U32 end) {
         for (U32 i = start; i < end; ++i) {
             misc[i].w = pos[i].xyz.distanceSquared(eyePos);
         }
@@ -293,9 +286,9 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
     parallel_for(_context.context(), descriptor);
 
     _bufferUpdate = CreateTask(_context.context(),
-        [this, aliveCount, &renderStagePass](const Task& parentTask) {
+        [this, &renderStagePass](const Task&) {
         // invalidateCache means that the existing particle data is no longer partially sorted
-        _particles->sort(true);
+        _particles->sort();
         _buffersDirty[to_U32(renderStagePass._stage)] = true;
     });
 
@@ -366,7 +359,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = aliveCount;
         descriptor._partitionSize = s_particlesPerThread;
-        descriptor._cbk = [this](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [this](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {
                 _particles->_position[i].w = _particles->_misc[i].z;
                 _particles->_acceleration[i].set(0.0f);
@@ -383,7 +376,7 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
         Wait(*_bbUpdate);
 
         _bbUpdate = CreateTask(_context.context(), 
-              [this, aliveCount, averageEmitRate](const Task& parentTask)
+              [this, aliveCount, averageEmitRate](const Task&)
         {
             BoundingBox aabb;
             for (U32 i = 0; i < aliveCount; i += to_U32(averageEmitRate) / 4) {
@@ -398,10 +391,10 @@ void ParticleEmitter::sceneUpdate(const U64 deltaTimeUS,
 }
 
 U32 ParticleEmitter::getAliveParticleCount() const {
-    if (!_particles.get()) {
-        return 0;
+    if (!_particles) {
+        return 0u;
     }
     return _particles->aliveCount();
 }
 
-};
+}

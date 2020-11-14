@@ -226,9 +226,9 @@ bool copyFile(const char* sourcePath, const char* sourceName, const char* target
         return false;
     }
 
-    std::filesystem::copy_file(std::filesystem::path(source),
-                               std::filesystem::path(target),
-                               std::filesystem::copy_options::overwrite_existing);
+    copy_file(std::filesystem::path(source),
+              std::filesystem::path(target),
+              std::filesystem::copy_options::overwrite_existing);
 
     return true;
 }
@@ -279,8 +279,8 @@ bool deleteAllFiles(const char* filePath, const char* extension) {
         const std::filesystem::path pathIn(filePath);
         for (const auto& p : std::filesystem::directory_iterator(pathIn)) {
             try {
-                if (std::filesystem::is_regular_file(p.status())) {
-                    if (!extension || (extension != nullptr && p.path().extension() == extension)) {
+                if (is_regular_file(p.status())) {
+                    if (!extension || extension != nullptr && p.path().extension() == extension) {
                         if (std::filesystem::remove(p.path())) {
                             ret = true;
                         }
@@ -330,7 +330,7 @@ std::string extractFilePathAndName(char* argv0) {
     std::error_code ec;
     auto currentPath = std::filesystem::current_path();
     currentPath.append(argv0);
-    std::filesystem::path p(std::filesystem::canonical(currentPath, ec));
+    std::filesystem::path p(canonical(currentPath, ec));
 
     std::string ret = p.make_preferred().string();
     return ret;

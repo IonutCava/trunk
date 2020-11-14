@@ -99,7 +99,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     friend class AnimationSystem;
     template<typename T, typename U>
     friend class ECSSystem;
-    void Update(U64 deltaTimeUS) final;
+    void Update(U64 deltaTimeUS) override;
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
@@ -119,5 +119,5 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
 INIT_COMPONENT(AnimationComponent);
 
-};  // namespace Divide
+}  // namespace Divide
 #endif

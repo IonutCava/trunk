@@ -22,7 +22,7 @@ const CameraSnapshot& Camera::snapshot() const noexcept {
     return _data;
 }
 
-void Camera::fromCamera(const Camera& camera, bool flag) {
+void Camera::fromCamera(const Camera& camera, const bool flag) {
     ACKNOWLEDGE_UNUSED(flag);
 
     _reflectionPlane = camera._reflectionPlane;
@@ -80,9 +80,9 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
     const mat4<F32> modelViewT(a_modelView.getTranspose());
 
     // Get plane normals 
-    const vec4<F32> n1(modelViewT.getRow(0));
-    const vec4<F32> n2(modelViewT.getRow(1));
-    const vec4<F32> n3(modelViewT.getRow(2));
+    const vec4<F32>& n1(modelViewT.getRow(0));
+    const vec4<F32>& n2(modelViewT.getRow(1));
+    const vec4<F32>& n3(modelViewT.getRow(2));
 
     // Get plane distances
     const F32 d1(n1.w);
@@ -93,7 +93,7 @@ vec3<F32> ExtractCameraPos2(const mat4<F32>& a_modelView)
     // (using math from RealTime Collision Detection by Christer Ericson)
     const vec3<F32> n2n3 = Cross(n2.xyz, n3.xyz);
     const F32 denom = Dot(n1.xyz, n2n3);
-    const vec3<F32> top = (n2n3 * d1) + Cross(n1.xyz, (d3*n2.xyz) - (d2*n3.xyz));
+    const vec3<F32> top = n2n3 * d1 + Cross(n1.xyz, d3*n2.xyz - d2*n3.xyz);
     return top / -denom;
 }
 
@@ -131,7 +131,7 @@ bool Camera::updateLookAt() {
     if (cameraUpdated) {
         viewProjectionMatrix(mat4<F32>::Multiply(viewMatrix(), projectionMatrix()));
 
-        for (ListenerMap::value_type it : _updateCameraListeners) {
+        for (const auto& it : _updateCameraListeners) {
             it.second(*this);
         }
     }
@@ -139,7 +139,7 @@ bool Camera::updateLookAt() {
     return cameraUpdated;
 }
 
-void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
+void Camera::setGlobalRotation(const F32 yaw, const F32 pitch, const F32 roll) {
     const Quaternion<F32> pitchRot(WORLD_X_AXIS, -pitch);
     const Quaternion<F32> yawRot(WORLD_Y_AXIS, -yaw);
 
@@ -150,7 +150,7 @@ void Camera::setGlobalRotation(F32 yaw, F32 pitch, F32 roll) {
     }
 }
 
-bool Camera::removeUpdateListener(U32 id) {
+bool Camera::removeUpdateListener(const U32 id) {
     const auto& it = _updateCameraListeners.find(id);
     if (it != std::cend(_updateCameraListeners)) {
         _updateCameraListeners.erase(it);
@@ -161,7 +161,7 @@ bool Camera::removeUpdateListener(U32 id) {
 }
 
 U32 Camera::addUpdateListener(const DELEGATE<void, const Camera&>& f) {
-    hashAlg::insert(_updateCameraListeners, ++_updateCameraId, f);
+    insert(_updateCameraListeners, ++_updateCameraId, f);
     return _updateCameraId;
 }
 
@@ -204,11 +204,11 @@ const mat4<F32>& Camera::setProjection(const vec2<F32>& zPlanes) {
     return setProjection(_data._FoV, zPlanes);
 }
 
-const mat4<F32>& Camera::setProjection(F32 verticalFoV, const vec2<F32>& zPlanes) {
+const mat4<F32>& Camera::setProjection(const F32 verticalFoV, const vec2<F32>& zPlanes) {
     return setProjection(_data._aspectRatio, verticalFoV, zPlanes);
 }
 
-const mat4<F32>& Camera::setProjection(F32 aspectRatio, F32 verticalFoV, const vec2<F32>& zPlanes) {
+const mat4<F32>& Camera::setProjection(const F32 aspectRatio, const F32 verticalFoV, const vec2<F32>& zPlanes) {
     setAspectRatio(aspectRatio);
     setVerticalFoV(verticalFoV);
 
@@ -230,7 +230,7 @@ const mat4<F32>& Camera::setProjection(const vec4<F32>& rect, const vec2<F32>& z
     return projectionMatrix();
 }
 
-const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, bool isOrtho) noexcept {
+const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F32>& zPlanes, const bool isOrtho) noexcept {
     _data._projectionMatrix.set(projection);
     _data._zPlanes = zPlanes;
     _projectionDirty = false;
@@ -240,17 +240,17 @@ const mat4<F32>& Camera::setProjection(const mat4<F32>& projection, const vec2<F
     return _data._projectionMatrix;
 }
 
-void Camera::setAspectRatio(F32 ratio) noexcept {
+void Camera::setAspectRatio(const F32 ratio) noexcept {
     _data._aspectRatio = ratio;
     _projectionDirty = true;
 }
 
-void Camera::setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept {
+void Camera::setVerticalFoV(const Angle::DEGREES<F32> verticalFoV) noexcept {
     _data._FoV = verticalFoV;
     _projectionDirty = true;
 }
 
-void Camera::setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept {
+void Camera::setHorizontalFoV(const Angle::DEGREES<F32> horizontalFoV) noexcept {
     _data._FoV = Angle::to_VerticalFoV(horizontalFoV, to_D64(_data._aspectRatio));
     _projectionDirty = true;
 }
@@ -348,9 +348,9 @@ vec2<F32> Camera::project(const vec3<F32>& worldCoords, const Rect<I32>& viewpor
 
     const vec2<F32> ndcSpace = clipSpace.xy / clampedClipW;
 
-    const vec2<F32> winSpace = ((ndcSpace + 1.0f) * 0.5f) * winSize;
+    const vec2<F32> winSpace = (ndcSpace + 1.0f) * 0.5f * winSize;
 
     return winOffset + winSpace;
 }
 
-};
+}

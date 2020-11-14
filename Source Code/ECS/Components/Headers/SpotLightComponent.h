@@ -42,7 +42,7 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
 {
    public:
     explicit SpotLightComponent(SceneGraphNode* sgn, PlatformContext& context);
-    void PreUpdate(U64 deltaTime) final;
+    void PreUpdate(U64 deltaTime) override;
 
     PROPERTY_RW(Angle::DEGREES<F32>, coneCutoffAngle, 35.0f);
     PROPERTY_RW(Angle::DEGREES<F32>, outerConeCutoffAngle, 15.0f);
@@ -54,7 +54,7 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
     [[nodiscard]] F32 coneSlantHeight() const noexcept;
 
    protected:
-    void OnData(const ECS::CustomEvent& data) final;
+    void OnData(const ECS::CustomEvent& data) override;
     void setDirection(const vec3<F32>& direction) const;
 
    private:
@@ -63,6 +63,6 @@ class SpotLightComponent final : public BaseComponentType<SpotLightComponent, Co
 
 INIT_COMPONENT(SpotLightComponent);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_SPOT_LIGHT_COMPONENT_H_

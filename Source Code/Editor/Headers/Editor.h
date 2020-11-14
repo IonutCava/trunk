@@ -62,7 +62,7 @@ namespace Attorney {
     class EditorPropertyWindow;
     class EditorSceneViewWindow;
     class EditorSolutionExplorerWindow;
-};
+}
 
 class Gizmo;
 class Camera;
@@ -144,7 +144,7 @@ class Editor final : public PlatformContextComponent,
 
     void toggle(bool state);
     void onSizeChange(const SizeChangeParams& params);
-    void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node) const;
+    void selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) const;
 
     [[nodiscard]] bool Undo() const;
     [[nodiscard]] inline size_t UndoStackSize() const noexcept;
@@ -508,12 +508,12 @@ namespace Attorney {
         friend class Divide::ContentExplorerWindow;
         friend class Divide::SolutionExplorerWindow;
     };
-};
+}
 
 void PushReadOnly() noexcept;
 void PopReadOnly() noexcept;
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_DIVIDE_EDITOR_H_
 

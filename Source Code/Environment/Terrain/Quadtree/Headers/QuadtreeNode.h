@@ -65,43 +65,41 @@ class QuadtreeNode {
      ~QuadtreeNode();
 
     /// recursive node building function
-    void build(const U8 depth,
+    void build(U8 depth,
                const vec2<U16>& pos,
                const vec2<U16>& HMsize,
                U32 targetChunkDimension,
-               Terrain* const terrain,
+               Terrain* terrain,
                U32& chunkCount);
 
-    bool computeBoundingBox(BoundingBox& parentBB);
+    [[nodiscard]] bool computeBoundingBox(BoundingBox& parentBB);
     
     void drawBBox(RenderPackage& packageOut);
     void toggleBoundingBoxes();
 
-    inline bool isALeaf() const { return _children[0] == nullptr; }
-    inline U8 LoD() const { return _LoD; }
+    [[nodiscard]] bool isALeaf() const noexcept { return _children[0] == nullptr; }
+    [[nodiscard]] U8 LoD() const noexcept { return _LoD; }
 
-    inline const BoundingBox& getBoundingBox() const { return _boundingBox; }
-    inline void setBoundingBox(const BoundingBox& bbox) { _boundingBox = bbox; }
-    inline TerrainChunk* getChunk() { return _terrainChunk.get(); }
+    [[nodiscard]] const BoundingBox& getBoundingBox() const noexcept { return _boundingBox; }
+    void setBoundingBox(const BoundingBox& bbox) noexcept { _boundingBox = bbox; }
+    [[nodiscard]] TerrainChunk* getChunk() const { return _terrainChunk.get(); }
 
-    inline QuadtreeNode& getChild(ChildPosition pos) const noexcept { return *_children[to_base(pos)]; }
-    inline QuadtreeNode& getChild(U32 index) const noexcept { return *_children[index]; }
+    [[nodiscard]] QuadtreeNode& getChild(const ChildPosition pos) const noexcept { return *_children[to_base(pos)]; }
+    [[nodiscard]] QuadtreeNode& getChild(const U32 index) const noexcept { return *_children[index]; }
 
    private:
-    BoundingBox _boundingBox;                    //< Node BoundingBox
-    BoundingSphere _boundingSphere;              //< Node BoundingSphere
+    BoundingBox _boundingBox;                    ///< Node BoundingBox
+    BoundingSphere _boundingSphere;              ///< Node BoundingSphere
     Quadtree* _parent = nullptr;
-    std::array<QuadtreeNode*, 4> _children = {}; //< Node children
-    eastl::unique_ptr<TerrainChunk> _terrainChunk = nullptr; //< Terrain Chunk contained in node
+    std::array<QuadtreeNode*, 4> _children = {}; ///< Node children
+    eastl::unique_ptr<TerrainChunk> _terrainChunk = nullptr; ///< Terrain Chunk contained in node
     GFXDevice&    _context;
     IMPrimitive*  _bbPrimitive = nullptr;
     U32 _targetChunkDimension = 0u;
-    //ToDo: make this work in a multi-threaded environment
-    mutable I8 _frustPlaneCache = -1;
     U8 _LoD = 0u;
     bool _drawBBoxes = false;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

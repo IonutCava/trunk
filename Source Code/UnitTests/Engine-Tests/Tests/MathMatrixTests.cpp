@@ -655,4 +655,4 @@ TEST_MEMBER_FUNCTION(matN, inverse, NA)
     CHECK_EQUAL(input2, result2);
 }
 
-}; //namespace Divide
+} //namespace Divide

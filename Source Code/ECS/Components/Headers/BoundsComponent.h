@@ -66,11 +66,11 @@ namespace Divide {
         template<typename T, typename U>
         friend class ECSSystem;
 
-        void PreUpdate(U64 deltaTimeUS) final;
-        void Update(U64 deltaTimeUS) final;
-        void PostUpdate(U64 deltaTimeUS) final;
+        void PreUpdate(U64 deltaTimeUS) override;
+        void Update(U64 deltaTimeUS) override;
+        void PostUpdate(U64 deltaTimeUS) override;
 
-        void OnData(const ECS::CustomEvent& data) final;
+        void OnData(const ECS::CustomEvent& data) override;
 
         void setRefBoundingBox(const BoundingBox& nodeBounds) noexcept;
 

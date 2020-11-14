@@ -46,6 +46,6 @@ class NOINITVTABLE CommandParser {
    protected:
     hashMap<U64 /*command name*/, std::function<void(stringImpl /*args*/)> > _commands;
 };
-};
+}
 
 #endif

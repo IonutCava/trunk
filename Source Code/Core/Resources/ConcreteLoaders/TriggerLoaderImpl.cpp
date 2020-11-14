@@ -18,4 +18,4 @@ CachedResource_ptr ImplResourceLoader<Trigger>::operator()() {
     return ptr;
 }
 
-};
+}

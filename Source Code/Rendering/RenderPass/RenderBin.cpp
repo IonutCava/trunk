@@ -13,7 +13,7 @@ namespace Divide {
 
 namespace {
     constexpr U32 AVERAGE_BIN_SIZE = 127;
-};
+}
 
 RenderBin::RenderBin(const RenderBinType rbType) : _rbType(rbType)
 {
@@ -80,21 +80,20 @@ void RenderBin::sort(const RenderStage stage, const RenderingOrder renderOrder) 
         case RenderingOrder::WATER_FIRST: {
             eastl::sort(stack.begin(),
                         stack.end(),
-                        [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
+                        [](const RenderBinItem& a, const RenderBinItem&) -> bool {
                             return a._renderable->getSGN()->getNode().type() == SceneNodeType::TYPE_WATER;
                         });
         } break;
         case RenderingOrder::NONE: {
             // no need to sort
         } break;
-        default:
         case RenderingOrder::COUNT: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_SORT_ORDER")), _rbType._to_string());
         } break;
-    };
+    }
 }
 
-U16 RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes) const {
+U16 RenderBin::getSortedNodes(const RenderStage stage, SortedQueue& nodes) const {
     OPTICK_EVENT();
 
     nodes.resize(0);
@@ -108,27 +107,27 @@ U16 RenderBin::getSortedNodes(RenderStage stage, SortedQueue& nodes) const {
     return to_U16(stack.size());
 }
 
-void RenderBin::refresh(RenderStage stage) {
+void RenderBin::refresh(const RenderStage stage) {
     _renderBinStack[to_base(stage)].clear();
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderPackage& pkg, const RenderStagePass& stagePass, const F32 minDistToCameraSq) {
+void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderPackage& pkg, const RenderStagePass& renderStagePass, const F32 minDistToCameraSq) {
     RenderingComponent* const rComp = sgn->get<RenderingComponent>();
 
-    const U8 stageIndex = to_U8(stagePass._stage);
+    const U8 stageIndex = to_U8(renderStagePass._stage);
 
     RenderBinItem item = {};
     item._renderable = rComp;
 
     // Sort by state hash depending on the current rendering stage
     // Save the render state hash value for sorting
-    item._stateHash = rComp->getSortKeyHash(stagePass);
+    item._stateHash = rComp->getSortKeyHash(renderStagePass);
     item._distanceToCameraSq = minDistToCameraSq;
 
     const Material_ptr& nodeMaterial = rComp->getMaterialInstance();
     if (nodeMaterial) {
-        nodeMaterial->getSortKeys(stagePass, item._sortKeyA, item._sortKeyB);
+        nodeMaterial->getSortKeys(renderStagePass, item._sortKeyA, item._sortKeyB);
     } else {
         item._sortKeyA = to_I64(_renderBinStack[stageIndex].size() + 1);
         item._sortKeyB = to_I32(item._sortKeyA);
@@ -161,4 +160,4 @@ bool RenderBin::empty(RenderStage stage) const {
     return getBinSize(stage) == 0;
 }
 
-};
+}

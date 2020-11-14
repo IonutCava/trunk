@@ -78,11 +78,11 @@ class RenderStateBlock : public GUIDWrapper, public Hashable {
         /// Use "from" instead of "operator=" to bypass the GUID restrictions
         void from(const RenderStateBlock& other) noexcept;
 
-        inline bool operator==(const RenderStateBlock& rhs) const noexcept {
+       bool operator==(const RenderStateBlock& rhs) const noexcept {
             return getHash() == rhs.getHash();
         }
 
-        inline bool operator!=(const RenderStateBlock& rhs) const noexcept {
+       bool operator!=(const RenderStateBlock& rhs) const noexcept {
             return getHash() != rhs.getHash();
         }
 

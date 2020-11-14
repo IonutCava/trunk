@@ -70,7 +70,7 @@ class CascadedShadowMapsGenerator final : public ShadowMapGenerator {
 
     void applyFrustumSplits(DirectionalLightComponent& light, const Camera& shadowCamera, U8 numSplits) const;
 
-    void updateMSAASampleCount(const U8 sampleCount) override;
+    void updateMSAASampleCount(U8 sampleCount) override;
 
   protected:
     Pipeline* _blurPipeline = nullptr;

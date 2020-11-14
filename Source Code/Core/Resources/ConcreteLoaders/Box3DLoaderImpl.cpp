@@ -26,4 +26,4 @@ CachedResource_ptr ImplResourceLoader<Box3D>::operator()() {
     return ptr;
 }
 
-};
+}

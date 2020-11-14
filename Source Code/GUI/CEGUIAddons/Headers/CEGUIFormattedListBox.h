@@ -37,15 +37,15 @@
 #include <CEGUI/CEGUI.h>
 
 namespace CEGUI {
-///! A ListboxItem based class that can do horizontal text formatiing.
-class FormattedListboxTextItem : public ListboxTextItem {
+///! A ListboxItem based class that can do horizontal text formatting.
+class FormattedListboxTextItem final : public ListboxTextItem {
    public:
     ///! Constructor
     FormattedListboxTextItem(
         const String& text, const Colour& col,
-        const HorizontalTextFormatting format = HTF_LEFT_ALIGNED,
-        const uint item_id = 0, void* const item_data = 0,
-        const bool disabled = false, const bool auto_delete = true);
+        HorizontalTextFormatting format = HTF_LEFT_ALIGNED,
+        uint item_id = 0, void* item_data = nullptr,
+        bool disabled = false, bool auto_delete = true);
 
     ///! Destructor.
     ~FormattedListboxTextItem();
@@ -58,12 +58,11 @@ class FormattedListboxTextItem : public ListboxTextItem {
         do it automatically since you may wish to batch changes to multiple
         items and multiple calls to handleUpdatedItemData is wasteful.
     */
-    void setFormatting(const HorizontalTextFormatting fmt);
+    void setFormatting(HorizontalTextFormatting fmt);
 
     // overridden functions.
-    Sizef getPixelSize(void) const override;
-    void draw(GeometryBuffer& buffer, const Rectf& targetRect, float alpha,
-              const Rectf* clipper) const override;
+    Sizef getPixelSize() const override;
+    void draw(GeometryBuffer& buffer, const Rectf& targetRect, float alpha, const Rectf* clipper) const override;
 
    protected:
     ///! Helper to create a FormattedRenderedString of an appropriate type.

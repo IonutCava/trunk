@@ -52,10 +52,10 @@ class PropertyWindow final : public DockedWindow, public PlatformContextComponen
         PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
         ~PropertyWindow() = default;
 
-        void drawInternal() final;
-        void backgroundUpdateInternal() final;
+        void drawInternal() override;
+        void backgroundUpdateInternal() override;
 
-        [[nodiscard]] const char* name() const noexcept final;
+        [[nodiscard]] const char* name() const noexcept override;
     protected:
 
         [[nodiscard]] bool drawCamera(Camera* cam);
@@ -73,7 +73,7 @@ class PropertyWindow final : public DockedWindow, public PlatformContextComponen
         Texture* _previewTexture = nullptr;
 };
 
-void NewFunction(Divide::I32 &id, Divide::Material * material, bool fromTexture, bool readOnly);
-}; //namespace Divide
+void NewFunction(I32&id, Material* material, bool fromTexture, bool readOnly);
+} //namespace Divide
 
 #endif //_EDITOR_PROPERTY_WINDOW_H_

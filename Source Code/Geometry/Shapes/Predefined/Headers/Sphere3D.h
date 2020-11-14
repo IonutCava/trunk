@@ -37,21 +37,19 @@
 
 namespace Divide {
 
-class Sphere3D : public Object3D {
+class Sphere3D final : public Object3D {
    public:
     /// Change resolution to affect the spacing between vertices
     explicit Sphere3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, F32 radius, U32 resolution);
 
-    inline F32 getRadius() { return _radius; }
-    inline U32 getResolution() { return _resolution; }
+    F32 getRadius() const { return _radius; }
+    U32 getResolution() const { return _resolution; }
 
     void setRadius(F32 radius);
     void setResolution(U32 resolution);
 
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
-
-    const char* getTypeName() const override { return "Sphere3D"; }
 
   private:
     // SuperBible stuff

@@ -39,7 +39,7 @@ namespace Divide {
 
 namespace Time {
     class ProfileTimer;
-};
+}
 
 struct Task;
 struct RenderStagePass;
@@ -53,7 +53,7 @@ enum class RenderStage : U8;
 // A RenderPass may contain multiple linked stages.
 // Useful to avoid having multiple renderqueues per pass if 2 stages depend on one:
 // E.g.: PRE_PASS + MAIN_PASS share the same renderqueue
-class RenderPass : private NonCopyable {
+class RenderPass : NonCopyable {
    public:
        struct BufferData {
            ShaderBuffer* _nodeData = nullptr;
@@ -105,6 +105,6 @@ class RenderPass : private NonCopyable {
 	const bool _performanceCounters;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

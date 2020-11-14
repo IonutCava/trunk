@@ -48,9 +48,9 @@ namespace Divide {
         virtual bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer);
         virtual bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer);
 
-        virtual void PreUpdate(F32 dt);
-        virtual void Update(F32 dt);
-        virtual void PostUpdate(F32 dt);
+        void PreUpdate(F32 dt) override;
+        void Update(F32 dt) override;
+        void PostUpdate(F32 dt) override;
 
     protected:
         ECS::ECSEngine& _engine;
@@ -59,7 +59,7 @@ namespace Divide {
 
         vectorEASTLFast<U*> _componentCache;
     };
-};
+}
 
 #endif //_ECS_SYSTEM_H_
 

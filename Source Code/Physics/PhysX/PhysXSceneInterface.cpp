@@ -28,7 +28,7 @@ PhysXSceneInterface::~PhysXSceneInterface() {
 }
 
 bool PhysXSceneInterface::init() {
-    physx::PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.context().pfx().getImpl()).getSDK();
+    PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.context().pfx().getImpl()).getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
         Console::errorfn(Locale::get(_ID("ERROR_PHYSX_SDK")));
@@ -118,15 +118,15 @@ void PhysXSceneInterface::update(const U64 deltaTimeUS) {
         PxRigidActor* actor = static_cast<PxRigidActor*>(activeTransforms[i].actor);
         TransformComponent* tComp = static_cast<TransformComponent*>(actor->userData);
         PxTransform pT = actor->getGlobalPose();
-        PxQuat pQ = pT.q.getConjugate();
-        PxVec3 pP = pT.p;
+        const PxQuat pQ = pT.q.getConjugate();
+        const PxVec3 pP = pT.p;
         tComp->setRotation(Quaternion<F32>(pQ.x, pQ.y, pQ.z, pQ.w));
         tComp->setPosition(vec3<F32>(pP.x, pP.y, pP.z));
     }
 }
 
 void PhysXSceneInterface::updateActor(PhysXActor& actor) {
-
+    ACKNOWLEDGE_UNUSED(actor);
 }
 
 void PhysXSceneInterface::process(const U64 deltaTimeUS) {
@@ -134,8 +134,8 @@ void PhysXSceneInterface::process(const U64 deltaTimeUS) {
         return;
     }
 
-    physx::PxReal deltaTimeMS = 
-        Time::MicrosecondsToMilliseconds<physx::PxReal>(deltaTimeUS);
+    const PxReal deltaTimeMS = 
+        Time::MicrosecondsToMilliseconds<PxReal>(deltaTimeUS);
 
     _gScene->simulate(deltaTimeMS);
 
@@ -156,13 +156,14 @@ void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
 }
 
 void PhysXSceneInterface::addToScene(PhysXActor& actor) {
+    ACKNOWLEDGE_UNUSED(actor);
     constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
                                to_base(ComponentType::TRANSFORM) |
                                to_base(ComponentType::RIGID_BODY) |
                                to_base(ComponentType::BOUNDS) |
                                to_base(ComponentType::RENDERING) |
                                to_base(ComponentType::NETWORKING);
-
+    ACKNOWLEDGE_UNUSED(normalMask);
    /* STUBBED("ToDo: Only 1 shape per actor for now. Also, maybe use a factory or something. Fix This! -Ionut")
     SceneNode* sceneNode = nullptr;
 

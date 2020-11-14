@@ -181,7 +181,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
     void addIndices(const vectorEASTLFast<T>& indices, const bool containsRestartIndex) {
         eastl::transform(eastl::cbegin(indices),
                          eastl::cend(indices),
-                         eastl::back_inserter(_indices),
+                         back_inserter(_indices),
                          static_caster<T, U32>());
 
         if (containsRestartIndex) {
@@ -195,18 +195,18 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     void addRestartIndex() {
         hasRestartIndex(true);
-        addIndex((usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S));
+        addIndex(usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S);
      }
 
     void modifyPositionValues(const U32 indexOffset, const vectorEASTL<vec3<F32>>& newValues) {
        assert(indexOffset + newValues.size() - 1 < _data.size());
        DIVIDE_ASSERT(_staticBuffer == false ||
-           (_staticBuffer == true && !_data.empty()),
+           _staticBuffer == true && !_data.empty(),
            "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
        vectorEASTL<Vertex>::iterator it = _data.begin() + indexOffset;
        for (const vec3<F32>& value : newValues) {
-            (it++)->_position.set(value);
+            it++->_position.set(value);
        }
 
        _attribDirty[to_base(AttribLocation::POSITION)] = true;
@@ -220,7 +220,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && !_data.empty()),
+                      _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._position.set(x, y, z);
@@ -235,7 +235,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && !_data.empty()),
+                      _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._colour.set(r, g, b, a);
@@ -250,7 +250,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && !_data.empty()),
+                      _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._normal = Util::PACK_VEC3(x, y, z);
@@ -265,7 +265,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                     (_staticBuffer == true && !_data.empty()),
+                     _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._tangent = Util::PACK_VEC3(x, y, z);
@@ -280,7 +280,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && !_data.empty()),
+                      _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._texcoord.set(s, t);
@@ -291,7 +291,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && !_data.empty()),
+                      _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._indices = indices;
@@ -311,7 +311,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         assert(index < _data.size());
 
         DIVIDE_ASSERT(_staticBuffer == false ||
-                      (_staticBuffer == true && !_data.empty()),
+                      _staticBuffer == true && !_data.empty(),
                       "VertexBuffer error: Modifying static buffers after creation is not allowed!");
 
         _data[index]._weights = packedWeights;

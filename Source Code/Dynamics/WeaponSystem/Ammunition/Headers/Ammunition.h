@@ -33,8 +33,6 @@
 #ifndef _AMMUNITION_H_
 #define _AMMUNITION_H_
 
-#include "Core/Math/Headers/MathHelper.h"
-
 namespace Divide {
 
 /// Base class for ammunition
@@ -51,12 +49,11 @@ class Ammunition {
     };
 
     Ammunition(AmmunitionType type);
-    ~Ammunition();
+    ~Ammunition() = default;
 
-   private:
-    AmmunitionType _type;
+    PROPERTY_RW(AmmunitionType, type, AmmunitionType::COUNT);
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

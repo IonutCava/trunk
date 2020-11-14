@@ -8,4 +8,4 @@ CommandParser::~CommandParser()
 {
     _commands.clear();
 }
-};  // namespace Divide
+}  // namespace Divide

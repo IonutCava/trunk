@@ -41,7 +41,7 @@ inline void ParamHandler::setDebugOutput(const bool logState) noexcept {
 }
 
 template <typename T>
-inline bool ParamHandler::isParam(const HashType nameID) const {
+bool ParamHandler::isParam(const HashType nameID) const {
     SharedLock<SharedMutex> r_lock(_mutex);
     return _params.find(nameID) != std::cend(_params);
 }
@@ -100,7 +100,7 @@ inline void ParamHandler::setParam(const HashType nameID, stringImpl&& value) {
     UniqueLock<SharedMutex> w_lock(_mutex);
     const ParamStringMap::iterator it = _paramsStr.find(nameID);
     if (it == std::end(_paramsStr)) {
-        const bool result = hashAlg::insert(_paramsStr, nameID, MOV(value)).second;
+        const bool result = insert(_paramsStr, nameID, MOV(value)).second;
         DIVIDE_ASSERT(result, "ParamHandler error: can't add specified value to map!");
     } else {
         it->second = MOV(value);
@@ -201,6 +201,6 @@ inline void ParamHandler::delParam<F32>(HashType nameID) {
     }
 }
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_PARAM_HANDLER_INL_

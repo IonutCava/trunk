@@ -23,4 +23,4 @@ CachedResource_ptr ImplResourceLoader<WaterPlane>::operator()() {
     return ptr;
 }
 
-};
+}

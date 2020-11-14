@@ -16,10 +16,10 @@ namespace Divide {
 
 ASIO::LOG_CBK ASIO::_logCBK;
 
-ASIO::ASIO() : _thread(nullptr),
+ASIO::ASIO() : _localClient(nullptr),
+               _thread(nullptr),
                _connected(false),
-               _debugOutput(true),
-               _localClient(nullptr)
+               _debugOutput(true)
 {
 }
 

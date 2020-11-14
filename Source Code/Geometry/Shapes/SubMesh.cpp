@@ -10,7 +10,7 @@
 
 namespace Divide {
 
-SubMesh::SubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, ObjectFlag flag)
+SubMesh::SubMesh(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, ObjectFlag flag)
     : Object3D(context,
                parentCache,
                descriptorHash,
@@ -18,7 +18,7 @@ SubMesh::SubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descript
                {},
                {},
                ObjectType::SUBMESH,
-               to_base(ObjectFlag::OBJECT_FLAG_NO_VB)),
+               to_base(flag)),
       _visibleToNetwork(true),
       _render(true),
       _ID(0),

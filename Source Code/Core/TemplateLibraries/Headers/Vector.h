@@ -92,6 +92,7 @@ auto ToggleIndices(Cont& cont, It beg, It end) -> decltype(eastl::end(cont))
     int helpIndx = 0;
     return eastl::stable_partition(eastl::begin(cont), eastl::end(cont),
         [&](decltype(*eastl::begin(cont)) const & val) -> bool {
+            ACKNOWLEDGE_UNUSED(val);
             return eastl::find(beg, end, helpIndx++) == end;
         });
 }
@@ -113,7 +114,7 @@ void EraseIndices(Cont& cont, IndCont& indices) {
 
 template<typename T, typename A>
 vectorEASTL<T, A> erase_indices(const vectorEASTL<T, A>& data, vectorEASTL<size_t>& indicesToDelete/* can't assume copy elision, don't pass-by-value */) {
-    eastl::sort(eastl::begin(indicesToDelete), eastl::end(indicesToDelete));
+    eastl::sort(begin(indicesToDelete), end(indicesToDelete));
     return erase_sorted_indices(data, indicesToDelete);
 }
 

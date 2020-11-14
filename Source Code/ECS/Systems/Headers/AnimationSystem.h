@@ -38,15 +38,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "ECS/Components/Headers/AnimationComponent.h"
 
 namespace Divide {
-    class AnimationSystem : public PlatformContextComponent,
-                            public ECSSystem<AnimationSystem, AnimationComponent> {
+    class AnimationSystem final : public PlatformContextComponent,
+                                  public ECSSystem<AnimationSystem, AnimationComponent> {
       public:
         AnimationSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~AnimationSystem() = default;
 
-        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
-        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;
+        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) override;
+        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) override;
     };
-};
+}
 
 #endif //_ANIMATION_SYSTEM_H_

@@ -21,6 +21,7 @@ bool PreparePlatform() {
 }
 
 int main(int argc, char **argv) {
+    (void)argv;
 
     std::cout << "Running Engine Unit Tests!" << std::endl;
 

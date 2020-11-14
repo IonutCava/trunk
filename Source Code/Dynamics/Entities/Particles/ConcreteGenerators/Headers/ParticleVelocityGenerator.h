@@ -36,16 +36,16 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-struct ParticleVelocityGenerator final : public ParticleGenerator {
+struct ParticleVelocityGenerator final : ParticleGenerator {
     vec3<F32> _minStartVel = VECTOR3_ZERO;
     vec3<F32> _maxStartVel = VECTOR3_ZERO;
 
     void generate(Task& packagedTasksParent,
-                  const U64 deltaTimeUS,
+                  U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,
                   U32 endIndex) override;
 };
-};
+}
 
 #endif

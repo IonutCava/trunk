@@ -35,8 +35,8 @@
 namespace Divide {
 
 inline bool BoundingBox::containsPoint(const vec3<F32>& point) const noexcept {
-    return (IS_GEQUAL(point.x, _min.x) && IS_GEQUAL(point.y, _min.y) && IS_GEQUAL(point.z, _min.z) &&
-            IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z));
+    return IS_GEQUAL(point.x, _min.x) && IS_GEQUAL(point.y, _min.y) && IS_GEQUAL(point.z, _min.z) &&
+        IS_LEQUAL(point.x, _max.x) && IS_LEQUAL(point.y, _max.y) && IS_LEQUAL(point.z, _max.z);
 }
 
 inline bool BoundingBox::compare(const BoundingBox& bb) const  noexcept {
@@ -91,7 +91,7 @@ inline void BoundingBox::add(const vec3<F32>& v) noexcept {
     if (v.z < _min.z) {
         _min.z = v.z;
     }
-};
+}
 
 inline void BoundingBox::add(const BoundingBox& bb) noexcept {
     _max.set(std::max(bb._max.x, _max.x),
@@ -253,7 +253,7 @@ inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const noexcept {
 }
 
 inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept {
-    return Divide::Sqrt(nearestDistanceFromPointSquared(pos));
+    return Sqrt(nearestDistanceFromPointSquared(pos));
 }
 
 inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const noexcept {
@@ -268,6 +268,6 @@ inline vec3<F32> BoundingBox::getNVertex(const vec3<F32>& normal) const noexcept
                      normal.z >= 0.0f ? _min.z : _max.z);
 }
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_MATH_BOUNDINGVOLUMES_BOUNDINGBOX_INL_

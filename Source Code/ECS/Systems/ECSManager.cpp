@@ -70,7 +70,7 @@ namespace {
     {
         explicit EnvProbeSystem(ECS::ECSEngine& parentEngine) : ECSSystem(parentEngine) {}
     };
-};
+}
 
 ECSManager::ECSManager(PlatformContext& context, ECS::ECSEngine& engine)
     : PlatformContextComponent(context),
@@ -158,4 +158,4 @@ bool ECSManager::loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) const {
     return true;
 }
 
-}; //namespace Divide
+} //namespace Divide

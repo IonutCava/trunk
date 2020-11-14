@@ -72,6 +72,6 @@ class Projectile {
     U32 _properyMask;  ///< weapon properties
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

@@ -226,4 +226,4 @@ void BoundsComponent::onBoundsChanged(const SceneGraphNode* sgn) const {
         onBoundsChanged(parent);
     }
 }
-};
+}

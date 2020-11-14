@@ -38,7 +38,7 @@
 namespace Divide {
 namespace Attorney {
     class BoundingSphereEditor;
-};
+}
 
 class PropertyWindow;
 class BoundingSphere {
@@ -46,7 +46,7 @@ class BoundingSphere {
 
    public:
     BoundingSphere() noexcept;
-    BoundingSphere(const vec3<F32>& center, F32 radius) noexcept;
+    BoundingSphere(vec3<F32> center, F32 radius) noexcept;
     explicit BoundingSphere(const vectorEASTL<vec3<F32>>& points) noexcept;
     explicit BoundingSphere(const std::array<vec3<F32>, 8>& points) noexcept;
 
@@ -99,9 +99,9 @@ namespace Attorney {
         }
         friend class Divide::PropertyWindow;
     };
-}; //namespace Attorney
+} //namespace Attorney
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_MATH_BOUNDINGVOLUMES_BOUNDINGSPHERE_H_
 

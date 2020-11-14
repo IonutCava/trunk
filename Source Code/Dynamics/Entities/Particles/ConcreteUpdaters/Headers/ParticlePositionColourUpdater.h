@@ -51,5 +51,5 @@ class ParticlePositionColourUpdater final : public ParticleUpdater {
 
     void update(U64 deltaTimeUS, ParticleData& p) override;
 };
-};
+}
 #endif

@@ -874,7 +874,7 @@ I32 GL_API::getFont(const Str64& fontName) {
                 Console::errorfn(Locale::get(_ID("ERROR_FONT_FILE")), fontName.c_str());
             }
             // Save the font in the font cache
-            hashAlg::insert(_fonts, fontNameHash, _fontCache.second);
+            insert(_fonts, fontNameHash, _fontCache.second);
             
         } else {
             _fontCache.second = it->second;
@@ -945,7 +945,7 @@ void GL_API::drawText(const TextElementBatch& batch) {
         for (size_t i = 0; i < lineCount; ++i) {
             fonsDrawText(_fonsContext,
                          textX,
-                         textY - (lh * i),
+                         textY - lh * i,
                          text[i].c_str(),
                          nullptr);
         }
@@ -963,7 +963,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
     OPTICK_EVENT();
 
     if (data != nullptr && data->Valid) {
-        auto& stateTracker = GL_API::getStateTracker();
+        auto& stateTracker = getStateTracker();
 
         GenericVertexData::IndexBuffer idxBuffer;
         GenericDrawCommand cmd = {};
@@ -1026,7 +1026,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
 
 bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) const {
     OPTICK_EVENT();
-    auto& stateTracker = GL_API::getStateTracker();
+    auto& stateTracker = getStateTracker();
 
     if (stateTracker._activePipeline && *stateTracker._activePipeline == pipeline) {
         return true;
@@ -1068,7 +1068,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
 
     assert(GL_API::getStateTracker()._activePipeline != nullptr);
 
-    ShaderProgram* program = ShaderProgram::findShaderProgram(GL_API::getStateTracker()._activePipeline->shaderProgramHandle());
+    ShaderProgram* program = ShaderProgram::findShaderProgram(getStateTracker()._activePipeline->shaderProgramHandle());
     if (program == nullptr) {
         // Should we skip the upload?
         program = ShaderProgram::defaultShader().get();
@@ -1105,14 +1105,14 @@ bool GL_API::draw(const GenericDrawCommand& cmd, const U32 cmdBufferOffset) cons
 void GL_API::pushDebugMessage(const char* message) {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, static_cast<GLuint>(_ID(message)), -1, message);
-        GL_API::getStateTracker()._debugScope = message;
+        getStateTracker()._debugScope = message;
     }
 }
 
 void GL_API::popDebugMessage() {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPopDebugGroup();
-        GL_API::getStateTracker()._debugScope = "";
+        getStateTracker()._debugScope = "";
     }
 }
 
@@ -1128,14 +1128,14 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             GFX::BeginRenderPassCommand* crtCmd = commandBuffer.get<GFX::BeginRenderPassCommand>(entry);
             glFramebuffer& rt = static_cast<glFramebuffer&>(_context.renderTargetPool().renderTarget(crtCmd->_target));
             Attorney::GLAPIRenderTarget::begin(rt, crtCmd->_descriptor);
-            GL_API::getStateTracker()._activeRenderTarget = &rt;
-            GL_API::pushDebugMessage(crtCmd->_name.c_str());
+            getStateTracker()._activeRenderTarget = &rt;
+            pushDebugMessage(crtCmd->_name.c_str());
         }break;
         case GFX::CommandType::END_RENDER_PASS: {
             GFX::EndRenderPassCommand* crtCmd = commandBuffer.get<GFX::EndRenderPassCommand>(entry);
             assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
-            GL_API::popDebugMessage();
-            glFramebuffer& fb = *GL_API::getStateTracker()._activeRenderTarget;
+            popDebugMessage();
+            glFramebuffer& fb = *getStateTracker()._activeRenderTarget;
             Attorney::GLAPIRenderTarget::end(fb, crtCmd->_setDefaultRTState);
         }break;
         case GFX::CommandType::BEGIN_PIXEL_BUFFER: {
@@ -1146,27 +1146,27 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (crtCmd->_command) {
                 crtCmd->_command(data);
             }
-            GL_API::getStateTracker()._activePixelBuffer = buffer;
+            getStateTracker()._activePixelBuffer = buffer;
         }break;
         case GFX::CommandType::END_PIXEL_BUFFER: {
             assert(GL_API::getStateTracker()._activePixelBuffer != nullptr);
-            Attorney::GLAPIPixelBuffer::end(*GL_API::getStateTracker()._activePixelBuffer);
+            Attorney::GLAPIPixelBuffer::end(*getStateTracker()._activePixelBuffer);
         }break;
         case GFX::CommandType::BEGIN_RENDER_SUB_PASS: {
             assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
             GFX::BeginRenderSubPassCommand* crtCmd = commandBuffer.get<GFX::BeginRenderSubPassCommand>(entry);
             for (const RenderTarget::DrawLayerParams& params : crtCmd->_writeLayers) {
-                GL_API::getStateTracker()._activeRenderTarget->drawToLayer(params);
+                getStateTracker()._activeRenderTarget->drawToLayer(params);
             }
 
-            GL_API::getStateTracker()._activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel);
+            getStateTracker()._activeRenderTarget->setMipLevel(crtCmd->_mipWriteLevel);
         }break;
         case GFX::CommandType::END_RENDER_SUB_PASS: {
         }break;
         case GFX::CommandType::SET_BLEND_STATE: {
             assert(GL_API::getStateTracker()._activeRenderTarget != nullptr);
             GFX::SetBlendStateCommand* crtCmd = commandBuffer.get<GFX::SetBlendStateCommand>(entry);
-            GL_API::getStateTracker()._activeRenderTarget->setBlendState(crtCmd->_blendStates);
+            getStateTracker()._activeRenderTarget->setBlendState(crtCmd->_blendStates);
         }break;
         case GFX::CommandType::COPY_TEXTURE: {
             GFX::CopyTextureCommand* crtCmd = commandBuffer.get<GFX::CopyTextureCommand>(entry);
@@ -1199,7 +1199,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         } break;
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+            if (getStateTracker()._activePipeline != nullptr) {
                 sendPushConstants(commandBuffer.get<GFX::SendPushConstantsCommand>(entry)->_constants);
             }
         } break;
@@ -1271,21 +1271,21 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
-            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+            if (getStateTracker()._activePipeline != nullptr) {
                 GFX::DrawTextCommand* crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
                 drawText(crtCmd->_batch);
                 lockBuffers(_context.getFrameCount());
             }
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
-            if (GL_API::getStateTracker()._activePipeline != nullptr) {
+            if (getStateTracker()._activePipeline != nullptr) {
                 GFX::DrawIMGUICommand* crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
                 drawIMGUI(crtCmd->_data, crtCmd->_windowGUID);
                 lockBuffers(_context.getFrameCount());
             }
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
-            const GLStateTracker& stateTracker = GL_API::getStateTracker();
+            const GLStateTracker& stateTracker = getStateTracker();
             if (stateTracker._activePipeline != nullptr) {
                 GFX::DrawCommand* crtCmd = commandBuffer.get<GFX::DrawCommand>(entry);
                 const GFX::DrawCommand::CommandContainer& drawCommands = crtCmd->_drawCommands;
@@ -1304,7 +1304,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             GFX::DispatchComputeCommand* crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
-            if(GL_API::getStateTracker()._activePipeline != nullptr) {
+            if(getStateTracker()._activePipeline != nullptr) {
                 OPTICK_EVENT("GL: Dispatch Compute");
                 glDispatchCompute(crtCmd->_computeGroupSize.x, crtCmd->_computeGroupSize.y, crtCmd->_computeGroupSize.z);
                 lockBuffers(_context.getFrameCount());
@@ -1413,7 +1413,7 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
     const auto it = _IMGUIBuffers.find(windowGUID);
-    if (it != eastl::cend(_IMGUIBuffers)) {
+    if (it != cend(_IMGUIBuffers)) {
         return it->second;
     }
 
@@ -1429,7 +1429,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
 
     GenericVertexData::SetBufferParams params = {};
     params._buffer = 0;
-    params._elementCount = (1 << 16);
+    params._elementCount = 1 << 16;
     params._elementSize = sizeof(ImDrawVert);
     params._useRingBuffer = true;
     params._updateFrequency = BufferUpdateFrequency::OFTEN;
@@ -1580,7 +1580,7 @@ GLuint GL_API::getSamplerHandle(const size_t samplerHash) {
         //Cache miss. Create the sampler object now.
         // Create and store the newly created sample object. GL_API is responsible for deleting these!
         const GLuint sampler = glSamplerObject::construct(SamplerDescriptor::get(samplerHash));
-        hashAlg::emplace(s_samplerMap, samplerHash, sampler);
+        emplace(s_samplerMap, samplerHash, sampler);
         return sampler;
     }
 

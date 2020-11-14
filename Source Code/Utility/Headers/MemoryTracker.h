@@ -106,7 +106,7 @@ class MemoryTracker {
         if (!_locked) {
             UniqueLock<Mutex> w_lock(_mutex);
             Lock lock(*this);
-            hashAlg::emplace(_allocations, p, file, line, size);
+            emplace(_allocations, p, file, line, size);
         }
     }
 
@@ -152,7 +152,7 @@ class MemoryTracker {
                 output.append(entry.File());
                 output.append(", ");
                 output.append(Util::to_string(entry.Line()));
-                output.append(Util::StringFormat("( %d bytes / %d bytes (%5.2f Mb)) \n", crtSize, totalUsage, (totalUsage / 1024.0f) / 1024));
+                output.append(Util::StringFormat("( %d bytes / %d bytes (%5.2f Mb)) \n", crtSize, totalUsage, totalUsage / 1024.0f / 1024));
                 sizeLeaked += entry.Size();
             }
             leakDetected = true;
@@ -162,7 +162,7 @@ class MemoryTracker {
             output.append("Total leaked bytes: ");
             output.append(Util::to_string(sizeLeaked));
             output.append(" / MB: ");
-            output.append(Util::to_string((sizeLeaked / 1024.0f) / 1024));
+            output.append(Util::to_string(sizeLeaked / 1024.0f / 1024));
             output.append("\n");
         } 
         return output;
@@ -187,6 +187,6 @@ class MemoryTracker {
 };
 
 extern MemoryTracker AllocTracer;
-};  // namespace MemoryManager
-};  // namespace Divide
+}  // namespace MemoryManager
+}  // namespace Divide
 #endif  //_MEMORY_TRACKER_H_

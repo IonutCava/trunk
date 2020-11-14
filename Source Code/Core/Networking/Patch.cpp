@@ -13,8 +13,8 @@ namespace Patch {
         s_ModelData.push_back(data);
     }
 
-    bool compareData(const PatchData& data) {
-        bool updated = true;
+    bool compareData(const PatchData& /*data*/) {
+        const bool updated = true;
         /*XML::loadScene(data.sceneName);
         for (vector<FileData>::iterator _iter = std::begin(ModelData);
              _iter != std::end(ModelData); _iter++) {

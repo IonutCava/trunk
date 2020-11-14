@@ -45,22 +45,22 @@ namespace Divide {
 /// Scales the given shape as precisely as possible.
 void Scale(physx::PxShape &shape, const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
-void Scale(physx::PxGeometry &geometry, physx::PxTransform &location,
+void Scale(physx::PxGeometry &geometry, physx::PxTransform &pose,
            const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
-void Scale(physx::PxBoxGeometry &geometry, physx::PxTransform &location,
+void Scale(physx::PxBoxGeometry &geometry, physx::PxTransform &pose,
            const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
-void Scale(physx::PxSphereGeometry &geometry, physx::PxTransform &location,
+void Scale(physx::PxSphereGeometry &geometry, physx::PxTransform &pose,
            const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
-void Scale(physx::PxPlaneGeometry &geometry, physx::PxTransform &location,
+void Scale(physx::PxPlaneGeometry &geometry, physx::PxTransform &pose,
            const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
-void Scale(physx::PxCapsuleGeometry &geometry, physx::PxTransform &location,
+void Scale(physx::PxCapsuleGeometry &geometry, physx::PxTransform &pose,
            const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
-void Scale(physx::PxConvexMeshGeometry &geometry, physx::PxTransform &location,
+void Scale(physx::PxConvexMeshGeometry &geometry, physx::PxTransform &pose,
            const physx::PxVec3 &scaling);
 /// Scales the given shape as precisely as possible.
 void Scale(physx::PxTriangleMeshGeometry &geometry,

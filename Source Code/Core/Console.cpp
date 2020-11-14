@@ -26,7 +26,7 @@ namespace {
         static moodycamel::BlockingConcurrentQueue<Console::OutputEntry> buf;
         return buf;
     }
-};
+}
 
 //! Do not remove the following license without express permission granted by DIVIDE-Studio
 void Console::printCopyrightNotice() {
@@ -104,9 +104,9 @@ void Console::output(const char* text, const bool newline, const EntryType type)
 }
 
 void Console::printToFile(const OutputEntry& entry) {
-    ((entry._type == EntryType::ERR && _errorStreamEnabled) ? std::cerr : std::cout) << entry._text.c_str();
+    (entry._type == EntryType::ERR && _errorStreamEnabled ? std::cerr : std::cout) << entry._text.c_str();
 
-    for (const Console::ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
+    for (const ConsolePrintCallback& cbk : _guiConsoleCallbacks) {
         if (!_running) {
             break;
         }
@@ -148,4 +148,4 @@ void Console::stop() {
         std::cout << std::flush;
     }
 }
-};
+}

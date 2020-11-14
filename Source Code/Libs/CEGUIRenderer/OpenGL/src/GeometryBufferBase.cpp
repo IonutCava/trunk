@@ -43,13 +43,13 @@ namespace CEGUI
 //----------------------------------------------------------------------------//
 OpenGLGeometryBufferBase::OpenGLGeometryBufferBase(OpenGLRendererBase& owner) :
     d_owner(&owner),
-    d_activeTexture(0),
+    d_activeTexture(nullptr),
     d_clipRect(0, 0, 0, 0),
     d_clippingActive(true),
     d_translation(0, 0, 0),
     d_rotation(Quaternion::IDENTITY),
     d_pivot(0, 0, 0),
-    d_effect(0),
+    d_effect(nullptr),
     d_matrix(new mat4Pimpl()),
     d_matrixValid(false)
 {
@@ -137,7 +137,7 @@ void OpenGLGeometryBufferBase::reset()
 {
     d_batches.clear();
     d_vertices.clear();
-    d_activeTexture = 0;
+    d_activeTexture = nullptr;
 }
 
 //----------------------------------------------------------------------------//
@@ -208,13 +208,13 @@ void OpenGLGeometryBufferBase::updateMatrix() const
 
     modelMatrix = glm::translate(modelMatrix, final_trans);
 
-    glm::quat rotationQuat = glm::quat(d_rotation.d_w, d_rotation.d_x, d_rotation.d_y, d_rotation.d_z);
-    glm::mat4 rotation_matrix = glm::mat4_cast(rotationQuat);
+    const glm::quat rotationQuat = glm::quat(d_rotation.d_w, d_rotation.d_x, d_rotation.d_y, d_rotation.d_z);
+    const glm::mat4 rotation_matrix = glm::mat4_cast(rotationQuat);
 
     modelMatrix = modelMatrix * rotation_matrix;
 
-    glm::vec3 transl = glm::vec3(-d_pivot.d_x, -d_pivot.d_y, -d_pivot.d_z);
-    glm::mat4 translMatrix = glm::translate(glm::mat4(1.f), transl);
+    const glm::vec3 transl = glm::vec3(-d_pivot.d_x, -d_pivot.d_y, -d_pivot.d_z);
+    const glm::mat4 translMatrix = glm::translate(glm::mat4(1.f), transl);
     modelMatrix =  modelMatrix * translMatrix;
 
     d_matrixValid = true;

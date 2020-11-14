@@ -87,7 +87,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
         texture.waitForReady(true);
         _currentLuminance = CreateResource<Texture>(cache, texture);
 
-        const F32 val = 1.0f;
+        F32 val = 1.0f;
         _currentLuminance->loadData({ (Byte*)&val, 1 * sizeof(F32) }, vec2<U16>(1u));
     }
 
@@ -117,7 +117,11 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
                     hdrBatch.emplace_back(eastl::make_unique<BloomPreRenderOperator>(_context, *this, _resCache));
                     break;
 
-                default:
+                case FilterType::FILTER_LUT_CORECTION:
+                case FilterType::FILTER_COUNT:
+                case FilterType::FILTER_UNDERWATER:
+                case FilterType::FILTER_NOISE:
+                case FilterType::FILTER_VIGNETTE:
                     DIVIDE_UNEXPECTED_CALL();
                     break;
             }
@@ -133,6 +137,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
                 case FilterType::FILTER_SS_ANTIALIASING:
                     ldrBatch.push_back(eastl::make_unique<PostAAPreRenderOperator>(_context, *this, _resCache));
                     break;
+
                 default:
                     DIVIDE_UNEXPECTED_CALL();
                     break;
@@ -415,7 +420,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         const F32 logLumRange = _toneMapParams.maxLogLuminance - _toneMapParams.minLogLuminance;
         const F32 histogramParams[4] = {
                 _toneMapParams.minLogLuminance,
-                1.0f / (logLumRange),
+                1.0f / logLumRange,
                 to_F32(_toneMapParams.width),
                 to_F32(_toneMapParams.height),
         };
@@ -436,31 +441,31 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
             screenImage._layer = 0u;
             screenImage._level = 0u;
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "CreateLuminanceHistogram" });
+            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "CreateLuminanceHistogram" });
 
             GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
             bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
             bindDescriptorSetsCmd._set._images.push_back(screenImage);
-            GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+            EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
             GFX::BindPipelineCommand pipelineCmd = {};
             pipelineCmd._pipeline = pipelineLumCalcHistogram;
-            GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+            EnqueueCommand(bufferInOut, pipelineCmd);
 
             GFX::SendPushConstantsCommand pushConstantsCommand = {};
             pushConstantsCommand._constants.set(_ID("u_params"), GFX::PushConstantType::VEC4, histogramParams);
-            GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+            EnqueueCommand(bufferInOut, pushConstantsCommand);
 
             GFX::DispatchComputeCommand computeCmd = {};
             computeCmd._computeGroupSize.set(groupsX, groupsY, 1);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
+            EnqueueCommand(bufferInOut, computeCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
         }
 
         GFX::MemoryBarrierCommand memCmd = {};
         memCmd._barrierMask = to_base(MemoryBarrierType::BUFFER_UPDATE);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
+        EnqueueCommand(bufferInOut, memCmd);
 
         { // Averaging pass
             const F32 deltaTime = Time::MicrosecondsToSeconds<F32>(_lastDeltaTimeUS);
@@ -480,28 +485,28 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
             luminanceImage._layer = 0u;
             luminanceImage._level = 0u;
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "AverageLuminanceHistogram" });
+            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "AverageLuminanceHistogram" });
 
             GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
             bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
             bindDescriptorSetsCmd._set._images.push_back(luminanceImage);
-            GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+            EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ pipelineLumCalcAverage });
+            EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ pipelineLumCalcAverage });
 
             GFX::SendPushConstantsCommand pushConstantsCommand = {};
             pushConstantsCommand._constants.set(_ID("u_params"), GFX::PushConstantType::VEC4, avgParams);
-            GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+            EnqueueCommand(bufferInOut, pushConstantsCommand);
 
             GFX::DispatchComputeCommand computeCmd = {};
             computeCmd._computeGroupSize.set(1, 1, 1);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
+            EnqueueCommand(bufferInOut, computeCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
         }
 
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_IMAGE) | to_base(MemoryBarrierType::SHADER_STORAGE);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
+        EnqueueCommand(bufferInOut, memCmd);
     }
 
     // Execute all HDR based operators
@@ -529,21 +534,21 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
         descriptorSetCmd._set._textureData.setTexture(_currentLuminance->data(), lumanSampler.getHash(), TextureUsage::UNIT1);
         descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), screenDepthAtt.samplerHash(),TextureUsage::DEPTH);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = getOutput(false)._targetID;
         beginRenderPassCmd._name = "DO_TONEMAP_PASS";
-        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 
         _toneMapConstants.set(_ID("exposure"), GFX::PushConstantType::FLOAT, adaptiveExposureControl() ? _toneMapParams.manualExposureAdaptive : _toneMapParams.manualExposure);
         _toneMapConstants.set(_ID("whitePoint"), GFX::PushConstantType::FLOAT, _toneMapParams.manualWhitePoint);
-        GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
+        EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
 
-        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         _screenRTs._swappedLDR = !_screenRTs._swappedLDR;
     }
@@ -555,7 +560,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         RTClearDescriptor clearTarget = {};
         clearTarget.clearColours(true);
@@ -563,21 +568,21 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         GFX::ClearRenderTargetCommand clearEdgeTarget = {};
         clearEdgeTarget._target = _sceneEdges._targetID;
         clearEdgeTarget._descriptor = clearTarget;
-        GFX::EnqueueCommand(bufferInOut, clearEdgeTarget);
+        EnqueueCommand(bufferInOut, clearEdgeTarget);
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
         beginRenderPassCmd._target = _sceneEdges._targetID;
         beginRenderPassCmd._name = "DO_EDGE_DETECT_PASS";
-        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _edgeDetectionPipelines[to_base(edgeDetectionMethod())] });
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _edgeDetectionPipelines[to_base(edgeDetectionMethod())] });
         
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         pushConstantsCommand._constants.set(_ID("dvd_edgeThreshold"), GFX::PushConstantType::FLOAT, edgeDetectionThreshold());
-        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
     
     // Execute all LDR based operators

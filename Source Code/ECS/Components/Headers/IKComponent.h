@@ -43,6 +43,6 @@ class IKComponent final : public BaseComponentType<IKComponent, ComponentType::I
 };
 
 INIT_COMPONENT(IKComponent);
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_IK_COMPONENT_H_

@@ -30,4 +30,4 @@ CachedResource_ptr ImplResourceLoader<Terrain>::operator()() {
     return ptr;
 }
 
-};
+}

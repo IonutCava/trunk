@@ -192,5 +192,5 @@ namespace Divide {
     using Str64  = Str<64>;
     using Str128 = Str<128>;
     using Str256 = Str<256>;
-};//namespace Divide
+}//namespace Divide
 #endif //_STRING_H_

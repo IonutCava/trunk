@@ -54,6 +54,6 @@ class Player final : public Character {
     void setParentNode(SceneGraphNode* node) override;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

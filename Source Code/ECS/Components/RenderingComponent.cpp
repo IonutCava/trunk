@@ -32,10 +32,11 @@ namespace {
     constexpr U8 MAX_LOD_LEVEL = 4u;
 
     constexpr I16 g_renderRangeLimit = std::numeric_limits<I16>::max();
-};
+}
 
 RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
+      _rebuildDrawCommandsFlags{},
       _context(context.gfx()),
       _config(context.config())
 {
@@ -277,7 +278,7 @@ void RenderingComponent::onMaterialChanged() {
     _parentSGN->getNode().rebuildDrawCommands(true);
 }
 
-bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData) {
+bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, const U8 LoD) const {
     OPTICK_EVENT();
     OPTICK_TAG("Node", (_parentSGN->name().c_str()));
 
@@ -291,7 +292,7 @@ bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, U8 LoD,
     return false;
 }
 
-void RenderingComponent::onParentUsageChanged(NodeUsageContext context) {
+void RenderingComponent::onParentUsageChanged(const NodeUsageContext context) {
     if (_materialInstance != nullptr) {
         _materialInstance->isStatic(context == NodeUsageContext::NODE_STATIC);
     }
@@ -393,7 +394,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     return true;
 }
 
-void RenderingComponent::getMaterialColourMatrix(const RenderStagePass& stagePass, mat4<F32>& matOut) const {
+void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
     matOut.zero();
 
     if (_materialInstance != nullptr) {
@@ -491,7 +492,7 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
         lod = getLoDLevel(_boundsCache.getCenter(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
     }
 
-    if (canDraw(renderStagePass, lod, refreshData)) {
+    if (canDraw(renderStagePass, lod)) {
         RenderPackage& pkg = getDrawPackage(renderStagePass);
 
         if (pkg.empty() || getRebuildFlag(renderStagePass)) {
@@ -556,7 +557,7 @@ size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass
 
 namespace Hack {
     Sky* g_skyPtr = nullptr;
-};
+}
 
 bool RenderingComponent::updateReflection(const U16 reflectionIndex,
                                           const bool inBudget,
@@ -667,8 +668,8 @@ void RenderingComponent::updateNearestProbes(const SceneEnvironmentProbePool& pr
     }
     probePool.unlockProbeList();
 
-    eastl::sort(eastl::begin(_envProbes),
-                eastl::end(_envProbes),
+    eastl::sort(begin(_envProbes),
+                end(_envProbes),
                 [&position](const auto& a, const auto& b) -> bool {
                     return a->distanceSqTo(position) < b->distanceSqTo(position);
                 });
@@ -783,14 +784,14 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
                 bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
                 return;
             }
-        };
+        }
     } else if (_skeletonPrimitive) {
         _context.destroyIMP(_skeletonPrimitive);
     }
 }
 
-void RenderingComponent::drawBounds(const bool AABB, const bool obb, const bool Sphere, GFX::CommandBuffer& bufferInOut) {
-    if (!AABB && !Sphere && !obb) {
+void RenderingComponent::drawBounds(const bool AABB, const bool OBB, const bool Sphere, GFX::CommandBuffer& bufferInOut) {
+    if (!AABB && !Sphere && !OBB) {
         return;
     }
 
@@ -813,7 +814,7 @@ void RenderingComponent::drawBounds(const bool AABB, const bool obb, const bool 
         _context.destroyIMP(_boundingBoxPrimitive);
     }
 
-    if (obb) {
+    if (OBB) {
         if (_orientedBoundingBoxPrimitive == nullptr) {
             _orientedBoundingBoxPrimitive = _context.newIMP();
             _orientedBoundingBoxPrimitive->name("OrientedBoundingBox_" + _parentSGN->name());
@@ -821,8 +822,8 @@ void RenderingComponent::drawBounds(const bool AABB, const bool obb, const bool 
             _orientedBoundingBoxPrimitive->skipPostFX(true);
         }
 
-        const OBB& bb = _parentSGN->get<BoundsComponent>()->getOBB();
-        _orientedBoundingBoxPrimitive->fromOBB(bb, isSubMesh ? UColour4(128, 0, 255, 255) : UColour4(255, 0, 128, 255));
+        const auto& obb = _parentSGN->get<BoundsComponent>()->getOBB();
+        _orientedBoundingBoxPrimitive->fromOBB(obb, isSubMesh ? UColour4(128, 0, 255, 255) : UColour4(255, 0, 128, 255));
         bufferInOut.add(_orientedBoundingBoxPrimitive->toCommandBuffer());
     } else if (_orientedBoundingBoxPrimitive != nullptr) {
         _context.destroyIMP(_orientedBoundingBoxPrimitive);
@@ -872,4 +873,4 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
         default: break;
     }
 }
-};
+}

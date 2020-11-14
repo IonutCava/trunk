@@ -20,78 +20,78 @@ namespace NS_GLIM
         virtual ~GLIM_BATCH ();
 
         // Begins defining one piece of geometry that can later be rendered with one set of states.
-        virtual void BeginBatch (bool reserveBuffers = true, unsigned int vertexCount = 64 * 3, unsigned int attributeCount = 1);
+        void BeginBatch (bool reserveBuffers = true, unsigned int vertexCount = 64 * 3, unsigned int attributeCount = 1) override;
         //! Ends defining the batch. After this call "RenderBatch" can be called to actually render it.
-        virtual void EndBatch (void);
+        void EndBatch (void) override;
 
         //! Renders the batch that has been defined previously.
-        virtual void RenderBatch (bool bWireframe = false);
+        void RenderBatch (bool bWireframe = false) override;
         //! Renders n instances of the batch that has been defined previously.
-        virtual void RenderBatchInstanced (int iInstances, bool bWireframe = false);
+        void RenderBatchInstanced (int iInstances, bool bWireframe = false) override;
 
         //! Begins gathering information about the given type of primitives. 
-        virtual void Begin (GLIM_ENUM eType);
+        void Begin (GLIM_ENUM eType) override;
         //! Ends gathering information about the primitives.
-        virtual void End (void);
+        void End (void) override;
 #ifdef AE_RENDERAPI_OPENGL
         //! Specifies the shader program's attribute location for vertex data
         virtual void SetVertexAttribLocation(unsigned int vertexLocation = 0) noexcept;
         virtual void SetShaderProgramHandle(Divide::I64 shaderProgramHandle) noexcept;
 #endif
         //! Specifies a new vertex of a primitive.
-        virtual void Vertex (float x, float y, float z = 0.0f);
+        void Vertex (float x, float y, float z = 0.0f) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute1f (unsigned int attribLocation, float a1);
+        GLIM_ATTRIBUTE Attribute1f (unsigned int attribLocation, float a1) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute2f (unsigned int attribLocation, float a1, float a2);
+        GLIM_ATTRIBUTE Attribute2f (unsigned int attribLocation, float a1, float a2) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute3f (unsigned int attribLocation, float a1, float a2, float a3);
+        GLIM_ATTRIBUTE Attribute3f (unsigned int attribLocation, float a1, float a2, float a3) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute4f (unsigned int attribLocation, float a1, float a2, float a3, float a4);
+        GLIM_ATTRIBUTE Attribute4f (unsigned int attribLocation, float a1, float a2, float a3, float a4) override;
 
         //! Specifies a new value for the attribute with the given location.
-        virtual GLIM_ATTRIBUTE Attribute1i (unsigned int attribLocation, int a1);
+        GLIM_ATTRIBUTE Attribute1i (unsigned int attribLocation, int a1) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute2i (unsigned int attribLocation, int a1, int a2);
+        GLIM_ATTRIBUTE Attribute2i (unsigned int attribLocation, int a1, int a2) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute3i (unsigned int attribLocation, int a1, int a2, int a3);
+        GLIM_ATTRIBUTE Attribute3i (unsigned int attribLocation, int a1, int a2, int a3) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute4i (unsigned int attribLocation, int a1, int a2, int a3, int a4);
+        GLIM_ATTRIBUTE Attribute4i (unsigned int attribLocation, int a1, int a2, int a3, int a4) override;
 
         //! Specifies a new value for the attribute with the given name.
-        virtual GLIM_ATTRIBUTE Attribute4ub (unsigned int attribLocation, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4 = 255);
+        GLIM_ATTRIBUTE Attribute4ub (unsigned int attribLocation, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4 = 255) override;
 
 
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute1f (GLIM_ATTRIBUTE Attr, float a1);
+        void Attribute1f (GLIM_ATTRIBUTE Attr, float a1) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute2f (GLIM_ATTRIBUTE Attr, float a1, float a2);
+        void Attribute2f (GLIM_ATTRIBUTE Attr, float a1, float a2) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute3f (GLIM_ATTRIBUTE Attr, float a1, float a2, float a3);
+        void Attribute3f (GLIM_ATTRIBUTE Attr, float a1, float a2, float a3) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute4f (GLIM_ATTRIBUTE Attr, float a1, float a2, float a3, float a4);
+        void Attribute4f (GLIM_ATTRIBUTE Attr, float a1, float a2, float a3, float a4) override;
 
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute1i (GLIM_ATTRIBUTE Attr, int a1);
+        void Attribute1i (GLIM_ATTRIBUTE Attr, int a1) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute2i (GLIM_ATTRIBUTE Attr, int a1, int a2);
+        void Attribute2i (GLIM_ATTRIBUTE Attr, int a1, int a2) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute3i (GLIM_ATTRIBUTE Attr, int a1, int a2, int a3);
+        void Attribute3i (GLIM_ATTRIBUTE Attr, int a1, int a2, int a3) override;
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute4i (GLIM_ATTRIBUTE Attr, int a1, int a2, int a3, int a4);
+        void Attribute4i (GLIM_ATTRIBUTE Attr, int a1, int a2, int a3, int a4) override;
 
         //! Specifies a new value for the attribute with the given name.
-        virtual void Attribute4ub (GLIM_ATTRIBUTE Attr, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4 = 255);
+        void Attribute4ub (GLIM_ATTRIBUTE Attr, unsigned char a1, unsigned char a2, unsigned char a3, unsigned char a4 = 255) override;
 
 
         //! Returns the axis-aligned bounding box of the batches geometry, if there is any geometry. Else the results are undefined.
-        virtual void getBatchAABB (float& out_fMinX, float& out_fMaxX, float& out_fMinY, float& out_fMaxY, float& out_fMinZ, float& out_fMaxZ);
+        void getBatchAABB (float& out_fMinX, float& out_fMaxX, float& out_fMinY, float& out_fMaxY, float& out_fMinZ, float& out_fMaxZ) override;
 
         //! Deletes all data associated with this object.
         void Clear (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount);
 
         //! Returns true if the GLIM_BATCH contains no batch data.
-        bool isCleared (void) const {return (m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY);}
+        bool isCleared (void) const {return m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY;}
 
 #ifdef AE_RENDERAPI_D3D11
         const vector<D3D11_INPUT_ELEMENT_DESC>& GetSignature (void) const;

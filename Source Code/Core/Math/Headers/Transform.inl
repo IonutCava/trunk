@@ -267,6 +267,6 @@ inline bool Transform::operator==(const Transform& other) const {
 inline bool Transform::operator!=(const Transform& other) const {
     return _transformValues != other._transformValues;
 }
-};
+}
 
 #endif //_TRANSFORM_INL_

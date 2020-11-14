@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Editor.h"
-#include "Headers/Sample.h"
 
 #include "Editor/Widgets/Headers/EditorOptionsWindow.h"
 #include "Editor/Widgets/Headers/MenuBar.h"
@@ -64,7 +63,7 @@ namespace {
     };
 
     hashMap<I64, TextureCallbackData> g_modalTextureData;
-};
+}
 
 void InitBasicImGUIState(ImGuiIO& io) noexcept {
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
@@ -131,7 +130,7 @@ Editor::~Editor()
 }
 
 void Editor::idle() {
-    OPTICK_EVENT();
+    OPTICK_EVENT()
 }
 
 bool Editor::init(const vec2<U16>& renderResolution) {
@@ -213,8 +212,8 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.DisplaySize.y = to_F32(_mainWindow->getDimensions().height);
 
     const vec2<U16> display_size = _mainWindow->getDrawableSize();
-    io.DisplayFramebufferScale.x = io.DisplaySize.x > 0 ? ((F32)display_size.width / io.DisplaySize.x)  : 0.f;
-    io.DisplayFramebufferScale.y = io.DisplaySize.y > 0 ? ((F32)display_size.height / io.DisplaySize.y) : 0.f;
+    io.DisplayFramebufferScale.x = io.DisplaySize.x > 0 ? (F32)display_size.width / io.DisplaySize.x  : 0.f;
+    io.DisplayFramebufferScale.y = io.DisplaySize.y > 0 ? (F32)display_size.height / io.DisplaySize.y : 0.f;
 
     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     main_viewport->PlatformHandle = _mainWindow;
@@ -232,9 +231,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                                     to_U16(WindowDescriptor::Flags::CLEAR_COLOUR) |
                                     to_U16(WindowDescriptor::Flags::CLEAR_DEPTH);
             // We don't enable SDL_WINDOW_RESIZABLE because it enforce windows decorations
-            winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::DECORATED);
-            winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_NoDecoration) ? 0 : to_U32(WindowDescriptor::Flags::RESIZEABLE);
-            winDescriptor.flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
+            winDescriptor.flags |= viewport->Flags & ImGuiViewportFlags_NoDecoration ? 0 : to_U32(WindowDescriptor::Flags::DECORATED);
+            winDescriptor.flags |= viewport->Flags & ImGuiViewportFlags_NoDecoration ? 0 : to_U32(WindowDescriptor::Flags::RESIZEABLE);
+            winDescriptor.flags |= viewport->Flags & ImGuiViewportFlags_TopMost ? to_U32(WindowDescriptor::Flags::ALWAYS_ON_TOP) : 0;
             winDescriptor.flags |= to_U32(WindowDescriptor::Flags::SHARE_CONTEXT);
 
             winDescriptor.dimensions.set(viewport->Size.x, viewport->Size.y);
@@ -341,9 +340,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
 
     platform_io.Platform_SetWindowSize = [](ImGuiViewport* viewport, ImVec2 size) {
         if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
-            U16 w = to_U16(size.x);
-            U16 h = to_U16(size.y);
-            WAIT_FOR_CONDITION(data->_window->setDimensions(w, h));
+            WAIT_FOR_CONDITION(data->_window->setDimensions(to_U16(size.x), to_U16(size.y)));
         }
     };
 
@@ -372,10 +369,9 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             ImGui::SetCurrentContext(editor->_imguiContexts[to_base(ImGuiContextType::Editor)]);
             GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
             GFX::CommandBuffer& buffer = sBuffer();
-            const ImGuiIO& io = ImGui::GetIO();
             ImDrawData* pDrawData = viewport->DrawData;
-            const I32 fb_width = to_I32(pDrawData->DisplaySize.x * io.DisplayFramebufferScale.x);
-            const I32 fb_height = to_I32(pDrawData->DisplaySize.y * io.DisplayFramebufferScale.y);
+            const I32 fb_width = to_I32(pDrawData->DisplaySize.x * ImGui::GetIO().DisplayFramebufferScale.x);
+            const I32 fb_height = to_I32(pDrawData->DisplaySize.y * ImGui::GetIO().DisplayFramebufferScale.y);
             editor->renderDrawList(viewport->DrawData, Rect<I32>(0, 0, fb_width, fb_height), ((DisplayWindow*)viewport->PlatformHandle)->getGUID(), buffer);
             context->gfx().flushCommandBuffer(buffer);
         }
@@ -554,7 +550,7 @@ void Editor::update(const U64 deltaTimeUS) {
         ToggleCursor(!io.MouseDrawCursor);
         if (io.MouseDrawCursor || ImGui::GetMouseCursor() == ImGuiMouseCursor_None) {
             WindowManager::SetCursorStyle(CursorStyle::NONE);
-        }else if (io.MousePos.x != -1.f && io.MousePos.y != -1.f) {
+        } else if (!COMPARE(io.MousePos.x, -1.f) && !COMPARE(io.MousePos.y, -1.f)) {
             switch (ImGui::GetCurrentContext()->MouseCursor)
             {
                 default:
@@ -820,7 +816,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
     pipelineDesc._stateHash = state.getHash();
     pipelineDesc._shaderProgramHandle = _imguiProgram->getGUID();
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render IMGUI" });
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render IMGUI" });
 
     GFX::SetBlendCommand blendCmd = {};
     blendCmd._blendProperties = BlendingProperties{
@@ -829,11 +825,11 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
         BlendOperation::ADD
     };
     blendCmd._blendProperties._enabled = true;
-    GFX::EnqueueCommand(bufferInOut, blendCmd);
+    EnqueueCommand(bufferInOut, blendCmd);
 
     GFX::BindPipelineCommand pipelineCmd = {};
     pipelineCmd._pipeline = _context.gfx().newPipeline(pipelineDesc);
-    GFX::EnqueueCommand(bufferInOut, pipelineCmd);
+    EnqueueCommand(bufferInOut, pipelineCmd);
 
     PushConstants pushConstants = {};
     pushConstants.set(_ID("toggleChannel"), GFX::PushConstantType::IVEC4, vec4<I32>(1, 1, 1, 1));
@@ -842,11 +838,11 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants = pushConstants;
-    GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+    EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     GFX::SetViewportCommand viewportCmd = {};
     viewportCmd._viewport = targetViewport;
-    GFX::EnqueueCommand(bufferInOut, viewportCmd);
+    EnqueueCommand(bufferInOut, viewportCmd);
 
     const F32 L = pDrawData->DisplayPos.x;
     const F32 R = pDrawData->DisplayPos.x + pDrawData->DisplaySize.x;
@@ -863,17 +859,17 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
     GFX::SetCameraCommand cameraCmd = {};
     cameraCmd._cameraSnapshot = Camera::utilityCamera(Camera::UtilityCamera::_2D_FLIP_Y)->snapshot();
     memcpy(cameraCmd._cameraSnapshot._projectionMatrix.m, ortho_projection, sizeof(F32) * 16);
-    GFX::EnqueueCommand(bufferInOut, cameraCmd);
+    EnqueueCommand(bufferInOut, cameraCmd);
 
     GFX::DrawIMGUICommand drawIMGUI = {};
     drawIMGUI._data = pDrawData;
     drawIMGUI._windowGUID = windowGUID;
-    GFX::EnqueueCommand(bufferInOut, drawIMGUI);
+    EnqueueCommand(bufferInOut, drawIMGUI);
 
     blendCmd._blendProperties._enabled = false;
-    GFX::EnqueueCommand(bufferInOut, blendCmd);
+    EnqueueCommand(bufferInOut, blendCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) const {
@@ -904,32 +900,32 @@ bool Editor::Redo() const {
 
 /// Key pressed: return true if input was consumed
 bool Editor::onKeyDown(const Input::KeyEvent& key) {
-    if (!isInit() || !running() || (!inEditMode() && scenePreviewFocused())) {
+    if (!isInit() || !running() || !inEditMode() && scenePreviewFocused()) {
         return false;
     }
 
     if (scenePreviewFocused()) {
         return _gizmo->onKey(true, key);
-    } else {
-        ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
+    }
 
-        io.KeysDown[to_I32(key._key)] = true;
-        if (key._text != nullptr) {
-            io.AddInputCharactersUTF8(key._text);
-        }
+    ImGuiIO& io = _imguiContexts[to_base(ImGuiContextType::Editor)]->IO;
 
-        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-            io.KeyCtrl = true;
-        }
-        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-            io.KeyShift = true;
-        }
-        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-            io.KeyAlt = true;
-        }
-        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-            io.KeySuper = true;
-        }
+    io.KeysDown[to_I32(key._key)] = true;
+    if (key._text != nullptr) {
+        io.AddInputCharactersUTF8(key._text);
+    }
+
+    if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+        io.KeyCtrl = true;
+    }
+    if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+        io.KeyShift = true;
+    }
+    if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+        io.KeyAlt = true;
+    }
+    if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+        io.KeySuper = true;
     }
 
     return wantsKeyboard();
@@ -937,7 +933,7 @@ bool Editor::onKeyDown(const Input::KeyEvent& key) {
 
 // Key released: return true if input was consumed
 bool Editor::onKeyUp(const Input::KeyEvent& key) {
-    if (!isInit() || !running() || (!inEditMode() && scenePreviewFocused())) {
+    if (!isInit() || !running() || !inEditMode() && scenePreviewFocused()) {
         return false;
     }
 
@@ -956,24 +952,24 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
 
     if (scenePreviewFocused()) {
         return _gizmo->onKey(false, key);
-    } else {
-        io.KeysDown[to_I32(key._key)] = false;
+    }
 
-        if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
-            io.KeyCtrl = false;
-        }
+    io.KeysDown[to_I32(key._key)] = false;
 
-        if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
-            io.KeyShift = false;
-        }
+    if (key._key == Input::KeyCode::KC_LCONTROL || key._key == Input::KeyCode::KC_RCONTROL) {
+        io.KeyCtrl = false;
+    }
 
-        if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
-            io.KeyAlt = false;
-        }
+    if (key._key == Input::KeyCode::KC_LSHIFT || key._key == Input::KeyCode::KC_RSHIFT) {
+        io.KeyShift = false;
+    }
 
-        if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
-            io.KeySuper = false;
-        }
+    if (key._key == Input::KeyCode::KC_LMENU || key._key == Input::KeyCode::KC_RMENU) {
+        io.KeyAlt = false;
+    }
+
+    if (key._key == Input::KeyCode::KC_LWIN || key._key == Input::KeyCode::KC_RWIN) {
+        io.KeySuper = false;
     }
 
     return wantsKeyboard();
@@ -1277,8 +1273,8 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
             ImGuiIO& io = _imguiContexts[i]->IO;
             io.DisplaySize.x = to_F32(params.width);
             io.DisplaySize.y = to_F32(params.height);
-            io.DisplayFramebufferScale = ImVec2(params.width > 0 ? (to_F32(displaySize.width) / params.width) : 0.f,
-                                                params.height > 0 ? (to_F32(displaySize.height) / params.height) : 0.f);
+            io.DisplayFramebufferScale = ImVec2(params.width > 0 ? to_F32(displaySize.width) / params.width : 0.f,
+                                                params.height > 0 ? to_F32(displaySize.height) / params.height : 0.f);
         }
     }
 }
@@ -1325,7 +1321,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
 
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         pushConstantsCommand._constants = pushConstants;
-        GFX::EnqueueCommand(buffer, pushConstantsCommand);
+        EnqueueCommand(buffer, pushConstantsCommand);
         data._gfxDevice->flushCommandBuffer(buffer);
     } };
 
@@ -1649,4 +1645,4 @@ void PopReadOnly() noexcept {
     ImGui::PopItemFlag();
     ImGui::PopStyleVar();
 }
-}; //namespace Divide
+} //namespace Divide

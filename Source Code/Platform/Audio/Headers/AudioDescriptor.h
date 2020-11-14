@@ -60,7 +60,7 @@ class AudioDescriptor final : public CachedResource {
 
     void clean() noexcept { dirty(false); }
 
-    const char* getResourceTypeName() const noexcept  override { return "AudioDescriptor"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept  override { return "AudioDescriptor"; }
 
     PROPERTY_RW(F32, frequency, 44.2f);
     PROPERTY_RW(I8, bitDepth, 16);

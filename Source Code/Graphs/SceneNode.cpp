@@ -10,25 +10,10 @@
 
 namespace Divide {
 
-namespace {
-    bool isRigidBody(SceneNode& node) {
-        STUBBED("Due to the way that physics libs work in world transforms only, a classical scene graph type system does not "
-            "fit the physics model well. Thus, for now, only first-tier nodes are physically simulated!");
-        // If nodes need more complex physical relationships, they can be added as first tier nodes and linked together
-        // with a joint type system and the "parent" node's 'relative' mass set to infinite so the child node couldn't move it
-        if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
-            if (static_cast<Object3D&>(node).getObjectType()._value != ObjectType::SUBMESH) {
-                return true;
-            }
-        }
-        return false;
-    }
-};
-
 SceneNode::SceneNode(ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const ResourcePath& resourceName, const ResourcePath& resourceLocation, const SceneNodeType type, const U32 requiredComponentMask)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name, resourceName, resourceLocation),
      _type(type),
-     _editorComponent(""),
+     _editorComponent(Names::sceneNodeType[to_base(type)]),
      _parentCache(parentCache)
 {
     std::atomic_init(&_sgnParentCount, 0);
@@ -37,14 +22,19 @@ SceneNode::SceneNode(ResourceCache* parentCache, const size_t descriptorHash, co
     _boundingBox.setMin(-1.0f);
     _boundingBox.setMax(1.0f);
 
-    getEditorComponent().name(getTypeName());
     getEditorComponent().onChangedCbk([this](const std::string_view field) {
         editorFieldChanged(field);
     });
-
 }
 
-const char* SceneNode::getTypeName() const {
+stringImpl SceneNode::getTypeName() const {
+    if (_type == SceneNodeType::TYPE_OBJECT3D) {
+        const Object3D* obj = static_cast<const Object3D*>(this);
+        if (obj->getObjectType()._value != ObjectType::COUNT) {
+            return obj->getObjectType()._to_string();
+        }
+    }
+
     return Names::sceneNodeType[to_base(_type)];
 }
 
@@ -84,6 +74,10 @@ void SceneNode::occlusionCull(const RenderStagePass& stagePass,
 }
 
 void SceneNode::postLoad(SceneGraphNode* sgn) {
+    if (getEditorComponent().name().empty()) {
+        getEditorComponent().name(getTypeName());
+    }
+
     sgn->postLoad();
 }
 

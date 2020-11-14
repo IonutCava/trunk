@@ -43,7 +43,7 @@ namespace AI {
 
 namespace Attorney {
     class VisualSensorConstructor;
-};
+}
 
 /// SGN GUID, SGN pointer
 using NodeContainer = hashMap<I64, SceneGraphNode*>;
@@ -59,17 +59,17 @@ class VisualSensor final : public Sensor {
    public:
      ~VisualSensor();
 
-    void update(U64 deltaTimeUS);
+    void update(U64 deltaTimeUS) override;
 
     void followSceneGraphNode(U32 containerID, SceneGraphNode* node);
     void unfollowSceneGraphNode(U32 containerID, U64 nodeGUID);
 
     F32 getDistanceToNodeSq(U32 containerID, U64 nodeGUID);
 
-    F32 getDistanceToNode(U32 containerID, U64 nodeGUID) {
+    F32 getDistanceToNode(const U32 containerID, const U64 nodeGUID) {
         const F32 distanceSq = getDistanceToNodeSq(containerID, nodeGUID);
         if (distanceSq < std::numeric_limits<F32>::max() - 1.0f) {
-            return Divide::Sqrt(distanceSq);
+            return Sqrt(distanceSq);
         }
         return distanceSq;
     }
@@ -78,7 +78,7 @@ class VisualSensor final : public Sensor {
     SceneGraphNode* getClosestNode(U32 containerID);
 
    protected:
-    explicit VisualSensor(AIEntity* const parentEntity);
+    explicit VisualSensor(AIEntity* parentEntity);
 
 
    protected:
@@ -92,10 +92,10 @@ class VisualSensorConstructor {
         return MemoryManager_NEW VisualSensor(parentEntity);
     }
 
-    friend class Divide::AI::AIEntity;
+    friend class AI::AIEntity;
 };
-};  // namespace Attorney
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace AI
+}  // namespace Divide
 
 #endif

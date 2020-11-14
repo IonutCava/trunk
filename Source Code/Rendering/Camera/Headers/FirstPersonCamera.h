@@ -46,7 +46,7 @@ class FirstPersonCamera final : public FreeFlyCamera {
 
     static constexpr CameraType Type() noexcept { return CameraType::FIRST_PERSON; }
 
-    void fromCamera(const Camera& camera, bool flag = false) final;
+    void fromCamera(const Camera& camera, bool flag = false) override;
 };
 
 };  // namespace Divide

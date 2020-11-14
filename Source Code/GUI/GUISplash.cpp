@@ -64,17 +64,17 @@ void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) const {
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = context.newPipeline(pipelineDescriptor);
-    GFX::EnqueueCommand(buffer, pipelineCmd);
+    EnqueueCommand(buffer, pipelineCmd);
 
     GFX::SetViewportCommand viewportCommand;
     viewportCommand._viewport.set(0, 0, _dimensions.width, _dimensions.height);
-    GFX::EnqueueCommand(buffer, viewportCommand);
+    EnqueueCommand(buffer, viewportCommand);
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd;
     descriptorSetCmd._set._textureData.setTexture(_splashImage->data(), splashSampler.getHash(), TextureUsage::UNIT0);
-    GFX::EnqueueCommand(buffer, descriptorSetCmd);
+    EnqueueCommand(buffer, descriptorSetCmd);
 
-    GFX::EnqueueCommand(buffer, GFX::DrawCommand{ drawCmd });
+    EnqueueCommand(buffer, GFX::DrawCommand{ drawCmd });
 
     context.flushCommandBuffer(buffer);
 }

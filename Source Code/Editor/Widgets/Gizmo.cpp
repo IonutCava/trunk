@@ -294,9 +294,9 @@ namespace Divide {
                 io.MousePos.y - bounds.mScreenSquareCenter.y
             };
             const F32 dist = deltaScreen.length();
-            return dist < (bounds.mRadiusSquareCenter + 5.0f);
+            return dist < bounds.mRadiusSquareCenter + 5.0f;
         }
 
         return false;
     }
-}; //namespace Divide
+} //namespace Divide

@@ -2,7 +2,6 @@
 #ifndef _SCENE_NODE_RENDER_STATE_H_
 #define _SCENE_NODE_RENDER_STATE_H_
 
-#include "Platform/Headers/PlatformDefines.h"
 #include "Platform/Video/Headers/RenderStagePass.h"
 
 namespace Divide {

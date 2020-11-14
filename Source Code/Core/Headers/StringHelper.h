@@ -114,8 +114,8 @@ namespace Divide {
         void CStringRemoveChar(char* str, char charToRemove) noexcept;
 
         bool IsEmptyOrNull(const char* str) noexcept;
-    }; //namespace Util
-}; //namespace Divide
+    } //namespace Util
+} //namespace Divide
 
 #endif //_CORE_STRING_HELPER_H_
 

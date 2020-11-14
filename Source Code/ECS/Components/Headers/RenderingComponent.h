@@ -64,7 +64,7 @@ namespace Attorney {
     class RenderingCompGFXDevice;
     class RenderingCompRenderBin;
     class RenderingComponentSGN;
-};
+}
 
 struct RenderParams {
     GenericDrawCommand _cmd;
@@ -152,7 +152,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                                 PlatformContext& context);
     ~RenderingComponent();
 
-    void Update(U64 deltaTimeUS) final;
+    void Update(U64 deltaTimeUS) override;
 
     void toggleRenderOption(RenderOptions option, bool state, bool recursive = true);
     bool renderOptionEnabled(RenderOptions option) const;
@@ -170,7 +170,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool lodLocked(const RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
     void instantiateMaterial(const Material_ptr& material);
 
-    void getMaterialColourMatrix(const RenderStagePass& stagePass, mat4<F32>& matOut) const;
+    void getMaterialColourMatrix(mat4<F32>& matOut) const;
 
     void getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const;
 
@@ -193,7 +193,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void drawDebugAxis(GFX::CommandBuffer& bufferInOut);
     void drawSelectionGizmo(GFX::CommandBuffer& bufferInOut);
     void drawSkeleton(GFX::CommandBuffer& bufferInOut);
-    void drawBounds(const bool AABB, const bool OBB, const bool Sphere, GFX::CommandBuffer& bufferInOut);
+    void drawBounds(bool AABB, bool OBB, bool Sphere, GFX::CommandBuffer& bufferInOut);
     
     void prepareRender(const RenderStagePass& renderStagePass);
 
@@ -206,8 +206,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
     bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick);
-    void onRenderOptionChanged(const RenderOptions option, const bool state);
-    bool canDraw(const RenderStagePass& renderStagePass, U8 LoD, bool refreshData);
+    void onRenderOptionChanged(RenderOptions option, bool state);
+    bool canDraw(const RenderStagePass& renderStagePass, U8 LoD) const;
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -245,7 +245,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void onMaterialChanged();
     void onParentUsageChanged(NodeUsageContext context);
 
-    void OnData(const ECS::CustomEvent& data) final;
+    void OnData(const ECS::CustomEvent& data) override;
 
    protected:
     using PackagesPerIndex = vectorEASTLFast<RenderPackage>;
@@ -311,14 +311,13 @@ INIT_COMPONENT(RenderingComponent);
 
 namespace Attorney {
 class RenderingCompRenderPass {
-    private:
         /// Returning true or false controls our reflection/refraction budget only. 
 
         /// Return true if we executed an external render pass (e.g. water planar reflection)
         /// Return false for no or non-expensive updates (e.g. selected the nearest probe)
         static bool updateReflection(RenderingComponent& renderable,
-                                     U16 reflectionIndex,
-                                     bool inBudget,
+                                     const U16 reflectionIndex,
+                                     const bool inBudget,
                                      Camera* camera,
                                      const SceneRenderState& renderState,
                                      GFX::CommandBuffer& bufferInOut)
@@ -329,8 +328,8 @@ class RenderingCompRenderPass {
         /// Return true if we executed an external render pass (e.g. water planar refraction)
         /// Return false for no or non-expensive updates (e.g. selected the nearest probe)
         static bool updateRefraction(RenderingComponent& renderable,
-                                     U16 refractionIndex,
-                                     bool inBudget,
+                                     const U16 refractionIndex,
+                                     const bool inBudget,
                                      Camera* camera,
                                      const SceneRenderState& renderState,
                                      GFX::CommandBuffer& bufferInOut)
@@ -342,7 +341,7 @@ class RenderingCompRenderPass {
                                        const Camera& camera,
                                        const SceneRenderState& sceneRenderState,
                                        const RenderStagePass& renderStagePass,
-                                       bool refreshData) {
+                                       const bool refreshData) {
             return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
@@ -355,7 +354,6 @@ class RenderingCompRenderPass {
 };
 
 class RenderingCompRenderBin {
-   private:
     static void postRender(RenderingComponent* renderable,
                            const SceneRenderState& sceneRenderState,
                            const RenderStagePass& renderStagePass,
@@ -373,6 +371,6 @@ class RenderingComponentSGN {
     }
     friend class Divide::SceneGraphNode;
 };
-};  // namespace Attorney
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace Divide
 #endif

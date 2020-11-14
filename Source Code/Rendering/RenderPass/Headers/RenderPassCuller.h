@@ -36,8 +36,9 @@
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 /// This class performs all the necessary visibility checks on the scene's
-/// scenegraph to decide what get's rendered and what not
+/// SceneGraph to decide what get's rendered and what not
 namespace Divide {
+
 class SceneState;
 class SceneRenderState;
 
@@ -62,6 +63,11 @@ struct NodeCullParams {
 struct VisibleNode {
     SceneGraphNode* _node = nullptr;
     F32 _distanceToCameraSq = 0.0f;
+};
+
+struct FeedBackContainer
+{
+    vectorEASTL<VisibleNode> _visibleNodes;
 };
 
 template<size_t N = Config::MAX_VISIBLE_NODES>
@@ -108,16 +114,16 @@ class RenderPassCuller {
         void frustumCull(const NodeCullParams& params, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList<>& nodesOut) const;
         void toVisibleNodes(const Camera* camera, const vectorEASTL<SceneGraphNode*>& nodes, VisibleNodeList<>& nodesOut) const;
 
-        VisibleNodeList<>& getNodeCache(RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
-        const VisibleNodeList<>& getNodeCache(RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
+        VisibleNodeList<>& getNodeCache(const RenderStage stage) noexcept { return _visibleNodes[to_U32(stage)]; }
+        const VisibleNodeList<>& getNodeCache(const RenderStage stage) const noexcept { return _visibleNodes[to_U32(stage)]; }
 
     protected:
-        void frustumCullNode(const Task* parentTask, SceneGraphNode* node, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const;
+        void frustumCullNode(SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const;
         void addAllChildren(const SceneGraphNode* currentNode, const NodeCullParams& params,  VisibleNodeList<>& nodes) const;
 
     protected:
         std::array<VisibleNodeList<>, to_base(RenderStage::COUNT)> _visibleNodes;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 #endif

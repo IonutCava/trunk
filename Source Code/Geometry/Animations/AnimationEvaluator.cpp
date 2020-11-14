@@ -64,7 +64,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
         "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
     size_t boneCount = _transforms.front().count();
-    U32 numberOfFrames = frameCount();
+    const U32 numberOfFrames = frameCount();
 
     using FrameData = std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>;
     using TempContainer = vectorEASTL<FrameData>;
@@ -76,7 +76,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     for (U32 i = 0; i < numberOfFrames; ++i) {
         FrameData& anim = animationData[i];
         const BoneTransform& frameTransforms = _transforms[i];
-        size_t numberOfTransforms = frameTransforms.count();
+        const size_t numberOfTransforms = frameTransforms.count();
         for (U32 j = 0; j < numberOfTransforms; ++j) {
             anim[j].set(frameTransforms.matrices()[j]);
         }
@@ -156,7 +156,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             // is after the last time, else from beginning
             // Should be much quicker than always looking from start for the
             // average use case.
-            U32 frame = (time >= _lastTime) ? _lastPositions[a].x : 0;
+            U32 frame = time >= _lastTime ? _lastPositions[a].x : 0;
             while (frame < channel->_positionKeys.size() - 1) {
                 if (time < channel->_positionKeys[frame + 1].mTime) {
                     break;
@@ -185,7 +185,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
 
         // ******** Rotation *********
         if (!channel->_rotationKeys.empty()) {
-            U32 frame = (time >= _lastTime) ? _lastPositions[a].y : 0;
+            U32 frame = time >= _lastTime ? _lastPositions[a].y : 0;
             while (frame < channel->_rotationKeys.size() - 1) {
                 if (time < channel->_rotationKeys[frame + 1].mTime) break;
                 frame++;
@@ -213,7 +213,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
 
         // ******** Scaling **********
         if (!channel->_scalingKeys.empty()) {
-            U32 frame = (time >= _lastTime) ? _lastPositions[a].z : 0;
+            U32 frame = time >= _lastTime ? _lastPositions[a].z : 0;
             while (frame < channel->_scalingKeys.size() - 1) {
                 if (time < channel->_scalingKeys[frame + 1].mTime) break;
                 frame++;

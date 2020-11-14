@@ -53,9 +53,9 @@ class Quad3D final : public Object3D {
                     const Str256& name,
                     bool doubleSided);
 
-    vec3<F32> getCorner(CornerLocation corner);
+    vec3<F32> getCorner(CornerLocation corner) const;
 
-    void setNormal(CornerLocation corner, const vec3<F32>& normal);
+    void setNormal(CornerLocation corner, const vec3<F32>& normal) const;
 
     void setCorner(CornerLocation corner, const vec3<F32>& value);
 
@@ -63,7 +63,7 @@ class Quad3D final : public Object3D {
     // Remember to invert for 2D mode
     void setDimensions(const vec4<F32>& rect);
 
-    const char* getResourceTypeName() const noexcept override { return "Quad3D"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Quad3D"; }
 
    protected:
      void recomputeBounds();

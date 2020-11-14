@@ -9,8 +9,7 @@
 namespace Divide {
     
 namespace {
-
-    inline GLint getBufferTargetIndex(GLenum target) {
+    GLint getBufferTargetIndex(GLenum target) {
         // Select the appropriate index in the array based on the buffer target
         switch (target) {
             case GL_TEXTURE_BUFFER: return 0;
@@ -432,8 +431,8 @@ void GLStateTracker::setClippingPlaneState(const bool lowerLeftOrigin, const boo
     if (lowerLeftOrigin != _lowerLeftOrigin || negativeOneToOneDepth != _negativeOneToOneDepth) {
 
         glClipControl(
-            (lowerLeftOrigin ? GL_LOWER_LEFT : GL_UPPER_LEFT),
-            (negativeOneToOneDepth ? GL_NEGATIVE_ONE_TO_ONE : GL_ZERO_TO_ONE)
+            lowerLeftOrigin ? GL_LOWER_LEFT : GL_UPPER_LEFT,
+            negativeOneToOneDepth ? GL_NEGATIVE_ONE_TO_ONE : GL_ZERO_TO_ONE
         );
 
         _lowerLeftOrigin = lowerLeftOrigin;
@@ -455,9 +454,9 @@ void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
 
     const bool enable = blendingProperties.blendEnabled();
 
-    if ((_blendEnabledGlobal == GL_TRUE) != enable) {
+    if (_blendEnabledGlobal == GL_TRUE != enable) {
         enable ? glEnable(GL_BLEND) : glDisable(GL_BLEND);
-        _blendEnabledGlobal = (enable ? GL_TRUE : GL_FALSE);
+        _blendEnabledGlobal = enable ? GL_TRUE : GL_FALSE;
         std::fill(std::begin(_blendEnabled), std::end(_blendEnabled), _blendEnabledGlobal);
     }
 
@@ -509,9 +508,9 @@ void GLStateTracker::setBlending(const GLuint drawBufferIdx,const BlendingProper
 
     assert(drawBufferIdx < static_cast<GLuint>(GL_API::s_maxFBOAttachments));
 
-    if ((_blendEnabled[drawBufferIdx] == GL_TRUE) != enable) {
+    if (_blendEnabled[drawBufferIdx] == GL_TRUE != enable) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
-        _blendEnabled[drawBufferIdx] = (enable ? GL_TRUE : GL_FALSE);
+        _blendEnabled[drawBufferIdx] = enable ? GL_TRUE : GL_FALSE;
         if (!enable) {
             _blendEnabledGlobal = GL_FALSE;
         }

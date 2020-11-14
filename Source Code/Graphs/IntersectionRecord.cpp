@@ -20,10 +20,10 @@ IntersectionRecord::IntersectionRecord(const vec3<F32>& hitPos,
     _position(hitPos),
     _normal(hitNormal),
     _ray(ray),
-    _distance(distance),
-    _hasHit(true),
     _intersectedObject1(nullptr),
-    _intersectedObject2(nullptr)
+    _intersectedObject2(nullptr),
+    _distance(distance),
+    _hasHit(true)
 {
 }
 

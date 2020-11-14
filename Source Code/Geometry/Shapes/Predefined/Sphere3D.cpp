@@ -57,7 +57,7 @@ void Sphere3D::rebuildVB() {
         // artifacts at the poles on some OpenGL implementations
         F32 s = 0.0f;
         for (U32 j = 0; j <= slices; j++) {
-            const F32 theta = (j == slices) ? 0.0f : j * dtheta;
+            const F32 theta = j == slices ? 0.0f : j * dtheta;
             const F32 stheta = -std::sin(theta);
             const F32 ctheta = std::cos(theta);
 

@@ -27,7 +27,6 @@ namespace Navigation {
 NavigationMesh::NavigationMesh(PlatformContext& context, DivideRecast& recastInterface)
     : GUIDWrapper(),
       PlatformContextComponent(context),
-      _buildJobGUID(-1),
       _recastInterface(recastInterface)
 {
     ParamHandler& par = context.paramHandler();
@@ -36,7 +35,7 @@ NavigationMesh::NavigationMesh(PlatformContext& context, DivideRecast& recastInt
 
     _debugDrawInterface = MemoryManager_NEW NavMeshDebugDraw(context.gfx());
     _filePath = path.str() + "/" + Paths::g_navMeshesLocation.str();
-    
+
     _configFile.append(path.str());
     _configFile.append("/navMeshConfig.ini");
     _buildThreaded = true;
@@ -66,7 +65,7 @@ bool NavigationMesh::unload() {
 
     if (_navQuery) {
         dtFreeNavMeshQuery(_navQuery);
-        _navQuery = 0;
+        _navQuery = nullptr;
     }
 
     freeIntermediates(true);
@@ -104,18 +103,18 @@ void NavigationMesh::freeIntermediates(bool freeAll) {
 }
 
 namespace {
-inline I32 charToInt(const char* val) {
+    I32 charToInt(const char* val) {
     return Util::ConvertData<I32, const char*>(val);
 }
 
-inline F32 charToFloat(const char* val) {
+    F32 charToFloat(const char* val) {
     return Util::ConvertData<F32, const char*>(val);
 }
 
-inline bool charToBool(const char* val) {
+    bool charToBool(const char* val) {
     return _stricmp(val, "true") == 0;
 }
-};
+}
 
 bool NavigationMesh::loadConfigFromFile() {
     // Use SimpleIni library for cross-platform INI parsing
@@ -169,14 +168,14 @@ bool NavigationMesh::loadConfigFromFile() {
 
 bool NavigationMesh::build(SceneGraphNode* sgn,
                            CreationCallback creationCompleteCallback,
-                           bool threaded) {
+                           const bool threaded) {
     if (!loadConfigFromFile()) {
         Console::errorfn(Locale::get(_ID("NAV_MESH_CONFIG_NOT_FOUND")));
         return false;
     }
 
     _sgn = sgn;
-    _loadCompleteClbk = creationCompleteCallback;
+    _loadCompleteClbk = std::move(creationCompleteCallback);
 
     if (_buildThreaded && threaded) {
         return buildThreaded();
@@ -189,22 +188,22 @@ bool NavigationMesh::buildThreaded() {
     stopThreadedBuild();
 
     _buildTask = CreateTask(_context,
-                            [this](const Task& parentTask) {
-                                buildInternal(parentTask);
+                            [this](const Task& /*parentTask*/) {
+                                buildInternal();
                             });
     Start(*_buildTask);
 
     return true;
 }
 
-void NavigationMesh::buildInternal(const Task& parentTask) {
+void NavigationMesh::buildInternal() {
     OPTICK_EVENT();
 
     _building = true;
     // Create mesh
     Time::ProfileTimer importTimer;
     importTimer.start();
-    bool state = generateMesh();
+    const bool state = generateMesh();
     importTimer.stop();
     if (state) {
         Console::printfn(Locale::get(_ID("NAV_MESH_GENERATION_COMPLETE")),
@@ -220,7 +219,7 @@ void NavigationMesh::buildInternal(const Task& parentTask) {
             _debugDrawInterface->setDirty(true);
             _tempNavMesh = nullptr;
 
-            bool navQueryComplete = createNavigationQuery();
+            const bool navQueryComplete = createNavigationQuery();
             DIVIDE_ASSERT(
                 navQueryComplete,
                 "NavigationMesh Error: Navigation query creation failed!");
@@ -237,7 +236,6 @@ void NavigationMesh::buildInternal(const Task& parentTask) {
     } else {
         Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")),
                          Time::MicrosecondsToSeconds<F32>(importTimer.get()));
-        return;
     }
 }
 
@@ -246,7 +244,7 @@ bool NavigationMesh::buildProcess() {
     // Create mesh
     Time::ProfileTimer importTimer;
     importTimer.start();
-    bool success = generateMesh();
+    const bool success = generateMesh();
     importTimer.stop();
     if (!success) {
         Console::errorfn(Locale::get(_ID("NAV_MESH_GENERATION_INCOMPLETE")),
@@ -267,7 +265,7 @@ bool NavigationMesh::buildProcess() {
         _debugDrawInterface->setDirty(true);
         _tempNavMesh = nullptr;
 
-        bool navQueryComplete = createNavigationQuery();
+        const bool navQueryComplete = createNavigationQuery();
         DIVIDE_ASSERT(
             navQueryComplete,
             "NavigationMesh Error: Navigation query creation failed!");
@@ -322,7 +320,7 @@ bool NavigationMesh::generateMesh() {
     rcContextDivide ctx(true);
 
     rcConfig cfg;
-    memset(&cfg, 0, sizeof(cfg));
+    memset(&cfg, 0, sizeof cfg);
 
     cfg.cs = _configParams.getCellSize();
     cfg.ch = _configParams.getCellHeight();
@@ -357,7 +355,7 @@ bool NavigationMesh::generateMesh() {
 
     // Detour initialisation data
     dtNavMeshCreateParams params;
-    memset(&params, 0, sizeof(params));
+    memset(&params, 0, sizeof params);
     rcVcopy(params.bmax, cfg.bmax);
     rcVcopy(params.bmin, cfg.bmin);
 
@@ -409,7 +407,7 @@ bool NavigationMesh::generateMesh() {
 
 bool NavigationMesh::createNavigationQuery(U32 maxNodes) {
     _navQuery = dtAllocNavMeshQuery();
-    return (_navQuery->init(_navMesh, maxNodes) == DT_SUCCESS);
+    return _navQuery->init(_navMesh, maxNodes) == DT_SUCCESS;
 }
 
 bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data, rcContextDivide* ctx) {
@@ -484,9 +482,8 @@ bool NavigationMesh::createPolyMesh(rcConfig& cfg, NavModelData& data, rcContext
         return false;
     }
 
-    if (false) {
-        if (!rcBuildRegionsMonotone(ctx, *_compactHeightField, cfg.borderSize,
-                                    cfg.minRegionArea, cfg.mergeRegionArea)) {
+    if_constexpr (false) {
+        if (!rcBuildRegionsMonotone(ctx, *_compactHeightField, cfg.borderSize, cfg.minRegionArea, cfg.mergeRegionArea)) {
             Console::errorfn(Locale::get(_ID("ERROR_NAV_REGIONS")), _fileName.c_str());
             return false;
         }
@@ -554,7 +551,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
         return false;
     }
 
-    dtStatus s = _tempNavMesh->init(tileData, tileDataSize, DT_TILE_FREE_DATA);
+    const dtStatus s = _tempNavMesh->init(tileData, tileDataSize, DT_TILE_FREE_DATA);
     if (dtStatusFailed(s)) {
         Console::errorfn(Locale::get(_ID("ERROR_NAV_DT_INIT")), _fileName.c_str());
         return false;
@@ -643,10 +640,9 @@ bool NavigationMesh::load(SceneGraphNode* sgn) {
         return false;
     }
 
-    dtNavMesh* temp = nullptr;
     Str256 file = _fileName;
 
-    Str128 nodeName(generateMeshName(sgn));
+    const Str128 nodeName(generateMeshName(sgn));
     
     // Parse objects from level into RC-compatible format
     file.append(nodeName);
@@ -672,14 +668,14 @@ bool NavigationMesh::load(SceneGraphNode* sgn) {
     }
 
     std::lock_guard<Mutex> lock(_navigationMeshLock);
-    temp = dtAllocNavMesh();
+    dtNavMesh* temp = dtAllocNavMesh();
 
     if (!temp) {
         fclose(fp);
         return false;
     }
 
-    dtStatus status = temp->init(&header.params);
+    const dtStatus status = temp->init(&header.params);
 
     if (dtStatusFailed(status)) {
         fclose(fp);
@@ -689,7 +685,7 @@ bool NavigationMesh::load(SceneGraphNode* sgn) {
     // Read tiles.
     for (U32 i = 0; i < to_U32(header.numTiles); ++i) {
         NavMeshTileHeader tileHeader;
-        fread(&tileHeader, sizeof(tileHeader), 1, fp);
+        fread(&tileHeader, sizeof tileHeader, 1, fp);
         if (!tileHeader.tileRef || !tileHeader.dataSize) {
             return false;  // break;
         }
@@ -703,7 +699,7 @@ bool NavigationMesh::load(SceneGraphNode* sgn) {
         fread(data, tileHeader.dataSize, 1, fp);
 
         temp->addTile(data, tileHeader.dataSize, DT_TILE_FREE_DATA,
-                     tileHeader.tileRef, 0);
+                     tileHeader.tileRef, nullptr);
     }
     fclose(fp);
 
@@ -763,7 +759,7 @@ bool NavigationMesh::save(SceneGraphNode* sgn) {
         tileHeader.tileRef = _navMesh->getTileRef(tile);
         tileHeader.dataSize = tile->dataSize;
 
-        fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
+        fwrite(&tileHeader, sizeof tileHeader, 1, fp);
         fwrite(tile->data, tile->dataSize, 1, fp);
     }
 
@@ -797,6 +793,6 @@ bool NavigationMesh::getRandomPositionInCircle(const vec3<F32>& center,
                                                U8 maxIters) const {
     return _recastInterface.getRandomPointAroundCircle(*this, center, radius, extents, result, maxIters);
 }
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide

@@ -54,7 +54,7 @@ SpotLightComponent::SpotLightComponent(SceneGraphNode* sgn, PlatformContext& con
 
     registerFields(getEditorComponent());
 
-    getEditorComponent().onChangedCbk([this](std::string_view field) {
+    getEditorComponent().onChangedCbk([this](std::string_view) {
         if (coneCutoffAngle() > outerConeCutoffAngle()) {
             coneCutoffAngle(outerConeCutoffAngle());
         }
@@ -93,7 +93,7 @@ void SpotLightComponent::PreUpdate(const U64 deltaTime) {
 
 void SpotLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
-        Light::updateCache(data);
+        updateCache(data);
     } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
         const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(data._flag);
         if (flag == SceneGraphNode::Flags::SELECTED) {
@@ -110,4 +110,4 @@ void SpotLightComponent::setDirection(const vec3<F32>& direction) const {
         tComp->setRotation(rot);
     }
 }
-};
+}

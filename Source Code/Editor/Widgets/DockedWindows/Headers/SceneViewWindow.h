@@ -44,7 +44,7 @@ namespace Divide {
         SceneViewWindow(Editor& parent, const Descriptor& descriptor);
         ~SceneViewWindow() = default;
 
-        void drawInternal() final;
+        void drawInternal() override;
 
         [[nodiscard]] const Rect<I32>& sceneRect() const noexcept;
         [[nodiscard]] const vec2<I32>& getWindowOffset() const noexcept;
@@ -53,6 +53,6 @@ namespace Divide {
         Rect<I32> _sceneRect;
         vec2<I32> _windowOffset;
     };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCENE_VIEW_WINDOW_H_

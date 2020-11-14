@@ -118,7 +118,7 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
     glTextureParameteri(d_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(d_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
+    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
     Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_texture, 0);
     glTexImage2D(GL_TEXTURE_2D,
                  0,
@@ -126,7 +126,7 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
                    GL_RGBA8 : GL_RGBA,
                  static_cast<GLsizei>(DEFAULT_SIZE),
                  static_cast<GLsizei>(DEFAULT_SIZE),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
 
     glNamedFramebufferTexture(d_frameBuffer, GL_COLOR_ATTACHMENT0, d_texture, 0);
 
@@ -144,7 +144,7 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
 void OpenGL3FBOTextureTarget::resizeRenderTexture()
 {
     // save old texture binding
-    Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
+    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
 
     // Some drivers (hint: Intel) segfault when glTexImage2D is called with
     // any of the dimensions being 0. The downside of this workaround is very
@@ -165,7 +165,7 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
                    GL_RGBA8 : GL_RGBA,
                  static_cast<GLsizei>(sz.d_width),
                  static_cast<GLsizei>(sz.d_height),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     clear();
 
     // ensure the CEGUI::Texture is wrapping the gl texture and has correct size
@@ -194,7 +194,7 @@ void OpenGL3FBOTextureTarget::restoreTexture()
 //----------------------------------------------------------------------------//
 void OpenGL3FBOTextureTarget::checkFramebufferStatus()
 {
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    const GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
     // Check for completeness
     if(status != GL_FRAMEBUFFER_COMPLETE)
@@ -230,7 +230,7 @@ void OpenGL3FBOTextureTarget::checkFramebufferStatus()
             break;
         }
 
-        if (CEGUI::Logger* logger = CEGUI::Logger::getSingletonPtr())
+        if (Logger* logger = Logger::getSingletonPtr())
             logger->logEvent(stringStream.str().c_str());
         else
             std::cerr << stringStream.str() << std::endl;

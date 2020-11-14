@@ -80,7 +80,7 @@ void Texture::threadedLoad() {
         // Skip invalid entries
         if (!currentTextureFile.empty()) {
 
-            currentTextureFullPath = (currentTextureLocation.empty() ? Paths::g_texturesLocation : ResourcePath{currentTextureLocation});
+            currentTextureFullPath = currentTextureLocation.empty() ? Paths::g_texturesLocation : ResourcePath{currentTextureLocation};
             currentTextureFullPath.append("/" + currentTextureFile);
             Util::ReplaceStringInPlace(currentTextureFullPath, searchPattern, "/");
             _descriptor._sourceFileList.push_back(currentTextureFile);

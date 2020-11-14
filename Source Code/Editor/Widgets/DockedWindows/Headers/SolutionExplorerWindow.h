@@ -48,7 +48,7 @@ class SolutionExplorerWindow final : public DockedWindow, public PlatformContext
       SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
       ~SolutionExplorerWindow() = default;
 
-      void drawInternal() final;
+      void drawInternal() override;
   protected:
       void drawTransformSettings() const;
       void drawRemoveNodeDialog();
@@ -77,6 +77,6 @@ class SolutionExplorerWindow final : public DockedWindow, public PlatformContext
       SceneGraphNode* _childNode = nullptr;
       SceneGraphNode* _tempParent = nullptr;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_SOLUTION_EXPLORER_H_

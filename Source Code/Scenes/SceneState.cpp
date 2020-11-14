@@ -18,11 +18,10 @@ FogDescriptor::FogDescriptor()
 
 SceneRenderState::SceneRenderState(Scene& parentScene)
     : SceneComponent(parentScene),
-      _stateMask(0u),
-      _renderPass(0),
+      _generalVisibility(1.0f),
       _grassVisibility(1.0f),
       _treeVisibility(1.0f),
-      _generalVisibility(1.0f)
+      _stateMask(0u)
 {
     enableOption(RenderOptions::RENDER_GEOMETRY);
     enableOption(RenderOptions::PLAY_ANIMATIONS);
@@ -91,10 +90,11 @@ vec4<U16> SceneRenderState::lodThresholds(RenderStage stage) const noexcept {
             _lodThresholds.y,
             _lodThresholds.z,
             _lodThresholds.w };
-    } else if (stage == RenderStage::SHADOW) {
+    }
+    if (stage == RenderStage::SHADOW) {
         return _lodThresholds * 3u;
     }
 
     return _lodThresholds;
 }
-};  // namespace Divide
+}  // namespace Divide

@@ -12,7 +12,7 @@ UnitComponent::UnitComponent(SceneGraphNode* parentSGN, PlatformContext& context
 {
 }
 
-bool UnitComponent::setUnit(const Unit_ptr unit) {
+bool UnitComponent::setUnit(const Unit_ptr& unit) {
     if (!_unit) {
         _unit = unit;
         Attorney::UnitComponent::setParentNode(_unit.get(), _parentSGN);
@@ -22,4 +22,4 @@ bool UnitComponent::setUnit(const Unit_ptr unit) {
     return false;
 }
 
-}; //namespace Divide
+} //namespace Divide

@@ -49,6 +49,6 @@ class EditorOptionsWindow final : public PlatformContextComponent, NonMovable {
     U16 _changeCount = 0u;
     bool _openDialog = false;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_OPTIONS_WINDOW_H

@@ -6,11 +6,11 @@ namespace Divide {
 
 void ParticlePositionColourUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     const U32 endID = p.aliveCount();
-    F32 diffr = _maxPos.x - _minPos.x;
-    F32 diffg = _maxPos.y - _minPos.y;
-    F32 diffb = _maxPos.z - _minPos.z;
+    const F32 diffr = _maxPos.x - _minPos.x;
+    const F32 diffg = _maxPos.y - _minPos.y;
+    const F32 diffb = _maxPos.z - _minPos.z;
 
-    vec3<F32> floatColourRGB;
+    
     for (U32 i = 0; i < endID; ++i) {
         p._colour[i].set(
             (p._position[i].x - _minPos.x) /
@@ -25,4 +25,4 @@ void ParticlePositionColourUpdater::update(const U64 deltaTimeUS, ParticleData& 
                   p._misc[i].y) * 255.0f);
     }
 }
-};
+}

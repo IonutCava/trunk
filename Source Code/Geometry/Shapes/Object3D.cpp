@@ -48,10 +48,10 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descri
             break;
         case ObjectType::MESH: {
             STUBBED("ToDo: Add capsule and convex mesh support for 3D Objects! -Ionut");
-            if (true) { // general meshes? Maybe have a concave flag?
+            if_constexpr (true) { // general meshes? Maybe have a concave flag?
                 _rigidBodyShape = RigidBodyShape::SHAPE_TRIANGLEMESH;
             } else { 
-                if (true) { // skinned characters?
+                if_constexpr(true) { // skinned characters?
                     _rigidBodyShape = RigidBodyShape::SHAPE_CAPSULE;
                 } else { // have a convex flag for imported meshes?
                     _rigidBodyShape = RigidBodyShape::SHAPE_CONVEXMESH;
@@ -62,17 +62,6 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descri
             _rigidBodyShape = RigidBodyShape::SHAPE_COUNT;
             break;
     };
-
-    _editorComponent.name(getTypeName());
-}
-
-
-const char* Object3D::getTypeName() const {
-    if (_geometryType._value != ObjectType::COUNT) {
-        return _geometryType._to_string();
-    }
-
-    return SceneNode::getTypeName();
 }
 
 bool Object3D::isPrimitive() const noexcept {
@@ -174,12 +163,12 @@ bool Object3D::computeTriangleList() {
                   "Object3D error: computeTriangleList called with no position "
                   "data available!");
 
-    size_t partitionOffset = geometry->getPartitionOffset(_geometryPartitionIDs[0]);
-    size_t partitionCount = geometry->getPartitionIndexCount(_geometryPartitionIDs[0]);
-    PrimitiveType type = (_geometryType._value == ObjectType::MESH ||
-                          _geometryType._value == ObjectType::SUBMESH
-                              ? PrimitiveType::TRIANGLES
-                              : PrimitiveType::TRIANGLE_STRIP);
+    const size_t partitionOffset = geometry->getPartitionOffset(_geometryPartitionIDs[0]);
+    const size_t partitionCount = geometry->getPartitionIndexCount(_geometryPartitionIDs[0]);
+    const PrimitiveType type = _geometryType._value == ObjectType::MESH ||
+                               _geometryType._value == ObjectType::SUBMESH
+                                   ? PrimitiveType::TRIANGLES
+                                   : PrimitiveType::TRIANGLE_STRIP;
 
     if (!_geometryTriangles.empty()) {
         _geometryTriangles.resize(0);
@@ -191,8 +180,8 @@ bool Object3D::computeTriangleList() {
 
     size_t indiceCount = partitionCount;
     if (type == PrimitiveType::TRIANGLE_STRIP) {
-        size_t indiceStart = 2 + partitionOffset;
-        size_t indiceEnd = indiceCount + partitionOffset;
+        const size_t indiceStart = 2 + partitionOffset;
+        const size_t indiceEnd = indiceCount + partitionOffset;
         vec3<U32> curTriangle;
         _geometryTriangles.reserve(indiceCount / 2);
         const vectorEASTL<U32>& indices = geometry->getIndices();
@@ -218,12 +207,12 @@ bool Object3D::computeTriangleList() {
     // Check for degenerate triangles
     _geometryTriangles.erase(
         eastl::partition(
-            eastl::begin(_geometryTriangles), eastl::end(_geometryTriangles),
+            begin(_geometryTriangles), end(_geometryTriangles),
             [](const vec3<U32>& triangle) -> bool {
-                return (triangle.x != triangle.y && triangle.x != triangle.z &&
-                        triangle.y != triangle.z);
+                return triangle.x != triangle.y && triangle.x != triangle.z &&
+                    triangle.y != triangle.z;
             }),
-        eastl::end(_geometryTriangles));
+        end(_geometryTriangles));
 
     DIVIDE_ASSERT(!_geometryTriangles.empty(),
                   "Object3D error: computeTriangleList() failed to generate "
@@ -251,10 +240,10 @@ void Object3D::playAnimations(const SceneGraphNode* sgn, const bool state) {
             animComp->playAnimations(state);
         }
         sgn->forEachChild([state](const SceneGraphNode* child, I32 /*childIdx*/) {
-            AnimationComponent* animComp = child->get<AnimationComponent>();
+            AnimationComponent* animCompInner = child->get<AnimationComponent>();
             // Not all submeshes are necessarily animated. (e.g. flag on the back of a character)
-            if (animComp != nullptr) {
-                animComp->playAnimations(state && animComp->playAnimations());
+            if (animCompInner != nullptr) {
+                animCompInner->playAnimations(state && animCompInner->playAnimations());
             }
             return true;
         });

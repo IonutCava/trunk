@@ -45,7 +45,7 @@ class NavigationComponent final : public BaseComponentType<NavigationComponent, 
         NODE_IGNORE
     };
 
-    NavigationComponent(SceneGraphNode* sgn, PlatformContext& context);
+    NavigationComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~NavigationComponent() = default;
 
     [[nodiscard]] const NavigationContext& navigationContext() const {
@@ -65,5 +65,5 @@ class NavigationComponent final : public BaseComponentType<NavigationComponent, 
 
 INIT_COMPONENT(NavigationComponent);
 
-};  // namespace Divide
+}  // namespace Divide
 #endif

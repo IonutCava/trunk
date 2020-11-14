@@ -81,13 +81,13 @@ struct Ray {
         } else {
             ret._invDirection.z = std::numeric_limits<F32>::infinity();
         }
-        ret._sign.x = (ret._invDirection.x < 0.0f);
-        ret._sign.y = (ret._invDirection.y < 0.0f);
-        ret._sign.z = (ret._invDirection.z < 0.0f);
+        ret._sign.x = ret._invDirection.x < 0.0f;
+        ret._sign.y = ret._invDirection.y < 0.0f;
+        ret._sign.z = ret._invDirection.z < 0.0f;
         return ret;
     }
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

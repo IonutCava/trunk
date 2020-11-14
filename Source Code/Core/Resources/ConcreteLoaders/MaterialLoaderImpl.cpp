@@ -23,4 +23,4 @@ CachedResource_ptr ImplResourceLoader<Material>::operator()() {
     return ptr;
 }
 
-};
+}

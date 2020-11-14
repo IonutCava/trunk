@@ -141,6 +141,6 @@ inline const vectorEASTL<WindowManager::MonitorData>& WindowManager::monitorData
     return _monitors;
 }
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_CORE_WINDOW_MANAGER_INL_

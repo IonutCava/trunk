@@ -55,9 +55,9 @@ SceneGraphNode::SceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescr
     for (auto& it : Events._eventsFreeList) {
         std::atomic_init(&it, true);
     }
-    _name = (descriptor._name.empty() ? Util::StringFormat("%s_SGN", (_node->resourceName().empty() ? "ERROR"   
-                                                                                                    : _node->resourceName().c_str())).c_str()
-                                      : descriptor._name);
+    _name = descriptor._name.empty() ? Util::StringFormat("%s_SGN", _node->resourceName().empty() ? "ERROR"   
+                                                                        : _node->resourceName().c_str()).c_str()
+                : descriptor._name;
 
     setFlag(Flags::ACTIVE);
     clearFlag(Flags::VISIBILITY_LOCKED);
@@ -235,7 +235,7 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
         setFlag(Flags::LOADING);
         sceneGraphNode->_node->addStateCallback(ResourceState::RES_LOADED,
             [this, sceneGraphNode](CachedResource* res) {
-                PostLoad((static_cast<SceneNode*>(res)), (sceneGraphNode));
+                PostLoad(static_cast<SceneNode*>(res), sceneGraphNode);
                 clearFlag(Flags::LOADING);
             }
         );
@@ -328,13 +328,13 @@ bool SceneGraphNode::isChildOfType(const U16 typeMask) const {
 bool SceneGraphNode::isRelated(const SceneGraphNode* target) const {
     const I64 targetGUID = target->getGUID();
     // We also ignore grandparents as this will usually be the root;
-    return _relationshipCache.clasifyNode(targetGUID) != SGNRelationshipCache::RelationshipType::COUNT;
+    return _relationshipCache.classifyNode(targetGUID) != SGNRelationshipCache::RelationshipType::COUNT;
 }
 
 bool SceneGraphNode::isChild(const SceneGraphNode* target, const bool recursive) const {
     const I64 targetGUID = target->getGUID();
 
-    const SGNRelationshipCache::RelationshipType type = _relationshipCache.clasifyNode(targetGUID);
+    const SGNRelationshipCache::RelationshipType type = _relationshipCache.classifyNode(targetGUID);
     if (type == SGNRelationshipCache::RelationshipType::GRANDCHILD && recursive) {
         return true;
     }
@@ -366,7 +366,7 @@ SceneGraphNode* SceneGraphNode::findChild(const I64 GUID, const bool sceneNodeGu
     if (GUID != -1) {
         SharedLock<SharedMutex> r_lock(_childLock);
         for (auto& child : _children) {
-            if (sceneNodeGuid ? (child->getNode().getGUID() == GUID) : (child->getGUID() == GUID)) {
+            if (sceneNodeGuid ? child->getNode().getGUID() == GUID : child->getGUID() == GUID) {
                 return child;
             }
             if (recursive) {

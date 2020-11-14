@@ -53,7 +53,7 @@ enum class RebuildCommandsState : U8 {
     DONE
 };
 
-class Sky : public SceneNode {
+class Sky final : public SceneNode {
    public: 
        struct Atmosphere {
            vec3<F32> _RayleighCoeff =
@@ -71,11 +71,11 @@ class Sky : public SceneNode {
 
    public:
     explicit Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, U32 diameter);
-    ~Sky();
+    ~Sky() = default;
 
     // Returns the sun position and intensity details for the specified date-time
     SunDetails setDateTime(struct tm *dateTime);
-    SunDetails getCurrentDetails() const noexcept;
+    [[nodiscard]] SunDetails getCurrentDetails() const noexcept;
 
     PROPERTY_R(Atmosphere, atmosphere);
     void setAtmosphere(const Atmosphere& atmosphere) noexcept;
@@ -88,13 +88,12 @@ class Sky : public SceneNode {
     PROPERTY_RW(bool, useNightSkybox, true);
     PROPERTY_RW(FColour4, nightSkyColour, DefaultColours::BLACK);
 
-    const Texture_ptr& activeSkyBox() const noexcept;
-    
+    [[nodiscard]] const Texture_ptr& activeSkyBox() const noexcept;
 
    protected:
     void postLoad(SceneGraphNode* sgn) override;
 
-    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
 
     void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
@@ -105,7 +104,7 @@ class Sky : public SceneNode {
                         RenderingComponent& rComp,
                         const RenderStagePass& renderStagePass,
                         const Camera& camera,
-                        bool refreshData) final;
+                        bool refreshData) override;
 
    protected:
     template <typename T>
@@ -113,9 +112,9 @@ class Sky : public SceneNode {
 
     bool load() override;
 
-    const char* getResourceTypeName() const noexcept  override { return "Sky"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
-    const std::array<vec4<F32>, 3> atmoToShaderData() const noexcept;
+    [[nodiscard]]  const std::array<vec4<F32>, 3> atmoToShaderData() const noexcept;
   
     GFXDevice& _context;
     eastl::unique_ptr<Sun> _sun = nullptr;
@@ -134,6 +133,6 @@ class Sky : public SceneNode {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Sky);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_SKY_H_

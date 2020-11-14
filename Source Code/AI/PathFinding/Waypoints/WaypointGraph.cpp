@@ -18,7 +18,7 @@ void WaypointGraph::addWaypoint(Waypoint* wp) {
         return;
     }
 
-    hashAlg::insert(_waypoints, wp->ID(), wp);
+    insert(_waypoints, wp->ID(), wp);
     updateGraph();
 }
 
@@ -37,10 +37,10 @@ void WaypointGraph::updateGraph() {
     _rotations.resize(0);
     _times.resize(0);
     for (auto& waypoint : _waypoints) {
-        _positions.push_back((waypoint.second)->position());
-        _rotations.push_back((waypoint.second)->orientation());
-        _times.push_back((waypoint.second)->time());
+        _positions.push_back(waypoint.second->position());
+        _rotations.push_back(waypoint.second->orientation());
+        _times.push_back(waypoint.second->time());
     }
 }
-};
-};
+}
+}

@@ -57,6 +57,6 @@ inline Hashable& Hashable::operator=(Hashable const& old) noexcept
 
     return *this;
 }
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_HASHABLE_H_

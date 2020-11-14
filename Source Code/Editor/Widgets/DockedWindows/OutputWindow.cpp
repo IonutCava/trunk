@@ -14,7 +14,7 @@ namespace Divide {
         : DockedWindow(parent, descriptor),
          _scrollToBottom(true)
     {
-        memset(_inputBuf, 0, sizeof(_inputBuf));
+        memset(_inputBuf, 0, sizeof _inputBuf);
 
         std::atomic_init(&g_writeIndex, 0);
         _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
@@ -123,7 +123,7 @@ namespace Divide {
         }
 
         // Demonstrate keeping auto focus on the input box
-        if (ImGui::IsItemHovered() || (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0))) {
+        if (ImGui::IsItemHovered() || ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !ImGui::IsAnyItemActive() && !ImGui::IsMouseClicked(0)) {
             ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
         }
         ImGui::PopStyleColor();
@@ -148,8 +148,8 @@ namespace Divide {
             case ImGuiInputTextFlags_CallbackCompletion:
             case ImGuiInputTextFlags_CallbackHistory:
             default: break;
-        };
+        }
 
         return -1;
     }
-};
+}

@@ -11,12 +11,12 @@ namespace AI {
 
 namespace {
     const U16 g_entityThreadedThreashold = 16u;
-};
+}
 
 AITeam::AITeam(U32 id, AIManager& parentManager)
      : GUIDWrapper(),
-       _parentManager(parentManager),
-       _teamID(id)
+       _teamID(id),
+       _parentManager(parentManager)
 {
     _team.clear();
     _parentManager.registerTeam(this);
@@ -31,22 +31,21 @@ AITeam::~AITeam()
     }
     {
         UniqueLock<SharedMutex> w_lock(_updateMutex);
-        for (AITeam::TeamMap::value_type& entity : _team) {
+        for (TeamMap::value_type& entity : _team) {
             Attorney::AIEntityAITeam::setTeamPtr(*entity.second, nullptr);
         }
         _team.clear();
     }
 }
 
-void AITeam::addCrowd(AIEntity::PresetAgentRadius radius,
-                      Navigation::NavigationMesh* navMesh) {
+void AITeam::addCrowd(const AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* navMesh) {
     DIVIDE_ASSERT(_aiTeamCrowd.find(radius) == std::end(_aiTeamCrowd),
                   "AITeam error: DtCrowd already existed for new navmesh!");
-    hashAlg::emplace(_aiTeamCrowd, radius,
-                     MemoryManager_NEW Navigation::DivideDtCrowd(navMesh));
+    emplace(_aiTeamCrowd, radius,
+            MemoryManager_NEW Navigation::DivideDtCrowd(navMesh));
 }
 
-void AITeam::removeCrowd(AIEntity::PresetAgentRadius radius) {
+void AITeam::removeCrowd(const AIEntity::PresetAgentRadius radius) {
     AITeamCrowd::iterator it = _aiTeamCrowd.find(radius);
     DIVIDE_ASSERT(
         it != std::end(_aiTeamCrowd),
@@ -61,7 +60,7 @@ vectorEASTL<AIEntity*> AITeam::getEntityList() const {
 
     U32 i = 0;
     vectorEASTL<AIEntity*> entities(_team.size(), nullptr);
-    for (const AITeam::TeamMap::value_type& entity : _team) {
+    for (const TeamMap::value_type& entity : _team) {
         entities[i++] = entity.second;
     }
 
@@ -77,13 +76,13 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
         }
     }
 
-    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = getEntityList();
     for (AIEntity* entity : entities) {
         if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
             return false;
         }
     }
-    U16 entityCount = to_U16(entities.size());
+    const U16 entityCount = to_U16(entities.size());
     if (entityCount <= g_entityThreadedThreashold) {
         for (AIEntity* entity : entities) {
             if (!Attorney::AIEntityAITeam::update(*entity, deltaTimeUS)) {
@@ -94,7 +93,7 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = entityCount;
         descriptor._partitionSize = g_entityThreadedThreashold;
-        descriptor._cbk = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [this, deltaTimeUS, &entities](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::update(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -108,9 +107,9 @@ bool AITeam::update(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
-    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = getEntityList();
 
-    U16 entityCount = to_U16(entities.size());
+    const U16 entityCount = to_U16(entities.size());
     if (entityCount <= g_entityThreadedThreashold) {
         for (AIEntity* entity : entities) {
             if (!Attorney::AIEntityAITeam::processInput(*entity, deltaTimeUS)) {
@@ -121,7 +120,7 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = entityCount;
         descriptor._partitionSize = g_entityThreadedThreashold;
-        descriptor._cbk = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [this, deltaTimeUS, &entities](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processInput(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -136,9 +135,9 @@ bool AITeam::processInput(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
-    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = getEntityList();
 
-    U16 entityCount = to_U16(entities.size());
+    const U16 entityCount = to_U16(entities.size());
     if (entityCount <= g_entityThreadedThreashold) {
         for (AIEntity* entity : entities) {
             if (!Attorney::AIEntityAITeam::processData(*entity, deltaTimeUS)) {
@@ -149,7 +148,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
         ParallelForDescriptor descriptor = {};
         descriptor._iterCount = entityCount;
         descriptor._partitionSize = g_entityThreadedThreashold;
-        descriptor._cbk = [this, deltaTimeUS, &entities](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [this, deltaTimeUS, &entities](const Task*, const U32 start, const U32 end) {
             for (U32 i = start; i < end; ++i) {
                 if (!Attorney::AIEntityAITeam::processData(*entities[i], deltaTimeUS)) {
                     //print error;
@@ -164,7 +163,7 @@ bool AITeam::processData(TaskPool& parentPool, const U64 deltaTimeUS) {
 }
 
 void AITeam::resetCrowd() {
-    vectorEASTL<AIEntity*> entities = AITeam::getEntityList();
+    vectorEASTL<AIEntity*> entities = getEntityList();
     for (AIEntity* entity : entities) {
         entity->resetCrowd();
     }
@@ -179,7 +178,7 @@ bool AITeam::addTeamMember(AIEntity* entity) {
     if (_team.find(entity->getGUID()) != std::end(_team)) {
         return true;
     }
-    hashAlg::insert(_team, entity->getGUID(), entity);
+    insert(_team, entity->getGUID(), entity);
     Attorney::AIEntityAITeam::setTeamPtr(*entity, this);
 
     return true;
@@ -208,8 +207,8 @@ bool AITeam::addEnemyTeam(U32 enemyTeamID) {
 }
 
 bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
-    vectorEASTL<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
-    if (it != eastl::end(_enemyTeams)) {
+    const vectorEASTL<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
+    if (it != end(_enemyTeams)) {
         UniqueLock<SharedMutex> w_lock(_updateMutex);
         _enemyTeams.erase(it);
         return true;
@@ -217,5 +216,5 @@ bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
     return false;
 }
 
-}; // namespace AI
-}; // namespace Divide
+} // namespace AI
+} // namespace Divide

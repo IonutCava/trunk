@@ -49,7 +49,7 @@ class ParticleFloorUpdater final : public ParticleUpdater {
 
     ~ParticleFloorUpdater() = default;
 
-    void update(const U64 deltaTimeUS, ParticleData& p) override;
+    void update(U64 deltaTimeUS, ParticleData& p) override;
 };
-};
+}
 #endif

@@ -40,11 +40,11 @@ class PreRenderBatch;
 class NOINITVTABLE PreRenderOperator {
    public:
     /// The RenderStage is used to inform the GFXDevice of what we are currently
-    /// doing to set up apropriate states
+    /// doing to set up appropriate states
     /// The target is the full screen quad to which we want to apply our
     /// operation to generate the result
     PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, FilterType operatorType);
-    virtual ~PreRenderOperator();
+    virtual ~PreRenderOperator() = default;
 
     virtual void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut);
     /// Return true if we rendered into "output"

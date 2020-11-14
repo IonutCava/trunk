@@ -27,7 +27,7 @@ bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) 
     const F32 d = hypot(dx, dy); // Suggested by Keith Briggs
 
     /* Check for solvability. */
-    if (d > (r0 + r1))
+    if (d > r0 + r1)
     {
         /* no solution. circles do not intersect. */
         return false;
@@ -44,16 +44,16 @@ bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) 
      */
 
      /* Determine the distance from point 0 to point 2. */
-    const F32 a = ((r0*r0) - (r1*r1) + (d*d)) / (2.0f * d);
+    const F32 a = (r0*r0 - r1*r1 + d*d) / (2.0f * d);
 
     /* Determine the coordinates of point 2. */
-    const F32 x2 = x0 + (dx * a / d);
-    const F32 y2 = y0 + (dy * a / d);
+    const F32 x2 = x0 + dx * a / d;
+    const F32 y2 = y0 + dy * a / d;
 
     /* Determine the distance from point 2 to either of the
      * intersection points.
      */
-    const F32 h = sqrt((r0*r0) - (a*a));
+    const F32 h = sqrt(r0*r0 - a*a);
 
     /* Now determine the offsets of the intersection points from
      * point 2.
@@ -304,5 +304,5 @@ void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw,
         }
     }
 }
-};  // namespace Util
-};  // namespace Divide
+}  // namespace Util
+}  // namespace Divide

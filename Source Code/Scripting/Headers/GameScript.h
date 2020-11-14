@@ -33,7 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _SCRIPTING_GAME_SCRIPT_H_
 #define _SCRIPTING_GAME_SCRIPT_H_
 
-#include "Headers/Script.h"
+#include <Scripting/Headers/Script.h>
 #include "Rendering/Headers/FrameListener.h"
 
 namespace Divide {
@@ -68,6 +68,6 @@ public:
         void addGameInstance();
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCRIPTING_GAME_SCRIPT_H_

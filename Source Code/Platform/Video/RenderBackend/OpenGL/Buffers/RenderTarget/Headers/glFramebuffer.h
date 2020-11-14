@@ -146,7 +146,7 @@ namespace Attorney {
             buffer.end(needsUnbind);
         }
 
-        friend class Divide::GL_API;
+        friend class GL_API;
     };
 };  // namespace Attorney
 };  // namespace Divide

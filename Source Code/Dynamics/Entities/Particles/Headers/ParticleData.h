@@ -51,7 +51,7 @@ namespace Names {
     static const char* particleDataProperties[] = {
           "Position", "Velocity", "Acceleration", "Colour", "Colour transform", "UNKNOWN"
     };
-};
+}
 
 /// Container to store data for a given set of particles
 class ParticleData {
@@ -84,21 +84,21 @@ class ParticleData {
                              const vectorEASTL<U32>& particleGeometryIndices,
                              PrimitiveType particleGeometryType);
 
-    void setBillboarded(const bool state);
+    void setBillboarded(bool state);
 
-    inline PrimitiveType particleGeometryType() const noexcept {
+    [[nodiscard]] PrimitiveType particleGeometryType() const noexcept {
         return _particleGeometryType;
     }
 
-    inline const vectorEASTL<vec3<F32>>& particleGeometryVertices() const noexcept {
+    [[nodiscard]] const vectorEASTL<vec3<F32>>& particleGeometryVertices() const noexcept {
         return _particleGeometryVertices;
     }
 
-    inline const vectorEASTL<U32>& particleGeometryIndices() const noexcept {
+    [[nodiscard]] const vectorEASTL<U32>& particleGeometryIndices() const noexcept {
         return _particleGeometryIndices;
     }
 
-    inline bool isBillboarded() const noexcept {
+    [[nodiscard]] bool isBillboarded() const noexcept {
         return _isBillboarded;
     }
 
@@ -112,24 +112,24 @@ class ParticleData {
     void wake(U32 index);
     void swapData(U32 indexA, U32 indexB);
 
-    inline U32 aliveCount() const noexcept { return _aliveCount; }
-    inline U32 totalCount() const noexcept { return _totalCount; }
+    [[nodiscard]] U32 aliveCount() const noexcept { return _aliveCount; }
+    [[nodiscard]] U32 totalCount() const noexcept { return _totalCount; }
     
     /// Sort ALIVE particles only
-    void sort(bool invalidateCache);
+    void sort();
 
    protected:
-    U32 _totalCount;
-    U32 _aliveCount;
+    U32 _totalCount = 0u;
+    U32 _aliveCount = 0u;
 
-    bool _isBillboarded;
+    bool _isBillboarded = true;
     vectorEASTL<vec3<F32>> _particleGeometryVertices;
     vectorEASTL<U32> _particleGeometryIndices;
-    PrimitiveType _particleGeometryType;
+    PrimitiveType _particleGeometryType = PrimitiveType::COUNT;
 
     GFXDevice& _context;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

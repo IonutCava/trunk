@@ -54,11 +54,11 @@ public:
     ErrorCode initAudioAPI(PlatformContext& context) override;
     void closeAudioAPI() override;
 
-    inline void setAPI(AudioAPI API) noexcept { _API_ID = API; }
-    inline AudioAPI getAPI() const noexcept { return _API_ID; }
+    void setAPI(AudioAPI API) noexcept { _API_ID = API; }
+    AudioAPI getAPI() const noexcept { return _API_ID; }
 
-    inline void setAudioState(const AudioState& state) noexcept { _state = state; }
-    inline AudioState& getActiveAudioState() noexcept { return _state; }
+    void setAudioState(const AudioState& state) noexcept { _state = state; }
+    AudioState& getActiveAudioState() noexcept { return _state; }
 
     void beginFrame() override;
     void endFrame() override;

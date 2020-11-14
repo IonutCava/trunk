@@ -40,21 +40,21 @@ namespace Divide {
 class RenderTarget;
 class ShaderProgram;
 
-class BloomPreRenderOperator : public PreRenderOperator {
+class BloomPreRenderOperator final : public PreRenderOperator {
    public:
     BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~BloomPreRenderOperator();
 
-    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
-    void reshape(U16 width, U16 height) final;
+    [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
+    void reshape(U16 width, U16 height) override;
 
-    F32 factor() const noexcept { return _bloomFactor; }
+    [[nodiscard]] F32 factor() const noexcept { return _bloomFactor; }
     void factor(F32 val);
 
-    F32 luminanceThreshold() const noexcept { return _bloomThreshold; }
+    [[nodiscard]] F32 luminanceThreshold() const noexcept { return _bloomThreshold; }
     void luminanceThreshold(F32 val);
 
-    bool ready() const final;
+    [[nodiscard]] bool ready() const override;
 
    private:
     RenderTargetHandle _bloomOutput;
@@ -72,6 +72,6 @@ class BloomPreRenderOperator : public PreRenderOperator {
     F32 _bloomThreshold;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

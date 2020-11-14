@@ -87,9 +87,9 @@ namespace Divide {
         std::function<void(const void*)> _dataSetter = {};
         Str128 _tooltip = "";
         void* _data = nullptr;
-        vec2<F32> _range = { 0.0f, 0.0f }; //< Used by slider_type as a min / max range or dropdown as selected_index / count
+        vec2<F32> _range = { 0.0f, 0.0f }; ///< Used by slider_type as a min / max range or dropdown as selected_index / count
         Str32  _name = "";
-        F32 _step = 0.0f; //< 0.0f == no +- buttons
+        F32 _step = 0.0f; ///< 0.0f == no +- buttons
         const char* _format = "";
         GFX::PushConstantType _basicType = GFX::PushConstantType::COUNT;
         EditorComponentFieldType _type = EditorComponentFieldType::COUNT;
@@ -210,8 +210,8 @@ namespace Divide {
 
       protected:
         void onChanged(EditorComponentField& field) const;
-        virtual void saveToXML(boost::property_tree::ptree& pt) const;
-        virtual void loadFromXML(const boost::property_tree::ptree& pt);
+        void saveToXML(boost::property_tree::ptree& pt) const;
+        void loadFromXML(const boost::property_tree::ptree& pt);
 
         void saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const;
         void loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt);
@@ -223,7 +223,6 @@ namespace Divide {
 
     namespace Attorney {
         class EditorComponentEditor {
-          private:
             static vectorEASTL<EditorComponentField>& fields(EditorComponent& comp) noexcept {
                 return comp._fields;
             }
@@ -239,7 +238,6 @@ namespace Divide {
         };
 
         class EditorComponentSceneGraphNode {
-           private:
             static bool saveCache(const EditorComponent& comp, ByteBuffer& outputBuffer) {
                 return comp.saveCache(outputBuffer);
             }

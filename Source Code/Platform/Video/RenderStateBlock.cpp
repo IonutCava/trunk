@@ -105,7 +105,7 @@ void RenderStateBlock::flipCullMode()  noexcept {
         case CullMode::ALL:  _cullMode = CullMode::NONE; break;
         case CullMode::CW:   _cullMode = CullMode::CCW;  break;
         case CullMode::CCW:  _cullMode = CullMode::CW;   break;
-        default: break;
+        case CullMode::COUNT: DIVIDE_UNEXPECTED_CALL();  break;
     }
     _dirty = true;
 }
@@ -140,10 +140,10 @@ void RenderStateBlock::setColourWrites(const bool red,
                                        const bool blue,
                                        const bool alpha)  noexcept {
     P32 rgba = {};
-    rgba.b[0] = (red ? 1 : 0);
-    rgba.b[1] = (green ? 1 : 0);
-    rgba.b[2] = (blue ? 1 : 0);
-    rgba.b[3] = (alpha ? 1 : 0);
+    rgba.b[0] = red ? 1 : 0;
+    rgba.b[1] = green ? 1 : 0;
+    rgba.b[2] = blue ? 1 : 0;
+    rgba.b[3] = alpha ? 1 : 0;
 
     if (_colourWrite != rgba) {
         _colourWrite = rgba;
@@ -263,8 +263,8 @@ size_t RenderStateBlock::getHash() const noexcept {
     }
 
     // Avoid small float rounding errors offsetting the general hash value
-    const U32 zBias = to_U32(std::floor((_zBias * 1000.0f) + 0.5f));
-    const U32 zUnits = to_U32(std::floor((_zUnits * 1000.0f) + 0.5f));
+    const U32 zBias = to_U32(std::floor(_zBias * 1000.0f + 0.5f));
+    const U32 zUnits = to_U32(std::floor(_zUnits * 1000.0f + 0.5f));
 
     _hash = 59;
     Util::Hash_combine(_hash, _colourWrite.i);
@@ -288,7 +288,7 @@ size_t RenderStateBlock::getHash() const noexcept {
 
     if (previousCache != _hash) {
         UniqueLock<SharedMutex> w_lock(s_stateBlockMapMutex);
-        hashAlg::insert(s_stateBlockMap, _hash, *this);
+        insert(s_stateBlockMap, _hash, *this);
     }
     _dirty = false;
     return _hash;

@@ -88,7 +88,7 @@ class GUIElement : public GUIDWrapper {
 };
 
 template<GUIType EnumVal>
-struct GUIElementBase : public GUIElement {
+struct GUIElementBase : GUIElement {
 
     GUIElementBase(const stringImpl& name, CEGUI::Window* const parent)
         : GUIElement(name, parent)

@@ -26,10 +26,10 @@ namespace TypeUtil {
 
         return LightType::COUNT;
     }
-};
+}
 
 Light::Light(SceneGraphNode* sgn, const F32 range, const LightType type, LightPool& parentPool)
-    : ECS::Event::IEventListener(sgn->sceneGraph()->GetECSEngine()),
+    : IEventListener(sgn->sceneGraph()->GetECSEngine()),
       _castsShadows(false),
       _sgn(sgn),
       _parentPool(parentPool),
@@ -117,17 +117,17 @@ void Light::registerFields(EditorComponent& comp) {
     comp.registerField(MOV(shadowStrengthField));
 }
 
-void Light::updateCache(const ECS::CustomEvent& data) {
+void Light::updateCache(const ECS::CustomEvent& event) {
     OPTICK_EVENT();
 
-    TransformComponent* tComp = static_cast<TransformComponent*>(data._sourceCmp);
+    TransformComponent* tComp = static_cast<TransformComponent*>(event._sourceCmp);
     assert(tComp != nullptr);
 
-    if (_type != LightType::DIRECTIONAL && BitCompare(data._flag, to_U32(TransformType::TRANSLATION))) {
+    if (_type != LightType::DIRECTIONAL && BitCompare(event._flag, to_U32(TransformType::TRANSLATION))) {
         _positionCache = tComp->getPosition();
     }
 
-    if (_type != LightType::POINT && BitCompare(data._flag, to_U32(TransformType::ROTATION))) {
+    if (_type != LightType::POINT && BitCompare(event._flag, to_U32(TransformType::ROTATION))) {
         _directionCache = DirectionFromAxis(tComp->getOrientation(), WORLD_Z_NEG_AXIS);
     }
 }
@@ -136,4 +136,4 @@ void Light::setDiffuseColour(const UColour3& newDiffuseColour) {
     _colour.rgb = newDiffuseColour;
 }
 
-};
+}

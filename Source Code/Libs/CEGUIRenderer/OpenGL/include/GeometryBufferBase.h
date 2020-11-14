@@ -58,21 +58,21 @@ public:
     virtual ~OpenGLGeometryBufferBase();
 
     // implementation of abstract members from GeometryBuffer
-    void setTranslation(const Vector3f& t);
-    void setRotation(const Quaternion& r);
-    void setPivot(const Vector3f& p);
-    void setClippingRegion(const Rectf& region);
-    void appendVertex(const Vertex& vertex);
-    void appendGeometry(const Vertex* const vbuff, uint vertex_count);
-    void setActiveTexture(Texture* texture);
-    void reset();
-    Texture* getActiveTexture() const;
-    uint getVertexCount() const;
-    uint getBatchCount() const;
-    void setRenderEffect(RenderEffect* effect);
-    RenderEffect* getRenderEffect();
-    void setClippingActive(const bool active);
-    bool isClippingActive() const;
+    void setTranslation(const Vector3f& t) override;
+    void setRotation(const Quaternion& r) override;
+    void setPivot(const Vector3f& p) override;
+    void setClippingRegion(const Rectf& region) override;
+    void appendVertex(const Vertex& vertex) override;
+    void appendGeometry(const Vertex* vbuff, uint vertex_count) override;
+    void setActiveTexture(Texture* texture) override;
+    void reset() override;
+    Texture* getActiveTexture() const override;
+    uint getVertexCount() const override;
+    uint getBatchCount() const override;
+    void setRenderEffect(RenderEffect* effect) override;
+    RenderEffect* getRenderEffect() override;
+    void setClippingActive(bool active) override;
+    bool isClippingActive() const override;
 
     //! return the GL modelview matrix used for this buffer.
     const mat4Pimpl* getMatrix() const;

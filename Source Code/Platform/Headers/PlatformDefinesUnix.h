@@ -79,7 +79,7 @@ namespace Divide {
 }; //namespace Divide
 
 template <typename T>
-inline bool isfinite(T val) {
+bool isfinite(T val) {
 	return std::isfinite(val);
 }
 

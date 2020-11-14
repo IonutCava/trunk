@@ -38,14 +38,15 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 
-class rcContextDivide : public rcContext {
+class rcContextDivide final : public rcContext {
    public:
-    explicit rcContextDivide(bool state) : rcContext(state)
+    explicit rcContextDivide(const bool state) : rcContext(state)
     {
         _startTime.fill(0.0);
         _accTime.fill(0);
         resetTimers();
     }
+
     ~rcContextDivide() = default;
 
    private:
@@ -53,19 +54,18 @@ class rcContextDivide : public rcContext {
     ///  @param[in]        category    The category of the message.
     ///  @param[in]        msg            The formatted message.
     ///  @param[in]        len            The length of the formatted message.
-    void doLog(const rcLogCategory /*category*/, const char* /*msg*/,
-               const I32 /*len*/);
-    void doResetTimers();
-    void doStartTimer(const rcTimerLabel /*label*/);
-    void doStopTimer(const rcTimerLabel /*label*/);
-    I32 doGetAccumulatedTime(const rcTimerLabel /*label*/) const;
+    void doLog(rcLogCategory /*category*/, const char* /*msg*/, I32 /*len*/) override;
+    void doResetTimers() override;
+    void doStartTimer(rcTimerLabel /*label*/) override;
+    void doStopTimer(rcTimerLabel /*label*/) override;
+    [[nodiscard]] I32 doGetAccumulatedTime(rcTimerLabel /*label*/) const override;
 
    private:
     std::array<D64, RC_MAX_TIMERS> _startTime;
     std::array<I32, RC_MAX_TIMERS> _accTime;
 };
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide
 
 #endif

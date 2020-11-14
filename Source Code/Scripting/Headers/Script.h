@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace FW {
     class FileWatcher;
-};
+}
 
 namespace Divide {
 
@@ -89,7 +89,7 @@ protected:
     static bool s_scriptsReady;
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCRIPTING_SCRIPT_H_
 

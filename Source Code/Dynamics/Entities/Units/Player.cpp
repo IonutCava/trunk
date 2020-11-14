@@ -9,7 +9,7 @@
 namespace Divide {
 
 Player::Player(U8 index, FrameListenerManager& parent, U32 callOrder)
-    : Character(Character::CharacterType::CHARACTER_TYPE_PLAYER, parent, callOrder),
+    : Character(CharacterType::CHARACTER_TYPE_PLAYER, parent, callOrder),
       _index(index)
 {
      const stringImpl& cameraName = Util::StringFormat("Player_Cam_%d", getGUID());
@@ -31,4 +31,4 @@ void Player::setParentNode(SceneGraphNode* node) {
     }
 }
 
-};
+}

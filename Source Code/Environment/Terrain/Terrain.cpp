@@ -64,7 +64,7 @@ namespace {
 }
 
 void TessellationParams::fromDescriptor(const std::shared_ptr<TerrainDescriptor>& descriptor) {
-    WorldScale((descriptor->dimensions() * 0.5f) / to_F32(PATCHES_PER_TILE_EDGE));
+    WorldScale(descriptor->dimensions() * 0.5f / to_F32(PATCHES_PER_TILE_EDGE));
 }
 
 Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
@@ -201,8 +201,8 @@ void Terrain::postBuild() {
 
     // ToDo: Use parallel_for for this
     I32 vectorIndex = 0;
-    for (U16 height = 0; height < (terrainHeight - 1); ++height) {
-        for (U16 width = 0; width < (terrainWidth - 1); ++width) {
+    for (U16 height = 0; height < terrainHeight - 1; ++height) {
+        for (U16 width = 0; width < terrainWidth - 1; ++width) {
             const U16 vertexIndex = TER_COORD(width, height, terrainWidth);
             // Top triangle (T0)
             triangles[vectorIndex++].set(vertexIndex, vertexIndex + terrainWidth + 1, vertexIndex + 1);
@@ -225,7 +225,7 @@ void Terrain::postBuild() {
 
     {
         // widths[0] doesn't define a ring hence -1
-        const size_t ringCount = sizeof(g_RingWidths) / sizeof(g_RingWidths[0]) - 1;
+        const size_t ringCount = sizeof g_RingWidths / sizeof g_RingWidths[0] - 1;
         _tileRings.reserve(ringCount);
         F32 tileWidth = g_StartTileSize;
         for (size_t i = 0; i < ringCount ; ++i) {
@@ -253,9 +253,9 @@ void Terrain::postBuild() {
 
             GenericVertexData::SetBufferParams params = {};
             params._elementSize = sizeof(TileRing::InstanceData);
-            params._updateFrequency = Divide::BufferUpdateFrequency::ONCE;
-            params._updateUsage = Divide::BufferUpdateUsage::CPU_W_GPU_R;
-            params._storageType = Divide::BufferStorageType::NORMAL;
+            params._updateFrequency = BufferUpdateFrequency::ONCE;
+            params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+            params._storageType = BufferStorageType::NORMAL;
             params._instanceDivisor = 1u;
             params._sync = false;
 
@@ -265,12 +265,12 @@ void Terrain::postBuild() {
             } else {
                 _terrainBuffer->create(ringCount);
             }
-            _terrainBuffer->setIndexBuffer(idxBuff, Divide::BufferUpdateFrequency::ONCE);
+            _terrainBuffer->setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
             if_constexpr(USE_BASE_VERTEX_OFFSETS) {
                 vectorEASTL<TileRing::InstanceData> vbData;
                 for (size_t i = 0; i < ringCount; ++i) {
                     vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
-                    vbData.insert(eastl::cend(vbData), eastl::cbegin(ringData), eastl::cend(ringData));
+                    vbData.insert(cend(vbData), cbegin(ringData), cend(ringData));
                 }
                 params._buffer = 0;
                 params._initialData = { vbData.data(), vbData.size() * params._elementSize };
@@ -285,8 +285,8 @@ void Terrain::postBuild() {
                     _terrainBuffer->setBuffer(params);
                 }
             }
-            AttributeDescriptor& descPosition  = _terrainBuffer->attribDescriptor(Divide::to_base(AttribLocation::POSITION));
-            AttributeDescriptor& descAdjacency = _terrainBuffer->attribDescriptor(Divide::to_base(AttribLocation::COLOR));
+            AttributeDescriptor& descPosition  = _terrainBuffer->attribDescriptor(to_base(AttribLocation::POSITION));
+            AttributeDescriptor& descAdjacency = _terrainBuffer->attribDescriptor(to_base(AttribLocation::COLOR));
             descPosition.set( 0u, 4, GFXDataFormat::FLOAT_32, false, 0u * sizeof(F32));
             descAdjacency.set(0u, 4, GFXDataFormat::FLOAT_32, false, 4u * sizeof(F32));
         }
@@ -310,7 +310,9 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState
         case EditorDataState::PROCESSED:
             _editorDataDirtyState = EditorDataState::IDLE;
             break;
-        default: break;
+        case EditorDataState::CHANGED:
+        case EditorDataState::IDLE:
+            break;
     };
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
@@ -417,8 +419,8 @@ Terrain::Vert Terrain::getVertFromGlobal(F32 x, F32 z, bool smooth) const {
     x -= _boundingBox.getCenter().x;
     z -= _boundingBox.getCenter().z;
     const vec2<U16>& dim = _descriptor->dimensions();
-    const F32 xClamp = ((0.5f * dim.width) + x) / dim.width;
-    const F32 zClamp = ((0.5f * dim.height) - z) / dim.height;
+    const F32 xClamp = (0.5f * dim.width + x) / dim.width;
+    const F32 zClamp = (0.5f * dim.height - z) / dim.height;
     return getVert(xClamp, 1 - zClamp, smooth);
 }
 
@@ -556,8 +558,8 @@ void Terrain::saveToXML(boost::property_tree::ptree& pt) const {
 }
 
 void Terrain::loadFromXML(const boost::property_tree::ptree& pt) {
- 
+
     Object3D::loadFromXML(pt);
 }
 
-};
+}

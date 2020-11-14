@@ -78,7 +78,7 @@ public:
     std::atomic_bool _logState;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_PARAM_HANDLER_H_
 

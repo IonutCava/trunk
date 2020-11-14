@@ -106,7 +106,7 @@ namespace CEGUI {
         Only supports Epoxy! Otherwise returns false.
         */
         bool verAtLeast(GLint major, GLint minor) {
-            return verMajor() > major || (verMajor() == major && verMinor() >= minor);
+            return verMajor() > major || verMajor() == major && verMinor() >= minor;
         }
 
         /*!

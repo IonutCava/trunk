@@ -22,7 +22,7 @@ namespace Divide {
 namespace {
     // how far to offset the clipping planes for reflections in order to avoid artefacts at water/geometry intersections with high wave noise factors
     constexpr F32 g_reflectionPlaneCorrectionHeight = -1.0f;
-};
+}
 
 WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
     : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_WATER, to_base(ComponentType::TRANSFORM))
@@ -115,7 +115,7 @@ WaterPlane::~WaterPlane()
     Camera::destroyCamera(_reflectionCam);
 }
 
-void WaterPlane::onEditorChange(std::string_view field) {
+void WaterPlane::onEditorChange(std::string_view) {
     _editorDataDirtyState = EditorDataState::QUEUED;
 }
 
@@ -302,8 +302,10 @@ void WaterPlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneSt
         case EditorDataState::PROCESSED:
             _editorDataDirtyState = EditorDataState::IDLE;
             break;
-        default: break;
-    };
+        case EditorDataState::CHANGED:
+        case EditorDataState::IDLE:
+            break;
+    }
     WaterBodyData data;
     data._positionW = sgn->get<TransformComponent>()->getPosition();
     data._extents.xyz = { to_F32(_dimensions.width),
@@ -389,7 +391,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
     clearMainTarget._descriptor = clearDescriptor;
-    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+    EnqueueCommand(bufferInOut, clearMainTarget);
 
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 }
@@ -435,7 +437,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
     clearMainTarget._descriptor = clearDescriptor;
-    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+    EnqueueCommand(bufferInOut, clearMainTarget);
 
     renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 
@@ -486,4 +488,4 @@ void WaterPlane::loadFromXML(const boost::property_tree::ptree& pt) {
     SceneNode::loadFromXML(pt);
 }
 
-};
+}

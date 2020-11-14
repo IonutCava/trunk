@@ -58,7 +58,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         fxaa.propertyDescriptor(aaShaderDescriptor);
         fxaa.waitForReady(false);
         _fxaa = CreateResource<ShaderProgram>(cache, fxaa);
-        _fxaa->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        _fxaa->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _fxaa->getGUID();
@@ -84,7 +84,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         smaaWeights.propertyDescriptor(weightsDescriptor);
         smaaWeights.waitForReady(false);
         _smaaWeightComputation = CreateResource<ShaderProgram>(cache, smaaWeights);
-        _smaaWeightComputation->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        _smaaWeightComputation->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _smaaWeightComputation->getGUID();
@@ -100,7 +100,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
         smaaBlend.propertyDescriptor(blendDescriptor);
         smaaBlend.waitForReady(false);
         _smaaBlend = CreateResource<ShaderProgram>(cache, smaaBlend);
-        _smaaBlend->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        _smaaBlend->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
             PipelineDescriptor pipelineDescriptor;
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _smaaBlend->getGUID();
@@ -179,12 +179,12 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
             GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
             clearRenderTargetCmd._target = _smaaWeights._targetID;
             clearRenderTargetCmd._descriptor = clearTarget;
-            GFX::EnqueueCommand(bufferInOut, clearRenderTargetCmd);
+            EnqueueCommand(bufferInOut, clearRenderTargetCmd);
 
             GFX::BeginRenderPassCommand beginRenderPassCmd = {};
             beginRenderPassCmd._target = _smaaWeights._targetID;
             beginRenderPassCmd._name = "DO_SMAA_WEIGHT_PASS";
-            GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+            EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
             const auto& att = _parent.edgesRT()._rt->getAttachment(RTAttachmentType::Colour, 0);
             const TextureData edgesTex = att.texture()->data();
@@ -195,21 +195,21 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
             descriptorSetCmd._set._textureData.setTexture(edgesTex, att.samplerHash(),TextureUsage::UNIT0);
             descriptorSetCmd._set._textureData.setTexture(areaTex, SamplerDescriptor::s_defaultHashValue, TextureUsage::UNIT1);
             descriptorSetCmd._set._textureData.setTexture(searchTex, SamplerDescriptor::s_defaultHashValue, to_U8(TextureUsage::UNIT1) + 1);
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaWeightPipeline });
-            GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
+            EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaWeightPipeline });
+            EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
-            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+            EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
+            EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
         }
         { //Step 2: Blend
             GFX::BeginRenderPassCommand beginRenderPassCmd = {};
             beginRenderPassCmd._target = output._targetID;
             beginRenderPassCmd._descriptor = _screenOnlyDraw;
             beginRenderPassCmd._name = "DO_SMAA_BLEND_PASS";
-            GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+            EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
             const auto& att = _smaaWeights._rt->getAttachment(RTAttachmentType::Colour, 0);
             const TextureData blendTex = att.texture()->data();
@@ -217,14 +217,14 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
             descriptorSetCmd._set._textureData.setTexture(blendTex, att.samplerHash(),TextureUsage::UNIT1);
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaBlendPipeline });
-            GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
+            EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaBlendPipeline });
+            EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
-            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+            EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
+            EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
         }
     } else {
         // Apply FXAA/SMAA to the specified render target
@@ -232,21 +232,21 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
         beginRenderPassCmd._target = output._targetID;
         beginRenderPassCmd._descriptor = _screenOnlyDraw;
         beginRenderPassCmd._name = "DO_POSTAA_PASS";
-        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _fxaaPipeline });
-        GFX::EnqueueCommand(bufferInOut, _pushConstantsCommand);
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _fxaaPipeline });
+        EnqueueCommand(bufferInOut, _pushConstantsCommand);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-        GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+        EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
     }
 
     return true;
 }
 
-};
+}

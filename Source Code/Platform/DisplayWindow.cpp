@@ -304,7 +304,7 @@ void DisplayWindow::centerWindowPosition() {
 
 void DisplayWindow::decorated(const bool state) noexcept {
     // documentation states that this is a no-op on redundant state, so no need to bother checking
-    SDL_SetWindowBordered(_sdlWindow, (state ? SDL_TRUE : SDL_FALSE));
+    SDL_SetWindowBordered(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
 
     ToggleBit(_flags, WindowFlags::DECORATED, state);
 }

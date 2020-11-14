@@ -62,7 +62,7 @@ class Client {
     void start(boost::asio::ip::tcp::resolver::iterator endpoint_iter);
     void stop();
 
-    inline boost::asio::ip::tcp::socket& getSocket() noexcept { return _socket; }
+       boost::asio::ip::tcp::socket& getSocket() noexcept { return _socket; }
 
     // Packet I/O
     bool sendPacket(WorldPacket& p);

@@ -220,7 +220,7 @@ namespace Divide {
     }
 
     void SetThreadName(std::thread* thread, const char* threadName) noexcept {
-        const DWORD threadId = ::GetThreadId(static_cast<HANDLE>(thread->native_handle()));
+        const DWORD threadId = GetThreadId(static_cast<HANDLE>(thread->native_handle()));
         SetThreadName(threadId, threadName);
     }
 

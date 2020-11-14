@@ -222,7 +222,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
           to_U8(0),
           to_U8(s_stateTracker._opengl46Supported ? GLUtil::getGLValue(GL_MAX_TEXTURE_MAX_ANISOTROPY)
                                                   : GLUtil::getGLValue(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
-    GL_API::s_anisoLevel = config.rendering.anisotropicFilteringLevel;
+    s_anisoLevel = config.rendering.anisotropicFilteringLevel;
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
     const U8 maxGLSamples = to_U8(std::min(254, GLUtil::getGLValue(GL_MAX_SAMPLES)));
@@ -250,7 +250,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Maximum number of texture units we can address in shaders
     Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS")),
                      GLUtil::getGLValue(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
-                     GL_API::s_maxTextureUnits);
+                     s_maxTextureUnits);
     // Query shading language version support
     Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
@@ -260,12 +260,12 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
-    GLUtil::getGLValue(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, GL_API::s_UBOffsetAlignment);
-    GLUtil::getGLValue(GL_MAX_UNIFORM_BLOCK_SIZE, GL_API::s_UBMaxSize);
+    GLUtil::getGLValue(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, s_UBOffsetAlignment);
+    GLUtil::getGLValue(GL_MAX_UNIFORM_BLOCK_SIZE, s_UBMaxSize);
     Console::printfn(Locale::get(_ID("GL_UBO_INFO")),
                      GLUtil::getGLValue(GL_MAX_UNIFORM_BUFFER_BINDINGS),
-                     GL_API::s_UBMaxSize / 1024,
-                     GL_API::s_UBOffsetAlignment);
+                     s_UBMaxSize / 1024,
+                     s_UBOffsetAlignment);
 
     // In order: Maximum number of shader storage buffer binding points,
     //           maximum size in basic machine units of a shader storage block,
@@ -273,14 +273,14 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     //           be accessed by all active shaders and
     //           minimum required alignment for shader storage buffer sizes and
     //           offset.
-    GLUtil::getGLValue(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, GL_API::s_SSBOffsetAlignment);
-    GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, GL_API::s_SSBMaxSize);
+    GLUtil::getGLValue(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, s_SSBOffsetAlignment);
+    GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, s_SSBMaxSize);
     Console::printfn(
         Locale::get(_ID("GL_SSBO_INFO")),
         GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
-        (GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024) / 1024,
+        GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024 / 1024,
         GLUtil::getGLValue(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
-        GL_API::s_SSBOffsetAlignment);
+        s_SSBOffsetAlignment);
 
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
@@ -322,10 +322,10 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Prepare immediate mode emulation rendering
     NS_GLIM::glim.SetVertexAttribLocation(to_base(AttribLocation::POSITION));
     // Initialize our VAO pool
-    GL_API::s_vaoPool.init(g_maxVAOS);
+    s_vaoPool.init(g_maxVAOS);
 
     // Initialize our query pool
-    GL_API::s_hardwareQueryPool->init(
+    s_hardwareQueryPool->init(
         {
             { GL_TIME_ELAPSED, 9 },
             { GL_TRANSFORM_FEEDBACK_OVERFLOW, 6 },
@@ -345,7 +345,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Init static program data
     glShaderProgram::onStartup(_context, _context.parent().resourceCache());
     // We need a dummy VAO object for point rendering
-    s_dummyVAO = GL_API::s_vaoPool.allocate();
+    s_dummyVAO = s_vaoPool.allocate();
 
     // Once OpenGL is ready for rendering, init CEGUI
     _GUIGLrenderer = &CEGUI::OpenGL3Renderer::create();
@@ -394,14 +394,14 @@ void GL_API::closeRenderingAPI() {
 
     _fonts.clear();
     if (s_dummyVAO > 0) {
-        GL_API::deleteVAOs(1, &s_dummyVAO);
+        deleteVAOs(1, &s_dummyVAO);
     }
     s_texturePool.destroy();
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
-    GL_API::s_vaoPool.destroy();
-    if (GL_API::s_hardwareQueryPool != nullptr) {
-        GL_API::s_hardwareQueryPool->destroy();
+    s_vaoPool.destroy();
+    if (s_hardwareQueryPool != nullptr) {
+        s_hardwareQueryPool->destroy();
         MemoryManager::DELETE(s_hardwareQueryPool);
     }
 

@@ -97,7 +97,7 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
         default:
             DIVIDE_UNEXPECTED_CALL("Invalid file format!");
             break;
-    };
+    }
 
     _dataType = is16Bit() ? GFXDataFormat::UNSIGNED_SHORT : isHDR() ? GFXDataFormat::FLOAT_32 : GFXDataFormat::UNSIGNED_BYTE;
 
@@ -209,11 +209,11 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
                                      ? TextureType::TEXTURE_3D
                                      : TextureType::TEXTURE_2D;
     }
-    _compressed = ((dxtc == IL_DXT1) ||
-                   (dxtc == IL_DXT2) ||
-                   (dxtc == IL_DXT3) ||
-                   (dxtc == IL_DXT4) ||
-                   (dxtc == IL_DXT5));
+    _compressed = dxtc == IL_DXT1 ||
+        dxtc == IL_DXT2 ||
+        dxtc == IL_DXT3 ||
+        dxtc == IL_DXT4 ||
+        dxtc == IL_DXT5;
 
     const I32 channelCount = ilGetInteger(IL_IMAGE_CHANNELS);
     CheckError();
@@ -239,7 +239,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
                 CheckError();
                 return false;
             }
-        };
+        }
     } else {
         const I32 format = ilGetInteger(IL_IMAGE_FORMAT);
         switch (format) {
@@ -266,7 +266,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
                 CheckError();
                 return false;
             }
-        };
+        }
     }
 
     const I32 numMips = ilGetInteger(IL_NUM_MIPMAPS) + 1;
@@ -341,10 +341,10 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
         case nv_dds::TextureCubemap:
             _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;
             break;
-        default:
+        case nv_dds::TextureNone:
             DIVIDE_UNEXPECTED_CALL("Unsupported texture type!");
             break;
-    };
+    }
 
     _compressed = image.is_compressed();
     _bpp = image.get_format() == nv_dds::Format::DXT1 ? 8 : 16;
@@ -377,7 +377,7 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
           assert(!_compressed);
           assert(false && "LUMINANCE image format is no longer supported!");
       } break;
-      default:
+      case nv_dds::Format::COUNT:
           DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
           break;
     }
@@ -472,12 +472,12 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
     // open file and check for errors
     FILE* file = fopen(filename.c_str(), "wb");
     if (file == nullptr) {
-        return (-1);
+        return -1;
     }
 
     // compute image type: 2 for RGB(A), 3 for greyscale
     const U8 mode = pixelDepth / 8;
-    const U8 type = ((pixelDepth == 24) || (pixelDepth == 32)) ? 2 : 3;
+    const U8 type = pixelDepth == 24 || pixelDepth == 32 ? 2 : 3;
 
     // write the header
     fwrite(&cGarbage, sizeof(U8), 1, file);
@@ -526,5 +526,5 @@ I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, const U8 
 
     return status;
 }
-};  // namespace ImageTools
-};  // namespace Divide
+}  // namespace ImageTools
+}  // namespace Divide

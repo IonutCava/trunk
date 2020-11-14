@@ -40,36 +40,34 @@ namespace Divide {
 
 class Unit;
 /// When a unit touches the circle described by
-class Trigger : public SceneNode {
+class Trigger final : public SceneNode {
    public:
     explicit Trigger(ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
-    ~Trigger();
+    ~Trigger() = default;
 
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
 
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
-    bool check(Unit* const unit, const vec3<F32>& camEyePos = VECTOR3_ZERO);
-    /// Sets a new Task for this trigger
-    void updateTriggeredTask(Task& triggeredTask);
+    [[nodiscard]] bool check(Unit* unit, const vec3<F32>& camEyePos = VECTOR3_ZERO);
     /// Trigger's the Task regardless of position
-    bool trigger();
+    [[nodiscard]] bool trigger() const;
     /// Draw a sphere at the trigger's position
     /// The impostor has the radius of the trigger's radius
-    inline void setDrawImpostor(bool state) { _drawImpostor = state; }
+    void setDrawImpostor(const bool state) { _drawImpostor = state; }
     /// Enable or disable the trigger
-    inline void setEnabled(bool state) { _enabled = state; }
+    void setEnabled(const bool state) { _enabled = state; }
     /// Set the callback, the position and the radius of the trigger
     void setParams(Task& triggeredTask, const vec3<F32>& triggerPosition, F32 radius);
     /// Just update the callback
-    inline void setParams(Task& triggeredTask) {
+    void setParams(Task& triggeredTask) {
         setParams(triggeredTask, _triggerPosition, _radius);
     }
 
     /// SceneNode concrete implementations
     bool unload() override;
 
-    const char* getResourceTypeName() const noexcept override { return "Trigger"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Trigger"; }
 
    private:
     /// The Task to be launched when triggered
@@ -77,14 +75,14 @@ class Trigger : public SceneNode {
     /// The trigger circle's center position
     vec3<F32> _triggerPosition;
     /// The trigger's radius
-    F32 _radius;
+    F32 _radius = 1.f;
     /// Draw the impostor?
-    bool _drawImpostor;
-    bool _enabled;
+    bool _drawImpostor = false;
+    bool _enabled = true;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Trigger);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

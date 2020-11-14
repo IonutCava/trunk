@@ -135,7 +135,7 @@ struct Deleter {
 template<typename T>
 struct DeleterImpl final : Deleter {
     void del(CommandBase*& cmd) const override {
-        CmdAllocator<T>::deallocate((T*&)(cmd));
+        CmdAllocator<T>::deallocate((T*&)cmd);
         cmd = nullptr;
     }
 };
@@ -163,10 +163,10 @@ struct Command : CommandBase {
 
     Command() noexcept : CommandBase(EnumVal) {}
 
-    void addToBuffer(CommandBuffer* buffer) const final;
+    void addToBuffer(CommandBuffer* buffer) const override final;
 
 protected:
-    [[nodiscard]] Deleter& getDeleter() const noexcept final {
+    [[nodiscard]] Deleter& getDeleter() const noexcept override final {
         static DeleterImpl<T> s_deleter;
         return s_deleter; 
     }

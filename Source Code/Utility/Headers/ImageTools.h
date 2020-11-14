@@ -66,7 +66,7 @@ struct ImageMip final : LayerData {
 
     ~ImageMip() = default;
 
-    [[nodiscard]] bufferPtr data() const override { return (bufferPtr)(_data.data()); }
+    [[nodiscard]] bufferPtr data() const override { return (bufferPtr)_data.data(); }
 
 protected:
     vectorEASTL<T> _data;
@@ -222,7 +222,7 @@ I8 SaveToTGA(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDe
 /// save a single file to tga using a sequential naming pattern
 I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, U8 pixelDepth, U8* imageData);
 
-};  // namespace ImageTools
-};  // namespace Divide
+}  // namespace ImageTools
+}  // namespace Divide
 
 #endif

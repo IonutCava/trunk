@@ -63,7 +63,7 @@ namespace std {
     using stringSize = size_t;
 
     //ref: http://www.gotw.ca/gotw/029.htm
-    struct ci_char_traits : public char_traits<char>
+    struct ci_char_traits : char_traits<char>
         // just inherit all the other functions
         //  that we don't need to override
     {
@@ -95,7 +95,7 @@ namespace std {
             return s;
         }
     }; //ci_string
-}; //namespace std
+} //namespace std
 
 using stringImpl_IgnoreCase = stringAlg::basic_string<char, stringAlg::ci_char_traits>;
 

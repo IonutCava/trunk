@@ -22,7 +22,7 @@ namespace Divide {
 
 namespace {
     Task* g_gameTaskID = nullptr;
-};
+}
 
 PingPongScene::PingPongScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name)
     : Scene(context, cache, parent, name)
@@ -85,20 +85,20 @@ void PingPongScene::resetGame() {
     _ballSGN->get<TransformComponent>()->setPosition(vec3<F32>(0, 2, 2));
 }
 
-void PingPongScene::serveBall(I64 btnGUID) {
+void PingPongScene::serveBall() {
     _GUI->modifyText("insults", "", false);
     resetGame();
 
     removeTask(*g_gameTaskID);
 
     g_gameTaskID = CreateTask(context(), [this](const Task& parent) {
-        test(parent, Random(4), GFX::PushConstantType::INT, GFX::PushConstantSize::DWORD);
+        test(Random(4), GFX::PushConstantType::INT);
     });
 
     registerTask(*g_gameTaskID);
 }
 
-void PingPongScene::test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size) {
+void PingPongScene::test(std::any a, GFX::PushConstantType type) {
     bool updated = false;
     stringImpl message;
     TransformComponent* ballTransform =
@@ -125,7 +125,7 @@ void PingPongScene::test(const Task& parentTask, std::any a, GFX::PushConstantTy
 
     // Is the ball moving to the right or to the left?
     ballPosition.x += _sideDrift * 0.15f;
-    if (opponentPosition.x != ballPosition.x)
+    if (!COMPARE(opponentPosition.x, ballPosition.x))
         opponent->get<TransformComponent>()->translateX(
             ballPosition.x - opponentPosition.x);
 
@@ -160,8 +160,8 @@ void PingPongScene::test(const Task& parentTask, std::any a, GFX::PushConstantTy
     if (ballPosition.y + 0.75f < table->get<BoundsComponent>()->getBoundingBox().getMax().y) {
         // If we hit the ball and it landed on the opponent's table half
         // Or if the opponent hit the ball and it landed on our table half
-        if ((_touchedAdversaryTableHalf && _directionTowardsAdversary) ||
-            (!_directionTowardsAdversary && !_touchedOwnTableHalf))
+        if (_touchedAdversaryTableHalf && _directionTowardsAdversary ||
+            !_directionTowardsAdversary && !_touchedOwnTableHalf)
             _lost = false;
         else
             _lost = true;
@@ -219,7 +219,7 @@ void PingPongScene::test(const Task& parentTask, std::any a, GFX::PushConstantTy
         }
 
         _GUI->modifyText("Score", Util::StringFormat("Score: %d", _score), false);
-        _GUI->modifyText("Message", (char*)message.c_str(), false);
+        _GUI->modifyText("Message", message, false);
         resetGame();
     }
 
@@ -252,12 +252,12 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 
     SceneGraphNode* paddle(_sceneGraph->findNode("paddle"));
 
-    vec3<F32> pos = paddle->get<TransformComponent>()->getPosition();
+    const vec3<F32> pos = paddle->get<TransformComponent>()->getPosition();
 
     // Paddle movement is limited to the [-3,3] range except for Y-descent
     if (state()->playerState(idx).moveFB() != MoveDirection::NONE) {
-        if ((state()->playerState(idx).moveFB() == MoveDirection::POSITIVE && pos.y >= 3) ||
-            (state()->playerState(idx).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f)) {
+        if (state()->playerState(idx).moveFB() == MoveDirection::POSITIVE && pos.y >= 3 ||
+            state()->playerState(idx).moveFB() == MoveDirection::NEGATIVE && pos.y <= 0.5f) {
             Scene::processInput(idx, deltaTimeUS);
             return;
         }
@@ -266,8 +266,8 @@ void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
 
     if (state()->playerState(idx).moveLR() != MoveDirection::NONE) {
         // Left/right movement is flipped for proper control
-        if ((state()->playerState(idx).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3) ||
-            (state()->playerState(idx).moveLR() == MoveDirection::POSITIVE && pos.x <= -3)) {
+        if (state()->playerState(idx).moveLR() == MoveDirection::NEGATIVE && pos.x >= 3 ||
+            state()->playerState(idx).moveLR() == MoveDirection::POSITIVE && pos.x <= -3) {
             Scene::processInput(idx, deltaTimeUS);
             return;
         }
@@ -284,7 +284,7 @@ bool PingPongScene::load(const Str256& name) {
     // Load scene resources
     const bool loadState = SCENE_LOAD(name);
 
-    ResourceDescriptor ballDescriptor("Ping Pong Ball");
+    const ResourceDescriptor ballDescriptor("Ping Pong Ball");
     _ball = CreateResource<Sphere3D>(_resCache, ballDescriptor);
     _ball->setResolution(16);
     _ball->setRadius(0.1f);
@@ -337,21 +337,25 @@ U16 PingPongScene::registerInputActions() {
         //ToDo: Move these to per-scene XML file
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {serveBall(-1); });
+        if (!_input->actionList().registerInputAction(actionID, [this](const InputParams /*param*/) { serveBall(); })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _input->addJoystickMapping(Input::Joystick::JOYSTICK_1, Input::JoystickElementType::BUTTON_PRESS, 0, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+        if (!_input->actionList().registerInputAction(actionID, [this](const InputParams param) {
             _freeFly = !_freeFly;
             if (!_freeFly) {
                 state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(_paddleCam);
             } else {
                 state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).overrideCamera(nullptr);
             }
-        });
+        })) {
+            DIVIDE_UNEXPECTED_CALL();
+        };
         _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
     }
     return actionID++;
@@ -367,7 +371,7 @@ void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                                      pixelScale(100, 25));
 
     btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) {
-        serveBall(btnGUID);
+        serveBall();
     });
 
     _GUI->addText("Score",
@@ -393,4 +397,4 @@ void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     Scene::postLoadMainThread(targetRenderViewport);
 }
 
-};
+}

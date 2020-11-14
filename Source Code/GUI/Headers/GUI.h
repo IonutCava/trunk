@@ -103,18 +103,18 @@ public:
     }
 
     /// Get a pointer to our console window
-    inline GUIConsole& getConsole() noexcept { return *_console; }
-    inline const GUIConsole& getConsole() const noexcept { return *_console; }
+    GUIConsole& getConsole() noexcept { return *_console; }
+    const GUIConsole& getConsole() const noexcept { return *_console; }
 
-    inline CEGUI::Window* rootSheet() const noexcept { return _rootSheet; }
-    inline const stringImpl& guiScheme() const noexcept { return _defaultGUIScheme; }
+    CEGUI::Window* rootSheet() const noexcept { return _rootSheet; }
+    const stringImpl& guiScheme() const noexcept { return _defaultGUIScheme; }
 
     /// Return a pointer to the default, general purpose message box
-    inline GUIMessageBox* const getDefaultMessageBox() const noexcept {
+    GUIMessageBox* const getDefaultMessageBox() const noexcept {
         return _defaultMsgBox;
     }
     /// Used to prevent text updating every frame
-    inline void setTextRenderTimer(const U64 renderIntervalUs) noexcept {
+    void setTextRenderTimer(const U64 renderIntervalUs) noexcept {
         _textRenderInterval = renderIntervalUs;
     }
     /// Mouse cursor forced to a certain position
@@ -166,7 +166,7 @@ protected:
 
 protected:
     friend class SceneGUIElements;
-    CEGUI::Window* _rootSheet;  //< gui root Window
+    CEGUI::Window* _rootSheet;  ///< gui root Window
     stringImpl _defaultGUIScheme;
     CEGUI::GUIContext* _ceguiContext;
     CEGUI::TextureTarget* _ceguiRenderTextureTarget;
@@ -175,12 +175,12 @@ private:
     bool _init;              //< Set to true when the GUI has finished loading
                              /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
                              /// performance)
-    CEGUIInput _ceguiInput;  //< Used to implement key repeat
+    CEGUIInput _ceguiInput;  ///< Used to implement key repeat
     CEGUI::Renderer* _ceguiRenderer; //<Used to render CEGUI to a texture;
-    GUIConsole* _console;    //< Pointer to the GUIConsole object
-    GUIMessageBox* _defaultMsgBox;  //< Pointer to a default message box used for general purpose messages
-    U64 _textRenderInterval;  //< We should avoid rendering text as fast as possible
-                              //for performance reasons
+    GUIConsole* _console;    ///< Pointer to the GUIConsole object
+    GUIMessageBox* _defaultMsgBox;  ///< Pointer to a default message box used for general purpose messages
+    U64 _textRenderInterval;  ///< We should avoid rendering text as fast as possible
+                              ///for performance reasons
 
     /// Each scene has its own gui elements! (0 = global)
     Scene* _activeScene;

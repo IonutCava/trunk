@@ -23,4 +23,4 @@ CachedResource_ptr ImplResourceLoader<Quad3D>::operator()() {
     return ptr;
 }
 
-};
+}

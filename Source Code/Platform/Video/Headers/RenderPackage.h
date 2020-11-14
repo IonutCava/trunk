@@ -150,7 +150,7 @@ namespace Attorney {
             return pkg->commands();
         }
 
-        friend class Divide::RenderPassManager;
+        friend class RenderPassManager;
     };
 
     class RenderPackageRenderingComponent {
@@ -158,7 +158,7 @@ namespace Attorney {
             pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
         }
 
-        friend class Divide::RenderingComponent;
+        friend class RenderingComponent;
     };
 }; // namespace Attorney
 }; // namespace Divide

@@ -36,7 +36,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace ECS {
     class ECSEngine;
-};
+}
 
 namespace Divide {
     class ByteBuffer;
@@ -52,6 +52,6 @@ namespace Divide {
         protected:
             ECS::ECSEngine& _ecsEngine;
     };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_ECS_MANAGER_H_

@@ -41,11 +41,11 @@ CachedResource::CachedResource(const ResourceType type,
 CachedResource::CachedResource(const ResourceType type,
                                const size_t descriptorHash,
                                const Str256& resourceName,
-                               const ResourcePath& assetName,
-                               const ResourcePath& assetLocation)
+                               ResourcePath assetName,
+                               ResourcePath assetLocation)
     : Resource(type, resourceName),
-      _assetLocation(assetLocation),
-      _assetName(assetName),
+      _assetLocation(std::move(assetLocation)),
+      _assetName(std::move(assetName)),
       _descriptorHash(descriptorHash)
 {
 }
@@ -80,7 +80,7 @@ void CachedResource::setState(const ResourceState currentState) noexcept {
 void CachedResource::flushStateCallbacks() {
     const ResourceState currentState = getState();
     for (U8 i = 0; i < to_base(currentState) + 1; ++i) {
-        const ResourceState tempState = static_cast<ResourceState>(i);
+        const auto tempState = static_cast<ResourceState>(i);
         CachedResource* ptr = nullptr;
         if (tempState != ResourceState::RES_UNKNOWN && tempState != ResourceState::RES_UNLOADING) {
             ptr = this;
@@ -94,4 +94,4 @@ void CachedResource::flushStateCallbacks() {
     }
 }
 
-};  // namespace Divide
+}  // namespace Divide

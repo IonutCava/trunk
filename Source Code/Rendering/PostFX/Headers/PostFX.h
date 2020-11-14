@@ -107,12 +107,12 @@ public:
         }
     }
 
-    bool getFilterState(const FilterType filter) const noexcept {
+    [[nodiscard]] bool getFilterState(const FilterType filter) const noexcept {
         return BitCompare(_filterStack, to_U32(filter)) ||
                BitCompare(_overrideFilterStack, to_U32(filter));
     }
 
-    PreRenderBatch* getFilterBatch() const noexcept {
+    [[nodiscard]] PreRenderBatch* getFilterBatch() const noexcept {
         return _preRenderBatch.get();
     }
 
@@ -131,7 +131,7 @@ public:
     void setFadeOutIn(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS);
     void setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
-    static const char* FilterName(FilterType filter) noexcept;
+    [[nodiscard]] static const char* FilterName(FilterType filter) noexcept;
 private:
 
     eastl::unique_ptr<PreRenderBatch> _preRenderBatch = nullptr;
@@ -167,6 +167,6 @@ private:
     PushConstants _drawConstants;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

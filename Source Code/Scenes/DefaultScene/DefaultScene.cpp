@@ -23,7 +23,7 @@ DefaultScene::DefaultScene(PlatformContext& context, ResourceCache* cache, Scene
 }
 
 bool DefaultScene::load(const Str256& name) {
-    bool loadState = SCENE_LOAD(name);
+    const bool loadState = SCENE_LOAD(name);
     state()->saveLoadDisabled(true);
 
     _taskTimers.push_back(0.0);
@@ -58,14 +58,14 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     RelativePosition2D buttonPosition(RelativeValue(btnStartXOffset, 0.0f),
                                       RelativeValue(btnStartYOffset, 0.0f));
     // In pixels
-    RelativeScale2D buttonSize(RelativeValue(0.0f, to_F32(btnWidth)),
-                               RelativeValue(0.0f, to_F32(btnHeight)));
+    const RelativeScale2D buttonSize(RelativeValue(0.0f, to_F32(btnWidth)),
+                                     RelativeValue(0.0f, to_F32(btnHeight)));
 
     size_t i = 0, j = 0;
     for (const Str256& scene : scenes) {
         if (scene != resourceName()) {
-            size_t localOffsetX = btnWidth * (i % numColumns) + spacingX * (i % numColumns);
-            size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
+            const size_t localOffsetX = btnWidth * (i % numColumns) + spacingX * (i % numColumns);
+            const size_t localOffsetY = btnHeight * (j % numRows) + spacingY * (j % numRows);
 
             buttonPosition.d_x.d_offset = to_F32(localOffsetX);
             buttonPosition.d_y.d_offset = to_F32(localOffsetY);
@@ -88,10 +88,10 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
         }
     }
 
-    RelativePosition2D quitPosition(RelativeValue(0.0f, resolution.width - quitButtonWidth * 1.5f),
-                                    RelativeValue(0.0f, resolution.height - quitButtonHeight * 1.5f));
-    RelativeScale2D quitScale(RelativeValue(0.0f, to_F32(quitButtonWidth)),
-                              RelativeValue(0.0f, to_F32(quitButtonHeight)));
+    const RelativePosition2D quitPosition(RelativeValue(0.0f, resolution.width - quitButtonWidth * 1.5f),
+                                          RelativeValue(0.0f, resolution.height - quitButtonHeight * 1.5f));
+    const RelativeScale2D quitScale(RelativeValue(0.0f, to_F32(quitButtonWidth)),
+                                    RelativeValue(0.0f, to_F32(quitButtonHeight)));
 
     GUIButton* btn = _GUI->addButton("Quit",
                                      "Quit",
@@ -99,14 +99,14 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                                      quitScale);
 
     btn->setEventCallback(GUIButton::Event::MouseClick,
-                          [this](I64 btnGUID) {
+                          [this](I64 /*btnGUID*/) {
                               _context.app().RequestShutdown();
                           });
 
     RelativePosition2D playerChangePosition(RelativeValue(0.01f, 0.0f),
                                             RelativeValue(0.0f, resolution.height - playerButtonHeight * 1.5f));
 
-    RelativeScale2D playerChangeScale = pixelScale(quitButtonWidth, playerButtonHeight);
+    const RelativeScale2D playerChangeScale = pixelScale(quitButtonWidth, playerButtonHeight);
 
     btn = _GUI->addButton("AddPlayer",
                           "Add Player",
@@ -114,7 +114,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                           playerChangeScale);
 
     btn->setEventCallback(GUIButton::Event::MouseClick,
-                          [this](I64 btnGUID) {
+                          [this](I64 /*btnGUID*/) {
                               addPlayerInternal(true);
                           });
 
@@ -126,13 +126,13 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                           playerChangeScale);
 
     btn->setEventCallback(GUIButton::Event::MouseClick,
-                          [this](I64 btnGUID) {
+                          [this](I64 /*btnGUID*/) {
                               if (_scenePlayers.size() > 1) {
                                   removePlayerInternal(_scenePlayers.back()->index());
                               }
                           });
 
-    RelativePosition2D textPosition = pixelPosition(windowCenterX - 100, windowCenterY - ((numRows / 2) + 1)* btnHeight);
+    RelativePosition2D textPosition = pixelPosition(windowCenterX - 100, windowCenterY - (numRows / 2 + 1)* btnHeight);
     _GUI->addText("globalMessage",
                   textPosition,
                   Font::DIVIDE_DEFAULT,
@@ -175,7 +175,7 @@ void DefaultScene::processTasks(const U64 deltaTimeUS) {
 
     if (_taskTimers[0] >= SpinTimer) {
         for (hashMap<U8, Angle::DEGREES<F32>>::value_type& it : _camAngle) {
-            it.second = 0.25f * ((it.first * 2.0f) + 1.0f) * (it.first % 2 == 0 ? -1 : 1);
+            it.second = 0.25f * (it.first * 2.0f + 1.0f) * (it.first % 2 == 0 ? -1 : 1);
         }
 
         _taskTimers[0] = 0.0;
@@ -190,7 +190,7 @@ void DefaultScene::loadScene(I64 btnGUID) {
 
     GUIButton* selection = _GUI->getGUIElement<GUIButton>(btnGUID);
     selection->setText(_sceneToLoad + "\nLoading ...");
-    for (hashMap<I64, Str256>::value_type it : _buttonToSceneMap) {
+    for (const hashMap<I64, Str256>::value_type it : _buttonToSceneMap) {
         GUIButton* btn = _GUI->getGUIElement<GUIButton>(it.first);
         btn->active(false);
         if (it.first != btnGUID) {
@@ -210,4 +210,4 @@ void DefaultScene::onSetActive() {
 
     Scene::onSetActive();
 }
-};
+}

@@ -44,7 +44,7 @@ namespace AI {
 class AITeam;
 class AIEntity;
 class WarSceneOrder;
-};
+}
 
 class WarScene : public Scene {
    public:
@@ -56,11 +56,11 @@ class WarScene : public Scene {
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
     void processTasks(U64 deltaTimeUS) override;
     void processGUI(U64 deltaTimeUS) override;
-    void updateSceneStateInternal(U64 deltaTimeUS);
+    void updateSceneStateInternal(U64 deltaTimeUS) override;
     U16 registerInputActions() override;
 
     void registerPoint(U16 teamID, const stringImpl& unitName);
-    void printMessage(U8 eventId, const stringImpl& unitName);
+    void printMessage(U8 eventId, const stringImpl& unitName) const;
     void debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) override;
 
    private:
@@ -79,7 +79,7 @@ class WarScene : public Scene {
     void toggleTerrainMode();
 
    private:
-    GUIMessageBox* _infoBox;
+    GUIMessageBox* _infoBox = nullptr;
     vectorEASTL<TransformComponent*> _lightNodeTransforms;
     vectorEASTL<std::pair<SceneGraphNode*, bool>> _lightNodes2;
     vectorEASTL<SceneGraphNode*> _lightNodes3;
@@ -87,22 +87,22 @@ class WarScene : public Scene {
    private:  // Game
     U32  _timeLimitMinutes;
     U32  _scoreLimit;
-    U32  _runCount;
-    U64  _elapsedGameTime;
-    bool _sceneReady;
-    bool _resetUnits;
-    bool _terrainMode;
-    U64 _lastNavMeshBuildTime;
+    U32  _runCount = 0;
+    U64  _elapsedGameTime = 0;
+    bool _sceneReady = false;
+    bool _resetUnits = false;
+    bool _terrainMode = false;
+    U64 _lastNavMeshBuildTime = 0UL;
     /// NPC's are the actual game entities
     vectorEASTL<SceneGraphNode*> _armyNPCs[2];
-    IMPrimitive* _targetLines;
-    SceneGraphNode* _flag[2];
-    SceneGraphNode* _particleEmitter;
-    SceneGraphNode* _firstPersonWeapon;
+    IMPrimitive* _targetLines = nullptr;
+    SceneGraphNode* _flag[2]{nullptr, nullptr};
+    SceneGraphNode* _particleEmitter = nullptr;
+    SceneGraphNode* _firstPersonWeapon = nullptr;
     /// Teams are factions for AIEntites so they can manage friend/foe situations
-    AI::AITeam* _faction[2];
+    AI::AITeam* _faction[2]{nullptr, nullptr};
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

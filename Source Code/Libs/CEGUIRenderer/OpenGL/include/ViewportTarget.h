@@ -63,7 +63,7 @@ public:
     OpenGLViewportTarget(OpenGLRendererBase& owner, const Rectf& area);
 
     // implementations of RenderTarget interface
-    bool isImageryCache() const;
+    bool isImageryCache() const override;
 };
 
 } // End of  CEGUI namespace section

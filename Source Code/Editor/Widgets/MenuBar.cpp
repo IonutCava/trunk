@@ -53,8 +53,8 @@ namespace {
             case RenderTargetUsage::SCREEN: return "Screen";
             case RenderTargetUsage::SCREEN_MS: return "Screen_MS";
             case RenderTargetUsage::SHADOW: return "Shadow";
-            default: break;
-        };
+            case RenderTargetUsage::COUNT: break;
+        }
 
         return "Unknown";
     }
@@ -64,11 +64,11 @@ namespace {
             case PreRenderBatch::EdgeDetectionMethod::Depth: return "Depth";
             case PreRenderBatch::EdgeDetectionMethod::Luma: return "Luma";
             case PreRenderBatch::EdgeDetectionMethod::Colour: return "Colour";
-            default: break;
-        };
+            case PreRenderBatch::EdgeDetectionMethod::COUNT: break;
+        }
         return "Unknown";
     }
-};
+}
 
 
 MenuBar::MenuBar(PlatformContext& context, const bool mainMenu)
@@ -78,7 +78,7 @@ MenuBar::MenuBar(PlatformContext& context, const bool mainMenu)
 }
 
 void MenuBar::draw() {
-    if ((ImGui::BeginMenuBar()))
+    if (ImGui::BeginMenuBar())
     {
         drawFileMenu();
         drawEditMenu();
@@ -231,7 +231,7 @@ void MenuBar::drawFileMenu() {
 
             if (ImGui::BeginMenu("MSAA"))
             {
-                for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
+                for (U8 i = 0; 1 << i <= maxMSAASamples; ++i) {
                     const U8 sampleCount = i == 0u ? 0u : 1 << i;
                     if (sampleCount % 2 == 0) {
                         bool msaaEntryEnabled = config.rendering.MSAASamples == sampleCount;
@@ -253,7 +253,7 @@ void MenuBar::drawFileMenu() {
                                                         ? config.rendering.shadowMapping.csm.MSAASamples
                                                         : config.rendering.shadowMapping.spot.MSAASamples;
 
-                    for (U8 i = 0; (1 << i) <= maxMSAASamples; ++i) {
+                    for (U8 i = 0; 1 << i <= maxMSAASamples; ++i) {
                         const U8 sampleCount = i == 0u ? 0u : 1 << i;
                         if (sampleCount % 2 == 0) {
                             bool msaaEntryEnabled = currentCount == sampleCount;
@@ -625,7 +625,7 @@ void MenuBar::drawDebugMenu() {
             pool.lightImpostorsEnabled(lightImpostors);
         }
         
-        const bool validLight = (pool.debugLight() != nullptr && pool.debugLight()->getLightType() == LightType::DIRECTIONAL);
+        const bool validLight = pool.debugLight() != nullptr && pool.debugLight()->getLightType() == LightType::DIRECTIONAL;
         if (!validLight) {
             _context.gfx().csmPreviewIndex(-1);
         }
@@ -644,22 +644,22 @@ void MenuBar::drawDebugMenu() {
 
             bool temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
             if (ImGui::MenuItem("Show AABBs", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), (temp ? "On" : "Off"));
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_AABB, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_OBB);
             if (ImGui::MenuItem("Show OBBs", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_ORIENTED_BOUNDING_BOXES")), (temp ? "On" : "Off"));
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_ORIENTED_BOUNDING_BOXES")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_OBB, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
             if (ImGui::MenuItem("Show bounding spheres", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), (temp ? "On" : "Off"));
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_BSPHERES, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
             if (ImGui::MenuItem("Show skeletons", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")), (temp ? "On" : "Off"));
+                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_SKELETONS, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
@@ -729,7 +729,7 @@ void MenuBar::drawDebugMenu() {
                     groups.insert(groupID);
                 }
 
-                const stringImpl label = (groupID == -1 ? name : Util::StringFormat("(%d) %s", groupID, name.c_str()));
+                const stringImpl label = groupID == -1 ? name : Util::StringFormat("(%d) %s", groupID, name.c_str());
                 if (ImGui::MenuItem(label.c_str(), "", &enabled)) {
                     _context.gfx().toggleDebugView(index, enabled);
                 }
@@ -769,4 +769,4 @@ void MenuBar::drawHelpMenu() const {
         ImGui::EndMenu();
     }
 }
-}; //namespace Divide
+} //namespace Divide

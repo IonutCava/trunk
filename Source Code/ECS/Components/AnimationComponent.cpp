@@ -58,7 +58,7 @@ void AnimationComponent::Update(const U64 deltaTimeUS) {
         _prevFameIndex = _frameIndex;
         _frameIndex = _animator->frameIndexForTimeStamp(_currentAnimIndex, Time::MicrosecondsToSeconds<D64>(_currentTimeStamp));
 
-        if ((_currentAnimIndex != _previousAnimationIndex) && _currentAnimIndex >= 0) {
+        if (_currentAnimIndex != _previousAnimationIndex && _currentAnimIndex >= 0) {
             _previousAnimationIndex = _currentAnimIndex;
         }
     }
@@ -205,8 +205,8 @@ mat4<F32> AnimationComponent::getBoneTransform(U32 animationID, const D64 timeSt
     assert(_animator != nullptr);
 
     if (node.getObjectType()._value != ObjectType::SUBMESH ||
-        (node.getObjectType()._value == ObjectType::SUBMESH &&
-         !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)))
+        node.getObjectType()._value == ObjectType::SUBMESH &&
+        !node.getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED))
     {
         mat4<F32> mat;
         _parentSGN->get<TransformComponent>()->getWorldMatrix(mat);
@@ -231,4 +231,4 @@ AnimEvaluator& AnimationComponent::getAnimationByIndex(I32 animationID) const {
 
     return _animator->animationByIndex(animationID);
 }
-};
+}

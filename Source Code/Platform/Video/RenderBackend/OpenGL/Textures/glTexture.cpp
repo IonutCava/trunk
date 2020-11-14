@@ -96,7 +96,7 @@ bool glTexture::unload() {
         if (GL_API::s_texturePool.typeSupported(_type)) {
             GL_API::s_texturePool.deallocate(textureID, _type);
         } else {
-            Divide::GL_API::deleteTextures(1, &textureID, _descriptor.texType());
+            GL_API::deleteTextures(1, &textureID, _descriptor.texType());
         }
         _data._textureHandle = 0u;
     }
@@ -154,7 +154,7 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
         _loadingData._textureHandle = tempHandle;
     }
 
-    const vec2<U16> mipLevels(0, hasMipMaps() ? 1 + Texture::computeMipCount(_width, _height) : 1);
+    const vec2<U16> mipLevels(0, hasMipMaps() ? 1 + computeMipCount(_width, _height) : 1);
 
     _allocatedStorage = false;
     // We may have limited the number of mips

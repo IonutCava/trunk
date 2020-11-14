@@ -19,7 +19,7 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
 
 IMPrimitive::~IMPrimitive() 
 {
-    GFX::deallocateCommandBuffer(_cmdBuffer);
+    deallocateCommandBuffer(_cmdBuffer);
 }
 
 void IMPrimitive::reset() {
@@ -102,23 +102,23 @@ void IMPrimitive::fromSphere(const vec3<F32>& center,
 
                 F32 s = 0.0f;
                 for (U32 j = 0; j <= slices; j++) {
-                    const F32 theta = (j == slices) ? 0.0f : j * dtheta;
+                    const F32 theta = j == slices ? 0.0f : j * dtheta;
                     const F32 stheta = -std::sin(theta);
                     const F32 ctheta = std::cos(theta);
 
                     F32 x = stheta * srho;
                     F32 y = ctheta * srho;
                     F32 z = crho;
-                    vertex((x * radius) + center.x,
-                        (y * radius) + center.y,
-                        (z * radius) + center.z);
+                    vertex(x * radius + center.x,
+                        y * radius + center.y,
+                        z * radius + center.z);
                     x = stheta * srhodrho;
                     y = ctheta * srhodrho;
                     z = crhodrho;
                     s += ds;
-                    vertex((x * radius) + center.x,
-                        (y * radius) + center.y,
-                        (z * radius) + center.z);
+                    vertex(x * radius + center.x,
+                        y * radius + center.y,
+                        z * radius + center.z);
                 }
                 t -= dt;
             }
@@ -133,16 +133,16 @@ void IMPrimitive::fromCone(const vec3<F32>& root,
                            const UColour4& colour) {
     constexpr U8 slices = 16u;
     const vec3<F32> invDirection = -direction;
-    const vec3<F32> c = root + (-invDirection * length);
+    const vec3<F32> c = root + -invDirection * length;
     const vec3<F32> e0 = Perpendicular(invDirection);
     const vec3<F32> e1 = Cross(e0, invDirection);
-    const F32 angInc = 360.0f / slices * M_PIDIV180;
+    const F32 angInc = 360.0f / slices * M_PIDIV180_f;
 
     // calculate points around directrix
     std::array<vec3<F32>, slices> pts = {};
     for (size_t i = 0; i < pts.size(); ++i) {
         const F32 rad = angInc * i;
-        pts[i] = c + (((e0 * std::cos(rad)) + (e1 * std::sin(rad))) * radius);
+        pts[i] = c + (e0 * std::cos(rad) + e1 * std::sin(rad)) * radius;
     }
 
     // draw cone top

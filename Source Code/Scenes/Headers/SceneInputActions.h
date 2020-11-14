@@ -102,13 +102,13 @@ public:
 
     struct Entry {
         PROPERTY_RW(std::set<Input::KeyCode>, modifiers);
-        inline std::set<Input::KeyCode>& modifiers() noexcept { return _modifiers; }
+        std::set<Input::KeyCode>& modifiers() noexcept { return _modifiers; }
         PROPERTY_RW(std::set<U16>, pressIDs);
-        inline std::set<U16>& pressIDs() noexcept { return _pressIDs; }
+        std::set<U16>& pressIDs() noexcept { return _pressIDs; }
         PROPERTY_RW(std::set<U16>, releaseIDs);
-        inline std::set<U16>& releaseIDs() noexcept { return _releaseIDs; }
+        std::set<U16>& releaseIDs() noexcept { return _releaseIDs; }
 
-        inline void clear() {
+        void clear() {
             modifiers().clear();
             pressIDs().clear();
             releaseIDs().clear();
@@ -122,10 +122,10 @@ public:
 };
 
 struct InputAction {
-    InputAction(const DELEGATE<void, InputParams>& action);
+    explicit InputAction(DELEGATE<void, InputParams> action);
 
     DELEGATE<void, InputParams> _action;
-    // This will be usefull for menus and the like (defined in XML)
+    // This will be useful for menus and the like (defined in XML)
     Str64 _displayName;
 
     void displayName(const Str64& name);
@@ -135,15 +135,16 @@ class InputActionList {
    public:
     InputActionList();
 
-    bool registerInputAction(U16 id, const DELEGATE<void, InputParams>& action);
-    InputAction& getInputAction(U16 id);
-    const InputAction& getInputAction(U16 id) const;
+    [[nodiscard]] bool registerInputAction(U16 id, const InputAction& action);
+    [[nodiscard]] bool registerInputAction(U16 id, DELEGATE<void, InputParams> action);
+    [[nodiscard]] InputAction& getInputAction(U16 id);
+    [[nodiscard]] const InputAction& getInputAction(U16 id) const;
 
    protected:
     hashMap<U16 /*actionID*/, InputAction> _inputActions;
     InputAction _noOPAction;
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCENE_INPUT_ACTIONS_H_

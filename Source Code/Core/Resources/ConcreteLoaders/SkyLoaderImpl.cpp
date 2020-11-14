@@ -19,4 +19,4 @@ CachedResource_ptr ImplResourceLoader<Sky>::operator()() {
     return ptr;
 }
 
-};
+}

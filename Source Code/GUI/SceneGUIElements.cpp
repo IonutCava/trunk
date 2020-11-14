@@ -25,7 +25,7 @@ void SceneGUIElements::draw(GFXDevice& context, GFX::CommandBuffer& bufferInOut)
     for (const GUIMap::value_type& guiStackIterator : map) {
         GUIText& textElement = static_cast<GUIText&>(*guiStackIterator.second.first);
         if (textElement.visible() && !textElement.text().empty()) {
-            _drawTextCommand._batch._data[idx++] = textElement;
+            _drawTextCommand._batch._data[idx++] = static_cast<TextElement>(textElement);
         }
     }
 
@@ -51,4 +51,4 @@ void SceneGUIElements::onDisable() {
     }
 }
 
-}; // namespace Divide
+} // namespace Divide

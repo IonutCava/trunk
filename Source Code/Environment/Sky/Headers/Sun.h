@@ -49,8 +49,8 @@ namespace Divide {
 
     struct SunPosition
     {
-        static SunInfo CalculateSunPosition(struct tm *dateTime, F32 latitude, F32 longitude);
-        static D64 CorrectAngle(D64 angleInRadians);
+        [[nodiscard]] static SunInfo CalculateSunPosition(struct tm *dateTime, F32 latitude, F32 longitude);
+        [[nodiscard]] static D64 CorrectAngle(D64 angleInRadians);
     };
 
     struct SunDetails
@@ -64,13 +64,13 @@ namespace Divide {
     {
         void SetLocation(F32 longitude, F32 latitude);
         void SetDate(struct tm *dateTime);
-        SunDetails GetDetails() const;
+        [[nodiscard]] SunDetails GetDetails() const;
 
     private:
         F32 _longitude = 0.0f;
         F32 _latitude = 0.0f;
         struct tm* _dateTime = {};
     };
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_SUN_H_

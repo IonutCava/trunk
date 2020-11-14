@@ -145,14 +145,14 @@ namespace Input {
         return KeyCodeFromSDLKey(SDL_GetKeyFromName(keyName));
     }
 
-    InputState getKeyState(U8 deviceIndex, Input::KeyCode key) {
+    InputState getKeyState(U8 deviceIndex, KeyCode key) {
         ACKNOWLEDGE_UNUSED(deviceIndex);
         const Uint8 *state = SDL_GetKeyboardState(nullptr);
 
         return state[SDL_GetScancodeFromKey(SDLKeyCodeFromKey(key))] ? InputState::PRESSED : InputState::RELEASED;
     }
 
-    InputState getMouseButtonState(U8 deviceIndex, Input::MouseButton button) noexcept {
+    InputState getMouseButtonState(U8 deviceIndex, MouseButton button) noexcept {
         ACKNOWLEDGE_UNUSED(deviceIndex);
 
         I32 x = -1, y = -1;
@@ -160,19 +160,19 @@ namespace Input {
 
         U32 sdlButton;
         switch (button) {
-        case Input::MouseButton::MB_Left:
+        case MouseButton::MB_Left:
             sdlButton = SDL_BUTTON_LEFT;
             break;
-        case Input::MouseButton::MB_Right:
+        case MouseButton::MB_Right:
             sdlButton = SDL_BUTTON_RIGHT;
             break;
-        case Input::MouseButton::MB_Middle:
+        case MouseButton::MB_Middle:
             sdlButton = SDL_BUTTON_MIDDLE;
             break;
-        case Input::MouseButton::MB_Button3:
+        case MouseButton::MB_Button3:
             sdlButton = SDL_BUTTON_X1;
             break;
-        case Input::MouseButton::MB_Button4:
+        case MouseButton::MB_Button4:
             sdlButton = SDL_BUTTON_X2;
             break;
         default:
@@ -182,7 +182,7 @@ namespace Input {
         return (state & SDL_BUTTON(sdlButton)) != 0 ? InputState::PRESSED : InputState::RELEASED;
     }
 
-    InputState getJoystickElementState(Input::Joystick deviceIndex, Input::JoystickElement element) noexcept {
+    InputState getJoystickElementState(Joystick deviceIndex, JoystickElement element) noexcept {
         assert(false && "implement me!");
 
         return InputState::RELEASED;

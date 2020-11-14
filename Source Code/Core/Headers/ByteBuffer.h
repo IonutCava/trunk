@@ -58,31 +58,13 @@ class ByteBuffer {
 
     template <typename T>
     ByteBuffer& operator<<(const T& value);
-    template<>
-    ByteBuffer& operator<<(const bool& value);
-    template <> 
-    ByteBuffer& operator<<(const stringImpl& value);
-    template <>
-    ByteBuffer& operator<<(const ResourcePath& value);
 
     /// read_noskip calls don't move the read head
     template <typename T>
     void read_noskip(T& value);
-    template <typename T>
-    void read_noskip(bool& value) const;
-    template <typename T>
-    void read_noskip(stringImpl& value);
-    template <typename T>
-    void read_noskip(ResourcePath& value);
 
     template <typename T>
     ByteBuffer& operator>>(T& value);
-    template<>
-    ByteBuffer& operator>>(bool& value);
-    template<>
-    ByteBuffer& operator>>(stringImpl& value);
-    template<>
-    ByteBuffer& operator>>(ResourcePath& value);
     template <typename U>
     ByteBuffer& operator>>(Unused<U>& value);
 
@@ -135,7 +117,7 @@ class ByteBuffer {
     vectorEASTL<Byte> _storage;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 #endif //_CORE_BYTE_BUFFER_H_
 
 #include "ByteBuffer.inl"

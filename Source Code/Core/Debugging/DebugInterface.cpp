@@ -77,4 +77,4 @@ const stringImpl& DebugInterface::output() const noexcept {
     return _output;
 }
 
-}; //namespace Divide
+} //namespace Divide

@@ -21,6 +21,6 @@ namespace ImGui {
             col_bg = *v ? IM_COL32(145, 211, 68, 255) : IM_COL32(218, 218, 218, 255);
 
         draw_list->AddRectFilled(p, ImVec2(p.x + width, p.y + height), col_bg, height * 0.5f);
-        draw_list->AddCircleFilled(ImVec2(*v ? (p.x + width - radius) : (p.x + radius), p.y + radius), radius - 1.5f, IM_COL32(255, 255, 255, 255));
+        draw_list->AddCircleFilled(ImVec2(*v ? p.x + width - radius : p.x + radius, p.y + radius), radius - 1.5f, IM_COL32(255, 255, 255, 255));
     }
-}; //namespace ImGui
+} //namespace ImGui

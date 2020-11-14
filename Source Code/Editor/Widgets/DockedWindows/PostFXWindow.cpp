@@ -32,7 +32,7 @@ namespace {
         }
         ImGui::PopID();
         return ret;
-    };
+    }
 
     constexpr I32 g_exposureRefreshFrameCount = 3;
 
@@ -219,4 +219,4 @@ namespace {
             }
         }
     }
-};
+}

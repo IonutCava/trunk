@@ -51,5 +51,5 @@ private:
     bool _enabled = false;
 };
 
-}; //namespace Divide
+} //namespace Divide
 #endif //_DEBUG_INTERFACE_H_

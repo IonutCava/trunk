@@ -69,7 +69,7 @@ void updateClipRegionRoot(
     F32 &clipMin, F32 &clipMax) {
     F32 nz = (lightRadius - nc * lc) / lz;
     F32 pz =
-        (lc * lc + lz * lz - lightRadius * lightRadius) / (lz - (nz / nc) * lc);
+        (lc * lc + lz * lz - lightRadius * lightRadius) / (lz - nz / nc * lc);
 
     if (pz < 0.0f) {
         F32 c = -nz * cameraScale / nc;
@@ -128,5 +128,5 @@ vec4<F32> computeClipRegion(const vec3<F32> &lightPosView, F32 lightRadius,
 
     return clipRegion;
 }
-};
+}
 #endif  // _ClipRegion_h_

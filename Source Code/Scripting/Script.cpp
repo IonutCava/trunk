@@ -15,7 +15,7 @@ namespace {
     UpdateListener s_fileWatcherListener([](const std::string_view atomName, FileUpdateEvent evt) {
         Script::onScriptModify(atomName, evt);
     });
-};
+}
 
 I64 Script::s_scriptFileWatcher = -1;
 
@@ -39,7 +39,7 @@ Script::Script(const stringImpl& scriptPathOrCode, const FileType fileType)
     bootstrap();
     extractAtoms();
     if (s_scriptsReady) {
-        hashAlg::insert(s_scripts, hashAlg::make_pair(getGUID(), this));
+        insert(s_scripts, hashAlg::make_pair(getGUID(), this));
     }
 }
 
@@ -125,7 +125,7 @@ void Script::preprocessIncludes(const stringImpl& source, const I32 level /*= 0 
 
     istringstreamImpl input(source);
     while (std::getline(input, line)) {
-        if (boost::regex_search(line, matches, Paths::g_usePattern)) {
+        if (regex_search(line, matches, Paths::g_usePattern)) {
             ResourcePath include_file = ResourcePath{ Util::Trim(matches[1].str()).c_str() };
             _usedAtoms.push_back(include_file);
 
@@ -159,7 +159,7 @@ void Script::handleOutput(const std::string &msg) {
     Console::printfn(Locale::get(_ID("SCRIPT_CONSOLE_OUTPUT")), msg.c_str());
 }
 
-void Script::onScriptModify(const std::string_view script, FileUpdateEvent& evt) {
+void Script::onScriptModify(const std::string_view script, FileUpdateEvent& /*evt*/) {
     vectorEASTL<Script*> scriptsToReload;
 
     for (ScriptMap::value_type it : s_scripts) {
@@ -183,4 +183,4 @@ void Script::caughtException(const char* message, const bool isEvalException) co
                      message);
 }
 
-}; //namespace Divide
+} //namespace Divide

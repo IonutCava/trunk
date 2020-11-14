@@ -56,6 +56,6 @@ private:
     hashMap<I64, Str256> _buttonToSceneMap;
     Str256 _sceneToLoad;
 };
-};
+}
 
 #endif //_DEFAULT_SCENE_H_

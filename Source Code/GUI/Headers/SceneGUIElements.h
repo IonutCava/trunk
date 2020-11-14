@@ -55,6 +55,6 @@ public:
 private:
     GFX::DrawTextCommand _drawTextCommand = {};
 };
-}; //namespace Divide;
+} //namespace Divide;
 
 #endif //_SCENE_GUI_ELEMENTS_H_

@@ -90,7 +90,7 @@ namespace Navigation {
 
 class NavigationMesh;
 
-class DivideDtCrowd : public NonCopyable {
+class DivideDtCrowd final : public NonCopyable {
    public:
     /**
       * Initialize a detour crowd that will manage agents on the specified
@@ -103,31 +103,25 @@ class DivideDtCrowd : public NonCopyable {
     ~DivideDtCrowd();
     /// Add an agent to the crowd: Returns ID of created agent
     /// (-1 if maximum agents is already created)
-    I32 addAgent(const vec3<F32>& position, F32 maxSpeed, F32 acceleration);
+    [[nodiscard]] I32 addAgent(const vec3<F32>& position, F32 maxSpeed, F32 acceleration);
     /// Retrieve agent with specified ID from the crowd.
-    inline const dtCrowdAgent* getAgent(I32 id) const {
-        return _crowd->getAgent(id);
-    }
+    [[nodiscard]] const dtCrowdAgent* getAgent(const I32 id) const { return _crowd->getAgent(id); }
     /// Remove agent with specified ID from the crowd.
-    void removeAgent(const I32 idx);
+    void removeAgent(I32 idx);
     /**
       * Set global destination or target for all agents in the crowd.
       * Setting adjust to true will try to adjust the current calculated path
       * of the agents slightly to end at the new destination, avoiding the need
-      * to calculate a completely new path. This only works if the destination
-      *is
-      * close to the previously set one, for example when chasing a moving
-      *entity.
+      * to calculate a completely new path. This only works if the destination is
+      * close to the previously set one, for example when chasing a moving entity.
       **/
     void setMoveTarget(const vec3<F32>& position, bool adjust);
     /**
       * Set target or destination for an individual agent.
       * Setting adjust to true will try to adjust the current calculated path
       * of the agent slightly to end at the new destination, avoiding the need
-      * to calculate a completely new path. This only works if the destination
-      *is
-      * close to the previously set one, for example when chasing a moving
-      *entity.
+      * to calculate a completely new path. This only works if the destination is
+      * close to the previously set one, for example when chasing a moving entity.
       **/
     void setMoveTarget(I32 agentID, const vec3<F32>& position, bool adjust);
     /**
@@ -135,90 +129,72 @@ class DivideDtCrowd : public NonCopyable {
       * Requesting a velocity means manually controlling an agent.
       * Returns true if the request was successful.
       **/
-    bool requestVelocity(I32 agentID, const vec3<F32>& velocity);
+    [[nodiscard]] bool requestVelocity(I32 agentID, const vec3<F32>& velocity) const;
     /// Cancels any request for the specified agent, making it stop.
     /// Returns true if the request was successul.
-    bool stopAgent(I32 agentID);
+    [[nodiscard]] bool stopAgent(I32 agentID) const;
     /**
-      * Helper that calculates the needed velocity to steer an agent to a target
-      *destination.
+      * Helper that calculates the needed velocity to steer an agent to a target destination.
       * Parameters:
       *     position    is the current position of the agent
       *     target      is the target destination to reach
       *     speed       is the (max) speed the agent can travel at
       * Returns the calculated velocity.
       *
-      * This function can be used together with requestMoveVelocity to achieve
-      *the functionality
+      * This function can be used together with requestMoveVelocity to achieve the functionality
       * of adjustMoveTarget function.
       **/
-    static vec3<F32> calcVel(const vec3<F32>& position, const vec3<F32>& target,
-                             D64 speed);
-    static F32 getDistanceToGoal(const dtCrowdAgent* agent, const F32 maxRange);
-    static bool destinationReached(const dtCrowdAgent* agent,
-                                   const F32 maxDistanceFromTarget);
+    [[nodiscard]] static vec3<F32> calcVel(const vec3<F32>& position, const vec3<F32>& target, D64 speed);
+    [[nodiscard]] static F32 getDistanceToGoal(const dtCrowdAgent* agent, F32 maxRange);
+    [[nodiscard]] static bool destinationReached(const dtCrowdAgent* agent, F32 maxDistanceFromTarget);
     /**
-      * Update method for the crowd manager. Will calculate new positions for
-      *moving agents.
+      * Update method for the crowd manager. Will calculate new positions for moving agents.
       * Call this method in your frameloop every frame to make your agents move.
       *
-      * DetourCrowd uses sampling based local steering to calculate a velocity
-      *vector for each
-      * agent. The calculation time of this is limited to the number of agents
-      *in the crowd and
+      * DetourCrowd uses sampling based local steering to calculate a velocity vector for each
+      * agent. The calculation time of this is limited to the number of agents in the crowd and
       * the sampling amount (which is a constant).
       *
-      * Additionally pathfinding tasks are queued and the number of computations
-      *is limited, to
-      * limit the maximum amount of time spent for preparing a frame. This can
-      *have as consequence
-      * that some agents will only start to move after a few frames, when their
-      *paths are calculated.
+      * Additionally pathfinding tasks are queued and the number of computations is limited, to
+      * limit the maximum amount of time spent for preparing a frame. This can have as consequence
+      * that some agents will only start to move after a few frames, when their paths are calculated.
       **/
     void update(U64 deltaTimeUS);
     /// The height of agents in this crowd. All agents in a crowd have the same
     /// height, and height is
     /// determined by the agent height parameter with which the navmesh is
     /// build.
-    inline D64 getAgentHeight() const {
-        return Attorney::NavigationMeshCrowd::getConfigParams(*_recast)
-            .getAgentHeight();
-    }
+    [[nodiscard]] D64 getAgentHeight() const { return Attorney::NavigationMeshCrowd::getConfigParams(*_recast).getAgentHeight(); }
     /// The radius of agents in this crowd. All agents in a crowd have the same
     /// radius, and radius
     /// determined by the agent radius parameter with which the navmesh is
     /// build.
-    inline D64 getAgentRadius() const {
-        return Attorney::NavigationMeshCrowd::getConfigParams(*_recast)
-            .getAgentRadius();
-    }
+    [[nodiscard]] D64 getAgentRadius() const { return Attorney::NavigationMeshCrowd::getConfigParams(*_recast).getAgentRadius(); }
     /// The number of (active) agents in this crowd.
-    inline I32 getNbAgents() const { return _activeAgents; }
+    [[nodiscard]] I32 getNbAgents() const { return _activeAgents; }
     /// Get the navigation mesh associated with this crowd
-    inline const NavigationMesh& getNavMesh() { return *_recast; }
+    [[nodiscard]] const NavigationMesh& getNavMesh() const { return *_recast; }
     /// Check if the navMesh is valid
-    bool isValidNavMesh() const;
+    [[nodiscard]] bool isValidNavMesh() const;
     /// Change the navigation mesh for this crowd
-    inline void setNavMesh(NavigationMesh* navMesh) { _recast = navMesh; }
+    void setNavMesh(NavigationMesh* navMesh) { _recast = navMesh; }
     /// The maximum number of agents that are allowed in this crowd.
-    inline I32 getMaxNbAgents() const { return _crowd->getAgentCount(); }
+    [[nodiscard]] I32 getMaxNbAgents() const { return _crowd->getAgentCount(); }
     /// Get all (active) agents in this crowd.
-    vectorEASTL<dtCrowdAgent*> getActiveAgents(void);
+    [[nodiscard]] vectorEASTL<dtCrowdAgent*> getActiveAgents() const;
     /// Get the IDs of all (active) agents in this crowd.
-    vectorEASTL<I32> getActiveAgentIDs(void);
+    [[nodiscard]] vectorEASTL<I32> getActiveAgentIDs() const;
     /// The last set destination for the crowd.
     /// This is the destination that will be assigned to newly added agents.
-    inline vec3<F32> getLastDestination() const {
-        return vec3<F32>(_targetPos);
-    }
+    [[nodiscard]] vec3<F32> getLastDestination() const { return vec3<F32>(_targetPos); }
     /// Reference to the DetourCrowd object that is wrapped.
-    dtCrowd* _crowd;
+    dtCrowd* _crowd = nullptr;
     /// Reference to the Recast/Detour wrapper object for Divide.
-    NavigationMesh* _recast;
+    NavigationMesh* _recast = nullptr;
     /// The latest set target or destination section in the recast navmesh.
-    dtPolyRef _targetRef;
+    dtPolyRef _targetRef = 0u;
     /// The latest set target or destination position.
-    F32 _targetPos[3];
+    F32 _targetPos[3]{0.f, 0.f, 0.f};
     /// Max pathlength for calculated paths.
     static constexpr I32 AGENT_MAX_TRAIL = 64;
     /// Max number of agents allowed in this crowd.
@@ -233,39 +209,36 @@ class DivideDtCrowd : public NonCopyable {
     /// this application.
     dtCrowdAgentDebugInfo _agentDebug;
     /// Parameters for obstacle avoidance of DetourCrowd steering.
-    dtObstacleAvoidanceDebugData* _vod;
+    dtObstacleAvoidanceDebugData* _vod = nullptr;
     /// Agent configuration parameters
-    bool _anticipateTurns;
-    bool _optimizeVis;
-    bool _optimizeTopo;
-    bool _obstacleAvoidance;
-    bool _separation;
-    F32 _obstacleAvoidanceType;
-    F32 _separationWeight;
+    bool _anticipateTurns = true;
+    bool _optimizeVis = true;
+    bool _optimizeTopo = true;
+    bool _obstacleAvoidance = true;
+    bool _separation = false;
+    F32 _obstacleAvoidanceType = 3.0f;
+    F32 _separationWeight = 2.0f;
 
    protected:
     /**
-      * Helper to calculate the needed velocity to steer an agent to a target
-      *destination.
+      * Helper to calculate the needed velocity to steer an agent to a target destination.
       * Parameters:
       *     velocity    is the return parameter, the calculated velocity
       *     position    is the current position of the agent
       *     target      is the target destination to reach
       *     speed       is the (max) speed the agent can travel at
       *
-      * This function can be used together with requestMoveVelocity to achieve
-      *the functionality
+      * This function can be used together with requestMoveVelocity to achieve the functionality
       * of the old adjustMoveTarget function.
       **/
-    static void calcVel(F32* velocity, const F32* position, const F32* target,
-                        const F32 speed);
+    static void calcVel(F32* velocity, const F32* position, const F32* target, F32 speed);
 
    private:
     /// Number of (active) agents in the crowd.
-    I32 _activeAgents;
+    I32 _activeAgents = 0;
 };  // DivideDtCrowd
 
-};  // Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // Navigation
+}  // namespace AI
+}  // namespace Divide
 #endif

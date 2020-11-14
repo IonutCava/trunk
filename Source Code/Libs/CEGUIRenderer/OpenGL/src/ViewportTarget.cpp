@@ -43,8 +43,8 @@ OpenGLViewportTarget::OpenGLViewportTarget(OpenGLRendererBase& owner) :
     GLint vp[4];
     Divide::GL_API::getStateTracker().getActiveViewport(vp);
 
-    Rectf init_area(Vector2f(static_cast<float>(vp[0]), static_cast<float>(vp[1])),
-                        Sizef(static_cast<float>(vp[2]), static_cast<float>(vp[3])));
+    const Rectf init_area(Vector2f(static_cast<float>(vp[0]), static_cast<float>(vp[1])),
+                          Sizef(static_cast<float>(vp[2]), static_cast<float>(vp[3])));
 
     setArea(init_area);
 }

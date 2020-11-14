@@ -59,7 +59,7 @@ namespace {
 
         return true;
     }
-};
+}
 
 bool RenderPassCuller::onStartup() {
   
@@ -95,9 +95,9 @@ VisibleNodeList<>& RenderPassCuller::frustumCull(const NodeCullParams& params, c
         descriptor._partitionSize = g_nodesPerCullingPartition;
         descriptor._priority = TaskPriority::DONT_CARE;
         descriptor._useCurrentThread = true;
-        descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [&](const Task*, const U32 start, const U32 end) {
                             for (U32 i = start; i < end; ++i) {
-                                frustumCullNode(parentTask, rootChildren[i], params, 0u, nodeCache);
+                                frustumCullNode(rootChildren[i], params, 0u, nodeCache);
                             }
                         };
         parallel_for(context, descriptor);
@@ -108,7 +108,7 @@ VisibleNodeList<>& RenderPassCuller::frustumCull(const NodeCullParams& params, c
 }
 
 /// This method performs the visibility check on the given node and all of its children and adds them to the RenderQueue
-void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const {
+void RenderPassCuller::frustumCullNode(SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const {
     OPTICK_EVENT();
 
     // Early out for inactive nodes
@@ -154,7 +154,7 @@ void RenderPassCuller::frustumCullNode(const Task* task, SceneGraphNode* current
                 descriptor._useCurrentThread = true;
                 descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
                                         for (U32 i = start; i < end; ++i) {
-                                            frustumCullNode(parentTask, children[i], params, recursionLevel + 1, nodes);
+                                            frustumCullNode(children[i], params, recursionLevel + 1, nodes);
                                         }
                                     };
                 parallel_for(currentNode->context(), descriptor);
@@ -180,7 +180,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const N
         bool isTransformNode = false;
         if (!shouldCullNode(params._stage, child, isTransformNode)) {
             F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-            if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(child, *(child->get<BoundsComponent>()), params, distanceSqToCamera)) {
+            if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(child, *child->get<BoundsComponent>(), params, distanceSqToCamera)) {
                 VisibleNode node = {};
                 node._node = child;
                 node._distanceToCameraSq = distanceSqToCamera;
@@ -215,7 +215,7 @@ void RenderPassCuller::toVisibleNodes(const Camera* camera, const vectorEASTL<Sc
 
     nodesOut.reset();
 
-    const vec3<F32> cameraEye = camera->getEye();
+    const vec3<F32>& cameraEye = camera->getEye();
     for (SceneGraphNode* node : nodes) {
         F32 distanceSqToCamera = std::numeric_limits<F32>::max();
         BoundsComponent* bComp = node->get<BoundsComponent>();
@@ -225,4 +225,4 @@ void RenderPassCuller::toVisibleNodes(const Camera* camera, const vectorEASTL<Sc
         nodesOut.append({ node, distanceSqToCamera });
     }
 }
-};
+}

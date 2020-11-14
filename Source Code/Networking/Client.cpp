@@ -14,14 +14,14 @@
 
 namespace Divide {
 Client::Client(ASIO* asioPointer, boost::asio::io_service& service, bool debugOutput)
-    : _header(0),
-    _fileSize(0),
-    _asioPointer(asioPointer),
-    _stopped(false),
+    : _stopped(false),
     _debugOutput(debugOutput),
     _socket(service),
+    _header(0),
     _deadline(service),
-    _heartbeatTimer(service)
+    _heartbeatTimer(service),
+    _fileSize(0),
+    _asioPointer(asioPointer)
 {
 }
 
@@ -55,8 +55,8 @@ void Client::start_read() {
     _header = 0;
     _inputBuffer.consume(_inputBuffer.size());
     // Start an asynchronous operation to read a newline-delimited message.
-    boost::asio::async_read(
-        _socket, boost::asio::buffer(&_header, sizeof(_header)),
+    async_read(
+        _socket, boost::asio::buffer(&_header, sizeof _header),
         [&](boost::system::error_code ec, std::size_t N) {
             handle_read_body(ec, N);
         });
@@ -72,7 +72,7 @@ void Client::handle_read_body(const boost::system::error_code& ec,
 
     if (!ec) {
         _deadline.expires_from_now(boost::posix_time::seconds(30));
-        boost::asio::async_read(
+        async_read(
             _socket, _inputBuffer.prepare(_header),
             [&](boost::system::error_code ec, std::size_t N) {
                 handle_read_packet(ec, N);
@@ -104,7 +104,7 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
         }
 
         if (packet.opcode() == OPCodes::SMSG_SEND_FILE) {
-            boost::asio::async_read_until(
+            async_read_until(
                 _socket, _requestBuf, "\n\n",
                 [&](boost::system::error_code ec, std::size_t N) {
                     handle_read_file(ec, N);
@@ -141,7 +141,7 @@ void Client::handle_read_file(const boost::system::error_code& ec,
        << ", tellg=" << request_stream.tellg();
     ASIO::LOG_PRINT(ss.str().c_str());
 
-    size_t pos = file_path.find_last_of('\\');
+    const size_t pos = file_path.find_last_of('\\');
     if (pos != stringImpl::npos) file_path = file_path.substr(pos + 1);
     _outputFile.open(file_path.c_str(), std::ios_base::binary);
     if (!_outputFile) {
@@ -198,10 +198,10 @@ void Client::start_write() {
 
     size_t header = buf.size();
     vectorEASTL<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
+    buffers.push_back(boost::asio::buffer(&header, sizeof header));
     buffers.push_back(buf.data());
-    boost::asio::async_write(_socket, buffers,
-                             std::bind(&Client::handle_write, this, std::placeholders::_1));
+    async_write(_socket, buffers,
+                std::bind(&Client::handle_write, this, std::placeholders::_1));
 }
 
 void Client::handle_write(const boost::system::error_code& ec) {

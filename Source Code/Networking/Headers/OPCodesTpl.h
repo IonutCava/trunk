@@ -23,10 +23,10 @@ public:
     static const ValueType CMSG_PING = 0x006;
     static const ValueType SMSG_PONG = 0x007;
 
-    static const ValueType FIRST_FREE_OPCODE = OPCodes::SMSG_PONG;
+    static const ValueType FIRST_FREE_OPCODE = SMSG_PONG;
  
     static constexpr ValueType OPCODE_ID(const ValueType index) {
-        return OPCodes::FIRST_FREE_OPCODE + index;
+        return FIRST_FREE_OPCODE + index;
     }
 };
 

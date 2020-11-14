@@ -65,7 +65,7 @@ class Object3D : public SceneNode {
 
     virtual ~Object3D() = default;
 
-    virtual VertexBuffer* getGeometryVB() const;
+    VertexBuffer* getGeometryVB() const;
     void setGeometryVBDirty() noexcept { _geometryDirty = true; }
 
     ObjectType getObjectType() const noexcept { return _geometryType; }
@@ -98,11 +98,12 @@ class Object3D : public SceneNode {
         ACKNOWLEDGE_UNUSED(sgn);
         ACKNOWLEDGE_UNUSED(newIndex);
     }
+
     /// Use playAnimations() to toggle animation playback for the current object
     /// (and all subobjects) on or off
-    virtual void playAnimations(const SceneGraphNode* sgn, const bool state);
+    virtual void playAnimations(const SceneGraphNode* sgn, bool state);
 
-    void setGeometryPartitionID(const U8 lodIndex, const U16 ID) {
+    void setGeometryPartitionID(const U8 lodIndex, const U16 ID) noexcept {
         if (lodIndex < _geometryPartitionIDs.size()) {
             _geometryPartitionIDs[lodIndex] = ID;
         }
@@ -127,17 +128,15 @@ class Object3D : public SceneNode {
 
     void addTriangles(const vectorEASTL<vec3<U32>>& triangles) {
         reserveTriangleCount(to_U32(triangles.size() + _geometryTriangles.size()));
-        _geometryTriangles.insert(eastl::cend(_geometryTriangles),
-                                  eastl::cbegin(triangles),
-                                  eastl::cend(triangles));
+        _geometryTriangles.insert(cend(_geometryTriangles),
+                                  cbegin(triangles),
+                                  cend(triangles));
     }
 
     // Create a list of triangles from the vertices + indices lists based on primitive type
     bool computeTriangleList();
 
     static vectorEASTL<SceneGraphNode*> filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter);
-
-    virtual const char* getTypeName() const override;
 
     bool isPrimitive() const noexcept;
 
@@ -151,16 +150,16 @@ class Object3D : public SceneNode {
     void rebuild();
     virtual void rebuildVB();
 
-    /// Use a custom vertex buffer for this object (e.g., a submesh uses the mesh's vb)
+    /// Use a custom vertex buffer for this object (e.g., a SubMesh uses the mesh's vb)
     /// Please manually delete the old VB if available before replacing!
-    virtual void setGeometryVB(VertexBuffer* const vb);
+    virtual void setGeometryVB(VertexBuffer* vb);
 
-    virtual void buildDrawCommands(SceneGraphNode* sgn,
-                                   const RenderStagePass& renderStagePass,
-                                   const Camera& crtCamera,
-                                   RenderPackage& pkgInOut) override;
+    void buildDrawCommands(SceneGraphNode* sgn,
+                           const RenderStagePass& renderStagePass,
+                           const Camera& crtCamera,
+                           RenderPackage& pkgInOut) override;
 
-    virtual const char* getResourceTypeName() const noexcept override { return "Object3D"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Object3D"; }
 
    protected:
     GFXDevice& _context;

@@ -12,7 +12,7 @@ FormattedListboxTextItem::FormattedListboxTextItem(
       ListboxTextItem(text, item_id, item_data, disabled, auto_delete),
       // initialise subclass fields
       d_formatting(format),
-      d_formattedRenderedString(0),
+      d_formattedRenderedString(nullptr),
       d_formattingAreaSize(0, 0) {
     setTextColours(col);
 }
@@ -34,7 +34,7 @@ void FormattedListboxTextItem::setFormatting(
 
     d_formatting = fmt;
     CEGUI_DELETE_AO d_formattedRenderedString;
-    d_formattedRenderedString = 0;
+    d_formattedRenderedString = nullptr;
     d_formattingAreaSize = Sizef(0, 0);
 }
 
@@ -80,7 +80,7 @@ void FormattedListboxTextItem::draw(GeometryBuffer& buffer,
     }
 
     // draw selection imagery
-    if (d_selected && d_selectBrush != 0)
+    if (d_selected && d_selectBrush != nullptr)
         d_selectBrush->render(buffer, targetRect, clipper,
                               getModulateAlphaColourRect(d_selectCols, alpha));
 
@@ -97,7 +97,7 @@ void FormattedListboxTextItem::draw(GeometryBuffer& buffer,
 void FormattedListboxTextItem::setupStringFormatter() const {
     // delete any existing formatter
     CEGUI_DELETE_AO d_formattedRenderedString;
-    d_formattedRenderedString = 0;
+    d_formattedRenderedString = nullptr;
 
     // create new formatter of whichever type...
     switch (d_formatting) {

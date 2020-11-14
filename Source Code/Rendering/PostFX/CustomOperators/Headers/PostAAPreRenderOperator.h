@@ -45,13 +45,13 @@ class PostAAPreRenderOperator final : public PreRenderOperator {
     PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~PostAAPreRenderOperator() = default;
 
-    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
-    void reshape(U16 width, U16 height) final;
+    [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
+    void reshape(U16 width, U16 height) override;
 
     PROPERTY_RW(U8, postAAQualityLevel, 2u);
     PROPERTY_RW(bool, useSMAA, false);
 
-    bool ready() const final;
+    [[nodiscard]] bool ready() const override;
 
   private:
     PROPERTY_INTERNAL(U8, currentPostAAQualityLevel, 2u);
@@ -74,6 +74,6 @@ class PostAAPreRenderOperator final : public PreRenderOperator {
     GFX::SendPushConstantsCommand _pushConstantsCommand = {};
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

@@ -32,7 +32,7 @@ TEST(ParallelForTest)
     Console::toggleErrorStream(false);
 
     TaskPool test;
-    bool init = test.init(HardwareThreadCount(), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    const bool init = test.init(HardwareThreadCount(), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     const U32 partitionSize = 4;
@@ -44,7 +44,9 @@ TEST(ParallelForTest)
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = loopCount;
     descriptor._partitionSize = partitionSize;
-    descriptor._cbk = [&totalCounter, &loopCounter](const Task* parentTask, U32 start, U32 end) {
+    descriptor._cbk = [&totalCounter, &loopCounter](const Task* parentTask, const U32 start, const U32 end) {
+        ACKNOWLEDGE_UNUSED(parentTask);
+
         ++loopCounter;
         for (U32 i = start; i < end; ++i) {
             ++totalCounter;
@@ -61,12 +63,14 @@ TEST(ParallelForTest)
 TEST(TaskCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    const bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     std::atomic_bool testValue = false;
 
     Task* job = CreateTask(test, [](const Task& parentTask) {
+        ACKNOWLEDGE_UNUSED(parentTask);
+
         Time::ProfileTimer timer;
         timer.start();
         std::cout << "TaskCallbackTest: Thread sleeping for 500ms" << std::endl;
@@ -125,12 +129,12 @@ namespace {
       private:
         std::atomic_bool _testValue;
     };
-};
+}
 
 TEST(TaskClassMemberCallbackTest)
 {
     TaskPool test;
-    bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
+    const bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
     ThreadedTest testObj;
@@ -172,6 +176,7 @@ TEST(TaskSpeedTest)
         timer.start();
         Task* job = CreateTask(test,
             [](const Task& parentTask) {
+                ACKNOWLEDGE_UNUSED(parentTask);
                 NOP();
             }
         );
@@ -179,6 +184,7 @@ TEST(TaskSpeedTest)
         for (std::size_t i = 0; i < 60 * 1000; ++i) {
             Start(*CreateTask(test, job,
                 [](const Task& parentTask) {
+                    ACKNOWLEDGE_UNUSED(parentTask);
                     NOP();
                 }
             ));
@@ -199,6 +205,7 @@ TEST(TaskSpeedTest)
         timer.start();
         Task* job = CreateTask(test,
             [](const Task& parentTask) {
+                ACKNOWLEDGE_UNUSED(parentTask);
                 NOP();
             }
         );
@@ -206,6 +213,7 @@ TEST(TaskSpeedTest)
         for (std::size_t i = 0; i < 60 * 1000; ++i) {
             Start(*CreateTask(test, job,
                 [](const Task& parentTask) {
+                    ACKNOWLEDGE_UNUSED(parentTask);
                     NOP();
                 }
             ));
@@ -231,7 +239,10 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = false;
-        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [](const Task* parentTask, const U32 start, const U32 end) {
+            ACKNOWLEDGE_UNUSED(parentTask);
+            ACKNOWLEDGE_UNUSED(start);
+            ACKNOWLEDGE_UNUSED(end);
             NOP();
         };
 
@@ -255,7 +266,10 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = true;
-        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [](const Task* parentTask, const U32 start, const U32 end) {
+            ACKNOWLEDGE_UNUSED(parentTask);
+            ACKNOWLEDGE_UNUSED(start);
+            ACKNOWLEDGE_UNUSED(end);
             NOP();
         };
 
@@ -277,7 +291,10 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = false;
-        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [](const Task* parentTask, const U32 start, const U32 end) {
+            ACKNOWLEDGE_UNUSED(parentTask);
+            ACKNOWLEDGE_UNUSED(start);
+            ACKNOWLEDGE_UNUSED(end);
             NOP();
         };
 
@@ -287,7 +304,7 @@ TEST(TaskSpeedTest)
         timer.stop();
         const F32 durationMS = Time::MicrosecondsToMilliseconds<F32>(timer.get() - timerOverhead);
         std::cout << "Threading speed test (parallel_for - lockfree): 8192 + 1 partitions tasks completed in: " << durationMS << " ms." << std::endl;
-    }   
+    }
     {
         TaskPool test;
         bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_LOCKFREE);
@@ -303,7 +320,11 @@ TEST(TaskSpeedTest)
         descriptor._iterCount = loopCount;
         descriptor._partitionSize = partitionSize;
         descriptor._useCurrentThread = true;
-        descriptor._cbk = [](const Task* parentTask, U32 start, U32 end) {
+        descriptor._cbk = [](const Task* parentTask, const U32 start, const U32 end) {
+            ACKNOWLEDGE_UNUSED(parentTask);
+            ACKNOWLEDGE_UNUSED(start);
+            ACKNOWLEDGE_UNUSED(end);
+
             NOP();
         };
 
@@ -340,6 +361,8 @@ TEST(TaskPriorityTest)
     CHECK_EQUAL(callbackValue, 2u);
 
     job = CreateTask(test, [&callbackValue](const Task& parentTask) {
+        ACKNOWLEDGE_UNUSED(parentTask);
+
         std::cout << "TaskPriorityTest: threaded function call (NO_CALLBACK)" << std::endl;
         ++callbackValue;
     });
@@ -351,6 +374,7 @@ TEST(TaskPriorityTest)
     CHECK_EQUAL(callbackValue, 3u);
 
     job = CreateTask(test, [&callbackValue](const Task& parentTask) {
+        ACKNOWLEDGE_UNUSED(parentTask);
         std::cout << "TaskPriorityTest: threaded function call (REALTIME)" << std::endl;
         ++callbackValue;
     });
@@ -361,4 +385,4 @@ TEST(TaskPriorityTest)
     CHECK_EQUAL(callbackValue, 5u);
 }
 
-}; //namespace Divide
+} //namespace Divide

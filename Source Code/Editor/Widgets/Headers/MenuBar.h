@@ -67,6 +67,6 @@ namespace Divide {
         stringImpl _errorMsg = "";
         vectorEASTL<Texture_ptr> _previewTextures;
     };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_MENU_BAR_H_

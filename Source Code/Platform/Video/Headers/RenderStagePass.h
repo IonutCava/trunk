@@ -59,12 +59,12 @@ struct RenderStagePass {
     U16 _index = 0u; //usually some kind of type info (reflector/refractor index, light type, etc)
     U16 _pass = 0u; //usually some kind of actual pass index (eg. cube face we are rendering into)
 
-    [[nodiscard]] inline bool isDepthPass() const noexcept {
+    [[nodiscard]] bool isDepthPass() const noexcept {
         return _stage == RenderStage::SHADOW || _passType == RenderPassType::PRE_PASS;
     }
 
     /// This ignores the variant and pass index flags!
-    [[nodiscard]] inline U8 baseIndex() const noexcept {
+    [[nodiscard]] U8 baseIndex() const noexcept {
         return baseIndex(_stage, _passType);
     }
 
@@ -95,7 +95,7 @@ struct RenderStagePass {
             if (renderStagePass._variant == to_base(ReflectorType::PLANAR)) {
                 return renderStagePass._index;
             } else {
-                return (Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6) + (renderStagePass._index * 6 + renderStagePass._pass);
+                return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + (renderStagePass._index * 6 + renderStagePass._pass);
 
             }
         } else {
@@ -115,7 +115,7 @@ struct RenderStagePass {
         return to_U8(1u);
     }
 
-    inline bool operator==(const RenderStagePass& other) const noexcept {
+    bool operator==(const RenderStagePass& other) const noexcept {
         return _variant == other._variant &&
                _pass == other._pass &&
                _index == other._index &&
@@ -123,7 +123,7 @@ struct RenderStagePass {
                _passType == other._passType;
     }
 
-    inline bool operator!=(const RenderStagePass& other) const noexcept {
+    bool operator!=(const RenderStagePass& other) const noexcept {
         return _variant != other._variant ||
                _pass != other._pass ||
                _index != other._index ||

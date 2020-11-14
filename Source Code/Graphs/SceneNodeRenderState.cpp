@@ -17,8 +17,8 @@ bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 
         const bool mainIndexMatch = exclusion._index == g_AllIndicesID || //All Passes
                                     exclusion._index == stagePass._index;//Same pass
 
-        const bool subIndexMatch = (exclusion._pass == g_AllPassID ||
-                                    exclusion._pass == stagePass._pass); //Sub pass index 2 match or all index 2 sub pass indices
+        const bool subIndexMatch = exclusion._pass == g_AllPassID ||
+            exclusion._pass == stagePass._pass; //Sub pass index 2 match or all index 2 sub pass indices
 
         return mainIndexMatch || subIndexMatch;
     };
@@ -41,7 +41,7 @@ void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage, RenderPassT
 
     const RenderStagePass stagePass{ stage, passType, variant, index, pass };
 
-    if (eastl::find(eastl::cbegin(_exclusionStagePasses), eastl::cend(_exclusionStagePasses), stagePass) == eastl::cend(_exclusionStagePasses)) {
+    if (eastl::find(cbegin(_exclusionStagePasses), cend(_exclusionStagePasses), stagePass) == cend(_exclusionStagePasses)) {
         _exclusionStagePasses.emplace_back(stagePass);
     }
 }

@@ -30,14 +30,14 @@ void CStringRemoveChar(char* str, const char charToRemove) noexcept {
     char *pr = str, *pw = str;
     while (*pr) {
         *pw = *pr++;
-        pw += (*pw != charToRemove);
+        pw += *pw != charToRemove;
     }
     *pw = '\0';
 }
 
 bool IsEmptyOrNull(const char* str) noexcept {
-    return str == nullptr || (str[0] == '\0');
+    return str == nullptr || str[0] == '\0';
 }
-}; //namespace Util
+} //namespace Util
 
-}; //namespace Divide
+} //namespace Divide

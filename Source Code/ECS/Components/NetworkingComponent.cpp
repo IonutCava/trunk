@@ -30,14 +30,18 @@ void NetworkingComponent::flagDirty() {
 }
 
 WorldPacket NetworkingComponent::deltaCompress(const WorldPacket& crt, const WorldPacket& previous) const {
+    ACKNOWLEDGE_UNUSED(previous);
+
     return crt;
 }
 
 WorldPacket NetworkingComponent::deltaDecompress(const WorldPacket& crt, const WorldPacket& previous) const {
+    ACKNOWLEDGE_UNUSED(previous);
+
     return crt;
 }
 
-void NetworkingComponent::onNetworkSend(U32 frameCountIn)  {
+void NetworkingComponent::onNetworkSend(const U32 frameCountIn)  {
     if (!_resendRequired) {
         return;
     }
@@ -48,21 +52,21 @@ void NetworkingComponent::onNetworkSend(U32 frameCountIn)  {
 
     Attorney::SceneNodeNetworkComponent::onNetworkSend(_parentSGN, _parentSGN->getNode(), dataOut);
 
-    WorldPacket p = deltaCompress(dataOut, _previousSent);
+    const WorldPacket p = deltaCompress(dataOut, _previousSent);
     _previousSent = p;
 
     _resendRequired = _parentClient.sendPacket(dataOut);
 }
 
 void NetworkingComponent::onNetworkReceive(WorldPacket& dataIn) {
-    WorldPacket p = deltaDecompress(dataIn, _previousReceived);
+    const WorldPacket p = deltaDecompress(dataIn, _previousReceived);
     _previousReceived = p;
 
     Attorney::SceneNodeNetworkComponent::onNetworkReceive(_parentSGN, _parentSGN->getNode(), dataIn);
 }
 
-NetworkingComponent* NetworkingComponent::getReceiver(I64 guid) {
-    hashMap<I64, NetworkingComponent*>::const_iterator it = s_NetComponents.find(guid);
+NetworkingComponent* NetworkingComponent::getReceiver(const I64 guid) {
+    const hashMap<I64, NetworkingComponent*>::const_iterator it = s_NetComponents.find(guid);
 
     if (it != std::cend(s_NetComponents)) {
         return it->second;
@@ -85,4 +89,4 @@ void UpdateEntities(WorldPacket& p) {
     }
 }
 
-};
+}

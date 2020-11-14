@@ -43,9 +43,9 @@ public:
     ~Engine();
 
     // see the ErrorCode enum in Application.h for the returned value
-    bool init(int argc, char **argv);
-    void shutdown();
-    bool step() const;
+    [[nodiscard]] bool init(int argc, char **argv);
+                  void shutdown();
+    [[nodiscard]] bool step() const;
 
     [[nodiscard]] I32 errorCode() const;
 
@@ -55,6 +55,6 @@ private:
     StreamBuffer* _outputStreams[2];
 };
 
-};
+}
 
 #endif  //_ENGINE_MAIN_HEADER_

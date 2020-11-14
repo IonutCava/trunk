@@ -179,5 +179,5 @@ public:
 };
 
 
-};
+}
 #endif //_TRANSFORM_INTERFACE_H_

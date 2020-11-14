@@ -40,11 +40,11 @@ Camera* Camera::utilityCameraInternal(UtilityCamera type) {
 }
 
 void Camera::initPool() {
-    _utilityCameras[to_base(UtilityCamera::DEFAULT)] = Camera::createCamera<FreeFlyCamera>("DefaultCamera");
-    _utilityCameras[to_base(UtilityCamera::_2D)] = Camera::createCamera<StaticCamera>("2DRenderCamera");
-    _utilityCameras[to_base(UtilityCamera::_2D_FLIP_Y)] = Camera::createCamera<StaticCamera>("2DRenderCameraFlipY");
-    _utilityCameras[to_base(UtilityCamera::CUBE)] = Camera::createCamera<StaticCamera>("CubeCamera");
-    _utilityCameras[to_base(UtilityCamera::DUAL_PARABOLOID)] = Camera::createCamera<StaticCamera>("DualParaboloidCamera");
+    _utilityCameras[to_base(UtilityCamera::DEFAULT)] = createCamera<FreeFlyCamera>("DefaultCamera");
+    _utilityCameras[to_base(UtilityCamera::_2D)] = createCamera<StaticCamera>("2DRenderCamera");
+    _utilityCameras[to_base(UtilityCamera::_2D_FLIP_Y)] = createCamera<StaticCamera>("2DRenderCameraFlipY");
+    _utilityCameras[to_base(UtilityCamera::CUBE)] = createCamera<StaticCamera>("CubeCamera");
+    _utilityCameras[to_base(UtilityCamera::DUAL_PARABOLOID)] = createCamera<StaticCamera>("DualParaboloidCamera");
 }
 
 void Camera::destroyPool() {
@@ -64,25 +64,25 @@ void Camera::destroyPool() {
 Camera* Camera::createCameraInternal(const Str256& cameraName, CameraType type) {
     Camera* camera = nullptr;
     switch (type) {
-        case Camera::CameraType::FIRST_PERSON:
+        case CameraType::FIRST_PERSON:
             camera = MemoryManager_NEW FirstPersonCamera(cameraName);
             break;
-        case Camera::CameraType::STATIC:
+        case CameraType::STATIC:
             camera = MemoryManager_NEW StaticCamera(cameraName);
             break;
-        case Camera::CameraType::FREE_FLY:
+        case CameraType::FREE_FLY:
             camera = MemoryManager_NEW FreeFlyCamera(cameraName);
             break;
-        case Camera::CameraType::ORBIT:
+        case CameraType::ORBIT:
             camera = MemoryManager_NEW OrbitCamera(cameraName);
             break;
-        case Camera::CameraType::SCRIPTED:
+        case CameraType::SCRIPTED:
             camera = MemoryManager_NEW ScriptedCamera(cameraName);
             break;
-        case Camera::CameraType::THIRD_PERSON:
+        case CameraType::THIRD_PERSON:
             camera = MemoryManager_NEW ThirdPersonCamera(cameraName);
             break;
-        default: break;
+        case CameraType::COUNT: break;
     }
 
     if (camera != nullptr) {
@@ -98,7 +98,7 @@ bool Camera::destroyCameraInternal(Camera* camera) {
         const U64 targetHash = _ID(camera->resourceName().c_str());
         if (camera->unload()) {
             UniqueLock<SharedMutex> w_lock(s_cameraPoolLock);
-            eastl::erase_if(s_cameraPool, [targetHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == targetHash; });
+            erase_if(s_cameraPool, [targetHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == targetHash; });
             MemoryManager::DELETE(camera);
             return true;
         }
@@ -109,7 +109,7 @@ bool Camera::destroyCameraInternal(Camera* camera) {
 
 Camera* Camera::findCameraInternal(U64 nameHash) {
     SharedLock<SharedMutex> r_lock(s_cameraPoolLock);
-    const auto it = eastl::find_if(eastl::cbegin(s_cameraPool), eastl::cend(s_cameraPool), [nameHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == nameHash; });
+    const auto it = eastl::find_if(cbegin(s_cameraPool), cend(s_cameraPool), [nameHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == nameHash; });
     if (it != std::end(s_cameraPool)) {
         return *it;
     }
@@ -128,7 +128,7 @@ bool Camera::removeChangeListener(const U32 id) {
 }
 
 U32 Camera::addChangeListener(const DELEGATE<void, const Camera&>& f) {
-    hashAlg::insert(s_changeCameraListeners, ++s_changeCameraId, f);
+    insert(s_changeCameraListeners, ++s_changeCameraId, f);
     return s_changeCameraId;
 }
 

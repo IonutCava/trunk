@@ -71,7 +71,7 @@ RTClearDescriptor::RTClearDescriptor() noexcept
 
 RTClearColourDescriptor::RTClearColourDescriptor() noexcept
 {
-    _customClearColour.fill((DefaultColours::BLACK));
+    _customClearColour.fill(DefaultColours::BLACK);
 }
 
 RTDrawDescriptor::RTDrawDescriptor() noexcept

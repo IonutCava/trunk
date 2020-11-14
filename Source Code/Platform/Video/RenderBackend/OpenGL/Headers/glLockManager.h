@@ -48,7 +48,7 @@ class glLockManager : public GUIDWrapper {
     // if quickCheck is true, we don't retry if the initial check fails 
     static bool wait(GLsync syncObj, bool blockClient, bool quickCheck, U8& retryCount);
 
-    inline static bool wait(GLsync syncObj, bool blockClient, bool quickCheck = false) {
+    static bool wait(GLsync syncObj, bool blockClient, bool quickCheck = false) {
         U8 retryCount = 0;
         return wait(syncObj, blockClient, quickCheck, retryCount);
     }

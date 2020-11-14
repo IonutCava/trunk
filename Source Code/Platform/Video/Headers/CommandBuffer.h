@@ -41,7 +41,7 @@ namespace Divide {
 
     namespace GFX {
 
-void DELETE_CMD(GFX::CommandBase*& cmd) noexcept;
+void DELETE_CMD(CommandBase*& cmd) noexcept;
 size_t RESERVE_CMD(U8 typeIndex) noexcept;
 
 enum class ErrorType : U8
@@ -78,7 +78,7 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     friend class CommandBufferPool;
   public:
       using CommandEntry = PolyContainerEntry;
-      using Container = PolyContainer<GFX::CommandBase, to_base(GFX::CommandType::COUNT), DELETE_CMD, RESERVE_CMD>;
+      using Container = PolyContainer<CommandBase, to_base(CommandType::COUNT), DELETE_CMD, RESERVE_CMD>;
       using CommandOrderContainer = eastl::fixed_vector<CommandEntry, 256, true>;
 
   public:
@@ -105,7 +105,7 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     // Return true if merge is successful
     template<typename T>
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-    tryMergeCommands(GFX::CommandType type, T* prevCommand, T* crtCommand) const;
+    tryMergeCommands(CommandType type, T* prevCommand, T* crtCommand) const;
 
     [[nodiscard]] bool exists(const CommandEntry& commandEntry) const noexcept;
 
@@ -157,11 +157,11 @@ class CommandBuffer final : GUIDWrapper, NonCopyable {
     typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
     allocateCommand();
 
-    static void ToString(const GFX::CommandBase& cmd, GFX::CommandType type, I32& crtIndent, stringImpl& out);
+    static void ToString(const CommandBase& cmd, CommandType type, I32& crtIndent, stringImpl& out);
 
   protected:
       CommandOrderContainer _commandOrder;
-      eastl::array<U24, to_base(GFX::CommandType::COUNT)> _commandCount;
+      eastl::array<U24, to_base(CommandType::COUNT)> _commandCount;
 
       Container _commands;
       bool _batched = false;

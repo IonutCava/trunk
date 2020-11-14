@@ -150,8 +150,8 @@ namespace detail {
 
     inline F32 packed11bitToFloat(U32 x) noexcept {
         if (x == 0u)              return 0.0f;
-        if (x == ((1 << 11) - 1)) return ~0;//NaN
-        if (x == (0x1f << 6))     return ~0;//Inf
+        if (x == (1 << 11) - 1) return ~0;//NaN
+        if (x == 0x1f << 6)     return ~0;//Inf
 
         U32 result = packed11ToFloat(x);
         return reinterpret_cast<F32&>(result);
@@ -167,8 +167,8 @@ namespace detail {
 
     inline F32 packed10bitToFloat(U32 x) noexcept {
         if (x == 0)               return 0.0f;
-        if (x == ((1 << 10) - 1)) return ~0;//NaN
-        if (x == (0x1f << 5))     return ~0;//Inf
+        if (x == (1 << 10) - 1) return ~0;//NaN
+        if (x == 0x1f << 5)     return ~0;//Inf
 
         U32 result = packed10ToFloat(x);
         return reinterpret_cast<F32&>(result);
@@ -290,7 +290,7 @@ T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max,
     static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be mapped!");
     const D64 diff = in_max > in_min ? to_D64(in_max - in_min) : std::numeric_limits<D64>::epsilon();
     slopeOut = 1.0 * (out_max - out_min) / diff;
-    return static_cast<T>(out_min + (slopeOut * (input - in_min)));
+    return static_cast<T>(out_min + slopeOut * (input - in_min));
 }
 
 template <typename T>
@@ -370,19 +370,19 @@ ToggleBit(Mask& bitMask, const Type bit, bool state) noexcept {
 template<typename Mask>
 constexpr bool AnyCompare(const Mask bitMask, const Mask checkMask) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    return ((bitMask & checkMask) != 0);
+    return (bitMask & checkMask) != 0;
 }
 
 template<typename Mask>
 constexpr bool AllCompare(const Mask bitMask, const Mask checkMask) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    return ((bitMask & checkMask) == checkMask);
+    return (bitMask & checkMask) == checkMask;
 }
 
 template<typename Mask>
 constexpr bool BitCompare(const Mask bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    return ((bitMask & bit) == bit);
+    return (bitMask & bit) == bit;
 }
 
 template<typename Mask>
@@ -394,7 +394,7 @@ constexpr void SetBit(Mask& bitMask, const Mask bit) noexcept {
 template<typename Mask>
 constexpr void ClearBit(Mask& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    bitMask &= ~(bit);
+    bitMask &= ~bit;
 }
 
 template<typename Mask>
@@ -434,13 +434,13 @@ ClearBit(std::atomic<Mask>& bitMask, const Type bit) noexcept {
 template<typename Mask>
 constexpr bool AnyCompare(const std::atomic<Mask> bitMask, const Mask checkMask) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    return ((bitMask & checkMask) != 0);
+    return (bitMask & checkMask) != 0;
 }
 
 template<typename Mask>
 constexpr bool BitCompare(const std::atomic<Mask>& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    return ((bitMask & bit) == bit);
+    return (bitMask & bit) == bit;
 }
 
 template<typename Mask>
@@ -452,7 +452,7 @@ constexpr void SetBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
 template<typename Mask>
 constexpr void ClearBit(std::atomic<Mask>& bitMask, const Mask bit) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
-    bitMask &= ~(bit);
+    bitMask &= ~bit;
 }
 
 template<typename Mask>
@@ -470,7 +470,7 @@ constexpr T roundup(T value,
 {
     return maxb <= curb
                 ? value
-                : roundup(((value - 1) | ((value - 1) >> curb)) + 1, maxb, curb << 1);
+                : roundup((value - 1 | value - 1 >> curb) + 1, maxb, curb << 1);
 }
 
 constexpr U32 nextPOW2(U32 n) noexcept {
@@ -485,11 +485,11 @@ constexpr U32 nextPOW2(U32 n) noexcept {
 }
 
 constexpr U32 prevPOW2(U32 n) noexcept {
-    n = n | (n >> 1);
-    n = n | (n >> 2);
-    n = n | (n >> 4);
-    n = n | (n >> 8);
-    n = n | (n >> 16);
+    n = n | n >> 1;
+    n = n | n >> 2;
+    n = n | n >> 4;
+    n = n | n >> 8;
+    n = n | n >> 16;
     return n - (n >> 1);
 }
 
@@ -506,7 +506,7 @@ T Lerp(const T v1, const T v2, const U t) {
 #if defined(FAST_LERP)
     return v1 + t * (v2 - v1);
 #else
-    return (v1 * (static_cast<U>(1) - t)) + (v2 * t);
+    return v1 * (static_cast<U>(1) - t) + v2 * t;
 #endif
 }
 
@@ -539,19 +539,19 @@ inline I8 FLOAT_TO_SCHAR_SNORM(const F32 value) noexcept {
 
 inline I8 FLOAT_TO_SCHAR(const F32 value) noexcept {
     assert(value > 0.0f);
-    return to_I8(((value + 1.0f) * 0.5f) * 255.0f);
+    return to_I8((value + 1.0f) * 0.5f * 255.0f);
 }
 
 constexpr U8 FLOAT_TO_CHAR_SNORM(const F32 value) noexcept {
-    return to_U8(std::min(255, to_I32((value * 256.0f))));
+    return to_U8(std::min(255, to_I32(value * 256.0f)));
 }
 
 constexpr U8 FLOAT_TO_CHAR(const F32 value) noexcept {
-    return to_U8(((value + 1.0f) * 0.5f) * 255.0f);
+    return to_U8((value + 1.0f) * 0.5f * 255.0f);
 }
 
 constexpr F32 CHAR_TO_FLOAT(const U8 value) noexcept {
-    return ((value / 255.0f) * 2.0f) - 1.0f;
+    return value / 255.0f * 2.0f - 1.0f;
 }
 
 constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value)noexcept {
@@ -562,7 +562,7 @@ constexpr F32 CHAR_TO_FLOAT_SNORM(const U8 value)noexcept {
 inline F32 PACK_FLOAT(const U8 x, const U8 y, const U8 z) noexcept {
     constexpr D64 offset = to_D64(1 << 24);
 
-    const U32 packed = (x << 16) | (y << 8) | z;
+    const U32 packed = x << 16 | y << 8 | z;
     return to_F32(to_D64(packed) / offset);
 }
 
@@ -573,16 +573,16 @@ inline void UNPACK_FLOAT(const F32 src, F32& r, F32& g, F32& b) noexcept {
     b = FRACT(src * 65536.0f);
 
     // Unpack to the -1..1 range
-    r = (r * 2.0f) - 1.0f;
-    g = (g * 2.0f) - 1.0f;
-    b = (b * 2.0f) - 1.0f;
+    r = r * 2.0f - 1.0f;
+    g = g * 2.0f - 1.0f;
+    b = b * 2.0f - 1.0f;
 }
 
 inline U32 PACK_11_11_10(const F32 x, const F32 y, const F32 z) noexcept {
     return
-        ((detail::floatTo11bit(x) & ((1 << 11) - 1)) << 0) |
-        ((detail::floatTo11bit(y) & ((1 << 11) - 1)) << 11) |
-        ((detail::floatTo10bit(z) & ((1 << 10) - 1)) << 22);
+        (detail::floatTo11bit(x) & (1 << 11) - 1) << 0 |
+        (detail::floatTo11bit(y) & (1 << 11) - 1) << 11 |
+        (detail::floatTo10bit(z) & (1 << 10) - 1) << 22;
 }
 
 inline void UNPACK_11_11_10(const U32 src, F32& x, F32& y, F32& z) noexcept {
@@ -680,7 +680,7 @@ constexpr T Radians(const T radians) noexcept {
     return radians;
 }
 
-};  // namespace Angle
+}  // namespace Angle
 
 namespace Metric {
 
@@ -828,7 +828,7 @@ constexpr T Pico(const U a) {
     return static_cast<T>(divide(a,  1e12));
 }
 
-};  // namespace Metric
+}  // namespace Metric
 
 namespace Time {
 
@@ -932,7 +932,7 @@ constexpr T SecondsToNanoseconds(const U a) noexcept {
     return Metric::Giga<T, U>(a);
 }
 
-};  // namespace Time
+}  // namespace Time
 
 namespace Util {
 
@@ -967,7 +967,7 @@ void InsertionSort(FwdIt first, FwdIt last, Compare cmp)
     }
 }
 
-};  // namespace Util
-};  // namespace Divide
+}  // namespace Util
+}  // namespace Divide
 
 #endif  //_CORE_MATH_MATH_HELPER_INL_

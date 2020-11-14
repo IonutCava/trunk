@@ -13,7 +13,9 @@ extern "C" {
 #include "Headers/glsw.h"
 
 #ifdef _WIN32
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
 #pragma warning(disable:4996) // allow "fopen"
 #endif
 
@@ -40,7 +42,7 @@ struct glswContextRec
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE GLOBALS
 
-thread_local glswContext* __glsw__Context = 0;
+thread_local glswContext* __glsw__Context = nullptr;
 
 ///////////////////////////////////////////////////////////////////////////////
 // PRIVATE FUNCTIONS
@@ -48,9 +50,9 @@ thread_local glswContext* __glsw__Context = 0;
 static int __glsw__Alphanumeric(char c)
 {
     return
-        (c >= 'A' && c <= 'Z') ||
-        (c >= 'a' && c <= 'z') ||
-        (c >= '0' && c <= '9') ||
+        c >= 'A' && c <= 'Z' ||
+        c >= 'a' && c <= 'z' ||
+        c >= '0' && c <= '9' ||
         c == '_' || c == '.';
 }
 
@@ -73,8 +75,8 @@ static int glswClear(glswContext* gc)
 {
     __glsw__FreeList(gc->ShaderMap);
     __glsw__FreeList(gc->LoadedEffects);
-    gc->ShaderMap = NULL;
-    gc->LoadedEffects = NULL;
+    gc->ShaderMap = nullptr;
+    gc->LoadedEffects = nullptr;
     return 0;
 }
 
@@ -120,9 +122,9 @@ int glswShutdown()
     bdestroy(gc->ErrorMessage);
     glswClear(gc);
     __glsw__FreeList(gc->TokenMap);
-    gc->TokenMap = NULL;
+    gc->TokenMap = nullptr;
     free(gc);
-    glswSetCurrentContext(0);
+    glswSetCurrentContext(nullptr);
 
     return 1;
 }
@@ -139,7 +141,7 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
     if (!gc->PathPrefix) {
         gc->PathPrefix = bfromcstr(pathPrefix);
     } else {
-        bstring prefix = bfromcstr(pathPrefix);
+        const bstring prefix = bfromcstr(pathPrefix);
         if (bstrcmp(gc->PathPrefix, prefix) != 0) {
             bassign(gc->PathPrefix, prefix);
         }
@@ -151,7 +153,7 @@ int glswSetPath(const char* pathPrefix, const char* pathSuffix)
     if (!gc->PathSuffix) {
         gc->PathSuffix = bfromcstr(pathSuffix);
     } else {
-        bstring suffix = bfromcstr(pathSuffix);
+        const bstring suffix = bfromcstr(pathSuffix);
         if (bstrcmp(gc->PathSuffix, suffix) != 0) {
             bassign(gc->PathSuffix, suffix);
         }
@@ -167,16 +169,16 @@ const char* glswGetShader(const char* pEffectKey)
 {
     glswContext* gc = glswGetCurrentContext();
 
-    bstring effectKey = 0;
-    glswList* closestMatch = 0;
-    struct bstrList* tokens = 0;
-    bstring effectName = 0;
-    glswList* pLoadedEffect = 0;
-    glswList* pShaderEntry = 0;
-    bstring shaderKey = 0;
+    bstring effectKey = nullptr;
+    glswList* closestMatch = nullptr;
+    struct bstrList* tokens = nullptr;
+    bstring effectName = nullptr;
+    glswList* pLoadedEffect = nullptr;
+    glswList* pShaderEntry = nullptr;
+    bstring shaderKey = nullptr;
 
     if (!gc) {
-        return 0;
+        return nullptr;
     }
 
     // Extract the effect name from the effect key
@@ -188,7 +190,7 @@ const char* glswGetShader(const char* pEffectKey)
         gc->ErrorMessage = bformat("Malformed effect key key '%s'.", pEffectKey);
         bstrListDestroy(tokens);
         bdestroy(effectKey);
-        return 0;
+        return nullptr;
     }
     effectName = tokens->entry[0];
 
@@ -204,12 +206,12 @@ const char* glswGetShader(const char* pEffectKey)
     // If we haven't loaded this file yet, load it in
     if (!pLoadedEffect)
     {
-        bstring effectContents = 0;
-        struct bstrList* lines = 0;
+        bstring effectContents = nullptr;
+        struct bstrList* lines = nullptr;
         int lineNo = 0;
         {
-            FILE* fp = 0;
-            bstring effectFile = 0;
+            FILE* fp = nullptr;
+            bstring effectFile = nullptr;
 
             // Decorate the effect name to form the fullpath
             effectFile = bstrcpy(effectName);
@@ -225,7 +227,7 @@ const char* glswGetShader(const char* pEffectKey)
                 bdestroy(effectFile);
                 bdestroy(effectKey);
                 bstrListDestroy(tokens);
-                return 0;
+                return nullptr;
             }
 
             // Add a new entry to the front of gc->LoadedEffects
@@ -240,16 +242,16 @@ const char* glswGetShader(const char* pEffectKey)
             effectContents = bread_gl((bNread) fread, fp);
             fclose(fp);
             bdestroy(effectFile);
-            effectFile = 0;
+            effectFile = nullptr;
         }
 
         lines = bsplit(effectContents, '\n');
         bdestroy(effectContents);
-        effectContents = 0;
+        effectContents = nullptr;
 
         for (lineNo = 0; lineNo < lines->qty; lineNo++)
         {
-            bstring line = lines->entry[lineNo];
+            const bstring line = lines->entry[lineNo];
 
             // If the line starts with "--", then it marks a new section
             if (blength(line) >= 2 && line->data[0] == '-' && line->data[1] == '-')
@@ -258,7 +260,7 @@ const char* glswGetShader(const char* pEffectKey)
                 int colNo = 0;
                 for (colNo = 2; colNo < blength(line); colNo++)
                 {
-                    char c = line->data[colNo];
+                    const char c = line->data[colNo];
                     if (__glsw__Alphanumeric(c))
                     {
                         break;
@@ -270,7 +272,7 @@ const char* glswGetShader(const char* pEffectKey)
                 if (colNo >= blength(line))
                 {
                     bdestroy(shaderKey);
-                    shaderKey = 0;
+                    shaderKey = nullptr;
                 }
                 else
                 {
@@ -278,7 +280,7 @@ const char* glswGetShader(const char* pEffectKey)
                     int endCol = 0;
                     for (endCol = colNo; endCol < blength(line); endCol++)
                     {
-                        char c = line->data[endCol];
+                        const char c = line->data[endCol];
                         if (!__glsw__Alphanumeric(c))
                         {
                             break;
@@ -310,7 +312,7 @@ const char* glswGetShader(const char* pEffectKey)
 
                         while (pTokenMapping)
                         {
-                            bstring directive = 0;
+                            bstring directive = nullptr;
                             int tokenIndex = 0;
 
                             // An empty key in the token mapping means "always prepend this directive".
@@ -325,7 +327,7 @@ const char* glswGetShader(const char* pEffectKey)
                             // Check all tokens in the current section divider for a mapped token.
                             for (tokenIndex = 0; tokenIndex < tokens->qty && !directive; tokenIndex++)
                             {
-                                bstring token = tokens->entry[tokenIndex];
+                                const bstring token = tokens->entry[tokenIndex];
                                 if (biseq(pTokenMapping->Key, token) == 1)
                                 {
                                     directive = pTokenMapping->Value;
@@ -337,7 +339,7 @@ const char* glswGetShader(const char* pEffectKey)
                         }
 
                         bstrListDestroy(tokens);
-                        tokens = 0;
+                        tokens = nullptr;
                     }
                 }
                 continue;
@@ -351,9 +353,9 @@ const char* glswGetShader(const char* pEffectKey)
 
         // Cleanup
         bstrListDestroy(lines);
-        lines = 0;
+        lines = nullptr;
         bdestroy(shaderKey);
-        shaderKey = 0;
+        shaderKey = nullptr;
     }
 
     // Find the longest matching shader key
@@ -371,15 +373,15 @@ const char* glswGetShader(const char* pEffectKey)
     }
 
     bstrListDestroy(tokens);
-    tokens = 0;
+    tokens = nullptr;
     bdestroy(effectKey);
-    effectKey = 0;
+    effectKey = nullptr;
 
     if (!closestMatch)
     {
         bdestroy(gc->ErrorMessage);
         gc->ErrorMessage = bformat("Could not find shader with key '%s'.", pEffectKey);
-        return 0;
+        return nullptr;
     }
 
     return (const char*) closestMatch->Value->data;
@@ -394,20 +396,19 @@ const char* glswGetError()
         return "The glsw API has not been initialized.";
     }
 
-    return (const char*) (gc->ErrorMessage ? gc->ErrorMessage->data : 0);
+    return (const char*) (gc->ErrorMessage ? gc->ErrorMessage->data : nullptr);
 }
 
 int glswAddDirectiveToken(const char* token, const char* directive)
 {
     glswContext* gc = glswGetCurrentContext();
-    glswList* temp;
 
     if (!gc)
     {
         return 0;
     }
 
-    temp = gc->TokenMap;
+    glswList* temp = gc->TokenMap;
     gc->TokenMap = (glswList*) calloc(sizeof(glswContext), 1);
     if (!gc->TokenMap) {
         return 0;

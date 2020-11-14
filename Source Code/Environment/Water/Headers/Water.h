@@ -51,7 +51,7 @@ class WaterPlane : public SceneNode {
 
     bool pointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point);
 
-    inline const std::shared_ptr<Quad3D>& getQuad() const noexcept { return _plane; }
+    const std::shared_ptr<Quad3D>& getQuad() const noexcept { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode* sgn,
                              Plane<F32>& plane,
@@ -74,7 +74,7 @@ class WaterPlane : public SceneNode {
                            RenderPackage& pkgInOut) override;
 
     void postLoad(SceneGraphNode* sgn) override;
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
     bool prepareRender(SceneGraphNode* sgn,
                        RenderingComponent& rComp,
                        const RenderStagePass& renderStagePass,
@@ -87,7 +87,7 @@ class WaterPlane : public SceneNode {
     bool load() override;
     void onEditorChange(std::string_view field);
 
-    const char* getResourceTypeName() const noexcept override { return "WaterPlane"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "WaterPlane"; }
 
    private:
     void updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut);
@@ -109,6 +109,6 @@ class WaterPlane : public SceneNode {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(WaterPlane);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

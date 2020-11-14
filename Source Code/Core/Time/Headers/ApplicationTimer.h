@@ -77,7 +77,7 @@ namespace Game {
     U64 ElapsedMicroseconds();
     D64 ElapsedMilliseconds();
     D64 ElapsedSeconds();
-};
+}
 
 namespace App {
     /// The following functions force a timer update (a call to query performance timer).
@@ -85,10 +85,10 @@ namespace App {
     U64 ElapsedMicroseconds();
     D64 ElapsedMilliseconds();
     D64 ElapsedSeconds();
-};
+}
 
-};  // namespace Time
-};  // namespace Divide
+}  // namespace Time
+}  // namespace Divide
 
 #endif  //_CORE_TIME_APPLICATION_TIMER_H_
 

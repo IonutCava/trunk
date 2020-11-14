@@ -123,13 +123,13 @@ namespace GFX {
 
         if (count == 1) {
             //fast path
-            const I32 value = (*data ? 1 : 0);
+            const I32 value = *data ? 1 : 0;
             set(&value, 1, flag);
         } else {
             //Slooow. Avoid using in the rendering loop. Try caching
             vectorEASTL<I32> temp(count);
             std::transform(data, data + count, std::back_inserter(temp),
-                [](const bool e) noexcept { return (e ? 1 : 0); });
+                [](const bool e) noexcept { return e ? 1 : 0; });
             set(temp.data(), count, flag);
         }
     }

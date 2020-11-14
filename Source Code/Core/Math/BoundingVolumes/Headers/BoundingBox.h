@@ -39,7 +39,7 @@ namespace Divide {
 
 namespace Attorney {
     class BoundingBoxEditor;
-};
+}
 
 class OBB;
 class PropertyWindow;
@@ -51,7 +51,7 @@ class BoundingBox {
     BoundingBox() noexcept;
     BoundingBox(const OBB& obb) noexcept;
     BoundingBox(const BoundingSphere& bSphere) noexcept;
-    BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept;
+    BoundingBox(vec3<F32> min, vec3<F32> max) noexcept;
     BoundingBox(const vectorEASTL<vec3<F32>>& points) noexcept;
     BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept;
     BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
@@ -135,7 +135,6 @@ class BoundingBox {
 
 namespace Attorney {
     class BoundingBoxEditor {
-        private:
         static F32* min(BoundingBox& bb) noexcept {
             return bb._min._v;
         }
@@ -144,9 +143,9 @@ namespace Attorney {
         }
         friend class Divide::PropertyWindow;
     };
-}; //namespace Attorney
+} //namespace Attorney
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_MATH_BOUNDINGVOLUMES_BOUNDINGBOX_H_
 

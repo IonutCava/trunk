@@ -6,5 +6,5 @@ namespace Divide {
 namespace Navigation {
 
 
-};
-};
+}
+}

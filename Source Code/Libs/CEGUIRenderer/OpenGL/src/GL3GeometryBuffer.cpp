@@ -69,7 +69,7 @@ OpenGL3GeometryBuffer::~OpenGL3GeometryBuffer()
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::draw() const
 {
-    CEGUI::Rectf viewPort = d_owner->getActiveViewPort();
+    const Rectf viewPort = d_owner->getActiveViewPort();
 
     d_glStateChanger->scissor(static_cast<GLint>(d_clipRect.left()),
               static_cast<GLint>(viewPort.getHeight() - d_clipRect.bottom()),
@@ -148,7 +148,7 @@ void OpenGL3GeometryBuffer::initialiseOpenGLBuffers()
 
     // This binds and sets up a vbo. The 
     configureVertexArray();
-    glBufferData(GL_ARRAY_BUFFER, 0, 0, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
 
     // Unbind Vertex Attribute Array (VAO)
     Divide::GL_API::getStateTracker().setActiveVAO(0);
@@ -160,12 +160,12 @@ void OpenGL3GeometryBuffer::initialiseOpenGLBuffers()
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::configureVertexArray() const
 {
-    GLsizei stride = 9 * sizeof(GLfloat);
+    const GLsizei stride = 9 * sizeof(GLfloat);
 
     Divide::GL_API::getStateTracker().setActiveBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
     Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    glVertexAttribPointer(d_shaderTexCoordLoc, 2, GL_FLOAT, GL_FALSE, stride, 0);
+    glVertexAttribPointer(d_shaderTexCoordLoc, 2, GL_FLOAT, GL_FALSE, stride, nullptr);
     glEnableVertexAttribArray(d_shaderTexCoordLoc);
 
     glVertexAttribPointer(d_shaderColourLoc, 4, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(2 * sizeof(GLfloat)));
@@ -186,7 +186,7 @@ void OpenGL3GeometryBuffer::deinitialiseOpenGLBuffers()
 void OpenGL3GeometryBuffer::updateOpenGLBuffers()
 {
     bool needNewBuffer = false;
-    unsigned int vertexCount = (unsigned int)d_vertices.size();
+    const unsigned int vertexCount = (unsigned int)d_vertices.size();
 
     if(d_bufferSize < vertexCount)
     {
@@ -196,11 +196,11 @@ void OpenGL3GeometryBuffer::updateOpenGLBuffers()
 
     d_glStateChanger->bindBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
 
-    GLsizei dataSize = vertexCount * sizeof(GLVertex);
+    const GLsizei dataSize = vertexCount * sizeof(GLVertex);
 
     GLVertex* data;
     if(d_vertices.empty())
-        data = 0;
+        data = nullptr;
     else
         data = &d_vertices[0];
 

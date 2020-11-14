@@ -17,35 +17,35 @@ template<bool texCoords, bool normals, bool tangents, bool colour, bool bones>
 void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut) noexcept
 {
     for (const VertexBuffer::Vertex& data : dataIn) {
-        std::memcpy(dataOut, data._position._v, sizeof(data._position));
-        dataOut += sizeof(data._position);
+        std::memcpy(dataOut, data._position._v, sizeof data._position);
+        dataOut += sizeof data._position;
 
         if (texCoords) {
-            std::memcpy(dataOut, data._texcoord._v, sizeof(data._texcoord));
-            dataOut += sizeof(data._texcoord);
+            std::memcpy(dataOut, data._texcoord._v, sizeof data._texcoord);
+            dataOut += sizeof data._texcoord;
         }
 
         if (normals) {
-            std::memcpy(dataOut, &data._normal, sizeof(data._normal));
-            dataOut += sizeof(data._normal);
+            std::memcpy(dataOut, &data._normal, sizeof data._normal);
+            dataOut += sizeof data._normal;
         }
 
         if (tangents) {
-            std::memcpy(dataOut, &data._tangent, sizeof(data._tangent));
-            dataOut += sizeof(data._tangent);
+            std::memcpy(dataOut, &data._tangent, sizeof data._tangent);
+            dataOut += sizeof data._tangent;
         }
 
         if (colour) {
-            std::memcpy(dataOut, data._colour._v, sizeof(data._colour));
-            dataOut += sizeof(data._colour);
+            std::memcpy(dataOut, data._colour._v, sizeof data._colour);
+            dataOut += sizeof data._colour;
         }
 
         if (bones) {
-            std::memcpy(dataOut, &data._weights.i, sizeof(data._weights.i));
-            dataOut += sizeof(data._weights.i);
+            std::memcpy(dataOut, &data._weights.i, sizeof data._weights.i);
+            dataOut += sizeof data._weights.i;
 
-            std::memcpy(dataOut, &data._indices.i, sizeof(data._indices.i));
-            dataOut += sizeof(data._indices.i);
+            std::memcpy(dataOut, &data._indices.i, sizeof data._indices.i);
+            dataOut += sizeof data._indices.i;
         }
     }
 }
@@ -212,9 +212,9 @@ bool glVertexArray::refresh() {
     // rendering system)
     assert(!_indices.empty() && "glVertexArray::refresh error: Invalid index data on Refresh()!");
 
-    const size_t nSizeIndices = (_indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16)));
+    const size_t nSizeIndices = _indices.size() * (usesLargeIndices() ? sizeof(U32) : sizeof(U16));
 
-    const bool indicesChanged = (nSizeIndices != _prevSizeIndices);
+    const bool indicesChanged = nSizeIndices != _prevSizeIndices;
     _prevSizeIndices = nSizeIndices;
     _refreshQueued = indicesChanged;
 
@@ -289,10 +289,10 @@ bool glVertexArray::refresh() {
         } else {
             vectorEASTL<U16> smallIndices;
             smallIndices.reserve(getIndexCount());
-            eastl::transform(eastl::cbegin(_indices),
-                             eastl::cend(_indices),
-                             eastl::back_inserter(smallIndices),
-                             static_caster<U32, U16>());
+            transform(cbegin(_indices),
+                      cend(_indices),
+                      back_inserter(smallIndices),
+                      static_caster<U32, U16>());
             // Update our IB
             glNamedBufferData(_IBid, nSizeIndices, (bufferPtr)smallIndices.data(), GL_STATIC_DRAW);
         }
@@ -327,7 +327,7 @@ void glVertexArray::upload() {
         // Dirty on a VAO map cache miss
         if (!_VAOMap.getVAO(stageUsage, _vaoCaches[i], crtHash)) {
             const GLuint crtVao = _vaoCaches[i];
-            if (eastl::find(eastl::cbegin(vaos), eastl::cend(vaos), crtVao) == eastl::cend(vaos)) {
+            if (eastl::find(cbegin(vaos), cend(vaos), crtVao) == cend(vaos)) {
                 vaos.push_back(crtVao);
                 // Set vertex attribute pointers
                 uploadVBAttributes(crtVao);

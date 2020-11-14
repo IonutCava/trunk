@@ -186,7 +186,6 @@ class PlatformContext {
 
 namespace Attorney {
     class PlatformContextKernel {
-    private:
         static void onThreadCreated(PlatformContext& context, const std::thread::id& threadID) {
             context.onThreadCreated(threadID);
         }

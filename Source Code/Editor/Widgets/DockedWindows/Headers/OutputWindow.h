@@ -43,7 +43,7 @@ class OutputWindow final : public DockedWindow {
         OutputWindow(Editor& parent, const Descriptor& descriptor);
         ~OutputWindow();
 
-        void drawInternal() final;
+        void drawInternal() override;
         void printText(const Console::OutputEntry& entry);
         I32 textEditCallback(ImGuiTextEditCallbackData* data);
 
@@ -58,6 +58,6 @@ class OutputWindow final : public DockedWindow {
         char _inputBuf[256];
         ImGuiTextFilter _filter;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_OUTPUT_WINDOW_H_

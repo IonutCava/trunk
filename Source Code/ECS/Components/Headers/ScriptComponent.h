@@ -41,11 +41,11 @@ class ScriptComponent final : public BaseComponentType<ScriptComponent, Componen
     explicit ScriptComponent(SceneGraphNode* parentSGN, PlatformContext& context);
     ~ScriptComponent() = default;
 
-    void Update(U64 deltaTimeUS) final;
+    void Update(U64 deltaTimeUS) override;
 
 };
 
 INIT_COMPONENT(ScriptComponent);
 
-};  // namespace Divide
+}  // namespace Divide
 #endif //_SCRIPT_COMPONENT_H_

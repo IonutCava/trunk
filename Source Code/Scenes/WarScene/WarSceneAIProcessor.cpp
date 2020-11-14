@@ -24,7 +24,7 @@ namespace {
  const U32 g_myTeamContainer = 0;
  const U32 g_enemyTeamContainer = 1;
  const U32 g_flagContainer = 2;
- };
+ }
 
 vec3<F32> WarSceneAIProcessor::_initialFlagPositions[2];
 GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
@@ -33,16 +33,9 @@ DELEGATE<void, U8, const stringImpl&> WarSceneAIProcessor::_messageCallback;
 
 WarSceneAIProcessor::WarSceneAIProcessor(AIType type, AIManager& parentManager)
     : AIProcessor(parentManager),
-      _type(type),
-      _tickCount(0),
-      _visualSensorUpdateCounter(0),
-      _attackTimer(0ULL),
-      _deltaTime(0ULL),
-      _visualSensor(nullptr),
-      _audioSensor(nullptr)
+      _type(type)
 {
     _actionState.fill(false);
-    _planStatus = "None";
 }
 
 WarSceneAIProcessor::~WarSceneAIProcessor()
@@ -69,8 +62,8 @@ WarSceneAIProcessor::~WarSceneAIProcessor()
 
 void WarSceneAIProcessor::invalidateCurrentPlan() {
     AITeam* const currentTeam = _entity->getTeam();
-    U32 ownTeamID = currentTeam->getTeamID();
-    U32 enemyTeamID = 1 - ownTeamID;
+    const U32 ownTeamID = currentTeam->getTeamID();
+    const U32 enemyTeamID = 1 - ownTeamID;
 
     worldState().setVariable(GOAPFact(Fact::AT_HOME_BASE), GOAPValue(atHomeBase()));
     worldState().setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(nearEnemyFlag()));
@@ -111,13 +104,13 @@ void WarSceneAIProcessor::initInternal() {
 
     for (const AITeam::TeamMap::value_type& member : teamAgents) {
         SceneGraphNode* node = member.second->getUnitRef()->getBoundNode();
-        hashAlg::insert(_nodeToUnitMap[g_myTeamContainer], node->getGUID(), member.second);
+        insert(_nodeToUnitMap[g_myTeamContainer], node->getGUID(), member.second);
         _visualSensor->followSceneGraphNode(g_myTeamContainer, node);
     }
 
     for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
         SceneGraphNode* node = enemy.second->getUnitRef()->getBoundNode();
-        hashAlg::insert(_nodeToUnitMap[g_enemyTeamContainer], node->getGUID(), enemy.second);
+        insert(_nodeToUnitMap[g_enemyTeamContainer], node->getGUID(), enemy.second);
         _visualSensor->followSceneGraphNode(g_enemyTeamContainer, node);
     }
 
@@ -146,11 +139,11 @@ bool WarSceneAIProcessor::DIE() {
     }
      
     AITeam* const currentTeam = _entity->getTeam();
-    U32 ownTeamID = currentTeam->getTeamID();
-    U32 enemyTeamID = 1 - ownTeamID;
+    const U32 ownTeamID = currentTeam->getTeamID();
+    const U32 enemyTeamID = 1 - ownTeamID;
 
     _entity->getUnitRef()->setAttribute(to_base(UnitAttributes::ALIVE_FLAG), 0);
-    U8 teamCount = _globalWorkingMemory._teamAliveCount[ownTeamID].value();
+    const U8 teamCount = _globalWorkingMemory._teamAliveCount[ownTeamID].value();
     _globalWorkingMemory._teamAliveCount[ownTeamID].value(to_U8(std::max(teamCount - 1, 0)));
 
     bool hadFlag = _localWorkingMemory._hasEnemyFlag.value();
@@ -197,10 +190,10 @@ bool WarSceneAIProcessor::DIE() {
     return true;
 }
 
-AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, SceneGraphNode* node) const {
+AIEntity* WarSceneAIProcessor::getUnitForNode(U32 /*teamID*/, SceneGraphNode* node) const {
     SceneGraphNode* sgnNode(node);
     if (sgnNode) {
-        NodeToUnitMap::const_iterator it =
+        const NodeToUnitMap::const_iterator it =
             _nodeToUnitMap[g_enemyTeamContainer].find(sgnNode->getGUID());
         if (it != std::end(_nodeToUnitMap[g_enemyTeamContainer])) {
             return it->second;
@@ -212,7 +205,7 @@ AIEntity* WarSceneAIProcessor::getUnitForNode(U32 teamID, SceneGraphNode* node) 
 
 void WarSceneAIProcessor::beginPlan(const GOAPGoal& currentGoal) {
     const AITeam* const currentTeam = _entity->getTeam();
-    U32 ownTeamID = currentTeam->getTeamID();
+    const U32 ownTeamID = currentTeam->getTeamID();
 
     if (_localWorkingMemory._isFlagRetriever.value() == true) {
         _globalWorkingMemory._flagRetrieverCount[ownTeamID].value(
@@ -228,7 +221,8 @@ void WarSceneAIProcessor::beginPlan(const GOAPGoal& currentGoal) {
                 _globalWorkingMemory._flagRetrieverCount[ownTeamID].value() +
                 1);
         } break;
-    };
+        default: break;
+    }
     Console::d_printfn(printPlan().c_str());
 }
 
@@ -241,7 +235,7 @@ namespace {
         LOW_PRIORITY = 1,
         IGNORE_PRIORITY = 0
     };
-};
+}
 
 void WarSceneAIProcessor::requestOrders() {
     const AITeam::OrderList& orders = _entity->getTeam()->requestOrders();
@@ -251,23 +245,20 @@ void WarSceneAIProcessor::requestOrders() {
     printWorkingMemory();
 
     const AITeam* const currentTeam = _entity->getTeam();
-    U32 ownTeamID = currentTeam->getTeamID();
-    U32 enemyTeamID = 1 - ownTeamID;
+    const U32 ownTeamID = currentTeam->getTeamID();
+    const U32 enemyTeamID = 1 - ownTeamID;
 
-    PriorityLevel prio;
+    const bool atHome = atHomeBase();
+    const bool nearEnemyF = nearEnemyFlag();
 
-    bool atHome = atHomeBase();
-    bool nearEnemyF = nearEnemyFlag();
-
-    WarSceneOrder::WarOrder orderID;
     for (const AITeam::OrderPtr& order : orders) {
-        orderID = static_cast<WarSceneOrder::WarOrder>(order->getID());
+        const WarSceneOrder::WarOrder orderID = static_cast<WarSceneOrder::WarOrder>(order->getID());
 
-        prio = PriorityLevel::IGNORE_PRIORITY;
+        PriorityLevel priorityLevel = PriorityLevel::IGNORE_PRIORITY;
         switch (orderID) {
             case WarSceneOrder::WarOrder::CAPTURE_ENEMY_FLAG: {
                 if (_globalWorkingMemory._flagCarriers[ownTeamID].value() == nullptr) {
-                    prio = PriorityLevel::MAX_PRIORITY;
+                    priorityLevel = PriorityLevel::MAX_PRIORITY;
                 }
             } break;
 
@@ -275,28 +266,28 @@ void WarSceneAIProcessor::requestOrders() {
                 if (_localWorkingMemory._hasEnemyFlag.value() == true &&
                     _globalWorkingMemory._flagsAtBase[ownTeamID].value() == true) {
                     assert(_globalWorkingMemory._flagCarriers[ownTeamID].value()->getGUID() == _entity->getGUID());
-                    prio = PriorityLevel::MAX_PRIORITY;
+                    priorityLevel = PriorityLevel::MAX_PRIORITY;
                 }
             } break;
 
             case WarSceneOrder::WarOrder::IDLE: {
-                prio = PriorityLevel::LOW_PRIORITY;
+                priorityLevel = PriorityLevel::LOW_PRIORITY;
                 // If we have the enemy flag and the enemy has our flag,
                 // we MUST wait for someone else to retrieve it
                 if (atHome &&
                     _localWorkingMemory._hasEnemyFlag.value() == true && 
                     _globalWorkingMemory._flagsAtBase[ownTeamID].value() == false &&
                     _globalWorkingMemory._teamAliveCount[ownTeamID].value() > 1){
-                     prio = PriorityLevel::MAX_PRIORITY;
+                     priorityLevel = PriorityLevel::MAX_PRIORITY;
                 }
             } break;
 
             case WarSceneOrder::WarOrder::KILL_ENEMY: {
                 if (_localWorkingMemory._currentTarget.value() != nullptr) {
-                    prio = PriorityLevel::VERY_HIGH_PRIORITY;
+                    priorityLevel = PriorityLevel::VERY_HIGH_PRIORITY;
                 }
                 if (_globalWorkingMemory._teamAliveCount[enemyTeamID].value() > 0) {
-                    prio = PriorityLevel::MEDIUM_PRIORITY;
+                    priorityLevel = PriorityLevel::MEDIUM_PRIORITY;
                 }
             } break;
 
@@ -304,7 +295,7 @@ void WarSceneAIProcessor::requestOrders() {
                 if (_globalWorkingMemory._flagCarriers[ownTeamID].value() != nullptr &&
                     _localWorkingMemory._hasEnemyFlag.value() == false &&
                     !nearEnemyF) {
-                    prio = PriorityLevel::HIGH_PRIORITY;
+                    priorityLevel = PriorityLevel::HIGH_PRIORITY;
                 }
             } break;
 
@@ -312,14 +303,15 @@ void WarSceneAIProcessor::requestOrders() {
                 if (_globalWorkingMemory._flagCarriers[enemyTeamID].value() != nullptr &&
                     _globalWorkingMemory._flagRetrieverCount[ownTeamID].value() < 2) {
                     if (_localWorkingMemory._hasEnemyFlag.value() == false) {
-                        prio = PriorityLevel::LOW_PRIORITY;
+                        priorityLevel = PriorityLevel::LOW_PRIORITY;
                     } else {
-                        prio = PriorityLevel::MAX_PRIORITY;
+                        priorityLevel = PriorityLevel::MAX_PRIORITY;
                     }
                 }
             } break;
+            default: break;
         }
-        priority[order->getID()] = to_U8(prio);
+        priority[order->getID()] = to_U8(priorityLevel);
     }
 
     for (GOAPGoal& goal : goalList()) {
@@ -352,14 +344,13 @@ void WarSceneAIProcessor::requestOrders() {
     }
 }
 
-bool WarSceneAIProcessor::preAction(ActionType type,
-                                    const WarSceneAction* warAction) {
+bool WarSceneAIProcessor::preAction(const ActionType type, const WarSceneAction* /*warAction*/) {
     const AITeam* const currentTeam = _entity->getTeam();
     DIVIDE_ASSERT(currentTeam != nullptr,
                   "WarScene error: INVALID TEAM FOR INPUT UPDATE");
 
-    U32 ownTeamID = currentTeam->getTeamID();
-    U32 enemyTeamID = 1 - ownTeamID;
+    const U32 ownTeamID = currentTeam->getTeamID();
+    const U32 enemyTeamID = 1 - ownTeamID;
     _actionState[to_U32(type)] = true;
 
     switch (type) {
@@ -370,7 +361,9 @@ bool WarSceneAIProcessor::preAction(ActionType type,
         } break;
         case ActionType::APPROACH_ENEMY_FLAG: {
             PRINT("Starting approach flag action");
-            _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value());
+            if (!_entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value())) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
         } break;
         case ActionType::CAPTURE_ENEMY_FLAG: {
             PRINT("Starting capture flag action");
@@ -386,7 +379,9 @@ bool WarSceneAIProcessor::preAction(ActionType type,
         } break;
         case ActionType::RETURN_TO_BASE: {
             PRINT("Starting return to base action");
-            _entity->updateDestination(_initialFlagPositions[ownTeamID]);
+            if  (!_entity->updateDestination(_initialFlagPositions[ownTeamID])) {
+              DIVIDE_UNEXPECTED_CALL();
+            }
         } break;
         case ActionType::ATTACK_ENEMY: {
             PRINT("Starting attack enemy action");
@@ -395,7 +390,9 @@ bool WarSceneAIProcessor::preAction(ActionType type,
 
                 if (_localWorkingMemory._isFlagRetriever.value() == false) {
                     SceneGraphNode* enemy = _visualSensor->getClosestNode(g_enemyTeamContainer);
-                    _entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true);
+                    if (!_entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true)) {
+                        DIVIDE_UNEXPECTED_CALL();
+                    }
                     _localWorkingMemory._currentTarget.value(enemy);
                 } else {
                     if (_globalWorkingMemory._flagCarriers[enemyTeamID].value() == nullptr) {
@@ -407,21 +404,28 @@ bool WarSceneAIProcessor::preAction(ActionType type,
                             .value()
                             ->getUnitRef()
                             ->getBoundNode();
-                    _entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true);
+                    if (!_entity->updateDestination(enemy->get<TransformComponent>()->getPosition(), true)) {
+                        DIVIDE_UNEXPECTED_CALL();
+                    }
                     _localWorkingMemory._currentTarget.value(enemy);
                 }
             } else {
-                _entity->updateDestination(_localWorkingMemory._currentTarget.value()->get<TransformComponent>()->getPosition());
+                if (!_entity->updateDestination(_localWorkingMemory._currentTarget.value()->get<TransformComponent>()->getPosition())) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
         } break;
         case ActionType::RECOVER_FLAG: {
             PRINT("Starting recover flag action");
-            _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value());
+            if (!_entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value())) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
         } break;
-        default: {
+        default: 
+        case ActionType::COUNT: {
             DIVIDE_UNEXPECTED_CALL();
         } break;
-    };
+    }
 
     return true;
 }
@@ -471,11 +475,10 @@ bool WarSceneAIProcessor::postAction(ActionType type,
                 SceneGraphNode* targetNode = _entity->getUnitRef()->getBoundNode();
                 SceneGraphNode* flag = _globalWorkingMemory._flags[enemyTeamID].value();
                 TransformComponent* tComp = flag->get<TransformComponent>();
-                TransformComponent* parenttComp = targetNode->get<TransformComponent>();
+                TransformComponent* parentComp = targetNode->get<TransformComponent>();
                 flag->setParent(targetNode);
                 vec3<F32> prevScale(tComp->getLocalScale());
-                vec3<F32> parentScale(parenttComp->getLocalScale());
-                vec3<F32> parentPos(parenttComp->getPosition());
+                vec3<F32> parentScale(parentComp->getLocalScale());
 
                 tComp->pushTransforms();
                 tComp->setPosition(vec3<F32>(-2.5f, 2.75f, 1.0f));
@@ -513,10 +516,11 @@ bool WarSceneAIProcessor::postAction(ActionType type,
             }
             _messageCallback(1, _entity->name());
         } break;
-        default: {
+        default: 
+        case ActionType::COUNT: {
             DIVIDE_UNEXPECTED_CALL();
         } break;
-    };
+    }
 
     GOAPAction::operationsIterator o;
     for (o = std::begin(warAction->effects()); o != std::end(warAction->effects()); ++o) {
@@ -530,15 +534,15 @@ bool WarSceneAIProcessor::postAction(ActionType type,
 
 bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep) {
     const WarSceneAction& warAction = static_cast<const WarSceneAction&>(planStep);
-    ActionType type = warAction.actionType();
+    const ActionType type = warAction.actionType();
     if (!_actionState[to_U32(type)]) {
         return false;
     }
 
     const AITeam* const currentTeam = _entity->getTeam();
-   
-    U32 ownTeamID = currentTeam->getTeamID();
-    U32 enemyTeamID = 1 - ownTeamID;
+
+    const U32 ownTeamID = currentTeam->getTeamID();
+    const U32 enemyTeamID = 1 - ownTeamID;
 
     //SceneGraphNode* currentNode(_entity->getUnitRef()->getBoundNode());
     //SceneGraphNode* enemyFlag(_globalWorkingMemory._flags[enemyTeamID].value());
@@ -549,7 +553,9 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
         case ActionType::CAPTURE_ENEMY_FLAG: {
             state = nearEnemyFlag();
             if (!state) {
-                _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value(), true);
+                if (!_entity->updateDestination(_globalWorkingMemory._teamFlagPosition[enemyTeamID].value(), true)) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
         } break;
 
@@ -564,7 +570,9 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
                 _entity->destinationReached();
 
             if (!state){
-                _entity->updateDestination(_initialFlagPositions[ownTeamID]);
+                if (!_entity->updateDestination(_initialFlagPositions[ownTeamID])) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
           
         } break;
@@ -573,7 +581,9 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
         case ActionType::RETURN_TO_BASE: {
             state = atHomeBase();
             if (!state && _entity->destinationReached()) {
-                _entity->updateDestination(_initialFlagPositions[ownTeamID]);
+                if (!_entity->updateDestination(_initialFlagPositions[ownTeamID])) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
         } break;
         case ActionType::ATTACK_ENEMY: {
@@ -586,7 +596,9 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
                         targetNPC->getAttribute(to_base(UnitAttributes::HEALTH_POINTS)) == 0;
                 if (!state) {
                     if (_entity->getPosition().distanceSquared(targetNPC->getPosition()) >= g_ATTACK_RADIUS_SQ) {
-                        _entity->updateDestination(targetNPC->getPosition(), true);
+                        if (!_entity->updateDestination(targetNPC->getPosition(), true)) {
+                            DIVIDE_UNEXPECTED_CALL();
+                        }
                     }
                 }
             }
@@ -594,13 +606,16 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
         case ActionType::RECOVER_FLAG: {
             state = _globalWorkingMemory._flagsAtBase[ownTeamID].value();
             if (!state) {
-                _entity->updateDestination(_globalWorkingMemory._teamFlagPosition[ownTeamID].value());
+                if (!_entity->updateDestination(_globalWorkingMemory._teamFlagPosition[ownTeamID].value())) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
             }
         } break;
-        default: {
+        default:
+        case ActionType::COUNT: {
             DIVIDE_UNEXPECTED_CALL();
         } break;
-    };
+    }
 
     if (state) {
         return warAction.postAction(*this);
@@ -631,10 +646,10 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
         } break;
 
         case AIMsg::HAVE_DIED: {
-            bool hadFlag = std::any_cast<bool>(msg_content);
+            const bool hadFlag = std::any_cast<bool>(msg_content);
             if (hadFlag) {
-                U32 senderTeamID = sender.getTeamID();
-                U32 ownTeamID = _entity->getTeamID();
+                const U32 senderTeamID = sender.getTeamID();
+                const U32 ownTeamID = _entity->getTeamID();
                 if (ownTeamID == senderTeamID) {
                     worldState().setVariable(GOAPFact(Fact::HAS_ENEMY_FLAG), GOAPValue(false));
                 } else{
@@ -653,7 +668,10 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
                 invalidateCurrentPlan();
             }
         } break;
-    };
+    case AIMsg::HAVE_SCORED: break;
+    case AIMsg::COUNT: break;
+    default: break;
+    }
 }
 
 bool WarSceneAIProcessor::atHomeBase() const {
@@ -698,7 +716,7 @@ void WarSceneAIProcessor::updatePositions() {
     AITeam* currentTeam = _entity->getTeam();
     AITeam* enemyTeam = _parentManager.getTeamByID(currentTeam->getEnemyTeamID(0));
 
-    bool atHome = atHomeBase();
+    const bool atHome = atHomeBase();
     U32 teamID = currentTeam->getTeamID();
 
     // If the enemy dropped the flag and we are near it, return it to base
@@ -727,7 +745,7 @@ void WarSceneAIProcessor::updatePositions() {
     }
 
     if (_type != AIType::HEAVY) {
-        BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode()->get<BoundsComponent>()->getBoundingSphere());
+        const BoundingSphere boundingSphere(_entity->getUnitRef()->getBoundNode()->get<BoundsComponent>()->getBoundingSphere());
         const AITeam::TeamMap& enemyMembers = enemyTeam->getTeamMembers();
         for (const AITeam::TeamMap::value_type& enemy : enemyMembers) {
             if (boundingSphere.collision(enemy.second->getUnitRef()->getBoundNode()->get<BoundsComponent>()->getBoundingSphere())) {
@@ -790,13 +808,13 @@ bool WarSceneAIProcessor::processData(const U64 deltaTimeUS) {
         AIEntity* targetUnit = getUnitForNode(g_enemyTeamContainer, enemy);
         if (targetUnit != nullptr) {
             NPC* targetNPC = targetUnit->getUnitRef();
-            bool alive = targetNPC->getAttribute(to_base(UnitAttributes::ALIVE_FLAG)) > 0;
+            const bool alive = targetNPC->getAttribute(to_base(UnitAttributes::ALIVE_FLAG)) > 0;
             if (alive && _entity->getPosition().distanceSquared(targetNPC->getPosition()) < g_ATTACK_RADIUS_SQ) {
                 _entity->stop();
                 _entity->getUnitRef()->lookAt(targetNPC->getPosition());
                 if (_attackTimer >= Time::SecondsToMicroseconds(0.5)) {
-                    I32 HP = targetNPC->getAttribute(to_base(UnitAttributes::HEALTH_POINTS));
-                    I32 Damage = _entity->getUnitRef()->getAttribute(to_base(UnitAttributes::DAMAGE));
+                    const I32 HP = targetNPC->getAttribute(to_base(UnitAttributes::HEALTH_POINTS));
+                    const I32 Damage = _entity->getUnitRef()->getAttribute(to_base(UnitAttributes::DAMAGE));
                     targetNPC->setAttribute(to_base(UnitAttributes::HEALTH_POINTS), std::max(HP - Damage, 0));
                     _entity->sendMessage(*targetUnit, AIMsg::ATTACK, 0);
                     _attackTimer = 0ULL;
@@ -840,12 +858,12 @@ bool WarSceneAIProcessor::performAction(const GOAPAction& planStep) {
 
 bool WarSceneAIProcessor::performActionStep(
     GOAPAction::operationsIterator step) {
-    GOAPFact crtFact = step->first;
-    GOAPValue newVal = step->second;
-    GOAPValue oldVal = worldState().getVariable(crtFact);
+    const GOAPFact crtFact = step->first;
+    const GOAPValue newVal = step->second;
+    const GOAPValue oldVal = worldState().getVariable(crtFact);
     if (oldVal != newVal) {
         PRINT("\t\t Changing \"%s\" from \"%s\" to \"%s\"",
-                         WarSceneFactName(crtFact),
+                         WarSceneFactName(crtFact).c_str(),
                          GOAPValueName(oldVal),
                          GOAPValueName(newVal));
     }
@@ -864,8 +882,8 @@ void WarSceneAIProcessor::printWorkingMemory() {
 
 stringImpl WarSceneAIProcessor::toString(bool state) const {
     const AITeam* const currentTeam = _entity->getTeam();
-    U32 ownTeamID = currentTeam->getTeamID();
-    U32 enemyTeamID = 1 - ownTeamID;
+    const U32 ownTeamID = currentTeam->getTeamID();
+    const U32 enemyTeamID = 1 - ownTeamID;
 
     stringImpl ret(Util::StringFormat("Unit: [ %s ]\n", _entity->name().c_str()));
     ret.append("--------------- Working memory state BEGIN ----------------------------\n");
@@ -915,10 +933,10 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
         "       Team count - Own Team: [ %d ] Enemy Team: [ %d]\n",
         _globalWorkingMemory._teamAliveCount[ownTeamID].value(),
         _globalWorkingMemory._teamAliveCount[enemyTeamID].value()));
-    for (std::pair<GOAPFact, GOAPValue> var : worldState().vars_) {
+    for (const auto[fact, value] : worldState().vars_) {
         ret.append(Util::StringFormat("        World state fact [ %s ] : [ %s ]\n",
-                                  WarSceneFactName(var.first),
-                                  var.second ? "true" : "false"));
+                                  WarSceneFactName(fact).c_str(),
+                                  value ? "true" : "false"));
     }
     ret.append("--------------- Working memory state END ----------------------------\n");
 
@@ -926,7 +944,7 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
         const GOAPAction* activeAction = getActiveAction();
         if (activeAction) {
             ret.append("Active action: ");
-            ret.append(activeAction->name().c_str());
+            ret.append(activeAction->name());
             ret.append("\n");
         }
     }
@@ -954,6 +972,6 @@ void WarSceneAIProcessor::registerGOAPPackage(const GOAPPackage& package) {
     }
 }
 
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide
 

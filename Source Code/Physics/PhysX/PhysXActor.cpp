@@ -6,9 +6,9 @@ namespace Divide {
     PhysXActor::PhysXActor(RigidBodyComponent& parent)
         : PhysicsAsset(parent),
         _actor(nullptr),
+        _type(physx::PxGeometryType::eINVALID),
         _isDynamic(false),
-        _userData(0.0f),
-        _type(physx::PxGeometryType::eINVALID)
+        _userData(0.0f)
     {
     }
 

@@ -12,11 +12,11 @@
 namespace Divide {
 
 struct MeshLoadData {
-    explicit MeshLoadData(const Mesh_ptr& mesh,
+    explicit MeshLoadData(Mesh_ptr mesh,
                           ResourceCache* cache,
                           PlatformContext* context,
                           const ResourceDescriptor& descriptor)
-        : _mesh(mesh),
+        : _mesh(std::move(mesh)),
           _cache(cache),
           _context(context),
           _descriptor(descriptor)
@@ -33,7 +33,7 @@ struct MeshLoadData {
 void threadedMeshLoad(MeshLoadData loadData, Import::ImportData tempMeshData) {
     OPTICK_EVENT();
 
-    if (MeshImporter::loadMeshDataFromFile(*loadData._context, loadData._cache, tempMeshData)) {
+    if (MeshImporter::loadMeshDataFromFile(*loadData._context, tempMeshData)) {
         if (!MeshImporter::loadMesh(loadData._mesh, *loadData._context, loadData._cache, tempMeshData)) {
             loadData._mesh.reset();
         }
@@ -65,7 +65,7 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
 
     MeshLoadData loadingData(ptr, _cache, &_context, _descriptor);
     if (_descriptor.threaded()) {
-        Start(*CreateTask(_context, [this, tempMeshData, loadingData](const Task & parent) {
+        Start(*CreateTask(_context, [this, tempMeshData, loadingData](const Task &) {
             threadedMeshLoad(loadingData, tempMeshData);
         }));
     } else {
@@ -74,4 +74,4 @@ CachedResource_ptr ImplResourceLoader<Mesh>::operator()() {
     return ptr;
 }
 
-};
+}

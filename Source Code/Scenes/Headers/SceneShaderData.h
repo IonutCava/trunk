@@ -44,7 +44,6 @@ class ShaderBuffer;
 constexpr U8 GLOBAL_WATER_BODIES = 2;
 
 class SceneShaderData {
-  private:
     struct SceneShaderBufferData {
         // w - reserved
         vec4<F32> _sunDirection = { 0.0f };
@@ -68,10 +67,10 @@ class SceneShaderData {
     };
 
   public:
-    SceneShaderData(GFXDevice& context);
-    ~SceneShaderData();
+    explicit SceneShaderData(GFXDevice& context);
+    ~SceneShaderData() = default;
 
-    ShaderBuffer* buffer() const noexcept {
+    [[nodiscard]] ShaderBuffer* buffer() const noexcept {
         return _sceneShaderData;
     }
 
@@ -87,7 +86,7 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    void fogDetails(F32 colourR, F32 colourG, F32 colourB, F32 density) noexcept {
+    void fogDetails(const F32 colourR, const F32 colourG, const F32 colourB, const F32 density) noexcept {
         _bufferData._fogDetails.set(colourR, colourG, colourB, density);
         _dirty = true;
     }
@@ -98,27 +97,27 @@ class SceneShaderData {
         _dirty = true;
     }
 
-    void shadowingSettings(F32 lightBleedBias, F32 minShadowVariance, F32 shadowFadeDist, F32 shadowMaxDist) noexcept {
+    void shadowingSettings(const F32 lightBleedBias, const F32 minShadowVariance, const F32 shadowFadeDist, const F32 shadowMaxDist) noexcept {
         _bufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
         _dirty = true;
     }
 
-    void windDetails(F32 directionX, F32 directionY, F32 directionZ, F32 speed) noexcept {
+    void windDetails(const F32 directionX, const F32 directionY, const F32 directionZ, const F32 speed) noexcept {
         _bufferData._windDetails.set(directionX, directionY, directionZ, speed);
         _dirty = true;
     }
 
-    void elapsedTime(U32 timeMS) noexcept {
+    void elapsedTime(const U32 timeMS) noexcept {
         _bufferData._otherData.x = to_F32(timeMS);
         _dirty = true;
     }
 
-    void deltaTime(F32 deltaTimeMS) noexcept {
+    void deltaTime(const F32 deltaTimeMS) noexcept {
         _bufferData._otherData.y = deltaTimeMS;
         _dirty = true;
     }
 
-    bool waterDetails(U8 index, const WaterBodyData& data) {
+    bool waterDetails(const U8 index, const WaterBodyData& data) {
         if (index < GLOBAL_WATER_BODIES) {
             _bufferData._waterEntities[index] = data;
             _dirty = true;
@@ -138,6 +137,6 @@ class SceneShaderData {
       /// Generic scene data that doesn't change per shader
       ShaderBuffer* _sceneShaderData;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCENE_SHADER_DATA_H_

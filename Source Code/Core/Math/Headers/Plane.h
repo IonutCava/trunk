@@ -66,7 +66,7 @@ class Plane {
         NEGATIVE_SIDE
     };
 
-    Plane() : Plane(Divide::WORLD_Y_AXIS, static_cast<T>(0))
+    Plane() : Plane(WORLD_Y_AXIS, static_cast<T>(0))
     {
     }
 
@@ -110,8 +110,8 @@ class Plane {
 
     [[nodiscard]] Side classifyPoint(const vec3<F32>& point) const {
         const F32 result = signedDistanceToPoint(point);
-        return (result > 0 ? Side::POSITIVE_SIDE
-                           : (result < 0 ? Side::NEGATIVE_SIDE : Side::NO_SIDE));
+        return result > 0 ? Side::POSITIVE_SIDE
+                   : result < 0 ? Side::NEGATIVE_SIDE : Side::NO_SIDE;
     }
 
     [[nodiscard]] T signedDistanceToPoint(const vec3<T>& point) const {
@@ -187,7 +187,7 @@ template<size_t N>
 using PlaneList = std::array<Plane<F32>, N>;
 using PlaneDynamicList = vectorEASTL<Plane<F32>>;
 
-static const Plane<F32> DEFAULT_PLANE = {Divide::WORLD_Y_AXIS, 0.0f };
-};  // namespace Divide
+static const Plane<F32> DEFAULT_PLANE = {WORLD_Y_AXIS, 0.0f };
+}  // namespace Divide
 
 #endif

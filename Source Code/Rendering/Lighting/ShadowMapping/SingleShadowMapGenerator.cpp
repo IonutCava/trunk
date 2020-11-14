@@ -177,18 +177,18 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     clearDescriptor.clearColours(true);
     clearDescriptor.resetToDefault(true);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("Single Shadow Pass Light: [ %d ]", lightIndex).c_str()));
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("Single Shadow Pass Light: [ %d ]", lightIndex).c_str()));
 
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
     clearMainTarget._descriptor = clearDescriptor;
-    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+    EnqueueCommand(bufferInOut, clearMainTarget);
 
     _context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
 
     postRender(spotLight, bufferInOut);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::CommandBuffer& bufferInOut) {
@@ -200,7 +200,7 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
     blitRenderTargetCommand._source = _drawBufferDepth._targetID;
     blitRenderTargetCommand._destination = g_depthMapID;
     blitRenderTargetCommand._blitColours[0].set(0u, 0u, 0u, layerOffset);
-    GFX::EnqueueCommand(bufferInOut, blitRenderTargetCommand);
+    EnqueueCommand(bufferInOut, blitRenderTargetCommand);
 
     // Now we can either blur our target or just skip to mipmap computation
     if (g_shadowSettings.spot.enableBlurring) {
@@ -219,14 +219,14 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
         beginRenderPassCmd._target = _blurBuffer._targetID;
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
 
-        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
 
         const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
         TextureData texData = shadowAtt.texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, shadowAtt.samplerHash(), TextureUsage::UNIT0);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         _shaderConstants.set(_ID("layered"), GFX::PushConstantType::BOOL, true);
         _shaderConstants.set(_ID("verticalBlur"), GFX::PushConstantType::BOOL, false);
@@ -234,39 +234,39 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
         _shaderConstants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);
 
         pushConstantsCommand._constants = _shaderConstants;
-        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        EnqueueCommand(bufferInOut, drawCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
         // Blur vertically
         const auto& blurAtt = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0);
         texData = blurAtt.texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, blurAtt.samplerHash(),TextureUsage::UNIT0);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         beginRenderPassCmd._target = g_depthMapID;
         beginRenderPassCmd._descriptor = {};
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_VERTICAL";
-        GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
         pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::BOOL, true);
         pushConstantsCommand._constants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
         pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, layerOffset);
 
-        GFX::EnqueueCommand(bufferInOut, pushConstantsCommand);
+        EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-        GFX::EnqueueCommand(bufferInOut, drawCmd);
+        EnqueueCommand(bufferInOut, drawCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
 
     GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
     computeMipMapsCommand._texture = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture().get();
     computeMipMapsCommand._layerRange = vec2<U32>(light.getShadowOffset(), layerCount);
     computeMipMapsCommand._defer = false;
-    GFX::EnqueueCommand(bufferInOut, computeMipMapsCommand);
+    EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }
 
 void SingleShadowMapGenerator::updateMSAASampleCount(const U8 sampleCount) {

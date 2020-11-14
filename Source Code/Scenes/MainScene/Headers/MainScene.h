@@ -45,8 +45,8 @@ class MainScene : public Scene {
     explicit MainScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
 
     /*General Scene Requirement*/
-    bool load(const Str256& name);
-    bool unload();
+    bool load(const Str256& name) override;
+    bool unload() override;
     void postLoadMainThread(const Rect<U16>& targetRenderViewport) override;
 
    private:
@@ -55,7 +55,7 @@ class MainScene : public Scene {
     void processInput(PlayerIndex idx, U64 deltaTimeUS)override;
     void processTasks(U64 deltaTimeUS)override;
     void processGUI(U64 deltaTimeUS)override;
-    void test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size);
+    void test();
     U16 registerInputActions() override;
 
    private:
@@ -65,6 +65,6 @@ class MainScene : public Scene {
     AudioDescriptor_ptr _beep;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

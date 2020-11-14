@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "HotReloading/Headers/HotReloading.h"
-
 #include "engineMain.h"
 
 #if defined(_WIN32)
@@ -12,7 +10,7 @@ int main(int argc, char **argv) {
     Divide::U64 callCount = 0;
     _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
 
-    auto started = std::chrono::high_resolution_clock::now();
+    const auto started = std::chrono::high_resolution_clock::now();
 
     // Create a new engine instance
     Divide::Engine engine;
@@ -26,7 +24,7 @@ int main(int argc, char **argv) {
     }
     // Stop the engine
     engine.shutdown();
-    auto done = std::chrono::high_resolution_clock::now();
+    const auto done = std::chrono::high_resolution_clock::now();
 
     std::cout << "Divide engine shutdown after "
               << callCount

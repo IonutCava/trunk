@@ -102,5 +102,5 @@ namespace Divide {
         stringImpl _lastActionName;
     };
 
-}; //namespace Divide
+} //namespace Divide
 #endif //_UNDO_MANAGER_H_

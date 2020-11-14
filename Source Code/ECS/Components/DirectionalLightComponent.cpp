@@ -13,13 +13,13 @@ namespace Divide {
 
 namespace {
     constexpr F32 g_defaultLightDistance = 500.0f;
-};
+}
 
 DirectionalLightComponent::DirectionalLightComponent(SceneGraphNode* sgn, PlatformContext& context)
     : BaseComponentType<DirectionalLightComponent, ComponentType::DIRECTIONAL_LIGHT>(sgn, context), 
       Light(sgn, -1, LightType::DIRECTIONAL, sgn->sceneGraph()->parentScene().lightPool())
 {
-    Light::range(g_defaultLightDistance);
+    range(g_defaultLightDistance);
 
     _shadowProperties._lightDetails.y = to_F32(_csmSplitCount);
     _shadowProperties._lightDetails.z = 0.0f;
@@ -83,10 +83,10 @@ void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
         const F32 coneDist = 11.f;
         const Camera* playerCam = getSGN()->sceneGraph()->parentScene().playerCamera();
         // Try and place the cone in such a way that it's always in view, because directional lights have no "source"
-        const vec3<F32> min = (-coneDist * directionCache()) + 
+        const vec3<F32> min = -coneDist * directionCache() + 
                               playerCam->getEye() + 
-                             (playerCam->getForwardDir() * 10.0f) + 
-                             (playerCam->getRightDir() * 2.0f);
+                             playerCam->getForwardDir() * 10.0f + 
+                             playerCam->getRightDir() * 2.0f;
 
         context().gfx().debugDrawCone(min, directionCache(), coneDist, 1.f, getDiffuseColour());
     }
@@ -96,7 +96,7 @@ void DirectionalLightComponent::PreUpdate(const U64 deltaTime) {
 
 void DirectionalLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
-        Light::updateCache(data);
+        updateCache(data);
     } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
         const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(data._flag);
         if (flag == SceneGraphNode::Flags::SELECTED) {
@@ -115,4 +115,4 @@ void DirectionalLightComponent::setDirection(const vec3<F32>& direction) {
     }
 }
 
-};
+}

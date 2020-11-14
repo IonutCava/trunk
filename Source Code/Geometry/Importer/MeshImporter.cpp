@@ -182,7 +182,7 @@ namespace Import {
         return true;
     }
 };
-    bool MeshImporter::loadMeshDataFromFile(PlatformContext& context, ResourceCache* cache, Import::ImportData& dataOut) {
+    bool MeshImporter::loadMeshDataFromFile(PlatformContext& context, Import::ImportData& dataOut) {
         Time::ProfileTimer importTimer = {};
         importTimer.start();
 
@@ -273,7 +273,7 @@ namespace Import {
                                                                  subMeshData.maxPos());
 
                 if (!tempSubMesh->getMaterialTpl()) {
-                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(context, cache, subMeshData._material, subMeshData.boneCount() > 0));
+                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(cache, subMeshData._material, subMeshData.boneCount() > 0));
                 }
             }
 
@@ -293,7 +293,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    Material_ptr MeshImporter::loadSubMeshMaterial(PlatformContext& context, ResourceCache* cache, const Import::MaterialData& importData, bool skinned) {
+    Material_ptr MeshImporter::loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned) {
         ResourceDescriptor materialDesc(importData.name());
         if (skinned) {
             materialDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
@@ -332,7 +332,7 @@ namespace Import {
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
                 Texture_ptr texPtr = CreateResource<Texture>(cache, texture);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource* res) {
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
                     tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, textureSampler.getHash(),tex.operation());
                 });
             }
@@ -349,7 +349,7 @@ namespace Import {
                 opacityDesc.assetLocation(diffuse->assetLocation());
                 opacityDesc.propertyDescriptor(diffuse->descriptor());
                 Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource* res) {
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
                     tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, tempMaterial->getSampler(TextureUsage::UNIT0),TextureOperation::REPLACE);
                 });
                 

@@ -10,17 +10,13 @@ namespace Divide {
 
 Character::Character(CharacterType type, FrameListenerManager& parent, U32 callOrder)
     : Unit(UnitType::UNIT_TYPE_CHARACTER, parent, callOrder),
-      _type(type)
+      _characterType(type)
 {
     _positionDirty = false;
     _velocityDirty = false;
     setRelativeLookingDirection(WORLD_Z_NEG_AXIS);
     _newVelocity.reset();
     _curVelocity.reset();
-}
-
-Character::~Character()
-{
 }
 
 void Character::setParentNode(SceneGraphNode* node) {
@@ -113,7 +109,7 @@ void Character::lookAt(const vec3<F32>& targetPos) {
     _velocityDirty = true;
 }
 
-void Character::playAnimation(I32 index) {
+void Character::playAnimation(I32 index) const {
     SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
@@ -121,9 +117,9 @@ void Character::playAnimation(I32 index) {
             anim->playAnimation(index);
         } else {
             node->forEachChild([index](const SceneGraphNode* child, I32 /*childIdx*/) {
-                AnimationComponent* anim = child->get<AnimationComponent>();
-                if (anim) {
-                    anim->playAnimation(index);
+                AnimationComponent* childAnim = child->get<AnimationComponent>();
+                if (childAnim) {
+                    childAnim->playAnimation(index);
                 }
                 return true;
             });
@@ -139,9 +135,9 @@ void Character::playNextAnimation() {
             anim->playNextAnimation();
         } else {
             node->forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
-                AnimationComponent* anim = child->get<AnimationComponent>();
-                if (anim) {
-                    anim->playNextAnimation();
+                AnimationComponent* childAnim = child->get<AnimationComponent>();
+                if (childAnim) {
+                    childAnim->playNextAnimation();
                 }
                 return true;
             });
@@ -149,7 +145,7 @@ void Character::playNextAnimation() {
     }
 }
 
-void Character::playPreviousAnimation() {
+void Character::playPreviousAnimation() const {
     SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
@@ -157,9 +153,9 @@ void Character::playPreviousAnimation() {
             anim->playPreviousAnimation();
         } else {
             node->forEachChild([](const SceneGraphNode* child, I32 /*childIdx*/) {
-                AnimationComponent* anim = child->get<AnimationComponent>();
-                if (anim) {
-                    anim->playPreviousAnimation();
+                AnimationComponent* childAnim = child->get<AnimationComponent>();
+                if (childAnim) {
+                    childAnim->playPreviousAnimation();
                 }
                 return true;
             });
@@ -167,7 +163,7 @@ void Character::playPreviousAnimation() {
     }
 }
 
-void Character::pauseAnimation(bool state) {
+void Character::pauseAnimation(bool state) const {
     SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();
@@ -175,13 +171,13 @@ void Character::pauseAnimation(bool state) {
             anim->playAnimations(state);
         } else {
             node->forEachChild([state](const SceneGraphNode* child, I32 /*childIdx*/) {
-                AnimationComponent* anim = child->get<AnimationComponent>();
-                if (anim) {
-                    anim->playAnimations(state);
+                AnimationComponent* childAnim = child->get<AnimationComponent>();
+                if (childAnim) {
+                    childAnim->playAnimations(state);
                 }
                 return true;
             });
         }
     }
 }
-};
+}

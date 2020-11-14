@@ -31,5 +31,5 @@ void FrameRateHandler::tick(const U64 deltaTimeUS) noexcept {
     }
 }
 
-}; //namespace Time
-}; //namespace Divide
+} //namespace Time
+} //namespace Divide

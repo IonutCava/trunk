@@ -37,15 +37,15 @@
 
 namespace Divide {
 
-class CubeShadowMapGenerator : public ShadowMapGenerator {
+class CubeShadowMapGenerator final : public ShadowMapGenerator {
    public:
     explicit CubeShadowMapGenerator(GFXDevice& context);
 
-    void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) final;
+    void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) override;
 
-    void updateMSAASampleCount(const U8 sampleCount) final;
+    void updateMSAASampleCount(U8 sampleCount) override;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_CUBE_SHADOW_MAP_GENERATOR_H_

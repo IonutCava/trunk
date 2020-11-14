@@ -283,9 +283,9 @@ namespace Input {
     MouseButton mouseButtonByName(const stringImpl& buttonName);
     JoystickElement joystickElementByName(const stringImpl& elementName);
 
-    InputState getKeyState(U8 deviceIndex, Input::KeyCode key);
-    InputState getMouseButtonState(U8 deviceIndex, Input::MouseButton button) noexcept;
-    InputState getJoystickElementState(Input::Joystick deviceIndex, Input::JoystickElement element) noexcept;
+    InputState getKeyState(U8 deviceIndex, KeyCode key);
+    InputState getMouseButtonState(U8 deviceIndex, MouseButton button) noexcept;
+    InputState getJoystickElementState(Joystick deviceIndex, JoystickElement element) noexcept;
 
     }; //namespace Input
 }; //namespace Divide

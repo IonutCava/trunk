@@ -60,7 +60,7 @@ struct PressReleaseActionCbks {
     void from(const PressReleaseActions& actions, const InputActionList& actionList);
 };
 
-class SceneInput : public Input::InputAggregatorInterface {
+class SceneInput final : public Input::InputAggregatorInterface {
    public:
     using JoystickMapKey = std::pair<std::underlying_type_t<Input::JoystickElementType>, U32>;
 
@@ -77,7 +77,7 @@ class SceneInput : public Input::InputAggregatorInterface {
     using KeyLog = vectorEASTL<std::pair<Input::KeyCode, Input::InputState>>;
     using MouseBtnLog = vectorEASTL<std::tuple<Input::MouseButton, Input::InputState, vec2<I32>>>;
 
-    explicit SceneInput(Scene &parentScene, PlatformContext& context);
+    explicit SceneInput(Scene &parentScene);
 
     //Keyboard: return true if input was consumed
     bool onKeyDown(const Input::KeyEvent &arg) override;
@@ -102,7 +102,7 @@ class SceneInput : public Input::InputAggregatorInterface {
     bool removeKeyMapping(Input::KeyCode key);
     /// Returns true if the key has a valid mapping and sets the callback output
     /// to the mapping's function
-    bool getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCbkOut);
+    bool getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCbksOut);
 
     /// Returns false if the button is already assigned.
     /// Call removeButtonMapping for the specified key first
@@ -140,7 +140,6 @@ class SceneInput : public Input::InputAggregatorInterface {
                             bool onPress);
 
    private:
-    PlatformContext& _context;
     Scene &_parentScene;
 
     KeyMap _keyMap;
@@ -158,6 +157,6 @@ class SceneInput : public Input::InputAggregatorInterface {
 
 };  // SceneInput
 
-};  // namespace Divide
+}  // namespace Divide
 #endif  //_SCENE_INPUT_H_
 

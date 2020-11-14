@@ -18,4 +18,4 @@ namespace Divide {
     {
         _mgr.removeFrameListener(this);
     }
-}; //namespace Divide
+} //namespace Divide

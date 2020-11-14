@@ -154,7 +154,7 @@ void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor);
 
 void WaitForAllTasks(TaskPool& pool, bool yield, bool flushCallbacks);
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_TASK_POOL_H_
 

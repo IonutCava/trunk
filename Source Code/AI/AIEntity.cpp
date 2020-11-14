@@ -19,15 +19,15 @@ constexpr D64 DESTINATION_RADIUS_SQ = DESTINATION_RADIUS *
 constexpr F32 DESTINATION_RADIUS_F = to_F32(DESTINATION_RADIUS);
 constexpr F32 DESTINATION_RADIUS_SQ_F = to_F32(DESTINATION_RADIUS_SQ);
 
-AIEntity::AIEntity(const vec3<F32>& currentPosition, const stringImpl& name)
+AIEntity::AIEntity(const vec3<F32>& currentPosition, stringImpl name)
     : GUIDWrapper(),
-      _name(name),
+      _name(std::move(name)),
+      _teamPtr(nullptr),
       _processor(nullptr),
       _unitRef(nullptr),
-      _teamPtr(nullptr),
+      _agentID(-1),
       _detourCrowd(nullptr),
       _agent(nullptr),
-      _agentID(-1),
       _distanceToTarget(-1.f),
       _previousDistanceToTarget(-1.f),
       _moveWaitTimer(0ULL),
@@ -46,18 +46,22 @@ AIEntity::~AIEntity()
     _agentID = -1;
     _agent = nullptr;
 
-    setAIProcessor(nullptr);
+    if (!setAIProcessor(nullptr)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
     MemoryManager::DELETE_HASHMAP(_sensorList);
 }
 
 void AIEntity::load(const vec3<F32>& position) {
-    setPosition(position);
+    if (!setPosition(position)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 
     if (!isAgentLoaded() && _detourCrowd) {
         _agentID = _detourCrowd->addAgent(position,
                                           _unitRef
                                               ? _unitRef->getMovementSpeed()
-                                              : to_F32((_detourCrowd->getAgentHeight() / 2) * 3.5f),
+                                              : to_F32(_detourCrowd->getAgentHeight() / 2 * 3.5f),
                                            _unitRef
                                               ? _unitRef->getAcceleration()
                                               : 5.0f);
@@ -81,7 +85,7 @@ void AIEntity::unload() {
 }
 
 void AIEntity::sendMessage(AIEntity& receiver,
-                           AIMsg msg,
+                           const AIMsg msg,
                            const std::any& msg_content) {
     
     if (getGUID() != receiver.getGUID()) {
@@ -90,29 +94,29 @@ void AIEntity::sendMessage(AIEntity& receiver,
 }
 
 void AIEntity::receiveMessage(AIEntity& sender,
-                              AIMsg msg,
+                              const AIMsg msg,
                               const std::any& msg_content) {
     processMessage(sender, msg, msg_content);
 }
 
 void AIEntity::processMessage(AIEntity& sender,
-                              AIMsg msg,
+                              const AIMsg msg,
                               const std::any& msg_content) {
     assert(_processor);
     SharedLock<SharedMutex> r_lock(_updateMutex);
     _processor->processMessage(sender, msg, msg_content);
 }
 
-Sensor* AIEntity::getSensor(SensorType type) {
+Sensor* AIEntity::getSensor(const SensorType type) {
     SharedLock<SharedMutex> r_lock(_updateMutex);
-    SensorMap::const_iterator it = _sensorList.find(type);
+    const SensorMap::const_iterator it = _sensorList.find(type);
     if (it != std::end(_sensorList)) {
         return it->second;
     }
     return nullptr;
 }
 
-bool AIEntity::addSensor(SensorType type) {
+bool AIEntity::addSensor(const SensorType type) {
     UniqueLock<SharedMutex> w_lock(_updateMutex);
     Sensor* sensor = nullptr;
     switch (type) {
@@ -122,12 +126,15 @@ bool AIEntity::addSensor(SensorType type) {
         case SensorType::VISUAL_SENSOR: {
             sensor = Attorney::VisualSensorConstructor::construct(this);
         } break;
+        case SensorType::NONE:{
+                
+        } break;
     };
 
     if (sensor) {
-        auto result = hashAlg::insert(_sensorList, type, sensor);
+        auto result = insert(_sensorList, type, sensor);
         if (!result.second) {
-            MemoryManager::SAFE_UPDATE((result.first)->second, sensor);
+            MemoryManager::SAFE_UPDATE(result.first->second, sensor);
         } 
         return true;
     }
@@ -236,10 +243,10 @@ bool AIEntity::setPosition(const vec3<F32>& position) {
 
     // Find position on NavMesh
     vec3<F32> result;
-    bool isPointOnNavMesh = _detourCrowd->getNavMesh().getClosestPosition(position,
-                                                                          vec3<F32>(5),
-                                                                          DESTINATION_RADIUS_F,
-                                                                          result);
+    const bool isPointOnNavMesh = _detourCrowd->getNavMesh().getClosestPosition(position,
+                                                                                vec3<F32>(5),
+                                                                                DESTINATION_RADIUS_F,
+                                                                                result);
     DIVIDE_ASSERT(isPointOnNavMesh, "AIEntity::setPosition error: Invalid NavMesh position returned!");
 
     // Remove agent from crowd and re-add at position
@@ -247,7 +254,7 @@ bool AIEntity::setPosition(const vec3<F32>& position) {
     _agentID = _detourCrowd->addAgent(result,
                                       _unitRef
                                           ? _unitRef->getMovementSpeed()
-                                          : to_F32((_detourCrowd->getAgentHeight() / 2) * 3.5f),
+                                          : to_F32(_detourCrowd->getAgentHeight() / 2 * 3.5f),
                                       _unitRef
                                           ? _unitRef->getAcceleration()
                                           : 5.0f);
@@ -265,29 +272,34 @@ void AIEntity::updatePosition(const U64 deltaTimeUS) {
     if (isAgentLoaded() && getAgent()->active) {
         _previousDistanceToTarget = _distanceToTarget;
         _distanceToTarget = _currentPosition.distanceSquared(_destination);
-        /*F32 distanceDelta = std::abs(_previousDistanceToTarget - _distanceToTarget);
+        const F32 distanceDelta = std::abs(_previousDistanceToTarget - _distanceToTarget);
         // if we are walking but did not change distance in a while
         if (distanceDelta < DESTINATION_RADIUS_SQ) {
-            _moveWaitTimer += deltaTime;
+            _moveWaitTimer += deltaTimeUS;
 
             if (Time::MicrosecondsToSeconds<D64>(_moveWaitTimer) > 5) {
-                _moveWaitTimer = 0;
-                stop();
-                if (_detourCrowd) {
-                    vec3<F32> result;
-                    bool isPointOnNavMesh =
-                        _detourCrowd->getNavMesh().getClosestPosition(_currentPosition,
-                                                                      vec3<F32>(5),
-                                                                      DESTINATION_RADIUS_F,
-                                                                      result);
-                    DIVIDE_ASSERT(isPointOnNavMesh, "AIEntity::updatePosition error: Invalid NavMesh position returned!");
-                    _unitRef->moveTo(result);
+                // DISABLED FOR NOW!
+                if_constexpr(false) {
+                    _moveWaitTimer = 0;
+                    stop();
+                    if (_detourCrowd) {
+                        vec3<F32> result;
+                        const bool isPointOnNavMesh =
+                            _detourCrowd->getNavMesh().getClosestPosition(_currentPosition,
+                                vec3<F32>(5),
+                                DESTINATION_RADIUS_F,
+                                result);
+                        DIVIDE_ASSERT(isPointOnNavMesh, "AIEntity::updatePosition error: Invalid NavMesh position returned!");
+                        if (!_unitRef->moveTo(result)) {
+                            DIVIDE_UNEXPECTED_CALL();
+                        }
+                    }
+                    return;
                 }
-                return;
             }
         } else {
             _moveWaitTimer = 0;
-        }*/
+        }
         _currentPosition.set(getAgent()->npos);
         _currentVelocity.set(getAgent()->nvel);
     }
@@ -298,8 +310,7 @@ void AIEntity::updatePosition(const U64 deltaTimeUS) {
     }
 }
 
-bool AIEntity::updateDestination(const vec3<F32>& destination,
-                                 bool updatePreviousPath) {
+bool AIEntity::updateDestination(const vec3<F32>& destination, const bool updatePreviousPath) {
     if (!isAgentLoaded()) {
         return false;
     }
@@ -347,12 +358,12 @@ const vec3<F32>& AIEntity::getDestination() const {
     return getPosition();
 }
 
-bool AIEntity::destinationReached() {
+bool AIEntity::destinationReached() const {
     if (!isAgentLoaded()) {
         return false;
     }
 
-    return (_currentPosition.distanceSquared(getDestination()) <= DESTINATION_RADIUS_SQ) ||
+    return _currentPosition.distanceSquared(getDestination()) <= DESTINATION_RADIUS_SQ ||
             _detourCrowd->destinationReached(getAgent(), DESTINATION_RADIUS_F);
 }
 
@@ -366,17 +377,17 @@ void AIEntity::setDestination(const vec3<F32>& destination) {
 }
 
 void AIEntity::moveForward() {
-    vec3<F32> lookDirection(_unitRef != nullptr
-                               ? Normalized(_unitRef->getLookingDirection())
-                               : WORLD_Z_NEG_AXIS);
+    const vec3<F32> lookDirection(_unitRef != nullptr
+                                      ? Normalized(_unitRef->getLookingDirection())
+                                      : WORLD_Z_NEG_AXIS);
 
     setVelocity(lookDirection * to_F32(getMaxSpeed()));
 }
 
 void AIEntity::moveBackwards() {
-    vec3<F32> lookDirection(_unitRef != nullptr
-                               ? Normalized(_unitRef->getLookingDirection())
-                               : WORLD_Z_NEG_AXIS);
+    const vec3<F32> lookDirection(_unitRef != nullptr
+                                      ? Normalized(_unitRef->getLookingDirection())
+                                      : WORLD_Z_NEG_AXIS);
 
     setVelocity(lookDirection * to_F32(getMaxSpeed()) * -1.0f);
 }
@@ -385,8 +396,8 @@ void AIEntity::setVelocity(const vec3<F32>& velocity) {
     _stopped = false;
     _destination.reset();
 
-    if (isAgentLoaded()) {
-        _detourCrowd->requestVelocity(getAgentID(), velocity);
+    if (!isAgentLoaded() || !_detourCrowd->requestVelocity(getAgentID(), velocity)) {
+        DIVIDE_UNEXPECTED_CALL();
     }
 }
 
@@ -403,15 +414,15 @@ void AIEntity::stop() {
 }
 
 vec3<F32> AIEntity::getVelocity() const {
-    return (isAgentLoaded() ? vec3<F32>(getAgent()->nvel) : vec3<F32>());
+    return isAgentLoaded() ? vec3<F32>(getAgent()->nvel) : vec3<F32>();
 }
 
-D64 AIEntity::getMaxSpeed() {
-    return (isAgentLoaded() ? getAgent()->params.maxSpeed : 0.0);
+D64 AIEntity::getMaxSpeed() const {
+    return isAgentLoaded() ? getAgent()->params.maxSpeed : 0.0;
 }
 
-D64 AIEntity::getMaxAcceleration() {
-    return (isAgentLoaded() ? getAgent()->params.maxAcceleration : 0.0);
+D64 AIEntity::getMaxAcceleration() const {
+    return isAgentLoaded() ? getAgent()->params.maxAcceleration : 0.0;
 }
 
 stringImpl AIEntity::toString() const {
@@ -421,4 +432,4 @@ stringImpl AIEntity::toString() const {
 
     return "Error_" + name();
 }
-};  // namespace Divide
+}  // namespace Divide

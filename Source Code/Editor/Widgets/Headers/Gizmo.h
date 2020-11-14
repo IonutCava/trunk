@@ -50,7 +50,7 @@ namespace Divide {
 
     namespace Attorney {
         class GizmoEditor;
-    };
+    }
 
     struct TransformSettings {
         ImGuizmo::OPERATION currentGizmoOperation = ImGuizmo::ROTATE;
@@ -124,7 +124,7 @@ namespace Divide {
             }
             friend class Divide::Editor;
         };
-    };
-}; //namespace Divide
+    }
+} //namespace Divide
 
 #endif //_EDITOR_GIZMO_H_

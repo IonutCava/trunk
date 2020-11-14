@@ -51,7 +51,7 @@ namespace {
             case RenderStage::REFRACTION: return Config::MAX_REFRACTIVE_NODES_IN_VIEW; // planar
             case RenderStage::REFLECTION: return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + // could be planar
                                                  Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6; // environment
-            default: break;
+            case RenderStage::COUNT:      break;
         };
 
         DIVIDE_UNEXPECTED_CALL();
@@ -149,28 +149,37 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
 
     U32 cmdBufferIdx = 0u;
     switch (_stageFlag) {
-        case RenderStage::DISPLAY:    
-        case RenderStage::SHADOW: cmdBufferIdx = RenderStagePass::indexForStage(stagePass); break;
+        case RenderStage::DISPLAY:
+        case RenderStage::SHADOW:
+            cmdBufferIdx = RenderStagePass::indexForStage(stagePass);
+            break;
+
         case RenderStage::REFRACTION: { 
             switch (static_cast<RefractorType>(stagePass._variant)) {
                 case RefractorType::PLANAR:
                     cmdBufferIdx = stagePass._index;
                     break;
-                default: DIVIDE_UNEXPECTED_CALL();
+                case RefractorType::COUNT:
+                    DIVIDE_UNEXPECTED_CALL();
                     break;
             };
         } break;
+
         case RenderStage::REFLECTION: {
             switch (static_cast<ReflectorType>(stagePass._variant)) {
                 case ReflectorType::PLANAR:  //We buffer for worst case scenario anyway (6 passes)
                 case ReflectorType::CUBE:
                     cmdBufferIdx = stagePass._index * 6 + stagePass._pass;
                     break;
-                default: DIVIDE_UNEXPECTED_CALL(); 
+                case ReflectorType::COUNT:
+                    DIVIDE_UNEXPECTED_CALL(); 
                     break;
             };
         } break;
-        default: DIVIDE_UNEXPECTED_CALL(); break;
+
+        case RenderStage::COUNT:
+            DIVIDE_UNEXPECTED_CALL();
+            break;
     }
 
     BufferData ret;
@@ -231,13 +240,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             params._target = _context.renderTargetPool().screenTargetID();
             clearMainTarget._target = params._target;
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Main Display Pass" });
-            GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Main Display Pass" });
+            EnqueueCommand(bufferInOut, clearMainTarget);
 
             _parent.doCustomPass(params, bufferInOut);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
         } break;
+
         case RenderStage::SHADOW: {
             OPTICK_EVENT("RenderPass - Shadow");
             if (_config.rendering.shadowMapping.enabled) {
@@ -246,7 +256,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
                 LightPool& lightPool = Attorney::SceneManagerRenderPass::lightPool(mgr);
 
-                GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
+                EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
 
                 //ToDo: remove this and change lookup code
                 GFX::SetClippingStateCommand clipStateCmd;
@@ -258,13 +268,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 clipStateCmd._negativeOneToOneDepth = false;
                 //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
 
-                GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+                EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
             }
         } break;
+
         case RenderStage::REFLECTION: {
             static VisibleNodeList s_Nodes;
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Reflection Pass" });
+            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Reflection Pass" });
 
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
@@ -305,13 +316,14 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                     }
                 }
             }
-            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         } break;
+
         case RenderStage::REFRACTION: {
             static VisibleNodeList s_Nodes;
 
-            GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Refraction Pass" });
+            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Refraction Pass" });
 
             OPTICK_EVENT("RenderPass - Refraction");
             // Get list of refractive nodes from the scene manager
@@ -336,10 +348,13 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 }
             }
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         } break;
-        default: DIVIDE_UNEXPECTED_CALL(); break;
+
+        case RenderStage::COUNT:
+            DIVIDE_UNEXPECTED_CALL();
+            break;
     };
 }
 

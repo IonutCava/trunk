@@ -45,7 +45,7 @@ class ParticleBasicTimeUpdater final : public ParticleUpdater {
 
     ~ParticleBasicTimeUpdater() = default;
 
-    void update(const U64 deltaTimeUS, ParticleData& p) override;
+    void update(U64 deltaTimeUS, ParticleData& p) override;
 };
-};
+}
 #endif

@@ -45,6 +45,6 @@ namespace Divide {
         BoundsSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~BoundsSystem() = default;
     };
-};
+}
 
 #endif //_BOUNDS_SYSTEM_H_

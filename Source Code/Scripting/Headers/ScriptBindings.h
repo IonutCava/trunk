@@ -45,6 +45,6 @@ namespace Divide {
     chaiscript::ModulePtr create_chaiscript_stdlib();
     chaiscript::ModulePtr create_chaiscript_stl_extra();
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCRIPTING_SCRIPT_BINDINGS_H_

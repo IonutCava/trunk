@@ -67,7 +67,7 @@ inline void REMOVE_TIMER(ProfileTimer*& timer) {
     ProfileTimer::removeTimer(*timer);
 }
 
-};  // namespace Time
-};  // namespace Divide
+}  // namespace Time
+}  // namespace Divide
 
 #endif  //_CORE_TIME_PROFILE_TIMER_INL_

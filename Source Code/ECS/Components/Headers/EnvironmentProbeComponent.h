@@ -47,7 +47,7 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 
 namespace GFX {
     class CommandBuffer;
-}; //namespace GFX
+} //namespace GFX
 
 
 class EnvironmentProbeComponent final : public BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>,
@@ -62,7 +62,7 @@ public:
     explicit EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
 
-    void PreUpdate(U64 deltaTime) final;
+    void PreUpdate(U64 deltaTime) override;
 
     void refresh(GFX::CommandBuffer& bufferInOut);
     void setUpdateRate(U8 rate);
@@ -81,7 +81,7 @@ PROPERTY_R_IW(U16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
 
 protected:
-    void OnData(const ECS::CustomEvent& data) final;
+    void OnData(const ECS::CustomEvent& data) override;
 
     [[nodiscard]] SceneGraphNode* findNodeToIgnore() const noexcept;
 
@@ -98,6 +98,6 @@ private:
 
 INIT_COMPONENT(EnvironmentProbeComponent);
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_ENVIRONMENT_PROBE_COMPONENT_H_

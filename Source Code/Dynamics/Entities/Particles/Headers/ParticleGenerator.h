@@ -39,11 +39,11 @@ namespace Divide {
 
 class NOINITVTABLE ParticleGenerator {
    public:
-    ParticleGenerator() noexcept {}
+    ParticleGenerator() noexcept = default;
     virtual ~ParticleGenerator() = default;
 
     virtual void generate(Task& packagedTasksParent,
-                          const U64 deltaTimeUS,
+                          U64 deltaTimeUS,
                           ParticleData& p,
                           U32 startIndex,
                           U32 endIndex) = 0;
@@ -53,5 +53,5 @@ class NOINITVTABLE ParticleGenerator {
      vec3<F32> _sourcePosition;
      Quaternion<F32> _sourceOrientation;
 };
-};
+}
 #endif

@@ -68,7 +68,7 @@ namespace ImGui {
     {
         return InputDoubleN(label, v, 4, display_format, extra_flags);
     }
-};
+}
 
 namespace Divide {
     namespace {
@@ -91,7 +91,7 @@ namespace Divide {
 
         hashMap<U64, std::tuple<Frustum, FColour3, bool>> g_debugFrustums;
 
-        inline const char* getFormat(ImGuiDataType dataType, const char* input) {
+        const char* getFormat(ImGuiDataType dataType, const char* input) {
             if (input == nullptr || strlen(input) == 0) {
                 const auto unsignedType = [dataType]() {
                     return dataType == ImGuiDataType_U8 || dataType == ImGuiDataType_U16 || dataType == ImGuiDataType_U32 || dataType == ImGuiDataType_U64;
@@ -219,7 +219,7 @@ namespace Divide {
                     }
                 });
             }
-            if (!field._readOnly && ret && val != field.get<T>()) {
+            if (!field._readOnly && ret && !COMPARE(val, field.get<T>())) {
                 field.set(val);
             }
                 
@@ -228,7 +228,7 @@ namespace Divide {
             }
 
             return ret;
-        };
+        }
 
         template<typename T, size_t num_rows>
         bool inputMatrix(Editor & parent, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format) {
@@ -271,7 +271,7 @@ namespace Divide {
         }
 
         template<typename Pred>
-        void ApplyAllButton(I32 &id, Material * material, bool readOnly, Pred&& predicate) {
+        void ApplyAllButton(I32 &id, const bool readOnly, Pred&& predicate) {
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 40);
             ImGui::PushID(4321234 + id++);
             if (readOnly) {
@@ -308,7 +308,7 @@ namespace Divide {
             ImGui::PopID();
             return ret;
         }
-    };
+    }
 
     PropertyWindow::PropertyWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
@@ -336,8 +336,8 @@ namespace Divide {
                 camField._type = EditorComponentFieldType::PUSH_TYPE;
                 camField._readOnly = false;
                 camField._data = eye._v;
-                camField._dataSetter = [cam](const void* eye) {
-                    cam->setEye(*static_cast<const vec3<F32>*>(eye));
+                camField._dataSetter = [cam](const void* val) {
+                    cam->setEye(*static_cast<const vec3<F32>*>(val));
                 };
                 sceneChanged = processField(camField) || sceneChanged;
             }
@@ -349,8 +349,8 @@ namespace Divide {
                 camField._type = EditorComponentFieldType::PUSH_TYPE;
                 camField._readOnly = false;
                 camField._data = euler._v;
-                camField._dataSetter = [cam](const void* euler) {
-                    cam->setEuler(*static_cast<const vec3<F32>*>(euler));
+                camField._dataSetter = [cam](const void* e) {
+                    cam->setEuler(*static_cast<const vec3<F32>*>(e));
                 };
                 sceneChanged = processField(camField) || sceneChanged;
             }
@@ -372,8 +372,8 @@ namespace Divide {
                 camField._type = EditorComponentFieldType::PUSH_TYPE;
                 camField._readOnly = false;
                 camField._data = &aspect;
-                camField._dataSetter = [cam](const void* aspect) {
-                    cam->setAspectRatio(*static_cast<const F32*>(aspect));
+                camField._dataSetter = [cam](const void* a) {
+                    cam->setAspectRatio(*static_cast<const F32*>(a));
                 };
                 sceneChanged = processField(camField) || sceneChanged;
             }
@@ -399,11 +399,10 @@ namespace Divide {
                 camField._readOnly = false;
                 camField._data = zPlanes._v;
                 camField._dataSetter = [cam](const void* planes) {
-                    const vec2<F32> zPlanes = *static_cast<const vec2<F32>*>(planes);
                     if (cam->isOrthoProjected()) {
-                        cam->setProjection(cam->orthoRect(), zPlanes);
+                        cam->setProjection(cam->orthoRect(), *static_cast<const vec2<F32>*>(planes));
                     } else {
-                        cam->setProjection(cam->getAspectRatio(), cam->getVerticalFoV(), zPlanes);
+                        cam->setProjection(cam->getAspectRatio(), cam->getVerticalFoV(), *static_cast<const vec2<F32>*>(planes));
                     }
                 };
                 sceneChanged = processField(camField) || sceneChanged;
@@ -651,7 +650,7 @@ namespace Divide {
                                                 }
                                             } break;
 
-                                            default: {
+                                            case LightType::COUNT: {
                                                 DIVIDE_UNEXPECTED_CALL();
                                             } break;
                                         }
@@ -880,11 +879,11 @@ namespace Divide {
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = bbMin;
-                    bbField._dataSetter = [&field](const void* min) {
-                        BoundingBox bb = {};
-                        field.get<BoundingBox>(bb);
-                        bb.setMin(*static_cast<const vec3<F32>*>(min));
-                        field.set<BoundingBox>(bb);
+                    bbField._dataSetter = [&field](const void* val) {
+                        BoundingBox aabb = {};
+                        field.get<BoundingBox>(aabb);
+                        aabb.setMin(*static_cast<const vec3<F32>*>(val));
+                        field.set<BoundingBox>(aabb);
                     };
                     ret = processField(bbField) || ret;
                 }
@@ -895,11 +894,11 @@ namespace Divide {
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = bbMax;
-                    bbField._dataSetter = [&field](const void* max) {
-                        BoundingBox bb = {};
-                        field.get<BoundingBox>(bb);
-                        bb.setMax(*static_cast<const vec3<F32>*>(max));
-                        field.set<BoundingBox>(bb);
+                    bbField._dataSetter = [&field](const void* val) {
+                        BoundingBox aabb = {};
+                        field.get<BoundingBox>(aabb);
+                        aabb.setMax(*static_cast<const vec3<F32>*>(val));
+                        field.set<BoundingBox>(aabb);
                     };
                     ret = processField(bbField) || ret;
                 }
@@ -951,11 +950,11 @@ namespace Divide {
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = center;
-                    bbField._dataSetter = [&field](const void* center) {
-                        BoundingSphere bs = {};
-                        field.get<BoundingSphere>(bs);
-                        bs.setCenter(*static_cast<const vec3<F32>*>(center));
-                        field.set<BoundingSphere>(bs);
+                    bbField._dataSetter = [&field](const void* c) {
+                        BoundingSphere bSphere = {};
+                        field.get<BoundingSphere>(bSphere);
+                        bSphere.setCenter(*static_cast<const vec3<F32>*>(c));
+                        field.set<BoundingSphere>(bSphere);
                     };
                     ret = processField(bbField) || ret;
                 }
@@ -966,11 +965,11 @@ namespace Divide {
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = &radius;
-                    bbField._dataSetter = [&field](const void* radius) {
-                        BoundingSphere bs = {};
-                        field.get<BoundingSphere>(bs);
-                        bs.setRadius(*static_cast<const F32*>(radius));
-                        field.set<BoundingSphere>(bs);
+                    bbField._dataSetter = [&field](const void* r) {
+                        BoundingSphere bSphere = {};
+                        field.get<BoundingSphere>(bSphere);
+                        bSphere.setRadius(*static_cast<const F32*>(r));
+                        field.set<BoundingSphere>(bSphere);
                     };
                     ret = processField(bbField) || ret;
                 }
@@ -984,8 +983,8 @@ namespace Divide {
                 assert(!field._dataSetter && "Need direct access to memory");
                 ret = processMaterial(field.getPtr<Material>(), field._readOnly);
             }break;
-            default: break;
-        };
+            case EditorComponentFieldType::COUNT: break;
+        }
         if (field._readOnly) {
             PopReadOnly();
         }
@@ -1100,8 +1099,8 @@ namespace Divide {
                     {
                         ImGui::Text("Defines: ");
                         ImGui::Separator();
-                        for (const auto& define : module._defines) {
-                            ImGui::Text(define.first.c_str());
+                        for (const auto& [text, appendPrefix] : module._defines) {
+                            ImGui::Text(text.c_str());
                         }
                         if (ImGui::Button("Open Source File")) {
                             const stringImpl& textEditor = Attorney::EditorGeneralWidget::externalTextEditorPath(_context.editor());
@@ -1145,15 +1144,15 @@ namespace Divide {
                     bool val = colourWrite.b[i] == 1;
                     if (ImGui::Checkbox(names[i], &val)) {
                         RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !val, val, "Colour Mask", [stateHash, material, i](const bool& oldVal) {
-                            RenderStateBlock block = RenderStateBlock::get(stateHash);
-                            const P32 colourWrite = block.colourWrite();
-                            block.setColourWrites(
-                                i == 0 ? oldVal : colourWrite.b[0],
-                                i == 1 ? oldVal : colourWrite.b[1],
-                                i == 2 ? oldVal : colourWrite.b[2],
-                                i == 3 ? oldVal : colourWrite.b[3]
+                            RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                            const P32 cw = stateBlock.colourWrite();
+                            stateBlock.setColourWrites(
+                                i == 0 ? oldVal : cw.b[0],
+                                i == 1 ? oldVal : cw.b[1],
+                                i == 2 ? oldVal : cw.b[2],
+                                i == 3 ? oldVal : cw.b[3]
                             );
-                            material->setRenderStateBlock(block.getHash(), currentStagePass._stage, currentStagePass._passType, currentStagePass._variant);
+                            material->setRenderStateBlock(stateBlock.getHash(), currentStagePass._stage, currentStagePass._passType, currentStagePass._variant);
                         });
                         colourWrite.b[i] = val ? 1 : 0;
                         block.setColourWrites(colourWrite.b[0] == 1, colourWrite.b[1] == 1, colourWrite.b[2] == 1, colourWrite.b[3] == 1);
@@ -1174,9 +1173,9 @@ namespace Divide {
                 tempField._range = { 0.0f, 1000.0f };
                 RenderStagePass tempPass = currentStagePass;
                 tempField._dataSetter = [material, stateHash, tempPass, zUnits](const void* data) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setZBias(*(static_cast<const F32*>(data)), zUnits);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setZBias(*static_cast<const F32*>(data), zUnits);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 };
                 changed = processField(tempField) || changed;
             }
@@ -1190,9 +1189,9 @@ namespace Divide {
                 tempField._range = { 0.0f, 65536.0f };
                 RenderStagePass tempPass = currentStagePass;
                 tempField._dataSetter = [material, stateHash, tempPass, zBias](const void* data) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setZBias(zBias, *(static_cast<const F32*>(data)));
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setZBias(zBias, *static_cast<const F32*>(data));
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 };
                 changed = processField(tempField) || changed;
             }
@@ -1216,9 +1215,9 @@ namespace Divide {
                             cullUndo._newVal = to_I32(mode);
                             RenderStagePass tempPass = currentStagePass;
                             cullUndo._dataSetter = [material, stateHash, tempPass](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setCullMode(static_cast<CullMode>(data));
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setCullMode(static_cast<CullMode>(data));
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(cullUndo);
 
@@ -1249,9 +1248,9 @@ namespace Divide {
                             fillUndo._newVal = to_I32(mode);
                             RenderStagePass tempPass = currentStagePass;
                             fillUndo._dataSetter = [material, stateHash, tempPass](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setFillMode(static_cast<FillMode>(data));
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setFillMode(static_cast<FillMode>(data));
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(fillUndo);
 
@@ -1272,9 +1271,9 @@ namespace Divide {
             if (ImGui::InputScalar("Stencil mask", ImGuiDataType_U32, &stencilReadMask, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilMask(), stencilReadMask, "Stencil mask", [material, stateHash, stencilWriteMask, tempPass](const U32& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setStencilReadWriteMask(oldVal, stencilWriteMask);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setStencilReadWriteMask(oldVal, stencilWriteMask);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
                 block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
@@ -1284,9 +1283,9 @@ namespace Divide {
             if (ImGui::InputScalar("Stencil write mask", ImGuiDataType_U32, &stencilWriteMask, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilWriteMask(), stencilWriteMask, "Stencil write mask", [material, stateHash, stencilReadMask, tempPass](const U32& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setStencilReadWriteMask(stencilReadMask, oldVal);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setStencilReadWriteMask(stencilReadMask, oldVal);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
                 block.setStencilReadWriteMask(stencilReadMask, stencilWriteMask);
@@ -1304,9 +1303,9 @@ namespace Divide {
             if (ImGui::InputScalar("Stencil reference mask", ImGuiDataType_U32, &stencilRef, nullptr, nullptr, "%08X", ImGuiInputTextFlags_CharsHexadecimal)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<U32, false>(_parent, GFX::PushConstantType::UINT, block.stencilRef(), stencilRef, "Stencil reference mask", [material, stateHash, tempPass, stencilEnabled, sFailOp, sZFailOp, sPassOp, sFunc](const U32& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setStencil(stencilEnabled, oldVal, sFailOp, sPassOp, sZFailOp, sFunc);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setStencil(stencilEnabled, oldVal, sFailOp, sPassOp, sZFailOp, sFunc);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
                 stencilDirty = true;
             }
@@ -1327,9 +1326,9 @@ namespace Divide {
                             stencilUndo._newVal = to_I32(func);
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setZFunc(static_cast<ComparisonFunction>(data));
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setZFunc(static_cast<ComparisonFunction>(data));
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
 
@@ -1359,9 +1358,9 @@ namespace Divide {
                             stencilUndo._newVal = to_I32(op);
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sZFailOp, sPassOp, sFunc](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, static_cast<StencilOperation>(data), sPassOp, sZFailOp, sFunc);
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setStencil(stencilEnabled, stencilRef, static_cast<StencilOperation>(data), sPassOp, sZFailOp, sFunc);
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
 
@@ -1390,9 +1389,9 @@ namespace Divide {
                             stencilUndo._newVal = to_I32(op);
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sPassOp, sFunc](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, static_cast<StencilOperation>(data), sFunc);
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, static_cast<StencilOperation>(data), sFunc);
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
 
@@ -1422,9 +1421,9 @@ namespace Divide {
                             stencilUndo._newVal = to_I32(op);
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sZFailOp, sFunc](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, sFailOp, static_cast<StencilOperation>(data), sZFailOp, sFunc);
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setStencil(stencilEnabled, stencilRef, sFailOp, static_cast<StencilOperation>(data), sZFailOp, sFunc);
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
 
@@ -1454,9 +1453,9 @@ namespace Divide {
                             stencilUndo._newVal = to_I32(mode);
                             RenderStagePass tempPass = currentStagePass;
                             stencilUndo._dataSetter = [material, stateHash, tempPass, stencilEnabled, stencilRef, sFailOp, sZFailOp, sPassOp](const I32& data) {
-                                RenderStateBlock block = RenderStateBlock::get(stateHash);
-                                block.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, sZFailOp,  static_cast<ComparisonFunction>(data));
-                                material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                                RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                                stateBlock.setStencil(stencilEnabled, stencilRef, sFailOp, sPassOp, sZFailOp,  static_cast<ComparisonFunction>(data));
+                                material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                             };
                             _context.editor().registerUndoEntry(stencilUndo);
 
@@ -1475,9 +1474,9 @@ namespace Divide {
             if (ImGui::Checkbox("CCW front face", &frontFaceCCW)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !frontFaceCCW, frontFaceCCW, "CCW front face", [material, stateHash, tempPass](const bool& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setFrontFaceCCW(oldVal);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setFrontFaceCCW(oldVal);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
                 block.setFrontFaceCCW(frontFaceCCW);
@@ -1488,9 +1487,9 @@ namespace Divide {
             if (ImGui::Checkbox("Scissor test", &scissorEnabled)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !scissorEnabled, scissorEnabled, "Scissor test", [material, stateHash, tempPass](const bool& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setScissorTest(oldVal);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setScissorTest(oldVal);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
                 block.setScissorTest(scissorEnabled);
@@ -1501,9 +1500,9 @@ namespace Divide {
             if (ImGui::Checkbox("Depth test", &depthTestEnabled)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !depthTestEnabled, depthTestEnabled, "Depth test", [material, stateHash, tempPass](const bool& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.depthTestEnabled(oldVal);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.depthTestEnabled(oldVal);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
                 block.depthTestEnabled(depthTestEnabled);
@@ -1513,9 +1512,9 @@ namespace Divide {
             if (ImGui::Checkbox("Stencil test", &stencilEnabled)) {
                 const RenderStagePass tempPass = currentStagePass;
                 RegisterUndo<bool, false>(_parent, GFX::PushConstantType::BOOL, !stencilEnabled, stencilEnabled, "Stencil test", [material, stateHash, tempPass, stencilRef, sFailOp, sZFailOp, sPassOp, sFunc](const bool& oldVal) {
-                    RenderStateBlock block = RenderStateBlock::get(stateHash);
-                    block.setStencil(oldVal, stencilRef, sFailOp, sPassOp, sZFailOp,  sFunc);
-                    material->setRenderStateBlock(block.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
+                    RenderStateBlock stateBlock = RenderStateBlock::get(stateHash);
+                    stateBlock.setStencil(oldVal, stencilRef, sFailOp, sPassOp, sZFailOp,  sFunc);
+                    material->setRenderStateBlock(stateBlock.getHash(), tempPass._stage, tempPass._passType, tempPass._variant);
                 });
 
                 stencilDirty = true;
@@ -1536,7 +1535,7 @@ namespace Divide {
         const char* crtModeName = TypeUtil::ShadingModeToString(crtMode);
         if (ImGui::CollapsingHeader(Util::StringFormat("Shading Mode [ %s ]", crtModeName).c_str())) {
             const auto diffuseSetter = [material](const void* data) {
-                material->baseColour(*(FColour4*)data);
+                material->baseColour(*(const FColour4*)data);
             };
             {
                 static UndoEntry<I32> modeUndo = {};
@@ -1553,6 +1552,7 @@ namespace Divide {
                             modeUndo._oldVal = to_I32(crtMode);
                             modeUndo._newVal = to_I32(mode);
                             modeUndo._dataSetter = [material, mode](const I32& data) {
+                                ACKNOWLEDGE_UNUSED(data);
                                 material->shadingMode(mode);
                             };
                             _context.editor().registerUndoEntry(modeUndo);
@@ -1568,7 +1568,7 @@ namespace Divide {
                 ImGui::PopItemWidth();
             }
             I32 id = 0;
-            ApplyAllButton(id, material, false, [&material]() {
+            ApplyAllButton(id, false, [&material]() {
                 if (material->baseMaterial() != nullptr) {
                     material->baseMaterial()->shadingMode(material->shadingMode(), true);
                 }
@@ -1588,7 +1588,7 @@ namespace Divide {
                 if (fromTexture && ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("Albedo is sampled from a texture. Base colour possibly unused!");
                 }
-                ApplyAllButton(id, material, fromTexture || readOnly, [&material]() {
+                ApplyAllButton(id, fromTexture || readOnly, [&material]() {
                     if (material->baseMaterial() != nullptr) {
                         material->baseMaterial()->baseColour(material->baseColour(), true);
                     }
@@ -1601,7 +1601,7 @@ namespace Divide {
             { //Emissive
                 ImGui::Separator();
                 const auto emissiveSetter = [material](const void* data) {
-                    material->emissiveColour(*(FColour3*)data);
+                    material->emissiveColour(*(const FColour3*)data);
                 };
                 ImGui::PushItemWidth(250);
                 FColour3 emissive = material->getEmissive(fromTexture, texture);
@@ -1613,7 +1613,7 @@ namespace Divide {
                 if (fromTexture && ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("Control managed by application (e.g. is overriden by a texture)");
                 }
-                ApplyAllButton(id, material, fromTexture || readOnly, [&material]() {
+                ApplyAllButton(id, fromTexture || readOnly, [&material]() {
                     if (material->baseMaterial() != nullptr) {
                         material->baseMaterial()->emissiveColour(material->emissive(), true);
                     }
@@ -1636,8 +1636,8 @@ namespace Divide {
                 }
                 tempField._data = &metallic;
                 tempField._range = { 0.0f, 1.0f };
-                tempField._dataSetter = [material](const void* metallic) {
-                    material->metallic(*static_cast<const F32*>(metallic));
+                tempField._dataSetter = [material](const void* m) {
+                    material->metallic(*static_cast<const F32*>(m));
                 };
                 
                 ImGui::PushItemWidth(175);
@@ -1646,7 +1646,7 @@ namespace Divide {
 
                 ImGui::SameLine();
                 ImGui::Text(tempField._name.c_str());
-                ApplyAllButton(id, material, tempField._readOnly, [&material]() {
+                ApplyAllButton(id, tempField._readOnly, [&material]() {
                     if (material->baseMaterial() != nullptr) {
                         material->baseMaterial()->metallic(material->metallic(), true);
                     }
@@ -1669,15 +1669,15 @@ namespace Divide {
                 }
                 tempField._data = &roughness;
                 tempField._range = { 0.0f, 1.0f };
-                tempField._dataSetter = [material](const void* roughness) {
-                    material->roughness(*static_cast<const F32*>(roughness));
+                tempField._dataSetter = [material](const void* r) {
+                    material->roughness(*static_cast<const F32*>(r));
                 };
                 ImGui::PushItemWidth(175);
                 ret = processBasicField(tempField) || ret;
                 ImGui::PopItemWidth();
                 ImGui::SameLine();
                 ImGui::Text(tempField._name.c_str());
-                ApplyAllButton(id, material, tempField._readOnly, [&material]() {
+                ApplyAllButton(id, tempField._readOnly, [&material]() {
                     if (material->baseMaterial() != nullptr) {
                         material->baseMaterial()->roughness(material->roughness(), true);
                     }
@@ -1697,15 +1697,15 @@ namespace Divide {
                 tempField._readOnly = readOnly;
                 tempField._data = &parallax;
                 tempField._range = { 0.0f, 1.0f };
-                tempField._dataSetter = [material](const void* parallax) {
-                    material->parallaxFactor(*static_cast<const F32*>(parallax));
+                tempField._dataSetter = [material](const void* p) {
+                    material->parallaxFactor(*static_cast<const F32*>(p));
                 };
                 ImGui::PushItemWidth(175);
                 ret = processBasicField(tempField) || ret;
                 ImGui::PopItemWidth();
                 ImGui::SameLine();
                 ImGui::Text(tempField._name.c_str());
-                ApplyAllButton(id, material, tempField._readOnly, [&material]() {
+                ApplyAllButton(id, tempField._readOnly, [&material]() {
                     if (material->baseMaterial() != nullptr) {
                         material->baseMaterial()->parallaxFactor(material->parallaxFactor(), true);
                     }
@@ -1722,7 +1722,7 @@ namespace Divide {
                 material->doubleSided(doubleSided);
                 ret = true;
             }
-            ApplyAllButton(id, material, false, [&material]() {
+            ApplyAllButton(id, false, [&material]() {
                 if (material->baseMaterial() != nullptr) {
                     material->baseMaterial()->doubleSided(material->doubleSided(), true);
                 }
@@ -1734,7 +1734,7 @@ namespace Divide {
                 material->refractive(refractive);
                 ret = true;
             }
-            ApplyAllButton(id, material, false, [&material]() {
+            ApplyAllButton(id, false, [&material]() {
                 if (material->baseMaterial() != nullptr) {
                     material->baseMaterial()->refractive(material->refractive(), true);
                 }
@@ -1784,7 +1784,7 @@ namespace Divide {
                   case GFX::PushConstantSize::DWORD: ret = inputOrSlider<I32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
                   case GFX::PushConstantSize::WORD:  ret = inputOrSlider<I16, 1>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
                   case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<I8,  1>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                  default: DIVIDE_UNEXPECTED_CALL(); break;
+                  case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UINT: {
@@ -1793,7 +1793,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<U32, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<U16, 1>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<U8,  1>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                  default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::DOUBLE: {
@@ -1808,7 +1808,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<I32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<I16>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<I8>,  2>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::IVEC3: {
@@ -1817,7 +1817,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<I32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<I16>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<I8>,  3>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::IVEC4: {
@@ -1826,7 +1826,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<I32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<I16>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<I8>,  4>(_parent, isSlider, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UVEC2: {
@@ -1835,7 +1835,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec2<U32>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec2<U16>, 2>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec2<U8>,  2>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UVEC3: {
@@ -1844,7 +1844,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec3<U32>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec3<U16>, 3>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec3<U8>,  3>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UVEC4: {
@@ -1853,7 +1853,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputOrSlider<vec4<U32>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputOrSlider<vec4<U16>, 4>(_parent, isSlider, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputOrSlider<vec4<U8>,  4>(_parent, isSlider, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::VEC2: {
@@ -1880,7 +1880,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<I32>, 2>(_parent, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<I16>, 2>(_parent, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<I8>,  2>(_parent, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::IMAT3: {
@@ -1889,16 +1889,16 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<I32>, 3>(_parent, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<I16>, 3>(_parent, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<I8>,  3>(_parent, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::IMAT4: {
                   switch (field._basicTypeSize) {
-                  case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<I64>, 4>(_parent, "", name, step, ImGuiDataType_S64, field, flags, field._format); break;
-                  case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
-                  case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<I16>, 4>(_parent, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
-                  case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<I8>,  4>(_parent, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::QWORD: ret = inputMatrix<mat4<I64>, 4>(_parent, "", name, step, ImGuiDataType_S64, field, flags, field._format); break;
+                      case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<I32>, 4>(_parent, "", name, step, ImGuiDataType_S32, field, flags, field._format); break;
+                      case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<I16>, 4>(_parent, "", name, step, ImGuiDataType_S16, field, flags, field._format); break;
+                      case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<I8>,  4>(_parent, "", name, step, ImGuiDataType_S8,  field, flags, field._format); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UMAT2: {
@@ -1907,7 +1907,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat2<U32>, 2>(_parent, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat2<U16>, 2>(_parent, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat2<U8>,  2>(_parent, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UMAT3: {
@@ -1916,7 +1916,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat3<U32>, 3>(_parent, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat3<U16>, 3>(_parent, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat3<U8>,  3>(_parent, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::UMAT4: {
@@ -1925,7 +1925,7 @@ namespace Divide {
                       case GFX::PushConstantSize::DWORD: ret = inputMatrix<mat4<U32>, 4>(_parent, "", name, step, ImGuiDataType_U32, field, flags, field._format); break;
                       case GFX::PushConstantSize::WORD:  ret = inputMatrix<mat4<U16>, 4>(_parent, "", name, step, ImGuiDataType_U16, field, flags, field._format); break;
                       case GFX::PushConstantSize::BYTE:  ret = inputMatrix<mat4<U8>,  4>(_parent, "", name, step, ImGuiDataType_U8,  field, flags, field._format); break;
-                      default: DIVIDE_UNEXPECTED_CALL(); break;
+                      case GFX::PushConstantSize::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
                   }
               }break;
               case GFX::PushConstantType::MAT2: {
@@ -1952,7 +1952,7 @@ namespace Divide {
               case GFX::PushConstantType::FCOLOUR4: {
                   ret = colourInput4(_parent, "", field);
               }break;
-              default: {
+              case GFX::PushConstantType::COUNT: {
                   ImGui::Text(name);
               }break;
           }
@@ -1973,4 +1973,4 @@ namespace Divide {
 
           return Util::StringFormat("%s, %s, ...", node(nodes._selections[0])->name().c_str(), node(nodes._selections[1])->name().c_str()).c_str();
       }
-}; //namespace Divide
+} //namespace Divide

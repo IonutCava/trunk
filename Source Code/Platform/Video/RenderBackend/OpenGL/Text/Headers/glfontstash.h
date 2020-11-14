@@ -45,9 +45,9 @@ constexpr bool USE_EXPLICIT_FLUSH = true;
 
 constexpr GLuint GLFONS_VB_SIZE_FACTOR = 120;
 constexpr size_t GLFONS_VB_BUFFER_SIZE = GLFONS_VB_SIZE_FACTOR * sizeof(FONSvert) * FONS_VERTEX_COUNT;
-constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)(Divide::AttribLocation::POSITION);
-constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)(Divide::AttribLocation::TEXCOORD);
-constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)(Divide::AttribLocation::COLOR);
+constexpr GLuint GLFONS_VERTEX_ATTRIB = (GLuint)Divide::AttribLocation::POSITION;
+constexpr GLuint GLFONS_TCOORD_ATTRIB = (GLuint)Divide::AttribLocation::TEXCOORD;
+constexpr GLuint GLFONS_COLOR_ATTRIB = (GLuint)Divide::AttribLocation::COLOR;
 
 struct GLFONScontext {
     GLuint tex;
@@ -98,7 +98,7 @@ static int glfons__renderCreate(void* userPtr, int width, int height)
             storageMask |= GL_MAP_COHERENT_BIT;
             accessMask |= GL_MAP_COHERENT_BIT;
         }
-        glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE, NULL, storageMask);
+        glNamedBufferStorage(gl->glfons_vboID, GLFONS_VB_BUFFER_SIZE, nullptr, storageMask);
         gl->glfons_vboData = (FONSvert*)glMapNamedBufferRange(gl->glfons_vboID, 0, GLFONS_VB_BUFFER_SIZE, accessMask);
 
          Divide::U32 prevOffset = 0;
@@ -225,13 +225,12 @@ static void glfons__renderDelete(void* userPtr) {
 FONS_DEF FONScontext* glfonsCreate(int width, int height, int flags)
 {
 	FONSparams params;
-	GLFONScontext* gl;
 
-	gl = (GLFONScontext*)malloc(sizeof(GLFONScontext));
+    GLFONScontext* gl = (GLFONScontext*)malloc(sizeof(GLFONScontext));
 	if (gl == nullptr) goto error;
 	memset(gl, 0, sizeof(GLFONScontext));
 
-    memset(&params, 0, sizeof(params));
+    memset(&params, 0, sizeof params);
     params.width = width;
     params.height = height;
 	params.flags = (unsigned char)flags;
@@ -245,8 +244,8 @@ FONS_DEF FONScontext* glfonsCreate(int width, int height, int flags)
     return fonsCreateInternal(&params);
 
 error:
-	if (gl != NULL) free(gl);
-	return NULL;
+	if (gl != nullptr) free(gl);
+	return nullptr;
 }
 
 FONS_DEF void glfonsDelete(FONScontext* ctx)
@@ -256,7 +255,7 @@ FONS_DEF void glfonsDelete(FONScontext* ctx)
 
 FONS_DEF unsigned int glfonsRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
-	return (r) | (g << 8) | (b << 16) | (a << 24);
+	return r | g << 8 | b << 16 | a << 24;
 }
 
 #endif // GLFONTSTASH_IMPLEMENTATION

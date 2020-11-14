@@ -42,10 +42,10 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
 {
    public:
     explicit PointLightComponent(SceneGraphNode* sgn, PlatformContext& context);
-    void PreUpdate(U64 deltaTime) final;
+    void PreUpdate(U64 deltaTime) override;
 
    protected:
-    void OnData(const ECS::CustomEvent& data) final;
+    void OnData(const ECS::CustomEvent& data) override;
 
    private:
     bool _drawImpostor = false;
@@ -53,6 +53,6 @@ class PointLightComponent final : public BaseComponentType<PointLightComponent, 
 
 INIT_COMPONENT(PointLightComponent);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_POINT_LIGHT_COMPONENT_H_

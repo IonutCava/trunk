@@ -94,6 +94,6 @@ class ImplResourceLoader final : public ResourceLoader {
 
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

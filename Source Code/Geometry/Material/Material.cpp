@@ -195,6 +195,8 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
 }
 
 bool Material::update(const U64 deltaTimeUS) {
+    ACKNOWLEDGE_UNUSED(deltaTimeUS);
+
     if (_needsNewShader) {
         recomputeShaders();
         _needsNewShader = false;
@@ -204,9 +206,7 @@ bool Material::update(const U64 deltaTimeUS) {
     return false;
 }
 
-bool Material::setSampler(TextureUsage textureUsageSlot,
-                          size_t samplerHash,
-                          bool applyToInstances)
+bool Material::setSampler(const TextureUsage textureUsageSlot, const size_t samplerHash, const bool applyToInstances)
 {
     if (applyToInstances) {
         for (Material* instance : _instances) {
@@ -223,11 +223,7 @@ bool Material::setSampler(TextureUsage textureUsageSlot,
 // base = base texture
 // second = second texture used for multitexturing
 // bump = bump map
-bool Material::setTexture(TextureUsage textureUsageSlot,
-                          const Texture_ptr& texture,
-                          const size_t samplerHash,
-                          const TextureOperation& op,
-                          bool applyToInstances) 
+bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr& texture, const size_t samplerHash, const TextureOperation& op, const bool applyToInstances) 
 {
     setSampler(textureUsageSlot, samplerHash, applyToInstances);
 
@@ -325,7 +321,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
     }
 
     shaderInfo._shaderRef = shader;
-    shaderInfo._shaderCompStage = (shader == nullptr || shader->getState() == ResourceState::RES_LOADED)
+    shaderInfo._shaderCompStage = shader == nullptr || shader->getState() == ResourceState::RES_LOADED
                                                      ? (shaderInfo._customShader ? ShaderBuildStage::COMPUTED : ShaderBuildStage::READY)
                                                      : ShaderBuildStage::COMPUTED;
 }
@@ -814,10 +810,10 @@ bool Material::unload() {
     
     if (_baseMaterial != nullptr) {
         const I64 guid = getGUID();
-        eastl::erase_if(_baseMaterial->_instances,
-                        [guid](Material* instance) {
-                            return instance->getGUID() == guid;
-                        });
+        erase_if(_baseMaterial->_instances,
+                 [guid](Material* instance) {
+                     return instance->getGUID() == guid;
+                 });
     }
 
     for (Material* instance : _instances) {
@@ -1072,7 +1068,7 @@ void Material::updateTransparency() {
     }
 
     if (usingAlbedoTexAlpha || usingOpacityTexAlpha) {
-        Texture* tex = (usingOpacityTexAlpha ? opacity.get() : albedo.get());
+        Texture* tex = usingOpacityTexAlpha ? opacity.get() : albedo.get();
 
         const U16 baseLevel = tex->getBaseMipLevel();
         const U16 maxLevel = tex->getMaxMipLevel();
@@ -1304,7 +1300,7 @@ void Material::loadRenderStatesFromXML(const stringImpl& entryName, const boost:
                 );
                 if (stateIndex != 0) {
                     const auto& it = previousHashValues.find(stateIndex);
-                    if (it != eastl::cend(previousHashValues)) {
+                    if (it != cend(previousHashValues)) {
                         _defaultRenderStates[s][p][v] = it->second;
                     } else {
                         const size_t stateHash = RenderStateBlock::loadFromXML(Util::StringFormat("%s.RenderStates.%u", entryName.c_str(), stateIndex), pt);
@@ -1356,7 +1352,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
 
     for (const TextureUsage usage : g_materialTextures) {
 
-        if (pt.get_child_optional(((entryName + ".texture.") + TypeUtil::TextureUsageToString(usage)) + ".name")) {
+        if (pt.get_child_optional(entryName + ".texture." + TypeUtil::TextureUsageToString(usage) + ".name")) {
             const stringImpl textureNode = entryName + ".texture." + TypeUtil::TextureUsageToString(usage);
 
             const ResourcePath texName = ResourcePath(pt.get<stringImpl>(textureNode + ".name", ""));
@@ -1368,7 +1364,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 const auto& it = previousHashValues.find(index);
 
                 size_t hash;
-                if (it != eastl::cend(previousHashValues)) {
+                if (it != cend(previousHashValues)) {
                     hash = it->second;
                 } else {
                      hash = XMLParser::loadFromXML(Util::StringFormat("%s.SamplerDescriptors.%u", entryName.c_str(), index), pt);
@@ -1404,7 +1400,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 texture.flag(!flipped);
 
                 Texture_ptr tex =  CreateResource<Texture>(_context.parent().resourceCache(), texture);
-                tex->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource* res) {
+                tex->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
                     setTexture(usage, tex, hash, op);
                     loadTasks.fetch_sub(1u);
                 });

@@ -51,7 +51,7 @@ private:
     /// MSG_HEARTBEAT: break;}
     void handlePacket(WorldPacket& p) override;
 
-    void HandlePongOpCode(WorldPacket& p);
+    void HandlePongOpCode(WorldPacket& p) const;
     void HandleHeartBeatOpCode(WorldPacket& p);
     void HandleDisconnectOpCode(WorldPacket& p);
     void HandleGeometryAppendOpCode(WorldPacket& p);

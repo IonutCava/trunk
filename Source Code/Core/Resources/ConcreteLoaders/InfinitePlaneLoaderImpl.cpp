@@ -18,4 +18,4 @@ namespace Divide {
         return ptr;
     }
 
-};
+}

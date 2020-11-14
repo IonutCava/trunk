@@ -23,7 +23,7 @@ namespace Divide {
 
 template <typename T>
 void ByteBuffer::put(const size_t pos, const T& value) {
-    put(pos, (Byte*)(&value), sizeof(T));
+    put(pos, (Byte*)&value, sizeof(T));
 }
 
 template <typename T>
@@ -60,7 +60,7 @@ ByteBuffer& ByteBuffer::operator>>(T& value) {
 
 template<>
 inline ByteBuffer& ByteBuffer::operator>>(bool& value) {
-    value = (read<I8>() == to_I8(1));
+    value = read<I8>() == to_I8(1);
     return *this;
 }
 
@@ -93,14 +93,13 @@ void ByteBuffer::read_noskip(T& value) {
     value = read<T>(_rpos);
 }
 
-template <typename T>
-void ByteBuffer::read_noskip(bool& value) const
-{
+template <>
+inline void ByteBuffer::read_noskip(bool& value) {
     value = read<I8>(_rpos) == to_I8(1);
 }
 
-template <typename T>
-void ByteBuffer::read_noskip(stringImpl& value) {
+template <>
+inline void ByteBuffer::read_noskip(stringImpl& value) {
     value.clear();
     size_t inc = 0;
     // prevent crash at wrong string format in packet
@@ -114,8 +113,8 @@ void ByteBuffer::read_noskip(stringImpl& value) {
     _rpos -= inc;
 }
 
-template <typename T>
-void ByteBuffer::read_noskip(ResourcePath& value) {
+template <>
+inline void ByteBuffer::read_noskip(ResourcePath& value) {
     stringImpl temp{};
     read_noskip(temp);
     value = ResourcePath(temp);
@@ -170,7 +169,7 @@ T ByteBuffer::read(const size_t pos) const {
         DIVIDE_UNEXPECTED_CALL();
     }
 
-    T val = *((T const *)&_storage[pos]);
+    T val = *(T const *)&_storage[pos];
     //EndianConvert(val);
     return val;
 }
@@ -188,20 +187,20 @@ inline void ByteBuffer::readPackXYZ(F32& x, F32& y, F32& z) {
     U32 packed = 0;
     *this >> packed;
     x = ((packed & 0x7FF) << 21 >> 21) * 0.25f;
-    y = ((((packed >> 11) & 0x7FF) << 21) >> 21) * 0.25f;
-    z = ((packed >> 22 << 22) >> 22) * 0.25f;
+    y = ((packed >> 11 & 0x7FF) << 21 >> 21) * 0.25f;
+    z = (packed >> 22 << 22 >> 22) * 0.25f;
 }
 
 inline U64 ByteBuffer::readPackGUID() {
     U64 guid = 0;
     U8 guidmark = 0;
-    (*this) >> guidmark;
+    *this >> guidmark;
 
     for (I32 i = 0; i < 8; ++i) {
-        if (guidmark & (to_U8(1) << i)) {
+        if (guidmark & to_U8(1) << i) {
             U8 bit;
-            (*this) >> bit;
-            guid |= (static_cast<U64>(bit) << (i * 8));
+            *this >> bit;
+            guid |= static_cast<U64>(bit) << i * 8;
         }
     }
 
@@ -210,7 +209,7 @@ inline U64 ByteBuffer::readPackGUID() {
 
 template <typename T>
 void ByteBuffer::append(const T *src, size_t cnt) {
-    return append((const Byte*)(src), cnt * sizeof(T));
+    return append((const Byte*)src, cnt * sizeof(T));
 }
 
 inline void ByteBuffer::append(const stringImpl& str) {
@@ -229,7 +228,7 @@ inline void ByteBuffer::append(const ByteBuffer &buffer) {
 
 inline void ByteBuffer::appendPackXYZ(const F32 x, const F32 y, const F32 z) {
     U32 packed = 0;
-    packed |= (to_I32(x / 0.25f) & 0x7FF);
+    packed |= to_I32(x / 0.25f) & 0x7FF;
     packed |= (to_I32(y / 0.25f) & 0x7FF) << 11;
     packed |= (to_I32(z / 0.25f) & 0x3FF) << 22;
     *this << packed;
@@ -308,7 +307,7 @@ inline void ByteBuffer::put(const size_t pos, const Byte *src, const size_t cnt)
 //private:
 template <typename T>
 void ByteBuffer::append(const T& value) {
-    append((const Byte*)(&value), sizeof(T));
+    append((const Byte*)&value, sizeof(T));
 }
 
 //specializations
@@ -445,7 +444,7 @@ ByteBuffer &operator>>(ByteBuffer &b, std::array<T, N>& a) {
     U64 size;
     b >> size;
     assert(size == static_cast<U64>(N));
-    b.read((Byte*)(a.data()), N * sizeof(T));
+    b.read((Byte*)a.data(), N * sizeof(T));
 
     return b;
 }
@@ -485,7 +484,7 @@ ByteBuffer &operator>>(ByteBuffer &b, vectorEASTL<T> &v) {
     U32 vsize;
     b >> vsize;
     v.resize(vsize);
-    b.read((Byte*)(v.data()), vsize * sizeof(T));
+    b.read((Byte*)v.data(), vsize * sizeof(T));
     return b;
 }
 
@@ -556,6 +555,6 @@ ByteBuffer &operator>>(ByteBuffer &b, std::map<K, V> &m) {
     return b;
 }
 
-};
+}
 
 #endif //_CORE_BYTE_BUFFER_INL_

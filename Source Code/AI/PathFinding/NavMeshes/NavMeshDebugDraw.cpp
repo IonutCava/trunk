@@ -17,13 +17,12 @@ namespace Navigation {
 
 NavMeshDebugDraw::NavMeshDebugDraw(GFXDevice& context)
     : _context(context),
+      _primType(PrimitiveType::COUNT),
+      _primitive(nullptr),
+      _colour(0),
       _overrideColour(false),
       _dirty(true),
-      _paused(false),
-      _colour(0),
-      _primitive(nullptr),
-      _primType(PrimitiveType::COUNT),
-      _vertCount(0)
+      _paused(false)
 {
 }
 
@@ -78,7 +77,6 @@ void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
     }
 
     switch (prim) {
-        default:
         case DU_DRAW_TRIS:
             _primType = PrimitiveType::TRIANGLES;
             break;
@@ -127,6 +125,6 @@ void NavMeshDebugDraw::overrideColour(U32 col) {
     _overrideColour = true;
     _colour = col;
 }
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide

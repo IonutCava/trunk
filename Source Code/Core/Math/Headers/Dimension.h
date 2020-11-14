@@ -60,6 +60,6 @@ namespace Divide {
         return pixelScale(scale.x, scale.y);
     }
 
-}; //namespace Divide 
+} //namespace Divide 
 
 #endif //_CORE_MATH_DIMENSION_H

@@ -45,9 +45,9 @@ namespace Divide {
         TransformSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~TransformSystem() = default;
 
-        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
-        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;
+        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) override;
+        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) override;
     };
-};
+}
 
 #endif //_TRANSFORM_SYSTEM_H_

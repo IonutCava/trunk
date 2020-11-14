@@ -276,29 +276,29 @@ void UNPACK_11_11_10(U32 src, F32& x, F32& y, F32& z) noexcept;
 
 // bit manipulation
 template<typename T1, typename T2>
-constexpr auto BitSet(T1& arg, const T2 pos) { return (arg |= 1 << pos); }
+constexpr auto BitSet(T1& arg, const T2 pos) { return arg |= 1 << pos; }
 
 template<typename T1, typename T2>
-constexpr auto BitClr(T1& arg, const T2 pos) { return arg &= ~(1 << (pos)); }
+constexpr auto BitClr(T1& arg, const T2 pos) { return arg &= ~(1 << pos); }
 
 template<typename T1, typename T2>
-constexpr bool BitTst(const T1 arg, const T2 pos) { return (arg & 1 << (pos)) != 0; }
+constexpr bool BitTst(const T1 arg, const T2 pos) { return (arg & 1 << pos) != 0; }
 
 template<typename T1, typename T2>
-constexpr bool BitDiff(const T1 arg1, const T2 arg2) { return (arg1 ^ arg2); }
+constexpr bool BitDiff(const T1 arg1, const T2 arg2) { return arg1 ^ arg2; }
 
 template<typename T1, typename T2, typename T3>
-constexpr bool BitCmp(const T1 arg1, const T2 arg2, const T3 pos) { return (arg1 << pos) == (arg2 << pos); }
+constexpr bool BitCmp(const T1 arg1, const T2 arg2, const T3 pos) { return arg1 << pos == arg2 << pos; }
 
 // bitmask manipulation
 template<typename T1, typename T2>
-constexpr auto BitMaskSet(T1& arg, const T2 mask) { return ((arg) |= (mask)); }
+constexpr auto BitMaskSet(T1& arg, const T2 mask) { return arg |= mask; }
 template<typename T1, typename T2>
-constexpr auto BitMaskClear(T1& arg, const T2 mask) { return ((arg) &= (~(mask))); }
+constexpr auto BitMaskClear(T1& arg, const T2 mask) { return arg &= ~mask; }
 template<typename T1, typename T2>
-constexpr auto BitMaskFlip(T1& arg, const T2 mask) { return ((arg) ^= (mask)); }
+constexpr auto BitMaskFlip(T1& arg, const T2 mask) { return arg ^= mask; }
 template<typename T1, typename T2>
-constexpr auto BitMaskCheck(T1& arg, const T2 mask) { return ((arg) & (mask)); }
+constexpr auto BitMaskCheck(T1& arg, const T2 mask) { return arg & mask; }
 
 namespace Angle {
 
@@ -421,7 +421,7 @@ template <typename T, typename U>
 /// Base value * 0.000000000001
 template <typename T, typename U>
 [[nodiscard]] constexpr T Pico(U a);
-};
+}
 
 struct SimpleTime {
     U8 _hour = 0u;
@@ -477,7 +477,7 @@ template <typename T = U64, typename U>
 template <typename T = U64, typename U>
 [[nodiscard]] constexpr T SecondsToNanoseconds(U a) noexcept;
 
-};  // namespace Time
+}  // namespace Time
 
 namespace Util {
 
@@ -555,7 +555,7 @@ inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) noexcept {
 inline U32 PACK_VEC2(F32 x, F32 y) noexcept {
     const U32 xScaled = to_U32(x * 0xFFFF);
     const U32 yScaled = to_U32(y * 0xFFFF);
-    return (xScaled << 16) | (yScaled & 0xFFFF);
+    return xScaled << 16 | yScaled & 0xFFFF;
 }
 
 [[nodiscard]] F32 PACK_VEC3(const vec3<F32>& value) noexcept;
@@ -583,8 +583,8 @@ void UNPACK_VEC2(U32 src, vec2<F32>& res) noexcept;
 
 void UNPACK_11_11_10(U32 src, vec3<F32>& res) noexcept;
 
-};  // namespace Util
-};  // namespace Divide
+}  // namespace Util
+}  // namespace Divide
 
 namespace std {
     template<typename T, size_t N>
@@ -603,7 +603,7 @@ namespace std {
             return h;
         }
     };
-};
+}
 
 #endif  //_CORE_MATH_MATH_HELPER_H_
 

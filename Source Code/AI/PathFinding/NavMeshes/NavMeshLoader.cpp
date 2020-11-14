@@ -15,8 +15,7 @@ namespace Divide {
 namespace AI {
 namespace Navigation {
 namespace NavigationMeshLoader {
-static vec3<F32> _minVertValue, _maxVertValue;
-constexpr U32 cubeFaces[6][4] = {{0, 4, 6, 2},
+    constexpr U32 cubeFaces[6][4] = {{0, 4, 6, 2},
                                  {0, 2, 3, 1},
                                  {0, 1, 5, 4},
                                  {3, 2, 6, 7},
@@ -30,7 +29,7 @@ char* parseRow(char* buf, char* bufEnd, char* row, I32 len) {
     I32 n = 0;
 
     while (!done && buf < bufEnd) {
-        char c = *buf;
+        const char c = *buf;
         buf++;
         // multi row
         switch (c) {
@@ -79,7 +78,7 @@ I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
         if (*s == '\0')
             continue;
 
-        I32 vi = atoi(s);
+        const I32 vi = atoi(s);
         data[j++] = vi < 0 ? vi + vcnt : vi - 1;
         if (j >= n)
             return j;
@@ -87,14 +86,14 @@ I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
     return j;
 }
 
-bool loadMeshFile(NavModelData& outData, const char* filepath, const char* filename) {
+bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileName) {
     STUBBED("ToDo: Rework load/save to properly use a ByteBuffer instead of this const char* hackery. -Ionut");
     char* buf = nullptr;
-    char* srcEnd = nullptr;
+    char* srcEnd;
 
     {
         ByteBuffer tempBuffer;
-        if (!tempBuffer.loadFromFile(filepath, filename)) {
+        if (!tempBuffer.loadFromFile(filepath, fileName)) {
             return false;
         }
 
@@ -108,25 +107,23 @@ bool loadMeshFile(NavModelData& outData, const char* filepath, const char* filen
     char row[512];
     I32 face[32];
     F32 x, y, z;
-    I32 nv;
-    I32 result;
     while (src < srcEnd) {
         // Parse one row
         row[0] = '\0';
-        src = parseRow(src, srcEnd, row, sizeof(row) / sizeof(char));
+        src = parseRow(src, srcEnd, row, sizeof row / sizeof(char));
         // Skip comments
         if (row[0] == '#')
             continue;
 
         if (row[0] == 'v' && row[1] != 'n' && row[1] != 't') {
             // Vertex pos
-            result = sscanf(row + 1, "%f %f %f", &x, &y, &z);
+            I32 result = sscanf(row + 1, "%f %f %f", &x, &y, &z);
             if (result != 0)
                 addVertex(&outData, vec3<F32>(x, y, z));
         }
         if (row[0] == 'f') {
             // Faces
-            nv = parseFace(row + 1, face, 32, outData._vertexCount);
+            I32 nv = parseFace(row + 1, face, 32, outData._vertexCount);
             for (I32 i = 2; i < nv; ++i) {
                 const I32 a = face[0];
                 const I32 b = face[i - 1];
@@ -183,13 +180,13 @@ bool saveMeshFile(const NavModelData& inData, const char* filepath, const char* 
     I32* tstart = inData._triangles;
     for (U32 i = 0; i < inData.getVertCount(); i++) {
         F32* vp = vstart + i * 3;
-        tempBuffer << "v " << (*(vp)) << " " << *(vp + 1) << " " << (*(vp + 2))
+        tempBuffer << "v " << *vp << " " << *(vp + 1) << " " << *(vp + 2)
                    << "\n";
     }
     for (U32 i = 0; i < inData.getTriCount(); i++) {
         I32* tp = tstart + i * 3;
-        tempBuffer << "f " << (*(tp) + 1) << " " << (*(tp + 1) + 1) << " "
-                  << (*(tp + 2) + 1) << "\n";
+        tempBuffer << "f " << *tp + 1 << " " << *(tp + 1) + 1 << " "
+                  << *(tp + 2) + 1 << "\n";
     }
 
     return tempBuffer.dumpToFile(filepath, filename);
@@ -202,12 +199,13 @@ NavModelData mergeModels(NavModelData& a,
     if (a.getVerts() || b.getVerts()) {
         if (!a.getVerts())
             return b;
-        else if (!b.getVerts())
+
+        if (!b.getVerts())
             return a;
 
         mergedData.clear();
 
-        I32 totalVertCt = (a.getVertCount() + b.getVertCount());
+        const I32 totalVertCt = a.getVertCount() + b.getVertCount();
         I32 newCap = 8;
 
         while (newCap < totalVertCt)
@@ -222,7 +220,7 @@ NavModelData mergeModels(NavModelData& a,
         memcpy(mergedData._vertices + a.getVertCount() * 3, b.getVerts(),
                b.getVertCount() * 3 * sizeof(F32));
 
-        I32 totalTriCt = (a.getTriCount() + b.getTriCount());
+        const I32 totalTriCt = a.getTriCount() + b.getTriCount();
         newCap = 8;
 
         while (newCap < totalTriCt)
@@ -231,10 +229,10 @@ NavModelData mergeModels(NavModelData& a,
         mergedData._triangles = MemoryManager_NEW I32[newCap * 3];
         mergedData._triangleCapacity = newCap;
         mergedData._triangleCount = totalTriCt;
-        I32 aFaceSize = a.getTriCount() * 3;
+        const I32 aFaceSize = a.getTriCount() * 3;
         memcpy(mergedData._triangles, a.getTris(), aFaceSize * sizeof(I32));
 
-        I32 bFaceSize = b.getTriCount() * 3;
+        const I32 bFaceSize = b.getTriCount() * 3;
         I32* bFacePt = mergedData._triangles +
                        a.getTriCount() * 3;  // i like pointing at faces
         memcpy(bFacePt, b.getTris(), bFaceSize * sizeof(I32));
@@ -401,20 +399,20 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             static_cast<Object3D&>(sn).computeTriangleList();
             const vectorEASTL<vec3<U32> >& triangles = static_cast<const Object3D&>(sn).getTriangles();
             if (nodeType != SceneNodeType::TYPE_OBJECT3D ||
-               (nodeType == SceneNodeType::TYPE_OBJECT3D &&
-                static_cast<const Object3D&>(sn).getObjectType()._value != ObjectType::TERRAIN))
+               nodeType == SceneNodeType::TYPE_OBJECT3D &&
+               static_cast<const Object3D&>(sn).getObjectType()._value != ObjectType::TERRAIN)
             {
                 mat4<F32> nodeTransform = MAT4_IDENTITY;
                 nodeSGN->get<TransformComponent>()->getWorldMatrix(nodeTransform);
 
                 for (U32 i = 0; i < vertices.size(); ++i) {
                     // Apply the node's transform and add the vertex to the NavMesh
-                    addVertex(&outData, nodeTransform * (vertices[i]._position));
+                    addVertex(&outData, nodeTransform * vertices[i]._position);
                 }
             } else {
                 for (U32 i = 0; i < vertices.size(); ++i) {
                     // Apply the node's transform and add the vertex to the NavMesh
-                    addVertex(&outData, (vertices[i]._position));
+                    addVertex(&outData, vertices[i]._position);
                 }
             }
 
@@ -425,7 +423,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             std::array<vec3<F32>, 8> vertices = box.getPoints();
 
             for (U32 i = 0; i < 8; i++) {
-                addVertex(&outData, (vertices[i]));
+                addVertex(&outData, vertices[i]);
             }
 
             for (U32 f = 0; f < 6; f++) {
@@ -448,8 +446,6 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 // although labels are bad, skipping here using them is the easiest solution to
 // follow -Ionut
 next:
-    ;
-
     return !sgn->forEachChild([&outData](SceneGraphNode* child, I32 /*childIdx*/) {
                 if (!parse(child->get<BoundsComponent>()->getBoundingBox(), outData, child)) {
                     return false;
@@ -458,7 +454,7 @@ next:
             });
 
 }
-};
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide

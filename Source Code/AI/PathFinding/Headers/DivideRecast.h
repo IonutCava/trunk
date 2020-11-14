@@ -126,7 +126,7 @@ class DivideRecast {
     /**
     * Returns a random point on the navmesh.
     **/
-    bool getRandomNavMeshPoint(const NavigationMesh& navMesh, vec3<F32>& resultPt);
+    bool getRandomNavMeshPoint(const NavigationMesh& navMesh, vec3<F32>& resultPt) const;
     /**
     * Returns a random point on the navmesh contained withing the specified circle
     **/
@@ -149,7 +149,7 @@ class DivideRecast {
     bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
                                   const vec3<F32>& position,
                                   const vec3<F32>& extents, vec3<F32>& resultPt,
-                                  dtPolyRef& resultPoly);
+                                  dtPolyRef& resultPoly) const;
 
   protected:
     /// Stores all created paths
@@ -159,8 +159,8 @@ class DivideRecast {
 
 };
 
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide
 
 #endif

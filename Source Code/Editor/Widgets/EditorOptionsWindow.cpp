@@ -99,8 +99,8 @@ namespace Divide {
         ImGui::SameLine();
         if (ImGui::Button("Defaults", ImVec2(120, 0))) {
             _changeCount = 0u;
-            Attorney::EditorOptionsWindow::setTheme(_context.editor(), ImGuiStyleEnum::ImGuiStyle_DarkCodz01);
-            ImGui::ResetStyle(ImGuiStyleEnum::ImGuiStyle_DarkCodz01);
+            Attorney::EditorOptionsWindow::setTheme(_context.editor(), ImGuiStyle_DarkCodz01);
+            ImGui::ResetStyle(ImGuiStyle_DarkCodz01);
         }
         ImGui::End();
 
@@ -112,6 +112,6 @@ namespace Divide {
             if (_fileOpenDialog.hasUserJustCancelledDialog()) {
                 _openDialog = false;
             }
-        };
+        }
     }
-};
+}

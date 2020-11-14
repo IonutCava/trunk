@@ -55,28 +55,28 @@ class OPENGL_GUIRENDERER_API OpenGLRendererBase : public Renderer
 {
 public:
     // implement Renderer interface
-    RenderTarget& getDefaultRenderTarget();
-    GeometryBuffer& createGeometryBuffer();
-    void destroyGeometryBuffer(const GeometryBuffer& buffer);
-    void destroyAllGeometryBuffers();
-    TextureTarget* createTextureTarget();
-    void destroyTextureTarget(TextureTarget* target);
-    void destroyAllTextureTargets();
-    Texture& createTexture(const String& name);
+    RenderTarget& getDefaultRenderTarget() override;
+    GeometryBuffer& createGeometryBuffer() override;
+    void destroyGeometryBuffer(const GeometryBuffer& buffer) override;
+    void destroyAllGeometryBuffers() override;
+    TextureTarget* createTextureTarget() override;
+    void destroyTextureTarget(TextureTarget* target) override;
+    void destroyAllTextureTargets() override;
+    Texture& createTexture(const String& name) override;
     Texture& createTexture(const String& name,
                            const String& filename,
-                           const String& resourceGroup);
-    Texture& createTexture(const String& name, const Sizef& size);
-    void destroyTexture(Texture& texture);
-    void destroyTexture(const String& name);
-    void destroyAllTextures();
-    Texture& getTexture(const String& name) const;
-    bool isTextureDefined(const String& name) const;
-    void setDisplaySize(const Sizef& sz);
-    const Sizef& getDisplaySize() const;
-    const Vector2f& getDisplayDPI() const;
-    uint getMaxTextureSize() const;
-    const String& getIdentifierString() const;
+                           const String& resourceGroup) override;
+    Texture& createTexture(const String& name, const Sizef& size) override;
+    void destroyTexture(Texture& texture) override;
+    void destroyTexture(const String& name) override;
+    void destroyAllTextures() override;
+    Texture& getTexture(const String& name) const override;
+    bool isTextureDefined(const String& name) const override;
+    void setDisplaySize(const Sizef& sz) override;
+    const Sizef& getDisplaySize() const override;
+    const Vector2f& getDisplayDPI() const override;
+    uint getMaxTextureSize() const override;
+    const String& getIdentifierString() const override;
 
     /*!
     \brief
@@ -149,11 +149,11 @@ public:
         Utility function that will return \a f if it's a power of two, or the
         next power of two up from \a f if it's not.
     */
-    static float getNextPOTSize(const float f);
+    static float getNextPOTSize(float f);
 
     //! set the render states for the specified BlendMode.
-    virtual void setupRenderingBlendMode(const BlendMode mode,
-                                         const bool force = false) = 0;
+    virtual void setupRenderingBlendMode(BlendMode mode,
+                                         bool force = false) = 0;
 
     //! \deprecated - the OpenGL Info class should be used in the future for this purpose
     virtual bool isS3TCSupported() const = 0;
@@ -183,7 +183,7 @@ public:
     \return
         The viewport.
     */
-    const CEGUI::Rectf& getActiveViewPort();
+    const Rectf& getActiveViewPort();
 
     /*!
     \brief
@@ -314,7 +314,7 @@ public:
     OGLTextureTargetFactory() noexcept {}
     virtual ~OGLTextureTargetFactory() {}
     virtual TextureTarget* create(OpenGLRendererBase&) const
-        { return 0; }
+        { return nullptr; }
 };
 
 }

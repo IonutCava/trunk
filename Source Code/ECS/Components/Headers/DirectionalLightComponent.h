@@ -34,7 +34,7 @@
 #define _DIRECTIONAL_LIGHT_COMPONENT_H_
 
 #include "Rendering/Lighting/Headers/Light.h"
-#include "Managers/Headers/RenderPassManager.h"
+#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 namespace Divide {
 
@@ -51,7 +51,7 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     ~DirectionalLightComponent() = default;
 
     void setDirection(const vec3<F32>& direction);
-    void PreUpdate(U64 deltaTime) final;
+    void PreUpdate(U64 deltaTime) override;
 
     // Quick hack to store previous frame's culling results
     vectorEASTL<FeedBackContainer>& feedBackContainers() noexcept { return _feedbackContainers; }
@@ -67,15 +67,15 @@ class DirectionalLightComponent final : public BaseComponentType<DirectionalLigh
     PROPERTY_R_IW(bool,  drawImpostor, false);
 
 protected:
-     void OnData(const ECS::CustomEvent& data) final;
+     void OnData(const ECS::CustomEvent& data) override;
 
 protected:
-    //Used to adjust ortho-matrice's near/far planes per pass
+    //Used to adjust ortho-matrix's near/far planes per pass
     vectorEASTL<FeedBackContainer> _feedbackContainers;
 };
 
 INIT_COMPONENT(DirectionalLightComponent);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_DIRECTIONAL_LIGHT_COMPONENT_H_

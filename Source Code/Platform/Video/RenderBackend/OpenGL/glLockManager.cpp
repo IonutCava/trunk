@@ -20,7 +20,7 @@ glLockManager::~glLockManager()
     Wait(false);
 }
 
-void glLockManager::Wait(bool blockClient) {
+void glLockManager::Wait(const bool blockClient) {
     OPTICK_EVENT();
 
     {
@@ -38,7 +38,7 @@ void glLockManager::Wait(bool blockClient) {
     }
 }
  
-void glLockManager::Lock(bool flush) {
+void glLockManager::Lock(const bool flush) {
     OPTICK_EVENT();
 
     UniqueLock<SharedMutex> lock(_syncMutex);

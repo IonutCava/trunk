@@ -7,4 +7,4 @@ I64 GUIDWrapper::generateGUID() noexcept {
     static std::atomic<I64> idGenerator{ 1 };
     return idGenerator.fetch_add(1);
 }
-};  // namespace Divide
+}  // namespace Divide

@@ -56,7 +56,7 @@ namespace Build {
 #endif
 
     constexpr bool ENABLE_EDITOR = !IS_SHIPPING_BUILD;
-};
+}
 
 /// Application desired framerate for physics and input simulations
 constexpr unsigned int TARGET_FRAME_RATE = 60;
@@ -106,7 +106,7 @@ constexpr bool USE_COLOURED_WOIT = false;
 /// Compute related options
 namespace Compute {
 
-}; //namespace Compute
+} //namespace Compute
 
 /// Profiling options
 namespace Profile {
@@ -126,7 +126,7 @@ constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
 #endif
 /// Benchmark reset frequency in milliseconds
 constexpr unsigned int BENCHMARK_FREQUENCY = 500;
-};  // namespace Profile
+}  // namespace Profile
 
 namespace Assert {
 #if defined(_RELEASE)
@@ -141,7 +141,7 @@ namespace Assert {
 
 /// Do not call the platform "assert" function in order to continue application execution
 constexpr bool CONTINUE_ON_ASSERT = false;
-};  // namespace Assert
+}  // namespace Assert
 
 namespace Lighting {
 // How many lights (in order as passed to the shader for the node) should cast shadows
@@ -154,9 +154,9 @@ constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = MAX_SHADOW_CASTING_DIRECTIO
 constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
 
 static constexpr U32 MAX_SHADOW_PASSES =
-    Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT +
-    Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS * 6 +
-    Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS;
+    MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * MAX_CSM_SPLITS_PER_LIGHT +
+    MAX_SHADOW_CASTING_POINT_LIGHTS * 6 +
+    MAX_SHADOW_CASTING_SPOT_LIGHTS;
 
 /// Used mainly for caching/memory efficiency reasons
 constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
@@ -166,16 +166,16 @@ static_assert(MAX_CSM_SPLITS_PER_LIGHT < 6, "Maximum splits per light can't be m
 namespace ClusteredForward {
     constexpr unsigned short MAX_LIGHTS_PER_CLUSTER = 100u;
     constexpr unsigned short CLUSTER_Z_THREADS = 4u;
-};
+}
 
-};  // namespace Lighting
+}  // namespace Lighting
 
 namespace Networking {
 /// How often should the client send messages to the server
 constexpr unsigned int NETWORK_SEND_FREQUENCY_HZ = 20;
 /// How many times should we try to send an update to the server before giving up?
 constexpr unsigned int NETWORK_SEND_RETRY_COUNT = 3;
-};
+}
 #ifndef GPU_VALIDATION_IN_RELEASE_BUILD
     //#define GPU_VALIDATION_IN_RELEASE_BUILD
 #endif
@@ -199,8 +199,8 @@ constexpr bool ENABLE_GPU_VALIDATION = false;
 
 constexpr bool ENABLE_LOCALE_FILE_WATCHER = false;
 
-};  // namespace Config
-};  // namespace Divide
+}  // namespace Config
+}  // namespace Divide
 
 /// If the target machine uses the nVidia Optimus layout (IntelHD + nVidiadiscreet GPU)
 /// or the AMD PowerXPress system, this forces the client to use the high performance GPU

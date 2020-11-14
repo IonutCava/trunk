@@ -66,16 +66,14 @@ class GUIConsole final : public PlatformContextComponent {
     void printText(const Console::OutputEntry& entry);
 
    protected:
-    void RegisterHandlers();  //< Register our handler functions
+    void RegisterHandlers();  ///< Register our handler functions
     bool Handle_TextSubmitted(
-        const CEGUI::EventArgs& e);  //< Handle when we press Enter after typing
-    bool Handle_TextInput(const CEGUI::EventArgs& e);  //< A key is pressed in
-                                                       //the console input
-                                                       //editbox
+        const CEGUI::EventArgs& e);  ///< Handle when we press Enter after typing
+    bool Handle_TextInput(const CEGUI::EventArgs& e);  ///< A key is pressed in the console input editbox
 
    protected:
     friend class GUI;
-    void createCEGUIWindow();  //< The function which will load in the CEGUI Window and register event handlers
+    void createCEGUIWindow();  ///< The function which will load in the CEGUI Window and register event handlers
     // Post the message to the ChatHistory listbox with a white colour default
     void OutputText(const Console::OutputEntry& text);
 

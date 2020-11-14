@@ -52,16 +52,15 @@ class SkinnedSubMesh final : public SubMesh {
     explicit SkinnedSubMesh(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~SkinnedSubMesh() = default;
 
-   public:
     void postLoad(SceneGraphNode* sgn) override;
 
    protected:
     void onAnimationChange(SceneGraphNode* sgn, I32 newIndex) override;
-    const char* getResourceTypeName() const noexcept override { return "SkinnedSubMesh"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "SkinnedSubMesh"; }
 
     void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
-                     SceneState& sceneState) final;
+                     SceneState& sceneState) override;
    private:
     void computeBBForAnimation(SceneGraphNode* sgn, I32 animIndex);
     void buildBoundingBoxesForAnim(const Task& parentTask,

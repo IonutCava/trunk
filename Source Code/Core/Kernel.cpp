@@ -272,7 +272,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         Time::ScopedTimer timer2(_cameraMgrTimer);
         // Update cameras 
         // ToDo: add a speed slider in the editor -Ionut
-        Camera::update(_timingData.freezeLoopTime() ? (appDeltaTimeUS / 2) : deltaTimeUS);
+        Camera::update(_timingData.freezeLoopTime() ? appDeltaTimeUS / 2 : deltaTimeUS);
     }
 
     if (_platformContext.mainWindow().minimized()) {
@@ -363,7 +363,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         _platformContext.editor().update(appDeltaTimeUS);
     }
 
-    return presentToScreen(evt, deltaTimeUS);
+    return presentToScreen(evt);
 }
 
 void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& targetViewports, U8 count) {
@@ -417,12 +417,12 @@ void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& tar
 
     // Remove extra rows and columns, if any
     const U8 columnCount = resizeViewportContainer(count);
-    const U8 extraColumns = (columnCount * columnCount) - count;
+    const U8 extraColumns = columnCount * columnCount - count;
     const U8 extraRows = extraColumns / columnCount;
     for (U8 i = 0; i < extraRows; ++i) {
         rows.pop_back();
     }
-    const U8 columnsToRemove = extraColumns - (extraRows * columnCount);
+    const U8 columnsToRemove = extraColumns - extraRows * columnCount;
     for (U8 i = 0; i < columnsToRemove; ++i) {
         rows.back().pop_back();
     }
@@ -448,7 +448,7 @@ void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& tar
     if (extraColumns > 0) {
         ViewportRow& lastRow = rows.back();
         const I32 screenMidPoint = width / 2;
-        const I32 rowMidPoint = to_I32((lastRow.size() * playerWidth) / 2);
+        const I32 rowMidPoint = to_I32(lastRow.size() * playerWidth / 2);
         const I32 slideFactor = screenMidPoint - rowMidPoint;
         for (Rect<I32>& viewport : lastRow) {
             viewport.x += slideFactor;
@@ -472,7 +472,7 @@ Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorEASTL<Time::
     return *timers[index];
 }
 
-bool Kernel::presentToScreen(FrameEvent& evt, const U64 deltaTimeUS) {
+bool Kernel::presentToScreen(FrameEvent& evt) {
     OPTICK_EVENT();
 
     Time::ScopedTimer time(_flushToScreenTimer);
@@ -577,8 +577,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     // Load info from XML files
     XMLEntryData& entryData = _platformContext.entryData();
     Configuration& config = _platformContext.config();
-    XML::loadFromXML(entryData, entryPoint.c_str());
-    XML::loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
+    loadFromXML(entryData, entryPoint.c_str());
+    loadFromXML(config, (entryData.scriptLocation + "/config.xml").c_str());
 
     if (Util::FindCommandLineArgument(_argc, _argv, "disableRenderAPIDebugging")) {
         config.debug.enableRenderAPIDebugging = false;
@@ -606,7 +606,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         is_error ? Console::errorfn(stringImpl(msg).c_str()) : Console::printfn(stringImpl(msg).c_str());
     });
 
-    _platformContext.server().init(static_cast<Divide::U16>(443), "127.0.0.1", true);
+    _platformContext.server().init(static_cast<U16>(443), "127.0.0.1", true);
 
     if (!_platformContext.client().connect(entryData.serverAddress, 443)) {
         _platformContext.client().connect("127.0.0.1", 443);
@@ -688,11 +688,11 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
 
-    winManager.mainWindow()->addEventListener(WindowEvent::LOST_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
+    winManager.mainWindow()->addEventListener(WindowEvent::LOST_FOCUS, [this](const DisplayWindow::WindowEventArgs& ) {
         _sceneManager->onLostFocus();
         return true;
     });
-    winManager.mainWindow()->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& args) {
+    winManager.mainWindow()->addEventListener(WindowEvent::GAINED_FOCUS, [this](const DisplayWindow::WindowEventArgs& ) {
         _sceneManager->onGainFocus();
         return true;
     });
@@ -812,7 +812,7 @@ bool Kernel::onKeyDown(const Input::KeyEvent& key) {
     if (!_platformContext.gui().onKeyDown(key)) {
         return _sceneManager->onKeyDown(key);
     }
-    return true;  //< InputInterface needs to know when this is completed
+    return true;  ////< InputInterface needs to know when this is completed
 }
 
 bool Kernel::onKeyUp(const Input::KeyEvent& key) {

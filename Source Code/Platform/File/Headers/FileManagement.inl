@@ -54,7 +54,7 @@ bool readFile(const char* filePath, const char* fileName, T& contentOut, FileTyp
             optional_reserve(contentOut, fileSize);
 
             static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
-            contentOut.assign((std::istreambuf_iterator<char>(streamIn)),
+            contentOut.assign(std::istreambuf_iterator<char>(streamIn),
                                std::istreambuf_iterator<char>());
         }
 

@@ -56,15 +56,16 @@ class Quadtree {
     void build(BoundingBox& terrainBBox,
                const vec2<U16>& HMSize,
                U32 targetChunkDimension,
-               Terrain* const terrain);
-    const BoundingBox& computeBoundingBox();
+               Terrain* terrain);
 
-    inline U32 getChunkCount() const noexcept { return _chunkCount; }
+    [[nodiscard]] const BoundingBox& computeBoundingBox() const;
+
+    [[nodiscard]] U32 getChunkCount() const noexcept { return _chunkCount; }
 
     void drawBBox(RenderPackage& packageOut);
     void toggleBoundingBoxes();
 
-    QuadtreeNode* findLeaf(const vec2<F32>& pos);
+    [[nodiscard]] QuadtreeNode* findLeaf(const vec2<F32>& pos) const;
 
     POINTER_R(Pipeline, bbPipeline, nullptr);
 
@@ -77,6 +78,6 @@ class Quadtree {
     bool _drawBBoxes = false;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

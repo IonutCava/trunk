@@ -39,4 +39,4 @@ size_t ResourceDescriptor::getHash() const noexcept {
     return _hash;
 }
 
-};
+}

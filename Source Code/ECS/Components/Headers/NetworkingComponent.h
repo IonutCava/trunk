@@ -73,6 +73,6 @@ private:
 
 INIT_COMPONENT(NetworkingComponent);
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_NETWORKING_COMPONENT_H_

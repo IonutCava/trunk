@@ -46,32 +46,32 @@ class TerrainDescriptor;
 struct VegetationDetails;
 
 FWD_DECLARE_MANAGED_CLASS(Terrain);
-class TerrainLoader : private NonCopyable {
+class TerrainLoader : NonCopyable {
    public:
-    static bool loadTerrain(Terrain_ptr terrain,
-                            const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
-                            PlatformContext& context,
-                            bool threadedLoading);
+    [[nodiscard]] static bool loadTerrain(const Terrain_ptr& terrain,
+                                          const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
+                                          PlatformContext& context,
+                                          bool threadedLoading);
 
 
 
    protected:
     static bool Save(const char* fileName);
-    static bool Load(const char* filename);
+    static bool Load(const char* fileName);
 
    private:
-    TerrainLoader() noexcept {}
-    ~TerrainLoader() {}
+    TerrainLoader() noexcept = default;
+    ~TerrainLoader() = default;
 
-    static bool loadThreadedResources(Terrain_ptr terrain,
-                                      PlatformContext& context,
-                                      const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
+    [[nodiscard]] static bool loadThreadedResources(const Terrain_ptr& terrain,
+                                                    PlatformContext& context,
+                                                    const std::shared_ptr<TerrainDescriptor>& terrainDescriptor);
 
-    static VegetationDetails& initializeVegetationDetails(Terrain_ptr terrain,
-                                                          PlatformContext& context,
-                                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor);
+    [[nodiscard]] static VegetationDetails& initializeVegetationDetails(const Terrain_ptr& terrain,
+                                                                        PlatformContext& context,
+                                                                        const std::shared_ptr<TerrainDescriptor>& terrainDescriptor);
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_TERRAIN_LOADER_H_

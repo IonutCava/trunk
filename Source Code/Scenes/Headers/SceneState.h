@@ -62,14 +62,13 @@ struct WaterBodyData
 };
 
 struct FogDescriptor {
-  public:
     FogDescriptor();
 
-    inline bool dirty() const noexcept { return _dirty; }
-    inline F32 density() const noexcept { return _density; }
-    inline const vec3<F32>& colour() const noexcept { return _colour; }
+    [[nodiscard]] bool dirty() const noexcept { return _dirty; }
+    [[nodiscard]] F32 density() const noexcept { return _density; }
+    [[nodiscard]] const vec3<F32>& colour() const noexcept { return _colour; }
 
-    inline void set(const vec3<F32>& colour, F32 density) {
+    void set(const vec3<F32>& colour, F32 density) {
         CLAMP_01(density);
         _colour.set(colour);
         _density = density;
@@ -79,13 +78,16 @@ struct FogDescriptor {
 
   protected:
     friend class SceneManager;
-    inline void clean() noexcept {
+
+    void clean() noexcept {
         _dirty = false;
     }
-    inline void active(const bool state) noexcept {
+
+    void active(const bool state) noexcept {
         _active = state;
     }
-    inline bool active() const noexcept {
+
+    [[nodiscard]] bool active() const noexcept {
         return _active;
     }
   private:
@@ -129,22 +131,22 @@ class SceneRenderState : public SceneComponent {
     explicit SceneRenderState(Scene& parentScene);
 
     void renderMask(U16 mask);
-    bool isEnabledOption(RenderOptions option) const;
+    [[nodiscard]] bool isEnabledOption(RenderOptions option) const;
     void enableOption(RenderOptions option);
     void disableOption(RenderOptions option);
     void toggleOption(RenderOptions option);
-    void toggleOption(RenderOptions option, const bool state);
+    void toggleOption(RenderOptions option, bool state);
     
     PROPERTY_RW(F32, generalVisibility, 1000.0f);
     PROPERTY_RW(F32, grassVisibility, 1000.0f);
     PROPERTY_RW(F32, treeVisibility, 1000.0f);
     PROPERTY_RW(U8, renderPass, 0u);
 
-    inline vec4<U16>& lodThresholds() noexcept { return _lodThresholds; }
-    inline FogDescriptor& fogDescriptor() noexcept { return _fog; }
-    inline const FogDescriptor& fogDescriptor() const noexcept { return _fog; }
+    [[nodiscard]] vec4<U16>& lodThresholds() noexcept { return _lodThresholds; }
+    [[nodiscard]] FogDescriptor& fogDescriptor() noexcept { return _fog; }
+    [[nodiscard]] const FogDescriptor& fogDescriptor() const noexcept { return _fog; }
 
-    vec4<U16> lodThresholds(RenderStage stage = RenderStage::DISPLAY) const noexcept;
+    [[nodiscard]] vec4<U16> lodThresholds(RenderStage stage = RenderStage::DISPLAY) const noexcept;
 
   protected:
     FogDescriptor _fog;
@@ -163,11 +165,11 @@ enum class MoveDirection : I8 {
 constexpr F32 DEFAULT_PLAYER_HEIGHT = 1.82f;
 
 struct SceneStatePerPlayer {
-    inline void resetMovement() noexcept {
+    void resetMovement() noexcept {
         _moveFB = _moveLR = _moveUD = _angleUD = _angleLR = _roll = _zoom = MoveDirection::NONE;
     }
 
-    inline void resetAll() noexcept {
+    void resetAll() noexcept {
         resetMovement();
         _cameraUnderwater = false;
         _cameraUpdated = false;
@@ -197,45 +199,45 @@ class SceneState : public SceneComponent {
     /// Background music map : trackName - track
     using MusicPlaylist = hashMap<U64, AudioDescriptor_ptr>;
 
-    SceneState(Scene& parentScene)
+    explicit SceneState(Scene& parentScene)
         : SceneComponent(parentScene),
           _renderState(parentScene)
      {
      }
 
-    inline void onPlayerAdd(U8 index) {
+    void onPlayerAdd(const U8 index) {
         // Just reset everything
         onPlayerRemove(index);
     }
 
-    inline void onPlayerRemove(U8 index) {
+    void onPlayerRemove(const U8 index) {
         _playerState[index].resetAll();
     }
 
-    inline SceneStatePerPlayer& playerState() {
+    [[nodiscard]] SceneStatePerPlayer& playerState() {
         return _playerState[playerPass()];
     }
 
-    inline const SceneStatePerPlayer& playerState() const {
+    [[nodiscard]] const SceneStatePerPlayer& playerState() const {
         return _playerState[playerPass()];
     }
 
-    inline SceneStatePerPlayer& playerState(U8 index) {
+    [[nodiscard]] SceneStatePerPlayer& playerState(const U8 index) {
         return _playerState[index];
     }
 
-    inline const SceneStatePerPlayer& playerState(U8 index) const {
+    [[nodiscard]] const SceneStatePerPlayer& playerState(const U8 index) const {
         return _playerState[index];
     }
 
-    inline SceneRenderState& renderState() noexcept { return _renderState; }
-    inline MusicPlaylist& music(MusicType type) noexcept { return _music[to_U32(type)]; }
+    [[nodiscard]] SceneRenderState& renderState() noexcept { return _renderState; }
+    [[nodiscard]] MusicPlaylist& music(const MusicType type) noexcept { return _music[to_U32(type)]; }
 
-    inline const SceneRenderState& renderState() const noexcept { return _renderState; }
-    inline const MusicPlaylist& music(MusicType type) const noexcept { return _music[to_U32(type)]; }
+    [[nodiscard]] const SceneRenderState& renderState() const noexcept { return _renderState; }
+    [[nodiscard]] const MusicPlaylist& music(const MusicType type) const noexcept { return _music[to_U32(type)]; }
 
-    inline vectorEASTL<WaterBodyData>& waterBodies() noexcept { return _waterBodies; }
-    inline const vectorEASTL<WaterBodyData>& waterBodies() const noexcept { return _waterBodies; }
+    [[nodiscard]] vectorEASTL<WaterBodyData>& waterBodies() noexcept { return _waterBodies; }
+    [[nodiscard]] const vectorEASTL<WaterBodyData>& waterBodies() const noexcept { return _waterBodies; }
 
     PROPERTY_RW(U8, playerPass, 0u);
     PROPERTY_RW(bool, saveLoadDisabled, false);
@@ -254,5 +256,5 @@ protected:
     vectorEASTL<WaterBodyData> _waterBodies;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 #endif

@@ -186,6 +186,6 @@ CreateResource(ResourceCache* cache, const ResourceDescriptor& descriptor, std::
 }
 
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

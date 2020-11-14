@@ -47,7 +47,6 @@ TEST(I24Conversions)
     const I24 testB(inputB);
     const I24 testC = testB;
     I24 testD = I24(inputD);
-    I24 testE = I24(inputC);
 
     CHECK_EQUAL(testC, testB);
     CHECK_EQUAL(to_I32(testA), inputA);
@@ -68,4 +67,4 @@ TEST(I24Conversions)
     CHECK_EQUAL(testD++, inputD - 1);
     CHECK_EQUAL(testD, I24(inputD));
 }
-}; //namespace Divide
+} //namespace Divide

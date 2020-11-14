@@ -74,6 +74,6 @@ private:
 
     mutable SharedMutex _sceneLock;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCENE_POOL_H_

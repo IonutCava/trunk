@@ -43,17 +43,17 @@ class SceneComponent {
         {
         }
 
-        inline Scene& parentScene() noexcept {
+        [[nodiscard]] Scene& parentScene() noexcept {
             return _parentScene;
         }
 
-        inline const Scene& parentScene() const noexcept {
+        [[nodiscard]] const Scene& parentScene() const noexcept {
             return _parentScene;
         }
 
     protected:
         Scene& _parentScene;
 };
-}; // namespace Divide
+} // namespace Divide
 
 #endif //_SCENE_COMPONENT_H_

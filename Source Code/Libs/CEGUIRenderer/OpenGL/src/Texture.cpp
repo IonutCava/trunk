@@ -38,9 +38,8 @@ namespace CEGUI
 {
 //----------------------------------------------------------------------------//
 OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name) :
-    d_ogltexture(0),
     d_size(0, 0),
-    d_grabBuffer(0),
+    d_grabBuffer(nullptr),
     d_dataSize(0, 0),
     d_texelScaling(0, 0),
     d_owner(owner),
@@ -54,9 +53,8 @@ OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name) :
 OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
                              const String& filename,
                              const String& resourceGroup) :
-    d_ogltexture(0),
     d_size(0, 0),
-    d_grabBuffer(0),
+    d_grabBuffer(nullptr),
     d_dataSize(0, 0),
     d_owner(owner),
     d_name(name)
@@ -69,9 +67,8 @@ OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
 //----------------------------------------------------------------------------//
 OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
                              const Sizef& size) :
-    d_ogltexture(0),
     d_size(0, 0),
-    d_grabBuffer(0),
+    d_grabBuffer(nullptr),
     d_dataSize(0, 0),
     d_owner(owner),
     d_name(name)
@@ -86,7 +83,7 @@ OpenGLTexture::OpenGLTexture(OpenGLRendererBase& owner, const String& name,
                              GLuint tex, const Sizef& size) :
     d_ogltexture(tex),
     d_size(size),
-    d_grabBuffer(0),
+    d_grabBuffer(nullptr),
     d_dataSize(size),
     d_owner(owner),
     d_name(name)
@@ -308,11 +305,10 @@ GLsizei OpenGLTexture::getCompressedTextureSize(const Sizef& pixel_size) const
         blocksize = 8;
     }
 
-    return (
-        static_cast<GLsizei>(
+    return static_cast<GLsizei>(
         std::ceil(pixel_size.d_width / 4) *
         std::ceil(pixel_size.d_height / 4) *
-        blocksize));
+        blocksize);
 }
 
 //----------------------------------------------------------------------------//
@@ -338,11 +334,11 @@ void OpenGLTexture::setTextureSize_impl(const Sizef& sz)
         glGetFloatv(GL_MAX_TEXTURE_SIZE, &maxSize);
     }
 
-    if ((size.d_width > maxSize) || (size.d_height > maxSize))
+    if (size.d_width > maxSize || size.d_height > maxSize)
         CEGUI_THROW(RendererException("size too big"));
 
     // save old texture binding
-    Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
+    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
 
     // set texture to required size
     Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_ogltexture);
@@ -353,14 +349,14 @@ void OpenGLTexture::setTextureSize_impl(const Sizef& sz)
         glCompressedTexImage2D(GL_TEXTURE_2D, 0, d_format,
                                static_cast<GLsizei>(size.d_width),
                                static_cast<GLsizei>(size.d_height),
-                               0, image_size, 0);
+                               0, image_size, nullptr);
     }
     else
     {
         glTexImage2D(GL_TEXTURE_2D, 0, internalFormat(),
                      static_cast<GLsizei>(size.d_width),
                      static_cast<GLsizei>(size.d_height),
-                     0, d_format, d_subpixelFormat, 0);
+                     0, d_format, d_subpixelFormat, nullptr);
     }
 
     // restore previous texture binding.
@@ -409,15 +405,14 @@ void OpenGLTexture::restoreTexture()
     generateOpenGLTexture();
     setTextureSize_impl(d_size);
 
-    Sizef blit_size;
     /* In OpenGL ES we used "glReadPixels" to grab the texture, reading just the
        relevant rectangle. */
-    blit_size = OpenGLInfo::getSingleton().isUsingOpenglEs() ? d_dataSize : d_size;
+    Sizef blit_size = OpenGLInfo::getSingleton().isUsingOpenglEs() ? d_dataSize : d_size;
     blitFromMemory(d_grabBuffer, Rectf(Vector2f(0, 0), blit_size));
 
     // free the grabbuffer
     delete [] d_grabBuffer;
-    d_grabBuffer = 0;
+    d_grabBuffer = nullptr;
 }
 
 //----------------------------------------------------------------------------//
@@ -425,7 +420,7 @@ void OpenGLTexture::blitFromMemory(const void* sourceData, const Rectf& area)
 {
     // save old texture binding
     // save old texture binding
-    Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
+    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
 
     // set texture to required size
     Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_ogltexture);
@@ -480,7 +475,7 @@ void OpenGLTexture::blitToMemory(void* targetData)
     {
 
         // save existing config
-        Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
+        const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
 
         Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_ogltexture);
 
@@ -512,7 +507,7 @@ void OpenGLTexture::updateCachedScaleValues()
 void OpenGLTexture::generateOpenGLTexture()
 {
     // save old texture binding
-    Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
+    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &d_ogltexture);
 
@@ -539,7 +534,7 @@ void OpenGLTexture::cleanupOpenGLTexture()
     if (d_grabBuffer)
     {
         delete[] d_grabBuffer;
-        d_grabBuffer = 0;
+        d_grabBuffer = nullptr;
     }
     // otherwise delete any OpenGL texture associated with this object.
     else

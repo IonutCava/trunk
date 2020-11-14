@@ -88,7 +88,7 @@ class SubMesh : public Object3D {
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
-    virtual const char* getResourceTypeName() const noexcept override { return "SubMesh"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "SubMesh"; }
 
     void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,

@@ -53,7 +53,7 @@ bool SceneManager::onShutdown() {
 
 SceneManager::SceneManager(Kernel& parentKernel)
     : FrameListener("SceneManager", parentKernel.frameListenerMgr(), 2),
-      Input::InputAggregatorInterface(),
+      InputAggregatorInterface(),
       KernelComponent(parentKernel)
 {
 }
@@ -214,7 +214,7 @@ bool SceneManager::switchScene(const Str256& name, bool unloadPrevious, const Re
 
     // We use our rendering task pool for scene changes because we might be creating / loading GPU assets (shaders, textures, buffers, etc)
     Start(*CreateTask(_platformContext->taskPool(TaskPoolType::HIGH_PRIORITY),
-        [this, name, unloadPrevious, &sceneToUnload](const Task& parentTask)
+        [this, name, unloadPrevious, &sceneToUnload](const Task& /*parentTask*/)
         {
             // Load first, unload after to make sure we don't reload common resources
             if (load(name) != nullptr) {
@@ -242,7 +242,7 @@ bool SceneManager::switchScene(const Str256& name, bool unloadPrevious, const Re
                                                     pixelScale(50, 25));
                     
                     btn->setEventCallback(GUIButton::Event::MouseClick,
-                        [this, &targetRenderViewport](I64 btnGUID)
+                        [this, &targetRenderViewport](I64 /*btnGUID*/)
                         {
                             _sceneSwitchTarget = {
                                 _scenePool->defaultScene().resourceName(),
@@ -487,7 +487,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
                 }
             }
 
-            if (eastl::find(eastl::cbegin(ret), eastl::cend(ret), parsedNode) == eastl::cend(ret)) {
+            if (eastl::find(cbegin(ret), cend(ret), parsedNode) == cend(ret)) {
                 ret.push_back(parsedNode);
             }
         }
@@ -575,8 +575,8 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
 
 void SceneManager::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut) {
     //Set a 2D camera for rendering
-    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
-    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ targetViewport });
+    EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ targetViewport });
 
     Attorney::SceneManager::drawCustomUI(getActiveScene(), targetViewport, bufferInOut);
 }
@@ -626,7 +626,7 @@ void SceneManager::moveCameraToNode(const SceneGraphNode* targetNode) const {
         if (bComp != nullptr) {
             const BoundingSphere& bSphere = bComp->getBoundingSphere();
             targetPos = bSphere.getCenter();
-            targetPos -= (bSphere.getRadius() * 1.5f) * playerCamera()->getForwardDir();
+            targetPos -= bSphere.getRadius() * 1.5f * playerCamera()->getForwardDir();
         } else {
             const TransformComponent* tComp = targetNode->get<TransformComponent>();
             if (tComp != nullptr) {
@@ -696,7 +696,7 @@ void SceneManager::getSortedRefractiveNodes(const Camera* camera, const RenderSt
     }
 }
 
-const VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const Camera& camera, const I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
+const VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const Camera& camera, const I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount) {
     OPTICK_EVENT();
 
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
@@ -707,7 +707,7 @@ const VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, c
     NodeCullParams cullParams = {};
     cullParams._lodThresholds = sceneState->renderState().lodThresholds(stage);
     cullParams._minExtents = minExtents;
-    cullParams._ignoredGUIDS = std::make_pair(ignoredGUIDS, ignoredGUIDSCount);
+    cullParams._ignoredGUIDS = std::make_pair(ignoredGUIDs, ignoredGUIDsCount);
     cullParams._currentCamera = &camera;
     cullParams._cullMaxDistanceSq = std::numeric_limits<F32>::max();
     cullParams._minLoD = minLoD;
@@ -752,10 +752,10 @@ void SceneManager::resetSelection(const PlayerIndex idx) {
     }
 }
 
-void SceneManager::setSelected(const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, const bool recursive) {
-    Attorney::SceneManager::setSelected(getActiveScene(), idx, sgns, recursive);
+void SceneManager::setSelected(const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& SGNs, const bool recursive) {
+    Attorney::SceneManager::setSelected(getActiveScene(), idx, SGNs, recursive);
     for (auto& cbk : _selectionChangeCallbacks) {
-        cbk(idx, sgns);
+        cbk(idx, SGNs);
     }
 }
 
@@ -983,7 +983,7 @@ bool SceneManager::saveActiveScene(bool toCache, const bool deferred, const DELE
     TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::LOW_PRIORITY);
     _saveTask = CreateTask(pool,
                            nullptr,
-                           [&activeScene, msgCallback, finishCallback, toCache](const Task& parentTask) {
+                           [&activeScene, msgCallback, finishCallback, toCache](const Task& /*parentTask*/) {
                                LoadSave::saveScene(activeScene, toCache, msgCallback, finishCallback);
                            },
                            false);

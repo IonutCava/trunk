@@ -23,7 +23,7 @@ void ParticleVelocityGenerator::generate(Task& packagedTasksParent,
     {
         Start(*CreateTask(tp,
             &packagedTasksParent,
-            [from, to, min, max](const Task& parentTask) mutable
+            [from, to, min, max](const Task&) mutable
             {
                 std::for_each(from, to, [&](vec4<F32>& velocity)
                 {
@@ -32,4 +32,4 @@ void ParticleVelocityGenerator::generate(Task& packagedTasksParent,
             }));
         });
 }
-};
+}

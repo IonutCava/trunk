@@ -12,9 +12,9 @@ BoundingBox::BoundingBox() noexcept
 {
 }
 
-BoundingBox::BoundingBox(const vec3<F32>& min, const vec3<F32>& max) noexcept
-    : _min(min), 
-      _max(max)
+BoundingBox::BoundingBox(vec3<F32> min, vec3<F32> max) noexcept
+    : _min(std::move(min)), 
+      _max(std::move(max))
 {
 }
 
@@ -99,9 +99,9 @@ bool BoundingBox::collision(const BoundingBox& AABB2) const noexcept {
     const vec3<F32>& otherCenter = AABB2.getCenter();
     const vec3<F32>& otherHalfWidth = AABB2.getHalfExtent();
 
-    return std::abs(center.x - otherCenter.x) <= (halfWidth.x + otherHalfWidth.x) &&
-           std::abs(center.y - otherCenter.y) <= (halfWidth.y + otherHalfWidth.y) &&
-           std::abs(center.z - otherCenter.z) <= (halfWidth.z + otherHalfWidth.z);
+    return std::abs(center.x - otherCenter.x) <= halfWidth.x + otherHalfWidth.x &&
+           std::abs(center.y - otherCenter.y) <= halfWidth.y + otherHalfWidth.y &&
+           std::abs(center.z - otherCenter.z) <= halfWidth.z + otherHalfWidth.z;
 }
 
 bool BoundingBox::collision(const BoundingSphere& bSphere) const noexcept {
@@ -133,7 +133,7 @@ RayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     const F32 ty_min = (bounds[colHelpers._sign[1]].y - origin.y) * colHelpers._invDirection.y;
     const F32 ty_max = (bounds[1 - colHelpers._sign[1]].y - origin.y) * colHelpers._invDirection.y;
 
-    if ((t_min > ty_max) || (ty_min > t_max)) {
+    if (t_min > ty_max || ty_min > t_max) {
         return { false, (t_min >= 0.0f ? t_min : t_max) };
     }
 
@@ -148,7 +148,7 @@ RayResult BoundingBox::intersect(const Ray& r, F32 t0, F32 t1) const noexcept {
     const F32 tz_min = (bounds[colHelpers._sign[2]].z - origin.z) * colHelpers._invDirection.z;
     const F32 tz_max = (bounds[1 - colHelpers._sign[2]].z - origin.z) * colHelpers._invDirection.z;
 
-    if ((t_min > tz_max) || (tz_min > t_max)) {
+    if (t_min > tz_max || tz_min > t_max) {
         return { false, (t_min >= 0.0f ? t_min : t_max) };
     }
 
@@ -214,4 +214,4 @@ F32 BoundingBox::nearestDistanceFromPointSquared(const vec3<F32>& pos) const noe
 #endif
 }
 
-};  // namespace Divide
+}  // namespace Divide

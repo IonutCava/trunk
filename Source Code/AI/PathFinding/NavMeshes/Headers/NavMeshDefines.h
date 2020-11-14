@@ -41,9 +41,9 @@
 #include <Detour/Include/DetourNavMeshQuery.h>
 #include <Detour/Include/DetourNavMeshBuilder.h>
 
-#define MAX_PATHSLOT 128  // how many paths we can store
-#define MAX_PATHPOLY 256  // max number of polygons in a path
-#define MAX_PATHVERT 512  // most verts in a path
+constexpr auto MAX_PATHSLOT = 128;  ///< how many paths we can store;
+constexpr auto MAX_PATHPOLY = 256;  ///< max number of polygons in a path
+constexpr auto MAX_PATHVERT = 512;  ///< most verts in a path
 
 namespace Divide {
 namespace AI {
@@ -89,8 +89,8 @@ enum class PathErrorCode : I8 {
     PATH_ERROR_NO_STRAIGHT_PATH_CREATE = -5,
     PATH_ERROR_NO_STRAIGHT_PATH_FIND = -6
 };
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide
 
 #endif

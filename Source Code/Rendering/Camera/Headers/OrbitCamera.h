@@ -74,7 +74,7 @@ class OrbitCamera : public FreeFlyCamera {
     virtual ~OrbitCamera() = default;
 
    protected:
-    virtual bool updateViewMatrix() override;
+    bool updateViewMatrix() override;
 
    protected:
     F32 _maxRadius = 10.0f;

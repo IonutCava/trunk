@@ -39,7 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
     namespace Attorney {
         class TransformComponentSGN;
-    };
+    }
     
     enum class TransformType : U8 {
         NONE = 0,
@@ -160,8 +160,8 @@ namespace Divide {
          void setTransformDirty(TransformType type) noexcept;
          void setTransformDirty(U32 typeMask) noexcept;
 
-         void PreUpdate(U64 deltaTimeUS) final;
-         void Update(U64 deltaTimeUS) final;
+         void PreUpdate(U64 deltaTimeUS) override;
+         void Update(U64 deltaTimeUS) override;
 
          void onParentTransformDirty(U32 transformMask) noexcept;
          void onParentUsageChanged(NodeUsageContext context) noexcept;
@@ -218,8 +218,8 @@ namespace Divide {
             friend class Divide::SceneGraphNode;
         };
 
-    }; //namespace Attorney
+    } //namespace Attorney
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_TRANSFORM_COMPONENT_H_

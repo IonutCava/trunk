@@ -120,12 +120,12 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     bool loadFile(const ResourcePath& name, ImageTools::ImageData& fileData);
     bool checkTransparency(const ResourcePath& name, ImageTools::ImageData& fileData);
     /// Load texture data using the specified file name
-    virtual bool load() override;
+    bool load() override;
     virtual void threadedLoad();
 
     virtual void validateDescriptor();
 
-    const char* getResourceTypeName() const noexcept override { return "Texture"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Texture"; }
 
   protected:
     bool _asyncLoad;

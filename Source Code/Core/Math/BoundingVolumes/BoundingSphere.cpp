@@ -9,13 +9,13 @@ BoundingSphere::BoundingSphere() noexcept
     _center.reset();
 }
 
-BoundingSphere::BoundingSphere(const vec3<F32>& center, const F32 radius) noexcept
-    : _center(center),
+BoundingSphere::BoundingSphere(vec3<F32> center, const F32 radius) noexcept
+    : _center(std::move(center)),
       _radius(radius)
 {
 }
 
-BoundingSphere::BoundingSphere(const vectorEASTL<vec3<F32> >& points) noexcept
+BoundingSphere::BoundingSphere(const vectorEASTL<vec3<F32>>& points) noexcept
     : BoundingSphere()
 {
     createFromPoints(points);
@@ -45,7 +45,7 @@ bool BoundingSphere::containsBoundingBox(const BoundingBox& AABB) const noexcept
 
 bool BoundingSphere::containsPoint(const vec3<F32>& point) const noexcept {
     const F32 distanceSQ = _center.distanceSquared(point);
-    return distanceSQ <= (_radius * _radius);
+    return distanceSQ <= _radius * _radius;
 }
 
 bool BoundingSphere::collision(const BoundingSphere& sphere2) const noexcept {
@@ -71,7 +71,7 @@ RayResult BoundingSphere::intersect(const Ray& r, const F32 tMin, const F32 tMax
     // A negative discriminant corresponds to ray missing sphere 
     if (discr < 0.0f) {
         return {};
-    };
+    }
 
     // Ray now found to intersect sphere, compute smallest t value of intersection
     // If t is negative, ray started inside sphere so clamp t to zero
@@ -87,4 +87,4 @@ RayResult BoundingSphere::intersect(const Ray& r, const F32 tMin, const F32 tMax
     return ret;
 }
 
-};  // namespace Divide
+}  // namespace Divide

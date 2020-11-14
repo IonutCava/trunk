@@ -9,6 +9,7 @@
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Time/Headers/ApplicationTimer.h"
+#include "Dynamics/Entities/Units/Headers/NPC.h"
 #include "Rendering/Camera/Headers/ThirdPersonCamera.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
 #include "Managers/Headers/SceneManager.h"
@@ -21,49 +22,27 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/PointLightComponent.h"
+#include "ECS/Components/Headers/UnitComponent.h"
 
 #include "Environment/Terrain/Headers/Terrain.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
 
-namespace {
-    bool g_direction = false;
-    U64 elapsedGameTimeUs = 0;
-};
-
 WarScene::WarScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name)
    : Scene(context, cache, parent, name),
-    _flag{ nullptr, nullptr },
-    _particleEmitter(nullptr),
-    _infoBox(nullptr),
-    _sceneReady(false),
-    _terrainMode(false),
-    _lastNavMeshBuildTime(0UL),
-    _targetLines(nullptr),
-    _firstPersonWeapon(nullptr)
+    _timeLimitMinutes(5),
+    _scoreLimit(3)
 {
-
-    for (U8 i = 0; i < 2; ++i) {
-        _faction[i] = nullptr;
-    }
-
-    _resetUnits = false;
-
-    parent.addSelectionCallback([&](PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& node) {
-        stringImpl selectionText = "";
+    parent.addSelectionCallback([&](PlayerIndex /*idx*/, const vectorEASTL<SceneGraphNode*>& node) {
+        stringImpl selectionText;
         for (SceneGraphNode* it : node) {
             selectionText.append("\n");
             selectionText.append(it->name().c_str());
         }
 
-        _GUI->modifyText("entityState", selectionText.c_str(), true);
+        _GUI->modifyText("entityState", selectionText, true);
     });
-
-    _runCount = 0;
-    _timeLimitMinutes = 5;
-    _scoreLimit = 3;
-    _elapsedGameTime = 0;
 }
 
 WarScene::~WarScene()
@@ -93,7 +72,7 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
     }
 
     if (_guiTimersMS[1] >= Time::SecondsToMilliseconds(1)) {
-        stringImpl selectionText = "";
+        stringImpl selectionText;
         const Selections& selections = _currentSelection[0];
         for (U8 i = 0u; i < selections._selectionCount; ++i) {
             SceneGraphNode* node = sceneGraph()->findNode(selections._selections[i]);
@@ -106,12 +85,12 @@ void WarScene::processGUI(const U64 deltaTimeUS) {
             }
         }
         if (!selectionText.empty()) {
-            _GUI->modifyText("entityState", selectionText.c_str(), true);
+            _GUI->modifyText("entityState", selectionText, true);
         }
     }
 
     if (_guiTimersMS[2] >= 66) {
-        U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+        U32 elapsedTimeMinutes = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60 % 60;
         U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
         U32 elapsedTimeMilliseconds = Time::MicrosecondsToMilliseconds<U32>(_elapsedGameTime) % 1000;
 
@@ -143,7 +122,7 @@ namespace {
     F32 phiLight = 0.0f;
     bool initPosSetLight = false;
     vectorEASTL<vec3<F32>> initPosLight;
-};
+}
 
 void WarScene::toggleTerrainMode() {
     _terrainMode = !_terrainMode;
@@ -231,14 +210,15 @@ void WarScene::processTasks(const U64 deltaTimeUS) {
 }
 
 namespace {
+    constexpr bool g_enableOldGameLogic = false;
     F32 phi = 0.0f;
     vec3<F32> initPos;
     bool initPosSet = false;
-};
+}
 
 namespace{
     SceneGraphNode* g_terrain = nullptr;
-};
+}
 
 void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
     //OPTICK_EVENT();
@@ -267,70 +247,71 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
             }
         }
     }
-#if 0
-    if (_resetUnits) {
-        resetUnits();
-        _resetUnits = false;
-    }
 
-    SceneGraphNode* particles = _particleEmitter;
-    const F32 radius = 20;
-
-    if (particles) {
-        phi += 0.001f;
-        if (phi > 360.0f) {
-            phi = 0.0f;
+    if_constexpr(g_enableOldGameLogic) {
+        if (_resetUnits) {
+            resetUnits();
+            _resetUnits = false;
         }
 
-        TransformComponent* tComp = particles->get<TransformComponent>();
-        if (!initPosSet) {
-            initPos.set(tComp->getPosition());
-            initPosSet = true;
-        }
+        SceneGraphNode* particles = _particleEmitter;
+        const F32 radius = 20;
 
-        tComp->setPosition(radius * std::cos(phi) + initPos.x,
-            (radius * 0.5f) * std::sin(phi) + initPos.y,
-            radius * std::sin(phi) + initPos.z);
-        tComp->rotateY(phi);
-    }
-
-
-
-    if (!_aiManager->getNavMesh(_armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
-        return;
-    }
-
-    // renderState().drawDebugLines(true);
-    vec3<F32> tempDestination;
-    UColour4 redLine(255, 0, 0, 128);
-    UColour4 blueLine(0, 0, 255, 128);
-    vector<Line> paths;
-    paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
-    for (U8 i = 0; i < 2; ++i) {
-        for (SceneGraphNode* node : _armyNPCs[i]) {
-            AI::AIEntity* const character = node->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
-            if (!node->isActive()) {
-                continue;
+        if (particles) {
+            phi += 0.001f;
+            if (phi > 360.0f) {
+                phi = 0.0f;
             }
-            tempDestination.set(character->getDestination());
-            if (!tempDestination.isZeroLength()) {
-                paths.emplace_back(
-                    character->getPosition(),
-                    tempDestination,
-                    i == 0 ? blueLine : redLine,
-                    i == 0 ? blueLine / 2 : redLine / 2);
+
+            TransformComponent* tComp = particles->get<TransformComponent>();
+            if (!initPosSet) {
+                initPos.set(tComp->getPosition());
+                initPosSet = true;
+            }
+
+            tComp->setPosition(radius * std::cos(phi) + initPos.x,
+                (radius * 0.5f) * std::sin(phi) + initPos.y,
+                radius * std::sin(phi) + initPos.z);
+            tComp->rotateY(phi);
+        }
+
+
+
+        if (!_aiManager->getNavMesh(_armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity()->getAgentRadiusCategory())) {
+            return;
+        }
+
+        // renderState().drawDebugLines(true);
+        vec3<F32> tempDestination;
+        UColour4 redLine(255, 0, 0, 128);
+        UColour4 blueLine(0, 0, 255, 128);
+        vectorEASTL<Line> paths;
+        paths.reserve(_armyNPCs[0].size() + _armyNPCs[1].size());
+        for (U8 i = 0; i < 2; ++i) {
+            for (SceneGraphNode* node : _armyNPCs[i]) {
+                AI::AIEntity* const character = node->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
+                if (!node->IsActive()) {
+                    continue;
+                }
+                tempDestination.set(character->getDestination());
+                if (!tempDestination.isZeroLength()) {
+                    paths.emplace_back(
+                        character->getPosition(),
+                        tempDestination,
+                        i == 0 ? blueLine : redLine,
+                        i == 0 ? blueLine / 2 : redLine / 2);
+                }
             }
         }
-    }
-    if (_targetLines) {
-        _targetLines->fromLines(paths);
-    }
+        if (_targetLines) {
+            _targetLines->fromLines(paths.data(), paths.size());
+        }
 
-    if (!_aiManager->updatePaused()) {
-        _elapsedGameTime += deltaTimeUS;
-        checkGameCompletion();
+        if (!_aiManager->updatePaused()) {
+            _elapsedGameTime += deltaTimeUS;
+            checkGameCompletion();
+        }
     }
-#endif
 }
 
 bool WarScene::load(const Str256& name) {
@@ -338,10 +319,6 @@ bool WarScene::load(const Str256& name) {
                               to_base(ComponentType::BOUNDS) |
                               to_base(ComponentType::RENDERING);
 
-    constexpr U32 normalMask = lightMask |
-                               to_base(ComponentType::RIGID_BODY) |
-                               to_base(ComponentType::NAVIGATION) |
-                               to_base(ComponentType::NETWORKING);
 
     // Load scene resources
     const bool loadState = SCENE_LOAD(name);
@@ -353,7 +330,13 @@ bool WarScene::load(const Str256& name) {
 
     // Add some obstacles
 
-    /*SceneGraphNode* cylinder[5];
+    /*
+    constexpr U32 normalMask = lightMask |
+                           to_base(ComponentType::RIGID_BODY) |
+                           to_base(ComponentType::NAVIGATION) |
+                           to_base(ComponentType::NETWORKING);
+
+    SceneGraphNode* cylinder[5];
     cylinder[0] = _sceneGraph->findNode("cylinderC");
     cylinder[1] = _sceneGraph->findNode("cylinderNW");
     cylinder[2] = _sceneGraph->findNode("cylinderNE");
@@ -585,7 +568,7 @@ bool WarScene::load(const Str256& name) {
             pointLight->range(50.0f);
             pointLight->setDiffuseColour(DefaultColours::RANDOM().rgb);
             TransformComponent* tComp = lightSGN->get<TransformComponent>();
-            tComp->setPosition(vec3<F32>(-21.0f + (115 * row), 20.0f, (-21.0f + (115 * col))));
+            tComp->setPosition(vec3<F32>(-21.0f + 115 * row, 20.0f, -21.0f + 115 * col));
             _lightNodeTransforms.push_back(tComp);
         }
     }
@@ -612,31 +595,37 @@ U16 WarScene::registerInputActions() {
     {
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {toggleCamera(param); });
+        if (!_input->actionList().registerInputAction(actionID, [this](const InputParams& param) {toggleCamera(param); })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _input->addKeyMapping(Input::KeyCode::KC_TAB, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
-        _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(0u, ""); });
+        if (!_input->actionList().registerInputAction(actionID, [this](const InputParams& /*param*/) {registerPoint(0u, ""); })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         actionEntry.releaseIDs().insert(actionID);
         _input->addKeyMapping(Input::KeyCode::KC_1, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
-        _input->actionList().registerInputAction(actionID, [this](const InputParams& param) {registerPoint(1u, ""); });
+        if (!_input->actionList().registerInputAction(actionID, [this](const InputParams& /*param*/) {registerPoint(1u, ""); })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         actionEntry.releaseIDs().insert(actionID);
         _input->addKeyMapping(Input::KeyCode::KC_2, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+        if (!_input->actionList().registerInputAction(actionID, [this](InputParams /*param*/) {
             /// TTT -> TTF -> TFF -> FFT -> FTT -> TFT -> TTT
-            bool dir   = _lightPool->lightTypeEnabled(LightType::DIRECTIONAL);
-            bool point = _lightPool->lightTypeEnabled(LightType::POINT);
-            bool spot  = _lightPool->lightTypeEnabled(LightType::SPOT);
+            const bool dir   = _lightPool->lightTypeEnabled(LightType::DIRECTIONAL);
+            const bool point = _lightPool->lightTypeEnabled(LightType::POINT);
+            const bool spot  = _lightPool->lightTypeEnabled(LightType::SPOT);
             if (dir && point && spot) {
                 _lightPool->toggleLightType(LightType::SPOT, false);
             } else if (dir && point && !spot) {
@@ -652,7 +641,9 @@ U16 WarScene::registerInputActions() {
             } else {
                 _lightPool->toggleLightType(LightType::POINT, true);
             }
-        });
+        })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         actionEntry.releaseIDs().insert(actionID);
         _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
     }
@@ -672,7 +663,9 @@ void WarScene::toggleCamera(InputParams param) {
         fpsCamera = Camera::findCamera(_ID("fpsCamera"));
     }
 
-    PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
+    ACKNOWLEDGE_UNUSED(fpsCamera);
+
+    const PlayerIndex idx = getPlayerIndexForDevice(param._deviceIndex);
     if (_currentSelection[idx]._selectionCount > 0u) {
         SceneGraphNode* node = sceneGraph()->findNode(_currentSelection[idx]._selections[0]);
         if (node != nullptr) {
@@ -705,14 +698,14 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                           pixelPosition(targetRenderViewport.sizeX - 220, 30),
                           pixelScale(100, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
-                         [this](I64 btnID) { rebuildShaders(); });
+                         [this](I64 /*btnID*/) { rebuildShaders(); });
 
     btn = _GUI->addButton("TerrainMode",
                           "Terrain Mode Toggle",
                           pixelPosition(targetRenderViewport.sizeX - 240, 90),
                           pixelScale(120, 25));
     btn->setEventCallback(GUIButton::Event::MouseClick,
-        [this](I64 btnID) { toggleTerrainMode(); });
+        [this](I64 /*btnID*/) { toggleTerrainMode(); });
 
     _GUI->addText("RenderBinCount",
                   pixelPosition(60, 83),
@@ -775,4 +768,4 @@ void WarScene::weaponCollision(const RigidBodyComponent& collider) {
     Console::d_printfn("Weapon touched [ %s ]", collider.getSGN()->name().c_str());
 }
 
-};
+}

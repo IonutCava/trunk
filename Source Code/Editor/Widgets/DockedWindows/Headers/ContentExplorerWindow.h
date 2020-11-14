@@ -61,7 +61,7 @@ namespace Divide {
         ContentExplorerWindow(Editor& parent, const Descriptor& descriptor);
         ~ContentExplorerWindow() = default;
 
-        void drawInternal() final;
+        void drawInternal() override;
         void init();
         void update(U64 deltaTimeUS);
 
@@ -87,6 +87,6 @@ namespace Divide {
         bool _modelLoadQueueLocked = false;
         std::stack<std::pair<Str256, Str64>> _modelLoadQueue;
     };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_CONTENT_EXPLORER_WINDOW_H_

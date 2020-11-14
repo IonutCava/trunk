@@ -54,8 +54,8 @@ class PingPongScene : public Scene {
     U16 registerInputActions() override;
 
    private:
-    void test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size);
-    void serveBall(I64 btnGUID);
+    void test(std::any a, GFX::PushConstantType type);
+    void serveBall();
     void resetGame();
 
    private:
@@ -63,7 +63,7 @@ class PingPongScene : public Scene {
     vectorEASTL<stringImpl> _quotes;
     vec3<F32> _sunvector;
     std::shared_ptr<Sphere3D> _ball;
-    SceneGraphNode* _ballSGN;
+    SceneGraphNode* _ballSGN = nullptr;
     FreeFlyCamera* _paddleCam;
 
    private:  // Game stuff:
@@ -77,6 +77,6 @@ class PingPongScene : public Scene {
     F32 _sideDrift;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

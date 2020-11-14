@@ -25,22 +25,22 @@ void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir
 
     // We can ignore files that end in a specific character. Many text editors, for example, append a '~' at the end of temp files
     if (!_ignoredEndingCharacters.empty()) {
-        if (eastl::find_if(eastl::cbegin(_ignoredEndingCharacters),
-            eastl::cend(_ignoredEndingCharacters),
-            [filename](const char character) noexcept {
-            return std::tolower(filename.back()) == std::tolower(character);
-        }) != eastl::cend(_ignoredEndingCharacters)) {
+        if (eastl::find_if(cbegin(_ignoredEndingCharacters),
+                           cend(_ignoredEndingCharacters),
+                           [filename](const char character) noexcept {
+                               return std::tolower(filename.back()) == std::tolower(character);
+                           }) != cend(_ignoredEndingCharacters)) {
             return;
         }
     }
 
     // We can specify a list of extensions to ignore for a specific listener to avoid, for example, parsing temporary OS files
     if (!_ignoredExtensions.empty()) {
-        if (eastl::find_if(eastl::cbegin(_ignoredExtensions),
-            eastl::cend(_ignoredExtensions),
-            [filename](const Str8& extension) {
-            return hasExtension(filename.c_str(), extension);
-        }) != eastl::cend(_ignoredExtensions)) {
+        if (eastl::find_if(cbegin(_ignoredExtensions),
+                           cend(_ignoredExtensions),
+                           [filename](const Str8& extension) {
+                               return hasExtension(filename.c_str(), extension);
+                           }) != cend(_ignoredExtensions)) {
             return;
         }
     }

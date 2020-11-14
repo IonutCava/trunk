@@ -111,7 +111,7 @@ namespace {
 
         ImGui::End();
     }
-};
+}
 
 
 StatusBar::StatusBar(PlatformContext& context)
@@ -150,4 +150,4 @@ F32 StatusBar::height() const {
     return std::max(1.0f, g.NextWindowData.MenuBarOffsetMinVal.y) + g.FontBaseSize + g.Style.FramePadding.y;
 }
 
-}; //namespace Divide
+} //namespace Divide

@@ -127,7 +127,7 @@ class LightPool : public SceneComponent,
         return _lights[to_U32(type)];
     }
 
-    [[nodiscard]] Light* getLight(const I64 lightGUID, const LightType type) const;
+    [[nodiscard]] Light* getLight(I64 lightGUID, LightType type) const;
 
     void prepareLightData(RenderStage stage, const vec3<F32>& eyePos, const mat4<F32>& viewMatrix);
 
@@ -157,7 +157,7 @@ class LightPool : public SceneComponent,
                 return getShadowBindSlotOffset(ShadowType::CUBEMAP);
             case LightType::DIRECTIONAL:
                 return getShadowBindSlotOffset(ShadowType::LAYERED);
-            default:
+            case LightType::COUNT:
                 DIVIDE_UNEXPECTED_CALL();
                 return 0u;
         };
@@ -179,10 +179,10 @@ class LightPool : public SceneComponent,
     }
 
     [[nodiscard]] LightList::const_iterator findLightLocked(I64 GUID, const LightType type) const {
-        return eastl::find_if(eastl::cbegin(_lights[to_U32(type)]), eastl::cend(_lights[to_U32(type)]),
-                             [&GUID](Light* const light) noexcept {
-                                 return (light && light->getGUID() == GUID);
-                             });
+        return eastl::find_if(cbegin(_lights[to_U32(type)]), cend(_lights[to_U32(type)]),
+                              [&GUID](Light* const light) noexcept {
+                                  return light && light->getGUID() == GUID;
+                              });
     }
 
   private:

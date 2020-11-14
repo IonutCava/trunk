@@ -21,11 +21,11 @@
 namespace Divide {
 
 TileRing::TileRing(I32 holeWidth, I32 outerWidth, F32 tileSize):
-	_holeWidth(holeWidth),
-	_outerWidth(outerWidth), 
-	_ringWidth((outerWidth - holeWidth) / 2), // No remainder - see assert below.
 	_tileCount(outerWidth*outerWidth - holeWidth*holeWidth),
-	_tileSize(tileSize)
+	_tileSize(tileSize), 
+	_holeWidth(holeWidth), // No remainder - see assert below.
+	_outerWidth(outerWidth),
+	_ringWidth((outerWidth - holeWidth) / 2)
 {
 	assert((outerWidth - holeWidth) % 2 == 0);
 }
@@ -34,7 +34,7 @@ bool TileRing::InRing(I32 x, I32 y) const
 {
 	assert(x >= 0 && x < _outerWidth);
 	assert(y >= 0 && y < _outerWidth);
-	return (x < _ringWidth || y < _ringWidth || x >= _outerWidth - _ringWidth || y >= _outerWidth - _ringWidth);
+	return x < _ringWidth || y < _ringWidth || x >= _outerWidth - _ringWidth || y >= _outerWidth - _ringWidth;
 }
 
 void TileRing::AssignNeighbourSizes(I32 x, I32 y, Adjacency* pAdj) const
@@ -97,7 +97,7 @@ void TileRing::AssignNeighbourSizes(I32 x, I32 y, Adjacency* pAdj) const
 
 vectorEASTL<TileRing::InstanceData> TileRing::createInstanceDataVB(I32 ringID)
 {
-	vectorEASTL<TileRing::InstanceData> ret(tileCount());
+	vectorEASTL<InstanceData> ret(tileCount());
 
 	I32 index = 0;
 	const F32 halfWidth = 0.5f * to_F32(_outerWidth);
@@ -111,7 +111,7 @@ vectorEASTL<TileRing::InstanceData> TileRing::createInstanceDataVB(I32 ringID)
 				ret[index].data.positionZ = tileSize() * (to_F32(y) - halfWidth);
 				ret[index].data.tileScale = tileSize();
 				ret[index].data.ringID = to_F32(ringID);
-				AssignNeighbourSizes(x, y, &(ret[index].adjacency));
+				AssignNeighbourSizes(x, y, &ret[index].adjacency);
 				index++;
 			}
 		}
@@ -120,4 +120,4 @@ vectorEASTL<TileRing::InstanceData> TileRing::createInstanceDataVB(I32 ringID)
 	return ret;
 }
 
-}; //namespace Divide
+} //namespace Divide

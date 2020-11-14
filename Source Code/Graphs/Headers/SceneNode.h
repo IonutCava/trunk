@@ -81,14 +81,14 @@ enum class NodeUsageContext : U8 {
 
 /// ToDo: Move particle emitter and triggers to components (it will make them way more dynamic) - Ionut
 enum class SceneNodeType : U16 {
-    TYPE_OBJECT3D = 0,       //< 3d objects in the scene
-    TYPE_TRANSFORM,          //< dummy node to stack multiple transforms
-    TYPE_WATER,              //< water node
-    TYPE_TRIGGER,            //< a scene trigger (perform action on contact)
-    TYPE_PARTICLE_EMITTER,   //< a particle emitter
-    TYPE_SKY,                //< sky node
-    TYPE_INFINITEPLANE,      //< the infinite plane that sits beneath everything in the world
-    TYPE_VEGETATION,         //< grass node
+    TYPE_OBJECT3D = 0,       ///< 3d objects in the scene
+    TYPE_TRANSFORM,          ///< dummy node to stack multiple transforms
+    TYPE_WATER,              ///< water node
+    TYPE_TRIGGER,            ///< a scene trigger (perform action on contact)
+    TYPE_PARTICLE_EMITTER,   ///< a particle emitter
+    TYPE_SKY,                ///< sky node
+    TYPE_INFINITEPLANE,      ///< the infinite plane that sits beneath everything in the world
+    TYPE_VEGETATION,         ///< grass node
     COUNT
 };
 
@@ -127,7 +127,7 @@ class SceneNode : public CachedResource {
                                bool refreshData);
 
     virtual void buildDrawCommands(SceneGraphNode* sgn,
-                                   const RenderStagePass& renderStage,
+                                   const RenderStagePass& renderStagePass,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut);
 
@@ -145,7 +145,7 @@ class SceneNode : public CachedResource {
     SceneNodeRenderState& renderState() noexcept { return _renderState; }
     const SceneNodeRenderState& renderState() const noexcept { return _renderState; }
 
-    virtual const char* getTypeName() const;
+    stringImpl getTypeName() const;
 
     ResourceCache* parentResourceCache() noexcept { return _parentCache; }
     const ResourceCache* parentResourceCache() const noexcept { return _parentCache; }
@@ -167,14 +167,14 @@ class SceneNode : public CachedResource {
     // Post insertion calls (Use this to setup child objects during creation)
     virtual void postLoad(SceneGraphNode* sgn);
 
-    virtual void setBounds(const BoundingBox& aabb);
+    void setBounds(const BoundingBox& aabb);
 
     EditorComponent& getEditorComponent() noexcept { return _editorComponent; }
     const EditorComponent& getEditorComponent() const noexcept { return _editorComponent; }
 
     virtual size_t maxReferenceCount() const noexcept { return 1; }
 
-    virtual const char* getResourceTypeName() const noexcept override { return "SceneNode"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "SceneNode"; }
 
     virtual void occlusionCull(const RenderStagePass& stagePass,
                                const Texture_ptr& depthBuffer,
@@ -213,7 +213,6 @@ TYPEDEF_SMART_POINTERS_FOR_TYPE(SceneNode);
 
 namespace Attorney {
 class SceneNodeSceneGraph {
-   private:
     static void postLoad(SceneNode* node, SceneGraphNode* sgn) {
         node->postLoad(sgn);
     }
@@ -257,7 +256,6 @@ class SceneNodeSceneGraph {
 };
 
 class SceneNodeNetworkComponent {
-  private:
     static void onNetworkSend(SceneGraphNode* sgn, SceneNode& node, WorldPacket& dataOut) {
         node.onNetworkSend(sgn, dataOut);
     }
@@ -270,7 +268,6 @@ class SceneNodeNetworkComponent {
 };
 
 class SceneNodeBoundsComponent {
-  private:
     static void setBounds(SceneNode& node, const BoundingBox& aabb) {
         node.setBounds(aabb);
     }
@@ -292,7 +289,6 @@ class SceneNodeBoundsComponent {
 };
 
 class SceneNodeLightComponent {
-private:
     static void setBounds(SceneNode& node, const BoundingBox& aabb) {
         node.setBounds(aabb);
     }
@@ -304,7 +300,6 @@ private:
 };
 
 class SceneNodePlayer {
-private:
     static void setBounds(SceneNode& node, const BoundingBox& aabb) {
         node.setBounds(aabb);
     }

@@ -27,7 +27,7 @@ void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction)
 };
 
 Task& Start(Task& task, const TaskPriority priority, const DELEGATE<void>& onCompletionFunction) {
-    const bool hasOnCompletionFunction = (priority != TaskPriority::REALTIME && onCompletionFunction);
+    const bool hasOnCompletionFunction = priority != TaskPriority::REALTIME && onCompletionFunction;
 
     if (!task._parentPool->enqueue(
         [&task, hasOnCompletionFunction](const bool threadWaitingCall)

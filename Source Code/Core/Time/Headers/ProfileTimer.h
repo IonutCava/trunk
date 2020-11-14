@@ -83,7 +83,7 @@ class ProfileTimer {
      static bool s_enabled;
 };
 
-class ScopedTimer : private NonCopyable {
+class ScopedTimer : NonCopyable {
 public:
     explicit ScopedTimer(ProfileTimer& timer);
     ~ScopedTimer();
@@ -99,8 +99,8 @@ void START_TIMER(ProfileTimer& timer);
 void STOP_TIMER(ProfileTimer& timer);
 stringImpl PRINT_TIMER(ProfileTimer& timer);
 
-};  // namespace Time
-};  // namespace Divide
+}  // namespace Time
+}  // namespace Divide
 
 #endif  //_CORE_TIME_PROFILE_TIMER_H_
 

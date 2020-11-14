@@ -21,21 +21,17 @@ namespace TypeUtil {
 
         return UnitType::COUNT;
     }
-};
+}
 
-Unit::Unit(UnitType type, FrameListenerManager& parent, U32 callOrder)
+Unit::Unit(const UnitType type, FrameListenerManager& parent, const U32 callOrder)
     : FrameListener(TypeUtil::UnitTypeToString(type), parent, callOrder),
-      _node(nullptr),
       _type(type),
       _moveSpeed(Metric::Base(1.0f)),
       _acceleration(Metric::Base(1.0f)),
       _moveTolerance(0.1f),
-      _prevTime(0)
+      _prevTime(0),
+      _node(nullptr)
 {
-}
-
-Unit::~Unit()
-{ 
 }
 
 void Unit::setParentNode(SceneGraphNode* node) {
@@ -67,7 +63,7 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
     _prevTime = currentTime;
     // 'moveSpeed' m/s = '0.001 * moveSpeed' m / ms
     // distance = timeDif * 0.001 * moveSpeed
-    F32 moveDistance = std::min(to_F32(_moveSpeed * (Time::MillisecondsToSeconds(timeDif))),
+    F32 moveDistance = std::min(to_F32(_moveSpeed * Time::MillisecondsToSeconds(timeDif)),
                                 0.0f);
 
     bool returnValue = IS_TOLERANCE(moveDistance, Metric::Centi(1.0f));
@@ -84,39 +80,39 @@ bool Unit::moveTo(const vec3<F32>& targetPosition) {
         vec3<F32> interpPosition;
         if (!yTolerance && !IS_ZERO(yDelta)) {
             interpPosition.y =
-                (_currentPosition.y > _currentTargetPosition.y ? -moveDistance
-                                                               : moveDistance);
+                _currentPosition.y > _currentTargetPosition.y ? -moveDistance
+                    : moveDistance;
         }
-        if ((!xTolerance || !zTolerance)) {
+        if (!xTolerance || !zTolerance) {
             // Update target
             if (IS_ZERO(xDelta)) {
                 interpPosition.z =
-                    (_currentPosition.z > _currentTargetPosition.z
-                         ? -moveDistance
-                         : moveDistance);
+                    _currentPosition.z > _currentTargetPosition.z
+                        ? -moveDistance
+                        : moveDistance;
             } else if (IS_ZERO(zDelta)) {
                 interpPosition.x =
-                    (_currentPosition.x > _currentTargetPosition.x
-                         ? -moveDistance
-                         : moveDistance);
+                    _currentPosition.x > _currentTargetPosition.x
+                        ? -moveDistance
+                        : moveDistance;
             } else if (std::fabs(xDelta) > std::fabs(zDelta)) {
                 F32 value = std::fabs(zDelta / xDelta) * moveDistance;
                 interpPosition.z =
-                    (_currentPosition.z > _currentTargetPosition.z ? -value
-                                                                   : value);
+                    _currentPosition.z > _currentTargetPosition.z ? -value
+                        : value;
                 interpPosition.x =
-                    (_currentPosition.x > _currentTargetPosition.x
-                         ? -moveDistance
-                         : moveDistance);
+                    _currentPosition.x > _currentTargetPosition.x
+                        ? -moveDistance
+                        : moveDistance;
             } else {
                 F32 value = std::fabs(xDelta / zDelta) * moveDistance;
                 interpPosition.x =
-                    (_currentPosition.x > _currentTargetPosition.x ? -value
-                                                                   : value);
+                    _currentPosition.x > _currentTargetPosition.x ? -value
+                        : value;
                 interpPosition.z =
-                    (_currentPosition.z > _currentTargetPosition.z
-                         ? -moveDistance
-                         : moveDistance);
+                    _currentPosition.z > _currentTargetPosition.z
+                        ? -moveDistance
+                        : moveDistance;
             }
             // commit transformations
             _node->get<TransformComponent>()->translate(interpPosition);
@@ -205,7 +201,7 @@ void Unit::setAttribute(U32 attributeID, I32 initialValue) {
 }
 
 I32 Unit::getAttribute(U32 attributeID) const {
-    AttributeMap::const_iterator it = _attributes.find(attributeID);
+    const AttributeMap::const_iterator it = _attributes.find(attributeID);
     if (it != std::end(_attributes)) {
         return it->second;
     }
@@ -213,4 +209,4 @@ I32 Unit::getAttribute(U32 attributeID) const {
     return -1;
 }
 
-};
+}

@@ -81,7 +81,11 @@ bool CEGUIInput::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         case Input::MouseButton::MB_Button4: {
             consumed = _parent.getCEGUIContext().injectMouseButtonDown(CEGUI::X2Button);
         } break;
-        default: break;
+
+        case Input::MouseButton::MB_Button5:
+        case Input::MouseButton::MB_Button6:
+        case Input::MouseButton::MB_Button7:
+        case Input::MouseButton::COUNT: break;
     };
 
     return consumed;
@@ -114,48 +118,48 @@ bool CEGUIInput::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
 
 // Return true if input was consumed
 bool CEGUIInput::joystickAxisMoved(const Input::JoystickEvent& arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
 bool CEGUIInput::joystickPovMoved(const Input::JoystickEvent& arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
 bool CEGUIInput::joystickButtonPressed(const Input::JoystickEvent& arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
 bool CEGUIInput::joystickButtonReleased(const Input::JoystickEvent& arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
 bool CEGUIInput::joystickBallMoved(const Input::JoystickEvent& arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }
 
 // Return true if input was consumed
 bool CEGUIInput::joystickAddRemove(const Input::JoystickEvent& arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }
 
 bool CEGUIInput::joystickRemap(const Input::JoystickEvent &arg) {
-    bool consumed = false;
+    const bool consumed = false;
 
     return consumed;
 }

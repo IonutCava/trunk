@@ -55,7 +55,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         bool addNodes(const vectorEASTL<SceneGraphNode*>& nodes);
         void getAllRegions(vectorEASTL<BoundingBox>& regionsOut) const;
 
-        inline const BoundingBox& getRegion() const noexcept { return _region; }
+        const BoundingBox& getRegion() const noexcept { return _region; }
 
         void updateTree();
 

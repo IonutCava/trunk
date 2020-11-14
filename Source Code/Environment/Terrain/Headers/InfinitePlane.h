@@ -38,10 +38,10 @@
 namespace Divide {
 
 FWD_DECLARE_MANAGED_CLASS(Quad3D);
-class InfinitePlane : public SceneNode {
+class InfinitePlane final : public SceneNode {
 public:
-    explicit InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const vec2<U16>& dimensions);
-    ~InfinitePlane();
+    explicit InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, vec2<U16> dimensions);
+    ~InfinitePlane() = default;
 
 protected:
     void postLoad(SceneGraphNode* sgn) override;
@@ -50,14 +50,15 @@ protected:
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
-    void sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
+
 protected:
     template <typename T>
     friend class ImplResourceLoader;
 
     bool load() override;
 
-    const char* getResourceTypeName() const noexcept override { return "InfinitePlane"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "InfinitePlane"; }
 
 private:
     GFXDevice& _context;
@@ -66,5 +67,5 @@ private:
     size_t _planeRenderStateHash;
     size_t _planeRenderStateHashPrePass;
 }; //InfinitePlane
-}; //namespace Divide
+} //namespace Divide
 #endif

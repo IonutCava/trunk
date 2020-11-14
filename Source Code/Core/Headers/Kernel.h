@@ -76,7 +76,7 @@ struct LoopTimingData {
     PROPERTY_R(bool, freezeLoopTime, false);
 
 
-    inline void update(const U64 elapsedTimeUS) noexcept {
+    void update(const U64 elapsedTimeUS) noexcept {
         _previousTimeUS = _currentTimeUS;
         _currentTimeUS = elapsedTimeUS;
         _currentTimeDeltaUS = _currentTimeUS - _previousTimeUS;
@@ -89,7 +89,7 @@ struct LoopTimingData {
     }
 
     // return true on change
-    inline bool freezeTime(bool state) noexcept {
+    bool freezeTime(bool state) noexcept {
         if (_freezeLoopTime != state) {
             _freezeLoopTime = state;
             _currentTimeFrozenUS = _currentTimeUS;
@@ -98,7 +98,7 @@ struct LoopTimingData {
         return false;
     }
 
-    inline bool runUpdateLoop() noexcept {
+    bool runUpdateLoop() noexcept {
         if (_currentTimeUS > _nextGameTickUS && _updateLoops < Config::MAX_FRAMESKIP) {
             return true;
         }
@@ -107,7 +107,7 @@ struct LoopTimingData {
         return false;
     }
 
-    inline void endUpdateLoop(const U64 deltaTimeUS, const bool fixedTimestep) noexcept {
+    void endUpdateLoop(const U64 deltaTimeUS, const bool fixedTimestep) noexcept {
         _nextGameTickUS += deltaTimeUS;
         ++_updateLoops;
 
@@ -203,7 +203,7 @@ class Kernel final : public Input::InputAggregatorInterface,
                        U64 deltaTimeUS,     //Framerate independent deltaTime. Can be paused. (e.g. used by scene updates)
                        U64 realDeltaTimeUS, //Framerate dependent deltaTime. Can be paused. (e.g. used by physics)
                        U64 appDeltaTimeUS); //Real app delta time between frames. Can't be paused (e.g. used by editor)
-    bool presentToScreen(FrameEvent& evt, U64 deltaTimeUS);
+    bool presentToScreen(FrameEvent& evt);
     /// Update all engine components that depend on the current screen size. Returns true if the rendering viewport and the window viewport have differnt aspect ratios
     bool onSizeChange(const SizeChangeParams& params);
     vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept;
@@ -239,7 +239,6 @@ class Kernel final : public Input::InputAggregatorInterface,
 
 namespace Attorney {
     class KernelApplication {
-      protected:
         static ErrorCode initialize(Kernel* kernel, const stringImpl& entryPoint) {
             return kernel->initialize(entryPoint);
         }
@@ -261,11 +260,10 @@ namespace Attorney {
         }
 
         friend class Divide::Application;
-        friend class Divide::Attorney::ApplicationTask;
+        friend class ApplicationTask;
     };
 
     class KernelDebugInterface {
-    protected:
         static const LoopTimingData& timingData(const Kernel& kernel) noexcept {
             return kernel._timingData;
         }

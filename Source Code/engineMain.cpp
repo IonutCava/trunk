@@ -16,7 +16,7 @@ namespace {
     {
         DIVIDE_ASSERT(false, "Out of memory!");
     }
-};
+}
 
 class StreamBuffer {
 public:
@@ -88,4 +88,4 @@ int Engine::errorCode() const {
     return to_I32(_errorCode);
 }
 
-};
+}

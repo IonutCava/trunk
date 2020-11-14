@@ -66,8 +66,8 @@ inline void FrameRateHandler::frameStates(F32& avgFPSOut, F32& minFPSOut, F32& m
     maxFPSOut = _maxFPS;
 }
 
-}; //namespace Time
-}; //namespace Divide
+} //namespace Time
+} //namespace Divide
 
 
 #endif //_CORE_TIME_FRAMERATE_HANDLER_INL_

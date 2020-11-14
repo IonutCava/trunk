@@ -15,7 +15,7 @@ namespace {
     std::array<bool, Config::Profile::MAX_PROFILE_TIMERS> g_profileTimersState;
 
     bool g_timersInit = false;
-};
+}
 
 bool ProfileTimer::s_enabled = true;
 
@@ -41,13 +41,13 @@ ProfileTimer::ProfileTimer() noexcept
 
 void ProfileTimer::start() {
     if (timersEnabled()) {
-        _timer = Time::App::ElapsedMicroseconds();
+        _timer = App::ElapsedMicroseconds();
     }
 }
 
 void ProfileTimer::stop() {
     if (timersEnabled()) {
-        _timerAverage += Time::App::ElapsedMicroseconds() - _timer;
+        _timerAverage += App::ElapsedMicroseconds() - _timer;
         _timerCounter++;
     }
 }
@@ -71,12 +71,12 @@ void ProfileTimer::removeChildTimer(ProfileTimer& child) {
     const U32 childID = child._globalIndex;
 
     _children.erase(
-        eastl::remove_if(eastl::begin(_children),
-                       eastl::end(_children),
-                       [childID](const U32 entry) {
-                           return entry == childID;
-                        }),
-        eastl::end(_children));
+        eastl::remove_if(begin(_children),
+                         end(_children),
+                         [childID](const U32 entry) {
+                             return entry == childID;
+                         }),
+        end(_children));
     child._parent = Config::Profile::MAX_PROFILE_TIMERS + 1;
 }
 
@@ -84,11 +84,11 @@ bool ProfileTimer::hasChildTimer(ProfileTimer& child) const
 {
     const U32 childID = child._globalIndex;
 
-    return eastl::find_if(eastl::cbegin(_children),
-                        eastl::cend(_children),
-                        [childID](const U32 entry) {
-                            return entry == childID;
-            }) != eastl::cend(_children);
+    return eastl::find_if(cbegin(_children),
+                          cend(_children),
+                          [childID](const U32 entry) {
+                              return entry == childID;
+                          }) != cend(_children);
 }
 
 U64 ProfileTimer::getChildTotal() const {
@@ -202,5 +202,5 @@ void ProfileTimer::disableTimers() noexcept {
     s_enabled = false;
 }
 
-};  // namespace Time
-};  // namespace Divide
+}  // namespace Time
+}  // namespace Divide

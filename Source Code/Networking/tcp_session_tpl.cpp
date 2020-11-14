@@ -19,14 +19,14 @@
 namespace Divide {
 
 tcp_session_tpl::tcp_session_tpl(boost::asio::io_service& io_service, channel& ch)
-    : _startTime(time(nullptr)),
+    : _header(0),
       _channel(ch),
       _socket(io_service),
       _inputDeadline(io_service),
       _nonEmptyOutputQueue(io_service),
       _outputDeadline(io_service),
-      _strand(eastl::make_unique<Strand>(io_service)),
-      _header(0)
+      _startTime(time(nullptr)),
+      _strand(eastl::make_unique<Strand>(io_service))
 {
     _inputDeadline.expires_at(boost::posix_time::pos_infin);
     _outputDeadline.expires_at(boost::posix_time::pos_infin);
@@ -71,9 +71,9 @@ void tcp_session_tpl::start_read() {
     _header = 0;
     _inputBuffer.consume(_inputBuffer.size());
     _inputDeadline.expires_from_now(boost::posix_time::seconds(30));
-    boost::asio::async_read(
+    async_read(
         _socket, 
-        boost::asio::buffer(&_header, sizeof(_header)),
+        boost::asio::buffer(&_header, sizeof _header),
         _strand->get().wrap(
             [&](boost::system::error_code ec, std::size_t N) {
                 handle_read_body(ec, N);
@@ -89,7 +89,7 @@ void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec, size
 
     if (!ec) {
         _inputDeadline.expires_from_now(boost::posix_time::seconds(30));
-        boost::asio::async_read(
+        async_read(
             _socket, _inputBuffer.prepare(_header),
             _strand->get().wrap(
                 [&](boost::system::error_code ec, std::size_t N) {
@@ -142,16 +142,16 @@ void tcp_session_tpl::start_write() {
 
     size_t header = buf.size();
     vectorEASTL<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
+    buffers.push_back(boost::asio::buffer(&header, sizeof header));
     buffers.push_back(buf.data());
     // Start an asynchronous operation to send a message.
     if (p.opcode() == OPCodes::SMSG_SEND_FILE) {
-        boost::asio::async_write(
+        async_write(
             _socket, buffers,
             _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write_file,
                                      shared_from_this(), std::placeholders::_1)));
     } else {
-        boost::asio::async_write(
+        async_write(
             _socket, buffers,
             _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write,
                                      shared_from_this(), std::placeholders::_1)));
@@ -161,7 +161,7 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     ACKNOWLEDGE_UNUSED(ec);
 
     boost::asio::streambuf request_;
-    stringImpl filePath = _outputFileQueue.front();
+    const stringImpl filePath = _outputFileQueue.front();
     std::ifstream source_file;
     source_file.open(filePath.c_str(),
                      std::ios_base::binary | std::ios_base::ate);
@@ -169,7 +169,7 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
         ASIO::LOG_PRINT(("failed to open " + filePath).c_str());
         return;
     }
-    size_t file_size = sizeof(source_file);  //.tellg();
+    const size_t file_size = sizeof source_file;  //.tellg();
     source_file.seekg(0);
     // first send file name and file size to server
     std::ostream request_stream(&request_);
@@ -179,7 +179,7 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     // Start an asynchronous resolve to translate the server and service names
     // into a list of endpoints.
     _outputFileQueue.pop_front();
-    boost::asio::async_write(
+    async_write(
         _socket, request_,
         _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write,
                                  shared_from_this(), std::placeholders::_1)));
@@ -246,7 +246,7 @@ void udp_broadcaster::sendPacket(const WorldPacket& p) {
 
     size_t header = buf.size();
     vectorEASTL<boost::asio::const_buffer> buffers;
-    buffers.push_back(boost::asio::buffer(&header, sizeof(header)));
+    buffers.push_back(boost::asio::buffer(&header, sizeof header));
     buffers.push_back(buf.data());
     boost::system::error_code ignored_ec;
     socket_.send(buffers, 0, ignored_ec);

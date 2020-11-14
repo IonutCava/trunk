@@ -19,4 +19,4 @@ CachedResource_ptr ImplResourceLoader<ParticleEmitter>::operator()() {
     return ptr;
 }
 
-};
+}

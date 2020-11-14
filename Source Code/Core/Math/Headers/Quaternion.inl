@@ -66,7 +66,7 @@ namespace AVX {
         /* now we only need to shuffle the components in place and return the result      */
         return _mm_shuffle_ps(XZWY, XZWY, _MM_SHUFFLE(2, 1, 3, 0));
     }
-};
+}
 
 template <typename T>
 Quaternion<T>::Quaternion() noexcept
@@ -184,19 +184,19 @@ inline Quaternion<F32> Quaternion<F32>::operator*(const Quaternion<F32>& rq) con
 
 template <typename T>
 Quaternion<T>& Quaternion<T>::operator*=(const Quaternion<T>& rq) {
-    (*this) = (*this) * rq;
-    return (*this);
+    *this = *this * rq;
+    return *this;
 }
 
 template <typename T>
 Quaternion<T> Quaternion<T>::operator/(const Quaternion& rq) const {
-    return ((*this) * (rq.inverse()));
+    return *this * rq.inverse();
 }
 
 template <typename T>
 Quaternion<T>& Quaternion<T>::operator/=(const Quaternion& rq) {
-    (*this) = rq / (*this);
-    return (*this);
+    *this = rq / *this;
+    return *this;
 }
 
 template <typename T>
@@ -204,9 +204,9 @@ vec3<T> Quaternion<T>::operator*(const vec3<T>& vec) const {
     // nVidia SDK implementation
     vec3<T> uv = Cross(_elements.xyz, vec);
     const vec3<T> uuv = Cross(_elements.xyz, uv);
-    uv *= (W() * 2);
+    uv *= W() * 2;
 
-    return vec + uv + (uuv * 2);
+    return vec + uv + uuv * 2;
 }
 
 template <typename T>
@@ -335,11 +335,11 @@ template <typename T>
 void Quaternion<T>::fromRotation(const vec3<T>& sourceDirection, const vec3<T>& destinationDirection, const vec3<T>& up) {
     const F32 dot = to_F32(Dot(sourceDirection, destinationDirection));
 
-    if (std::abs(dot - (-1.0f)) < EPSILON_F32) {
+    if (std::abs(dot - -1.0f) < EPSILON_F32) {
         // vector a and b point exactly in the opposite direction, 
         // so it is a 180 degrees turn around the up-axis
         fromAxisAngle(up, M_PI);
-    } else if (std::abs(dot - (1.0f)) < EPSILON_F32) {
+    } else if (std::abs(dot - 1.0f) < EPSILON_F32) {
         // vector a and b point exactly in the same direction
         // so we return the identity quaternion
         identity();
@@ -636,7 +636,9 @@ Quaternion<T> RotationFromVToU(const vec3<T>& v, const vec3<T>& u, const vec3<T>
     // If dot == 1, vectors are the same
     if (d >= 1.0f) {
         return q;
-    } else if (d < (1e-6f - 1.0f)) {
+    }
+
+    if (d < 1e-6f - 1.0f) {
         if (!fallbackAxis.compare(VECTOR3_ZERO)) {
             // rotate 180 degrees about the fallback axis
             q.fromAxisAngle(fallbackAxis, M_PI_f);
@@ -707,6 +709,6 @@ vec3<T> DirectionFromEuler(vec3<Angle::DEGREES<T>> const & euler, const vec3<T>&
     q.fromEuler(euler);
     return DirectionFromAxis(q, FORWARD_DIRECTION);
 }
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_QUATERNION_INL_

@@ -41,20 +41,20 @@ class ParticleSource {
    public:
     ParticleSource(GFXDevice& context);
     ParticleSource(GFXDevice& context, F32 emitRate);
-    virtual ~ParticleSource();
+    virtual ~ParticleSource() = default;
 
-    virtual void emit(const U64 deltaTimeUS, std::shared_ptr<ParticleData> p);
+    virtual void emit(U64 deltaTimeUS, const std::shared_ptr<ParticleData>& p);
 
-    inline void addGenerator(std::shared_ptr<ParticleGenerator> generator) {
+    void addGenerator(const std::shared_ptr<ParticleGenerator>& generator) {
         _particleGenerators.push_back(generator);
     }
 
-    inline void updateEmitRate(F32 emitRate) noexcept { _emitRate = emitRate; }
+    void updateEmitRate(const F32 emitRate) noexcept { _emitRate = emitRate; }
 
-    inline F32 emitRate() const noexcept { return _emitRate; }
+    [[nodiscard]] F32 emitRate() const noexcept { return _emitRate; }
 
-    inline void updateTransform(const vec3<F32>& position, const Quaternion<F32>& orientation) {
-        for (std::shared_ptr<ParticleGenerator> generator : _particleGenerators) {
+    void updateTransform(const vec3<F32>& position, const Quaternion<F32>& orientation) {
+        for (const std::shared_ptr<ParticleGenerator>& generator : _particleGenerators) {
             generator->updateTransform(position, orientation);
         }
     }
@@ -64,5 +64,5 @@ class ParticleSource {
     GFXDevice& _context;
     vectorEASTL<std::shared_ptr<ParticleGenerator> > _particleGenerators;
 };
-};
+}
 #endif

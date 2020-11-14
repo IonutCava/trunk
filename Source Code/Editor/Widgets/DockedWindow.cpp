@@ -4,11 +4,11 @@
 
 namespace Divide {
 
-    DockedWindow::DockedWindow(Editor& parent, const Descriptor& descriptor)
+    DockedWindow::DockedWindow(Editor& parent, Descriptor descriptor)
         : _parent(parent),
           _focused(false),
           _isHovered(false),
-          _descriptor(descriptor)
+          _descriptor(std::move(descriptor))
     {
     }
 
@@ -36,4 +36,4 @@ namespace Divide {
         ImGui::End();
     }
 
-}; //namespace Divide
+} //namespace Divide

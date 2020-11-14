@@ -62,7 +62,7 @@ ErrorCode PlatformPostInit(const int argc, char** argv) {
     Paths::initPaths(sysInfo());
 
     ErrorCode err = ErrorCode::WRONG_WORKING_DIRECTORY;
-    if (pathExists((Paths::g_exePath + Paths::g_assetsLocation))) {
+    if (pathExists(Paths::g_exePath + Paths::g_assetsLocation)) {
         // Read language table
         err = Locale::init();
         if (err == ErrorCode::NO_ERR) {
@@ -163,7 +163,7 @@ void SetClipboardText(void* user_data, const char* text) noexcept
 
 void ToggleCursor(const bool state) noexcept
 {
-    SDL_ShowCursor((state ? SDL_TRUE : SDL_FALSE));
+    SDL_ShowCursor(state ? SDL_TRUE : SDL_FALSE);
 }
 
 bool CursorState() noexcept

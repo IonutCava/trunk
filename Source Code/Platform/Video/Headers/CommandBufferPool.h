@@ -63,7 +63,7 @@ class ScopedCommandBuffer : NonCopyable, NonMovable {
     ScopedCommandBuffer();
 
   private:
-    GFX::CommandBuffer* _buffer;
+    CommandBuffer* _buffer;
 };
 
 void initPools();

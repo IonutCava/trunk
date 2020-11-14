@@ -60,7 +60,8 @@ class GUIMessageBox : public GUIElementBase<GUIType::GUI_MESSAGE_BOX> {
     void setMessage(const stringImpl& message);
     void setOffset(const vec2<I32>& offsetFromCentre);
     void setMessageType(MessageType type);
-    inline void show() noexcept {
+
+    void show() noexcept {
         active(true);
         visible(true);
     }

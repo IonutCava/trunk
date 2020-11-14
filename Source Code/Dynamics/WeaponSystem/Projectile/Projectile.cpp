@@ -19,4 +19,4 @@ bool Projectile::addProperties(ProjectileProperty property) {
     _properyMask |= to_U32(property);
     return true;
 }
-};
+}

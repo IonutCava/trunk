@@ -100,16 +100,16 @@ public:
     void restoreTexture();
 
     // implement abstract members from base class.
-    const String& getName() const;
-    const Sizef& getSize() const;
-    const Sizef& getOriginalDataSize() const;
-    const Vector2f& getTexelScaling() const;
-    void loadFromFile(const String& filename, const String& resourceGroup);
+    const String& getName() const override;
+    const Sizef& getSize() const override;
+    const Sizef& getOriginalDataSize() const override;
+    const Vector2f& getTexelScaling() const override;
+    void loadFromFile(const String& filename, const String& resourceGroup) override;
     void loadFromMemory(const void* buffer, const Sizef& buffer_size,
-                        PixelFormat pixel_format);
-    void blitFromMemory(const void* sourceData, const Rectf& area);
-    void blitToMemory(void* targetData);
-    bool isPixelFormatSupported(const PixelFormat fmt) const;
+                        PixelFormat pixel_format) override;
+    void blitFromMemory(const void* sourceData, const Rectf& area) override;
+    void blitToMemory(void* targetData) override;
+    bool isPixelFormatSupported(PixelFormat fmt) const override;
 
 protected:
     // Friends (to allow construction and destruction)
@@ -146,7 +146,7 @@ protected:
     GLenum internalFormat() const;
 
     //! initialise the internal format flags for the given CEGUI::PixelFormat.
-    void initInternalPixelFormatFields(const PixelFormat fmt);
+    void initInternalPixelFormatFields(PixelFormat fmt);
 
     //! internal texture resize function (does not reset format or other fields)
     void setTextureSize_impl(const Sizef& sz);

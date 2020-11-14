@@ -110,10 +110,10 @@ public:
         _selectionChangeCallbacks.push_back(selectionCallback);
     }
     void resetSelection(PlayerIndex idx);
-    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive);
+    void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& SGNs, bool recursive);
     void onNodeDestroy(SceneGraphNode* node);
     // cull the scenegraph against the current view frustum
-    const VisibleNodeList<>& cullSceneGraph(RenderStage stage, const Camera& camera, const I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount);
+    const VisibleNodeList<>& cullSceneGraph(RenderStage stage, const Camera& camera, I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount);
     // get the full list of reflective nodes
     void getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const;
     // get the full list of refractive nodes
@@ -241,7 +241,7 @@ protected:
 
     [[nodiscard]] Camera* playerCamera() const;
     [[nodiscard]] Camera* playerCamera(PlayerIndex idx) const;
-    void currentPlayerPass(const PlayerIndex idx);
+    void currentPlayerPass(PlayerIndex idx);
     void moveCameraToNode(const SceneGraphNode* targetNode) const;
     bool saveNode(const SceneGraphNode* targetNode) const;
     bool loadNode(SceneGraphNode* targetNode) const;

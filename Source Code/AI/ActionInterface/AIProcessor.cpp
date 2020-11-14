@@ -8,10 +8,10 @@ namespace Divide {
 namespace AI {
 
 AIProcessor::AIProcessor(AIManager& parentManager)
-    : _parentManager(parentManager),
-      _entity(nullptr),
-      _activeGoal(nullptr),
-      _currentStep(-1)
+    : _entity(nullptr),
+      _parentManager(parentManager),
+      _currentStep(-1),
+      _activeGoal(nullptr)
 {
     _init = false;
 }
@@ -53,5 +53,5 @@ const stringImpl& AIProcessor::printActionStats(const GOAPAction& planStep) cons
     return placeholder;
 }
 
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide

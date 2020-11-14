@@ -25,8 +25,8 @@ GUIMessageBox::GUIMessageBox(const stringImpl& name,
     setTitle(title);
     setMessage(message);
     setOffset(offsetFromCentre);
-    active(true);
-    visible(false);
+    GUIMessageBox::active(true);
+    GUIMessageBox::visible(false);
 }
 
 GUIMessageBox::~GUIMessageBox()
@@ -67,9 +67,8 @@ void GUIMessageBox::setOffset(const vec2<I32>& offsetFromCentre) {
     _msgBoxWindow->setPosition(crtPosition);
 }
 
-void GUIMessageBox::setMessageType(MessageType type) {
+void GUIMessageBox::setMessageType(const MessageType type) {
     switch (type) {
-        default:
         case MessageType::MESSAGE_INFO: {
             _msgBoxWindow->setProperty("CaptionColour", "FFFFFFFF");
         } break;

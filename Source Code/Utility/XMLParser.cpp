@@ -46,7 +46,7 @@ namespace detail {
             std::locale(),
             boost::property_tree::xml_writer_make_settings<boost::property_tree::iptree::key_type>('\t', 1));
     }
-};
+}
 
 void populatePressRelease(const ptree & attributes, PressReleaseActions::Entry& entryOut) {
     static vectorEASTL<std::string> modifiersOut, actionsUpOut, actionsDownOut;
@@ -105,37 +105,37 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
     Console::printfn(Locale::get(_ID("XML_LOAD_DEFAULT_KEY_BINDINGS")), file.c_str());
     read_xml(file, pt);
 
-    for(const ptree::value_type & f : pt.get_child("actions", g_emptyPtree))
+    for(const auto & [tag, data] : pt.get_child("actions", g_emptyPtree))
     {
-        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
+        const ptree & attributes = data.get_child("<xmlattr>", g_emptyPtree);
         scene->input()->actionList().getInputAction(attributes.get<U16>("id", 0)).displayName(attributes.get<stringImpl>("name", "").c_str());
     }
 
     PressReleaseActions::Entry entry = {};
-    for (const ptree::value_type & f : pt.get_child("keys", g_emptyPtree))
+    for (const auto & [tag, data] : pt.get_child("keys", g_emptyPtree))
     {
-        if (f.first == "<xmlcomment>") {
+        if (tag == "<xmlcomment>") {
             continue;
         }
 
         
-        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
+        const ptree & attributes = data.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(attributes, entry);
 
-        const Input::KeyCode key = Input::keyCodeByName(Util::Trim(f.second.data()).c_str());
+        const Input::KeyCode key = Input::keyCodeByName(Util::Trim(data.data()).c_str());
         scene->input()->addKeyMapping(key, entry);
     }
 
-    for (const ptree::value_type & f : pt.get_child("mouseButtons", g_emptyPtree))
+    for (const auto & [tag, data] : pt.get_child("mouseButtons", g_emptyPtree))
     {
-        if (f.first == "<xmlcomment>") {
+        if (tag == "<xmlcomment>") {
             continue;
         }
 
-        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
+        const ptree & attributes = data.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(attributes, entry);
 
-        const Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(f.second.data()));
+        const Input::MouseButton btn = Input::mouseButtonByName(Util::Trim(data.data()));
 
         scene->input()->addMouseMapping(btn, entry);
     }
@@ -161,6 +161,8 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
 }
 
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* const scene, const Configuration& config) {
+    ACKNOWLEDGE_UNUSED(config);
+
     const stringImpl file = (scenePath + "/" + fileName).c_str();
 
     if (!fileExists(file.c_str())) {
@@ -170,28 +172,28 @@ void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* co
     ptree pt;
     read_xml(file, pt);
 
-    for (const ptree::value_type & f : pt.get_child("backgroundThemes", g_emptyPtree))
+    for (const auto & [tag, data] : pt.get_child("backgroundThemes", g_emptyPtree))
     {
-        const ptree & attributes = f.second.get_child("<xmlattr>", g_emptyPtree);
+        const ptree & attributes = data.get_child("<xmlattr>", g_emptyPtree);
         scene->addMusic(MusicType::TYPE_BACKGROUND,
                         attributes.get<stringImpl>("name", "").c_str(),
                         Paths::g_assetsLocation + attributes.get<stringImpl>("src", ""));
     }
 }
 
-void writeXML(const stringImpl& path, const boost::property_tree::ptree& tree) {
+void writeXML(const stringImpl& path, const ptree& tree) {
     static boost::property_tree::xml_writer_settings<std::string> settings(' ', 4);
 
-    boost::property_tree::write_xml(path, tree, std::locale(), settings);
+    write_xml(path, tree, std::locale(), settings);
 }
 
-void readXML(const stringImpl& path, boost::property_tree::ptree& tree) {
+void readXML(const stringImpl& path, ptree& tree) {
     try {
-        boost::property_tree::read_xml(path, tree);
+        read_xml(path, tree);
     } catch (const boost::property_tree::xml_parser_error& e) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_FILE")), path.c_str(), e.what());
     }
 }
-};  // namespace XML
-};  // namespace Divide
+}  // namespace XML
+}  // namespace Divide
 

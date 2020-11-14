@@ -37,7 +37,7 @@ void PointLightComponent::PreUpdate(const U64 deltaTime) {
 
 void PointLightComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
-        Light::updateCache(data);
+        updateCache(data);
     } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
         const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(data._flag);
         if (flag == SceneGraphNode::Flags::SELECTED) {
@@ -46,4 +46,4 @@ void PointLightComponent::OnData(const ECS::CustomEvent& data) {
     }
 }
 
-};
+}

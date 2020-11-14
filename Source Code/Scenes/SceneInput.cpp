@@ -9,7 +9,7 @@ namespace Divide {
 
 namespace {
     constexpr bool g_recordInput = true;
-};
+}
 
 void PressReleaseActionCbks::from(const PressReleaseActions& actions, const InputActionList& actionList) {
 
@@ -29,9 +29,8 @@ void PressReleaseActionCbks::from(const PressReleaseActions& actions, const Inpu
     }
 }
 
-SceneInput::SceneInput(Scene& parentScene, PlatformContext& context) 
-    : _parentScene(parentScene),
-      _context(context)
+SceneInput::SceneInput(Scene& parentScene) 
+    : _parentScene(parentScene)
 {
 }
 
@@ -45,8 +44,8 @@ void SceneInput::onRemoveActive() {
 }
 
 void SceneInput::onPlayerAdd(U8 index) {
-    hashAlg::insert(_keyLog, index, KeyLog());
-    hashAlg::insert(_mouseBtnLog, index, MouseBtnLog());
+    insert(_keyLog, index, KeyLog());
+    insert(_mouseBtnLog, index, MouseBtnLog());
 }
 
 void SceneInput::onPlayerRemove(U8 index) {
@@ -65,7 +64,7 @@ bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
     for (const PressReleaseActionCbks::Entry& entry : cbks._entries) {
         //Check modifiers
         for (const Input::KeyCode modifier : entry._modifiers) {
-            if (Input::getKeyState(params._deviceIndex, modifier) != Input::InputState::PRESSED) {
+            if (getKeyState(params._deviceIndex, modifier) != Input::InputState::PRESSED) {
                 goto next;
             }
         }
@@ -121,8 +120,7 @@ bool SceneInput::onKeyUp(const Input::KeyEvent& arg) {
 }
 
 bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg) {
-
-    Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
+    const Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
     PressReleaseActionCbks cbks;
 
 
@@ -134,8 +132,7 @@ bool SceneInput::joystickButtonPressed(const Input::JoystickEvent& arg) {
 }
 
 bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg) {
-    
-    Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
+    const Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, arg._element._type, arg._element._elementIndex, cbks)) {
@@ -146,15 +143,15 @@ bool SceneInput::joystickButtonReleased(const Input::JoystickEvent& arg) {
 }
 
 bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg) {
-    Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
+    const Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, arg._element._type, arg._element._elementIndex, cbks)) {
-        InputParams params(arg._deviceIndex,
-                           arg._element._data._data, // move value
-                           arg._element._elementIndex, // axis index
-                           arg._element._data._gamePad ? 1 : 0, // is gamepad
-                           arg._element._data._deadZone); // dead zone
+        const InputParams params(arg._deviceIndex,
+                                 arg._element._data._data, // move value
+                                 arg._element._elementIndex, // axis index
+                                 arg._element._data._gamePad ? 1 : 0, // is gamepad
+                                 arg._element._data._deadZone); // dead zone
         return handleCallbacks(cbks, params, true);
     }
     
@@ -162,13 +159,12 @@ bool SceneInput::joystickAxisMoved(const Input::JoystickEvent& arg) {
 }
 
 bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg) {
-
-    Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
+    const Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, arg._element._type, arg._element._elementIndex, cbks)) {
-        InputParams params(arg._deviceIndex,
-                           arg._element._data._data);
+        const InputParams params(arg._deviceIndex,
+                                 arg._element._data._data);
         return handleCallbacks(cbks, params, true);
     }
 
@@ -176,14 +172,14 @@ bool SceneInput::joystickPovMoved(const Input::JoystickEvent& arg) {
 }
 
 bool SceneInput::joystickBallMoved(const Input::JoystickEvent& arg) {
-    Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
+    const Input::Joystick joy = static_cast<Input::Joystick>(arg._deviceIndex);
 
     PressReleaseActionCbks cbks;
     if (getJoystickMapping(joy, arg._element._type, arg._element._elementIndex, cbks)) {
-        InputParams params(arg._deviceIndex,
-                           arg._element._data._smallData[0],
-                           arg._element._data._smallData[1],
-                           arg._element._data._gamePad ? 1 : 0);
+        const InputParams params(arg._deviceIndex,
+                                 arg._element._data._smallData[0],
+                                 arg._element._data._smallData[1],
+                                 arg._element._data._gamePad ? 1 : 0);
         return handleCallbacks(cbks, params, true);
     }
 
@@ -200,24 +196,24 @@ bool SceneInput::joystickRemap(const Input::JoystickEvent &arg) {
 
 bool SceneInput::mouseMoved(const Input::MouseMoveEvent& arg) {
     if (!arg.wheelEvent()) {
-        PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
+        const PlayerIndex idx = getPlayerIndexForDevice(arg._deviceIndex);
         SceneStatePerPlayer& state = _parentScene.state()->playerState(idx);
         if (state.cameraLockedToMouse()) {
             
             if (arg.wheelEvent()) {
-                I32 wheel = arg.WheelV();
-                state.zoom((wheel > 0) ? MoveDirection::POSITIVE
-                                     : (wheel < 0) ? MoveDirection::NEGATIVE
+                const I32 wheel = arg.WheelV();
+                state.zoom(wheel > 0 ? MoveDirection::POSITIVE
+                                     : wheel < 0 ? MoveDirection::NEGATIVE
                                                    : MoveDirection::NONE);
             } else {
-                I32 xRel = arg.relativePos().x;
-                I32 yRel = arg.relativePos().y;
-                state.angleLR((xRel > 0) ? MoveDirection::POSITIVE
-                                         : (xRel < 0) ? MoveDirection::NEGATIVE
+                const I32 xRel = arg.relativePos().x;
+                const I32 yRel = arg.relativePos().y;
+                state.angleLR(xRel > 0 ? MoveDirection::POSITIVE
+                                         : xRel < 0 ? MoveDirection::NEGATIVE
                                                       : MoveDirection::NONE);
 
-                state.angleUD((yRel > 0) ? MoveDirection::POSITIVE
-                                                        : (yRel < 0) ? MoveDirection::NEGATIVE
+                state.angleUD(yRel > 0 ? MoveDirection::POSITIVE
+                                                        : yRel < 0 ? MoveDirection::NEGATIVE
                                                                      : MoveDirection::NONE);
             }
         }
@@ -267,12 +263,12 @@ bool SceneInput::onUTF8(const Input::UTF8Event& arg) {
     return false;
 }
 
-bool SceneInput::addKeyMapping(Input::KeyCode key, const PressReleaseActions::Entry& keyCbks) {
+bool SceneInput::addKeyMapping(const Input::KeyCode key, const PressReleaseActions::Entry& keyCbks) {
     return _keyMap[key].add(keyCbks);
 }
 
-bool SceneInput::removeKeyMapping(Input::KeyCode key) {
-    KeyMap::iterator it = _keyMap.find(key);
+bool SceneInput::removeKeyMapping(const Input::KeyCode key) {
+    const KeyMap::iterator it = _keyMap.find(key);
     if (it != std::end(_keyMap)) {
         _keyMap.erase(it);
         return false;
@@ -281,18 +277,18 @@ bool SceneInput::removeKeyMapping(Input::KeyCode key) {
     return false;
 }
 
-bool SceneInput::getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCbksOut) {
-    KeyMapCache::const_iterator itCache = _keyMapCache.find(key);
+bool SceneInput::getKeyMapping(const Input::KeyCode key, PressReleaseActionCbks& keyCbksOut) {
+    const KeyMapCache::const_iterator itCache = _keyMapCache.find(key);
     if (itCache != std::cend(_keyMapCache)) {
         keyCbksOut = itCache->second;
         return true;
     }
 
-    KeyMap::const_iterator it = _keyMap.find(key);
+    const KeyMap::const_iterator it = _keyMap.find(key);
     if (it != std::cend(_keyMap)) {
         const PressReleaseActions& actions = it->second;
         keyCbksOut.from(actions, _actionList);
-        hashAlg::insert(_keyMapCache, key, keyCbksOut);
+        insert(_keyMapCache, key, keyCbksOut);
 
         return true;
     }
@@ -300,12 +296,12 @@ bool SceneInput::getKeyMapping(Input::KeyCode key, PressReleaseActionCbks& keyCb
     return false;
 }
 
-bool SceneInput::addMouseMapping(Input::MouseButton button, const PressReleaseActions::Entry& btnCbks) {
+bool SceneInput::addMouseMapping(const Input::MouseButton button, const PressReleaseActions::Entry& btnCbks) {
     return _mouseMap[button].add(btnCbks);
 }
 
-bool SceneInput::removeMouseMapping(Input::MouseButton button) {
-    MouseMap::iterator it = _mouseMap.find(button);
+bool SceneInput::removeMouseMapping(const Input::MouseButton button) {
+    const MouseMap::iterator it = _mouseMap.find(button);
     if (it != std::end(_mouseMap)) {
         _mouseMap.erase(it);
         return false;
@@ -314,35 +310,34 @@ bool SceneInput::removeMouseMapping(Input::MouseButton button) {
     return false;
 }
 
-bool SceneInput::getMouseMapping(Input::MouseButton button, PressReleaseActionCbks& btnCbksOut) {
-
-    MouseMapCache::const_iterator itCache = _mouseMapCache.find(button);
+bool SceneInput::getMouseMapping(const Input::MouseButton button, PressReleaseActionCbks& btnCbksOut) {
+    const MouseMapCache::const_iterator itCache = _mouseMapCache.find(button);
     if (itCache != std::cend(_mouseMapCache)) {
         btnCbksOut = itCache->second;
         return true;
     }
 
 
-    MouseMap::const_iterator it = _mouseMap.find(button);
+    const MouseMap::const_iterator it = _mouseMap.find(button);
     if (it != std::cend(_mouseMap)) {
         const PressReleaseActions& actions = it->second;
         btnCbksOut.from(actions, _actionList);
-        hashAlg::insert(_mouseMapCache, button, btnCbksOut);
+        insert(_mouseMapCache, button, btnCbksOut);
         return true;
     }
 
     return false;
 }
 
-bool SceneInput::addJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, const PressReleaseActions::Entry& btnCbks) {
+bool SceneInput::addJoystickMapping(const Input::Joystick device, const Input::JoystickElementType elementType, U32 id, const PressReleaseActions::Entry& btnCbks) {
     const JoystickMapKey key = std::make_pair(to_base(elementType), id);
     return _joystickMap[to_base(device)][key].add(btnCbks);
 }
 
-bool SceneInput::removeJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id) {
+bool SceneInput::removeJoystickMapping(const Input::Joystick device, const Input::JoystickElementType elementType, U32 id) {
     JoystickMapEntry& entry = _joystickMap[to_base(device)];
 
-    JoystickMapEntry::iterator it = entry.find(std::make_pair(to_base(elementType), id));
+    const JoystickMapEntry::iterator it = entry.find(std::make_pair(to_base(elementType), id));
     if (it != std::end(entry)) {
         entry.erase(it);
         return false;
@@ -351,21 +346,21 @@ bool SceneInput::removeJoystickMapping(Input::Joystick device, Input::JoystickEl
     return false;
 }
 
-bool SceneInput::getJoystickMapping(Input::Joystick device, Input::JoystickElementType elementType, U32 id, PressReleaseActionCbks& btnCbksOut) {
+bool SceneInput::getJoystickMapping(const Input::Joystick device, const Input::JoystickElementType elementType, U32 id, PressReleaseActionCbks& btnCbksOut) {
     JoystickMapCacheEntry& entry = _joystickMapCache[to_base(device)];
 
-    JoystickMapCacheEntry::const_iterator itCache = entry.find(std::make_pair(to_base(elementType), id));
+    const JoystickMapCacheEntry::const_iterator itCache = entry.find(std::make_pair(to_base(elementType), id));
     if (itCache != std::cend(entry)) {
         btnCbksOut = itCache->second;
         return true;
     }
 
     JoystickMapEntry& entry2 = _joystickMap[to_base(device)];
-    JoystickMapEntry::const_iterator it = entry2.find(std::make_pair(to_base(elementType), id));
+    const JoystickMapEntry::const_iterator it = entry2.find(std::make_pair(to_base(elementType), id));
     if (it != std::cend(entry2)) {
         const PressReleaseActions& actions = it->second;
         btnCbksOut.from(actions, _actionList);
-        JoystickMapKey key = std::make_pair(to_base(elementType), id);
+        const JoystickMapKey key = std::make_pair(to_base(elementType), id);
         entry[key] = btnCbksOut;
         return true;
     }
@@ -383,4 +378,4 @@ void SceneInput::flushCache() {
     _joystickMapCache.clear();
 }
 
-};
+}

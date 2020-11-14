@@ -15,12 +15,12 @@ AIManager::AIManager(Scene& parentScene, TaskPool& pool)
     : SceneComponent(parentScene),
       _parentPool(pool),
       _activeTask(nullptr),
-      _navMeshDebugDraw(false),
-      _pauseUpdate(true),
-      _updating(false),
       _deltaTimeUS(0ULL),
       _currentTimeUS(0ULL),
-      _previousTimeUS(0ULL)
+      _previousTimeUS(0ULL),
+      _navMeshDebugDraw(false),
+      _pauseUpdate(true),
+      _updating(false)
 {
     _shouldStop = false;
     _running = false;
@@ -136,7 +136,7 @@ void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
 bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh) {
     {
         UniqueLock<SharedMutex> w_lock(_navMeshMutex);
-        NavMeshMap::iterator it = _navMeshes.find(radius);
+        const NavMeshMap::iterator it = _navMeshes.find(radius);
         DIVIDE_ASSERT(it == std::end(_navMeshes),
                       "AIManager error: NavMesh for specified dimensions already "
                       "exists. Remove it first!");
@@ -144,7 +144,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
                       "AIManager error: Invalid navmesh specified!");
 
         navMesh->debugDraw(_navMeshDebugDraw);
-        hashAlg::insert(_navMeshes, radius, navMesh);
+        insert(_navMeshes, radius, navMesh);
     }
     {
         UniqueLock<Mutex> w_lock(_updateMutex);
@@ -176,17 +176,17 @@ void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
 
 void AIManager::registerTeam(AITeam* const team) {
     UniqueLock<Mutex> w_lock(_updateMutex);
-    U32 teamID = team->getTeamID();
+    const U32 teamID = team->getTeamID();
     DIVIDE_ASSERT(_aiTeams.find(teamID) == std::end(_aiTeams),
                   "AIManager error: attempt to double register an AI team!");
 
-    hashAlg::insert(_aiTeams, teamID, team);
+    insert(_aiTeams, teamID, team);
 }
 
 void AIManager::unregisterTeam(AITeam* const team) {
     UniqueLock<Mutex> w_lock(_updateMutex);
-    U32 teamID = team->getTeamID();
-    AITeamMap::iterator it = _aiTeams.find(teamID);
+    const U32 teamID = team->getTeamID();
+    const AITeamMap::iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
                   "AIManager error: attempt to unregister an invalid AI team!");
     _aiTeams.erase(it);

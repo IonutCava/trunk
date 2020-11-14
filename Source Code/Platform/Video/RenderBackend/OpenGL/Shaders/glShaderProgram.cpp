@@ -66,10 +66,10 @@ namespace {
 
         context_type ctx(input.begin(), input.end(), name);
 
-        ctx.set_language(boost::wave::enable_long_long(ctx.get_language()));
-        ctx.set_language(boost::wave::enable_preserve_comments(ctx.get_language()));
-        ctx.set_language(boost::wave::enable_prefer_pp_numbers(ctx.get_language()));
-        ctx.set_language(boost::wave::enable_emit_line_directives(ctx.get_language(), false));
+        ctx.set_language(enable_long_long(ctx.get_language()));
+        ctx.set_language(enable_preserve_comments(ctx.get_language()));
+        ctx.set_language(enable_prefer_pp_numbers(ctx.get_language()));
+        ctx.set_language(enable_emit_line_directives(ctx.get_language(), false));
 
         context_type::iterator_type first = ctx.begin();
         const context_type::iterator_type last = ctx.end();
@@ -301,9 +301,9 @@ vectorEASTL<ResourcePath> glShaderProgram::loadSourceCode(const Str128& stageNam
 {
                                              
     vectorEASTL<ResourcePath> atoms = {};
-    const stringImpl fileName = (definesHash != 0
-                                        ? Util::StringFormat("%s.%zu.%s", stageName.c_str(), definesHash, extension.c_str())
-                                        : Util::StringFormat("%s.%s", stageName.c_str(), extension.c_str()));
+    const stringImpl fileName = definesHash != 0
+                                    ? Util::StringFormat("%s.%zu.%s", stageName.c_str(), definesHash, extension.c_str())
+                                    : Util::StringFormat("%s.%s", stageName.c_str(), extension.c_str());
 
 
     sourceCodeOut.first = false;
@@ -391,7 +391,7 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
                 // Placeholders are ignored
                 if (define.first != "DEFINE_PLACEHOLDER") {
                     // We manually add define dressing if needed
-                    header.append((define.second ? "#define " : ""));
+                    header.append(define.second ? "#define " : "");
                     header.append(define.first + "\n");
                 }
             }
@@ -567,7 +567,7 @@ stringImpl glShaderProgram::preprocessIncludes(const ResourcePath& name,
     istringstreamImpl input(source);
 
     while (std::getline(input, line)) {
-        if (!boost::regex_search(line, matches, Paths::g_includePattern)) {
+        if (!regex_search(line, matches, Paths::g_includePattern)) {
             output.append(line);
         } else {
             include_file = ResourcePath(Util::Trim(matches[1].str()));
@@ -626,7 +626,7 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
     // If that's the case, return the code from cache
     if (it != std::cend(s_atoms)) {
         const auto& atoms = s_atomIncludes[atomNameHash];
-        foundAtoms.insert(eastl::end(foundAtoms), eastl::begin(atoms), eastl::end(atoms));
+        foundAtoms.insert(end(foundAtoms), begin(atoms), end(atoms));
         wasParsed = true;
         return it->second;
     }
@@ -646,7 +646,7 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
         output = preprocessIncludes(atomName, output, 0, atoms, false);
     }
 
-    foundAtoms.insert(eastl::end(foundAtoms), eastl::begin(atoms), eastl::end(atoms));
+    foundAtoms.insert(end(foundAtoms), begin(atoms), end(atoms));
     const auto result = s_atoms.insert({ atomNameHash, output });
     assert(result.second);
     s_atomIncludes.insert({atomNameHash, atoms});

@@ -50,6 +50,6 @@ protected:
     /*virtual*/ ~NonCopyable() = default;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_NON_COPYABLE_H_

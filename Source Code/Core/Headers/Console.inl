@@ -211,6 +211,6 @@ NO_INLINE void Console::d_errorf(std::ofstream& outStream, const char* format, A
         sink{ outStream, format, args ... };
     }
 }
-};
+}
 
 #endif  //_CORE_CONSOLE_INL_

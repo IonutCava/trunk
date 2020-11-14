@@ -168,9 +168,9 @@ class vec2 {
     vec2(const vec4<U> &v) noexcept : vec2(v.x, v.y) {}
 
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    vec2 &operator=(U _f) noexcept { this->set(_f); return (*this); }
+    vec2 &operator=(U _f) noexcept { this->set(_f); return *this; }
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    vec2 &operator=(const vec2<U>& other) noexcept { this->set(other); return (*this); }
+    vec2 &operator=(const vec2<U>& other) noexcept { this->set(other); return *this; }
 
     bool operator> (const vec2 &v) const noexcept { return x > v.x && y > v.y; }
     bool operator< (const vec2 &v) const noexcept { return x < v.x && y < v.y; }
@@ -289,10 +289,10 @@ class vec2 {
     [[nodiscard]] vec2 closestPointOnSegment(const vec2 &vA, const vec2 &vB);
     /// compare 2 vectors
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    [[nodiscard]] bool compare(const vec2<U> &_v) const noexcept;
+    [[nodiscard]] bool compare(const vec2<U> &v) const noexcept;
     /// compare 2 vectors within the specified tolerance
     template<typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    [[nodiscard]] bool compare(const vec2<U> &_v, U epsi) const noexcept;
+    [[nodiscard]] bool compare(const vec2<U> &v, U epsi) const noexcept;
     /// export the vector's components in the first 2 positions of the specified array
     [[nodiscard]] void get(T *v) const;
 
@@ -378,9 +378,9 @@ class vec3 {
     [[nodiscard]] bool operator==(const vec3<U> &v) const noexcept { return this->compare(v); }
 
     template <typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    vec3 &operator=(U _f) noexcept { this->set(_f, _f, _f); return (*this); }
+    vec3 &operator=(U _f) noexcept { this->set(_f, _f, _f); return *this; }
     template <typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
-    vec3 &operator=(const vec3<U>& other) noexcept { this->set(other); return (*this); }
+    vec3 &operator=(const vec3<U>& other) noexcept { this->set(other); return *this; }
     template <typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
     [[nodiscard]] vec3 operator+(U _f) const noexcept { return vec3(this->x + _f, this->y + _f, this->z + _f); }
     template <typename U, std::enable_if_t<std::is_pod_v<U>, bool> = true>
@@ -880,7 +880,7 @@ class Rect : public vec4<T> {
     [[nodiscard]] vec2<T> clamp(const vec2<T>& coords) const noexcept { return clamp(coords.x, coords.y); }
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 // Inline definitions
 #include "MathVectors.inl"

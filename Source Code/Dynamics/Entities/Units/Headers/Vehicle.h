@@ -54,13 +54,13 @@ class Vehicle : public Unit {
         COUNT
     };
 
-    explicit Vehicle(SceneGraphNode* node, FrameListenerManager& parent, U32 callOrder);
-    virtual ~Vehicle();
+    explicit Vehicle(FrameListenerManager& parent, U32 callOrder);
+    virtual ~Vehicle() = default;
 
     /// A vehicle can be of multiple types at once
     void setVehicleTypeMask(U32 mask);
     /// Check if current vehicle fits the desired type
-    bool checkVehicleMask(VehicleType type) const;
+    [[nodiscard]] bool checkVehicleMask(VehicleType type) const;
 
    public:
     /// Is this vehicle controlled by the player or the AI?
@@ -68,6 +68,6 @@ class Vehicle : public Unit {
     U32 _vehicleTypeMask;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

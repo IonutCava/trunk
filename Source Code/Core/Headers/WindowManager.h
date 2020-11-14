@@ -171,7 +171,7 @@ protected:
 
     static hashMap<CursorStyle, SDL_Cursor*> s_cursors;
 };
-}; //namespace Divide
+} //namespace Divide
 #endif //_CORE_WINDOW_MANAGER_H_
 
 #include "WindowManager.inl"

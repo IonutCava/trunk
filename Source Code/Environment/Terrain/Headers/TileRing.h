@@ -72,17 +72,17 @@ namespace Divide {
 //    ###################
 //    ###################
 //
-class TileRing : private NonCopyable
+class TileRing : NonCopyable
 {
 public:
 	struct Adjacency
 	{
 		// These are the size of the neighbours along +/- x or y axes.
 		// For interior tiles this is 1.  For edge tiles it is 0.5 or 2.0.
-		F32 neighbourMinusX;
-		F32 neighbourMinusY;
-		F32 neighbourPlusX;
-		F32 neighbourPlusY;
+		F32 neighbourMinusX = 1.f;
+		F32 neighbourMinusY = 1.f;
+		F32 neighbourPlusX = 1.f;
+		F32 neighbourPlusY = 1.f;
 	};
 
 	struct VertexData
@@ -95,8 +95,8 @@ public:
 
 	struct InstanceData
 	{
-		VertexData data;
-		Adjacency adjacency;
+		VertexData data = {};
+		Adjacency adjacency = {};
 	};
 
 public:
@@ -108,10 +108,10 @@ public:
 	PROPERTY_R(F32, tileSize, 1.f);
 
 	// We use ID as a really hacky LoD system. Ring 0 => LoD 0. Ring 1 => LoD 1 (e.g. no detail normals), etc
-	vectorEASTL<InstanceData> createInstanceDataVB(I32 ringID);
+	[[nodiscard]] vectorEASTL<InstanceData> createInstanceDataVB(I32 ringID);
 
 private:
-	bool InRing(I32 x, I32 y) const;
+	[[nodiscard]] bool InRing(I32 x, I32 y) const;
 	void AssignNeighbourSizes(I32 x, I32 y, Adjacency*) const;
 
 private:
@@ -120,6 +120,6 @@ private:
 	const I32 _ringWidth = 0;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_TILE_RING_H_

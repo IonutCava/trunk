@@ -56,21 +56,26 @@ namespace Divide {
 
             if (Util::CompareIgnoreCase(extension, "obj")) {
                 return ContentExplorerWindow::GeometryFormat::OBJ;
-            } else if (Util::CompareIgnoreCase(extension, "x")) {
+            }
+            if (Util::CompareIgnoreCase(extension, "x")) {
                 return ContentExplorerWindow::GeometryFormat::X;
-            } else if (Util::CompareIgnoreCase(extension, "md5mesh")) {
+            }
+            if (Util::CompareIgnoreCase(extension, "md5mesh")) {
                 return ContentExplorerWindow::GeometryFormat::MD5;
-            } else if (Util::CompareIgnoreCase(extension, "md2")) {
+            }
+            if (Util::CompareIgnoreCase(extension, "md2")) {
                 return ContentExplorerWindow::GeometryFormat::MD2;
-            } else if (Util::CompareIgnoreCase(extension, "ase")) {
+            }
+            if (Util::CompareIgnoreCase(extension, "ase")) {
                 return ContentExplorerWindow::GeometryFormat::ASE;
-            } else if (Util::CompareIgnoreCase(extension, "3ds")) {
+            }
+            if (Util::CompareIgnoreCase(extension, "3ds")) {
                 return ContentExplorerWindow::GeometryFormat::_3DS;
             }
 
             return ContentExplorerWindow::GeometryFormat::COUNT;
         }
-    };
+    }
 
     ContentExplorerWindow::ContentExplorerWindow(Editor& parent, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor)
@@ -103,16 +108,16 @@ namespace Divide {
 
         while (!_textureLoadQueue.empty() || !_modelLoadQueue.empty()) {
             if (!_textureLoadQueue.empty()) {
-                auto file = _textureLoadQueue.top();
+                auto [path, name] = _textureLoadQueue.top();
                 _textureLoadQueue.pop();
-                _loadedTextures[_ID((file.first + "/" + file.second).c_str())] = getTextureForPath(ResourcePath(file.first), ResourcePath(file.second));
+                _loadedTextures[_ID((path + "/" + name).c_str())] = getTextureForPath(ResourcePath(path), ResourcePath(name));
             }
 
 
             if (!_modelLoadQueue.empty()) {
-                auto file = _modelLoadQueue.top();
+                auto [path, name] = _modelLoadQueue.top();
                 _modelLoadQueue.pop();
-                _loadedModels[_ID((file.first + "/" + file.second).c_str())] = getModelForPath(ResourcePath(file.first), ResourcePath(file.second));
+                _loadedModels[_ID((path + "/" + name).c_str())] = getModelForPath(ResourcePath(path), ResourcePath(name));
             }
         }
 
@@ -125,12 +130,12 @@ namespace Divide {
         if (is_directory(p)) {
             directoryOut._path = p.filename().generic_string();
             for (auto&& x : std::filesystem::directory_iterator(p)) {
-                if (std::filesystem::is_regular_file(x.path())) {
+                if (is_regular_file(x.path())) {
                     if (IsValidFile(x.path().generic_string().c_str())) {
                         directoryOut._files.push_back({ directoryOut._path, x.path().filename().generic_string() });
 
                     }
-                } else if (std::filesystem::is_directory(x.path())) {
+                } else if (is_directory(x.path())) {
                     directoryOut._children.push_back(std::make_shared<Directory>());
                     getDirectoryStructureForPath(ResourcePath(x.path().generic_string()), *directoryOut._children.back());
                 }
@@ -310,4 +315,4 @@ namespace Divide {
 
         return CreateResource<Mesh>(_parent.context().kernel().resourceCache(), model);
     }
-}; //namespace Divide
+} //namespace Divide

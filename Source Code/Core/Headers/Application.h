@@ -108,7 +108,7 @@ class Application : public SDLEventListener {
     inline void registerShutdownCallback(const DELEGATE<void>& cbk);
 
     PROPERTY_R(Time::ApplicationTimer, timer);
-    inline Time::ApplicationTimer& timer() noexcept { return _timer; }
+    Time::ApplicationTimer& timer() noexcept { return _timer; }
 
   private:
     bool onSDLEvent(SDL_Event event) override;

@@ -165,7 +165,7 @@ namespace Divide {
                 const F32 deltaUV = uvExtension.x;
                 const F32 remainingUV = 1.f - deltaUV;
                 if (deltaUV < 1) {
-                    const F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
+                    const F32 adder = remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace;
                     remainingWndSize.x -= adder * imageSz.x;
                     imageSz.x += adder * imageSz.x;
                 }
@@ -175,7 +175,7 @@ namespace Divide {
                 const F32 deltaUV = uvExtension.y;
                 const F32 remainingUV = 1.f - deltaUV;
                 if (deltaUV < 1) {
-                    const F32 adder = (remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace);
+                    const F32 adder = remainingUV < remainingSizeInUVSpace ? remainingUV : remainingSizeInUVSpace;
                     remainingWndSize.y -= adder * imageSz.y;
                     imageSz.y += adder * imageSz.y;
                 }
@@ -222,7 +222,6 @@ namespace Divide {
                 case ImGuizmo::SCALE:
                     ImGui::InputFloat("Scale", &settings.snap[0]);
                     break;
-                default:
                 case ImGuizmo::BOUNDS: break;
             }
             ImGui::PopItemWidth();
@@ -233,9 +232,9 @@ namespace Divide {
 
     const Rect<I32>& SceneViewWindow::sceneRect() const noexcept {
         return  _sceneRect;
-    };
+    }
 
     const vec2<I32>& SceneViewWindow::getWindowOffset() const noexcept {
         return _windowOffset;
     }
-};
+}

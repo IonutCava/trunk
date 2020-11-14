@@ -22,7 +22,7 @@ void ParticleBoxGenerator::generate(Task& packagedTasksParent,
     {
         Start(*CreateTask(tp,
             &packagedTasksParent,
-            [from, to, min, max](const Task& parentTask) mutable
+            [from, to, min, max](const Task&) mutable
             {
                 std::for_each(from, to, [min, max](vec4<F32>& position)
                 {
@@ -32,4 +32,4 @@ void ParticleBoxGenerator::generate(Task& packagedTasksParent,
     });
 }
 
-};
+}

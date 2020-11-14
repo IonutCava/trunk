@@ -111,8 +111,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     /// Is the shader ready for drawing?
     virtual bool isValid() const = 0;
-    virtual bool load() override;
-    virtual bool unload() override;
+    bool load() override;
+    bool unload() override;
 
     virtual bool recompile(bool force);
 
@@ -187,7 +187,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
     const ShaderProgramDescriptor& descriptor() const noexcept { return _descriptor; }
 
-    const char* getResourceTypeName() const noexcept override { return "ShaderProgram"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "ShaderProgram"; }
 
     PROPERTY_RW(bool, highPriority, true);
 
@@ -236,7 +236,7 @@ namespace Attorney {
             ShaderProgram::useShaderBinaryCache(state);
         }
 
-        friend class Divide::Kernel;
+        friend class Kernel;
     };
 }
 

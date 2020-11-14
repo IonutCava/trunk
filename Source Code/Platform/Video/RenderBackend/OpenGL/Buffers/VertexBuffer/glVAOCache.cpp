@@ -16,7 +16,7 @@ glVAOCache::~glVAOCache()
 void glVAOCache::clear() {
     for (VAOMap::value_type& value : _cache) {
         if (value.second != 0) {
-            Divide::GL_API::s_vaoPool.deallocate(value.second);
+            GL_API::s_vaoPool.deallocate(value.second);
         }
     }
     _cache.clear();
@@ -44,9 +44,9 @@ bool glVAOCache::getVAO(const AttribFlags& flags, GLuint& vaoOut, size_t& hashOu
     }
 
     // Otherwise allocate a new VAO and save it in the cache
-    vaoOut = Divide::GL_API::s_vaoPool.allocate();
+    vaoOut = GL_API::s_vaoPool.allocate();
     assert(vaoOut != 0 && Locale::get(_ID("ERROR_VAO_INIT")));
-    hashAlg::insert(_cache, hashOut, vaoOut);
+    insert(_cache, hashOut, vaoOut);
     return false;
 }
 

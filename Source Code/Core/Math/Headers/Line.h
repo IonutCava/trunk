@@ -40,13 +40,15 @@ namespace Divide {
 struct Line {
     Line() = default;
 
-    Line(const vec3<F32>& positionStart, const vec3<F32>& positionEnd, const FColour3& colourStart, const FColour3& colourEnd, const F32 widthStart, const F32 widthEnd) noexcept
-        : _positionStart(positionStart),
-          _positionEnd(positionEnd),
-          _colourStart(colourStart),
-          _colourEnd(colourEnd),
+    Line(vec3<F32> positionStart, vec3<F32> positionEnd, FColour3 colourStart, FColour3 colourEnd, const F32 widthStart, const F32 widthEnd) noexcept
+        : _positionStart(std::move(positionStart)),
+          _positionEnd(std::move(positionEnd)),
+          _colourStart(std::move(colourStart)),
+          _colourEnd(std::move(colourEnd)),
           _widthStart(widthStart),
-          _widthEnd(widthEnd){}
+          _widthEnd(widthEnd)
+    {
+    }
 
     PROPERTY_RW(vec3<F32>, positionStart, VECTOR3_ZERO);
     PROPERTY_RW(vec3<F32>, positionEnd, VECTOR3_UNIT);
@@ -56,7 +58,7 @@ struct Line {
     PROPERTY_RW(F32, widthEnd, 1.0f);
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_CORE_MATH_LINE_H_
 

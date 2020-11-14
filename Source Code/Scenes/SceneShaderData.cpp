@@ -27,10 +27,6 @@ SceneShaderData::SceneShaderData(GFXDevice& context)
     _sceneShaderData->bind(ShaderBufferLocation::SCENE_DATA);
 }
 
-SceneShaderData::~SceneShaderData()
-{
-}
-
 ShaderBuffer* SceneShaderData::uploadToGPU() {
     if (_dirty) {
         _sceneShaderData->writeData(&_bufferData);
@@ -40,4 +36,4 @@ ShaderBuffer* SceneShaderData::uploadToGPU() {
     return _sceneShaderData;
 }
 
-}; //namespace Divide
+} //namespace Divide

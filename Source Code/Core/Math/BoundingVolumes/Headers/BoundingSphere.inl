@@ -149,6 +149,6 @@ inline F32 BoundingSphere::getDistanceFromPoint(const vec3<F32>& point) const no
 inline vec4<F32> BoundingSphere::asVec4() const noexcept {
     return vec4<F32>(getCenter(), getRadius());
 }
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_MATH_BOUNDINGVOLUMES_BOUNDINGSPHERE_INL_

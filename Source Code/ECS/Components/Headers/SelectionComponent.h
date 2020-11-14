@@ -44,6 +44,6 @@ namespace Divide {
 
     INIT_COMPONENT(SelectionComponent);
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SELECTION_COMPONENT_H_

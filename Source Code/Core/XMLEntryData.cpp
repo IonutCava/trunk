@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-XMLEntryData::XMLEntryData() : XML::IXMLSerializable()
+XMLEntryData::XMLEntryData() : IXMLSerializable()
 {
     scriptLocation = "XML";
     config = "config.xml";

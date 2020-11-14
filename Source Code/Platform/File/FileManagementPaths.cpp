@@ -101,14 +101,14 @@ void Paths::initPaths(const SysInfo& info) {
     Editor::g_tabLayoutFile = ResourcePath("Tabs.layout");
     Editor::g_panelLayoutFile = ResourcePath("Panels.layout");
 
-    Scripts::g_scriptsLocation = Paths::g_assetsLocation + "scripts/";
-    Scripts::g_scriptsAtomsLocation = Paths::Scripts::g_scriptsLocation + "atoms/";
+    Scripts::g_scriptsLocation = g_assetsLocation + "scripts/";
+    Scripts::g_scriptsAtomsLocation = Scripts::g_scriptsLocation + "atoms/";
 
     Textures::g_metadataLocation = ResourcePath("textureData/");
 
     Shaders::g_cacheLocation = ResourcePath("shaders/");
-    Shaders::g_cacheLocationText = Paths::Shaders::g_cacheLocation + "Text/";
-    Shaders::g_cacheLocationBin = Paths::Shaders::g_cacheLocation + "Binary/";
+    Shaders::g_cacheLocationText = Shaders::g_cacheLocation + "Text/";
+    Shaders::g_cacheLocationBin = Shaders::g_cacheLocation + "Binary/";
 
     // these must match the last 4 characters of the atom file
     Shaders::GLSL::g_fragAtomExt = "frag";

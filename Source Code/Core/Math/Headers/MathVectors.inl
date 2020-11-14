@@ -104,7 +104,7 @@ vec2<T> operator*(T fl, const vec2<T> &v) noexcept {
 /// general vec2 dot product
 template <typename T>
 T Dot(const vec2<T> &a, const vec2<T> &b) noexcept {
-    return (a.x * b.x + a.y * b.y);
+    return a.x * b.x + a.y * b.y;
 }
 
 template <typename T>
@@ -132,7 +132,7 @@ vec3<T> operator*(T fl, const vec3<T> &v) noexcept {
 /// general vec3 dot product
 template <typename T>
 T Dot(const vec3<T> &a, const vec3<T> &b) noexcept {
-    return (a.x * b.x + a.y * b.y + a.z * b.z);
+    return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
 /// general vec3 cross function
@@ -173,7 +173,7 @@ vec3<T> ProjectToNorm(const vec3<T>& in, const vec3<T> &direction) {
 template <typename T>
 void OrthoNormalize(vec3<T> &n, vec3<T> &u) {
     n.normalize();
-    u.set(Cross(Normalized((Cross(n, u))), n));
+    u.set(Cross(Normalized(Cross(n, u)), n));
 }
 
 template <typename T>
@@ -317,8 +317,8 @@ bool vec2<T>::compare(const vec2<U> &v) const noexcept {
 template <typename T>
 template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec2<T>::compare(const vec2<U> &v, U epsi) const noexcept {
-    return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-            COMPARE_TOLERANCE(this->y, v.y, epsi));
+    return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+        COMPARE_TOLERANCE(this->y, v.y, epsi);
 }
 
 /// return the projection factor from *this to the line determined by points vA
@@ -332,7 +332,7 @@ T vec2<T>::projectionOnLine(const vec2 &vA, const vec2 &vB) const {
 /// get the dot product between this vector and the specified one
 template <typename T>
 T vec2<T>::dot(const vec2 &v) const noexcept {
-    return ((this->x * v.x) + (this->y * v.y));
+    return this->x * v.x + this->y * v.y;
 }
 
 /// round both values
@@ -353,7 +353,7 @@ void vec2<T>::get(T *v) const {
 /// determined by points vA and vB
 template <typename T>
 vec2<T> vec2<T>::closestPointOnLine(const vec2 &vA, const vec2 &vB) {
-    return (((vB - vA) * this->projectionOnLine(vA, vB)) + vA);
+    return (vB - vA) * this->projectionOnLine(vA, vB) + vA;
 }
 
 /// return the coordinates of the closest point from *this to the segment
@@ -366,7 +366,7 @@ vec2<T> vec2<T>::closestPointOnSegment(const vec2 &vA, const vec2 &vB) {
 
     if (factor >= 1) return vB;
 
-    return (((vB - vA) * factor) + vA);
+    return (vB - vA) * factor + vA;
 }
 
 /// lerp between this and the specified vector by the specified amount
@@ -439,7 +439,7 @@ vec3<T>& vec3<T>::normalize() {
 
     if (l >= std::numeric_limits<F32>::epsilon()) {
         // multiply by the inverse length
-        *this *= (1.0f / l);
+        *this *= 1.0f / l;
     }
 
     return *this;
@@ -600,7 +600,7 @@ vec3<T> vec3<T>::vector(const vec3 &vp1, const vec3 &vp2) const noexcept {
 /// vector
 template <typename T>
 vec3<T> vec3<T>::closestPointOnLine(const vec3 &vA, const vec3 &vB) {
-    return (((vB - vA) * this->projectionOnLine(vA, vB)) + vA);
+    return (vB - vA) * this->projectionOnLine(vA, vB) + vA;
 }
 
 /// return the closest point on the line segment created between the 2 points
@@ -617,7 +617,7 @@ vec3<T> vec3<T>::closestPointOnSegment(const vec3 &vA, const vec3 &vB) {
         return vB;
     }
 
-    return (((vB - vA) * factor) + vA);
+    return (vB - vA) * factor + vA;
 }
 
 /// lerp between the 2 specified vectors by the specified amount
@@ -779,10 +779,10 @@ bool vec4<T>::compare(const vec4<U> &v, const U epsi) const noexcept{
     if_constexpr(std::is_same<T, U>::value && std::is_same<U, F32>::value) {
         return !AVX::Fneq128(_reg._reg, v._reg._reg, epsi);
     } else {
-        return (COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-                COMPARE_TOLERANCE(this->y, v.y, epsi) &&
-                COMPARE_TOLERANCE(this->z, v.z, epsi) &&
-                COMPARE_TOLERANCE(this->w, v.w, epsi));
+        return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
+            COMPARE_TOLERANCE(this->y, v.y, epsi) &&
+            COMPARE_TOLERANCE(this->z, v.z, epsi) &&
+            COMPARE_TOLERANCE(this->w, v.w, epsi);
     }
 }
 
@@ -816,7 +816,7 @@ void vec4<T>::swap(vec4 &iv) noexcept {
 /// general vec4 dot product
 template <typename T>
 T Dot(const vec4<T> &a, const vec4<T> &b) noexcept {
-    return (a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w);
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
 }
 
 template <>
@@ -854,7 +854,7 @@ vec4<T>& vec4<T>::normalize() {
 
     if (l >= std::numeric_limits<F32>::epsilon()) {
         // multiply by the inverse length
-        *this *= (1.0f / l);
+        *this *= 1.0f / l;
     }
 
     return *this;
@@ -924,6 +924,6 @@ vec4<Type> Random(const vec4<Type>& min, const vec4<Type>& max) {
     return vec4<Type>(Random(min.x, max.x), Random(min.y, max.y),
                       Random(min.z, max.z), Random(min.w, max.w));
 }
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_CORE_MATH_MATH_VECTORS_INL_

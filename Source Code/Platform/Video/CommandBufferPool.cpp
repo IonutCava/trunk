@@ -51,7 +51,7 @@ CommandBuffer* allocateCommandBuffer() {
     return s_commandBufferPool.allocateBuffer();
 }
 
-void deallocateCommandBuffer(GFX::CommandBuffer*& buffer) {
+void deallocateCommandBuffer(CommandBuffer*& buffer) {
     s_commandBufferPool.deallocateBuffer(buffer);
 }
 

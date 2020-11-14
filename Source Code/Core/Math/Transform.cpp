@@ -89,4 +89,4 @@ void Transform::identity() {
     _rebuild = false;
 }
 
-};  // namespace Divide
+}  // namespace Divide

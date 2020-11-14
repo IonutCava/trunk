@@ -81,7 +81,7 @@ namespace Attorney {
         static void end(glPixelBuffer& buffer) {
             buffer.end();
         }
-        friend class Divide::GL_API;
+        friend class GL_API;
     };
 };  // namespace Attorney
 };  // namespace Divide

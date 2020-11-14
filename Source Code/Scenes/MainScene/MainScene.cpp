@@ -25,14 +25,14 @@ namespace Divide {
 
 namespace {
     Task* g_boxMoveTaskID = nullptr;
-};
+}
 
 MainScene::MainScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name)
    : Scene(context, cache, parent, name),
-    _beep(nullptr),
+    _musicPlaying(false),
     _freeflyCamera(true/*false*/),
     _updateLights(true),
-    _musicPlaying(false)
+    _beep(nullptr)
 {
 }
 
@@ -41,7 +41,6 @@ void MainScene::updateLights() {
         return;
     }
     _updateLights = false;
-    return;
 }
 
 void MainScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
@@ -130,19 +129,13 @@ void MainScene::processTasks(const U64 deltaTimeUS) {
 
 bool MainScene::load(const Str256& name) {
     // Load scene resources
-    bool loadState = SCENE_LOAD(name);
+    const bool loadState = SCENE_LOAD(name);
     FreeFlyCamera* baseCamera = Camera::utilityCamera<FreeFlyCamera>(Camera::UtilityCamera::DEFAULT);
     baseCamera->setMoveSpeedFactor(10.0f);
 
-    constexpr U32 normalMask = to_base(ComponentType::NAVIGATION) |
-                               to_base(ComponentType::TRANSFORM) |
-                               to_base(ComponentType::BOUNDS) |
-                               to_base(ComponentType::RENDERING) |
-                               to_base(ComponentType::NAVIGATION);
-
     ResourceDescriptor infiniteWater("waterEntity");
     infiniteWater.data(vec3<U16>(baseCamera->getZPlanes().y));
-    WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
+    const WaterPlane_ptr water = CreateResource<WaterPlane>(_resCache, infiniteWater);
 
     SceneGraphNodeDescriptor waterNodeDescriptor;
     waterNodeDescriptor._node = water;
@@ -164,7 +157,7 @@ bool MainScene::load(const Str256& name) {
 
         removeTask(*g_boxMoveTaskID);
         g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
-            test(parent, stringImpl("test"), GFX::PushConstantType::COUNT, GFX::PushConstantSize::COUNT);
+            test();
         });
 
         registerTask(*g_boxMoveTaskID);
@@ -186,49 +179,56 @@ U16 MainScene::registerInputActions() {
     {
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {_context.sfx().playSound(_beep); });
+        if (!_input->actionList().registerInputAction(actionID, [this](InputParams /*param*/) {_context.sfx().playSound(_beep); })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _input->addKeyMapping(Input::KeyCode::KC_X, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+        if (!_input->actionList().registerInputAction(actionID, [this](InputParams /*param*/) {
             _musicPlaying = !_musicPlaying;
             if (_musicPlaying) {
-                SceneState::MusicPlaylist::const_iterator it;
-                it = state()->music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
+                SceneState::MusicPlaylist::const_iterator it = state()->music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
                 if (it != std::cend(state()->music(MusicType::TYPE_BACKGROUND))) {
                     _context.sfx().playMusic(it->second);
                 }
             } else {
                 _context.sfx().stopMusic();
             }
-        });
+        })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _input->addKeyMapping(Input::KeyCode::KC_M, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+        if (!_input->actionList().registerInputAction(actionID, [this](const InputParams param) {
             _freeflyCamera = !_freeflyCamera;
             FreeFlyCamera* cam = _scenePlayers[getPlayerIndexForDevice(param._deviceIndex)]->camera();
             cam->setMoveSpeedFactor(_freeflyCamera ? 20.0f : 10.0f);
-        });
+        })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _input->addKeyMapping(Input::KeyCode::KC_L, actionEntry);
         actionID++;
     }
     {
         PressReleaseActions::Entry actionEntry = {};
         actionEntry.releaseIDs().insert(actionID);
-        _input->actionList().registerInputAction(actionID, [this](InputParams param) {
+        if (!_input->actionList().registerInputAction(actionID, [this](InputParams /*param*/) {
             vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
 
             for (SceneGraphNode* terrainNode : terrains) {
                 terrainNode->getNode<Terrain>().toggleBoundingBoxes();
             }
-        });
+        })) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         _input->addKeyMapping(Input::KeyCode::KC_T, actionEntry);
     }
     return actionID++;
@@ -242,7 +242,7 @@ bool MainScene::unload() {
     return Scene::unload();
 }
 
-void MainScene::test(const Task& parentTask, std::any a, GFX::PushConstantType type, GFX::PushConstantSize size) {
+void MainScene::test() {
     static bool switchAB = false;
     vec3<F32> pos;
     SceneGraphNode* boxNode(_sceneGraph->findNode("box"));
@@ -252,21 +252,21 @@ void MainScene::test(const Task& parentTask, std::any a, GFX::PushConstantType t
     }
 
     if (!switchAB) {
-        if (pos.x < 300 && pos.z == 0) pos.x++;
-        if (pos.x == 300) {
-            if (pos.y < 800 && pos.z == 0) pos.y++;
-            if (pos.y == 800) {
+        if (pos.x < 300 && IS_ZERO(pos.z)) pos.x++;
+        if (COMPARE(pos.x, 300.f)) {
+            if (pos.y < 800 && IS_ZERO(pos.z)) pos.y++;
+            if (COMPARE(pos.y, 800.f)) {
                 if (pos.z > -500) pos.z--;
-                if (pos.z == -500) switchAB = true;
+                if (COMPARE(pos.z, -500.f)) switchAB = true;
             }
         }
     } else {
-        if (pos.x > -300 && pos.z == -500) pos.x--;
-        if (pos.x == -300) {
-            if (pos.y > 100 && pos.z == -500) pos.y--;
-            if (pos.y == 100) {
+        if (pos.x > -300 && COMPARE(pos.z, -500)) pos.x--;
+        if (COMPARE(pos.x, -300.f)) {
+            if (pos.y > 100 && COMPARE(pos.z, -500)) pos.y--;
+            if (COMPARE(pos.y, 100)) {
                 if (pos.z < 0) pos.z++;
-                if (pos.z == 0) switchAB = false;
+                if (IS_ZERO(pos.z)) switchAB = false;
             }
         }
     }
@@ -276,7 +276,7 @@ void MainScene::test(const Task& parentTask, std::any a, GFX::PushConstantType t
 
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
         g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
-            test(parent, stringImpl("test"), GFX::PushConstantType::COUNT, GFX::PushConstantSize::COUNT);
+            test();
         });
 
         registerTask(*g_boxMoveTaskID);
@@ -303,4 +303,4 @@ void MainScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     Scene::postLoadMainThread(targetRenderViewport);
 }
 
-};
+}

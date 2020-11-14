@@ -8,6 +8,7 @@
 namespace Divide {
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TERRAIN_INFO)
+        , _name(name)
         , _altitudeRange(0.f, 1.f)
         , _chunkSize(256)
     {
@@ -24,14 +25,14 @@ namespace Divide {
             return false;
         }
         
-        addVariable("terrainName", name.c_str());
-        addVariable("descriptor", terrainDescriptor.c_str());
+        addVariable("terrainName", name);
+        addVariable("descriptor", terrainDescriptor);
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
         addVariable("underwaterAlbedoTexture", pt.get<stringImpl>("underwaterAlbedoTexture", "sandfloor009a.jpg"));
         addVariable("underwaterDetailTexture", pt.get<stringImpl>("underwaterDetailTexture", "terrain_detail_NM.png"));
         addVariable("tileNoiseTexture", pt.get<stringImpl>("tileNoiseTexture", "bruit_gaussien_2.jpg"));
         addVariable("underwaterTileScale", pt.get<F32>("underwaterTileScale", 1.0f));
-        stringImpl alphaMapDescriptor = "";
+        stringImpl alphaMapDescriptor;
         {
             boost::property_tree::ptree descTree = {};
             XML::readXML((Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor.c_str() + "/descriptor.xml").c_str(), descTree);
@@ -82,7 +83,7 @@ namespace Divide {
                 ++itImage, ++i)
             {
                 stringImpl layerName(itImage->second.data());
-                stringImpl format(itImage->first.data());
+                stringImpl format(itImage->first);
 
                 if (format.find("<xmlcomment>") != stringImpl::npos) {
                     i--;
@@ -96,17 +97,17 @@ namespace Divide {
                     itLayer != std::end(itImage->second.get_child("LayerList"));
                     ++itLayer)
                 {
-                    if (stringImpl(itLayer->first.data()).find("<xmlcomment>") != stringImpl::npos) {
+                    if (stringImpl(itLayer->first).find("<xmlcomment>") != stringImpl::npos) {
                         continue;
                     }
 
                     stringImpl layerColour = itLayer->second.get<stringImpl>("LayerColour", "");
-                    stringImpl materialName = "";
+                    stringImpl materialName;
                     for (boost::property_tree::ptree::iterator itMaterial = std::begin(itLayer->second.get_child("MtlList"));
                         itMaterial != std::end(itLayer->second.get_child("MtlList"));
                         ++itMaterial)
                     {
-                        if (stringImpl(itMaterial->first.data()).find("<xmlcomment>") != stringImpl::npos) {
+                        if (stringImpl(itMaterial->first).find("<xmlcomment>") != stringImpl::npos) {
                             continue;
                         }
 
@@ -124,10 +125,10 @@ namespace Divide {
     }
 
     void TerrainDescriptor::addVariable(const stringImpl& name, const stringImpl& value) {
-        hashAlg::insert(_variables, hashAlg::make_pair(_ID(name.c_str()), value));
+        insert(_variables, hashAlg::make_pair(_ID(name.c_str()), value));
     }
 
     void TerrainDescriptor::addVariable(const stringImpl& name, F32 value) {
-        hashAlg::insert(_variablesf, hashAlg::make_pair(_ID(name.c_str()), value));
+        insert(_variablesf, hashAlg::make_pair(_ID(name.c_str()), value));
     }
-}; //namespace Divide
+} //namespace Divide

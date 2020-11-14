@@ -48,8 +48,8 @@ class TileRing;
 class TerrainLoader;
 
 template <typename T>
-inline T TER_COORD(T x, T y, T width) noexcept {
-    return x + (width * y);
+T TER_COORD(T x, T y, T width) noexcept {
+    return x + width * y;
 }
 
 enum class TerrainTextureChannel : U8 {
@@ -70,7 +70,7 @@ FWD_DECLARE_MANAGED_CLASS(ShaderProgram);
 namespace Attorney {
     class TerrainChunk;
     class TerrainLoader;
-};
+}
 
 struct TessellationParams
 {
@@ -123,42 +123,42 @@ class Terrain final : public Object3D {
     [[nodiscard]] vec2<U16> getDimensions() const noexcept;
     [[nodiscard]] vec2<F32> getAltitudeRange() const noexcept;
 
-    [[nodiscard]] inline const Quadtree& getQuadtree() const noexcept { return _terrainQuadtree; }
+    [[nodiscard]] const Quadtree& getQuadtree() const noexcept { return _terrainQuadtree; }
 
     void getVegetationStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
 
-    [[nodiscard]] inline const vectorEASTL<TerrainChunk*>& terrainChunks() const noexcept { return _terrainChunks; }
+    [[nodiscard]] const vectorEASTL<TerrainChunk*>& terrainChunks() const noexcept { return _terrainChunks; }
     [[nodiscard]] const std::shared_ptr<TerrainDescriptor>& descriptor() const noexcept { return _descriptor; }
 
-    void saveToXML(boost::property_tree::ptree& pt) const final;
-    void loadFromXML(const boost::property_tree::ptree& pt)  final;
+    void saveToXML(boost::property_tree::ptree& pt) const override;
+    void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
    protected:
     [[nodiscard]] Vert getVert(F32 x_clampf, F32 z_clampf) const;
     [[nodiscard]] Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
 
-    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) final;
+    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
 
     void onRefreshNodeData(const SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            bool refreshData,
-                           GFX::CommandBuffer& bufferInOut) final;
+                           GFX::CommandBuffer& bufferInOut) override;
 
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
-                           RenderPackage& pkgInOut) final;
+                           RenderPackage& pkgInOut) override;
 
      bool prepareRender(SceneGraphNode* sgn,
                         RenderingComponent& rComp,
                         const RenderStagePass& renderStagePass,
                         const Camera& camera,
-                        bool refreshData) final;
+                        bool refreshData) override;
 
-    void postLoad(SceneGraphNode* sgn);
+    void postLoad(SceneGraphNode* sgn) override;
 
     void onEditorChange(std::string_view field);
 
@@ -244,7 +244,7 @@ class TerrainLoader {
     friend class Divide::TerrainLoader;
 };
 
-};  // namespace Attorney
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace Divide
 
 #endif

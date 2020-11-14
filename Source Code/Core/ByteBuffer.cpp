@@ -19,7 +19,7 @@ ByteBufferException::ByteBufferException(const bool add, const size_t pos, const
 void ByteBufferException::printPosError() const {
 
     Console::errorfn(Locale::get(_ID("BYTE_BUFFER_ERROR")),
-                     (_add ? "append" : "read"), 
+                     _add ? "append" : "read", 
                      _pos,
                      _esize,
                      _size);
@@ -69,4 +69,4 @@ bool ByteBuffer::loadFromFile(const char* path, const char* fileName) {
     return false;
 }
 
-};  // namespace Divide
+}  // namespace Divide

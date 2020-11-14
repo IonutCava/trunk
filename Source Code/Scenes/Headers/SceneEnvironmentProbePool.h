@@ -40,7 +40,7 @@ namespace Divide {
 
 namespace GFX {
     class CommandBuffer;
-};
+}
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);
 
@@ -88,6 +88,6 @@ private:
     static RenderTargetHandle s_reflection;
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCENE_ENVIRONMENT_PROBE_POOL_H_

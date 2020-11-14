@@ -32,13 +32,13 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
 
     UniqueLock<SharedMutex> lock(_listenerLock);
     const vectorEASTL<FrameListener*>::const_iterator it = 
-        eastl::find_if(eastl::cbegin(_listeners), eastl::cend(_listeners),
-                      [targetGUID](FrameListener const* fl) -> bool
-                      {
-                          return fl->getGUID() == targetGUID;
-                      });
+        eastl::find_if(cbegin(_listeners), cend(_listeners),
+                       [targetGUID](FrameListener const* fl) -> bool
+                       {
+                           return fl->getGUID() == targetGUID;
+                       });
 
-    if (it != eastl::cend(_listeners)) {
+    if (it != cend(_listeners)) {
         _listeners.erase(it);
     } else {
         Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")), listener->getListenerName().c_str());
@@ -60,7 +60,6 @@ bool FrameListenerManager::frameEvent(const FrameEvent& evt) {
         case FrameEventType::FRAME_EVENT_PROCESS     : return frameRenderingQueued(evt);
         case FrameEventType::FRAME_EVENT_ENDED       : return frameEnded(evt);
         case FrameEventType::FRAME_EVENT_ANY         : return true;
-        default: break;
     };
 
     return false;
@@ -185,8 +184,8 @@ U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEvent
         return 0;
     }
 
-    EventTimeMap::const_iterator it = eastl::cbegin(times);
-    EventTimeMap::const_iterator end = eastl::cend(times) - 2;
+    EventTimeMap::const_iterator it = cbegin(times);
+    const EventTimeMap::const_iterator end = cend(times) - 2;
 
     while (it != end) {
         if (currentTimeUS - *it > 0) {
@@ -196,7 +195,7 @@ U64 FrameListenerManager::calculateEventTime(const U64 currentTimeUS, FrameEvent
         }
     }
 
-    times.erase(eastl::cbegin(times), it);
-    return (times.back() - times.front());
+    times.erase(cbegin(times), it);
+    return times.back() - times.front();
 }
 };

@@ -2,7 +2,6 @@
 
 #include "Headers/ParticleSource.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/EngineTaskPool.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 
@@ -13,17 +12,13 @@ ParticleSource::ParticleSource(GFXDevice& context)
 {
 }
 
-ParticleSource::ParticleSource(GFXDevice& context, F32 emitRate)
+ParticleSource::ParticleSource(GFXDevice& context, const F32 emitRate)
     : _emitRate(emitRate),
       _context(context)
 {
 }
 
-ParticleSource::~ParticleSource()
-{
-}
-
-void ParticleSource::emit(const U64 deltaTimeUS, std::shared_ptr<ParticleData> p) {
+void ParticleSource::emit(const U64 deltaTimeUS, const std::shared_ptr<ParticleData>& p) {
     ParticleData& data = *p;
 
     const F32 dt = Time::MicrosecondsToSeconds<F32>(deltaTimeUS);
@@ -41,4 +36,4 @@ void ParticleSource::emit(const U64 deltaTimeUS, std::shared_ptr<ParticleData> p
         p->wake(i);
     }
 }
-};
+}

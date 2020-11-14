@@ -53,7 +53,7 @@ class PropertyDescriptor : public Hashable {
     {
     }
 
-    virtual size_t getHash() const noexcept override;
+    [[nodiscard]] size_t getHash() const noexcept override;
 
 protected:
     /// useful for switch statements
@@ -99,6 +99,6 @@ class ResourceDescriptor final : public Hashable {
     PropertyDescriptor_ptr _propertyDescriptor = nullptr;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

@@ -33,6 +33,7 @@
 #define _WAR_SCENE_AESOP_ACTION_INTERFACE_H_
 
 #include "AI/ActionInterface/Headers/GOAPInterface.h"
+#include "Core/Headers/StringHelper.h"
 
 namespace Divide {
 namespace AI {
@@ -59,7 +60,7 @@ enum class Fact : U8 {
     COUNT
 };
 
-inline const char* WarSceneFactName(GOAPFact fact) {
+inline stringImpl WarSceneFactName(GOAPFact fact) {
     switch (static_cast<Fact>(fact)) {
         case Fact::NEAR_ENEMY_FLAG:
             return "NEAR ENEMY FLAG";
@@ -73,28 +74,29 @@ inline const char* WarSceneFactName(GOAPFact fact) {
             return "IDLING";
         case Fact::ENEMY_DEAD:
             return "ENEMY DEAD";
-        default:break;
-    };
-    return GOAPFactName(fact);
-};
+        case Fact::COUNT: break;
+    }
+
+    return Util::to_string(fact);
+}
 
 class WarSceneAIProcessor;
-class WarSceneAction : public GOAPAction {
+class WarSceneAction final : public GOAPAction {
    public:
     WarSceneAction(ActionType type, const stringImpl& name, F32 cost = 1.0f);
-    virtual ~WarSceneAction();
+    virtual ~WarSceneAction() = default;
 
-    inline ActionType actionType() const { return _type; }
+    ActionType actionType() const noexcept { return _type; }
 
     bool preAction(WarSceneAIProcessor& parentProcessor) const;
     bool postAction(WarSceneAIProcessor& parentProcessor) const;
-    virtual bool checkImplDependentCondition() const { return true; }
+    bool checkImplDependentCondition() const override { return true; }
 
    protected:
     ActionType _type;
 };
 
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide
 
 #endif

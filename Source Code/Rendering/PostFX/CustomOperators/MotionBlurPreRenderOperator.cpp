@@ -38,7 +38,7 @@ MotionBlurPreRenderOperator::MotionBlurPreRenderOperator(GFXDevice& context, Pre
     motionBlur.waitForReady(false);
 
     _blurApply = CreateResource<ShaderProgram>(cache, motionBlur);
-    _blurApply->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+    _blurApply->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _blurApply->getGUID();
@@ -47,10 +47,6 @@ MotionBlurPreRenderOperator::MotionBlurPreRenderOperator(GFXDevice& context, Pre
     });
 
     velocityScale(_context.context().config().rendering.postFX.velocityScale);
-}
-
-MotionBlurPreRenderOperator::~MotionBlurPreRenderOperator()
-{
 }
 
 bool MotionBlurPreRenderOperator::ready() const {
@@ -70,7 +66,7 @@ bool MotionBlurPreRenderOperator::execute(const Camera* camera, const RenderTarg
 
     const F32 fps = _context.parent().platformContext().app().timer().getFps();
 
-    const F32 velocityFactor = (fps / Config::TARGET_FRAME_RATE) * _velocityScale;
+    const F32 velocityFactor = fps / Config::TARGET_FRAME_RATE * _velocityScale;
     _blurApplyConstants.set(_ID("dvd_velocityScale"), GFX::PushConstantType::FLOAT, velocityFactor);
     _blurApplyConstants.set(_ID("dvd_maxSamples"), GFX::PushConstantType::INT, to_I32(maxSamples()));
 
@@ -83,22 +79,22 @@ bool MotionBlurPreRenderOperator::execute(const Camera* camera, const RenderTarg
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
     descriptorSetCmd._set._textureData.setTexture(velocityTex, velocityAtt.samplerHash(),TextureUsage::UNIT1);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = output._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
     beginRenderPassCmd._name = "DO_MOTION_BLUR_PASS";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+    EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurApplyPipeline });
-    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _blurApplyConstants });
+    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurApplyPipeline });
+    EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _blurApplyConstants });
 
-    GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+    EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
+    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{ });
 
     return true;
 }
 
-};
+}

@@ -50,6 +50,6 @@ protected:
     /*virtual*/ ~NonMovable() = default;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_NON_MOVABLE_H_

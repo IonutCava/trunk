@@ -40,7 +40,7 @@ namespace Divide {
 class UnitComponent;
 namespace Attorney {
     class UnitComponent;
-};
+}
 
 FWD_DECLARE_MANAGED_CLASS(SceneGraphNode);
 
@@ -57,12 +57,12 @@ namespace Names {
     static const char* unitType[] = {
           "CHARACTER", "VEHICLE", "UNKOWN"
     };
-};
+}
 
 namespace TypeUtil {
     const char* UnitTypeToString(UnitType unitType) noexcept;
     UnitType StringToUnitType(const stringImpl& name);
-};
+}
 
 /// Unit interface
 class Unit : public FrameListener {
@@ -73,56 +73,54 @@ class Unit : public FrameListener {
    public:
 
     explicit Unit(UnitType type, FrameListenerManager& parent, U32 callOrder);
-    virtual ~Unit();
+    virtual ~Unit() = default;
 
     /// moveTo makes the unit follow a path from it's current position to the
     /// targets position
-    virtual bool moveTo(const vec3<F32>& targetPosition);
-    virtual bool moveToX(const F32 targetPosition);
-    virtual bool moveToY(const F32 targetPosition);
-    virtual bool moveToZ(const F32 targetPosition);
+    [[nodiscard]] virtual bool moveTo(const vec3<F32>& targetPosition);
+    [[nodiscard]] virtual bool moveToX(F32 targetPosition);
+    [[nodiscard]] virtual bool moveToY(F32 targetPosition);
+    [[nodiscard]] virtual bool moveToZ(F32 targetPosition);
     /// teleportTo instantly places the unit at the desired position
-    virtual bool teleportTo(const vec3<F32>& targetPosition);
+    [[nodiscard]] virtual bool teleportTo(const vec3<F32>& targetPosition);
 
     /// Accesors
     /// Get the unit's position in the world
-    inline const vec3<F32>& getCurrentPosition() const {
+    [[nodiscard]] const vec3<F32>& getCurrentPosition() const {
         return _currentPosition;
     }
     /// Get the unit's target coordinates in the world
-    inline const vec3<F32>& getTargetPosition() const {
+    [[nodiscard]] const vec3<F32>& getTargetPosition() const {
         return _currentTargetPosition;
     }
     /// Set the unit's movement speed in metres per second (minimum is 0 = the
     /// unit does not move / is rooted)
-    virtual void setMovementSpeed(F32 movementSpeed) {
+    virtual void setMovementSpeed(const F32 movementSpeed) {
         _moveSpeed = movementSpeed;
         CLAMP<F32>(_moveSpeed, 0.0f, 100.0f);
     }
     /// Set the unit's acceleration in metres per second squared
-    virtual void setAcceleration(F32 acceleration) {
+    virtual void setAcceleration(const F32 acceleration) {
         _acceleration = acceleration;
         CLAMP<F32>(_moveSpeed, 0.0f, 100.0f);
     }
     /// Get the unit's current movement speed
-    virtual F32 getMovementSpeed() const { return _moveSpeed; }
+    [[nodiscard]] virtual F32 getMovementSpeed() const { return _moveSpeed; }
     /// Get the unit's acceleration rate
-    virtual F32 getAcceleration() const { return _acceleration; }
+    [[nodiscard]] virtual F32 getAcceleration() const { return _acceleration; }
     /// Set destination tolerance
-    inline void setMovementTolerance(F32 movementTolerance) {
+    void setMovementTolerance(const F32 movementTolerance) {
         _moveTolerance = std::max(0.1f, movementTolerance);
     }
     /// Get the units current movement tolerance
-    inline F32 getMovementTolerance() const { return _moveTolerance; }
+    [[nodiscard]] F32 getMovementTolerance() const { return _moveTolerance; }
     /// Get bound node
-    inline SceneGraphNode* getBoundNode() const {
-        return _node;
-    }
+    [[nodiscard]] SceneGraphNode* getBoundNode() const { return _node; }
     /// Just before we render the frame
-    virtual bool frameRenderingQueued(const FrameEvent& evt) override { ACKNOWLEDGE_UNUSED(evt); return true; }
+    [[nodiscard]] bool frameRenderingQueued(const FrameEvent& evt) override { ACKNOWLEDGE_UNUSED(evt); return true; }
 
     virtual void setAttribute(U32 attributeID, I32 initialValue);
-    virtual I32 getAttribute(U32 attributeID) const;
+    [[nodiscard]] virtual I32 getAttribute(U32 attributeID) const;
 
     PROPERTY_RW(UnitType, type, UnitType::COUNT);
 
@@ -154,7 +152,7 @@ namespace Attorney {
         }
         friend class Divide::UnitComponent;
     };
-};
-};  // namespace Divide
+}
+}  // namespace Divide
 
 #endif

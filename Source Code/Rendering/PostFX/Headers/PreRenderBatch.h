@@ -35,7 +35,7 @@ class PreRenderBatch {
     PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache* cache);
     ~PreRenderBatch();
 
-    PostFX& parent() const noexcept { return _parent; }
+    [[nodiscard]] PostFX& parent() const noexcept { return _parent; }
 
     void idle(const Configuration& config);
     void update(U64 deltaTimeUS) noexcept;
@@ -47,14 +47,14 @@ class PreRenderBatch {
     void onFilterEnabled(FilterType filter);
     void onFilterDisabled(FilterType filter);
 
-    RenderTargetHandle getInput(bool hdr) const;
-    RenderTargetHandle getOutput(bool hdr) const;
+    [[nodiscard]] RenderTargetHandle getInput(bool hdr) const;
+    [[nodiscard]] RenderTargetHandle getOutput(bool hdr) const;
 
-    RenderTargetHandle screenRT() const noexcept;
-    RenderTargetHandle edgesRT() const noexcept;
-    Texture_ptr luminanceTex() const noexcept;
+    [[nodiscard]] RenderTargetHandle screenRT() const noexcept;
+    [[nodiscard]] RenderTargetHandle edgesRT() const noexcept;
+    [[nodiscard]] Texture_ptr luminanceTex() const noexcept;
 
-    PreRenderOperator* getOperator(FilterType type) {
+    [[nodiscard]] PreRenderOperator* getOperator(FilterType type) {
         const FilterSpace fSpace = GetOperatorSpace(type);
         if (fSpace == FilterSpace::COUNT) {
             return nullptr;
@@ -69,7 +69,7 @@ class PreRenderBatch {
         return (*it).get();
     }
 
-    const PreRenderOperator* getOperator(FilterType type) const {
+    [[nodiscard]] const PreRenderOperator* getOperator(FilterType type) const {
         const FilterSpace fSpace = GetOperatorSpace(type);
         if (fSpace == FilterSpace::COUNT) {
             return nullptr;
@@ -89,11 +89,11 @@ class PreRenderBatch {
     PROPERTY_RW(EdgeDetectionMethod, edgeDetectionMethod, EdgeDetectionMethod::Luma);
 
     void adaptiveExposureControl(bool state) noexcept;
-    F32  adaptiveExposureValue() const;
+    [[nodiscard]] F32  adaptiveExposureValue() const;
 
    private:
 
-    static FilterSpace GetOperatorSpace(const FilterType type) noexcept {
+    [[nodiscard]] static FilterSpace GetOperatorSpace(const FilterType type) noexcept {
         // ToDo: Always keep this up-to-date with every filter we add
         switch(type) {
             case FilterType::FILTER_SS_ANTIALIASING :
@@ -105,7 +105,12 @@ class PreRenderBatch {
             case FilterType::FILTER_MOTION_BLUR:
                 return FilterSpace::FILTER_SPACE_HDR;
 
-            default: break;
+            case FilterType::FILTER_SS_REFLECTIONS:
+            case FilterType::FILTER_LUT_CORECTION:
+            case FilterType::FILTER_COUNT:
+            case FilterType::FILTER_UNDERWATER: 
+            case FilterType::FILTER_NOISE: 
+            case FilterType::FILTER_VIGNETTE: break;
         }
 
         return FilterSpace::COUNT;
@@ -113,7 +118,8 @@ class PreRenderBatch {
 
     void onFilterToggle(FilterType type, bool state);
 
-    bool operatorsReady() const;
+    [[nodiscard]] bool operatorsReady() const;
+
   private:
     using OperatorBatch = vectorEASTL<eastl::unique_ptr<PreRenderOperator>>;
     std::array<OperatorBatch, to_base(FilterSpace::COUNT)> _operators;
@@ -155,5 +161,5 @@ class PreRenderBatch {
     U64 _lastDeltaTimeUS = 0u;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 #endif

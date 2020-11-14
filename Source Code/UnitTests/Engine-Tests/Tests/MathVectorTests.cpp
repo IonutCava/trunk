@@ -162,4 +162,4 @@ TEST_CONST_MEMBER_FUNCTION(vecN, mul, vecN)
     CHECK_EQUAL(input3 * input6, result3);
 }
 
-}; //namespace Divide
+} //namespace Divide

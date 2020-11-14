@@ -50,6 +50,6 @@ namespace Divide {
     Task* CreateTask(TaskPool& pool, Task* parentTask, Predicate&& threadedFunction, const bool allowedInIdle) {
         return pool.createTask(parentTask, threadedFunction, allowedInIdle);
     }
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_TASK_POOL_INL_

@@ -54,7 +54,7 @@ namespace Divide {
 
 namespace {
     constexpr const char* const g_defaultPlayerName = "Player_%d";
-};
+}
 
 Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name)
     : Resource(ResourceType::DEFAULT, name),
@@ -65,7 +65,7 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
 {
     _sceneTimerUS = 0UL;
     _sceneState = MemoryManager_NEW SceneState(*this);
-    _input = MemoryManager_NEW SceneInput(*this, _context);
+    _input = MemoryManager_NEW SceneInput(*this);
     _sceneGraph = MemoryManager_NEW SceneGraph(*this);
     _aiManager = MemoryManager_NEW AI::AIManager(*this, _context.taskPool(TaskPoolType::HIGH_PRIORITY));
     _lightPool = MemoryManager_NEW LightPool(*this, _context);
@@ -296,7 +296,7 @@ bool Scene::loadXML(const Str256& name) {
     // Data can be added in code for simple scenes
     if (!fileExists(sceneDataFile.c_str())) {
         sceneGraph()->loadFromXML("assets.xml");
-        XML::loadMusicPlaylist(sceneLocation.str(), "musicPlaylist.xml", this, config);
+        loadMusicPlaylist(sceneLocation.str(), "musicPlaylist.xml", this, config);
         return true;
     }
 
@@ -368,20 +368,20 @@ bool Scene::loadXML(const Str256& name) {
 
     state()->renderState().lodThresholds().set(lodThresholds);
     sceneGraph()->loadFromXML(pt.get("assets", "assets.xml").c_str());
-    XML::loadMusicPlaylist(sceneLocation.str(), pt.get("musicPlaylist", ""), this, config);
+    loadMusicPlaylist(sceneLocation.str(), pt.get("musicPlaylist", ""), this, config);
 
     return true;
 }
 
 SceneNode_ptr Scene::createNode(const SceneNodeType type, const ResourceDescriptor& descriptor) const {
     switch (type) {
-        case SceneNodeType::TYPE_TRANSFORM:        return nullptr;
         case SceneNodeType::TYPE_WATER:            return CreateResource<WaterPlane>(_resCache, descriptor);
         case SceneNodeType::TYPE_TRIGGER:          return CreateResource<Trigger>(_resCache, descriptor);
         case SceneNodeType::TYPE_PARTICLE_EMITTER: return CreateResource<ParticleEmitter>(_resCache, descriptor);
         case SceneNodeType::TYPE_INFINITEPLANE:    return CreateResource<InfinitePlane>(_resCache, descriptor);
         default: break;
     }
+
     // Warning?
     return nullptr;
 }
@@ -660,7 +660,7 @@ void Scene::toggleFlashlight(const PlayerIndex idx) {
         spotLight->castsShadows(true);
         spotLight->setDiffuseColour(DefaultColours::WHITE.rgb);
 
-        hashAlg::insert(_flashLight, idx, flashLight);
+        insert(_flashLight, idx, flashLight);
 
         _cameraUpdateListeners[idx] = playerCamera(idx)->addUpdateListener([this, idx](const Camera& cam) {
             if (idx < _scenePlayers.size() && idx < _flashLight.size() && _flashLight[idx]) {
@@ -813,7 +813,7 @@ U16 Scene::registerInputActions() {
     const auto turnDown       = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::POSITIVE); };
     const auto stopTurnUpDown = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleUD(MoveDirection::NONE); };
 
-    const auto togglePauseState = [this](const InputParams param){ _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false)); };
+    const auto togglePauseState = [this](const InputParams /*param*/){ _context.paramHandler().setParam(_ID("freezeLoopTime"), !_context.paramHandler().getParam(_ID("freezeLoopTime"), false)); };
 
     const auto takeScreenShot = [this](const InputParams param) { ACKNOWLEDGE_UNUSED(param); _context.gfx().screenshot("screenshot_"); };
 
@@ -929,42 +929,47 @@ U16 Scene::registerInputActions() {
     const auto dragSelectEnd   = [this](const InputParams param) { endDragSelection(getPlayerIndexForDevice(param._deviceIndex), true); };
 
     InputActionList& actions = _input->actionList();
+    bool ret = true;
     U16 actionID = 0;
-    actions.registerInputAction(actionID++, none);                   // 0
-    actions.registerInputAction(actionID++, deleteSelection);        // 1
-    actions.registerInputAction(actionID++, increaseCameraSpeed);    // 2
-    actions.registerInputAction(actionID++, decreaseCameraSpeed);    // 3
-    actions.registerInputAction(actionID++, increaseResolution);     // 4
-    actions.registerInputAction(actionID++, decreaseResolution);     // 5
-    actions.registerInputAction(actionID++, moveForward);            // 6
-    actions.registerInputAction(actionID++, moveBackwards);          // 7
-    actions.registerInputAction(actionID++, stopMoveFWDBCK);         // 8
-    actions.registerInputAction(actionID++, strafeLeft);             // 9
-    actions.registerInputAction(actionID++, strafeRight);            // 10
-    actions.registerInputAction(actionID++, stopStrafeLeftRight);    // 11
-    actions.registerInputAction(actionID++, rollCCW);                // 12
-    actions.registerInputAction(actionID++, rollCW);                 // 13
-    actions.registerInputAction(actionID++, stopRollCCWCW);          // 14
-    actions.registerInputAction(actionID++, turnLeft);               // 15
-    actions.registerInputAction(actionID++, turnRight);              // 16
-    actions.registerInputAction(actionID++, stopTurnLeftRight);      // 17
-    actions.registerInputAction(actionID++, turnUp);                 // 18
-    actions.registerInputAction(actionID++, turnDown);               // 19
-    actions.registerInputAction(actionID++, stopTurnUpDown);         // 20
-    actions.registerInputAction(actionID++, togglePauseState);       // 21
-    actions.registerInputAction(actionID++, takeScreenShot);         // 22
-    actions.registerInputAction(actionID++, toggleFullScreen);       // 23
-    actions.registerInputAction(actionID++, toggleFlashLight);       // 24
-    actions.registerInputAction(actionID++, lockCameraToMouse);      // 25
-    actions.registerInputAction(actionID++, releaseCameraFromMouse); // 26
-    actions.registerInputAction(actionID++, shutdown);               // 27
-    actions.registerInputAction(actionID++, povNavigation);          // 28
-    actions.registerInputAction(actionID++, axisNavigation);         // 29
-    actions.registerInputAction(actionID++, toggleDebugInterface);   // 30
-    actions.registerInputAction(actionID++, toggleEditor);           // 31
-    actions.registerInputAction(actionID++, toggleConsole);          // 32
-    actions.registerInputAction(actionID++, dragSelectBegin);        // 33
-    actions.registerInputAction(actionID++, dragSelectEnd);          // 34
+    ret = actions.registerInputAction(actionID++, none) && ret;                   // 0
+    ret = actions.registerInputAction(actionID++, deleteSelection) && ret;        // 1
+    ret = actions.registerInputAction(actionID++, increaseCameraSpeed) && ret;    // 2
+    ret = actions.registerInputAction(actionID++, decreaseCameraSpeed) && ret;    // 3
+    ret = actions.registerInputAction(actionID++, increaseResolution) && ret;     // 4
+    ret = actions.registerInputAction(actionID++, decreaseResolution) && ret;     // 5
+    ret = actions.registerInputAction(actionID++, moveForward) && ret;            // 6
+    ret = actions.registerInputAction(actionID++, moveBackwards) && ret;          // 7
+    ret = actions.registerInputAction(actionID++, stopMoveFWDBCK) && ret;         // 8
+    ret = actions.registerInputAction(actionID++, strafeLeft) && ret;             // 9
+    ret = actions.registerInputAction(actionID++, strafeRight) && ret;            // 10
+    ret = actions.registerInputAction(actionID++, stopStrafeLeftRight) && ret;    // 11
+    ret = actions.registerInputAction(actionID++, rollCCW) && ret;                // 12
+    ret = actions.registerInputAction(actionID++, rollCW) && ret;                 // 13
+    ret = actions.registerInputAction(actionID++, stopRollCCWCW) && ret;          // 14
+    ret = actions.registerInputAction(actionID++, turnLeft) && ret;               // 15
+    ret = actions.registerInputAction(actionID++, turnRight) && ret;              // 16
+    ret = actions.registerInputAction(actionID++, stopTurnLeftRight) && ret;      // 17
+    ret = actions.registerInputAction(actionID++, turnUp) && ret;                 // 18
+    ret = actions.registerInputAction(actionID++, turnDown) && ret;               // 19
+    ret = actions.registerInputAction(actionID++, stopTurnUpDown) && ret;         // 20
+    ret = actions.registerInputAction(actionID++, togglePauseState) && ret;       // 21
+    ret = actions.registerInputAction(actionID++, takeScreenShot) && ret;         // 22
+    ret = actions.registerInputAction(actionID++, toggleFullScreen) && ret;       // 23
+    ret = actions.registerInputAction(actionID++, toggleFlashLight) && ret;       // 24
+    ret = actions.registerInputAction(actionID++, lockCameraToMouse) && ret;      // 25
+    ret = actions.registerInputAction(actionID++, releaseCameraFromMouse) && ret; // 26
+    ret = actions.registerInputAction(actionID++, shutdown) && ret;               // 27
+    ret = actions.registerInputAction(actionID++, povNavigation) && ret;          // 28
+    ret = actions.registerInputAction(actionID++, axisNavigation) && ret;         // 29
+    ret = actions.registerInputAction(actionID++, toggleDebugInterface) && ret;   // 30
+    ret = actions.registerInputAction(actionID++, toggleEditor) && ret;           // 31
+    ret = actions.registerInputAction(actionID++, toggleConsole) && ret;          // 32
+    ret = actions.registerInputAction(actionID++, dragSelectBegin) && ret;        // 33
+    ret = actions.registerInputAction(actionID++, dragSelectEnd) && ret;          // 34
+
+    if (!ret) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 
     return actionID;
 }
@@ -1205,7 +1210,7 @@ void Scene::addPlayerInternal(const bool queue) {
 
         SceneGraphNodeDescriptor playerNodeDescriptor;
         playerNodeDescriptor._serialize = false;
-        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(GUIDWrapper::generateGUID() + _parent.getActivePlayerCount()), playerName, ResourcePath{ playerName }, ResourcePath{}, SceneNodeType::TYPE_TRANSFORM, 0u);
+        playerNodeDescriptor._node = std::make_shared<SceneNode>(_resCache, to_size(generateGUID() + _parent.getActivePlayerCount()), playerName, ResourcePath{ playerName }, ResourcePath{}, SceneNodeType::TYPE_TRANSFORM, 0u);
         playerNodeDescriptor._name = playerName;
         playerNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
         playerNodeDescriptor._componentMask = to_base(ComponentType::UNIT) |
@@ -1384,7 +1389,7 @@ void Scene::removeTask(Task& task) {
     UniqueLock<SharedMutex> w_lock(_tasksMutex);
     for (vectorEASTL<Task*>::iterator it = begin(_tasks); it != end(_tasks); ++it) {
         if ((*it)->_id == task._id) {
-            Wait(*(*it));
+            Wait(**it);
             _tasks.erase(it);
             return;
         }
@@ -1522,7 +1527,7 @@ bool Scene::checkCameraUnderwater(const Camera& camera) const {
             if (eyePos.x >= -halfWidth && eyePos.x <= halfWidth &&
                 eyePos.z >= -halfLength && eyePos.z <= halfLength) {
                 const float depth = -extents.y + position.y;
-                return (eyePos.y < position.y && eyePos.y > depth);
+                return eyePos.y < position.y && eyePos.y > depth;
             }
         }
     }
@@ -1577,7 +1582,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             if (sType == SceneNodeType::TYPE_OBJECT3D) {
                 const ObjectType oType = sgn->getNode<Object3D>().getObjectType();
 
-                if ((!inEditMode && oType._value == ObjectType::SUBMESH) ||
+                if (!inEditMode && oType._value == ObjectType::SUBMESH ||
                     oType._value == ObjectType::TERRAIN) {
                     sType = SceneNodeType::COUNT;
                 } else if (sgn->parent() != nullptr) {
@@ -1594,11 +1599,11 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
         };
 
         // If we don't force selections, remove all of the nodes that lack a SelectionComponent
-        eastl::sort(eastl::begin(_sceneSelectionCandidates),
-            eastl::end(_sceneSelectionCandidates),
-            [](const SGNRayResult& A, const SGNRayResult& B) noexcept -> bool {
-            return A.dist < B.dist;
-        });
+        eastl::sort(begin(_sceneSelectionCandidates),
+                    end(_sceneSelectionCandidates),
+                    [](const SGNRayResult& A, const SGNRayResult& B) noexcept -> bool {
+                        return A.dist < B.dist;
+                    });
 
         SceneGraphNode* target = nullptr;
         for (const SGNRayResult& result : _sceneSelectionCandidates) {
@@ -1910,4 +1915,4 @@ Camera* Scene::playerCamera(U8 index) const {
     return Attorney::SceneManagerCameraAccessor::playerCamera(_parent, index);
 }
 
-};
+}

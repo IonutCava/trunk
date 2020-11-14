@@ -28,7 +28,7 @@ TEST(HashCombineResourceDescriptors)
     ResourceDescriptor inputB("testDescriptor");
     inputB.flag(true);
 
-    size_t result1 = inputA.getHash();
+    const size_t result1 = inputA.getHash();
     size_t result2 = inputB.getHash();
 
     CHECK_EQUAL(result1, result2);
@@ -42,4 +42,4 @@ TEST(HashCombineResourceDescriptors)
     CHECK_NOT_EQUAL(result1, result2);
 }
 
-}; //namespace Divide
+} //namespace Divide

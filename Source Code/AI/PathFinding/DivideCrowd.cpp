@@ -10,30 +10,22 @@ namespace AI {
 namespace Navigation {
 
 DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
-    : _crowd(nullptr), _recast(navMesh), _targetRef(0), _activeAgents(0) {
+    : _recast(navMesh)
+{
     assert(_recast);
     _crowd = dtAllocCrowd();
     if (!_crowd) {
         Console::errorfn(Locale::get(_ID("ERROR_DETOUR_CROWD_INSTANCE")));
         assert(_crowd != nullptr);
     }
-    _targetPos[0] = _targetPos[1] = _targetPos[2] = 0.0f;
-    // Set default agent parameters
-    _anticipateTurns = true;
-    _optimizeVis = true;
-    _optimizeTopo = true;
-    _obstacleAvoidance = true;
-    _separation = false;
-    _obstacleAvoidanceType = 3.0f;
-    _separationWeight = 2.0f;
 
-    memset(_trails, 0, sizeof(_trails));
+    memset(_trails, 0, sizeof _trails);
 
     _vod = dtAllocObstacleAvoidanceDebugData();
     assert(_vod != nullptr);
     _vod->init(2048);
 
-    memset(&_agentDebug, 0, sizeof(_agentDebug));
+    memset(&_agentDebug, 0, sizeof _agentDebug);
     _agentDebug.idx = -1;
     _agentDebug.vod = _vod;
 
@@ -54,8 +46,7 @@ DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
         // Setup local avoidance params to different qualities.
         dtObstacleAvoidanceParams params;
         // Use mostly default settings, copy from dtCrowd.
-        memcpy(&params, crowd->getObstacleAvoidanceParams(0),
-               sizeof(dtObstacleAvoidanceParams));
+        memcpy(&params, crowd->getObstacleAvoidanceParams(0), sizeof(dtObstacleAvoidanceParams));
         // Low (11)
         params.velBias = 0.5f;
         params.adaptiveDivs = 5;
@@ -112,11 +103,10 @@ void DivideDtCrowd::update(const U64 deltaTimeUS) {
     // 1000.0f);
 }
 
-I32 DivideDtCrowd::addAgent(const vec3<F32>& position, F32 maxSpeed,
-                            F32 acceleration) {
+I32 DivideDtCrowd::addAgent(const vec3<F32>& position, const F32 maxSpeed, const F32 acceleration) {
     // Define parameters for agent in crowd
     dtCrowdAgentParams ap;
-    memset(&ap, 0, sizeof(ap));
+    memset(&ap, 0, sizeof ap);
     ap.radius = to_F32(getAgentRadius());
     ap.height = to_F32(getAgentHeight());
     ap.maxAcceleration = acceleration;
@@ -133,7 +123,7 @@ I32 DivideDtCrowd::addAgent(const vec3<F32>& position, F32 maxSpeed,
     ap.obstacleAvoidanceType = (U8)_obstacleAvoidanceType;
     ap.separationWeight = _separationWeight;
     const F32* p = &position.x;
-    I32 idx = _crowd->addAgent(p, &ap);
+    const I32 idx = _crowd->addAgent(p, &ap);
     if (idx != -1) {
         // If a move target is defined: move agent towards it
         // TODO: do we want to set newly added agent's destination to previously
@@ -152,49 +142,52 @@ I32 DivideDtCrowd::addAgent(const vec3<F32>& position, F32 maxSpeed,
     return idx;
 }
 
-vectorEASTL<dtCrowdAgent*> DivideDtCrowd::getActiveAgents() {
+vectorEASTL<dtCrowdAgent*> DivideDtCrowd::getActiveAgents() const
+{
     dtCrowdAgent** resultEntries = MemoryManager_NEW dtCrowdAgent * [getMaxNbAgents()];
-    I32 size = _crowd->getActiveAgents(resultEntries, getMaxNbAgents());
+    const I32 size = _crowd->getActiveAgents(resultEntries, getMaxNbAgents());
 
     vectorEASTL<dtCrowdAgent*> result(resultEntries, resultEntries + size);
     MemoryManager::DELETE_ARRAY(resultEntries);
     return result;
 }
 
-vectorEASTL<I32> DivideDtCrowd::getActiveAgentIDs() {
+vectorEASTL<I32> DivideDtCrowd::getActiveAgentIDs() const
+{
     vectorEASTL<I32> result;
     result.reserve(getMaxNbAgents());
-    const dtCrowdAgent* agent = nullptr;
+
     for (I32 i = 0; i < getMaxNbAgents(); i++) {
-        agent = _crowd->getAgent(i);
-        if (agent->active) result.push_back(i);
+        const dtCrowdAgent* agent = _crowd->getAgent(i);
+        if (agent->active) {
+            result.push_back(i);
+        }
     }
 
     return result;
 }
 
-void DivideDtCrowd::removeAgent(const I32 ID) {
-    _crowd->removeAgent(ID);
+void DivideDtCrowd::removeAgent(const I32 idx) {
+    _crowd->removeAgent(idx);
     _activeAgents--;
 }
 
 vec3<F32> DivideDtCrowd::calcVel(const vec3<F32>& position,
                                  const vec3<F32>& target,
-                                 D64 speed) {
+                                 const D64 speed) {
     vec3<F32> res;
     calcVel(res._v, &position.x, &target.x, to_F32(speed));
     return res;
 }
 
-void DivideDtCrowd::calcVel(F32* velocity, const F32* position,
-                            const F32* target, const F32 speed) {
+void DivideDtCrowd::calcVel(F32* velocity, const F32* position, const F32* target, const F32 speed) {
     dtVsub(velocity, target, position);
     velocity[1] = 0.0;
     dtVnormalize(velocity);
     dtVscale(velocity, velocity, speed);
 }
 
-void DivideDtCrowd::setMoveTarget(const vec3<F32>& position, bool adjust) {
+void DivideDtCrowd::setMoveTarget(const vec3<F32>& position, const bool adjust) {
     // Find nearest point on navmesh and set move request to that location.
     const dtNavMeshQuery& navquery = _recast->getNavQuery();
 
@@ -222,8 +215,7 @@ void DivideDtCrowd::setMoveTarget(const vec3<F32>& position, bool adjust) {
     }
 }
 
-void DivideDtCrowd::setMoveTarget(I32 agentID, const vec3<F32>& position,
-                                  bool adjust) {
+void DivideDtCrowd::setMoveTarget(const I32 agentID, const vec3<F32>& position, const bool adjust) {
     // TODO extract common method
     // Find nearest point on navmesh and set move request to that location.
     const dtNavMeshQuery& navquery = _recast->getNavQuery();
@@ -243,20 +235,21 @@ void DivideDtCrowd::setMoveTarget(I32 agentID, const vec3<F32>& position,
     }
 }
 
-bool DivideDtCrowd::requestVelocity(I32 agentID, const vec3<F32>& velocity) {
-    if (!getAgent(agentID)->active) return false;
+bool DivideDtCrowd::requestVelocity(I32 agentID, const vec3<F32>& velocity) const {
+    if (!getAgent(agentID)->active) {
+        return false;
+    }
 
     return _crowd->requestMoveVelocity(agentID, &velocity.x);
 }
 
-bool DivideDtCrowd::stopAgent(I32 agentID) {
+bool DivideDtCrowd::stopAgent(const I32 agentID) const {
     F32 zeroVel[] = {0, 0, 0};
     return _crowd->resetMoveTarget(agentID) &&
            _crowd->requestMoveVelocity(agentID, zeroVel);
 }
 
-F32 DivideDtCrowd::getDistanceToGoal(const dtCrowdAgent* agent,
-                                     const F32 maxRange) {
+F32 DivideDtCrowd::getDistanceToGoal(const dtCrowdAgent* agent, const F32 maxRange) {
     if (!agent || !agent->ncorners || agent->ncorners < 0) return maxRange;
 
     if (agent->cornerFlags[agent->ncorners - 1] & DT_STRAIGHTPATH_END)
@@ -267,15 +260,13 @@ F32 DivideDtCrowd::getDistanceToGoal(const dtCrowdAgent* agent,
     return maxRange;
 }
 
-bool DivideDtCrowd::destinationReached(const dtCrowdAgent* agent,
-                                       const F32 maxDistanceFromTarget) {
-    return getDistanceToGoal(agent, maxDistanceFromTarget) <
-           maxDistanceFromTarget;
+bool DivideDtCrowd::destinationReached(const dtCrowdAgent* agent, const F32 maxDistanceFromTarget) {
+    return getDistanceToGoal(agent, maxDistanceFromTarget) < maxDistanceFromTarget;
 }
 
 bool DivideDtCrowd::isValidNavMesh() const {
     return _recast->getNavQuery().getAttachedNavMesh() != nullptr;
 }
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide

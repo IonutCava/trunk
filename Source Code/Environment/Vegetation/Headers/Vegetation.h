@@ -49,7 +49,7 @@ namespace eastl {
             return h;
         }
     };
-};
+}
 
 namespace Divide {
 
@@ -93,7 +93,7 @@ struct VegetationData {
 
 /// Generates grass on the terrain.
 /// Grass VB's + all resources are stored locally in the class.
-class Vegetation : public SceneNode {
+class Vegetation final : public SceneNode {
    public:
     explicit Vegetation(GFXDevice& context, TerrainChunk& parentChunk, const VegetationDetails& details);
     ~Vegetation();
@@ -101,7 +101,7 @@ class Vegetation : public SceneNode {
     void buildDrawCommands(SceneGraphNode* sgn,
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
-                           RenderPackage& pkgInOut) final;
+                           RenderPackage& pkgInOut) override;
 
     void getStats(U32& maxGrassInstances, U32& maxTreeInstances) const;
 
@@ -115,26 +115,25 @@ class Vegetation : public SceneNode {
 
     void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
-                     SceneState& sceneState) final;
+                     SceneState& sceneState) override;
 
     void occlusionCull(const RenderStagePass& stagePass,
                        const Texture_ptr& depthBuffer,
                        const Camera& camera,
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
-                       GFX::CommandBuffer& bufferInOut) const final;
+                       GFX::CommandBuffer& bufferInOut) const override;
    private:
     void uploadVegetationData(SceneGraphNode* sgn);
-    void computeVegetationTransforms(const Task& parentTask, bool treeData);
+    void computeVegetationTransforms(bool treeData);
 
-    const char* getResourceTypeName() const noexcept final { return "Vegetation"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept final { return "Vegetation"; }
 
    private:
     GFXDevice& _context;
     TerrainChunk& _terrainChunk;
     // variables
     Terrain_wptr _terrain;
-    U16 _billboardCount = 0u;  ///< Vegetation cumulated density
-    F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f, _time = 0.0f;
+    F32 _windX = 0.0f, _windZ = 0.0f, _windS = 0.0f;
     U64 _stateRefreshIntervalUS = Time::SecondsToMicroseconds(1);
     U64 _stateRefreshIntervalBufferUS = 0ULL;
     vec4<F32> _grassScales = VECTOR4_UNIT;
@@ -149,7 +148,6 @@ class Vegetation : public SceneNode {
     SceneGraphNode* _treeParentNode = nullptr;
     PushConstants _cullPushConstants;
 
-    bool _shadowMapped = true;
     U32 _instanceCountGrass = 0u;
     U32 _instanceCountTrees = 0u;
     F32 _grassDistance = -1.0f;
@@ -184,6 +182,6 @@ class Vegetation : public SceneNode {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Vegetation);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

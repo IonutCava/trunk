@@ -80,7 +80,7 @@ class Resource : public GUIDWrapper
 
    protected:
     virtual void setState(ResourceState currentState) noexcept;
-    virtual const char* getResourceTypeName() const noexcept { return "Resource"; }
+    [[nodiscard]] virtual const char* getResourceTypeName() const noexcept { return "Resource"; }
 
    protected:
     std::atomic<ResourceState> _resourceState;
@@ -105,8 +105,8 @@ public:
     explicit CachedResource(ResourceType type,
                             size_t descriptorHash,
                             const Str256& resourceName,
-                            const ResourcePath& assetName,
-                            const ResourcePath& assetLocation);
+                            ResourcePath assetName,
+                            ResourcePath assetLocation);
 
     /// Loading and unloading interface
     virtual bool load();
@@ -116,8 +116,8 @@ public:
     void addStateCallback(ResourceState targetState, const DELEGATE<void, CachedResource*>& cbk);
 
 protected:
-    void setState(ResourceState currentState) noexcept override;
-    const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
+    void setState(ResourceState currentState) noexcept final;
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Cached Resource"; }
     void flushStateCallbacks();
 
 protected:
@@ -144,6 +144,6 @@ struct TerrainInfo {
 
 FWD_DECLARE_MANAGED_CLASS(Resource);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

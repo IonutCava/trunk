@@ -11,14 +11,14 @@ namespace Divide {
 
 /// ------------------------------------------------------------------------------------------------
 /// Calculates the global transformation matrix for the given internal node
-void calculateBoneToWorldTransform(Bone* child) {
-    child->_globalTransform = child->_localTransform;
-    Bone* parent = child->_parent;
+void calculateBoneToWorldTransform(Bone* pInternalNode) {
+    pInternalNode->_globalTransform = pInternalNode->_localTransform;
+    Bone* parent = pInternalNode->_parent;
     // This will climb the nodes up along through the parents concatenating all
     // the matrices to get the Object to World transform,
     // or in this case, the Bone To World transform
     while (parent) {
-        child->_globalTransform *= parent->_localTransform;
+        pInternalNode->_globalTransform *= parent->_localTransform;
         // get the parent of the bone we are working on
         parent = parent->_parent;
     }
@@ -111,7 +111,7 @@ bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const v
 void SceneAnimator::calculate(I32 animationIndex, const D64 pTime) {
     assert(_skeleton != nullptr);
 
-    if ((animationIndex < 0) || (animationIndex >= (I32)_animations.size())) {
+    if (animationIndex < 0 || animationIndex >= (I32)_animations.size()) {
         return;  // invalid animation
     }
     _animations[animationIndex]->evaluate(pTime, _skeleton);
@@ -128,14 +128,14 @@ void SceneAnimator::updateTransforms(Bone* pNode) {
     }
 }
 
-Bone* SceneAnimator::boneByName(const stringImpl& bname) const {
+Bone* SceneAnimator::boneByName(const stringImpl& name) const {
     assert(_skeleton != nullptr);
 
-    return _skeleton->find(bname);
+    return _skeleton->find(name);
 }
 
-I32 SceneAnimator::boneIndex(const stringImpl& bname) const {
-    Bone* bone = boneByName(bname);
+I32 SceneAnimator::boneIndex(const stringImpl& bName) const {
+    Bone* bone = boneByName(bName);
 
     if (bone != nullptr) {
         return bone->_boneID;

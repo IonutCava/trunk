@@ -103,7 +103,7 @@ class DivideRecast;
 
 namespace Attorney {
     class NavigationMeshCrowd;
-};
+}
 
 class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,public SceneObject */ {
     friend class Attorney::NavigationMeshCrowd;
@@ -120,7 +120,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
    public:
     using CreationCallback = DELEGATE<void, NavigationMesh*>;
 
-    inline void setFileName(const Str256& fileName) {
+    void setFileName(const Str256& fileName) {
         _fileName.append(fileName);
     }
     /// Initiates the NavigationMesh build process, which includes notifying the
@@ -134,15 +134,15 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     bool unload();
     /// Render the debug mesh if debug drawing is enabled
     GFX::CommandBuffer& draw(bool force);
-    inline void debugDraw(bool state) { _debugDraw = state; }
-    inline bool debugDraw() const { return _debugDraw; }
+    void debugDraw(bool state) { _debugDraw = state; }
+    bool debugDraw() const { return _debugDraw; }
 
-    inline void setRenderMode(const RenderMode& mode) { _renderMode = mode; }
-    inline void setRenderConnections(bool state) { _renderConnections = state; }
+    void setRenderMode(const RenderMode& mode) { _renderMode = mode; }
+    void setRenderConnections(bool state) { _renderConnections = state; }
 
-    inline const vec3<F32>& getExtents() const { return _extents; }
+    const vec3<F32>& getExtents() const { return _extents; }
 
-    inline const dtNavMeshQuery& getNavQuery() const { return *_navQuery; }
+    const dtNavMeshQuery& getNavQuery() const { return *_navQuery; }
 
     bool getRandomPosition(vec3<F32>& result) const;
 
@@ -166,7 +166,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// calls to this method properly!
     bool buildProcess();
     /// Used for multithreaded loading
-    void buildInternal(const Task& parentTask);
+    void buildInternal();
     /// Generates a navigation mesh for the collection of objects in this
     /// mesh. Returns true if successful. Stores the created mesh in tnm.
     bool generateMesh();
@@ -182,7 +182,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// Create a unique mesh name using the given root node
     Str128 generateMeshName(SceneGraphNode* sgn);
    private:
-    bool _saveIntermediates;
+    bool _saveIntermediates = false;
     NavigationMeshConfig _configParams;
     /// @name NavigationMesh build
     /// @{
@@ -203,7 +203,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// @}
 
     /// A thread for us to update in.
-    I64 _buildJobGUID;
+    I64 _buildJobGUID = -1;
     /// A mutex for accessing our actual NavigationMesh.
     Mutex _navigationMeshLock;
     /// A simple flag to say we are building.
@@ -233,18 +233,17 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
 
 namespace Attorney {
 class NavigationMeshCrowd {
-   private:
     static dtNavMesh* getNavigationMesh(NavigationMesh& navMesh) {
         return navMesh._navMesh;
     }
     static const NavigationMeshConfig& getConfigParams( NavigationMesh& navMesh) {
         return navMesh._configParams;
     }
-    friend class Divide::AI::Navigation::DivideDtCrowd;
+    friend class Navigation::DivideDtCrowd;
 };
-};  // namespace Attorney
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide
 
 #endif

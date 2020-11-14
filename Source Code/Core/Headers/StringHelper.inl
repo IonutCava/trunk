@@ -48,7 +48,7 @@ Split(const char* input, const char delimiter, T_vec& elems) {
         {
             size_t i;
             const char* o = input;
-            for (i = 0; input[i]; input[i] == delimiter ? i++ : *(input++)) {
+            for (i = 0; input[i]; input[i] == delimiter ? i++ : *input++) {
                 NOP();
             }
             elems.resize(i + 1);
@@ -227,8 +227,9 @@ inline bool CompareIgnoreCase(const char* a, const char* b) noexcept {
 inline bool CompareIgnoreCase(const char* a, const std::string_view b) noexcept {
     if (a != nullptr && !b.empty()) {
         return strncasecmp(a, b.data(), b.length()) == 0;
-    } else if (b.empty()) {
-        return Util::IsEmptyOrNull(a);
+    }
+    if (b.empty()) {
+        return IsEmptyOrNull(a);
     }
 
     return false;
@@ -238,8 +239,9 @@ template<typename T_strA>
 bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
     if (b != nullptr && !a.empty()) {
         return CompareIgnoreCase(a.c_str(), b);
-    } else if (a.empty()) {
-        return Util::IsEmptyOrNull(b);
+    }
+    if (a.empty()) {
+        return IsEmptyOrNull(b);
     }
     return false;
 }
@@ -278,7 +280,7 @@ inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) 
 }
 
 template<typename T_strA, typename T_strB>
-inline bool CompareIgnoreCase(const T_strA& a, const T_strB& b) noexcept {
+bool CompareIgnoreCase(const T_strA& a, const T_strB& b) noexcept {
     return CompareIgnoreCase(a.c_str(), b.c_str());
 }
 
@@ -289,13 +291,13 @@ U32 LineCount(const T_str& str) {
 
 /// http://stackoverflow.com/questions/216823/whats-the-best-way-to-trim-stdstring
 template<typename T_str>
-inline T_str Ltrim(const T_str& s) {
+T_str Ltrim(const T_str& s) {
     T_str temp(s);
     return Ltrim(temp);
 }
 
 template<typename T_str>
-inline T_str& Ltrim(T_str& s) {
+T_str& Ltrim(T_str& s) {
     s.erase(eastl::begin(s),
             eastl::find_if(eastl::begin(s),
                          eastl::end(s),
@@ -334,6 +336,6 @@ stringImpl to_string(T value) {
     return fmt::format("{}", value);
 }
 
-}; //namespace Util
-}; //namespace Divide
+} //namespace Util
+} //namespace Divide
 #endif //_CORE_STRING_HELPER_INL_

@@ -71,7 +71,7 @@ namespace Divide {
         auto iterBegin = _container->begin();
         auto iterEnd = _container->end();
         for (size_t idx = 0; iterBegin != iterEnd; ++iterBegin, ++idx) {
-            _componentCache[idx] = &(*iterBegin);
+            _componentCache[idx] = &*iterBegin;
         }
 
         for (U* comp : _componentCache) {
@@ -100,5 +100,5 @@ namespace Divide {
             comp->PostUpdate(microSec);
         }
     }
-};
+}
 #endif //_ECS_SYSTEM_INL_

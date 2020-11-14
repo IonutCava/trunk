@@ -28,4 +28,4 @@ namespace Divide {
 
         return Super::loadCache(sgn, inputBuffer);
     }
-}; //namespace Divide
+} //namespace Divide

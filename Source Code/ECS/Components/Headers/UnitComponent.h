@@ -44,10 +44,10 @@ public:
     ~UnitComponent() = default;
 
     // This call will take ownership of the specified pointer!
-    bool setUnit(Unit_ptr unit);
+    bool setUnit(const Unit_ptr& unit);
 
     template <typename T = Unit>
-    inline std::shared_ptr<T> getUnit() const {
+    std::shared_ptr<T> getUnit() const {
         static_assert(std::is_base_of<Unit, T>::value,
             "UnitComponent::getUnit error: Invalid target unit type!");
         return std::static_pointer_cast<T>(_unit);
@@ -58,6 +58,6 @@ private:
 };
 
 INIT_COMPONENT(UnitComponent);
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_UNIT_COMPONENT_H_

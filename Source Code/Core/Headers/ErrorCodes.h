@@ -66,6 +66,6 @@ namespace Divide {
         PLATFORM_CLOSE_ERROR = -28,
         EDITOR_INIT_ERROR = -29
     };
-};
+}
 
 #endif //_CORE_ERROR_CODES_H_

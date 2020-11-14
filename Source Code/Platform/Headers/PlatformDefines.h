@@ -145,11 +145,11 @@ constexpr U64 val_64_const = 0xcbf29ce484222325;
 constexpr U64 prime_64_const = 0x100000001b3;
 
 constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcept {
-    return (str[0] == '\0') ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
+    return str[0] == '\0' ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
 }
 
 constexpr U64 _ID_VIEW(const char* const str, const size_t len, const U64 value = val_64_const) noexcept {
-    return (len == 0) ? value : _ID_VIEW(&str[1], len - 1, (value ^ U64(str[0])) * prime_64_const);
+    return len == 0 ? value : _ID_VIEW(&str[1], len - 1, (value ^ U64(str[0])) * prime_64_const);
 }
 
 constexpr U64 operator ""_id(const char* str, const size_t len) {
@@ -362,7 +362,7 @@ inline bool AlmostEqualUlpsAndAbs(const F32 A, const F32 B, const F32 maxDiff, c
     }
 
     // Find the difference in ULPs.
-    return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
+    return std::abs(uA.i - uB.i) <= maxUlpsDiff;
 }
 
 inline bool AlmostEqualUlpsAndAbs(const D64 A, const D64 B, const D64 maxDiff, const I32 maxUlpsDiff) noexcept {
@@ -381,7 +381,7 @@ inline bool AlmostEqualUlpsAndAbs(const D64 A, const D64 B, const D64 maxDiff, c
     }
 
     // Find the difference in ULPs.
-    return (std::abs(uA.i - uB.i) <= maxUlpsDiff);
+    return std::abs(uA.i - uB.i) <= maxUlpsDiff;
 }
 
 inline bool AlmostEqualRelativeAndAbs(const F32 A, const F32 B, const F32 maxDiff, const F32 maxRelDiff)  noexcept {
@@ -392,7 +392,7 @@ inline bool AlmostEqualRelativeAndAbs(const F32 A, const F32 B, const F32 maxDif
     }
 
     const F32 largest = std::max(std::abs(A), std::abs(B));
-    return (diff <= largest * maxRelDiff);
+    return diff <= largest * maxRelDiff;
 }
 
 inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, const D64 maxDiff, const D64 maxRelDiff) noexcept {
@@ -404,9 +404,9 @@ inline bool AlmostEqualRelativeAndAbs(D64 A, D64 B, const D64 maxDiff, const D64
 
     A = std::abs(A);
     B = std::abs(B);
-    const D64 largest = (B > A) ? B : A;
+    const D64 largest = B > A ? B : A;
 
-    return (diff <= largest * maxRelDiff);
+    return diff <= largest * maxRelDiff;
 }
 
 constexpr void NOP() noexcept {
@@ -521,16 +521,16 @@ bool IS_ZERO(const T X) noexcept {
 
 template <>
 inline bool IS_ZERO(const F32 X) noexcept {
-    return (abs(X) < EPSILON_F32);
+    return abs(X) < EPSILON_F32;
 }
 template <>
 inline bool IS_ZERO(const D64 X) noexcept {
-    return (abs(X) < EPSILON_D64);
+    return abs(X) < EPSILON_D64;
 }
 
 template <typename T>
 bool IS_TOLERANCE(const T X, const T TOLERANCE) noexcept {
-    return (abs(X) <= TOLERANCE);
+    return abs(X) <= TOLERANCE;
 }
 
 template<typename T, typename U = T>
@@ -655,7 +655,7 @@ struct safe_static_cast_helper<true, true>
 
 
 template <typename TO, typename FROM>
-inline TO safe_static_cast(FROM from)
+TO safe_static_cast(FROM from)
 {
 #if defined(_DEBUG)
     // delegate the call to the proper helper class, depending on the signedness of both types

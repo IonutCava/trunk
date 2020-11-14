@@ -37,7 +37,7 @@
 
 namespace Divide {
 
-class Box3D : public Object3D {
+class Box3D final : public Object3D {
    public:
    explicit Box3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const vec3<F32>& size);
 
@@ -51,7 +51,7 @@ class Box3D : public Object3D {
    void saveToXML(boost::property_tree::ptree& pt) const override;
    void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
-   const char* getResourceTypeName() const noexcept override { return "Box3D"; }
+   [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Box3D"; }
 
    private:
       vec3<F32> _halfExtent;

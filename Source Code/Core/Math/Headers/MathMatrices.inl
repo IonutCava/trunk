@@ -38,7 +38,7 @@ namespace Divide {
 #endif
 
 template<typename T1, typename T2, typename T3, typename T4>
-constexpr auto MakeShuffleMask(T1 x, T2 y, T3 z, T4 w) { return (x | (y<<2) | (z<<4) | (w<<6)); }
+constexpr auto MakeShuffleMask(T1 x, T2 y, T3 z, T4 w) { return x | y<<2 | z<<4 | w<<6; }
 
     // vec(0, 1, 2, 3) -> (vec[x], vec[y], vec[z], vec[w])
 #define VecSwizzle(vec, x,y,z,w)           _mm_shuffle_ps(vec, vec, MakeShuffleMask(x,y,z,w))
@@ -252,8 +252,7 @@ namespace AVX {
         r._reg[2]._reg = VecShuffle(Y_, W_, 3, 1, 3, 1);
         r._reg[3]._reg = VecShuffle(Y_, W_, 2, 0, 2, 0);
     }
-
-};
+}
 
 template<typename T>
 void GetInverse(const mat4<T>& inM, mat4<T>& r) noexcept
@@ -428,25 +427,25 @@ mat2<T>& mat2<T>::operator-=(const mat2<U> &B) noexcept {
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator*(U f) const noexcept {
-    return (mat2(*this) *= f);
+    return mat2(*this) *= f;
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator/(U f) const {
-    return (mat2(*this) /= f);
+    return mat2(*this) /= f;
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator+(U f) const noexcept {
-    return (mat2(*this) += f);
+    return mat2(*this) += f;
 }
 
 template<typename T>
 template<typename U>
 mat2<T> mat2<T>::operator-(U f) const noexcept {
-    return (mat2(*this) -= f);
+    return mat2(*this) -= f;
 }
 
 template<typename T>
@@ -680,8 +679,8 @@ void mat2<T>::identity() noexcept {
 
 template<typename T>
 bool mat2<T>::isIdentity() const noexcept {
-    return (COMPARE(mat[0], 1) && IS_ZERO(mat[1]) &&
-            IS_ZERO(mat[2])    && COMPARE(mat[3], 1));
+    return COMPARE(mat[0], 1) && IS_ZERO(mat[1]) &&
+        IS_ZERO(mat[2])    && COMPARE(mat[3], 1);
 }
 
 template<typename T>
@@ -695,7 +694,7 @@ void mat2<T>::swap(mat2 &B) noexcept {
 
 template<typename T>
 T mat2<T>::det() const noexcept {
-    return (mat[0] * mat[3] - mat[1] * mat[2]);
+    return mat[0] * mat[3] - mat[1] * mat[2];
 }
 
 template<typename T>
@@ -812,7 +811,7 @@ template<typename U>
 mat3<T>::mat3(const mat2<U> &B, bool zeroFill) noexcept
     : mat3(B[0], B[1], 0,
            B[2], B[3], 0,
-           0,    0,    (zeroFill ? 0 : 1))
+           0,    0,    zeroFill ? 0 : 1)
 {
 }
 
@@ -942,25 +941,25 @@ mat3<T>& mat3<T>::operator-=(const mat3<U> &B) noexcept {
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator*(U f) const noexcept {
-    return (mat3(*this) *= f);
+    return mat3(*this) *= f;
 }
 
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator/(U f) const {
-    return (mat3(*this) /= f);
+    return mat3(*this) /= f;
 }
 
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator+(U f) const noexcept {
-    return (mat3(*this) += f);
+    return mat3(*this) += f;
 }
 
 template<typename T>
 template<typename U>
 mat3<T> mat3<T>::operator-(U f) const noexcept {
-    return (mat3(*this) -= f);
+    return mat3(*this) -= f;
 }
 
 template<typename T>
@@ -1209,9 +1208,9 @@ void mat3<T>::identity() noexcept {
 
 template<typename T>
 bool mat3<T>::isIdentity() const noexcept {
-    return (COMPARE(mat[0], 1) && IS_ZERO(mat[1])    && IS_ZERO(mat[2]) &&
-            IS_ZERO(mat[3])    && COMPARE(mat[4], 1) && IS_ZERO(mat[5]) &&
-            IS_ZERO(mat[6])    && IS_ZERO(mat[7])    && COMPARE(mat[8], 1));
+    return COMPARE(mat[0], 1) && IS_ZERO(mat[1])    && IS_ZERO(mat[2]) &&
+        IS_ZERO(mat[3])    && COMPARE(mat[4], 1) && IS_ZERO(mat[5]) &&
+        IS_ZERO(mat[6])    && IS_ZERO(mat[7])    && COMPARE(mat[8], 1);
 }
 
 template<typename T>
@@ -1231,12 +1230,12 @@ void mat3<T>::swap(mat3 &B) noexcept {
 
 template<typename T>
 T mat3<T>::det() const noexcept {
-    return ((mat[0] * mat[4] * mat[8]) +
-            (mat[3] * mat[7] * mat[2]) +
-            (mat[6] * mat[1] * mat[5]) -
-            (mat[6] * mat[4] * mat[2]) -
-            (mat[3] * mat[1] * mat[8]) -
-            (mat[0] * mat[7] * mat[5]));
+    return mat[0] * mat[4] * mat[8] +
+        mat[3] * mat[7] * mat[2] +
+        mat[6] * mat[1] * mat[5] -
+        mat[6] * mat[4] * mat[2] -
+        mat[3] * mat[1] * mat[8] -
+        mat[0] * mat[7] * mat[5];
 }
 
 template<typename T>
@@ -1329,7 +1328,7 @@ template<typename U>
 void mat3<T>::fromRotation(U x, U y, U z, Angle::RADIANS<U> angle) {
     U c = std::cos(angle);
     U s = std::sin(angle);
-    U l = static_cast<U>(Divide::Sqrt(static_cast<D64>(x * x + y * y + z * z)));
+    U l = static_cast<U>(Sqrt(static_cast<D64>(x * x + y * y + z * z)));
 
     l = l < EPSILON_F32 ? 1 : 1 / l;
     x *= l;
@@ -1623,13 +1622,13 @@ mat4<T> mat4<T>::operator/(const mat4<U>& matrix) const {
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator+(const mat4<U> &matrix) const noexcept {
-    return (mat4(*this) += matrix);
+    return mat4(*this) += matrix;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator-(const mat4<U> &matrix) const noexcept {
-    return (mat4(*this) -= matrix);
+    return mat4(*this) -= matrix;
 }
 
 template<typename T>
@@ -1668,25 +1667,25 @@ mat4<T>& mat4<T>::operator-=(const mat4<U> &matrix) noexcept {
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator*(U f) const noexcept {
-    return (mat4(*this) *= f);
+    return mat4(*this) *= f;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator/(U f) const {
-    return (mat4(*this) /= f);
+    return mat4(*this) /= f;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator+(U f) const noexcept {
-    return (mat4(*this) += f);
+    return mat4(*this) += f;
 }
 
 template<typename T>
 template<typename U>
 mat4<T> mat4<T>::operator-(U f) const noexcept {
-    return (mat4(*this) -= f);
+    return mat4(*this) -= f;
 }
 
 template<typename T>
@@ -1889,7 +1888,7 @@ void mat4<T>::set(const mat4<U> &matrix) noexcept {
 
 template<typename T>
 template<typename U>
-inline void mat4<T>::set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept {
+void mat4<T>::set(const vec3<U> &translation, const vec3<U> &scale, const mat4<U>& rotation) noexcept {
     set(scale.x,           static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
         static_cast<U>(0), scale.y,           static_cast<U>(0), static_cast<U>(0),
         static_cast<U>(0), static_cast<U>(0), scale.z,           static_cast<U>(0),
@@ -2008,9 +2007,9 @@ void mat4<T>::swap(mat4 &B) noexcept {
 
 template<typename T>
 T mat4<T>::det() const noexcept {
-    return ((mat[0] * mat[5] * mat[10]) + (mat[4] * mat[9] * mat[2]) +
-            (mat[8] * mat[1] * mat[6])  - (mat[8] * mat[5] * mat[2]) -
-            (mat[4] * mat[1] * mat[10]) - (mat[0] * mat[9] * mat[6]));
+    return mat[0] * mat[5] * mat[10] + mat[4] * mat[9] * mat[2] +
+        mat[8] * mat[1] * mat[6]  - mat[8] * mat[5] * mat[2] -
+        mat[4] * mat[1] * mat[10] - mat[0] * mat[9] * mat[6];
 }
 
 template<typename T>
@@ -2412,10 +2411,10 @@ void mat4<T>::perspective(const Angle::DEGREES<U> fovyRad, const U aspect, const
     zero();
 
     m[0][0] =  static_cast<T>(1.0f / (aspect * tanHalfFovy));
-    m[1][1] =  static_cast<T>(1.0f / (tanHalfFovy));
+    m[1][1] =  static_cast<T>(1.0f / tanHalfFovy);
     m[2][2] = -static_cast<T>(to_F32(zFar + zNear) / (zFar - zNear));
     m[2][3] = -static_cast<T>(1);
-    m[3][2] = -static_cast<T>((2.0f * zFar * zNear) / (zFar - zNear));
+    m[3][2] = -static_cast<T>(2.0f * zFar * zNear / (zFar - zNear));
 }
 
 template<typename T>
@@ -2423,13 +2422,13 @@ template<typename U>
 void mat4<T>::frustum(const U left, const U right, const U bottom, const U top, const U nearVal, const U farVal) {
     zero();
 
-    m[0][0] = static_cast<T>((2.0f * nearVal) / (right - left));
-    m[1][1] = static_cast<T>((2.0f * nearVal) / (top - bottom));
+    m[0][0] = static_cast<T>(2.0f * nearVal / (right - left));
+    m[1][1] = static_cast<T>(2.0f * nearVal / (top - bottom));
     m[2][0] = static_cast<T>(to_F32(right + left) / (right - left));
     m[2][1] = static_cast<T>(to_F32(top + bottom) / (top - bottom));
     m[2][2] = -static_cast<T>(to_F32(farVal + nearVal) / (farVal - nearVal));
     m[2][3] = static_cast<T>(-1);
-    m[3][2] = -static_cast<T>((2.0f * farVal * nearVal) / (farVal - nearVal));
+    m[3][2] = -static_cast<T>(2.0f * farVal * nearVal / (farVal - nearVal));
 }
 
 template<typename T>
@@ -2527,5 +2526,5 @@ void mat4<T>::Inverse(const T* in, T* out) noexcept {
     }
 }
 
-}; //namespace Divide
+} //namespace Divide
 #endif //_MATH_MATRICES_INL_

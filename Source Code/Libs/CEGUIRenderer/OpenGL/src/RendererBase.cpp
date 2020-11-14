@@ -50,8 +50,8 @@ String OpenGLRendererBase::d_rendererID("--- subclass did not set ID: Fix this!"
 
 //----------------------------------------------------------------------------//
 OpenGLRendererBase::OpenGLRendererBase() :
-    d_viewProjectionMatrix(0),
-    d_activeRenderTarget(0)
+    d_viewProjectionMatrix(nullptr),
+    d_activeRenderTarget(nullptr)
 {
     init();
     initialiseDisplaySizeWithViewportSize();
@@ -61,8 +61,8 @@ OpenGLRendererBase::OpenGLRendererBase() :
 //----------------------------------------------------------------------------//
 OpenGLRendererBase::OpenGLRendererBase(const Sizef& display_size) :
     d_displaySize(display_size),
-    d_viewProjectionMatrix(0),
-    d_activeRenderTarget(0)
+    d_viewProjectionMatrix(nullptr),
+    d_activeRenderTarget(nullptr)
 {
     init();
     d_defaultTarget = CEGUI_NEW_AO OpenGLViewportTarget(*this);
@@ -70,8 +70,8 @@ OpenGLRendererBase::OpenGLRendererBase(const Sizef& display_size) :
 
 //----------------------------------------------------------------------------//
 OpenGLRendererBase::OpenGLRendererBase(bool set_glew_experimental) :
-    d_viewProjectionMatrix(0),
-    d_activeRenderTarget(0)
+    d_viewProjectionMatrix(nullptr),
+    d_activeRenderTarget(nullptr)
 {
     init(true, set_glew_experimental);
     initialiseDisplaySizeWithViewportSize();
@@ -82,8 +82,8 @@ OpenGLRendererBase::OpenGLRendererBase(bool set_glew_experimental) :
 OpenGLRendererBase::OpenGLRendererBase(const Sizef& display_size,
                                        bool set_glew_experimental) :
     d_displaySize(display_size),
-    d_viewProjectionMatrix(0),
-    d_activeRenderTarget(0)
+    d_viewProjectionMatrix(nullptr),
+    d_activeRenderTarget(nullptr)
 {
     init(true, set_glew_experimental);
     d_defaultTarget = CEGUI_NEW_AO OpenGLViewportTarget(*this);
@@ -148,9 +148,9 @@ GeometryBuffer& OpenGLRendererBase::createGeometryBuffer()
 //----------------------------------------------------------------------------//
 void OpenGLRendererBase::destroyGeometryBuffer(const GeometryBuffer& buffer)
 {
-    GeometryBufferList::iterator i = std::find(d_geometryBuffers.begin(),
-                                               d_geometryBuffers.end(),
-                                               &buffer);
+    const GeometryBufferList::iterator i = std::find(d_geometryBuffers.begin(),
+                                                     d_geometryBuffers.end(),
+                                                     &buffer);
 
     if (d_geometryBuffers.end() != i)
     {
@@ -180,9 +180,9 @@ TextureTarget* OpenGLRendererBase::createTextureTarget()
 //----------------------------------------------------------------------------//
 void OpenGLRendererBase::destroyTextureTarget(TextureTarget* target)
 {
-    TextureTargetList::iterator i = std::find(d_textureTargets.begin(),
-                                              d_textureTargets.end(),
-                                              target);
+    const TextureTargetList::iterator i = std::find(d_textureTargets.begin(),
+                                                    d_textureTargets.end(),
+                                                    target);
 
     if (d_textureTargets.end() != i)
     {
@@ -290,7 +290,7 @@ void OpenGLRendererBase::destroyAllTextures()
 //----------------------------------------------------------------------------//
 Texture& OpenGLRendererBase::getTexture(const String& name) const
 {
-    TextureMap::const_iterator i = d_textures.find(name);
+    const TextureMap::const_iterator i = d_textures.find(name);
     
     if (i == d_textures.end())
         CEGUI_THROW(UnknownObjectException(
@@ -414,7 +414,7 @@ float OpenGLRendererBase::getNextPOTSize(const float f)
     uint size = static_cast<uint>(f);
 
     // if not power of 2
-    if ((size & (size - 1)) || !size)
+    if (size & size - 1 || !size)
     {
         int log = 0;
 
@@ -423,7 +423,7 @@ float OpenGLRendererBase::getNextPOTSize(const float f)
             ++log;
 
         // use log to calculate value to use as size.
-        size = (2 << log);
+        size = 2 << log;
     }
 
     return static_cast<float>(size);
@@ -442,7 +442,7 @@ void OpenGLRendererBase::setViewProjectionMatrix(const mat4Pimpl* viewProjection
 }
 
 //----------------------------------------------------------------------------//
-const CEGUI::Rectf& OpenGLRendererBase::getActiveViewPort()
+const Rectf& OpenGLRendererBase::getActiveViewPort()
 {
     return d_activeRenderTarget->getArea();
 }

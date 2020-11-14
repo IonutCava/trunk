@@ -117,8 +117,8 @@ PostFX::~PostFX()
 }
 
 void PostFX::updateResolution(U16 width, U16 height) {
-    if ((_resolutionCache.width == width &&
-         _resolutionCache.height == height)|| 
+    if (_resolutionCache.width == width &&
+        _resolutionCache.height == height|| 
         width < 1 || height < 1)
     {
         return;
@@ -138,14 +138,14 @@ void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
         _drawConstants.set(_ID("underwaterEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_UNDERWATER));
         _filtersDirty = false;
     };
-    
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Prepare" });
 
-    GFX::EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Prepare" });
+
+    EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
     _preRenderBatch->prepare(camera, _filterStack | _overrideFilterStack, bufferInOut);
-    GFX::EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
+    EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
@@ -156,9 +156,9 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
         s_samplerHash = defaultSampler.getHash();
     }
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Apply" });
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Apply" });
 
-    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
+    EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
     _preRenderBatch->execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
 
@@ -179,14 +179,14 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
     beginRenderPassCmd._descriptor = _postFXTarget;
     beginRenderPassCmd._name = "DO_POSTFX_PASS";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+    EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _drawPipeline;
-    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+    EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
-    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
+    EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
     bindDescriptorSetsCmd._set._textureData.setTexture(depthData, depthAtt.samplerHash(),TextureUsage::DEPTH);
@@ -195,16 +195,16 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     bindDescriptorSetsCmd._set._textureData.setTexture(data0, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
     bindDescriptorSetsCmd._set._textureData.setTexture(data1, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
     bindDescriptorSetsCmd._set._textureData.setTexture(data2, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
-    GFX::EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+    EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GenericDrawCommand drawCommand;
     drawCommand._primitiveType = PrimitiveType::TRIANGLES;
     drawCommand._drawCount = 1;
-    GFX::EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCommand });
+    EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCommand });
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void PostFX::idle(const Configuration& config) {

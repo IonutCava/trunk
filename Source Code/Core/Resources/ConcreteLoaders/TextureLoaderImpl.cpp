@@ -75,4 +75,4 @@ CachedResource_ptr ImplResourceLoader<Texture>::operator()() {
     return ptr;
 }
 
-};
+}

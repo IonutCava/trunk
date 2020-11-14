@@ -52,7 +52,7 @@ namespace NS_GLIM
     bool GLIM_BATCH::BeginRender (void)
     {
 #ifdef AE_RENDERAPI_OPENGL
-        return (BeginRenderOGL ());
+        return BeginRenderOGL ();
 #else
         return (BeginRenderD3D11 ());
 #endif
@@ -81,7 +81,7 @@ namespace NS_GLIM
     bool GLIM_BATCH::BeginRenderOGL (void)
     {
         if (m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY)
-            return (false);
+            return false;
 
         GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_FINISHED_BATCH, "GLIM_BATCH::RenderBatch: This function can only be called after a batch has been created.");
         
@@ -96,12 +96,12 @@ namespace NS_GLIM
 
         // if this happens the array is simply empty
         if (!m_Data.m_bUploadedToGPU)
-            return (false);
+            return false;
 
         // bind all vertex arrays
         m_Data.Bind ( m_Data.m_ShaderProgramHandle);
 
-        return (true);
+        return true;
     }
 
     void GLIM_BATCH::RenderBatchInstancedOGL(int iInstances, bool bWireframe)
@@ -109,7 +109,7 @@ namespace NS_GLIM
         if (!BeginRender ())
             return;
     
-        bWireframe |= GLIM_Interface::s_bForceWireframe;
+        bWireframe |= s_bForceWireframe;
 
         Divide::GenericDrawCommand cmd;
         cmd._cmd.primCount = iInstances;
@@ -166,7 +166,7 @@ namespace NS_GLIM
 
     void GLIM_BATCH::BeginBatch (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount)
     {
-        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_FINISHED_BATCH), "GLIM_BATCH::BeginBatch: This function cannot be called again before EndBatch has been called.");
+        GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_EMPTY || m_Data.m_State == GLIM_BATCH_STATE::STATE_FINISHED_BATCH, "GLIM_BATCH::BeginBatch: This function cannot be called again before EndBatch has been called.");
 
         // clear all previous data
         Clear (reserveBuffers, vertexCount, attributeCount);
@@ -178,7 +178,7 @@ namespace NS_GLIM
     void GLIM_BATCH::EndBatch (void)
     {
         // if the state is STATE_BEGINNING_BATCH, than no Begin/End call has been made => created an empty batch, which is ok
-        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_END_PRIMITIVE) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH), "GLIM_BATCH::EndBatch: This function must be called after a call to \"End\".");
+        GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_END_PRIMITIVE || m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH, "GLIM_BATCH::EndBatch: This function must be called after a call to \"End\".");
 
         // mark this batch as finished
         m_Data.m_State = GLIM_BATCH_STATE::STATE_FINISHED_BATCH;
@@ -192,12 +192,12 @@ namespace NS_GLIM
     {
         // if the state is STATE_BEGINNING_BATCH, than no Begin/End call has been made yet
         // if it is STATE_END_PRIMITIVE then a previous Begin/End call has been made
-        GLIM_CHECK ((m_Data.m_State == GLIM_BATCH_STATE::STATE_END_PRIMITIVE) || (m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH), "GLIM_BATCH::Begin: This function must be called after a call to \"BeginBatch\" or after a \"Begin\"/\"End\"-pair.");
+        GLIM_CHECK (m_Data.m_State == GLIM_BATCH_STATE::STATE_END_PRIMITIVE || m_Data.m_State == GLIM_BATCH_STATE::STATE_BEGINNING_BATCH, "GLIM_BATCH::Begin: This function must be called after a call to \"BeginBatch\" or after a \"Begin\"/\"End\"-pair.");
 
         m_Data.m_State = GLIM_BATCH_STATE::STATE_BEGIN_PRIMITIVE;
         m_PrimitiveType = eType;
         m_uiPrimitiveVertex = 0;
-        m_uiPrimitiveFirstIndex = (unsigned int) (m_Data.m_PositionData.size ()) / 3; // three floats per vertex
+        m_uiPrimitiveFirstIndex = (unsigned int) m_Data.m_PositionData.size () / 3; // three floats per vertex
 
         switch (m_PrimitiveType)
         {
@@ -307,7 +307,7 @@ namespace NS_GLIM
 
         case GLIM_ENUM::GLIM_POLYGON:
             {
-                GLIM_CHECK ((m_uiPrimitiveVertex == 0) || (m_uiPrimitiveVertex >= 3), "GLIM_BATCH::End: You did not finish constructing the last Polygon.");
+                GLIM_CHECK (m_uiPrimitiveVertex == 0 || m_uiPrimitiveVertex >= 3, "GLIM_BATCH::End: You did not finish constructing the last Polygon.");
 
                 m_Data.m_IndexBuffer_Wireframe.push_back (m_uiPrimitiveLastIndex);
                 m_Data.m_IndexBuffer_Wireframe.push_back (m_uiPrimitiveFirstIndex);

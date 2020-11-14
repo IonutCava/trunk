@@ -44,7 +44,7 @@ class SGNComponent;
 class SceneRenderState;
 struct RenderStagePass;
 
-}; //namespace Divide 
+} //namespace Divide 
 
 namespace ECS {
     struct CustomEvent {
@@ -71,7 +71,7 @@ namespace ECS {
             };
         };
     };
-};
+}
 
 namespace Divide {
 
@@ -112,7 +112,7 @@ struct Factory {
                 node->AddSGNComponent<T>(FWD(args)...);
             });
 
-            Factory::destructData().emplace(C, [](SceneGraphNode* node) -> void {
+            destructData().emplace(C, [](SceneGraphNode* node) -> void {
                 node->RemoveSGNComponent<T>();
             });
 
@@ -151,7 +151,7 @@ private:
 
 template <typename Base, typename... Args>
 template <typename T, ComponentType::_enumerated C>
-bool Factory<Base, Args...>::Registrar<T, C>::s_registered = Factory<Base, Args...>::template Registrar<T, C>::RegisterComponentType();
+bool Factory<Base, Args...>::Registrar<T, C>::s_registered = RegisterComponentType();
 
 struct EntityOnUpdate;
 
@@ -180,7 +180,7 @@ class SGNComponent : protected PlatformContextComponent,
         U64 uniqueID() const;
 
         virtual bool enabled() const;
-        virtual void enabled(const bool state);
+        virtual void enabled(bool state);
 
     protected:
         EditorComponent _editorComponent;
@@ -194,7 +194,7 @@ template<typename T, ComponentType::_enumerated C>
 using BaseComponentType = SGNComponent::Registrar<T, C>;
 
 #define INIT_COMPONENT(X) static bool X##_registered = X::s_registered
-};  // namespace Divide
+}  // namespace Divide
 #endif //_SGN_COMPONENT_H_
 
 #include "SGNComponent.inl"

@@ -9,7 +9,7 @@
 
 namespace {
     const bool USE_THREADED_SHADER_LOAD = true;
-};
+}
 
 namespace Divide {
 
@@ -45,4 +45,4 @@ CachedResource_ptr ImplResourceLoader<ShaderProgram>::operator()() {
     return ptr;
 }
 
-};
+}

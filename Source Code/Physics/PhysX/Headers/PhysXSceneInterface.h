@@ -47,11 +47,11 @@ class PhysXSceneInterface final : public PhysicsSceneInterface {
     PhysXSceneInterface(Scene& parentScene);
     virtual ~PhysXSceneInterface();
 
-    virtual bool init() override;
-    virtual void idle() override;
-    virtual void release() override;
-    virtual void update(U64 deltaTimeUS) override;
-    virtual void process(U64 deltaTimeUS) override;
+    bool init() override;
+    void idle() override;
+    void release() override;
+    void update(U64 deltaTimeUS) override;
+    void process(U64 deltaTimeUS) override;
 
     void addRigidActor(PhysXActor* actor, bool threaded = true);
     vectorEASTL<physx::PxMaterial*> getMaterials() const {

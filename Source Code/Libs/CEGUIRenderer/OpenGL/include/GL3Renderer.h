@@ -74,7 +74,7 @@ public:
     \return
         Reference to the CEGUI::OpenGL3Renderer object that was created.
     */
-    static OpenGL3Renderer& bootstrapSystem(const int abi = CEGUI_VERSION_ABI);
+    static OpenGL3Renderer& bootstrapSystem(int abi = CEGUI_VERSION_ABI);
 
     /*!
     \brief
@@ -99,7 +99,7 @@ public:
         Reference to the CEGUI::OpenGL3Renderer object that was created.
     */
     static OpenGL3Renderer& bootstrapSystem(const Sizef& display_size,
-                                            const int abi = CEGUI_VERSION_ABI);
+                                            int abi = CEGUI_VERSION_ABI);
 
     /*!
     \brief
@@ -129,7 +129,7 @@ public:
     \param abi
         This must be set to CEGUI_VERSION_ABI
     */
-    static OpenGL3Renderer& create(const int abi = CEGUI_VERSION_ABI);
+    static OpenGL3Renderer& create(int abi = CEGUI_VERSION_ABI);
 
     /*!
     \brief
@@ -146,7 +146,7 @@ public:
         This must be set to CEGUI_VERSION_ABI
     */
     static OpenGL3Renderer& create(const Sizef& display_size,
-                                   const int abi = CEGUI_VERSION_ABI);
+                                   int abi = CEGUI_VERSION_ABI);
 
     /*!
     \brief
@@ -221,17 +221,17 @@ public:
     OpenGL3StateChangeWrapper* getOpenGLStateChanger();
 
     // base class overrides / abstract function implementations
-    void beginRendering();
-    void endRendering();
-    Sizef getAdjustedTextureSize(const Sizef& sz) const;
-    bool isS3TCSupported() const;
-    void setupRenderingBlendMode(const BlendMode mode,
-                                 const bool force = false);
+    void beginRendering() override;
+    void endRendering() override;
+    Sizef getAdjustedTextureSize(const Sizef& sz) const override;
+    bool isS3TCSupported() const override;
+    void setupRenderingBlendMode(BlendMode mode,
+                                 bool force = false) override;
 
 private:
     //! Overrides
-    OpenGLGeometryBufferBase* createGeometryBuffer_impl();
-    TextureTarget* createTextureTarget_impl();
+    OpenGLGeometryBufferBase* createGeometryBuffer_impl() override;
+    TextureTarget* createTextureTarget_impl() override;
 
     void initialiseRendererIDString();
 

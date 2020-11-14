@@ -17,7 +17,7 @@ namespace {
     // Previous frame's time stamp
     TimeValue g_frameDelay;
     std::atomic<U64> g_elapsedTimeUs;
-};
+}
 
 ApplicationTimer::ApplicationTimer() noexcept
 {
@@ -43,7 +43,7 @@ void ApplicationTimer::update() {
     
     if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
 
-        if (g_elapsedTimeUs - _lastBenchmarkTimeStamp > Time::MillisecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
+        if (g_elapsedTimeUs - _lastBenchmarkTimeStamp > MillisecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
         {
             F32 fps = 0.f;
             F32 frameTime = 0.f;
@@ -73,7 +73,7 @@ namespace Game {
     D64 ElapsedSeconds() {
         return MicrosecondsToSeconds(ElapsedMicroseconds());
     }
-};
+}
 
 namespace App {
     /// The following functions force a timer update (a call to query performance timer).
@@ -89,6 +89,6 @@ namespace App {
     D64 ElapsedSeconds() {
         return MicrosecondsToSeconds(ElapsedMicroseconds());
     }
-};
-};  // namespace Time
-};  // namespace Divide
+}
+}  // namespace Time
+}  // namespace Divide

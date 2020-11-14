@@ -49,7 +49,7 @@ void GUIInterface::addElement(const U64 id, GUIElement* element) {
         MemoryManager::SAFE_UPDATE(it->second.first, element);
         it->second.second = element ? element->visible() : false;
     } else {
-        hashAlg::insert(targetMap, id, std::make_pair(element, element ? element->visible() : false));
+        insert(targetMap, id, std::make_pair(element, element ? element->visible() : false));
     }
 }
 
@@ -118,7 +118,7 @@ GUIButton* GUIInterface::addButton(const char* name,
     ResourceDescriptor beepSound("buttonClick");
     beepSound.assetName(ResourcePath("beep.wav"));
     beepSound.assetLocation(Paths::g_assetsLocation + Paths::g_soundsLocation);
-    AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
+    const AudioDescriptor_ptr onClickSound = CreateResource<AudioDescriptor>(_context->parent().resourceCache(), beepSound);
 
     GUIButton* btn = MemoryManager_NEW GUIButton(name,
                                                  text,
@@ -194,7 +194,7 @@ GUIFlash* GUIInterface::addFlash(const char* name,
 GUIText* GUIInterface::modifyText(const char* name, const stringImpl& text, bool multiLine) {
     const U64 guiID = _ID(name);
 
-    GUIMap::iterator it = _guiElements[to_base(GUIType::GUI_TEXT)].find(guiID);
+    const GUIMap::iterator it = _guiElements[to_base(GUIType::GUI_TEXT)].find(guiID);
 
     if (it == std::cend(_guiElements[to_base(GUIType::GUI_TEXT)])) {
         return nullptr;

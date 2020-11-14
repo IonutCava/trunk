@@ -188,7 +188,7 @@ class SceneAnimator {
     /// The index can be used to index directly into the vector returned from
     /// GetTransform
     I32 boneIndex(const stringImpl& bName) const;
-    const vectorEASTL<Line>& skeletonLines(I32 animationIndex, const D64 dt);
+    const vectorEASTL<Line>& skeletonLines(I32 animationIndex, D64 dt);
 
     /// Returns the frame count of the longest registered animation
     U32 getMaxAnimationFrames() const noexcept {
@@ -202,11 +202,11 @@ class SceneAnimator {
    private:
     bool init(PlatformContext& context);
     /// I/O operations
-    void saveSkeleton(ByteBuffer& dataOut, Bone* pNode) const;
-    Bone* loadSkeleton(ByteBuffer& dataIn, Bone* pNode);
+    void saveSkeleton(ByteBuffer& dataOut, Bone* parent) const;
+    Bone* loadSkeleton(ByteBuffer& dataIn, Bone* parent);
 
     void updateTransforms(Bone* pNode);
-    void calculate(I32 animationIndex, const D64 pTime);
+    void calculate(I32 animationIndex, D64 pTime);
     I32 createSkeleton(Bone* piNode,
                        const mat4<F32>& parent,
                        vectorEASTL<Line>& lines);
@@ -236,7 +236,7 @@ namespace Attorney {
             animator._animations.reserve(animationCount);
             for (size_t i = 0; i < animationCount; ++i) {
                 animator._animations.push_back(animations[i]);
-                hashAlg::insert(animator._animationNameToID, _ID(animator._animations[i]->name().c_str()), to_U32(i));
+                insert(animator._animationNameToID, _ID(animator._animations[i]->name().c_str()), to_U32(i));
             }
         }
 

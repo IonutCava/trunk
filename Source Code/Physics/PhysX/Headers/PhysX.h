@@ -67,20 +67,20 @@ public:
     ~PhysX();
 
 public:
-    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) final;
-    bool closePhysicsAPI() final;
-    void update(U64 deltaTimeUS) final;
-    void process(U64 deltaTimeUS) final;
-    void idle() final;
+    ErrorCode initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) override;
+    bool closePhysicsAPI() override;
+    void update(U64 deltaTimeUS) override;
+    void process(U64 deltaTimeUS) override;
+    void idle() override;
 
-    void updateTimeStep(U8 timeStepFactor, F32 simSpeed) final;
+    void updateTimeStep(U8 timeStepFactor, F32 simSpeed) override;
 
-    PhysicsSceneInterface* NewSceneInterface(Scene& scene) final;
+    PhysicsSceneInterface* NewSceneInterface(Scene& scene) override;
 
     physx::PxPhysics* getSDK() const noexcept { return _gPhysicsSDK; }
-    void setPhysicsScene(PhysicsSceneInterface* targetScene) final;
+    void setPhysicsScene(PhysicsSceneInterface* targetScene) override;
 
-    PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) final;
+    PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) override;
 
 
     void togglePvdConnection();

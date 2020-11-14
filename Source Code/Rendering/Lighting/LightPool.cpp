@@ -33,16 +33,18 @@ namespace {
             case LightType::DIRECTIONAL: return Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS;
             case LightType::POINT: return Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS;
             case LightType::SPOT: return Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS;
-            default: break;
-        };
+            case LightType::COUNT: break;
+        }
         return 0u;
     };
-};
+}
 
 LightPool::LightPool(Scene& parentScene, PlatformContext& context)
     : SceneComponent(parentScene),
       PlatformContextComponent(context),
      // shadowPassTimer is used to measure the CPU-duration of shadow map generation step
+     _activeLightCount{},
+     _lightTypeState{},
      _shadowPassTimer(Time::ADD_TIMER("Shadow Pass Timer"))
 {
 
@@ -83,7 +85,7 @@ void LightPool::init() {
     
     {
         bufferDescriptor._name = "LIGHT_BUFFER";
-        bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; //< no shadows
+        bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; ///< no shadows
         bufferDescriptor._elementSize = sizeof(BufferData);
         // Holds general info about the currently active lights: position, colour, etc.
         _lightShaderBuffer = _context.gfx().newSB(bufferDescriptor);
@@ -150,7 +152,7 @@ bool LightPool::addLight(Light& light) {
     const U32 lightTypeIdx = to_base(type);
 
     UniqueLock<SharedMutex> r_lock(_lightLock);
-    if (findLightLocked(light.getGUID(), type) != eastl::end(_lights[lightTypeIdx])) {
+    if (findLightLocked(light.getGUID(), type) != end(_lights[lightTypeIdx])) {
 
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
                          light.getGUID());
@@ -165,9 +167,9 @@ bool LightPool::addLight(Light& light) {
 // try to remove any leftover lights
 bool LightPool::removeLight(Light& light) {
     UniqueLock<SharedMutex> lock(_lightLock);
-    LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
+    const LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
 
-    if (it == eastl::end(_lights[to_U32(light.getLightType())])) {
+    if (it == end(_lights[to_U32(light.getLightType())])) {
         Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
                          light.getGUID());
         return false;
@@ -221,8 +223,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
                 std::memcpy(propsTarget._position.data(), propsSource._lightPosition.data(), sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
                 std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP.data(), sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
             }break;
-            default: break;
-        };
+            case LightType::COUNT: break;
+        }
     }
 
     if (dirty) {
@@ -303,17 +305,17 @@ void LightPool::prepareLightData(const RenderStage stage, const vec3<F32>& eyePo
         sortedLights.reserve(totalLightCount);
 
         for (U8 i = 1; i < to_base(LightType::COUNT); ++i) {
-            sortedLights.insert(eastl::cend(sortedLights), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
+            sortedLights.insert(cend(sortedLights), cbegin(_lights[i]), cend(_lights[i]));
         }
     }
     {
         OPTICK_EVENT("LightPool::SortLights");
-        eastl::sort(eastl::begin(sortedLights),
-                    eastl::end(sortedLights),
+        eastl::sort(begin(sortedLights),
+                    end(sortedLights),
                     [&eyePos](Light* a, Light* b) noexcept {
                         if_constexpr(g_GroupSortedLightsByType) {
                             return  a->getLightType() < b->getLightType() ||
-                                (a->getLightType() == b->getLightType() && a->distanceSquared(eyePos) < b->distanceSquared(eyePos));
+                                a->getLightType() == b->getLightType() && a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
                         } else {
                             return a->distanceSquared(eyePos) < b->distanceSquared(eyePos);
                         }
@@ -322,7 +324,7 @@ void LightPool::prepareLightData(const RenderStage stage, const vec3<F32>& eyePo
     {
         SharedLock<SharedMutex> r_lock(_lightLock);
         const LightList& dirLights = _lights[to_base(LightType::DIRECTIONAL)];
-        sortedLights.insert(eastl::begin(sortedLights), eastl::cbegin(dirLights), eastl::cend(dirLights));
+        sortedLights.insert(begin(sortedLights), cbegin(dirLights), cend(dirLights));
     }
 
     const U32 totalLightCount = uploadLightList(stage, sortedLights, viewMatrix);
@@ -344,8 +346,8 @@ void LightPool::prepareLightData(const RenderStage stage, const vec3<F32>& eyePo
         OPTICK_EVENT("LightPool::UploadLightDataToGPU");
 
         _lightShaderBuffer->writeBytes((stageIndex - 1) * _lightShaderBuffer->getPrimitiveSize(),
-                                       sizeof(vec4<U32>) + sizeof(vec4<F32>) + (totalLightCount * sizeof(LightProperties)),
-                                       (bufferPtr)(&crtData));
+                                       sizeof(vec4<U32>) + sizeof(vec4<F32>) + totalLightCount * sizeof(LightProperties),
+                                       (bufferPtr)&crtData);
     }
 }
 
@@ -364,7 +366,7 @@ void LightPool::uploadLightData(const RenderStage stage, GFX::CommandBuffer& buf
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set.addShaderBuffer(bufferLight);
     descriptorSetCmd._set.addShaderBuffer(bufferShadow);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
 void LightPool::preRenderAllPasses(const Camera* playerCamera) {
@@ -389,7 +391,7 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
         }());
 
         for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
-            g_sortedLightsContainer.insert(eastl::cend(g_sortedLightsContainer), eastl::cbegin(_lights[i]), eastl::cend(_lights[i]));
+            g_sortedLightsContainer.insert(cend(g_sortedLightsContainer), cbegin(_lights[i]), cend(_lights[i]));
         }
     }
 
@@ -402,9 +404,9 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
     };
 
     if_constexpr(USE_PARALLEL_SORT) {
-        std::sort(std::execution::par, eastl::begin(g_sortedLightsContainer), eastl::end(g_sortedLightsContainer), sortPredicate);
+        std::sort(std::execution::par, begin(g_sortedLightsContainer), end(g_sortedLightsContainer), sortPredicate);
     } else {
-        eastl::sort(eastl::begin(g_sortedLightsContainer), eastl::end(g_sortedLightsContainer), sortPredicate);
+        eastl::sort(begin(g_sortedLightsContainer), end(g_sortedLightsContainer), sortPredicate);
     }
 
     const auto isInViewFrustum = [](const Frustum& frustum, Light* light) {
@@ -419,7 +421,7 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
             } else if (lType == LightType::SPOT) {
                 const F32 range = light->range();
                 const Angle::RADIANS<F32> angle = Angle::DegreesToRadians(static_cast<SpotLightComponent*>(light)->outerConeCutoffAngle());
-                radius = (angle > M_PI_4) ? (range * tan(angle)) : range * 0.5f / pow(cos(angle), 2.0f);
+                radius = angle > M_PI_4 ? range * tan(angle) : range * 0.5f / pow(cos(angle), 2.0f);
                 position += light->directionCache() * radius;
             } else {
                 DIVIDE_UNEXPECTED_CALL();
@@ -493,15 +495,15 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
 
         GFX::BindPipelineCommand bindPipeline;
         bindPipeline._pipeline = _context.gfx().newPipeline(pipelineDescriptor);
-        GFX::EnqueueCommand(bufferInOut, bindPipeline);
+        EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
         descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), s_samplerHash, TextureUsage::UNIT0);
-        GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand = { pointsCmd };
-        GFX::EnqueueCommand(bufferInOut, drawCommand);
+        EnqueueCommand(bufferInOut, drawCommand);
     }
 }
 
-};
+}

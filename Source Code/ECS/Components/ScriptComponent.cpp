@@ -14,4 +14,4 @@ void ScriptComponent::Update(const U64 deltaTimeUS) {
 }
 
 
-}; //namespace Divide
+} //namespace Divide

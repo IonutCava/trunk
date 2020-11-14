@@ -66,7 +66,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Geometry/Material/Headers/Material.h"
 #include "GLIM/Declarations.h"
-#include "GLIM/Declarations.h"
 
 struct aiMesh;
 struct aiScene;

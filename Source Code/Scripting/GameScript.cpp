@@ -28,7 +28,7 @@ GameScript::~GameScript()
 }
 
 void GameScript::addGameInstance() {
-    chaiscript::ModulePtr m = chaiscript::ModulePtr(new chaiscript::Module());
+    const chaiscript::ModulePtr m = chaiscript::ModulePtr(new chaiscript::Module());
     chaiscript::utility::add_class<GameScriptInstance>(*m,
         "GameScriptInstance",
         { 

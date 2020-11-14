@@ -99,7 +99,7 @@ class SceneGraph final : NonCopyable,
         nodesOut.resize(0);
         for (const SceneNodeType type : types) {
             const vectorEASTL<SceneGraphNode*>& nodes = getNodesByType(type);
-            nodesOut.insert(eastl::cend(nodesOut), eastl::cbegin(nodes), eastl::cend(nodes));
+            nodesOut.insert(cend(nodesOut), cbegin(nodes), cend(nodes));
         }
     }
 

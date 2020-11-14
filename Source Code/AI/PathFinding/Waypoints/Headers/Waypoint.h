@@ -56,7 +56,7 @@ struct WaypointPath {
     PROPERTY_RW(Ray, collisionRay);
 };
 
-};  // namespace Navigation
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace Divide
 
 #endif

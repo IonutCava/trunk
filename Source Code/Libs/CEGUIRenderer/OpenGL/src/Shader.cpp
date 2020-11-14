@@ -127,7 +127,7 @@ GLuint OpenGL3Shader::compile(GLenum type, const std::string &source)
 {
     // Create shader object
     checkGLErrors();
-    GLuint shader = glCreateShader(type);
+    const GLuint shader = glCreateShader(type);
 
     if (shader == 0)
     {
@@ -249,7 +249,7 @@ void OpenGL3Shader::outputShaderLog(GLuint shader)
 //----------------------------------------------------------------------------//
 void getGLErrors(const char *location)
 {
-    GLenum error = glGetError();
+    const GLenum error = glGetError();
 
     if (error != GL_NO_ERROR)
     {
@@ -277,7 +277,7 @@ void getGLErrors(const char *location)
             stringStream << "GL_ERROR: Unknown error." << std::endl;
         }
 
-        if (CEGUI::Logger* logger = CEGUI::Logger::getSingletonPtr())
+        if (Logger* logger = Logger::getSingletonPtr())
             logger->logEvent(stringStream.str().c_str());
         else
             std::cerr << stringStream.str() << std::endl;

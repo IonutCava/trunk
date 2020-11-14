@@ -89,12 +89,8 @@ class Character : public Unit {
     };
 
     explicit Character(CharacterType type, FrameListenerManager& parent, U32 callOrder);
-    virtual ~Character();
+    virtual ~Character() = default;
 
-    /// Set unit type
-    inline void setCharacterType(CharacterType type) noexcept { _type = type; }
-    /// Get unit type
-    inline CharacterType getCharacterType() const noexcept { return _type; }
     /**
       * Update this character for drawing a new frame.
       * Updates one tick in the render loop.
@@ -110,36 +106,33 @@ class Character : public Unit {
       * and collision testing).
       **/
     virtual void update(U64 deltaTimeUS);
-    /// Set the curent position of this charater
+    /// Set the current position of this charater
     virtual void setPosition(const vec3<F32>& newPosition);
     /// Update character velocity
     virtual void setVelocity(const vec3<F32>& newVelocity);
     /// The current position of this character
-    virtual vec3<F32> getPosition() const;
+    [[nodiscard]] virtual vec3<F32> getPosition() const;
     /// The direction in which the character is currently looking.
-    virtual vec3<F32> getLookingDirection();
+    [[nodiscard]] virtual vec3<F32> getLookingDirection();
     /// Rotate the character to look at another character
     virtual void lookAt(const vec3<F32>& targetPos);
     /// Just before we render the frame
-    virtual bool frameRenderingQueued(const FrameEvent& evt) override;
+    [[nodiscard]] bool frameRenderingQueued(const FrameEvent& evt) override;
 
-    inline const vec3<F32>& getRelativeLookingDirection() const noexcept {
-        return _lookingDirection;
-    }
-    inline const void setRelativeLookingDirection(const vec3<F32>& direction) noexcept {
-        _lookingDirection = direction;
-    }
+    [[nodiscard]] const vec3<F32>& getRelativeLookingDirection() const noexcept { return _lookingDirection; }
+    void setRelativeLookingDirection(const vec3<F32>& direction) noexcept { _lookingDirection = direction; }
 
-    void playAnimation(I32 index);
+    void playAnimation(I32 index) const;
     void playNextAnimation();
-    void playPreviousAnimation();
-    void pauseAnimation(bool state);
+    void playPreviousAnimation() const;
+    void pauseAnimation(bool state) const;
+
+    PROPERTY_RW(CharacterType, characterType, CharacterType::COUNT);
 
    protected:
     void setParentNode(SceneGraphNode* node) override;
 
    private:
-    CharacterType _type;
     vec3<F32> _lookingDirection;
     vec3<F32> _newPosition, _oldPosition, _curPosition;
     vec3<F32> _newVelocity, _curVelocity;
@@ -147,6 +140,6 @@ class Character : public Unit {
     std::atomic_bool _velocityDirty;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

@@ -161,10 +161,10 @@ struct I24
     FORCE_INLINE operator I32() const noexcept {
         /* Sign extend negative quantities */
         if (value[2] & 0x80) {
-            return (0xff << 24) | (value[2] << 16) | (value[1] << 8) | value[0];
+            return 0xff << 24 | value[2] << 16 | value[1] << 8 | value[0];
         }
          
-        return (value[2] << 16) | (value[1] << 8) | value[0];
+        return value[2] << 16 | value[1] << 8 | value[0];
     }
 
     FORCE_INLINE I24 operator+   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) + val); }
@@ -181,13 +181,13 @@ struct I24
     FORCE_INLINE I24 operator<<  (const I32 val) const  noexcept { return I24(static_cast<I32>(*this) << val); }
 
     FORCE_INLINE operator bool()   const noexcept { return static_cast<I32>(*this) != 0; }
-    FORCE_INLINE bool operator! () const noexcept { return !(static_cast<I32>(*this)); }
+    FORCE_INLINE bool operator! () const noexcept { return !static_cast<I32>(*this); }
     FORCE_INLINE I24  operator- () const noexcept { return I24(-static_cast<I32>(*this)); }
     FORCE_INLINE I24& operator++ ()      noexcept { *this = *this + 1; return *this; }
     FORCE_INLINE I24& operator-- ()      noexcept { *this = *this - 1; return *this; }
 
-    FORCE_INLINE I24  operator++ (I32)                  noexcept { I24 ret = *this; ++(*this); return ret; }
-    FORCE_INLINE I24  operator-- (I32)                  noexcept { I24 ret = *this; --(*this); return ret; }
+    FORCE_INLINE I24  operator++ (I32)                  noexcept { I24 ret = *this; ++*this; return ret; }
+    FORCE_INLINE I24  operator-- (I32)                  noexcept { I24 ret = *this; --*this; return ret; }
     FORCE_INLINE bool operator== (const I24& val) const noexcept { return static_cast<I32>(*this) == static_cast<I32>(val); }
     FORCE_INLINE bool operator!= (const I24& val) const noexcept { return static_cast<I32>(*this) != static_cast<I32>(val); }
     FORCE_INLINE bool operator>= (const I24& val) const noexcept { return static_cast<I32>(*this) >= static_cast<I32>(val); }
@@ -289,12 +289,12 @@ struct U24
     FORCE_INLINE U24 operator<<  (const U32 val) const  noexcept { return U24(static_cast<U32>(*this) << val); }
 
     FORCE_INLINE operator bool()   const noexcept { return static_cast<U32>(*this) != 0; }
-    FORCE_INLINE bool operator! () const noexcept { return !(static_cast<U32>(*this)); }
+    FORCE_INLINE bool operator! () const noexcept { return !static_cast<U32>(*this); }
     FORCE_INLINE U24& operator++ ()      noexcept { *this = *this + 1u; return *this; }
     FORCE_INLINE U24& operator-- ()      noexcept { *this = *this - 1u; return *this; }
 
-    FORCE_INLINE U24  operator++ (I32)                  noexcept { U24 ret = *this; ++(*this); return ret; }
-    FORCE_INLINE U24  operator-- (I32)                  noexcept { U24 ret = *this; --(*this); return ret; }
+    FORCE_INLINE U24  operator++ (I32)                  noexcept { U24 ret = *this; ++*this; return ret; }
+    FORCE_INLINE U24  operator-- (I32)                  noexcept { U24 ret = *this; --*this; return ret; }
     FORCE_INLINE bool operator== (const U24& val) const noexcept { return static_cast<U32>(*this) == static_cast<U32>(val); }
     FORCE_INLINE bool operator!= (const U24& val) const noexcept { return static_cast<U32>(*this) != static_cast<U32>(val); }
     FORCE_INLINE bool operator>= (const U24& val) const noexcept { return static_cast<U32>(*this) >= static_cast<U32>(val); }
@@ -304,11 +304,11 @@ struct U24
 
     template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
     FORCE_INLINE bool operator==  (const T& val) const noexcept {
-        return (val >= 0) && static_cast<U32>(*this) == val;
+        return val >= 0 && static_cast<U32>(*this) == val;
     }
     template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
     FORCE_INLINE bool operator!=  (const T& val) const noexcept {
-        return (val < 0) || static_cast<U32>(*this) != val;
+        return val < 0 || static_cast<U32>(*this) != val;
     }
     template<typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
     FORCE_INLINE bool operator> (const T& val) const noexcept {

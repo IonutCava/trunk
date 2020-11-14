@@ -31,13 +31,14 @@ void LocalClient::handlePacket(WorldPacket& p) {
     default:
         _parent.platformContext().paramHandler().setParam(_ID("serverResponse"), "Unknown OpCode: [ 0x" + Util::to_string(p.opcode()) + " ]");
         break;
-    };
+    }
 }
 
-void LocalClient::HandlePongOpCode(WorldPacket& p) {
+void LocalClient::HandlePongOpCode(WorldPacket& p) const
+{
     F32 time = 0;
     p >> time;
-    D64 result = Time::App::ElapsedMilliseconds() - time;
+    const D64 result = Time::App::ElapsedMilliseconds() - time;
     _parent.platformContext().paramHandler().setParam(
         _ID("serverResponse"),
         "Server says: Pinged with : " +
@@ -77,6 +78,7 @@ void LocalClient::HandleGeometryAppendOpCode(WorldPacket& p) {
 }
 
 void LocalClient::HandleHeartBeatOpCode(WorldPacket& p) {
+    ACKNOWLEDGE_UNUSED(p);
     /// nothing. Heartbeats keep us alive \:D/
 }
 

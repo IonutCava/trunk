@@ -39,7 +39,7 @@ class SceneGraphNode;
 class SGNRelationshipCache {
 public:
     enum class RelationshipType : U8 {
-        GRANDPARENT = 0, //<applies for all levels above 0
+        GRANDPARENT = 0, ///<applies for all levels above 0
         PARENT,
         CHILD,
         GRANDCHILD,
@@ -53,7 +53,7 @@ public:
     bool rebuild();
 
     // this will issue a rebuild if the cache is invalid
-    RelationshipType clasifyNode(I64 GUID) const;
+    RelationshipType classifyNode(I64 GUID) const;
 protected:
     void updateChildren(U8 level, vectorEASTL<std::pair<I64, U8>>& cache) const;
     void updateParents(U8 level, vectorEASTL<std::pair<I64, U8>>& cache) const;

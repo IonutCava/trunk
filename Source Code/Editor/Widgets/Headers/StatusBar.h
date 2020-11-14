@@ -53,6 +53,6 @@ namespace Divide {
         F32 _lastMessageDurationMS;
         stringImpl _lastMessage;
     };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_STATUS_BAR_H_

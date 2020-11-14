@@ -7,15 +7,11 @@
 namespace Divide {
 namespace AI {
 
-WarSceneAction::WarSceneAction(ActionType type,
+WarSceneAction::WarSceneAction(const ActionType type,
                                const stringImpl& name,
-                               F32 cost)
-    : GOAPAction(name.c_str(), to_I32(cost)),
+                               const F32 cost)
+    : GOAPAction(name, to_I32(cost)),
     _type(type)
-{
-}
-
-WarSceneAction::~WarSceneAction()
 {
 }
 
@@ -27,5 +23,5 @@ bool WarSceneAction::postAction(WarSceneAIProcessor& parentProcessor) const {
     return Attorney::WarAISceneWarAction::postAction(parentProcessor, _type, this);
 }
 
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide

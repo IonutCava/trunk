@@ -78,7 +78,7 @@ namespace Attorney {
     class SceneGUI;
     class SceneInput;
     class SceneEnvironmentProbeComponent;
-};
+}
 
 struct Selections {
     static constexpr U8 MaxSelections = 254u;
@@ -86,7 +86,7 @@ struct Selections {
     std::array<I64, MaxSelections> _selections;
     U8 _selectionCount = 0u;
 
-    inline void reset() noexcept {
+    void reset() noexcept {
         _selections.fill(-1);
         _selectionCount = 0u;
     }
@@ -135,7 +135,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     /**Begin scene logic loop*/
     /// Get all input commands from the user
-    virtual void processInput(PlayerIndex idx, const U64 deltaTimeUS);
+    virtual void processInput(PlayerIndex idx, U64 deltaTimeUS);
     /// Update the scene based on the inputs
     virtual void processTasks(U64 deltaTimeUS);
     virtual void processGUI(U64 deltaTimeUS);
@@ -174,7 +174,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// Object picking
     Selections getCurrentSelection(const PlayerIndex index = 0) const {
         const auto it = _currentSelection.find(index);
-        if (it != eastl::cend(_currentSelection)) {
+        if (it != cend(_currentSelection)) {
             return it->second;
         }
 
@@ -189,17 +189,17 @@ class Scene : public Resource, public PlatformContextComponent {
                                        std::shared_ptr<ParticleData> data,
                                        SceneGraphNode* parentNode) const;
 
-    inline AI::AIManager& aiManager() noexcept { return *_aiManager; }
-    inline const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
+    AI::AIManager& aiManager() noexcept { return *_aiManager; }
+    const AI::AIManager& aiManager() const noexcept { return *_aiManager; }
 
-    inline ResourceCache* resourceCache() noexcept { return _resCache; }
-    inline const ResourceCache* resourceCache() const noexcept { return _resCache; }
+    ResourceCache* resourceCache() noexcept { return _resCache; }
+    const ResourceCache* resourceCache() const noexcept { return _resCache; }
 
     Camera* playerCamera() const;
     Camera* playerCamera(U8 index) const;
 
-    inline LightPool& lightPool() noexcept { return *_lightPool; }
-    inline const LightPool& lightPool() const noexcept { return *_lightPool; }
+    LightPool& lightPool() noexcept { return *_lightPool; }
+    const LightPool& lightPool() const noexcept { return *_lightPool; }
 
     // can save at any time, I guess?
     virtual bool saveXML(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) const;
@@ -285,7 +285,7 @@ class Scene : public Resource, public PlatformContextComponent {
     void onPlayerRemove(const Player_ptr& player);
 
     /// simple function to load the scene elements.
-    inline bool SCENE_LOAD(const Str256& name) {
+    bool SCENE_LOAD(const Str256& name) {
         if (!Scene::load(name)) {
             Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
@@ -304,7 +304,7 @@ class Scene : public Resource, public PlatformContextComponent {
 
     bool lockCameraToPlayerMouse(PlayerIndex index, bool lockState) const;
 
-    const char* getResourceTypeName() const noexcept override { return "Scene"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Scene"; }
 
     void updateSelectionData(PlayerIndex idx, DragSelectData& data, bool remapped);
 
@@ -458,7 +458,6 @@ class SceneManager {
 };
 
 class SceneRenderPass {
- private:
     static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
         return scene._envProbePool;
     }
@@ -469,7 +468,6 @@ class SceneRenderPass {
 
 class SceneEnvironmentProbeComponent
 {
-private:
     static void registerProbe(Scene& scene, EnvironmentProbeComponent* probe) noexcept {
         scene._envProbePool->registerProbe(probe);
     }
@@ -481,7 +479,6 @@ private:
 };
 
 class SceneLoadSave {
- private:
     static bool save(const Scene& scene, ByteBuffer& outputBuffer) {
         return scene.save(outputBuffer);
     }
@@ -494,7 +491,6 @@ class SceneLoadSave {
 };
 
 class SceneGraph {
-private:
     static void onNodeDestroy(Scene& scene, SceneGraphNode* node) {
         scene.onNodeDestroy(node);
     }
@@ -503,7 +499,6 @@ private:
 };
 
 class SceneGUI {
-private:
     static SceneGUIElements* guiElements(Scene& scene) noexcept {
         return scene._GUI;
     }
@@ -512,7 +507,6 @@ private:
 };
 
 class SceneInput {
-private:
     static bool mouseMoved(Scene& scene, const Input::MouseMoveEvent& arg) {
         return scene.mouseMoved(arg);
     }
@@ -520,7 +514,7 @@ private:
     friend class Divide::SceneInput;
 };
 
-};  // namespace Attorney
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace Divide
 
 #endif

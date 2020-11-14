@@ -36,20 +36,20 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-struct ParticleBoxGenerator final : public ParticleGenerator {
+struct ParticleBoxGenerator final : ParticleGenerator {
     void generate(Task& packagedTasksParent,
-                  const U64 deltaTimeUS,
+                  U64 deltaTimeUS,
                   ParticleData& p,
                   U32 startIndex,
                   U32 endIndex) override;
 
-    inline void pos(const vec3<F32>& pos) noexcept {
+    void pos(const vec3<F32>& pos) noexcept {
         _pos.set(pos);
         _posMin.set(_pos - _halfExtent);
         _posMax.set(_pos + _halfExtent);
     }
 
-    inline void halfExtent(const vec3<F32>& dist) noexcept {
+    void halfExtent(const vec3<F32>& dist) noexcept {
         _halfExtent.set(dist);
         _posMin.set(_pos - _halfExtent);
         _posMax.set(_pos + _halfExtent);
@@ -61,6 +61,6 @@ private:
     vec3<F32> _posMin;
     vec3<F32> _posMax;
 };
-};
+}
 
 #endif

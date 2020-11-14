@@ -24,8 +24,8 @@ namespace {
             case CursorStyle::RESIZE_NESW: return SDL_SYSTEM_CURSOR_SIZENESW;
             case CursorStyle::RESIZE_NWSE: return SDL_SYSTEM_CURSOR_SIZENWSE;
             case CursorStyle::TEXT_INPUT: return SDL_SYSTEM_CURSOR_IBEAM;
-            default: break;
-        };
+            case CursorStyle::COUNT: break;
+        }
 
         return SDL_SYSTEM_CURSOR_NO;
     }
@@ -37,7 +37,7 @@ namespace {
         }
 
         return true;
-    };
+    }
 
     bool ValidateAssert(const I32 errCode) {
         if (!Validate(errCode)) {
@@ -46,9 +46,9 @@ namespace {
         }
 
         return true;
-    };
+    }
 
-}; // namespace 
+} // namespace 
 
 hashMap<CursorStyle, SDL_Cursor*> WindowManager::s_cursors;
 
@@ -194,7 +194,7 @@ ErrorCode WindowManager::init(PlatformContext& context,
     }
 
     for (U8 i = 0; i < to_U8(CursorStyle::COUNT); ++i) {
-        const CursorStyle style = static_cast<CursorStyle>(i);
+        const auto style = static_cast<CursorStyle>(i);
         s_cursors[style] = SDL_CreateSystemCursor(CursorToSDL(style));
     }
 
@@ -222,7 +222,7 @@ void WindowManager::close() {
 
 DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, ErrorCode& err, U32& windowIndex ) {
     windowIndex = std::numeric_limits<U32>::max();
-    DisplayWindow* window = MemoryManager_NEW DisplayWindow(*this, *_context);
+    auto* window = MemoryManager_NEW DisplayWindow(*this, *_context);
     assert(window != nullptr);
 
     if (err != ErrorCode::NO_ERR) {
@@ -284,42 +284,42 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
     if (err != ErrorCode::NO_ERR) {
         MemoryManager::SAFE_DELETE(window);
         return nullptr;
-    } else {
-        windowIndex = to_U32(_windows.size());
-        _windows.emplace_back(window);
-        window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
-            SizeChangeParams params;
-            params.width = to_U16(args.x);
-            params.height = to_U16(args.y);
-            params.isWindowResize = true;
-            params.isFullScreen = args._flag;
-            params.winGUID = args._windowGUID;
+    }
+ 
+    windowIndex = to_U32(_windows.size());
+    _windows.emplace_back(window);
+    window->addEventListener(WindowEvent::SIZE_CHANGED, [this](const DisplayWindow::WindowEventArgs& args) {
+        SizeChangeParams params;
+        params.width = to_U16(args.x);
+        params.height = to_U16(args.y);
+        params.isWindowResize = true;
+        params.isFullScreen = args._flag;
+        params.winGUID = args._windowGUID;
 
-            // Only if rendering window
-            return _context->app().onSizeChange(params);
-        });
+        // Only if rendering window
+        return _context->app().onSizeChange(params);
+    });
 
-        if (!descriptor.externalClose) {
-            window->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
-                Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
+    if (!descriptor.externalClose) {
+        window->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
+            Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
 
-                if (_mainWindowGUID == args._windowGUID) {
-                    _context->app().RequestShutdown();
-                } else {
-                    for (DisplayWindow*& win : _windows) {
-                        if (win->getGUID() == args._windowGUID) {
-                            if (!destroyWindow(win)) {
-                                Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
-                                win->hidden(true);
-                            }
-                            break;
+            if (_mainWindowGUID == args._windowGUID) {
+                _context->app().RequestShutdown();
+            } else {
+                for (DisplayWindow*& win : _windows) {
+                    if (win->getGUID() == args._windowGUID) {
+                        if (!destroyWindow(win)) {
+                            Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
+                            win->hidden(true);
                         }
+                        break;
                     }
-                    return false;
                 }
-                return true;
-            });
-        }
+                return false;
+            }
+            return true;
+        });
     }
 
     return window;
@@ -384,10 +384,12 @@ ErrorCode WindowManager::configureAPISettings(const RenderAPI api, const U16 des
 {
     Uint32 OpenGLFlags = SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG | SDL_GL_CONTEXT_RESET_ISOLATION_FLAG;
 
+    bool useDebugContext = false;
     if_constexpr (Config::ENABLE_GPU_VALIDATION) {
         // OpenGL error handling is available in any build configuration if the proper defines are in place.
         OpenGLFlags |= SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG;
         if (_context->config().debug.enableRenderAPIDebugging) {
+            useDebugContext = true;
             OpenGLFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
         }
     }
@@ -403,7 +405,7 @@ ErrorCode WindowManager::configureAPISettings(const RenderAPI api, const U16 des
     ValidateAssert(SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8));
     ValidateAssert(SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24));
 
-    if (!Config::ENABLE_GPU_VALIDATION || !_context->config().debug.enableRenderAPIDebugging) {
+    if (!useDebugContext) {
         ValidateAssert(SDL_GL_SetAttribute(SDL_GL_CONTEXT_NO_ERROR, 1));
     }
 
@@ -558,4 +560,4 @@ void WindowManager::hideAll() noexcept {
     }
 }
 
-}; //namespace Divide
+} //namespace Divide

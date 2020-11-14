@@ -69,7 +69,7 @@ class Camera : public Resource {
 
     virtual void fromCamera(const Camera& camera, bool flag = false);
     virtual void fromSnapshot(const CameraSnapshot& snapshot);
-    const CameraSnapshot& snapshot() const noexcept;
+    [[nodiscard]] const CameraSnapshot& snapshot() const noexcept;
 
     // Return true if the cached camera state wasn't up-to-date
     bool updateLookAt();
@@ -111,48 +111,48 @@ class Camera : public Resource {
     void setEuler(const vec3<Angle::DEGREES<F32>>& euler) { setRotation(euler.yaw, euler.pitch, euler.roll); }
 
     void setAspectRatio(F32 ratio) noexcept;
-    F32 getAspectRatio() const noexcept { return _data._aspectRatio; }
+    [[nodiscard]] F32 getAspectRatio() const noexcept { return _data._aspectRatio; }
 
     void setVerticalFoV(Angle::DEGREES<F32> verticalFoV) noexcept;
-    Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
+    [[nodiscard]] Angle::DEGREES<F32> getVerticalFoV() const noexcept { return _data._FoV; }
 
     void setHorizontalFoV(Angle::DEGREES<F32> horizontalFoV) noexcept;
-    Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
+    [[nodiscard]] Angle::DEGREES<F32> getHorizontalFoV() const noexcept {
         const Angle::RADIANS<F32> halfFoV = Angle::to_RADIANS(_data._FoV) * 0.5f;
         return Angle::to_DEGREES(2.0f * std::atan(tan(halfFoV) * _data._aspectRatio));
     }
 
-    const CameraType& type() const noexcept { return _type; }
-    const vec3<F32>& getEye() const noexcept { return _data._eye; }
-    const vec3<Angle::DEGREES<F32>>& getEuler() const noexcept { return _euler; }
-    const Quaternion<F32>& getOrientation() const noexcept { return _data._orientation; }
-    const vec2<F32>& getZPlanes() const noexcept { return _data._zPlanes; }
-    const vec4<F32>& orthoRect() const noexcept { return _orthoRect; }
-    bool isOrthoProjected() const noexcept { return _data._isOrthoCamera; }
+    [[nodiscard]] const CameraType& type() const noexcept { return _type; }
+    [[nodiscard]] const vec3<F32>& getEye() const noexcept { return _data._eye; }
+    [[nodiscard]] const vec3<Angle::DEGREES<F32>>& getEuler() const noexcept { return _euler; }
+    [[nodiscard]] const Quaternion<F32>& getOrientation() const noexcept { return _data._orientation; }
+    [[nodiscard]] const vec2<F32>& getZPlanes() const noexcept { return _data._zPlanes; }
+    [[nodiscard]] const vec4<F32>& orthoRect() const noexcept { return _orthoRect; }
+    [[nodiscard]] bool isOrthoProjected() const noexcept { return _data._isOrthoCamera; }
 
-    vec3<F32> getUpDir() const noexcept {
+    [[nodiscard]] vec3<F32> getUpDir() const noexcept {
         const mat4<F32>& viewMat = viewMatrix();
         return vec3<F32>(viewMat.m[0][1], viewMat.m[1][1], viewMat.m[2][1]);
     }
 
-    vec3<F32> getRightDir() const noexcept {
+    [[nodiscard]] vec3<F32> getRightDir() const noexcept {
         const mat4<F32>& viewMat = viewMatrix();
         return vec3<F32>(viewMat.m[0][0], viewMat.m[1][0], viewMat.m[2][0]);
     }
 
-    vec3<F32> getForwardDir() const noexcept {
+    [[nodiscard]] vec3<F32> getForwardDir() const noexcept {
         const mat4<F32>& viewMat = viewMatrix();
         return vec3<F32>(-viewMat.m[0][2], -viewMat.m[1][2], -viewMat.m[2][2]);
     }
 
-    const mat4<F32>& viewMatrix() const noexcept { return _data._viewMatrix; }
-    const mat4<F32>& viewMatrix()                { updateViewMatrix(); return _data._viewMatrix; }
+    [[nodiscard]] const mat4<F32>& viewMatrix() const noexcept { return _data._viewMatrix; }
+    [[nodiscard]] const mat4<F32>& viewMatrix()                { updateViewMatrix(); return _data._viewMatrix; }
 
-    const mat4<F32>& projectionMatrix() const noexcept { return _data._projectionMatrix; }
-    const mat4<F32>& projectionMatrix()                { updateProjection(); return _data._projectionMatrix; }
+    [[nodiscard]] const mat4<F32>& projectionMatrix() const noexcept { return _data._projectionMatrix; }
+    [[nodiscard]] const mat4<F32>& projectionMatrix()                { updateProjection(); return _data._projectionMatrix; }
 
-    mat4<F32> worldMatrix()                                      { return GetInverse(viewMatrix()); }
-    mat4<F32> worldMatrix()                       const noexcept { return GetInverse(viewMatrix()); }
+    [[nodiscard]] mat4<F32> worldMatrix()                                      { return GetInverse(viewMatrix()); }
+    [[nodiscard]] mat4<F32> worldMatrix()                       const noexcept { return GetInverse(viewMatrix()); }
     void      worldMatrix(mat4<F32>& worldMatOut)                { viewMatrix().getInverse(worldMatOut); }
     void      worldMatrix(mat4<F32>& worldMatOut) const noexcept { viewMatrix().getInverse(worldMatOut); }
 
@@ -168,18 +168,18 @@ class Camera : public Resource {
     /// Extract the frustum associated with our current PoV
     virtual bool updateFrustum();
     /// Get the camera's current frustum
-    const Frustum& getFrustum() const noexcept { assert(!_frustumDirty); return _frustum; }
-    Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
+    [[nodiscard]] const Frustum& getFrustum() const noexcept { assert(!_frustumDirty); return _frustum; }
+    [[nodiscard]] Frustum& getFrustum() noexcept { assert(!_frustumDirty); return _frustum; }
     void lockFrustum(const bool state) noexcept { _frustumLocked = state; }
 
     /// Returns the world space direction for the specified winCoords for this camera
     /// Use getEye() + unProject(...) * distance for a world-space position
-    vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, const Rect<I32>& viewport) const;
-    vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const { return unProject(winCoords.x, winCoords.y, viewport); }
-    vec2<F32> project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const noexcept;
+    [[nodiscard]] vec3<F32> unProject(F32 winCoordsX, F32 winCoordsY, const Rect<I32>& viewport) const;
+    [[nodiscard]] vec3<F32> unProject(const vec3<F32>& winCoords, const Rect<I32>& viewport) const { return unProject(winCoords.x, winCoords.y, viewport); }
+    [[nodiscard]] vec2<F32> project(const vec3<F32>& worldCoords, const Rect<I32>& viewport) const noexcept;
 
-    bool removeUpdateListener(U32 id);
-    U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
+    [[nodiscard]] bool removeUpdateListener(U32 id);
+    [[nodiscard]] U32 addUpdateListener(const DELEGATE<void, const Camera& /*updated camera*/>& f);
 
                   void flag(const U8 flag)       noexcept { _data._flag = flag; }
     [[nodiscard]] U8   flag()              const noexcept { return _data._flag; }
@@ -191,17 +191,17 @@ class Camera : public Resource {
     virtual bool updateProjection();
     virtual void update(F32 deltaTimeMS) noexcept;
 
-    const char* getResourceTypeName() const noexcept override { return "Camera"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Camera"; }
 
-    bool dirty() const noexcept { return _projectionDirty || _viewMatrixDirty || _frustumDirty; }
+    [[nodiscard]] bool dirty() const noexcept { return _projectionDirty || _viewMatrixDirty || _frustumDirty; }
    protected:
     SET_DELETE_FRIEND
     SET_DELETE_HASHMAP_FRIEND
     explicit Camera(const Str256& name, const CameraType& type, const vec3<F32>& eye = VECTOR3_ZERO);
 
    protected:
-     using ListenerMap = hashMap<U32, DELEGATE<void, const Camera&>>;
-     ListenerMap _updateCameraListeners;
+    using ListenerMap = hashMap<U32, DELEGATE<void, const Camera&>>;
+    ListenerMap _updateCameraListeners;
 
     CameraSnapshot _data;
     Frustum _frustum;
@@ -223,7 +223,7 @@ class Camera : public Resource {
 
    // Camera pool
    public:
-    static void update(const U64 deltaTimeUS);
+    static void update(U64 deltaTimeUS);
     static void initPool();
     static void destroyPool();
 
@@ -286,7 +286,7 @@ protected:
         : Camera(name, Type(), eye)
     {
     }
-    bool unload() noexcept final { return Camera::unload(); }
+    bool unload() noexcept { return Camera::unload(); }
 
 public:
     ~StaticCamera() = default;

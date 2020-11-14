@@ -107,6 +107,6 @@ class StateTracker {
     std::array<optionalValue, to_base(State::COUNT)> _trackedValues;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif// UTIL_STATE_TRACKER_H_

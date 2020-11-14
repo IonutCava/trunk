@@ -215,7 +215,7 @@ public:
 
     /// Returns a pointer to a specific component. Returns null if the SGN does not have the component requested
     template <typename T>
-    T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } //< ToDo: Optimise this -Ionut
+    T* get() const { return _compManager->GetComponent<T>(GetEntityID()); } ///< ToDo: Optimise this -Ionut
 
     void SendEvent(ECS::CustomEvent&& event);
 
@@ -239,11 +239,11 @@ public:
 
         if (comp->type()._value == ComponentType::TRANSFORM) {
             //Ewww
-            Hacks._transformComponentCache = (TransformComponent*)(comp);
+            Hacks._transformComponentCache = (TransformComponent*)comp;
         }
         if (comp->type()._value == ComponentType::BOUNDS) {
             //Ewww x2
-            Hacks._boundsComponentCache = (BoundsComponent*)(comp);
+            Hacks._boundsComponentCache = (BoundsComponent*)comp;
         }
 
         return static_cast<T*>(comp);
@@ -466,7 +466,7 @@ namespace Attorney {
     };
     
     class SceneGraphNodeScene {
-        static const void reserveChildCount(SceneGraphNode* node, size_t count) noexcept {
+        static const void reserveChildCount(SceneGraphNode* node, const size_t count) noexcept {
             node->lockChildrenForWrite();
             node->_children.reserve(count);
             node->unlockChildrenForWrite();

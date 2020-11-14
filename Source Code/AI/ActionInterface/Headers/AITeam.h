@@ -46,13 +46,14 @@ class AIManager;
 namespace Navigation {
     class DivideDtCrowd;
     class NavigationMesh;
-};
+}
 
 class Order {
    public:
-    Order(U32 id) : _id(id), _locked(false) {}
-    inline U32 getID() const { return _id; }
-    inline bool locked() const { return _locked; }
+    virtual ~Order() = default;
+    Order(const U32 id) : _id(id), _locked(false) {}
+    [[nodiscard]] U32 getID() const { return _id; }
+    [[nodiscard]] bool locked() const { return _locked; }
     virtual void lock() { _locked = true; }
     virtual void unlock() { _locked = false; }
 
@@ -61,7 +62,7 @@ class Order {
     bool _locked;
 };
 
-class AITeam : public GUIDWrapper {
+class AITeam final : public GUIDWrapper {
    public:
     using CrowdPtr = Navigation::DivideDtCrowd*;
     using AITeamCrowd = hashMap<AIEntity::PresetAgentRadius, CrowdPtr>;
@@ -74,9 +75,9 @@ class AITeam : public GUIDWrapper {
     AITeam(U32 id, AIManager& parentManager);
     ~AITeam();
 
-    inline CrowdPtr const getCrowd(AIEntity::PresetAgentRadius radius) const {
+    CrowdPtr getCrowd(AIEntity::PresetAgentRadius radius) const {
         SharedLock<SharedMutex> r_lock(_crowdMutex);
-        AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
+        const AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
         if (it != std::end(_aiTeamCrowd)) {
             return it->second;
         }
@@ -88,33 +89,34 @@ class AITeam : public GUIDWrapper {
     bool addEnemyTeam(U32 enemyTeamID);
     bool removeEnemyTeam(U32 enemyTeamID);
 
-    inline void setTeamID(U32 value) { _teamID = value; }
-    inline U32  getTeamID() const { return _teamID; }
-    inline I32  getEnemyTeamID(U32 index) const {
+    void setTeamID(const U32 value) { _teamID = value; }
+    U32  getTeamID() const { return _teamID; }
+
+    I32  getEnemyTeamID(const U32 index) const {
         if (_enemyTeams.size() <= index) {
             return -1;
         }
         return _enemyTeams[index];
     }
 
-    inline const TeamMap& getTeamMembers() const { return _team; }
-    inline MemberVariable& getMemberVariable() { return _memberVariable; }
+    const TeamMap& getTeamMembers() const { return _team; }
+    MemberVariable& getMemberVariable() { return _memberVariable; }
 
-    inline void clearOrders() {
+    void clearOrders() {
         UniqueLock<SharedMutex> w_lock(_orderMutex);
         _orders.clear();
     }
 
-    inline void addOrder(const OrderPtr& order) {
+    void addOrder(const OrderPtr& order) {
         UniqueLock<SharedMutex> w_lock(_orderMutex);
         if (findOrder(order->getID()) == std::end(_orders)) {
             _orders.push_back(order);
         }
     }
 
-    inline void removeOrder(const Order& order) {
+    void removeOrder(const Order& order) {
         UniqueLock<SharedMutex> w_lock(_orderMutex);
-        OrderList::iterator it = findOrder(order);
+        const OrderList::iterator it = findOrder(order);
         if (it != std::end(_orders)) {
             _orders.erase(it);
         }
@@ -126,21 +128,20 @@ class AITeam : public GUIDWrapper {
     friend class AIManager;
     /// Update the crowding system
     void resetCrowd();
-    bool processInput(TaskPool& parentPool, U64 deltaTimeUS);
-    bool processData(TaskPool& parentPool, U64 deltaTimeUS);
-    bool update(TaskPool& parentPool, U64 deltaTimeUS);
-    void addCrowd(AIEntity::PresetAgentRadius radius,
-                  Navigation::NavigationMesh* crowd);
+    [[nodiscard]] bool processInput(TaskPool& parentPool, U64 deltaTimeUS);
+    [[nodiscard]] bool processData(TaskPool& parentPool, U64 deltaTimeUS);
+    [[nodiscard]] bool update(TaskPool& parentPool, U64 deltaTimeUS);
+    void addCrowd(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* navMesh);
     void removeCrowd(AIEntity::PresetAgentRadius radius);
 
    protected:
-       vectorEASTL<AIEntity*> getEntityList() const;
+    [[nodiscard]] vectorEASTL<AIEntity*> getEntityList() const;
 
-    inline OrderList::iterator findOrder(const Order& order) {
+    [[nodiscard]] OrderList::iterator findOrder(const Order& order) {
         return findOrder(order.getID());
     }
 
-    inline OrderList::iterator findOrder(U32 orderID) {
+    [[nodiscard]] OrderList::iterator findOrder(U32 orderID) {
         return eastl::find_if(
             eastl::begin(_orders), 
             eastl::end(_orders),
@@ -149,10 +150,10 @@ class AITeam : public GUIDWrapper {
             });
     }
 
-    inline vectorEASTL<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
+    [[nodiscard]] vectorEASTL<U32>::iterator findEnemyTeamEntry(U32 enemyTeamID) {
         return eastl::find_if(
-            eastl::begin(_enemyTeams), eastl::end(_enemyTeams),
-            [&enemyTeamID](U32 id) -> bool { return id == enemyTeamID; });
+            begin(_enemyTeams), end(_enemyTeams),
+            [&enemyTeamID](const U32 id) -> bool { return id == enemyTeamID; });
     }
 
    protected:
@@ -161,7 +162,7 @@ class AITeam : public GUIDWrapper {
    private:
     U32 _teamID;
     TeamMap _team;
-    AI::AIManager& _parentManager;
+    AIManager& _parentManager;
     /// Container with data per team member. For example a map of distances
     MemberVariable _memberVariable;
     AITeamCrowd _aiTeamCrowd;
@@ -171,7 +172,7 @@ class AITeam : public GUIDWrapper {
     OrderList _orders;
 };
 
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide
 
 #endif

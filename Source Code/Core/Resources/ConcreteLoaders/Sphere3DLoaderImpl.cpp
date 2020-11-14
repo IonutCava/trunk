@@ -35,4 +35,4 @@ CachedResource_ptr ImplResourceLoader<Sphere3D>::operator()() {
     return ptr;
 }
 
-};
+}

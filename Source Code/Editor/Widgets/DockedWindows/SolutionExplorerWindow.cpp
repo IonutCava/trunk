@@ -35,7 +35,7 @@ namespace Divide {
         vec3<F32> g_particleAcceleration = {0.f, -20.f, 0.f};
         FColour4 g_particleStartColour = DefaultColours::BLACK;
         FColour4 g_particleEndColour = DefaultColours::WHITE;
-    };
+    }
 
     SolutionExplorerWindow::SolutionExplorerWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
@@ -129,7 +129,7 @@ namespace Divide {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
                                         //Conflicts with "Teleport to node on double click"
                                         // | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-        const bool wasSelected = secondaryView ? (_tempParent != nullptr && _tempParent->getGUID() == sgn->getGUID()) : sgn->hasFlag(SceneGraphNode::Flags::SELECTED);
+        const bool wasSelected = secondaryView ? _tempParent != nullptr && _tempParent->getGUID() == sgn->getGUID() : sgn->hasFlag(SceneGraphNode::Flags::SELECTED);
 
         if (open) {
             node_flags |= ImGuiTreeNodeFlags_DefaultOpen;
@@ -153,7 +153,7 @@ namespace Divide {
                 if (secondaryView) {
                     _tempParent = sgn;
                 } else {
-                    const bool parentSelected = (!isRoot && sgn->parent()->hasFlag(SceneGraphNode::Flags::SELECTED));
+                    const bool parentSelected = !isRoot && sgn->parent()->hasFlag(SceneGraphNode::Flags::SELECTED);
                     const bool childrenSelected = sgn->getChildCount() > 0 && sgn->getChild(0u)->hasFlag(SceneGraphNode::Flags::SELECTED);
 
                     sceneManager->resetSelection(0);
@@ -251,8 +251,8 @@ namespace Divide {
         ms_per_frame_accum += ms_per_frame[ms_per_frame_idx];
         ms_per_frame_idx = (ms_per_frame_idx + 1) % g_maxEntryCount;
         const F32 ms_per_frame_avg = ms_per_frame_accum / g_maxEntryCount;
-        if (ms_per_frame_avg + (Config::TARGET_FRAME_RATE / 1000.0f) > max_ms_per_frame) {
-            max_ms_per_frame = ms_per_frame_avg + (Config::TARGET_FRAME_RATE / 1000.0f);
+        if (ms_per_frame_avg + Config::TARGET_FRAME_RATE / 1000.0f > max_ms_per_frame) {
+            max_ms_per_frame = ms_per_frame_avg + Config::TARGET_FRAME_RATE / 1000.0f;
         }
 
         // We need this bit to get a nice "flowing" feel
@@ -261,9 +261,9 @@ namespace Divide {
             g_framerateBuffer.pop_front();
         }
         g_framerateBufferCont.resize(0);
-        g_framerateBufferCont.insert(eastl::cbegin(g_framerateBufferCont),
-                                     eastl::cbegin(g_framerateBuffer),
-                                     eastl::cend(g_framerateBuffer));
+        g_framerateBufferCont.insert(cbegin(g_framerateBufferCont),
+                                     cbegin(g_framerateBuffer),
+                                     cend(g_framerateBuffer));
         ImGui::PlotHistogram("",
                              g_framerateBufferCont.data(),
                              to_I32(g_framerateBufferCont.size()),
@@ -686,4 +686,4 @@ namespace Divide {
             }
         }
     }
-};
+}

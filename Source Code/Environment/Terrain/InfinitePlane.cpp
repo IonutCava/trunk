@@ -14,22 +14,17 @@
 
 namespace Divide {
 
-InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const vec2<U16>& dimensions)
+InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, vec2<U16> dimensions)
     : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_INFINITEPLANE, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
-      _planeRenderStateHash(0),
-      _planeRenderStateHashPrePass(0),
       _context(context),
-      _dimensions(dimensions),
-      _plane(nullptr)
+      _dimensions(std::move(dimensions)),
+      _plane(nullptr),
+      _planeRenderStateHash(0),
+      _planeRenderStateHashPrePass(0)
 {
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
     _renderState.addToDrawExclusionMask(RenderStage::REFLECTION);
     _renderState.addToDrawExclusionMask(RenderStage::REFRACTION);
-}
-
-InfinitePlane::~InfinitePlane() 
-{
-
 }
 
 bool InfinitePlane::load() {
@@ -155,4 +150,4 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode* sgn,
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-}; //namespace Divide
+} //namespace Divide

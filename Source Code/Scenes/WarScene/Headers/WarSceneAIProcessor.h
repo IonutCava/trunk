@@ -80,16 +80,16 @@ class WorkingMemoryFact {
         _belief = 0.0f;
     }
 
-    inline void value(const T& val) {
+    void value(const T& val) {
         _value = val;
         belief(1.0f);
     }
 
-    inline void belief(F32 belief) { _belief = belief; }
+    void belief(const F32 belief) { _belief = belief; }
 
-    inline const T& value() const { return _value; }
-    inline FactType type() const { return _type; }
-    inline F32 belief() const { return _belief; }
+    [[nodiscard]] const T& value() const { return _value; }
+    [[nodiscard]] FactType type() const { return _type; }
+    [[nodiscard]] F32 belief() const { return _belief; }
 
    protected:
     T _value;
@@ -142,7 +142,7 @@ class LocalWorkingMemory {
     ToggleStateFact _isFlagRetriever;
 };
 
-class WarSceneOrder : public Order {
+class WarSceneOrder final : public Order {
    public:
     enum class WarOrder : U8 {
         IDLE = 0,
@@ -154,13 +154,14 @@ class WarSceneOrder : public Order {
         COUNT
     };
 
-    WarSceneOrder(WarOrder order) : Order(to_U32(order))
+    WarSceneOrder(const WarOrder order) : Order(to_U32(order))
     {
     }
 
-    void evaluatePriority();
-    void lock() { Order::lock(); }
-    void unlock() { Order::unlock(); }
+    virtual ~WarSceneOrder() = default;
+
+    void lock() override { Order::lock(); }
+    void unlock() override { Order::unlock(); }
 };
 
 struct GOAPPackage {
@@ -171,7 +172,7 @@ struct GOAPPackage {
 
 namespace Attorney {
     class WarAISceneWarAction;
-};
+}
 
 class AudioSensor;
 class VisualSensor;
@@ -191,10 +192,10 @@ class WarSceneAIProcessor : public AIProcessor {
 
     void registerGOAPPackage(const GOAPPackage& package);
 
-    bool processData(U64 deltaTimeUS);
-    bool processInput(U64 deltaTimeUS);
-    bool update(U64 deltaTimeUS, NPC* unitRef = nullptr);
-    void processMessage(AIEntity& sender, AIMsg msg, const std::any& msg_content);
+    bool processData(U64 deltaTimeUS) override;
+    bool processInput(U64 deltaTimeUS) override;
+    bool update(U64 deltaTimeUS, NPC* unitRef = nullptr) override;
+    void processMessage(AIEntity& sender, AIMsg msg, const std::any& msg_content) override;
 
     static void registerFlags(SceneGraphNode* flag1, SceneGraphNode* flag2) {
         _globalWorkingMemory._flags[0].value(flag1);
@@ -225,18 +226,18 @@ class WarSceneAIProcessor : public AIProcessor {
     bool preAction(ActionType type, const WarSceneAction* warAction);
     bool postAction(ActionType type, const WarSceneAction* warAction);
     bool checkCurrentActionComplete(const GOAPAction& planStep);
-    void invalidateCurrentPlan();
-    stringImpl toString(bool state = false) const;
+    void invalidateCurrentPlan() override;
+    stringImpl toString(bool state = false) const override;
 
    private:
     bool DIE();
     void requestOrders();
     void updatePositions();
-    bool performAction(const GOAPAction& planStep);
-    bool performActionStep(GOAPAction::operationsIterator step);
-    const stringImpl& printActionStats(const GOAPAction& planStep) const;
+    bool performAction(const GOAPAction& planStep) override;
+    bool performActionStep(GOAPAction::operationsIterator step) override;
+    const stringImpl& printActionStats(const GOAPAction& planStep) const override;
     void printWorkingMemory();
-    void initInternal();
+    void initInternal() override;
     void beginPlan(const GOAPGoal& currentGoal);
     AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
 
@@ -249,14 +250,13 @@ class WarSceneAIProcessor : public AIProcessor {
 
   private:
     AIType _type;
-    U16 _tickCount;
-    U64 _deltaTime;
-    U8 _visualSensorUpdateCounter;
-    U64 _attackTimer;
-    stringImpl _planStatus;
+    U64 _deltaTime = 0ULL;
+    U8 _visualSensorUpdateCounter = 0;
+    U64 _attackTimer = 0ULL;
+    stringImpl _planStatus = "None";
     stringImpl _tempString;
-    VisualSensor* _visualSensor;
-    AudioSensor* _audioSensor;
+    VisualSensor* _visualSensor = nullptr;
+    AudioSensor* _audioSensor = nullptr;
     LocalWorkingMemory _localWorkingMemory;
     /// Keep this in memory at this level
     vectorEASTL<WarSceneAction> _actionList;
@@ -274,28 +274,30 @@ class WarSceneAIProcessor : public AIProcessor {
 
 template <typename... Args>
 void WarSceneAIProcessor::PRINT(const char* format, Args&&... args) const {
-    #if defined(PRINT_AI_TO_FILE)
+#if defined(PRINT_AI_TO_FILE)
     Console::d_printfn(_WarAIOutputStream, format, FWD(args)...);
-    #endif
+#else
+    ACKNOWLEDGE_UNUSED(format);
+#endif
 }
 
 namespace Attorney {
 class WarAISceneWarAction {
    private:
     static bool preAction(WarSceneAIProcessor& aiProcessor, ActionType type,
-                          const Divide::AI::WarSceneAction* warAction) {
+                          const WarSceneAction* warAction) {
         return aiProcessor.preAction(type, warAction);
     }
     static bool postAction(WarSceneAIProcessor& aiProcessor, ActionType type,
-                           const Divide::AI::WarSceneAction* warAction) {
+                           const WarSceneAction* warAction) {
         return aiProcessor.postAction(type, warAction);
     }
 
-    friend class Divide::AI::WarSceneAction;
+    friend class AI::WarSceneAction;
 };
 
-};  // namespace Attorney
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace AI
+}  // namespace Divide
 
 #endif

@@ -37,7 +37,8 @@ namespace {
         std::atomic_bool g_wasSetUp = false;
 
         struct assimpStream final : public Assimp::LogStream {
-            void write(const char* message) final {
+            void write(const char* message)
+            {
                 Console::printf("%s\n", message);
             }
         };
@@ -112,11 +113,11 @@ namespace {
 
 
     hashMap<U32, TextureWrap>
-    DVDConverter::aiTextureMapModeTable = DVDConverter::fillTextureWrapMap();
+    DVDConverter::aiTextureMapModeTable = fillTextureWrapMap();
     hashMap<U32, ShadingMode>
-    DVDConverter::aiShadingModeInternalTable = DVDConverter::fillShadingModeMap();
+    DVDConverter::aiShadingModeInternalTable = fillShadingModeMap();
     hashMap<U32, TextureOperation>
-    DVDConverter::aiTextureOperationTable = DVDConverter::fillTextureOperationMap();
+    DVDConverter::aiTextureOperationTable = fillTextureOperationMap();
 
 DVDConverter::DVDConverter(PlatformContext& context, Import::ImportData& target, bool& result) {
     bool expected = false;
@@ -157,7 +158,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
                             aiProcess_OptimizeMeshes |
                             aiProcess_TransformUVCoords;// Preprocess UV transformations (scaling, translation ...)
 
-    const aiScene* aiScenePointer = importer.ReadFile(((filePath.str() + "/") + fileName.str()).c_str(), ppsteps);
+    const aiScene* aiScenePointer = importer.ReadFile((filePath.str() + "/" + fileName.str()).c_str(), ppsteps);
 
     if (!aiScenePointer) {
         Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), fileName.c_str(), importer.GetErrorString());
@@ -430,7 +431,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
         auto& source_indices = subMeshData._indices[0];
         auto& source_vertices = subMeshData._vertices[0];
 
-        const F32 targetSimplification = (g_useSloppyMeshSimplification ? g_SloppyTrianglePercentPerLoD : g_PreciseTrianglePercentPerLoD) * 0.01f;
+        constexpr F32 targetSimplification = (g_useSloppyMeshSimplification ? g_SloppyTrianglePercentPerLoD : g_PreciseTrianglePercentPerLoD) * 0.01f;
 
         if (source_indices.size() >= g_minIndexCountForAutoLoD) {
             for (U8 i = 1; i < Import::MAX_LOD_LEVELS; ++i) {
@@ -509,9 +510,6 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     aiGetMaterialInteger(mat, AI_MATKEY_SHADING_MODEL, &shadingModel);
     material.shadingMode(aiShadingModeInternalTable[shadingModel]);
 
-    const bool isPBRMaterial = !(material.shadingMode() != ShadingMode::OREN_NAYAR && 
-                                 material.shadingMode() != ShadingMode::COOK_TORRANCE);
-    
     // Load material opacity value
     F32 alpha = 1.0f;
     aiGetMaterialFloat(mat, AI_MATKEY_OPACITY, &alpha);

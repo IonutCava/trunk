@@ -63,6 +63,6 @@ void RenderingComponent::onRenderOptionChanged(const RenderOptions option, const
           }
       } break;
       default: break;
-    };
+    }
 }
-}; //namespace Divide
+} //namespace Divide

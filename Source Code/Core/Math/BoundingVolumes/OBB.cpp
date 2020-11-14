@@ -6,10 +6,10 @@
 #include "Headers/BoundingSphere.h"
 
 namespace Divide {
-    OBB::OBB(const vec3<F32>& pos, const vec3<F32>& hExtents, const OBBAxis& axis)  noexcept
-        : _position(pos),
-          _halfExtents(hExtents),
-          _axis(axis)
+    OBB::OBB(vec3<F32> pos, vec3<F32> hExtents, OBBAxis axis)  noexcept
+        : _position(std::move(pos)),
+       _halfExtents(std::move(hExtents)),
+          _axis(std::move(axis))
     {
     }
 
@@ -64,9 +64,9 @@ namespace Divide {
         OrthoNormalize(_axis[0], _axis[1], _axis[2]);
     }
 
-    void OBB::fromBoundingSphere(const BoundingSphere& bSphere)  noexcept {
-        _position.set(bSphere.getCenter());
-        _halfExtents.set(bSphere.getRadius());
+    void OBB::fromBoundingSphere(const BoundingSphere& sphere)  noexcept {
+        _position.set(sphere.getCenter());
+        _halfExtents.set(sphere.getRadius());
         _axis = { WORLD_X_AXIS, WORLD_Y_AXIS, WORLD_Z_AXIS };
     }
 
@@ -202,7 +202,7 @@ namespace Divide {
         }
 
         RayResult ret;
-        ret.dist = (tNear > 0.f) ? tNear : tFar;
+        ret.dist = tNear > 0.f ? tNear : tFar;
         // Ray started inside the box
         if (ret.dist < 0.0f) {
             ret.dist = 0.0f;
@@ -213,4 +213,4 @@ namespace Divide {
         return ret;
     }
 
-};  // namespace Divide
+}  // namespace Divide

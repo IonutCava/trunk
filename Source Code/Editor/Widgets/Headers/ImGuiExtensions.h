@@ -37,6 +37,6 @@ namespace ImGui {
 
     void ToggleButton(const char* str_id, bool* v);
 
-}; //namespace ImGui
+} //namespace ImGui
 
 #endif //_EDITOR_IMGUI_EXTENSIONS_H_

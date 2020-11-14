@@ -11,10 +11,10 @@
 namespace Divide {
 
 Quadtree::Quadtree(GFXDevice& context)
-    : _context(context),
-      _root(eastl::make_unique<QuadtreeNode>(context, this))
+    : _root(eastl::make_unique<QuadtreeNode>(context, this)),
+      _context(context)
 {
-    RenderStateBlock primitiveRenderState;
+    const RenderStateBlock primitiveRenderState;
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveRenderState.getHash();
     pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
@@ -56,15 +56,15 @@ void Quadtree::drawBBox(RenderPackage& packageOut) {
     packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
 }
 
-QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
+QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) const
+{
     assert(_root);
 
     QuadtreeNode* node = _root.get();
-    QuadtreeNode* child = nullptr;
     while (!node->isALeaf()) {
-        U32 i = 0;
+        U32 i;
         for (i = 0; i < 4; i++) {
-            child = &(node->getChild(i));
+            QuadtreeNode* child = &node->getChild(i);
             const BoundingBox& bb = child->getBoundingBox();
             if (bb.containsPoint(vec3<F32>(pos.x, bb.getCenter().y, pos.y))) {
                 node = child;
@@ -81,18 +81,21 @@ QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) {
 }
 
 void Quadtree::build(BoundingBox& terrainBBox,
-                     const vec2<U16>& HMsize,
-                     U32 targetChunkDimension,
+                     const vec2<U16>& HMSize,
+                     const U32 targetChunkDimension,
                      Terrain* const terrain) {
 
     _root->setBoundingBox(terrainBBox);
-    _root->build(0, vec2<U16>(0u), HMsize, targetChunkDimension, terrain, _chunkCount);
+    _root->build(0, vec2<U16>(0u), HMSize, targetChunkDimension, terrain, _chunkCount);
 }
 
-const BoundingBox& Quadtree::computeBoundingBox() {
+const BoundingBox& Quadtree::computeBoundingBox() const {
     assert(_root);
     BoundingBox rootBB = _root->getBoundingBox();
-    _root->computeBoundingBox(rootBB);
+    if (!_root->computeBoundingBox(rootBB)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
+
     return _root->getBoundingBox();
 }
-};
+}

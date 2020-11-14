@@ -40,17 +40,17 @@ namespace AI {
 
 namespace Attorney {
     class AudioSensorConstructor;
-};
+}
 
 class AudioSensor final : public Sensor {
     friend class Attorney::AudioSensorConstructor;
 
    public:
-    void update(U64 deltaTimeUS);
-    ~AudioSensor();
+    void update(U64 deltaTimeUS) override;
+    ~AudioSensor() = default;
 
    protected:
-    AudioSensor(AIEntity* const parentEntity);
+    AudioSensor(AIEntity* parentEntity);
 };
 
 namespace Attorney {
@@ -60,10 +60,10 @@ class AudioSensorConstructor {
         return MemoryManager_NEW AudioSensor(parentEntity);
     }
 
-    friend class Divide::AI::AIEntity;
+    friend class AI::AIEntity;
 };
-};  // namespace Attorney
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace AI
+}  // namespace Divide
 
 #endif

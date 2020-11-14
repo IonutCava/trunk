@@ -9,7 +9,7 @@ namespace Divide {
 namespace {
     SharedMutex g_hashLock;
     std::set<size_t> g_loadingHashes;
-};
+}
 
 ResourceLoadLock::ResourceLoadLock(const size_t hash, PlatformContext& context)
     : _loadingHash(hash),
@@ -19,7 +19,7 @@ ResourceLoadLock::ResourceLoadLock(const size_t hash, PlatformContext& context)
         if (_threaded) {
             notifyTaskPool(context);
         }
-    };
+    }
 }
 
 ResourceLoadLock::~ResourceLoadLock()
@@ -172,4 +172,4 @@ void ResourceCache::remove(CachedResource* resource) {
     resource->setState(ResourceState::RES_UNKNOWN);
 }
 
-};
+}

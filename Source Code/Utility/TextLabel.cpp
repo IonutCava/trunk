@@ -56,7 +56,7 @@ size_t TextLabelStyle::getHash() const noexcept {
 
         if (previousCache != _hash) {
             UniqueLock<SharedMutex> w_lock(s_textLableStyleMutex);
-            hashAlg::insert(s_textLabelStyle, _hash, *this);
+            insert(s_textLabelStyle, _hash, *this);
         }
         _dirty = false;
     }
@@ -89,4 +89,4 @@ const Str64& TextLabelStyle::fontName(const size_t fontNameHash) {
     return s_fontName[fontNameHash];
 }
 
-}; //namespace Divide
+} //namespace Divide

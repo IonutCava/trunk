@@ -10,7 +10,7 @@ namespace {
     std::atomic_uint g_taskIDCounter = 0u;
     thread_local Task g_taskAllocator[Config::MAX_POOLED_TASKS];
     thread_local U64  g_allocatedTasks = 0u;
-};
+}
 
 TaskPool::TaskPool()
     : GUIDWrapper(),
@@ -44,14 +44,16 @@ bool TaskPool::init(const U32 threadCount, const TaskPoolType poolType, const DE
     switch (poolType) {
         case TaskPoolType::TYPE_LOCKFREE: {
             std::get<1>(_poolImpl._poolImpl) = MemoryManager_NEW ThreadPool<false>(*this, _workerThreadCount);
-        } break;
+            return true;
+        }
         case TaskPoolType::TYPE_BLOCKING: {
             std::get<0>(_poolImpl._poolImpl) = MemoryManager_NEW ThreadPool<true>(*this, _workerThreadCount);
-        } break;
-        default: break;
+            return true;
+        }
+        case TaskPoolType::COUNT: break;
     }
 
-    return true;
+    return false;
 }
 
 void TaskPool::shutdown() {
@@ -158,7 +160,7 @@ void TaskPool::taskCompleted(const U32 taskIndex, const bool hasOnCompletionFunc
 Task* TaskPool::allocateTask(Task* parentTask, const bool allowedInIdle) {
     Task* task = nullptr;
     do {
-        Task& crtTask = g_taskAllocator[g_allocatedTasks++ & (Config::MAX_POOLED_TASKS - 1u)];
+        Task& crtTask = g_taskAllocator[g_allocatedTasks++ & Config::MAX_POOLED_TASKS - 1u];
 
         U16 expected = to_U16(0u);
         if (crtTask._unfinishedJobs.compare_exchange_strong(expected, 1u)) {
@@ -268,4 +270,4 @@ void parallel_for(TaskPool& pool, const ParallelForDescriptor& descriptor) {
         }
     }
 }
-};
+}

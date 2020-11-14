@@ -15,7 +15,7 @@ RenderPackage::RenderPackage() noexcept
 RenderPackage::~RenderPackage()
 {
     if (_commands != nullptr) {
-        GFX::deallocateCommandBuffer(_commands);
+        deallocateCommandBuffer(_commands);
     }
 }
 
@@ -229,14 +229,14 @@ void RenderPackage::updateDrawCommands(const U32 dataIndex, U32 startOffset, U8 
         const auto& [offset, count] = _lodIndexOffsets[lodLevel];
 
         const GFX::CommandBuffer::Container::EntryList& cmds = commands()->get<GFX::DrawCommand>();
-        const bool autoIndex = (offset != 0u || count != 0u);
+        const bool autoIndex = offset != 0u || count != 0u;
 
         for (GFX::CommandBase* cmd : cmds) {
             GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
             for (GenericDrawCommand& drawCmd : drawCommands) {
                 drawCmd._commandOffset = startOffset++;
 
-                drawCmd._cmd.baseInstance = (_isInstanced || drawCmd._cmd.primCount > 1u) ? 0u : dataIndex;
+                drawCmd._cmd.baseInstance = _isInstanced || drawCmd._cmd.primCount > 1u ? 0u : dataIndex;
                 if (autoIndex) {
                     drawCmd._cmd.firstIndex = to_U32(offset);
                     drawCmd._cmd.indexCount = to_U32(count);

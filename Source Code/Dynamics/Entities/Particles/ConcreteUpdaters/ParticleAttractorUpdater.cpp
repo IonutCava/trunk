@@ -23,4 +23,4 @@ void ParticleAttractorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
         }
     }
 }
-};
+}

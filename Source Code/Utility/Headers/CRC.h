@@ -70,7 +70,7 @@ namespace Util {
     // internal support
     static U32 Reflect(U32 v, I32 bits) noexcept;
 };
-};  // namespace Util
-};  // namespace Divide
+}  // namespace Util
+}  // namespace Divide
 
 #endif

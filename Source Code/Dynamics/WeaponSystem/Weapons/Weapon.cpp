@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-Weapon::Weapon(WeaponType type)
+Weapon::Weapon(const WeaponType type)
     : _type(type),
       _properyMask(0)
 {
@@ -12,11 +12,9 @@ Weapon::Weapon(WeaponType type)
     assert(_type != WeaponType::COUNT);
 }
 
-Weapon::~Weapon() {}
-
-bool Weapon::addProperty(WeaponProperty property) {
+bool Weapon::addProperty(const WeaponProperty property) {
     assert(property != WeaponProperty::COUNT);
     _properyMask |= to_U32(property);
     return true;
 }
-};
+}

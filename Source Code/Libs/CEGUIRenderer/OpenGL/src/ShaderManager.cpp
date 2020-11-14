@@ -58,7 +58,7 @@ namespace CEGUI
         if(d_shaders.find(id) != d_shaders.end())
             return d_shaders[id];
         else
-            return 0;
+            return nullptr;
     }
 
     void OpenGL3ShaderManager::loadShader(GLuint id, std::string vertexShader, std::string fragmentShader)
@@ -85,16 +85,16 @@ namespace CEGUI
 
             if(!getShader(SHADER_ID_STANDARDSHADER)->isCreatedSuccessfully())
             {
-                const CEGUI::String errorString("Critical Error - One or "
+                const String errorString("Critical Error - One or "
                   "multiple shader programs weren't created successfully");
                 CEGUI_THROW(RendererException(errorString));
 
                 return;
             }
 
-            const CEGUI::String notify("OpenGL3Renderer: Notification - "
+            const String notify("OpenGL3Renderer: Notification - "
               "Successfully initialised OpenGL3Renderer shader programs.");
-            if (CEGUI::Logger* logger = CEGUI::Logger::getSingletonPtr())
+            if (Logger* logger = Logger::getSingletonPtr())
                 logger->logEvent(notify);
 
             return;

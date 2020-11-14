@@ -18,7 +18,7 @@ namespace Divide {
     stringImpl line;
     vectorEASTL<stringImpl> include_file;
     while (std::getline(inputStream, line)) {
-        if (boost::regex_search(line, matches, pattern)) {
+        if (regex_search(line, matches, pattern)) {
             include_file.emplace_back(Util::Trim(matches[1].str()));
         }
     }
@@ -103,13 +103,13 @@ TEST(RegexFailTest)
         const stringImpl& inputInclude3("# include \"blaBla.h");
         const stringImpl& inputInclude4("   include <  blaBla.h>");
 
-        vectorEASTL<stringImpl> temp1 = getFiles(inputInclude1, Paths::g_includePattern);
+        const vectorEASTL<stringImpl> temp1 = getFiles(inputInclude1, Paths::g_includePattern);
         CHECK_FALSE(temp1.size() == 1);
-        vectorEASTL<stringImpl> temp2 = getFiles(inputInclude2, Paths::g_includePattern);
+        const vectorEASTL<stringImpl> temp2 = getFiles(inputInclude2, Paths::g_includePattern);
         CHECK_FALSE(temp2.size() == 1);
-        vectorEASTL<stringImpl> temp3 = getFiles(inputInclude3, Paths::g_includePattern);
+        const vectorEASTL<stringImpl> temp3 = getFiles(inputInclude3, Paths::g_includePattern);
         CHECK_FALSE(temp3.size() == 1);
-        vectorEASTL<stringImpl> temp4 = getFiles(inputInclude4, Paths::g_includePattern);
+        const vectorEASTL<stringImpl> temp4 = getFiles(inputInclude4, Paths::g_includePattern);
         CHECK_FALSE(temp4.size() == 1);
     }
     {
@@ -117,11 +117,11 @@ TEST(RegexFailTest)
         const stringImpl& inputUse2("usadfse( \"blaBla.h\")");
         const stringImpl& inputUse3("      use    ---   (\"blaBla.h\")");
 
-        vectorEASTL<stringImpl> temp1 = getFiles(inputUse1, Paths::g_usePattern);
+        const vectorEASTL<stringImpl> temp1 = getFiles(inputUse1, Paths::g_usePattern);
         CHECK_FALSE(temp1.size() == 1);
-        vectorEASTL<stringImpl> temp2 = getFiles(inputUse2, Paths::g_usePattern);
+        const vectorEASTL<stringImpl> temp2 = getFiles(inputUse2, Paths::g_usePattern);
         CHECK_FALSE(temp2.size() == 1);
-        vectorEASTL<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
+        const vectorEASTL<stringImpl> temp3 = getFiles(inputUse3, Paths::g_usePattern);
         CHECK_FALSE(temp3.size() == 1);
     }
 }
@@ -161,7 +161,7 @@ TEST(TestCharTrail)
     CHECK_TRUE(Util::GetTrailingCharacters(input, 3) == extension);
     CHECK_TRUE(Util::GetTrailingCharacters(input, 20) == input);
 
-    size_t length = 4;
+    const size_t length = 4;
     CHECK_TRUE(Util::GetTrailingCharacters(input, length).size() == length);
 }
 
@@ -280,10 +280,10 @@ TEST(HashIsConstantExpr)
 TEST(TestRuntimeID)
 {
     const char* str = "TEST String garbagegarbagegarbage";
-    std::string_view str2 = str;
+    const std::string_view str2 = str;
 
-    U64 input1 = _ID(str);
-    U64 input2 = _ID_VIEW(str2.data(), str2.length());
+    const U64 input1 = _ID(str);
+    const U64 input2 = _ID_VIEW(str2.data(), str2.length());
 
     CHECK_EQUAL(input1, _ID(str));
     CHECK_EQUAL(_ID(str), _ID(stringImpl(str).c_str()));
@@ -296,7 +296,7 @@ TEST(TestStringAllocator)
     const char* input = "TEST test TEST";
     stringImpl input1(input);
     stringImplFast input2(input);
-    for( U8 i = 0; i < input1.size(); ++i) {
+    for( size_t i = 0; i < input1.size(); ++i) {
         CHECK_EQUAL(input1[i], input2[i]);
     }
 }
@@ -316,4 +316,4 @@ TEST(TestStringStream)
     CHECK_EQUAL(result2, stringImplFast(input));
 }
 
-}; //namespace Divide
+} //namespace Divide

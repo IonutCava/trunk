@@ -40,18 +40,18 @@ namespace Divide {
 class DoFPreRenderOperator final : public PreRenderOperator {
    public:
     DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
-    ~DoFPreRenderOperator();
+    ~DoFPreRenderOperator() = default;
 
-    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
-    void reshape(U16 width, U16 height) final;
+    [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
+    void reshape(U16 width, U16 height) override;
 
-    F32 focalDepth() const { return _focalDepth; }
+    [[nodiscard]] F32 focalDepth() const { return _focalDepth; }
     void focalDepth(F32 val);
 
-    bool autoFocus() const { return _autoFocus; }
+    [[nodiscard]] bool autoFocus() const { return _autoFocus; }
     void autoFocus(bool state);
 
-    bool ready() const final;
+    [[nodiscard]] bool ready() const override;
 
    private:
      ShaderProgram_ptr _dofShader = nullptr;
@@ -61,6 +61,6 @@ class DoFPreRenderOperator final : public PreRenderOperator {
      bool _autoFocus = true;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

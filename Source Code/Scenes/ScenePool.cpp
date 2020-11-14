@@ -13,10 +13,10 @@ namespace Divide {
 INIT_SCENE_FACTORY
 
 ScenePool::ScenePool(SceneManager& parentMgr)
-  : _parentMgr(parentMgr),
-    _activeScene(nullptr),
+  : _activeScene(nullptr),
     _loadedScene(nullptr),
-    _defaultScene(nullptr)
+    _defaultScene(nullptr),
+    _parentMgr(parentMgr)
 {
     assert(!g_sceneFactory.empty());
 }
@@ -26,9 +26,9 @@ ScenePool::~ScenePool()
     vectorEASTL<Scene*> tempScenes;
     {   
         SharedLock<SharedMutex> r_lock(_sceneLock);
-        tempScenes.insert(eastl::cend(tempScenes),
-                          eastl::cbegin(_createdScenes),
-                          eastl::cend(_createdScenes));
+        tempScenes.insert(cend(tempScenes),
+                          cbegin(_createdScenes),
+                          cend(_createdScenes));
     }
 
     for (Scene* scene : tempScenes) {
@@ -43,7 +43,7 @@ ScenePool::~ScenePool()
 }
 
 bool ScenePool::defaultSceneActive() const {
-    return (!_defaultScene || !_activeScene) ||
+    return !_defaultScene || !_activeScene ||
             _activeScene->getGUID() == _defaultScene->getGUID();
 }
 
@@ -106,8 +106,8 @@ Scene* ScenePool::getOrCreateScene(PlatformContext& context, ResourceCache* cach
 bool ScenePool::deleteScene(Scene*& scene) {
     if (scene != nullptr) {
         I64 targetGUID = scene->getGUID();
-        I64 defaultGUID = _defaultScene ? _defaultScene->getGUID() : 0;
-        I64 activeGUID = _activeScene ? _activeScene->getGUID() : 0;
+        const I64 defaultGUID = _defaultScene ? _defaultScene->getGUID() : 0;
+        const I64 activeGUID = _activeScene ? _activeScene->getGUID() : 0;
 
         if (targetGUID != defaultGUID) {
             if (targetGUID == activeGUID && defaultGUID != 0) {
@@ -120,11 +120,11 @@ bool ScenePool::deleteScene(Scene*& scene) {
         {
             UniqueLock<SharedMutex> w_lock(_sceneLock);
             _createdScenes.erase(
-                eastl::find_if(eastl::cbegin(_createdScenes),
-                               eastl::cend(_createdScenes),
-                               [&targetGUID](Scene* scene) -> bool
+                eastl::find_if(cbegin(_createdScenes),
+                               cend(_createdScenes),
+                               [&targetGUID](Scene* s) -> bool
                                {
-                                   return scene->getGUID() == targetGUID;
+                                   return s->getGUID() == targetGUID;
                                }));
         }
 
@@ -144,7 +144,7 @@ vectorEASTL<Str256> ScenePool::sceneNameList(bool sorted) const {
     }
 
     if (sorted) {
-        eastl::sort(eastl::begin(scenes), eastl::end(scenes), [](const Str256& a, const Str256& b)-> bool {
+        eastl::sort(begin(scenes), end(scenes), [](const Str256& a, const Str256& b)-> bool {
             return a < b;
         });
     }
@@ -152,4 +152,4 @@ vectorEASTL<Str256> ScenePool::sceneNameList(bool sorted) const {
     return scenes;
 }
 
-}; //namespace Divide
+} //namespace Divide

@@ -171,32 +171,32 @@ void Renderer::preRender(RenderStagePass stagePass,
     if (_previousProjMatrix != projectionMatrix) {
         _previousProjMatrix = projectionMatrix;
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Rebuild Light Grid" });
+        EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Rebuild Light Grid" });
 
         bindPipelineCmd._pipeline = _lightBuildClusteredAABBsPipeline;
-        GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+        EnqueueCommand(bufferInOut, bindPipelineCmd);
 
         computeCmd._computeGroupSize.set(1, 1, zThreads);
-        GFX::EnqueueCommand(bufferInOut, computeCmd);
+        EnqueueCommand(bufferInOut, computeCmd);
 
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_STORAGE);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
+        EnqueueCommand(bufferInOut, memCmd);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+        EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
     }
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Cull Lights" });
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Renderer Cull Lights" });
 
     bindPipelineCmd._pipeline = _lightCullPipeline;
-    GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
+    EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     computeCmd._computeGroupSize.set(1, 1, zThreads);
-    GFX::EnqueueCommand(bufferInOut, computeCmd);
+    EnqueueCommand(bufferInOut, computeCmd);
 
     memCmd._barrierMask = to_base(MemoryBarrierType::BUFFER_UPDATE);
-    GFX::EnqueueCommand(bufferInOut, memCmd);
+    EnqueueCommand(bufferInOut, memCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void Renderer::idle() const {
@@ -208,4 +208,4 @@ void Renderer::idle() const {
 void Renderer::updateResolution(const U16 newWidth, const U16 newHeight) const {
     _postFX->updateResolution(newWidth, newHeight);
 }
-};
+}

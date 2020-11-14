@@ -51,7 +51,7 @@ inline void ApplicationTimer::getFrameRateAndTime(F32& fpsOut, F32& frameTimeOut
     _frameRateHandler.frameRateAndTime(fpsOut, frameTimeOut);
 }
 
-};  // namespace Time
-};  // namespace Divide
+}  // namespace Time
+}  // namespace Divide
 
 #endif  //_CORE_TIME_APPLICATION_TIMER_INL_

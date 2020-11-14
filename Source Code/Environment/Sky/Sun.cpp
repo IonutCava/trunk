@@ -5,8 +5,8 @@
 namespace Divide {
 
 namespace {
-    constexpr D64 SunDia = 0.53;         // Sunradius degrees
-    constexpr D64 AirRefr = 34.0 / 60.0; // Athmospheric refraction degrees
+    constexpr D64 SunDia = 0.53;         // Sun radius degrees
+    constexpr D64 AirRefr = 34.0 / 60.0; // Atmospheric refraction degrees
     constexpr D64 TwoPi = 2 * M_PI;
     // Sun computation coefficients
     constexpr D64 Longitude_A = 282.9404;
@@ -20,14 +20,14 @@ namespace {
     constexpr D64 Ecliptic_A = Angle::DegreesToRadians(1.915);
     constexpr D64 Ecliptic_B = Angle::DegreesToRadians(.02);
 
-    inline D64 FNrange(const D64 x) noexcept {
+    D64 FNrange(const D64 x) noexcept {
         const D64 b = x / TwoPi;
         const D64 a = TwoPi * (b - to_I32(b));
-        return (a < 0) ? TwoPi + a : a;
-    };
+        return a < 0 ? TwoPi + a : a;
+    }
 
     // Calculating the hourangle
-    inline D64 f0(const D64 lat, const D64 declin) noexcept {
+    D64 f0(const D64 lat, const D64 declin) noexcept {
         D64 dfo = Angle::DegreesToRadians(0.5 * SunDia + AirRefr);
         if (lat < 0.0) {
             dfo = -dfo;	// Southern hemisphere
@@ -37,7 +37,7 @@ namespace {
             fo = 1.0; // to avoid overflow //
         }
         return std::asin(fo) + M_PI_2;
-    };
+    }
 
     D64 FNsun(const D64 d, D64& RA, D64& delta, D64& L) {
         //   mean longitude of the Sun
@@ -78,12 +78,10 @@ namespace {
 
         //   Ecliptic longitude of the Sun
         return FNrange(L + Ecliptic_A * std::sin(g) + Ecliptic_B * std::sin(2 * g));
-    };
-};
+    }
+}
 
-SunInfo SunPosition::CalculateSunPosition(struct tm *dateTime, F32 latitude, F32 longitude) {
-
-    SunInfo ret = {};
+SunInfo SunPosition::CalculateSunPosition(struct tm *dateTime, const F32 latitude, const F32 longitude) {
 
     const D64 longit = to_D64(longitude);
     const D64 latit = to_D64(latitude);
@@ -103,7 +101,7 @@ SunInfo SunPosition::CalculateSunPosition(struct tm *dateTime, F32 latitude, F32
     //   Get the days to J2000
     //   h is UT in decimal hours
     //   FNday only works between 1901 to 2099 - see Meeus chapter 7
-    const D64 jd = [year, h, m, day, UT]() noexcept {
+    const D64 jd = [year, h, m, day]() noexcept {
         const I32 luku = -7 * (year + (m + 9) / 12) / 4 + 275 * m / 9 + day;
         // type casting necessary on PC DOS and TClite to avoid overflow
         return to_D64(luku + year * 367) - 730530.0 + h / 24.0;
@@ -138,15 +136,10 @@ SunInfo SunPosition::CalculateSunPosition(struct tm *dateTime, F32 latitude, F32
     const D64 alpha = std::atan2(std::cos(obliq) * std::sin(lambda), std::cos(lambda));
 
     //   Find the Equation of Time in minutes
-    const D64 equation = 1440 - Angle::RadiansToDegrees((L - alpha)) * 4;
+    const D64 equation = 1440 - Angle::RadiansToDegrees(L - alpha) * 4;
 
     ha = f0(latit, delta);
 
-    // Conversion of angle to hours and minutes //
-    D64 daylen = Angle::RadiansToDegrees(ha) / 7.5;
-    if (daylen < 0.0001) { 
-        daylen = 0.0;
-    }
     // arctic winter     //
 
     D64 riset = 12.0 - 12.0 * ha / M_PI + tzone - longit / 15.0 + equation / 60.0;
@@ -161,13 +154,14 @@ SunInfo SunPosition::CalculateSunPosition(struct tm *dateTime, F32 latitude, F32
     riset -= 24 * (riset > 24 ? 1 : 0);
     settm -= 24 * (settm > 24 ? 1 : 0);
 
-    auto calcTime = [](const D64 dhr) noexcept {
-        SimpleTime ret = {};
+    const auto calcTime = [](const D64 dhr) noexcept {
+        SimpleTime ret;
         ret._hour = to_U8(dhr);
         ret._minutes = to_U8((dhr - to_D64(ret._hour)) * 60);
         return ret;
     };
 
+    SunInfo ret;
     ret.sunriseTime = calcTime(riset);
     ret.sunsetTime = calcTime(settm);
     ret.noonTime = calcTime(noont);
@@ -179,17 +173,18 @@ SunInfo SunPosition::CalculateSunPosition(struct tm *dateTime, F32 latitude, F32
     return ret;
 }
 
-D64 SunPosition::CorrectAngle(D64 angleInRadians) {
+D64 SunPosition::CorrectAngle(const D64 angleInRadians) {
     if (angleInRadians < 0) {
         return TwoPi - std::fmod(std::abs(angleInRadians), TwoPi);
-    } else if (angleInRadians > TwoPi) {
-        return std::fmod(angleInRadians, TwoPi);
-    } else {
-        return angleInRadians;
     }
+    if (angleInRadians > TwoPi) {
+        return std::fmod(angleInRadians, TwoPi);
+    }
+
+    return angleInRadians;
 }
 
-void Sun::SetLocation(F32 longitude, F32 latitude) {
+void Sun::SetLocation(const F32 longitude, const F32 latitude) {
     _longitude = longitude;
     _latitude = latitude;
 }
@@ -199,13 +194,6 @@ void Sun::SetDate(struct tm *dateTime) {
 }
 
 SunDetails Sun::GetDetails() const {
-    auto const InverseLerp = [](F32 min, F32 max, F32 value) {
-        if (std::abs(max - min) < std::numeric_limits<F32>::epsilon()) {
-            return min;
-        }
-        return (value - min) / (max - min);
-    };
-
     SunDetails ret = {};
     ret._info = SunPosition::CalculateSunPosition(_dateTime, _latitude, _longitude);
     ret._eulerDirection.x = -Angle::RadiansToDegrees(ret._info.altitude);
@@ -215,4 +203,4 @@ SunDetails Sun::GetDetails() const {
     return ret;
 }
 
-}; //namespace Divide
+} //namespace Divide

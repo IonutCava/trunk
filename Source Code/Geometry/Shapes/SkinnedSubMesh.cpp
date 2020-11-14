@@ -75,10 +75,10 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
             const vec4<F32>& wgh = parentVB->getBoneWeights(idx);
             const vec3<F32>& curentVert = parentVB->getPosition(idx);
 
-            currentBB.add((wgh.x * (matrices[ind.b[0]] * curentVert)) +
-                          (wgh.y * (matrices[ind.b[1]] * curentVert)) +
-                          (wgh.z * (matrices[ind.b[2]] * curentVert)) +
-                          (wgh.w * (matrices[ind.b[3]] * curentVert)));
+            currentBB.add(wgh.x * (matrices[ind.b[0]] * curentVert) +
+                          wgh.y * (matrices[ind.b[1]] * curentVert) +
+                          wgh.z * (matrices[ind.b[2]] * curentVert) +
+                          wgh.w * (matrices[ind.b[3]] * curentVert));
         }
     }
 }
@@ -112,7 +112,7 @@ void SkinnedSubMesh::computeBBForAnimation(SceneGraphNode* sgn, I32 animIndex) {
     Start(*computeBBTask,
           TaskPriority::DONT_CARE,
           [this, animIndex, animComp]() {
-              UniqueLock<Mutex> w_lock(_bbStateLock);
+              UniqueLock<Mutex> w_lock2(_bbStateLock);
               _boundingBoxesState[animIndex] = BoundingBoxState::Computed;
               // We could've changed the animation while waiting for this task to end
               if (animComp->animationIndex() == animIndex) {

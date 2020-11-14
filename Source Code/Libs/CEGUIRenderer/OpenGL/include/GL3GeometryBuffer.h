@@ -51,9 +51,9 @@ public:
     void updateOpenGLBuffers();
 
     // implementation/overrides of members from GeometryBuffer
-    void draw() const;
-    void appendGeometry(const Vertex* const vbuff, uint vertex_count);
-    void reset();
+    void draw() const override;
+    void appendGeometry(const Vertex* vbuff, uint vertex_count) override;
+    void reset() override;
 
 protected:
     //! OpenGL vao used for the vertices
@@ -61,7 +61,7 @@ protected:
     //! OpenGL vbo containing all vertex data
     GLuint d_verticesVBO;
     //! Reference to the OpenGL shader inside the Renderer, that is used to render all geometry
-    CEGUI::OpenGL3Shader*& d_shader;
+    OpenGL3Shader*& d_shader;
     //! Position variable location inside the shader, for OpenGL
     const GLint d_shaderPosLoc;
     //! TexCoord variable location inside the shader, for OpenGL

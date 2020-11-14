@@ -367,7 +367,7 @@ void submitIndirectCommand(const IndirectDrawCommand& cmd,
         // We could just submit a multi-draw with a draw count of 1, but this might avoid some CPU overhead.
         // Either I or the driver has to do the count check/loop, but I can profile my own code.
         if (drawIndexed) {
-            glDrawElementsIndirect(mode, internalFormat, (bufferPtr)(offset));
+            glDrawElementsIndirect(mode, internalFormat, (bufferPtr)offset);
         } else {
             // This needs a different command buffer and different IndirectDrawCommand (16byte instead of 20)
             glDrawArraysInstancedBaseInstance(mode, cmd.firstIndex, cmd.indexCount, cmd.primCount, cmd.baseInstance);
@@ -399,7 +399,7 @@ void submitDirectCommand(const IndirectDrawCommand& cmd,
         }
     } else {
         if (drawIndexed) {
-            const size_t elementSize = (internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint));
+            const size_t elementSize = internalFormat == GL_UNSIGNED_SHORT ? sizeof(GLushort) : sizeof(GLuint);
             for (GLuint i = 0; i < drawCount; ++i) {
                 glDrawElementsInstancedBaseVertexBaseInstance(mode,
                                                               cmd.indexCount,
@@ -520,7 +520,7 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
         }
         _types.push_back(it.first);
 
-        hashAlg::insert(_pools, it.first, MOV(pool));
+        insert(_pools, it.first, MOV(pool));
     }
 }
 

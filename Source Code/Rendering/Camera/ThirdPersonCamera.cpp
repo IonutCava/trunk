@@ -17,10 +17,10 @@ bool ThirdPersonCamera::rotateRelative(const vec3<I32>& relRotation) {
     if (relRotation.lengthSquared() != 0) {
         vec3<F32> rotation(relRotation.pitch, relRotation.yaw, relRotation.roll);
 
-        rotation.set((rotation / _mouseSensitivity) * _speed.turn);
+        rotation.set(rotation / _mouseSensitivity * _speed.turn);
 
         if (!IS_ZERO(rotation.yaw)) {
-            F32 targetYaw = _cameraRotation.yaw - rotation.yaw;
+            const F32 targetYaw = _cameraRotation.yaw - rotation.yaw;
             if (targetYaw > -rotationLimitRollLower &&
                 targetYaw < rotationLimitRollUpper) {
                 _cameraRotation.yaw -= rotation.yaw;
@@ -29,7 +29,7 @@ bool ThirdPersonCamera::rotateRelative(const vec3<I32>& relRotation) {
         }
 
         if (!IS_ZERO(rotation.pitch)) {
-            F32 targetPitch = _cameraRotation.yaw - rotation.pitch;
+            const F32 targetPitch = _cameraRotation.yaw - rotation.pitch;
             if (targetPitch > -rotationLimitPitch && targetPitch < rotationLimitPitch) {
                 _cameraRotation.pitch -= rotation.pitch;
                 _rotationDirty = true;

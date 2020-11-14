@@ -20,9 +20,9 @@ void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = endID;
     descriptor._partitionSize = s_particlesPerThread;
-    descriptor._cbk = [&p, floorY, bounce](const Task* parentTask, U32 start, U32 end) {
+    descriptor._cbk = [&p, floorY, bounce](const Task*, const U32 start, const U32 end) {
         for (U32 i = start; i < end; ++i) {
-            if ((p._position[i].y - (p._position[i].w / 2)) < floorY) {
+            if (p._position[i].y - p._position[i].w / 2 < floorY) {
                 vec3<F32> force(p._acceleration[i]);
 
                 F32 normalFactor = force.dot(WORLD_Y_AXIS);
@@ -40,4 +40,4 @@ void ParticleFloorUpdater::update(const U64 deltaTimeUS, ParticleData& p) {
     parallel_for(context(), descriptor);
 }
 
-};
+}

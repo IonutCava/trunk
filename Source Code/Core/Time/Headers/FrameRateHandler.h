@@ -63,8 +63,8 @@ private:
     F32 _framerateSecPerFrameAccum = 0.0f;
 };
 
-}; //namespace Time
-}; //namespace Divide
+} //namespace Time
+} //namespace Divide
 
 #endif //_CORE_TIME_FRAMERATE_HANDLER_H_
 

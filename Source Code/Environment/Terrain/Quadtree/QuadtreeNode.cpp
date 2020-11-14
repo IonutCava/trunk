@@ -14,8 +14,8 @@
 namespace Divide {
 
 QuadtreeNode::QuadtreeNode(GFXDevice& context, Quadtree* parent)
-    : _context(context),
-      _parent(parent)
+    : _parent(parent),
+      _context(context)
 {
 }
 
@@ -37,7 +37,7 @@ void QuadtreeNode::build(U8 depth,
                          U32& chunkCount)
 {
     _targetChunkDimension = std::min(targetChunkDimension, to_U32(HMsize.width));
-    U32 div = to_U32(std::pow(2.0f, to_F32(depth)));
+    const U32 div = to_U32(std::pow(2.0f, to_F32(depth)));
     vec2<U16> nodesize = HMsize / div;
     if (nodesize.x % 2 == 0) {
         nodesize.x++;
@@ -45,7 +45,7 @@ void QuadtreeNode::build(U8 depth,
     if (nodesize.y % 2 == 0) {
         nodesize.y++;
     }
-    vec2<U16> newsize = nodesize / 2;
+    const vec2<U16> newsize = nodesize / 2;
 
     if (std::max(newsize.x, newsize.y) < _targetChunkDimension) {
         _terrainChunk = eastl::make_unique<TerrainChunk>(_context, terrain, *this);
@@ -85,7 +85,9 @@ void QuadtreeNode::build(U8 depth,
 bool QuadtreeNode::computeBoundingBox(BoundingBox& parentBB) {
     if (!isALeaf()) {
         for (I8 i = 0; i < 4; ++i) {
-            _children[i]->computeBoundingBox(_boundingBox);
+            if (!_children[i]->computeBoundingBox(_boundingBox)) {
+                return false;
+            }
         }
     }
 
@@ -123,4 +125,4 @@ void QuadtreeNode::drawBBox(RenderPackage& packageOut) {
         getChild(ChildPosition::CHILD_SE).drawBBox(packageOut);
     }
 }
-};
+}

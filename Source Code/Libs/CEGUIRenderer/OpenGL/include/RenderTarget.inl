@@ -51,7 +51,7 @@ template <typename T>
 OpenGLRenderTarget<T>::OpenGLRenderTarget(OpenGLRendererBase& owner) :
     d_owner(owner),
     d_area(0, 0, 0, 0),
-    d_matrix(0),
+    d_matrix(nullptr),
     d_matrixValid(false),
     d_viewDistance(0)
 {
@@ -209,26 +209,26 @@ void OpenGLRenderTarget<T>::updateMatrix() const
     // We need to check if width or height are zero and act accordingly to prevent running into issues
     // with divisions by zero which would lead to undefined values, as well as faulty clipping planes
     // This is mostly important for avoiding asserts
-    const bool widthAndHeightNotZero = ( w != 0.0f ) && ( h != 0.0f);
+    const bool widthAndHeightNotZero = w != 0.0f && h != 0.0f;
 
     const float aspect = widthAndHeightNotZero ? w / h : 1.0f;
     const float midx = widthAndHeightNotZero ? w * 0.5f : 0.5f;
     const float midy = widthAndHeightNotZero ? h * 0.5f : 0.5f;
     d_viewDistance = midx / (aspect * d_yfov_tan);
 
-    glm::vec3 eye = glm::vec3(midx, midy, float(-d_viewDistance));
-    glm::vec3 center = glm::vec3(midx, midy, 1);
-    glm::vec3 up = glm::vec3(0, -1, 0);
+    const glm::vec3 eye = glm::vec3(midx, midy, float(-d_viewDistance));
+    const glm::vec3 center = glm::vec3(midx, midy, 1);
+    const glm::vec3 up = glm::vec3(0, -1, 0);
 
     //Older glm versions use degrees as parameter here by default (Unless radians are forced via GLM_FORCE_RADIANS). Newer versions of glm exlusively use radians.
 #if (GLM_VERSION_MAJOR == 0 && GLM_VERSION_MINOR <= 9 && GLM_VERSION_PATCH < 6) && (!defined(GLM_FORCE_RADIANS))
-    glm::mat4 projectionMatrix = glm::perspective(30.f, aspect, float(d_viewDistance * 0.5), float(d_viewDistance * 2.0));
+    const glm::mat4 projectionMatrix = glm::perspective(30.f, aspect, float(d_viewDistance * 0.5), float(d_viewDistance * 2.0));
 #else
     glm::mat4 projectionMatrix = glm::perspective(glm::radians(30.f), aspect, float(d_viewDistance * 0.5), float(d_viewDistance * 2.0));
 #endif
 
     // Projection matrix abuse!
-    glm::mat4 viewMatrix = glm::lookAt(eye, center, up);
+    const glm::mat4 viewMatrix = glm::lookAt(eye, center, up);
   
     d_matrix->d_matrix = projectionMatrix * viewMatrix;
 

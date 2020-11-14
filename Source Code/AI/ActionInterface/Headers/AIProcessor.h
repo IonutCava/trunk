@@ -43,15 +43,15 @@ namespace AI {
 class AIManager;
 enum class AIMsg : U8;
 /// Provides a scene-level AI implementation
-class NOINITVTABLE AIProcessor : private NonCopyable {
+class NOINITVTABLE AIProcessor : NonCopyable {
    public:
     AIProcessor(AIManager& parentManager);
     virtual ~AIProcessor();
     virtual void addEntityRef(AIEntity* entity);
 
-    inline void worldState(const GOAPWorldState& state) { _worldState = state; }
-    inline GOAPWorldState& worldState() { return _worldState; }
-    inline const GOAPWorldState& worldState() const { return _worldState; }
+    void worldState(const GOAPWorldState& state) { _worldState = state; }
+    GOAPWorldState& worldState() { return _worldState; }
+    const GOAPWorldState& worldState() const { return _worldState; }
 
     /// Register a specific action.
     /// This only holds a reference to the action itself and does not create a
@@ -65,41 +65,43 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     void registerGoalList(const GOAPGoalList& goalList);
 
     virtual GOAPGoal* findGoal(const stringImpl& goalName) {
-        GOAPGoalList::iterator it;
-        it = eastl::find_if(eastl::begin(_goals), eastl::end(_goals),
-                          [&goalName](const GOAPGoal& goal) -> bool {
-                              return goal.name().compare(goalName.c_str()) ==
-                                     0;
-                          });
+        const GOAPGoalList::iterator it = 
+            eastl::find_if(begin(_goals),
+                           end(_goals),
+                            [&goalName](const GOAPGoal& goal) -> bool
+                            {
+                                return goal.name() == goalName;
+                            });
 
-        if (it != eastl::end(_goals)) {
-            return &(*it);
+        if (it != end(_goals)) {
+            return &*it;
         }
 
         return nullptr;
     }
 
-    inline const GOAPGoalList& goalList() const { return _goals; }
+    const GOAPGoalList& goalList() const { return _goals; }
 
    protected:
     friend class AIEntity;
-    inline GOAPGoalList& goalList() { return _goals; }
+    GOAPGoalList& goalList() { return _goals; }
 
-    inline void resetActiveGoals() {
+    void resetActiveGoals() {
         _activeGoals.clear();
         for (GOAPGoal& goal : goalList()) {
             goal.relevancy(0.0f);
             activateGoal(goal.name());
         }
     }
+
     /// Although we want the goal to be activated,
     /// it might not be the most relevant in the current scene state
-    inline bool activateGoal(const stringImpl& name) {
+    bool activateGoal(const stringImpl& name) {
         GOAPGoal* goal = findGoal(name);
         if (goal != nullptr) {
             _activeGoals.push_back(goal);
         }
-        return (goal != nullptr);
+        return goal != nullptr;
     }
 
     /// Get the most relevant goal and set it as active
@@ -108,10 +110,10 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
             return nullptr;
         }
 
-        eastl::sort(eastl::begin(_activeGoals), eastl::end(_activeGoals),
-                  [](GOAPGoal const* a, GOAPGoal const* b) {
-                      return a->relevancy() < b->relevancy();
-                  });
+        eastl::sort(begin(_activeGoals), end(_activeGoals),
+                    [](GOAPGoal const* a, GOAPGoal const* b) {
+                        return a->relevancy() < b->relevancy();
+                    });
 
         _activeGoal = _activeGoals.back();
         _currentStep = -1;
@@ -128,13 +130,13 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
             return false;
         }
 
-        auto it = eastl::find_if(
-            eastl::begin(_activeGoals), eastl::end(_activeGoals),
+        const auto it = eastl::find_if(
+            begin(_activeGoals), end(_activeGoals),
             [goal](GOAPGoal const* actGoal) {
-                return actGoal->name().compare(goal->name()) == 0;
+                return actGoal->name() == goal->name();
             });
 
-        if (it == eastl::end(_activeGoals)) {
+        if (it == end(_activeGoals)) {
             return false;
         }
 
@@ -142,25 +144,26 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         return true;
     }
 
-    inline bool replanGoal() {
+    bool replanGoal() {
         if (_activeGoal != nullptr) {
             if (_activeGoal->plan(_worldState, _actionSet)) {
                 popActiveGoal(_activeGoal);
                 advanceGoal();
                 return true;
-            } else {
-                _planLog = "Plan Log: \n";
-                _planLog.append("\t OpenList: \n");
-                _planLog.append(_activeGoal->getOpenList().c_str());
-                _planLog.append("\t ClosedList: \n");
-                _planLog.append(_activeGoal->getClosedList().c_str());
-                invalidateCurrentPlan();
             }
+
+            _planLog = "Plan Log: \n";
+            _planLog.append("\t OpenList: \n");
+            _planLog.append(_activeGoal->getOpenList());
+            _planLog.append("\t ClosedList: \n");
+            _planLog.append(_activeGoal->getClosedList());
+            invalidateCurrentPlan();
         }
+
         return false;
     }
 
-    inline bool advanceGoal() {
+    bool advanceGoal() {
         if (_activeGoal == nullptr) {
             return false;
         }
@@ -177,17 +180,17 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         return false;
     }
 
-    inline stringImpl printPlan() {
+    stringImpl printPlan() {
         if (_activeGoal == nullptr) {
             return "no active goal!";
         }
-        stringImpl returnString("");
+        stringImpl returnString;
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         for (const GOAPAction* action : plan) {
             returnString.append(" - " + printActionStats(*action) + "\n");
         }
 
-        return returnString.c_str();
+        return returnString;
     }
 
     virtual void invalidateCurrentPlan() {
@@ -195,7 +198,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         _currentStep = -1;
     }
 
-    inline const GOAPAction* getActiveAction() const {
+    const GOAPAction* getActiveAction() const {
         assert(_activeGoal != nullptr);
         const GOAPPlan& plan = _activeGoal->getCurrentPlan();
         if (to_U32(_currentStep) >= plan.size()) {
@@ -204,9 +207,9 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
         return plan[_currentStep];
     }
 
-    inline GOAPGoal* const getActiveGoal() const { return _activeGoal; }
+    GOAPGoal* getActiveGoal() const { return _activeGoal; }
 
-    inline const stringImpl& getPlanLog() const { return _planLog; }
+    const stringImpl& getPlanLog() const { return _planLog; }
 
     virtual const stringImpl& printActionStats(const GOAPAction& planStep) const;
     virtual bool performActionStep(GOAPAction::operationsIterator step) = 0;
@@ -244,7 +247,7 @@ class NOINITVTABLE AIProcessor : private NonCopyable {
     stringImpl _planLog;
 };
 
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide
 
 #endif //_AI_PROCESSOR_H_

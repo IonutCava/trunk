@@ -43,7 +43,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
       _activeColourBuffers{},
       _activeReadBuffer(GL_NONE),
       _prevViewport(-1),
-      _debugMessage(("Render Target: [ " + name() + " ]")),
+      _debugMessage("Render Target: [ " + name() + " ]"),
       _framebufferHandle(0),
       _isLayeredDepth(false),
       _statusCheckQueued(false),
@@ -113,11 +113,11 @@ void glFramebuffer::initAttachment(const RTAttachmentType type, const U8 index) 
         attachment->binding(to_U32(GL_DEPTH_ATTACHMENT));
 
         const TextureType texType = tex->data()._textureType;
-        _isLayeredDepth = (texType == TextureType::TEXTURE_2D_ARRAY ||
-                           texType == TextureType::TEXTURE_2D_ARRAY_MS ||
-                           texType == TextureType::TEXTURE_CUBE_MAP ||
-                           texType == TextureType::TEXTURE_CUBE_ARRAY ||
-                           texType == TextureType::TEXTURE_3D);
+        _isLayeredDepth = texType == TextureType::TEXTURE_2D_ARRAY ||
+            texType == TextureType::TEXTURE_2D_ARRAY_MS ||
+            texType == TextureType::TEXTURE_CUBE_MAP ||
+            texType == TextureType::TEXTURE_CUBE_ARRAY ||
+            texType == TextureType::TEXTURE_3D;
     } else {
         attachment->binding(to_U32(GL_COLOR_ATTACHMENT0) + index);
     }
@@ -211,7 +211,7 @@ namespace BlitHelpers {
 void glFramebuffer::blitFrom(const RTBlitParams& params) {
     OPTICK_EVENT();
 
-    if (!params._inputFB || (!params.hasBlitColours() && !IsValid(params._blitDepth))) {
+    if (!params._inputFB || !params.hasBlitColours() && !IsValid(params._blitDepth)) {
         return;
     }
 
@@ -303,10 +303,10 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
                 }
             }
 
-            blittedDepth = (!blittedDepth &&
-                            !depthMisMatch &&
-                            params._blitDepth._inputLayer == inputLayer &&
-                            params._blitDepth._outputLayer == outputLayer);
+            blittedDepth = !blittedDepth &&
+                !depthMisMatch &&
+                params._blitDepth._inputLayer == inputLayer &&
+                params._blitDepth._outputLayer == outputLayer;
             checkStatus();
 
             glBlitNamedFramebuffer(input->_framebufferHandle,
@@ -580,9 +580,9 @@ void glFramebuffer::drawToLayer(const DrawLayerParams& params) {
         return;
     }
 
-    const bool useDepthLayer =  (hasDepth()  && params._includeDepth) ||
-                                (hasDepth()  && params._type == RTAttachmentType::Depth);
-    const bool useColourLayer = (hasColour() && params._type == RTAttachmentType::Colour);
+    const bool useDepthLayer =  hasDepth()  && params._includeDepth ||
+                                hasDepth()  && params._type == RTAttachmentType::Depth;
+    const bool useColourLayer = hasColour() && params._type == RTAttachmentType::Colour;
 
     if (useDepthLayer && _isLayeredDepth) {
         const RTAttachment_ptr& attDepth = _attachmentPool->get(RTAttachmentType::Depth, 0);
@@ -648,7 +648,7 @@ void glFramebuffer::readData(const vec4<U16>& rect,
     OPTICK_EVENT();
 
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
-    GL_API::getStateTracker().setActiveFB(RenderTarget::RenderTargetUsage::RT_READ_ONLY, _framebufferHandle);
+    GL_API::getStateTracker().setActiveFB(RenderTargetUsage::RT_READ_ONLY, _framebufferHandle);
     glReadPixels(
         rect.x, rect.y, rect.z, rect.w,
         GLUtil::glImageFormatTable[to_U32(imageFormat)],

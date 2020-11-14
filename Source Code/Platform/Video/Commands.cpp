@@ -207,7 +207,7 @@ stringImpl ToString(const SetClippingStateCommand& cmd, U16 indent) {
     return Util::StringFormat(" [ Origin: %s ] [ Depth: %s ]", cmd._lowerLeftOrigin ? "LOWER_LEFT" : "UPPER_LEFT", cmd._negativeOneToOneDepth ? "-1 to 1 " : "0 to 1");
 }
 
-stringImpl ToString(const CommandBase& cmd, U16 indent) {
+stringImpl ToString(const CommandBase& cmd, const U16 indent) {
     stringImpl ret(indent, ' ');
     ret.append(cmd.Name());
 

@@ -49,7 +49,7 @@ namespace Names {
     static const char* shadowType[] = {
           "SINGLE", "LAYERED", "CUBEMAP", "UNKNOWN"
     };
-};
+}
 
 class Light;
 class Camera;
@@ -60,7 +60,7 @@ enum class LightType : U8;
 
 namespace GFX {
     class CommandBuffer;
-};
+}
 
 class SceneState;
 class PlatformContext;
@@ -127,6 +127,6 @@ class NOINITVTABLE ShadowMap {
     static std::array<ShadowCameraPool, to_base(ShadowType::COUNT)> s_shadowCameras;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

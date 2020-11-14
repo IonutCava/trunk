@@ -47,4 +47,4 @@ mat4<F32> MAT4_ZERO = { 0.0f };
 mat2<F32> MAT2_IDENTITY = {};
 mat3<F32> MAT3_IDENTITY = {};
 mat4<F32> MAT4_IDENTITY = {};
-};  // namespace Divide
+}  // namespace Divide

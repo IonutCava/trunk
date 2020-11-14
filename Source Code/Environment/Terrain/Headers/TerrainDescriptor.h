@@ -47,7 +47,8 @@ class TerrainDescriptor final : public PropertyDescriptor {
 
     void addVariable(const stringImpl& name, const stringImpl& value);
     void addVariable(const stringImpl& name, F32 value);
-    stringImpl getVariable(const stringImpl& name) const {
+
+    [[nodiscard]] stringImpl getVariable(const stringImpl& name) const {
         const hashMap<U64, stringImpl>::const_iterator it = _variables.find(_ID(name.c_str()));
         if (it != std::end(_variables)) {
             return it->second;
@@ -55,7 +56,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return "";
     }
 
-    F32 getVariablef(const stringImpl& name) const {
+    [[nodiscard]] F32 getVariablef(const stringImpl& name) const {
         const hashMap<U64, F32>::const_iterator it = _variablesf.find(_ID(name.c_str()));
         if (it != std::end(_variablesf)) {
             return it->second;
@@ -63,14 +64,15 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return 0.0f;
     }
 
-    inline U32 maxNodesPerStage() const noexcept {
+    [[nodiscard]] U32 maxNodesPerStage() const noexcept {
         // Quadtree, so assume worst case scenario
         return dimensions().maxComponent() / 4;
     }
 
-    size_t getHash() const noexcept final {
+    [[nodiscard]] size_t getHash() const noexcept override
+    {
         _hash = PropertyDescriptor::getHash();
-        for (hashMap<U64, stringImpl>::value_type it : _variables) {
+        for (const auto& it : _variables) {
             Util::Hash_combine(_hash, it.first);
             Util::Hash_combine(_hash, it.second);
         }
@@ -92,6 +94,7 @@ class TerrainDescriptor final : public PropertyDescriptor {
 private:
     hashMap<U64, stringImpl> _variables;
     hashMap<U64, F32> _variablesf;
+    const stringImpl& _name;
 
 protected:
     friend class Terrain;
@@ -105,6 +108,6 @@ protected:
 
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

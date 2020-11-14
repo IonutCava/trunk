@@ -36,7 +36,7 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
     std::array<Camera*, 6> cameras = {};
     std::copy_n(std::begin(shadowCameras), std::min(cameras.size(),shadowCameras.size()), std::begin(cameras));
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("Cube Shadow Pass Light: [ %d ]", lightIndex).c_str()));
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("Cube Shadow Pass Light: [ %d ]", lightIndex).c_str()));
 
     RenderPassParams params = {};
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP));
@@ -64,9 +64,9 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
     computeMipMapsCommand._texture = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture().get();
     computeMipMapsCommand._layerRange = vec2<U32>(light.getShadowOffset(), layerCount);
     computeMipMapsCommand._defer = false;
-    GFX::EnqueueCommand(bufferInOut, computeMipMapsCommand);
+    EnqueueCommand(bufferInOut, computeMipMapsCommand);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void CubeShadowMapGenerator::updateMSAASampleCount(const U8 sampleCount) {

@@ -4,7 +4,6 @@
 #include "Headers/SubMesh.h"
 
 #include "Core/Headers/StringHelper.h"
-#include "ECS/Components/Headers/AnimationComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "Geometry/Material/Headers/Material.h"

@@ -202,7 +202,7 @@ vec3<T> DirectionFromAxis(const Quaternion<T>& q, const vec3<T>& AXIS);
 
 template <typename T>
 vec3<T> DirectionFromEuler(vec3<Angle::DEGREES<T>> const & euler, const vec3<T>& FORWARD_DIRECTION);
-};  // namespace Divide
+}  // namespace Divide
 
 #endif
 

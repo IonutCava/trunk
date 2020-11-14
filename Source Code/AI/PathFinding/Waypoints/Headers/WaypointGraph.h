@@ -48,11 +48,10 @@ class WaypointGraph {
     void addWaypoint(Waypoint* wp);
     void removeWaypoint(Waypoint* wp);
 
-    void sortMarkers();
     void updateGraph();
     bool isLooping() { return _loop; }
-    inline U32 getID() const { return _id; }
-    inline U32 getSize() { return to_U32(_waypoints.size()); }
+    U32 getID() const { return _id; }
+    U32 getSize() { return to_U32(_waypoints.size()); }
 
    private:
     WaypointMap _waypoints;
@@ -66,7 +65,7 @@ class WaypointGraph {
     vectorEASTL<U32> _times;
 };
 
-};  // namespace Navigation
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace Divide
 
 #endif

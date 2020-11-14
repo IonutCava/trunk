@@ -82,7 +82,7 @@ const Str64& currentLanguage() noexcept;
 const char* get(U64 key, const char* defaultValue);
 const char* get(U64 key);
 
-};  // namespace Locale
-};  // namespace Divide
+}  // namespace Locale
+}  // namespace Divide
 
 #endif

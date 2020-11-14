@@ -63,7 +63,7 @@ bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
     if (count > 0 && buffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             const GLuint crtBuffer = buffers[i];
-            GLStateTracker& stateTracker = GL_API::getStateTracker();
+            GLStateTracker& stateTracker = getStateTracker();
             for (GLuint& boundBuffer : stateTracker._activeBufferID) {
                 if (boundBuffer == crtBuffer) {
                     boundBuffer = GLUtil::k_invalidObjectID;

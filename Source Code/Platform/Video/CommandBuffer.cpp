@@ -101,7 +101,7 @@ void CommandBuffer::batch() {
 
     const auto  EraseEmptyCommands = [this]() {
         const size_t initialSize = _commandOrder.size();
-        eastl::erase_if(_commandOrder, ([](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; }));
+        erase_if(_commandOrder, [](const CommandEntry& entry) noexcept { return entry._data == PolyContainerEntry::INVALID_ENTRY_ID; });
         return initialSize != _commandOrder.size();
     };
 
@@ -351,7 +351,7 @@ void CommandBuffer::clean() {
     {
         OPTICK_EVENT("Remove redundant Pipelines");
         // Remove redundant pipeline changes
-        auto* entry = eastl::next(eastl::begin(_commandOrder));
+        auto* entry = eastl::next(begin(_commandOrder));
         for (; entry != cend(_commandOrder); ++entry) {
             const U8 typeIndex = entry->_typeIndex;
 
@@ -549,7 +549,7 @@ bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousID
     // Batch-able commands must share the same buffer and other various state
     if (compatible(previousIDC, currentIDC)) {
         const U32 diff = byBaseInstance 
-                            ? (currentIDC._cmd.baseInstance - previousIDC._cmd.baseInstance) 
+                            ? currentIDC._cmd.baseInstance - previousIDC._cmd.baseInstance 
                             : to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
 
         if (diff == previousIDC._drawCount) {
@@ -581,14 +581,14 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
 
     DrawCommand::CommandContainer& commands = prevCommand->_drawCommands;
     commands.insert(cend(commands),
-                    eastl::make_move_iterator(eastl::begin(crtCommand->_drawCommands)),
-                    eastl::make_move_iterator(eastl::end(crtCommand->_drawCommands)));
+                    eastl::make_move_iterator(begin(crtCommand->_drawCommands)),
+                    eastl::make_move_iterator(end(crtCommand->_drawCommands)));
     crtCommand->_drawCommands.resize(0);
 
     {
         OPTICK_EVENT("Merge by instance");
-        eastl::sort(eastl::begin(commands),
-                    eastl::end(commands),
+        eastl::sort(begin(commands),
+                    end(commands),
                     [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
                         return a._cmd.baseInstance < b._cmd.baseInstance;
                     });
@@ -599,8 +599,8 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
 
     {
         OPTICK_EVENT("Merge by offset");
-        eastl::sort(eastl::begin(commands),
-                    eastl::end(commands),
+        eastl::sort(begin(commands),
+                    end(commands),
                     [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
                         return a._commandOffset < b._commandOffset;
                     });

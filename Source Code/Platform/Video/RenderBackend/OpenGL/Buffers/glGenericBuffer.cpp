@@ -128,7 +128,7 @@ void glVertexDataContainer::rebuildCountAndIndexData(const U32 drawCount, const 
             _indexOffsetData.resize(idxCountInternal, firstIndex);
         }
         if (_lastFirstIndex != firstIndex) {
-            eastl::fill(eastl::begin(_indexOffsetData), eastl::end(_indexOffsetData), firstIndex);
+            eastl::fill(begin(_indexOffsetData), end(_indexOffsetData), firstIndex);
         }
     }
     _lastDrawCount = drawCount;

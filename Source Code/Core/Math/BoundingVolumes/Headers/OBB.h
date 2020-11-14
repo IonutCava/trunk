@@ -52,7 +52,7 @@ public:
     using OOBBEdgeList = std::array<LineSegment, 12>;
 
     OBB() = default;
-    OBB(const vec3<F32>& pos, const vec3<F32>& hExtents, const OBBAxis& axis)  noexcept;
+    OBB(vec3<F32> pos, vec3<F32> hExtents, OBBAxis axis)  noexcept;
     OBB(const BoundingBox &aabb)  noexcept;
     OBB(const BoundingSphere &bSphere)  noexcept;
     ~OBB() = default;
@@ -87,6 +87,6 @@ public:
     PROPERTY_RW(OBBAxis, axis);
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_MATH_BOUNDINGVOLUMES_OOBB_H_

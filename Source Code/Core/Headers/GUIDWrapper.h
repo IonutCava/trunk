@@ -59,6 +59,6 @@ class GUIDWrapper {
     const I64 _GUID;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

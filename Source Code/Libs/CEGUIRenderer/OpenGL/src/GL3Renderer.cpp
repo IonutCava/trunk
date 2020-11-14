@@ -65,8 +65,8 @@ namespace CEGUI
 template<typename T>
 class OGLTemplateTargetFactory : public OGLTextureTargetFactory
 {
-    TextureTarget* create(OpenGLRendererBase& r) const
-        { return CEGUI_NEW_AO T(static_cast<OpenGL3Renderer&>(r)); }
+    TextureTarget* create(OpenGLRendererBase& r) const override
+    { return CEGUI_NEW_AO T(static_cast<OpenGL3Renderer&>(r)); }
 };
 
 //----------------------------------------------------------------------------//
@@ -79,7 +79,7 @@ OpenGL3Renderer& OpenGL3Renderer::bootstrapSystem(const int abi)
             "CEGUI::System object is already initialised."));
 
     OpenGL3Renderer& renderer(create());
-    DefaultResourceProvider* rp = CEGUI_NEW_AO CEGUI::DefaultResourceProvider();
+    DefaultResourceProvider* rp = CEGUI_NEW_AO DefaultResourceProvider();
     System::create(renderer, rp);
 
     return renderer;
@@ -96,7 +96,7 @@ OpenGL3Renderer& OpenGL3Renderer::bootstrapSystem(const Sizef& display_size,
             "CEGUI::System object is already initialised."));
 
     OpenGL3Renderer& renderer(create(display_size));
-    DefaultResourceProvider* rp = CEGUI_NEW_AO CEGUI::DefaultResourceProvider();
+    DefaultResourceProvider* rp = CEGUI_NEW_AO DefaultResourceProvider();
     System::create(renderer, rp);
 
     return renderer;
@@ -145,9 +145,9 @@ void OpenGL3Renderer::destroy(OpenGL3Renderer& renderer)
 //----------------------------------------------------------------------------//
 OpenGL3Renderer::OpenGL3Renderer() :
     OpenGLRendererBase(true),
-    d_shaderStandard(0),
-    d_openGLStateChanger(0),
-    d_shaderManager(0)
+    d_shaderStandard(nullptr),
+    d_openGLStateChanger(nullptr),
+    d_shaderManager(nullptr)
 {
     init();
     CEGUI_UNUSED(d_s3tcSupported);
@@ -157,9 +157,9 @@ OpenGL3Renderer::OpenGL3Renderer() :
 //----------------------------------------------------------------------------//
 OpenGL3Renderer::OpenGL3Renderer(const Sizef& display_size) :
     OpenGLRendererBase(display_size, true),
-    d_shaderStandard(0),
-    d_openGLStateChanger(0),
-    d_shaderManager(0)
+    d_shaderStandard(nullptr),
+    d_openGLStateChanger(nullptr),
+    d_shaderManager(nullptr)
 {
     init();
 }
@@ -264,7 +264,7 @@ void OpenGL3Renderer::setupRenderingBlendMode(const BlendMode mode,
                                              const bool force)
 {
     // exit if mode is already set up (and update not forced)
-    if ((d_activeBlendMode == mode) && !force)
+    if (d_activeBlendMode == mode && !force)
         return;
 
     d_activeBlendMode = mode;

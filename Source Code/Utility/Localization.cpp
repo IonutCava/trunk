@@ -32,7 +32,7 @@ namespace detail {
         }
     });
 
-}; //detail
+} //detail
 
 void LanguageData::setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk) {
     _languageChangeCallback = cbk;
@@ -60,7 +60,7 @@ ErrorCode LanguageData::changeLanguage(std::string_view newLanguage) {
     // And add all pairs to the language table
     CSimpleIni::TKeyVal::const_iterator keyValuePairIt = keyValue->begin();
     for (; keyValuePairIt != keyValue->end(); ++keyValuePairIt) {
-        hashAlg::emplace(_languageTable, _ID(keyValuePairIt->first.pItem), keyValuePairIt->second);
+        emplace(_languageTable, _ID(keyValuePairIt->first.pItem), keyValuePairIt->second);
     }
 
     if (_languageChangeCallback) {
@@ -140,5 +140,5 @@ const Str64& currentLanguage() noexcept {
     return detail::g_localeFile;
 }
 
-};  // namespace Locale
-};  // namespace Divide
+}  // namespace Locale
+}  // namespace Divide

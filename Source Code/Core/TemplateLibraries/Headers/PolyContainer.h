@@ -161,5 +161,5 @@ struct PolyContainer {
     eastl::array<EntryList, N> _collection;
 };
 
-}; //namespace Divide
+} //namespace Divide
 #endif //_POLY_CONTAINER_H_

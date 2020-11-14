@@ -99,26 +99,26 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
 
         GFX::BindPipelineCommand pipelineCommand;
         pipelineCommand._pipeline = _pipeline;
-        GFX::EnqueueCommand(*_cmdBuffer, pipelineCommand);
+        EnqueueCommand(*_cmdBuffer, pipelineCommand);
         
         GFX::SendPushConstantsCommand pushConstantsCommand;
         pushConstantsCommand._constants = pushConstants;
-        GFX::EnqueueCommand(*_cmdBuffer, pushConstantsCommand);
+        EnqueueCommand(*_cmdBuffer, pushConstantsCommand);
 
         if (_texture) {
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
             descriptorSetCmd._set = _descriptorSet;
-            GFX::EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
+            EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
         }
 
         if (_viewport != Rect<I32>(-1)) {
             GFX::SetViewportCommand viewportCmd = {};
             viewportCmd._viewport = _viewport;
-            GFX::EnqueueCommand(*_cmdBuffer, viewportCmd);
+            EnqueueCommand(*_cmdBuffer, viewportCmd);
         }
 
         GFX::DrawCommand drawCommand = { cmd };
-        GFX::EnqueueCommand(*_cmdBuffer, drawCommand);
+        EnqueueCommand(*_cmdBuffer, drawCommand);
 
         _cmdBufferDirty = false;
     }

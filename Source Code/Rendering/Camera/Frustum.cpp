@@ -15,7 +15,7 @@ FrustumCollision Frustum::PlanePointIntersect(const Plane<F32>& frustumPlane, co
         case Plane<F32>::Side::NEGATIVE_SIDE:
             return FrustumCollision::FRUSTUM_OUT;
 
-        default: break;
+        case Plane<F32>::Side::POSITIVE_SIDE: break;
     }
 
     return FrustumCollision::FRUSTUM_IN;
@@ -223,8 +223,8 @@ void Frustum::updatePoints() noexcept {
         const F32 denom = Dot(Cross(a._normal, b._normal), c._normal);
         assert(!IS_ZERO(denom));
         return (-(a._distance * Cross(b._normal, c._normal)) -
-                 (b._distance * Cross(c._normal, a._normal)) -
-                 (c._distance * Cross(a._normal, b._normal))) / denom;
+                 b._distance * Cross(c._normal, a._normal) -
+                 c._distance * Cross(a._normal, b._normal)) / denom;
     };
 
     _frustumPoints[to_base(FrustumPoints::NEAR_LEFT_TOP)]     = intersectionPoint(nearPlane, leftPlane,  topPlane);

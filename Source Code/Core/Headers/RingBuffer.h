@@ -49,7 +49,7 @@ public:
         const I32 ret = _queueIndex.load();
 
         if (_separateReadWrite) {
-            return (ret + (_writeAhead ? 1 : (_queueLength - 1))) % _queueLength;
+            return (ret + (_writeAhead ? 1 : _queueLength - 1)) % _queueLength;
         }
         
         return ret;
@@ -107,6 +107,6 @@ private:
     std::atomic_int _queueIndex;
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_CORE_RING_BUFFER_H_

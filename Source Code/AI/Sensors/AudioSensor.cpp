@@ -10,12 +10,8 @@ AudioSensor::AudioSensor(AIEntity* const parentEntity)
 {
 }
 
-AudioSensor::~AudioSensor()
-{
-}
-
 void AudioSensor::update(const U64 deltaTimeUS) {
     ACKNOWLEDGE_UNUSED(deltaTimeUS);
 }
 
-};  // namespace Divide
+}  // namespace Divide

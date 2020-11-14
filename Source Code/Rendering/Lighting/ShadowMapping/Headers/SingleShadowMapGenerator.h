@@ -41,14 +41,14 @@ namespace Divide {
 class Pipeline;
 class SpotLightComponent;
 /// A single shadow map system. Used, for example, by spot lights.
-class SingleShadowMapGenerator : public ShadowMapGenerator {
+class SingleShadowMapGenerator final : public ShadowMapGenerator {
    public:
     explicit SingleShadowMapGenerator(GFXDevice& context);
     ~SingleShadowMapGenerator();
 
-    void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) final;
+    void render(const Camera& playerCamera, Light& light, U16 lightIndex, GFX::CommandBuffer& bufferInOut) override;
 
-    void updateMSAASampleCount(const U8 sampleCount) final;
+    void updateMSAASampleCount(U8 sampleCount) override;
 
   protected:
     void postRender(const SpotLightComponent& light, GFX::CommandBuffer& bufferInOut);

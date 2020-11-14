@@ -42,8 +42,8 @@ namespace eastl {
     struct dvd_eastl_allocator
     {
         dvd_eastl_allocator() = default;
-        dvd_eastl_allocator(const char* pName) noexcept { (void)pName; };
-        dvd_eastl_allocator(const allocator& x, const char* pName) noexcept { (void)pName; };
+        dvd_eastl_allocator(const char* pName) noexcept { (void)pName; }
+        dvd_eastl_allocator(const allocator& x, const char* pName) noexcept { (void)x;  (void)pName; }
         dvd_eastl_allocator& operator=(const dvd_eastl_allocator& EASTL_NAME(x)) = default;
 
         [[nodiscard]] void* allocate(const size_t n, int flags = 0)

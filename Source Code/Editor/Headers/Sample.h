@@ -39,6 +39,6 @@ namespace Divide {
     void Resize(int w, int h);
     void Draw();
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_DIVIDE_EDITOR_SAMPLE_H_

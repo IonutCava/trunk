@@ -34,4 +34,4 @@ TEST_MEMBER_FUNCTION(ScriptTestClass, eval, ExternalFunction)
     }
 }
 
-}; //namespace Divide
+} //namespace Divide

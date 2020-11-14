@@ -63,7 +63,7 @@ namespace Divide {
 
         void onCollision(const RigidBodyComponent& collider);
 
-        inline void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) { _collisionCbk = cbk; }
+        void onCollisionCbk(const DELEGATE<void, const RigidBodyComponent&>& cbk) { _collisionCbk = cbk; }
 
       private:
         bool filterCollission(const RigidBodyComponent& collider);
@@ -76,6 +76,6 @@ namespace Divide {
 
     INIT_COMPONENT(RigidBodyComponent);
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_RIGID_BODY_COMPONENT_H_

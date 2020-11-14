@@ -120,8 +120,8 @@ class TextureDescriptor final : public PropertyDescriptor {
     }
 
     bool isCubeTexture() const noexcept {
-        return (_texType == TextureType::TEXTURE_CUBE_MAP ||
-                _texType == TextureType::TEXTURE_CUBE_ARRAY);
+        return _texType == TextureType::TEXTURE_CUBE_MAP ||
+            _texType == TextureType::TEXTURE_CUBE_ARRAY;
     }
 
     bool isArrayTexture() const noexcept {
@@ -135,18 +135,26 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     U8 numChannels() const noexcept {
         switch (baseFormat()) {
-                case GFXImageFormat::RED:
-                case GFXImageFormat::DEPTH_COMPONENT:
-                    return 1;
-                case GFXImageFormat::RG:
-                    return 2;
-                case GFXImageFormat::BGR:
-                case GFXImageFormat::RGB:
-                    return 3;
-                case GFXImageFormat::BGRA:
-                case GFXImageFormat::RGBA:
-                    return 4;
-                default: break;
+            case GFXImageFormat::RED:
+            case GFXImageFormat::DEPTH_COMPONENT:
+                return 1;
+            case GFXImageFormat::RG:
+                return 2;
+            case GFXImageFormat::BGR:
+            case GFXImageFormat::RGB:
+            case GFXImageFormat::COMPRESSED_RGB_DXT1:
+                return 3;
+            case GFXImageFormat::BGRA:
+            case GFXImageFormat::RGBA:
+            case GFXImageFormat::COMPRESSED_RGBA_DXT1 :
+            case GFXImageFormat::COMPRESSED_RGBA_DXT3 :
+            case GFXImageFormat::COMPRESSED_RGBA_DXT5 :
+                return 4;
+
+            default:
+            case GFXImageFormat::COUNT:
+                DIVIDE_UNEXPECTED_CALL();
+                break;
         }
 
         return 0;

@@ -30,4 +30,4 @@ void RingBuffer::resize(const I32 queueLength) noexcept {
     _queueIndex = 0;
 }
 
-}; //namespace Divide
+} //namespace Divide

@@ -29,7 +29,7 @@ bool SGNRelationshipCache::rebuild() {
     return true;
 }
 
-SGNRelationshipCache::RelationshipType SGNRelationshipCache::clasifyNode(I64 GUID) const {
+SGNRelationshipCache::RelationshipType SGNRelationshipCache::classifyNode(I64 GUID) const {
     assert(isValid());
 
     if (GUID != _parentNode->getGUID()) {

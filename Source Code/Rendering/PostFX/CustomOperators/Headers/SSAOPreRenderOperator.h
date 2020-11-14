@@ -42,23 +42,23 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
     ~SSAOPreRenderOperator();
 
-    void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) final;
-    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
-    void reshape(U16 width, U16 height) final;
+    void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) override;
+    [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
+    void reshape(U16 width, U16 height) override;
 
-    F32 radius() const noexcept { return _radius; }
+    [[nodiscard]] F32 radius() const noexcept { return _radius; }
     void radius(F32 val);
 
-    F32 power() const noexcept { return _power; }
+    [[nodiscard]] F32 power() const noexcept { return _power; }
     void power(F32 val);
 
-    U8 kernelIndex(U8& minOut, U8& maxOut) const noexcept { minOut = 0u; maxOut = 3u; return _kernelIndex; }
+    [[nodiscard]] U8 kernelIndex(U8& minOut, U8& maxOut) const noexcept { minOut = 0u; maxOut = 3u; return _kernelIndex; }
     void kernelIndex(U8 val);
 
-    bool ready() const final;
+    [[nodiscard]] bool ready() const override;
 
    private:
-     void onToggle(bool state) final;
+     void onToggle(bool state) override;
 
    private:
     PushConstants _ssaoBlurConstants;
@@ -75,6 +75,6 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     bool _enabled = true;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

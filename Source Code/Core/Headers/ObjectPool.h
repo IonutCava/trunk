@@ -74,7 +74,7 @@ protected:
     std::array<T*, N> _pool = {};
 };
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_OBJECT_POOL_H_
 

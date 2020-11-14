@@ -46,7 +46,7 @@ namespace Font {
     const static char* DROID_SERIF = "DroidSerif-Regular.ttf";
     const static char* DROID_SERIF_ITALIC = "DroidSerif-Italic.ttf";
     const static char* DROID_SERIF_BOLD = "DroidSerif-Bold.ttf";
-};
+}
 
 class TextLabelStyle final : public Hashable {
   protected:
@@ -161,6 +161,6 @@ struct TextElementBatch {
     BatchType _data;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif //_UTILITY_TEXT_LABEL_H_

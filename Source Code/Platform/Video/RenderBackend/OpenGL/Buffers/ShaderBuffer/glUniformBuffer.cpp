@@ -17,7 +17,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                  const ShaderBufferDescriptor& descriptor)
     : ShaderBuffer(context, descriptor)
 {
-    _maxSize = (_usage != Usage::CONSTANT_BUFFER) ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
+    _maxSize = _usage != Usage::CONSTANT_BUFFER ? GL_API::s_SSBMaxSize : GL_API::s_UBMaxSize;
 
     _alignedBufferSize = realign_offset(_bufferSize, alignmentRequirement(_usage));
 
@@ -29,7 +29,7 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._initToZero = descriptor._initToZero;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._updateUsage = descriptor._updateUsage;
-    implParams._explicitFlush = !BitCompare(_flags, ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+    implParams._explicitFlush = !BitCompare(_flags, Flags::AUTO_RANGE_FLUSH);
 
     implParams._target = _usage == Usage::UNBOUND_BUFFER 
                                  ? GL_SHADER_STORAGE_BUFFER
@@ -37,20 +37,20 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                                            ? GL_UNIFORM_BUFFER
                                            : GL_ATOMIC_COUNTER_BUFFER;
 
-    if (BitCompare(_flags, ShaderBuffer::Flags::IMMUTABLE_STORAGE) || 
-        BitCompare(_flags, ShaderBuffer::Flags::ALLOW_THREADED_WRITES) ||
+    if (BitCompare(_flags, Flags::IMMUTABLE_STORAGE) || 
+        BitCompare(_flags, Flags::ALLOW_THREADED_WRITES) ||
         _usage == Usage::ATOMIC_COUNTER) 
     {
         implParams._storageType = BufferStorageType::IMMUTABLE;
-    } else if (BitCompare(_flags, ShaderBuffer::Flags::AUTO_STORAGE)) {
+    } else if (BitCompare(_flags, Flags::AUTO_STORAGE)) {
         implParams._storageType = BufferStorageType::AUTO;
     } else {
         implParams._storageType = BufferStorageType::NORMAL;
     }
 
-    implParams._unsynced =  (implParams._storageType != BufferStorageType::IMMUTABLE &&
-                             implParams._storageType != BufferStorageType::AUTO) ||
-                            BitCompare(_flags, ShaderBuffer::Flags::NO_SYNC) ||
+    implParams._unsynced =  implParams._storageType != BufferStorageType::IMMUTABLE &&
+        implParams._storageType != BufferStorageType::AUTO ||
+                            BitCompare(_flags, Flags::NO_SYNC) ||
                             _frequency == BufferUpdateFrequency::ONCE;
 
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);

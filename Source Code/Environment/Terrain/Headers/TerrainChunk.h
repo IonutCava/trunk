@@ -52,7 +52,7 @@ FWD_DECLARE_MANAGED_CLASS(Vegetation);
 
 namespace Attorney {
     class TerrainChunkTerrain;
-};
+}
 
 class TerrainChunk {
     static U32 _chunkID;
@@ -62,24 +62,24 @@ class TerrainChunk {
     TerrainChunk(GFXDevice& context, Terrain* parentTerrain, QuadtreeNode& parentNode);
     ~TerrainChunk() = default;
 
-    void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMsize, BoundingBox& bbInOut);
+    void load(U8 depth, const vec2<U32>& pos, U32 targetChunkDimension, const vec2<U32>& HMSize, BoundingBox& bbInOut);
 
-    U32 ID() const noexcept { return _ID; }
+    [[nodiscard]] U32 ID() const noexcept { return _ID; }
 
-    vec4<F32> getOffsetAndSize() const noexcept {
+    [[nodiscard]] vec4<F32> getOffsetAndSize() const noexcept {
         return vec4<F32>(_xOffset, _yOffset, _sizeX, _sizeY);
     }
 
-    const Terrain& parent() const noexcept { return *_parentTerrain; }
-    const QuadtreeNode& quadtreeNode() const noexcept { return _quadtreeNode; };
+    [[nodiscard]] const Terrain& parent() const noexcept { return *_parentTerrain; }
+    [[nodiscard]] const QuadtreeNode& quadtreeNode() const noexcept { return _quadtreeNode; }
 
-    const BoundingBox& bounds() const;
+    [[nodiscard]] const BoundingBox& bounds() const;
     void drawBBox(RenderPackage& packageOut);
 
-    U8 LoD() const;
+    [[nodiscard]] U8 LoD() const;
 
    protected:
-    const Vegetation_ptr& getVegetation() const noexcept { return _vegetation; }
+       [[nodiscard]] const Vegetation_ptr& getVegetation() const noexcept { return _vegetation; }
 
     friend class Vegetation;
     void initializeVegetation(const VegetationDetails& vegDetails);
@@ -98,13 +98,13 @@ class TerrainChunk {
 
 namespace Attorney {
 class TerrainChunkTerrain {
-   private:
-    static const Vegetation_ptr& getVegetation(Divide::TerrainChunk& chunk) {
+    static const Vegetation_ptr& getVegetation(const Divide::TerrainChunk& chunk) {
         return chunk.getVegetation();
     }
     friend class Divide::Terrain;
 };
-};  // namespace Attorney
-};  // namespace Divide
+}  // namespace Attorney
+
+}  // namespace Divide
 
 #endif

@@ -86,6 +86,6 @@ class RenderQueue final : public KernelComponent {
     RenderBinArray _renderBins = {};
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

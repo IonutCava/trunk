@@ -40,9 +40,9 @@ namespace {
         container.push_back(item);
         return std::make_pair(to_U8(container.size() - 1), true);
     }
-};
+}
 
-bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
+bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                                 const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
                                 PlatformContext& context,
                                 bool threadedLoading) {
@@ -111,16 +111,16 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
         layerOffsetStr = Util::to_string(i);
         splatTextures.push_back(terrainDescriptor->getVariable("blendMap" + layerOffsetStr));
         U8 j = 0;
-        for (auto it : channels) {
-            currentMaterial = terrainDescriptor->getVariable(it.first + layerOffsetStr + "_mat");
+        for (const auto &[channelName, channel] : channels) {
+            currentMaterial = terrainDescriptor->getVariable(channelName + layerOffsetStr + "_mat");
             if (currentMaterial.empty()) {
                 continue;
             }
 
             for (U8 k = 0; k < to_base(TerrainTextureType::COUNT); ++k) {
-                auto ret = findOrInsert(textureQuality, textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial.c_str());
-                indices[k][idx] = ret.first;
-                if (ret.second) {
+                auto [index, wasNew] = findOrInsert(textureQuality, textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial);
+                indices[k][idx] = index;
+                if (wasNew) {
                     ++offsets[k];
                 }
             }
@@ -265,8 +265,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
     for (U8 i = 0; i < to_base(TerrainTextureType::COUNT); ++i) {
         stringImpl& dataStr = indexData[i];
         dataStr = Util::StringFormat("const uint %s[ %d ] = {", idxNames[i], indices[i].size());
-        for (size_t j = 0; j < indices[i].size(); ++j) {
-            dataStr.append(Util::StringFormat("%d,", indices[i][j]));
+        for (const U16 idxTemp : indices[i]) {
+            dataStr.append(Util::StringFormat("%d,", idxTemp));
         }
         dataStr.pop_back();
         dataStr.append("};");
@@ -351,9 +351,9 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
         bool hasGeometryPass = false;
 
-        stringImpl propName = "";
+        stringImpl propName;
         for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
-            stringImpl shaderPropName = "";
+            stringImpl shaderPropName;
 
             if (wMode != Terrain::WireframeMode::NONE) {
                 hasGeometryPass = true;
@@ -394,7 +394,7 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                 shaderPropName += ".PerPixelNormals";
                 shaderModule._defines.emplace_back("PER_PIXEL_NORMALS", true);
             }
-            const vec2<F32> uvDivisor = (WorldScale * TessellationParams::PATCHES_PER_TILE_EDGE) - TessellationParams::PATCHES_PER_TILE_EDGE;
+            const vec2<F32> uvDivisor = WorldScale * TessellationParams::PATCHES_PER_TILE_EDGE - TessellationParams::PATCHES_PER_TILE_EDGE;
 
             shaderModule._defines.emplace_back("COMPUTE_TBN", true);
 
@@ -434,8 +434,8 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
                     shaderModule._defines.emplace_back(str, false);
                 }
 
-            } else if ((hasGeometryPass && shaderModule._moduleType == ShaderType::GEOMETRY) ||
-                (!hasGeometryPass && shaderModule._moduleType == ShaderType::TESSELLATION_EVAL)) {
+            } else if (hasGeometryPass && shaderModule._moduleType == ShaderType::GEOMETRY ||
+                !hasGeometryPass && shaderModule._moduleType == ShaderType::TESSELLATION_EVAL) {
                 shaderModule._defines.emplace_back("HAS_CLIPPING_OUT", true);
             }
 
@@ -570,20 +570,18 @@ bool TerrainLoader::loadTerrain(Terrain_ptr terrain,
 
     terrain->setMaterialTpl(terrainMaterial);
 
-    if (threadedLoading) {
-        Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task & parent) {
-            loadThreadedResources(terrain, context, terrainDescriptor);
-        }));
-    } else {
-        loadThreadedResources(terrain, context, terrainDescriptor);
-    }
+    Start(*CreateTask(context.taskPool(TaskPoolType::HIGH_PRIORITY), [terrain, terrainDescriptor, &context](const Task&) {
+        if (!loadThreadedResources(terrain, context, terrainDescriptor)) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
+    }), threadedLoading ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
 
     return true;
 }
 
-bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
+bool TerrainLoader::loadThreadedResources(const Terrain_ptr& terrain,
                                           PlatformContext& context,
-                                          const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
+                                          const std::shared_ptr<TerrainDescriptor>& terrainDescriptor) {
 
     ResourcePath terrainMapLocation{ Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor->getVariable("descriptor") };
     ResourcePath terrainRawFile{ terrainDescriptor->getVariable("heightfield") };
@@ -636,14 +634,14 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
 
                 F32 yOffset = 0.0f;
                 U16* heightData = reinterpret_cast<U16*>(data.data());
-                yOffset = (altitudeRange * (heightData[idxIMG] / ushortMax)) + minAltitude;
+                yOffset = altitudeRange * (heightData[idxIMG] / ushortMax) + minAltitude;
 
 
                 //#pragma omp critical
                 //Surely the id is unique and memory has also been allocated beforehand
-                vertexData.set(bMin.x + (to_F32(width)) * bXRange / (terrainWidth - 1),         //X
+                vertexData.set(bMin.x + to_F32(width) * bXRange / (terrainWidth - 1),         //X
                                yOffset,                                                         //Y
-                               bMin.z + (to_F32(height)) * (bZRange) / (terrainHeight - 1));    //Z
+                               bMin.z + to_F32(height) * bZRange / (terrainHeight - 1));    //Z
             }
         }
 
@@ -721,15 +719,15 @@ bool TerrainLoader::loadThreadedResources(Terrain_ptr terrain,
     return terrain->load();
 }
 
-VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Terrain> terrain,
+VegetationDetails& TerrainLoader::initializeVegetationDetails(const Terrain_ptr& terrain,
                                                               PlatformContext& context,
-                                                              const std::shared_ptr<TerrainDescriptor> terrainDescriptor) {
+                                                              const std::shared_ptr<TerrainDescriptor>& terrainDescriptor) {
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
 
     const U32 terrainWidth = terrainDescriptor->dimensions().width;
     const U32 terrainHeight = terrainDescriptor->dimensions().height;
     const U16 chunkSize = terrainDescriptor->chunkSize();
-    const U32 maxChunkCount = to_U32(std::ceil((terrainWidth * terrainHeight) / (chunkSize * chunkSize * 1.0f)));
+    const U32 maxChunkCount = to_U32(std::ceil(terrainWidth * terrainHeight / (chunkSize * chunkSize * 1.0f)));
 
     Vegetation::precomputeStaticData(context.gfx(), chunkSize, maxChunkCount);
 
@@ -800,8 +798,15 @@ VegetationDetails& TerrainLoader::initializeVegetationDetails(std::shared_ptr<Te
     return vegDetails;
 }
 
-bool TerrainLoader::Save(const char* fileName) { return true; }
+bool TerrainLoader::Save(const char* fileName) {
+    ACKNOWLEDGE_UNUSED(fileName);
+    return true;
+}
 
-bool TerrainLoader::Load(const char* filename) { return true; }
+bool TerrainLoader::Load(const char* fileName) {
+    ACKNOWLEDGE_UNUSED(fileName);
 
-};
+    return true;
+}
+
+}

@@ -44,9 +44,9 @@ namespace Divide {
         RenderingSystem(ECS::ECSEngine& parentEngine, PlatformContext& context);
         virtual ~RenderingSystem() = default;
 
-        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) final;
-        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) final;
+        bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) override;
+        bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) override;
     };
-};
+}
 
 #endif //_RENDERING_SYSTEM_H_

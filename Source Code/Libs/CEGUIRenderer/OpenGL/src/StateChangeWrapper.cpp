@@ -31,7 +31,7 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace {
-    static const GLuint s_invalidBuffer = std::numeric_limits<GLuint>::max();
+    const GLuint s_invalidBuffer = std::numeric_limits<GLuint>::max();
 };
 
 namespace Divide {
@@ -61,7 +61,7 @@ namespace CEGUI
 
     bool OpenGL3StateChangeWrapper::BlendFuncParams::equal(GLenum sFactor, GLenum dFactor)
     {
-        bool equal = (d_sFactor == sFactor) && (d_dFactor == dFactor);
+        const bool equal = d_sFactor == sFactor && d_dFactor == dFactor;
         if(!equal)
         {
             d_sFactor = sFactor;
@@ -85,7 +85,7 @@ namespace CEGUI
 
     bool OpenGL3StateChangeWrapper::BlendFuncSeperateParams::equal(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
     {
-        bool equal = (d_sfactorRGB == sfactorRGB) && (d_dfactorRGB == dfactorRGB) && (d_sfactorAlpha == sfactorAlpha) && (d_dfactorAlpha == dfactorAlpha);
+        const bool equal = d_sfactorRGB == sfactorRGB && d_dfactorRGB == dfactorRGB && d_sfactorAlpha == sfactorAlpha && d_dfactorAlpha == dfactorAlpha;
         if(!equal)
         {
             d_sfactorRGB = sfactorRGB;
@@ -110,7 +110,7 @@ namespace CEGUI
 
     bool OpenGL3StateChangeWrapper::PortParams::equal(GLint x, GLint y, GLsizei width, GLsizei height)
     {
-        bool equal = (d_x == x) && (d_y == y) && (d_width == width) && (d_height == height);
+        const bool equal = d_x == x && d_y == y && d_width == width && d_height == height;
         if(!equal)
         {
             d_x = x;
@@ -133,7 +133,7 @@ namespace CEGUI
 
     bool OpenGL3StateChangeWrapper::BindBufferParams::equal(GLenum target, GLuint buffer)
     {
-        bool equal = (d_target == target) && (d_buffer == buffer);
+        const bool equal = d_target == target && d_buffer == buffer;
         if(!equal)
         {
             d_target = target;
@@ -191,7 +191,7 @@ void OpenGL3StateChangeWrapper::bindVertexArray(GLuint vertexArray)
 
 void OpenGL3StateChangeWrapper::blendFunc(GLenum sfactor, GLenum dfactor)
 {
-    bool callIsRedundant = d_blendFuncParams.equal(sfactor, dfactor);
+    const bool callIsRedundant = d_blendFuncParams.equal(sfactor, dfactor);
     if(!callIsRedundant)
     {
         Divide::BlendingProperties blend = {
@@ -206,7 +206,7 @@ void OpenGL3StateChangeWrapper::blendFunc(GLenum sfactor, GLenum dfactor)
 
 void OpenGL3StateChangeWrapper::blendFuncSeparate(GLenum sfactorRGB, GLenum dfactorRGB, GLenum sfactorAlpha, GLenum dfactorAlpha)
 {
-    bool callIsRedundant = d_blendFuncSeperateParams.equal(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
+    const bool callIsRedundant = d_blendFuncSeperateParams.equal(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha);
     if (!callIsRedundant) {
         Divide::BlendingProperties blend = {
                                                         Divide::getProperty(sfactorRGB),
@@ -224,7 +224,7 @@ void OpenGL3StateChangeWrapper::blendFuncSeparate(GLenum sfactorRGB, GLenum dfac
 
 void OpenGL3StateChangeWrapper::viewport(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    bool callIsRedundant = d_viewPortParams.equal(x, y, width, height);
+    const bool callIsRedundant = d_viewPortParams.equal(x, y, width, height);
     if (!callIsRedundant) {
         Divide::GL_API::getStateTracker().setViewport(x, y, width, height);
     }
@@ -232,14 +232,14 @@ void OpenGL3StateChangeWrapper::viewport(GLint x, GLint y, GLsizei width, GLsize
 
 void OpenGL3StateChangeWrapper::scissor(GLint x, GLint y, GLsizei width, GLsizei height)
 {
-    bool callIsRedundant = d_scissorParams.equal(x, y, width, height);
+    const bool callIsRedundant = d_scissorParams.equal(x, y, width, height);
     if (!callIsRedundant) {
         Divide::GL_API::getStateTracker().setScissor(x, y, width, height);
     }
 }
 void OpenGL3StateChangeWrapper::bindBuffer(GLenum target, GLuint buffer)
 {
-    bool callIsRedundant = d_bindBufferParams.equal(target, buffer);
+    const bool callIsRedundant = d_bindBufferParams.equal(target, buffer);
     if (!callIsRedundant) {
         Divide::GL_API::getStateTracker().setActiveBuffer(target, buffer);
     }

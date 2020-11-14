@@ -43,6 +43,6 @@ namespace Divide {
     };
 
     INIT_COMPONENT(RagdollComponent);
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_RAGDOLL_COMPONENT_H_

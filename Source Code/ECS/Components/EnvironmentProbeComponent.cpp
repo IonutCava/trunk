@@ -38,7 +38,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
         *static_cast<bool*>(dataOut) = _type == ProbeType::TYPE_LOCAL;
     };
     typeField._dataSetter = [this](const void* data) {
-        _type = (*static_cast<const bool*>(data)) ? ProbeType::TYPE_LOCAL : ProbeType::TYPE_INFINITE;
+        _type = *static_cast<const bool*>(data) ? ProbeType::TYPE_LOCAL : ProbeType::TYPE_INFINITE;
     };
     typeField._type = EditorComponentFieldType::PUSH_TYPE;
     typeField._readOnly = false;
@@ -116,7 +116,7 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
             rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(false));
         }
 
-        GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()));
+        EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()));
 
         vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::probeCameras();
 
@@ -136,7 +136,7 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
                                        bufferInOut,
                                        cameras);
 
-        GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+        EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 
         _currentUpdateCall = 0;
         _dirty = false;
@@ -228,4 +228,4 @@ std::array<Camera*, 6> EnvironmentProbeComponent::probeCameras() const noexcept 
 
     return cameras;
 }
-}; //namespace Divide
+} //namespace Divide

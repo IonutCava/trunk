@@ -63,7 +63,7 @@ inline vec4<F32> RANDOM_NORMALIZED() noexcept {
     return Util::ToFloatColour(RANDOM());
 }
 
-};  // namespace DefaultColours
-};  // namespace Divide
+}  // namespace DefaultColours
+}  // namespace Divide
 
 #endif

@@ -36,7 +36,7 @@ ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
         } break;
         case PhysicsAPI::ODE: 
         case PhysicsAPI::Bullet: 
-        default: {
+        case PhysicsAPI::COUNT: {
             Console::errorfn(Locale::get(_ID("ERROR_PFX_DEVICE_API")));
             return ErrorCode::PFX_NON_SPECIFIED;
         };

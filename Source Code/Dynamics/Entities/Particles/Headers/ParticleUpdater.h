@@ -47,7 +47,7 @@ class ParticleUpdater : public PlatformContextComponent{
 
     virtual ~ParticleUpdater() = default;
 
-    virtual void update(const U64 deltaTimeUS, ParticleData& p) = 0;
+    virtual void update(U64 deltaTimeUS, ParticleData& p) = 0;
 };
-};
+}
 #endif

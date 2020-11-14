@@ -666,4 +666,4 @@ namespace Divide {
 
         return BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::loadCache(inputBuffer);
     }
-}; //namespace
+} //namespace

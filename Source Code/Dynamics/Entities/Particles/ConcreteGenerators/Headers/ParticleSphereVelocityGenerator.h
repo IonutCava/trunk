@@ -36,7 +36,7 @@
 #include "Dynamics/Entities/Particles/Headers/ParticleGenerator.h"
 
 namespace Divide {
-struct ParticleSphereVelocityGenerator final : public ParticleGenerator {
+struct ParticleSphereVelocityGenerator final : ParticleGenerator {
     F32 _minVel = 0.f;
     F32 _maxVel = 0.f;
 
@@ -46,6 +46,6 @@ struct ParticleSphereVelocityGenerator final : public ParticleGenerator {
                   U32 startIndex,
                   U32 endIndex) override;
 };
-};
+}
 
 #endif

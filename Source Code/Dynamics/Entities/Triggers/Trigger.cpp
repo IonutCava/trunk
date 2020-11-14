@@ -11,18 +11,10 @@
 
 namespace Divide {
 
-Trigger::Trigger(ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
-    : SceneNode(parentCache, descriptorHash, name, ResourcePath(name), {}, SceneNodeType::TYPE_TRIGGER, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
-      _drawImpostor(false),
-      _enabled(true),
-      _radius(1.0f)
+Trigger::Trigger(ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
+    : SceneNode(parentCache, descriptorHash, name, ResourcePath(name), {}, SceneNodeType::TYPE_TRIGGER, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS))
 {
 }
-
-Trigger::~Trigger()
-{
-}
-
 
 void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
     if (_drawImpostor) {
@@ -35,7 +27,7 @@ void Trigger::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState
 
 void Trigger::setParams(Task& triggeredTask,
                         const vec3<F32>& triggerPosition,
-                        F32 radius) {
+                        const F32 radius) {
     /// Check if position has changed
     if (!_triggerPosition.compare(triggerPosition)) {
         _triggerPosition = triggerPosition;
@@ -70,9 +62,9 @@ bool Trigger::check(Unit* const unit, const vec3<F32>& camEyePos) {
     return false;
 }
 
-bool Trigger::trigger() {
+bool Trigger::trigger() const {
     assert(_triggeredTask != nullptr);
     Start(*_triggeredTask);
     return true;
 }
-};
+}

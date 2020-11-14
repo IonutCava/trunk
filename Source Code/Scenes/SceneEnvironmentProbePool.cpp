@@ -95,8 +95,8 @@ RenderTargetHandle SceneEnvironmentProbePool::reflectionTarget() {
 }
 
 const EnvironmentProbeList& SceneEnvironmentProbePool::sortAndGetLocked(const vec3<F32>& position) {
-    eastl::sort(eastl::begin(_envProbes),
-                eastl::end(_envProbes),
+    eastl::sort(begin(_envProbes),
+                end(_envProbes),
                 [&position](const auto& a, const auto& b) -> bool {
                     return a->distanceSqTo(position) < b->distanceSqTo(position);
                 });
@@ -120,7 +120,7 @@ void SceneEnvironmentProbePool::prepare(GFX::CommandBuffer& bufferInOut) {
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = s_reflection._targetID;
     clearMainTarget._descriptor = clearDescriptor;
-    GFX::EnqueueCommand(bufferInOut, clearMainTarget);
+    EnqueueCommand(bufferInOut, clearMainTarget);
 }
 
 void SceneEnvironmentProbePool::lockProbeList() const {
@@ -145,10 +145,10 @@ void SceneEnvironmentProbePool::unregisterProbe(EnvironmentProbeComponent* probe
     if (probe != nullptr) {
         UniqueLock<SharedMutex> w_lock(_probeLock);
         I64 probeGUID = probe->getGUID();
-        _envProbes.erase(eastl::remove_if(eastl::begin(_envProbes), eastl::end(_envProbes),
-                                       [&probeGUID](const auto& probe)
-                                            -> bool { return probe->getGUID() == probeGUID; }),
-                         eastl::end(_envProbes));
+        _envProbes.erase(eastl::remove_if(begin(_envProbes), end(_envProbes),
+                                          [&probeGUID](const auto& p)
+                                      -> bool { return p->getGUID() == probeGUID; }),
+                         end(_envProbes));
     }
 
     if (probe == _debugProbe) {
@@ -185,11 +185,11 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
         ResourceDescriptor shadowPreviewShader("fbPreview.Cube");
         shadowPreviewShader.propertyDescriptor(shaderDescriptor);
         shadowPreviewShader.threaded(false);
-        ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(parentScene().resourceCache(), shadowPreviewShader);
+        const ShaderProgram_ptr previewShader = CreateResource<ShaderProgram>(parentScene().resourceCache(), shadowPreviewShader);
 
         constexpr I32 Base = 10;
         for (U32 i = 0; i < 6; ++i) {
-            DebugView_ptr probeView = std::make_shared<DebugView>(to_I16((std::numeric_limits<I16>::max() - 1) - 6 + i));
+            DebugView_ptr probeView = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1 - 6 + i));
             probeView->_texture = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
             probeView->_samplerHash = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
             probeView->_shader = previewShader;
@@ -199,11 +199,11 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
             probeView->_groupID = Base + probe->rtLayerIndex();
             s_debugViews.push_back(probeView);
         }
-    };
+    }
 
     for (const DebugView_ptr& view : s_debugViews) {
         parentScene().context().gfx().addDebugView(view);
     }
 }
 
-}; //namespace Divide
+} //namespace Divide

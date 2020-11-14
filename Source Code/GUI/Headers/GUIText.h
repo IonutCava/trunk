@@ -38,7 +38,7 @@
 
 namespace Divide {
 
-class GUIText : public GUIElementBase<GUIType::GUI_TEXT>, public TextElement {
+class GUIText final : public GUIElementBase<GUIType::GUI_TEXT>, public TextElement {
     friend class GUIInterface;
 
    public:

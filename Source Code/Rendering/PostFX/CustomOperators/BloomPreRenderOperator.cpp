@@ -17,7 +17,7 @@ namespace Divide {
 
 namespace {
     F32 resolutionDownscaleFactor = 2.0f;
-};
+}
 
 BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_BLOOM),
@@ -43,7 +43,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     bloomCalc.waitForReady(false);
 
     _bloomCalc = CreateResource<ShaderProgram>(cache, bloomCalc);
-    _bloomCalc->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+    _bloomCalc->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _bloomCalc->getGUID();
@@ -60,7 +60,7 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     bloomApply.propertyDescriptor(shaderDescriptor);
     bloomApply.waitForReady(false);
     _bloomApply = CreateResource<ShaderProgram>(cache, bloomApply);
-    _bloomApply->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+    _bloomApply->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _bloomApply->getGUID();
@@ -147,10 +147,10 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
     
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
-    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomCalcConstants });
+    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomCalcPipeline });
+    EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomCalcConstants });
 
     // Step 1: generate bloom - render all of the "bright spots"
     RTClearDescriptor clearTarget = {};
@@ -160,16 +160,16 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
     GFX::ClearRenderTargetCommand clearRenderTargetCmd = {};
     clearRenderTargetCmd._target = _bloomOutput._targetID;
     clearRenderTargetCmd._descriptor = clearTarget;
-    GFX::EnqueueCommand(bufferInOut, clearRenderTargetCmd);
+    EnqueueCommand(bufferInOut, clearRenderTargetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};
     beginRenderPassCmd._target = _bloomOutput._targetID;
     beginRenderPassCmd._name = "DO_BLOOM_PASS";
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+    EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+    EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
     // Step 2: blur bloom
     _context.blurTarget(_bloomOutput,
@@ -188,21 +188,21 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
 
     descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
     descriptorSetCmd._set._textureData.setTexture(bloomTex, bloomAtt.samplerHash(),TextureUsage::UNIT1);
-    GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+    EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });
-    GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomApplyConstants });
+    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _bloomApplyPipeline });
+    EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _bloomApplyConstants });
 
     beginRenderPassCmd._target = output._targetID;
     beginRenderPassCmd._descriptor = _screenOnlyDraw;
-    GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+    EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-    GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+    EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-    GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
 
 
     return true;
 }
 
-};
+}

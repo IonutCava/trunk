@@ -51,7 +51,7 @@ public:
     void   deallocate(GLuint& vao);
 
 protected:
-    friend class Divide::GL_API;
+    friend class GL_API;
     void init(U32 capacity);
     void destroy();
 

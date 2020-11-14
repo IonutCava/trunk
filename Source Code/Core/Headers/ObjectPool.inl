@@ -68,6 +68,8 @@ PoolHandle ObjectPool<T, N>::allocate(void* mem, Args... args) {
 
 template<typename T, size_t N>
 void ObjectPool<T, N>::deallocate(void* mem, const PoolHandle handle) {
+    ACKNOWLEDGE_UNUSED(mem);
+
     T* obj = find(handle);
     if (obj) {
         obj->~T();
@@ -105,6 +107,6 @@ void ObjectPool<T, N>::unregisterExisting(const PoolHandle handle) {
     DIVIDE_UNEXPECTED_CALL();
 }
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_OBJECT_POOL_INL_

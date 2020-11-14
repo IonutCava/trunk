@@ -45,7 +45,7 @@ ResourcePath operator+(const ResourcePath& lhs, const ResourcePath& rhs) {
         return lhs;
     }
 
-    const bool hasSeparator = (*lhs.str().rbegin() == '/' || *rhs.str().begin() == '/');
+    const bool hasSeparator = *lhs.str().rbegin() == '/' || *rhs.str().begin() == '/';
     return ResourcePath(lhs.str() + (hasSeparator ? "" : "/") + rhs.str());
 }
 

@@ -117,7 +117,7 @@ class Material final : public CachedResource {
                     bool applyToInstances = false);
 
     bool setTexture(TextureUsage textureUsageSlot,
-                    const Texture_ptr& tex,
+                    const Texture_ptr& texture,
                     size_t samplerHash,
                     const TextureOperation& op = TextureOperation::NONE,
                     bool applyToInstances = false);
@@ -190,7 +190,7 @@ class Material final : public CachedResource {
 
     void recomputeShaders();
     void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
-                                  const RenderStagePass& stage,
+                                  const RenderStagePass& stagePass,
                                   bool computeOnAdd);
 
     void setShaderProgramInternal(const ShaderProgram_ptr& shader,
@@ -203,7 +203,7 @@ class Material final : public CachedResource {
 
     const ShaderProgramInfo& shaderInfo(const RenderStagePass& renderStagePass) const;
 
-    const char* getResourceTypeName() const noexcept override { return "Material"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Material"; }
 
     void saveRenderStatesToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadRenderStatesFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);

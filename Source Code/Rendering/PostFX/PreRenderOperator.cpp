@@ -27,10 +27,6 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
     _triangleDrawCmd = { triangleCmd };
 }
 
-PreRenderOperator::~PreRenderOperator()
-{
-}
-
 void PreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(bufferInOut);
@@ -57,4 +53,4 @@ void PreRenderOperator::idle(const Configuration& config) {
 void PreRenderOperator::onToggle(const bool state) {
     ACKNOWLEDGE_UNUSED(state);
 }
-}; //namespace Divide
+} //namespace Divide

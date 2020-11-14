@@ -37,17 +37,17 @@
 
 namespace Divide {
 
-class MotionBlurPreRenderOperator : public PreRenderOperator {
+class MotionBlurPreRenderOperator final : public PreRenderOperator {
    public:
     MotionBlurPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache);
-    ~MotionBlurPreRenderOperator();
+    ~MotionBlurPreRenderOperator() = default;
 
-    bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) final;
+    [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
 
-    inline F32 velocityScale() const noexcept { return _velocityScale; }
+    [[nodiscard]] F32 velocityScale() const noexcept { return _velocityScale; }
     void velocityScale(F32 val);
 
-    bool ready() const final;
+    [[nodiscard]] bool ready() const override;
 
     PROPERTY_RW(U8, maxSamples, 16u);
    private:
@@ -58,6 +58,6 @@ class MotionBlurPreRenderOperator : public PreRenderOperator {
     F32 _velocityScale = 1.0f;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

@@ -143,7 +143,7 @@ void SceneAnimator::save(PlatformContext& context, ByteBuffer& dataOut) const {
     }
 
     // the number of animations
-    uint32_t nsize = static_cast<uint32_t>(_animations.size());
+    const uint32_t nsize = static_cast<uint32_t>(_animations.size());
     dataOut << nsize;
 
     for (uint32_t i(0); i < nsize; i++) {
@@ -175,7 +175,7 @@ void SceneAnimator::load(PlatformContext& context, ByteBuffer& dataIn) {
         anim = std::make_shared<AnimEvaluator>();
         AnimEvaluator::load(*anim, dataIn);
         // get all the animation names so I can reference them by name and get the correct id
-        hashAlg::insert(_animationNameToID, _ID(anim->name().c_str()), idx++);
+        insert(_animationNameToID, _ID(anim->name().c_str()), idx++);
     }
     
     init(context);
@@ -190,7 +190,7 @@ void SceneAnimator::saveSkeleton(ByteBuffer& dataOut, Bone* parent) const {
     dataOut << parent->_originalLocalTransform;
 
     // number of children
-    uint32_t nsize = static_cast<uint32_t>(parent->_children.size());
+    const uint32_t nsize = static_cast<uint32_t>(parent->_children.size());
     dataOut << nsize;
     // continue for all children
     for (vectorEASTL<Bone*>::iterator it = std::begin(parent->_children); it != std::end(parent->_children); ++it) {

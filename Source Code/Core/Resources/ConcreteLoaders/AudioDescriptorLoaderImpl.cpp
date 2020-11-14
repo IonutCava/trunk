@@ -22,4 +22,4 @@ CachedResource_ptr ImplResourceLoader<AudioDescriptor>::operator()() {
     return ptr;
 }
 
-};
+}

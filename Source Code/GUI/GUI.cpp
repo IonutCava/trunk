@@ -83,7 +83,7 @@ void GUI::onChangeScene(Scene* newScene) {
         it->second->onEnable();
     } else {
         SceneGUIElements* elements = Attorney::SceneGUI::guiElements(*newScene);
-        hashAlg::insert(_guiStack, newScene->getGUID(), elements);
+        insert(_guiStack, newScene->getGUID(), elements);
         elements->onEnable();
     }
 
@@ -104,12 +104,12 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
         return;
     }
 
-    GFX::EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render GUI" });
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Render GUI" });
 
     //Set a 2D camera for rendering
-    GFX::EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
+    EnqueueCommand(bufferInOut, GFX::SetCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
 
-    GFX::EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ viewport });
+    EnqueueCommand(bufferInOut, GFX::SetViewportCommand{ viewport });
 
     const GUIMap& elements = _guiElements[to_base(GUIType::GUI_TEXT)];
 
@@ -144,7 +144,7 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
             getCEGUIContext().draw();
             _ceguiRenderer->endRendering();
         };
-        GFX::EnqueueCommand(bufferInOut, ceguiDraw);
+        EnqueueCommand(bufferInOut, ceguiDraw);
 
         GFX::SetBlendCommand blendCmd = {};
         blendCmd._blendProperties = BlendingProperties{
@@ -153,15 +153,15 @@ void GUI::draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer
             BlendOperation::ADD
         };
         blendCmd._blendProperties._enabled = true;
-        GFX::EnqueueCommand(bufferInOut, blendCmd);
+        EnqueueCommand(bufferInOut, blendCmd);
 
         context.drawTextureInViewport(getCEGUIRenderTextureData(), 0u, viewport, false, false, bufferInOut);
     }
 
     // Restore full state
-    GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _postCEGUIPipeline });
-    GFX::EnqueueCommand(bufferInOut, GFX::SetBlendCommand{});
-    GFX::EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _postCEGUIPipeline });
+    EnqueueCommand(bufferInOut, GFX::SetBlendCommand{});
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
 void GUI::update(const U64 deltaTimeUS) {
@@ -199,7 +199,7 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
 
     CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>(CEGUI::System::getSingleton().getResourceProvider());
 
-    CEGUI::String CEGUIInstallSharePath((Paths::g_assetsLocation + Paths::g_GUILocation).c_str());
+    const CEGUI::String CEGUIInstallSharePath((Paths::g_assetsLocation + Paths::g_GUILocation).c_str());
     rp->setResourceGroupDirectory("schemes", CEGUIInstallSharePath + "schemes/");
     rp->setResourceGroupDirectory("imagesets", CEGUIInstallSharePath + "imagesets/");
     rp->setResourceGroupDirectory("fonts", CEGUIInstallSharePath + Paths::g_fontsPath.c_str());

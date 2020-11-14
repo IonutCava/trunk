@@ -57,21 +57,21 @@ class ParticleEmitter : public SceneNode {
                            GFX::CommandBuffer& bufferInOut) override;
 
     /// toggle the particle emitter on or off
-    inline void enableEmitter(bool state) noexcept { _enabled = state; }
+    void enableEmitter(bool state) noexcept { _enabled = state; }
 
-    inline void setDrawImpostor(const bool state) noexcept { _drawImpostor = state; }
+    void setDrawImpostor(const bool state) noexcept { _drawImpostor = state; }
 
-    bool updateData(const std::shared_ptr<ParticleData>& particleData);
+    bool updateData();
     bool initData(const std::shared_ptr<ParticleData>& particleData);
 
     /// SceneNode concrete implementations
     bool unload() override;
-    
-    inline void addUpdater(std::shared_ptr<ParticleUpdater> updater) {
+
+    void addUpdater(const std::shared_ptr<ParticleUpdater>& updater) {
         _updaters.push_back(updater);
     }
 
-    inline void addSource(std::shared_ptr<ParticleSource> source) {
+    void addSource(const std::shared_ptr<ParticleSource>& source) {
         _sources.push_back(source);
     }
 
@@ -80,7 +80,7 @@ class ParticleEmitter : public SceneNode {
    protected:
 
     /// preprocess particles here
-    void sceneUpdate(const U64 deltaTimeUS,
+    void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
                      SceneState& sceneState) override;
 
@@ -93,7 +93,7 @@ class ParticleEmitter : public SceneNode {
 
     GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
 
-    const char* getResourceTypeName() const noexcept override { return "ParticleEmitter"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "ParticleEmitter"; }
 
    private:
     static constexpr U8 s_MaxPlayerBuffers = 4;
@@ -126,6 +126,6 @@ class ParticleEmitter : public SceneNode {
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(ParticleEmitter);
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif

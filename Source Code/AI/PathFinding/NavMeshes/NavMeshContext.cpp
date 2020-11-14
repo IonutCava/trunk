@@ -11,7 +11,6 @@ namespace Navigation {
 void rcContextDivide::doLog(const rcLogCategory category, const char* msg,
                             const I32 len) {
     switch (category) {
-        default:
         case RC_LOG_PROGRESS:
             Console::printfn(Locale::get(_ID("RECAST_CTX_LOG_PROGRESS")), msg);
             break;
@@ -44,6 +43,6 @@ void rcContextDivide::doStopTimer(const rcTimerLabel label) {
 I32 rcContextDivide::doGetAccumulatedTime(const rcTimerLabel label) const {
     return _accTime[label];
 }
-};
-};  // namespace AI
-};  // namespace Divide
+}
+}  // namespace AI
+}  // namespace Divide

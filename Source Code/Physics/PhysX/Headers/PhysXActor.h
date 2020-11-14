@@ -46,48 +46,48 @@ public:
     explicit PhysXActor(RigidBodyComponent& parent);
     ~PhysXActor();
 
-    void setPosition(const vec3<F32>& position) final;
-    void setPosition(F32 x, F32 y, F32 z) final;
-    void setPositionX(F32 positionX) final;
-    void setPositionY(F32 positionY) final;
-    void setPositionZ(F32 positionZ) final;
-    void translate(const vec3<F32>& axisFactors) final;
+    void setPosition(const vec3<F32>& position) override;
+    void setPosition(F32 x, F32 y, F32 z) override;
+    void setPositionX(F32 positionX) override;
+    void setPositionY(F32 positionY) override;
+    void setPositionZ(F32 positionZ) override;
+    void translate(const vec3<F32>& axisFactors) override;
     using ITransform::setPosition;
 
-    void setScale(const vec3<F32>& amount) final;
-    void setScaleX(F32 amount) final;
-    void setScaleY(F32 amount) final;
-    void setScaleZ(F32 amount) final;
-    void scale(const vec3<F32>& axisFactors) final;
-    void scaleX(F32 amount) final;
-    void scaleY(F32 amount) final;
-    void scaleZ(F32 amount) final;
+    void setScale(const vec3<F32>& scale) override;
+    void setScaleX(F32 amount) override;
+    void setScaleY(F32 amount) override;
+    void setScaleZ(F32 amount) override;
+    void scale(const vec3<F32>& axisFactors) override;
+    void scaleX(F32 amount) override;
+    void scaleY(F32 amount) override;
+    void scaleZ(F32 amount) override;
     using ITransform::setScale;
 
-    void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) final;
-    void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) final;
-    void setRotation(const Quaternion<F32>& quat) final;
-    void setRotationX(Angle::DEGREES<F32> angle) final;
-    void setRotationY(Angle::DEGREES<F32> angle) final;
-    void setRotationZ(Angle::DEGREES<F32> angle) final;
+    void setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void setRotation(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
+    void setRotation(const Quaternion<F32>& quat) override;
+    void setRotationX(Angle::DEGREES<F32> angle) override;
+    void setRotationY(Angle::DEGREES<F32> angle) override;
+    void setRotationZ(Angle::DEGREES<F32> angle) override;
     using ITransform::setRotation;
 
-    void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) final;
-    void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) final;
-    void rotate(const Quaternion<F32>& quat) final;
-    void rotateSlerp(const Quaternion<F32>& quat, D64 deltaTime) final;
-    void rotateX(Angle::DEGREES<F32> angle) final;
-    void rotateY(Angle::DEGREES<F32> angle) final;
-    void rotateZ(Angle::DEGREES<F32> angle) final;
+    void rotate(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) override;
+    void rotate(Angle::DEGREES<F32> pitch, Angle::DEGREES<F32> yaw, Angle::DEGREES<F32> roll) override;
+    void rotate(const Quaternion<F32>& quat) override;
+    void rotateSlerp(const Quaternion<F32>& quat, D64 deltaTime) override;
+    void rotateX(Angle::DEGREES<F32> angle) override;
+    void rotateY(Angle::DEGREES<F32> angle) override;
+    void rotateZ(Angle::DEGREES<F32> angle) override;
     using ITransform::rotate;
 
-    void getScale(vec3<F32>& scaleOut) const final;
-    void getPosition(vec3<F32>& posOut) const final;
-    void getOrientation(Quaternion<F32>& quatOut) const final;
+    void getScale(vec3<F32>& scaleOut) const override;
+    void getPosition(vec3<F32>& posOut) const override;
+    void getOrientation(Quaternion<F32>& quatOut) const override;
 
-    void getMatrix(mat4<F32>& matrixOut) final;
+    void getMatrix(mat4<F32>& matrixOut) override;
 
-    TransformValues getValues() const final;
+    TransformValues getValues() const override;
 
 protected:
     friend class PhysX;

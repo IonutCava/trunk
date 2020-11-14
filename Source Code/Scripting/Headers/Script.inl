@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 template<typename T>
-inline void Script::addGlobal(const T& var, const char* name, bool asConst, bool overwrite) {
+void Script::addGlobal(const T& var, const char* name, bool asConst, bool overwrite) {
     if (overwrite) {
         if (asConst) {
             _script->set_global_const(chaiscript::const_var(var), name);
@@ -52,17 +52,17 @@ inline void Script::addGlobal(const T& var, const char* name, bool asConst, bool
 }
 
 template <typename T>
-inline void Script::registerType(const char* typeName) {
+void Script::registerType(const char* typeName) {
     _script->add(chaiscript::user_type<T>(), typeName);
 }
 
 template <typename Func >
-inline void Script::registerFunction(const Func& function, const char* functionName) {
+void Script::registerFunction(const Func& function, const char* functionName) {
     _script->add(chaiscript::fun(function), functionName);
 }
 
 template<typename T>
-inline T Script::eval() {
+T Script::eval() {
     assert(!_scriptSource.empty());
     try {
         return _script->eval<T>(_scriptSource);
@@ -85,6 +85,6 @@ inline void Script::eval() {
     ACKNOWLEDGE_UNUSED(ret);
 }
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_SCRIPTING_SCRIPT_INL_

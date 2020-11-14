@@ -43,7 +43,7 @@ namespace Input {
 /// specified intervals
 class AutoRepeatKey {
    private:
-    Input::KeyEvent _key;
+    KeyEvent _key;
 
     D64 _elapsed;
     D64 _delay;
@@ -62,9 +62,9 @@ class AutoRepeatKey {
     /// Default constructor
     AutoRepeatKey(D64 repeatDelay = 0.035, D64 initialDelay = 0.300);
     /// Called when a key is pressed
-    void begin(const Input::KeyEvent &evt) noexcept;
+    void begin(const KeyEvent&evt) noexcept;
     /// Called when a key is released
-    void end(const Input::KeyEvent &evt) noexcept;
+    void end(const KeyEvent&evt) noexcept;
     /// Update the internal time interval between frames (microseconds)
     void update(U64 deltaTimeUS);
     /// Adjust delay between key injections

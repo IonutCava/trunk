@@ -49,7 +49,7 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
     if (commandString.length() >= 1) {
         // Check if the first letter is a 'command' operator
         if (commandString.at(0) == '/') {
-            stringImpl::size_type commandEnd = commandString.find(' ', 1);
+            const stringImpl::size_type commandEnd = commandString.find(' ', 1);
             stringImpl command = commandString.substr(1, commandEnd - 1);
             stringImpl commandArgs = commandString.substr(commandEnd + 1, commandString.length() - (commandEnd + 1));
 
@@ -116,9 +116,9 @@ void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
-    ResourcePath filename(Paths::g_assetsLocation + args);
+    const ResourcePath filename(Paths::g_assetsLocation + args);
 
-    std::ifstream soundfile(filename.str());
+    const std::ifstream soundfile(filename.str());
     if (soundfile) {
         // Check extensions (not really, musicwav.abc would still be valid, but
         // still ...)
@@ -194,7 +194,7 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
         Console::errorfn(Locale::get(_ID("CONSOLE_INVALID_NUMBER")));
         return;
     }
-    I32 FoV = (atoi(args.c_str()));
+    I32 FoV = atoi(args.c_str());
     CLAMP<I32>(FoV, 40, 140);
 
     Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager())->setHorizontalFoV(Angle::DEGREES<F32>(FoV));

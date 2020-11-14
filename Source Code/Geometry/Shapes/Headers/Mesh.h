@@ -75,7 +75,7 @@ class Mesh final : public Object3D {
 
     void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,
-                     SceneState& sceneState) final;
+                     SceneState& sceneState) override;
 
     void setAnimator(const std::shared_ptr<SceneAnimator>& animator) noexcept {
         assert(getObjectFlag(ObjectFlag::OBJECT_FLAG_SKINNED));
@@ -94,7 +94,7 @@ class Mesh final : public Object3D {
     void queueRecomputeBB() noexcept { _recomputeBBQueued = true; }
 
    protected:
-    const char* getResourceTypeName() const noexcept override { return "Mesh"; }
+    [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Mesh"; }
 
     friend class MeshImporter;
     void postImport();

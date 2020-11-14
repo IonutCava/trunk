@@ -52,7 +52,7 @@ class Console : NonCopyable {
         EntryType _type = EntryType::INFO;
     };
 
-    using ConsolePrintCallback = std::function<void(const Console::OutputEntry&)>;
+    using ConsolePrintCallback = std::function<void(const OutputEntry&)>;
 
    public:
     static void printAll();
@@ -158,7 +158,7 @@ class Console : NonCopyable {
 
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif  //_CORE_CONSOLE_H_
 

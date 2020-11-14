@@ -74,7 +74,7 @@ namespace Divide {
         /// Set the blending properties for the specified draw buffer
         void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties);
 
-        inline void resetBlending(GLuint drawBufferIdx) {
+        void resetBlending(GLuint drawBufferIdx) {
             setBlending(drawBufferIdx, _blendProperties[drawBufferIdx]);
         }
 
@@ -91,7 +91,7 @@ namespace Divide {
         void activateStateBlock(const RenderStateBlock& newBlock);
         /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
         bool setPixelPackUnpackAlignment(GLint packAlignment = 4, GLint unpackAlignment = 4) {
-            return (setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment));
+            return setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment);
         }
         /// Pixel pack alignment is usually changed by textures, PBOs, etc
         bool setPixelPackAlignment(GLint packAlignment = 4, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
@@ -122,17 +122,18 @@ namespace Divide {
 
         bool setScissor(const Rect<I32>& newScissorRect);
 
-        inline  bool setScissor(I32 x, I32 y, I32 width, I32 height) {
+        bool setScissor(I32 x, I32 y, I32 width, I32 height) {
             return setScissor({ x, y, width, height });
         }
 
         bool setClearColour(const FColour4& colour);
-        inline bool setClearColour(const UColour4& colour) {
+
+        bool setClearColour(const UColour4& colour) {
             return setClearColour(Util::ToFloatColour(colour));
         }
 
         /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
-        inline GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
+        GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
             return _activeFBID[to_U32(usage)];
         }
 
@@ -140,7 +141,7 @@ namespace Divide {
 
         bool setViewport(const Rect<I32>& viewport);
 
-        inline bool setViewport(I32 x, I32 y, I32 width, I32 height) {
+        bool setViewport(I32 x, I32 y, I32 width, I32 height) {
             return setViewport({ x, y, width, height });
         }
 

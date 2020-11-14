@@ -33,8 +33,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _EDITOR_DOCKED_WINDOW_H_
 #define _EDITOR_DOCKED_WINDOW_H_
 
-#include "Platform/Headers/PlatformDefines.h"
-
 namespace Divide {
 
 class Editor;
@@ -50,7 +48,7 @@ class DockedWindow : NonCopyable, NonMovable {
         };
 
     public:
-        explicit DockedWindow(Editor& parent, const Descriptor& descriptor);
+        explicit DockedWindow(Editor& parent, Descriptor descriptor);
         virtual ~DockedWindow() = default;
 
         // Called when the editor is visible
@@ -69,7 +67,7 @@ class DockedWindow : NonCopyable, NonMovable {
 
     protected:
         virtual void drawInternal() = 0;
-        virtual void backgroundUpdateInternal() {};
+        virtual void backgroundUpdateInternal() {}
 
     protected:
         Editor & _parent;
@@ -78,6 +76,6 @@ class DockedWindow : NonCopyable, NonMovable {
         bool _isHovered;
         Descriptor _descriptor;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_DOCKED_WINDOW_H_

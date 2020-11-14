@@ -156,8 +156,8 @@ void glimBatchData::Reset(bool reserveBuffers, unsigned int vertexCount, unsigne
         m_PositionData.reserve(vertexCount);
         m_IndexBuffer_Points.reserve(vertexCount / 4);
         m_IndexBuffer_Lines.reserve(vertexCount / 2);
-        m_IndexBuffer_Triangles.reserve((size_t)(vertexCount) * 2);
-        m_IndexBuffer_Wireframe.reserve((size_t)(vertexCount) * 2);
+        m_IndexBuffer_Triangles.reserve((size_t)vertexCount * 2);
+        m_IndexBuffer_Wireframe.reserve((size_t)vertexCount * 2);
     }
 #ifdef AE_RENDERAPI_D3D11
     if (m_pVertexBuffer) {
@@ -204,17 +204,15 @@ unsigned int glimBatchData::AddVertex(float x, float y, float z) {
     m_PositionData.emplace_back(y);
     m_PositionData.emplace_back(z);
 
-    hashMap<unsigned int, GlimArrayData>::iterator it;
-    hashMap<unsigned int, GlimArrayData>::const_iterator itend;
-    it = std::begin(m_Attributes);
-    itend = std::cend(m_Attributes);
+    hashMap<unsigned int, GlimArrayData>::iterator it = std::begin(m_Attributes);
+    hashMap<unsigned int, GlimArrayData>::const_iterator itend = std::cend(m_Attributes);
 
     it->second.m_ArrayData.reserve(m_Attributes.size());
     for (; it != itend; ++it) {
         it->second.PushElement();
     }
 
-    return ((unsigned int)(m_PositionData.size() / 3) - 1);
+    return (unsigned int)(m_PositionData.size() / 3) - 1;
 }
 
 #ifdef AE_RENDERAPI_D3D11
@@ -309,10 +307,9 @@ void glimBatchData::GenerateSignature(void) {
 unsigned int glimBatchData::getVertexDataSize(void) const {
     unsigned int uiVertexDataSize = sizeof(float) * 3;
 
-    hashMap<unsigned int, GlimArrayData>::const_iterator it, itend;
-    itend = m_Attributes.end();
+    hashMap<unsigned int, GlimArrayData>::const_iterator itend = m_Attributes.end();
 
-    for (it = m_Attributes.begin(); it != itend; ++it) {
+    for (hashMap<unsigned int, GlimArrayData>::const_iterator it = m_Attributes.begin(); it != itend; ++it) {
         switch (it->second.m_DataType) {
             // 4 byte data
             case GLIM_ENUM::GLIM_1I:
@@ -347,7 +344,7 @@ unsigned int glimBatchData::getVertexDataSize(void) const {
         }
     }
 
-    return (uiVertexDataSize);
+    return uiVertexDataSize;
 }
 
 #ifdef AE_RENDERAPI_OPENGL
@@ -367,10 +364,9 @@ void glimBatchData::BindOGL(Divide::I64 uiCurrentProgram) {
     Divide::GL_API::getStateTracker().setActiveBuffer(GL_ARRAY_BUFFER, m_uiVertexBufferID);
     Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    hashMap<unsigned int, GlimArrayData>::iterator it, itend;
-    itend = m_Attributes.end();
+    hashMap<unsigned int, GlimArrayData>::iterator itend = m_Attributes.end();
 
-    for (it = m_Attributes.begin(); it != itend; ++it) {
+    for (hashMap<unsigned int, GlimArrayData>::iterator it = m_Attributes.begin(); it != itend; ++it) {
         int iAttributeArray = 0;
         GlimArrayData::AttributeLocationMap& attribs = it->second.m_programAttribLocation;
         GlimArrayData::AttributeLocationMap::const_iterator it2 = attribs.find(uiCurrentProgram);
@@ -379,7 +375,7 @@ void glimBatchData::BindOGL(Divide::I64 uiCurrentProgram) {
             iAttributeArray = it2->second;
         } else {
             iAttributeArray = it->first;
-            hashAlg::insert(attribs, uiCurrentProgram, iAttributeArray);
+            insert(attribs, uiCurrentProgram, iAttributeArray);
         }
 
         if (iAttributeArray < 0) {
@@ -453,7 +449,7 @@ void glimBatchData::UploadOGL() {
     m_bUploadedToGPU = true;
 
     const unsigned int uiVertexDataSize = (unsigned int)getVertexDataSize();
-    const unsigned int uiVertices = (unsigned int)(m_PositionData.size()) / 3;
+    const unsigned int uiVertices = (unsigned int)m_PositionData.size() / 3;
 
     if (!m_bCreatedVBOs) {
         m_bCreatedVBOs = true;
@@ -497,9 +493,8 @@ void glimBatchData::UploadOGL() {
 
     // space reservation pre-pass;
     size_t bufferSize = m_PositionData.size();
-    hashMap<unsigned int, GlimArrayData>::iterator it, itend;
-    it = std::begin(m_Attributes);
-    itend = std::end(m_Attributes);
+    hashMap<unsigned int, GlimArrayData>::iterator it = std::begin(m_Attributes);
+    hashMap<unsigned int, GlimArrayData>::iterator itend = std::end(m_Attributes);
     for (; it != itend; ++it) {
         bufferSize += it->second.m_ArrayData.size();
     }
@@ -521,7 +516,7 @@ void glimBatchData::UploadOGL() {
                             std::cend(data.m_ArrayData));
 
         // already includes the number of vertices
-        const unsigned int uiAttributeSize = (unsigned int)(data.m_ArrayData.size()) *
+        const unsigned int uiAttributeSize = (unsigned int)data.m_ArrayData.size() *
                                              sizeof(Glim4ByteData);  
         // free the temporary buffer in RAM
         data.m_ArrayData.resize(0);

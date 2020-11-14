@@ -70,10 +70,10 @@ void OrbitCamera::update(const F32 deltaTimeMS) noexcept {
 
 bool OrbitCamera::zoom(I32 zoomFactor) noexcept {
     if (zoomFactor != 0) {
-        curRadius(_curRadius += (zoomFactor * _speed.zoom * -0.01f));
+        curRadius(_curRadius += zoomFactor * _speed.zoom * -0.01f);
     }
 
     return FreeFlyCamera::zoom(zoomFactor);
 }
 
-};  // namespace Divide
+}  // namespace Divide

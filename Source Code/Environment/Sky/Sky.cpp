@@ -24,8 +24,8 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
 {
     _sun = eastl::make_unique<Sun>();
 
-    time_t t = time(NULL);
-    _sun->SetLocation(-2.589910f, 51.45414); // Bristol :D
+    time_t t = time(nullptr);
+    _sun->SetLocation(-2.589910f, 51.45414f); // Bristol :D
     _sun->SetDate(localtime(&t));
 
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
@@ -197,10 +197,6 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     getEditorComponent().registerField(MOV(nightColourField));
 }
 
-Sky::~Sky()
-{
-}
-
 const std::array<vec4<F32>, 3> Sky::atmoToShaderData() const noexcept {
     return {
         vec4<F32>
@@ -357,7 +353,7 @@ void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sc
     sgn->get<TransformComponent>()->rotateY(0.3f * Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
-};
+}
 
 bool Sky::prepareRender(SceneGraphNode* sgn,
                 RenderingComponent& rComp,
@@ -391,15 +387,15 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     PipelineDescriptor pipelineDescriptor = {};
     if (renderStagePass._passType == RenderPassType::PRE_PASS) {
         WAIT_FOR_CONDITION(_skyShaderPrePass->getState() == ResourceState::RES_LOADED);
-        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
+        pipelineDescriptor._stateHash = renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHashPrePass
-                                            : _skyboxRenderStateHashPrePass);
+                                            : _skyboxRenderStateHashPrePass;
         pipelineDescriptor._shaderProgramHandle = _skyShaderPrePass->getGUID();
     } else {
         WAIT_FOR_CONDITION(_skyShader->getState() == ResourceState::RES_LOADED);
-        pipelineDescriptor._stateHash = (renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
-                                                      ? _skyboxRenderStateReflectedHash
-                                                      : _skyboxRenderStateHash);
+        pipelineDescriptor._stateHash = renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
+                                            ? _skyboxRenderStateReflectedHash
+                                            : _skyboxRenderStateHash;
         pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();
     }
 
@@ -431,4 +427,4 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-};
+}

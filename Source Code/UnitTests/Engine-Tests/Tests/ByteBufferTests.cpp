@@ -144,7 +144,7 @@ TEST(ByteBufferRWArrayInt)
     ByteBuffer test;
     test << input;
 
-    std::array<I32, 11> output;
+    std::array<I32, 11> output{};
 
     test >> output;
 
@@ -187,7 +187,7 @@ TEST(ByteBufferRWMixedData)
     bool outputBool = true;
     vectorEASTL<I32> outputVectorInt;
     vectorEASTL<stringImpl> outputVectorStr;
-    std::array<I32, 11> outputArrayInt;
+    std::array<I32, 11> outputArrayInt{};
     std::array<stringImpl, 11> outputArrayStr;
     U8  outputU8 = 0;
     U16 outputU16 = 0;
@@ -248,4 +248,4 @@ TEST(ByteBufferRWMixedData)
 
 }
 
-};//namespace Divide
+}//namespace Divide

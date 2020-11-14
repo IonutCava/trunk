@@ -16,7 +16,7 @@ namespace Divide {
             const stringImpl temp = Util::ReplaceString(fieldName.c_str(), InvalidXMLStrings, "__");
             return Util::StringFormat("%s.%s", componentName, temp.c_str());
         }
-    };
+    }
 
     EditorComponent::EditorComponent(ComponentType parentComponentType, const Str128& name)
         : GUIDWrapper(),
@@ -211,7 +211,7 @@ namespace Divide {
                         bs.setRadius(pt.get<F32>(entryName + ".aabb.radius", 1.0f));
                         field.set<BoundingSphere>(bs);
                     } break;
-                };
+                }
             }
         }
     }
@@ -306,7 +306,7 @@ namespace Divide {
 
             field.set<T>(data);
         }
-    };
+    }
 
     void EditorComponent::saveFieldToXML(const EditorComponentField& field, boost::property_tree::ptree& pt) const {
         auto entryName = GetFullFieldName(_name.c_str(), field._name);
@@ -825,4 +825,4 @@ namespace Divide {
             default: break;
         }
     }
-}; //namespace Divide
+} //namespace Divide

@@ -72,6 +72,6 @@ void CRC32::Hash(const void* buf, size_t siz) noexcept {
         mCrc = (mCrc >> 8) ^ mTable[(mCrc & 0xFF) ^ p[i]];
     }
 }
-};  // namespace Util
-};  // namespace Divide
+}  // namespace Util
+}  // namespace Divide
 

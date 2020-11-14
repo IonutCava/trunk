@@ -559,9 +559,9 @@ namespace Attorney {
         static void drawText(const GFXDevice& device, const TextElementBatch& batch, GFX::CommandBuffer& bufferInOut) {
             return device.drawText(batch, bufferInOut);
         }
-        friend class Divide::GUI;
-        friend class Divide::GUIText;
-        friend class Divide::SceneGUIElements;
+        friend class GUI;
+        friend class GUIText;
+        friend class SceneGUIElements;
     };
 
     class GFXDeviceKernel {
@@ -569,8 +569,8 @@ namespace Attorney {
             return device.onSizeChange(params);
         }
         
-        friend class Divide::Kernel;
-        friend class Divide::Attorney::KernelApplication;
+        friend class Kernel;
+        friend class KernelApplication;
     };
 
     class GFXDeviceGraphicsResource {
@@ -594,7 +594,7 @@ namespace Attorney {
            device._graphicResources.erase(it);
    
        }
-       friend class Divide::GraphicsResource;
+       friend class GraphicsResource;
     };
 
     class GFXDeviceGFXRTPool {
@@ -602,7 +602,7 @@ namespace Attorney {
             return device.newRT(descriptor);
         };
 
-        friend class Divide::GFXRTPool;
+        friend class GFXRTPool;
     };
 };  // namespace Attorney
 };  // namespace Divide

@@ -60,7 +60,7 @@ void GUIConsole::createCEGUIWindow() {
         Console::errorfn(Locale::get(_ID("ERROR_CONSOLE_DOUBLE_INIT")));
     }
     // load the console Window from the layout file
-    stringImpl layoutFile(_context.config().gui.consoleLayoutFile);
+    const stringImpl layoutFile(_context.config().gui.consoleLayoutFile);
     _consoleWindow = CEGUI::WindowManager::getSingletonPtr()->loadLayoutFromFile(layoutFile.c_str());
 
     if (_consoleWindow) {
@@ -121,7 +121,7 @@ bool GUIConsole::Handle_TextInput(const CEGUI::EventArgs& e) {
     return true;
 }
 
-bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs& e) {
+bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs& /*e*/) {
     assert(_editBox != nullptr);
     // Since we have that string, lets send it to the TextParser which will
     // handle it from here
@@ -165,7 +165,7 @@ void GUIConsole::setVisible(bool visible) {
                 Console::EntryType::INFO
             }
         );
-        size_t count = _outputWindow->getItemCount();
+        const size_t count = _outputWindow->getItemCount();
         if (count > 0 && visible) {
             _outputWindow->ensureItemIsVisible(count - 1);
         }
@@ -191,11 +191,11 @@ void GUIConsole::OutputText(const Console::OutputEntry& text) {
     CEGUI::FormattedListboxTextItem* crtItem =
         new CEGUI::FormattedListboxTextItem(
             CEGUI::String(text._text.c_str()),
-            (text._type == Console::EntryType::ERR 
-                         ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
-                         : text._type == Console::EntryType::WARNING 
-                                      ? CEGUI::Colour(1.0f, 1.0f, 0.0f)
-                                      : CEGUI::Colour(0.4f, 0.4f, 0.3f)),
+            text._type == Console::EntryType::ERR 
+                ? CEGUI::Colour(1.0f, 0.0f, 0.0f)
+                : text._type == Console::EntryType::WARNING 
+                ? CEGUI::Colour(1.0f, 1.0f, 0.0f)
+                : CEGUI::Colour(0.4f, 0.4f, 0.3f),
             CEGUI::HTF_WORDWRAP_LEFT_ALIGNED);
 
     crtItem->setTextParsingEnabled(false);
@@ -203,7 +203,7 @@ void GUIConsole::OutputText(const Console::OutputEntry& text) {
     _outputWindow->ensureItemIsVisible(crtItem);
 }
 
-void GUIConsole::update(const U64 deltaTimeUS) {
+void GUIConsole::update(const U64 /*deltaTimeUS*/) {
     if (!_init || !Runtime::isMainThread() || _closing) {
         return;
     }
@@ -214,7 +214,7 @@ void GUIConsole::update(const U64 deltaTimeUS) {
     {
         Console::OutputEntry message;
         while(_outputBuffer.try_dequeue(message)) {
-            Console::EntryType type = message._type;
+            const Console::EntryType type = message._type;
             if (_lastMsgType != type) {
                 _lastMsgType = type;
                 OutputText(message);

@@ -47,9 +47,9 @@ class NOINITVTABLE Sensor {
    public:
     virtual ~Sensor() = default;
 
-    inline SensorType sensorType() const noexcept { return _type; }
+    [[nodiscard]] SensorType sensorType() const noexcept { return _type; }
     virtual void update(U64 deltaTimeUS) = 0;
-    inline void updateRange(const vec2<F32>& range) { _range.set(range); }
+    void updateRange(const vec2<F32>& range) { _range.set(range); }
 
    protected:
     Sensor(AIEntity* const parentEntity, const SensorType type) noexcept {
@@ -62,7 +62,7 @@ class NOINITVTABLE Sensor {
     SensorType _type;
     AIEntity* _parentEntity;
 };
-};  // namespace AI
-};  // namespace Divide
+}  // namespace AI
+}  // namespace Divide
 
 #endif

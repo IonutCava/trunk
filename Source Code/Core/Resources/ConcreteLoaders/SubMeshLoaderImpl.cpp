@@ -26,4 +26,4 @@ CachedResource_ptr ImplResourceLoader<SubMesh>::operator()() {
     return ptr;
 }
 
-};
+}

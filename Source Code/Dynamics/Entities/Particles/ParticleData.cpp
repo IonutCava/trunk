@@ -28,7 +28,7 @@ ParticleData::~ParticleData()
     generateParticles(0, _optionsMask);
 }
 
-void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
+void ParticleData::generateParticles(const U32 particleCount, const U32 optionsMask) {
     _totalCount = particleCount;
     _aliveCount = 0;
     _optionsMask = optionsMask;
@@ -63,17 +63,17 @@ void ParticleData::generateParticles(U32 particleCount, U32 optionsMask) {
     }
 }
 
-void ParticleData::kill(U32 index) {
+void ParticleData::kill(const U32 index) {
     swapData(index, _aliveCount - 1);
     _aliveCount--;
 }
 
-void ParticleData::wake(U32 index) {
+void ParticleData::wake(U32 /*index*/) {
     //swapData(index, _aliveCount);
     _aliveCount++;
 }
 
-void ParticleData::sort(bool invalidateCache) {
+void ParticleData::sort() {
     U32 count = aliveCount();
 
     if (count == 0) {
@@ -85,11 +85,8 @@ void ParticleData::sort(bool invalidateCache) {
     _renderingColours.resize(count);
 
     for (U32 i = 0; i < count; ++i) {
-        std::pair<U32, F32>& idx = _indices[i];
-        idx.first = i;
-        idx.second = _misc[i].w;
+        _indices[i] = { i, _misc[i].w };
     }
-    
 
     eastl::sort(eastl::begin(_indices),
                 eastl::end(_indices),
@@ -97,13 +94,13 @@ void ParticleData::sort(bool invalidateCache) {
                     return indexA.second > indexB.second;
                 });
 
-   auto parsePositions = [count, this](const Task& parentTask) -> void {
+   auto parsePositions = [count, this](const Task&) -> void {
         for (U32 i = 0; i < count; ++i) {
             _renderingPositions[i].set(_position[_indices[i].first]);
         }
     };
 
-    auto parseColours = [count, this](const Task& parentTask) -> void {
+    auto parseColours = [count, this](const Task&) -> void {
         for (U32 i = 0; i < count; ++i) {
             Util::ToByteColour(_colour[_indices[i].first], _renderingColours[i]);
         }
@@ -147,4 +144,4 @@ void ParticleData::setParticleGeometry(const vectorEASTL<vec3<F32>>& particleGeo
 void ParticleData::setBillboarded(const bool state) {
     _isBillboarded = state;
 }
-};
+}

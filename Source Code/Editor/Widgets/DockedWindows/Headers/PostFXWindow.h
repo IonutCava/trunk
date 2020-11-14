@@ -45,11 +45,11 @@ public:
     PostFXWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor);
     ~PostFXWindow() = default;
 
-    void drawInternal() final;
+    void drawInternal() override;
 private:
     PostFX& _postFX;
     Texture* _previewTexture = nullptr;
 };
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_EDITOR_POSTFX_WINDOW_H_

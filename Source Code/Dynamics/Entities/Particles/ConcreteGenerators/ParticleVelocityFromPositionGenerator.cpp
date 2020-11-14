@@ -13,4 +13,4 @@ void ParticleVelocityFromPositionGenerator::generate(Task& packagedTasksParent,
         p._velocity[i].xyz = Random(_minScale, _maxScale) * (p._position[i].xyz - _offset);
     }
 }
-};
+}

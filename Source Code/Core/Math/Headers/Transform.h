@@ -115,7 +115,7 @@ class Transform final : public ITransform, public GUIDWrapper, NonCopyable {
     bool _rebuild = false;
 };
 
-};  // namespace Divide
+}  // namespace Divide
 
 #endif
 

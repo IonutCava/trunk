@@ -50,8 +50,8 @@ namespace Divide {
     inline bool operator==(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
         return lhs._isOrthoCamera == rhs._isOrthoCamera &&
                lhs._flag == rhs._flag &&
-               lhs._FoV == rhs._FoV &&
-               lhs._aspectRatio == rhs._aspectRatio &&
+               COMPARE(lhs._FoV, rhs._FoV) &&
+               COMPARE(lhs._aspectRatio,rhs._aspectRatio) &&
                lhs._zPlanes == rhs._zPlanes &&
                lhs._eye == rhs._eye &&
                lhs._viewMatrix == rhs._viewMatrix &&
@@ -63,8 +63,8 @@ namespace Divide {
     inline bool operator!=(const CameraSnapshot& lhs, const CameraSnapshot& rhs) {
         return lhs._isOrthoCamera != rhs._isOrthoCamera ||
                lhs._flag != rhs._flag ||
-               lhs._FoV != rhs._FoV ||
-               lhs._aspectRatio != rhs._aspectRatio ||
+               !COMPARE(lhs._FoV, rhs._FoV) ||
+               !COMPARE(lhs._aspectRatio, rhs._aspectRatio) ||
                lhs._zPlanes != rhs._zPlanes ||
                lhs._eye != rhs._eye ||
                lhs._viewMatrix != rhs._viewMatrix ||

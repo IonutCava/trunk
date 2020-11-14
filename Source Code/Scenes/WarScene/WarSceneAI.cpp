@@ -17,10 +17,10 @@ namespace Divide {
 
 namespace {
     bool g_navMeshStarted = false;
-};
+}
 
-void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {
-    stringImpl eventName = "";
+void WarScene::printMessage(const U8 eventId, const stringImpl& unitName) const {
+    stringImpl eventName;
     switch (eventId) {
         case 0: {
             eventName = "Captured flag";
@@ -28,9 +28,10 @@ void WarScene::printMessage(U8 eventId, const stringImpl& unitName) {
         case 1: {
             eventName = "Recovered flag";
         } break;
-    };
+        default: "Unknown!";
+    }
 
-    U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+    U32 elapsedTimeMinutes = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60 % 60;
     U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
 
     Console::d_printfn(Util::StringFormat("[GAME TIME: %d:%d][%s]: %s", elapsedTimeMinutes, elapsedTimeSeconds, eventName.c_str(), unitName.c_str()).c_str());
@@ -63,7 +64,7 @@ void WarScene::checkGameCompletion() {
         }
     }
 
-    U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+    const U32 elapsedTimeMinutes = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60 % 60;
     if (elapsedTimeMinutes >= _timeLimitMinutes) {
         timeReason = true;
         if (_timeLimitMinutes == 5) {
@@ -87,7 +88,7 @@ void WarScene::checkGameCompletion() {
 
     if (restartGame) {
         _elapsedGameTime = 0;
-        Console::d_printfn(Util::StringFormat("\n\nRESTARTING GAME!. Reason: %s \n\n", (timeReason ? "TIME" : "SCORE")).c_str());
+        Console::d_printfn(Util::StringFormat("\n\nRESTARTING GAME!. Reason: %s \n\n", timeReason ? "TIME" : "SCORE").c_str());
         AI::WarSceneAIProcessor::resetScore(0);
         AI::WarSceneAIProcessor::resetScore(1);
         if (timeReason) {
@@ -118,14 +119,14 @@ void WarScene::registerPoint(U16 teamID, const stringImpl& unitName) {
         AI::WarSceneAIProcessor::incrementScore(teamID);
         AI::WarSceneAIProcessor::registerFlags(_flag[0], _flag[1]);
 
-        U32 elapsedTimeMinutes = (Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60) % 60;
+        U32 elapsedTimeMinutes = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60 % 60;
         U32 elapsedTimeSeconds = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) % 60;
-        Console::d_printfn(Util::StringFormat("[GAME TIME: %d:%d][TEAM %s REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, (teamID == 0 ? "A" : "B"), unitName.c_str()).c_str());
+        Console::d_printfn(Util::StringFormat("[GAME TIME: %d:%d][TEAM %s REGISTER POINT]: %s", elapsedTimeMinutes, elapsedTimeSeconds, teamID == 0 ? "A" : "B", unitName.c_str()).c_str());
         checkGameCompletion();
     }
 }
 
-bool WarScene::initializeAI(bool continueOnErrors) {
+bool WarScene::initializeAI(bool /*continueOnErrors*/) {
     //------------------------Artificial Intelligence------------------------//
     // Create 2 AI teams
     for (U8 i = 0; i < 2; ++i) {
@@ -224,7 +225,7 @@ bool WarScene::addUnits() {
     idle.setVariable(GOAPFact(Fact::IDLING), GOAPValue(true));
 
     GOAPGoal killEnemy("Kill", to_base(WarSceneOrder::WarOrder::KILL_ENEMY));
-    killEnemy.setVariable(GOAPFact(Fact::ENEMY_DEAD), AI::GOAPValue(true));
+    killEnemy.setVariable(GOAPFact(Fact::ENEMY_DEAD), GOAPValue(true));
 
     GOAPGoal protectFlagCarrier("Protect Flag Carrier", to_base(WarSceneOrder::WarOrder::PROTECT_FLAG_CARRIER));
     protectFlagCarrier.setVariable(GOAPFact(Fact::NEAR_ENEMY_FLAG), GOAPValue(true));
@@ -385,7 +386,7 @@ bool WarScene::addUnits() {
 }
 
 AI::AIEntity* WarScene::findAI(SceneGraphNode* node) {
-    I64 targetGUID = node->getGUID();
+    const I64 targetGUID = node->getGUID();
 
     for (U8 i = 0; i < 2; ++i) {
         for (SceneGraphNode* npc : _armyNPCs[i]) {
@@ -408,7 +409,7 @@ bool WarScene::resetUnits() {
     return state;
 }
 
-bool WarScene::deinitializeAI(bool continueOnErrors) {
+bool WarScene::deinitializeAI(bool /*continueOnErrors*/) {
     _aiManager->pauseUpdate(true);
     if (removeUnits()) {
         for (U8 i = 0; i < 2; ++i) {
@@ -420,7 +421,7 @@ bool WarScene::deinitializeAI(bool continueOnErrors) {
     return false;
 }
 
-void WarScene::startSimulation(I64 btnGUID) {
+void WarScene::startSimulation(I64 /*btnGUID*/) {
     if (g_navMeshStarted || _armyNPCs[0].empty()) {
         return;
     }
@@ -432,8 +433,8 @@ void WarScene::startSimulation(I64 btnGUID) {
     _infoBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_INFO);
     bool previousMesh = false;
     bool loadedFromFile = true;
-    U64 currentTime = Time::Game::ElapsedMicroseconds();
-    U64 diffTime = currentTime - _lastNavMeshBuildTime;
+    const U64 currentTime = Time::Game::ElapsedMicroseconds();
+    const U64 diffTime = currentTime - _lastNavMeshBuildTime;
 
     AI::AIEntity* aiEntity = _armyNPCs[0][0]->get<UnitComponent>()->getUnit<NPC>()->getAIEntity();
     if (_lastNavMeshBuildTime == 0UL ||
@@ -452,9 +453,9 @@ void WarScene::startSimulation(I64 btnGUID) {
             AI::AIEntity::PresetAgentRadius radius = aiEntity->getAgentRadiusCategory();
             navMesh->build(
                 _sceneGraph->getRoot(),
-                [&radius, this](AI::Navigation::NavigationMesh* navMesh) {
+                [&radius, this](AI::Navigation::NavigationMesh* mesh) {
                 _aiManager->toggleNavMeshDebugDraw(true);
-                _aiManager->addNavMesh(radius, navMesh);
+                _aiManager->addNavMesh(radius, mesh);
                 g_navMeshStarted = false;
             });
         } else {
@@ -504,7 +505,7 @@ void WarScene::startSimulation(I64 btnGUID) {
         stringImpl info(
             "Can't reload the navigation mesh this soon.\n Please wait \\[ ");
         info.append(
-            Util::to_string(Time::MicrosecondsToSeconds<I32>(diffTime)).c_str());
+            Util::to_string(Time::MicrosecondsToSeconds<I32>(diffTime)));
         info.append(" ] seconds more!");
 
         _infoBox->setMessage(info);
@@ -515,4 +516,4 @@ void WarScene::startSimulation(I64 btnGUID) {
     _aiManager->pauseUpdate(false);
 }
 
-};  // namespace Divide
+}  // namespace Divide

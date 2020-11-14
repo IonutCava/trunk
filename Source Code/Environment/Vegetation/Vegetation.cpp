@@ -33,7 +33,7 @@ namespace {
     constexpr I16 g_maxRadiusSteps = 512;
 
     SharedMutex g_treeMeshLock;
-};
+}
 
 bool Vegetation::s_buffersBound = false;
 Material_ptr Vegetation::s_treeMaterial = nullptr;
@@ -68,14 +68,13 @@ Vegetation::Vegetation(GFXDevice& context,
       _context(context),
       _terrainChunk(parentChunk),
       _terrain(details.parentTerrain),
-      _billboardCount(details.billboardCount),
       _grassScales(details.grassScales),
       _treeScales(details.treeScales),
       _treeRotations(details.treeRotations),
       _grassMap(details.grassMap),
       _treeMap(details.treeMap)
 {
-    _treeMeshNames.insert(eastl::cend(_treeMeshNames), eastl::cbegin(details.treeMeshes), eastl::cend(details.treeMeshes));
+    _treeMeshNames.insert(cend(_treeMeshNames), cbegin(details.treeMeshes), cend(details.treeMeshes));
 
     assert(!_grassMap->imageLayers().empty() && !_treeMap->imageLayers().empty());
 
@@ -93,12 +92,12 @@ Vegetation::Vegetation(GFXDevice& context,
     renderState().minLodLevel(2u);
     renderState().drawState(false);
 
-    setState(ResourceState::RES_LOADING);
+    CachedResource::setState(ResourceState::RES_LOADING);
     _buildTask = CreateTask(_context.context(),
         [this](const Task& parentTask) {
             s_bufferUsage.fetch_add(1);
-            computeVegetationTransforms(parentTask, false);
-            computeVegetationTransforms(parentTask, true);
+            computeVegetationTransforms(false);
+            computeVegetationTransforms(true);
             _instanceCountGrass = to_U32(_tempGrassData.size());
             _instanceCountTrees = to_U32(_tempTreeData.size());
         });
@@ -153,7 +152,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
             vec3<F32>(-pos240.x - offsetBottom, -0.025f, -pos240.y               ),  vec3<F32>(-pos240.x - offsetTop, 1.0f, -pos240.y            ),  vec3<F32>(pos240.x - offsetTop, 1.0f, pos240.y            ), vec3<F32>(pos240.x - offsetBottom, -0.025f, pos240.y               )
         };
 
-        const size_t billboardsPlaneCount = sizeof(vertices) / (sizeof(vec3<F32>) * 4);
+        const size_t billboardsPlaneCount = sizeof vertices / (sizeof(vec3<F32>) * 4);
 
         const U16 indices[] = { 0, 1, 2, 
                                 0, 2, 3 };
@@ -179,7 +178,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
                 s_buffer->addRestartIndex();
             }
             for (U8 j = 0; j < 6; ++j) {
-                s_buffer->addIndex(indices[j] + (i * 4));
+                s_buffer->addIndex(indices[j] + i * 4);
             }
 
         }
@@ -211,10 +210,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         const F32 Ar = ArBase + dR * to_F32(RadiusStepA);
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
             const F32 Br = BrBase + dR * to_F32(RadiusStepB);
-            circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
-            circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
+            circleA.radius = Ar + (RadiusStepB % 3 ? 0.0f : 0.3f * dR);
+            circleB.radius = Br + (RadiusStepA % 3 ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
-            if (Util::IntersectCircles(circleA, circleB, intersections)) {
+            if (IntersectCircles(circleA, circleB, intersections)) {
                 // Add the resulting points if they are within the pattern bounds
                 for (U8 i = 0; i < 2; ++i) {
                     if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, -to_F32(chunkSize), to_F32(chunkSize)) &&
@@ -234,10 +233,10 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
         const F32 Ar = ArBase + dR * to_F32(RadiusStepA);
         for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
             const F32 Br = BrBase + dR * to_F32(RadiusStepB);
-            circleA.radius = Ar + ((RadiusStepB % 3) ? 0.0f : 0.3f * dR);
-            circleB.radius = Br + ((RadiusStepA % 3) ? 0.0f : 0.3f * dR);
+            circleA.radius = Ar + (RadiusStepB % 3 ? 0.0f : 0.3f * dR);
+            circleB.radius = Br + (RadiusStepA % 3 ? 0.0f : 0.3f * dR);
             // Intersect circle Ac,UseAr and Bc,UseBr
-            if (Util::IntersectCircles(circleA, circleB, intersections)) {
+            if (IntersectCircles(circleA, circleB, intersections)) {
                 // Add the resulting points if they are within the pattern bounds
                 for (U8 i = 0; i < 2; ++i) {
                     if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, -to_F32(chunkSize), to_F32(chunkSize)) &&
@@ -513,7 +512,7 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
                         ResourceDescriptor model("Tree");
                         model.assetLocation(Paths::g_assetsLocation + "models");
                         model.flag(true);
-                        model.threaded(false); //< we need the extents asap!
+                        model.threaded(false); ///< we need the extents asap!
                         model.assetName(meshName);
                         Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
                         meshPtr->setMaterialTpl(s_treeMaterial);
@@ -612,10 +611,10 @@ void Vegetation::occlusionCull(const RenderStagePass& stagePass,
 
             //Cull grass
             bindPipelineCmd._pipeline = _cullPipelineGrass;
-            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-            GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
-            GFX::EnqueueCommand(bufferInOut, cullConstants);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
+            EnqueueCommand(bufferInOut, bindPipelineCmd);
+            EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+            EnqueueCommand(bufferInOut, cullConstants);
+            EnqueueCommand(bufferInOut, computeCmd);
         }
 
         if (_instanceCountTrees > 0) {
@@ -623,15 +622,15 @@ void Vegetation::occlusionCull(const RenderStagePass& stagePass,
 
             // Cull trees
             bindPipelineCmd._pipeline = _cullPipelineTrees;
-            GFX::EnqueueCommand(bufferInOut, bindPipelineCmd);
-            GFX::EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
-            GFX::EnqueueCommand(bufferInOut, cullConstants);
-            GFX::EnqueueCommand(bufferInOut, computeCmd);
+            EnqueueCommand(bufferInOut, bindPipelineCmd);
+            EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+            EnqueueCommand(bufferInOut, cullConstants);
+            EnqueueCommand(bufferInOut, computeCmd);
         }
 
         GFX::MemoryBarrierCommand memCmd = {};
         memCmd._barrierMask = to_base(MemoryBarrierType::SHADER_STORAGE);
-        GFX::EnqueueCommand(bufferInOut, memCmd);
+        EnqueueCommand(bufferInOut, memCmd);
     }
 
 
@@ -677,12 +676,12 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         const F32 sceneRenderRange = renderState.generalVisibility();
         const F32 sceneGrassDistance = std::min(renderState.grassVisibility(), sceneRenderRange);
         const F32 sceneTreeDistance = std::min(renderState.treeVisibility(), sceneRenderRange);
-        if (sceneGrassDistance != _grassDistance) {
+        if (!COMPARE(sceneGrassDistance, _grassDistance)) {
             _grassDistance = sceneGrassDistance;
             _cullPushConstants.set(_ID("dvd_grassVisibilityDistance"), GFX::PushConstantType::FLOAT, _grassDistance);
             sgn->get<RenderingComponent>()->setRenderRange(-_grassDistance, _grassDistance);
         }
-        if (sceneTreeDistance != _treeDistance) {
+        if (!COMPARE(sceneTreeDistance, _treeDistance)) {
             _treeDistance = sceneTreeDistance;
             _cullPushConstants.set(_ID("dvd_treeVisibilityDistance"), GFX::PushConstantType::FLOAT, _treeDistance);
             if (_treeParentNode != nullptr) {
@@ -744,7 +743,7 @@ namespace {
     }
 };
 
-void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeData) {
+void Vegetation::computeVegetationTransforms(bool treeData) {
     // Grass disabled
     if (!treeData && !_context.context().config().debug.enableGrassInstances) {
         return;
@@ -757,7 +756,7 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
     const Terrain& terrain = _terrainChunk.parent();
     const U32 ID = _terrainChunk.ID();
 
-    const stringImpl cacheFileName = Util::StringFormat("%s_%s_%s_%d.cache", terrain.resourceName().c_str(), resourceName().c_str(), (treeData ? "trees" : "grass"), ID);
+    const stringImpl cacheFileName = Util::StringFormat("%s_%s_%s_%d.cache", terrain.resourceName().c_str(), resourceName().c_str(), treeData ? "trees" : "grass", ID);
     Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), ID);
 
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;
@@ -807,11 +806,11 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
 
             const F32 xmlScale = scales[treeData ? meshID : index];
             // Don't go under 75% of the scale specified in the data files
-            const F32 minXmlScale = (xmlScale * 7.5f) / 10.0f;
+            const F32 minXmlScale = xmlScale * 7.5f / 10.0f;
             // Don't go over 75% of the cale specified in the data files
-            const F32 maxXmlScale = (xmlScale * 1.25f);
+            const F32 maxXmlScale = xmlScale * 1.25f;
 
-            const F32 scale = CLAMPED(((colour[index] + 1) / 256.0f) * xmlScale, minXmlScale, maxXmlScale);
+            const F32 scale = CLAMPED((colour[index] + 1) / 256.0f * xmlScale, minXmlScale, maxXmlScale);
 
             assert(scale > std::numeric_limits<F32>::epsilon());
 
@@ -846,4 +845,4 @@ void Vegetation::computeVegetationTransforms(const Task& parentTask, bool treeDa
     Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
 }
 
-};
+}

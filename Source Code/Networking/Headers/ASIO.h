@@ -59,7 +59,7 @@ class ASIO {
     /// Check connection state;
     virtual bool isConnected() const noexcept;
     /// Toggle the printing of debug information
-    virtual void toggleDebugOutput(const bool debugOutput);
+    virtual void toggleDebugOutput(bool debugOutput);
 
 
     using LOG_CBK = DELEGATE<void, std::string_view /*msg*/, bool /*is_error*/>;

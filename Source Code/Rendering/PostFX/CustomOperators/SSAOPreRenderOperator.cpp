@@ -20,7 +20,7 @@ namespace {
     constexpr U8 MAX_KERNEL_SIZE = 64;
     constexpr U8 KERNEL_SIZE_COUNT = 4;
     std::array<vectorEASTL<vec3<F32>>, KERNEL_SIZE_COUNT> g_kernels;
-};
+}
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
 SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
@@ -192,10 +192,10 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             GFX::BeginRenderPassCommand beginRenderPassCmd = {};
             beginRenderPassCmd._target = _ssaoOutput._targetID;
             beginRenderPassCmd._name = "DO_SSAO_CALC";
-            GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+            EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
             pipelineDescriptor._shaderProgramHandle = _ssaoGenerateShader->getGUID();
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+            EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.setTexture(_noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0);
@@ -205,13 +205,13 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
 
             const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
             descriptorSetCmd._set._textureData.setTexture(screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::NORMALMAP);
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });
+            EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });
 
-            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+            EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
         }
         {
             // Blur AO
@@ -220,22 +220,22 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
             beginRenderPassCmd._target = _parent.screenRT()._targetID;
             beginRenderPassCmd._name = "DO_SSAO_BLUR";
-            GFX::EnqueueCommand(bufferInOut, beginRenderPassCmd);
+            EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
             pipelineDescriptor._shaderProgramHandle = _ssaoBlurShader->getGUID();
             pipelineDescriptor._stateHash = blueChannelOnly.getHash();
-            GFX::EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+            EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
             const auto& ssaoAtt = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0);
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.setTexture(ssaoAtt.texture()->data(), ssaoAtt.samplerHash(),TextureUsage::UNIT0);
-            GFX::EnqueueCommand(bufferInOut, descriptorSetCmd);
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
+            EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
 
-            GFX::EnqueueCommand(bufferInOut, _triangleDrawCmd);
+            EnqueueCommand(bufferInOut, _triangleDrawCmd);
 
-            GFX::EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+            EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
         }
     }
 }
@@ -254,4 +254,4 @@ void SSAOPreRenderOperator::onToggle(const bool state) {
     _enabled = state;
     _ssaoBlurConstants.set(_ID("passThrough"), GFX::PushConstantType::BOOL, !state);
 }
-};
+}

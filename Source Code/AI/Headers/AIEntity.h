@@ -45,18 +45,19 @@ namespace AI {
 class AITeam;
 class AIProcessor;
 class Order;
-enum class AIMsg : U8;  //< scene dependent message list
+enum class AIMsg : U8; ///< scene dependent message list
+
 namespace Navigation {
     class DivideRecast;
     class DivideDtCrowd;
-};
+}
 
 namespace Attorney {
     class AIEntityAITeam;
-};
+}
 
 /// Based on OgreCrowd.
-class AIEntity : public GUIDWrapper {
+class AIEntity final : public GUIDWrapper {
     friend class Attorney::AIEntityAITeam;
    public:
     enum class PresetAgentRadius : U8 {
@@ -67,69 +68,64 @@ class AIEntity : public GUIDWrapper {
         COUNT
     };
 
-    AIEntity(const vec3<F32>& currentPosition, const stringImpl& name);
+    AIEntity(const vec3<F32>& currentPosition, stringImpl name);
     ~AIEntity();
 
     void load(const vec3<F32>& position);
     void unload();
 
-    bool addSensor(SensorType type);
-    bool setAIProcessor(AIProcessor* processor);
+    [[nodiscard]] bool addSensor(SensorType type);
+    [[nodiscard]] bool setAIProcessor(AIProcessor* processor);
 
     void sendMessage(AIEntity& receiver, AIMsg msg, const std::any& msg_content);
     void receiveMessage(AIEntity& sender, AIMsg msg, const std::any& msg_content);
     void processMessage(AIEntity& sender, AIMsg msg, const std::any& msg_content);
 
-    Sensor* getSensor(SensorType type);
+    [[nodiscard]] Sensor* getSensor(SensorType type);
 
-    inline AITeam* getTeam() const noexcept { return _teamPtr; }
-    I32 getTeamID() const;
-    const stringImpl& name() const noexcept { return _name; }
+    [[nodiscard]] AITeam* getTeam() const noexcept { return _teamPtr; }
+    [[nodiscard]] I32 getTeamID() const;
+    [[nodiscard]] const stringImpl& name() const noexcept { return _name; }
 
-    void addUnitRef(NPC* const npc);
-    inline NPC* getUnitRef() noexcept { return _unitRef; }
+    void addUnitRef(NPC* npc);
+    [[nodiscard]] NPC* getUnitRef() const noexcept { return _unitRef; }
 
     /// PathFinding
     /// Index ID identifying the agent of this character in the crowd
-    inline I32 getAgentID() const noexcept { return _agentID; }
+    [[nodiscard]] I32 getAgentID() const noexcept { return _agentID; }
     /// The agent that steers this character within the crowd
-    inline const dtCrowdAgent* getAgent() const noexcept { return _agent; }
-    inline bool isAgentLoaded() const noexcept { return _agentID >= 0; }
+    [[nodiscard]] const dtCrowdAgent* getAgent() const noexcept { return _agent; }
+    [[nodiscard]] bool isAgentLoaded() const noexcept { return _agentID >= 0; }
     /// Update the crowding system
     void resetCrowd();
     /// The height of the agent for this character.
-    D64 getAgentHeight() const;
+    [[nodiscard]] D64 getAgentHeight() const;
     /// The radius of the agent for this character.
-    D64 getAgentRadius() const;
+    [[nodiscard]] D64 getAgentRadius() const;
     /// The radius category of this character
-    inline PresetAgentRadius getAgentRadiusCategory() const noexcept {
-        return _agentRadiusCategory;
-    }
+    [[nodiscard]] PresetAgentRadius getAgentRadiusCategory() const noexcept { return _agentRadiusCategory; }
     /**
       * Update the destination for this agent.
-      * If updatePreviousPath is set to true the previous path will be reused
-    *instead
-      * of calculating a completely new path, but this can only be used if the
-    *new
+      * If updatePreviousPath is set to true the previous path will be reused instead
+      * of calculating a completely new path, but this can only be used if the new
       * destination is close to the previous (eg. when chasing a moving entity).
-    **/
-    bool updateDestination(const vec3<F32>& destination,
-                           bool updatePreviousPath = false);
+     **/
+    [[nodiscard]] bool updateDestination(const vec3<F32>& destination, bool updatePreviousPath = false);
     /// The destination set for this agent.
-    const vec3<F32>& getDestination() const;
+    [[nodiscard]] const vec3<F32>& getDestination() const;
     /// Returns true when this agent has reached its set destination.
-    bool destinationReached();
+    [[nodiscard]] bool destinationReached() const;
     /// Place agent at new position.
-    bool setPosition(const vec3<F32>& position);
+    [[nodiscard]] bool setPosition(const vec3<F32>& position);
     /// The current position of the agent.
     /// Is only up to date once update() has been called in a frame.
-    const vec3<F32>& getPosition() const;
+    [[nodiscard]] const vec3<F32>& getPosition() const;
     /// The maximum speed this character can attain.
     /// This parameter is configured for the agent controlling this character.
-    D64 getMaxSpeed();
+    [[nodiscard]] D64 getMaxSpeed() const;
     /// The maximum acceleration this character has towards its maximum speed.
     /// This parameter is configured for the agent controlling this character.
-    D64 getMaxAcceleration();
+    [[nodiscard]] D64 getMaxAcceleration() const;
     /**
      * Request to set a manual velocity for this character, to control it
      * manually.
@@ -140,7 +136,7 @@ class AIEntity : public GUIDWrapper {
      * as the fact that it cannot steer off the navmesh or into other agents.
      * You will notice small corrections to steering when walking into objects
      * or the border of the navmesh (which is usually a wall or object).
-   **/
+    **/
     void setVelocity(const vec3<F32>& velocity);
     /// Manually control the character moving it forward.
     void moveForward();
@@ -151,35 +147,31 @@ class AIEntity : public GUIDWrapper {
     void stop();
     /// The current velocity (speed and direction) this character is traveling
     /// at.
-    vec3<F32> getVelocity() const;
+    [[nodiscard]] vec3<F32> getVelocity() const;
     /// The current speed this character is traveling at.
-    D64 getSpeed() const { return getVelocity().length(); }
+    [[nodiscard]] D64 getSpeed() const { return getVelocity().length(); }
     /// Returns true if this character is moving.
-    bool isMoving() const { return !_stopped || !IS_ZERO(getSpeed()); }
+    [[nodiscard]] bool isMoving() const { return !_stopped || !IS_ZERO(getSpeed()); }
 
-    stringImpl toString() const;
+    [[nodiscard]] stringImpl toString() const;
 
    protected:
     /**
-      * Update current position of this character to the current position of its
-    *agent.
+     * Update current position of this character to the current position of its agent.
     **/
-    void updatePosition(const U64 deltaTimeUS);
+    void updatePosition(U64 deltaTimeUS);
     /**
-  * Set destination member variable directly without updating the agent state.
-  * Usually you should call updateDestination() externally, unless you are
-*controlling
-  * the agents directly and need to update the corresponding character class to
-*reflect
-  * the change in state (see OgreRecastApplication friendship).
-**/
+     * Set destination member variable directly without updating the agent state.
+     * Usually you should call updateDestination() externally, unless you are controlling
+     * the agents directly and need to update the corresponding character class to reflect
+     * the change in state (see OgreRecastApplication friendship).
+    **/
     void setDestination(const vec3<F32>& destination);
 
-   protected:
-    void setTeamPtr(AITeam* const teamPtr);
-    bool processInput(const U64 deltaTimeUS);
-    bool processData(const U64 deltaTimeUS);
-    bool update(const U64 deltaTimeUS);
+    void setTeamPtr(AITeam* teamPtr);
+    [[nodiscard]] bool processInput(U64 deltaTimeUS);
+    [[nodiscard]] bool processData(U64 deltaTimeUS);
+    [[nodiscard]] bool update(U64 deltaTimeUS);
 
    private:
     stringImpl _name;
@@ -202,14 +194,10 @@ class AIEntity : public GUIDWrapper {
     PresetAgentRadius _agentRadiusCategory;
 
     /**
-      * The current destination set for this agent.
-      * Take care in properly setting this variable, as it is only updated
-    *properly when
-      * using Character::updateDestination() to set an individual destination
-    *for this character.
-      * After updating the destination of all agents this variable should be set
-    *externally using
-      * setDestination().
+     * The current destination set for this agent.
+     * Take care in properly setting this variable, as it is only updated properly when
+     * using Character::updateDestination() to set an individual destination for this character.
+     * After updating the destination of all agents this variable should be set externally using  setDestination().
     **/
     vec3<F32> _destination;
     vec3<F32> _currentPosition;
@@ -223,7 +211,6 @@ class AIEntity : public GUIDWrapper {
 
 namespace Attorney {
 class AIEntityAITeam {
-   private:
     static void setTeamPtr(AIEntity& entity, AITeam* const teamPtr) {
         entity.setTeamPtr(teamPtr);
     }
@@ -236,10 +223,10 @@ class AIEntityAITeam {
     static bool update(AIEntity& entity, const U64 deltaTimeUS) {
         return entity.update(deltaTimeUS);
     }
-    friend class Divide::AI::AITeam;
+    friend class AI::AITeam;
 };
-};  // namespace Attorney
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Attorney
+}  // namespace AI
+}  // namespace Divide
 
 #endif

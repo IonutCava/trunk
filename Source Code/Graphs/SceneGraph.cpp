@@ -30,7 +30,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
 
     SceneGraphNodeDescriptor rootDescriptor = {};
     rootDescriptor._name = "ROOT";
-    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), GUIDWrapper::generateGUID(), "ROOT", ResourcePath{ "ROOT" }, ResourcePath{ "" }, SceneNodeType::TYPE_TRANSFORM, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
+    rootDescriptor._node = std::make_shared<SceneNode>(parentScene.resourceCache(), generateGUID(), "ROOT", ResourcePath{ "ROOT" }, ResourcePath{ "" }, SceneNodeType::TYPE_TRANSFORM, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS));
     rootDescriptor._componentMask = to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS);
     rootDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
 
@@ -66,7 +66,7 @@ void SceneGraph::unload()
 void SceneGraph::addToDeleteQueue(SceneGraphNode* node, size_t childIdx) {
     UniqueLock<SharedMutex> w_lock(_pendingDeletionLock);
     vectorEASTL<size_t>& list = _pendingDeletion[node];
-    if (eastl::find(eastl::cbegin(list), eastl::cend(list), childIdx) == eastl::cend(list))
+    if (eastl::find(cbegin(list), cend(list), childIdx) == cend(list))
     {
         list.push_back(childIdx);
     }
@@ -79,11 +79,11 @@ void SceneGraph::onNodeDestroy(SceneGraphNode* oldNode) {
         return;
     }
 
-    eastl::erase_if(_nodesByType[to_base(oldNode->getNode().type())],
-                    [guid](SceneGraphNode* node)-> bool
-                    {
-                        return node && node->getGUID() == guid;
-                    });
+    erase_if(_nodesByType[to_base(oldNode->getNode().type())],
+             [guid](SceneGraphNode* node)-> bool
+             {
+                 return node && node->getGUID() == guid;
+             });
 
     Attorney::SceneGraph::onNodeDestroy(_parentScene, oldNode);
 
@@ -182,7 +182,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(_nodeList.size());
     descriptor._partitionSize = g_nodesPerPartition;
-    descriptor._cbk = [this](const Task* parentTask, U32 start, U32 end) {
+    descriptor._cbk = [this](const Task* /*parentTask*/, const U32 start, const U32 end) {
         for (U32 i = start; i < end; ++i) {
             Attorney::SceneGraphNodeSceneGraph::processEvents(_nodeList[i]);
         }
@@ -196,7 +196,7 @@ void SceneGraph::sceneUpdate(const U64 deltaTimeUS, SceneState& sceneState) {
 
     if (_loadComplete) {
         Start(*CreateTask(context,
-            [this, deltaTimeUS](const Task& parentTask) mutable
+            [this, deltaTimeUS](const Task& /*parentTask*/) mutable
             {
                 OPTICK_EVENT("Octree Update");
                 _octreeUpdating = true;
@@ -244,7 +244,7 @@ void SceneGraph::postLoad() {
 SceneGraphNode* SceneGraph::createSceneGraphNode(SceneGraph* sceneGraph, const SceneGraphNodeDescriptor& descriptor) {
     UniqueLock<Mutex> u_lock(_nodeCreateMutex);
 
-    ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(sceneGraph, descriptor);
+    const ECS::EntityId nodeID = GetEntityManager()->CreateEntity<SceneGraphNode>(sceneGraph, descriptor);
     return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
 }
 
@@ -382,7 +382,7 @@ namespace {
     boost::property_tree::ptree dumpSGNtoAssets(const SceneGraphNode* node) {
         boost::property_tree::ptree entry;
         entry.put("<xmlattr>.name", node->name().c_str());
-        entry.put("<xmlattr>.type", node->getNode().getTypeName());
+        entry.put("<xmlattr>.type", node->getNode().getTypeName().c_str());
 
         node->forEachChild([&entry](const SceneGraphNode* child, I32 /*childIdx*/) {
             if (child->serialize()) {

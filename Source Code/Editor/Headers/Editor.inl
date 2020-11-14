@@ -71,6 +71,6 @@ inline void Editor::toggleMemoryEditor(bool state) noexcept {
     _showMemoryEditor = state;
 }
 
-}; //namespace Divide
+} //namespace Divide
 
 #endif //_DIVIDE_EDITOR_INL_

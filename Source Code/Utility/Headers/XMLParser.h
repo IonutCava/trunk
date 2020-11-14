@@ -60,7 +60,7 @@ namespace detail {
         bool prepareSaveFile(const stringImpl& path) const;
         void write() const;
     };
-};
+}
 
 #ifndef GET_PARAM
 #define CONCAT(first, second) first second
@@ -112,7 +112,7 @@ struct SceneNode {
 
 void loadMusicPlaylist(const Str256& scenePath, const Str64& fileName, Scene* scene, const Configuration& config);
 
-};  // namespace XML
-};  // namespace Divide
+}  // namespace XML
+}  // namespace Divide
 
 #endif

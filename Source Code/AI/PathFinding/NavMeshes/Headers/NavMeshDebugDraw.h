@@ -41,12 +41,11 @@ namespace Divide {
 class GFXDevice;
 class IMPrimitive;
 class RenderStateBlock;
-class CommandBuffer;
 
 namespace AI {
 namespace Navigation {
 
-/// Convert a Rcast colour integer to RGBA components.
+/// Convert a Recast colour integer to RGBA components.
 inline void rcCol(U32 col, U8& r, U8& g, U8& b, U8& a) {
     r = col % 256;
     col /= 256;
@@ -57,50 +56,55 @@ inline void rcCol(U32 col, U8& r, U8& g, U8& b, U8& a) {
     a = col % 256;
 }
 
-class NavMeshDebugDraw : public duDebugDraw {
+class NavMeshDebugDraw final : public duDebugDraw {
    public:
     NavMeshDebugDraw(GFXDevice& context);
-    ~NavMeshDebugDraw();
+    virtual ~NavMeshDebugDraw();
 
     void paused(bool state);
     void overrideColour(U32 col);
     void beginBatch();
     void endBatch();
 
-    void begin(duDebugDrawPrimitives prim, F32 size = 1.0f);
-    void vertex(const F32 x, const F32 y, const F32 z, U32 colour);
-    void end();
+    void begin(duDebugDrawPrimitives prim, F32 size = 1.0f) override;
+    void vertex(F32 x, F32 y, F32 z, U32 colour) override;
+    void end() override;
 
-    inline void setDirty(bool state) { _dirty = state; }
-    inline bool isDirty() const { return _dirty; }
-    inline bool paused() const { return _paused; }
-    inline void cancelOverride() { _overrideColour = false; }
-    inline void texture(bool state) { ACKNOWLEDGE_UNUSED(state); }
-    inline void vertex(const F32* pos, U32 colour) {
+    void setDirty(const bool state) noexcept { _dirty = state; }
+    [[nodiscard]] bool isDirty() const noexcept { return _dirty; }
+    [[nodiscard]] bool paused() const noexcept { return _paused; }
+    void cancelOverride() noexcept { _overrideColour = false; }
+
+    void texture(bool state) override { ACKNOWLEDGE_UNUSED(state); }
+
+    void vertex(const F32* pos, const U32 colour) override
+    {
         vertex(pos[0], pos[1], pos[2], colour);
     }
-    inline void vertex(const F32* pos, U32 colour, const F32* uv) {
+
+    void vertex(const F32* pos, const U32 colour, const F32* uv) override
+    {
         vertex(pos[0], pos[1], pos[2], colour);
     }
-    inline void vertex(const F32 x, const F32 y, const F32 z, U32 colour,
-                       const F32 u, const F32 v) {
+
+    void vertex(const F32 x, const F32 y, const F32 z, const U32 colour, const F32 u, const F32 v) override
+    {
         vertex(x, y, z, colour);
     }
 
-    GFX::CommandBuffer& toCommandBuffer() const;
+    [[nodiscard]] GFX::CommandBuffer& toCommandBuffer() const;
 
    private:
     GFXDevice& _context;
     PrimitiveType _primType;
     IMPrimitive* _primitive;
-    U32 _vertCount;
     U32 _colour;
     bool _overrideColour;
     bool _dirty;
     bool _paused;
 };
-};  // namespace Navigation
-};  // namespace AI
-};  // namespace Divide
+}  // namespace Navigation
+}  // namespace AI
+}  // namespace Divide
 
 #endif

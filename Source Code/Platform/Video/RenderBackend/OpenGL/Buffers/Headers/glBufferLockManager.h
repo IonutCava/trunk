@@ -47,7 +47,7 @@ struct BufferRange {
     size_t _length = 0;
 
     [[nodiscard]] bool Overlaps(const BufferRange& _rhs) const noexcept {
-        return _startOffset < (_rhs._startOffset + _rhs._length) && _rhs._startOffset < (_startOffset + _length);
+        return _startOffset < _rhs._startOffset + _rhs._length && _rhs._startOffset < _startOffset + _length;
     }
 };
 

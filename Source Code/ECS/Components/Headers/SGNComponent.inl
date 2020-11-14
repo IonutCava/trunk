@@ -35,6 +35,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
   
-};//namespace Divide
+}//namespace Divide
 
 #endif

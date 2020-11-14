@@ -9,14 +9,13 @@ void ParticleSphereVelocityGenerator::generate(Task& packagedTasksParent,
                                                ParticleData& p,
                                                U32 startIndex,
                                                U32 endIndex) {
-    F32 phi, theta, v, r;
     for (U32 i = startIndex; i < endIndex; ++i) {
-        phi = Random(-M_PI_f, M_PI_f);
-        theta = Random(-M_PI_f, M_PI_f);
-        v = Random(_minVel, _maxVel);
-        r = v * std::sin(phi);
+        F32 phi = Random(-M_PI_f, M_PI_f);
+        F32 theta = Random(-M_PI_f, M_PI_f);
+        F32 v = Random(_minVel, _maxVel);
+        F32 r = v * std::sin(phi);
         vec4<F32>& vel = p._velocity[i];
         vel.set(r * std::cos(theta), r * std::sin(theta), v * std::cos(phi), vel.w);
     }
 }
-};
+}

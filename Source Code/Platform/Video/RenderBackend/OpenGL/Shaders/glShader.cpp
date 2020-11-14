@@ -54,7 +54,7 @@ namespace {
         static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
 
         const GLsizei size = byteCount / sizeof(T_in);
-        return { size, (const T_out*)(values) };
+        return { size, (const T_out*)values };
     }
 };
 
@@ -103,7 +103,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
             const vectorEASTL<stringImpl>& src = _sourceCode[shaderIdx];
             cstrings.reserve(src.size());
             eastl::transform(eastl::cbegin(src), eastl::cend(src),
-                             eastl::back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
+                             back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
 
             if (_programHandle != GLUtil::k_invalidObjectID) {
                 GL_API::deleteShaderPrograms(1, &_programHandle);
@@ -134,7 +134,7 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
                     cstrings.resize(0);
                     cstrings.reserve(src.size());
                     eastl::transform(eastl::cbegin(src), eastl::cend(src),
-                                     eastl::back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
+                                     back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
 
                     const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[i]);
                     if (shader != 0u) {
@@ -423,7 +423,7 @@ I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, const bool fo
                     return -1;
                 }
             } else {
-                hashAlg::emplace(map, constant._bindingHash, constant);
+                emplace(map, constant._bindingHash, constant);
             }
 
             return locationIter->second;
@@ -466,11 +466,11 @@ void glShader::cacheActiveUniforms() {
                 const GLint startLocation = values.back();
                 for (GLint i = 0; i < arraySize; ++i) {
                     //Arrays and structs will be assigned sequentially increasing locations, starting with the given location
-                    hashAlg::insert(_shaderVarLocation, _ID(Util::StringFormat("%s[%d]", name.c_str(), i).c_str()), startLocation + i);
+                    insert(_shaderVarLocation, _ID(Util::StringFormat("%s[%d]", name.c_str(), i).c_str()), startLocation + i);
                 }
             }
-             
-            hashAlg::insert(_shaderVarLocation, _ID(name.c_str()), values.back());
+
+            insert(_shaderVarLocation, _ID(name.c_str()), values.back());
         }
     }
 }
@@ -492,7 +492,7 @@ void glShader::Uniform(const I32 binding, const GFX::PushConstantType type, cons
         return;
     }
 
-    const GLboolean transpose = (flag ? GL_TRUE : GL_FALSE);
+    const GLboolean transpose = flag ? GL_TRUE : GL_FALSE;
     switch (type) {
         case GFX::PushConstantType::BOOL: {
             const auto&[size, data] = convertData<GLint, 1, I32>(byteCount, values);
