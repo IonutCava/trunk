@@ -8,7 +8,7 @@
 
 namespace Divide {
 namespace TypeUtil {
-    const char* UnitTypeToString(UnitType unitType) noexcept {
+    const char* UnitTypeToString(const UnitType unitType) noexcept {
         return Names::unitType[to_base(unitType)];
     }
 
@@ -196,11 +196,11 @@ bool Unit::teleportTo(const vec3<F32>& targetPosition) {
     return false;  ///< no
 }
 
-void Unit::setAttribute(U32 attributeID, I32 initialValue) {
+void Unit::setAttribute(const U32 attributeID, const I32 initialValue) {
     _attributes[attributeID] = initialValue;
 }
 
-I32 Unit::getAttribute(U32 attributeID) const {
+I32 Unit::getAttribute(const U32 attributeID) const {
     const AttributeMap::const_iterator it = _attributes.find(attributeID);
     if (it != std::end(_attributes)) {
         return it->second;

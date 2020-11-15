@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-class DefaultScene : public Scene {
+class DefaultScene final : public Scene {
 public:
     DefaultScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
 

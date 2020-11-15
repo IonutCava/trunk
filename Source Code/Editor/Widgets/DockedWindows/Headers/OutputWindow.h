@@ -44,8 +44,8 @@ class OutputWindow final : public DockedWindow {
         ~OutputWindow();
 
         void drawInternal() override;
-        void printText(const Console::OutputEntry& entry);
-        I32 textEditCallback(ImGuiTextEditCallbackData* data);
+        static void PrintText(const Console::OutputEntry& entry);
+        static I32 TextEditCallback(ImGuiTextEditCallbackData* data);
 
     protected:
         void clearLog();

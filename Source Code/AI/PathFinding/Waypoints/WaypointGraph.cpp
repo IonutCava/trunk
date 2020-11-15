@@ -4,8 +4,8 @@
 
 #include "Utility/Headers/Localization.h"
 
-namespace Divide {
-namespace Navigation {
+namespace Divide::Navigation {
+
 WaypointGraph::WaypointGraph() {
     _id = 0xFFFFFFFF;
     _loop = true;
@@ -42,5 +42,5 @@ void WaypointGraph::updateGraph() {
         _times.push_back(waypoint.second->time());
     }
 }
-}
-}
+
+}  // namespace Divide::Navigation

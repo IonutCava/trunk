@@ -82,7 +82,7 @@ GFXDevice::renderTargetPool() const noexcept {
 }
 
 inline const ShaderProgram_ptr&
-GFXDevice::getRTPreviewShader(bool depthOnly) const noexcept {
+GFXDevice::getRTPreviewShader(const bool depthOnly) const noexcept {
     return depthOnly ? _previewRenderTargetDepth : _previewRenderTargetColour;
 }
 
@@ -118,7 +118,7 @@ GFXDevice::registerDrawCall() noexcept {
 }
 
 inline void
-GFXDevice::registerDrawCalls(U32 count) noexcept {
+GFXDevice::registerDrawCalls(const U32 count) noexcept {
     FRAME_DRAW_CALLS += count;
 }
 

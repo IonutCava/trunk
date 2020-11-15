@@ -156,7 +156,7 @@ bool MainScene::load(const Str256& name) {
         _guiTimersMS.push_back(0.0);  // Time
 
         removeTask(*g_boxMoveTaskID);
-        g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
+        g_boxMoveTaskID = CreateTask(context(), [this](const Task& /*parent*/) {
             test();
         });
 
@@ -191,7 +191,7 @@ U16 MainScene::registerInputActions() {
         if (!_input->actionList().registerInputAction(actionID, [this](InputParams /*param*/) {
             _musicPlaying = !_musicPlaying;
             if (_musicPlaying) {
-                SceneState::MusicPlaylist::const_iterator it = state()->music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
+                const SceneState::MusicPlaylist::const_iterator it = state()->music(MusicType::TYPE_BACKGROUND).find(_ID("themeSong"));
                 if (it != std::cend(state()->music(MusicType::TYPE_BACKGROUND))) {
                     _context.sfx().playMusic(it->second);
                 }
@@ -275,7 +275,7 @@ void MainScene::test() {
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        g_boxMoveTaskID = CreateTask(context(), [this](const Task& parent) {
+        g_boxMoveTaskID = CreateTask(context(), [this](const Task& /*parent*/) {
             test();
         });
 

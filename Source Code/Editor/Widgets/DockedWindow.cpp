@@ -8,7 +8,7 @@ namespace Divide {
         : _parent(parent),
           _focused(false),
           _isHovered(false),
-          _descriptor(std::move(descriptor))
+          _descriptor(MOV(descriptor))
     {
     }
 

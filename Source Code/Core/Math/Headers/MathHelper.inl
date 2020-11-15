@@ -148,7 +148,7 @@ namespace detail {
         return float2packed11(reinterpret_cast<U32&>(x));
     }
 
-    inline F32 packed11bitToFloat(U32 x) noexcept {
+    inline F32 packed11bitToFloat(const U32 x) noexcept {
         if (x == 0u)              return 0.0f;
         if (x == (1 << 11) - 1) return ~0;//NaN
         if (x == 0x1f << 6)     return ~0;//Inf
@@ -165,7 +165,7 @@ namespace detail {
         return float2packed10(reinterpret_cast<U32&>(x));
     }
 
-    inline F32 packed10bitToFloat(U32 x) noexcept {
+    inline F32 packed10bitToFloat(const U32 x) noexcept {
         if (x == 0)               return 0.0f;
         if (x == (1 << 10) - 1) return ~0;//NaN
         if (x == 0x1f << 5)     return ~0;//Inf
@@ -251,7 +251,7 @@ void SeedRandom() {
 }
 
 template<typename Engine>
-void SeedRandom(U32 seed) {
+void SeedRandom(const U32 seed) {
     customRNG::srand<Engine>(seed);
 }
 
@@ -404,7 +404,7 @@ constexpr void ToggleBit(Mask& bitMask, const Mask bit) noexcept {
 }
 
 template<typename Mask>
-constexpr void ToggleBit(Mask& bitMask, const Mask bit, bool state) noexcept {
+constexpr void ToggleBit(Mask& bitMask, const Mask bit, const bool state) noexcept {
     static_assert(std::is_integral<Mask>::value, "Invalid bit mask type!");
     if (state) {
         SetBit(bitMask, bit);
@@ -470,7 +470,7 @@ constexpr T roundup(T value,
 {
     return maxb <= curb
                 ? value
-                : roundup((value - 1 | value - 1 >> curb) + 1, maxb, curb << 1);
+                : roundup(((value - 1) | ((value - 1) >> curb)) + 1, maxb, curb << 1);
 }
 
 constexpr U32 nextPOW2(U32 n) noexcept {
@@ -493,7 +493,7 @@ constexpr U32 prevPOW2(U32 n) noexcept {
     return n - (n >> 1);
 }
 
-constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept {
+constexpr U32 minSquareMatrixSize(const U32 elementCount) noexcept {
     U32 result = 1;
     while (result * result < elementCount) {
         ++result;

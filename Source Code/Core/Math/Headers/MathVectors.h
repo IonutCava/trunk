@@ -62,12 +62,12 @@ namespace Divide {
 
 template <size_t Alignment = 16>
 struct AlignedBase {
-    void *operator new (size_t size)
+    void *operator new (const size_t size)
     {
         return _mm_malloc(size, Alignment);
     }
 
-    void *operator new[](size_t size)
+    void *operator new[](const size_t size)
     {
         return _mm_malloc(size, Alignment);
     }
@@ -93,10 +93,10 @@ template<typename T>
 class SimdVector<T, std::enable_if_t<std::is_same<T, F32>::value>> {
 public:
     SimdVector() noexcept : SimdVector(0) {}
-    SimdVector(T reg0, T reg1, T reg2, T reg3)  noexcept : _reg(_mm_set_ps(reg3, reg2, reg1, reg0)) {}
-    SimdVector(T reg)  noexcept : _reg(_mm_set_ps(reg, reg, reg, reg)) {}
-    SimdVector(T reg[4])  noexcept : _reg(_mm_set_ps(reg[3], reg[2], reg[1], reg[0])) {}
-    SimdVector(__m128 reg)  noexcept : _reg(reg) {}
+    explicit SimdVector(T reg0, T reg1, T reg2, T reg3)  noexcept : _reg(_mm_set_ps(reg3, reg2, reg1, reg0)) {}
+    explicit SimdVector(T reg)  noexcept : _reg(_mm_set_ps(reg, reg, reg, reg)) {}
+    explicit SimdVector(T reg[4])  noexcept : _reg(_mm_set_ps(reg[3], reg[2], reg[1], reg[0])) {}
+    explicit SimdVector(const __m128 reg)  noexcept : _reg(reg) {}
 
     bool operator==(const SimdVector& other) const noexcept;
     bool operator!=(const SimdVector& other) const noexcept;
@@ -108,9 +108,9 @@ template<typename T>
 class SimdVector<T, std::enable_if_t<!std::is_same<T, F32>::value>> {
   public:
     SimdVector()  noexcept : SimdVector(0) {}
-    SimdVector(T reg0, T reg1, T reg2, T reg3)  noexcept :  _reg{reg0, reg1, reg2, reg3} {}
-    SimdVector(T val) noexcept : _reg{ val, val, val, val } {}
-    SimdVector(T reg[4])  noexcept : _reg(reg) {}
+    explicit SimdVector(T reg0, T reg1, T reg2, T reg3)  noexcept :  _reg{reg0, reg1, reg2, reg3} {}
+    explicit SimdVector(T val) noexcept : _reg{ val, val, val, val } {}
+    explicit SimdVector(T reg[4])  noexcept : _reg(reg) {}
 
     bool operator==(const SimdVector& other) const noexcept {
         for (U8 i = 0; i < 4; ++i) {

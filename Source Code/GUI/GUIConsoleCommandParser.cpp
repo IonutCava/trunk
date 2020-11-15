@@ -194,8 +194,8 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
         Console::errorfn(Locale::get(_ID("CONSOLE_INVALID_NUMBER")));
         return;
     }
-    I32 FoV = atoi(args.c_str());
-    CLAMP<I32>(FoV, 40, 140);
+
+    const I32 FoV = CLAMPED<I32>(atoi(args.c_str()), 40, 140);
 
     Attorney::SceneManagerCameraAccessor::playerCamera(_context.kernel().sceneManager())->setHorizontalFoV(Angle::DEGREES<F32>(FoV));
 }

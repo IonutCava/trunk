@@ -49,7 +49,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     skyboxRenderStateReflection.setColourWrites(false, false, false, false);
     _skyboxRenderStateReflectedHashPrePass = skyboxRenderStateReflection.getHash();
 
-    getEditorComponent().onChangedCbk([this](std::string_view field) {
+    getEditorComponent().onChangedCbk([this](const std::string_view field) {
         if (field == "Reset To Default") {
             _atmosphere = defaultAtmosphere();
         }
@@ -197,7 +197,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     getEditorComponent().registerField(MOV(nightColourField));
 }
 
-const std::array<vec4<F32>, 3> Sky::atmoToShaderData() const noexcept {
+std::array<vec4<F32>, 3> Sky::atmoToShaderData() const noexcept {
     return {
         vec4<F32>
         {
@@ -325,7 +325,7 @@ void Sky::postLoad(SceneGraphNode* sgn) {
     SceneNode::postLoad(sgn);
 }
 
-SunDetails Sky::setDateTime(struct tm *dateTime) {
+SunDetails Sky::setDateTime(struct tm *dateTime) const {
     _sun->SetDate(dateTime);
     return getCurrentDetails();
 }

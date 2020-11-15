@@ -2,9 +2,7 @@
 
 #include "Headers/Waypoint.h"
 
-namespace Divide {
-namespace Navigation {
+namespace Divide::Navigation {
 
 
-}
-}
+} // namespace Divide::Navigation

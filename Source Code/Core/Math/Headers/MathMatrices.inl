@@ -110,15 +110,15 @@ namespace AVX {
         // transpose 3x3, we know m03 = m13 = m23 = 0
         const __m128 t0 = VecShuffle_0101(inM._reg[0]._reg, inM._reg[1]._reg); // 00, 01, 10, 11
         const __m128 t1 = VecShuffle_2323(inM._reg[0]._reg, inM._reg[1]._reg); // 02, 03, 12, 13
-        r._reg[0] = VecShuffle(t0, inM._reg[2]._reg, 0, 2, 0, 3);        // 00, 10, 20, 23(=0)
-        r._reg[1] = VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3);        // 01, 11, 21, 23(=0)
-        r._reg[2] = VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3);        // 02, 12, 22, 23(=0)
+        r._reg[0] = SimdVector<F32>(VecShuffle(t0, inM._reg[2]._reg, 0, 2, 0, 3));        // 00, 10, 20, 23(=0)
+        r._reg[1] = SimdVector<F32>(VecShuffle(t0, inM._reg[2]._reg, 1, 3, 1, 3));        // 01, 11, 21, 23(=0)
+        r._reg[2] = SimdVector<F32>(VecShuffle(t1, inM._reg[2]._reg, 0, 2, 2, 3));        // 02, 12, 22, 23(=0)
 
                                                              // last line
-        r._reg[3] = _mm_mul_ps(r._reg[0]._reg, VecSwizzle1(inM._reg[3]._reg, 0));
-        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[1]._reg, VecSwizzle1(inM._reg[3]._reg, 1)));
-        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[2]._reg, VecSwizzle1(inM._reg[3]._reg, 2)));
-        r._reg[3] = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg);
+        r._reg[3] = SimdVector<F32>(_mm_mul_ps(r._reg[0]._reg, VecSwizzle1(inM._reg[3]._reg, 0)));
+        r._reg[3] = SimdVector<F32>(_mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[1]._reg, VecSwizzle1(inM._reg[3]._reg, 1))));
+        r._reg[3] = SimdVector<F32>(_mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[2]._reg, VecSwizzle1(inM._reg[3]._reg, 2))));
+        r._reg[3] = SimdVector<F32>(_mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg));
     }
 
     // for column major matrix
@@ -167,15 +167,15 @@ namespace AVX {
             _mm_cmplt_ps(sizeSqr, _mm_set1_ps(SMALL_NUMBER))
         );
 
-        r._reg[0] = _mm_mul_ps(r._reg[0]._reg, rSizeSqr);
-        r._reg[1] = _mm_mul_ps(r._reg[1]._reg, rSizeSqr);
-        r._reg[2] = _mm_mul_ps(r._reg[2]._reg, rSizeSqr);
+        r._reg[0] = SimdVector<F32>(_mm_mul_ps(r._reg[0]._reg, rSizeSqr));
+        r._reg[1] = SimdVector<F32>(_mm_mul_ps(r._reg[1]._reg, rSizeSqr));
+        r._reg[2] = SimdVector<F32>(_mm_mul_ps(r._reg[2]._reg, rSizeSqr));
 
         // last line
-        r._reg[3] = _mm_mul_ps(r._reg[0]._reg, VecSwizzle1(inM._reg[3]._reg, 0));
-        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[1]._reg, VecSwizzle1(inM._reg[3]._reg, 1)));
-        r._reg[3] = _mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[2]._reg, VecSwizzle1(inM._reg[3]._reg, 2)));
-        r._reg[3] = _mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg);
+        r._reg[3] = SimdVector<F32>(_mm_mul_ps(r._reg[0]._reg, VecSwizzle1(inM._reg[3]._reg, 0)));
+        r._reg[3] = SimdVector<F32>(_mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[1]._reg, VecSwizzle1(inM._reg[3]._reg, 1))));
+        r._reg[3] = SimdVector<F32>(_mm_add_ps(r._reg[3]._reg, _mm_mul_ps(r._reg[2]._reg, VecSwizzle1(inM._reg[3]._reg, 2))));
+        r._reg[3] = SimdVector<F32>(_mm_sub_ps(_mm_setr_ps(0.f, 0.f, 0.f, 1.f), r._reg[3]._reg));
     }
 
     // Inverse function is the same no matter column major or row major this version treats it as column major
@@ -808,7 +808,7 @@ mat3<T>::mat3(const U *values) noexcept
 
 template<typename T>
 template<typename U>
-mat3<T>::mat3(const mat2<U> &B, bool zeroFill) noexcept
+mat3<T>::mat3(const mat2<U> &B, const bool zeroFill) noexcept
     : mat3(B[0], B[1], 0,
            B[2], B[3], 0,
            0,    0,    zeroFill ? 0 : 1)
@@ -1466,7 +1466,7 @@ mat4<T>::mat4(const U *values) noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat2<U> &B, bool zeroFill) noexcept
+mat4<T>::mat4(const mat2<U> &B, const bool zeroFill) noexcept
     : mat4({ B[0],              B[1],              static_cast<U>(0), static_cast<U>(0),
              B[2],              B[3],              static_cast<U>(0), static_cast<U>(0),
              static_cast<U>(0), static_cast<U>(0), static_cast<U>(zeroFill ? 0 : 1), static_cast<U>(0),
@@ -1476,7 +1476,7 @@ mat4<T>::mat4(const mat2<U> &B, bool zeroFill) noexcept
 
 template<typename T>
 template<typename U>
-mat4<T>::mat4(const mat3<U> &B, bool zeroFill) noexcept
+mat4<T>::mat4(const mat3<U> &B, const bool zeroFill) noexcept
     : mat4({ B[0],              B[1],              B[2],              static_cast<U>(0),
              B[3],              B[4],              B[5],              static_cast<U>(0),
              B[6],              B[7],              B[8],              static_cast<U>(0),
@@ -2473,7 +2473,7 @@ inline void mat4<F32>::Multiply(const mat4<F32>& matrixA, const mat4<F32>& matri
     // this can be better if A is in memory.
     _mm256_zeroupper();
     for (U8 i = 0; i < 4; ++i) {
-        ret._reg[i] = AVX::lincomb_AVX_4mem(matrixA.m[i], matrixB);
+        ret._reg[i] = SimdVector<F32>(AVX::lincomb_AVX_4mem(matrixA.m[i], matrixB));
     }
 #endif
 }

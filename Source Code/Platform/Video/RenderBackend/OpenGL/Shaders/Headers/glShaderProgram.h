@@ -150,10 +150,10 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
 namespace Attorney {
     class GLAPIShaderProgram {
-        static void setGlobalLineOffset(U32 offset) {
+        static void setGlobalLineOffset(const U32 offset) {
             glShaderProgram::_lineOffset.fill(offset);
         }
-        static void addLineOffset(ShaderType stage, U32 offset) noexcept {
+        static void addLineOffset(const ShaderType stage, const U32 offset) noexcept {
             glShaderProgram::_lineOffset[to_U32(stage)] += offset;
         }
         static std::pair<bool, bool> bind(glShaderProgram& program) {

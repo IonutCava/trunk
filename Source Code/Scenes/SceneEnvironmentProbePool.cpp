@@ -46,11 +46,11 @@ U16 SceneEnvironmentProbePool::allocateSlice(bool lock) {
     return 0u;
 }
 
-void SceneEnvironmentProbePool::unlockSlice(U16 slice) {
+void SceneEnvironmentProbePool::unlockSlice(const U16 slice) {
     s_availableSlices[slice] = { true, false };
 }
 
-void SceneEnvironmentProbePool::onStartup(GFXDevice& context) {
+void SceneEnvironmentProbePool::OnStartup(GFXDevice& context) {
     s_availableSlices.fill({ true, false });
 
     // Reflection Targets
@@ -86,11 +86,11 @@ void SceneEnvironmentProbePool::onStartup(GFXDevice& context) {
     s_reflection = context.renderTargetPool().allocateRT(RenderTargetUsage::ENVIRONMENT, desc);
 }
 
-void SceneEnvironmentProbePool::onShutdown(GFXDevice& context) {
+void SceneEnvironmentProbePool::OnShutdown(GFXDevice& context) {
     context.renderTargetPool().deallocateRT(s_reflection);
 }
 
-RenderTargetHandle SceneEnvironmentProbePool::reflectionTarget() {
+RenderTargetHandle SceneEnvironmentProbePool::ReflectionTarget() {
     return s_reflection;
 }
 
@@ -104,7 +104,7 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::sortAndGetLocked(const ve
     return _envProbes;
 }
 
-void SceneEnvironmentProbePool::prepare(GFX::CommandBuffer& bufferInOut) {
+void SceneEnvironmentProbePool::Prepare(GFX::CommandBuffer& bufferInOut) {
     for (U16 i = 0; i < Config::MAX_REFLECTIVE_PROBES_PER_PASS; ++i) {
         if (!s_availableSlices[i].second) {
             s_availableSlices[i].first = true;
@@ -190,8 +190,8 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
         constexpr I32 Base = 10;
         for (U32 i = 0; i < 6; ++i) {
             DebugView_ptr probeView = std::make_shared<DebugView>(to_I16(std::numeric_limits<I16>::max() - 1 - 6 + i));
-            probeView->_texture = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
-            probeView->_samplerHash = reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
+            probeView->_texture = ReflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture();
+            probeView->_samplerHash = ReflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).samplerHash();
             probeView->_shader = previewShader;
             probeView->_shaderData.set(_ID("layer"), GFX::PushConstantType::INT, probe->rtLayerIndex());
             probeView->_shaderData.set(_ID("face"), GFX::PushConstantType::INT, i);

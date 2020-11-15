@@ -36,7 +36,7 @@ bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 
     return true;
 }
 
-void SceneNodeRenderState::addToDrawExclusionMask(RenderStage stage, RenderPassType passType, U8 variant, U16 index, U16 pass) {
+void SceneNodeRenderState::addToDrawExclusionMask(const RenderStage stage, const RenderPassType passType, const U8 variant, const U16 index, const U16 pass) {
     assert(variant == g_AllVariantsID ||  variant < Material::g_maxVariantsPerPass);
 
     const RenderStagePass stagePass{ stage, passType, variant, index, pass };

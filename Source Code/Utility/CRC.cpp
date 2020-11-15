@@ -2,8 +2,7 @@
 
 #include "Utility/Headers/CRC.h"
 
-namespace Divide {
-namespace Util {
+namespace Divide::Util {
 //=====================================================
 U32 CRC32::mTable[0x100] = {
     0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F,
@@ -52,7 +51,7 @@ U32 CRC32::mTable[0x100] = {
 
 //=====================================================
 
-U32 CRC32::Reflect(U32 v, I32 bits) noexcept {
+U32 CRC32::Reflect(const U32 v, I32 bits) noexcept {
     U32 ret = 0;
 
     --bits;
@@ -64,7 +63,7 @@ U32 CRC32::Reflect(U32 v, I32 bits) noexcept {
 
 //=====================================================
 
-void CRC32::Hash(const void* buf, size_t siz) noexcept {
+void CRC32::Hash(const void* buf, const size_t siz) noexcept {
     //=============================
     const U8* p = static_cast<const U8*>(buf);
 
@@ -72,6 +71,6 @@ void CRC32::Hash(const void* buf, size_t siz) noexcept {
         mCrc = (mCrc >> 8) ^ mTable[(mCrc & 0xFF) ^ p[i]];
     }
 }
-}  // namespace Util
-}  // namespace Divide
+}  // namespace Divide::Util
+
 

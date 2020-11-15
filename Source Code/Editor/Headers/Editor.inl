@@ -67,7 +67,7 @@ inline size_t Editor::RedoStackSize() const noexcept {
     return _undoManager->RedoStackSize();
 }
 
-inline void Editor::toggleMemoryEditor(bool state) noexcept {
+inline void Editor::toggleMemoryEditor(const bool state) noexcept {
     _showMemoryEditor = state;
 }
 

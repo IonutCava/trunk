@@ -48,12 +48,12 @@ public:
     void frameEnded() {}
 };
 
-    class GameScript : public Script,
-                       public FrameListener {
+    class GameScript final : public Script,
+                             public FrameListener {
     public:
         explicit GameScript(const stringImpl& sourceCode, FrameListenerManager& parent, U32 callOrder);
         explicit GameScript(const stringImpl& scriptPath, FileType fileType, FrameListenerManager& parent, U32 callOrder);
-        ~GameScript();
+        ~GameScript() = default;
 
     protected:
         bool frameStarted(const FrameEvent& evt) override;
@@ -65,7 +65,7 @@ public:
         bool frameEnded(const FrameEvent& evt) override;
 
     private:
-        void addGameInstance();
+        void addGameInstance() const;
 };
 
 } //namespace Divide

@@ -187,12 +187,11 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 
     ShadowMap::clearShadowMapBuffers(bufferInOut);
 
-    std::array<U32, to_base(LightType::COUNT)> indexCounter;
-    indexCounter.fill(0u);
+    std::array<U32, to_base(LightType::COUNT)> indexCounter{};
 
     bool dirty = false;
-    for (U16 i = 0; i < _sortedShadowLights.count; ++i) {
-        Light* light = _sortedShadowLights.entries[i];
+    for (U16 i = 0; i < _sortedShadowLights._count; ++i) {
+        Light* light = _sortedShadowLights._entries[i];
 
         const LightType lType = light->getLightType();
         const U32 lTypeIndex = to_U32(lType);
@@ -334,7 +333,7 @@ void LightPool::prepareLightData(const RenderStage stage, const vec3<F32>& eyePo
         _activeLightCount[stageIndex][to_base(LightType::DIRECTIONAL)],
         _activeLightCount[stageIndex][to_base(LightType::POINT)],
         _activeLightCount[stageIndex][to_base(LightType::SPOT)],
-        to_U32(_sortedShadowLights.count));
+        to_U32(_sortedShadowLights._count));
 
     if (!sortedLights.empty()) {
         crtData._ambientColour.rgb = { 0.05f * sortedLights.front()->getDiffuseColour() };
@@ -377,7 +376,7 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
     const vec3<F32>& eyePos = playerCamera->getEye();
     const Frustum& camFrustum = playerCamera->getFrustum();
 
-    _sortedShadowLights.count = 0;
+    _sortedShadowLights._count = 0;
 
     g_sortedLightsContainer.resize(0);
     {
@@ -438,7 +437,7 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
     for (Light* light : g_sortedLightsContainer) {
         light->shadowIndex(-1);
         if (light->enabled() && light->castsShadows() && _lightTypeState[to_base(light->getLightType())]) {
-            if (_sortedShadowLights.count < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
+            if (_sortedShadowLights._count < Config::Lighting::MAX_SHADOW_CASTING_LIGHTS) {
                 const LightType lType = light->getLightType();
                 const U32 lTypeIndex = to_U32(lType);
                 if (indexCounter[lTypeIndex] == MaxLights(lType) || !isInViewFrustum(camFrustum, light)) {
@@ -446,7 +445,7 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
                 }
 
                 light->shadowIndex(to_I32(indexCounter[lTypeIndex]++));
-                _sortedShadowLights.entries[_sortedShadowLights.count++] = light;
+                _sortedShadowLights._entries[_sortedShadowLights._count++] = light;
             }
         }
     }

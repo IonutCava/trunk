@@ -74,7 +74,7 @@ namespace Divide {
         /// Set the blending properties for the specified draw buffer
         void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties);
 
-        void resetBlending(GLuint drawBufferIdx) {
+        void resetBlending(const GLuint drawBufferIdx) {
             setBlending(drawBufferIdx, _blendProperties[drawBufferIdx]);
         }
 
@@ -90,7 +90,7 @@ namespace Divide {
         /// Some may be redundant, so we check each one individually
         void activateStateBlock(const RenderStateBlock& newBlock);
         /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
-        bool setPixelPackUnpackAlignment(GLint packAlignment = 4, GLint unpackAlignment = 4) {
+        bool setPixelPackUnpackAlignment(const GLint packAlignment = 4, const GLint unpackAlignment = 4) {
             return setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment);
         }
         /// Pixel pack alignment is usually changed by textures, PBOs, etc
@@ -100,9 +100,9 @@ namespace Divide {
         /// Bind a texture specified by a GL handle and GL type to the specified unit
         /// using the sampler object defined by handle value
         bool bindTexture(GLushort unit, TextureType type, GLuint handle, GLuint samplerHandle = 0u);
-        bool bindTextureImage(GLushort unit, TextureType type, GLuint handle, GLint level,
-            bool layered, GLint layer, GLenum access,
-            GLenum format);
+        bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
+                              bool layered, GLint layer, GLenum access,
+                              GLenum format);
         /// Bind multiple textures specified by an array of handles and an offset unit
         bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType* textureTypes, GLuint* textureHandles, GLuint* samplerHandles);
 
@@ -122,7 +122,7 @@ namespace Divide {
 
         bool setScissor(const Rect<I32>& newScissorRect);
 
-        bool setScissor(I32 x, I32 y, I32 width, I32 height) {
+        bool setScissor(const I32 x, const I32 y, const I32 width, const I32 height) {
             return setScissor({ x, y, width, height });
         }
 
@@ -133,7 +133,7 @@ namespace Divide {
         }
 
         /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
-        GLuint getActiveFB(RenderTarget::RenderTargetUsage usage) {
+        GLuint getActiveFB(const RenderTarget::RenderTargetUsage usage) {
             return _activeFBID[to_U32(usage)];
         }
 
@@ -141,7 +141,7 @@ namespace Divide {
 
         bool setViewport(const Rect<I32>& viewport);
 
-        bool setViewport(I32 x, I32 y, I32 width, I32 height) {
+        bool setViewport(const I32 x, const I32 y, const I32 width, const I32 height) {
             return setViewport({ x, y, width, height });
         }
 

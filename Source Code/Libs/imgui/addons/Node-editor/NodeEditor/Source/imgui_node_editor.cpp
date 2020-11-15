@@ -1952,7 +1952,7 @@ void ed::EditorContext::SetUserContext(bool globalSpace)
 {
     const auto mousePos = ImGui::GetMousePos();
 
-    // Move drawing cursor to mouse location and prepare layer for
+    // Move drawing cursor to mouse location and Prepare layer for
     // content added by user.
     if (globalSpace)
         ImGui::SetCursorScreenPos(m_Canvas.FromLocal(mousePos));

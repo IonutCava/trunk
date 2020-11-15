@@ -33,7 +33,7 @@ void glHardwareQueryPool::destroy() {
     _queryPool.clear();
 }
 
-glHardwareQueryRing& glHardwareQueryPool::allocate(GLenum queryType) {
+glHardwareQueryRing& glHardwareQueryPool::allocate(const GLenum queryType) {
     return *_queryPool[queryType][++_index[queryType]];
 }
 

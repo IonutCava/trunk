@@ -10,7 +10,7 @@ BoundingSphere::BoundingSphere() noexcept
 }
 
 BoundingSphere::BoundingSphere(vec3<F32> center, const F32 radius) noexcept
-    : _center(std::move(center)),
+    : _center(MOV(center)),
       _radius(radius)
 {
 }

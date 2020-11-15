@@ -74,8 +74,8 @@ union P32 {
     U8  b[4];
 
     P32() = default;
-    P32(U32 val) noexcept : i(val) {}
-    P32(U8 b1, U8 b2, U8 b3, U8 b4) noexcept : b{ b1, b2, b3, b4 } {}
+    P32(const U32 val) noexcept : i(val) {}
+    P32(const U8 b1, const U8 b2, const U8 b3, const U8 b4) noexcept : b{ b1, b2, b3, b4 } {}
     P32(U8* bytes) noexcept : b{ bytes[0], bytes[1], bytes[2], bytes[3] } {}
 };
 
@@ -87,8 +87,8 @@ union P64 {
     U8  b[8];
 
     P64() = default;
-    P64(U64 val) noexcept : i(val) {}
-    P64(U8 b1, U8 b2, U8 b3, U8 b4, U8 b5, U8 b6, U8 b7, U8 b8) noexcept : b{ b1, b2, b3, b4, b5, b6, b7, b8 } {}
+    P64(const U64 val) noexcept : i(val) {}
+    P64(const U8 b1, const U8 b2, const U8 b3, const U8 b4, const U8 b5, const U8 b6, const U8 b7, const U8 b8) noexcept : b{ b1, b2, b3, b4, b5, b6, b7, b8 } {}
     P64(U8* bytes) noexcept { std::memcpy(b, bytes, 8 * sizeof(U8)); }
 };
 
@@ -167,8 +167,8 @@ struct I24
         return value[2] << 16 | value[1] << 8 | value[0];
     }
 
-    FORCE_INLINE I24 operator+   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) + val); }
-    FORCE_INLINE I24 operator-   (I32 val)        const noexcept { return I24(static_cast<I32>(*this) - val); }
+    FORCE_INLINE I24 operator+   (const I32 val)  const noexcept { return I24(static_cast<I32>(*this) + val); }
+    FORCE_INLINE I24 operator-   (const I32 val)  const noexcept { return I24(static_cast<I32>(*this) - val); }
     FORCE_INLINE I24 operator+   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) + static_cast<I32>(val)); }
     FORCE_INLINE I24 operator-   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) - static_cast<I32>(val)); }
     FORCE_INLINE I24 operator*   (const I24& val) const noexcept { return I24(static_cast<I32>(*this) * static_cast<I32>(val)); }
@@ -275,8 +275,8 @@ struct U24
         return value[0] | value[1] << 8 | value[2] << 16;
     }
 
-    FORCE_INLINE U24 operator+   (U32 val)        const noexcept { return U24(static_cast<U32>(*this) + val); }
-    FORCE_INLINE U24 operator-   (U32 val)        const noexcept { return U24(static_cast<U32>(*this) - val); }
+    FORCE_INLINE U24 operator+   (const U32 val)  const noexcept { return U24(static_cast<U32>(*this) + val); }
+    FORCE_INLINE U24 operator-   (const U32 val)  const noexcept { return U24(static_cast<U32>(*this) - val); }
     FORCE_INLINE U24 operator+   (const U24& val) const noexcept { return U24(static_cast<U32>(*this) + static_cast<U32>(val)); }
     FORCE_INLINE U24 operator-   (const U24& val) const noexcept { return U24(static_cast<U32>(*this) - static_cast<U32>(val)); }
     FORCE_INLINE U24 operator*   (const U24& val) const noexcept { return U24(static_cast<U32>(*this) * static_cast<U32>(val)); }
@@ -419,15 +419,15 @@ constexpr char to_byte(const T value) {
 
 //ref: http://codereview.stackexchange.com/questions/51235/udp-network-server-client-for-gaming-using-boost-asio
 class counter {
-    size_t count;
+    size_t _count;
 public:
-    counter &operator=(const size_t val) noexcept { count = val; return *this; }
-    counter(const size_t count = 0) noexcept : count(count) {}
-    operator size_t() const noexcept { return count; }
-    counter &operator++() noexcept { ++count; return *this; }
-    counter operator++(int) noexcept { const counter ret(count); ++count; return ret; }
-    bool operator==(counter const &other) const noexcept { return count == other.count; }
-    bool operator!=(counter const &other) const noexcept { return count != other.count; }
+    counter &operator=(const size_t val) noexcept { _count = val; return *this; }
+    counter(const size_t count = 0) noexcept : _count(count) {}
+    operator size_t() const noexcept { return _count; }
+    counter &operator++() noexcept { ++_count; return *this; }
+    counter operator++(int) noexcept { const counter ret(_count); ++_count; return ret; }
+    bool operator==(counter const &other) const noexcept { return _count == other._count; }
+    bool operator!=(counter const &other) const noexcept { return _count != other._count; }
 };
 
 

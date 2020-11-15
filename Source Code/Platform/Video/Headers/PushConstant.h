@@ -90,7 +90,7 @@ namespace GFX {
         }
 
         template<typename T>
-        PushConstant(U64 bindingHash, PushConstantType type, const T* data, const size_t count, bool flag = false)
+        PushConstant(const U64 bindingHash, const PushConstantType type, const T* data, const size_t count, bool flag = false)
             : _bindingHash(bindingHash),
               _type(type)
         {

@@ -46,27 +46,27 @@ void RenderTarget::destroy() {
     }
 }
 
-bool RenderTarget::hasAttachment(RTAttachmentType type, U8 index) const {
+bool RenderTarget::hasAttachment(const RTAttachmentType type, const U8 index) const {
     return _attachmentPool->exists(type, index);
 }
 
-const RTAttachment_ptr& RenderTarget::getAttachmentPtr(RTAttachmentType type, U8 index) const {
+const RTAttachment_ptr& RenderTarget::getAttachmentPtr(const RTAttachmentType type, const U8 index) const {
     return _attachmentPool->get(type, index);
 }
 
-const RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) const {
+const RTAttachment& RenderTarget::getAttachment(const RTAttachmentType type, const U8 index) const {
     return *_attachmentPool->get(type, index);
 }
 
-RTAttachment& RenderTarget::getAttachment(RTAttachmentType type, U8 index) {
+RTAttachment& RenderTarget::getAttachment(const RTAttachmentType type, const U8 index) {
     return *_attachmentPool->get(type, index);
 }
 
-U8 RenderTarget::getAttachmentCount(RTAttachmentType type) const {
+U8 RenderTarget::getAttachmentCount(const RTAttachmentType type) const {
     return _attachmentPool->attachmentCount(type);
 }
 
-void RenderTarget::readData(GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const {
+void RenderTarget::readData(const GFXImageFormat imageFormat, const GFXDataFormat dataType, const bufferPtr outData) const {
     readData(vec4<U16>(0u, 0u, _descriptor._resolution.width, _descriptor._resolution.height), imageFormat, dataType, outData);
 }
 
@@ -89,7 +89,7 @@ F32& RenderTarget::depthClearValue() {
     return _descriptor._depthValue;
 }
 
-bool RenderTarget::resize(U16 width, U16 height) {
+bool RenderTarget::resize(const U16 width, const U16 height) {
     if (_descriptor._resolution != vec2<U16>(width, height)) {
         _descriptor._resolution.set(width, height);
         return create();

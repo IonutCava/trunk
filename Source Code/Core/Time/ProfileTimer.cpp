@@ -7,8 +7,7 @@
 
 #include "Core/Headers/StringHelper.h"
 
-namespace Divide {
-namespace Time {
+namespace Divide::Time {
 
 namespace {
     std::array<ProfileTimer, Config::Profile::MAX_PROFILE_TIMERS> g_profileTimers;
@@ -202,5 +201,4 @@ void ProfileTimer::disableTimers() noexcept {
     s_enabled = false;
 }
 
-}  // namespace Time
-}  // namespace Divide
+}  // namespace Divide::Time

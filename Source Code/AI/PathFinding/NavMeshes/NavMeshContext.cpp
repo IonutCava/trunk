@@ -5,9 +5,8 @@
 #include "Core/Time/Headers/ApplicationTimer.h"
 #include "Utility/Headers/Localization.h"
 
-namespace Divide {
-namespace AI {
-namespace Navigation {
+namespace Divide::AI::Navigation {
+
 void rcContextDivide::doLog(const rcLogCategory category, const char* msg,
                             const I32 len) {
     switch (category) {
@@ -43,6 +42,5 @@ void rcContextDivide::doStopTimer(const rcTimerLabel label) {
 I32 rcContextDivide::doGetAccumulatedTime(const rcTimerLabel label) const {
     return _accTime[label];
 }
-}
-}  // namespace AI
-}  // namespace Divide
+
+}  // namespace Divide::AI::Navigation

@@ -96,12 +96,12 @@ class NavMeshDebugDraw final : public duDebugDraw {
 
    private:
     GFXDevice& _context;
-    PrimitiveType _primType;
-    IMPrimitive* _primitive;
-    U32 _colour;
-    bool _overrideColour;
-    bool _dirty;
-    bool _paused;
+    PrimitiveType _primType = PrimitiveType::COUNT;
+    IMPrimitive*_primitive = nullptr;
+    U32 _colour = 0;
+    bool _overrideColour = false;
+    bool _dirty = true;
+    bool _paused = false;
 };
 }  // namespace Navigation
 }  // namespace AI

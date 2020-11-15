@@ -339,7 +339,7 @@ END_COMMAND(EndDebugScopeCommand);
 
 BEGIN_COMMAND(DrawTextCommand, CommandType::DRAW_TEXT);
     DrawTextCommand(TextElementBatch&& batch) noexcept : _batch(MOV(batch)) {}
-    DrawTextCommand(const TextElementBatch& batch) noexcept : _batch(batch) {}
+    DrawTextCommand(TextElementBatch batch) noexcept : _batch(MOV(batch)) {}
 
     TextElementBatch _batch;
 END_COMMAND(DrawTextCommand);

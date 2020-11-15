@@ -45,9 +45,9 @@ class IntersectionRecord
 {
   public:
     IntersectionRecord();
-    IntersectionRecord(const vec3<F32>& hitPos,
-                       const vec3<F32>& hitNormal,
-                       const Ray& ray,
+    IntersectionRecord(vec3<F32> hitPos,
+                       vec3<F32> hitNormal,
+                       Ray ray,
                        D64 distance);
     /// Creates a new intersection record indicating whether there was a hit or not and the object which was hit.
     IntersectionRecord(SceneGraphNode* hitObject);
@@ -77,7 +77,7 @@ class IntersectionRecord
     bool _hasHit;
 
     /// check the object identities between the two intersection records. If they match in either order, we have a duplicate.
-    bool operator==(const IntersectionRecord& otherRecord);
+    bool operator==(const IntersectionRecord& otherRecord) const;
 
     [[nodiscard]] bool isEmpty() const noexcept {
         return _intersectedObject1 == nullptr && _intersectedObject2 == nullptr;

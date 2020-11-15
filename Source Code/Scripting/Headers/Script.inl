@@ -35,7 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 template<typename T>
-void Script::addGlobal(const T& var, const char* name, bool asConst, bool overwrite) {
+void Script::addGlobal(const T& var, const char* name, const bool asConst, const bool overwrite) {
     if (overwrite) {
         if (asConst) {
             _script->set_global_const(chaiscript::const_var(var), name);

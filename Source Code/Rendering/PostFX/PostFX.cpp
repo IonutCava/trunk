@@ -102,7 +102,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     ResourceDescriptor postFXShader("postProcessing");
     postFXShader.propertyDescriptor(postFXShaderDescriptor);
     _postProcessingShader = CreateResource<ShaderProgram>(cache, postFXShader, loadTasks);
-    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context](CachedResource* res) {
+    _postProcessingShader->addStateCallback(ResourceState::RES_LOADED, [this, &context](CachedResource*) {
         PipelineDescriptor pipelineDescriptor;
         pipelineDescriptor._stateHash = context.gfx().get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = _postProcessingShader->getGUID();
@@ -112,21 +112,17 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     WAIT_FOR_CONDITION(loadTasks.load() == 0);
 }
 
-PostFX::~PostFX()
-{
-}
-
-void PostFX::updateResolution(U16 width, U16 height) {
-    if (_resolutionCache.width == width &&
-        _resolutionCache.height == height|| 
-        width < 1 || height < 1)
+void PostFX::updateResolution(const U16 newWidth, const U16 newHeight) {
+    if (_resolutionCache.width == newWidth &&
+        _resolutionCache.height == newHeight|| 
+        newWidth < 1 || newHeight < 1)
     {
         return;
     }
 
-    _resolutionCache.set(width, height);
+    _resolutionCache.set(newWidth, newHeight);
 
-    _preRenderBatch->reshape(width, height);
+    _preRenderBatch->reshape(newWidth, newHeight);
 }
 
 void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
@@ -262,7 +258,7 @@ void PostFX::update(const U64 deltaTimeUS) {
     _preRenderBatch->update(deltaTimeUS);
 }
 
-void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS, DELEGATE<void> onComplete) {
+void PostFX::setFadeOut(const UColour3& targetColour, const D64 durationMS, const D64 waitDurationMS, DELEGATE<void> onComplete) {
     _drawConstants.set(_ID("_fadeColour"), GFX::PushConstantType::VEC4, Util::ToFloatColour(targetColour));
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, true);
     _targetFadeTimeMS = durationMS;
@@ -270,27 +266,27 @@ void PostFX::setFadeOut(const UColour3& targetColour, D64 durationMS, D64 waitDu
     _fadeWaitDurationMS = waitDurationMS;
     _fadeOut = true;
     _fadeActive = true;
-    _fadeOutComplete = onComplete;
+    _fadeOutComplete = MOV(onComplete);
 }
 
 // clear any fading effect currently active over the specified time interval
 // set durationMS to instantly clear the fade effect
-void PostFX::setFadeIn(D64 durationMS, DELEGATE<void> onComplete) {
+void PostFX::setFadeIn(const D64 durationMS, DELEGATE<void> onComplete) {
     _targetFadeTimeMS = durationMS;
     _currentFadeTimeMS = 0.0;
     _fadeOut = false;
     _fadeActive = true;
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, true);
-    _fadeInComplete = onComplete;
+    _fadeInComplete = MOV(onComplete);
 }
 
-void PostFX::setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationMS) {
-    if (durationMS > 0.0) {
-        setFadeOutIn(targetColour, durationMS * 0.5, durationMS * 0.5, durationFadeOutMS);
+void PostFX::setFadeOutIn(const UColour3& targetColour, const D64 durationFadeOutMS, const D64 waitDurationMS) {
+    if (waitDurationMS > 0.0) {
+        setFadeOutIn(targetColour, waitDurationMS * 0.5, waitDurationMS * 0.5, durationFadeOutMS);
     }
 }
 
-void PostFX::setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS) {
+void PostFX::setFadeOutIn(const UColour3& targetColour, const D64 durationFadeOutMS, const D64 durationFadeInMS, const D64 waitDurationMS) {
     setFadeOut(targetColour, durationFadeOutMS, waitDurationMS, [this, durationFadeInMS]() {setFadeIn(durationFadeInMS); });
 }
 

@@ -6,14 +6,13 @@
 #include "AI/Headers/AIManager.h"
 #include "AI/PathFinding/Headers/DivideCrowd.h"
 
-namespace Divide {
-namespace AI {
+namespace Divide::AI {
 
 namespace {
     const U16 g_entityThreadedThreashold = 16u;
 }
 
-AITeam::AITeam(U32 id, AIManager& parentManager)
+AITeam::AITeam(const U32 id, AIManager& parentManager)
      : GUIDWrapper(),
        _teamID(id),
        _parentManager(parentManager)
@@ -197,7 +196,7 @@ bool AITeam::removeTeamMember(AIEntity* entity) {
     return true;
 }
 
-bool AITeam::addEnemyTeam(U32 enemyTeamID) {
+bool AITeam::addEnemyTeam(const U32 enemyTeamID) {
     if (findEnemyTeamEntry(enemyTeamID) == std::end(_enemyTeams)) {
         UniqueLock<SharedMutex> w_lock(_updateMutex);
         _enemyTeams.push_back(enemyTeamID);
@@ -206,7 +205,7 @@ bool AITeam::addEnemyTeam(U32 enemyTeamID) {
     return false;
 }
 
-bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
+bool AITeam::removeEnemyTeam(const U32 enemyTeamID) {
     const vectorEASTL<U32>::iterator it = findEnemyTeamEntry(enemyTeamID);
     if (it != end(_enemyTeams)) {
         UniqueLock<SharedMutex> w_lock(_updateMutex);
@@ -216,5 +215,4 @@ bool AITeam::removeEnemyTeam(U32 enemyTeamID) {
     return false;
 }
 
-} // namespace AI
-} // namespace Divide
+} // namespace Divide::AI

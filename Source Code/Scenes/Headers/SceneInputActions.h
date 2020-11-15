@@ -39,27 +39,27 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct InputParams {
-    InputParams(U8 deviceIndex) noexcept
+    InputParams(const U8 deviceIndex) noexcept
         : InputParams(deviceIndex, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1) noexcept
+    InputParams(const U8 deviceIndex, const I32 var1) noexcept
         : InputParams(deviceIndex, var1, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1, I32 var2) noexcept
+    InputParams(const U8 deviceIndex, const I32 var1, const I32 var2) noexcept
         : InputParams(deviceIndex, var1, var2, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1, I32 var2, I32 var3) noexcept
+    InputParams(const U8 deviceIndex, const I32 var1, const I32 var2, const I32 var3) noexcept
         : InputParams(deviceIndex, var1, var2, var3, -1)
     {
     }
 
-    InputParams(U8 deviceIndex, I32 var1, I32 var2, I32 var3, I32 var4) noexcept
+    InputParams(const U8 deviceIndex, const I32 var1, const I32 var2, const I32 var3, const I32 var4) noexcept
         : _var{ var1, var2, var3, var4 },
           _deviceIndex(deviceIndex)
     {
@@ -136,7 +136,7 @@ class InputActionList {
     InputActionList();
 
     [[nodiscard]] bool registerInputAction(U16 id, const InputAction& action);
-    [[nodiscard]] bool registerInputAction(U16 id, DELEGATE<void, InputParams> action);
+    [[nodiscard]] bool registerInputAction(U16 id, const DELEGATE<void, InputParams>& action);
     [[nodiscard]] InputAction& getInputAction(U16 id);
     [[nodiscard]] const InputAction& getInputAction(U16 id) const;
 

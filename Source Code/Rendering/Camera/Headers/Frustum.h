@@ -46,19 +46,21 @@ class Frustum {
 
     void set(const Frustum& other);
 
-    FrustumCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const noexcept;
-    FrustumCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const noexcept;
-    FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept;
+    [[nodiscard]] FrustumCollision ContainsPoint(const vec3<F32>& point, I8& lastPlaneCache) const noexcept;
+    [[nodiscard]] FrustumCollision ContainsBoundingBox(const BoundingBox& bbox, I8& lastPlaneCache) const noexcept;
+    [[nodiscard]] FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept;
 
-    FrustumCollision ContainsPoint(const vec3<F32>& point) const noexcept {
+    [[nodiscard]] FrustumCollision ContainsPoint(const vec3<F32>& point) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsPoint(point, lastPlaneCache);
     }
-    FrustumCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
+
+    [[nodiscard]] FrustumCollision ContainsBoundingBox(const BoundingBox& bbox) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsBoundingBox(bbox, lastPlaneCache);
     }
-    FrustumCollision ContainsSphere(const vec3<F32>& center, F32 radius) const noexcept {
+
+    [[nodiscard]] FrustumCollision ContainsSphere(const vec3<F32>& center, const F32 radius) const noexcept {
         I8 lastPlaneCache = -1;
         return ContainsSphere(center, radius, lastPlaneCache);
     }
@@ -90,33 +92,16 @@ class Frustum {
         return false;
     }
 
-     FrustumCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane,
-                                                const BoundingBox& bbox) const noexcept;
-     FrustumCollision PlanePointIntersect(const Plane<F32>& frustumPlane, 
-                                          const vec3<F32>& point) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane, const BoundingBox& bbox) const noexcept;
+    [[nodiscard]] FrustumCollision PlanePointIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& point) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, F32 radius) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(FrustumPlane frustumPlane, const BoundingBox& bbox) const noexcept;
+    [[nodiscard]] FrustumCollision PlanePointIntersect(FrustumPlane frustumPlane, const vec3<F32>& point) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneSphereIntersect(FrustumPlane frustumPlane, const vec3<F32>& center, F32 radius) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes, U8 count, const BoundingBox& bbox) const noexcept;
+    [[nodiscard]] FrustumCollision PlanePointIntersect(const FrustumPlane* frustumPlanes, U8 count, const vec3<F32>& point) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneSphereIntersect(const FrustumPlane* frustumPlanes, U8 count, const vec3<F32>& center, F32 radius) const noexcept;
 
-     FrustumCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane,
-                                         const vec3<F32>& center,
-                                         F32 radius) const noexcept;
-
-     FrustumCollision PlaneBoundingBoxIntersect(FrustumPlane frustumPlane,
-                                                const BoundingBox& bbox) const noexcept;
-     FrustumCollision PlanePointIntersect(FrustumPlane frustumPlane,
-                                          const vec3<F32>& point) const noexcept;
-     FrustumCollision PlaneSphereIntersect(FrustumPlane frustumPlane,
-                                           const vec3<F32>& center,
-                                           F32 radius) const noexcept;
-
-     FrustumCollision PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes,
-                                                U8 count,
-                                                const BoundingBox& bbox) const noexcept;
-     FrustumCollision PlanePointIntersect(const FrustumPlane* frustumPlanes,
-                                          U8 count,
-                                          const vec3<F32>& point) const noexcept;
-     FrustumCollision PlaneSphereIntersect(const FrustumPlane* frustumPlanes,
-                                           U8 count,
-                                           const vec3<F32>& center,
-                                           F32 radius) const noexcept;
     void updatePoints() noexcept;
 
     const std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>& planes() const noexcept { return _frustumPlanes; }

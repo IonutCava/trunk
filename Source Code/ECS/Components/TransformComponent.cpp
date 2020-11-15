@@ -49,7 +49,7 @@ namespace Divide {
         recomputeMatrixField._readOnly = false; //disabled/enabled
         _editorComponent.registerField(MOV(recomputeMatrixField));
 
-        _editorComponent.onChangedCbk([this](std::string_view field) {
+        _editorComponent.onChangedCbk([this](const std::string_view field) {
             if (field == "Transform") {
                 setTransformDirty(to_base(TransformType::ALL));
             } else if (field == "Position Offset") {
@@ -62,13 +62,13 @@ namespace Divide {
         });
     }
 
-    void TransformComponent::onParentTransformDirty(U32 transformMask) noexcept {
+    void TransformComponent::onParentTransformDirty(const U32 transformMask) noexcept {
         if (transformMask != to_base(TransformType::NONE)) {
             setTransformDirty(transformMask);
         }
     }
 
-    void TransformComponent::onParentUsageChanged(NodeUsageContext context) noexcept {
+    void TransformComponent::onParentUsageChanged(const NodeUsageContext context) noexcept {
         _parentUsageContext = context;
     }
 
@@ -589,11 +589,11 @@ namespace Divide {
         return quat;
     }
 
-    vec3<F32> TransformComponent::getLocalPosition(D64 interpolationFactor) const {
+    vec3<F32> TransformComponent::getLocalPosition(const D64 interpolationFactor) const {
         return Lerp(_prevTransformValues._translation, getLocalPosition(), to_F32(interpolationFactor));
     }
 
-    vec3<F32> TransformComponent::getLocalScale(D64 interpolationFactor) const {
+    vec3<F32> TransformComponent::getLocalScale(const D64 interpolationFactor) const {
         return Lerp(_prevTransformValues._scale, getLocalScale(), to_F32(interpolationFactor));
     }
 
@@ -609,7 +609,7 @@ namespace Divide {
         return Rotate(WORLD_X_AXIS, getOrientation());
     }
 
-    Quaternion<F32> TransformComponent::getLocalOrientation(D64 interpolationFactor) const {
+    Quaternion<F32> TransformComponent::getLocalOrientation(const D64 interpolationFactor) const {
         return Slerp(_prevTransformValues._orientation, getLocalOrientation(), to_F32(interpolationFactor));
     }
 

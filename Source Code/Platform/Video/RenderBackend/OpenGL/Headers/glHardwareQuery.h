@@ -43,7 +43,7 @@ namespace Divide {
 class glHardwareQuery : public glObject {
 public:
     explicit glHardwareQuery(GFXDevice& context);
-    ~glHardwareQuery();
+    ~glHardwareQuery() = default;
 
     void create(GLenum queryType);
     void destroy();

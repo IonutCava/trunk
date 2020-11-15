@@ -94,7 +94,7 @@ Vegetation::Vegetation(GFXDevice& context,
 
     CachedResource::setState(ResourceState::RES_LOADING);
     _buildTask = CreateTask(_context.context(),
-        [this](const Task& parentTask) {
+        [this](const Task& /*parentTask*/) {
             s_bufferUsage.fetch_add(1);
             computeVegetationTransforms(false);
             computeVegetationTransforms(true);
@@ -136,7 +136,7 @@ void Vegetation::destroyStaticData() {
     s_cullShaderTrees.reset();
 }
 
-void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 maxChunkCount) {
+void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize, const U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
         constexpr F32 offsetTop = 0.075f;
@@ -177,8 +177,8 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
             if (i > 0) {
                 s_buffer->addRestartIndex();
             }
-            for (U8 j = 0; j < 6; ++j) {
-                s_buffer->addIndex(indices[j] + i * 4);
+            for (U16 idx : indices) {
+                s_buffer->addIndex(idx + i * 4);
             }
 
         }
@@ -215,11 +215,11 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
             // Intersect circle Ac,UseAr and Bc,UseBr
             if (IntersectCircles(circleA, circleB, intersections)) {
                 // Add the resulting points if they are within the pattern bounds
-                for (U8 i = 0; i < 2; ++i) {
-                    if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, -to_F32(chunkSize), to_F32(chunkSize)) &&
-                        IS_IN_RANGE_EXCLUSIVE(intersections[i].y, -to_F32(chunkSize), to_F32(chunkSize)))
+                for (const vec2<F32>& record : intersections) {
+                    if (IS_IN_RANGE_EXCLUSIVE(record.x, -to_F32(chunkSize), to_F32(chunkSize)) &&
+                        IS_IN_RANGE_EXCLUSIVE(record.y, -to_F32(chunkSize), to_F32(chunkSize)))
                     {
-                        s_grassPositions.insert(intersections[i]);
+                        s_grassPositions.insert(record);
                     }
                 }
             }
@@ -238,11 +238,11 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, U32 chunkSize, U32 m
             // Intersect circle Ac,UseAr and Bc,UseBr
             if (IntersectCircles(circleA, circleB, intersections)) {
                 // Add the resulting points if they are within the pattern bounds
-                for (U8 i = 0; i < 2; ++i) {
-                    if (IS_IN_RANGE_EXCLUSIVE(intersections[i].x, -to_F32(chunkSize), to_F32(chunkSize)) &&
-                        IS_IN_RANGE_EXCLUSIVE(intersections[i].y, -to_F32(chunkSize), to_F32(chunkSize)))
+                for (const vec2<F32>& record : intersections) {
+                    if (IS_IN_RANGE_EXCLUSIVE(record.x, -to_F32(chunkSize), to_F32(chunkSize)) &&
+                        IS_IN_RANGE_EXCLUSIVE(record.y, -to_F32(chunkSize), to_F32(chunkSize)))
                     {
-                        s_treePositions.insert(intersections[i]);
+                        s_treePositions.insert(record);
                     }
                 }
             }

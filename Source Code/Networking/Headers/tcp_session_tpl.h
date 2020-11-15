@@ -2,12 +2,13 @@
 #ifndef _SESSION_TPL_H_
 #define _SESSION_TPL_H_
 
+#include "Strand.h"
 #include "WorldPacket.h"
 
+#include <boost/asio/ip/udp.hpp>
 
 namespace Divide {
 
-struct Strand;
 //----------------------------------------------------------------------
 
 //This is game specific but core functionality
@@ -15,7 +16,7 @@ extern void UpdateEntities(WorldPacket& p);
 
 class subscriber {
    public:
-    virtual ~subscriber() {}
+    virtual ~subscriber() = default;
     virtual void sendPacket(const WorldPacket& p) = 0;
 };
 
@@ -25,9 +26,9 @@ using subscriber_ptr = std::shared_ptr<subscriber>;
 
 class channel {
    public:
-    void join(subscriber_ptr sub) { subscribers_.insert(sub); }
+    void join(const subscriber_ptr& sub) { subscribers_.insert(sub); }
 
-    void leave(subscriber_ptr sub) { subscribers_.erase(sub); }
+    void leave(const subscriber_ptr& sub) { subscribers_.erase(sub); }
 
     void sendPacket(const WorldPacket& p) {
         std::for_each(std::begin(subscribers_), std::end(subscribers_),
@@ -111,7 +112,7 @@ using tcp_session_ptr = std::shared_ptr<tcp_session_tpl>;
 
 //----------------------------------------------------------------------
 
-class udp_broadcaster : public subscriber {
+class udp_broadcaster final : public subscriber {
    public:
     udp_broadcaster(boost::asio::io_service& io_service,
                     const boost::asio::ip::udp::endpoint& broadcast_endpoint);

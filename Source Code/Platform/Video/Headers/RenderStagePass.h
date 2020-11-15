@@ -45,7 +45,7 @@ struct RenderStagePass {
     RenderStagePass() = default;
     ~RenderStagePass() = default;
 
-    explicit RenderStagePass(RenderStage stage, RenderPassType passType, U8 variant = 0u, U16 index = 0u, U16 pass = 0u)
+    explicit RenderStagePass(const RenderStage stage, const RenderPassType passType, const U8 variant = 0u, const U16 index = 0u, const U16 pass = 0u)
         : _stage(stage),
           _passType(passType),
           _variant(variant),
@@ -68,11 +68,11 @@ struct RenderStagePass {
         return baseIndex(_stage, _passType);
     }
 
-    static constexpr U8 baseIndex(RenderStage stage, RenderPassType passType) noexcept {
+    static constexpr U8 baseIndex(const RenderStage stage, const RenderPassType passType) noexcept {
         return static_cast<U8>(to_base(stage) + to_base(passType) * to_base(RenderStage::COUNT));
     }
 
-    static RenderStagePass fromBaseIndex(U8 baseIndex) noexcept {
+    static RenderStagePass fromBaseIndex(const U8 baseIndex) noexcept {
         const RenderStage stage = static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT));
         const RenderPassType pass = static_cast<RenderPassType>(baseIndex / to_base(RenderStage::COUNT));
         return RenderStagePass(stage, pass);
@@ -104,7 +104,7 @@ struct RenderStagePass {
         }
     }
 
-    static U8 passCountForStage(RenderStage renderStage) noexcept {
+    static U8 passCountForStage(const RenderStage renderStage) noexcept {
         if (renderStage == RenderStage::REFLECTION) {
             return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
                    Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;

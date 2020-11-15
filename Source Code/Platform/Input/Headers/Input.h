@@ -279,13 +279,13 @@ namespace Input {
     SDL_Keycode SDLKeyCodeFromKey(KeyCode code) noexcept;
     KeyCode KeyCodeFromSDLKey(SDL_Keycode code) noexcept;
 
-    KeyCode keyCodeByName(const char* keyName);
+    KeyCode KeyCodeByName(const char* keyName);
     MouseButton mouseButtonByName(const stringImpl& buttonName);
     JoystickElement joystickElementByName(const stringImpl& elementName);
 
-    InputState getKeyState(U8 deviceIndex, KeyCode key);
-    InputState getMouseButtonState(U8 deviceIndex, MouseButton button) noexcept;
-    InputState getJoystickElementState(Joystick deviceIndex, JoystickElement element) noexcept;
+    InputState GetKeyState(U8 deviceIndex, KeyCode key);
+    InputState GetMouseButtonState(U8 deviceIndex, MouseButton button) noexcept;
+    InputState GetJoystickElementState(Joystick deviceIndex, JoystickElement element) noexcept;
 
     }; //namespace Input
 }; //namespace Divide

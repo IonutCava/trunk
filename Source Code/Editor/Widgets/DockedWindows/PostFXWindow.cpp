@@ -14,7 +14,7 @@
 
 namespace Divide {
 namespace {
-    bool PreviewTextureButton(I32 &id, Texture* tex, bool readOnly) {
+    bool PreviewTextureButton(I32 &id, Texture* tex, const bool readOnly) {
         bool ret = false;
         ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 15);
         ImGui::PushID(4321234 + id++);
@@ -37,6 +37,7 @@ namespace {
     constexpr I32 g_exposureRefreshFrameCount = 3;
 
 }
+
     PostFXWindow::PostFXWindow(Editor& parent, PlatformContext& context, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
           PlatformContextComponent(context),
@@ -47,7 +48,7 @@ namespace {
     void PostFXWindow::drawInternal() {
         PreRenderBatch* batch = _postFX.getFilterBatch();
 
-        const auto checkBox = [this](FilterType filter, const char* label = "Enabled", bool overrideScene = false) {
+        const auto checkBox = [this](const FilterType filter, const char* label = "Enabled", const bool overrideScene = false) {
             bool filterEnabled = _postFX.getFilterState(filter);
             ImGui::PushID(to_base(filter));
             if (ImGui::Checkbox(label, &filterEnabled)) {

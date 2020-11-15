@@ -289,11 +289,11 @@ private:
 
 namespace Attorney {
 class SceneManagerScene {
-    static void addPlayer(Divide::SceneManager& manager, Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
+    static void addPlayer(Divide::SceneManager& manager, Scene& parentScene, SceneGraphNode* playerNode, const bool queue) {
         manager.addPlayer(parentScene, playerNode, queue);
     }
 
-    static void removePlayer(Divide::SceneManager& manager, Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
+    static void removePlayer(Divide::SceneManager& manager, Scene& parentScene, SceneGraphNode* playerNode, const bool queue) {
         manager.removePlayer(parentScene, playerNode, queue);
     }
 
@@ -309,11 +309,11 @@ class SceneManagerKernel {
         manager->initPostLoadState();
     }
 
-    static void currentPlayerPass(Divide::SceneManager* manager, PlayerIndex idx) {
+    static void currentPlayerPass(Divide::SceneManager* manager, const PlayerIndex idx) {
         manager->currentPlayerPass(idx);
     }
 
-    static bool networkUpdate(Divide::SceneManager* manager, U32 frameCount) {
+    static bool networkUpdate(Divide::SceneManager* manager, const U32 frameCount) {
         return manager->networkUpdate(frameCount);
     }
 
@@ -321,7 +321,7 @@ class SceneManagerKernel {
 };
 
 class SceneManagerEditor {
-   static SceneNode_ptr createNode(Divide::SceneManager* manager, SceneNodeType type, const ResourceDescriptor& descriptor) {
+   static SceneNode_ptr createNode(Divide::SceneManager* manager, const SceneNodeType type, const ResourceDescriptor& descriptor) {
      return manager->createNode(type, descriptor);
    }
 
@@ -357,11 +357,11 @@ class SceneManagerCameraAccessor {
         return mgr.playerCamera();
     }
 
-    static Camera* playerCamera(const Divide::SceneManager* mgr, PlayerIndex idx) {
+    static Camera* playerCamera(const Divide::SceneManager* mgr, const PlayerIndex idx) {
         return mgr->playerCamera(idx);
     }
 
-    static Camera* playerCamera(const Divide::SceneManager& mgr, PlayerIndex idx) {
+    static Camera* playerCamera(const Divide::SceneManager& mgr, const PlayerIndex idx) {
         return mgr.playerCamera(idx);
     }
 
@@ -379,7 +379,7 @@ class SceneManagerCameraAccessor {
 };
 
 class SceneManagerRenderPass {
-    static const VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, const RenderStage stage, const Camera& camera, const I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, size_t ignoredGUIDSCount) {
+    static const VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, const RenderStage stage, const Camera& camera, const I32 minLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, const size_t ignoredGUIDSCount) {
         return mgr->cullSceneGraph(stage, camera, minLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
     }
 

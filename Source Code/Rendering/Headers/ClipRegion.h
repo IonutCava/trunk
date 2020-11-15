@@ -30,7 +30,7 @@
 // Copyright 2010 Intel Corporation
 // All Rights Reserved
 //
-// Permission is granted to use, copy, distribute and prepare derivative works
+// Permission is granted to use, copy, distribute and Prepare derivative works
 // of this
 // software for any purpose and without fee, provided, that the above copyright
 // notice

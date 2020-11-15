@@ -141,7 +141,7 @@ bool GUIConsole::Handle_TextSubmitted(const CEGUI::EventArgs& /*e*/) {
     return true;
 }
 
-void GUIConsole::setVisible(bool visible) {
+void GUIConsole::setVisible(const bool visible) {
     if (_init) {
         // if it's not the first key (e.g., if the toggle key is "~", then
         // "lorem~ipsum" should not close the Window)
@@ -172,7 +172,7 @@ void GUIConsole::setVisible(bool visible) {
     }
 }
 
-bool GUIConsole::isVisible() {
+bool GUIConsole::isVisible() const {
     if (!_init) {
         return false;
     }
@@ -183,7 +183,7 @@ void GUIConsole::printText(const Console::OutputEntry& entry) {
     _outputBuffer.enqueue(entry);
 }
 
-void GUIConsole::OutputText(const Console::OutputEntry& text) {
+void GUIConsole::OutputText(const Console::OutputEntry& text) const {
     if (_outputWindow->getItemCount() == _CEGUI_MAX_CONSOLE_ENTRIES - 1) {
         _outputWindow->removeItem(_outputWindow->getListboxItemFromIndex(0));
     }

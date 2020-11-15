@@ -11,17 +11,17 @@ SharedMutex RenderStateBlock::s_stateBlockMapMutex;
 size_t RenderStateBlock::s_defaultHashValue = 0;
 
 namespace TypeUtil {
-    const char* ComparisonFunctionToString(ComparisonFunction func) noexcept {
+    const char* ComparisonFunctionToString(const ComparisonFunction func) noexcept {
         return Names::compFunctionNames[to_base(func)];
     }
 
-    const char* StencilOperationToString(StencilOperation op) noexcept {
+    const char* StencilOperationToString(const StencilOperation op) noexcept {
         return Names::stencilOpNames[to_base(op)];
     }
-    const char* FillModeToString(FillMode mode) noexcept {
+    const char* FillModeToString(const FillMode mode) noexcept {
         return Names::fillModes[to_base(mode)];
     }
-    const char* CullModeToString(CullMode mode) noexcept {
+    const char* CullModeToString(const CullMode mode) noexcept {
         return Names::cullModes[to_base(mode)];
     }
 

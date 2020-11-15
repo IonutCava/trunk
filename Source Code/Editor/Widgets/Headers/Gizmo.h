@@ -107,7 +107,7 @@ namespace Divide {
                 gizmo->updateSelections(nodes);
             }
 
-            static void update(Gizmo* gizmo, U64 deltaTimeUS) {
+            static void update(Gizmo* gizmo, const U64 deltaTimeUS) {
                 gizmo->update(deltaTimeUS);
             }
 

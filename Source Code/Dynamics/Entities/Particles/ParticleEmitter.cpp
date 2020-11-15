@@ -39,8 +39,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache,
                 {},
                 SceneNodeType::TYPE_PARTICLE_EMITTER,
                 to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::RENDERING)),
-      _context(context),
-      _buffersDirty{}
+      _context(context)
 {
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
@@ -99,7 +98,9 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
         }
     }
 
-    updateData();
+    if (!updateData()) {
+        return false;
+    }
 
     // Generate a render state
     RenderStateBlock particleRenderState;
@@ -299,7 +300,7 @@ void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, c
 void ParticleEmitter::onRefreshNodeData(const SceneGraphNode* sgn,
                                         const RenderStagePass& renderStagePass,
                                         const Camera& crtCamera,
-                                        bool refreshData,
+                                        const bool refreshData,
                                         GFX::CommandBuffer& bufferInOut) {
 
     if ( _enabled &&  getAliveParticleCount() > 0) {

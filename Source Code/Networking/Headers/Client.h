@@ -66,15 +66,14 @@ class Client {
 
     // Packet I/O
     bool sendPacket(WorldPacket& p);
-    void receivePacket(WorldPacket& p);
+    void receivePacket(WorldPacket& p) const;
 
-    void toggleDebugOutput(bool debugOutput) noexcept { _debugOutput = debugOutput; }
+    void toggleDebugOutput(const bool debugOutput) noexcept { _debugOutput = debugOutput; }
 
    private:
     // Connection
     void start_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iter);
-    void handle_connect(const boost::system::error_code& ec,
-                        boost::asio::ip::tcp::resolver::iterator endpoint_iter);
+    void handle_connect(const boost::system::error_code& ec, boost::asio::ip::tcp::resolver::iterator endpoint_iter);
 
     // Read
     void start_read();
@@ -90,16 +89,15 @@ class Client {
     // Write
     void start_write();
     void handle_write(const boost::system::error_code& ec);
-    void handle_read_file_content(const boost::system::error_code& err,
-                                  std::size_t bytes_transfered);
+    void handle_read_file_content(const boost::system::error_code& err, std::size_t bytes_transferred);
 
     // Timers
     void check_deadline();
 
    private:
-    bool _stopped, _debugOutput;
+    bool _stopped = false, _debugOutput;
     boost::asio::ip::tcp::socket _socket;
-    size_t _header;
+    size_t _header = 0;
     boost::asio::streambuf _inputBuffer;
     boost::asio::deadline_timer _deadline;
     boost::asio::deadline_timer _heartbeatTimer;
@@ -108,8 +106,8 @@ class Client {
     // File Data
     std::ofstream _outputFile;
     boost::asio::streambuf _requestBuf;
-    size_t _fileSize;
-    std::array<char, 1024> _buf;
+    size_t _fileSize = 0;
+    std::array<char, 1024> _buf{};
     ASIO* _asioPointer;
 };
 

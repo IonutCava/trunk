@@ -41,13 +41,13 @@ void ASIO::disconnect() {
     sendPacket(p);
 }
 
-bool ASIO::init(const stringImpl& address, U16 port) {
+bool ASIO::init(const stringImpl& address, const U16 port) {
     try {
         boost::asio::ip::tcp::resolver res(io_service_);
         _localClient = new Client(this, io_service_, _debugOutput);
         _work.reset(new boost::asio::io_service::work(io_service_));
         _localClient->start(
-            res.resolve(boost::asio::ip::tcp::resolver::query(address.c_str(), Util::to_string(port).c_str())));
+            res.resolve(boost::asio::ip::tcp::resolver::query(address, Util::to_string(port))));
         _thread = new std::thread([&] { io_service_.run(); });
         SetThreadName(_thread, "ASIO_THREAD");
 
@@ -63,7 +63,7 @@ bool ASIO::init(const stringImpl& address, U16 port) {
     return _connected;
 }
 
-bool ASIO::connect(const stringImpl& address, U16 port) {
+bool ASIO::connect(const stringImpl& address, const U16 port) {
     if (_connected) {
         close();
     }
@@ -104,7 +104,7 @@ void ASIO::SET_LOG_FUNCTION(const LOG_CBK& cbk) {
     _logCBK = cbk;
 }
 
-void ASIO::LOG_PRINT(const char* msg, bool error) {
+void ASIO::LOG_PRINT(const char* msg, const bool error) {
     if (_logCBK) {
         _logCBK(msg, error);
     }  else {

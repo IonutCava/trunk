@@ -14,10 +14,10 @@ RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescripto
 {
 }
 
-RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor, const RTAttachment_ptr& externalAtt)
+RTAttachment::RTAttachment(RTAttachmentPool& parent, const RTAttachmentDescriptor& descriptor, RTAttachment_ptr externalAtt)
     : _samplerHash(descriptor._samplerHash),
       _descriptor(descriptor),
-      _externalAttachment(externalAtt),
+      _externalAttachment(MOV(externalAtt)),
       _parent(parent)
 
 {
@@ -45,7 +45,7 @@ bool RTAttachment::isExternal() const {
     return _externalAttachment != nullptr;
 }
 
-bool RTAttachment::mipWriteLevel(U16 level) {
+bool RTAttachment::mipWriteLevel(const U16 level) {
     //ToDo: Investigate why this isn't working ... -Ionut
     if (/*_descriptor._texDescriptor.mipLevels() > level && */_mipWriteLevel != level) {
         _mipWriteLevel = level;
@@ -59,7 +59,7 @@ U16 RTAttachment::mipWriteLevel() const {
     return _mipWriteLevel;
 }
 
-bool RTAttachment::writeLayer(U16 layer) {
+bool RTAttachment::writeLayer(const U16 layer) {
     const U16 layerCount = texture()->descriptor().isCubeTexture() ? numLayers() * 6 : numLayers();
     if (layerCount > layer && _writeLayer != layer) {
         _writeLayer = layer;

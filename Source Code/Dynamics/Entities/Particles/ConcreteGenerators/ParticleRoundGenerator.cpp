@@ -7,8 +7,8 @@ namespace Divide {
 void ParticleRoundGenerator::generate(Task& packagedTasksParent,
                                       const U64 deltaTimeUS,
                                       ParticleData& p,
-                                      U32 startIndex,
-                                      U32 endIndex) {
+                                      const U32 startIndex,
+                                      const U32 endIndex) {
     const vec3<F32> center(_center + _sourcePosition);
     for (U32 i = startIndex; i < endIndex; i++) {
         const F32 ang = Random(0.0f, M_2PI_f);

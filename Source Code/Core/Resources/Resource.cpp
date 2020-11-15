@@ -44,8 +44,8 @@ CachedResource::CachedResource(const ResourceType type,
                                ResourcePath assetName,
                                ResourcePath assetLocation)
     : Resource(type, resourceName),
-      _assetLocation(std::move(assetLocation)),
-      _assetName(std::move(assetName)),
+      _assetLocation(MOV(assetLocation)),
+      _assetName(MOV(assetName)),
       _descriptorHash(descriptorHash)
 {
 }

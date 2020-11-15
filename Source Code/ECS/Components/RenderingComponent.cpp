@@ -212,11 +212,11 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
     }
 }
 
-void RenderingComponent::setMinRenderRange(F32 minRange) noexcept {
+void RenderingComponent::setMinRenderRange(const F32 minRange) noexcept {
     _renderRange.min = std::max(minRange, -1.0f * g_renderRangeLimit);
 }
 
-void RenderingComponent::setMaxRenderRange(F32 maxRange) noexcept {
+void RenderingComponent::setMaxRenderRange(const F32 maxRange) noexcept {
     _renderRange.max = std::min(maxRange,  1.0f * g_renderRangeLimit);
 }
 
@@ -484,7 +484,7 @@ U8 RenderingComponent::getLoDLevel(const vec3<F32>& center, const vec3<F32>& cam
     return MAX_LOD_LEVEL;
 }
 
-bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData) {
+bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, const bool refreshData) {
     OPTICK_EVENT();
 
     U8& lod = _lodLevels[to_base(renderStagePass._stage)];
@@ -590,7 +590,7 @@ bool RenderingComponent::updateReflection(const U16 reflectionIndex,
                 // ToDo: Investigate if we can lazy-refresh probes here? Call refresh but have a "clean" flag per frame?
                 _envProbes.front()->setDirty();
 
-                const auto& targetAtt = SceneEnvironmentProbePool::reflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
+                const auto& targetAtt = SceneEnvironmentProbePool::ReflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
 
                 UniqueLock<SharedMutex> w_lock(_reflectionLock);
                 _reflectionIndex = _envProbes.front()->rtLayerIndex();
@@ -624,8 +624,8 @@ bool RenderingComponent::updateReflection(const U16 reflectionIndex,
     return false;
 }
 
-bool RenderingComponent::updateRefraction(U16 refractionIndex,
-                                          bool inBudget,
+bool RenderingComponent::updateRefraction(const U16 refractionIndex,
+                                          const bool inBudget,
                                           Camera* camera,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut) {

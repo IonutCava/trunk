@@ -25,12 +25,12 @@ namespace {
                                                           : Paths::g_climatesLowResLocation);
     }
 
-    std::pair<U8, bool> findOrInsert(const U8 textureQuality, vectorEASTL<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
+    std::pair<U8, bool> FindOrInsert(const U8 textureQuality, vectorEASTL<stringImpl>& container, const stringImpl& texture, stringImpl materialName) {
         if (!fileExists((ClimatesLocation(textureQuality) + "/" + materialName + "/" + texture).c_str())) {
             materialName = "std_default";
         }
         const stringImpl item = materialName + "/" + texture;
-        const auto it = eastl::find(eastl::cbegin(container),
+        const auto* const it = eastl::find(eastl::cbegin(container),
                                     eastl::cend(container),
                                     item);
         if (it != eastl::cend(container)) {
@@ -94,7 +94,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
     size_t idxCount = layerCount * to_size(TerrainTextureChannel::COUNT);
     std::array<vectorEASTL<U16>, to_base(TerrainTextureType::COUNT)> indices;
-    std::array<U16, to_base(TerrainTextureType::COUNT)> offsets;
+    std::array<U16, to_base(TerrainTextureType::COUNT)> offsets{};
     vectorEASTL<U8> channelCountPerLayer(layerCount, 0u);
 
     for (auto& it : indices) {
@@ -118,7 +118,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             }
 
             for (U8 k = 0; k < to_base(TerrainTextureType::COUNT); ++k) {
-                auto [index, wasNew] = findOrInsert(textureQuality, textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial);
+                auto [index, wasNew] = FindOrInsert(textureQuality, textures[k], Util::StringFormat("%s.%s", textureNames[k], k == to_base(TerrainTextureType::ALBEDO_ROUGHNESS) ? "png" : "jpg"), currentMaterial);
                 indices[k][idx] = index;
                 if (wasNew) {
                     ++offsets[k];

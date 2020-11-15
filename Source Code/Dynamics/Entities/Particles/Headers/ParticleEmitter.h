@@ -45,7 +45,7 @@ class GenericVertexData;
 
 FWD_DECLARE_MANAGED_CLASS(Texture);
 /// A Particle emitter scene node. Nothing smarter to say, sorry :"> - Ionut
-class ParticleEmitter : public SceneNode {
+class ParticleEmitter final : public SceneNode {
    public:
     explicit ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~ParticleEmitter();
@@ -57,12 +57,12 @@ class ParticleEmitter : public SceneNode {
                            GFX::CommandBuffer& bufferInOut) override;
 
     /// toggle the particle emitter on or off
-    void enableEmitter(bool state) noexcept { _enabled = state; }
+    void enableEmitter(const bool state) noexcept { _enabled = state; }
 
     void setDrawImpostor(const bool state) noexcept { _drawImpostor = state; }
 
-    bool updateData();
-    bool initData(const std::shared_ptr<ParticleData>& particleData);
+    [[nodiscard]] bool updateData();
+    [[nodiscard]] bool initData(const std::shared_ptr<ParticleData>& particleData);
 
     /// SceneNode concrete implementations
     bool unload() override;
@@ -75,7 +75,7 @@ class ParticleEmitter : public SceneNode {
         _sources.push_back(source);
     }
 
-    U32 getAliveParticleCount() const;
+    [[nodiscard]] U32 getAliveParticleCount() const;
 
    protected:
 
@@ -91,7 +91,7 @@ class ParticleEmitter : public SceneNode {
 
     void prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera);
 
-    GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
+    [[nodiscard]] GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
 
     [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "ParticleEmitter"; }
 
@@ -111,8 +111,8 @@ class ParticleEmitter : public SceneNode {
 
     using BuffersPerStage = std::array<GenericVertexData*, to_base(RenderStage::COUNT)>;
     using BuffersPerPlayer = std::array<BuffersPerStage, s_MaxPlayerBuffers>;
-    BuffersPerPlayer _particleGPUBuffers;
-    std::array<bool, to_base(RenderStage::COUNT)> _buffersDirty;
+    BuffersPerPlayer _particleGPUBuffers{};
+    std::array<bool, to_base(RenderStage::COUNT)> _buffersDirty{};
 
     size_t _particleStateBlockHash = 0;
     size_t _particleStateBlockHashDepth = 0;

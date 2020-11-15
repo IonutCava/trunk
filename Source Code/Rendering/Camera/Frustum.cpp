@@ -49,7 +49,7 @@ FrustumCollision Frustum::ContainsPoint(const vec3<F32>& point, I8& lastPlaneCac
     return res;
 }
 
-FrustumCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, F32 radius) const noexcept {
+FrustumCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, const F32 radius) const noexcept {
     const F32 distance = frustumPlane.signedDistanceToPoint(center);
     if (distance < -radius) {
         return FrustumCollision::FRUSTUM_OUT;
@@ -62,7 +62,7 @@ FrustumCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumPlane, c
     return  FrustumCollision::FRUSTUM_IN;
 }
 
-FrustumCollision Frustum::ContainsSphere(const vec3<F32>& center, F32 radius, I8& lastPlaneCache) const noexcept {
+FrustumCollision Frustum::ContainsSphere(const vec3<F32>& center, const F32 radius, I8& lastPlaneCache) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
@@ -103,19 +103,19 @@ FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane frustumPlane,
 }
 
 FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane frustumPlane,
-                                                      const vec3<F32>& center,
-                                                       F32 radius) const noexcept {
+                                               const vec3<F32>& center,
+                                               const F32 radius) const noexcept {
     return PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlane)], center, radius);
 }
 
-FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlane,
-                                                           const U8 count,
-                                                           const BoundingBox& bbox) const noexcept {
+FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes,
+                                                    const U8 count,
+                                                    const BoundingBox& bbox) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     for (U8 i = 0; i < count; ++i) {
-        res = PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlane[i])], bbox);
+        res = PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlanes[i])], bbox);
         if (res != FrustumCollision::FRUSTUM_IN) {
             break;
         }
@@ -140,16 +140,16 @@ FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane* frustumPlanes,
     return res;
 }
 
-FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane* frustumPlane,
-                                                      const U8 count,
-                                                      const vec3<F32>& center,
-                                                      F32 radius) const noexcept {
+FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane* frustumPlanes,
+                                               const U8 count,
+                                               const vec3<F32>& center,
+                                               const F32 radius) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
 
     for (U8 i = 0; i < count; ++i) {
-        res = PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlane[i])], center, radius);
+        res = PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlanes[i])], center, radius);
         if (res != FrustumCollision::FRUSTUM_IN) {
             break;
         }

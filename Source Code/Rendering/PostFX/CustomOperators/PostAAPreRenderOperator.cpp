@@ -138,7 +138,7 @@ bool PostAAPreRenderOperator::ready() const {
     return false;
 }
 
-void PostAAPreRenderOperator::reshape(U16 width, U16 height) {
+void PostAAPreRenderOperator::reshape(const U16 width, const U16 height) {
     PreRenderOperator::reshape(width, height);
     _smaaWeights._rt->resize(width, height);
 }

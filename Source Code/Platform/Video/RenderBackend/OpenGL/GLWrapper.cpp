@@ -159,7 +159,7 @@ F32 GL_API::getFrameDurationGPU() const noexcept {
     return FRAME_DURATION_GPU;
 }
 
-void GL_API::appendToShaderHeader(ShaderType type,
+void GL_API::appendToShaderHeader(const ShaderType type,
                                   const stringImpl& entry,
                                   ShaderOffsetArray& inOutOffset) {
     const U8 index = to_U8(type);
@@ -217,20 +217,20 @@ bool GL_API::initGLSW(Configuration& config) {
 
         stringImpl passData("void PassData(in int index) {");
         passData.append("\n");
-        for (const auto& var : shaderVaryings) {
-            passData.append(Util::StringFormat(baseString.c_str(), var.second, var.second));
+        for (const auto& [varType, name] : shaderVaryings) {
+            passData.append(Util::StringFormat(baseString.c_str(), name, name));
             passData.append("\n");
         }
         passData.append("#if defined(COMPUTE_TBN)\n");
-        for (const auto& var : shaderVaryingsBump) {
-            passData.append(Util::StringFormat(baseString.c_str(), var.second, var.second));
+        for (const auto& [varType, name] : shaderVaryingsBump) {
+            passData.append(Util::StringFormat(baseString.c_str(), name, name));
             passData.append("\n");
         }
         passData.append("#endif\n");
 
         passData.append("#if defined(HAS_VELOCITY)\n");
-        for (const auto& var : shaderVaryingsVelocity) {
-            passData.append(Util::StringFormat(baseString.c_str(), var.second, var.second));
+        for (const auto& [varType, name] : shaderVaryingsVelocity) {
+            passData.append(Util::StringFormat(baseString.c_str(), name, name));
             passData.append("\n");
         }
         passData.append("#endif\n");
@@ -715,20 +715,20 @@ bool GL_API::initGLSW(Configuration& config) {
         lineOffsets);
 
     const auto addVaryings = [&](const ShaderType type, ShaderOffsetArray& offsets) {
-        for (const auto& var : shaderVaryings) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", var.first, var.second), offsets);
+        for (const auto& [varType, name] : shaderVaryings) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name), offsets);
         }
     };
 
-    const auto addVaryingsBump = [&](ShaderType type, ShaderOffsetArray& offsets) {
-        for (const auto& var : shaderVaryingsBump) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", var.first, var.second), offsets);
+    const auto addVaryingsBump = [&](const ShaderType type, ShaderOffsetArray& offsets) {
+        for (const auto& [varType, name] : shaderVaryingsBump) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name), offsets);
         }
     };
 
-    const auto addVaryingsVelocity = [&](ShaderType type, ShaderOffsetArray& offsets) {
-        for (const auto& var : shaderVaryingsVelocity) {
-            appendToShaderHeader(type, Util::StringFormat("    %s %s;", var.first, var.second), offsets);
+    const auto addVaryingsVelocity = [&](const ShaderType type, ShaderOffsetArray& offsets) {
+        for (const auto& [varType, name] : shaderVaryingsVelocity) {
+            appendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name), offsets);
         }
     };
 
@@ -1411,7 +1411,7 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     }
 }
 
-GenericVertexData* GL_API::getOrCreateIMGUIBuffer(I64 windowGUID) {
+GenericVertexData* GL_API::getOrCreateIMGUIBuffer(const I64 windowGUID) {
     const auto it = _IMGUIBuffers.find(windowGUID);
     if (it != cend(_IMGUIBuffers)) {
         return it->second;
@@ -1518,8 +1518,8 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
     for (const auto& it : textureViews) {
         const size_t viewHash = it.getHash();
 
-        std::pair<GLuint,bool> handle = s_texturePool.allocate(viewHash, GL_NONE);
-        if (handle.first == 0u) {
+        auto [textureID, cacheHit] = s_texturePool.allocate(viewHash, GL_NONE);
+        if (textureID == 0u) {
             DIVIDE_UNEXPECTED_CALL();
             continue;
         }
@@ -1529,7 +1529,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
         const TextureData& data = tex->data();
         assert(IsValid(data));
 
-        if (!handle.second) {
+        if (!cacheHit) {
             const TextureDescriptor& descriptor = tex->descriptor();
             const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
             const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
@@ -1541,7 +1541,7 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
                 layerRange.min *= 6; //offset
                 layerRange.max *= 6; //count
             }
-            glTextureView(handle.first,
+            glTextureView(textureID,
                 type,
                 data._textureHandle,
                 glInternalFormat,
@@ -1550,9 +1550,9 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
                 layerRange.min,
                 layerRange.max);
         }
-        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, handle.first, getSamplerHandle(it._view._samplerHash)) || bound;
+        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, textureID, getSamplerHandle(it._view._samplerHash)) || bound;
         // Self delete after 3 frames unless we use it again
-        s_texturePool.deallocate(handle.first, GL_NONE, 3u);
+        s_texturePool.deallocate(textureID, GL_NONE, 3u);
     }
 
     return bound;

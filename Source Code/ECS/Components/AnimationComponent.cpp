@@ -93,7 +93,7 @@ bool AnimationComponent::playAnimation(const stringImpl& name) {
 }
 
 /// Select an animation by index
-bool AnimationComponent::playAnimation(I32 pAnimIndex) {
+bool AnimationComponent::playAnimation(const I32 pAnimIndex) {
     if (!_animator) {
         return false;
     }
@@ -182,7 +182,7 @@ AnimationComponent::AnimData AnimationComponent::getAnimationData() const {
     return ret;
 }
 
-I32 AnimationComponent::frameCount(U32 animationID) const {
+I32 AnimationComponent::frameCount(const U32 animationID) const {
     return _animator != nullptr ? _animator->frameCount(animationID) : -1;
 }
 
@@ -194,7 +194,7 @@ bool AnimationComponent::frameTicked() const noexcept {
     return _frameIndex._prev != _frameIndex._curr;
 }
 
-const BoneTransform& AnimationComponent::transformsByIndex(U32 animationID, U32 index) const {
+const BoneTransform& AnimationComponent::transformsByIndex(const U32 animationID, const U32 index) const {
     assert(_animator != nullptr);
 
     return _animator->transforms(animationID, index);
@@ -226,7 +226,7 @@ Bone* AnimationComponent::getBoneByName(const stringImpl& bname) const {
     return _animator != nullptr ? _animator->boneByName(bname) : nullptr;
 }
 
-AnimEvaluator& AnimationComponent::getAnimationByIndex(I32 animationID) const {
+AnimEvaluator& AnimationComponent::getAnimationByIndex(const I32 animationID) const {
     assert(_animator != nullptr);
 
     return _animator->animationByIndex(animationID);

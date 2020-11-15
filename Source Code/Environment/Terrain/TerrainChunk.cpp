@@ -89,7 +89,7 @@ U8 TerrainChunk::LoD() const {
     return _quadtreeNode.LoD();
 }
 
-void TerrainChunk::drawBBox(RenderPackage& packageOut) {
+void TerrainChunk::drawBBox(RenderPackage& packageOut) const {
     _quadtreeNode.drawBBox(packageOut);
 }
 }

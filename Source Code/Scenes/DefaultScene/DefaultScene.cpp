@@ -75,7 +75,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                                              buttonSize);
 
             btn->setEventCallback(GUIButton::Event::MouseClick,
-                                  [this](I64 btnGUID) {
+                                  [this](const I64 btnGUID) {
                                       loadScene(btnGUID);
 
                                   });
@@ -144,7 +144,7 @@ void DefaultScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     Scene::postLoadMainThread(targetRenderViewport);
 }
 
-void DefaultScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+void DefaultScene::processInput(const PlayerIndex idx, const U64 deltaTimeUS) {
     if (!_sceneToLoad.empty()) {
         const vec2<U16>& drawSize = _context.mainWindow().getDrawableSize();
 
@@ -184,7 +184,7 @@ void DefaultScene::processTasks(const U64 deltaTimeUS) {
     Scene::processTasks(deltaTimeUS);
 }
 
-void DefaultScene::loadScene(I64 btnGUID) {
+void DefaultScene::loadScene(const I64 btnGUID) {
     _sceneToLoad = _buttonToSceneMap[btnGUID];
     Console::d_printf("Loading scene [ %s ]", _sceneToLoad.c_str());
 

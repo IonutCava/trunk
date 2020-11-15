@@ -110,7 +110,7 @@ class NOINITVTABLE ShadowMap {
 
     static void setMSAASampleCount(ShadowType type, U8 sampleCount);
 
-    static vectorEASTL<Camera*>& shadowCameras(ShadowType type) noexcept { return s_shadowCameras[to_base(type)]; }
+    static vectorEASTL<Camera*>& shadowCameras(const ShadowType type) noexcept { return s_shadowCameras[to_base(type)]; }
 
   protected:
     using LayerUsageMask = vectorEASTL<bool>;

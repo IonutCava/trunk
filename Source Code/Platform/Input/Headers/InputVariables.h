@@ -148,7 +148,7 @@ class VariableEffect {
     EffectVariablesApplier _pfApplyVariables;
 
     // True if the effect is currently being played.
-    bool _bActive;
+    bool _bActive = false;
 
    public:
     VariableEffect(const char* pszDesc, OIS::Effect* pEffect,
@@ -157,10 +157,12 @@ class VariableEffect {
         : _pszDesc(pszDesc),
           _pEffect(pEffect),
           _mapVariables(mapVars),
-          _pfApplyVariables(pfApplyVars),
-          _bActive(false) {}
+          _pfApplyVariables(pfApplyVars)
+    {
+    }
 
-    ~VariableEffect() {
+    ~VariableEffect()
+    {
         MemoryManager::DELETE(_pEffect);
         for (MapVariables::iterator iterVars = std::begin(_mapVariables);
              iterVars != std::end(_mapVariables); ++iterVars) {

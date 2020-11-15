@@ -116,7 +116,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
     target.setRenderStateBlock(shadowDescriptor.getHash(),   RenderStage::SHADOW, RenderPassType::COUNT);
 }
 
-Material::Material(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
+Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
       _parentCache(parentCache),
@@ -298,8 +298,8 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
 
 void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
                                         ShaderProgramInfo& shaderInfo,
-                                        RenderStage stage,
-                                        RenderPassType pass,
+                                        const RenderStage stage,
+                                        const RenderPassType pass,
                                         U8 variant)
 {
     if (shader != nullptr) {
@@ -679,7 +679,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     return false;
 }
 
-bool Material::getTextureData(TextureUsage slot, TextureDataContainer<>& container) {
+bool Material::getTextureData(const TextureUsage slot, TextureDataContainer<>& container) {
     const U8 slotValue = to_U8(slot);
 
     TextureData data = {};
@@ -823,7 +823,7 @@ bool Material::unload() {
     return true;
 }
 
-void Material::refractive(const bool state, bool applyToInstances) {
+void Material::refractive(const bool state, const bool applyToInstances) {
     if (_isRefractive != state) {
         _isRefractive = state;
         _needsNewShader = true;
@@ -836,7 +836,7 @@ void Material::refractive(const bool state, bool applyToInstances) {
     }
 }
 
-void Material::doubleSided(const bool state, bool applyToInstances) {
+void Material::doubleSided(const bool state, const bool applyToInstances) {
     if (_doubleSided != state) {
         _doubleSided = state;
         _needsNewShader = true;
@@ -849,7 +849,7 @@ void Material::doubleSided(const bool state, bool applyToInstances) {
     }
 }
 
-void Material::receivesShadows(const bool state, bool applyToInstances) {
+void Material::receivesShadows(const bool state, const bool applyToInstances) {
     if (_receivesShadows != state) {
         _receivesShadows = state;
         _needsNewShader = true;
@@ -862,7 +862,7 @@ void Material::receivesShadows(const bool state, bool applyToInstances) {
     }
 }
 
-void Material::isStatic(const bool state, bool applyToInstances) {
+void Material::isStatic(const bool state, const bool applyToInstances) {
     if (_isStatic != state) {
         _isStatic = state;
         _needsNewShader = true;
@@ -875,7 +875,7 @@ void Material::isStatic(const bool state, bool applyToInstances) {
     }
 }
 
-void Material::hardwareSkinning(const bool state, bool applyToInstances) {
+void Material::hardwareSkinning(const bool state, const bool applyToInstances) {
     if (_hardwareSkinning != state) {
         _hardwareSkinning = state;
         _needsNewShader = true;
@@ -888,7 +888,7 @@ void Material::hardwareSkinning(const bool state, bool applyToInstances) {
     }
 }
 
-void Material::textureUseForDepth(TextureUsage slot, bool state, bool applyToInstances) {
+void Material::textureUseForDepth(const TextureUsage slot, const bool state, const bool applyToInstances) {
     _textureUseForDepth[to_base(slot)] = state;
 
     if (applyToInstances) {
@@ -898,7 +898,7 @@ void Material::textureUseForDepth(TextureUsage slot, bool state, bool applyToIns
     }
 }
 
-void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage stage, RenderPassType pass, U8 variant) {
+void Material::setShaderProgram(const ShaderProgram_ptr& shader, const RenderStage stage, const RenderPassType pass, const U8 variant) {
     assert(variant == g_AllVariantsID || variant < g_maxVariantsPerPass);
 
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
@@ -924,7 +924,7 @@ void Material::setShaderProgram(const ShaderProgram_ptr& shader, RenderStage sta
     }
 }
 
-void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant) {
+void Material::setRenderStateBlock(const size_t renderStateBlockHash, const RenderStage stage, const RenderPassType pass, const U8 variant) {
     assert(variant == g_AllVariantsID || variant < g_maxVariantsPerPass);
 
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
@@ -942,7 +942,7 @@ void Material::setRenderStateBlock(size_t renderStateBlockHash, RenderStage stag
     }
 }
 
-void Material::toggleTransparency(const bool state, bool applyToInstances) {
+void Material::toggleTransparency(const bool state, const bool applyToInstances) {
     if (_transparencyEnabled != state) {
         _transparencyEnabled = state;
         _needsNewShader = true;
@@ -955,7 +955,7 @@ void Material::toggleTransparency(const bool state, bool applyToInstances) {
     }
 }
 
-void Material::baseColour(const FColour4& colour, bool applyToInstances) {
+void Material::baseColour(const FColour4& colour, const bool applyToInstances) {
     _baseColour = colour;
     updateTransparency();
 
@@ -966,7 +966,7 @@ void Material::baseColour(const FColour4& colour, bool applyToInstances) {
     }
 }
 
-void Material::emissiveColour(const FColour3& colour, bool applyToInstances) {
+void Material::emissiveColour(const FColour3& colour, const bool applyToInstances) {
     _emissive = colour;
 
     if (applyToInstances) {
@@ -976,7 +976,7 @@ void Material::emissiveColour(const FColour3& colour, bool applyToInstances) {
     }
 }
 
-void Material::metallic(F32 value, bool applyToInstances) {
+void Material::metallic(const F32 value, const bool applyToInstances) {
     _metallic = CLAMPED_01(value);
 
     if (applyToInstances) {
@@ -986,7 +986,7 @@ void Material::metallic(F32 value, bool applyToInstances) {
     }
 }
 
-void Material::roughness(F32 value, bool applyToInstances) {
+void Material::roughness(const F32 value, const bool applyToInstances) {
     _roughness = CLAMPED_01(value);
 
     if (applyToInstances) {
@@ -996,7 +996,7 @@ void Material::roughness(F32 value, bool applyToInstances) {
     }
 }
 
-void Material::parallaxFactor(F32 factor, bool applyToInstances) {
+void Material::parallaxFactor(const F32 factor, const bool applyToInstances) {
     _parallaxFactor = CLAMPED_01(factor);
 
     if (applyToInstances) {
@@ -1006,7 +1006,7 @@ void Material::parallaxFactor(F32 factor, bool applyToInstances) {
     }
 }
 
-void Material::bumpMethod(BumpMethod newBumpMethod, bool applyToInstances) {
+void Material::bumpMethod(const BumpMethod newBumpMethod, const bool applyToInstances) {
     if (_bumpMethod != newBumpMethod) {
         _bumpMethod = newBumpMethod;
         _needsNewShader = true;
@@ -1019,7 +1019,7 @@ void Material::bumpMethod(BumpMethod newBumpMethod, bool applyToInstances) {
     }
 }
 
-void Material::shadingMode(ShadingMode mode, bool applyToInstances) {
+void Material::shadingMode(const ShadingMode mode, const bool applyToInstances) {
     if (_shadingMode != mode) {
         _shadingMode = mode;
         _needsNewShader = true;

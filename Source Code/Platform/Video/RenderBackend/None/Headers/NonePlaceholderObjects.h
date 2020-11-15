@@ -99,7 +99,7 @@ namespace Divide {
 
     class noPixelBuffer final : public PixelBuffer {
     public:
-        noPixelBuffer(GFXDevice& context, PBType type, const char* name)
+        noPixelBuffer(GFXDevice& context, const PBType type, const char* name)
             : PixelBuffer(context, type, name)
         {}
 
@@ -141,12 +141,12 @@ namespace Divide {
     class noTexture final : public Texture {
     public:
         noTexture(GFXDevice& context,
-                  size_t descriptorHash,
+                  const size_t descriptorHash,
                   const Str256& name,
                   const ResourcePath& assetNames,
                   const ResourcePath& assetLocations,
-                  bool isFlipped,
-                  bool asyncLoad,
+                  const bool isFlipped,
+                  const bool asyncLoad,
                   const TextureDescriptor& texDescriptor)
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
@@ -160,12 +160,12 @@ namespace Divide {
 
     class noShaderProgram final : public ShaderProgram {
     public:
-        noShaderProgram(GFXDevice& context, size_t descriptorHash,
+        noShaderProgram(GFXDevice& context, const size_t descriptorHash,
                         const Str256& name,
                         const Str256& assetName,
                         const ResourcePath& assetLocation,
                         const ShaderProgramDescriptor& descriptor,
-                        bool asyncLoad)
+                        const bool asyncLoad)
             : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad)
         {}
 

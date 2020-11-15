@@ -6,7 +6,7 @@
 
 namespace Divide {
 
-PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, FilterType operatorType)
+PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, const FilterType operatorType)
     : _context(context),
       _parent(parent),
       _operatorType(operatorType)

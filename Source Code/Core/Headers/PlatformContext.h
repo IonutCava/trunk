@@ -90,9 +90,9 @@ class PlatformContext {
     explicit PlatformContext(Application& app, Kernel& kernel);
     ~PlatformContext();
 
-    void beginFrame(U32 mask = to_base(SystemComponentType::ALL));
-    void idle(bool fast, U32 mask = to_base(SystemComponentType::ALL));
-    void endFrame(U32 mask = to_base(SystemComponentType::ALL));
+    void beginFrame(U32 componentMask = to_base(SystemComponentType::ALL));
+    void idle(bool fast, U32 componentMask = to_base(SystemComponentType::ALL));
+    void endFrame(U32 componentMask = to_base(SystemComponentType::ALL));
 
     void beginFrame(const SystemComponentType component) { beginFrame(to_base(component)); }
     void idle(const SystemComponentType component) { idle(to_base(component)); }
@@ -133,8 +133,8 @@ class PlatformContext {
     [[nodiscard]] Editor& editor() noexcept { return *_editor; }
     [[nodiscard]] const Editor& editor() const noexcept { return *_editor; }
 
-    [[nodiscard]] TaskPool& taskPool(TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
-    [[nodiscard]] const TaskPool& taskPool(TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
+    [[nodiscard]] TaskPool& taskPool(const TaskPoolType type) noexcept {return *_taskPool[to_base(type)]; }
+    [[nodiscard]] const TaskPool& taskPool(const TaskPoolType type) const noexcept { return *_taskPool[to_base(type)]; }
 
     [[nodiscard]] Input::InputHandler& input() noexcept { return *_inputHandler; }
     [[nodiscard]] const Input::InputHandler& input() const noexcept { return *_inputHandler; }

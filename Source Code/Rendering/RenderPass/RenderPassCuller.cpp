@@ -152,7 +152,7 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode* currentNode, const NodeCu
                 descriptor._partitionSize = g_nodesPerCullingPartition;
                 descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
                 descriptor._useCurrentThread = true;
-                descriptor._cbk = [&](const Task* parentTask, U32 start, U32 end) {
+                descriptor._cbk = [&](const Task* /*parentTask*/, const U32 start, const U32 end) {
                                         for (U32 i = start; i < end; ++i) {
                                             frustumCullNode(children[i], params, recursionLevel + 1, nodes);
                                         }

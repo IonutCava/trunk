@@ -103,7 +103,7 @@ std::array<Input::MouseButton, 5> Editor::g_oisButtons = {
         Input::MouseButton::MB_Button4,
 };
 
-Editor::Editor(PlatformContext& context, ImGuiStyleEnum theme)
+Editor::Editor(PlatformContext& context, const ImGuiStyleEnum theme)
     : PlatformContextComponent(context),
       FrameListener("Editor", context.kernel().frameListenerMgr(), 9999),
       _editorUpdateTimer(Time::ADD_TIMER("Editor Update Timer")),
@@ -298,7 +298,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         }
     };
 
-    platform_io.Platform_SetWindowPos = [](ImGuiViewport* viewport, ImVec2 pos) {
+    platform_io.Platform_SetWindowPos = [](ImGuiViewport* viewport, const ImVec2 pos) {
         if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData)
         {
             data->_window->setPosition((I32)pos.x, (I32)pos.y);
@@ -332,7 +332,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         return false;
     };
 
-    platform_io.Platform_SetWindowAlpha = [](ImGuiViewport* viewport, float alpha) {
+    platform_io.Platform_SetWindowAlpha = [](ImGuiViewport* viewport, const float alpha) {
         if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
             data->_window->opacity(to_U8(alpha * 255));
         }
@@ -394,11 +394,11 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         ImGuiPlatformMonitor& imguiMonitor = platform_io.Monitors[i];
 
         // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
-        imguiMonitor.MainPos = ImVec2((F32)monitor.viewport.x, (F32)monitor.viewport.y);
-        imguiMonitor.WorkPos = ImVec2((F32)monitor.drawableArea.x, (F32)monitor.drawableArea.y);
+        imguiMonitor.MainPos = ImVec2(to_F32(monitor.viewport.x), to_F32(monitor.viewport.y));
+        imguiMonitor.WorkPos = ImVec2(to_F32(monitor.drawableArea.x), to_F32(monitor.drawableArea.y));
 
-        imguiMonitor.MainSize = ImVec2((F32)monitor.viewport.z, (F32)monitor.viewport.w);
-        imguiMonitor.WorkSize = ImVec2((F32)monitor.drawableArea.z, (F32)monitor.drawableArea.w);
+        imguiMonitor.MainSize = ImVec2(to_F32(monitor.viewport.z), to_F32(monitor.viewport.w));
+        imguiMonitor.WorkSize = ImVec2(to_F32(monitor.drawableArea.z), to_F32(monitor.drawableArea.w));
         imguiMonitor.DpiScale = monitor.dpi / 96.0f;
     }
 
@@ -872,7 +872,7 @@ void Editor::renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewpo
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }
 
-void Editor::selectionChangeCallback(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) const {
+void Editor::selectionChangeCallback(const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) const {
     if (idx != 0) {
         return;
     }
@@ -975,7 +975,7 @@ bool Editor::onKeyUp(const Input::KeyEvent& key) {
     return wantsKeyboard();
 }
 
-ImGuiViewport* Editor::findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
+ImGuiViewport* Editor::FindViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window) {
     if (window != nullptr) {
         for (I32 i = 0; i != context->Viewports.Size; i++) {
             DisplayWindow* it = static_cast<DisplayWindow*>(context->Viewports[i]->PlatformHandle);
@@ -1006,7 +1006,7 @@ bool Editor::mouseMoved(const Input::MouseMoveEvent& arg) {
         ImGuiContext* editorContext = _imguiContexts[to_base(ImGuiContextType::Editor)];
         ImGuiContext* gizmoContext = _imguiContexts[to_base(ImGuiContextType::Gizmo)];
         assert(editorContext->IO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable);
-        viewport = findViewportByPlatformHandle(editorContext, focusedWindow);
+        viewport = FindViewportByPlatformHandle(editorContext, focusedWindow);
 
         vec2<I32> mPosGlobal(-1);
         Rect<I32> viewportSize(-1);
@@ -1279,7 +1279,7 @@ void Editor::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-bool Editor::saveSceneChanges(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) {
+bool Editor::saveSceneChanges(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) const {
     if (_context.kernel().sceneManager()->saveActiveScene(false, true, msgCallback, finishCallback)) {
         if (saveToXML()) {
             _context.config().save();
@@ -1425,7 +1425,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
     return closed;
 }
 
-bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
+bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) const {
     if (mesh == nullptr) {
         return false;
     }
@@ -1476,7 +1476,7 @@ bool Editor::modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) {
     return closed;
 }
 
-void Editor::showStatusMessage(const stringImpl& message, F32 durationMS) const {
+void Editor::showStatusMessage(const stringImpl& message, const F32 durationMS) const {
     _statusBar->showMessage(message, durationMS);
 }
 
@@ -1533,12 +1533,12 @@ void Editor::loadNode(SceneGraphNode* sgn) const {
     }
 }
 
-void Editor::queueRemoveNode(I64 nodeGUID) const {
+void Editor::queueRemoveNode(const I64 nodeGUID) const {
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     activeScene.sceneGraph()->removeNode(nodeGUID);
 }
 
-bool Editor::addComponent(SceneGraphNode* selection, ComponentType newComponentType) const {
+bool Editor::addComponent(SceneGraphNode* selection, const ComponentType newComponentType) const {
     if (selection != nullptr && newComponentType._value != ComponentType::COUNT) {
         selection->AddComponents(to_U32(newComponentType), true);
         return BitCompare(selection->componentMask(), to_U32(newComponentType));
@@ -1547,7 +1547,7 @@ bool Editor::addComponent(SceneGraphNode* selection, ComponentType newComponentT
     return false;
 }
 
-bool Editor::addComponent(const Selections& selections, ComponentType newComponentType) const {
+bool Editor::addComponent(const Selections& selections, const ComponentType newComponentType) const {
     bool ret = false;
     if (selections._selectionCount > 0) {
         const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
@@ -1561,7 +1561,7 @@ bool Editor::addComponent(const Selections& selections, ComponentType newCompone
     return ret;
 }
 
-bool Editor::removeComponent(SceneGraphNode* selection, ComponentType newComponentType) const {
+bool Editor::removeComponent(SceneGraphNode* selection, const ComponentType newComponentType) const {
     if (selection != nullptr && newComponentType._value != ComponentType::COUNT) {
         selection->RemoveComponents(to_U32(newComponentType));
         return !BitCompare(selection->componentMask(), to_U32(newComponentType));
@@ -1570,7 +1570,7 @@ bool Editor::removeComponent(SceneGraphNode* selection, ComponentType newCompone
     return false;
 }
 
-bool Editor::removeComponent(const Selections& selections, ComponentType newComponentType) const {
+bool Editor::removeComponent(const Selections& selections, const ComponentType newComponentType) const {
     bool ret = false;
     if (selections._selectionCount > 0) {
         const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
@@ -1584,7 +1584,7 @@ bool Editor::removeComponent(const Selections& selections, ComponentType newComp
     return ret;
 }
 
-SceneNode_ptr Editor::createNode(SceneNodeType type, const ResourceDescriptor& descriptor) {
+SceneNode_ptr Editor::createNode(const SceneNodeType type, const ResourceDescriptor& descriptor) {
     return Attorney::SceneManagerEditor::createNode(context().kernel().sceneManager(), type, descriptor);
 }
 

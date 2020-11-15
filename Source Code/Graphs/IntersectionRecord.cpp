@@ -13,17 +13,17 @@ IntersectionRecord::IntersectionRecord()
 {
 }
 
-IntersectionRecord::IntersectionRecord(const vec3<F32>& hitPos,
-                                       const vec3<F32>& hitNormal,
-                                       const Ray& ray,
-                                       D64 distance) :
-    _position(hitPos),
-    _normal(hitNormal),
-    _ray(ray),
-    _intersectedObject1(nullptr),
-    _intersectedObject2(nullptr),
-    _distance(distance),
-    _hasHit(true)
+IntersectionRecord::IntersectionRecord(vec3<F32> hitPos,
+                                       vec3<F32> hitNormal,
+                                       Ray ray,
+                                       const D64 distance)
+    : _position(MOV(hitPos)),
+      _normal(MOV(hitNormal)),
+      _ray(MOV(ray)),
+      _intersectedObject1(nullptr),
+      _intersectedObject2(nullptr),
+      _distance(distance),
+      _hasHit(true)
 {
 }
 
@@ -45,7 +45,7 @@ void IntersectionRecord::reset()
     _intersectedObject2 = nullptr;
 }
 
-bool IntersectionRecord::operator==(const IntersectionRecord& otherRecord)
+bool IntersectionRecord::operator==(const IntersectionRecord& otherRecord) const
 {
     SceneGraphNode* node11 = _intersectedObject1;
     SceneGraphNode* node12 = _intersectedObject2;

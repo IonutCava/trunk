@@ -210,16 +210,16 @@ class WarSceneAIProcessor : public AIProcessor {
         _messageCallback = cbk;
     }
 
-    static U8 getScore(U16 teamID) {
+    static U8 getScore(const U16 teamID) {
         return _globalWorkingMemory._score[teamID].value();
     }
 
     static void reset();
-    static void incrementScore(U16 teamID) {
+    static void incrementScore(const U16 teamID) {
         _globalWorkingMemory._score[teamID].value(getScore(teamID) + 1);
     }
 
-    static void resetScore(U8 teamID) {
+    static void resetScore(const U8 teamID) {
         _globalWorkingMemory._score[teamID].value(0);
     }
    protected:
@@ -236,13 +236,13 @@ class WarSceneAIProcessor : public AIProcessor {
     bool performAction(const GOAPAction& planStep) override;
     bool performActionStep(GOAPAction::operationsIterator step) override;
     const stringImpl& printActionStats(const GOAPAction& planStep) const override;
-    void printWorkingMemory();
+    void printWorkingMemory() const;
     void initInternal() override;
     void beginPlan(const GOAPGoal& currentGoal);
     AIEntity* getUnitForNode(U32 teamID, SceneGraphNode* node) const;
 
     template <typename... T>
-    void PRINT(const char* format, T&&... args) const;
+    static void PRINT(const char* format, T&&... args);
 
     bool atHomeBase() const;
     bool nearOwnFlag() const;
@@ -273,7 +273,7 @@ class WarSceneAIProcessor : public AIProcessor {
 };
 
 template <typename... Args>
-void WarSceneAIProcessor::PRINT(const char* format, Args&&... args) const {
+void WarSceneAIProcessor::PRINT(const char* format, Args&&... args) {
 #if defined(PRINT_AI_TO_FILE)
     Console::d_printfn(_WarAIOutputStream, format, FWD(args)...);
 #else
@@ -284,11 +284,13 @@ void WarSceneAIProcessor::PRINT(const char* format, Args&&... args) const {
 namespace Attorney {
 class WarAISceneWarAction {
    private:
-    static bool preAction(WarSceneAIProcessor& aiProcessor, ActionType type,
+    static bool preAction(WarSceneAIProcessor& aiProcessor,
+                          const ActionType type,
                           const WarSceneAction* warAction) {
         return aiProcessor.preAction(type, warAction);
     }
-    static bool postAction(WarSceneAIProcessor& aiProcessor, ActionType type,
+    static bool postAction(WarSceneAIProcessor& aiProcessor,
+                           const ActionType type,
                            const WarSceneAction* warAction) {
         return aiProcessor.postAction(type, warAction);
     }

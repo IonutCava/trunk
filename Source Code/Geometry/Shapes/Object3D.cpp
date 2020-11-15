@@ -12,7 +12,7 @@
 
 namespace Divide {
 
-Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, const ResourcePath& resourceName, const ResourcePath& resourceLocation, ObjectType type, U32 flagMask)
+Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const ResourcePath& resourceName, const ResourcePath& resourceLocation, const ObjectType type, const U32 flagMask)
     : SceneNode(parentCache,
                 descriptorHash,
                 name,
@@ -103,7 +103,7 @@ VertexBuffer* Object3D::getGeometryVB() const {
 void Object3D::onRefreshNodeData(const SceneGraphNode* sgn,
                                  const RenderStagePass& renderStagePass,
                                  const Camera& crtCamera,
-                                 bool refreshData,
+                                 const bool refreshData,
                                  GFX::CommandBuffer& bufferInOut) {
     if (refreshData) {
         rebuild();
@@ -220,7 +220,7 @@ bool Object3D::computeTriangleList() {
     return true;
 }
 
-vectorEASTL<SceneGraphNode*> Object3D::filterByType(const vectorEASTL<SceneGraphNode*>& nodes, ObjectType filter) {
+vectorEASTL<SceneGraphNode*> Object3D::filterByType(const vectorEASTL<SceneGraphNode*>& nodes, const ObjectType filter) {
     vectorEASTL<SceneGraphNode*> result;
     result.reserve(nodes.size());
 

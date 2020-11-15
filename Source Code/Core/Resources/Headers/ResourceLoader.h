@@ -55,7 +55,7 @@ struct DeleteResource {
 class PlatformContext;
 class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
    public:
-    ResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
+    ResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, const size_t loadingDescriptorHash)
         : PlatformContextComponent(context),
           _cache(cache),
           _descriptor(descriptor),
@@ -74,7 +74,7 @@ class NOINITVTABLE ResourceLoader : public PlatformContextComponent {
 template <typename ResourceType>
 class ImplResourceLoader final : public ResourceLoader {
    public:
-    ImplResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, size_t loadingDescriptorHash)
+    ImplResourceLoader(ResourceCache* cache, PlatformContext& context, const ResourceDescriptor& descriptor, const size_t loadingDescriptorHash)
         : ResourceLoader(cache, context, descriptor, loadingDescriptorHash)
     {
     }

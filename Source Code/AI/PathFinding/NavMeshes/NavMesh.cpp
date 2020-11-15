@@ -20,9 +20,7 @@
 
 #include <SimpleINI/include/SimpleIni.h>
 
-namespace Divide {
-namespace AI {
-namespace Navigation {
+namespace Divide::AI::Navigation {
 
 NavigationMesh::NavigationMesh(PlatformContext& context, DivideRecast& recastInterface)
     : GUIDWrapper(),
@@ -79,12 +77,13 @@ bool NavigationMesh::unload() {
 
 void NavigationMesh::stopThreadedBuild() {
     if (_buildJobGUID != -1){
+        _buildJobGUID = -1;
         assert(_buildTask);
         Wait(*_buildTask);
     }
 }
 
-void NavigationMesh::freeIntermediates(bool freeAll) {
+void NavigationMesh::freeIntermediates(const bool freeAll) {
     UniqueLock<Mutex> w_lock(_navigationMeshLock);
 
     rcFreeHeightField(_heightField);
@@ -175,7 +174,7 @@ bool NavigationMesh::build(SceneGraphNode* sgn,
     }
 
     _sgn = sgn;
-    _loadCompleteClbk = std::move(creationCompleteCallback);
+    _loadCompleteClbk = MOV(creationCompleteCallback);
 
     if (_buildThreaded && threaded) {
         return buildThreaded();
@@ -192,6 +191,7 @@ bool NavigationMesh::buildThreaded() {
                                 buildInternal();
                             });
     Start(*_buildTask);
+    _buildJobGUID = 1;
 
     return true;
 }
@@ -286,7 +286,7 @@ bool NavigationMesh::buildProcess() {
 bool NavigationMesh::generateMesh() {
     assert(_sgn != nullptr);
 
-    Str128 nodeName(generateMeshName(_sgn));
+    Str128 nodeName(GenerateMeshName(_sgn));
 
     // Parse objects from level into RC-compatible format
     _fileName.append(nodeName);
@@ -301,8 +301,8 @@ bool NavigationMesh::generateMesh() {
     data.clear(false);
     data.name(nodeName);
 
-    if (!NavigationMeshLoader::loadMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str())) {
-        if (!NavigationMeshLoader::parse(_sgn->get<BoundsComponent>()->getBoundingBox(), data, _sgn)) {
+    if (!NavigationMeshLoader::LoadMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str())) {
+        if (!NavigationMeshLoader::Parse(_sgn->get<BoundsComponent>()->getBoundingBox(), data, _sgn)) {
             Console::errorfn(Locale::get(_ID("ERROR_NAV_PARSE_FAILED")),
                              nodeName.c_str());
         }
@@ -402,10 +402,10 @@ bool NavigationMesh::generateMesh() {
     data.isValid(true);
     save(_sgn);
 
-    return NavigationMeshLoader::saveMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str());  // input geometry;
+    return NavigationMeshLoader::SaveMeshFile(data, _filePath.c_str(), geometrySaveFile.c_str());  // input geometry;
 }
 
-bool NavigationMesh::createNavigationQuery(U32 maxNodes) {
+bool NavigationMesh::createNavigationQuery(const U32 maxNodes) {
     _navQuery = dtAllocNavMeshQuery();
     return _navQuery->init(_navMesh, maxNodes) == DT_SUCCESS;
 }
@@ -578,7 +578,7 @@ bool NavigationMesh::createNavigationMesh(dtNavMeshCreateParams& params) {
     return true;
 }
 
-GFX::CommandBuffer& NavigationMesh::draw(bool force) {
+GFX::CommandBuffer& NavigationMesh::draw(const bool force) {
     _debugDrawInterface->paused(!_debugDraw && !force);
 
     RenderMode mode = _renderMode;
@@ -642,7 +642,7 @@ bool NavigationMesh::load(SceneGraphNode* sgn) {
 
     Str256 file = _fileName;
 
-    const Str128 nodeName(generateMeshName(sgn));
+    const Str128 nodeName(GenerateMeshName(sgn));
     
     // Parse objects from level into RC-compatible format
     file.append(nodeName);
@@ -715,7 +715,7 @@ bool NavigationMesh::save(SceneGraphNode* sgn) {
 
     Str256 file = _fileName;
     // Parse objects from level into RC-compatible format
-    file.append(generateMeshName(sgn));
+    file.append(GenerateMeshName(sgn));
     file.append(".nm");
 
 
@@ -768,7 +768,7 @@ bool NavigationMesh::save(SceneGraphNode* sgn) {
     return true;
 }
 
-Str128 NavigationMesh::generateMeshName(SceneGraphNode* sgn) {
+Str128 NavigationMesh::GenerateMeshName(SceneGraphNode* sgn) {
     return sgn->parent() != nullptr
                ? Str128{"_node_[_" + sgn->name() + "_]"}
                : Str128{ "_root_node" };
@@ -776,7 +776,7 @@ Str128 NavigationMesh::generateMeshName(SceneGraphNode* sgn) {
 
 bool NavigationMesh::getClosestPosition(const vec3<F32>& destination,
                                         const vec3<F32>& extents,
-                                        F32 delta,
+                                        const F32 delta,
                                         vec3<F32>& result) const {
     dtPolyRef resultPoly;
     return _recastInterface.findNearestPointOnNavmesh(*this, destination, extents, delta, result, resultPoly);
@@ -787,12 +787,11 @@ bool NavigationMesh::getRandomPosition(vec3<F32>& result) const {
 }
 
 bool NavigationMesh::getRandomPositionInCircle(const vec3<F32>& center,
-                                               F32 radius,
+                                               const F32 radius,
                                                const vec3<F32>& extents,
                                                vec3<F32>& result,
-                                               U8 maxIters) const {
+                                               const U8 maxIters) const {
     return _recastInterface.getRandomPointAroundCircle(*this, center, radius, extents, result, maxIters);
 }
-}  // namespace Navigation
-}  // namespace AI
-}  // namespace Divide
+
+}  // namespace Divide::AI::Navigation

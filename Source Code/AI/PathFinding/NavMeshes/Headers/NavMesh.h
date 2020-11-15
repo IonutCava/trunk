@@ -134,11 +134,11 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     bool unload();
     /// Render the debug mesh if debug drawing is enabled
     GFX::CommandBuffer& draw(bool force);
-    void debugDraw(bool state) { _debugDraw = state; }
+    void debugDraw(const bool state) { _debugDraw = state; }
     bool debugDraw() const { return _debugDraw; }
 
     void setRenderMode(const RenderMode& mode) { _renderMode = mode; }
-    void setRenderConnections(bool state) { _renderConnections = state; }
+    void setRenderConnections(const bool state) { _renderConnections = state; }
 
     const vec3<F32>& getExtents() const { return _extents; }
 
@@ -180,7 +180,7 @@ class NavigationMesh : public GUIDWrapper, public PlatformContextComponent /*,pu
     /// Create a navigation mesh query to help in pathfinding.
     bool createNavigationQuery(U32 maxNodes = 2048);
     /// Create a unique mesh name using the given root node
-    Str128 generateMeshName(SceneGraphNode* sgn);
+    static Str128 GenerateMeshName(SceneGraphNode* sgn);
    private:
     bool _saveIntermediates = false;
     NavigationMeshConfig _configParams;

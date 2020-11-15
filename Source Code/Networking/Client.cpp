@@ -13,14 +13,11 @@
 #include <boost/archive/text_oarchive.hpp>
 
 namespace Divide {
-Client::Client(ASIO* asioPointer, boost::asio::io_service& service, bool debugOutput)
-    : _stopped(false),
-    _debugOutput(debugOutput),
+Client::Client(ASIO* asioPointer, boost::asio::io_service& service, const bool debugOutput)
+  : _debugOutput(debugOutput),
     _socket(service),
-    _header(0),
     _deadline(service),
     _heartbeatTimer(service),
-    _fileSize(0),
     _asioPointer(asioPointer)
 {
 }
@@ -33,13 +30,13 @@ bool Client::sendPacket(WorldPacket& p)
     return true;
 }
 
-void Client::receivePacket(WorldPacket& p) {
+void Client::receivePacket(WorldPacket& p) const {
     _asioPointer->handlePacket(p);
 }
 
-void Client::start(boost::asio::ip::tcp::resolver::iterator endpoint_iter) {
-    start_connect(endpoint_iter);
-    _deadline.async_wait(std::bind(&Client::check_deadline, this));
+void Client::start(const boost::asio::ip::tcp::resolver::iterator endpoint_iter) {
+    start_connect(MOV(endpoint_iter));
+    _deadline.async_wait([&](const boost::system::error_code) { check_deadline(); });
 }
 
 void Client::stop() {
@@ -57,7 +54,7 @@ void Client::start_read() {
     // Start an asynchronous operation to read a newline-delimited message.
     async_read(
         _socket, boost::asio::buffer(&_header, sizeof _header),
-        [&](boost::system::error_code ec, std::size_t N) {
+        [&](const boost::system::error_code ec, const std::size_t N) {
             handle_read_body(ec, N);
         });
 }
@@ -74,8 +71,8 @@ void Client::handle_read_body(const boost::system::error_code& ec,
         _deadline.expires_from_now(boost::posix_time::seconds(30));
         async_read(
             _socket, _inputBuffer.prepare(_header),
-            [&](boost::system::error_code ec, std::size_t N) {
-                handle_read_packet(ec, N);
+            [&](const boost::system::error_code code, const std::size_t N) {
+                handle_read_packet(code, N);
             });
     } else {
         stop();
@@ -106,8 +103,8 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
         if (packet.opcode() == OPCodes::SMSG_SEND_FILE) {
             async_read_until(
                 _socket, _requestBuf, "\n\n",
-                [&](boost::system::error_code ec, std::size_t N) {
-                    handle_read_file(ec, N);
+                [&](const boost::system::error_code code, const std::size_t N) {
+                    handle_read_file(code, N);
                 });
         } else {
             receivePacket(packet);
@@ -118,8 +115,7 @@ void Client::handle_read_packet(const boost::system::error_code& ec,
     }
 }
 
-void Client::handle_read_file(const boost::system::error_code& ec,
-                              size_t bytes_transfered) {
+void Client::handle_read_file(const boost::system::error_code& ec, const size_t bytes_transfered) {
     ACKNOWLEDGE_UNUSED(ec);
 
     std::stringstream ss;
@@ -159,13 +155,12 @@ void Client::handle_read_file(const boost::system::error_code& ec,
     } while (request_stream.gcount() > 0);
 
     async_read(_socket, boost::asio::buffer(_buf.data(), _buf.size()),
-                [&](boost::system::error_code ec, std::size_t N) {
-                    handle_read_file_content(ec, N);
+                [&](const boost::system::error_code code, const std::size_t N) {
+                    handle_read_file_content(code, N);
                 });
 }
 
-void Client::handle_read_file_content(const boost::system::error_code& err,
-                                      std::size_t bytes_transferred) {
+void Client::handle_read_file_content(const boost::system::error_code& err, std::size_t bytes_transferred) {
     if (bytes_transferred > 0) {
         _outputFile.write(_buf.data(), (std::streamsize)bytes_transferred);
         std::stringstream ss;
@@ -200,8 +195,7 @@ void Client::start_write() {
     vectorEASTL<boost::asio::const_buffer> buffers;
     buffers.push_back(boost::asio::buffer(&header, sizeof header));
     buffers.push_back(buf.data());
-    async_write(_socket, buffers,
-                std::bind(&Client::handle_write, this, std::placeholders::_1));
+    async_write(_socket, buffers, [&](const boost::system::error_code ec, const size_t ) {handle_write(ec);});
 }
 
 void Client::handle_write(const boost::system::error_code& ec) {
@@ -212,7 +206,7 @@ void Client::handle_write(const boost::system::error_code& ec) {
     if (!ec) {
         _packetQueue.pop_front();
         _heartbeatTimer.expires_from_now(boost::posix_time::seconds(2));
-        _heartbeatTimer.async_wait(std::bind(&Client::start_write, this));
+        _heartbeatTimer.async_wait([&](const boost::system::error_code) { start_write(); });
     } else {
         if (_debugOutput) {
             ASIO::LOG_PRINT(("[ASIO]: Error on packet: " + ec.message()).c_str(), true);
@@ -240,7 +234,7 @@ void Client::check_deadline() {
     }
 
     // Put the actor back to sleep.
-    _deadline.async_wait(std::bind(&Client::check_deadline, this));
+    _deadline.async_wait([&](const boost::system::error_code) { check_deadline(); });
 }
 
 void Client::start_connect(boost::asio::ip::tcp::resolver::iterator endpoint_iter) {
@@ -256,15 +250,16 @@ void Client::start_connect(boost::asio::ip::tcp::resolver::iterator endpoint_ite
         // Start the asynchronous connect operation.
         _socket.async_connect(
             endpoint_iter->endpoint(),
-            std::bind(&Client::handle_connect, this, std::placeholders::_1, endpoint_iter));
+            [&, endpoint_iter](const boost::system::error_code ec) {
+                handle_connect(ec, endpoint_iter);
+            });
     } else {
         // There are no more endpoints to try. Shut down the client.
         stop();
     }
 }
 
-void Client::handle_connect(const boost::system::error_code& ec,
-                            boost::asio::ip::tcp::resolver::iterator endpoint_iter) {
+void Client::handle_connect(const boost::system::error_code& ec, boost::asio::ip::tcp::resolver::iterator endpoint_iter) {
     if (_stopped) {
         return;
     }

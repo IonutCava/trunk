@@ -105,7 +105,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
                            const Str256& shaderName,
                            const Str256& shaderFileName,
                            const ResourcePath& shaderFileLocation,
-                           const ShaderProgramDescriptor& descriptor,
+                           ShaderProgramDescriptor descriptor,
                            bool asyncLoad);
     virtual ~ShaderProgram();
 
@@ -117,7 +117,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     virtual bool recompile(bool force);
 
     /** ------ BEGIN EXPERIMENTAL CODE ----- **/
-    size_t getFunctionCount(ShaderType shader) noexcept {
+    size_t getFunctionCount(const ShaderType shader) noexcept {
         return _functionIndex[to_U32(shader)].size();
     }
 
@@ -193,7 +193,7 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 
    protected:
      static void useShaderTextCache(bool state) noexcept { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
-     static void useShaderBinaryCache(bool state) noexcept { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
+     static void useShaderBinaryCache(const bool state) noexcept { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
 
    protected:
     /// Used to render geometry without valid materials.

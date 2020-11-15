@@ -143,7 +143,7 @@ namespace Divide {
         }
     }
 
-    void ContentExplorerWindow::printDirectoryStructure(const Directory& dir, bool open) const {
+    void ContentExplorerWindow::printDirectoryStructure(const Directory& dir, const bool open) const {
         ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | (open ? ImGuiTreeNodeFlags_DefaultOpen : 0);
 
         if (dir._children.empty()) {

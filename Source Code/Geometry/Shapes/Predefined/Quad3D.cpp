@@ -6,7 +6,7 @@ namespace Divide {
 
 Quad3D::Quad3D(GFXDevice& context,
                ResourceCache* parentCache,
-               size_t descriptorHash,
+               const size_t descriptorHash,
                const Str256& name,
                const bool doubleSided)
     : Object3D(context,
@@ -92,7 +92,6 @@ void Quad3D::setNormal(const CornerLocation corner, const vec3<F32>& normal) con
             getGeometryVB()->modifyNormalValue(2, normal);
             getGeometryVB()->modifyNormalValue(3, normal);
         } break;
-        default: break;
     }
     getGeometryVB()->queueRefresh();
 }
@@ -132,10 +131,13 @@ void Quad3D::setDimensions(const vec4<F32>& rect) {
 }
 
 void Quad3D::recomputeBounds() {
-    setBounds({
+    setBounds(
+        BoundingBox
+        {
         getGeometryVB()->getPosition(1),
         getGeometryVB()->getPosition(2) + vec3<F32>{ 0.0f, 0.0f, 0.0025f }
-    });
+        }
+    );
 }
 
 }; //namespace Divide

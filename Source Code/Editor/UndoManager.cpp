@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-UndoManager::UndoManager(U32 maxSize)
+UndoManager::UndoManager(const U32 maxSize)
     : _maxSize(maxSize)
 {
 }

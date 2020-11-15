@@ -81,9 +81,6 @@ namespace Divide {
         bool hasBatch() const override { return false; }
 
         GFX::CommandBuffer& toCommandBuffer() const override { return *_cmdBuffer; }
-
-    private:
-        GFX::CommandBuffer* _cmdBuffer = nullptr;
     };
 
     class vkVertexBuffer final : public VertexBuffer {
@@ -102,7 +99,7 @@ namespace Divide {
 
     class vkPixelBuffer final : public PixelBuffer {
     public:
-        vkPixelBuffer(GFXDevice& context, PBType type, const char* name)
+        vkPixelBuffer(GFXDevice& context, const PBType type, const char* name)
             : PixelBuffer(context, type, name)
         {}
 
@@ -145,12 +142,12 @@ namespace Divide {
     class vkTexture final : public Texture {
     public:
         vkTexture(GFXDevice& context,
-                  size_t descriptorHash,
+                  const size_t descriptorHash,
                   const Str256& name,
                   const ResourcePath& assetNames,
                   const ResourcePath& assetLocations,
-                  bool isFlipped,
-                  bool asyncLoad,
+                  const bool isFlipped,
+                  const bool asyncLoad,
                   const TextureDescriptor& texDescriptor)
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
@@ -164,12 +161,13 @@ namespace Divide {
 
     class vkShaderProgram final : public ShaderProgram {
     public:
-        vkShaderProgram(GFXDevice& context, size_t descriptorHash,
+        vkShaderProgram(GFXDevice& context, 
+                        const size_t descriptorHash,
                         const Str256& name,
                         const Str256& assetName,
                         const ResourcePath& assetLocation,
                         const ShaderProgramDescriptor& descriptor,
-                        bool asyncLoad)
+                        const bool asyncLoad)
             : ShaderProgram(context, descriptorHash, name, assetName, assetLocation, descriptor, asyncLoad)
         {}
 

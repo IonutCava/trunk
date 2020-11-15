@@ -75,7 +75,7 @@ public:
     ~GUI();
 
     /// Create the GUI
-    bool init(PlatformContext& context, ResourceCache* cache);
+    [[nodiscard]] bool init(PlatformContext& context, ResourceCache* cache);
     void destroy();
 
     void draw(GFXDevice& context, const Rect<I32>& viewport, GFX::CommandBuffer& bufferInOut);
@@ -88,13 +88,13 @@ public:
     void update(U64 deltaTimeUS);
 
     template <typename T>
-    typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
     getGUIElement(const I64 sceneID, const U64 elementName) {
         return static_cast<T*>(getGUIElementImpl(sceneID, elementName, T::Type));
     }
 
     template <typename T>
-    typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<GUIElement, T>::value, T*>::type
     getGUIElement(const I64 sceneID, const I64 elementID) {
         static_assert(std::is_base_of<GUIElement, T>::value,
             "getGuiElement error: Target is not a valid GUI item");
@@ -103,16 +103,14 @@ public:
     }
 
     /// Get a pointer to our console window
-    GUIConsole& getConsole() noexcept { return *_console; }
-    const GUIConsole& getConsole() const noexcept { return *_console; }
+    [[nodiscard]] GUIConsole& getConsole() noexcept { return *_console; }
+    [[nodiscard]] const GUIConsole& getConsole() const noexcept { return *_console; }
 
-    CEGUI::Window* rootSheet() const noexcept { return _rootSheet; }
-    const stringImpl& guiScheme() const noexcept { return _defaultGUIScheme; }
+    [[nodiscard]] CEGUI::Window* rootSheet() const noexcept { return _rootSheet; }
+    [[nodiscard]] const stringImpl& guiScheme() const noexcept { return _defaultGUIScheme; }
 
     /// Return a pointer to the default, general purpose message box
-    GUIMessageBox* const getDefaultMessageBox() const noexcept {
-        return _defaultMsgBox;
-    }
+    [[nodiscard]] GUIMessageBox* getDefaultMessageBox() const noexcept { return _defaultMsgBox; }
     /// Used to prevent text updating every frame
     void setTextRenderTimer(const U64 renderIntervalUs) noexcept {
         _textRenderInterval = renderIntervalUs;
@@ -120,39 +118,35 @@ public:
     /// Mouse cursor forced to a certain position
     void setCursorPosition(I32 x, I32 y);
     /// Key pressed: return true if input was consumed
-    bool onKeyDown(const Input::KeyEvent& key) override;
+    [[nodiscard]] bool onKeyDown(const Input::KeyEvent& key) override;
     /// Key released: return true if input was consumed
-    bool onKeyUp(const Input::KeyEvent& key) override;
+    [[nodiscard]] bool onKeyUp(const Input::KeyEvent& key) override;
     /// Joystick axis change: return true if input was consumed
-    bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickAxisMoved(const Input::JoystickEvent& arg) override;
     /// Joystick direction change: return true if input was consumed
-    bool joystickPovMoved(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickPovMoved(const Input::JoystickEvent& arg) override;
     /// Joystick button pressed: return true if input was consumed
-    bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickButtonPressed(const Input::JoystickEvent& arg) override;
     /// Joystick button released: return true if input was consumed
-    bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
-    bool joystickBallMoved(const Input::JoystickEvent& arg) override;
-    bool joystickAddRemove(const Input::JoystickEvent& arg) override;
-    bool joystickRemap(const Input::JoystickEvent &arg) override;
+    [[nodiscard]] bool joystickButtonReleased(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickBallMoved(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickAddRemove(const Input::JoystickEvent& arg) override;
+    [[nodiscard]] bool joystickRemap(const Input::JoystickEvent &arg) override;
     /// Mouse moved: return true if input was consumed
-    bool mouseMoved(const Input::MouseMoveEvent& arg) override;
+    [[nodiscard]] bool mouseMoved(const Input::MouseMoveEvent& arg) override;
     /// Mouse button pressed: return true if input was consumed
-    bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
+    [[nodiscard]] bool mouseButtonPressed(const Input::MouseButtonEvent& arg) override;
     /// Mouse button released: return true if input was consumed
-    bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
+    [[nodiscard]] bool mouseButtonReleased(const Input::MouseButtonEvent& arg) override;
 
-    bool onUTF8(const Input::UTF8Event& arg) override;
+    [[nodiscard]] bool onUTF8(const Input::UTF8Event& arg) override;
 
-    Scene* activeScene() noexcept {
-        return _activeScene;
-    }
+    [[nodiscard]] Scene* activeScene() noexcept { return _activeScene; }
 
-    const Scene* activeScene() const noexcept {
-        return _activeScene;
-    }
+    [[nodiscard]] const Scene* activeScene() const noexcept { return _activeScene; }
 
-    CEGUI::GUIContext& getCEGUIContext() noexcept;
-    const CEGUI::GUIContext& getCEGUIContext() const noexcept;
+    [[nodiscard]] CEGUI::GUIContext& getCEGUIContext() noexcept;
+    [[nodiscard]] const CEGUI::GUIContext& getCEGUIContext() const noexcept;
 
     void setRenderer(CEGUI::Renderer& renderer);
 
@@ -160,9 +154,9 @@ public:
     void showDebugCursor(bool state);
 
 protected:
-    GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;
-    GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const;
-    TextureData getCEGUIRenderTextureData() const;
+    [[nodiscard]] GUIElement* getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const;
+    [[nodiscard]] GUIElement* getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const;
+    [[nodiscard]] TextureData getCEGUIRenderTextureData() const;
 
 protected:
     friend class SceneGUIElements;
@@ -172,11 +166,11 @@ protected:
     CEGUI::TextureTarget* _ceguiRenderTextureTarget;
 
 private:
-    bool _init;              //< Set to true when the GUI has finished loading
+    bool _init;              ///< Set to true when the GUI has finished loading
                              /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
                              /// performance)
     CEGUIInput _ceguiInput;  ///< Used to implement key repeat
-    CEGUI::Renderer* _ceguiRenderer; //<Used to render CEGUI to a texture;
+    CEGUI::Renderer* _ceguiRenderer; ///<Used to render CEGUI to a texture;
     GUIConsole* _console;    ///< Pointer to the GUIConsole object
     GUIMessageBox* _defaultMsgBox;  ///< Pointer to a default message box used for general purpose messages
     U64 _textRenderInterval;  ///< We should avoid rendering text as fast as possible

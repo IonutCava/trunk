@@ -117,15 +117,15 @@ class RenderBin {
                       const RenderStagePass& renderStagePass,
                       F32 minDistToCameraSq);
 
-    const RenderBinItem& getItem(RenderStage stage, U16 index) const;
+    [[nodiscard]] const RenderBinItem& getItem(RenderStage stage, U16 index) const;
 
-    U16 getSortedNodes(RenderStage stage, SortedQueue& nodes) const;
+    [[nodiscard]] U16 getSortedNodes(RenderStage stage, SortedQueue& nodes) const;
 
-    U16 getBinSize(RenderStage stage) const;
+    [[nodiscard]] U16 getBinSize(RenderStage stage) const;
 
-    bool empty(RenderStage stage) const;
+    [[nodiscard]] bool empty(RenderStage stage) const;
 
-    RenderBinType getType() const noexcept { return _rbType; }
+    [[nodiscard]] RenderBinType getType() const noexcept { return _rbType; }
 
    private:
     const RenderBinType _rbType;

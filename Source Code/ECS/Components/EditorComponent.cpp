@@ -18,7 +18,7 @@ namespace Divide {
         }
     }
 
-    EditorComponent::EditorComponent(ComponentType parentComponentType, const Str128& name)
+    EditorComponent::EditorComponent(const ComponentType parentComponentType, const Str128& name)
         : GUIDWrapper(),
           _name(name),
           _parentComponentType(parentComponentType)

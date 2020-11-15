@@ -43,7 +43,7 @@ bool Trigger::unload() {
     return SceneNode::unload();
 }
 
-bool Trigger::check(Unit* const unit, const vec3<F32>& camEyePos) {
+bool Trigger::check(Unit* const unit, const vec3<F32>& camEyePos) const {
     if (!_enabled)
         return false;
 

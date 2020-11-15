@@ -44,7 +44,7 @@ namespace Divide {
 class PhysXActor final : public PhysicsAsset {
 public:
     explicit PhysXActor(RigidBodyComponent& parent);
-    ~PhysXActor();
+    ~PhysXActor() = default;
 
     void setPosition(const vec3<F32>& position) override;
     void setPosition(F32 x, F32 y, F32 z) override;
@@ -87,7 +87,7 @@ public:
 
     void getMatrix(mat4<F32>& matrixOut) override;
 
-    TransformValues getValues() const override;
+    [[nodiscard]] TransformValues getValues() const override;
 
 protected:
     friend class PhysX;

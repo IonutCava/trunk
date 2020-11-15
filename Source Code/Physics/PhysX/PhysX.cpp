@@ -125,7 +125,7 @@ bool PhysX::closePhysicsAPI() {
     return true;
 }
 
-void PhysX::togglePvdConnection() {
+void PhysX::togglePvdConnection() const {
     if (_pvd == nullptr) {
         return;
     }
@@ -140,8 +140,7 @@ void PhysX::togglePvdConnection() {
 }
 
 
-void PhysX::createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 timeout, bool useFullConnection)
-{
+void PhysX::createPvdConnection(const char* ip, const physx::PxU32 port, const physx::PxU32 timeout, const bool useFullConnection) {
     //Create a pvd connection that writes data straight to the filesystem.  This is
     //the fastest connection on windows for various reasons.  First, the transport is quite fast as
     //pvd writes data in blocks and filesystems work well with that abstraction.
@@ -174,7 +173,7 @@ void PhysX::createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 
     //}
 }
 
-inline void PhysX::updateTimeStep(U8 timeStepFactor, F32 simSpeed) {
+inline void PhysX::updateTimeStep(U8 timeStepFactor, const F32 simSpeed) {
     timeStepFactor = to_U8(std::max(1u, timeStepFactor * 1u));
     _timeStepFactor = timeStepFactor;
     _timeStep = 1.0f / _timeStepFactor;

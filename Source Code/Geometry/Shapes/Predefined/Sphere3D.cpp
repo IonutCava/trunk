@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-Sphere3D::Sphere3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, F32 radius, U32 resolution)
+Sphere3D::Sphere3D(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const F32 radius, const U32 resolution)
     : Object3D(context, parentCache, descriptorHash, name, {}, {}, ObjectType::SPHERE_3D, 0u),
     _radius(radius),
     _resolution(resolution)

@@ -49,7 +49,7 @@ class Trigger final : public SceneNode {
 
     /// Checks if the unit has activated this trigger and launches the Task
     /// If we receive a nullptr unit as a param, we use the camera position
-    [[nodiscard]] bool check(Unit* unit, const vec3<F32>& camEyePos = VECTOR3_ZERO);
+    [[nodiscard]] bool check(Unit* unit, const vec3<F32>& camEyePos = VECTOR3_ZERO) const;
     /// Trigger's the Task regardless of position
     [[nodiscard]] bool trigger() const;
     /// Draw a sphere at the trigger's position

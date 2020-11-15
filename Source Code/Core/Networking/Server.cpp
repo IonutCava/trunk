@@ -32,7 +32,7 @@ void Server::close() {
     thread_.reset();
 }
 
-void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool debugOutput) {
+void Server::init(const U16 port, const stringImpl& broadcast_endpoint_address, const bool debugOutput) {
     if (thread_) {
         return;
     }
@@ -50,7 +50,10 @@ void Server::init(U16 port, const stringImpl& broadcast_endpoint_address, bool d
 
         acceptor_->async_accept(
             new_session->getSocket(),
-            std::bind(&Server::handle_accept, this, new_session, std::placeholders::_1));
+            [&](const boost::system::error_code code) {
+                handle_accept(new_session, code);
+            }
+        );
         eastl::unique_ptr<io_service::work> work(
             new io_service::work(io_service_));
         
@@ -74,7 +77,9 @@ void Server::handle_accept(const tcp_session_ptr& session, const boost::system::
 
         acceptor_->async_accept(
             new_session->getSocket(),
-            std::bind(&Server::handle_accept, this, new_session, std::placeholders::_1));
+            [&](const boost::system::error_code code) {
+            handle_accept(new_session, code);
+        });
     } else {
         std::stringstream ss;
         ss << "ERROR: " << ec;

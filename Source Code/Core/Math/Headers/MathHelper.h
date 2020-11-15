@@ -552,10 +552,10 @@ inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) noexcept {
 }
 
 [[nodiscard]]
-inline U32 PACK_VEC2(F32 x, F32 y) noexcept {
+inline U32 PACK_VEC2(const F32 x, const F32 y) noexcept {
     const U32 xScaled = to_U32(x * 0xFFFF);
     const U32 yScaled = to_U32(y * 0xFFFF);
-    return xScaled << 16 | yScaled & 0xFFFF;
+    return (xScaled << 16) | (yScaled & 0xFFFF);
 }
 
 [[nodiscard]] F32 PACK_VEC3(const vec3<F32>& value) noexcept;

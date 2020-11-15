@@ -66,6 +66,7 @@ inline const char* getErrorCodeName(const ErrorCode code) noexcept {
         case ErrorCode::NOT_ENOUGH_RAM:           return "Insufficient physical RAM available to run the application!";
         case ErrorCode::WRONG_WORKING_DIRECTORY:  return "Wrong working directory specified! All paths are relative based on the executable's location.";
         case ErrorCode::EDITOR_INIT_ERROR:        return "Editor failed to load!";
+        case ErrorCode::GUI_INIT_ERROR:           return "GUI failed to initialise!";
     }
 
     DIVIDE_UNEXPECTED_CALL();
@@ -105,7 +106,7 @@ inline bool Application::mainLoopActive() const noexcept {
     return _mainLoopActive;
 }
 
-inline void Application::mainLoopActive(bool state) noexcept {
+inline void Application::mainLoopActive(const bool state) noexcept {
     _mainLoopActive = state;
 }
 
@@ -113,11 +114,11 @@ inline bool Application::mainLoopPaused() const noexcept {
     return _mainLoopPaused;
 }
 
-inline void Application::mainLoopPaused(bool state) noexcept {
+inline void Application::mainLoopPaused(const bool state) noexcept {
     _mainLoopPaused = state;
 }
 
-inline void Application::throwError(ErrorCode err) noexcept {
+inline void Application::throwError(const ErrorCode err) noexcept {
     _errorCode = err;
 }
 

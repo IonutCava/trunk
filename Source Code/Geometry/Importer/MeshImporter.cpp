@@ -83,8 +83,8 @@ namespace Import {
         dataOut << _partitionIDs;
         dataOut << _minPos;
         dataOut << _maxPos;
-        for (U8 i = 0; i < MAX_LOD_LEVELS; ++i) {
-            dataOut << _triangles[i];
+        for (const auto& triangle : _triangles) {
+            dataOut << triangle;
         }
         return _material.serialize(dataOut);
     }
@@ -96,8 +96,8 @@ namespace Import {
         dataIn >> _partitionIDs;
         dataIn >> _minPos;
         dataIn >> _maxPos;
-        for (U8 i = 0; i < MAX_LOD_LEVELS; ++i) {
-            dataIn >> _triangles[i];
+        for (auto& triangle : _triangles) {
+            dataIn >> triangle;
         }
         return _material.deserialize(dataIn);
     }

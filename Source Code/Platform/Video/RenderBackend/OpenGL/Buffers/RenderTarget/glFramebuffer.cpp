@@ -667,7 +667,7 @@ void glFramebuffer::setAttachmentState(const GLenum binding, const BindingState 
     _attachmentState[binding] = state;
 }
 
-glFramebuffer::BindingState glFramebuffer::getAttachmentState(GLenum binding) const {
+glFramebuffer::BindingState glFramebuffer::getAttachmentState(const GLenum binding) const {
     const hashMap<GLenum, BindingState>::const_iterator it = _attachmentState.find(binding);
     if (it != std::cend(_attachmentState)) {
         return it->second;

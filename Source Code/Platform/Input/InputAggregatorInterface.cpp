@@ -53,19 +53,19 @@ JoystickElement joystickElementByName(const stringImpl& elementName) {
     return ret;
 }
 
-InputEvent::InputEvent(DisplayWindow* sourceWindow, U8 deviceIndex) noexcept
+InputEvent::InputEvent(DisplayWindow* sourceWindow, const U8 deviceIndex) noexcept
     : _deviceIndex(deviceIndex),
       _sourceWindow(sourceWindow)
 {
 }
 
-MouseButtonEvent::MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+MouseButtonEvent::MouseButtonEvent(DisplayWindow* sourceWindow, const U8 deviceIndex)
     : InputEvent(sourceWindow, deviceIndex)
 {
 
 }
 
-MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn, bool wheelEvent)
+MouseMoveEvent::MouseMoveEvent(DisplayWindow* sourceWindow, const U8 deviceIndex, const MouseState stateIn, const bool wheelEvent)
     : InputEvent(sourceWindow, deviceIndex),
       _stateIn(stateIn),
       _wheelEvent(wheelEvent)
@@ -113,7 +113,7 @@ bool MouseMoveEvent::remapped() const noexcept {
     return _remapped;
 }
 
-JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex)
+JoystickEvent::JoystickEvent(DisplayWindow* sourceWindow, const U8 deviceIndex)
     : InputEvent(sourceWindow, deviceIndex)
 {
 }

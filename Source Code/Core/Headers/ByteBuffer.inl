@@ -208,7 +208,7 @@ inline U64 ByteBuffer::readPackGUID() {
 }
 
 template <typename T>
-void ByteBuffer::append(const T *src, size_t cnt) {
+void ByteBuffer::append(const T *src, const size_t cnt) {
     return append((const Byte*)src, cnt * sizeof(T));
 }
 
@@ -251,7 +251,7 @@ inline void ByteBuffer::appendPackGUID(U64 guid) {
     append(packGUID, size);
 }
 
-inline Byte ByteBuffer::operator[](size_t pos) const {
+inline Byte ByteBuffer::operator[](const size_t pos) const {
     return read<Byte>(pos);
 }
 

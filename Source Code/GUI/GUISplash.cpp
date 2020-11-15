@@ -13,8 +13,8 @@ namespace Divide {
 
 GUISplash::GUISplash(ResourceCache* cache,
                      const Str64& splashImageName,
-                     const vec2<U16>& dimensions) 
-    : _dimensions(dimensions)
+                     vec2<U16> dimensions) 
+    : _dimensions(MOV(dimensions))
 {
     TextureDescriptor splashDescriptor(TextureType::TEXTURE_2D);
 
@@ -45,7 +45,7 @@ GUISplash::GUISplash(ResourceCache* cache,
     _splashShader = CreateResource<ShaderProgram>(cache, splashShader);
 }
 
-void GUISplash::render(GFXDevice& context, const U64 deltaTimeUS) const {
+void GUISplash::render(GFXDevice& context) const {
     GenericDrawCommand drawCmd = {};
     drawCmd._primitiveType = PrimitiveType::TRIANGLES;
 

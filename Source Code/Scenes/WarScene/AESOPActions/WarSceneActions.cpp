@@ -4,8 +4,7 @@
 
 #include "Scenes/WarScene/Headers/WarSceneAIProcessor.h"
 
-namespace Divide {
-namespace AI {
+namespace Divide::AI {
 
 WarSceneAction::WarSceneAction(const ActionType type,
                                const stringImpl& name,
@@ -23,5 +22,4 @@ bool WarSceneAction::postAction(WarSceneAIProcessor& parentProcessor) const {
     return Attorney::WarAISceneWarAction::postAction(parentProcessor, _type, this);
 }
 
-}  // namespace AI
-}  // namespace Divide
+}  // namespace Divide::AI

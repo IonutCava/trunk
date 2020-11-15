@@ -2,9 +2,7 @@
 
 #include "Headers/DivideRecast.h"
 
-namespace Divide {
-namespace AI {
-namespace Navigation {
+namespace Divide::AI::Navigation {
 
 constexpr U8 DT_TILECACHE_NULL_AREA = 0;
 constexpr U8 DT_TILECACHE_WALKABLE_AREA = 63;
@@ -147,7 +145,7 @@ vectorEASTL<vec3<F32> > DivideRecast::getPath(const I32 pathSlot) {
     return result;
 }
 
-I32 DivideRecast::getTarget(I32 pathSlot) {
+I32 DivideRecast::getTarget(const I32 pathSlot) {
     if (pathSlot < 0 || pathSlot >= MAX_PATHSLOT) {
         return 0;
     }
@@ -175,7 +173,7 @@ bool DivideRecast::getRandomPointAroundCircle(const NavigationMesh& navMesh,
                                               const F32 radius,
                                               const vec3<F32>& extents,
                                               vec3<F32>& resultPt,
-                                              const U8 maxIters) {
+                                              const U8 maxIters) const {
 
     const dtNavMeshQuery& query = navMesh.getNavQuery();
 
@@ -212,7 +210,7 @@ bool DivideRecast::findNearestPointOnNavmesh(const NavigationMesh& navMesh,
                                              const vec3<F32>& extents,
                                              const F32 delta,
                                              vec3<F32>& resultPt,
-                                             dtPolyRef& resultPoly) {
+                                             dtPolyRef& resultPoly) const {
     const F32 distanceSq = delta * delta;
 
     bool pointOnPolyMesh = findNearestPolyOnNavmesh(navMesh,
@@ -263,6 +261,4 @@ bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
     return false;
 }
 
-}  // namespace Navigation
-}  // namespace AI
-}  // namespace Divide
+}  // namespace Divide::AI::Navigation

@@ -1088,7 +1088,7 @@ public:
 
     /** Return a conversion object to convert text to the same encoding
         as is used by the Save(), SaveFile() and SaveString() functions.
-        Use this to prepare the strings that you wish to append or prepend
+        Use this to Prepare the strings that you wish to append or prepend
         to the output INI data.
      */
     Converter GetConverter() const {
@@ -1602,7 +1602,7 @@ CSimpleIniTempl<SI_CHAR,SI_STRLESS,SI_CONVERTER>::FindEntry(
 
         // remove trailing spaces from the value
         pTrail = a_pData - 1;
-        if (*a_pData) { // prepare for the next round
+        if (*a_pData) { // Prepare for the next round
             SkipNewLine(a_pData);
         }
         while (pTrail >= a_pVal && IsSpace(*pTrail)) {

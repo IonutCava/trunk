@@ -74,7 +74,7 @@ class TerrainChunk {
     [[nodiscard]] const QuadtreeNode& quadtreeNode() const noexcept { return _quadtreeNode; }
 
     [[nodiscard]] const BoundingBox& bounds() const;
-    void drawBBox(RenderPackage& packageOut);
+    void drawBBox(RenderPackage& packageOut) const;
 
     [[nodiscard]] U8 LoD() const;
 

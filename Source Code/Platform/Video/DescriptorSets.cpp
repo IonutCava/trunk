@@ -14,7 +14,7 @@ namespace Divide {
         return a == nullptr && b == nullptr;
     }
 
-    const ShaderBufferBinding* DescriptorSet::findBinding(ShaderBufferLocation slot) const noexcept {
+    const ShaderBufferBinding* DescriptorSet::findBinding(const ShaderBufferLocation slot) const noexcept {
         for (const ShaderBufferBinding& it : _shaderBuffers) {
             if (it._binding == slot) {
                 return &it;
@@ -24,7 +24,7 @@ namespace Divide {
         return nullptr;
     }
 
-    const TextureEntry* DescriptorSet::findTexture(U8 binding) const noexcept {
+    const TextureEntry* DescriptorSet::findTexture(const U8 binding) const noexcept {
         const auto& textures = _textureData.textures();
         for (const auto& it : textures) {
             if (std::get<0>(it) == binding) {
@@ -35,7 +35,7 @@ namespace Divide {
         return nullptr;
     }
 
-    const TextureView* DescriptorSet::findTextureView(U8 binding) const noexcept {
+    const TextureView* DescriptorSet::findTextureView(const U8 binding) const noexcept {
         for (const auto& it : _textureViews) {
             if (it._binding == binding) {
                 return &it._view;
@@ -45,7 +45,7 @@ namespace Divide {
         return nullptr;
     }
 
-    const Image* DescriptorSet::findImage(U8 binding) const noexcept {
+    const Image* DescriptorSet::findImage(const U8 binding) const noexcept {
         for (const auto& it : _images) {
             if (it._binding == binding) {
                 return &it;
@@ -85,7 +85,7 @@ namespace Divide {
         return set(other._binding, other._buffer, other._elementRange);
     }
 
-    bool ShaderBufferBinding::set(ShaderBufferLocation binding,
+    bool ShaderBufferBinding::set(const ShaderBufferLocation binding,
                                   ShaderBuffer* buffer,
                                   const vec2<U32>& elementRange) {
         bool ret = false;

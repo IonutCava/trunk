@@ -44,7 +44,7 @@ namespace Divide {
                type() == WindowType::FULLSCREEN_WINDOWED;
     }
 
-    inline void DisplayWindow::setPosition(const vec2<I32>& position, bool global) {
+    inline void DisplayWindow::setPosition(const vec2<I32>& position, const bool global) {
         setPosition(position.x, position.y, global);
     }
 
@@ -76,7 +76,7 @@ namespace Divide {
         _clearColour.set(colour);
     }
 
-    void DisplayWindow::clearFlags(bool clearColour, bool clearDepth)noexcept {
+    void DisplayWindow::clearFlags(const bool clearColour, const bool clearDepth)noexcept {
         ToggleBit(_flags, WindowFlags::CLEAR_COLOUR, clearColour);
         ToggleBit(_flags, WindowFlags::CLEAR_DEPTH, clearDepth);
     }
@@ -112,7 +112,7 @@ namespace Divide {
         return _type;
     }
 
-    inline void DisplayWindow::changeType(WindowType newType) {
+    inline void DisplayWindow::changeType(const WindowType newType) {
         if (newType != _type) {
             _queuedType = newType;
             handleChangeWindowType(_queuedType);
@@ -127,11 +127,11 @@ namespace Divide {
         return SDL_GetWindowTitle(_sdlWindow);
     }
 
-    inline void DisplayWindow::addEventListener(WindowEvent windowEvent, const EventListener& listener) {
+    inline void DisplayWindow::addEventListener(const WindowEvent windowEvent, const EventListener& listener) {
         _eventListeners[to_base(windowEvent)].push_back(listener);
     }
 
-    inline void DisplayWindow::clearEventListeners(WindowEvent windowEvent) {
+    inline void DisplayWindow::clearEventListeners(const WindowEvent windowEvent) {
         _eventListeners[to_base(windowEvent)].clear();
     }
 

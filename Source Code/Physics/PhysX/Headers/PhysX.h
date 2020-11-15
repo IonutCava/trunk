@@ -40,7 +40,7 @@
 #include "PhysXActor.h"
 #include "Physics/Headers/PhysicsAPIWrapper.h"
 
-#define MAX_ACTOR_QUEUE 30
+constexpr auto MAX_ACTOR_QUEUE = 30;
 
 namespace Divide {
 
@@ -77,13 +77,13 @@ public:
 
     PhysicsSceneInterface* NewSceneInterface(Scene& scene) override;
 
-    physx::PxPhysics* getSDK() const noexcept { return _gPhysicsSDK; }
+    [[nodiscard]] physx::PxPhysics* getSDK() const noexcept { return _gPhysicsSDK; }
     void setPhysicsScene(PhysicsSceneInterface* targetScene) override;
 
     PhysicsAsset* createRigidActor(const SceneGraphNode* node, RigidBodyComponent& parentComp) override;
 
 
-    void togglePvdConnection();
+    void togglePvdConnection() const;
     void createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 timeout, bool useFullConnection);
 
 protected:

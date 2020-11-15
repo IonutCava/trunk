@@ -113,7 +113,7 @@ namespace Divide {
     }
 
     template<bool IsBlocking>
-    void ThreadPool<IsBlocking>::executeOneTask(bool waitForTask) {
+    void ThreadPool<IsBlocking>::executeOneTask(const bool waitForTask) {
         PoolTask task = {};
         if (dequeTask(waitForTask, task)) {
             if (!task(IsBlocking && !waitForTask)) {
@@ -124,7 +124,7 @@ namespace Divide {
     }
 
     template<>
-    inline bool ThreadPool<true>::dequeTask(bool waitForTask, PoolTask& taskOut) {
+    inline bool ThreadPool<true>::dequeTask(const bool waitForTask, PoolTask& taskOut) {
         if (waitForTask) {
             _queue._container.wait_dequeue(taskOut);
         } else if (!_queue._container.try_dequeue(taskOut)) {
@@ -135,7 +135,7 @@ namespace Divide {
     }
 
     template<>
-    inline bool ThreadPool<false>::dequeTask(bool waitForTask, PoolTask& taskOut) {
+    inline bool ThreadPool<false>::dequeTask(const bool waitForTask, PoolTask& taskOut) {
         if (waitForTask) {
             while (!_queue._container.try_dequeue(taskOut)) {
                 std::this_thread::yield();

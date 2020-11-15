@@ -586,9 +586,15 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
                   "Scene::addParticleEmitter error: Could not instantiate emitter!");
 
     if (Runtime::isMainThread()) {
-        emitter->initData(data);
+        if (!emitter->initData(data)) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
     } else {
-        _context.app().mainThreadTask([&emitter, &data] { emitter->initData(data); });
+        _context.app().mainThreadTask([&emitter, &data] { 
+            if (!emitter->initData(data)) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
+        });
     }
 
     SceneGraphNodeDescriptor particleNodeDescriptor;
@@ -603,7 +609,7 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
     return parentNode->addChildNode(particleNodeDescriptor);
 }
 
-void Scene::addTerrain(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
+void Scene::addTerrain(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName) {
     Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), nodeName.c_str());
 
     // Load the rest of the terrain
@@ -676,7 +682,7 @@ void Scene::toggleFlashlight(const PlayerIndex idx) {
     flashLight->get<SpotLightComponent>()->toggleEnabled();
 }
 
-SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
+SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName) {
     ResourceDescriptor skyDescriptor("DefaultSky_"+ nodeName);
     skyDescriptor.ID(to_U32(std::floor(Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->getZPlanes().y * 2)));
 
@@ -700,7 +706,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, const boost::property_
     return skyNode;
 }
 
-void Scene::addWater(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
+void Scene::addWater(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName) {
     auto registerWater = [this, nodeName, &parentNode, pt](CachedResource* res) {
         SceneGraphNodeDescriptor waterNodeDescriptor;
         waterNodeDescriptor._name = nodeName;
@@ -726,7 +732,7 @@ void Scene::addWater(SceneGraphNode* parentNode, const boost::property_tree::ptr
     ret->addStateCallback(ResourceState::RES_LOADED, registerWater);
 }
 
-SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, const boost::property_tree::ptree pt, const Str64& nodeName) {
+SceneGraphNode* Scene::addInfPlane(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName) {
     ResourceDescriptor planeDescriptor("InfPlane_" + nodeName);
 
     Camera* baseCamera = Camera::utilityCamera(Camera::UtilityCamera::DEFAULT);
@@ -1053,7 +1059,7 @@ bool Scene::load(const Str256& name) {
     descriptor._useCurrentThread = true;
     descriptor._allowPoolIdle = true;
     descriptor._waitForFinish = true;
-    descriptor._cbk = [this, &rootNode, &rootChildren](const Task* parentTask, U32 start, U32 end) {
+    descriptor._cbk = [this, &rootNode, &rootChildren](const Task* parentTask, const U32 start, const U32 end) {
                             for (U32 i = start; i < end; ++i) {
                                 loadAsset(parentTask, rootChildren[i], rootNode);
                             }
@@ -1178,7 +1184,10 @@ void Scene::onSetActive() {
             }
         }
     }
-    _context.sfx().playMusic(0);
+    if (!_context.sfx().playMusic(0)) {
+        //DIVIDE_UNEXPECTED_CALL();
+        NOP();
+    }
 
     assert(_parent.getActivePlayerCount() == 0);
     addPlayerInternal(false);
@@ -1225,7 +1234,7 @@ void Scene::addPlayerInternal(const bool queue) {
     assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
 }
 
-void Scene::removePlayerInternal(PlayerIndex idx) {
+void Scene::removePlayerInternal(const PlayerIndex idx) {
     assert(idx < _scenePlayers.size());
     
     Attorney::SceneManagerScene::removePlayer(_parent, *this, _scenePlayers[getSceneIndexForPlayer(idx)]->getBoundNode(), true);
@@ -1255,7 +1264,7 @@ void Scene::onPlayerRemove(const Player_ptr& player) {
     _scenePlayers.erase(std::cbegin(_scenePlayers) + getSceneIndexForPlayer(idx));
 }
 
-U8 Scene::getSceneIndexForPlayer(PlayerIndex idx) const {
+U8 Scene::getSceneIndexForPlayer(const PlayerIndex idx) const {
     for (U8 i = 0; i < to_U8(_scenePlayers.size()); ++i) {
         if (_scenePlayers[i]->index() == idx) {
             return i;
@@ -1266,11 +1275,11 @@ U8 Scene::getSceneIndexForPlayer(PlayerIndex idx) const {
     return 0;
 }
 
-Player* Scene::getPlayerForIndex(PlayerIndex idx) const {
+Player* Scene::getPlayerForIndex(const PlayerIndex idx) const {
     return _scenePlayers[getSceneIndexForPlayer(idx)];
 }
 
-U8 Scene::getPlayerIndexForDevice(U8 deviceIndex) const {
+U8 Scene::getPlayerIndexForDevice(const U8 deviceIndex) const {
     return input()->getPlayerIndexForDevice(deviceIndex);
 }
 
@@ -1474,7 +1483,7 @@ void Scene::drawCustomUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bu
     }
 }
 
-void Scene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+void Scene::debugDraw(const Camera* activeCamera, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_OCTREE_REGIONS)) {
             _octreeBoundingBoxes.resize(0);
@@ -1568,7 +1577,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
 
     if (!_sceneSelectionCandidates.empty()) {
 
-        const auto IsValidTarget = [](SceneGraphNode* sgn, bool inEditMode) {
+        const auto IsValidTarget = [](SceneGraphNode* sgn, const bool inEditMode) {
             if (sgn == nullptr) {
                 return false;
             }
@@ -1814,7 +1823,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
     }
 }
 
-void Scene::endDragSelection(PlayerIndex idx, bool clearSelection) {
+void Scene::endDragSelection(const PlayerIndex idx, const bool clearSelection) {
     constexpr F32 DRAG_SELECTION_THRESHOLD_PX_SQ = 9.f;
 
     auto& data = _dragSelectData[idx];
@@ -1833,7 +1842,7 @@ void Scene::initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLi
     _dayNightData._timeAccumulator = Time::Seconds(1.1f);
 }
 
-void Scene::setDayNightCycleTimeFactor(F32 factor) noexcept {
+void Scene::setDayNightCycleTimeFactor(const F32 factor) noexcept {
     _dayNightData._speedFactor = factor;
 }
 
@@ -1911,7 +1920,7 @@ Camera* Scene::playerCamera() const {
     return Attorney::SceneManagerCameraAccessor::playerCamera(_parent);
 }
 
-Camera* Scene::playerCamera(U8 index) const {
+Camera* Scene::playerCamera(const U8 index) const {
     return Attorney::SceneManagerCameraAccessor::playerCamera(_parent, index);
 }
 

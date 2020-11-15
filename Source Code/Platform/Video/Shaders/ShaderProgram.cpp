@@ -56,11 +56,11 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
                              const Str256& shaderName,
                              const Str256& shaderFileName,
                              const ResourcePath& shaderFileLocation,
-                             const ShaderProgramDescriptor& descriptor,
+                             ShaderProgramDescriptor descriptor,
                              const bool asyncLoad)
     : CachedResource(ResourceType::GPU_OBJECT, descriptorHash, shaderName, ResourcePath(shaderFileName), shaderFileLocation),
       GraphicsResource(context, Type::SHADER_PROGRAM, getGUID(), _ID(shaderName.c_str())),
-      _descriptor(descriptor),
+      _descriptor(MOV(descriptor)),
       _asyncLoad(asyncLoad)
 {
     if (shaderFileName.empty()) {
@@ -113,10 +113,9 @@ bool ShaderProgram::recompileShaderProgram(const Str256& name) {
     SharedLock<SharedMutex> r_lock(s_programLock);
 
     // Find the shader program
-    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        const ShaderProgramMapEntry& shader = it.second;
-        
-        ShaderProgram* program = shader.first;
+    for (const auto& [handle, programEntry] : s_shaderPrograms) {
+       
+        ShaderProgram* program = programEntry.first;
         const Str256& shaderName = program->resourceName();
         // Check if the name matches any of the program's name components    
         if (shaderName.find(name) != Str256::npos || shaderName.compare(name) == 0) {
@@ -184,8 +183,8 @@ bool ShaderProgram::updateAll() {
     if_constexpr(!Config::Build::IS_RELEASE_BUILD) {
         if (onOddFrame) {
             SharedLock<SharedMutex> r_lock(s_programLock);
-            for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-                it.second.first->recompile(false);
+            for (const auto& [handle, programEntry] : s_shaderPrograms) {
+                programEntry.first->recompile(false);
             }
         }
     }
@@ -239,9 +238,9 @@ ShaderProgram* ShaderProgram::findShaderProgram(const I64 shaderHandle) {
 
 ShaderProgram* ShaderProgram::findShaderProgram(const size_t shaderHash) {
     SharedLock<SharedMutex> r_lock(s_programLock);
-    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        if (it.second.second == shaderHash) {
-            return it.second.first;
+    for (const auto& [handle, programEntry] : s_shaderPrograms) {
+        if (programEntry.second == shaderHash) {
+            return programEntry.first;
         }
     }
 
@@ -258,8 +257,8 @@ const ShaderProgram_ptr& ShaderProgram::nullShader() {
 
 void ShaderProgram::rebuildAllShaders() {
     SharedLock<SharedMutex> r_lock(s_programLock);
-    for (const ShaderProgramMap::value_type& it : s_shaderPrograms) {
-        s_recompileQueue.push(it.second.first);
+    for (const auto& [handle, programEntry] : s_shaderPrograms) {
+        s_recompileQueue.push(programEntry.first);
     }
 }
 
@@ -324,9 +323,9 @@ size_t ShaderProgram::definesHash(const ModuleDefines& defines) {
     }
 
     size_t hash = 7919;
-    for (const auto& entry : defines) {
-        Util::Hash_combine(hash, _ID(entry.first.c_str()));
-        Util::Hash_combine(hash, entry.second);
+    for (const auto& [defineString, appendPrefix] : defines) {
+        Util::Hash_combine(hash, _ID(defineString.c_str()));
+        Util::Hash_combine(hash, appendPrefix);
     }
     return hash;
 }

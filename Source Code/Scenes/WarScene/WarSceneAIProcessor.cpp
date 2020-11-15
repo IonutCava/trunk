@@ -15,8 +15,7 @@
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
-namespace Divide {
-namespace AI {
+namespace Divide::AI {
 
 namespace {
  const D64 g_ATTACK_RADIUS = 5;
@@ -31,7 +30,7 @@ GlobalWorkingMemory WarSceneAIProcessor::_globalWorkingMemory;
 DELEGATE<void, U8, const stringImpl&> WarSceneAIProcessor::_scoreCallback;
 DELEGATE<void, U8, const stringImpl&> WarSceneAIProcessor::_messageCallback;
 
-WarSceneAIProcessor::WarSceneAIProcessor(AIType type, AIManager& parentManager)
+WarSceneAIProcessor::WarSceneAIProcessor(const AIType type, AIManager& parentManager)
     : AIProcessor(parentManager),
       _type(type)
 {
@@ -623,7 +622,8 @@ bool WarSceneAIProcessor::checkCurrentActionComplete(const GOAPAction& planStep)
     return state;
 }
 
-void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
+void WarSceneAIProcessor::processMessage(AIEntity& sender,
+                                         const AIMsg msg,
                                          const std::any& msg_content) {
     SceneGraphNode* senderNode(sender.getUnitRef()->getBoundNode());
     switch (msg) {
@@ -668,9 +668,9 @@ void WarSceneAIProcessor::processMessage(AIEntity& sender, AIMsg msg,
                 invalidateCurrentPlan();
             }
         } break;
-    case AIMsg::HAVE_SCORED: break;
-    case AIMsg::COUNT: break;
-    default: break;
+        case AIMsg::HAVE_SCORED: break;
+        case AIMsg::COUNT: break;
+        default: break;
     }
 }
 
@@ -856,8 +856,7 @@ bool WarSceneAIProcessor::performAction(const GOAPAction& planStep) {
     return static_cast<const WarSceneAction&>(planStep).preAction(*this);
 }
 
-bool WarSceneAIProcessor::performActionStep(
-    GOAPAction::operationsIterator step) {
+bool WarSceneAIProcessor::performActionStep(const GOAPAction::operationsIterator step) {
     const GOAPFact crtFact = step->first;
     const GOAPValue newVal = step->second;
     const GOAPValue oldVal = worldState().getVariable(crtFact);
@@ -876,7 +875,7 @@ const stringImpl& WarSceneAIProcessor::printActionStats(const GOAPAction& planSt
     return planStep.name();
 }
 
-void WarSceneAIProcessor::printWorkingMemory() {
+void WarSceneAIProcessor::printWorkingMemory() const {
     PRINT(toString(true).c_str());
 }
 
@@ -933,7 +932,7 @@ stringImpl WarSceneAIProcessor::toString(bool state) const {
         "       Team count - Own Team: [ %d ] Enemy Team: [ %d]\n",
         _globalWorkingMemory._teamAliveCount[ownTeamID].value(),
         _globalWorkingMemory._teamAliveCount[enemyTeamID].value()));
-    for (const auto[fact, value] : worldState().vars_) {
+    for (const auto&[fact, value] : worldState().vars_) {
         ret.append(Util::StringFormat("        World state fact [ %s ] : [ %s ]\n",
                                   WarSceneFactName(fact).c_str(),
                                   value ? "true" : "false"));
@@ -972,6 +971,4 @@ void WarSceneAIProcessor::registerGOAPPackage(const GOAPPackage& package) {
     }
 }
 
-}  // namespace AI
-}  // namespace Divide
-
+}  // namespace Divide::AI

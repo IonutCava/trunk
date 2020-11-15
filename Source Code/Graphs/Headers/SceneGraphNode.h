@@ -414,18 +414,18 @@ namespace Attorney {
     };
 
     class SceneGraphNodeComponent {
-        static void setTransformDirty(SceneGraphNode* node, U32 transformMask) {
+        static void setTransformDirty(SceneGraphNode* node, const U32 transformMask) {
             node->setTransformDirty(transformMask);
         }
 
-        static bool prepareRender(SceneGraphNode* node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, bool refreshData) {
+        static bool prepareRender(SceneGraphNode* node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, const bool refreshData) {
             return node->prepareRender(rComp, renderStagePass, camera, refreshData);
         }
 
-        static void onRefreshNodeData(SceneGraphNode* node, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) {
+        static void onRefreshNodeData(SceneGraphNode* node, const RenderStagePass& renderStagePass, const Camera& camera, const bool refreshData, GFX::CommandBuffer& bufferInOut) {
             node->onRefreshNodeData(renderStagePass, camera, refreshData, bufferInOut);
         }
-        static bool getDrawState(const SceneGraphNode* node, RenderStagePass stagePass, U8 LoD) {
+        static bool getDrawState(const SceneGraphNode* node, const RenderStagePass stagePass, const U8 LoD) {
             return node->getDrawState(stagePass, LoD);
         }
 
@@ -466,7 +466,7 @@ namespace Attorney {
     };
     
     class SceneGraphNodeScene {
-        static const void reserveChildCount(SceneGraphNode* node, const size_t count) noexcept {
+        static void reserveChildCount(SceneGraphNode* node, const size_t count) noexcept {
             node->lockChildrenForWrite();
             node->_children.reserve(count);
             node->unlockChildrenForWrite();

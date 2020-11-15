@@ -82,7 +82,7 @@ namespace {
         return ret;
     }
     size_t g_validationBufferMaxSize = 4096 * 16;
-    UpdateListener s_fileWatcherListener([](std::string_view atomName, FileUpdateEvent evt) {
+    UpdateListener s_fileWatcherListener([](const std::string_view atomName, const FileUpdateEvent evt) {
         glShaderProgram::onAtomChange(atomName, evt);
     });
 };
@@ -387,12 +387,12 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
 
             const U8 shaderIdx = to_U8(type);
             stringImpl header;
-            for (const auto& define : shaderDescriptor._defines) {
+            for (const auto& [defineString, appendPrefix] : shaderDescriptor._defines) {
                 // Placeholders are ignored
-                if (define.first != "DEFINE_PLACEHOLDER") {
+                if (defineString != "DEFINE_PLACEHOLDER") {
                     // We manually add define dressing if needed
-                    header.append(define.second ? "#define " : "");
-                    header.append(define.first + "\n");
+                    header.append(appendPrefix ? "#define " : "");
+                    header.append(defineString + "\n");
                 }
             }
 
@@ -647,11 +647,11 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
     }
 
     foundAtoms.insert(end(foundAtoms), begin(atoms), end(atoms));
-    const auto result = s_atoms.insert({ atomNameHash, output });
-    assert(result.second);
+    const auto&[entry, result] = s_atoms.insert({ atomNameHash, output });
+    assert(result);
     s_atomIncludes.insert({atomNameHash, atoms});
     // Return the source code
-    return result.first->second;
+    return entry->second;
 }
 
 void glShaderProgram::shaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut) {
@@ -667,7 +667,7 @@ void glShaderProgram::shaderFileWrite(const ResourcePath& filePath, const Resour
     }
 }
 
-void glShaderProgram::onAtomChange(std::string_view atomName, FileUpdateEvent evt) {
+void glShaderProgram::onAtomChange(const std::string_view atomName, const FileUpdateEvent evt) {
     // Do nothing if the specified file is "deleted". We do not want to break running programs
     if (evt == FileUpdateEvent::DELETE) {
         return;
@@ -687,9 +687,9 @@ void glShaderProgram::onAtomChange(std::string_view atomName, FileUpdateEvent ev
 
     //Get list of shader programs that use the atom and rebuild all shaders in list;
     SharedLock<SharedMutex> r_lock(s_programLock);
-    for (const auto& it : s_shaderPrograms) {
+    for (const auto& [handle, programEntry] : s_shaderPrograms) {
 
-        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(it.second.first);
+        glShaderProgram* shaderProgram = static_cast<glShaderProgram*>(programEntry.first);
 
         bool skip = false;
         for (glShader* shader : shaderProgram->_shaderStage) {

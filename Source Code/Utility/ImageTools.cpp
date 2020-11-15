@@ -24,8 +24,7 @@
 #include <IL/ilu.h>
 #pragma warning(pop)
 
-namespace Divide {
-namespace ImageTools {
+namespace Divide::ImageTools {
 
 Mutex ImageDataInterface::_loadingMutex;
 
@@ -526,5 +525,5 @@ I8 SaveSeries(const stringImpl& filename, const vec2<U16>& dimensions, const U8 
 
     return status;
 }
-}  // namespace ImageTools
-}  // namespace Divide
+}  // namespace Divide::ImageTools
+

@@ -57,7 +57,7 @@ namespace Divide {
     }
 
     template<class T, class U>
-    void ECSSystem<T, U>::PreUpdate(F32 dt) {
+    void ECSSystem<T, U>::PreUpdate(const F32 dt) {
         OPTICK_EVENT();
 
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
@@ -80,7 +80,7 @@ namespace Divide {
     }
 
     template<class T, class U>
-    void ECSSystem<T, U>::Update(F32 dt) {
+    void ECSSystem<T, U>::Update(const F32 dt) {
         OPTICK_EVENT();
 
         U64 microSec = Time::MillisecondsToMicroseconds(dt);
@@ -91,7 +91,7 @@ namespace Divide {
     }
 
     template<class T, class U>
-    void ECSSystem<T, U>::PostUpdate(F32 dt) {
+    void ECSSystem<T, U>::PostUpdate(const F32 dt) {
         OPTICK_EVENT();
 
         U64 microSec = Time::MillisecondsToMicroseconds(dt);

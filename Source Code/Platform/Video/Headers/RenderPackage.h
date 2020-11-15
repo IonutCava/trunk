@@ -110,7 +110,7 @@ public:
 
     void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) const;
     void setTexture(I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, U8 binding) const;
-    void setTexture(const I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, const TextureUsage binding) const {
+    void setTexture(const I32 descriptorSetIndex, const TextureData& data, const size_t samplerHash, const TextureUsage binding) const {
         setTexture(descriptorSetIndex, data, samplerHash, to_U8(binding));
     }
 
@@ -154,7 +154,7 @@ namespace Attorney {
     };
 
     class RenderPackageRenderingComponent {
-        static void updateDrawCommands(RenderPackage& pkg, U32 dataIndex, U32 startOffset, U8 lodLevel) {
+        static void updateDrawCommands(RenderPackage& pkg, const U32 dataIndex, const U32 startOffset, const U8 lodLevel) {
             pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
         }
 

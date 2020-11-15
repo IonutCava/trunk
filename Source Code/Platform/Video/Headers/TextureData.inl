@@ -49,13 +49,13 @@ namespace Divide {
     }
 
     template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, size_t samplerHash, U8 binding) {
+    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, const size_t samplerHash, const U8 binding) {
         assert(data._textureType != TextureType::COUNT);
         return setTextureInternal(data, samplerHash, binding);
     }
 
     template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, size_t samplerHash, TextureUsage binding) {
+    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, const size_t samplerHash, const TextureUsage binding) {
         return setTexture(data, samplerHash, to_U8(binding));
     }
 

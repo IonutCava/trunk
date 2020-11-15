@@ -463,7 +463,7 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window) const
         if (!vsyncSet) {
             vsyncSet = SDL_GL_SetSwapInterval(1) != -1;
         }
-        assert(vsyncSet);
+        DIVIDE_ASSERT(vsyncSet, "VSync change failed!");
     } else {
         SDL_GL_SetSwapInterval(0);
     }
@@ -532,7 +532,7 @@ vec2<I32> WindowManager::GetCursorPosition() noexcept {
     return ret;
 }
 
-U32 WindowManager::GetMouseState(vec2<I32>& pos, bool global) noexcept {
+U32 WindowManager::GetMouseState(vec2<I32>& pos, const bool global) noexcept {
     if (global) {
         return to_U32(SDL_GetGlobalMouseState(&pos.x, &pos.y));
     }
@@ -540,7 +540,7 @@ U32 WindowManager::GetMouseState(vec2<I32>& pos, bool global) noexcept {
     return to_U32(SDL_GetMouseState(&pos.x, &pos.y));
 }
 
-void WindowManager::SetCaptureMouse(bool state) noexcept {
+void WindowManager::SetCaptureMouse(const bool state) noexcept {
     SDL_CaptureMouse(state ? SDL_TRUE : SDL_FALSE);
 }
 

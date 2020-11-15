@@ -208,11 +208,11 @@ namespace Divide {
 
     namespace Attorney {
         class TransformComponentSGN {
-            static void onParentTransformDirty(TransformComponent& comp, U32 transformMask) noexcept {
+            static void onParentTransformDirty(TransformComponent& comp, const U32 transformMask) noexcept {
                 comp.onParentTransformDirty(transformMask);
             }
 
-            static void onParentUsageChanged(TransformComponent& comp, NodeUsageContext context) noexcept {
+            static void onParentUsageChanged(TransformComponent& comp, const NodeUsageContext context) noexcept {
                 comp.onParentUsageChanged(context);
             }
             friend class Divide::SceneGraphNode;

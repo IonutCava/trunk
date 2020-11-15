@@ -20,7 +20,7 @@ namespace Divide {
 GUIInterface::GUIInterface(GUI& context)
     : _context(&context)
 {
-    Locale::setChangeLanguageCallback([this](std::string_view newLanguage) { 
+    Locale::setChangeLanguageCallback([this](const std::string_view newLanguage) { 
         onLanguageChange(newLanguage);
     });
 }
@@ -157,8 +157,8 @@ GUIText* GUIInterface::addText(const char* name,
                                const stringImpl& font,
                                const UColour4& colour,
                                const stringImpl& text,
-                               bool multiLine,
-                               U8 fontSize) {
+                               const bool multiLine,
+                               const U8 fontSize) {
     const U64 guiID = _ID(name);
 
     assert(getGUIElement<GUIText>(guiID) == nullptr);
@@ -191,7 +191,7 @@ GUIFlash* GUIInterface::addFlash(const char* name,
     return flash;
 }
 
-GUIText* GUIInterface::modifyText(const char* name, const stringImpl& text, bool multiLine) {
+GUIText* GUIInterface::modifyText(const char* name, const stringImpl& text, const bool multiLine) {
     const U64 guiID = _ID(name);
 
     const GUIMap::iterator it = _guiElements[to_base(GUIType::GUI_TEXT)].find(guiID);

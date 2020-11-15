@@ -7,7 +7,7 @@
 
 namespace Divide {
 
-GameScript::GameScript(const stringImpl& sourceCode, FrameListenerManager& parent, U32 callOrder)
+GameScript::GameScript(const stringImpl& sourceCode, FrameListenerManager& parent, const U32 callOrder)
     : Script(sourceCode),
       FrameListener("Script", parent, callOrder)
 {
@@ -15,7 +15,7 @@ GameScript::GameScript(const stringImpl& sourceCode, FrameListenerManager& paren
     addGameInstance();
 }
 
-GameScript::GameScript(const stringImpl& scriptPath, FileType fileType, FrameListenerManager& parent, U32 callOrder)
+GameScript::GameScript(const stringImpl& scriptPath, const FileType fileType, FrameListenerManager& parent, const U32 callOrder)
     : Script(scriptPath, fileType),
       FrameListener("Script", parent, callOrder)
 {
@@ -23,11 +23,7 @@ GameScript::GameScript(const stringImpl& scriptPath, FileType fileType, FrameLis
     addGameInstance();
 }
 
-GameScript::~GameScript()
-{
-}
-
-void GameScript::addGameInstance() {
+void GameScript::addGameInstance() const {
     const chaiscript::ModulePtr m = chaiscript::ModulePtr(new chaiscript::Module());
     chaiscript::utility::add_class<GameScriptInstance>(*m,
         "GameScriptInstance",

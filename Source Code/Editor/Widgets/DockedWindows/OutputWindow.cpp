@@ -12,13 +12,14 @@ namespace Divide {
 
     OutputWindow::OutputWindow(Editor& parent, const Descriptor& descriptor)
         : DockedWindow(parent, descriptor),
-         _scrollToBottom(true)
+         _scrollToBottom(true),
+         _inputBuf{}
     {
         memset(_inputBuf, 0, sizeof _inputBuf);
 
         std::atomic_init(&g_writeIndex, 0);
         _consoleCallbackIndex = Console::bindConsoleOutput([this](const Console::OutputEntry& entry) {
-            printText(entry);
+            PrintText(entry);
         });
     }
 
@@ -106,7 +107,7 @@ namespace Divide {
                              ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
                              [](ImGuiTextEditCallbackData* data){
                                 OutputWindow* console = static_cast<OutputWindow*>(data->UserData);
-                                return console->textEditCallback(data);
+                                return console->TextEditCallback(data);
                              },
                              (void*)this))
         {
@@ -129,12 +130,12 @@ namespace Divide {
         ImGui::PopStyleColor();
     }
 
-    void OutputWindow::printText(const Console::OutputEntry& entry) {
+    void OutputWindow::PrintText(const Console::OutputEntry& entry) {
         g_log[g_writeIndex.fetch_add(1) % g_maxLogEntries] = entry;
     }
 
     void OutputWindow::executeCommand(const char* command_line) {
-        printText(
+        PrintText(
             {
                 Util::StringFormat("# %s\n", command_line),
                 Console::EntryType::COMMAND
@@ -142,7 +143,7 @@ namespace Divide {
         );
     }
 
-    I32 OutputWindow::textEditCallback(ImGuiTextEditCallbackData* data) {
+    I32 OutputWindow::TextEditCallback(ImGuiTextEditCallbackData* data) {
         switch (data->EventFlag)
         {
             case ImGuiInputTextFlags_CallbackCompletion:

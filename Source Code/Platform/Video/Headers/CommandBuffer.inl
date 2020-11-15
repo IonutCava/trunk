@@ -123,19 +123,19 @@ inline bool CommandBuffer::exists(const CommandEntry& commandEntry) const noexce
 
 template<typename T>
 typename std::enable_if<std::is_base_of<CommandBase, T>::value, bool>::type
-CommandBuffer::exists(U24 index) const noexcept {
+CommandBuffer::exists(const U24 index) const noexcept {
     return exists(to_base(T::EType), index);
 }
 
 template<typename T>
 [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::get(U24 index) noexcept {
+CommandBuffer::get(const U24 index) noexcept {
     return get<T>({to_base(T::EType), index});
 }
 
 template<typename T>
 [[nodiscard]] typename std::enable_if<std::is_base_of<CommandBase, T>::value, T*>::type
-CommandBuffer::get(U24 index) const noexcept {
+CommandBuffer::get(const U24 index) const noexcept {
     return get<T>({to_base(T::EType), index });
 }
 

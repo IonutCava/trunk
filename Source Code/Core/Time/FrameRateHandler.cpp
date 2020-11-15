@@ -2,8 +2,7 @@
 
 #include "Headers/FrameRateHandler.h"
 
-namespace Divide {
-namespace Time {
+namespace Divide::Time {
 
 
 void FrameRateHandler::tick(const U64 deltaTimeUS) noexcept {
@@ -31,5 +30,4 @@ void FrameRateHandler::tick(const U64 deltaTimeUS) noexcept {
     }
 }
 
-} //namespace Time
-} //namespace Divide
+} //namespace Divide::Time

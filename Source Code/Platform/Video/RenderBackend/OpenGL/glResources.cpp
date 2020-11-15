@@ -503,24 +503,24 @@ void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
     _types.reserve(poolSizes.size());
     //_pools.reserve(poolSizes.size());
 
-    for (const auto& it : poolSizes) {
+    for (const auto& [textureType, poolSize] : poolSizes) {
         poolImpl pool;
-        pool._usageMap.reserve(it.second); 
-        for (U32 i = 0; i < it.second; ++i) {
+        pool._usageMap.reserve(poolSize); 
+        for (U32 i = 0; i < poolSize; ++i) {
             pool._usageMap.push_back(AtomicWrapper<State>{ State::FREE });
         }
-        pool._type = it.first;
-        pool._handles.resize(it.second, 0u);
-        pool._lifeLeft.resize(it.second, 0u);
-        pool._tempBuffer.resize(it.second, 0u);
-        if (it.first != GL_NONE) {
-            glCreateTextures(it.first, static_cast<GLsizei>(it.second), pool._handles.data());
+        pool._type = textureType;
+        pool._handles.resize(poolSize, 0u);
+        pool._lifeLeft.resize(poolSize, 0u);
+        pool._tempBuffer.resize(poolSize, 0u);
+        if (textureType != GL_NONE) {
+            glCreateTextures(textureType, static_cast<GLsizei>(poolSize), pool._handles.data());
         } else {
-            glGenTextures(static_cast<GLsizei>(it.second), pool._handles.data());
+            glGenTextures(static_cast<GLsizei>(poolSize), pool._handles.data());
         }
-        _types.push_back(it.first);
+        _types.push_back(textureType);
 
-        insert(_pools, it.first, MOV(pool));
+        insert(_pools, textureType, MOV(pool));
     }
 }
 
@@ -591,7 +591,7 @@ void glTexturePool::destroy() {
     }
 }
 
-GLuint glTexturePool::allocate(GLenum type, const bool retry) {
+GLuint glTexturePool::allocate(const GLenum type, const bool retry) {
     return allocate(0u, type, retry).first;
 }
 

@@ -73,7 +73,7 @@ private:
 
 public:
     explicit PostFX(PlatformContext& context, ResourceCache* cache);
-    ~PostFX();
+    ~PostFX() = default;
 
     void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut);
     void apply(const Camera* camera, GFX::CommandBuffer& bufferInOut);
@@ -128,7 +128,7 @@ public:
     // fade out to specified colour and back again within the given time slice
     // if duration is 0.0, nothing happens
     // waitDurationMS is the amount of time to wait before fading back in
-    void setFadeOutIn(const UColour3& targetColour, D64 durationMS, D64 waitDurationMS);
+    void setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 waitDurationMS);
     void setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
     [[nodiscard]] static const char* FilterName(FilterType filter) noexcept;

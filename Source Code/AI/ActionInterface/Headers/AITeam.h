@@ -75,7 +75,7 @@ class AITeam final : public GUIDWrapper {
     AITeam(U32 id, AIManager& parentManager);
     ~AITeam();
 
-    CrowdPtr getCrowd(AIEntity::PresetAgentRadius radius) const {
+    CrowdPtr getCrowd(const AIEntity::PresetAgentRadius radius) const {
         SharedLock<SharedMutex> r_lock(_crowdMutex);
         const AITeamCrowd::const_iterator it = _aiTeamCrowd.find(radius);
         if (it != std::end(_aiTeamCrowd)) {

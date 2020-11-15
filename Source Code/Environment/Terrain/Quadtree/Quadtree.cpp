@@ -41,7 +41,7 @@ void Quadtree::toggleBoundingBoxes() {
     _root->toggleBoundingBoxes();
 }
 
-void Quadtree::drawBBox(RenderPackage& packageOut) {
+void Quadtree::drawBBox(RenderPackage& packageOut) const {
     if (!_drawBBoxes) {
         return;
     }

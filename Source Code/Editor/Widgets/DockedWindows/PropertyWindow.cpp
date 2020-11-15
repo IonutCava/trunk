@@ -27,7 +27,7 @@
 #include "Core/Math/BoundingVolumes/Headers/OBB.h"
 
 namespace ImGui {
-    bool InputDoubleN(const char* label, double* v, int components, const char* display_format, ImGuiInputTextFlags extra_flags)
+    bool InputDoubleN(const char* label, double* v, const int components, const char* display_format, const ImGuiInputTextFlags extra_flags)
     {
         ImGuiWindow* window = GetCurrentWindow();
         if (window->SkipItems)
@@ -54,17 +54,17 @@ namespace ImGui {
         return value_changed;
     }
 
-    bool InputDouble2(const char* label, double v[2], const char* display_format, ImGuiInputTextFlags extra_flags)
+    bool InputDouble2(const char* label, double v[2], const char* display_format, const ImGuiInputTextFlags extra_flags)
     {
         return InputDoubleN(label, v, 2, display_format, extra_flags);
     }
 
-    bool InputDouble3(const char* label, double v[3], const char* display_format, ImGuiInputTextFlags extra_flags)
+    bool InputDouble3(const char* label, double v[3], const char* display_format, const ImGuiInputTextFlags extra_flags)
     {
         return InputDoubleN(label, v, 3, display_format, extra_flags);
     }
 
-    bool InputDouble4(const char* label, double v[4], const char* display_format, ImGuiInputTextFlags extra_flags)
+    bool InputDouble4(const char* label, double v[4], const char* display_format, const ImGuiInputTextFlags extra_flags)
     {
         return InputDoubleN(label, v, 4, display_format, extra_flags);
     }
@@ -166,7 +166,7 @@ namespace Divide {
         }
 
         template<typename T, size_t num_comp, bool IsSlider>
-        bool inputOrSlider(Editor& parent, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format, float power = 1.0f) {
+        bool inputOrSlider(Editor& parent, const char* label, const char* name, const float stepIn, const ImGuiDataType data_type, EditorComponentField& field, const ImGuiInputTextFlags flags, const char* format, const float power = 1.0f) {
             if (field._readOnly) {
                 PushReadOnly();
             }
@@ -231,7 +231,7 @@ namespace Divide {
         }
 
         template<typename T, size_t num_rows>
-        bool inputMatrix(Editor & parent, const char* label, const char* name, const float stepIn, ImGuiDataType data_type, EditorComponentField& field, ImGuiInputTextFlags flags, const char* format) {
+        bool inputMatrix(Editor & parent, const char* label, const char* name, const float stepIn, const ImGuiDataType data_type, EditorComponentField& field, const ImGuiInputTextFlags flags, const char* format) {
             const T cStep = T(stepIn * 100);
 
             const void* step = IS_ZERO(stepIn) ? nullptr : (void*)&stepIn;
@@ -289,7 +289,7 @@ namespace Divide {
             ImGui::PopID();
         }
 
-        bool PreviewTextureButton(I32 &id, Texture* tex, bool readOnly) {
+        bool PreviewTextureButton(I32 &id, Texture* tex, const bool readOnly) {
             bool ret = false;
             ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - 15);
             ImGui::PushID(4321234 + id++);
@@ -824,7 +824,7 @@ namespace Divide {
         return selections;
     }
     
-    SceneGraphNode* PropertyWindow::node(I64 guid) const {
+    SceneGraphNode* PropertyWindow::node(const I64 guid) const {
         const Scene& activeScene = context().kernel().sceneManager()->getActiveScene();
 
         return activeScene.sceneGraph()->findNode(guid);

@@ -91,7 +91,7 @@ void PingPongScene::serveBall() {
 
     removeTask(*g_gameTaskID);
 
-    g_gameTaskID = CreateTask(context(), [this](const Task& parent) {
+    g_gameTaskID = CreateTask(context(), [this](const Task& /*parent*/) {
         test(Random(4), GFX::PushConstantType::INT);
     });
 
@@ -226,7 +226,7 @@ void PingPongScene::test(std::any a, GFX::PushConstantType type) {
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
 }
 
-void PingPongScene::processInput(PlayerIndex idx, const U64 deltaTimeUS) {
+void PingPongScene::processInput(const PlayerIndex idx, const U64 deltaTimeUS) {
     if (_freeFly) {
         _wasInFreeFly = true;
         Scene::processInput(idx, deltaTimeUS);
@@ -370,7 +370,7 @@ void PingPongScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                                                    to_I32(targetRenderViewport.sizeY / 1.1f)),
                                      pixelScale(100, 25));
 
-    btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) {
+    btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 /*btnGUID*/) {
         serveBall();
     });
 

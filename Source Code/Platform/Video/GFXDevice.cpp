@@ -47,11 +47,11 @@
 namespace Divide {
 
 namespace TypeUtil {
-    const char* GraphicResourceTypeToName(GraphicsResource::Type type) noexcept {
+    const char* GraphicResourceTypeToName(const GraphicsResource::Type type) noexcept {
         return Names::resourceTypes[to_base(type)];
     };
 
-    const char* RenderStageToString(RenderStage stage) noexcept {
+    const char* RenderStageToString(const RenderStage stage) noexcept {
         return Names::renderStage[to_base(stage)];
     }
 
@@ -65,7 +65,7 @@ namespace TypeUtil {
         return RenderStage::COUNT;
     }
 
-    const char* RenderPassTypeToString(RenderPassType pass) noexcept {
+    const char* RenderPassTypeToString(const RenderPassType pass) noexcept {
         return Names::renderPassType[to_base(pass)];
     }
 
@@ -216,7 +216,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     // Initialize the shader manager
     ShaderProgram::onStartup(cache);
-    SceneEnvironmentProbePool::onStartup(*this);
+    SceneEnvironmentProbePool::OnStartup(*this);
     GFX::initPools();
 
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
@@ -811,7 +811,7 @@ void GFXDevice::closeRenderingAPI() {
 
     RenderStateBlock::clear();
 
-    SceneEnvironmentProbePool::onShutdown(*this);
+    SceneEnvironmentProbePool::OnShutdown(*this);
     GFX::destroyPools();
     MemoryManager::SAFE_DELETE(_rtPool);
 
@@ -1165,7 +1165,7 @@ void GFXDevice::decreaseResolution() {
     stepResolution(false);
 }
 
-void GFXDevice::stepResolution(bool increment) {
+void GFXDevice::stepResolution(const bool increment) {
     auto compare = [](const vec2<U16>& a, const vec2<U16>& b) noexcept -> bool {
         return a.x > b.x || a.y > b.y;
     };
@@ -2106,14 +2106,16 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
     }
 
     TextElement text(labelStyleHash, RelativePosition2D(RelativeValue(0.1f, 0.0f), RelativeValue(0.1f, 0.0f)));
-    for (const std::pair<stringImpl, Rect<I32>>& entry : labelStack) {
+    for (const auto& [labelText, targetViewRect] : labelStack) {
         // Draw labels at the end to reduce number of state changes
-        setViewport._viewport.set(entry.second);
+        setViewport._viewport.set(targetViewRect);
         EnqueueCommand(bufferInOut, setViewport);
 
-        text._position.d_y.d_offset = entry.second.sizeY - 10.0f;
-        text.text(entry.first.c_str(), false);
-        drawText(GFX::DrawTextCommand{ TextElementBatch{ text } }, bufferInOut);
+        text._position.d_y.d_offset = targetViewRect.sizeY - 10.0f;
+        text.text(labelText.c_str(), false);
+
+        TextElementBatch batch{ text };
+        drawText(GFX::DrawTextCommand{ batch }, bufferInOut);
     }
 
     setViewport._viewport.set(previousViewport);
@@ -2162,7 +2164,7 @@ bool GFXDevice::removeDebugView(DebugView* view) {
     return false;
 }
 
-void GFXDevice::toggleDebugView(I16 index, const bool state) {
+void GFXDevice::toggleDebugView(const I16 index, const bool state) {
     UniqueLock<Mutex> lock(_debugViewLock);
     for (auto& view : _debugViews) {
         if (view->_sortIndex == index) {
@@ -2558,7 +2560,7 @@ VertexBuffer* GFXDevice::newVB() {
     return temp;
 }
 
-PixelBuffer* GFXDevice::newPB(PBType type, const char* name) {
+PixelBuffer* GFXDevice::newPB(const PBType type, const char* name) {
 
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
@@ -2614,12 +2616,12 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
     return temp;
 }
 
-Texture* GFXDevice::newTexture(size_t descriptorHash,
+Texture* GFXDevice::newTexture(const size_t descriptorHash,
                                const Str256& resourceName,
                                const ResourcePath& assetNames,
                                const ResourcePath& assetLocations,
-                               bool isFlipped,
-                               bool asyncLoad,
+                               const bool isFlipped,
+                               const bool asyncLoad,
                                const TextureDescriptor& texDescriptor) {
 
     UniqueLock<Mutex> w_lock(objectArenaMutex());
@@ -2664,12 +2666,12 @@ Pipeline* GFXDevice::newPipeline(const PipelineDescriptor& descriptor) {
     return &it->second;
 }
 
-ShaderProgram* GFXDevice::newShaderProgram(size_t descriptorHash,
+ShaderProgram* GFXDevice::newShaderProgram(const size_t descriptorHash,
                                            const Str256& resourceName,
                                            const Str256& assetName,
                                            const ResourcePath& assetLocation,
                                            const ShaderProgramDescriptor& descriptor,
-                                           bool asyncLoad) {
+                                           const bool asyncLoad) {
 
     UniqueLock<Mutex> w_lock(objectArenaMutex());
 
@@ -2755,7 +2757,7 @@ void GFXDevice::screenshot(const stringImpl& filename) const {
 }
 
 /// returns the standard state block
-size_t GFXDevice::getDefaultStateBlock(bool noDepth) const noexcept {
+size_t GFXDevice::getDefaultStateBlock(const bool noDepth) const noexcept {
     return noDepth ? _defaultStateNoDepthHash : RenderStateBlock::defaultHash();
 }
 

@@ -27,7 +27,7 @@ PXDevice::~PXDevice()
     closePhysicsAPI();
 }
 
-ErrorCode PXDevice::initPhysicsAPI(U8 targetFrameRate, F32 simSpeed) {
+ErrorCode PXDevice::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
     DIVIDE_ASSERT(_api == nullptr,
                 "PXDevice error: initPhysicsAPI called twice!");
     switch (_API_ID) {

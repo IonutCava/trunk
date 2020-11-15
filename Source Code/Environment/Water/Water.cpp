@@ -320,7 +320,7 @@ bool WaterPlane::prepareRender(SceneGraphNode* sgn,
                                RenderingComponent& rComp,
                                const RenderStagePass& renderStagePass,
                                const Camera& camera,
-                               bool refreshData) {
+                               const bool refreshData) {
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
         PushConstants& constants = pkg.pushConstants(0);
@@ -331,7 +331,7 @@ bool WaterPlane::prepareRender(SceneGraphNode* sgn,
     return SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
-bool WaterPlane::pointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point) {
+bool WaterPlane::PointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point) {
     return sgn->get<BoundsComponent>()->getBoundingBox().containsPoint(point);
 }
 
@@ -365,7 +365,7 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
 
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
-    const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+    const bool underwater = PointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater, refrPlaneOffset());
 
@@ -403,7 +403,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
 
     // If we are above water, process the plane's refraction.
     // If we are below, we render the scene normally
-    const bool underwater = pointUnderwater(renderParams._sgn, renderParams._camera->getEye());
+    const bool underwater = PointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     if (underwater) {
         return;
     }
@@ -460,7 +460,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     }
 }
 
-void WaterPlane::updatePlaneEquation(const SceneGraphNode* sgn, Plane<F32>& plane, bool reflection, F32 offset) {
+void WaterPlane::updatePlaneEquation(const SceneGraphNode* sgn, Plane<F32>& plane, const bool reflection, const F32 offset) const {
     const F32 waterLevel = sgn->get<TransformComponent>()->getPosition().y * (reflection ? -1.f : 1.f);
     const Quaternion<F32>& orientation = sgn->get<TransformComponent>()->getOrientation();
 

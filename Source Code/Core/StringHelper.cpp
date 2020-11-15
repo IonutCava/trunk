@@ -2,8 +2,7 @@
 
 #include "Headers/StringHelper.h"
 
-namespace Divide {
-namespace Util {
+namespace Divide::Util {
 
 bool FindCommandLineArgument(const int argc, char** argv, const char* target_arg, const char* arg_prefix) {
     stringImpl tempArg(arg_prefix);
@@ -38,6 +37,5 @@ void CStringRemoveChar(char* str, const char charToRemove) noexcept {
 bool IsEmptyOrNull(const char* str) noexcept {
     return str == nullptr || str[0] == '\0';
 }
-} //namespace Util
 
-} //namespace Divide
+} //namespace Divide::Util

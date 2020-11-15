@@ -65,7 +65,7 @@ struct GPUState : private NonCopyable {
         return _supportedDisplayModes.size();
     }
 
-    [[nodiscard]] const vectorEASTL<GPUVideoMode>& getDisplayModes(size_t displayIndex) const noexcept {
+    [[nodiscard]] const vectorEASTL<GPUVideoMode>& getDisplayModes(const size_t displayIndex) const noexcept {
         assert(displayIndex < _supportedDisplayModes.size());
         return _supportedDisplayModes[displayIndex];
     }

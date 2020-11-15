@@ -4,9 +4,9 @@
 
 namespace Divide {
 
-GUIElement::GUIElement(const stringImpl& name, CEGUI::Window* const parent)
+GUIElement::GUIElement(stringImpl name, CEGUI::Window* const parent)
     : GUIDWrapper(),
-      _name(name),
+      _name(MOV(name)),
       _parent(parent)
 {
 }

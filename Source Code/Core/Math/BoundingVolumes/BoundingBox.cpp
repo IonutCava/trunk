@@ -13,8 +13,8 @@ BoundingBox::BoundingBox() noexcept
 }
 
 BoundingBox::BoundingBox(vec3<F32> min, vec3<F32> max) noexcept
-    : _min(std::move(min)), 
-      _max(std::move(max))
+    : _min(MOV(min)),
+      _max(MOV(max))
 {
 }
 

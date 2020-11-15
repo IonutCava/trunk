@@ -107,7 +107,7 @@ void BoundsComponent::showBS(const bool state) {
     }
 }
 
-void BoundsComponent::flagBoundingBoxDirty(U32 transformMask, bool recursive) {
+void BoundsComponent::flagBoundingBoxDirty(const U32 transformMask, const bool recursive) {
     OPTICK_EVENT();
 
     if (_transformUpdatedMask.exchange(transformMask) != 0u) {

@@ -125,7 +125,7 @@ namespace Divide {
         }
     }
 
-    void SolutionExplorerWindow::printSceneGraphNode(SceneManager* sceneManager, SceneGraphNode* sgn, I32 nodeIDX, bool open, bool secondaryView) {
+    void SolutionExplorerWindow::printSceneGraphNode(SceneManager* sceneManager, SceneGraphNode* sgn, I32 nodeIDX, const bool open, bool secondaryView) {
         ImGuiTreeNodeFlags node_flags = ImGuiTreeNodeFlags_OpenOnArrow;
                                         //Conflicts with "Teleport to node on double click"
                                         // | ImGuiTreeNodeFlags_OpenOnDoubleClick;
@@ -171,7 +171,7 @@ namespace Divide {
 
         if (_filter.Filters.empty()) {
             if (printNode()) {
-                sgn->forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
+                sgn->forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, const I32 childIdx) {
                     printSceneGraphNode(sceneManager, child, childIdx, false, secondaryView);
                     return true;
                 });
@@ -182,7 +182,7 @@ namespace Divide {
             if (_filter.PassFilter(sgn->name().c_str())) {
                 nodeOpen = printNode();
             }
-            sgn->forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, I32 childIdx) {
+            sgn->forEachChild([this, &sceneManager, secondaryView](SceneGraphNode* child, const I32 childIdx) {
                 printSceneGraphNode(sceneManager, child, childIdx, false, secondaryView);
                 return true;
             });
@@ -629,18 +629,20 @@ namespace Divide {
         if (ptr) {
             if (g_currentNodeType == SceneNodeType::TYPE_PARTICLE_EMITTER) {
                 ParticleEmitter* emitter = static_cast<ParticleEmitter*>(ptr.get());
-                emitter->initData(g_particleEmitterData);
-                emitter->addSource(g_particleSource);
+                if (emitter->initData(g_particleEmitterData)) {
+                    emitter->addSource(g_particleSource);
 
-                std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(context());
-                eulerUpdater->_globalAcceleration.set(g_particleAcceleration);
-                emitter->addUpdater(eulerUpdater);
-                const std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(context());
-                floorUpdater->_bounceFactor = g_particleBounceFactor;
-                emitter->addUpdater(floorUpdater);
-                emitter->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(context()));
-                emitter->addUpdater(std::make_shared<ParticleBasicColourUpdater>(context()));
-
+                    std::shared_ptr<ParticleEulerUpdater> eulerUpdater = std::make_shared<ParticleEulerUpdater>(context());
+                    eulerUpdater->_globalAcceleration.set(g_particleAcceleration);
+                    emitter->addUpdater(eulerUpdater);
+                    const std::shared_ptr<ParticleFloorUpdater> floorUpdater = std::make_shared<ParticleFloorUpdater>(context());
+                    floorUpdater->_bounceFactor = g_particleBounceFactor;
+                    emitter->addUpdater(floorUpdater);
+                    emitter->addUpdater(std::make_shared<ParticleBasicTimeUpdater>(context()));
+                    emitter->addUpdater(std::make_shared<ParticleBasicColourUpdater>(context()));
+                } else {
+                    ptr.reset();
+                }
                 g_particleEmitterData.reset();
                 g_particleSource.reset();
             }

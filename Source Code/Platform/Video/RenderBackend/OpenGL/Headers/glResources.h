@@ -134,7 +134,7 @@ enum class glObjectType : U8 {
     COUNT
 };
 
-class glObject {
+class glObject  {
 public:
     explicit glObject(glObjectType type, GFXDevice& context);
 

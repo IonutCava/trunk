@@ -103,7 +103,7 @@ public:
     /// Find a render pass by name and remove it from the manager
     void removeRenderPass(const Str64& name);
     [[nodiscard]] U32  getLastTotalBinSize(RenderStage renderStage) const;
-    [[nodiscard]] I32 drawCallCount(RenderStage stage) const noexcept { return _drawCallCount[to_base(stage)]; }
+    [[nodiscard]] I32 drawCallCount(const RenderStage stage) const noexcept { return _drawCallCount[to_base(stage)]; }
 
     [[nodiscard]] RenderQueue& getQueue() noexcept { return _renderQueue; }
 

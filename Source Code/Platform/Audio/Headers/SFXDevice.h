@@ -51,14 +51,14 @@ public:
     SFXDevice(Kernel& parent);
     ~SFXDevice();
 
-    ErrorCode initAudioAPI(PlatformContext& context) override;
+    [[nodiscard]] ErrorCode initAudioAPI(PlatformContext& context) override;
     void closeAudioAPI() override;
 
-    void setAPI(AudioAPI API) noexcept { _API_ID = API; }
-    AudioAPI getAPI() const noexcept { return _API_ID; }
+    void setAPI(const AudioAPI API) noexcept { _API_ID = API; }
+    [[nodiscard]] AudioAPI getAPI() const noexcept { return _API_ID; }
 
     void setAudioState(const AudioState& state) noexcept { _state = state; }
-    AudioState& getActiveAudioState() noexcept { return _state; }
+    [[nodiscard]] AudioState& getActiveAudioState() noexcept { return _state; }
 
     void beginFrame() override;
     void endFrame() override;
@@ -72,8 +72,8 @@ public:
     void setSoundVolume(I8 value) override;
 
     void addMusic(U32 playlistEntry, const AudioDescriptor_ptr& music);
-    bool playMusic(U32 playlistEntry);
-    bool playMusic(MusicPlaylist& playlist);
+    [[nodiscard]] bool playMusic(U32 playlistEntry);
+    [[nodiscard]] bool playMusic(MusicPlaylist& playlist);
 
     void dumpPlaylists();
 protected:

@@ -59,9 +59,9 @@ class Renderer final : public PlatformContextComponent {
 
     void updateResolution(U16 newWidth, U16 newHeight) const;
 
-    PostFX& postFX() noexcept { return *_postFX; }
+    [[nodiscard]] PostFX& postFX() noexcept { return *_postFX; }
 
-    const PostFX& postFX() const noexcept { return *_postFX; }
+    [[nodiscard]] const PostFX& postFX() const noexcept { return *_postFX; }
 
   private:
     mat4<F32>         _previousProjMatrix;

@@ -11,18 +11,16 @@
 #include "ECS/Components/Headers/NavigationComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 
-namespace Divide {
-namespace AI {
-namespace Navigation {
-namespace NavigationMeshLoader {
-    constexpr U32 cubeFaces[6][4] = {{0, 4, 6, 2},
+namespace Divide::AI::Navigation::NavigationMeshLoader {
+
+    constexpr U32 g_cubeFaces[6][4] = {{0, 4, 6, 2},
                                  {0, 2, 3, 1},
                                  {0, 1, 5, 4},
                                  {3, 2, 6, 7},
                                  {7, 6, 4, 5},
                                  {3, 7, 5, 1}};
 
-char* parseRow(char* buf, char* bufEnd, char* row, I32 len) {
+char* ParseRow(char* buf, char* bufEnd, char* row, const I32 len) {
     bool cont = false;
     bool start = true;
     bool done = false;
@@ -61,7 +59,7 @@ char* parseRow(char* buf, char* bufEnd, char* row, I32 len) {
     return buf;
 }
 
-I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
+I32 ParseFace(char* row, I32* data, const I32 n, const I32 vcnt) {
     I32 j = 0;
     while (*row != '\0') {
         // Skip initial white space
@@ -86,7 +84,7 @@ I32 parseFace(char* row, I32* data, I32 n, I32 vcnt) {
     return j;
 }
 
-bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileName) {
+bool LoadMeshFile(NavModelData& outData, const char* filepath, const char* fileName) {
     STUBBED("ToDo: Rework load/save to properly use a ByteBuffer instead of this const char* hackery. -Ionut");
     char* buf = nullptr;
     char* srcEnd;
@@ -110,20 +108,20 @@ bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileN
     while (src < srcEnd) {
         // Parse one row
         row[0] = '\0';
-        src = parseRow(src, srcEnd, row, sizeof row / sizeof(char));
+        src = ParseRow(src, srcEnd, row, sizeof row / sizeof(char));
         // Skip comments
         if (row[0] == '#')
             continue;
 
         if (row[0] == 'v' && row[1] != 'n' && row[1] != 't') {
             // Vertex pos
-            I32 result = sscanf(row + 1, "%f %f %f", &x, &y, &z);
+            const I32 result = sscanf(row + 1, "%f %f %f", &x, &y, &z);
             if (result != 0)
-                addVertex(&outData, vec3<F32>(x, y, z));
+                AddVertex(&outData, vec3<F32>(x, y, z));
         }
         if (row[0] == 'f') {
             // Faces
-            I32 nv = parseFace(row + 1, face, 32, outData._vertexCount);
+            const I32 nv = ParseFace(row + 1, face, 32, outData._vertexCount);
             for (I32 i = 2; i < nv; ++i) {
                 const I32 a = face[0];
                 const I32 b = face[i - 1];
@@ -134,7 +132,7 @@ bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileN
                     continue;
                 }
 
-                addTriangle(&outData, vec3<U32>(a, b, c));
+                AddTriangle(&outData, vec3<U32>(a, b, c));
             }
         }
     }
@@ -171,7 +169,7 @@ bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileN
     return true;
 }
 
-bool saveMeshFile(const NavModelData& inData, const char* filepath, const char* filename) {
+bool SaveMeshFile(const NavModelData& inData, const char* filepath, const char* filename) {
     if (!inData.getVertCount() || !inData.getTriCount())
         return false;
 
@@ -192,9 +190,9 @@ bool saveMeshFile(const NavModelData& inData, const char* filepath, const char* 
     return tempBuffer.dumpToFile(filepath, filename);
 }
 
-NavModelData mergeModels(NavModelData& a,
+NavModelData MergeModels(NavModelData& a,
                          NavModelData& b,
-                         bool delOriginals /* = false*/) {
+                         const bool delOriginals /* = false*/) {
     NavModelData mergedData;
     if (a.getVerts() || b.getVerts()) {
         if (!a.getVerts())
@@ -254,7 +252,7 @@ NavModelData mergeModels(NavModelData& a,
     return mergedData;
 }
 
-void addVertex(NavModelData* modelData, const vec3<F32>& vertex) {
+void AddVertex(NavModelData* modelData, const vec3<F32>& vertex) {
     assert(modelData != nullptr);
 
     if (modelData->getVertCount() + 1 > modelData->_vertexCapacity) {
@@ -281,9 +279,9 @@ void addVertex(NavModelData* modelData, const vec3<F32>& vertex) {
     modelData->_vertexCount++;
 }
 
-void addTriangle(NavModelData* modelData,
+void AddTriangle(NavModelData* modelData,
                  const vec3<U32>& triangleIndices,
-                 U32 triangleIndexOffset,
+                 const U32 triangleIndexOffset,
                  const SamplePolyAreas& areaType) {
     if (modelData->getTriCount() + 1 > modelData->_triangleCapacity) {
         modelData->_triangleCapacity = !modelData->_triangleCapacity
@@ -311,8 +309,8 @@ void addTriangle(NavModelData* modelData,
     modelData->_triangleCount++;
 }
 
-const vec3<F32> borderOffset(BORDER_PADDING);
-bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
+const vec3<F32> g_borderOffset(BORDER_PADDING);
+bool Parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
     assert(sgn != nullptr);
 
     NavigationComponent* navComp = sgn->get<NavigationComponent>();
@@ -370,7 +368,7 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 // we should never reach this due to the bit checks above
                 DIVIDE_UNEXPECTED_CALL();
             } break;
-        };
+        }
 
         // I should remove this hack - Ionut
         SceneGraphNode* nodeSGN = sgn;
@@ -405,34 +403,34 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 mat4<F32> nodeTransform = MAT4_IDENTITY;
                 nodeSGN->get<TransformComponent>()->getWorldMatrix(nodeTransform);
 
-                for (U32 i = 0; i < vertices.size(); ++i) {
+                for (const VertexBuffer::Vertex& vert : vertices) {
                     // Apply the node's transform and add the vertex to the NavMesh
-                    addVertex(&outData, nodeTransform * vertices[i]._position);
+                    AddVertex(&outData, nodeTransform * vert._position);
                 }
             } else {
-                for (U32 i = 0; i < vertices.size(); ++i) {
+                for (const VertexBuffer::Vertex& vert : vertices) {
                     // Apply the node's transform and add the vertex to the NavMesh
-                    addVertex(&outData, vertices[i]._position);
+                    AddVertex(&outData, vert._position);
                 }
             }
 
-            for (U32 i = 0; i < triangles.size(); ++i) {
-                addTriangle(&outData, triangles[i], currentTriangleIndexOffset, areaType);
+            for (const vec3<U32>& triangle : triangles) {
+                AddTriangle(&outData, triangle, currentTriangleIndexOffset, areaType);
             }
         } else if (level == MeshDetailLevel::BOUNDINGBOX) {
             std::array<vec3<F32>, 8> vertices = box.getPoints();
 
             for (U32 i = 0; i < 8; i++) {
-                addVertex(&outData, vertices[i]);
+                AddVertex(&outData, vertices[i]);
             }
 
             for (U32 f = 0; f < 6; f++) {
                 for (U32 v = 2; v < 4; v++) {
                     // Note: We reverse the normal on the polygons to prevent
                     // things from going inside out
-                    addTriangle(&outData,
-                                vec3<U32>(cubeFaces[f][0], cubeFaces[f][v - 1],
-                                          cubeFaces[f][v]),
+                    AddTriangle(&outData,
+                                vec3<U32>(g_cubeFaces[f][0], g_cubeFaces[f][v - 1],
+                                          g_cubeFaces[f][v]),
                                 currentTriangleIndexOffset, areaType);
                 }
             }
@@ -447,14 +445,11 @@ bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 // follow -Ionut
 next:
     return !sgn->forEachChild([&outData](SceneGraphNode* child, I32 /*childIdx*/) {
-                if (!parse(child->get<BoundsComponent>()->getBoundingBox(), outData, child)) {
+                if (!Parse(child->get<BoundsComponent>()->getBoundingBox(), outData, child)) {
                     return false;
                 }
                 return true;
             });
 
 }
-}
-}  // namespace Navigation
-}  // namespace AI
-}  // namespace Divide
+}  // namespace Divide::AI::Navigation::NavigationMeshLoader

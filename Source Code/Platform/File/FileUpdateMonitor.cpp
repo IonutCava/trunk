@@ -48,10 +48,10 @@ void UpdateListener::handleFileAction(FW::WatchID watchid, const FW::String& dir
         FileUpdateEvent evt = FileUpdateEvent::COUNT;
         switch (action)
         {
-        case FW::Actions::Add: evt = FileUpdateEvent::ADD; break;
-        case FW::Actions::Delete: evt = FileUpdateEvent::DELETE; break;
-        case FW::Actions::Modified: evt = FileUpdateEvent::MODIFY; break;
-        default: DIVIDE_UNEXPECTED_CALL("Unknown file event!");
+            case FW::Actions::Add: evt = FileUpdateEvent::ADD; break;
+            case FW::Actions::Delete: evt = FileUpdateEvent::DELETE; break;
+            case FW::Actions::Modified: evt = FileUpdateEvent::MODIFY; break;
+            default: DIVIDE_UNEXPECTED_CALL("Unknown file event!");
         }
 
         _cbk(filename.c_str(), evt);

@@ -36,8 +36,8 @@ namespace {
 
         std::atomic_bool g_wasSetUp = false;
 
-        struct assimpStream final : public Assimp::LogStream {
-            void write(const char* message)
+        struct assimpStream final : Assimp::LogStream {
+            void write(const char* message) override
             {
                 Console::printf("%s\n", message);
             }
@@ -618,7 +618,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
         auto [img_name, img_path] = splitPathToNameAndLocation(path);
 
         // if we have a name and an extension
-        if (!img_name.str().substr(img_name.str().find_first_of("."), Str64::npos).empty()) {
+        if (!img_name.str().substr(img_name.str().find_first_of('.'), Str64::npos).empty()) {
 
             const TextureUsage usage = count == 1 ? TextureUsage::UNIT1
                                                                  : TextureUsage::UNIT0;

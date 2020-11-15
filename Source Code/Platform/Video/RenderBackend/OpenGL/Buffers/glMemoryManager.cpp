@@ -178,7 +178,7 @@ bufferPtr createAndAllocPersistentBuffer(const size_t bufferSize,
                                          const MapBufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data,
-                                         size_t dataSize,
+                                         const size_t dataSize,
                                          const char* name)
 {
     assert(dataSize <= bufferSize);

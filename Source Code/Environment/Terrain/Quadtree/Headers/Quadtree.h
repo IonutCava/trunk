@@ -62,7 +62,7 @@ class Quadtree {
 
     [[nodiscard]] U32 getChunkCount() const noexcept { return _chunkCount; }
 
-    void drawBBox(RenderPackage& packageOut);
+    void drawBBox(RenderPackage& packageOut) const;
     void toggleBoundingBoxes();
 
     [[nodiscard]] QuadtreeNode* findLeaf(const vec2<F32>& pos) const;

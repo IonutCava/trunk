@@ -144,8 +144,7 @@ void PhysXSceneInterface::process(const U64 deltaTimeUS) {
     }
 }
 
-void PhysXSceneInterface::addRigidActor(PhysXActor* const actor,
-                                        bool threaded) {
+void PhysXSceneInterface::addRigidActor(PhysXActor* const actor, const bool threaded) {
     assert(actor != nullptr);
 
     if (threaded) {

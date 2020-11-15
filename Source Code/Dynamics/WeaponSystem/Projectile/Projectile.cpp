@@ -4,7 +4,7 @@
 
 namespace Divide {
 
-Projectile::Projectile(ProjectileType type)
+Projectile::Projectile(const ProjectileType type)
     : _type(type),
       _properyMask(0)
 {
@@ -12,9 +12,7 @@ Projectile::Projectile(ProjectileType type)
     assert(_type != ProjectileType::COUNT);
 }
 
-Projectile::~Projectile() {}
-
-bool Projectile::addProperties(ProjectileProperty property) {
+bool Projectile::addProperties(const ProjectileProperty property) {
     assert(property != ProjectileProperty::COUNT);
     _properyMask |= to_U32(property);
     return true;

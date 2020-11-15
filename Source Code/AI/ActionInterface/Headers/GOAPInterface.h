@@ -47,7 +47,7 @@ using GOAPWorldState = goap::WorldState;
 using GOAPActionSet = vectorEASTL<const GOAPAction*>;
 using GOAPPlan = vectorEASTL<const GOAPAction*>;
 
-inline const char* GOAPValueName(GOAPValue val) {
+inline const char* GOAPValueName(const GOAPValue val) {
     return val ? "true" : "false";
 }
 

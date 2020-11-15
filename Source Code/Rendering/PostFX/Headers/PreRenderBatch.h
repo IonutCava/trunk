@@ -61,7 +61,7 @@ class PreRenderBatch {
         }
 
         const OperatorBatch& batch = _operators[to_U32(fSpace)];
-        const auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
+        const auto* const it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
 
@@ -76,7 +76,7 @@ class PreRenderBatch {
         }
 
         const OperatorBatch& batch = _operators[to_U32(GetOperatorSpace(type))];
-        const auto it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
+        const auto* const it = std::find_if(std::cbegin(batch), std::cend(batch), [type](const eastl::unique_ptr<PreRenderOperator>& op) noexcept {
                                     return op->operatorType() == type;
                               });
         assert(it != std::cend(batch));
@@ -116,7 +116,7 @@ class PreRenderBatch {
         return FilterSpace::COUNT;
     }
 
-    void onFilterToggle(FilterType type, bool state);
+    void onFilterToggle(FilterType filter, bool state);
 
     [[nodiscard]] bool operatorsReady() const;
 

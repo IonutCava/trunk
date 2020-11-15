@@ -44,7 +44,7 @@ namespace Util {
     {
     public:
         CRC32() = default;
-        explicit CRC32(const void* buf, size_t size)
+        explicit CRC32(const void* buf, const size_t size)
         {
             Hash(buf, size);
         }

@@ -145,11 +145,11 @@ constexpr U64 val_64_const = 0xcbf29ce484222325;
 constexpr U64 prime_64_const = 0x100000001b3;
 
 constexpr U64 _ID(const char* const str, const U64 value = val_64_const) noexcept {
-    return str[0] == '\0' ? value : _ID(&str[1], (value ^ U64(str[0])) * prime_64_const);
+    return str[0] == '\0' ? value : _ID(&str[1], (value ^ to_U64(str[0])) * prime_64_const);
 }
 
 constexpr U64 _ID_VIEW(const char* const str, const size_t len, const U64 value = val_64_const) noexcept {
-    return len == 0 ? value : _ID_VIEW(&str[1], len - 1, (value ^ U64(str[0])) * prime_64_const);
+    return len == 0 ? value : _ID_VIEW(&str[1], len - 1, (value ^ to_U64(str[0])) * prime_64_const);
 }
 
 constexpr U64 operator ""_id(const char* str, const size_t len) {
@@ -559,12 +559,12 @@ bool COMPARE(T X, U Y) noexcept {
 }
 
 template<>
-inline bool COMPARE(F32 X, F32 Y) noexcept {
+inline bool COMPARE(const F32 X, const F32 Y) noexcept {
     return COMPARE_TOLERANCE(X, Y, EPSILON_F32);
 }
 
 template<>
-inline bool COMPARE(D64 X, D64 Y) noexcept {
+inline bool COMPARE(const D64 X, const D64 Y) noexcept {
     return COMPARE_TOLERANCE(X, Y, EPSILON_D64);
 }
 

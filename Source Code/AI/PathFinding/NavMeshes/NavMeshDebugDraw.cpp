@@ -11,18 +11,10 @@
 #include "Platform/Video/Headers/IMPrimitive.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
-namespace Divide {
-namespace AI {
-namespace Navigation {
+namespace Divide::AI::Navigation {
 
 NavMeshDebugDraw::NavMeshDebugDraw(GFXDevice& context)
-    : _context(context),
-      _primType(PrimitiveType::COUNT),
-      _primitive(nullptr),
-      _colour(0),
-      _overrideColour(false),
-      _dirty(true),
-      _paused(false)
+    : _context(context)
 {
 }
 
@@ -33,7 +25,7 @@ NavMeshDebugDraw::~NavMeshDebugDraw()
     }
 }
 
-void NavMeshDebugDraw::paused(bool state) {
+void NavMeshDebugDraw::paused(const bool state) {
     _paused = state;
 }
 
@@ -71,7 +63,7 @@ void NavMeshDebugDraw::endBatch() {
     _dirty = false;
 }
 
-void NavMeshDebugDraw::begin(duDebugDrawPrimitives prim, F32 size) {
+void NavMeshDebugDraw::begin(const duDebugDrawPrimitives prim, F32 size) {
     if (!_dirty || !_primitive) {
         return;
     }
@@ -121,10 +113,9 @@ GFX::CommandBuffer& NavMeshDebugDraw::toCommandBuffer() const {
     return _primitive->toCommandBuffer();
 }
 
-void NavMeshDebugDraw::overrideColour(U32 col) {
+void NavMeshDebugDraw::overrideColour(const U32 col) {
     _overrideColour = true;
     _colour = col;
 }
-}  // namespace Navigation
-}  // namespace AI
-}  // namespace Divide
+
+}  // namespace Divide::AI::Navigation

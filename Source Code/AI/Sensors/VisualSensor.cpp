@@ -24,7 +24,7 @@ VisualSensor::~VisualSensor()
     _nodePositionsMap.clear();
 }
 
-void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* node) {
+void VisualSensor::followSceneGraphNode(const U32 containerID, SceneGraphNode* node) {
 
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
 
@@ -48,7 +48,7 @@ void VisualSensor::followSceneGraphNode(U32 containerID, SceneGraphNode* node) {
            node->get<TransformComponent>()->getPosition());
 }
 
-void VisualSensor::unfollowSceneGraphNode(U32 containerID, U64 nodeGUID) {
+void VisualSensor::unfollowSceneGraphNode(const U32 containerID, const U64 nodeGUID) {
     DIVIDE_ASSERT(nodeGUID != 0,
                   "VisualSensor error: Invalid node GUID specified for "
                   "unfollow function");
@@ -79,7 +79,7 @@ void VisualSensor::update(const U64 deltaTimeUS) {
     }
 }
 
-SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
+SceneGraphNode* VisualSensor::getClosestNode(const U32 containerID) {
     NodeContainerMap::iterator container = _nodeContainerMap.find(containerID);
     if (container != std::end(_nodeContainerMap)) {
         NodePositions& positions = _nodePositionsMap[container->first];
@@ -108,7 +108,7 @@ SceneGraphNode* VisualSensor::getClosestNode(U32 containerID) {
     return nullptr;
 }
 
-F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {
+F32 VisualSensor::getDistanceToNodeSq(const U32 containerID, const U64 nodeGUID) {
     DIVIDE_ASSERT(
         nodeGUID != 0,
         "VisualSensor error: Invalid node GUID specified for distance request");
@@ -121,7 +121,7 @@ F32 VisualSensor::getDistanceToNodeSq(U32 containerID, U64 nodeGUID) {
     return std::numeric_limits<F32>::max();
 }
 
-vec3<F32> VisualSensor::getNodePosition(U32 containerID, U64 nodeGUID) {
+vec3<F32> VisualSensor::getNodePosition(const U32 containerID, const U64 nodeGUID) {
     DIVIDE_ASSERT(
         nodeGUID != 0,
         "VisualSensor error: Invalid node GUID specified for position request");

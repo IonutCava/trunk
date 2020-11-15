@@ -67,7 +67,7 @@ void TessellationParams::fromDescriptor(const std::shared_ptr<TerrainDescriptor>
     WorldScale(descriptor->dimensions() * 0.5f / to_F32(PATCHES_PER_TILE_EDGE));
 }
 
-Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name)
+Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : Object3D(context, parentCache, descriptorHash, name, ResourcePath{ name }, {}, ObjectType::TERRAIN, to_U32(ObjectFlag::OBJECT_FLAG_NO_VB)),
       _terrainQuadtree(context)
 {
@@ -78,7 +78,7 @@ Terrain::Terrain(GFXDevice& context, ResourceCache* parentCache, size_t descript
 void Terrain::postLoad(SceneGraphNode* sgn) {
 
     if (!_initialSetupDone) {
-        _editorComponent.onChangedCbk([this](std::string_view field) {onEditorChange(field); });
+        _editorComponent.onChangedCbk([this](const std::string_view field) {onEditorChange(field); });
 
         EditorComponentField tessTriangleWidthField = {};
         tessTriangleWidthField._name = "Tessellated Triangle Width";
@@ -181,7 +181,7 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
     SceneNode::postLoad(sgn);
 }
 
-void Terrain::onEditorChange(std::string_view field) {
+void Terrain::onEditorChange(const std::string_view field) {
     if (field == "Toggle Quadtree Bounds") {
         toggleBoundingBoxes();
     } else {
@@ -332,7 +332,7 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
                             RenderingComponent& rComp,
                             const RenderStagePass& renderStagePass,
                             const Camera& camera,
-                            bool refreshData) {
+                            const bool refreshData) {
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         rComp.getMaterialInstance()->parallaxFactor(parallaxHeightScale());
@@ -415,7 +415,7 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
     Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-Terrain::Vert Terrain::getVertFromGlobal(F32 x, F32 z, bool smooth) const {
+Terrain::Vert Terrain::getVertFromGlobal(F32 x, F32 z, const bool smooth) const {
     x -= _boundingBox.getCenter().x;
     z -= _boundingBox.getCenter().z;
     const vec2<U16>& dim = _descriptor->dimensions();
@@ -424,12 +424,12 @@ Terrain::Vert Terrain::getVertFromGlobal(F32 x, F32 z, bool smooth) const {
     return getVert(xClamp, 1 - zClamp, smooth);
 }
 
-Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf, bool smooth) const {
+Terrain::Vert Terrain::getVert(const F32 x_clampf, const F32 z_clampf, const bool smooth) const {
     return smooth ? getSmoothVert(x_clampf, z_clampf)
                   : getVert(x_clampf, z_clampf);
 }
 
-Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
+Terrain::Vert Terrain::getSmoothVert(const F32 x_clampf, const F32 z_clampf) const {
     assert(!(x_clampf < 0.0f || z_clampf < 0.0f || 
              x_clampf > 1.0f || z_clampf > 1.0f));
 
@@ -499,7 +499,7 @@ Terrain::Vert Terrain::getSmoothVert(F32 x_clampf, F32 z_clampf) const {
 
 }
 
-Terrain::Vert Terrain::getVert(F32 x_clampf, F32 z_clampf) const {
+Terrain::Vert Terrain::getVert(const F32 x_clampf, const F32 z_clampf) const {
     assert(!(x_clampf < 0.0f || z_clampf < 0.0f ||
              x_clampf > 1.0f || z_clampf > 1.0f));
 

@@ -128,7 +128,7 @@ void WarScene::toggleTerrainMode() {
     _terrainMode = !_terrainMode;
 }
 
-void WarScene::debugDraw(const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+void WarScene::debugDraw(const Camera* activeCamera, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     if (renderState().isEnabledOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES)) {
         if (!_targetLines) {
             _targetLines = _context.gfx().newIMP();
@@ -315,11 +315,6 @@ void WarScene::updateSceneStateInternal(const U64 deltaTimeUS) {
 }
 
 bool WarScene::load(const Str256& name) {
-    constexpr U32 lightMask = to_base(ComponentType::TRANSFORM) |
-                              to_base(ComponentType::BOUNDS) |
-                              to_base(ComponentType::RENDERING);
-
-
     // Load scene resources
     const bool loadState = SCENE_LOAD(name);
     setDayNightCycleTimeFactor(24);
@@ -331,6 +326,10 @@ bool WarScene::load(const Str256& name) {
     // Add some obstacles
 
     /*
+    constexpr U32 lightMask = to_base(ComponentType::TRANSFORM) |
+                              to_base(ComponentType::BOUNDS) |
+                              to_base(ComponentType::RENDERING);
+
     constexpr U32 normalMask = lightMask |
                            to_base(ComponentType::RIGID_BODY) |
                            to_base(ComponentType::NAVIGATION) |
@@ -651,7 +650,7 @@ U16 WarScene::registerInputActions() {
     return actionID++;
 }
 
-void WarScene::toggleCamera(InputParams param) {
+void WarScene::toggleCamera(const InputParams param) {
     // None of this works with multiple players
     static bool tpsCameraActive = false;
     static bool flyCameraActive = true;
@@ -691,7 +690,7 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
                                      "Simulate",
                                      pixelPosition(targetRenderViewport.sizeX - 220, 60),
                                      pixelScale(100, 25));
-    btn->setEventCallback(GUIButton::Event::MouseClick, [this](I64 btnGUID) { startSimulation(btnGUID); });
+    btn->setEventCallback(GUIButton::Event::MouseClick, [this](const I64 btnGUID) { startSimulation(btnGUID); });
 
     btn = _GUI->addButton("ShaderReload",
                           "Shader Reload",

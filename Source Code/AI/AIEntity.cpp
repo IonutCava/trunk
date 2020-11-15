@@ -21,7 +21,7 @@ constexpr F32 DESTINATION_RADIUS_SQ_F = to_F32(DESTINATION_RADIUS_SQ);
 
 AIEntity::AIEntity(const vec3<F32>& currentPosition, stringImpl name)
     : GUIDWrapper(),
-      _name(std::move(name)),
+      _name(MOV(name)),
       _teamPtr(nullptr),
       _processor(nullptr),
       _unitRef(nullptr),
@@ -364,7 +364,7 @@ bool AIEntity::destinationReached() const {
     }
 
     return _currentPosition.distanceSquared(getDestination()) <= DESTINATION_RADIUS_SQ ||
-            _detourCrowd->destinationReached(getAgent(), DESTINATION_RADIUS_F);
+           Navigation::DivideDtCrowd::destinationReached(getAgent(), DESTINATION_RADIUS_F);
 }
 
 void AIEntity::setDestination(const vec3<F32>& destination) {

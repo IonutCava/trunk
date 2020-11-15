@@ -9,7 +9,7 @@
 namespace Divide {
 
 
-bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, bufferPtr content, size_t length, FileType fileType) {
+bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, const bufferPtr content, const size_t length, const FileType fileType) {
     return writeFile(filePath.c_str(), fileName.c_str(), content, length, fileType);
 }
 
@@ -138,7 +138,7 @@ bool fileExists(const char* filePath, const char* fileName) {
     return ret;
 }
 
-bool createFile(const char* filePathAndName, bool overwriteExisting) {
+bool createFile(const char* filePathAndName, const bool overwriteExisting) {
     if (overwriteExisting && fileExists(filePathAndName)) {
         const bool ret = std::ofstream(filePathAndName, std::fstream::in | std::fstream::trunc).good();
         return ret;
@@ -203,12 +203,12 @@ bool deleteFile(const char* filePath, const char* fileName) {
     return true;
 }
 
-bool copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, bool overwrite) {
+bool copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, const bool overwrite) {
     const bool ret = copyFile(sourcePath.c_str(), sourceName.c_str(), targetPath.c_str(), targetName.c_str(), overwrite);
     return ret;
 }
 
-bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite) {
+bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, const bool overwrite) {
     if (Util::IsEmptyOrNull(sourceName) || Util::IsEmptyOrNull(targetName)) {
         return false;
     }

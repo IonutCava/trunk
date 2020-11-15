@@ -525,7 +525,7 @@ void MenuBar::drawDebugMenu() {
 
         if (ImGui::BeginMenu("Select Env Probe")) {
             constexpr U8 MaxProbesPerPage = 32;
-            const auto PrintProbeEntry = [&envProbPool](const EnvironmentProbeList& probes, size_t j) {
+            const auto PrintProbeEntry = [&envProbPool](const EnvironmentProbeList& probes, const size_t j) {
                 EnvironmentProbeComponent* crtProbe = probes[j];
                 bool selected = envProbPool->debugProbe() == crtProbe;
                 if (ImGui::MenuItem(crtProbe->getSGN()->name().c_str(), "", &selected)) {
@@ -560,7 +560,7 @@ void MenuBar::drawDebugMenu() {
         if (ImGui::BeginMenu("Select Debug light"))
         {
             constexpr U8 MaxLightsPerPage = 32;
-            const auto PrintLightEntry = [&pool](const LightPool::LightList& lights, size_t j) {
+            const auto PrintLightEntry = [&pool](const LightPool::LightList& lights, const size_t j) {
                 Light* crtLight = lights[j];
                 bool selected = pool.debugLight() == crtLight;
                 if (ImGui::MenuItem(crtLight->getSGN()->name().c_str(), "", &selected)) {

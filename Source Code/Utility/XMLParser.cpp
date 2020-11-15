@@ -11,8 +11,7 @@
 
 #include <boost/property_tree/xml_parser.hpp>
 
-namespace Divide {
-namespace XML {
+namespace Divide::XML {
 
 using boost::property_tree::ptree;
 
@@ -122,7 +121,7 @@ void loadDefaultKeyBindings(const stringImpl &file, Scene* scene) {
         const ptree & attributes = data.get_child("<xmlattr>", g_emptyPtree);
         populatePressRelease(attributes, entry);
 
-        const Input::KeyCode key = Input::keyCodeByName(Util::Trim(data.data()).c_str());
+        const Input::KeyCode key = Input::KeyCodeByName(Util::Trim(data.data()).c_str());
         scene->input()->addKeyMapping(key, entry);
     }
 
@@ -194,6 +193,4 @@ void readXML(const stringImpl& path, ptree& tree) {
         Console::errorfn(Locale::get(_ID("ERROR_XML_INVALID_FILE")), path.c_str(), e.what());
     }
 }
-}  // namespace XML
-}  // namespace Divide
-
+}  // namespace Divide::XML

@@ -67,7 +67,7 @@ struct TypeHelper {
 class GUIElement : public GUIDWrapper {
     friend class GUI;
   public:
-    GUIElement(const stringImpl& name, CEGUI::Window* parent);
+    GUIElement(stringImpl name, CEGUI::Window* parent);
     virtual ~GUIElement() = default;
     
     virtual void setTooltip(const stringImpl& tooltipText) {

@@ -111,7 +111,7 @@ void Kernel::startSplashScreen() {
             const U64 deltaTimeUS = Time::App::ElapsedMicroseconds() - previousTimeUS;
             previousTimeUS += deltaTimeUS;
             _platformContext.beginFrame(PlatformContext::SystemComponentType::GFXDevice);
-            splash.render(_platformContext.gfx(), deltaTimeUS);
+            splash.render(_platformContext.gfx());
             _platformContext.endFrame(PlatformContext::SystemComponentType::GFXDevice);
             std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
@@ -366,7 +366,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
     return presentToScreen(evt);
 }
 
-void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& targetViewports, U8 count) {
+void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& targetViewports, const U8 count) {
     
     assert(count > 0);
     const I32 xOffset = mainViewport.x;
@@ -404,7 +404,7 @@ void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& tar
 
     // Allocates storage for a N x N matrix of viewports that will hold numViewports
     // Returns N;
-    const auto resizeViewportContainer = [&rows](U32 numViewports) {
+    const auto resizeViewportContainer = [&rows](const U32 numViewports) {
         //Try to fit all viewports into an appropriately sized matrix.
         //If the number of resulting rows is too large, drop empty rows.
         //If the last row has an odd number of elements, center them later.
@@ -463,7 +463,7 @@ void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& tar
     }
 }
 
-Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorEASTL<Time::ProfileTimer*>& timers, U8 index, const char* name) {
+Time::ProfileTimer& getTimer(Time::ProfileTimer& parentTimer, vectorEASTL<Time::ProfileTimer*>& timers, const U8 index, const char* name) {
     while (timers.size() < to_size(index) + 1) {
         timers.push_back(&Time::ADD_TIMER(Util::StringFormat("%s %d", name, timers.size()).c_str()));
         parentTimer.addChildTimer(*timers.back());
@@ -602,7 +602,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext.pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
     _platformContext.sfx().setAPI(SFXDevice::AudioAPI::SDL);
 
-    ASIO::SET_LOG_FUNCTION([](std::string_view msg, bool is_error) {
+    ASIO::SET_LOG_FUNCTION([](const std::string_view msg, const bool is_error) {
         is_error ? Console::errorfn(stringImpl(msg).c_str()) : Console::printfn(stringImpl(msg).c_str());
     });
 
@@ -698,7 +698,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     });
 
     // Initialize GUI with our current resolution
-    _platformContext.gui().init(_platformContext, resourceCache());
+    if (!_platformContext.gui().init(_platformContext, resourceCache())) {
+        return ErrorCode::GUI_INIT_ERROR;
+    }
+
     startSplashScreen();
 
     Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
@@ -742,7 +745,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         if (!_platformContext.editor().init(config.runtime.resolution)) {
             return ErrorCode::EDITOR_INIT_ERROR;
         }
-        _sceneManager->addSelectionCallback([&](PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) {
+        _sceneManager->addSelectionCallback([&](const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& nodes) {
             _platformContext.editor().selectionChangeCallback(idx, nodes);
         });
     }

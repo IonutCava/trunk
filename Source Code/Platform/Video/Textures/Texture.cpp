@@ -131,7 +131,6 @@ void Texture::threadedLoad() {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                     resourceName().c_str());
-                return;
             }
         }
     }
@@ -189,7 +188,7 @@ bool Texture::checkTransparency(const ResourcePath& name, ImageTools::ImageData&
             descriptor._iterCount = width;
             descriptor._partitionSize = std::max(16u, to_U32(width / 10));
             descriptor._useCurrentThread = true;
-            descriptor._cbk =  [this, &fileData, height, layer](const Task* parent, U32 start, U32 end) {
+            descriptor._cbk =  [this, &fileData, height, layer](const Task* /*parent*/, const U32 start, const U32 end) {
                 U8 tempA = 0u;
                 for (U32 i = start; i < end; ++i) {
                     for (I32 j = 0; j < height; ++j) {

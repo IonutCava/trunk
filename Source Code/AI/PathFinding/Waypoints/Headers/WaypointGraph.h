@@ -49,9 +49,9 @@ class WaypointGraph {
     void removeWaypoint(Waypoint* wp);
 
     void updateGraph();
-    bool isLooping() { return _loop; }
-    U32 getID() const { return _id; }
-    U32 getSize() { return to_U32(_waypoints.size()); }
+    [[nodiscard]] bool isLooping() const { return _loop; }
+    [[nodiscard]] U32 getID() const { return _id; }
+    [[nodiscard]] U32 getSize() const { return to_U32(_waypoints.size()); }
 
    private:
     WaypointMap _waypoints;

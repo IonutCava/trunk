@@ -62,7 +62,8 @@ Sizef FormattedListboxTextItem::getPixelSize() const {
 
 //----------------------------------------------------------------------------//
 void FormattedListboxTextItem::draw(GeometryBuffer& buffer,
-                                    const Rectf& targetRect, float alpha,
+                                    const Rectf& targetRect,
+                                    const float alpha,
                                     const Rectf* clipper) const {
     // reparse text if we need to.
     if (!d_renderedStringValid) parseTextString();

@@ -111,7 +111,7 @@ void glTexture::threadedLoad() {
     CachedResource::load();
 }
 
-void glTexture::setMipMapRange(U16 base, U16 max) noexcept {
+void glTexture::setMipMapRange(const U16 base, const U16 max) noexcept {
     if (_descriptor.mipLevels() == vec2<U16>(base, max)) {
         return;
     }
@@ -120,7 +120,7 @@ void glTexture::setMipMapRange(U16 base, U16 max) noexcept {
     Texture::setMipMapRange(base, max);
 }
 
-void glTexture::setMipRangeInternal(U16 base, U16 max) const noexcept {
+void glTexture::setMipRangeInternal(const U16 base, const U16 max) const noexcept {
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, base);
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, max);
 }
@@ -432,7 +432,7 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
     }
 }
 
-void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) {
+void glTexture::bindLayer(const U8 slot, const U8 level, const U8 layer, const bool layered, const Image::Flag rw_flag) {
     assert(_data._textureType != TextureType::COUNT);
 
     GLenum access = GL_NONE;
@@ -445,7 +445,7 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag
 
     if (access != GL_NONE) {
         const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
-        GL_API::getStateTracker().bindTextureImage(slot, _descriptor.texType(), _data._textureHandle, level, layered, layer, access, glInternalFormat);
+        GL_API::getStateTracker().bindTextureImage(slot, _data._textureHandle, level, layered, layer, access, glInternalFormat);
     } else {
         DIVIDE_UNEXPECTED_CALL();
     }
@@ -487,7 +487,7 @@ void glTexture::bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag
 
 std::pair<std::shared_ptr<Byte[]>, size_t> glTexture::readData(U16 mipLevel, const GFXDataFormat desiredFormat) const {
     if (_descriptor.compressed()) {
-        DIVIDE_ASSERT("glTexture::readData: Compressed textures not supported!");
+        DIVIDE_ASSERT(false, "glTexture::readData: Compressed textures not supported!");
         return {nullptr, 0};
     }
 

@@ -9,7 +9,7 @@
 namespace Divide {
     
 namespace {
-    GLint getBufferTargetIndex(GLenum target) {
+    GLint GetBufferTargetIndex(const GLenum target) {
         // Select the appropriate index in the array based on the buffer target
         switch (target) {
             case GL_TEXTURE_BUFFER: return 0;
@@ -58,10 +58,10 @@ void GLStateTracker::setStateBlock(size_t stateBlockHash) {
 }
 
 /// Pixel pack alignment is usually changed by textures, PBOs, etc
-bool GLStateTracker::setPixelPackAlignment(GLint packAlignment,
-                                           GLint rowLength,
-                                           GLint skipRows,
-                                           GLint skipPixels) {
+bool GLStateTracker::setPixelPackAlignment(const GLint packAlignment,
+                                           const GLint rowLength,
+                                           const GLint skipRows,
+                                           const GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
     if (_activePackUnpackAlignments[0] != packAlignment) {
@@ -93,10 +93,10 @@ bool GLStateTracker::setPixelPackAlignment(GLint packAlignment,
 }
 
 /// Pixel unpack alignment is usually changed by textures, PBOs, etc
-bool GLStateTracker::setPixelUnpackAlignment(GLint unpackAlignment,
-                                             GLint rowLength,
-                                             GLint skipRows,
-                                             GLint skipPixels) {
+bool GLStateTracker::setPixelUnpackAlignment(const GLint unpackAlignment,
+                                             const GLint rowLength,
+                                             const GLint skipRows,
+                                             const GLint skipPixels) {
     // Keep track if we actually affect any OpenGL state
     bool changed = false;
     if (_activePackUnpackAlignments[1] != unpackAlignment) {
@@ -129,7 +129,7 @@ bool GLStateTracker::setPixelUnpackAlignment(GLint unpackAlignment,
 
 /// Enable or disable primitive restart and ensure that the correct index size
 /// is used
-void GLStateTracker::togglePrimitiveRestart(bool state) {
+void GLStateTracker::togglePrimitiveRestart(const bool state) {
     // Toggle primitive restart on or off
     if (_primitiveRestartEnabled != state) {
         _primitiveRestartEnabled = state;
@@ -139,7 +139,7 @@ void GLStateTracker::togglePrimitiveRestart(bool state) {
 }
 
 /// Enable or disable primitive rasterization
-void GLStateTracker::toggleRasterization(bool state) {
+void GLStateTracker::toggleRasterization(const bool state) {
     // Toggle primitive restart on or off
     if (_rasterizationEnabled != state) {
         _rasterizationEnabled = state;
@@ -148,8 +148,8 @@ void GLStateTracker::toggleRasterization(bool state) {
     }
 }
 
-bool GLStateTracker::bindSamplers(GLushort unitOffset,
-                                  GLuint samplerCount,
+bool GLStateTracker::bindSamplers(const GLushort unitOffset,
+                                  const GLuint samplerCount,
                                   GLuint* samplerHandles) {
     if (samplerCount > 0 &&
         unitOffset + samplerCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
@@ -236,7 +236,7 @@ bool GLStateTracker::bindTextures(const GLushort unitOffset,
 
 /// Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
-bool GLStateTracker::bindTexture(GLushort unit,
+bool GLStateTracker::bindTexture(const GLushort unit,
                                  TextureType type,
                                  GLuint handle,
                                  GLuint samplerHandle) {
@@ -247,9 +247,8 @@ bool GLStateTracker::bindTexture(GLushort unit,
     return bindTextures(unit, 1, &type, &handle, &samplerHandle);
 }
 
-bool GLStateTracker::bindTextureImage(GLushort unit, TextureType type, GLuint handle, GLint level,
-                              bool layered, GLint layer, GLenum access,
-                              GLenum format) {
+bool GLStateTracker::bindTextureImage(const GLushort unit, const GLuint handle, const GLint level,
+                                      const bool layered, const GLint layer, const GLenum access, const GLenum format) {
     static ImageBindSettings tempSettings;
     tempSettings = {handle, level, layered ? GL_TRUE : GL_FALSE, layer, access, format};
 
@@ -264,7 +263,7 @@ bool GLStateTracker::bindTextureImage(GLushort unit, TextureType type, GLuint ha
 }
 
 /// Single place to change buffer objects for every target available
-bool GLStateTracker::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLuint instanceDivisor, size_t offset, size_t stride) {
+bool GLStateTracker::bindActiveBuffer(const GLuint vaoID, const GLuint location, GLuint bufferID, const GLuint instanceDivisor, size_t offset, size_t stride) {
     if (_vaoBufferData.instanceDivisor(vaoID, location) != instanceDivisor) {
         glVertexArrayBindingDivisor(vaoID, location, instanceDivisor);
         _vaoBufferData.instanceDivisor(vaoID, location, instanceDivisor);
@@ -284,14 +283,14 @@ bool GLStateTracker::bindActiveBuffer(GLuint vaoID, GLuint location, GLuint buff
     return false;
 }
 
-bool GLStateTracker::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID) {
+bool GLStateTracker::setActiveFB(const RenderTarget::RenderTargetUsage usage, const GLuint ID) {
     GLuint temp = 0;
     return setActiveFB(usage, ID, temp);
 }
 
 /// Switch the current framebuffer by binding it as either a R/W buffer, read
 /// buffer or write buffer
-bool GLStateTracker::setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID) {
+bool GLStateTracker::setActiveFB(const RenderTarget::RenderTargetUsage usage, GLuint ID, GLuint& previousID) {
     // We may query the active framebuffer handle and get an invalid handle in
     // return and then try to bind the queried handle
     // This is, for example, in save/restore FB scenarios. An invalid handle
@@ -360,9 +359,9 @@ bool GLStateTracker::setActiveVAO(const GLuint ID, GLuint& previousID) noexcept 
 
 
 /// Single place to change buffer objects for every target available
-bool GLStateTracker::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID) {
+bool GLStateTracker::setActiveBuffer(const GLenum target, const GLuint ID, GLuint& previousID) {
     GLuint& crtBinding = target != GL_ELEMENT_ARRAY_BUFFER 
-                                 ? _activeBufferID[getBufferTargetIndex(target)]
+                                 ? _activeBufferID[GetBufferTargetIndex(target)]
                                  : _activeVAOIB[_activeVAOID];
     previousID = crtBinding;
 
@@ -378,13 +377,13 @@ bool GLStateTracker::setActiveBuffer(GLenum target, GLuint ID, GLuint& previousI
     return true;
 }
 
-bool GLStateTracker::setActiveBuffer(GLenum target, GLuint ID) {
+bool GLStateTracker::setActiveBuffer(const GLenum target, const GLuint ID) {
     GLuint temp = 0u;
     return setActiveBuffer(target, ID, temp);
 }
 
 /// Change the currently active shader program. Passing null will unbind shaders (will use program 0)
-bool GLStateTracker::setActiveProgram(GLuint programHandle) {
+bool GLStateTracker::setActiveProgram(const GLuint programHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
     if (_activeShaderProgram != programHandle) {
@@ -401,7 +400,7 @@ bool GLStateTracker::setActiveProgram(GLuint programHandle) {
 }
 
 /// Change the currently active shader pipeline. Passing null will unbind shaders (will use pipeline 0)
-bool GLStateTracker::setActiveShaderPipeline(GLuint pipelineHandle) {
+bool GLStateTracker::setActiveShaderPipeline(const GLuint pipelineHandle) {
     // Check if we are binding a new program or unbinding all shaders
     // Prevent double bind
     if (_activeShaderPipeline != pipelineHandle) {
@@ -610,7 +609,7 @@ U32 GLStateTracker::getBoundTextureHandle(const U8 slot, const TextureType type)
     return _textureBoundMap[slot][to_base(type)];
 }
 
-void GLStateTracker::getActiveViewport(GLint* vp) {
+void GLStateTracker::getActiveViewport(GLint* const vp) {
     if (vp != nullptr) {
         *vp = *_activeViewport._v;
     }

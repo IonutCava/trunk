@@ -62,7 +62,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
         blurDepthMapShader.propertyDescriptor(shaderDescriptor);
 
         _blurDepthMapShader = CreateResource<ShaderProgram>(context.parent().resourceCache(), blurDepthMapShader);
-        _blurDepthMapShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
+        _blurDepthMapShader->addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
             PipelineDescriptor pipelineDescriptor = {};
             pipelineDescriptor._stateHash = _context.get2DStateBlock();
             pipelineDescriptor._shaderProgramHandle = _blurDepthMapShader->getGUID();

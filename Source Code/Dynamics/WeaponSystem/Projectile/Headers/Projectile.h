@@ -62,7 +62,7 @@ class Projectile {
     };
 
     Projectile(ProjectileType type);
-    ~Projectile();
+    ~Projectile() = default;
 
     /// Add a specific property to this projectile
     bool addProperties(ProjectileProperty property);

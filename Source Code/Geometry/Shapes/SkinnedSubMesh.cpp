@@ -83,7 +83,7 @@ void SkinnedSubMesh::buildBoundingBoxesForAnim(const Task& parentTask,
     }
 }
 
-void SkinnedSubMesh::updateBB(I32 animIndex) {
+void SkinnedSubMesh::updateBB(const I32 animIndex) {
     UniqueLock<Mutex> r_lock(_bbLock);
     setBounds(_boundingBoxes[animIndex]);
     _parentMesh->queueRecomputeBB();

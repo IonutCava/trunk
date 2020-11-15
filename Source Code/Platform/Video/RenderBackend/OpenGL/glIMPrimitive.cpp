@@ -22,7 +22,7 @@ glIMPrimitive::~glIMPrimitive()
     MemoryManager::DELETE(_imInterface);
 }
 
-void glIMPrimitive::beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) {
+void glIMPrimitive::beginBatch(const bool reserveBuffers, const U32 vertexCount, const U32 attributeCount) {
     _imInterface->BeginBatch(reserveBuffers, vertexCount, attributeCount);
 }
 
@@ -34,27 +34,27 @@ bool glIMPrimitive::hasBatch() const {
     return !_imInterface->isCleared();
 }
 
-void glIMPrimitive::begin(PrimitiveType type) {
+void glIMPrimitive::begin(const PrimitiveType type) {
     _imInterface->Begin(GLUtil::glimPrimitiveType[to_U32(type)]);
 }
 
-void glIMPrimitive::vertex(F32 x, F32 y, F32 z) {
+void glIMPrimitive::vertex(const F32 x, const  F32 y, const F32 z) {
     _imInterface->Vertex(x, y, z);
 }
 
-void glIMPrimitive::attribute1f(U32 attribLocation, F32 value) {
+void glIMPrimitive::attribute1f(const U32 attribLocation, const F32 value) {
     _imInterface->Attribute1f(attribLocation, value);
 }
 
-void glIMPrimitive::attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) {
+void glIMPrimitive::attribute4ub(const U32 attribLocation, const U8 x, const U8 y, const U8 z, const U8 w) {
     _imInterface->Attribute4ub(attribLocation, x, y, z, w);
 }
 
-void glIMPrimitive::attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) {
+void glIMPrimitive::attribute4f(const U32 attribLocation, const F32 x, const F32 y, const F32 z, const F32 w) {
     _imInterface->Attribute4f(attribLocation, x, y, z, w);
 }
 
-void glIMPrimitive::attribute1i(U32 attribLocation, I32 value) {
+void glIMPrimitive::attribute1i(const U32 attribLocation, const I32 value) {
     _imInterface->Attribute1i(attribLocation, value);
 }
 

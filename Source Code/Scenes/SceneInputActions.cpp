@@ -9,7 +9,7 @@ namespace {
 }
 
 InputAction::InputAction(DELEGATE<void, InputParams> action)
-    : _action(std::move(action))
+    : _action(MOV(action))
 {
 }
 
@@ -32,7 +32,7 @@ bool InputActionList::registerInputAction(const U16 id, const InputAction& actio
     return true;
 }
 
-bool InputActionList::registerInputAction(const U16 id, const DELEGATE<void, InputParams> action) {
+bool InputActionList::registerInputAction(const U16 id, const DELEGATE<void, InputParams>& action) {
     return registerInputAction(id, InputAction{action});
 }
 

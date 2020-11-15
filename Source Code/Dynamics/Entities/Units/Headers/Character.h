@@ -123,7 +123,7 @@ class Character : public Unit {
     void setRelativeLookingDirection(const vec3<F32>& direction) noexcept { _lookingDirection = direction; }
 
     void playAnimation(I32 index) const;
-    void playNextAnimation();
+    void playNextAnimation() const;
     void playPreviousAnimation() const;
     void pauseAnimation(bool state) const;
 

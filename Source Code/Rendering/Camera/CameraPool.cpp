@@ -31,7 +31,7 @@ void Camera::update(const U64 deltaTimeUS) {
     }
 }
 
-Camera* Camera::utilityCameraInternal(UtilityCamera type) {
+Camera* Camera::utilityCameraInternal(const UtilityCamera type) {
     if (type != UtilityCamera::COUNT) {
         return _utilityCameras[to_base(type)];
     }
@@ -61,7 +61,7 @@ void Camera::destroyPool() {
     s_cameraPool.clear();
 }
 
-Camera* Camera::createCameraInternal(const Str256& cameraName, CameraType type) {
+Camera* Camera::createCameraInternal(const Str256& cameraName, const CameraType type) {
     Camera* camera = nullptr;
     switch (type) {
         case CameraType::FIRST_PERSON:
@@ -109,7 +109,7 @@ bool Camera::destroyCameraInternal(Camera* camera) {
 
 Camera* Camera::findCameraInternal(U64 nameHash) {
     SharedLock<SharedMutex> r_lock(s_cameraPoolLock);
-    const auto it = eastl::find_if(cbegin(s_cameraPool), cend(s_cameraPool), [nameHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == nameHash; });
+    const auto* const it = eastl::find_if(cbegin(s_cameraPool), cend(s_cameraPool), [nameHash](Camera* cam) { return _ID(cam->resourceName().c_str()) == nameHash; });
     if (it != std::end(s_cameraPool)) {
         return *it;
     }

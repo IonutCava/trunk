@@ -172,7 +172,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             D64 diffTime = nextKey.mTime - key.mTime;
             if (diffTime < 0.0) diffTime += duration();
             if (diffTime > 0) {
-                const F32 factor = F32((time - key.mTime) / diffTime);
+                const F32 factor = to_F32((time - key.mTime) / diffTime);
                 presentPosition =
                     key.mValue + (nextKey.mValue - key.mValue) * factor;
             } else {
@@ -199,7 +199,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
             D64 diffTime = nextKey.mTime - key.mTime;
             if (diffTime < 0.0) diffTime += duration();
             if (diffTime > 0) {
-                const F32 factor = F32((time - key.mTime) / diffTime);
+                const F32 factor = to_F32((time - key.mTime) / diffTime);
                 presentRotation = presentRotationDefault;
                 aiQuaternion::Interpolate(presentRotation, key.mValue,
                                           nextKey.mValue, factor);

@@ -29,23 +29,23 @@ bool SGNRelationshipCache::rebuild() {
     return true;
 }
 
-SGNRelationshipCache::RelationshipType SGNRelationshipCache::classifyNode(I64 GUID) const {
+SGNRelationshipCache::RelationshipType SGNRelationshipCache::classifyNode(const I64 GUID) const {
     assert(isValid());
 
     if (GUID != _parentNode->getGUID()) {
         SharedLock<SharedMutex> r_lock(_updateMutex);
-        for (const std::pair<I64, U8>& entry : _childrenRecursiveCache) {
-            if (entry.first == GUID) {
-                return entry.second > 0 
+        for (const auto& [childGUID, childDepth] : _childrenRecursiveCache) {
+            if (childGUID == GUID) {
+                return childDepth > 0 
                                     ? RelationshipType::GRANDCHILD
                                     : RelationshipType::CHILD;
             }
         }
-        for (const std::pair<I64, U8>& entry : _parentRecursiveCache) {
-            if (entry.first == GUID) {
-                return entry.second > 0
-                    ? RelationshipType::GRANDPARENT
-                    : RelationshipType::PARENT;
+        for (const auto& [parentGUID, parentDepth] : _parentRecursiveCache) {
+            if (parentGUID == GUID) {
+                return parentDepth > 0
+                                   ? RelationshipType::GRANDPARENT
+                                   : RelationshipType::PARENT;
             }
         }
     }

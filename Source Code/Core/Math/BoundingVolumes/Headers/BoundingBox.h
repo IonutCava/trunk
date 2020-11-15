@@ -49,12 +49,12 @@ class BoundingBox {
 
    public:
     BoundingBox() noexcept;
-    BoundingBox(const OBB& obb) noexcept;
-    BoundingBox(const BoundingSphere& bSphere) noexcept;
-    BoundingBox(vec3<F32> min, vec3<F32> max) noexcept;
-    BoundingBox(const vectorEASTL<vec3<F32>>& points) noexcept;
-    BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept;
-    BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
+    explicit BoundingBox(const OBB& obb) noexcept;
+    explicit BoundingBox(const BoundingSphere& bSphere) noexcept;
+    explicit BoundingBox(vec3<F32> min, vec3<F32> max) noexcept;
+    explicit BoundingBox(const vectorEASTL<vec3<F32>>& points) noexcept;
+    explicit BoundingBox(const std::array<vec3<F32>, 8>& points) noexcept;
+    explicit BoundingBox(F32 minX, F32 minY, F32 minZ, F32 maxX, F32 maxY, F32 maxZ) noexcept;
     ~BoundingBox() = default;
 
     BoundingBox(const BoundingBox& b) noexcept;

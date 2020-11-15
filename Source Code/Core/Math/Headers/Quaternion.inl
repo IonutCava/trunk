@@ -272,12 +272,12 @@ Quaternion<T> Quaternion<T>::operator/(T scalar) const {
 }
 
 template <typename T>
-void Quaternion<T>::slerp(const Quaternion<T>& q, F32 t) {
+void Quaternion<T>::slerp(const Quaternion<T>& q, const F32 t) {
     slerp(*this, q, t);
 }
 
 template <typename T>
-void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, F32 t) {
+void Quaternion<T>::slerp(const Quaternion<T>& q0, const Quaternion<T>& q1, const F32 t) {
     F32 k0, k1;
     T cosomega = q0.dot(q1);
     Quaternion<T> q;

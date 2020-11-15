@@ -52,11 +52,11 @@ size_t RenderPackage::getSortKeyHash() const {
     return 0;
 }
 
-const GFX::DrawCommand& RenderPackage::drawCommand(I32 index) const {
+const GFX::DrawCommand& RenderPackage::drawCommand(const I32 index) const {
     return *_commands->get<GFX::DrawCommand>(index);
 }
 
-const GenericDrawCommand& RenderPackage::drawCommand(I32 index, I32 cmdIndex) const {
+const GenericDrawCommand& RenderPackage::drawCommand(const I32 index, const I32 cmdIndex) const {
     assert(_commands != nullptr && index < drawCommandCount() && "RenderPackage::drawCommand error: Invalid draw command index!");
     
     const GFX::DrawCommand & cmd = drawCommand(index);
@@ -215,7 +215,7 @@ void RenderPackage::addShaderBuffer(const I32 descriptorSetIndex, const ShaderBu
     cmd->_set.addShaderBuffer(buffer);
 }
 
-void RenderPackage::setTexture(const I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, U8 binding) const {
+void RenderPackage::setTexture(const I32 descriptorSetIndex, const TextureData& data, const size_t samplerHash, const U8 binding) const {
     assert(_commands != nullptr && descriptorSetIndex < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()) && "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     GFX::BindDescriptorSetsCommand* cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
     cmd->_set._textureData.setTexture(data, samplerHash, binding);

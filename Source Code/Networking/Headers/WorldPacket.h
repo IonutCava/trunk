@@ -5,9 +5,7 @@
 #include "OPCodesTpl.h"
 
 #include <boost/serialization/vector.hpp>
-#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ip/udp.hpp>
 
 namespace Divide {
 
@@ -18,34 +16,24 @@ class WorldPacket : public ByteBuffer {
     {
     }
 
-    explicit WorldPacket(OPCodes::ValueType opcode, size_t res = 200) noexcept
+    explicit WorldPacket(const OPCodes::ValueType opcode, const size_t res = 200) noexcept
         : ByteBuffer(res),
           m_opcode(opcode)
     {
     }
 
     // copy constructor
-    WorldPacket(const WorldPacket& packet)
-        : ByteBuffer(packet),
-          m_opcode(packet.m_opcode)
-    {
-    }
+    WorldPacket(const WorldPacket& packet) = default;
+    WorldPacket& operator=(const WorldPacket &packet) = default;
 
-    WorldPacket& operator=(const WorldPacket &packet) {
-        ByteBuffer::operator=(packet);
-        m_opcode = packet.m_opcode;
-
-        return *this;
-    }
-
-    void Initialize(U16 opcode, size_t newres = 200) {
+    void Initialize(const U16 opcode, const size_t newres = 200) {
         clear();
         _storage.reserve(newres);
         m_opcode = opcode;
     }
 
-    OPCodes::ValueType opcode() const noexcept { return m_opcode; }
-    void opcode(OPCodes::ValueType opcode) noexcept { m_opcode = opcode; }
+    [[nodiscard]] OPCodes::ValueType opcode() const noexcept { return m_opcode; }
+    void opcode(const OPCodes::ValueType opcode) noexcept { m_opcode = opcode; }
 
    private:
     friend class boost::serialization::access;

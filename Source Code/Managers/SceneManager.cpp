@@ -86,13 +86,13 @@ void SceneManager::idle() {
     } else {
         if (_playerQueueDirty) {
             while (!_playerAddQueue.empty()) {
-                std::pair<Scene*, SceneGraphNode*>& playerToAdd = _playerAddQueue.front();
-                addPlayerInternal(*playerToAdd.first, playerToAdd.second);
+                auto& [targetScene, playerSGN] = _playerAddQueue.front();
+                addPlayerInternal(*targetScene, playerSGN);
                 _playerAddQueue.pop();
             }
             while (!_playerRemoveQueue.empty()) {
-                std::pair<Scene*, SceneGraphNode*>& playerToRemove = _playerRemoveQueue.front();
-                removePlayerInternal(*playerToRemove.first, playerToRemove.second);
+                auto& [targetScene, playerSGN] = _playerRemoveQueue.front();
+                removePlayerInternal(*targetScene, playerSGN);
                 _playerRemoveQueue.pop();
             }
             _playerQueueDirty = false;
@@ -303,7 +303,7 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
     }
 }
 
-void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
+void SceneManager::addPlayer(Scene& parentScene, SceneGraphNode* playerNode, const bool queue) {
     if (queue) {
         _playerAddQueue.push(std::make_pair(&parentScene, playerNode));
         _playerQueueDirty = true;
@@ -340,7 +340,7 @@ void SceneManager::addPlayerInternal(Scene& parentScene, SceneGraphNode* playerN
     }
 }
 
-void SceneManager::removePlayer(Scene& parentScene, SceneGraphNode* playerNode, bool queue) {
+void SceneManager::removePlayer(Scene& parentScene, SceneGraphNode* playerNode, const bool queue) {
     if (queue) {
         _playerRemoveQueue.push(std::make_pair(&parentScene, playerNode));
         _playerQueueDirty = true;
@@ -386,7 +386,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
     intersectionParams._ignoredTypes = s_ignoredNodes.data();
     intersectionParams._ignoredTypesCount = s_ignoredNodes.size();
 
-    const auto CheckPointLoS = [&](const vec3<F32>& point, I64 nodeGUID, I64 parentNodeGUID) -> bool {
+    const auto CheckPointLoS = [&](const vec3<F32>& point, const I64 nodeGUID, const I64 parentNodeGUID) -> bool {
         intersectionParams._ray = { point, point.direction(eye) };
         intersectionParams._range = { 0.f, zPlanes.y };
 

@@ -58,7 +58,7 @@ class GUIConsole final : public PlatformContextComponent {
     /// Hide or show the console
     void setVisible(bool visible);
     /// Return true if console is visible, false if is hidden
-    bool isVisible();
+    bool isVisible() const;
 
     void update(U64 deltaTimeUS);
 
@@ -75,7 +75,7 @@ class GUIConsole final : public PlatformContextComponent {
     friend class GUI;
     void createCEGUIWindow();  ///< The function which will load in the CEGUI Window and register event handlers
     // Post the message to the ChatHistory listbox with a white colour default
-    void OutputText(const Console::OutputEntry& text);
+    void OutputText(const Console::OutputEntry& text) const;
 
    protected:
     GUI& _parent;

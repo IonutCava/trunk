@@ -73,11 +73,11 @@ public:
         return renderTarget(handle._targetID);
     }
 
-    RenderTarget& renderTarget(RenderTargetID target) noexcept {
+    RenderTarget& renderTarget(const RenderTargetID target) noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
-    [[nodiscard]] const RenderTarget& renderTarget(RenderTargetID target) const noexcept {
+    [[nodiscard]] const RenderTarget& renderTarget(const RenderTargetID target) const noexcept {
         return *_renderTargets[to_U32(target._usage)][target._index];
     }
 
@@ -85,11 +85,11 @@ public:
     [[nodiscard]] const RenderTarget& screenTarget() const noexcept;
     [[nodiscard]] RenderTargetID screenTargetID() const noexcept;
 
-    vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) noexcept {
+    vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(const RenderTargetUsage target) noexcept {
         return _renderTargets[to_U32(target)];
     }
 
-    [[nodiscard]] const vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(RenderTargetUsage target) const noexcept {
+    [[nodiscard]] const vectorEASTL<std::shared_ptr<RenderTarget>>& renderTargets(const RenderTargetUsage target) const noexcept {
         return _renderTargets[to_U32(target)];
     }
 

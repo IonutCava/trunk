@@ -87,7 +87,7 @@ inline void Transform::setScale(const vec3<F32>& amount) {
 
 /// Set the local orientation using the Axis-Angle system.
 /// The angle can be in either degrees(default) or radians
-inline void Transform::setRotation(const vec3<F32>& axis, Angle::DEGREES<F32> degrees) {
+inline void Transform::setRotation(const vec3<F32>& axis, const Angle::DEGREES<F32> degrees) {
     _dirty = true;
     _rebuild = true;
 

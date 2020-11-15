@@ -36,8 +36,8 @@ void IMPrimitive::fromOBB(const OBB& obb, const UColour4& colour) {
     std::array<Line, 12> lines = {};
     for (U8 i = 0; i < 12; ++i)
     {
-        lines[i].positionStart(edges[i].start);
-        lines[i].positionEnd(edges[i].end);
+        lines[i].positionStart(edges[i]._start);
+        lines[i].positionEnd(edges[i]._end);
         lines[i].colourStart(colour);
         lines[i].colourEnd(colour);
     }
@@ -80,7 +80,7 @@ void IMPrimitive::fromBox(const vec3<F32>& min, const vec3<F32>& max, const UCol
 }
 
 void IMPrimitive::fromSphere(const vec3<F32>& center,
-                             F32 radius,
+                             const F32 radius,
                              const UColour4& colour) {
     constexpr U32 slices = 8, stacks = 8;
     constexpr F32 drho = M_PI_f / stacks;
@@ -198,7 +198,7 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
     _cmdBufferDirty = true;
 }
 
-void IMPrimitive::texture(const Texture& texture, size_t samplerHash) {
+void IMPrimitive::texture(const Texture& texture, const size_t samplerHash) {
     _texture = &texture;
     _descriptorSet._textureData.clear();
     _descriptorSet._textureData.setTexture(_texture->data(), samplerHash, TextureUsage::UNIT0);

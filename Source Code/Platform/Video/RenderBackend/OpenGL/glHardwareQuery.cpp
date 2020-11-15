@@ -11,11 +11,6 @@ glHardwareQuery::glHardwareQuery(GFXDevice& context)
 {
 }
 
-glHardwareQuery::~glHardwareQuery()
-{
-    assert(_queryID == 0u);
-}
-
 void glHardwareQuery::create(GLenum queryType) {
     destroy();
     glGenQueries(1, &_queryID);
@@ -46,7 +41,7 @@ I64 glHardwareQuery::getResultNoWait() const {
     return res;
 }
 
-glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, GLenum queryType, U32 queueLength, U32 id)
+glHardwareQueryRing::glHardwareQueryRing(GFXDevice& context, const GLenum queryType, const U32 queueLength, const U32 id)
     : RingBufferSeparateWrite(queueLength, true),
       _context(context),
       _id(id),
@@ -72,7 +67,7 @@ const glHardwareQuery& glHardwareQueryRing::writeQuery() const {
     return _queries[queueWriteIndex()];
 }
 
-void glHardwareQueryRing::resize(I32 queueLength) noexcept {
+void glHardwareQueryRing::resize(const I32 queueLength) noexcept {
     RingBufferSeparateWrite::resize(queueLength);
 
     const I32 crtCount = to_I32(_queries.size());

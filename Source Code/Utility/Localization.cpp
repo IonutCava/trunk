@@ -8,8 +8,7 @@
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"
 
-namespace Divide {
-namespace Locale {
+namespace Divide::Locale {
 
 namespace detail {
     /// Default language can be set at compile time
@@ -21,7 +20,7 @@ namespace detail {
     eastl::unique_ptr<FW::FileWatcher> g_LanguageFileWatcher = nullptr;
 
     /// Callback for external file changes. 
-    UpdateListener g_fileWatcherListener([](std::string_view languageFile, FileUpdateEvent evt) {
+    UpdateListener g_fileWatcherListener([](const std::string_view languageFile, const FileUpdateEvent evt) {
         if (evt == FileUpdateEvent::DELETE) {
             return;
         }
@@ -38,7 +37,7 @@ void LanguageData::setChangeLanguageCallback(const DELEGATE<void, std::string_vi
     _languageChangeCallback = cbk;
 }
 
-ErrorCode LanguageData::changeLanguage(std::string_view newLanguage) {
+ErrorCode LanguageData::changeLanguage(const std::string_view newLanguage) {
     // Use SimpleIni library for cross-platform INI parsing
     CSimpleIni languageFile(true, false, true);
 
@@ -140,5 +139,4 @@ const Str64& currentLanguage() noexcept {
     return detail::g_localeFile;
 }
 
-}  // namespace Locale
-}  // namespace Divide
+}  // namespace Divide::Locale

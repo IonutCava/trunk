@@ -8,7 +8,7 @@
 
 namespace Divide {
 
-ParticleData::ParticleData(GFXDevice& context, U32 particleCount, U32 optionsMask)
+ParticleData::ParticleData(GFXDevice& context, const U32 particleCount, const U32 optionsMask)
     : _context(context)
 {
     _isBillboarded = true;
@@ -113,7 +113,7 @@ void ParticleData::sort() {
     Wait(Start(*updateTask));
 }
 
-void ParticleData::swapData(U32 indexA, U32 indexB) {
+void ParticleData::swapData(const U32 indexA, const U32 indexB) {
     if (BitCompare(_optionsMask, to_U32(ParticleDataProperties::PROPERTIES_POS))) {
         _position[indexA].set(_position[indexB]);
     }
@@ -135,7 +135,7 @@ void ParticleData::swapData(U32 indexA, U32 indexB) {
 
 void ParticleData::setParticleGeometry(const vectorEASTL<vec3<F32>>& particleGeometryVertices,
                                        const vectorEASTL<U32>& particleGeometryIndices,
-                                       PrimitiveType particleGeometryType) {
+                                       const PrimitiveType particleGeometryType) {
     _particleGeometryVertices = particleGeometryVertices;
     _particleGeometryIndices = particleGeometryIndices;
     _particleGeometryType = particleGeometryType;

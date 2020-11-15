@@ -36,7 +36,7 @@ SceneAnimator::~SceneAnimator()
     release();
 }
 
-void SceneAnimator::release(bool releaseAnimations)
+void SceneAnimator::release(const bool releaseAnimations)
 {
     // this should clean everything up
     _skeletonLines.clear();
@@ -108,10 +108,10 @@ bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const v
 
 // ------------------------------------------------------------------------------------------------
 // Calculates the node transformations for the scene.
-void SceneAnimator::calculate(I32 animationIndex, const D64 pTime) {
+void SceneAnimator::calculate(const I32 animationIndex, const D64 pTime) {
     assert(_skeleton != nullptr);
 
-    if (animationIndex < 0 || animationIndex >= (I32)_animations.size()) {
+    if (animationIndex < 0 || animationIndex >= to_I32(_animations.size())) {
         return;  // invalid animation
     }
     _animations[animationIndex]->evaluate(pTime, _skeleton);
@@ -145,7 +145,7 @@ I32 SceneAnimator::boneIndex(const stringImpl& bName) const {
 }
 
 /// Renders the current skeleton pose at time index dt
-const vectorEASTL<Line>& SceneAnimator::skeletonLines(I32 animationIndex, const D64 dt) {
+const vectorEASTL<Line>& SceneAnimator::skeletonLines(const I32 animationIndex, const D64 dt) {
     const I32 frameIndex = std::max(_animations[animationIndex]->frameIndexAt(dt)._curr - 1, 0);
     I32& vecIndex = _skeletonLines.at(animationIndex).at(frameIndex);
 

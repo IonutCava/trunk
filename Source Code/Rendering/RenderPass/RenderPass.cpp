@@ -64,13 +64,13 @@ namespace {
 };
 
 
-RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, bool performanceCounters)
+RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, const U8 sortKey, const RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, const bool performanceCounters)
     : _context(context),
       _parent(parent),
       _config(context.context().config()),
       _sortKey(sortKey),
       _dependencies(dependencies),
-      _name(name),
+      _name(MOV(name)),
       _stageFlag(passStageFlag),
       _performanceCounters(performanceCounters)
 {
@@ -89,7 +89,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._initToZero = true;
 
         if (_performanceCounters) {
-            bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag));
             _cullCounter = _context.newSB(bufferDescriptor);
         }
     }
@@ -105,7 +105,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._initToZero = true;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         { 
-            bufferDescriptor._name = Util::StringFormat("NODE_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            bufferDescriptor._name = Util::StringFormat("NODE_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
             _nodeData = _context.newSB(bufferDescriptor);
         }
     }
@@ -121,7 +121,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._initToZero = true;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         {
-            bufferDescriptor._name = Util::StringFormat("COLLISION_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            bufferDescriptor._name = Util::StringFormat("COLLISION_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
             _colData = _context.newSB(bufferDescriptor);
         }
 
@@ -138,7 +138,7 @@ void RenderPass::initBufferData() {
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._initToZero = true;
         {
-            bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag)).c_str();
+            bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
             _cmdBuffer = _context.newSB(bufferDescriptor);
         }
     }
@@ -251,6 +251,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         case RenderStage::SHADOW: {
             OPTICK_EVENT("RenderPass - Shadow");
             if (_config.rendering.shadowMapping.enabled) {
+                constexpr bool useNegOneToOneDepth = false;
                 SceneManager* mgr = _parent.parent().sceneManager();
                 const Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
 
@@ -258,16 +259,19 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
                 EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Shadow Render Stage" });
 
-                //ToDo: remove this and change lookup code
-                GFX::SetClippingStateCommand clipStateCmd;
-                clipStateCmd._negativeOneToOneDepth = true;
-                //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
-
+                if_constexpr(useNegOneToOneDepth) {
+                    //ToDo: remove this and change lookup code
+                    GFX::SetClippingStateCommand clipStateCmd;
+                    clipStateCmd._negativeOneToOneDepth = true;
+                    GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+                }
                lightPool.generateShadowMaps(*camera, bufferInOut);
 
-                clipStateCmd._negativeOneToOneDepth = false;
-                //GFX::EnqueueCommand(bufferInOut, clipStateCmd);
-
+               if_constexpr(useNegOneToOneDepth) {
+                   GFX::SetClippingStateCommand clipStateCmd;
+                   clipStateCmd._negativeOneToOneDepth = false;
+                   GFX::EnqueueCommand(bufferInOut, clipStateCmd);
+               }
                 EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
             }
         } break;
@@ -281,7 +285,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
             SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
             {
-                envProbPool->prepare(bufferInOut);
+                SceneEnvironmentProbePool::Prepare(bufferInOut);
+
                 OPTICK_EVENT("RenderPass - Probes");
                 envProbPool->lockProbeList();
                 const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(camera->getEye());

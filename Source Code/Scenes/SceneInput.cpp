@@ -43,28 +43,28 @@ void SceneInput::onRemoveActive() {
 
 }
 
-void SceneInput::onPlayerAdd(U8 index) {
+void SceneInput::onPlayerAdd(const U8 index) {
     insert(_keyLog, index, KeyLog());
     insert(_mouseBtnLog, index, MouseBtnLog());
 }
 
-void SceneInput::onPlayerRemove(U8 index) {
+void SceneInput::onPlayerRemove(const U8 index) {
     _keyLog.find(index)->second.clear();
     _mouseBtnLog.find(index)->second.clear();
 }
 
-U8 SceneInput::getPlayerIndexForDevice(U8 deviceIndex) const {
+U8 SceneInput::getPlayerIndexForDevice(const U8 deviceIndex) const {
     return deviceIndex;
 }
 
 bool SceneInput::handleCallbacks(const PressReleaseActionCbks& cbks,
                                  const InputParams& params,
-                                 bool onPress)
+                                 const bool onPress)
 {
     for (const PressReleaseActionCbks::Entry& entry : cbks._entries) {
         //Check modifiers
         for (const Input::KeyCode modifier : entry._modifiers) {
-            if (getKeyState(params._deviceIndex, modifier) != Input::InputState::PRESSED) {
+            if (GetKeyState(params._deviceIndex, modifier) != Input::InputState::PRESSED) {
                 goto next;
             }
         }

@@ -39,12 +39,12 @@ template <typename T>
 class StateTracker {
    protected:
     struct optionalValue {
-        T value;
-        bool initialized;
+        T _value;
+        bool _initialized;
 
         optionalValue()
-            : value(static_cast<T>(0)),
-              initialized(false)
+            : _value(static_cast<T>(0)),
+              _initialized(false)
         {
         }
     };

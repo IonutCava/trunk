@@ -108,7 +108,7 @@ bool AIManager::updateEntities(const U64 deltaTimeUS) {  // react
     return true;
 }
 
-bool AIManager::registerEntity(U32 teamID, AIEntity* entity) {
+bool AIManager::registerEntity(const U32 teamID, AIEntity* entity) {
     UniqueLock<Mutex> w_lock(_updateMutex);
     AITeamMap::const_iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
@@ -124,7 +124,7 @@ void AIManager::unregisterEntity(AIEntity* entity) {
     }
 }
 
-void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
+void AIManager::unregisterEntity(const U32 teamID, AIEntity* entity) {
     UniqueLock<Mutex> w_lock(_updateMutex);
     AITeamMap::const_iterator it = _aiTeams.find(teamID);
     DIVIDE_ASSERT(it != std::end(_aiTeams),
@@ -133,7 +133,7 @@ void AIManager::unregisterEntity(U32 teamID, AIEntity* entity) {
     it->second->removeTeamMember(entity);
 }
 
-bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh) {
+bool AIManager::addNavMesh(const AIEntity::PresetAgentRadius radius, Navigation::NavigationMesh* const navMesh) {
     {
         UniqueLock<SharedMutex> w_lock(_navMeshMutex);
         const NavMeshMap::iterator it = _navMeshes.find(radius);
@@ -155,7 +155,7 @@ bool AIManager::addNavMesh(AIEntity::PresetAgentRadius radius, Navigation::Navig
     return true;
 }
 
-void AIManager::destroyNavMesh(AIEntity::PresetAgentRadius radius) {
+void AIManager::destroyNavMesh(const AIEntity::PresetAgentRadius radius) {
     {
         UniqueLock<SharedMutex> w_lock(_navMeshMutex);
         NavMeshMap::iterator it = _navMeshes.find(radius);
@@ -192,7 +192,7 @@ void AIManager::unregisterTeam(AITeam* const team) {
     _aiTeams.erase(it);
 }
 
-void AIManager::toggleNavMeshDebugDraw(bool state) {
+void AIManager::toggleNavMeshDebugDraw(const bool state) {
     _navMeshDebugDraw = state;
 
     SharedLock<SharedMutex> r_lock(_navMeshMutex);
@@ -201,7 +201,7 @@ void AIManager::toggleNavMeshDebugDraw(bool state) {
     }
 }
 
-void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, bool forceAll) {
+void AIManager::debugDraw(GFX::CommandBuffer& bufferInOut, const bool forceAll) {
     if (forceAll || _navMeshDebugDraw) {
         SharedLock<SharedMutex> r_lock(_navMeshMutex);
         for (NavMeshMap::value_type& it : _navMeshes) {

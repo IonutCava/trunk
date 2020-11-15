@@ -78,7 +78,7 @@ stringImpl ToString(const SendPushConstantsCommand& cmd, const U16 indent) {
     return ret;
 }
 
-stringImpl ToString(const DrawCommand& cmd, U16 indent)  {
+stringImpl ToString(const DrawCommand& cmd, const U16 indent)  {
     stringImpl ret = "\n";
     size_t i = 0;
     for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
@@ -107,7 +107,7 @@ stringImpl ToString(const SetScissorCommand& cmd, U16 indent) {
     return Util::StringFormat(" [%d, %d, %d, %d]", cmd._rect.x, cmd._rect.y, cmd._rect.z, cmd._rect.w);
 }
 
-stringImpl ToString(const SetClipPlanesCommand& cmd, U16 indent) {
+stringImpl ToString(const SetClipPlanesCommand& cmd, const U16 indent) {
     stringImpl ret = "\n";
     for (U8 i = 0; i < cmd._clippingPlanes._planes.size(); ++i) {
         ret.append("    ");
@@ -129,7 +129,7 @@ stringImpl ToString(const SetCameraCommand& cmd, U16 indent) {
     return ret;
 }
 
-stringImpl ToString(const BindDescriptorSetsCommand& cmd, U16 indent) {
+stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
     stringImpl ret = Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", cmd._set._shaderBuffers.size(), cmd._set._textureData.count());
 
     for (const auto& it : cmd._set._shaderBuffers) {
@@ -177,7 +177,7 @@ stringImpl ToString(const BeginDebugScopeCommand& cmd, U16 indent) {
     return " [ " + stringImpl(cmd._scopeName.c_str()) + " ]";
 }
 
-stringImpl ToString(const DrawTextCommand& cmd, U16 indent) {
+stringImpl ToString(const DrawTextCommand& cmd, const U16 indent) {
     stringImpl ret = "\n";
     size_t i = 0;
     for (const TextElement& element : cmd._batch()) {

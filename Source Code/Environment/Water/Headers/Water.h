@@ -49,14 +49,14 @@ class WaterPlane : public SceneNode {
     explicit WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~WaterPlane();
 
-    bool pointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point);
+    static bool PointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point);
 
     const std::shared_ptr<Quad3D>& getQuad() const noexcept { return _plane; }
 
     void updatePlaneEquation(const SceneGraphNode* sgn,
                              Plane<F32>& plane,
                              bool reflection,
-                             F32 offset);
+                             F32 offset) const;
 
     // width, length, depth
     const vec3<U16>& getDimensions() const;

@@ -41,7 +41,7 @@ using boost::asio::ip::udp;
 
 namespace Divide {
 
-class Session : public tcp_session_tpl {
+class Session final : public tcp_session_tpl {
    public:
        Session(boost::asio::io_service& io_service, channel& ch);
 

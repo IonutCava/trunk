@@ -8,7 +8,7 @@
 
 namespace Divide {
 
-Character::Character(CharacterType type, FrameListenerManager& parent, U32 callOrder)
+Character::Character(const CharacterType type, FrameListenerManager& parent, const U32 callOrder)
     : Unit(UnitType::UNIT_TYPE_CHARACTER, parent, callOrder),
       _characterType(type)
 {
@@ -127,7 +127,7 @@ void Character::playAnimation(I32 index) const {
     }
 }
 
-void Character::playNextAnimation() {
+void Character::playNextAnimation() const {
     SceneGraphNode* node(getBoundNode());
     if (node) {
         AnimationComponent* anim = node->get<AnimationComponent>();

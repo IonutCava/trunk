@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Platform/Headers/PlatformDefines.h"
 
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/strand.hpp>
 
 namespace Divide {

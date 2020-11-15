@@ -57,7 +57,7 @@ bool MotionBlurPreRenderOperator::ready() const {
     return false;
 }
 
-void MotionBlurPreRenderOperator::velocityScale(F32 val) {
+void MotionBlurPreRenderOperator::velocityScale(const F32 val) {
     _velocityScale = val;
     _context.context().config().rendering.postFX.velocityScale = val;
 }

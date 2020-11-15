@@ -26,7 +26,7 @@ Application::Application()
     _errorCode = ErrorCode::NO_ERR;
 
     if_constexpr (Config::Build::IS_DEBUG_BUILD) {
-        MemoryManager::MemoryTracker::Ready = true; //< faster way of disabling memory tracking
+        MemoryManager::MemoryTracker::Ready = true; ///< faster way of disabling memory tracking
         MemoryManager::MemoryTracker::LogAllAllocations = false;
     }
 }
@@ -40,7 +40,6 @@ ErrorCode Application::start(const stringImpl& entryPoint, const I32 argc, char*
     assert(!entryPoint.empty());
 
     _isInitialized = true;
-    ErrorCode err = ErrorCode::NO_ERR;
     _timer.reset();
 
     Console::toggleImmediateMode(true);
@@ -54,7 +53,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, const I32 argc, char*
     _kernel = MemoryManager_NEW Kernel(argc, argv, *this);
 
     // and load it via an XML file config
-    err = Attorney::KernelApplication::initialize(_kernel, entryPoint);
+    ErrorCode err = Attorney::KernelApplication::initialize(_kernel, entryPoint);
 
     // failed to start, so cleanup
     if (err != ErrorCode::NO_ERR) {
@@ -128,7 +127,7 @@ bool Application::onLoop() {
 }
 
 
-bool Application::onSDLEvent(SDL_Event event) {
+bool Application::onSDLEvent(const SDL_Event event) {
     if (event.type == SDL_QUIT) {
         RequestShutdown();
         return true;
@@ -141,7 +140,7 @@ bool Application::onSizeChange(const SizeChangeParams& params) const {
     return Attorney::KernelApplication::onSizeChange(_kernel, params);
 }
 
-void Application::mainThreadTask(const DELEGATE<void>& task, bool wait) {
+void Application::mainThreadTask(const DELEGATE<void>& task, const bool wait) {
     std::atomic_bool done = false;
     if (wait) {
         UniqueLock<Mutex> w_lock(_taskLock);

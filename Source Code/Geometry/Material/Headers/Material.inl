@@ -34,7 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-inline Texture_wptr Material::getTexture(TextureUsage textureUsage) const {
+inline Texture_wptr Material::getTexture(const TextureUsage textureUsage) const {
     SharedLock<SharedMutex> r_lock(_textureLock);
     return _textures[to_U32(textureUsage)];
 }
@@ -71,7 +71,7 @@ inline const ShaderProgramInfo& Material::shaderInfo(const RenderStagePass& rend
     return variantMap[renderStagePass._variant];
 }
 
-inline void Material::addShaderDefine(ShaderType type, const Str128& define, bool addPrefix) {
+inline void Material::addShaderDefine(const ShaderType type, const Str128& define, const bool addPrefix) {
     if (type != ShaderType::COUNT) {
         addShaderDefineInternal(type, define, addPrefix);
     } else {

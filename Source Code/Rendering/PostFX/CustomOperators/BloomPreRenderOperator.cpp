@@ -115,7 +115,7 @@ bool BloomPreRenderOperator::ready() const {
     return false;
 }
 
-void BloomPreRenderOperator::reshape(U16 width, U16 height) {
+void BloomPreRenderOperator::reshape(const U16 width, const U16 height) {
     PreRenderOperator::reshape(width, height);
 
     const U16 w = to_U16(width / resolutionDownscaleFactor);
@@ -125,13 +125,13 @@ void BloomPreRenderOperator::reshape(U16 width, U16 height) {
     _bloomBlurBuffer[1]._rt->resize(width, height);
 }
 
-void BloomPreRenderOperator::factor(F32 val) {
+void BloomPreRenderOperator::factor(const F32 val) {
     _bloomFactor = val;
     _bloomApplyConstants.set(_ID("bloomFactor"), GFX::PushConstantType::FLOAT, _bloomFactor);
     _context.context().config().rendering.postFX.bloomFactor = val;
 }
 
-void BloomPreRenderOperator::luminanceThreshold(F32 val) {
+void BloomPreRenderOperator::luminanceThreshold(const F32 val) {
     _bloomThreshold = val;
     _bloomCalcConstants.set(_ID("luminanceThreshold"), GFX::PushConstantType::FLOAT, _bloomThreshold);
     _context.context().config().rendering.postFX.bloomThreshold = val;

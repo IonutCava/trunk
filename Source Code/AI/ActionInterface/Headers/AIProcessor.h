@@ -130,7 +130,7 @@ class NOINITVTABLE AIProcessor : NonCopyable {
             return false;
         }
 
-        const auto it = eastl::find_if(
+        auto* const it = eastl::find_if(
             begin(_activeGoals), end(_activeGoals),
             [goal](GOAPGoal const* actGoal) {
                 return actGoal->name() == goal->name();
@@ -180,7 +180,7 @@ class NOINITVTABLE AIProcessor : NonCopyable {
         return false;
     }
 
-    stringImpl printPlan() {
+    stringImpl printPlan() const {
         if (_activeGoal == nullptr) {
             return "no active goal!";
         }

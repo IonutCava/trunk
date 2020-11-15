@@ -19,7 +19,7 @@ namespace {
 };
 
 namespace MemoryManager {
-void log_new(void* p, size_t size, const char* zFile, size_t nLine) {
+void log_new(void* p, const size_t size, const char* zFile, const size_t nLine) {
     if_constexpr(Config::Build::IS_DEBUG_BUILD) {
         if (MemoryTracker::Ready) {
              AllocTracer.Add( p, size, zFile, nLine );
@@ -194,7 +194,7 @@ void operator delete(void* ptr, const char* zFile, size_t nLine) {
     free(ptr);
 }
 
-void* operator new[](size_t size, const char* zFile, const size_t nLine) {
+void* operator new[](const size_t size, const char* zFile, const size_t nLine) {
     void* ptr = malloc(size);
 #if defined(_DEBUG)
     Divide::MemoryManager::log_new(ptr, size, zFile, nLine);

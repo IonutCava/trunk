@@ -5,7 +5,7 @@
 
 namespace Divide {
 
-NPC::NPC(AI::AIEntity* const aiEntity, FrameListenerManager& parent, U32 callOrder)
+NPC::NPC(AI::AIEntity* const aiEntity, FrameListenerManager& parent, const U32 callOrder)
     : Character(CharacterType::CHARACTER_TYPE_NPC, parent, callOrder),
       _aiUnit(aiEntity)
 {

@@ -47,6 +47,7 @@ void Scale(PxShape&shape, const PxVec3&scaling) {
             Scale(geom, pose, scaling);
             shape.setGeometry(geom);
         } break;
+        default:
         case PxGeometryType::eHEIGHTFIELD:
         case PxGeometryType::eGEOMETRY_COUNT: break;
     }

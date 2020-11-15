@@ -81,7 +81,7 @@ class glFramebuffer final : public RenderTarget,
 
     void blitFrom(const RTBlitParams& params) override;
 
-    /// Bake in all settings and attachments to prepare it for rendering
+    /// Bake in all settings and attachments to Prepare it for rendering
     bool create() override;
 
     BindingState getAttachmentState(GLenum binding) const;

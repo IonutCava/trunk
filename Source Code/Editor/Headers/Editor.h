@@ -212,7 +212,7 @@ class Editor final : public PlatformContextComponent,
     void queueRemoveNode(I64 nodeGUID) const;
     void onPreviewFocus(bool state) const;
 
-    [[nodiscard]] ImGuiViewport* findViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
+    [[nodiscard]] static ImGuiViewport* FindViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);
 
     [[nodiscard]] U32 saveItemCount() const  noexcept;
 
@@ -226,12 +226,12 @@ class Editor final : public PlatformContextComponent,
   protected: // attorney
     void renderDrawList(ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) const;
 
-    [[nodiscard]] bool saveSceneChanges(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback);
+    [[nodiscard]] bool saveSceneChanges(const DELEGATE<void, std::string_view>& msgCallback, const DELEGATE<void, bool>& finishCallback) const;
     void updateCameraSnapshot();
     // Returns true if the window was closed
     [[nodiscard]] bool modalTextureView(const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) const;
     // Returns true if the modal window was closed
-    [[nodiscard]] bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh);
+    [[nodiscard]] bool modalModelSpawn(const char* modalName, const Mesh_ptr& mesh) const;
     // Return true if the model was spawned as a scene node
     [[nodiscard]] bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) const;
 
@@ -279,12 +279,12 @@ class Editor final : public PlatformContextComponent,
 
 namespace Attorney {
     class EditorGizmo {
-        static void renderDrawList(const Editor& editor, ImDrawData* pDrawData, const Rect<I32>& targetViewport, I64 windowGUID, GFX::CommandBuffer& bufferInOut) {
+        static void renderDrawList(const Editor& editor, ImDrawData* pDrawData, const Rect<I32>& targetViewport, const I64 windowGUID, GFX::CommandBuffer& bufferInOut) {
             editor.renderDrawList(pDrawData, targetViewport, windowGUID, bufferInOut);
         }
 
         [[nodiscard]] static ImGuiViewport* findViewportByPlatformHandle(Editor& editor, ImGuiContext* context, DisplayWindow* window) {
-            return editor.findViewportByPlatformHandle(context, window);
+            return editor.FindViewportByPlatformHandle(context, window);
         }
 
         friend class Divide::Gizmo;
@@ -464,7 +464,7 @@ namespace Attorney {
             editor._memoryEditorData = data;
         }
 
-        [[nodiscard]] static bool modalTextureView(Editor& editor, const char* modalName, const Texture* tex, const vec2<F32>& dimensions, bool preserveAspect, bool useModal) {
+        [[nodiscard]] static bool modalTextureView(Editor& editor, const char* modalName, const Texture* tex, const vec2<F32>& dimensions, const bool preserveAspect, const bool useModal) {
             return editor.modalTextureView(modalName, tex, dimensions, preserveAspect, useModal);
         }
 

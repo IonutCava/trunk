@@ -14,10 +14,10 @@
 
 namespace Divide {
 
-InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, vec2<U16> dimensions)
+InfinitePlane::InfinitePlane(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, vec2<U16> dimensions)
     : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_INFINITEPLANE, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS)),
       _context(context),
-      _dimensions(std::move(dimensions)),
+      _dimensions(MOV(dimensions)),
       _plane(nullptr),
       _planeRenderStateHash(0),
       _planeRenderStateHashPrePass(0)

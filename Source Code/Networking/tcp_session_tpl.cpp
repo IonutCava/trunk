@@ -38,11 +38,11 @@ void tcp_session_tpl::start() {
 
     start_read();
 
-    _inputDeadline.async_wait(_strand->get().wrap(std::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_inputDeadline)));
+    _inputDeadline.async_wait(_strand->get().wrap([&](const auto) {check_deadline(&_inputDeadline); }));
 
     await_output();
 
-    _outputDeadline.async_wait(_strand->get().wrap(std::bind(&tcp_session_tpl::check_deadline, shared_from_this(), &_outputDeadline)));
+    _outputDeadline.async_wait(_strand->get().wrap([&](const auto) {check_deadline(&_outputDeadline); }));
 }
 
 void tcp_session_tpl::stop() {
@@ -63,8 +63,8 @@ void tcp_session_tpl::sendPacket(const WorldPacket& p) {
     _nonEmptyOutputQueue.expires_at(boost::posix_time::neg_infin);
 }
 
-void tcp_session_tpl::sendFile(const stringImpl& name) {
-    _outputFileQueue.push_back(name);
+void tcp_session_tpl::sendFile(const stringImpl& fileName) {
+    _outputFileQueue.push_back(fileName);
 }
 
 void tcp_session_tpl::start_read() {
@@ -75,7 +75,7 @@ void tcp_session_tpl::start_read() {
         _socket, 
         boost::asio::buffer(&_header, sizeof _header),
         _strand->get().wrap(
-            [&](boost::system::error_code ec, std::size_t N) {
+            [&](const boost::system::error_code ec, const std::size_t N) {
                 handle_read_body(ec, N);
             }));
 }
@@ -92,16 +92,15 @@ void tcp_session_tpl::handle_read_body(const boost::system::error_code& ec, size
         async_read(
             _socket, _inputBuffer.prepare(_header),
             _strand->get().wrap(
-                [&](boost::system::error_code ec, std::size_t N) {
-                    handle_read_packet(ec, N);
+                [&](const boost::system::error_code code, const std::size_t N) {
+                    handle_read_packet(code, N);
                 }));
     } else {
         stop();
     }
 }
 
-void tcp_session_tpl::handle_read_packet(const boost::system::error_code& ec,
-                                         size_t bytes_transfered) {
+void tcp_session_tpl::handle_read_packet(const boost::system::error_code& ec, const size_t bytes_transfered) {
     ACKNOWLEDGE_UNUSED(bytes_transfered);
 
     if (stopped()) {
@@ -148,13 +147,13 @@ void tcp_session_tpl::start_write() {
     if (p.opcode() == OPCodes::SMSG_SEND_FILE) {
         async_write(
             _socket, buffers,
-            _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write_file,
-                                     shared_from_this(), std::placeholders::_1)));
+            _strand->get().wrap(
+                [&](const boost::system::error_code code, const size_t) {handle_write_file(code); }));
     } else {
         async_write(
             _socket, buffers,
-            _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write,
-                                     shared_from_this(), std::placeholders::_1)));
+            _strand->get().wrap(
+                [&](const boost::system::error_code code, const size_t) {handle_write(code); }));
     }
 }
 void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
@@ -179,10 +178,9 @@ void tcp_session_tpl::handle_write_file(const boost::system::error_code& ec) {
     // Start an asynchronous resolve to translate the server and service names
     // into a list of endpoints.
     _outputFileQueue.pop_front();
-    async_write(
-        _socket, request_,
-        _strand->get().wrap(std::bind(&tcp_session_tpl::handle_write,
-                                 shared_from_this(), std::placeholders::_1)));
+    async_write(_socket,
+                request_,
+                _strand->get().wrap([&](const boost::system::error_code code, const size_t) {handle_write(code); }));
 }
 
 void tcp_session_tpl::handle_write(const boost::system::error_code& ec) {
@@ -202,8 +200,7 @@ void tcp_session_tpl::await_output() {
     if (_outputQueue.empty()) {
         if (_outputQueue.empty()) {
             _nonEmptyOutputQueue.expires_at(boost::posix_time::pos_infin);
-            _nonEmptyOutputQueue.async_wait(std::bind(
-                &tcp_session_tpl::await_output, shared_from_this()));
+            _nonEmptyOutputQueue.async_wait( [&](const boost::system::error_code) {await_output(); });
         }
     } else {
         start_write();
@@ -216,15 +213,13 @@ void tcp_session_tpl::check_deadline(boost::asio::deadline_timer* deadline) {
     // Check whether the deadline has passed. We compare the deadline against
     // the current time since a new asynchronous operation may have moved the
     // deadline before this actor had a chance to run.
-    if (deadline->expires_at() <= 
-        boost::asio::deadline_timer::traits_type::now()) {
+    if (deadline->expires_at() <= boost::asio::deadline_timer::traits_type::now()) {
         // The deadline has passed. Stop the session. The other actors will
         // terminate as soon as possible.
         stop();
     } else {
         // Put the actor back to sleep.
-        deadline->async_wait(std::bind(&tcp_session_tpl::check_deadline,
-                                         shared_from_this(), deadline));
+        deadline->async_wait([&](const boost::system::error_code) {check_deadline(deadline); });
     }
 }
 

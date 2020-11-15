@@ -4,8 +4,7 @@
 
 #include "AI/Headers/AIManager.h"
 
-namespace Divide {
-namespace AI {
+namespace Divide::AI {
 
 AIProcessor::AIProcessor(AIManager& parentManager)
     : _entity(nullptr),
@@ -53,5 +52,4 @@ const stringImpl& AIProcessor::printActionStats(const GOAPAction& planStep) cons
     return placeholder;
 }
 
-}  // namespace AI
-}  // namespace Divide
+}  // namespace Divide::AI

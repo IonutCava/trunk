@@ -74,7 +74,7 @@ class Sky final : public SceneNode {
     ~Sky() = default;
 
     // Returns the sun position and intensity details for the specified date-time
-    SunDetails setDateTime(struct tm *dateTime);
+    SunDetails setDateTime(struct tm *dateTime) const;
     [[nodiscard]] SunDetails getCurrentDetails() const noexcept;
 
     PROPERTY_R(Atmosphere, atmosphere);
@@ -114,7 +114,7 @@ class Sky final : public SceneNode {
 
     [[nodiscard]] const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
-    [[nodiscard]]  const std::array<vec4<F32>, 3> atmoToShaderData() const noexcept;
+    [[nodiscard]] std::array<vec4<F32>, 3> atmoToShaderData() const noexcept;
   
     GFXDevice& _context;
     eastl::unique_ptr<Sun> _sun = nullptr;

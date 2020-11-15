@@ -133,7 +133,7 @@ class DivideRecast {
     bool getRandomPointAroundCircle(const NavigationMesh& navMesh,
                                     const vec3<F32>& centerPosition, F32 radius,
                                     const vec3<F32>& extents, vec3<F32>& resultPt,
-                                    U8 maxIters);
+                                    U8 maxIters) const;
     /**
     * Find a point on the navmesh closest to the specified point position, within
     *predefined
@@ -144,7 +144,7 @@ class DivideRecast {
     bool findNearestPointOnNavmesh(const NavigationMesh& navMesh,
                                    const vec3<F32>& position,
                                    const vec3<F32>& extents, F32 delta,
-                                   vec3<F32>& resultPt, dtPolyRef& resultPoly);
+                                   vec3<F32>& resultPt, dtPolyRef& resultPoly) const;
 
     bool findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
                                   const vec3<F32>& position,

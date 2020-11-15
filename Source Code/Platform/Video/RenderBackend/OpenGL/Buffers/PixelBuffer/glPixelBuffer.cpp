@@ -201,7 +201,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, const GLushort depth
 }
 
 void glPixelBuffer::updatePixels(const GLfloat* const pixels, const GLuint pixelCount) {
-    if (pixels && pixels[0] && pixelCount == _bufferSize / _dataSizeBytes) {
+    if (pixels && pixelCount == _bufferSize / _dataSizeBytes) {
         const bufferPtr ptr = begin();
         memcpy(ptr, pixels, _bufferSize);
         end();

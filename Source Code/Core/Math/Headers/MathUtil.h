@@ -46,7 +46,7 @@ namespace Divide {
 namespace Util {
 
 struct NOINITVTABLE GraphPlot {
-    explicit GraphPlot(stringImpl name) : _plotName(std::move(name))
+    explicit GraphPlot(stringImpl name) : _plotName(MOV(name))
     {
     }
     virtual ~GraphPlot() = default;
@@ -60,7 +60,7 @@ struct GraphPlot2D final : GraphPlot {
     {
     }
 
-    explicit GraphPlot2D(stringImpl name) : GraphPlot(std::move(name))
+    explicit GraphPlot2D(stringImpl name) : GraphPlot(MOV(name))
     {
     }
 
@@ -76,7 +76,7 @@ struct GraphPlot3D final : GraphPlot {
     {
     }
 
-    explicit GraphPlot3D(stringImpl name) : GraphPlot(std::move(name))
+    explicit GraphPlot3D(stringImpl name) : GraphPlot(MOV(name))
     {
     }
 

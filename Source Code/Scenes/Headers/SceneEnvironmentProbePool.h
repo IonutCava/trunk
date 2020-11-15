@@ -55,10 +55,10 @@ public:
     SceneEnvironmentProbePool(Scene& parentScene);
     ~SceneEnvironmentProbePool();
 
-    static void prepare(GFX::CommandBuffer& bufferInOut);
-    static void onStartup(GFXDevice& context);
-    static void onShutdown(GFXDevice& context);
-    static RenderTargetHandle reflectionTarget();
+    static void Prepare(GFX::CommandBuffer& bufferInOut);
+    static void OnStartup(GFXDevice& context);
+    static void OnShutdown(GFXDevice& context);
+    static RenderTargetHandle ReflectionTarget();
 
     const EnvironmentProbeList& sortAndGetLocked(const vec3<F32>& position);
     const EnvironmentProbeList& getLocked() const;

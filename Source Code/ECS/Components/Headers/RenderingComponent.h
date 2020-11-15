@@ -289,7 +289,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     IMPrimitive* _axisGizmo = nullptr;
     IMPrimitive* _selectionGizmo = nullptr;
 
-    /// used to keep track of what GFXDevice::reflectionTarget we are using for this rendering pass
+    /// used to keep track of what GFXDevice::ReflectionTarget we are using for this rendering pass
     U16 _reflectionIndex = 0u;
     U16 _refractionIndex = 0u;
     U32 _renderMask = 0u;
@@ -345,7 +345,7 @@ class RenderingCompRenderPass {
             return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
-        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick) {
+        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, const bool quick) {
             return renderable.onRefreshNodeData(refreshParams, bufferParams, quick);
         }
 
@@ -366,7 +366,7 @@ class RenderingCompRenderBin {
 };
 
 class RenderingComponentSGN {
-    static void onParentUsageChanged(RenderingComponent& comp, NodeUsageContext context) {
+    static void onParentUsageChanged(RenderingComponent& comp, const NodeUsageContext context) {
         comp.onParentUsageChanged(context);
     }
     friend class Divide::SceneGraphNode;

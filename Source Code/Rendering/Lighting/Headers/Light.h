@@ -74,7 +74,7 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         Util::ToFloatColour(_colour.rgb, colourOut);
     }
 
-    FColour3 getDiffuseColour() const noexcept {
+    [[nodiscard]] FColour3 getDiffuseColour() const noexcept {
         return Util::ToFloatColour(_colour.rgb);
     }
 
@@ -88,41 +88,41 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     void toggleEnabled() noexcept { enabled(!enabled()); }
 
     /// Get the light type. (see LightType enum)
-    const LightType& getLightType() const noexcept { return _type; }
+    [[nodiscard]] const LightType& getLightType() const noexcept { return _type; }
 
     /// Get the distance squared from this light to the specified position
-    F32 distanceSquared(const vec3<F32>& pos) const noexcept { return positionCache().distanceSquared(pos); }
+    [[nodiscard]] F32 distanceSquared(const vec3<F32>& pos) const noexcept { return positionCache().distanceSquared(pos); }
 
     /*----------- Shadow Mapping-------------------*/
-    const ShadowProperties& getShadowProperties() const noexcept {
+    [[nodiscard]] const ShadowProperties& getShadowProperties() const noexcept {
         return _shadowProperties;
     }
 
-    const mat4<F32>& getShadowVPMatrix(const U8 index) const noexcept {
+    [[nodiscard]] const mat4<F32>& getShadowVPMatrix(const U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
-    mat4<F32>& getShadowVPMatrix(const U8 index) noexcept {
+    [[nodiscard]] mat4<F32>& getShadowVPMatrix(const U8 index) noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightVP[index];
     }
 
-    F32 getShadowFloatValues(const U8 index) const noexcept {
+    [[nodiscard]] F32 getShadowFloatValues(const U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightPosition[index].w;
     }
 
-    const vec4<F32>& getShadowLightPos(const U8 index) const noexcept {
+    [[nodiscard]] const vec4<F32>& getShadowLightPos(const U8 index) const noexcept {
         assert(index < 6);
 
         return _shadowProperties._lightPosition[index];
     }
 
-    U16 getShadowOffset() const noexcept {
+    [[nodiscard]] U16 getShadowOffset() const noexcept {
         return to_U16(_shadowProperties._lightDetails.y);
     }
 
@@ -147,8 +147,8 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         _shadowProperties._lightDetails.y = to_F32(offset);
     }
 
-          SceneGraphNode* getSGN()       noexcept { return _sgn; }
-    const SceneGraphNode* getSGN() const noexcept { return _sgn; }
+    [[nodiscard]] SceneGraphNode* getSGN()       noexcept { return _sgn; }
+    [[nodiscard]] const SceneGraphNode* getSGN() const noexcept { return _sgn; }
 
     PROPERTY_R(vec3<F32>, positionCache);
     PROPERTY_R(vec3<F32>, directionCache);

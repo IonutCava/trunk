@@ -67,6 +67,7 @@ RenderingOrder RenderQueue::getSortOrder(const RenderStagePass stagePass, const 
             // Use an override one level up from this if we need a regular forward-style pass
             sortOrder = RenderingOrder::BY_STATE;
         } break;
+        default:
         case RenderBinType::RBT_COUNT: {
             Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
         } break;
@@ -128,6 +129,8 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material
             //... else add it to the general geometry bin
             return _renderBins[RenderBinType::RBT_OPAQUE];
         }
+        default:
+        case SceneNodeType::COUNT:
         case SceneNodeType::TYPE_TRIGGER: break;
     }
     return nullptr;
@@ -171,7 +174,7 @@ void RenderQueue::populateRenderQueues(const RenderStagePass stagePass, const st
     }
 }
 
-void RenderQueue::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+void RenderQueue::postRender(const SceneRenderState& renderState, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     for (RenderBin* renderBin : _renderBins) {
         renderBin->postRender(renderState, stagePass, bufferInOut);
     }
@@ -197,7 +200,7 @@ void RenderQueue::sort(RenderStagePass stagePass, const RenderBinType targetBinT
                 const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
                 Start(*CreateTask(pool,
                                     sortTask,
-                                    [renderBin, sortOrder, stagePass](const Task& parentTask) {
+                                    [renderBin, sortOrder, stagePass](const Task& /*parentTask*/) {
                                         renderBin->sort(stagePass._stage, sortOrder);
                                     }));
             }

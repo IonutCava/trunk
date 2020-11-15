@@ -100,8 +100,8 @@ class LightPool : public SceneComponent,
   public:
     struct ShadowLightList
     {
-        U16 count = 0;
-        Light* entries[Config::Lighting::MAX_SHADOW_CASTING_LIGHTS];
+        U16 _count = 0;
+        std::array<Light*, Config::Lighting::MAX_SHADOW_CASTING_LIGHTS> _entries{};
     };
 
     using LightList = vectorEASTL<Light*>;
@@ -159,8 +159,9 @@ class LightPool : public SceneComponent,
                 return getShadowBindSlotOffset(ShadowType::LAYERED);
             case LightType::COUNT:
                 DIVIDE_UNEXPECTED_CALL();
-                return 0u;
+                break;
         };
+        return 0u;
     }
     
     PROPERTY_RW(bool, lightImpostorsEnabled, false);

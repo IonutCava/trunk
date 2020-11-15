@@ -59,7 +59,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker.setStateBlock(RenderStateBlock::defaultHash());
 }
 
-bool GL_API::deleteBuffers(GLuint count, GLuint* buffers) {
+bool GL_API::deleteBuffers(const GLuint count, GLuint* buffers) {
     if (count > 0 && buffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             const GLuint crtBuffer = buffers[i];

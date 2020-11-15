@@ -16,7 +16,7 @@ struct MeshLoadData {
                           ResourceCache* cache,
                           PlatformContext* context,
                           const ResourceDescriptor& descriptor)
-        : _mesh(std::move(mesh)),
+        : _mesh(MOV(mesh)),
           _cache(cache),
           _context(context),
           _descriptor(descriptor)

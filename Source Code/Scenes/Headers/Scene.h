@@ -166,10 +166,10 @@ class Scene : public Resource, public PlatformContextComponent {
 
     void addMusic(MusicType type, const Str64& name, const ResourcePath& srcFile) const;
 
-    SceneGraphNode* addSky(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
-    SceneGraphNode* addInfPlane(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
-    void addWater(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
-    void addTerrain(SceneGraphNode* parentNode, boost::property_tree::ptree pt, const Str64& nodeName = "");
+    SceneGraphNode* addSky(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName = "");
+    SceneGraphNode* addInfPlane(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName = "");
+    void addWater(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName = "");
+    void addTerrain(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName = "");
 
     /// Object picking
     Selections getCurrentSelection(const PlayerIndex index = 0) const {
@@ -363,7 +363,7 @@ class Scene : public Resource, public PlatformContextComponent {
 namespace Attorney {
 class SceneManager {
    private:
-    static bool updateCameraControls(Scene& scene, PlayerIndex idx) {
+    static bool updateCameraControls(Scene& scene, const PlayerIndex idx) {
         return scene.updateCameraControls(idx);
     }
 
@@ -379,12 +379,12 @@ class SceneManager {
         scene.onPlayerRemove(player);
     }
 
-    static void currentPlayerPass(Scene& scene, PlayerIndex idx) {
+    static void currentPlayerPass(Scene& scene, const PlayerIndex idx) {
         scene.currentPlayerPass(idx);
     }
 
     /// Draw debug entities
-    static void debugDraw(Scene& scene, const Camera* activeCamera, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+    static void debugDraw(Scene& scene, const Camera* activeCamera, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
         scene.debugDraw(activeCamera, stagePass, bufferInOut);
     }
 
@@ -434,11 +434,11 @@ class SceneManager {
         return scene._GUI;
     }
 
-    static void resetSelection(Scene& scene, PlayerIndex idx) {
+    static void resetSelection(Scene& scene, const PlayerIndex idx) {
         scene.resetSelection(idx);
     }
 
-    static void setSelected(Scene& scene, PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, bool recursive) {
+    static void setSelected(Scene& scene, const PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& sgns, const bool recursive) {
         scene.setSelected(idx, sgns, recursive);
     }
 
@@ -446,7 +446,7 @@ class SceneManager {
         scene.clearHoverTarget(scene.input()->getPlayerIndexForDevice(arg._deviceIndex));
     }
 
-    static SceneNode_ptr createNode(Scene& scene, SceneNodeType type, const ResourceDescriptor& descriptor) {
+    static SceneNode_ptr createNode(Scene& scene, const SceneNodeType type, const ResourceDescriptor& descriptor) {
         return scene.createNode(type, descriptor);
     }
 

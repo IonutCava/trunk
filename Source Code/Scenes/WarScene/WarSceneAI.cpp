@@ -22,13 +22,15 @@ namespace {
 void WarScene::printMessage(const U8 eventId, const stringImpl& unitName) const {
     stringImpl eventName;
     switch (eventId) {
-        case 0: {
-            eventName = "Captured flag";
-        } break;
-        case 1: {
-            eventName = "Recovered flag";
-        } break;
-        default: "Unknown!";
+        case 0:
+          eventName = "Captured flag";
+          break;
+        case 1:
+          eventName = "Recovered flag";
+          break;
+        default: 
+          eventName = "Unknown!";
+          break;
     }
 
     U32 elapsedTimeMinutes = Time::MicrosecondsToSeconds<U32>(_elapsedGameTime) / 60 % 60;
@@ -105,7 +107,7 @@ void WarScene::checkGameCompletion() {
     }
 }
 
-void WarScene::registerPoint(U16 teamID, const stringImpl& unitName) {
+void WarScene::registerPoint(const U16 teamID, const stringImpl& unitName) {
     if (!_resetUnits) {
         _resetUnits = true;
 

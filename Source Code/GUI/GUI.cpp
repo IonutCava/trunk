@@ -341,7 +341,7 @@ void GUI::onSizeChange(const SizeChangeParams& params) {
 
 }
 
-void GUI::setCursorPosition(I32 x, I32 y) {
+void GUI::setCursorPosition(const I32 x, const I32 y) {
     if (parent().platformContext().config().gui.cegui.enabled) {
         getCEGUIContext().injectMousePosition(to_F32(x), to_F32(y));
     }
@@ -468,7 +468,7 @@ bool GUI::onUTF8(const Input::UTF8Event& arg) {
     return false;
 }
 
-GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) const {
+GUIElement* GUI::getGUIElementImpl(const I64 sceneID, const U64 elementName, const GUIType type) const {
     if (sceneID != 0) {
         SharedLock<SharedMutex> r_lock(_guiStackLock);
         const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);
@@ -482,7 +482,7 @@ GUIElement* GUI::getGUIElementImpl(I64 sceneID, U64 elementName, GUIType type) c
     return nullptr;
 }
 
-GUIElement* GUI::getGUIElementImpl(I64 sceneID, I64 elementID, GUIType type) const {
+GUIElement* GUI::getGUIElementImpl(const I64 sceneID, const I64 elementID, const GUIType type) const {
     if (sceneID != 0) {
         SharedLock<SharedMutex> r_lock(_guiStackLock);
         const GUIMapPerScene::const_iterator it = _guiStack.find(sceneID);

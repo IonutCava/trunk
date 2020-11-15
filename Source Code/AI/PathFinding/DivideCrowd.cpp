@@ -5,9 +5,7 @@
 #include "DetourCommon.h"
 #include "Utility/Headers/Localization.h"
 
-namespace Divide {
-namespace AI {
-namespace Navigation {
+namespace Divide::AI::Navigation {
 
 DivideDtCrowd::DivideDtCrowd(NavigationMesh* navMesh)
     : _recast(navMesh)
@@ -235,7 +233,7 @@ void DivideDtCrowd::setMoveTarget(const I32 agentID, const vec3<F32>& position, 
     }
 }
 
-bool DivideDtCrowd::requestVelocity(I32 agentID, const vec3<F32>& velocity) const {
+bool DivideDtCrowd::requestVelocity(const I32 agentID, const vec3<F32>& velocity) const {
     if (!getAgent(agentID)->active) {
         return false;
     }
@@ -267,6 +265,5 @@ bool DivideDtCrowd::destinationReached(const dtCrowdAgent* agent, const F32 maxD
 bool DivideDtCrowd::isValidNavMesh() const {
     return _recast->getNavQuery().getAttachedNavMesh() != nullptr;
 }
-}  // namespace Navigation
-}  // namespace AI
-}  // namespace Divide
+
+}  // namespace Divide::AI::Navigation

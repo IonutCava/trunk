@@ -71,7 +71,7 @@ class Mesh final : public Object3D {
 
     void setMaterialTpl(const Material_ptr& material) override;
 
-    void addSubMesh(SubMesh_ptr subMesh);
+    void addSubMesh(const SubMesh_ptr& subMesh);
 
     void sceneUpdate(U64 deltaTimeUS,
                      SceneGraphNode* sgn,

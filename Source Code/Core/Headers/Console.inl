@@ -41,7 +41,11 @@
 #endif
 #endif
 
-struct sink { template<typename ...Args> sink(Args const& ...) {} };
+struct sink { 
+    template<typename ...Args> 
+    explicit sink(Args const& ...)
+    {} 
+};
 
 namespace Divide {
 template <typename... Args>

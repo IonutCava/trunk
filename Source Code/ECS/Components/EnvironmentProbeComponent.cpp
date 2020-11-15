@@ -124,7 +124,7 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
         std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
 
         RenderPassParams params = {};
-        params._target = SceneEnvironmentProbePool::reflectionTarget()._targetID;
+        params._target = SceneEnvironmentProbePool::ReflectionTarget()._targetID;
         params._sourceNode = findNodeToIgnore();
         params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), rtLayerIndex());
         params._shadowMappingEnabled = false;
@@ -147,11 +147,11 @@ void EnvironmentProbeComponent::setBounds(const vec3<F32>& min, const vec3<F32>&
     _aabb.set(min, max);
 }
 
-void EnvironmentProbeComponent::setBounds(const vec3<F32>& center, F32 radius) {
+void EnvironmentProbeComponent::setBounds(const vec3<F32>& center, const F32 radius) {
     _aabb.createFromSphere(center, radius);
 }
 
-void EnvironmentProbeComponent::setUpdateRate(U8 rate) {
+void EnvironmentProbeComponent::setUpdateRate(const U8 rate) {
     if (_updateRate != rate) {
         if (_updateRate == 0) {
             SceneEnvironmentProbePool::unlockSlice(rtLayerIndex());

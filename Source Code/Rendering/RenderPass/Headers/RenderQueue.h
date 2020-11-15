@@ -60,27 +60,27 @@ class RenderQueue final : public KernelComponent {
     void sort(RenderStagePass stagePass, RenderBinType targetBinType = RenderBinType::RBT_COUNT, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void refresh(RenderStage stage, RenderBinType targetBinType = RenderBinType::RBT_COUNT);
     void addNodeToQueue(const SceneGraphNode* sgn, RenderStagePass stagePass, F32 minDistToCameraSq, RenderBinType targetBinType = RenderBinType::RBT_COUNT);
-    U16 getRenderQueueStackSize(RenderStage stage) const;
+    [[nodiscard]] U16 getRenderQueueStackSize(RenderStage stage) const;
 
-    RenderBin* getBin(const RenderBinType rbType) noexcept {
+    [[nodiscard]] RenderBin* getBin(const RenderBinType rbType) noexcept {
         return _renderBins[rbType._to_integral()];
     }
 
-    RenderBin* getBin(const U16 renderBin) noexcept {
+    [[nodiscard]] RenderBin* getBin(const U16 renderBin) noexcept {
         return _renderBins[renderBin];
     }
 
-    RenderBinArray& getBins() noexcept {
+    [[nodiscard]] RenderBinArray& getBins() noexcept {
         return _renderBins;
     }
 
-    U16 getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut) const;
+    [[nodiscard]] U16 getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut) const;
 
   private:
 
-    RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType) const;
+    [[nodiscard]] RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType) const;
 
-    RenderBin* getBinForNode(const SceneGraphNode* node, const Material_ptr& matInstance);
+    [[nodiscard]] RenderBin* getBinForNode(const SceneGraphNode* node, const Material_ptr& matInstance);
 
   private:
     RenderBinArray _renderBins = {};

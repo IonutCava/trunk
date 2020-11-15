@@ -57,23 +57,23 @@ void SceneRenderState::renderMask(U16 mask) {
     }
 }
 
-bool SceneRenderState::isEnabledOption(RenderOptions option) const {
+bool SceneRenderState::isEnabledOption(const RenderOptions option) const {
     return BitCompare(_stateMask, option);
 }
 
-void SceneRenderState::enableOption(RenderOptions option) {
+void SceneRenderState::enableOption(const RenderOptions option) {
     SetBit(_stateMask, option);
 }
 
-void SceneRenderState::disableOption(RenderOptions option) {
+void SceneRenderState::disableOption(const RenderOptions option) {
     ClearBit(_stateMask, option);
 }
 
-void SceneRenderState::toggleOption(RenderOptions option) {
+void SceneRenderState::toggleOption(const RenderOptions option) {
     toggleOption(option, !isEnabledOption(option));
 }
 
-void SceneRenderState::toggleOption(RenderOptions option, const bool state) {
+void SceneRenderState::toggleOption(const RenderOptions option, const bool state) {
     if (state) {
         enableOption(option);
     } else {
@@ -81,7 +81,7 @@ void SceneRenderState::toggleOption(RenderOptions option, const bool state) {
     }
 }
 
-vec4<U16> SceneRenderState::lodThresholds(RenderStage stage) const noexcept {
+vec4<U16> SceneRenderState::lodThresholds(const RenderStage stage) const noexcept {
     // Hack dumping ground. Scene specific lod management can be tweaked here to keep the components clean
     if (stage == RenderStage::REFLECTION || stage == RenderStage::REFRACTION) {
         // cancel out LoD Level 0

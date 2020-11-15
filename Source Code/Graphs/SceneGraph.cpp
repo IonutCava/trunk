@@ -63,7 +63,7 @@ void SceneGraph::unload()
     assert(_root == nullptr);
 }
 
-void SceneGraph::addToDeleteQueue(SceneGraphNode* node, size_t childIdx) {
+void SceneGraph::addToDeleteQueue(SceneGraphNode* node, const size_t childIdx) {
     UniqueLock<SharedMutex> w_lock(_pendingDeletionLock);
     vectorEASTL<size_t>& list = _pendingDeletion[node];
     if (eastl::find(cbegin(list), cend(list), childIdx) == cend(list))
@@ -111,11 +111,11 @@ void SceneGraph::idle()
 {
 }
 
-bool SceneGraph::removeNodesByType(SceneNodeType nodeType) {
+bool SceneGraph::removeNodesByType(const SceneNodeType nodeType) {
     return _root != nullptr && getRoot()->removeNodesByType(nodeType);
 }
 
-bool SceneGraph::removeNode(I64 guid) {
+bool SceneGraph::removeNode(const I64 guid) {
     return removeNode(findNode(guid));
 }
 
@@ -215,7 +215,7 @@ void SceneGraph::onStartUpdateLoop(const U8 loopNumber) {
     ACKNOWLEDGE_UNUSED(loopNumber);
 }
 
-void SceneGraph::onNetworkSend(U32 frameCount) {
+void SceneGraph::onNetworkSend(const U32 frameCount) {
     Attorney::SceneGraphNodeSceneGraph::onNetworkSend(_root, frameCount);
 }
 
@@ -248,7 +248,7 @@ SceneGraphNode* SceneGraph::createSceneGraphNode(SceneGraph* sceneGraph, const S
     return static_cast<SceneGraphNode*>(GetEntityManager()->GetEntity(nodeID));
 }
 
-void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, bool inPlace) {
+void SceneGraph::destroySceneGraphNode(SceneGraphNode*& node, const bool inPlace) {
     if (node) {
         if (inPlace) {
             GetEntityManager()->DestroyAndRemoveEntity(node->GetEntityID());
@@ -267,7 +267,7 @@ size_t SceneGraph::getTotalNodeCount() const noexcept {
 
     return ret;
 }
-const vectorEASTL<SceneGraphNode*>& SceneGraph::getNodesByType(SceneNodeType type) const {
+const vectorEASTL<SceneGraphNode*>& SceneGraph::getNodesByType(const SceneNodeType type) const {
     return _nodesByType[to_base(type)];
 }
 
@@ -288,11 +288,11 @@ ECS::ComponentManager* SceneGraph::GetComponentManager() const {
     return GetECSEngine().GetComponentManager();
 }
 
-SceneGraphNode* SceneGraph::findNode(const Str128& name, bool sceneNodeName) const {
+SceneGraphNode* SceneGraph::findNode(const Str128& name, const bool sceneNodeName) const {
     return findNode(_ID(name.c_str()), sceneNodeName);
 }
 
-SceneGraphNode* SceneGraph::findNode(const U64 nameHash, bool sceneNodeName) const {
+SceneGraphNode* SceneGraph::findNode(const U64 nameHash, const bool sceneNodeName) const {
     const U64 cmpHash = sceneNodeName ? _ID(_root->getNode().resourceName().c_str()) : _ID(_root->name().c_str());
 
     if (cmpHash == nameHash) {
@@ -302,7 +302,7 @@ SceneGraphNode* SceneGraph::findNode(const U64 nameHash, bool sceneNodeName) con
     return _root->findChild(nameHash, sceneNodeName, true);
 }
 
-SceneGraphNode* SceneGraph::findNode(I64 guid) const {
+SceneGraphNode* SceneGraph::findNode(const I64 guid) const {
     if (_root->getGUID() == guid) {
         return _root;
     }

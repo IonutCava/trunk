@@ -8,7 +8,7 @@
 
 namespace Divide {
 
-Player::Player(U8 index, FrameListenerManager& parent, U32 callOrder)
+Player::Player(const U8 index, FrameListenerManager& parent, const U32 callOrder)
     : Character(CharacterType::CHARACTER_TYPE_PLAYER, parent, callOrder),
       _index(index)
 {

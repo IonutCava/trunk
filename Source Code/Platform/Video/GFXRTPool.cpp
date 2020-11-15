@@ -69,7 +69,7 @@ void GFXRTPool::clear() {
     }
 }
 
-void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
+void GFXRTPool::resizeTargets(const RenderTargetUsage target, const  U16 width, const U16 height) {
     for (const std::shared_ptr<RenderTarget>& rt : _renderTargets[to_U32(target)]) {
         if (rt) {
             rt->resize(width, height);
@@ -77,7 +77,7 @@ void GFXRTPool::resizeTargets(RenderTargetUsage target, U16 width, U16 height) {
     }
 }
 
-void GFXRTPool::updateSampleCount(RenderTargetUsage target, U8 sampleCount) {
+void GFXRTPool::updateSampleCount(const RenderTargetUsage target, const U8 sampleCount) {
     for (const std::shared_ptr<RenderTarget>& rt : _renderTargets[to_U32(target)]) {
         if (rt) {
             rt->updateSampleCount(sampleCount);
@@ -85,11 +85,11 @@ void GFXRTPool::updateSampleCount(RenderTargetUsage target, U8 sampleCount) {
     }
 }
 
-void GFXRTPool::set(RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget) {
+void GFXRTPool::set(const RenderTargetID target, const std::shared_ptr<RenderTarget>& newTarget) {
     _renderTargets[to_U32(target._usage)][target._index] = newTarget;
 }
 
-RenderTargetHandle GFXRTPool::add(RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget, U8 index) {
+RenderTargetHandle GFXRTPool::add(const RenderTargetUsage targetUsage, const std::shared_ptr<RenderTarget>& newTarget, const U8 index) {
     vectorEASTL<std::shared_ptr<RenderTarget>>& rts = _renderTargets[to_U32(targetUsage)];
     if (index == g_defaultTargetIndex) {
         for (U16 i = 0; i < to_U16(rts.size()); ++i) {
@@ -119,11 +119,11 @@ bool GFXRTPool::remove(RenderTargetHandle& handle) {
     return state;
 }
 
-RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
+RenderTargetHandle GFXRTPool::allocateRT(const RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor) {
     return allocateRT(targetUsage, descriptor, g_defaultTargetIndex);
 }
 
-RenderTargetHandle GFXRTPool::allocateRT(RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor, U8 index) {
+RenderTargetHandle GFXRTPool::allocateRT(const RenderTargetUsage targetUsage, const RenderTargetDescriptor& descriptor, const U8 index) {
     const std::shared_ptr<RenderTarget> rt(Attorney::GFXDeviceGFXRTPool::newRT(_parent, descriptor), DeleteRT());
     return add(targetUsage, rt, index);
 }

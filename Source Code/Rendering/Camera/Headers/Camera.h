@@ -286,7 +286,7 @@ protected:
         : Camera(name, Type(), eye)
     {
     }
-    bool unload() noexcept { return Camera::unload(); }
+    bool unload() noexcept override { return Camera::unload(); }
 
 public:
     ~StaticCamera() = default;

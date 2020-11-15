@@ -51,7 +51,7 @@ void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords, bool normals, bool tangents, bool colour>
-void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool bones) noexcept
+void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool bones) noexcept
 {
     if (bones) {
         fillSmallData5<texCoords, normals, tangents, colour, true>(dataIn, dataOut);
@@ -61,7 +61,7 @@ void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords, bool normals, bool tangents>
-void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool colour, bool bones) noexcept
+void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool colour, const bool bones) noexcept
 {
     if (colour) {
         fillSmallData4<texCoords, normals, tangents, true>(dataIn, dataOut, bones);
@@ -71,7 +71,7 @@ void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords, bool normals>
-void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool tangents, bool colour, bool bones) noexcept
+void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool tangents, const bool colour, const bool bones) noexcept
 {
     if (tangents) {
         fillSmallData3<texCoords, normals, true>(dataIn, dataOut, colour, bones);
@@ -81,7 +81,7 @@ void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
 }
 
 template <bool texCoords>
-void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool normals, bool tangents, bool colour, bool bones) noexcept
+void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool normals, const bool tangents, const bool colour, const bool bones) noexcept
 {
     if (normals) {
         fillSmallData2<texCoords, true>(dataIn, dataOut, tangents, colour, bones);
@@ -90,7 +90,7 @@ void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
     }
 }
 
-void fillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, bool texCoords, bool normals, bool tangents, bool colour, bool bones) noexcept
+void fillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool texCoords, const bool normals, const bool tangents, const bool colour, const bool bones) noexcept
 {
     if (texCoords) {
         fillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);

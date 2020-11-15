@@ -7,8 +7,8 @@ namespace Divide {
 void ParticleColourGenerator::generate(Task& packagedTasksParent,
                                        const U64 deltaTimeUS,
                                        ParticleData& p,
-                                       U32 startIndex,
-                                       U32 endIndex) {
+                                       const U32 startIndex,
+                                       const U32 endIndex) {
 
     TaskPool& tp = *packagedTasksParent._parentPool;
 

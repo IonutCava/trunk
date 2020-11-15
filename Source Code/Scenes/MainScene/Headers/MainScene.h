@@ -40,7 +40,7 @@ namespace Divide {
 class Terrain;
 FWD_DECLARE_MANAGED_CLASS(WaterPlane);
 
-class MainScene : public Scene {
+class MainScene final : public Scene {
    public:
     explicit MainScene(PlatformContext& context, ResourceCache* cache, SceneManager& parent, const Str256& name);
 

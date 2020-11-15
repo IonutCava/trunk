@@ -52,12 +52,12 @@ class NOINITVTABLE PreRenderOperator {
 
     virtual void reshape(U16 width, U16 height);
 
-    FilterType operatorType() const noexcept { return _operatorType; }
+    [[nodiscard]] FilterType operatorType() const noexcept { return _operatorType; }
 
     virtual void idle(const Configuration& config);
     virtual void onToggle(bool state);
 
-    virtual bool ready() const { return true; }
+    [[nodiscard]] virtual bool ready() const { return true; }
 
    protected:
     GFXDevice& _context;

@@ -138,7 +138,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderPackage& pkg
     _renderBinStack[stageIndex].push_back(item);
 }
 
-void RenderBin::populateRenderQueue(RenderStagePass stagePass, RenderQueuePackages& queueInOut) const {
+void RenderBin::populateRenderQueue(const RenderStagePass stagePass, RenderQueuePackages& queueInOut) const {
     OPTICK_EVENT();
 
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
@@ -146,17 +146,17 @@ void RenderBin::populateRenderQueue(RenderStagePass stagePass, RenderQueuePackag
     }
 }
 
-void RenderBin::postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
         Attorney::RenderingCompRenderBin::postRender(item._renderable, renderState, stagePass, bufferInOut);
     }
 }
 
-U16 RenderBin::getBinSize(RenderStage stage) const {
+U16 RenderBin::getBinSize(const RenderStage stage) const {
     return to_U16(_renderBinStack[to_base(stage)].size());
 }
 
-bool RenderBin::empty(RenderStage stage) const {
+bool RenderBin::empty(const RenderStage stage) const {
     return getBinSize(stage) == 0;
 }
 

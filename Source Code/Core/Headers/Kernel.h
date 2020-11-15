@@ -89,7 +89,7 @@ struct LoopTimingData {
     }
 
     // return true on change
-    bool freezeTime(bool state) noexcept {
+    bool freezeTime(const bool state) noexcept {
         if (_freezeLoopTime != state) {
             _freezeLoopTime = state;
             _currentTimeFrozenUS = _currentTimeUS;

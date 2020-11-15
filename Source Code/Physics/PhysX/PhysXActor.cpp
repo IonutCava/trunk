@@ -12,10 +12,6 @@ namespace Divide {
     {
     }
 
-    PhysXActor::~PhysXActor()
-    {
-    }
-
     /// Set the local X,Y and Z position
     void PhysXActor::setPosition(const vec3<F32>& position) {
         setPosition(position.x, position.y, position.z);

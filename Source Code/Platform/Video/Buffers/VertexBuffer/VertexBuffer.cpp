@@ -29,7 +29,7 @@ bool VertexBuffer::createInternal() {
 }
 
 
-void VertexBuffer::setAttribMasks(size_t count, const AttribFlags& flagMask) {
+void VertexBuffer::setAttribMasks(const size_t count, const AttribFlags& flagMask) {
     _attribMasks.resize(0);
     _attribMasks.reserve(count);
     for (size_t i = 0; i < count; ++i) {
@@ -37,7 +37,7 @@ void VertexBuffer::setAttribMasks(size_t count, const AttribFlags& flagMask) {
     }
 }
 
-void VertexBuffer::setAttribMask(size_t index, const AttribFlags& flagMask) {
+void VertexBuffer::setAttribMask(const size_t index, const AttribFlags& flagMask) {
     assert(index < _attribMasks.size());
     _attribMasks[index] = flagMask;
 }

@@ -131,19 +131,19 @@ public:
 
     mat2() noexcept;
     template<typename U>
-    mat2(U m) noexcept;
+    explicit mat2(U m) noexcept;
     template<typename U>
-    mat2(U m0, U m1,
-         U m2, U m3) noexcept;
+    explicit mat2(U m0, U m1,
+                  U m2, U m3) noexcept;
     template<typename U>
-    mat2(const U *values) noexcept;
+    explicit mat2(const U *values) noexcept;
     mat2(const mat2 &B) noexcept;
     template<typename U>
-    mat2(const mat2<U> &B) noexcept;
+    explicit mat2(const mat2<U> &B) noexcept;
     template<typename U>
-    mat2(const mat3<U> &B) noexcept;
+    explicit mat2(const mat3<U> &B) noexcept;
     template<typename U>
-    mat2(const mat4<U> &B) noexcept;
+    explicit mat2(const mat4<U> &B) noexcept;
 
     
     template<typename U>
@@ -290,22 +290,22 @@ class mat3 {
 
     mat3() noexcept;
     template<typename U>
-    mat3(U m) noexcept;
+    explicit mat3(U m) noexcept;
     template<typename U>
-    mat3(U m0, U m1, U m2,
-         U m3, U m4, U m5,
-         U m6, U m7, U m8) noexcept;
+    explicit  mat3(U m0, U m1, U m2,
+                   U m3, U m4, U m5,
+                   U m6, U m7, U m8) noexcept;
     template<typename U>
-    mat3(const U *values) noexcept;
+    explicit mat3(const U *values) noexcept;
     template<typename U>
-    mat3(const mat2<U> &B, bool zeroFill) noexcept;
+    explicit mat3(const mat2<U> &B, bool zeroFill) noexcept;
     mat3(const mat3 &B) noexcept;
     template<typename U>
-    mat3(const mat3<U> &B) noexcept;
+    explicit mat3(const mat3<U> &B) noexcept;
     template<typename U>
-    mat3(const mat4<U> &B) noexcept;
+    explicit mat3(const mat4<U> &B) noexcept;
     template<typename U>
-    mat3(const vec3<U>& rotStart, const vec3<U>& rotEnd) noexcept;
+    explicit mat3(const vec3<U>& rotStart, const vec3<U>& rotEnd) noexcept;
 
     template<typename U>
     mat3 &operator=(const mat3<U>& other) noexcept;
@@ -478,34 +478,34 @@ class mat4 : public std::conditional<std::is_same<T, F32>::value, AlignedBase<16
     mat4() noexcept;
     mat4(std::initializer_list<T> matrix) noexcept;
     template<typename U>
-    mat4(U value) noexcept;
+    explicit mat4(U value) noexcept;
     template<typename U>
-    mat4(const U *values) noexcept;
+    explicit mat4(const U *values) noexcept;
     template<typename U>
-    mat4(const mat2<U> &B, bool zeroFill) noexcept;
+    explicit mat4(const mat2<U> &B, bool zeroFill) noexcept;
     template<typename U>
-    mat4(const mat3<U> &B, bool zeroFill) noexcept;
+    explicit mat4(const mat3<U> &B, bool zeroFill) noexcept;
     mat4(const mat4 &B) noexcept;
     template<typename U>
-    mat4(const mat4<U> &B) noexcept;
+    explicit mat4(const mat4<U> &B) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept;
+    explicit mat4(const vec3<U> &translation, const vec3<U> &scale) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation, const vec3<U> &scale, const mat3<U>& rotation) noexcept;
+    explicit mat4(const vec3<U> &translation, const vec3<U> &scale, const mat3<U>& rotation) noexcept;
     template<typename U>
-    mat4(const vec3<U> &translation) noexcept;
+    explicit mat4(const vec3<U> &translation) noexcept;
     template<typename U>
-    mat4(U translationX, U translationY, U translationZ) noexcept;
+    explicit mat4(U translationX, U translationY, U translationZ) noexcept;
     template<typename U>
-    mat4(const vec3<U> &axis, Angle::RADIANS<U> angle) noexcept;
+    explicit mat4(const vec3<U> &axis, Angle::RADIANS<U> angle) noexcept;
     template<typename U>
-    mat4(U x, U y, U z, Angle::RADIANS<U> angle) noexcept;
+    explicit mat4(U x, U y, U z, Angle::RADIANS<U> angle) noexcept;
     template<typename U>
-    mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept;
+    explicit mat4(const vec3<U> &eye, const vec3<U> &target, const vec3<U> &up) noexcept;
     template<typename U>
-    mat4(const Rect<U> &orthoRect, const vec2<U> &clip) noexcept;
+    explicit mat4(const Rect<U> &orthoRect, const vec2<U> &clip) noexcept;
     template<typename U>
-    mat4(const Plane<U>& reflectionPlane) noexcept;
+    explicit mat4(const Plane<U>& reflectionPlane) noexcept;
 
     template<typename U>
     mat4 &operator=(const mat4<U>& other) noexcept;

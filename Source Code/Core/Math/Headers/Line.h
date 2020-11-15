@@ -41,10 +41,10 @@ struct Line {
     Line() = default;
 
     Line(vec3<F32> positionStart, vec3<F32> positionEnd, FColour3 colourStart, FColour3 colourEnd, const F32 widthStart, const F32 widthEnd) noexcept
-        : _positionStart(std::move(positionStart)),
-          _positionEnd(std::move(positionEnd)),
-          _colourStart(std::move(colourStart)),
-          _colourEnd(std::move(colourEnd)),
+        : _positionStart(MOV(positionStart)),
+          _positionEnd(MOV(positionEnd)),
+          _colourStart(MOV(colourStart)),
+          _colourEnd(MOV(colourEnd)),
           _widthStart(widthStart),
           _widthEnd(widthEnd)
     {

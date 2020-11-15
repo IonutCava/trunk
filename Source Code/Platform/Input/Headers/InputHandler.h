@@ -43,7 +43,7 @@ class Application;
 namespace Input {
 
 class InputAggregatorInterface;
-class InputHandler : public SDLEventListener {
+class InputHandler final : public SDLEventListener {
    public:
     explicit InputHandler(InputAggregatorInterface& eventListener, Application& app);
 

@@ -35,7 +35,7 @@ namespace {
     const U32 g_maxVAOS = 512u;
 
     struct ContextPool {
-        bool init(size_t size, const DisplayWindow& window) {
+        bool init(const size_t size, const DisplayWindow& window) {
             SDL_Window* raw = window.getRawWindow();
             _contexts.resize(size, std::make_pair(nullptr, false));
             for (auto&[context, used] : _contexts) {
@@ -296,7 +296,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Enable all 6 clip planes, I guess
     for (U8 i = 0; i < to_U8(FrustumPlane::COUNT); ++i) {
-        glEnable(GLenum(static_cast<U32>(GL_CLIP_DISTANCE0) + i));
+        glEnable(static_cast<GLenum>(static_cast<U32>(GL_CLIP_DISTANCE0) + i));
     }
 
     s_texturePool.init(

@@ -40,8 +40,8 @@ namespace Divide {
 
 struct LineSegment
 {
-    vec3<F32> start;
-    vec3<F32> end;
+    vec3<F32> _start;
+    vec3<F32> _end;
 };
 
 class BoundingSphere;
@@ -52,9 +52,9 @@ public:
     using OOBBEdgeList = std::array<LineSegment, 12>;
 
     OBB() = default;
-    OBB(vec3<F32> pos, vec3<F32> hExtents, OBBAxis axis)  noexcept;
-    OBB(const BoundingBox &aabb)  noexcept;
-    OBB(const BoundingSphere &bSphere)  noexcept;
+    explicit OBB(vec3<F32> pos, vec3<F32> hExtents, OBBAxis axis)  noexcept;
+    explicit OBB(const BoundingBox &aabb)  noexcept;
+    explicit OBB(const BoundingSphere &bSphere)  noexcept;
     ~OBB() = default;
 
     void fromBoundingBox(const BoundingBox& aabb)  noexcept;

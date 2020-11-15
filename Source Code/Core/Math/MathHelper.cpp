@@ -2,8 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace Divide {
-namespace Util {
+namespace Divide::Util {
 
 bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) noexcept {
     assert(pointsOut != nullptr);
@@ -304,5 +303,4 @@ void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw,
         }
     }
 }
-}  // namespace Util
-}  // namespace Divide
+}  // namespace Divide::Util

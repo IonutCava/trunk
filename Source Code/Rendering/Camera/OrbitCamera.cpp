@@ -68,7 +68,7 @@ void OrbitCamera::update(const F32 deltaTimeMS) noexcept {
     _viewMatrixDirty = true;
 }
 
-bool OrbitCamera::zoom(I32 zoomFactor) noexcept {
+bool OrbitCamera::zoom(const I32 zoomFactor) noexcept {
     if (zoomFactor != 0) {
         curRadius(_curRadius += zoomFactor * _speed.zoom * -0.01f);
     }

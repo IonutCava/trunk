@@ -29,11 +29,12 @@ namespace Divide {
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
 
         struct PerPassData {
-            RenderBin::SortedQueues sortedQueues;
-            DrawCommandContainer drawCommands;
+            U16 _sortedNodeCount = 0u;
+            RenderBin::SortedQueues _sortedQueues;
+            DrawCommandContainer _drawCommands;
 
-            std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> nodeData;
-            std::array<GFXDevice::CollisionData, Config::MAX_VISIBLE_NODES> collisionData;
+            std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> _nodeData;
+            std::array<GFXDevice::CollisionData, Config::MAX_VISIBLE_NODES> _collisionData;
         };
 
         std::array<PerPassData, to_base(RenderStage::COUNT)> g_passData;
@@ -425,7 +426,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
 
     PerPassData& passData = g_passData[to_base(stagePass._stage)];
     RefreshNodeDataParams params = {};
-    params._drawCommandsInOut = &passData.drawCommands;
+    params._drawCommandsInOut = &passData._drawCommands;
     params._bufferInOut = &bufferInOut;
     params._camera = passParams._camera;
     params._stagePass = &stagePass;
@@ -437,7 +438,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
 
     if (fullRefresh) {
-        const auto IsOccluderBin = [](RenderBinType binType) {
+        const auto IsOccluderBin = [](const RenderBinType binType) {
             const auto type = binType._value;
             return type == RenderBinType::RBT_OPAQUE ||
                    type == RenderBinType::RBT_TERRAIN ||
@@ -454,7 +455,6 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
 
         U32 nodeCount = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-        const bool shadowMap = passParams._shadowMappingEnabled;
 
         bool isOccluder = true;
         bool hasHiZTarget = passParams._targetHIZ._usage != RenderTargetUsage::COUNT;
@@ -467,12 +467,12 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 hasHiZTarget = false;
             }
 
-            RenderBin::SortedQueue& queue = passData.sortedQueues[i];
+            RenderBin::SortedQueue& queue = passData._sortedQueues[i];
             for (RenderingComponent* rComp : queue) {
                 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
-                    GFXDevice::NodeData& data = passData.nodeData[bufferParams._dataIndex];
-                    GFXDevice::CollisionData& colData = passData.collisionData[bufferParams._dataIndex];
+                    GFXDevice::NodeData& data = passData._nodeData[bufferParams._dataIndex];
+                    GFXDevice::CollisionData& colData = passData._collisionData[bufferParams._dataIndex];
                     processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data, colData);
                     ++bufferParams._dataIndex;
                     ++nodeCount;
@@ -480,7 +480,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             }
         }
 
-        *bufferData._lastCommandCount = to_U32(passData.drawCommands.size());
+        *bufferData._lastCommandCount = to_U32(passData._drawCommands.size());
         *bufferData._lastNodeCount = nodeCount;
 
         {
@@ -488,17 +488,17 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             bufferData._nodeData->writeData(
                 bufferData._elementOffset,
                 *bufferData._lastNodeCount,
-                passData.nodeData.data());
+                passData._nodeData.data());
 
             bufferData._colData->writeData(
                 bufferData._elementOffset,
                 *bufferData._lastNodeCount,
-                passData.collisionData.data());
+                passData._collisionData.data());
 
             bufferData._cmdBuffer->writeData(
                 bufferData._elementOffset,
                 *bufferData._lastCommandCount,
-                passData.drawCommands.data());
+                passData._drawCommands.data());
         }
 
         ShaderBufferBinding cmdBuffer = {};
@@ -523,7 +523,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         descriptorSetCmd._set.addShaderBuffer(colBuffer);
         EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
-        for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
+        for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
             for (RenderingComponent* rComp : queue) {
                 Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, true);
             }
@@ -544,12 +544,12 @@ U32 RenderPassManager::buildDrawCommands(const RenderPassParams& params, const b
 
     const SceneRenderState& sceneRenderState = parent().sceneManager()->getActiveScene().renderState();
 
-    for (RenderBin::SortedQueue& queue : passData.sortedQueues) {
+    for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
         queue.resize(0);
         queue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    getQueue().getSortedQueues(stagePass._stage, isPrePass, passData.sortedQueues);
+    passData._sortedNodeCount = getQueue().getSortedQueues(stagePass._stage, isPrePass, passData._sortedQueues);
     return buildBufferData(stagePass, sceneRenderState, params, refreshNodeData, bufferInOut);
 }
 
@@ -669,7 +669,7 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList<>& nodes,
     EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "HiZ Construct & Cull" });
 
     // Update HiZ Target
-    const std::pair<const Texture_ptr&, size_t> HiZTex = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
+    const auto [hizTexture, hizSampler] = _context.constructHIZ(sourceDepthBuffer, targetDepthBuffer, bufferInOut);
 
     // ToDo: This should not be needed as we unbind the render target before we dispatch the compute task anyway.
     // See if we can remove this -Ionut
@@ -682,12 +682,12 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList<>& nodes,
     // Run occlusion culling CS
     const RenderPass::BufferData& bufferData = getBufferData(stagePass);
     GFX::SendPushConstantsCommand HIZPushConstantsCMDInOut = {};
-    _context.occlusionCull(stagePass, bufferData, HiZTex.first, HiZTex.second, HIZPushConstantsCMDInOut, bufferInOut);
+    _context.occlusionCull(stagePass, bufferData, hizTexture, hizSampler, HIZPushConstantsCMDInOut, bufferInOut);
 
     EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Per-node HiZ Cull" });
     for (size_t i = 0; i < nodes.size(); ++i) {
         const VisibleNode& node = nodes.node(i);
-        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(node._node, stagePass, HiZTex.first, camera, HIZPushConstantsCMDInOut, bufferInOut);
+        Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(node._node, stagePass, hizTexture, camera, HIZPushConstantsCMDInOut, bufferInOut);
     }
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 

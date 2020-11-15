@@ -8,8 +8,7 @@
 
 #include "Core/Headers/StringHelper.h"
 
-namespace Divide {
-namespace Time {
+namespace Divide::Time {
 
 namespace {
     // Time stamp at application initialization
@@ -90,5 +89,4 @@ namespace App {
         return MicrosecondsToSeconds(ElapsedMicroseconds());
     }
 }
-}  // namespace Time
-}  // namespace Divide
+}  // namespace Divide::Time

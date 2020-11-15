@@ -5,16 +5,16 @@
 
 namespace Divide {
 
-void finish(Task& task) {
+void Finish(Task& task) {
     if (task._unfinishedJobs.fetch_sub(1, std::memory_order_relaxed) == 1) {
         task._callback = {};
         if (task._parent != nullptr) {
-            finish(*task._parent);
+            Finish(*task._parent);
         }
     }
 }
 
-void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction) {
+void RunLocally(Task& task, TaskPriority priority, const bool hasOnCompletionFunction) {
     while (task._unfinishedJobs.load(std::memory_order_relaxed) > 1) {
         TaskYield(task);
     }
@@ -22,7 +22,7 @@ void runLocally(Task& task, TaskPriority priority, bool hasOnCompletionFunction)
         task._callback(task);
     }
 
-    finish(task);
+    Finish(task);
     task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
 };
 
@@ -45,7 +45,7 @@ Task& Start(Task& task, const TaskPriority priority, const DELEGATE<void>& onCom
                     task._callback(task);
                 }
 
-                finish(task);
+                Finish(task);
                 task._parentPool->taskCompleted(task._id, hasOnCompletionFunction);
                 return true;
             }
@@ -57,7 +57,7 @@ Task& Start(Task& task, const TaskPriority priority, const DELEGATE<void>& onCom
         onCompletionFunction)) 
     {
         Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
-        runLocally(task, priority, hasOnCompletionFunction);
+        RunLocally(task, priority, hasOnCompletionFunction);
         task._parentPool->flushCallbackQueue();
     }
 

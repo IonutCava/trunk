@@ -78,10 +78,10 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
     virtual void attribute1f(U32 attribLocation, F32 value) = 0;
     virtual void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z,  U8 w) = 0;
     virtual void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) = 0;
-    void attribute4ub(U32 attribLocation, const vec4<U8>& value) {
+    void attribute4ub(const U32 attribLocation, const vec4<U8>& value) {
         attribute4ub(attribLocation, value.x, value.y, value.z, value.w);
     }
-    void attribute4f(U32 attribLocation, const vec4<F32>& value) {
+    void attribute4f(const U32 attribLocation, const vec4<F32>& value) {
         attribute4f(attribLocation, value.x, value.y, value.z, value.w);
     }
 

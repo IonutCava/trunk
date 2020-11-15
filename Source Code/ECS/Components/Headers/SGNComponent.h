@@ -88,7 +88,7 @@ struct Factory {
         constructData().at(type)(node, FWD(args)...);
     }
 
-    static void destruct(ComponentType type, SceneGraphNode* node) {
+    static void destruct(const ComponentType type, SceneGraphNode* node) {
         destructData().at(type)(node);
     }
 
@@ -128,7 +128,7 @@ struct Factory {
 
 private:
     struct Key {
-        Key(bool registered) : _registered(registered) {}
+        Key(const bool registered) : _registered(registered) {}
 
       private:
         bool _registered = false;

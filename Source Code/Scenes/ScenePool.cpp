@@ -137,7 +137,7 @@ bool ScenePool::deleteScene(Scene*& scene) {
     return false;
 }
 
-vectorEASTL<Str256> ScenePool::sceneNameList(bool sorted) const {
+vectorEASTL<Str256> ScenePool::sceneNameList(const bool sorted) const {
     vectorEASTL<Str256> scenes;
     for (SceneNameMap::value_type it : g_sceneNameMap) {
         scenes.push_back(it.second);

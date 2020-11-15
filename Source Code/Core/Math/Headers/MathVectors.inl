@@ -423,7 +423,7 @@ bool vec3<T>::isUniform() const noexcept {
 
 template <typename T>
 template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
-bool vec3<T>::isPerpendicular(const vec3<U>& other, F32 epsilon) const noexcept {
+bool vec3<T>::isPerpendicular(const vec3<U>& other, const F32 epsilon) const noexcept {
     return SQUARED(dot(other)) <= SQUARED(epsilon) * lengthSquared() * other.lengthSquared();
 }
 /// return the squared distance of the vector
@@ -531,7 +531,7 @@ void vec3<T>::lerp(const vec3 &v, const vec3 &factor) noexcept {
 
 /// rotate this vector on the X axis
 template <typename T>
-void vec3<T>::rotateX(D64 radians) {
+void vec3<T>::rotateX(const D64 radians) {
     this->y = static_cast<T>(std::cos(radians) * this->y +
                              std::sin(radians) * this->z);
     this->z = static_cast<T>(-std::sin(radians) * this->y +
@@ -540,7 +540,7 @@ void vec3<T>::rotateX(D64 radians) {
 
 /// rotate this vector on the Y axis
 template <typename T>
-void vec3<T>::rotateY(D64 radians) {
+void vec3<T>::rotateY(const D64 radians) {
     this->x = static_cast<T>(std::cos(radians) * this->x -
                              std::sin(radians) * this->z);
     this->z = static_cast<T>(std::sin(radians) * this->x +
@@ -549,7 +549,7 @@ void vec3<T>::rotateY(D64 radians) {
 
 /// rotate this vector on the Z axis
 template <typename T>
-void vec3<T>::rotateZ(D64 radians) {
+void vec3<T>::rotateZ(const D64 radians) {
     this->x = static_cast<T>(std::cos(radians) * this->x +
                              std::sin(radians) * this->y);
     this->y = static_cast<T>(-std::sin(radians) * this->x +
@@ -652,52 +652,52 @@ vec3<T> Max(const vec3<T> &v1, const vec3<T> &v2) noexcept {
 
 template<>
 template<>
-inline vec4<F32> vec4<F32>::operator-(F32 _f) const noexcept {
+inline vec4<F32> vec4<F32>::operator-(const F32 _f) const noexcept {
     return vec4<F32>(_mm_sub_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
 template<>
-inline vec4<F32>& vec4<F32>::operator-=(F32 _f) noexcept {
+inline vec4<F32>& vec4<F32>::operator-=(const F32 _f) noexcept {
     _reg._reg = _mm_sub_ps(_reg._reg, _mm_set1_ps(_f));
     return *this;
 }
 
 template<>
 template<>
-inline vec4<F32> vec4<F32>::operator+(F32 _f) const noexcept {
+inline vec4<F32> vec4<F32>::operator+(const F32 _f) const noexcept {
     return vec4<F32>(_mm_add_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
 template<>
-inline vec4<F32>& vec4<F32>::operator+=(F32 _f) noexcept  {
+inline vec4<F32>& vec4<F32>::operator+=(const F32 _f) noexcept  {
     _reg._reg = _mm_add_ps(_reg._reg, _mm_set1_ps(_f));
     return *this;
 }
 
 template<>
 template<>
-inline vec4<F32> vec4<F32>::operator*(F32 _f) const noexcept {
+inline vec4<F32> vec4<F32>::operator*(const F32 _f) const noexcept {
     return vec4<F32>(_mm_mul_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
 template<>
-inline vec4<F32>& vec4<F32>::operator*=(F32 _f) noexcept {
+inline vec4<F32>& vec4<F32>::operator*=(const F32 _f) noexcept {
     _reg._reg = _mm_mul_ps(_reg._reg, _mm_set1_ps(_f));
     return *this;
 }
 
 template<>
 template<>
-inline vec4<F32> vec4<F32>::operator/(F32 _f) const noexcept {
+inline vec4<F32> vec4<F32>::operator/(const F32 _f) const noexcept {
     return vec4<F32>(_mm_div_ps(_reg._reg, _mm_set1_ps(_f)));
 }
 
 template<>
 template<>
-inline vec4<F32>& vec4<F32>::operator/=(F32 _f) noexcept {
+inline vec4<F32>& vec4<F32>::operator/=(const F32 _f) noexcept {
     _reg._reg = _mm_div_ps(_reg._reg, _mm_set1_ps(_f));
     return *this;
 }
@@ -869,7 +869,7 @@ inline vec4<F32>& vec4<F32>::normalize() {
 /// The current vector is perpendicular to the specified one within epsilon
 template <typename T>
 template<typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
-bool vec4<T>::isPerpendicular(const vec4<U>& other, F32 epsilon) const noexcept {
+bool vec4<T>::isPerpendicular(const vec4<U>& other, const F32 epsilon) const noexcept {
     return SQUARED(dot(other)) <= SQUARED(epsilon) * lengthSquared() * other.lengthSquared();
 }
 

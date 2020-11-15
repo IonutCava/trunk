@@ -47,8 +47,8 @@ void Mesh::sceneUpdate(const U64 deltaTimeUS,
     return Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-void Mesh::addSubMesh(SubMesh_ptr subMesh) {
-    // Hold a reference to the submesh by ID
+void Mesh::addSubMesh(const SubMesh_ptr& subMesh) {
+    // Hold a reference to the SubMesh by ID
     _subMeshList.push_back(subMesh);
     Attorney::SubMeshMesh::setParentMesh(*subMesh.get(), this);
 }
@@ -62,8 +62,8 @@ void Mesh::setMaterialTpl(const Material_ptr& material) {
             if (submeshMaterial != nullptr) {
                 submeshMaterial->baseShaderData(material->baseShaderData());
                 for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
-                    for (auto it : material->shaderDefines(static_cast<ShaderType>(i))) {
-                        submeshMaterial->addShaderDefine(static_cast<ShaderType>(i), it.first, it.second);
+                    for (auto [define, appendPrefix] : material->shaderDefines(static_cast<ShaderType>(i))) {
+                        submeshMaterial->addShaderDefine(static_cast<ShaderType>(i), define, appendPrefix);
                     }
                 }
             }

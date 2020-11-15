@@ -4798,7 +4798,7 @@ static int seek_to_sample_coarse(stb_vorbis *f, uint32 sample_number)
       end_pos = f->segment_count - 1;
    }
 
-   // prepare to start decoding
+   // Prepare to start decoding
    f->current_loc_valid = FALSE;
    f->last_seg = FALSE;
    f->valid_bits = 0;

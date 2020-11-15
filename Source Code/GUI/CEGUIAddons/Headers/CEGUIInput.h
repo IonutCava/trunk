@@ -40,8 +40,8 @@ namespace Divide {
 class GUI;
 
 /// This class defines AutoRepeatKey::repeatKey(...) as CEGUI key inputs
-class CEGUIInput : public Input::InputAggregatorInterface,
-                   public Input::AutoRepeatKey {
+class CEGUIInput final : public Input::InputAggregatorInterface,
+                         public Input::AutoRepeatKey {
    public:
     explicit CEGUIInput(GUI& parent);
     /// Key pressed: return true if input was consumed

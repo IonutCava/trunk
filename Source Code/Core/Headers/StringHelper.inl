@@ -224,7 +224,7 @@ inline bool CompareIgnoreCase(const char* a, const char* b) noexcept {
     return strcasecmp(a, b) == 0;
 }
 
-inline bool CompareIgnoreCase(const char* a, const std::string_view b) noexcept {
+inline bool CompareIgnoreCase(const char* a, const std::string_view b) {
     if (a != nullptr && !b.empty()) {
         return strncasecmp(a, b.data(), b.length()) == 0;
     }
@@ -236,7 +236,7 @@ inline bool CompareIgnoreCase(const char* a, const std::string_view b) noexcept 
 }
 
 template<typename T_strA>
-bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
+bool CompareIgnoreCase(const T_strA& a, const char* b) {
     if (b != nullptr && !a.empty()) {
         return CompareIgnoreCase(a.c_str(), b);
     }
@@ -247,12 +247,12 @@ bool CompareIgnoreCase(const T_strA& a, const char* b) noexcept {
 }
 
 template<typename T_strA>
-bool CompareIgnoreCase(const T_strA& a, std::string_view b) noexcept {
+bool CompareIgnoreCase(const T_strA& a, const std::string_view b)  {
     return CompareIgnoreCase(a.c_str(), b);
 }
 
 template<>
-inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) noexcept {
+inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b),
                           std::cend(b),
@@ -266,7 +266,7 @@ inline bool CompareIgnoreCase(const stringImpl& a, const stringImpl& b) noexcept
 }
 
 template<>
-inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) noexcept {
+inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) {
     if (a.length() == b.length()) {
         return std::equal(std::cbegin(b),
                           std::cend(b),
@@ -280,7 +280,7 @@ inline bool CompareIgnoreCase(const stringImplFast& a, const stringImplFast& b) 
 }
 
 template<typename T_strA, typename T_strB>
-bool CompareIgnoreCase(const T_strA& a, const T_strB& b) noexcept {
+bool CompareIgnoreCase(const T_strA& a, const T_strB& b) {
     return CompareIgnoreCase(a.c_str(), b.c_str());
 }
 

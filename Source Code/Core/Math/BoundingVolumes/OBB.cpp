@@ -7,9 +7,9 @@
 
 namespace Divide {
     OBB::OBB(vec3<F32> pos, vec3<F32> hExtents, OBBAxis axis)  noexcept
-        : _position(std::move(pos)),
-       _halfExtents(std::move(hExtents)),
-          _axis(std::move(axis))
+        : _position(MOV(pos)),
+          _halfExtents(MOV(hExtents)),
+          _axis(MOV(axis))
     {
     }
 

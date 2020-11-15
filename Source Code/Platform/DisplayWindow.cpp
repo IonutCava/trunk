@@ -356,7 +356,7 @@ bool DisplayWindow::grabState() const noexcept {
     return SDL_GetWindowGrab(_sdlWindow) == SDL_TRUE;
 }
 
-void DisplayWindow::grabState(bool state) const noexcept {
+void DisplayWindow::grabState(const bool state) const noexcept {
     SDL_SetWindowGrab(_sdlWindow, state ? SDL_TRUE : SDL_FALSE);
 }
 

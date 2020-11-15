@@ -128,23 +128,23 @@ enum class MeshDetailLevel : U8 {
 };
 
 /// Load the input geometry from file (Wavefront OBJ format) and save it in 'outData'
-[[nodiscard]] bool loadMeshFile(NavModelData& outData, const char* filepath, const char* fileName);
+[[nodiscard]] bool LoadMeshFile(NavModelData& outData, const char* filepath, const char* fileName);
 /// Save the navigation input geometry in Wavefront OBJ format
-[[nodiscard]] bool saveMeshFile(const NavModelData& inData, const char* filepath, const char* filename);
+[[nodiscard]] bool SaveMeshFile(const NavModelData& inData, const char* filepath, const char* filename);
 /// Merge the data from two navigation geometry sources
-[[nodiscard]] NavModelData mergeModels(NavModelData& a, NavModelData& b, bool delOriginals = false);
+[[nodiscard]] NavModelData MergeModels(NavModelData& a, NavModelData& b, bool delOriginals = false);
 /// Parsing method that calls itself recursively untill all geometry has been parsed
-[[nodiscard]] bool parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
+[[nodiscard]] bool Parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn);
 
-void addVertex(NavModelData* modelData, const vec3<F32>& vertex);
+void AddVertex(NavModelData* modelData, const vec3<F32>& vertex);
 
-void addTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices,
+void AddTriangle(NavModelData* modelData, const vec3<U32>& triangleIndices,
                  U32 triangleIndexOffset = 0,
                  const SamplePolyAreas& areaType = SamplePolyAreas::SAMPLE_POLYAREA_GROUND);
 
-[[nodiscard]] char* parseRow(char* buf, char* bufEnd, char* row, I32 len);
+[[nodiscard]] char* ParseRow(char* buf, char* bufEnd, char* row, I32 len);
 
-[[nodiscard]] I32 parseFace(char* row, I32* data, I32 n, I32 vcnt);
+[[nodiscard]] I32 ParseFace(char* row, I32* data, I32 n, I32 vcnt);
 }
 }  // namespace Navigation
 }  // namespace AI

@@ -75,7 +75,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) = 0;
     /// Change the texture's mip levels. This can be called at any time
-    virtual void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
+    virtual void setMipMapRange(const U16 base = 0, const U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) = 0;
     /// Change the number of MSAA samples for this current texture

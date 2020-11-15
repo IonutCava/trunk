@@ -44,21 +44,6 @@ namespace AI {
 class NavigationMeshConfig {
    public:
     NavigationMeshConfig() noexcept
-        : _tileSize(48),
-          _cellSize(0.3f),
-          _cellHeight(0.2f),
-          _agentMaxSlope(20),
-          _agentHeight(2.5f),
-          _agentMaxClimb(1),
-          _agentRadius(0.5f),
-          _edgeMaxLen(12),
-          _edgeMaxError(1.3f),
-          _regionMinSize(50),
-          _regionMergeSize(20),
-          _vertsPerPoly(DT_VERTS_PER_POLYGON),  // (=6)
-          _detailSampleDist(6),
-          _detailSampleMaxError(1),
-          _keepInterResults(false)
     {
         eval();
     }
@@ -225,7 +210,7 @@ class NavigationMeshConfig {
     }
 
     /** Tilesize is the number of (recast) cells per tile. (a multiple of 8 between 16 and 128) */
-    I32 _tileSize;
+    I32 _tileSize = 48;
 
     /**
       * Cellsize (cs) is the width and depth resolution used when sampling the source geometry.
@@ -240,7 +225,7 @@ class NavigationMeshConfig {
       * The minimum value for this parameter depends on the platform's floating point accuracy,
       * with the practical minimum usually around 0.05.
       **/
-    F32 _cellSize;
+    F32 _cellSize = 0.3f;
 
     /**
       * Cellheight (ch) is the height resolution used when sampling the source geometry.
@@ -261,7 +246,7 @@ class NavigationMeshConfig {
       * in number of cells. Also walkableClimb's precision is affected by ch in the same way,
       * along with some other parameters.
       **/
-    F32 _cellHeight;
+    F32 _cellHeight = 0.2f;
 
     /**
       * The maximum slope that is considered traversable (in degrees).
@@ -270,7 +255,7 @@ class NavigationMeshConfig {
       *
       * Also called maxTraversableSlope
       **/
-    F32 _agentMaxSlope;
+    F32 _agentMaxSlope = 20;
 
     /**
       * The height of an agent. Defines the minimum height that
@@ -280,7 +265,7 @@ class NavigationMeshConfig {
       * This parameter serves at setting walkableHeight (minTraversableHeight) parameter,
       * precision of this parameter is determined by cellHeight (ch).
       **/
-    F32 _agentHeight;
+    F32 _agentHeight = 2.5f;
 
     /**
       * The Maximum ledge height that is considered to still be traversable.
@@ -290,7 +275,7 @@ class NavigationMeshConfig {
       * Allows the mesh to flow over low lying obstructions such as curbs and up/down stairways.
       * The value is usually set to how far up/down an agent can step.
       **/
-    F32 _agentMaxClimb;
+    F32 _agentMaxClimb = 1;
 
     /**
       * The radius on the xz (ground) plane of the circle that describes the agent (character) size.
@@ -307,7 +292,7 @@ class NavigationMeshConfig {
       * While a value of zero is legal, it is not recommended and can result in odd edge case issues.
       *
       **/
-    F32 _agentRadius;
+    F32 _agentRadius = 0.5f;
 
     /**
       * The maximum allowed length for contour edges along the border of the mesh.
@@ -316,7 +301,7 @@ class NavigationMeshConfig {
       * A value of zero effectively disables this feature.
       * Serves at setting maxEdgeLen, the precision of maxEdgeLen is affected by cellSize (cs).
       **/
-    I32 _edgeMaxLen;
+    I32 _edgeMaxLen = 12;
 
     /**
       * The maximum distance a simplfied contour's border edges should deviate the original raw contour.
@@ -330,7 +315,7 @@ class NavigationMeshConfig {
       * A value to zero is not recommended since it can result in a large increase in the number of
       * polygons in the final meshes at a high processing cost.
       **/
-    F32 _edgeMaxError;
+    F32 _edgeMaxError = 1.3f;
 
     /**
       * The minimum number of cells allowed to form isolated island areas (size).
@@ -340,7 +325,7 @@ class NavigationMeshConfig {
       * Serves at setting minRegionArea, which will be set to the square of this value
       * (the regions are square, thus area=size*size)
       **/
-    I32 _regionMinSize;
+    I32 _regionMinSize = 50;
 
     /**
       * Any regions with a span count smaller than this value will, if possible, be merged with larger regions.
@@ -348,7 +333,7 @@ class NavigationMeshConfig {
       * Serves at setting MergeRegionArea, which will be set to the square of this value
       * (the regions are square, thus area=size*size)
       **/
-    I32 _regionMergeSize;
+    I32 _regionMergeSize = 20;
 
     /**
       * The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
@@ -361,7 +346,7 @@ class NavigationMeshConfig {
       * Higher values increase processing cost, but can also result in better formed polygons in the final meshes.
       * A value of around 6 is generally adequate with diminishing returns for higher values.
       **/
-    I32 _vertsPerPoly;
+    I32 _vertsPerPoly = DT_VERTS_PER_POLYGON;
 
     /**
       * Sets the sampling distance to use when generating the detail mesh.
@@ -374,7 +359,7 @@ class NavigationMeshConfig {
       * at the cost of a higher final triangle count and higher processing cost.
       * Setting this argument to less than 0.9 disables this functionality.
       **/
-    F32 _detailSampleDist;
+    F32 _detailSampleDist = 6;
 
     /**
       * The maximum distance the detail mesh surface should deviate from heightfield data.
@@ -388,13 +373,13 @@ class NavigationMeshConfig {
       * triangles in the final detail mesh at a high processing cost.
       * Stronly related to detailSampleDist (contourSampleDistance).
       **/
-    F32 _detailSampleMaxError;
+    F32 _detailSampleMaxError = 1;
 
     /**
       * Determines whether intermediary results are stored in OgreRecast class or whether they are
       * removed after navmesh creation.
       **/
-    bool _keepInterResults;
+    bool _keepInterResults = false;
 
     /**
       * Minimum height in number of (voxel) cells that the ceiling needs to be

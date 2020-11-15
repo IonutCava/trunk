@@ -117,6 +117,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
                     hdrBatch.emplace_back(eastl::make_unique<BloomPreRenderOperator>(_context, *this, _resCache));
                     break;
 
+                default:
                 case FilterType::FILTER_LUT_CORECTION:
                 case FilterType::FILTER_COUNT:
                 case FilterType::FILTER_UNDERWATER:
@@ -285,7 +286,7 @@ bool PreRenderBatch::operatorsReady() const {
     return true;
 }
 
-RenderTargetHandle PreRenderBatch::getInput(bool hdr) const {
+RenderTargetHandle PreRenderBatch::getInput(const bool hdr) const {
     if (hdr && _screenRTs._swappedHDR) {
         return _screenRTs._hdr._screenCopy;
     } else if (hdr) {
@@ -295,7 +296,7 @@ RenderTargetHandle PreRenderBatch::getInput(bool hdr) const {
     return _screenRTs._ldr._temp[_screenRTs._swappedLDR ? 0 : 1];
 }
 
-RenderTargetHandle PreRenderBatch::getOutput(bool hdr) const {
+RenderTargetHandle PreRenderBatch::getOutput(const bool hdr) const {
     if (hdr && _screenRTs._swappedHDR) {
         return _screenRTs._hdr._screenRef;
     }
@@ -348,11 +349,11 @@ Texture_ptr PreRenderBatch::luminanceTex() const noexcept {
     return _currentLuminance;
 }
 
-void PreRenderBatch::onFilterEnabled(FilterType filter) {
+void PreRenderBatch::onFilterEnabled(const FilterType filter) {
     onFilterToggle(filter, true);
 }
 
-void PreRenderBatch::onFilterDisabled(FilterType filter) {
+void PreRenderBatch::onFilterDisabled(const FilterType filter) {
     onFilterToggle(filter, false);
 }
 

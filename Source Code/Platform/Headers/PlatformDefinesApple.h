@@ -56,7 +56,7 @@ void checkMacEvents();
 
 namespace Divide {
     struct WindowHandle {
-        id _handle;
+        id _handle{};
     };
 }; //namespace Divide
 

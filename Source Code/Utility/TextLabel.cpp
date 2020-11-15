@@ -12,7 +12,7 @@ TextLabelStyle::FontNameHashMap TextLabelStyle::s_fontName;
 
 TextLabelStyle::TextLabelStyle(const char* font,
                                const UColour4& colour,
-                               U8 fontSize)
+                               const U8 fontSize)
   : _font(_ID(font)),
     _fontSize(fontSize),
     _width(1),
