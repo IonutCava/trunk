@@ -369,8 +369,6 @@
     <ClInclude Include="..\..\Source Code\Libs\Optick\optick_miniz.h" />
     <ClInclude Include="..\..\Source Code\Libs\Optick\optick_serialization.h" />
     <ClInclude Include="..\..\Source Code\Libs\Optick\optick_server.h" />
-    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.h" />
-    <ClInclude Include="..\..\Source Code\Libs\RenderDoc-Manager\renderdoc_app.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h" />
     <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h" />
@@ -470,11 +468,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\fmt\src\posix.cc">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
@@ -768,7 +761,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\RenderDoc-Manager\RenderDocManager.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcher.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherLinux.cpp" />
     <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherOSX.cpp" />

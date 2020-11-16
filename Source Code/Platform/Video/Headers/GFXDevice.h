@@ -53,8 +53,6 @@
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 
-class RenderDocManager;
-
 namespace Divide {
     struct RenderPassParams;
 
@@ -536,7 +534,6 @@ private:
    
     Mutex _pipelineCacheLock;
     hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;
-    std::shared_ptr<RenderDocManager> _renderDocManager = nullptr;
 
     std::stack<CameraSnapshot> _cameraSnapshots;
     std::stack<Rect<I32>> _viewportStack;

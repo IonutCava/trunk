@@ -40,8 +40,6 @@
 #include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShaderProgram.h"
 #include "Platform/Video/RenderBackend/OpenGL/Textures/Headers/glTexture.h"
 
-#include <RenderDoc-Manager/RenderDocManager.h>
-
 #include "Headers/CommandBufferPool.h"
 
 namespace Divide {
@@ -174,12 +172,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
 
     if (hardwareState == ErrorCode::NO_ERR) {
         // Initialize the rendering API
-        if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-            //_renderDocManager = 
-            //   std::make_shared<RenderDocManager>(const_sysInfo()._windowHandle,
-            //                                      ".\\RenderDoc\\renderdoc.dll",
-            //                                      L"\\RenderDoc\\Captures\\");
-        }
         hardwareState = _api->initRenderingAPI(argc, argv, config);
     }
 
@@ -874,12 +866,6 @@ void GFXDevice::idle(const bool fast) const {
 void GFXDevice::beginFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 
-    if_constexpr (Config::ENABLE_GPU_VALIDATION) {
-        if (global && _renderDocManager != nullptr) {
-            _renderDocManager->StartFrameCapture();
-        }
-    }
-
     if (global && _resolutionChangeQueued.second) {
         SizeChangeParams params;
         params.isWindowResize = false;
@@ -912,12 +898,6 @@ void GFXDevice::endFrame(DisplayWindow& window, const bool global) {
     DIVIDE_ASSERT(_viewportStack.empty(), "Not all viewports have been cleared properly! Check command buffers for missmatched push/pop!");
     // Activate the default render states
     _api->endFrame(window, global);
-
-    if_constexpr (Config::ENABLE_GPU_VALIDATION) {
-        if (global && _renderDocManager != nullptr) {
-            _renderDocManager->EndFrameCapture();
-        }
-    }
 }
 #pragma endregion
 
