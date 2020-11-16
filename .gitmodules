@@ -1,3 +1,12 @@
 [submodule "Source Code/Libs/ChaiScript"]
 	path = Source Code/Libs/ChaiScript
 	url = https://github.com/ChaiScript/ChaiScript
+[submodule "Source Code/Libs/EASTL"]
+	path = Source Code/Libs/EASTL
+	url = https://github.com/electronicarts/EASTL
+[submodule "Source Code/Libs/EABase"]
+	path = Source Code/Libs/EABase
+	url = https://github.com/electronicarts/EABase
+[submodule "Source Code/Libs/EAStdC"]
+	path = Source Code/Libs/EAStdC
+	url = https://github.com/electronicarts/EAStdC
