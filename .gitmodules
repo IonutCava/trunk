@@ -25,3 +25,6 @@
 [submodule "Source Code/Libs/CPPGoap"]
 	path = Source Code/Libs/CPPGoap
 	url = https://github.com/cpowell/cppGOAP
+[submodule "Source Code/Libs/MemoryPool"]
+	path = Source Code/Libs/MemoryPool
+	url = https://github.com/cacay/MemoryPool
