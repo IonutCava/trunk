@@ -31,3 +31,6 @@
 [submodule "Source Code/Libs/ReCast"]
 	path = Source Code/Libs/ReCast
 	url = https://github.com/recastnavigation/recastnavigation
+[submodule "Source Code/Libs/simplefilewatcher"]
+	path = Source Code/Libs/simplefilewatcher
+	url = https://github.com/jameswynn/simplefilewatcher
