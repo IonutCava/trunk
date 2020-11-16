@@ -28,3 +28,6 @@
 [submodule "Source Code/Libs/MemoryPool"]
 	path = Source Code/Libs/MemoryPool
 	url = https://github.com/cacay/MemoryPool
+[submodule "Source Code/Libs/ReCast"]
+	path = Source Code/Libs/ReCast
+	url = https://github.com/recastnavigation/recastnavigation
