@@ -1,0 +1,3 @@
+[submodule "Source Code/Libs/ChaiScript"]
+	path = Source Code/Libs/ChaiScript
+	url = https://github.com/ChaiScript/ChaiScript
