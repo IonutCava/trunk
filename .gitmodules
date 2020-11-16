@@ -40,3 +40,6 @@
 [submodule "Source Code/Libs/skarupke"]
 	path = Source Code/Libs/skarupke
 	url = https://github.com/skarupke/flat_hash_map
+[submodule "Source Code/Libs/STB"]
+	path = Source Code/Libs/STB
+	url = https://github.com/nothings/stb
