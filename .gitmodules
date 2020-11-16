@@ -46,3 +46,6 @@
 [submodule "Source Code/Libs/unit_test_framework"]
 	path = 3rdParty/unit_test_framework
 	url = https://gitlab.com/cppocl/unit_test_framework
+[submodule "3rdParty/physx34"]
+	path = 3rdParty/physx
+	url = https://github.com/NVIDIAGameWorks/PhysX-3.4
