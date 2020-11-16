@@ -13,3 +13,6 @@
 [submodule "Source Code/Libs/fmt"]
 	path = Source Code/Libs/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "Source Code/Libs/meshoptimizer"]
+	path = Source Code/Libs/meshoptimizer
+	url = https://github.com/zeux/meshoptimizer
