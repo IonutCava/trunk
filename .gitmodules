@@ -43,3 +43,6 @@
 [submodule "Source Code/Libs/STB"]
 	path = Source Code/Libs/STB
 	url = https://github.com/nothings/stb
+[submodule "Source Code/Libs/unit_test_framework"]
+	path = Source Code/Libs/unit_test_framework
+	url = https://gitlab.com/cppocl/unit_test_framework
