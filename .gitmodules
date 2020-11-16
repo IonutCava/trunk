@@ -19,3 +19,6 @@
 [submodule "Source Code/Libs/Optick"]
 	path = Source Code/Libs/Optick
 	url = https://github.com/bombomby/optick
+[submodule "Source Code/Libs/ConcurrentQueue"]
+	path = Source Code/Libs/ConcurrentQueue
+	url = https://github.com/cameron314/concurrentqueue
