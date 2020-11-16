@@ -137,6 +137,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #pragma warning (push)
 #pragma warning (disable: 4624) // warning C4624: destructor was implicitly defined as deleted (union Slot_{})
 #endif
+// Let's face it. This will never get fixed
+#define freeSlots freeSlots_
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
 #ifdef _MSC_VER
