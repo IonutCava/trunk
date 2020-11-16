@@ -10,3 +10,6 @@
 [submodule "Source Code/Libs/EAStdC"]
 	path = Source Code/Libs/EAStdC
 	url = https://github.com/electronicarts/EAStdC
+[submodule "Source Code/Libs/fmt"]
+	path = Source Code/Libs/fmt
+	url = https://github.com/fmtlib/fmt
