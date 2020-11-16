@@ -37,3 +37,6 @@
 [submodule "Source Code/Libs/SimpleINI"]
 	path = Source Code/Libs/SimpleINI
 	url = https://github.com/brofield/simpleini
+[submodule "Source Code/Libs/skarupke"]
+	path = Source Code/Libs/skarupke
+	url = https://github.com/skarupke/flat_hash_map
