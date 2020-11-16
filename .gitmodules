@@ -22,3 +22,6 @@
 [submodule "Source Code/Libs/ConcurrentQueue"]
 	path = Source Code/Libs/ConcurrentQueue
 	url = https://github.com/cameron314/concurrentqueue
+[submodule "Source Code/Libs/CPPGoap"]
+	path = Source Code/Libs/CPPGoap
+	url = https://github.com/cpowell/cppGOAP
