@@ -1,11 +1,14 @@
 ﻿#include "stdafx.h"
 
 #include "Headers/GLWrapper.h"
+
+#include "CEGUIOpenGLRenderer/include/Texture.h"
 #include "Headers/glHardwareQuery.h"
 
 #include "Platform/File/Headers/FileManagement.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
+#include "Platform/Video/Textures/Headers/Texture.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glBufferImpl.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/RenderTarget/Headers/glFramebuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
@@ -21,9 +24,8 @@
 
 #include <SDL_video.h>
 
-#include <Texture.h>
-#include <CEGUI/CEGUI.h>
 
+#include <CEGUI/CEGUI.h>
 
 #include "Platform/Headers/PlatformRuntime.h"
 #include "Text/Headers/fontstash.h"
@@ -874,7 +876,7 @@ I32 GL_API::getFont(const Str64& fontName) {
                 Console::errorfn(Locale::get(_ID("ERROR_FONT_FILE")), fontName.c_str());
             }
             // Save the font in the font cache
-            insert(_fonts, fontNameHash, _fontCache.second);
+            hashAlg::insert(_fonts, fontNameHash, _fontCache.second);
             
         } else {
             _fontCache.second = it->second;
@@ -1592,12 +1594,14 @@ U32 GL_API::getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const {
 }
 
 IMPrimitive* GL_API::newIMP(Mutex& lock, GFXDevice& parent) {
-    return s_IMPrimitivePool.newElement(lock, parent);
+    UniqueLock<Mutex> w_lock(lock);
+    return s_IMPrimitivePool.newElement(parent);
 }
 
 bool GL_API::destroyIMP(Mutex& lock, IMPrimitive*& primitive) {
     if (primitive != nullptr) {
-        s_IMPrimitivePool.deleteElement(lock, static_cast<glIMPrimitive*>(primitive));
+        UniqueLock<Mutex> w_lock(lock);
+        s_IMPrimitivePool.deleteElement(static_cast<glIMPrimitive*>(primitive));
         primitive = nullptr;
         return true;
     }

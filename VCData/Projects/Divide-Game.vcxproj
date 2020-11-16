@@ -89,6 +89,10 @@
     <ClCompile Include="../../Source Code\Environment\Terrain\TerrainChunk.cpp" />
     <ClCompile Include="../../Source Code\Environment\Terrain\TerrainDescriptor.cpp" />
     <ClCompile Include="../../Source Code\Environment\Terrain\TileRing.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Action.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Node.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Planner.cpp" />
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\WorldState.cpp" />
     <ClCompile Include="..\..\Source Code\Environment\Sky\Sun.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -166,6 +170,13 @@
     <ClInclude Include="../../Source Code\Environment\Terrain\Headers\TileRing.h" />
     <ClInclude Include="../../Source Code\Environment\Terrain\Quadtree\Headers\Quadtree.h" />
     <ClInclude Include="../../Source Code\Environment\Terrain\Quadtree\Headers\QuadtreeNode.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Action.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Node.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Planner.h" />
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\WorldState.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCacheCompressor.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCacheUtil.h" />
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\ReCastConvexHull.h" />
     <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sun.h" />
   </ItemGroup>
   <ItemGroup>
@@ -232,7 +243,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir>$(SolutionDir)../Source Code/Libs/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>Intermediate\$(Configuration)_Game\</IntDir>
@@ -245,10 +256,10 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir>$(SolutionDir)../Source Code/Libs/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir>$(SolutionDir)../Source Code/Libs/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>Intermediate\$(Configuration)_Game\</IntDir>
@@ -274,7 +285,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/ReCast/;$(SolutionDir)/../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)/../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)/../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/include/;$(SolutionDir)/../3rdParty/ReCast/Detour/include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/include/;$(SolutionDir)/../3rdParty/ReCast/ReCast/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../3rdParty/imgui\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
@@ -316,7 +327,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <AdditionalLibraryDirectories>
@@ -333,7 +344,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/ReCast/;$(SolutionDir)/../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)/../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)/../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/include/;$(SolutionDir)/../3rdParty/ReCast/Detour/include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/include/;$(SolutionDir)/../3rdParty/ReCast/ReCast/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../3rdParty/imgui\</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_RELEASE;NDEBUG</PreprocessorDefinitions>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
@@ -374,7 +385,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalDependencies>
       </AdditionalDependencies>
       <Verbose>false</Verbose>
@@ -386,7 +397,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/ReCast/;$(SolutionDir)/../Source Code/Libs/ReCast/DebugUtils/include/;$(SolutionDir)/../Source Code/Libs/ReCast/Detour/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourCrowd/include/;$(SolutionDir)/../Source Code/Libs/ReCast/DetourTileCache/include/;$(SolutionDir)/../Source Code/Libs/ReCast/ReCast/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../Source Code/Libs/imgui\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/include/;$(SolutionDir)/../3rdParty/ReCast/Detour/include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/include/;$(SolutionDir)/../3rdParty/ReCast/ReCast/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/DevIL\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\\include/extensions\;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/glm\;$(SolutionDir)/../3rdParty/imgui\</AdditionalIncludeDirectories>
       <UndefinePreprocessorDefinitions>
       </UndefinePreprocessorDefinitions>
       <PreprocessorDefinitions>_PROFILE;NDEBUG</PreprocessorDefinitions>
@@ -427,7 +438,7 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <Verbose>false</Verbose>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
     </Lib>

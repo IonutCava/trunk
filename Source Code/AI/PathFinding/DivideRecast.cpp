@@ -58,7 +58,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
                                                &StartPoly,
                                                StartNearest);
 
-    if (status & DT_FAILURE || status & DT_STATUS_MASK) {
+    if (status & DT_FAILURE) {
         // couldn't find a polygon
         return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_START;
     }
@@ -70,7 +70,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
                                       &EndPoly,
                                       EndNearest);
 
-    if (status & DT_FAILURE || status & DT_STATUS_MASK) {
+    if (status & DT_FAILURE) {
         // couldn't find a polygon
         return PathErrorCode::PATH_ERROR_NO_NEAREST_POLY_END;
     }
@@ -84,7 +84,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
                                &nPathCount,
                                MAX_PATHPOLY);
 
-    if (status & DT_FAILURE || status & DT_STATUS_MASK) {
+    if (status & DT_FAILURE) {
         // couldn't create a path
         return PathErrorCode::PATH_ERROR_COULD_NOT_CREATE_PATH;
     }
@@ -104,7 +104,7 @@ PathErrorCode DivideRecast::FindPath(const NavigationMesh& navMesh,
                                        &nVertCount,
                                        MAX_PATHVERT);
 
-    if (status & DT_FAILURE || status & DT_STATUS_MASK) {
+    if (status & DT_FAILURE) {
         // couldn't create a path
         return PathErrorCode::PATH_ERROR_NO_STRAIGHT_PATH_CREATE;
     }
@@ -162,7 +162,7 @@ bool DivideRecast::getRandomNavMeshPoint(const NavigationMesh& navMesh, vec3<F32
                                                                       &resultPoly,
                                                                       resultPt._v);
 
-        return !(status & DT_FAILURE || status & DT_STATUS_MASK);
+        return !(status & DT_FAILURE);
     }
 
     return false;
@@ -255,7 +255,7 @@ bool DivideRecast::findNearestPolyOnNavmesh(const NavigationMesh& navMesh,
                                                                       &resultPoly,
                                                                       resultPt._v);
 
-        return !(status & DT_FAILURE || status & DT_STATUS_MASK);
+        return !(status & DT_FAILURE);
     }
 
     return false;

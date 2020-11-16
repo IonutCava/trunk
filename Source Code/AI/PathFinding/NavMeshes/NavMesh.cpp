@@ -18,7 +18,7 @@
 #include <ReCast/DebugUtils/Include/DetourDebugDraw.h>
 #include <ReCast/DebugUtils/Include/RecastDebugDraw.h>
 
-#include <SimpleINI/include/SimpleIni.h>
+#include <SimpleINI/SimpleIni.h>
 
 namespace Divide::AI::Navigation {
 

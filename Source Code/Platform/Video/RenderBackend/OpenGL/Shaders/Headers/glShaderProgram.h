@@ -35,7 +35,7 @@
 
 #include "glShaderProgram.h"
 #include "AI/ActionInterface/Headers/AIProcessor.h"
-#include "GLIM/Declarations.h"
+#include "Platform/Video/GLIM/Declarations.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 

@@ -3,7 +3,7 @@
 #include "Headers/Localization.h"
 
 #include "Core/Headers/ErrorCodes.h"
-#include <SimpleINI/include/SimpleIni.h>
+#include <SimpleINI/SimpleIni.h>
 
 #include "Platform/File/Headers/FileManagement.h"
 #include "Platform/File/Headers/FileUpdateMonitor.h"

@@ -11,6 +11,8 @@ namespace GLUtil {
 /// Print OpenGL specific messages
 void DebugCallback(const GLenum source, const GLenum type, GLuint id, const GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
 
+    ACKNOWLEDGE_UNUSED(length);
+
     if (severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
         // Translate message source
         const char* gl_source = "Unknown Source";

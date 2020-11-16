@@ -400,14 +400,14 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
             shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
             shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
-            shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x) + "f", true);
-            shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x) + "f", true);
-            shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(WorldScale.width) + "f", true);
-            shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(WorldScale.height) + "f", true);
+            shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x), true);
+            shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x), true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(WorldScale.width), true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(WorldScale.height), true);
             shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(TerDim.width), true);
             shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(TerDim.height), true);
-            shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width) + "f", true);
-            shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height) + "f", true);
+            shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width), true);
+            shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height), true);
             shaderModule._defines.emplace_back("NODE_STATIC", true);
 
             shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);

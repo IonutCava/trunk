@@ -29,20 +29,25 @@ void NavMeshDebugDraw::paused(const bool state) {
     _paused = state;
 }
 
+void NavMeshDebugDraw::depthMask(const bool state) {
+    _depthMask = state;
+}
+
 void NavMeshDebugDraw::beginBatch() {
     if (!_primitive) {
         _dirty = true;
         _primitive = _context.newIMP();
-
-        // Generate a render state
-        RenderStateBlock navigationDebugStateBlock;
-        navigationDebugStateBlock.setCullMode(CullMode::NONE);
-
-        PipelineDescriptor pipeDesc;
-        pipeDesc._stateHash = navigationDebugStateBlock.getHash();
-
-        _primitive->pipeline(*_context.newPipeline(pipeDesc));
     }
+
+    // Generate a render state
+    RenderStateBlock navigationDebugStateBlock;
+    navigationDebugStateBlock.setCullMode(CullMode::NONE);
+    navigationDebugStateBlock.depthTestEnabled(_depthMask);
+
+    PipelineDescriptor pipeDesc;
+    pipeDesc._stateHash = navigationDebugStateBlock.getHash();
+
+    _primitive->pipeline(*_context.newPipeline(pipeDesc));
 
     assert(_primitive != nullptr);
 

@@ -54,11 +54,9 @@ ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
                                      _gDefaultErrorCallback);
     assert(_foundation != nullptr);
 
-    bool recordMemoryAllocations;
+    constexpr bool recordMemoryAllocations = (Config::Build::IS_DEBUG_BUILD || Config::Build::IS_PROFILE_BUILD);
 
-    if_constexpr(Config::Build::IS_DEBUG_BUILD || Config::Build::IS_PROFILE_BUILD) {
-
-        recordMemoryAllocations = Config::Build::IS_DEBUG_BUILD;
+    if_constexpr(recordMemoryAllocations) {
         createPvdConnection(g_pvd_target_ip,
                             g_pvd_target_port,
                             g_pvd_target_timeout_ms,

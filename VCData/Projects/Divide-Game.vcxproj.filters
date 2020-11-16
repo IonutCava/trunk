@@ -205,6 +205,9 @@
     <Filter Include="XML\Editor">
       <UniqueIdentifier>{3a971fc7-9112-4c6d-82be-a9a114176786}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AI\ActionInterface\CustomGOAP">
+      <UniqueIdentifier>{64759256-257e-4e01-b22f-4cec407c3ed2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/AI\AIEntity.cpp">
@@ -432,6 +435,18 @@
     <ClCompile Include="..\..\Source Code\Environment\Sky\Sun.cpp">
       <Filter>Environment\Sky</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Action.cpp">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Node.cpp">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Planner.cpp">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\WorldState.cpp">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/AI\Sensors\Headers\AudioSensor.h">
@@ -656,6 +671,27 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Environment\Sky\Headers\Sun.h">
       <Filter>Environment\Sky\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCacheCompressor.h">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\DivideTileCacheUtil.h">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\PathFinding\NavMeshes\DetourTileCache\Headers\ReCastConvexHull.h">
+      <Filter>AI\PathFinding\NavMeshes\DetourTileCaching\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Action.h">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Node.h">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\Planner.h">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\AI\ActionInterface\CustomGOAP\WorldState.h">
+      <Filter>AI\ActionInterface\CustomGOAP</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

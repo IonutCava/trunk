@@ -60,11 +60,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Intermediate\$(Configuration)_Engine\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</EmbedManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Intermediate\$(Configuration)_Engine\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Intermediate\$(Configuration)_Engine\</IntDir>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</EmbedManifest>
@@ -127,7 +127,7 @@
       </UndefinePreprocessorDefinitions>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <CompileAs>CompileAsCpp</CompileAs>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/ReCast\;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/Chaiscript/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/STB\;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/ReCast\;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/Chaiscript/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <StringPooling>true</StringPooling>
@@ -167,7 +167,7 @@
       </LinkStatus>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
@@ -194,7 +194,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/ReCast\;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/Chaiscript/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/STB\;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/ReCast\;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/Chaiscript/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -233,7 +233,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
@@ -260,7 +260,7 @@
       <DisableSpecificWarnings>4913;4512;4201;4100;4503</DisableSpecificWarnings>
       <OmitFramePointers>
       </OmitFramePointers>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/ReCast\;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/Chaiscript/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/STB\;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/ReCast\;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/Chaiscript/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/assimp\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/physx\PxShared\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/common\;$(SolutionDir)/../3rdParty/physx\PhysX_3.4\include/extensions\</AdditionalIncludeDirectories>
       <FloatingPointModel>Fast</FloatingPointModel>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
@@ -296,7 +296,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>
       </AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
@@ -413,26 +413,26 @@
     <ClCompile Include="..\..\Source Code\ECS\Systems\ECSSystem.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\RenderingSystem.cpp" />
     <ClCompile Include="..\..\Source Code\ECS\Systems\TransformSystem.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ComponentManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Engine.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\EntityManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\EventHandler.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEvent.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEventListener.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IComponent.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IEntity.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ISystem.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\Logger.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\LoggerManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\ECSMM.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\SystemManager.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\Timer.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\API.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\ComponentManager.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Engine.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\EntityManager.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Event\EventHandler.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Event\IEvent.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Event\IEventListener.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\IComponent.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\IEntity.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\ISystem.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Log\Logger.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Log\LoggerManager.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\ECSMM.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\SystemManager.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\util\FamilyTypeID.cpp" />
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\util\Timer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\FrameListener.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\MotionBlurPreRenderOperator.cpp" />
   </ItemGroup>
@@ -554,38 +554,38 @@
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RenderingSystem.h" />
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h" />
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\MaterialEnums.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\API.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Component.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ComponentManager.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ECS.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Engine.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Entity.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\EntityManager.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\Event.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEvent.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IComponent.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IEntity.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ISystem.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\Logger.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Platform.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\System.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\SystemManager.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Handle.h" />
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Timer.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\API.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Component.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\ComponentManager.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\ECS.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Engine.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Entity.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\EntityManager.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\Event.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\EventDelegate.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\EventDispatcher.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\EventHandler.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\IEvent.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\IEventListener.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\IComponent.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\IEntity.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\ISystem.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Log\Logger.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Log\LoggerMacro.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Log\LoggerManager.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\ECSMM.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Platform.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\System.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\SystemManager.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\FamilyTypeID.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\Handle.h" />
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\Timer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\MotionBlurPreRenderOperator.h" />
   </ItemGroup>
   <ItemGroup>

@@ -95,7 +95,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
     using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
     using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
-    using AtomInclusionMap = ska::bytell_hash_map<U64 /*name hash*/, vectorEASTL<ResourcePath>>;
+    //using AtomInclusionMap = ska::bytell_hash_map<U64 /*name hash*/, vectorEASTL<ResourcePath>>;
+    using AtomInclusionMap = hashMap<U64 /*name hash*/, vectorEASTL<ResourcePath>>;
     using ShaderQueue = eastl::stack<ShaderProgram*, vectorEASTLFast<ShaderProgram*> >;
 
 

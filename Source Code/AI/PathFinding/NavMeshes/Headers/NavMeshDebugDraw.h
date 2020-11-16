@@ -77,6 +77,8 @@ class NavMeshDebugDraw final : public duDebugDraw {
 
     void texture(bool state) override { ACKNOWLEDGE_UNUSED(state); }
 
+    void depthMask(bool state);
+
     void vertex(const F32* pos, const U32 colour) override
     {
         vertex(pos[0], pos[1], pos[2], colour);
@@ -102,6 +104,7 @@ class NavMeshDebugDraw final : public duDebugDraw {
     bool _overrideColour = false;
     bool _dirty = true;
     bool _paused = false;
+    bool _depthMask = true;
 };
 }  // namespace Navigation
 }  // namespace AI

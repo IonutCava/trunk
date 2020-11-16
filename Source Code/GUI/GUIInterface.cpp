@@ -27,8 +27,10 @@ GUIInterface::GUIInterface(GUI& context)
 
 GUIInterface::~GUIInterface()
 {
+    using namespace eastl;
+
     for (U8 i = 0; i < to_base(GUIType::COUNT); ++i) {
-        for (auto [nameHash, entry] : _guiElements[i]) {
+        for (auto& [nameHash, entry] : _guiElements[i]) {
             MemoryManager::DELETE(entry.first);
         }
     }

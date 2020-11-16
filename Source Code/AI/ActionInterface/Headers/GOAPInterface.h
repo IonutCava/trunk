@@ -33,9 +33,11 @@
 #define _AESOP_ACTION_INTERFACE_H_
 
 
-#include <CPPGoap/Planner.h>
-#include <CPPGoap/Action.h>
-#include <CPPGoap/WorldState.h>
+
+//ToDo: Implement our own version to avoid using STD
+#include "AI/ActionInterface/CustomGOAP/Planner.h"
+#include "AI/ActionInterface/CustomGOAP/Action.h"
+#include "AI/ActionInterface/CustomGOAP/WorldState.h"
 
 namespace Divide {
 namespace AI {

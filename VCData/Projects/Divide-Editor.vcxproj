@@ -94,10 +94,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Intermediate\$(Configuration)_Editor\</IntDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Intermediate\$(Configuration)_Editor\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Intermediate\$(Configuration)_Editor\</IntDir>
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Divide-Framework\VCData\DivideCheckRules.ruleset</CodeAnalysisRuleSet>
@@ -137,7 +137,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -177,7 +177,7 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_d$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TargetMachine>MachineX64</TargetMachine>
       <Verbose>false</Verbose>
@@ -195,7 +195,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -232,7 +232,7 @@
       <ProgramDataBaseFileName>$(IntDir)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
     </Lib>
@@ -246,7 +246,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/imgui/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -283,7 +283,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Lib>
-      <OutputFile>$(SolutionDir)../Source Code/Libs/lib\$(ProjectName)_p$(TargetExt)</OutputFile>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>$(SolutionDir)../3rdParty/boost\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Verbose>false</Verbose>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>

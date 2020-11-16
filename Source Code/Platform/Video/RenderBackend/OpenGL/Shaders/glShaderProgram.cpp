@@ -18,14 +18,6 @@
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
-#pragma warning(push)
-#pragma warning(disable:4458)
-#pragma warning(disable:4706)
-#include <boost/wave.hpp>
-#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
-#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
-#pragma warning(pop)
-
 namespace Divide {
 
 namespace {
@@ -86,15 +78,6 @@ namespace {
         glShaderProgram::onAtomChange(atomName, evt);
     });
 };
-
-SharedMutex glShaderProgram::s_atomLock;
-ShaderProgram::AtomMap glShaderProgram::s_atoms;
-ShaderProgram::AtomInclusionMap glShaderProgram::s_atomIncludes;
-I64 glShaderProgram::s_shaderFileWatcherID = -1;
-std::array<U32, to_base(ShaderType::COUNT)> glShaderProgram::_lineOffset;
-ResourcePath glShaderProgram::shaderAtomLocationPrefix[to_base(ShaderType::COUNT) + 1];
-U64 glShaderProgram::shaderAtomExtensionHash[to_base(ShaderType::COUNT) + 1];
-Str8 glShaderProgram::shaderAtomExtensionName[to_base(ShaderType::COUNT) + 1];
 
 void glShaderProgram::initStaticData() {
     const ResourcePath locPrefix = Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc;
@@ -626,7 +609,7 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
     // If that's the case, return the code from cache
     if (it != std::cend(s_atoms)) {
         const auto& atoms = s_atomIncludes[atomNameHash];
-        foundAtoms.insert(end(foundAtoms), begin(atoms), end(atoms));
+        foundAtoms.insert(eastl::end(foundAtoms), eastl::begin(atoms), eastl::end(atoms));
         wasParsed = true;
         return it->second;
     }

@@ -85,6 +85,30 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define TINYXML_STATIC
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4244) //warning C4244: 'return': conversion from 'int' to 'int8_t', possible loss of data
+#pragma warning(disable: 4458) //warning C4458: declaration of 'shift' hides class member
+#pragma warning(disable: 4310) //warning C4310: cast truncates constant value 
+#endif
+#include <skarupke/bytell_hash_map.hpp>
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+#include <EASTL/include/EASTL/set.h>
+#include <EASTL/include/EASTL/list.h>
+#include <EASTL/include/EASTL/array.h>
+#include <EASTL/include/EASTL/stack.h>
+#include <EASTL/include/EASTL/queue.h>
+#include <EASTL/include/EASTL/deque.h>
+#include <EASTL/include/EASTL/vector_map.h>
+#include <EASTL/include/EASTL/fixed_vector.h>
+#include <EASTL/include/EASTL/shared_ptr.h>
+#include <EASTL/include/EASTL/weak_ptr.h>
+#include <EASTL/include/EASTL/unique_ptr.h>
+#include <EASTL/include/EASTL/fixed_string.h>
+#include <EASTL/include/EASTL/unordered_set.h>
 
 #include <climits>
 #include <xmmintrin.h>
@@ -100,30 +124,24 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/regex.hpp>
 
-#include <simplefilewatcher/includes/FileWatcher.h>
+#include <simplefilewatcher/include/FileWatcher/FileWatcher.h>
 #include <BetterEnums/include/enum.h>
-#include <Optick/optick.h>
+#include <Optick/src/optick.h>
 
 #define HAVE_M_PI
 #define SDL_MAIN_HANDLED
 #include <sdl/include/SDL_mixer.h>
 #include <sdl/include/SDL.h>
 
-#include <EASTL/set.h>
-#include <EASTL/list.h>
-#include <EASTL/array.h>
-#include <EASTL/stack.h>
-#include <EASTL/queue.h>
-#include <EASTL/deque.h>
-#include <EASTL/vector_map.h>
-#include <EASTL/fixed_vector.h>
-#include <EASTL/shared_ptr.h>
-#include <EASTL/weak_ptr.h>
-#include <EASTL/unique_ptr.h>
-#include <EASTL/fixed_string.h>
-#include <EASTL/unordered_set.h>
+#ifdef _MSC_VER
+#pragma warning (push)
+#pragma warning (disable: 4624) // warning C4624: destructor was implicitly defined as deleted (union Slot_{})
+#endif
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
+#ifdef _MSC_VER
+#pragma warning (pop)
+#endif
 
 #include <ArenaAllocator/arena_allocator.h>
 
@@ -134,14 +152,21 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <ConcurrentQueue/concurrentqueue.h>
 #include <ConcurrentQueue/blockingconcurrentqueue.h>
 
-#include <Libs/fmt/include/fmt/format.h>
-#include <Libs/fmt/include/fmt/printf.h>
+#include <fmt/include/fmt/format.h>
+#include <fmt/include/fmt/printf.h>
 
+
+#ifdef _MSC_VER
 #pragma warning(push)
-#pragma warning(disable: 4310)
-#pragma warning(disable: 4458)
-#include <skarupke/bytell_hash_map.hpp>
+#pragma warning(disable:4458)
+#pragma warning(disable:4706)
+#endif
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
+#ifdef _MSC_VER
 #pragma warning(pop)
+#endif
 
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Threading/Headers/SharedMutex.h"
@@ -174,6 +199,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #endif
 #include <imgui.h>
 
-#include <ECS.h>
+#include <EntityComponentSystem/include/ECS/ECS.h>
 
 #endif //_DIVIDE_PCH_

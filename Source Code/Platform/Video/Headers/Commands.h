@@ -64,11 +64,13 @@ struct CmdAllocator {
 
     template <class... Args>
     static T* allocate(Args&&... args) {
-        return s_Pool.newElement(s_PoolMutex, FWD(args)...);
+        UniqueLock<Mutex> lock(s_PoolMutex);
+        return s_Pool.newElement(FWD(args)...);
     }
 
     static void deallocate(T*& ptr) {
-        s_Pool.deleteElement(s_PoolMutex, ptr);
+        UniqueLock<Mutex> lock(s_PoolMutex);
+        s_Pool.deleteElement(ptr);
     }
 };
 
@@ -162,6 +164,7 @@ struct Command : CommandBase {
     static constexpr CommandType EType = EnumVal;
 
     Command() noexcept : CommandBase(EnumVal) {}
+    virtual ~Command() = default;
 
     void addToBuffer(CommandBuffer* buffer) const override final;
 
@@ -179,6 +182,7 @@ decltype(CmdAllocator<Command>::s_Pool) CmdAllocator<Command>::s_Pool;
 #define BEGIN_COMMAND(Name, Enum) struct Name final : public Command<Name, Enum> { \
 using Base = Command<Name, Enum>; \
 Name() = default; \
+virtual ~Name() = default; \
 
 #define END_COMMAND(Name) }
 

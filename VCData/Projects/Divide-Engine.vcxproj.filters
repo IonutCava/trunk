@@ -446,58 +446,58 @@
     <ClCompile Include="../../Source Code/Rendering\Lighting\ShadowMapping\SingleShadowMapGenerator.cpp">
       <Filter>Rendering\Lighting\ShadowMapping</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\API.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\API.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Engine.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Engine.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\EntityManager.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\EntityManager.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IEntity.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\IEntity.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ISystem.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\ISystem.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\SystemManager.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\SystemManager.cpp">
       <Filter>ECS\ECSLib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\EventHandler.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Event\EventHandler.cpp">
       <Filter>ECS\ECSLib\Event</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEvent.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Event\IEvent.cpp">
       <Filter>ECS\ECSLib\Event</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Event\IEventListener.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Event\IEventListener.cpp">
       <Filter>ECS\ECSLib\Event</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\Logger.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Log\Logger.cpp">
       <Filter>ECS\ECSLib\Log</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Log\LoggerManager.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Log\LoggerManager.cpp">
       <Filter>ECS\ECSLib\Log</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\ECSMM.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\ECSMM.cpp">
       <Filter>ECS\ECSLib\Memory</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\IAllocator.cpp">
       <Filter>ECS\ECSLib\Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\LinearAllocator.cpp">
       <Filter>ECS\ECSLib\Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\PoolAllocator.cpp">
       <Filter>ECS\ECSLib\Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\Memory\Allocator\StackAllocator.cpp">
       <Filter>ECS\ECSLib\Memory\Allocator</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\FamilyTypeID.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\util\FamilyTypeID.cpp">
       <Filter>ECS\ECSLib\util</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\util\Timer.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\util\Timer.cpp">
       <Filter>ECS\ECSLib\util</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\ECS\Components\SelectionComponent.cpp">
@@ -539,10 +539,10 @@
     <ClCompile Include="..\..\Source Code\ECS\Components\UnitComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\ComponentManager.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\ComponentManager.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EntityComponentSystem\src\IComponent.cpp">
+    <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\IComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\ECS\Components\DirectionalLightComponent.cpp">
@@ -864,97 +864,97 @@
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\API.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\API.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ECS.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\ECS.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Engine.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Engine.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Entity.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Entity.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\EntityManager.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\EntityManager.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IComponent.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\IComponent.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\IEntity.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\IEntity.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ISystem.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\ISystem.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Platform.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Platform.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\System.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\System.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\SystemManager.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\SystemManager.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Events\Headers\EntityEvents.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\Event.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\Event.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDelegate.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\EventDelegate.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventDispatcher.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\EventDispatcher.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\EventHandler.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\EventHandler.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEvent.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\IEvent.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\IEventDispatcher.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Event\IEventListener.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Event\IEventListener.h">
       <Filter>ECS\ECSLib\Headers\Event</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\Logger.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Log\Logger.h">
       <Filter>ECS\ECSLib\Headers\Log</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerMacro.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Log\LoggerMacro.h">
       <Filter>ECS\ECSLib\Headers\Log</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Log\LoggerManager.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Log\LoggerManager.h">
       <Filter>ECS\ECSLib\Headers\Log</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\ECSMM.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\ECSMM.h">
       <Filter>ECS\ECSLib\Headers\Memory</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\IAllocator.h">
       <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\LinearAllocator.h">
       <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\PoolAllocator.h">
       <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\Allocator\StackAllocator.h">
       <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Memory\MemoryChunkAllocator.h">
       <Filter>ECS\ECSLib\Headers\Memory\Allocator</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\FamilyTypeID.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\FamilyTypeID.h">
       <Filter>ECS\ECSLib\Headers\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Handle.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\Handle.h">
       <Filter>ECS\ECSLib\Headers\util</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\util\Timer.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\Timer.h">
       <Filter>ECS\ECSLib\Headers\util</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SelectionComponent.h">
@@ -996,10 +996,10 @@
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\UnitComponent.h">
       <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\Component.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\Component.h">
       <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Libs\EntityComponentSystem\include\ECS\ComponentManager.h">
+    <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\ComponentManager.h">
       <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\DirectionalLightComponent.h">

@@ -15,11 +15,10 @@
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/ShaderBuffer/Headers/glUniformBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
-
+#include "Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/GL3Renderer.h"
 #include <CEGUI/CEGUI.h>
-#include <GL3Renderer.h>
 
-#include <GLIM/glim.h>
+#include "Platform/Video/GLIM/glim.h"
 
 #include <glbinding/Binding.h>
 

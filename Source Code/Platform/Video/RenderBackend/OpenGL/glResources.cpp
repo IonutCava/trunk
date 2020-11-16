@@ -4,8 +4,7 @@
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
-
-#include <GLIM/glim.h>
+#include "Platform/Video/GLIM/glim.h"
 
 namespace Divide {
 

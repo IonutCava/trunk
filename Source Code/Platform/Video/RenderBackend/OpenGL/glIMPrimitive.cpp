@@ -5,8 +5,7 @@
 #include "Headers/GLWrapper.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
-
-#include <GLIM/glim.h>
+#include "Platform/Video/GLIM/glim.h"
 
 namespace Divide {
 

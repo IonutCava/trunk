@@ -55,15 +55,15 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Intermediate\$(Configuration)_ThirdPartyLibs\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectName)_d</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Intermediate\$(Configuration)_ThirdPartyLibs\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectName)</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/lib\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)../Source Code/Libs/</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Intermediate\$(Configuration)_ThirdPartyLibs\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(ProjectName)_p</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">.lib</TargetExt>
@@ -88,7 +88,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui/addons/;$(SolutionDir)/../Source Code/Libs/imgui/addons/log/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../Source Code/Libs/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -144,7 +144,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui/addons/;$(SolutionDir)/../Source Code/Libs/imgui/addons/log/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../Source Code/Libs/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -196,7 +196,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../Source Code/Libs/;$(SolutionDir)/../Source Code/Libs/STB\;$(SolutionDir)/../Source Code/Libs/imgui\;$(SolutionDir)/../Source Code/Libs/fmt/include/;$(SolutionDir)/../Source Code/Libs/imgui/addons/;$(SolutionDir)/../Source Code/Libs/imgui/addons/log/;$(SolutionDir)/../Source Code/Libs/EASTL/include/;$(SolutionDir)/../Source Code/Libs/simplefilewatcher/;$(SolutionDir)/../Source Code/Libs/ChaiScript/include/;$(SolutionDir)/../Source Code/Libs/CEGUIRenderer\OpenGL\include/;$(SolutionDir)/../Source Code/Libs/EntityComponentSystem/include/ECS/;$(SolutionDir)/../Source Code/Libs/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty\ZLib\include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Profile/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -250,522 +250,446 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GeometryBufferBase.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3FBOTextureTarget.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3GeometryBuffer.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GL3Renderer.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/GlmPimpl.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/RendererBase.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/RenderTarget.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/Shader.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/ShaderManager.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderFrag.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StandardShaderVert.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/StateChangeWrapper.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/Texture.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/TextureTarget.h" />
-    <ClInclude Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\include/ViewportTarget.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\Allocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\DataTypes.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\Fault.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\stl_allocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Allocator\xallocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.h" />
-    <ClInclude Include="..\..\Source Code\Libs\ChaiScript\src\sha3.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Action.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Node.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\Planner.h" />
-    <ClInclude Include="..\..\Source Code\Libs\CPPGoap\WorldState.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\chrono.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\color.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\compile.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\core.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format-inl.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\format.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\locale.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ostream.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\posix.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\printf.h" />
-    <ClInclude Include="..\..\Source Code\Libs\fmt\include\fmt\ranges.h" />
-    <ClInclude Include="..\..\Source Code\Libs\GLIM\Declarations.h" />
-    <ClInclude Include="..\..\Source Code\Libs\GLIM\glim.h" />
-    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatch.h" />
-    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimBatchData.h" />
-    <ClInclude Include="..\..\Source Code\Libs\GLIM\glimInterface.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\button\imguial_button.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\IconsFontAwesome_c.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\IconsKenney_c.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\IconsMaterialDesign_c.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\fonts\imguial_fonts.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\utf8helper.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguidatechooser\imguidatechooser.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\dirent_portable.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\crypt.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImCurveEdit.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGradient.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\nanosvg.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\nanosvgrast.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_resize.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_write.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_ico.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_jpeg.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\imgui_memory_editor\imgui_memory_editor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\log\imguial_log.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\countof.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\perf_timer.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\portable\snprintf.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\msgbox\imguial_msgbox.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Include\imgui_node_editor.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\crude_json.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_bezier_math.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_canvas.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_extra_math.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_internal.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imconfig.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_internal.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imgui_user.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imstb_rectpack.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imstb_textedit.h" />
-    <ClInclude Include="..\..\Source Code\Libs\imgui\imstb_truetype.h" />
-    <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\src\meshoptimizer.h" />
-    <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\tools\cgltf.h" />
-    <ClInclude Include="..\..\Source Code\Libs\meshoptimizer\tools\fast_obj.h" />
-    <ClInclude Include="..\..\Source Code\Libs\nv_dds\nv_dds.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick.config.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_common.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.freebsd.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.linux.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.macos.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.platform.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_core.win.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_gpu.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_memory.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_message.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_miniz.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_serialization.h" />
-    <ClInclude Include="..\..\Source Code\Libs\Optick\optick_server.h" />
-    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\ConvertUTF.h" />
-    <ClInclude Include="..\..\Source Code\Libs\SimpleINI\include\SimpleIni.h" />
+    <ClInclude Include="..\..\3rdParty\Allocator\Allocator.h" />
+    <ClInclude Include="..\..\3rdParty\Allocator\DataTypes.h" />
+    <ClInclude Include="..\..\3rdParty\Allocator\Fault.h" />
+    <ClInclude Include="..\..\3rdParty\Allocator\stl_allocator.h" />
+    <ClInclude Include="..\..\3rdParty\Allocator\xallocator.h" />
+    <ClInclude Include="..\..\3rdParty\ArenaAllocator\arena_allocator.h" />
+    <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Action.h" />
+    <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Node.h" />
+    <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Planner.h" />
+    <ClInclude Include="..\..\3rdParty\CPPGoap\goap\WorldState.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\args.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\chrono.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\color.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\compile.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\core.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\format-inl.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\format.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\locale.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\os.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\ostream.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\posix.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\printf.h" />
+    <ClInclude Include="..\..\3rdParty\fmt\include\fmt\ranges.h" />
+    <ClInclude Include="..\..\3rdParty\meshoptimizer\src\meshoptimizer.h" />
+    <ClInclude Include="..\..\3rdParty\nv_dds\nv_dds.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick.config.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_capi.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_common.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_core.freebsd.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_core.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_core.linux.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_core.macos.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_core.platform.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_core.win.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_gpu.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_memory.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_message.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_miniz.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_serialization.h" />
+    <ClInclude Include="..\..\3rdParty\Optick\src\optick_server.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DebugUtils\Include\DebugDraw.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DebugUtils\Include\DetourDebugDraw.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DebugUtils\Include\RecastDebugDraw.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DebugUtils\Include\RecastDump.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourCrowd\Include\DetourCrowd.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourCrowd\Include\DetourLocalBoundary.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourCrowd\Include\DetourObstacleAvoidance.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourCrowd\Include\DetourPathCorridor.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourCrowd\Include\DetourPathQueue.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourCrowd\Include\DetourProximityGrid.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourTileCache\Include\DetourTileCache.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\DetourTileCache\Include\DetourTileCacheBuilder.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourAlloc.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourAssert.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourCommon.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourMath.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourNavMesh.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourNavMeshBuilder.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourNavMeshQuery.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourNode.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Detour\Include\DetourStatus.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Recast\Include\Recast.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Recast\Include\RecastAlloc.h" />
+    <ClInclude Include="..\..\3rdParty\ReCast\Recast\Include\RecastAssert.h" />
+    <ClInclude Include="..\..\3rdParty\simplefilewatcher\include\FileWatcher\FileWatcher.h" />
+    <ClInclude Include="..\..\3rdParty\simplefilewatcher\include\FileWatcher\FileWatcherImpl.h" />
+    <ClInclude Include="..\..\3rdParty\simplefilewatcher\include\FileWatcher\FileWatcherLinux.h" />
+    <ClInclude Include="..\..\3rdParty\simplefilewatcher\include\FileWatcher\FileWatcherOSX.h" />
+    <ClInclude Include="..\..\3rdParty\simplefilewatcher\include\FileWatcher\FileWatcherWin32.h" />
+    <ClInclude Include="..\..\3rdParty\SimpleINI\ConvertUTF.h" />
+    <ClInclude Include="..\..\3rdParty\SimpleINI\SimpleIni.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\button\imguial_button.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\fonts\IconsFontAwesome_c.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\fonts\IconsKenney_c.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\fonts\IconsMaterialDesign_c.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\fonts\imguial_fonts.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguicodeeditor\imguicodeeditor.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguicodeeditor\utf8helper.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguidatechooser\imguidatechooser.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguifilesystem\dirent_portable.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguifilesystem\imguifilesystem.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\crypt.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\ioapi.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\unzip.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\zip.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguigizmo\ImCurveEdit.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguigizmo\ImGradient.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguigizmo\ImGuizmo.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguigizmo\ImSequencer.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguihelper\imguihelper.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguilistview\imguilistview.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguistring\imguistring.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguistyleserializer\imguistyleserializer.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguitoolbar\imguitoolbar.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguivariouscontrols\imguivariouscontrols.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguibz2.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\nanosvg.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\nanosvgrast.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_resize.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\stb_image_write.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_ico.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\tiny_jpeg.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiminigames.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguistringifier.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguitinyfiledialogs.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\imgui_memory_editor\imgui_memory_editor.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\log\imguial_log.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\metrics_gui\metrics_gui.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\metrics_gui\portable\countof.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\metrics_gui\portable\perf_timer.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\metrics_gui\portable\snprintf.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\msgbox\imguial_msgbox.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Include\imgui_node_editor.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\crude_json.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_bezier_math.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_canvas.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_extra_math.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_internal.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imconfig.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imgui.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imgui_user.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imstb_rectpack.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imstb_textedit.h" />
+    <ClInclude Include="..\..\3rdParty\imgui\imstb_truetype.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Text\Headers\glfontstash.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GeometryBufferBase.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3FBOTextureTarget.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3GeometryBuffer.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\GL3Renderer.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\RendererBase.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Shader.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ShaderManager.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\StateChangeWrapper.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Allocator\Allocator_.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Allocator\Fault.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Allocator\xallocator.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\Texture.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\TextureTarget.cpp" />
-    <ClCompile Include="../../Source Code/Libs/CEGUIRenderer\OpenGL\src\ViewportTarget.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ArenaAllocator\arena_allocator.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\chaiscript_stdlib_module.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\libfuzzer_client.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\sha3.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\stl_extra.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\ChaiScript\src\test_module.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Action.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Node.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\Planner.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\CPPGoap\WorldState.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\allocator_eastl.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\assert.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\fixed_pool.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\hashtable.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\intrusive_list.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\numeric_limits.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\red_black_tree.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\string.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\EASTL\source\thread_support.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\fmt\src\format.cc">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatch.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchAttributes.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimBatchData.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\GLIM\glimD3D11.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\GLIM\Stuff.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\fonts\imguial_fonts.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguicodeeditor\imguicodeeditor.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\imguifilesystem.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\ioapi.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\unzip.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguifilesystem\minizip\zip.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImCurveEdit.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGradient.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImGuizmo.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguigizmo\ImSequencer.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguihelper\imguihelper.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguilistview\imguilistview.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\Allocator\Allocator_.cpp" />
+    <ClCompile Include="..\..\3rdParty\Allocator\Fault.cpp" />
+    <ClCompile Include="..\..\3rdParty\Allocator\xallocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\ArenaAllocator\arena_allocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\chaiscript_stdlib_module.cpp" />
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\libfuzzer_client.cpp" />
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\main.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\sanity_checks.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\sha3.cpp" />
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\stl_extra.cpp" />
+    <ClCompile Include="..\..\3rdParty\ChaiScript\src\test_module.cpp" />
+    <ClCompile Include="..\..\3rdParty\CPPGoap\goap\Action.cpp" />
+    <ClCompile Include="..\..\3rdParty\CPPGoap\goap\Node.cpp" />
+    <ClCompile Include="..\..\3rdParty\CPPGoap\goap\Planner.cpp" />
+    <ClCompile Include="..\..\3rdParty\CPPGoap\goap\WorldState.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\allocator_eastl.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\assert.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\atomic.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\fixed_pool.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\hashtable.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\intrusive_list.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\numeric_limits.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\red_black_tree.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\string.cpp" />
+    <ClCompile Include="..\..\3rdParty\EASTL\source\thread_support.cpp" />
+    <ClCompile Include="..\..\3rdParty\fmt\src\format.cc" />
+    <ClCompile Include="..\..\3rdParty\fmt\src\os.cc" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\allocator.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\clusterizer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\indexcodec.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\indexgenerator.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\overdrawanalyzer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\overdrawoptimizer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\simplifier.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\spatialorder.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\stripifier.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\vcacheanalyzer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\vcacheoptimizer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\vertexcodec.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\vertexfilter.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\vfetchanalyzer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\src\vfetchoptimizer.cpp" />
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\tools\codecbench.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\tools\meshloader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\tools\vcachetester.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\tools\vcachetuner.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\meshoptimizer\tools\wasmstubs.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\nv_dds\nv_dds.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_capi.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_core.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_gpu.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_gpu.d3d12.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistring\imguistring.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_gpu.vulkan.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguistyleserializer\imguistyleserializer.cpp">
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_message.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_miniz.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_serialization.cpp" />
+    <ClCompile Include="..\..\3rdParty\Optick\src\optick_server.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DebugUtils\Source\DebugDraw.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DebugUtils\Source\DetourDebugDraw.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DebugUtils\Source\RecastDebugDraw.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DebugUtils\Source\RecastDump.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourCrowd\Source\DetourCrowd.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourCrowd\Source\DetourLocalBoundary.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourCrowd\Source\DetourObstacleAvoidance.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourCrowd\Source\DetourPathCorridor.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourCrowd\Source\DetourPathQueue.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourCrowd\Source\DetourProximityGrid.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourTileCache\Source\DetourTileCache.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\DetourTileCache\Source\DetourTileCacheBuilder.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourAlloc.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourAssert.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourCommon.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourNavMesh.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourNavMeshBuilder.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourNavMeshQuery.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Detour\Source\DetourNode.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\Recast.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastAlloc.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastArea.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastAssert.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastContour.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastFilter.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastLayers.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastMesh.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastMeshDetail.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastRasterization.cpp" />
+    <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastRegion.cpp" />
+    <ClCompile Include="..\..\3rdParty\simplefilewatcher\source\FileWatcher.cpp" />
+    <ClCompile Include="..\..\3rdParty\simplefilewatcher\source\FileWatcherLinux.cpp" />
+    <ClCompile Include="..\..\3rdParty\simplefilewatcher\source\FileWatcherOSX.cpp" />
+    <ClCompile Include="..\..\3rdParty\simplefilewatcher\source\FileWatcherWin32.cpp" />
+    <ClCompile Include="..\..\3rdParty\SimpleINI\ConvertUTF.c" />
+    <ClCompile Include="..\..\3rdParty\imgui\addons\fonts\imguial_fonts.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguitoolbar\imguitoolbar.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguicodeeditor\imguicodeeditor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguivariouscontrols\imguivariouscontrols.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguifilesystem\imguifilesystem.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguibz2.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\ioapi.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\unzip.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguifilesystem\minizip\zip.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguigizmo\ImCurveEdit.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguiminigames.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguigizmo\ImGradient.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguistringifier.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguigizmo\ImGuizmo.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguitinyfiledialogs.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguigizmo\ImSequencer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\stb_vorbis.c">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguihelper\imguihelper.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\log\imguial_log.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguilistview\imguilistview.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\metrics_gui.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\metrics_gui\ProggyTiny.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\msgbox\imguial_msgbox.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguinodegrapheditor\imguinodegrapheditor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\crude_json.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguistring\imguistring.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_canvas.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguistyleserializer\imguistyleserializer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguitoolbar\imguitoolbar.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_api.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguivariouscontrols\imguivariouscontrols.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguibz2.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_demo.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_draw.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\jo_gif.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\imgui\imgui_widgets.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiimageeditor_plugins\lodepng.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\allocator.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguiminigames.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\clusterizer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\indexcodec.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguistringifier.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\indexgenerator.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\overdrawanalyzer.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguitinyfiledialogs.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\overdrawoptimizer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\simplifier.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\imguiyesaddons\stb_vorbis.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\stripifier.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vcacheanalyzer.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\log\imguial_log.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vcacheoptimizer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vertexcodec.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\metrics_gui\metrics_gui.cpp" />
+    <ClCompile Include="..\..\3rdParty\imgui\addons\metrics_gui\ProggyTiny.cpp" />
+    <ClCompile Include="..\..\3rdParty\imgui\addons\msgbox\imguial_msgbox.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vfetchanalyzer.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\src\vfetchoptimizer.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
+    <ClCompile Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\crude_json.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\meshoptimizer\tools\meshloader.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\nv_dds\nv_dds.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_core.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_canvas.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.d3d12.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_gpu.vulkan.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_api.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_message.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\imgui.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_miniz.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\imgui_demo.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_serialization.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\imgui_draw.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\Optick\optick_server.cpp">
+    <ClCompile Include="..\..\3rdParty\imgui\imgui_widgets.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcher.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherLinux.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherOSX.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\simplefilewatcher\Source\FileWatcherWin32.cpp" />
-    <ClCompile Include="..\..\Source Code\Libs\SimpleINI\src\ConvertUTF.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\bstrlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -778,12 +702,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Source Code\Libs\CEGUIRenderer\OpenGL\include\RenderTarget.inl" />
-    <None Include="..\..\Source Code\Libs\imgui\addons\imguiyesaddons\imguimodplug.cpp.inl" />
-    <None Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_bezier_math.inl" />
-    <None Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_extra_math.inl" />
-    <None Include="..\..\Source Code\Libs\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_internal.inl" />
-    <None Include="..\..\Source Code\Libs\imgui\imgui_user.inl" />
+    <None Include="..\..\3rdParty\imgui\addons\imguiyesaddons\imguimodplug.cpp.inl" />
+    <None Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_bezier_math.inl" />
+    <None Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_extra_math.inl" />
+    <None Include="..\..\3rdParty\imgui\addons\Node-editor\NodeEditor\Source\imgui_node_editor_internal.inl" />
+    <None Include="..\..\3rdParty\imgui\imgui_user.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

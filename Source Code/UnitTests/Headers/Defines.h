@@ -34,7 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _DEFINES_H_
 
 //Using: https://github.com/cppocl/cppocl
-#include <Test.hpp>
+#include <test/Test.hpp>
 
 bool PreparePlatform();
 
