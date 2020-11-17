@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "A free and open-source 3D Framework under heavy develo
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = "J:/Cloud/OneDrive/DIVIDE/Website/public_html/images/logo2 Mobile Custom.jpg"
+PROJECT_LOGO           = assets/misc_images/divideLogo.jpg
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -170,7 +170,7 @@ FULL_PATH_NAMES        = YES
 # will be relative from the directory where doxygen is started.
 # This tag requires that the tag FULL_PATH_NAMES is set to YES.
 
-STRIP_FROM_PATH        = C:/Users/k1ngp1n/Desktop/Divide-Framework/
+STRIP_FROM_PATH        =
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of the
 # path mentioned in the documentation of a class, which tells the reader which

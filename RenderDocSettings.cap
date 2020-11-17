@@ -5,7 +5,7 @@
         "commandLine": "",
         "environment": [
         ],
-        "executable": "D:\\Divide-Framework\\Divide-Executable_p.exe",
+        "executable": "D:\\Divide-Framework\\Build\\Divide-Executable_p.exe",
         "inject": false,
         "numQueuedFrames": 0,
         "options": {
