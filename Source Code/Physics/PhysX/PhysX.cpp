@@ -49,7 +49,7 @@ ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
 
     _simulationSpeed = simSpeed;
     // create foundation object with default error and allocator callbacks.
-    _foundation = PxCreateFoundation(PX_FOUNDATION_VERSION,
+    _foundation = PxCreateFoundation(PX_PHYSICS_VERSION,
                                      _gDefaultAllocatorCallback,
                                      _gDefaultErrorCallback);
     assert(_foundation != nullptr);
@@ -79,11 +79,8 @@ ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
     }
 
     if (!_cooking) {
-        physx::PxCookingParams* cookparams =
-            MemoryManager_NEW physx::PxCookingParams(physx::PxTolerancesScale());
-        cookparams->targetPlatform = physx::PxPlatform::ePC;
-        _cooking =
-            PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
+        physx::PxCookingParams* cookparams = MemoryManager_NEW physx::PxCookingParams(physx::PxTolerancesScale());
+        _cooking = PxCreateCooking(PX_PHYSICS_VERSION, *_foundation, *cookparams);
         MemoryManager::DELETE(cookparams);
     }
 
@@ -109,14 +106,17 @@ bool PhysX::closePhysicsAPI() {
         _cooking->release();
     }
     PxCloseExtensions();
+    _gPhysicsSDK->release();
     if (_pvd != nullptr) {
         _pvd->release();
+        _pvd = nullptr;
     }
     if (_transport != nullptr) {
         _transport->release();
+        _transport = nullptr;
     }
-    _gPhysicsSDK->release();
     _foundation->release();
+
     _gPhysicsSDK = nullptr;
     _foundation = nullptr;
 
@@ -165,7 +165,7 @@ void PhysX::createPvdConnection(const char* ip, const physx::PxU32 port, const p
     {
         _pvdFlags = physx::PxPvdInstrumentationFlag::ePROFILE;
     }
-    //_pvd = physx::PxCreatePvd(*_foundation);
+    _pvd = physx::PxCreatePvd(*_foundation);
     //if (_pvd->connect(*_transport, _pvdFlags)) {
     //    Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
     //}

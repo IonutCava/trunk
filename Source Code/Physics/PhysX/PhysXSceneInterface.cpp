@@ -49,7 +49,6 @@ bool PhysXSceneInterface::init() {
     if (!sceneDesc.filterShader) {
         sceneDesc.filterShader = PxDefaultSimulationFilterShader;
     }
-    sceneDesc.flags |= PxSceneFlag::eENABLE_ACTIVETRANSFORMS;
 
     _gScene = gPhysicsSDK->createScene(sceneDesc);
     if (!_gScene) {
@@ -110,13 +109,13 @@ void PhysXSceneInterface::update(const U64 deltaTimeUS) {
 
 
     // retrieve array of actors that moved
-    PxU32 nbActiveTransforms;
-    const PxActiveTransform* activeTransforms = _gScene->getActiveTransforms(nbActiveTransforms);
+    PxU32 nbActiveActors;
+    PxActor** activeActors = _gScene->getActiveActors(nbActiveActors);
 
-    // update each SGN with the new transform
-    for (PxU32 i = 0; i < nbActiveTransforms; ++i) {
-        PxRigidActor* actor = static_cast<PxRigidActor*>(activeTransforms[i].actor);
-        TransformComponent* tComp = static_cast<TransformComponent*>(actor->userData);
+    // update each render object with the new transform
+    for (PxU32 i = 0; i < nbActiveActors; ++i) {
+        PxRigidActor* actor = static_cast<PxRigidActor*>(activeActors[i]);
+        TransformComponent* tComp = static_cast<TransformComponent*>(activeActors[i]->userData);
         PxTransform pT = actor->getGlobalPose();
         const PxQuat pQ = pT.q.getConjugate();
         const PxVec3 pP = pT.p;

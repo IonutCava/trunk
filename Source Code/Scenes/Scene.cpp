@@ -1621,7 +1621,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             }
 
             SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUID);
-            if (IsValidTarget(crtNode, _context.editor().inEditMode())) {
+            if (IsValidTarget(crtNode, (Config::Build::ENABLE_EDITOR && _context.editor().inEditMode()))) {
                 target = crtNode;
                 break;
             }

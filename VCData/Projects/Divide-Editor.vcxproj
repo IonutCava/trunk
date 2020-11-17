@@ -137,7 +137,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -195,7 +195,7 @@
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -246,7 +246,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../Source Code;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code;$(SolutionDir)/../Source Code/Editor;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/boost/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/Zlib\include/;$(SolutionDir)/../3rdParty/glbinding/include/;$(SolutionDir)/../3rdParty/freetype/include/;$(SolutionDir)/../3rdParty/EntityComponentSystem/include/ECS/</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>false</MinimalRebuild>
       <ExceptionHandling>Sync</ExceptionHandling>

@@ -19,6 +19,12 @@
 #pragma comment(lib, "dinput8.lib")
 #pragma comment(lib, "dxguid.lib")
 
+#pragma comment(lib, "PhysX_64.lib")
+#pragma comment(lib, "PhysXCooking_64.lib")
+#pragma comment(lib, "PhysXFoundation_64.lib")
+#pragma comment(lib, "PhysXPvdSDK_static_64.lib")
+#pragma comment(lib, "PhysXExtensions_static_64.lib")
+
 #ifdef _DEBUG
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
@@ -32,25 +38,18 @@
 #pragma comment(lib, "zlib_d.lib")
 #pragma comment(lib, "freetype_d.lib")
 #pragma comment(lib, "FreeImage_d.lib")
-
 #pragma comment(lib, "SDL2d.lib")
 #pragma comment(lib, "SDL2_mixer_d.lib")
-
 #pragma comment(lib, "CEGUIBase-0_d.lib")
 #pragma comment(lib, "CEGUICommonDialogs-0_d.lib")
 #pragma comment(lib, "CEGUICoreWindowRendererSet_d.lib")
 #pragma comment(lib, "CEGUILuaScriptModule-0_d.lib")
 #pragma comment(lib, "CEGUISTBImageCodec_d.lib")
 #pragma comment(lib, "CEGUITinyXMLParser_d.lib")
-
-#pragma comment(lib, "PhysX3CookingDEBUG_x64.lib")
-#pragma comment(lib, "PhysX3DEBUG_x64.lib")
-#pragma comment(lib, "PhysX3CommonDEBUG_x64.lib")
-#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")
-#pragma comment(lib, "PxPvdSDKDEBUG_x64.lib")
-#pragma comment(lib, "PxFoundationDEBUG_x64.lib")
-
 #else  //_DEBUG
+#pragma comment(lib, "glbinding.lib")
+#pragma comment(lib, "glbinding-aux.lib")
+#pragma comment(lib, "assimp.lib")
 #pragma comment(lib, "IL.lib")
 #pragma comment(lib, "ILU.lib")
 #pragma comment(lib, "libpng.lib")
@@ -67,26 +66,6 @@
 #pragma comment(lib, "CEGUILuaScriptModule-0.lib")
 #pragma comment(lib, "CEGUISTBImageCodec.lib")
 #pragma comment(lib, "CEGUITinyXMLParser.lib")
-#pragma comment(lib, "assimp.lib")
-#pragma comment(lib, "glbinding.lib")
-#pragma comment(lib, "glbinding-aux.lib")
-
-#if defined(_PROFILE)
-    #pragma comment(lib, "PhysX3CookingPROFILE_x64.lib")
-    #pragma comment(lib, "PhysX3PROFILE_x64.lib")
-    #pragma comment(lib, "PhysX3CommonPROFILE_x64.lib")
-    #pragma comment(lib, "PhysX3ExtensionsPROFILE.lib")
-    #pragma comment(lib, "PxPvdSDKPROFILE_x64.lib")
-    #pragma comment(lib, "PxFoundationPROFILE_x64.lib")
-#else
-    #pragma comment(lib, "PhysX3Cooking_x64.lib")
-    #pragma comment(lib, "PhysX3_x64.lib")
-    #pragma comment(lib, "PhysX3Common_x64.lib")
-    #pragma comment(lib, "PhysX3Extensions.lib")
-    #pragma comment(lib, "PxPvdSDK_x64.lib")
-    #pragma comment(lib, "PxFoundation_x64.lib")
-#endif
-
 #endif  //_DEBUG
 
 #ifdef WIN32_LEAN_AND_MEAN
