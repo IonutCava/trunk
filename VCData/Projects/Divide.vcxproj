@@ -173,7 +173,7 @@
     <Link>
       <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <AdditionalDependencies>Divide-Game_d.lib;Divide-Platform_d.lib;Divide-Networking_d.lib;Divide-Engine_d.lib;Divide-Core_d.lib;Divide-Editor_d.lib;Divide-ThirdPartyLibs_d.lib;Divide-PCH_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../3rdParty/assimp\lib\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/sdl\lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/physx4\physx\bin\win.x86_64.vc142.mt\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../3rdParty/assimp\lib\Debug\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/sdl\lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/physx4\physx\bin\win.x86_64.vc142.mt\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ShowProgress>NotSet</ShowProgress>
       <IgnoreSpecificDefaultLibraries>LIBCMT.lib</IgnoreSpecificDefaultLibraries>
       <Profile>false</Profile>
@@ -192,11 +192,12 @@
       </AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysX_64.dll" "$(OutDir)PhysX_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXCommon_64.dll" "$(OutDir)PhysXCommon_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXFoundation_64.dll" "$(OutDir)PhysXFoundation_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXCooking_64.dll" "$(OutDir)PhysXCooking_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXGPU_64.dll" "$(OutDir)PhysXGPU_64.dll"</Command>
+      <Command>xcopy "$(TargetDir)3rdParty\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(OutDir)\" /d /y /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysX_64.dll" "$(OutDir)\" /d /y /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXCommon_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXFoundation_64.dll" "$(OutDir)\" /d  /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXCooking_64.dll" "$(OutDir)\" /d  /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXGPU_64.dll" "$(OutDir)\" /d  /y  /f</Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
@@ -248,7 +249,7 @@ copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXGP
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>Divide-Game.lib;Divide-Platform.lib;Divide-Networking.lib;Divide-Engine.lib;Divide-Core.lib;Divide-Editor.lib;Divide-ThirdPartyLibs.lib;Divide-PCH.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../3rdParty/assimp\lib\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/sdl\lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/physx4\physx\bin\win.x86_64.vc142.mt\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../3rdParty/assimp\lib\Release\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/sdl\lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/physx4\physx\bin\win.x86_64.vc142.mt\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions> /ignore:4099  /debug:fastlink %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>NotSet</SubSystem>
       <LargeAddressAware>true</LargeAddressAware>
@@ -262,11 +263,12 @@ copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXGP
       </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysX_64.dll" "$(OutDir)PhysX_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXCommon_64.dll" "$(OutDir)PhysXCommon_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXFoundation_64.dll" "$(OutDir)PhysXFoundation_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXCooking_64.dll" "$(OutDir)PhysXCooking_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXGPU_64.dll" "$(OutDir)PhysXGPU_64.dll"</Command>
+      <Command>xcopy "$(TargetDir)3rdParty\assimp\bin\Release\assimp-vc141-mt.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysX_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXCommon_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXFoundation_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXCooking_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXGPU_64.dll" "$(OutDir)\" /d /y  /f</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -314,7 +316,7 @@ copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysX
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>Divide-Game_p.lib;Divide-Platform_p.lib;Divide-Networking_p.lib;Divide-Engine_p.lib;Divide-Core_p.lib;Divide-Editor_p.lib;Divide-ThirdPartyLibs_p.lib;Divide-PCH_p.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../3rdParty/assimp\lib\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/sdl\lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/physx4\physx\bin\win.x86_64.vc142.mt\profile;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)../Source Code/Libs/;$(SolutionDir)../3rdParty/assimp\lib\Release\;$(SolutionDir)../3rdParty/boost\lib\;$(SolutionDir)../3rdParty/cegui\lib\;$(SolutionDir)../3rdParty/ZLib\lib\;$(SolutionDir)../3rdParty/freetype/lib\;$(SolutionDir)../3rdParty/imageLibs/lib\;$(SolutionDir)../3rdParty/OpenCL\lib\;$(SolutionDir)../3rdParty/OpenAL\libs\;$(SolutionDir)../3rdParty/glbinding\lib\;$(SolutionDir)../3rdParty/physx\PxShared\Lib\vc15win64\;$(SolutionDir)../3rdParty/OIS\lib\;$(SolutionDir)../3rdParty/sdl\lib\;$(SolutionDir)../3rdParty/DevIL\lib\;$(SolutionDir)../3rdParty/AntTweakBar\lib\;$(SolutionDir)../3rdParty/physx4\physx\bin\win.x86_64.vc142.mt\profile;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <Profile>true</Profile>
       <AdditionalOptions> /ignore:4099 /debug:fastlink %(AdditionalOptions)</AdditionalOptions>
       <SubSystem>NotSet</SubSystem>
@@ -329,11 +331,12 @@ copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysX
       <OutputFile>$(SolutionDir)../Source Code/Libs/$(ProjectName)_p$(TargetExt)</OutputFile>
     </Lib>
     <PostBuildEvent>
-      <Command>copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysX_64.dll" "$(OutDir)PhysX_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXCommon_64.dll" "$(OutDir)PhysXCommon_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXFoundation_64.dll" "$(OutDir)PhysXFoundation_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXCooking_64.dll" "$(OutDir)PhysXCooking_64.dll"
-copy /Y "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXGPU_64.dll" "$(OutDir)PhysXGPU_64.dll"</Command>
+      <Command>xcopy "$(TargetDir)3rdParty\assimp\bin\Release\assimp-vc141-mt.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysX_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXCommon_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXFoundation_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXCooking_64.dll" "$(OutDir)\" /d /y  /f
+xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXGPU_64.dll" "$(OutDir)\" /d /y  /f</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

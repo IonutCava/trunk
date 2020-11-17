@@ -141,6 +141,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define freeSlots freeSlots_
 #include <MemoryPool/StackAlloc.h>
 #include <MemoryPool/C-11/MemoryPool.h>
+#undef freeSlots
 #ifdef _MSC_VER
 #pragma warning (pop)
 #endif
