@@ -43,7 +43,7 @@
     <RootNamespace>DivideHardware</RootNamespace>
     <ProjectName>Divide-Executable</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-	<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -86,7 +86,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)/../</OutDir>
+    <OutDir>$(SolutionDir)/../Build/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>Intermediate\$(Configuration)_Executable/</IntDir>
@@ -99,10 +99,10 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)/../</OutDir>
+    <OutDir>$(SolutionDir)/../Build/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>$(SolutionDir)/../</OutDir>
+    <OutDir>$(SolutionDir)/../Build/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>Intermediate\$(Configuration)_Executable/</IntDir>
@@ -201,12 +201,12 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>robocopy $(TargetDir)3rdParty\assimp\bin\Debug\ $(OutDir)\ assimp-vc141-mtd.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
+      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Debug\ $(OutDir)\ assimp-vc141-mtd.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
 if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -273,12 +273,12 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>robocopy $(TargetDir)3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc141-mt.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
+      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Release\ $(OutDir) assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
 if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
@@ -346,12 +346,12 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>robocopy $(TargetDir)3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc141-mt.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
-robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
+      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
 if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>

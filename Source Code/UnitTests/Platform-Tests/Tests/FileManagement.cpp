@@ -11,9 +11,9 @@ TEST(FileExistanceCheck)
 
     if (PreparePlatform()) {
         const Divide::SysInfo& systemInfo = Divide::const_sysInfo();
-        const char* exeName = systemInfo._fileAndPath.first.c_str();
+        const char* workingPath = systemInfo._workingDirectory.c_str();
 
-        CHECK_TRUE(Divide::fileExists(exeName));
+        CHECK_TRUE(Divide::pathExists(workingPath));
         CHECK_FALSE(Divide::fileExists(invalidFileName));
     }
 }

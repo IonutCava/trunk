@@ -72,7 +72,7 @@ boost::regex Paths::g_definePattern;
 boost::regex Paths::g_usePattern;
 
 void Paths::initPaths(const SysInfo& info) {
-    g_exePath = info._fileAndPath.second + "/";
+    g_exePath = ResourcePath(info._workingDirectory);
     g_logPath = ResourcePath("logs/");
 
     g_assetsLocation = ResourcePath("assets/");

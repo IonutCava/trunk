@@ -162,7 +162,7 @@ struct SysInfo {
     size_t _availableRam;
     int _systemResolutionWidth;
     int _systemResolutionHeight;
-    FileAndPath _fileAndPath;
+    stringImpl _workingDirectory;
 };
 
 SysInfo& sysInfo() noexcept;
@@ -176,9 +176,6 @@ extern void GetWindowHandle(void* window, WindowHandle& handleOut) noexcept;
 extern void SetThreadName(std::thread* thread, const char* threadName) noexcept;
 extern void SetThreadName(const char* threadName) noexcept;
 
-//ref: http://stackoverflow.com/questions/1528298/get-path-of-executable
-extern FileAndPath GetExecutableLocation(I32 argc, char** argv);
-FileAndPath GetExecutableLocation(char* argv0);
 extern bool CallSystemCmd(const char* cmd, const char* args);
 
 bool CreateDirectories(const char* path);

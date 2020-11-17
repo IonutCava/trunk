@@ -129,6 +129,8 @@ struct Paths {
 }; //class Paths
 
 
+[[nodiscard]] std::string getWorkingDirectory();
+
 //returns true if both paths are identical regardless of number of slashes and capitalization
 [[nodiscard]] std::filesystem::path asPath(const char* filePath);
 [[nodiscard]] std::filesystem::path asPath(const std::string_view& filePath);

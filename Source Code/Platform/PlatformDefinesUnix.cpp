@@ -69,18 +69,6 @@ namespace Divide {
         prctl(PR_SET_NAME, threadName, 0, 0, 0);
     }
 
-    FileAndPath getExecutableLocation(I32 argc, char** argv) {
-        ACKNOWLEDGE_UNUSED(argc);
-        char buf[1024] = { 0 };
-        ssize_t size = readlink("/proc/self/exe", buf, sizeof(buf));
-        if (size == 0 || size == sizeof(buf))
-        {
-            return getExecutableLocation(argv0);
-        }
-
-        return splitPathToNameAndLocation(stringImpl(buf, size));
-    }
-
     bool CallSystemCmd(const char* cmd, const char* args) {
         return std::system(Util::StringFormat("%s %s", cmd, args).c_str()) == 0;
     }

@@ -68,7 +68,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)/../</OutDir>
+    <OutDir>$(SolutionDir)/../Build/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IntDir>Intermediate\$(Configuration)_Platform-Tests/</IntDir>
@@ -81,10 +81,10 @@
     <EnableClangTidyCodeAnalysis>true</EnableClangTidyCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)/../</OutDir>
+    <OutDir>$(SolutionDir)/../Build/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>$(SolutionDir)/../</OutDir>
+    <OutDir>$(SolutionDir)/../Build/</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IntDir>Intermediate\$(Configuration)_Platform-Tests/</IntDir>
@@ -173,8 +173,8 @@
       </AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
-      <Command>cd $(OutDir)
-$(OutDir)Test-Platform_d.exe nopause</Command>
+      <Command>cd $(OutDirFullPath)..\ 
+$(TargetPath) nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -231,8 +231,8 @@ $(OutDir)Test-Platform_d.exe nopause</Command>
       </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>cd $(OutDir)
-$(OutDir)Test-Platform.exe nopause</Command>
+      <Command>cd $(OutDirFullPath)..\ 
+$(TargetPath) nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
@@ -290,8 +290,8 @@ $(OutDir)Test-Platform.exe nopause</Command>
       <OutputFile>$(SolutionDir)../Source Code/Libs/$(ProjectName)_p$(TargetExt)</OutputFile>
     </Lib>
     <PostBuildEvent>
-      <Command>cd $(OutDir)
-$(OutDir)Test-Platform_p.exe nopause</Command>
+      <Command>cd $(OutDirFullPath)..\ 
+$(TargetPath) nopause</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

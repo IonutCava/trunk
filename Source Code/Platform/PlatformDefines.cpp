@@ -104,8 +104,8 @@ bool PlatformClose() {
 
 void InitSysInfo(SysInfo& info, const I32 argc, char** argv) {
     GetAvailableMemory(info);
-    info._fileAndPath = GetExecutableLocation(argc, argv);
-    info._fileAndPath.second.append("/");
+    info._workingDirectory = getWorkingDirectory();
+    info._workingDirectory.append("/");
 }
 
 U32 HardwareThreadCount() noexcept {
@@ -139,7 +139,7 @@ bool CreateDirectories(const char* path) {
     return true;
 }
 
-FileAndPath GetExecutableLocation(char* argv0) {
+FileAndPath GetInstallLocation(char* argv0) {
     if (argv0 == nullptr || argv0[0] == 0) {
         return {};
     }

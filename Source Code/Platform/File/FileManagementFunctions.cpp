@@ -8,6 +8,10 @@
 
 namespace Divide {
 
+std::string getWorkingDirectory() {
+    return std::filesystem::current_path().generic_string();
+}
+
 
 bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, const bufferPtr content, const size_t length, const FileType fileType) {
     return writeFile(filePath.c_str(), fileName.c_str(), content, length, fileType);
@@ -144,7 +148,7 @@ bool createFile(const char* filePathAndName, const bool overwriteExisting) {
         return ret;
     }
 
-    CreateDirectories((const_sysInfo()._fileAndPath.second.str() + "/" + splitPathToNameAndLocation(filePathAndName).second.str()).c_str());
+    CreateDirectories((const_sysInfo()._workingDirectory + splitPathToNameAndLocation(filePathAndName).second.str()).c_str());
 
     const bool ret = std::ifstream(filePathAndName, std::fstream::in).good();
     return ret;
@@ -175,7 +179,7 @@ bool openFile(const char* cmd, const char* filePath, const char* fileName) {
     };
 
     const stringImpl file = "\"" + Util::ReplaceString(
-        ResourcePath{ const_sysInfo()._fileAndPath.second + "/" + filePath + fileName }.str(), 
+        ResourcePath{ const_sysInfo()._workingDirectory + filePath + fileName }.str(),
         searchPattern, 
         "/", 
         true) + "\"";

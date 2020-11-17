@@ -203,18 +203,6 @@ namespace Divide {
         SetThreadName(threadId, threadName);
     }
 
-    FileAndPath GetExecutableLocation(I32 argc, char** argv) {
-        ACKNOWLEDGE_UNUSED(argc);
-
-        char buf[1024] = { 0 };
-        const DWORD ret = GetModuleFileNameA(nullptr, buf, sizeof(buf));
-        if (ret == 0 || ret == sizeof(buf))
-        {
-            return GetExecutableLocation(argv[0]);
-        }
-        return splitPathToNameAndLocation(buf);
-    }
-
     bool CallSystemCmd(const char* cmd, const char* args) {
         STARTUPINFO si;
         ZeroMemory(&si, sizeof(si));

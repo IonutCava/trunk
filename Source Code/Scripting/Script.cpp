@@ -96,7 +96,7 @@ void Script::compile() {
 
 void Script::bootstrap() {
     const SysInfo& systemInfo = const_sysInfo();
-    const std::string& path = systemInfo._fileAndPath.second.str();
+    const std::string& path = systemInfo._workingDirectory;
 
     std::vector<std::string> scriptPath{ path + Paths::Scripts::g_scriptsLocation.str(),
                                          path + Paths::Scripts::g_scriptsAtomsLocation.str() };
