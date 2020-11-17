@@ -43,6 +43,7 @@
     <RootNamespace>DivideHardware</RootNamespace>
     <ProjectName>Divide-Executable</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+	<DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -192,17 +193,22 @@
       </AdditionalLibraryDirectories>
     </Lib>
     <PostBuildEvent>
-      <Command>xcopy "$(TargetDir)3rdParty\assimp\bin\Debug\assimp-vc141-mtd.dll" "$(OutDir)\" /d /y /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysX_64.dll" "$(OutDir)\" /d /y /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXCommon_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXFoundation_64.dll" "$(OutDir)\" /d  /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXCooking_64.dll" "$(OutDir)\" /d  /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXGPU_64.dll" "$(OutDir)\" /d  /y  /f</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <ProjectReference>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
+    <PreBuildEvent>
+      <Command>robocopy $(TargetDir)3rdParty\assimp\bin\Debug\ $(OutDir)\ assimp-vc141-mtd.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -263,13 +269,18 @@ xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\PhysXGPU_
       </AdditionalDependencies>
     </Lib>
     <PostBuildEvent>
-      <Command>xcopy "$(TargetDir)3rdParty\assimp\bin\Release\assimp-vc141-mt.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysX_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXCommon_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXFoundation_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXCooking_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXGPU_64.dll" "$(OutDir)\" /d /y  /f</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>robocopy $(TargetDir)3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
@@ -331,13 +342,18 @@ xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\PhysXGP
       <OutputFile>$(SolutionDir)../Source Code/Libs/$(ProjectName)_p$(TargetExt)</OutputFile>
     </Lib>
     <PostBuildEvent>
-      <Command>xcopy "$(TargetDir)3rdParty\assimp\bin\Release\assimp-vc141-mt.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysX_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXCommon_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXFoundation_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXCooking_64.dll" "$(OutDir)\" /d /y  /f
-xcopy "$(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\PhysXGPU_64.dll" "$(OutDir)\" /d /y  /f</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>robocopy $(TargetDir)3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCooking_64.dll /NP /NJH /NJS
+robocopy $(TargetDir)3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXGPU_64.dll /NP /NJH /NJS
+if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
