@@ -1,54 +1,72 @@
 [submodule "Source Code/Libs/ChaiScript"]
 	path = 3rdParty/ChaiScript
 	url = https://github.com/ChaiScript/ChaiScript
+	ignore = dirty
 [submodule "Source Code/Libs/EASTL"]
 	path = 3rdParty/EASTL
 	url = https://github.com/electronicarts/EASTL
+	ignore = dirty
 [submodule "Source Code/Libs/EABase"]
 	path = 3rdParty/EABase
 	url = https://github.com/electronicarts/EABase
+	ignore = dirty
 [submodule "Source Code/Libs/EAStdC"]
 	path = 3rdParty/EAStdC
 	url = https://github.com/electronicarts/EAStdC
+	ignore = dirty
 [submodule "Source Code/Libs/fmt"]
 	path = 3rdParty/fmt
 	url = https://github.com/fmtlib/fmt
+	ignore = dirty
 [submodule "Source Code/Libs/meshoptimizer"]
 	path = 3rdParty/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer
+	ignore = dirty
 [submodule "Source Code/Libs/Optick"]
 	path = 3rdParty/Optick
 	url = https://github.com/bombomby/optick
+	ignore = dirty
 [submodule "Source Code/Libs/ConcurrentQueue"]
 	path = 3rdParty/ConcurrentQueue
 	url = https://github.com/cameron314/concurrentqueue
+	ignore = dirty
 [submodule "Source Code/Libs/CPPGoap"]
 	path = 3rdParty/CPPGoap
 	url = https://github.com/cpowell/cppGOAP
+	ignore = dirty
 [submodule "Source Code/Libs/MemoryPool"]
 	path = 3rdParty/MemoryPool
 	url = https://github.com/cacay/MemoryPool
+	ignore = dirty
 [submodule "Source Code/Libs/ReCast"]
 	path = 3rdParty/ReCast
 	url = https://github.com/recastnavigation/recastnavigation
+	ignore = dirty
 [submodule "Source Code/Libs/simplefilewatcher"]
 	path = 3rdParty/simplefilewatcher
 	url = https://github.com/jameswynn/simplefilewatcher
+	ignore = dirty
 [submodule "Source Code/Libs/SimpleINI"]
 	path = 3rdParty/SimpleINI
 	url = https://github.com/brofield/simpleini
+	ignore = dirty
 [submodule "Source Code/Libs/skarupke"]
 	path = 3rdParty/skarupke
 	url = https://github.com/skarupke/flat_hash_map
+	ignore = dirty
 [submodule "Source Code/Libs/STB"]
 	path = 3rdParty/STB
 	url = https://github.com/nothings/stb
+	ignore = dirty
 [submodule "Source Code/Libs/unit_test_framework"]
 	path = 3rdParty/unit_test_framework
 	url = https://gitlab.com/cppocl/unit_test_framework
+	ignore = dirty
 [submodule "3rdParty/physx4"]
 	path = 3rdParty/physx4
 	url = https://github.com/NVIDIAGameWorks/PhysX
+	ignore = dirty
 [submodule "3rdParty/assimp"]
 	path = 3rdParty/assimp
 	url = https://github.com/assimp/assimp
+	ignore = dirty
