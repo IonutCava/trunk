@@ -48,7 +48,7 @@ namespace Divide {
 
     class FileWatcherManager {
       public:
-        static void idle();
+        static void update();
         static FileWatcher& allocateWatcher();
         static void deallocateWatcher(I64 fileWatcherGUID);
         static void deallocateWatcher(const FileWatcher& fw);

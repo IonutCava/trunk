@@ -542,6 +542,7 @@ enum class QueryType : U8 {
     COUNT
 };
 
+
 };  // namespace Divide
 
 #endif

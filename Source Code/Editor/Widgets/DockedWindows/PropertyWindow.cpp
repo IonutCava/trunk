@@ -1015,7 +1015,7 @@ namespace Divide {
             }
         }
 
-        vec3<F32> rot; transformValues._orientation.getEuler(rot); rot = Angle::to_DEGREES(rot);
+        vec3<F32> rot = Angle::to_DEGREES(transformValues._orientation.getEuler());
         const vec3<F32> oldRot = rot;
         if (ImGui::InputFloat3(" - Rotation ", rot, "%.3f", flags)) {
             if (!readOnly) {

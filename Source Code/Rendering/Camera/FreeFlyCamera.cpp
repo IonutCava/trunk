@@ -46,9 +46,7 @@ void FreeFlyCamera::rotate(const Quaternion<F32>& q) {
     }
 
     if (_type == CameraType::FIRST_PERSON) {
-        vec3<Angle::DEGREES<F32>> euler;
-        q.getEuler(euler);
-        euler = Angle::to_DEGREES(euler);
+        const vec3<Angle::DEGREES<F32>> euler = Angle::to_DEGREES(q.getEuler());
         rotate(euler.yaw, euler.pitch, euler.roll);
     }
     else {

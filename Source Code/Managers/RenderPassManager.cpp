@@ -26,6 +26,8 @@
 namespace Divide {
 
     namespace {
+        // Just an upper cap for containers. Increasing it will not break anything
+        constexpr U32 g_maxRenderPasses = 16u;
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
 
         struct PerPassData {
@@ -203,16 +205,16 @@ namespace Divide {
             OPTICK_EVENT("RenderPassManager::FlushCommandBuffers");
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
-            eastl::fill(begin(_completedPasses), end(_completedPasses), false);
+            std::array<bool, g_maxRenderPasses> completedPasses{};
             {
                 OPTICK_EVENT("FLUSH_PASSES_WHEN_READY");
                 U8 idleCount = 0u;
-                while (!eastl::all_of(cbegin(_completedPasses), cend(_completedPasses), [](const bool v) { return v; })) {
+                while (!std::all_of(std::cbegin(completedPasses), std::cbegin(completedPasses) + renderPassCount, [](const bool v) { return v; })) {
 
                     // For every render pass
                     bool finished = true;
                     for (U8 i = 0; i < renderPassCount; ++i) {
-                        if (_completedPasses[i] || !Finished(*_renderTasks[i])) {
+                        if (completedPasses[i] || !Finished(*_renderTasks[i])) {
                             continue;
                         }
 
@@ -229,7 +231,7 @@ namespace Divide {
                             // Try and see if it's running
                             for (U8 j = 0; j < renderPassCount; ++j) {
                                 // If it is running, we can't render yet
-                                if (j != i && _renderPasses[j]->sortKey() == dep && !_completedPasses[j]) {
+                                if (j != i && _renderPasses[j]->sortKey() == dep && !completedPasses[j]) {
                                     dependenciesRunning = true;
                                     break;
                                 }
@@ -244,7 +246,7 @@ namespace Divide {
                             _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
                             _drawCallCount[i] = _context.getDrawCallCount() - _drawCallCount[i];
 
-                            _completedPasses[i] = true;
+                            completedPasses[i] = true;
                             //Wait(*whileRendering);
 
                         } else {
@@ -282,6 +284,7 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
                                              const vectorEASTL<U8>& dependencies,
                                              const bool usePerformanceCounters) {
     assert(!renderPassName.empty());
+    assert(_renderPasses.size() < g_maxRenderPasses);
 
     RenderPass* item = MemoryManager_NEW RenderPass(*this, _context, renderPassName, orderKey, renderStage, dependencies, usePerformanceCounters);
     _renderPasses.push_back(item);
@@ -294,7 +297,6 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
     eastl::sort(begin(_renderPasses), end(_renderPasses), [](RenderPass* a, RenderPass* b) -> bool { return a->sortKey() < b->sortKey(); });
 
     _renderTasks.resize(_renderPasses.size());
-    _completedPasses.resize(_renderPasses.size(), false);
 
     return *item;
 }
@@ -312,7 +314,6 @@ void RenderPassManager::removeRenderPass(const Str64& name) {
     }
 
     _renderTasks.resize(_renderPasses.size());
-    _completedPasses.resize(_renderPasses.size(), false);
 }
 
 U32 RenderPassManager::getLastTotalBinSize(const RenderStage renderStage) const {

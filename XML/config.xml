@@ -82,7 +82,7 @@
 		<!-- Quality level for FXAA or SMAA: 0 - off, 1 - lowest, 5 - highest-->
 		<PostAAQualityLevel>2</PostAAQualityLevel>
 		<enableAdaptiveToneMapping>true</enableAdaptiveToneMapping>
-		<enableDepthOfField>true</enableDepthOfField>
+		<enableDepthOfField>false</enableDepthOfField>
 		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
 		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->
 		<enableCameraBlur>true</enableCameraBlur>

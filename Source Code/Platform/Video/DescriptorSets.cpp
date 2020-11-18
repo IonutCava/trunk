@@ -111,53 +111,52 @@ namespace Divide {
             const size_t texCount = rhsTextures.size();
             for (size_t i = 0; i < texCount; ++i) {
                 const TextureEntry& it = rhsTextures[i];
-                if (std::get<0>(it) != TextureDataContainer<>::INVALID_BINDING) {
-                    const TextureEntry* texData = lhs.findTexture(std::get<0>(it));
-                    if (texData != nullptr && *texData == it) {
-                        partial = rhs._textureData.removeTexture(std::get<0>(it)) || partial;
-                    }
+
+                const U8 binding = std::get<0>(it);
+                if (binding == TextureDataContainer<>::INVALID_BINDING) {
+                    continue;
+                }
+
+                const TextureEntry* texData = lhs.findTexture(binding);
+                if (texData != nullptr && *texData == it) {
+                    partial = rhs._textureData.removeTexture(binding) || partial;
                 }
             }
         }
 
         TextureViews& otherViewList = rhs._textureViews;
-        if (!otherViewList.empty()) {
-            for (auto* it = begin(otherViewList); it != end(otherViewList);) {
-                const TextureView* texViewData = lhs.findTextureView(it->_binding);
-                if (texViewData != nullptr && *texViewData == it->_view) {
-                    it = otherViewList.erase(it);
-                    partial = true;
-                } else {
-                    ++it;
-                }
+        for (auto* it = begin(otherViewList); it != end(otherViewList);) {
+            const TextureView* texViewData = lhs.findTextureView(it->_binding);
+            if (texViewData != nullptr && *texViewData == it->_view) {
+                it = otherViewList.erase(it);
+                partial = true;
+            } else {
+                ++it;
             }
         }
 
         Images& otherImageList = rhs._images;
-        if (!otherImageList.empty()) {
-            for (auto* it = begin(otherImageList); it != end(otherImageList);) {
-                const Image* image = lhs.findImage(it->_binding);
-                if (image != nullptr && *image == *it) {
-                    it = otherImageList.erase(it);
-                    partial = true;
-                } else {
-                    ++it;
-                }
+        for (auto* it = begin(otherImageList); it != end(otherImageList);) {
+            const Image* image = lhs.findImage(it->_binding);
+            if (image != nullptr && *image == *it) {
+                it = otherImageList.erase(it);
+                partial = true;
+            } else {
+                ++it;
             }
         }
 
         ShaderBufferList& otherShaderBuffers = rhs._shaderBuffers;
-        if (!otherShaderBuffers.empty()) {
-            for (auto* it = begin(otherShaderBuffers); it != end(otherShaderBuffers);) {
-                const ShaderBufferBinding* binding = lhs.findBinding(it->_binding);
-                if (binding != nullptr && *binding == *it) {
-                    it = otherShaderBuffers.erase(it);
-                    partial = true;
-                } else {
-                    ++it;
-                }
+        for (auto* it = begin(otherShaderBuffers); it != end(otherShaderBuffers);) {
+            const ShaderBufferBinding* binding = lhs.findBinding(it->_binding);
+            if (binding != nullptr && *binding == *it) {
+                it = otherShaderBuffers.erase(it);
+                partial = true;
+            } else {
+                ++it;
             }
         }
+        
         return rhs.empty();
     }
 

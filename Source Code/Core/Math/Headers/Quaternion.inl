@@ -432,7 +432,9 @@ void Quaternion<T>::getAxisAngle(vec3<T>& axis, Angle::DEGREES<T>& angle) const 
 }
 
 template <typename T>
-void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
+vec3<Angle::RADIANS<T>> Quaternion<T>::getEuler() const {
+    vec3<Angle::RADIANS<T>> euler;
+
     T& yaw = euler.yaw;
     T& pitch = euler.pitch;
     T& roll = euler.roll;
@@ -462,6 +464,8 @@ void Quaternion<T>::getEuler(vec3<Angle::RADIANS<T>>& euler) const {
         pitch = std::atan2(2 * y * z + 2 * w * x, sqw - sqx - sqy + sqz);
         yaw   = std::asin(-2 * (x * z - w * y));
     }
+
+    return euler;
 }
 
 template <typename T>
@@ -681,9 +685,7 @@ mat3<T> GetMatrix(const Quaternion<T>& q) {
 
 template <typename T>
 vec3<Angle::RADIANS<T>> GetEuler(const Quaternion<T>& q) {
-    vec3<Angle::RADIANS<T>> euler;
-    q.getEuler(euler);
-    return euler;
+    return q.getEuler();
 }
 
 template <typename T>

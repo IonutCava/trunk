@@ -1,6 +1,8 @@
 -- Fragment
 
+#if !defined(DEPTH_ONLY)
 #include "utility.frag"
+#endif
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D tex;
 #if !defined(DEPTH_ONLY)

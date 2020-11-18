@@ -141,7 +141,7 @@ class Quaternion {
     //! Convert to Axis/Angles
     void getAxisAngle(vec3<T>& axis, Angle::DEGREES<T>& angle) const;
 
-    void getEuler(vec3<Angle::RADIANS<T>>& euler) const;
+    vec3<Angle::RADIANS<T>> getEuler() const;
 
 
     /// X/Y/Z Axis get/set a la Ogre: OgreQuaternion.cpp

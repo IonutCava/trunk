@@ -4,7 +4,7 @@
 
 #include "Headers/GUI.h"
 
-#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"  ///< For NavMesh creation
+#include "AI/PathFinding/NavMeshes/Headers/NavMesh.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/ParamHandler.h"
 #include "Core/Headers/PlatformContext.h"

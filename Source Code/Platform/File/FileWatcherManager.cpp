@@ -22,7 +22,7 @@ namespace Divide {
             std::end(s_fileWatchers));
     }
 
-    void FileWatcherManager::idle() {
+    void FileWatcherManager::update() {
         // Expensive: update just one per frame
         for (const eastl::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
             if (!fw->_updated) {

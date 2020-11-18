@@ -120,6 +120,7 @@ class PreRenderBatch {
 
     [[nodiscard]] bool operatorsReady() const;
 
+    [[nodiscard]] RenderTargetHandle getTarget(bool hdr, bool swapped) const;
   private:
     using OperatorBatch = vectorEASTL<eastl::unique_ptr<PreRenderOperator>>;
     std::array<OperatorBatch, to_base(FilterSpace::COUNT)> _operators;

@@ -121,15 +121,102 @@ namespace {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);
             PreRenderOperator* op = batch->getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
             DoFPreRenderOperator& dofOp = static_cast<DoFPreRenderOperator&>(*op);
-            F32 focalDepth = dofOp.focalDepth();
-            bool autoFocus = dofOp.autoFocus();
-            if (ImGui::SliderFloat("Focal Depth", &focalDepth, 0.0f, 1.0f)) {
-                dofOp.focalDepth(focalDepth);
+            DoFPreRenderOperator::Parameters params = dofOp.parameters();
+            bool dirty = false;
+
+            F32& focalLength = params._focalLength;
+            if (ImGui::SliderFloat("Focal Length (mm)", &focalLength, 0.0f, 100.0f)) {
+                dirty = true;
             }
+
+            I32 crtStop = to_I32(params._fStop);
+            const char* crtStopName = TypeUtil::FStopsToString(params._fStop);
+            if (ImGui::SliderInt("FStop", &crtStop, 0, to_base(FStops::COUNT) - 1, crtStopName)) {
+                params._fStop = static_cast<FStops>(crtStop);
+                dirty = true;
+            }
+
+            bool& autoFocus = params._autoFocus;
             if (ImGui::Checkbox("Auto Focus", &autoFocus)) {
-                dofOp.autoFocus(autoFocus);
+                dirty = true;
+            }
+
+            if (autoFocus) {
+                PushReadOnly();
+            }
+            F32& focalDepth = params._focalDepth;
+            if (ImGui::SliderFloat("Focal Depth (m)", &focalDepth, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            vec2<F32>& focalPosition = params._focalPoint;
+            if (ImGui::SliderFloat2("Focal Position", focalPosition._v, 0.0f, 1.0f)) {
+                dirty = true;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Position of focused point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)");
+            }
+            if (autoFocus) {
+                PopReadOnly();
+            }
+
+            bool& manualdof = params._manualdof;
+            if (ImGui::Checkbox("Manual dof calculation", &manualdof)) {
+                dirty = true;
+            }
+            if (!manualdof) {
+                PushReadOnly();
+            }
+            F32& ndofstart = params._ndofstart;
+            if (ImGui::SliderFloat("Near dof blur start", &ndofstart, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            F32& ndofdist = params._ndofdist;
+            if (ImGui::SliderFloat("Near dof blur falloff distance", &ndofdist, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            F32& fdofstart = params._fdofstart;
+            if (ImGui::SliderFloat("Far dof blur start", &fdofstart, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            F32& fdofdist = params._fdofdist;
+            if (ImGui::SliderFloat("Far dof blur falloff distance", &fdofdist, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            if (!manualdof) {
+                PopReadOnly();
+            }
+            bool& vignetting = params._vignetting;
+            if (ImGui::Checkbox("Use optical lens vignetting", &vignetting)) {
+                dirty = true;
+            }
+            if (!vignetting) {
+                PushReadOnly();
+            }
+            F32& vignout = params._vignout;
+            if (ImGui::SliderFloat("Vignetting outer border", &vignout, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            F32& vignin = params._vignin;
+            if (ImGui::SliderFloat("Vignetting inner border", &vignin, 0.0f, 100.0f)) {
+                dirty = true;
+            }
+            if (!vignetting) {
+                PopReadOnly();
+            }
+          
+            bool& debugFocus = params._debugFocus;
+            if (ImGui::Checkbox("Show debug focus point and focal range", &debugFocus)) {
+                dirty = true;
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("red = focal point, green = focal range");
+            }
+ 
+            if (dirty) {
+                dofOp.parameters(params);
             }
         }
+
         if (ImGui::CollapsingHeader("Bloom")) {
             checkBox(FilterType::FILTER_BLOOM);
             PreRenderOperator* op = batch->getOperator(FilterType::FILTER_BLOOM);

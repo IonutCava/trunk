@@ -1365,10 +1365,10 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         const F32 zNear = cameraSnapshot._zPlanes.min;
 
         //scale
-        data._lightingProperties.z = to_F32(gridSizeZ) / std::log2f(zFar / zNear);
+        data._lightingProperties.z = cameraSnapshot._isOrthoCamera ? 1.0f : to_F32(gridSizeZ) / std::log2f(zFar / zNear);
 
         //bias
-        data._lightingProperties.w = -(to_F32(gridSizeZ) * std::log2f(zNear) / std::log2f(zFar / zNear));
+        data._lightingProperties.w = cameraSnapshot._isOrthoCamera ? 0.0f : -(to_F32(gridSizeZ) * std::log2f(zNear) / std::log2f(zFar / zNear));
 
         needsUpdate = true;
     }

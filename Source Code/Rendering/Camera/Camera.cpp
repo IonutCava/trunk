@@ -4,6 +4,22 @@
 
 namespace Divide {
 
+namespace TypeUtil {
+    const char* FStopsToString(const FStops stop) noexcept {
+        return Names::fStops[to_base(stop)];
+    }
+
+    FStops StringToFStops(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(FStops::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::fStops[i]) == 0) {
+                return static_cast<FStops>(i);
+            }
+        }
+
+        return FStops::COUNT;
+    }
+}
+
 Camera::Camera(const Str256& name, const CameraType& type, const vec3<F32>& eye)
     : Resource(ResourceType::DEFAULT, name),
       _type(type)
@@ -270,8 +286,9 @@ bool Camera::updateViewMatrix() {
                                 -_data._orientation.yAxis().dot(_data._eye),
                                 -_data._orientation.zAxis().dot(_data._eye), 
                                 1.0f);
-    _data._orientation.getEuler(_euler);
-    _euler = Angle::to_DEGREES(_euler);
+
+    _euler = Angle::to_DEGREES(_data._orientation.getEuler());
+
     // Extract the pitch angle from the view matrix.
     _accumPitchDegrees = Angle::to_DEGREES(std::asinf(getForwardDir().y));
 

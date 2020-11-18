@@ -84,7 +84,9 @@ template<size_t Size = to_size(TextureUsage::COUNT)>
 struct TextureDataContainer {
     static constexpr U8 INVALID_BINDING = std::numeric_limits<U8>::max();
     static constexpr TextureEntry DefaultEntry = { INVALID_BINDING, {}, 0 };
+
     using DataEntries = std::array<TextureEntry, Size>;
+
     static constexpr size_t ContainerSize() noexcept { return Size; }
 
     bool set(const TextureDataContainer& other);

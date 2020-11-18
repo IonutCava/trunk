@@ -54,7 +54,8 @@
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 
 namespace Divide {
-    struct RenderPassParams;
+class ShaderProgramDescriptor;
+struct RenderPassParams;
 
     enum class SceneNodeType : U16;
 enum class WindowEvent : U8;
@@ -583,6 +584,8 @@ namespace Attorney {
                 [type, GUID, nameHash](const auto& crtEntry) noexcept -> bool {
                     if (std::get<1>(crtEntry) == GUID) {
                         assert(std::get<0>(crtEntry) == type && std::get<2>(crtEntry) == nameHash);
+                        ACKNOWLEDGE_UNUSED(type);
+                        ACKNOWLEDGE_UNUSED(nameHash);
                         return true;
                     }
                     return false;

@@ -40,6 +40,38 @@
 
 namespace Divide {
 
+enum class FStops : U8
+{
+    F_1_4,
+    F_1_8,
+    F_2_0,
+    F_2_8,
+    F_3_5,
+    F_4_0,
+    F_5_6,
+    F_8_0,
+    F_11_0,
+    F_16_0,
+    F_22_0,
+    F_32_0,
+    COUNT
+};
+
+namespace Names {
+    static const char* fStops[] = {
+        "f/1.4", "f/1.8", "f/2", "f/2.8", "f/3.5", "f/4", "f/5.6", "f/8", "f/11", "f/16", "f/22", "f/32", "NONE"
+    };
+}
+
+static constexpr std::array<F32, to_base(FStops::COUNT)> g_FStopValues = {
+    1.4f, 1.8f, 2.0f, 2.8f, 3.5f, 4.0f, 5.6f, 8.0f, 11.0f, 16.0f, 22.0f, 32.0f
+};
+
+namespace TypeUtil {
+    const char* FStopsToString(FStops stop) noexcept;
+    FStops StringToFStops(const stringImpl& name);
+};
+
 class GFXDevice;
 class Camera : public Resource {
    public:

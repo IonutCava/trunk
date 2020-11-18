@@ -11,6 +11,7 @@
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
 namespace Divide {

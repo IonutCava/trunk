@@ -9,6 +9,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"
@@ -286,26 +287,20 @@ bool PreRenderBatch::operatorsReady() const {
     return true;
 }
 
-RenderTargetHandle PreRenderBatch::getInput(const bool hdr) const {
-    if (hdr && _screenRTs._swappedHDR) {
-        return _screenRTs._hdr._screenCopy;
-    } else if (hdr) {
-        return _screenRTs._hdr._screenRef;
+RenderTargetHandle PreRenderBatch::getTarget(const bool hdr, const bool swapped) const {
+    if (hdr) {
+        return swapped ? _screenRTs._hdr._screenCopy : _screenRTs._hdr._screenRef;
     }
 
-    return _screenRTs._ldr._temp[_screenRTs._swappedLDR ? 0 : 1];
+    return _screenRTs._ldr._temp[swapped ? 0 : 1];
+}
+
+RenderTargetHandle PreRenderBatch::getInput(const bool hdr) const {
+    return getTarget(hdr, hdr ? _screenRTs._swappedHDR : _screenRTs._swappedLDR);
 }
 
 RenderTargetHandle PreRenderBatch::getOutput(const bool hdr) const {
-    if (hdr && _screenRTs._swappedHDR) {
-        return _screenRTs._hdr._screenRef;
-    }
-
-    if (!_screenRTs._swappedHDR) {
-        return _screenRTs._hdr._screenCopy;
-    }
-
-    return _screenRTs._ldr._temp[_screenRTs._swappedLDR ? 1 : 0];
+    return getTarget(hdr, hdr ? !_screenRTs._swappedHDR : !_screenRTs._swappedLDR);
 }
 
 void PreRenderBatch::idle(const Configuration& config) {

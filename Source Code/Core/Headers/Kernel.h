@@ -209,10 +209,10 @@ class Kernel final : public Input::InputAggregatorInterface,
     vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept;
 
    private:
-    vectorEASTL<Rect<I32>> _editorViewports;
-    vectorEASTL<Rect<I32>> _targetViewports;
+    vectorEASTL<Rect<I32>> _editorViewports{};
+    vectorEASTL<Rect<I32>> _targetViewports{};
 
-    std::atomic_bool _splashScreenUpdating;
+    std::atomic_bool _splashScreenUpdating{};
     Task* _splashTask = nullptr;
 
     Time::ProfileTimer& _appLoopTimer;
@@ -227,7 +227,7 @@ class Kernel final : public Input::InputAggregatorInterface,
     Time::ProfileTimer& _flushToScreenTimer;
     Time::ProfileTimer& _preRenderTimer;
     Time::ProfileTimer& _postRenderTimer;
-    vectorEASTL<Time::ProfileTimer*> _renderTimer;
+    vectorEASTL<Time::ProfileTimer*> _renderTimer{};
 
     // Command line arguments
     I32 _argc;

@@ -3,12 +3,12 @@
 #define _PRE_RENDER_OPERATOR_H_
 
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
-#include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
 
 namespace Divide {
 
 class Quad3D;
+class Camera;
 class Texture;
 class ShaderProgram;
 

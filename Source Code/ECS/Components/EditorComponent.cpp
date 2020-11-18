@@ -84,8 +84,7 @@ namespace Divide {
 
                     vec3<Angle::DEGREES<F32>> orientationEuler;
                     Quaternion<F32> orientation = transform->getLocalOrientation();
-                    orientation.getEuler(orientationEuler);
-                    orientationEuler = Angle::to_DEGREES(orientationEuler);
+                    orientationEuler = Angle::to_DEGREES(orientation.getEuler());
 
                     pt.put(entryName + ".position.<xmlattr>.x", position.x);
                     pt.put(entryName + ".position.<xmlattr>.y", position.y);

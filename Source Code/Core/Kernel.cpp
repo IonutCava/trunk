@@ -143,24 +143,24 @@ void Kernel::stopSplashScreen() {
 void Kernel::idle(const bool fast) {
     OPTICK_EVENT();
 
+    if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
+        Locale::idle();
+    }
+
     _platformContext.idle(fast);
 
-    if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
-        if (!fast) {
-            FileWatcherManager::idle();
-            Locale::idle();
-        }
-    }
     _sceneManager->idle();
     Script::idle();
+
+    frameListenerMgr().idle();
 
     if (--g_printTimer == 0) {
         Console::printAll();
         g_printTimer = g_printTimerBase;
     }
-    frameListenerMgr().idle();
 
-    bool freezeLoopTime = _platformContext.paramHandler().getParam(_ID("freezeLoopTime"), false);
+    constexpr U64 flagHash = _ID("freezeLoopTime");
+    bool freezeLoopTime = _platformContext.paramHandler().getParam(flagHash, false);
 
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         freezeLoopTime = _platformContext.editor().simulationPauseRequested() || freezeLoopTime;
@@ -177,6 +177,11 @@ void Kernel::onLoop() {
         _platformContext.app().mainLoopActive(false);
         sceneManager()->saveActiveScene(true, false);
         return;
+    }
+
+    if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
+        // Check for any file changes (shaders, scripts, etc)
+        FileWatcherManager::update();
     }
 
     // Update internal timer
@@ -234,12 +239,18 @@ void Kernel::onLoop() {
         _platformContext.gui().modifyText("ProfileData", platformContext().debug().output(), true);
     }
 
-    if (frameCount % 4 == 0u) {
-        F32 fps = 0.f, frameTime = 0.f;
-        DisplayWindow& window = _platformContext.mainWindow();
-        static stringImpl originalTitle = window.title();
-        _platformContext.app().timer().getFrameRateAndTime(fps, frameTime);
-        window.title("%s - %5.2f FPS - %3.2f ms - FrameIndex: %d", originalTitle, fps, frameTime, platformContext().gfx().getFrameCount());
+    if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
+        if (frameCount % 4 == 0u) {
+        
+            DisplayWindow& window = _platformContext.mainWindow();
+            static stringImpl originalTitle = window.title();
+
+            F32 fps = 0.f, frameTime = 0.f;
+            _platformContext.app().timer().getFrameRateAndTime(fps, frameTime);
+            constexpr const char* buildType = Config::Build::IS_DEBUG_BUILD ? "DEBUG" : Config::Build::IS_PROFILE_BUILD ? "PROFILE" : "RELEASE";
+            constexpr const char* titleString = "[%s] %s - %5.2f FPS - %3.2f ms - FrameIndex: %d";
+            window.title(titleString, buildType, originalTitle.c_str(), fps, frameTime, platformContext().gfx().getFrameCount());
+        }
     }
 
     // Cap FPS
