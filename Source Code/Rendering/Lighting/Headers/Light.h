@@ -158,6 +158,8 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     PROPERTY_RW(bool, enabled);
     /// Light range used for attenuation computation
     PROPERTY_RW(F32, range, 10.0f);
+    /// Light intensity in "lumens" (not really). Just a colour multiplier for now. ToDo: fix that -Ionut
+    PROPERTY_RW(F32, intensity, 1.0f);
     /// Index used to look up shadow properties in shaders
     PROPERTY_R_IW(I32, shadowIndex, -1);
 

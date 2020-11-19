@@ -10,15 +10,39 @@ class PostFX;
 
 struct ToneMapParams
 {
-    U16 width = 1u;
-    U16 height = 1u;
-    F32 minLogLuminance = -4.0f;
-    F32 maxLogLuminance = 3.0f;
-    F32 tau = 1.1f;
+    enum class MapFunctions : U8
+    {
+        REINHARD,
+        REINHARD_MODIFIED,
+        GT,
+        ACES,
+        UNREAL_ACES,
+        AMD_ACES,
+        GT_DIFF_PARAMETERS,
+        UNCHARTED_2,
+        COUNT
+    };
 
-    F32 manualExposureAdaptive = 1.1f;
-    F32 manualExposure = 0.975f;
-    F32 manualWhitePoint = 0.975f;
+    U16 _width = 1u;
+    U16 _height = 1u;
+    F32 _minLogLuminance = -4.0f;
+    F32 _maxLogLuminance = 3.0f;
+    F32 _tau = 1.1f;
+
+    F32 _manualExposure = 11.2f;
+
+    MapFunctions _function = MapFunctions::UNCHARTED_2;
+};
+
+namespace Names {
+    static const char* toneMapFunctions[] = {
+        "REINHARD", "REINHARD_MODIFIED", "GT", "ACES", "UNREAL_ACES", "AMD_ACES", "GT_DIFF_PARAMETERS", "UNCHARTED_2", "NONE"
+    };
+}
+
+namespace TypeUtil {
+    const char* ToneMapFunctionsToString(ToneMapParams::MapFunctions stop) noexcept;
+    ToneMapParams::MapFunctions StringToToneMapFunctions(const stringImpl& name);
 };
 
 class ResourceCache;
@@ -84,12 +108,14 @@ class PreRenderBatch {
     }
 
     PROPERTY_R(bool, adaptiveExposureControl, true);
-    PROPERTY_RW(ToneMapParams, toneMapParams, {});
+    PROPERTY_R(ToneMapParams, toneMapParams, {});
     PROPERTY_RW(F32, edgeDetectionThreshold, 0.1f);
     PROPERTY_RW(EdgeDetectionMethod, edgeDetectionMethod, EdgeDetectionMethod::Luma);
 
     void adaptiveExposureControl(bool state) noexcept;
     [[nodiscard]] F32  adaptiveExposureValue() const;
+
+    void toneMapParams(ToneMapParams params) noexcept;
 
    private:
 
@@ -160,6 +186,7 @@ class PreRenderBatch {
     PushConstants     _toneMapConstants;
 
     U64 _lastDeltaTimeUS = 0u;
+    bool _toneMapParamsDirty = true;
 };
 
 }  // namespace Divide

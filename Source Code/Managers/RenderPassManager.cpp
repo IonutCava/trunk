@@ -188,7 +188,8 @@ namespace Divide {
            const auto& screenAtt=  resolvedScreenTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
            const TextureData texData = screenAtt.texture()->data();
            const Rect<I32>& targetViewport = params._targetViewport;
-           gfx.drawTextureInViewport(texData, screenAtt.samplerHash(), targetViewport, true, false, buf);
+           // DO NOT CONVERT TO SRGB! Already handled in the tone mapping stage
+           gfx.drawTextureInViewport(texData, screenAtt.samplerHash(), targetViewport, false, false, buf);
            Attorney::SceneManagerRenderPass::drawCustomUI(sceneManager, targetViewport, buf);
            if_constexpr(Config::Build::ENABLE_EDITOR) {
                context.editor().drawScreenOverlay(cam, targetViewport, buf);

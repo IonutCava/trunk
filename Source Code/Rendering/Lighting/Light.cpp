@@ -81,6 +81,15 @@ void Light::registerFields(EditorComponent& comp) {
     rangeField._basicType = GFX::PushConstantType::FLOAT;
     comp.registerField(MOV(rangeField));
 
+    EditorComponentField intensityField = {};
+    intensityField._name = "Intensity";
+    intensityField._data = &_intensity;
+    intensityField._type = EditorComponentFieldType::PUSH_TYPE;
+    intensityField._readOnly = false;
+    intensityField._range = { std::numeric_limits<F32>::epsilon(), 25.f };
+    intensityField._basicType = GFX::PushConstantType::FLOAT;
+    comp.registerField(MOV(intensityField));
+
     EditorComponentField colourField = {};
     colourField._name = "Colour";
     colourField._dataGetter = [this](void* dataOut) { static_cast<FColour3*>(dataOut)->set(getDiffuseColour()); };

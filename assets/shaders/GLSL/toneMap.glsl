@@ -5,15 +5,22 @@
 //ref: https://github.com/BruOp/bae
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-
-#ifdef USE_ADAPTIVE_LUMINANCE
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texExposure;
-#endif
 
-uniform float exposure = 0.975f;
-uniform float whitePoint = 0.975f;
+uniform float manualExposure = 4.975f;
+uniform int mappingFunctions = UNCHARTED_2;
+uniform bool useAdaptiveExposure = true;
 
 out vec4 _colourOut;
+
+float Reinhard(float x) {
+    return x / (1.0f + x);
+}
+
+float Reinhard2(float x) {
+    const float L_white = 4.0f;
+    return (x * (1.0f + x / (L_white * L_white))) / (1.0 + x);
+}
 
 float Tonemap_ACES(float x) {
     // Narkowicz 2015, "ACES Filmic Tone Mapping Curve"
@@ -25,27 +32,11 @@ float Tonemap_ACES(float x) {
     return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
-vec3 Tonemap_ACES(vec3 x) {
-    return vec3(
-        Tonemap_ACES(x.r),
-        Tonemap_ACES(x.g),
-        Tonemap_ACES(x.b)
-    );
-}
-
 float Tonemap_Unreal(float x) {
     // Unreal 3, Documentation: "Color Grading"
     // Adapted to be close to Tonemap_ACES, with similar range
     // Gamma 2.2 correction is baked in, don't use with sRGB conversion!
     return x / (x + 0.155) * 1.019;
-}
-
-vec3 Tonemap_Unreal(vec3 x) {
-    return vec3(
-        Tonemap_Unreal(x.r),
-        Tonemap_Unreal(x.g),
-        Tonemap_Unreal(x.b)
-    );
 }
 
 float Tonemap_Uchimura(float x, float P, float a, float m, float l, float c, float b) {
@@ -75,15 +66,8 @@ float Tonemap_Uchimura(float x) {
     const float l = 0.4;  // linear section length
     const float c = 1.33; // black
     const float b = 0.0;  // pedestal
-    return Tonemap_Uchimura(x, P, a, m, l, c, b);
-}
 
-vec3 Tonemap_Uchimura(vec3 x) {
-    return vec3(
-        Tonemap_Uchimura(x.r),
-        Tonemap_Uchimura(x.g),
-        Tonemap_Uchimura(x.b)
-    );
+    return Tonemap_Uchimura(x, P, a, m, l, c, b);
 }
 
 float Tonemap_Lottes(float x) {
@@ -103,16 +87,7 @@ float Tonemap_Lottes(float x) {
     return pow(x, a) / (pow(x, a * d) * b + c);
 }
 
-vec3 Tonemap_Lottes(vec3 x) {
-    return vec3(
-        Tonemap_Lottes(x.r),
-        Tonemap_Lottes(x.g),
-        Tonemap_Lottes(x.b)
-    );
-}
-
-const float W = 11.2f;
-vec3 Uncharted2Tonemap(vec3 x)
+float Uncharted2(float x)
 {
     const float A = 0.15;
     const float B = 0.50;
@@ -120,12 +95,14 @@ vec3 Uncharted2Tonemap(vec3 x)
     const float D = 0.20;
     const float E = 0.02;
     const float F = 0.30;
+    const float W = 11.2f;
 
-    return ((x*(A*x + C*B) + D*E) / (x*(A*x + B) + D*F)) - E / F;
+    x =  ((x*(A*x + C*B) + D*E) / (x*(A*x + B) + D*F)) - E / F;
+    float white = ((W * (A * W + C * B) + D * E) / (W * (A * W + B) + D * F)) - E / F;
+    
+    return x / white;
 }
 
-
-#ifdef USE_ADAPTIVE_LUMINANCE
 vec3 convertRGB2Yxy(vec3 _rgb) {
     // Reference:
     // RGB/XYZ Matrices
@@ -156,29 +133,55 @@ vec3 convertYxy2RGB(vec3 _Yxy) {
     return rgb;
 }
 
-vec3 toGammaAccurate(vec3 _rgb) {
-    vec3 lo = _rgb * 12.92;
-    vec3 hi = pow(abs(_rgb), vec3(1.0 / 2.4)) * 1.055 - 0.055;
-    vec3 rgb = mix(hi, lo, vec3(lessThanEqual(_rgb, vec3(0.0031308))));
-    return rgb;
-}
-
-#endif
-
 void main() {
-    vec3 screenColour = texture(texScreen, VAR._texCoord).rgb;
+    vec3 screenColour = texture(texScreen, VAR._texCoord).rgb * manualExposure;
 
-#ifdef USE_ADAPTIVE_LUMINANCE
-    const float avgLuminance = texture(texExposure, VAR._texCoord).r;
     vec3 Yxy = convertRGB2Yxy(screenColour);
-    Yxy.x /= (9.6f * avgLuminance + 0.0001f);
-    screenColour = convertYxy2RGB(Yxy);
-#endif
+    float lp = Yxy.x;
 
-    screenColour *= exposure;
-    vec3 curr = Uncharted2Tonemap(screenColour);
-    vec3 whiteScale = 1.0 / Uncharted2Tonemap(vec3(whitePoint));
-    _colourOut.rgb = curr * whiteScale;
+    if (useAdaptiveExposure) {
+        const float avgLuminance = texture(texExposure, VAR._texCoord).r;
+        lp = Yxy.x / (9.6f * avgLuminance + 0.0001f);
+    }
 
+    if (mappingFunctions == REINHARD)
+    {
+        Yxy.x = Reinhard(lp);
+    }
+    else if (mappingFunctions == REINHARD_MODIFIED)
+    {
+        Yxy.x = Reinhard2(lp);
+    }
+    else if (mappingFunctions == GT)
+    {
+        Yxy.x = Tonemap_Uchimura(lp);
+    }
+    else if (mappingFunctions == ACES)
+    {
+        Yxy.x = Tonemap_ACES(lp);
+    }
+    else if (mappingFunctions == UNREAL_ACES)
+    {
+        Yxy.x = Tonemap_Unreal(lp);
+    }
+    else if (mappingFunctions == AMD_ACES)
+    {
+        Yxy.x = Tonemap_Lottes(lp);
+    }
+    else if (mappingFunctions == AMD_ACES)
+    {
+        Yxy.x = Tonemap_Uchimura(lp, 1.0f, 1.7f, 0.1f, 0.0f, 1.33f, 0.0f);
+    }
+    else if (mappingFunctions == UNCHARTED_2)
+    {
+        Yxy.x = Uncharted2(lp);
+    }
+    else
+    {
+        //Nothing. HDR? Nope. Straight up saturate (i.e. bad)
+    }
+
+    //Apply gamma correction here!
+    _colourOut.rgb = ToSRGBAccurate(convertYxy2RGB(Yxy));
     _colourOut.a = luminance(_colourOut.rgb);
 }

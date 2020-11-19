@@ -251,19 +251,17 @@ namespace {
                 batch->adaptiveExposureControl(adaptiveExposure);
             }
 
+            bool dirty = false;
             ToneMapParams params = batch->toneMapParams();
             if (adaptiveExposure) {
-                if (ImGui::SliderFloat("Min Log Luminance", &params.minLogLuminance, -16.0f, 0.0f)) {
-                    batch->toneMapParams(params);
+                if (ImGui::SliderFloat("Min Log Luminance", &params._minLogLuminance, -16.0f, 0.0f)) {
+                    dirty = true;
                 }
-                if (ImGui::SliderFloat("Max Log Luminance", &params.maxLogLuminance, 0.0f, 16.0f)) {
-                    batch->toneMapParams(params);
+                if (ImGui::SliderFloat("Max Log Luminance", &params._maxLogLuminance, 0.0f, 16.0f)) {
+                    dirty = true;
                 }
-                if (ImGui::SliderFloat("Tau", &params.tau, 0.1f, 2.0f)) {
-                    batch->toneMapParams(params);
-                }
-                if (ImGui::SliderFloat("Exposure", &params.manualExposureAdaptive, 0.01f, 1.99f)) {
-                    batch->toneMapParams(params);
+                if (ImGui::SliderFloat("Tau", &params._tau, 0.1f, 2.0f)) {
+                    dirty = true;
                 }
 
                 static I32 exposureRefreshFrameCount = 1;
@@ -278,15 +276,22 @@ namespace {
                 if (PreviewTextureButton(id, batch->luminanceTex().get(), false)) {
                     _previewTexture = batch->luminanceTex().get();
                 }
-            } else {
-                if (ImGui::SliderFloat("Exposure", &params.manualExposure, 0.01f, 1.99f)) {
-                    batch->toneMapParams(params);
-                }
             }
-            if (ImGui::SliderFloat("White Balance", &params.manualWhitePoint, 0.01f, 1.99f)) {
+
+            if (ImGui::SliderFloat("Manual exposure", &params._manualExposure, -20.0f, 100.0f)) {
+                dirty = true;
+            }
+
+            I32 crtFunc = to_I32(params._function);
+            const char* crtFuncName = TypeUtil::ToneMapFunctionsToString(params._function);
+            if (ImGui::SliderInt("ToneMap Function", &crtFunc, 0, to_base(ToneMapParams::MapFunctions::COUNT), crtFuncName)) {
+                params._function = static_cast<ToneMapParams::MapFunctions>(crtFunc);
+                dirty = true;
+            }
+
+            if (dirty) {
                 batch->toneMapParams(params);
             }
-            
             checkBox(FilterType::FILTER_LUT_CORECTION, PostFX::FilterName(FilterType::FILTER_LUT_CORECTION), false);
         }
         if (ImGui::CollapsingHeader("Test Effects")) {

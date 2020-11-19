@@ -25,6 +25,22 @@ namespace {
     constexpr U8  GROUP_Y_THREADS = 16u;
 };
 
+namespace TypeUtil {
+    const char* ToneMapFunctionsToString(const ToneMapParams::MapFunctions stop) noexcept {
+        return Names::toneMapFunctions[to_base(stop)];
+    }
+
+    ToneMapParams::MapFunctions StringToToneMapFunctions(const stringImpl& name) {
+        for (U8 i = 0; i < to_U8(ToneMapParams::MapFunctions::COUNT); ++i) {
+            if (strcmp(name.c_str(), Names::toneMapFunctions[i]) == 0) {
+                return static_cast<ToneMapParams::MapFunctions>(i);
+            }
+        }
+
+        return ToneMapParams::MapFunctions::COUNT;
+    }
+}
+
 PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache* cache)
     : _context(context),
       _parent(parent),
@@ -154,6 +170,13 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
+        for (U8 i = 0; i < to_base(ToneMapParams::MapFunctions::COUNT); ++i) {
+            fragModule._defines.emplace_back(
+                Util::StringFormat("%s %d",
+                                   TypeUtil::ToneMapFunctionsToString(static_cast<ToneMapParams::MapFunctions>(i)),
+                                   i),
+                true);
+        }
         fragModule._sourceFile = "toneMap.glsl";
 
         ShaderProgramDescriptor mapDescriptor1 = {};
@@ -328,6 +351,11 @@ F32 PreRenderBatch::adaptiveExposureValue() const {
     return 1.0f;
 }
 
+void PreRenderBatch::toneMapParams(const ToneMapParams params) noexcept {
+    _toneMapParams = params;
+    _toneMapParamsDirty = true;
+}
+
 void PreRenderBatch::update(const U64 deltaTimeUS) noexcept {
     _lastDeltaTimeUS = deltaTimeUS;
 }
@@ -404,8 +432,8 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     OperatorBatch& hdrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_HDR)];
     OperatorBatch& ldrBatch = _operators[to_base(FilterSpace::FILTER_SPACE_LDR)];
 
-    _toneMapParams.width = screenRT()._rt->getWidth();
-    _toneMapParams.height = screenRT()._rt->getHeight();
+    _toneMapParams._width = screenRT()._rt->getWidth();
+    _toneMapParams._height = screenRT()._rt->getHeight();
 
     const auto& screenDepthAtt = screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
 
@@ -413,16 +441,16 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     const Texture_ptr& screenDepth = screenDepthAtt.texture();
 
     if (adaptiveExposureControl()) {
-        const F32 logLumRange = _toneMapParams.maxLogLuminance - _toneMapParams.minLogLuminance;
+        const F32 logLumRange = _toneMapParams._maxLogLuminance - _toneMapParams._minLogLuminance;
         const F32 histogramParams[4] = {
-                _toneMapParams.minLogLuminance,
+                _toneMapParams._minLogLuminance,
                 1.0f / logLumRange,
-                to_F32(_toneMapParams.width),
-                to_F32(_toneMapParams.height),
+                to_F32(_toneMapParams._width),
+                to_F32(_toneMapParams._height),
         };
 
-        const U32 groupsX = to_U32(std::ceil(_toneMapParams.width / to_F32(GROUP_X_THREADS)));
-        const U32 groupsY = to_U32(std::ceil(_toneMapParams.height / to_F32(GROUP_Y_THREADS)));
+        const U32 groupsX = to_U32(std::ceil(_toneMapParams._width / to_F32(GROUP_X_THREADS)));
+        const U32 groupsY = to_U32(std::ceil(_toneMapParams._height / to_F32(GROUP_Y_THREADS)));
 
         ShaderBufferBinding shaderBuffer = {};
         shaderBuffer._binding = ShaderBufferLocation::LUMINANCE_HISTOGRAM;
@@ -465,13 +493,13 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         { // Averaging pass
             const F32 deltaTime = Time::MicrosecondsToSeconds<F32>(_lastDeltaTimeUS);
-            const F32 timeCoeff = CLAMPED_01(1.0f - std::exp(-deltaTime * _toneMapParams.tau));
+            const F32 timeCoeff = CLAMPED_01(1.0f - std::exp(-deltaTime * _toneMapParams._tau));
 
             const F32 avgParams[4] = {
-                _toneMapParams.minLogLuminance,
+                _toneMapParams._minLogLuminance,
                 logLumRange,
                 timeCoeff,
-                to_F32(_toneMapParams.width) * _toneMapParams.height,
+                to_F32(_toneMapParams._width) * _toneMapParams._height,
             };
 
             Image luminanceImage = {};
@@ -539,9 +567,15 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 
-        _toneMapConstants.set(_ID("exposure"), GFX::PushConstantType::FLOAT, adaptiveExposureControl() ? _toneMapParams.manualExposureAdaptive : _toneMapParams.manualExposure);
-        _toneMapConstants.set(_ID("whitePoint"), GFX::PushConstantType::FLOAT, _toneMapParams.manualWhitePoint);
-        EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
+        if (_toneMapParamsDirty) {
+            _toneMapParamsDirty = false;
+
+            _toneMapConstants.set(_ID("useAdaptiveExposure"), GFX::PushConstantType::BOOL, adaptiveExposureControl());
+            _toneMapConstants.set(_ID("manualExposure"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposure);
+            _toneMapConstants.set(_ID("mappingFunctions"), GFX::PushConstantType::INT, to_base(_toneMapParams._function));
+            EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
+            
+        }
 
         EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
         EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
@@ -549,7 +583,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         _screenRTs._swappedLDR = !_screenRTs._swappedLDR;
     }
 
-    // Now that we have an LDR target, proceed with edge detection
+    // Now that we have a gamma-corrected LDR target, proceed with edge detection
     if (edgeDetectionMethod() != EdgeDetectionMethod::COUNT) {
         const auto& screenAtt = getInput(false)._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
         const TextureData screenTex = screenAtt.texture()->data();

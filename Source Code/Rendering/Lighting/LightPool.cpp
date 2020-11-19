@@ -276,7 +276,7 @@ U32 LightPool::uploadLightList(const RenderStage stage, const LightList& lights,
 
             LightProperties& temp = crtData._lightProperties[ret - 1];
             light->getDiffuseColour(tempColour);
-            temp._diffuse.set(tempColour, isSpot ? std::cos(Angle::DegreesToRadians(spot->outerConeCutoffAngle())) : 0.f);
+            temp._diffuse.set(tempColour * light->intensity(), isSpot ? std::cos(Angle::DegreesToRadians(spot->outerConeCutoffAngle())) : 0.f);
             // Omni and spot lights have a position. Directional lights have this set to (0,0,0)
             temp._position.set( isDir  ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->positionCache(),  1.0f)).xyz, light->range());
             temp._direction.set(isOmni ? VECTOR3_ZERO : (viewMatrix * vec4<F32>(light->directionCache(), 0.0f)).xyz, isSpot ? std::cos(Angle::DegreesToRadians(spot->coneCutoffAngle())) : 0.f);
