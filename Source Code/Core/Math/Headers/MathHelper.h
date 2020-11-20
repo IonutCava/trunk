@@ -565,8 +565,14 @@ inline U32 PACK_VEC2(const F32 x, const F32 y) noexcept {
 [[nodiscard]] U32 PACK_HALF2x16(const vec2<F32>& value);
 void UNPACK_HALF2x16(U32 src, vec2<F32>& value);
 
+[[nodiscard]] U32 PACK_HALF2x16(F32 x, F32 y);
+void UNPACK_HALF2x16(U32 src, F32& x, F32& y);
+
 [[nodiscard]] U32 PACK_UNORM4x8(const vec4<U8>& value);
 void UNPACK_UNORM4x8(U32 src, vec4<U8>& value);
+
+[[nodiscard]] U32 PACK_UNORM4x8(U8 x, U8 y, U8 z, U8 w);
+void UNPACK_UNORM4x8(U32 src, U8& x, U8& y, U8& z, U8& w);
 
 inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) noexcept {
     UNPACK_FLOAT(src, x, y, z);

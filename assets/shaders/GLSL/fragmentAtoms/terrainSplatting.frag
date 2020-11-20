@@ -120,7 +120,7 @@ void computeTBN(in vec2 uv) {
     ///  Decoupling the tasks simplifies the whole."
     ///
     /// So ... yeah :/
-    const mat3 normalMatrix = mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
+    const mat3 normalMatrix = NormalMatrixW(dvd_Matrices[DATA_IDX]);
 
     const vec3 N = getVertNormal(uv);
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
@@ -170,7 +170,7 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, float currentDepthMapValue, in floa
     // depth of current layer
     float currentLayerDepth = 0.0;
     // the amount to shift the texture coordinates per layer (from vector P)
-    vec2 P = dvd_TBNViewDir.xy * dvd_parallaxFactor;
+    vec2 P = dvd_TBNViewDir.xy * dvd_parallaxFactor(DATA_IDX);
     vec2 deltaTexCoords = P / numLayers;
 
     // get initial values
@@ -200,11 +200,11 @@ vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
     vec2 scaledCoords = scaledTextureCoords(uv);
 
 #if !defined(LOW_QUALITY) && defined(HAS_PARALLAX)
-    if (dvd_LoD < 2 && dvd_bumpMethod != BUMP_NONE) {
+    if (dvd_LoD < 2 && BumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-        if (dvd_bumpMethod == BUMP_PARALLAX) {
+        if (BumpMethod == BUMP_PARALLAX) {
             return ParallaxOffset(scaledCoords, currentHeight);
-        } else if (dvd_bumpMethod == BUMP_PARALLAX_OCCLUSION) {
+        } else if (BumpMethod == BUMP_PARALLAX_OCCLUSION) {
             return ParallaxOcclusionMapping(uv, currentHeight, amnt);
         }
     }

@@ -61,7 +61,7 @@ namespace {
 
             AnimUtils::TransformMatrix(pNode->mTransformation, internalNode->_localTransform);
             internalNode->_originalLocalTransform = internalNode->_localTransform;
-            calculateBoneToWorldTransform(internalNode);
+            CalculateBoneToWorldTransform(internalNode);
 
             // continue for all child nodes and assign the created internal nodes as our
             // children recursively call this function on all children
@@ -223,7 +223,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
         }
 
         prevName = subMeshTemp.name();
-        subMeshTemp.boneCount(currentMesh->mNumBones);
+        subMeshTemp.boneCount(to_U8(currentMesh->mNumBones));
         loadSubMeshGeometry(currentMesh, subMeshTemp);
 
         loadSubMeshMaterial(subMeshTemp._material,
@@ -264,7 +264,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
 
             if (idxCount == 0) {
                 assert(lod > 0);
-                submeshBoneOffset += to_U8(data.boneCount());
+                submeshBoneOffset += data.boneCount();
                 data._partitionIDs[lod] = data._partitionIDs[lod - 1];
                 continue;
             }
@@ -332,7 +332,7 @@ void DVDConverter::buildGeometryBuffers(PlatformContext& context, Import::Import
                 data.maxPos(importBB.getMax());
             }
 
-            submeshBoneOffset += to_U8(data.boneCount());
+            submeshBoneOffset += data.boneCount();
             previousOffset += to_U32(vertices.size());
             data._partitionIDs[lod] = vb->partitionBuffer();
         } //submesh data

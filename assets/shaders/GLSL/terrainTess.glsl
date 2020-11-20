@@ -381,7 +381,7 @@ void computeNormalData(in vec2 uv) {
 #if !defined(USE_DEFERRED_NORMALS)
     _out._tbnViewDir = vec3(0.0f);
 #else //!USE_DEFERRED_NORMALS
-    const mat3 normalMatrix = mat3(dvd_Matrices[DATA_IDX]._normalMatrixW);
+    const mat3 normalMatrix = NormalMatrixW(dvd_Matrices[DATA_IDX]);
 
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);

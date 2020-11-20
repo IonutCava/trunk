@@ -149,7 +149,7 @@ private:
     U32 buildDrawCommands(const RenderPassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
     U32  buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const RenderPassParams& passParams, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut, GFXDevice::CollisionData& collisionDataOut) const;
+    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
 
 private: //TEMP
     friend class RenderBin;

@@ -23,18 +23,6 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent COMP_ONLY_R buffer dvd_Matri
     NodeData dvd_Matrices[MAX_VISIBLE_NODES];
 };
 
-struct CollisionInfo
-{
-    /// xyz - center, w - radius
-    vec4 _boundingSphere;
-    /// xyz - hExtents
-    vec4 _boundingBoxHExt;
-};
-
-layout(binding = COLLISION_INFO, std430) coherent COMP_ONLY_R buffer dvd_CollisionInfoBlock
-{
-    CollisionInfo dvd_CollisionInfo[MAX_VISIBLE_NODES];
-};
 
 layout(binding = BUFFER_GPU_COMMANDS, std430) coherent COMP_ONLY_RW buffer dvd_GPUCmds
 {
@@ -67,12 +55,18 @@ void main()
     }
 
     // Skip occlusion cull if the flag is negative
-    if (dvd_Matrices[nodeIndex]._colourMatrix[3].w < 0.0f) {
+    if (dvd_cullNode(dvd_Matrices[nodeIndex])) {
         return;
     }
 
-    const vec4 bSphere = dvd_CollisionInfo[nodeIndex]._boundingSphere;
-    const vec3 bBoxHExtents = dvd_CollisionInfo[nodeIndex]._boundingBoxHExt.xyz;
+
+    const vec3 boundsCenter = dvd_Matrices[nodeIndex]._normalMatrixW[3].xyz;
+    const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Matrices[nodeIndex]._normalMatrixW[1][3]));
+    const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Matrices[nodeIndex]._normalMatrixW[2][3]));
+
+    const vec4 bSphere  = vec4(boundsCenter, bboxHalfExtentsZRadius.y);
+    const vec3 bBoxHExtents = vec3(bboxHalfExtentsXY, bboxHalfExtentsZRadius.x);
+
     if (HiZCull(bSphere.xyz, bBoxHExtents, bSphere.w)) {
         CullItem(ident);
     }

@@ -94,7 +94,7 @@ namespace Divide {
 
             PROPERTY_RW(Str64, name);
             PROPERTY_RW(U32, index, 0u);
-            PROPERTY_RW(U32, boneCount, 0u);
+            PROPERTY_RW(U8, boneCount, 0u);
             PROPERTY_RW(vec3<F32>, minPos);
             PROPERTY_RW(vec3<F32>, maxPos);
 

@@ -57,7 +57,7 @@ namespace Divide {
 class ShaderProgramDescriptor;
 struct RenderPassParams;
 
-    enum class SceneNodeType : U16;
+enum class SceneNodeType : U16;
 enum class WindowEvent : U8;
 
 class GUI;
@@ -186,34 +186,28 @@ public:
 
     struct NodeData {
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
-        // [0][0] ... [2][2] = normal matrix
-        // [0][3] = bone count
-        // [1][3] = reflection index
-        // [2][3] = refraction index
-        // [3][0] ... [3][3] = bounding sphere
-        mat4<F32> _normalMatrixW = MAT4_IDENTITY;
-        // [0][0] ... [0][3] = base colour
-        // [1][0] ... [1][3] = metallic, roughness, unused, unused
-        // [2][0] ... [2][2] = emissive
-        // [2][3] = receives shadows;
-        // [3][0] = texture operation
-        // [3][1] = parallax factor
-        // [3][2] = lod level
-        // [3][3] = occlusion cull flag (if negative - no culling. use value for something else. if positive - cull)
-        mat4<F32> _colourMatrix = MAT4_ZERO;
-        // [0][0] ... [3][2] = previous world matrix
-        // [0][3] = texture operation
-        // [1][3] = bump method
-        // [2][3] = reserved
-        // [3][3] = reserved
-        mat4<F32> _prevWorldMatrix = MAT4_ZERO;
-    };
 
-    struct CollisionData {
-        /// xyz - center, w - radius
-        vec4<F32> _boundingSphere;
-        /// xyz - AABB hExtents, w - unused
-        vec4<F32> _boundingBoxHExt;
+        // [0...2][0...2] = normal matrix
+        // [0][3]         = 4x8U: bone count, lod level, tex op, bump method
+        // [1][3]         = 2x16F: BBox HalfExtent (X, Y) 
+        // [2][3]         = 2x16F: BBox HalfExtent (Z), BSphere Radius
+        // [3][0...2]     = bounds center
+        // [3][3]         = 2x16F: (Data Flag, reserved)
+        mat4<F32> _normalMatrixW = MAT4_IDENTITY;
+
+        // [0][0...3] = base colour
+        // [1][0...3] = 0: occlusion , 1: metallic, 2: roughness, 3: IBL texture size
+        // [2][0...2] = emissive
+        // [2][3]     = parallax factor
+        // [3][0...2] = reserved
+        mat4<F32> _colourMatrix = MAT4_ZERO;
+
+        // [0...3][0...2] = previous world matrix
+        // [0][3]         = 4x8U: animation ticked this frame (for motion blur), occlusion cull, reserved, reserved
+        // [1][3]         = reserved
+        // [2][3]         = reserved
+        // [3][3]         = reserved
+        mat4<F32> _prevWorldMatrix = MAT4_ZERO;
     };
 
     enum class MaterialDebugFlag : U8 {

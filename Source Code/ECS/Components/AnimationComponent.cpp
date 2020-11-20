@@ -186,8 +186,8 @@ I32 AnimationComponent::frameCount(const U32 animationID) const {
     return _animator != nullptr ? _animator->frameCount(animationID) : -1;
 }
 
-U32 AnimationComponent::boneCount() const {
-    return _animator != nullptr ? to_U32(_animator->boneCount()) : 0;
+U8 AnimationComponent::boneCount() const {
+    return _animator != nullptr ? _animator->boneCount() : to_U8(0);
 }
 
 bool AnimationComponent::frameTicked() const noexcept {

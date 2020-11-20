@@ -563,7 +563,8 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
         _treeParentNode->forEachChild([ID](SceneGraphNode* child, I32 /*childIdx*/) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
             // negative value to disable occlusion culling
-            rComp->cullFlag(-1.0f * ID);
+            rComp->dataFlag(to_F32(ID));
+            rComp->occlusionCull(false);
             return true;
         });
 
@@ -644,8 +645,8 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 
     if (!renderState().drawState()) {
         uploadVegetationData(sgn);
-        // positive value to keep occlusion culling happening
-        sgn->get<RenderingComponent>()->cullFlag(1.0f * _terrainChunk.ID());
+        // Keep occlusion culling happening
+        sgn->get<RenderingComponent>()->dataFlag(to_F32(_terrainChunk.ID()));
     }
 
     if (!s_buffersBound) {

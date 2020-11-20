@@ -7,26 +7,27 @@
 
 struct NodeData {
     mat4 _worldMatrix;
-    // [0][0] ... [2][2] = normal matrix
-    // [0][3] = bone count
-    // [1][3] = reflection index
-    // [2][3] = refraction index
-    // [3][0] ... [3][3] = unused
+
+    // [0...2][0...2] = normal matrix
+    // [3][0...2]     = bounds center
+    // [0][3]         = 4x8U: bone count, lod level, tex op, bump method
+    // [1][3]         = 2x16F: BBox HalfExtent (X, Y) 
+    // [2][3]         = 2x16F: BBox HalfExtent (Z), BSphere Radius
+    // [3][3]         = 2x16F: (Data Flag, reserved)
     mat4 _normalMatrixW;
-    // [0].rgba = base colour
-    // [1].a = occlusion, [1].g = metallic, [1].b = roughness, [1].a = IBL texture size
-    // [2].rgb = emissive
-    // [2].a = reserved
-    // [3].r = texture operation
-    // [3].g = parallax factor
-    // [3].b = lod level
-    // [3].a = occlusion cull flag (if negative - no culling. use value for something else. if positive - cull)
+
+    // [0][0...3] = base colour
+    // [1][0...3] = 0: occlusion , 1: metallic, 2: roughness, 3: IBL texture size
+    // [2][0...2] = emissive
+    // [2][3]     = parallax factor
+    // [3][0...2] = reserved
     mat4 _colourMatrix;
-    // [0][0] ... [3][2] = previous world matrix
-    // [0][3] = texture operation
-    // [1][3] = bump method
-    // [2][3] = animation ticked this frame (for motion blur)
-    // [3][3] = reserved
+
+    // [0...3][0...2] = previous world matrix
+    // [0][3]         = 4x8U: animation ticked this frame (for motion blur), occlusion cull, reserved, reserved
+    // [1][3]         = reserved
+    // [2][3]         = reserved
+    // [3][3]         = reserved
     mat4 _prevWorldMatrix;
 };
 
@@ -35,6 +36,24 @@ struct NodeData {
 #define Occlusion(X) X[1].a
 #define Metallic(X) X[1].g
 #define Roughness(X) X[1].b
-#define IBLSize(X) int(X[1].a)
+#define IBLSize(X) uint(X[1].a)
+
+#define NormalMatrixW(nodeData) mat3(nodeData._normalMatrixW)
+
+#define dvd_boneCount(nodeData) uint(unpackUnorm4x8(uint(nodeData._normalMatrixW[0][3])).x * 255)
+
+#define dvd_lodLevel(nodeData)  uint(unpackUnorm4x8(uint(nodeData._normalMatrixW[0][3])).y * 255)
+
+#define dvd_texOperation(nodeData) uint(unpackUnorm4x8(uint(nodeData._normalMatrixW[0][3])).z * 255)
+
+#define dvd_bumpMethod(nodeData)  uint(unpackUnorm4x8(uint(nodeData._normalMatrixW[0][3])).w * 255)
+
+#define dvd_frameTicked(nodeData) (uint(unpackUnorm4x8(uint(nodeData._prevWorldMatrix[0][3])).x  * 255) == 1)
+
+#define dvd_cullNode(nodeData) (uint(unpackUnorm4x8(uint(nodeData._prevWorldMatrix[0][3])).y * 255) == 1)
+
+#define dvd_parallaxFactor(X)  dvd_Matrices[X]._colourMatrix[2][3]
+
+#define dvd_dataFlag(X) unpackHalf2x16(uint(dvd_Matrices[X]._normalMatrixW[3][3])).x
 
 #endif //_NODE_DATA_DEFINITION_CMN_

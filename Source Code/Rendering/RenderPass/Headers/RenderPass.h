@@ -57,7 +57,6 @@ class RenderPass : NonCopyable {
    public:
        struct BufferData {
            ShaderBuffer* _nodeData = nullptr;
-           ShaderBuffer* _colData = nullptr;
            ShaderBuffer* _cullCounter = nullptr;
            ShaderBuffer* _cmdBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
@@ -98,11 +97,10 @@ class RenderPass : NonCopyable {
     RenderStage _stageFlag = RenderStage::COUNT;
 
     ShaderBuffer* _nodeData = nullptr;
-    ShaderBuffer* _colData = nullptr;
-	ShaderBuffer* _cullCounter = nullptr;
+    ShaderBuffer* _cullCounter = nullptr;
     ShaderBuffer* _cmdBuffer = nullptr;
 
-	const bool _performanceCounters;
+    const bool _performanceCounters;
 };
 
 }  // namespace Divide

@@ -49,7 +49,7 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
 
 vec3 _private_reflect = vec3(0.f);
 
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize) {
     // This will actually return the fresnel'ed mixed between reflection and refraction as that's more useful for debugging
     if (dvd_materialDebugFlag == DEBUG_REFLECTIONS) {
         return _private_reflect;

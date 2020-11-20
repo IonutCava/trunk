@@ -164,7 +164,7 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
 #define TEX_REPLACE  8
 
 #if defined(SKIP_TEX0)
-    if (dvd_texOperation != TEX_NONE) {
+    if (TexOperation != TEX_NONE) {
         return texture(texDiffuse1, uv);
     }
         
@@ -172,7 +172,7 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
 #else
     vec4 colour = texture(texDiffuse0, uv);
     // Read from the second texture (if any)
-    switch (dvd_texOperation) {
+    switch (TexOperation) {
         default:
             //hot pink to easily spot it in a crowd
             colour = vec4(0.7743, 0.3188, 0.5465, 1.0);
@@ -233,7 +233,7 @@ vec3 getNormalWV(in vec2 uv) {
     vec3 normalWV = VAR._normalWV;
 
 #   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
-        if (dvd_bumpMethod != BUMP_NONE) {
+        if (BumpMethod != BUMP_NONE) {
             normalWV = getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f);
         }
 #   endif //COMPUTE_TBN

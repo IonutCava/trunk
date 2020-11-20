@@ -36,7 +36,6 @@ namespace Divide {
             DrawCommandContainer _drawCommands;
 
             std::array<GFXDevice::NodeData, Config::MAX_VISIBLE_NODES> _nodeData;
-            std::array<GFXDevice::CollisionData, Config::MAX_VISIBLE_NODES> _collisionData;
         };
 
         std::array<PerPassData, to_base(RenderStage::COUNT)> g_passData;
@@ -353,9 +352,10 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
                                            const bool playAnimations,
                                            const D64 interpolationFactor,
                                            const bool needsInterp,
-                                           GFXDevice::NodeData& dataOut,
-                                           GFXDevice::CollisionData& collisionDataOut) const {
+                                           GFXDevice::NodeData& dataOut) const {
     OPTICK_EVENT();
+
+    constexpr F32 reserved = 0.0f;
 
     const SceneGraphNode* node = rComp.getSGN();
     const TransformComponent* const transform = node->get<TransformComponent>();
@@ -379,42 +379,46 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
     bool frameTicked = false;
+    U8 boneCount = 0u;
     if (playAnimations) {
         AnimationComponent* animComp = node->get<AnimationComponent>();
         if (animComp && animComp->playAnimations()) {
-            dataOut._normalMatrixW.element(0, 3) = to_F32(animComp->boneCount());
+            boneCount = animComp->boneCount();
             frameTicked = animComp->frameTicked();
         }
     }
 
-    // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
-    const BoundsComponent* const bounds = node->get<BoundsComponent>();
-    collisionDataOut._boundingSphere = bounds->getBoundingSphere().asVec4();
-    collisionDataOut._boundingBoxHExt = bounds->getBoundingBox().getHalfExtent();
-
-    // Get the colour matrix (base colour, metallic, etc)
-    rComp.getMaterialColourMatrix(dataOut._colourMatrix);
-
     RenderingComponent::NodeRenderingProperties properties = {};
     rComp.getRenderingProperties(stagePass, properties);
 
-    dataOut._normalMatrixW.element(1, 3) = to_F32(properties._reflectionIndex);
-    dataOut._normalMatrixW.element(2, 3) = to_F32(properties._refractionIndex);
-    dataOut._colourMatrix.element(3, 2) = to_F32(properties._lod);
-    //set properties.w to negative value to skip occlusion culling for the node
-    dataOut._colourMatrix.element(3, 3) = properties._cullFlagValue;
+
+    // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
+    const BoundsComponent* const bounds = node->get<BoundsComponent>();
+    const vec4<F32> bSphere = bounds->getBoundingSphere().asVec4();
+    const vec3<F32> bBoxHalfExtents = bounds->getBoundingBox().getHalfExtent();
+
+    dataOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, 0.f});
+
+    dataOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, to_U8(properties._texOperation), to_U8(properties._bumpMethod)));
+    dataOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
+    dataOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
+    dataOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved ));
+
+    // Get the colour matrix (base colour, metallic, etc)
+    rComp.getMaterialColourMatrix(dataOut._colourMatrix);
+    dataOut._colourMatrix.element(3, 2) = reserved;
 
     // Temp: Make the hovered node brighter by setting emissive to something bright
     if (stagePass._stage == RenderStage::DISPLAY && properties._isHovered) {
         FColour4 matColour = dataOut._colourMatrix.getRow(2);
-        matColour.rgb = {0.f, 0.25f, 0.f};
+        matColour.g += 0.25f;
         dataOut._colourMatrix.setRow(2, matColour);
     }
 
-    dataOut._prevWorldMatrix.element(0, 3) = to_F32(properties._texOperation);
-    dataOut._prevWorldMatrix.element(1, 3) = to_F32(properties._bumpMethod);
-    dataOut._prevWorldMatrix.element(2, 3) = frameTicked ? 1.0f : 0.0f;
-    dataOut._prevWorldMatrix.element(3, 3) = 1.0f;
+    dataOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1 : 0, properties._occlusionCull ? 1 : 0, 0, 0));
+    dataOut._prevWorldMatrix.element(1, 3) = reserved;
+    dataOut._prevWorldMatrix.element(2, 3) = reserved;
+    dataOut._prevWorldMatrix.element(3, 3) = reserved;
 }
 
 U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
@@ -474,8 +478,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
                     GFXDevice::NodeData& data = passData._nodeData[bufferParams._dataIndex];
-                    GFXDevice::CollisionData& colData = passData._collisionData[bufferParams._dataIndex];
-                    processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data, colData);
+                    processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data);
                     ++bufferParams._dataIndex;
                     ++nodeCount;
                 }
@@ -491,11 +494,6 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 bufferData._elementOffset,
                 *bufferData._lastNodeCount,
                 passData._nodeData.data());
-
-            bufferData._colData->writeData(
-                bufferData._elementOffset,
-                *bufferData._lastNodeCount,
-                passData._collisionData.data());
 
             bufferData._cmdBuffer->writeData(
                 bufferData._elementOffset,
@@ -513,16 +511,10 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         dataBuffer._buffer = bufferData._nodeData;
         dataBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
 
-        ShaderBufferBinding colBuffer = {};
-        colBuffer._binding = ShaderBufferLocation::COLLISION_INFO;
-        colBuffer._buffer = bufferData._colData;
-        colBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
-
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
         descriptorSetCmd._set.addShaderBuffer(dataBuffer);
-        descriptorSetCmd._set.addShaderBuffer(colBuffer);
         EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {

@@ -27,7 +27,7 @@ vec3 EnvBRDFApprox(vec3 SpecularColor, float Roughness, float NoV) {
     return SpecularColor * AB.x + AB.y;
 }
 
-vec4 FixCubeLookup(in vec3 v, in int textureSize) {
+vec4 FixCubeLookup(in vec3 v, in uint textureSize) {
     float M = max(max(abs(v.x), abs(v.y)), abs(v.z));
     float scale = (textureSize - 1) / textureSize;
 
@@ -44,7 +44,7 @@ vec4 FixCubeLookup(in vec3 v, in int textureSize) {
 ///     toCamera: normalized direction from surface point to camera
 ///     roughness: surface roughness
 ///     ambientOcclusion: ambient occlusion
-vec3 ImageBasedLighting(vec3 reflectVec, vec3 wsNormal, vec3 toCamera, float roughness, in int textureSize) {
+vec3 ImageBasedLighting(vec3 reflectVec, vec3 wsNormal, vec3 toCamera, float roughness, in uint textureSize) {
 #if defined(USE_PLANAR_REFLECTION)
     return vec3(0.0f);
 #else

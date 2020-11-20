@@ -68,7 +68,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
 
     [[nodiscard]] I32 frameCount(U32 animationID) const;
 
-    [[nodiscard]] U32 boneCount() const;
+    [[nodiscard]] U8 boneCount() const;
     [[nodiscard]] bool frameTicked() const noexcept;
 
     [[nodiscard]] Bone* getBoneByName(const stringImpl& bname) const;

@@ -232,13 +232,35 @@ void UNPACK_HALF2x16(const U32 src, vec2<F32>& value) {
     value.set(ret.x, ret.y);
 }
 
+U32 PACK_HALF2x16(const F32 x, const F32 y) {
+    return to_U32(glm::packHalf2x16(glm::mediump_vec2(x, y)));
+}
+
+void UNPACK_HALF2x16(const U32 src, F32& x, F32& y) {
+    const glm::vec2 ret = glm::unpackHalf2x16(src);
+    x = ret.x;
+    y = ret.y;
+}
+
 U32 PACK_UNORM4x8(const vec4<U8>& value) {
     return to_U32(glm::packUnorm4x8(glm::mediump_vec4(value.x, value.y, value.z, value.w)));
 }
 
 void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value) {
     const glm::vec4 ret = glm::unpackUnorm4x8(src);
-    value.set(ret.x, ret.y, ret.z, ret.w);
+    value.set(ret.x * 255, ret.y * 255, ret.z * 255, ret.w * 255);
+}
+
+U32 PACK_UNORM4x8(const U8 x, const U8 y, const U8 z, const U8 w) {
+    return to_U32(glm::packUnorm4x8(glm::mediump_vec4(x, y, z, w)));
+}
+
+void UNPACK_UNORM4x8(const U32 src, U8& x, U8& y, U8& z, U8& w) {
+    const glm::vec4 ret = glm::unpackUnorm4x8(src);
+    x = to_U8(ret.x * 255);
+    y = to_U8(ret.y * 255);
+    z = to_U8(ret.z * 255);
+    w = to_U8(ret.w * 255);
 }
 
 U32 PACK_11_11_10(const vec3<F32>& value) noexcept {

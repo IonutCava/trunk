@@ -23,7 +23,7 @@ void computeLightVectors(in NodeData data) {
     computeViewDirection(toCamera);
 #endif
 
-const mat3 normalMatrixW = mat3(data._normalMatrixW);
+const mat3 normalMatrixW = NormalMatrixW(data);
 const vec3 N = normalize(normalMatrixW * dvd_Normal);
 VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
 

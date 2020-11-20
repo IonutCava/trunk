@@ -56,7 +56,15 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     _showAxis       = renderOptionEnabled(RenderOptions::RENDER_AXIS);
     _receiveShadows = renderOptionEnabled(RenderOptions::RECEIVE_SHADOWS);
     _castsShadows   = renderOptionEnabled(RenderOptions::CAST_SHADOWS);
-
+    {
+        EditorComponentField occlusionCullField = {};
+        occlusionCullField._name = "HiZ Occlusion Cull";
+        occlusionCullField._data = &_occlusionCull;
+        occlusionCullField._type = EditorComponentFieldType::PUSH_TYPE;
+        occlusionCullField._basicType = GFX::PushConstantType::BOOL;
+        occlusionCullField._readOnly = false;
+        _editorComponent.registerField(MOV(occlusionCullField));
+    }
     {
         EditorComponentField vaxisField = {};
         vaxisField._name = "Show Axis";
@@ -103,7 +111,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
         // Do not cull the sky
         if (static_cast<const Object3D&>(node).type() == SceneNodeType::TYPE_SKY) {
-            cullFlag(-1.0f);
+            occlusionCull(false);
         }
         // Prepare it for rendering lines
         if (static_cast<const Object3D&>(node).getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
@@ -409,7 +417,8 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
     propertiesOut._isHovered = _parentSGN->hasFlag(SceneGraphNode::Flags::HOVERED);
     propertiesOut._isSelected = _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
-    propertiesOut._cullFlagValue = cullFlag();
+    propertiesOut._nodeFlagValue = dataFlag();
+    propertiesOut._occlusionCull = occlusionCull();
 
     {
         SharedLock<SharedMutex> r_lock(_reflectionLock);

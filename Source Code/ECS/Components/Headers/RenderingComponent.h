@@ -139,10 +139,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
        struct NodeRenderingProperties {
            U32 _reflectionIndex = 0u;
            U32 _refractionIndex = 0u;
-           F32 _cullFlagValue = 1.0f;
+           F32 _nodeFlagValue = 1.0f;
            U8 _lod = 0u;
            TextureOperation _texOperation = TextureOperation::REPLACE;
            BumpMethod _bumpMethod = BumpMethod::NONE;
+           bool _occlusionCull = true;
            bool _isHovered = false;
            bool _isSelected = false;
        };
@@ -237,8 +238,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     PROPERTY_R(bool, showAxis, false);
     PROPERTY_R(bool, receiveShadows, false);
     PROPERTY_R(bool, castsShadows, false);
-    // If the new value is negative, this disables occlusion culling!
-    PROPERTY_RW(F32, cullFlag, 1.0f);
+    PROPERTY_RW(bool, occlusionCull, true);
+    PROPERTY_RW(F32, dataFlag, 1.0f);
 
    protected:
 

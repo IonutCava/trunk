@@ -11,7 +11,7 @@ namespace Divide {
 
 /// ------------------------------------------------------------------------------------------------
 /// Calculates the global transformation matrix for the given internal node
-void calculateBoneToWorldTransform(Bone* pInternalNode) {
+void CalculateBoneToWorldTransform(Bone* pInternalNode) {
     pInternalNode->_globalTransform = pInternalNode->_localTransform;
     Bone* parent = pInternalNode->_parent;
     // This will climb the nodes up along through the parents concatenating all
@@ -99,11 +99,14 @@ bool SceneAnimator::init(PlatformContext& context) {
 /// This will build the skeleton based on the scene passed to it and CLEAR EVERYTHING
 bool SceneAnimator::init(PlatformContext& context, Bone* const skeleton, const vectorEASTL<Bone*>& bones) {
     release(false);
+
+    DIVIDE_ASSERT(_bones.size() < std::numeric_limits<U8>::max(), "SceneAnimator::init error: Too many bones for current node!");
+
     _skeleton = skeleton;
     _bones = bones;
-    _skeletonDepthCache = to_I32(_bones.size());
+    _skeletonDepthCache = to_I16(bones.size());
+
     return init(context);
-   
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -121,7 +124,7 @@ void SceneAnimator::calculate(const I32 animationIndex, const D64 pTime) {
 /// ------------------------------------------------------------------------------------------------
 /// Recursively updates the internal node transformations from the given matrix array
 void SceneAnimator::updateTransforms(Bone* pNode) {
-    calculateBoneToWorldTransform(pNode);  // update global transform as well
+    CalculateBoneToWorldTransform(pNode);  // update global transform as well
     /// continue for all children
     for (Bone* bone : pNode->_children) {
         updateTransforms(bone);

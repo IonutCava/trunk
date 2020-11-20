@@ -53,7 +53,7 @@ namespace Attorney {
 };
 
 /// Calculates the global transformation matrix for the given internal node
-void calculateBoneToWorldTransform(Bone* pInternalNode);
+void CalculateBoneToWorldTransform(Bone* pInternalNode);
 class ByteBuffer;
 class MeshImporter;
 class PlatformContext;
@@ -195,8 +195,8 @@ class SceneAnimator {
         return _maximumAnimationFrames;
     }
 
-    size_t boneCount() const noexcept {
-        return _skeletonDepthCache;
+    U8 boneCount() const noexcept {
+        return _skeletonDepthCache > -1 ? to_U8(_skeletonDepthCache) : to_U8(0);
     }
 
    private:
@@ -216,7 +216,7 @@ class SceneAnimator {
     U32 _maximumAnimationFrames;
     /// Root node of the internal scene structure
     Bone* _skeleton;
-    I32   _skeletonDepthCache;
+    I16   _skeletonDepthCache;
     vectorEASTL<Bone*> _bones;
     /// A vector that holds each animation
     vectorEASTL<AnimEvaluator_ptr> _animations;

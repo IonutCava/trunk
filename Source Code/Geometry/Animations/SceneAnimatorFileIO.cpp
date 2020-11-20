@@ -165,7 +165,7 @@ void SceneAnimator::load(PlatformContext& context, ByteBuffer& dataIn) {
         dataIn >> boneName;
         _bones[i] = _skeleton->find(boneName);
     }
-    _skeletonDepthCache = nsize;
+    _skeletonDepthCache = to_I16(nsize);
     // the number of animations
     dataIn >> nsize;
     _animations.resize(nsize);
@@ -214,7 +214,7 @@ Bone* SceneAnimator::loadSkeleton(ByteBuffer& dataIn, Bone* parent) {
  
     // a copy saved
     internalNode->_localTransform = internalNode->_originalLocalTransform;
-    calculateBoneToWorldTransform(internalNode);
+    CalculateBoneToWorldTransform(internalNode);
     // the number of children
     U32 nsize = 0;
     dataIn >> nsize;

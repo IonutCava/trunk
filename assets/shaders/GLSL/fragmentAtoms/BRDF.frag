@@ -24,7 +24,7 @@ float GetNdotL(in vec3 N, in vec3 L) {
     return ndl;
 }
 
-vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in int lodLevel)
+vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in uint lodLevel)
 {
     vec3 ret = vec3(0.0);
     float specularFactor = 0.0f;
@@ -142,7 +142,7 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in int 
     return ret;
 }
 
-float getShadowFactor(in vec3 normalWV, in int lodLevel) {
+float getShadowFactor(in vec3 normalWV, in uint lodLevel) {
     float ret = 1.0f;
     const uint dirLightCount = dvd_LightData.x;
 
@@ -220,9 +220,9 @@ vec3 lightClusterColours(const bool debugDepthClusters) {
 }
 
 #ifdef CUSTOM_IBL
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize);
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize);
 #else
-vec3 CubeLookup(in vec3 normalWV, in float roughness, in int textureSize) {
+vec3 CubeLookup(in vec3 normalWV, in float roughness, in uint textureSize) {
     const vec3 normal = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
     const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
     const vec3 reflection = normalize(reflect(toCamera, normal));
@@ -230,7 +230,7 @@ vec3 CubeLookup(in vec3 normalWV, in float roughness, in int textureSize) {
     return ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize);
 }
 
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in int textureSize) {
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize) {
 #if defined(USE_PLANAR_REFLECTION) || defined(NO_IBL)
     return colour; 
 #else
@@ -239,7 +239,7 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 }
 #endif
 
-vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv, in int lodLevel) {
+vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec2 uv, in uint lodLevel) {
     const vec3 OMR = getOcclusionMetallicRoughness(colourMatrix, uv);
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:               return albedo;
@@ -271,7 +271,7 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
 
 vec4 getPixelColour(in vec4 albedo, in NodeData data, in vec3 normalWV, in vec2 uv) {
     const mat4 colourMatrix = data._colourMatrix;
-    const int lodLevel = dvd_lodLevel(data);
+    const uint lodLevel = dvd_lodLevel(data);
 
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv, lodLevel), albedo.a);
 #if !defined(DISABLE_SHADOW_MAPPING)

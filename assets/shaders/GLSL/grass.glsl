@@ -57,7 +57,7 @@ void main() {
         VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
     }
 
-    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * mat3(nodeData._normalMatrixW);
+    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * NormalMatrixW(nodeData);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;

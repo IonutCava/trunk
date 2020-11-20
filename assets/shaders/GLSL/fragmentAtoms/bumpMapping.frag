@@ -102,7 +102,7 @@ vec3 normalUnityBlend(in vec3 n1, in vec3 n2) {
 //ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
 // Returned parallaxed texCoords
 vec2 ParallaxOffset(vec2 uv, vec3 viewDirTBN, float height) {
-    const vec2 p = viewDirTBN.xy / viewDirTBN.z * (height * dvd_parallaxFactor);
+    const vec2 p = viewDirTBN.xy / viewDirTBN.z * (height * dvd_parallaxFactor(DATA_IDX));
     return uv - p;
 }
 #endif //_BUMP_MAPPING_FRAG_
