@@ -179,12 +179,20 @@ constexpr void ClearBit(std::atomic<Mask>& bitMask, Mask bit) noexcept;
 template<typename Mask>
 constexpr void ToggleBit(std::atomic<Mask>& bitMask, Mask bit) noexcept;
 
+template <typename T> 
+constexpr I32 SIGN(const T val) {
+    return (val < T(0)) ? -1 : (val > T(0)) ? 1 : 0;
+}
+
 /// Clamps value n between min and max
 template <typename T, typename U = T>
-void CLAMP(T& n, U min, U max) noexcept;
+constexpr void CLAMP(T& n, U min, U max) noexcept;
+
+template <typename T>
+constexpr void CLAMP_01(T& n) noexcept;
 
 template <typename T, typename U>
-[[nodiscard]] T CLAMPED(const T& n, U min, U max) noexcept;
+[[nodiscard]] constexpr T CLAMPED(const T& n, U min, U max) noexcept;
 
 template <typename T>
 [[nodiscard]] T CLAMPED_01(const T& n) noexcept;
@@ -243,7 +251,7 @@ template<typename T>
 [[nodiscard]] constexpr U32 nextPOW2(U32 n) noexcept;
 [[nodiscard]] constexpr U32 prevPOW2(U32 n) noexcept;
 
-// Calculate the smalles NxN matrix that can hold the specified
+// Calculate the smallest NxN matrix that can hold the specified
 // number of elements. Returns N
 [[nodiscard]] constexpr U32 minSquareMatrixSize(U32 elementCount) noexcept;
 
@@ -256,23 +264,24 @@ template <typename T>
 template <typename T, typename U>
 [[nodiscard]] T Sqrt(U input) noexcept;
 
-///Helper methods to go from a float to packed char and back
-[[nodiscard]] constexpr U8 FLOAT_TO_CHAR(F32 value) noexcept;
-[[nodiscard]] constexpr U8 FLOAT_TO_CHAR_SNORM(F32 value) noexcept;
-[[nodiscard]] constexpr F32 CHAR_TO_FLOAT(U8 value) noexcept;
-[[nodiscard]] constexpr F32 CHAR_TO_FLOAT_SNORM(U8 value) noexcept;
+constexpr bool ACCURATE_FLOAT_TO_CHAR_CONVERSION = true;
+
+///Helper methods to go from an snorm float (-1...1) to packed unorm char (value => (value + 1) * 0.5 => U8)
+[[nodiscard]] constexpr U8 PACKED_FLOAT_TO_CHAR_UNORM(F32_SNORM value) noexcept;
+[[nodiscard]] constexpr F32_SNORM UNORM_CHAR_TO_PACKED_FLOAT(U8 value) noexcept;
+
+/// Returns clamped value * 128
+[[nodiscard]] constexpr I8 FLOAT_TO_CHAR_SNORM(F32_SNORM value) noexcept;
+// Returns clamped value / 128.f
+[[nodiscard]] constexpr F32_SNORM SNORM_CHAR_TO_FLOAT(I8 value) noexcept;
+
+/// Returns value / 255.f
+[[nodiscard]] constexpr F32_NORM UNORM_CHAR_TO_FLOAT(U8 value) noexcept;
+/// Returns round(value * 255)
+[[nodiscard]] constexpr U8 FLOAT_TO_CHAR_UNORM(F32_NORM value) noexcept;
 
 /// Helper method to emulate GLSL
 [[nodiscard]] F32 FRACT(F32 floatValue) noexcept;
-
-// Pack 3 values into 1 float
-[[nodiscard]] F32 PACK_FLOAT(U8 x, U8 y, U8 z) noexcept;
-
-// UnPack 3 values from 1 float
-void UNPACK_FLOAT(F32 src, F32& r, F32& g, F32& b) noexcept;
-
-[[nodiscard]] U32 PACK_11_11_10(F32 x, F32 y, F32 z) noexcept;
-void UNPACK_11_11_10(U32 src, F32& x, F32& y, F32& z) noexcept;
 
 // bit manipulation
 template<typename T1, typename T2>
@@ -536,58 +545,42 @@ void ToFloatColour(const UColour3& byteColour, FColour3& colourOut) noexcept;
 void ToFloatColour(const vec4<U32>& uintColour, FColour4& colourOut) noexcept;
 void ToFloatColour(const vec3<U32>& uintColour, FColour3& colourOut) noexcept;
 
+//ref: https://community.khronos.org/t/glsl-packing-a-normal-in-a-single-float/52039/3
+// Pack 3 values into 1 float
+[[nodiscard]] F32 PACK_VEC3(F32_SNORM x, F32_SNORM y, F32_SNORM z) noexcept;
+[[nodiscard]] F32 PACK_VEC3(U8 x, U8 y, U8 z) noexcept;
 
-[[nodiscard]] 
-inline F32 PACK_VEC3_SNORM(const F32 x, const F32 y, const F32 z) noexcept {
-    return PACK_FLOAT(FLOAT_TO_CHAR_SNORM(x),
-                      FLOAT_TO_CHAR_SNORM(y),
-                      FLOAT_TO_CHAR_SNORM(z));
-}
-
-[[nodiscard]]
-inline F32 PACK_VEC3(const F32 x, const F32 y, const F32 z) noexcept {
-    return PACK_FLOAT(FLOAT_TO_CHAR(x),
-                      FLOAT_TO_CHAR(y),
-                      FLOAT_TO_CHAR(z));
-}
-
-[[nodiscard]]
-inline U32 PACK_VEC2(const F32 x, const F32 y) noexcept {
-    const U32 xScaled = to_U32(x * 0xFFFF);
-    const U32 yScaled = to_U32(y * 0xFFFF);
-    return (xScaled << 16) | (yScaled & 0xFFFF);
-}
-
-[[nodiscard]] F32 PACK_VEC3(const vec3<F32>& value) noexcept;
-
-[[nodiscard]] U32 PACK_VEC2(const vec2<F32>& value) noexcept;
+[[nodiscard]] F32 PACK_VEC3(const vec3<F32_SNORM>& value) noexcept;
 
 [[nodiscard]] U32 PACK_HALF2x16(const vec2<F32>& value);
 void UNPACK_HALF2x16(U32 src, vec2<F32>& value);
+[[nodiscard]] vec2<F32> UNPACK_HALF2x16(U32 src) noexcept;
 
 [[nodiscard]] U32 PACK_HALF2x16(F32 x, F32 y);
 void UNPACK_HALF2x16(U32 src, F32& x, F32& y);
 
+[[nodiscard]] U32 PACK_UNORM4x8(const vec4<F32_NORM>& value);
 [[nodiscard]] U32 PACK_UNORM4x8(const vec4<U8>& value);
-void UNPACK_UNORM4x8(U32 src, vec4<U8>& value);
+void UNPACK_UNORM4x8(U32 src, vec4<F32_NORM>& value);
 
+[[nodiscard]] U32 PACK_UNORM4x8(F32_NORM x, F32_NORM y, F32_NORM z, F32_NORM w);
 [[nodiscard]] U32 PACK_UNORM4x8(U8 x, U8 y, U8 z, U8 w);
+void UNPACK_UNORM4x8(U32 src, F32_NORM& x, F32_NORM& y, F32_NORM& z, F32_NORM& w);
 void UNPACK_UNORM4x8(U32 src, U8& x, U8& y, U8& z, U8& w);
+[[nodiscard]] vec4<U8> UNPACK_UNORM4x8_U8(U32 src) noexcept;
+[[nodiscard]] vec4<F32_NORM> UNPACK_UNORM4x8_F32(U32 src) noexcept;
 
-inline void UNPACK_VEC3(const F32 src, F32& x, F32& y, F32& z) noexcept {
-    UNPACK_FLOAT(src, x, y, z);
-}
+// UnPack 3 values from 1 float
+void UNPACK_VEC3(F32 src, F32_SNORM& x, F32_SNORM& y, F32_SNORM& z) noexcept;
+void UNPACK_VEC3(F32 src, vec3<F32_SNORM>& res) noexcept;
+[[nodiscard]] vec3<F32_SNORM> UNPACK_VEC3(F32 src) noexcept;
 
-void UNPACK_VEC3(F32 src, vec3<F32>& res) noexcept;
+[[nodiscard]] U32 PACK_11_11_10(const vec3<F32_NORM>& value) noexcept;
+void UNPACK_11_11_10(U32 src, vec3<F32_NORM>& res) noexcept;
+[[nodiscard]] vec3<F32_NORM> UNPACK_11_11_10(U32 src) noexcept;
 
-[[nodiscard]] vec3<F32> UNPACK_VEC3(F32 src) noexcept;
-
-void UNPACK_VEC2(U32 src, F32& x, F32& y) noexcept;
-void UNPACK_VEC2(U32 src, vec2<F32>& res) noexcept;
-
-[[nodiscard]] U32 PACK_11_11_10(const vec3<F32>& value) noexcept;
-
-void UNPACK_11_11_10(U32 src, vec3<F32>& res) noexcept;
+[[nodiscard]] U32 PACK_11_11_10(F32_NORM x, F32_NORM y, F32_NORM z) noexcept;
+void UNPACK_11_11_10(U32 src, F32_NORM& x, F32_NORM& y, F32_NORM& z) noexcept;
 
 }  // namespace Util
 }  // namespace Divide

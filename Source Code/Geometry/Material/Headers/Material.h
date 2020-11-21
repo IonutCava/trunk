@@ -219,6 +219,7 @@ class Material final : public CachedResource {
     PROPERTY_R(FColour3, emissive, DefaultColours::BLACK);
     PROPERTY_R(F32, metallic, 0.0f);
     PROPERTY_R(F32, roughness, 0.5f);
+    PROPERTY_R(F32, occlusion, 1.0f);
     /// parallax/relief factor (higher value > more pronounced effect)
     PROPERTY_R(F32, parallaxFactor, 1.0f);
     PROPERTY_R(ShadingMode, shadingMode, ShadingMode::COUNT);

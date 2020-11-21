@@ -69,13 +69,9 @@ void main(){
 
 uniform mat4 dvd_WorldMatrixOverride;
 
-vec3 UNPACK_FLOAT(in float value) {
-    return (fract(vec3(1.0, 256.0, 65536.0) * value)* 2.0) - 1.0;
-}
-
 void main(void) {
     vec4 dvd_Vertex = vec4(inVertexData, 1.0);
-    vec3 dvd_Normal = UNPACK_FLOAT(inNormalData);
+    vec3 dvd_Normal = UNPACK_VEC3(inNormalData);
     VAR._vertexW = dvd_WorldMatrixOverride * dvd_Vertex;
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;

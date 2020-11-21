@@ -64,10 +64,9 @@ void main()
     const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Matrices[nodeIndex]._normalMatrixW[1][3]));
     const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Matrices[nodeIndex]._normalMatrixW[2][3]));
 
-    const vec4 bSphere  = vec4(boundsCenter, bboxHalfExtentsZRadius.y);
     const vec3 bBoxHExtents = vec3(bboxHalfExtentsXY, bboxHalfExtentsZRadius.x);
 
-    if (HiZCull(bSphere.xyz, bBoxHExtents, bSphere.w)) {
+    if (HiZCull(boundsCenter, bBoxHExtents, bboxHalfExtentsZRadius.y)) {
         CullItem(ident);
     }
 }

@@ -43,4 +43,6 @@
 
 #define MSToSeconds(ms) (ms * 0.001f)
 
+#define UNPACK_VEC3(VAL) (2.0f * fract(vec3(1.0, 256.0, 65536.0) * VAL) - 1.0f)
+
 #endif //_UTILITY_CMN_

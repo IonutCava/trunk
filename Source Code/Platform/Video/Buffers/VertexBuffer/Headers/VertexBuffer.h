@@ -145,12 +145,12 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
         return _data[index]._weights;
     }
 
-    [[nodiscard]] FColour4 getBoneWeights(const U32 index) const noexcept {
+    [[nodiscard]] vec4<F32> getBoneWeights(const U32 index) const noexcept {
         const P32& weight = _data[index]._weights;
-        return FColour4(CHAR_TO_FLOAT_SNORM(weight.b[0]),
-                        CHAR_TO_FLOAT_SNORM(weight.b[1]),
-                        CHAR_TO_FLOAT_SNORM(weight.b[2]),
-                        CHAR_TO_FLOAT_SNORM(weight.b[3]));
+        return vec4<F32>(UNORM_CHAR_TO_FLOAT(weight.b[0]),
+                         UNORM_CHAR_TO_FLOAT(weight.b[1]),
+                         UNORM_CHAR_TO_FLOAT(weight.b[2]),
+                         UNORM_CHAR_TO_FLOAT(weight.b[3]));
     }
 
     virtual bool queueRefresh() = 0;
@@ -300,10 +300,10 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     void modifyBoneWeights(const U32 index, const FColour4& weights) {
         P32 boneWeights;
-        boneWeights.b[0] = FLOAT_TO_CHAR_SNORM(weights.x);
-        boneWeights.b[1] = FLOAT_TO_CHAR_SNORM(weights.y);
-        boneWeights.b[2] = FLOAT_TO_CHAR_SNORM(weights.z);
-        boneWeights.b[3] = FLOAT_TO_CHAR_SNORM(weights.w);
+        boneWeights.b[0] = FLOAT_TO_CHAR_UNORM(weights.x);
+        boneWeights.b[1] = FLOAT_TO_CHAR_UNORM(weights.y);
+        boneWeights.b[2] = FLOAT_TO_CHAR_UNORM(weights.z);
+        boneWeights.b[3] = FLOAT_TO_CHAR_UNORM(weights.w);
         modifyBoneWeights(index, boneWeights);
     }
 

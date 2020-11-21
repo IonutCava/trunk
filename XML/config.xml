@@ -87,8 +87,8 @@
 		<!-- If false, only moving objects get blurred. If true, camera movement also blurs objects-->
 		<enableCameraBlur>true</enableCameraBlur>
 		<enableBloom>true</enableBloom>
-		<bloomFactor>0.8</bloomFactor>
-		<bloomThreshold>0.85</bloomThreshold>
+		<bloomFactor>0.800000012</bloomFactor>
+		<bloomThreshold>0.850000024</bloomThreshold>
 		<velocityScale>1</velocityScale>
 		<enableSSAO>true</enableSSAO>
 		<ssaoRadius>0.5</ssaoRadius>
