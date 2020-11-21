@@ -1152,9 +1152,12 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
+    const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), 1.0f);
+
     retMatrix.setRow(0, baseColour());
-    retMatrix.setRow(1, vec4<F32>{1.0f, metallic(), roughness(), 0.0f});
     retMatrix.setRow(2, vec4<F32>{ emissive(), parallaxFactor() });
+
+    retMatrix.element(1, 0) = to_F32(matPropertiesPacked);
 }
 
 void Material::rebuild() {

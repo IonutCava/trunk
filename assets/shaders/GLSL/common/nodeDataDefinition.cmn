@@ -17,7 +17,9 @@ struct NodeData {
     mat4 _normalMatrixW;
 
     // [0][0...3] = base colour
-    // [1][0...3] = 0: occlusion , 1: metallic, 2: roughness, 3: IBL texture size
+    // [1][0]     = 4x8U: occlusion, metallic, roughness, reserved
+    // [1][1]     = IBL texture size
+    // [1][2..3]  = reserved
     // [2][0...2] = emissive
     // [2][3]     = parallax factor
     // [3][0...2] = reserved
@@ -31,12 +33,20 @@ struct NodeData {
     mat4 _prevWorldMatrix;
 };
 
-#define BaseColour(X) X[0].rgba
-#define EmissiveColour(X) X[2].rgb
-#define Occlusion(X) X[1].a
-#define Metallic(X) X[1].g
-#define Roughness(X) X[1].b
-#define IBLSize(X) uint(X[1].a)
+
+#define PACKED_OMR(colourMat) unpackUnorm4x8(uint(colourMat[1][0]))
+
+#define BaseColour(colourMat) colourMat[0].rgba
+
+#define EmissiveColour(colourMat) colourMat[2].rgb
+
+#define Occlusion(colourMat) PACKED_OMR(colourMat).r
+
+#define Metallic(colourMat) PACKED_OMR(colourMat).g
+
+#define Roughness(colourMat) PACKED_OMR(colourMat).b
+
+#define IBLSize(colourMat) uint(colourMat[1][1])
 
 #define NormalMatrixW(nodeData) mat3(nodeData._normalMatrixW)
 

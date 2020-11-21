@@ -47,6 +47,57 @@ TEST(MapTest)
     CHECK_EQUAL(result, MAP(in, in_min, in_max, out_min, out_max));
 }
 
+TEST(FloatToCharConversions)
+{
+    // We don't expect these to match properly, but we still need a decent level of precision
+    constexpr F32 tolerance = 0.005f;
+
+    constexpr F32_NORM  input1 =  0.75f;
+    constexpr F32_SNORM input2 = -0.66f;
+    constexpr F32_SNORM input3 =  0.36f;
+
+    const U8 result1U = FLOAT_TO_CHAR_UNORM(input1);
+    const F32_NORM result1F = UNORM_CHAR_TO_FLOAT(result1U);
+    CHECK_TRUE(COMPARE_TOLERANCE(result1F, input1, tolerance));
+
+    const I8 result2I = FLOAT_TO_CHAR_SNORM(input2);
+    const F32_SNORM result2F = SNORM_CHAR_TO_FLOAT(result2I);
+    CHECK_TRUE(COMPARE_TOLERANCE(result2F, input2, tolerance));
+
+    const U8 result3I = PACKED_FLOAT_TO_CHAR_UNORM(input3);
+    const F32_SNORM result3F = UNORM_CHAR_TO_PACKED_FLOAT(result3I);
+    CHECK_TRUE(COMPARE_TOLERANCE(result3F, input3, tolerance));
+}
+
+TEST(VecPackingTests)
+{
+    // We don't expect these to match properly, but we still need a decent level of precision
+    constexpr F32 tolerance = 0.05f;
+
+    const vec2<F32_SNORM> input1{ 0.5f, -0.3f };
+    const vec3<F32_SNORM> input2{ 0.55f, -0.1f, 1.0f};
+    const vec3<F32_SNORM> input3{ 0.25f, 0.67f, 0.123f};
+    const vec4<U8>        input4{ 32, 64, 128, 255};
+
+    const U32 result1U = Util::PACK_HALF2x16(input1);
+    const F32 result2U = Util::PACK_VEC3(input2);
+
+    const vec2<F32_SNORM> result1V = Util::UNPACK_HALF2x16(result1U);
+    const vec3<F32_SNORM> result2V = Util::UNPACK_VEC3(result2U);
+
+    CHECK_TRUE(result1V.compare(input1, tolerance));
+    CHECK_TRUE(result2V.compare(input2, tolerance));
+
+    const U32 result3U = Util::PACK_11_11_10(input3);
+    const vec3<F32_SNORM> result3V = Util::UNPACK_11_11_10(result3U);
+
+    CHECK_TRUE(result3V.compare(input3, tolerance));
+
+    const U32 result4U = Util::PACK_UNORM4x8(input4);
+    const vec4<U8> result4V = Util::UNPACK_UNORM4x8_U8(result4U);
+    CHECK_EQUAL(result4V, input4);
+}
+
 TEST(TimeUpCast)
 {
     constexpr U32 secondsResult = 4;

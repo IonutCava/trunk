@@ -409,7 +409,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
         _materialInstance->getMaterialMatrix(matOut);
 
         SharedLock<SharedMutex> r_lock(_reflectionLock);
-        matOut.element(1, 3) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
+        matOut.element(1, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
     }
 }
 

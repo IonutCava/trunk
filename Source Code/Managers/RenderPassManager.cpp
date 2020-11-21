@@ -399,7 +399,11 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
 
     dataOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, 0.f});
 
-    dataOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, to_U8(properties._texOperation), to_U8(properties._bumpMethod)));
+    dataOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(UNORM_CHAR_TO_FLOAT(boneCount),
+                                                                      UNORM_CHAR_TO_FLOAT(properties._lod),
+                                                                      UNORM_CHAR_TO_FLOAT(to_U8(properties._texOperation)),
+                                                                      UNORM_CHAR_TO_FLOAT(to_U8(properties._bumpMethod))));
+
     dataOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
     dataOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
     dataOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved ));
@@ -415,7 +419,10 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
         dataOut._colourMatrix.setRow(2, matColour);
     }
 
-    dataOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1 : 0, properties._occlusionCull ? 1 : 0, 0, 0));
+    dataOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1.0f : 0.0f,
+                                                                        properties._occlusionCull ? 1.0f : 0.0f,
+                                                                        reserved,
+                                                                        reserved));
     dataOut._prevWorldMatrix.element(1, 3) = reserved;
     dataOut._prevWorldMatrix.element(2, 3) = reserved;
     dataOut._prevWorldMatrix.element(3, 3) = reserved;

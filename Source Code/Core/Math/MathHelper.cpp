@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/packing.hpp>
 
 namespace Divide::Util {
 
@@ -72,55 +73,55 @@ bool IntersectCircles(const Circle& cA, const Circle& cB, vec2<F32>* pointsOut) 
 }
 
 void ToByteColour(const FColour4& floatColour, UColour4& colourOut) noexcept {
-    colourOut.set(FLOAT_TO_CHAR(floatColour.r),
-                  FLOAT_TO_CHAR(floatColour.g),
-                  FLOAT_TO_CHAR(floatColour.b),
-                  FLOAT_TO_CHAR(floatColour.a));
+    colourOut.set(FLOAT_TO_CHAR_UNORM(floatColour.r),
+                  FLOAT_TO_CHAR_UNORM(floatColour.g),
+                  FLOAT_TO_CHAR_UNORM(floatColour.b),
+                  FLOAT_TO_CHAR_UNORM(floatColour.a));
 }
 
 void ToByteColour(const FColour3& floatColour, UColour3& colourOut) noexcept {
-    colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
-                  FLOAT_TO_CHAR_SNORM(floatColour.g),
-                  FLOAT_TO_CHAR_SNORM(floatColour.b));
+    colourOut.set(FLOAT_TO_CHAR_UNORM(floatColour.r),
+                  FLOAT_TO_CHAR_UNORM(floatColour.g),
+                  FLOAT_TO_CHAR_UNORM(floatColour.b));
 }
 
 void ToIntColour(const FColour4& floatColour, vec4<I32>& colourOut) noexcept {
-    colourOut.set(FLOAT_TO_SCHAR_SNORM(floatColour.r),
-                  FLOAT_TO_SCHAR_SNORM(floatColour.g),
-                  FLOAT_TO_SCHAR_SNORM(floatColour.b),
-                  FLOAT_TO_SCHAR_SNORM(floatColour.a));
-}
-
-void ToIntColour(const FColour3& floatColour, vec3<I32>& colourOut) noexcept {
-    colourOut.set(to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.r)),
-                  to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.g)),
-                  to_U32(FLOAT_TO_SCHAR_SNORM(floatColour.b)));
-}
-
-void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut) noexcept {
     colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
                   FLOAT_TO_CHAR_SNORM(floatColour.g),
                   FLOAT_TO_CHAR_SNORM(floatColour.b),
                   FLOAT_TO_CHAR_SNORM(floatColour.a));
 }
 
+void ToIntColour(const FColour3& floatColour, vec3<I32>& colourOut) noexcept {
+    colourOut.set(FLOAT_TO_CHAR_SNORM(floatColour.r),
+                  FLOAT_TO_CHAR_SNORM(floatColour.g),
+                  FLOAT_TO_CHAR_SNORM(floatColour.b));
+}
+
+void ToUIntColour(const FColour4& floatColour, vec4<U32>& colourOut) noexcept {
+    colourOut.set(FLOAT_TO_CHAR_UNORM(floatColour.r),
+                  FLOAT_TO_CHAR_UNORM(floatColour.g),
+                  FLOAT_TO_CHAR_UNORM(floatColour.b),
+                  FLOAT_TO_CHAR_UNORM(floatColour.a));
+}
+
 void ToUIntColour(const FColour3& floatColour, vec3<U32>& colourOut) noexcept {
-    colourOut.set(to_U32(FLOAT_TO_CHAR_SNORM(floatColour.r)),
-                  to_U32(FLOAT_TO_CHAR_SNORM(floatColour.g)),
-                  to_U32(FLOAT_TO_CHAR_SNORM(floatColour.b)));
+    colourOut.set(FLOAT_TO_CHAR_UNORM(floatColour.r),
+                  FLOAT_TO_CHAR_UNORM(floatColour.g),
+                  FLOAT_TO_CHAR_UNORM(floatColour.b));
 }
 
 void ToFloatColour(const UColour4& byteColour, FColour4& colourOut) noexcept {
-    colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
-                  CHAR_TO_FLOAT_SNORM(byteColour.g),
-                  CHAR_TO_FLOAT_SNORM(byteColour.b),
-                  CHAR_TO_FLOAT_SNORM(byteColour.a));
+    colourOut.set(UNORM_CHAR_TO_FLOAT(byteColour.r),
+                  UNORM_CHAR_TO_FLOAT(byteColour.g),
+                  UNORM_CHAR_TO_FLOAT(byteColour.b),
+                  UNORM_CHAR_TO_FLOAT(byteColour.a));
 }
 
 void ToFloatColour(const UColour3& byteColour, FColour3& colourOut) noexcept {
-    colourOut.set(CHAR_TO_FLOAT_SNORM(byteColour.r),
-                  CHAR_TO_FLOAT_SNORM(byteColour.g),
-                  CHAR_TO_FLOAT_SNORM(byteColour.b));
+    colourOut.set(UNORM_CHAR_TO_FLOAT(byteColour.r),
+                  UNORM_CHAR_TO_FLOAT(byteColour.g),
+                  UNORM_CHAR_TO_FLOAT(byteColour.b));
 }
 
 void ToFloatColour(const vec4<U32>& uintColour, FColour4& colourOut) noexcept {
@@ -196,31 +197,24 @@ FColour3 ToFloatColour(const vec3<U32>& uintColour) noexcept {
     return tempColour;
 }
 
-F32 PACK_VEC3(const vec3<F32>& value) noexcept {
+F32 PACK_VEC3(const vec3<F32_SNORM>& value) noexcept {
     return PACK_VEC3(value.x, value.y, value.z);
 }
 
-U32 PACK_VEC2(const vec2<F32>& value) noexcept {
-    return PACK_VEC2(value.x, value.y);
+void UNPACK_VEC3(const F32 src, vec3<F32_SNORM>& res)noexcept {
+    UNPACK_VEC3(src, res.x, res.y, res.z);
 }
 
-void UNPACK_VEC3(const F32 src, vec3<F32>& res)noexcept {
-    UNPACK_FLOAT(src, res.x, res.y, res.z);
-}
-
-vec3<F32> UNPACK_VEC3(const F32 src) noexcept {
-    vec3<F32> res;
+vec3<F32_SNORM> UNPACK_VEC3(const F32 src) noexcept {
+    vec3<F32_SNORM> res;
     UNPACK_VEC3(src, res);
     return res;
 }
 
-void UNPACK_VEC2(const U32 src, vec2<F32>& res) noexcept {
-    UNPACK_VEC2(src, res.x, res.y);
-}
-
-void UNPACK_VEC2(const U32 src, F32& x, F32& y) noexcept {
-    x = (src >> 16) / 65535.0f;
-    y = (src & 0xFFFF) / 65535.0f;
+[[nodiscard]] vec3<F32_NORM> UNPACK_11_11_10(const U32 src) noexcept {
+    vec3<F32_NORM> res;
+    UNPACK_11_11_10(src, res);
+    return res;
 }
 
 U32 PACK_HALF2x16(const vec2<F32>& value) {
@@ -230,6 +224,12 @@ U32 PACK_HALF2x16(const vec2<F32>& value) {
 void UNPACK_HALF2x16(const U32 src, vec2<F32>& value) {
     const glm::vec2 ret = glm::unpackHalf2x16(src);
     value.set(ret.x, ret.y);
+}
+
+vec2<F32> UNPACK_HALF2x16(const U32 src) noexcept {
+    vec2<F32> ret;
+    UNPACK_HALF2x16(src, ret);
+    return ret;
 }
 
 U32 PACK_HALF2x16(const F32 x, const F32 y) {
@@ -242,33 +242,85 @@ void UNPACK_HALF2x16(const U32 src, F32& x, F32& y) {
     y = ret.y;
 }
 
-U32 PACK_UNORM4x8(const vec4<U8>& value) {
-    return to_U32(glm::packUnorm4x8(glm::mediump_vec4(value.x, value.y, value.z, value.w)));
+// Converts each component of the normalized floating  point value "value" into 8 bit integer values.
+U32 PACK_UNORM4x8(const vec4<F32_NORM>& value) {
+    return PACK_UNORM4x8(value.x, value.y, value.z, value.w);
 }
 
-void UNPACK_UNORM4x8(const U32 src, vec4<U8>& value) {
-    const glm::vec4 ret = glm::unpackUnorm4x8(src);
-    value.set(ret.x * 255, ret.y * 255, ret.z * 255, ret.w * 255);
+U32 PACK_UNORM4x8(const vec4<U8>& value) {
+    return PACK_UNORM4x8(value.x, value.y, value.z, value.w);
+}
+
+void UNPACK_UNORM4x8(const U32 src, vec4<F32_NORM>& value) {
+    UNPACK_UNORM4x8(src, value.x, value.y, value.z, value.w);
 }
 
 U32 PACK_UNORM4x8(const U8 x, const U8 y, const U8 z, const U8 w) {
-    return to_U32(glm::packUnorm4x8(glm::mediump_vec4(x, y, z, w)));
+    return to_U32(glm::packUnorm4x8({ UNORM_CHAR_TO_FLOAT(x),
+                                      UNORM_CHAR_TO_FLOAT(y),
+                                      UNORM_CHAR_TO_FLOAT(z),
+                                      UNORM_CHAR_TO_FLOAT(w)}));
+}
+
+U32 PACK_UNORM4x8(const F32_NORM x, const F32_NORM y, const F32_NORM z, const F32_NORM w) {
+    assert(IS_IN_RANGE_INCLUSIVE(x, 0.f, 1.f));
+    assert(IS_IN_RANGE_INCLUSIVE(y, 0.f, 1.f));
+    assert(IS_IN_RANGE_INCLUSIVE(z, 0.f, 1.f));
+    assert(IS_IN_RANGE_INCLUSIVE(w, 0.f, 1.f));
+
+    return to_U32(glm::packUnorm4x8({ x, y, z, w }));
 }
 
 void UNPACK_UNORM4x8(const U32 src, U8& x, U8& y, U8& z, U8& w) {
     const glm::vec4 ret = glm::unpackUnorm4x8(src);
-    x = to_U8(ret.x * 255);
-    y = to_U8(ret.y * 255);
-    z = to_U8(ret.z * 255);
-    w = to_U8(ret.w * 255);
+    x = FLOAT_TO_CHAR_UNORM(ret.x);
+    y = FLOAT_TO_CHAR_UNORM(ret.y);
+    z = FLOAT_TO_CHAR_UNORM(ret.z);
+    w = FLOAT_TO_CHAR_UNORM(ret.w);
 }
 
-U32 PACK_11_11_10(const vec3<F32>& value) noexcept {
-    return Divide::PACK_11_11_10(value.x, value.y, value.z);
+void UNPACK_UNORM4x8(const U32 src, F32_NORM& x, F32_NORM& y, F32_NORM& z, F32_NORM& w) {
+    const glm::vec4 ret = glm::unpackUnorm4x8(src);
+    x = ret.x; y = ret.y; z = ret.z; w = ret.w;
+    assert(IS_IN_RANGE_INCLUSIVE(x, 0.f, 1.f));
+    assert(IS_IN_RANGE_INCLUSIVE(y, 0.f, 1.f));
+    assert(IS_IN_RANGE_INCLUSIVE(z, 0.f, 1.f));
+    assert(IS_IN_RANGE_INCLUSIVE(w, 0.f, 1.f));
 }
 
-void UNPACK_11_11_10(const U32 src, vec3<F32>& res) noexcept {
-    Divide::UNPACK_11_11_10(src, res.x, res.y, res.z);
+vec4<U8> UNPACK_UNORM4x8_U8(const U32 src) noexcept {
+    vec4<U8> ret;
+    UNPACK_UNORM4x8(src, ret.x, ret.y, ret.z, ret.w);
+    return ret;
+}
+
+vec4<F32_NORM> UNPACK_UNORM4x8_F32(const U32 src) noexcept {
+    vec4<F32_NORM> ret;
+    UNPACK_UNORM4x8(src, ret.x, ret.y, ret.z, ret.w);
+    return ret;
+}
+
+U32 PACK_11_11_10(const vec3<F32_NORM>& value) noexcept {
+    return PACK_11_11_10(value.x, value.y, value.z);
+}
+
+void UNPACK_11_11_10(const U32 src, vec3<F32_NORM>& res) noexcept {
+    UNPACK_11_11_10(src, res.x, res.y, res.z);
+}
+
+U32 PACK_11_11_10(const F32_NORM x, const F32_NORM y, const F32_NORM z) noexcept {
+    assert(x >= 0.f && x <= 1.0f);
+    assert(y >= 0.f && y <= 1.0f);
+    assert(z >= 0.f && z <= 1.0f);
+    
+    return glm::packF2x11_1x10(glm::vec3(x, y, z));
+}
+
+void UNPACK_11_11_10(const U32 src, F32_NORM& x, F32_NORM& y, F32_NORM& z) noexcept {
+    const glm::vec3 ret = glm::unpackF2x11_1x10(src);
+    x = ret.x;
+    y = ret.y;
+    z = ret.z;
 }
 
 void Normalize(vec3<F32>& inputRotation, const bool degrees, const bool normYaw, const bool normPitch, const bool normRoll) noexcept {

@@ -318,7 +318,7 @@ template <typename T>
 template <typename U, std::enable_if_t<std::is_pod_v<U>, bool>>
 bool vec2<T>::compare(const vec2<U> &v, U epsi) const noexcept {
     return COMPARE_TOLERANCE(this->x, v.x, epsi) &&
-        COMPARE_TOLERANCE(this->y, v.y, epsi);
+           COMPARE_TOLERANCE(this->y, v.y, epsi);
 }
 
 /// return the projection factor from *this to the line determined by points vA

@@ -122,7 +122,7 @@ void VertexBuffer::computeTangents() {
 
         const F32 r = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV1.y * deltaUV2.x);
         tangent.set((deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r);
-
+        tangent.normalize();
         // Set the same tangent for all three vertices of the triangle.
         // They will be merged later, in vbindexer.cpp
         modifyTangentValue(idx0, tangent);

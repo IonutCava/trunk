@@ -188,15 +188,17 @@ public:
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
 
         // [0...2][0...2] = normal matrix
+        // [3][0...2]     = bounds center
         // [0][3]         = 4x8U: bone count, lod level, tex op, bump method
         // [1][3]         = 2x16F: BBox HalfExtent (X, Y) 
         // [2][3]         = 2x16F: BBox HalfExtent (Z), BSphere Radius
-        // [3][0...2]     = bounds center
         // [3][3]         = 2x16F: (Data Flag, reserved)
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
 
         // [0][0...3] = base colour
-        // [1][0...3] = 0: occlusion , 1: metallic, 2: roughness, 3: IBL texture size
+        // [1][0]     = 4x8U: occlusion, metallic, roughness, reserved
+        // [1][1]     = IBL texture size
+        // [1][2..3]  = reserved
         // [2][0...2] = emissive
         // [2][3]     = parallax factor
         // [3][0...2] = reserved

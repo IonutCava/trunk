@@ -18,10 +18,6 @@ vec3   dvd_Tangent;
 vec4   dvd_Colour;
 #endif //DEPTH_PASS
 
-vec3 UNPACK_FLOAT(in float value) {
-    return (fract(vec3(1.0, 256.0, 65536.0) * value) * 2.0) - 1.0;
-}
-
 #if defined(USE_GPU_SKINNING)
 #include "boneTransforms.vert"
 #endif // USE_GPU_SKINNING
@@ -36,7 +32,7 @@ NodeData fetchInputData() {
 #endif //HAS_VELOCITY
 
 #if !defined(SHADOW_PASS)
-    dvd_Normal = UNPACK_FLOAT(inNormalData);
+    dvd_Normal = UNPACK_VEC3(inNormalData);
 #endif //SHADOW_PASS
 
 #if !defined(DEPTH_PASS)
@@ -44,7 +40,7 @@ NodeData fetchInputData() {
 #endif //DEPTH_PASS
 
 #if defined(COMPUTE_TBN)
-    dvd_Tangent = UNPACK_FLOAT(inTangentData);
+    dvd_Tangent = UNPACK_VEC3(inTangentData);
 #endif //COMPUTE_TBN
 
     VAR._texCoord = inTexCoordData;

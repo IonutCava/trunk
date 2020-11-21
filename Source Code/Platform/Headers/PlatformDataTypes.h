@@ -60,6 +60,11 @@ using F32  = float;
 using D64  = double;
 using D128 = long double;
 
+// Just a name to use as a reminder that these values shoul be be in the 0.0f to 1.0f range
+using F32_NORM = F32;
+// Just a name to use as a reminder that these values shoul be be in the -1.0f to 1.0f range
+using F32_SNORM = F32;
+
 using bufferPtr = void*;
 
 #if !defined(CPP_17_SUPPORT)

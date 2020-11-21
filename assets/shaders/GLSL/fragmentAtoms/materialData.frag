@@ -116,7 +116,9 @@ vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
     return omr;
 #else
     // Convert specular to roughness ... roughly? really wrong, but should work I guesssssssssss. -Ionut
-    return saturate(vec3(Occlusion(colourMatrix), Metallic(colourMatrix), 1.0f - omr.r));
+    return saturate(vec3(Occlusion(colourMatrix),
+                         Metallic(colourMatrix),
+                         1.0f - omr[2]));
 #endif
 #else
     return saturate(vec3(Occlusion(colourMatrix),

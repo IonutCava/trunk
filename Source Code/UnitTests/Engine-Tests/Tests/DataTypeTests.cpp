@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/Defines.h"
-#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 
