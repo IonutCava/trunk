@@ -150,7 +150,7 @@ namespace Divide {
             static bool loadMesh(const Mesh_ptr& mesh, PlatformContext& context, ResourceCache* cache, const Import::ImportData& dataIn);
 
         protected:
-            static Material_ptr loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned);
+            static Material_ptr loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned, std::atomic_uint& taskCounter);
     };
 
 };  // namespace Divide

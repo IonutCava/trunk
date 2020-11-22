@@ -95,8 +95,6 @@ namespace GLUtil {
                               GLenum usageMask,
                               GLuint& bufferIdOut,
                               bufferPtr data,
-                              size_t dataSize,
-                              bool initToZeroFreeSpace,
                               const char* name = nullptr);
 
     bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
@@ -104,7 +102,6 @@ namespace GLUtil {
                                              MapBufferAccessMask accessMask,
                                              GLuint& bufferIdOut,
                                              bufferPtr data,
-                                             size_t dataSize,
                                              const char* name = nullptr);
 
     void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);

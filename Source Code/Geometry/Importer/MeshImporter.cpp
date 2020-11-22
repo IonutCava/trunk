@@ -249,6 +249,9 @@ namespace Import {
         mesh->getGeometryVB()->fromBuffer(*dataIn.vertexBuffer());
         mesh->setGeometryVBDirty();
 
+        std::atomic_uint taskCounter;
+        std::atomic_init(&taskCounter, 0u);
+
         for (const Import::SubMeshData& subMeshData : dataIn._subMeshData) {
             // Submesh is created as a resource when added to the scenegraph
             ResourceDescriptor submeshdesc(subMeshData.name());
@@ -273,7 +276,7 @@ namespace Import {
                                                                  subMeshData.maxPos());
 
                 if (!tempSubMesh->getMaterialTpl()) {
-                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(cache, subMeshData._material, subMeshData.boneCount() > 0));
+                    tempSubMesh->setMaterialTpl(loadSubMeshMaterial(cache, subMeshData._material, subMeshData.boneCount() > 0, taskCounter));
                 }
             }
 
@@ -284,6 +287,7 @@ namespace Import {
         mesh->getGeometryVB()->keepData(mesh->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
         mesh->postImport();
 
+        WAIT_FOR_CONDITION(taskCounter.load() == 0)
         importTimer.stop();
         Console::d_printfn(Locale::get(_ID("PARSE_MESH_TIME")),
                            dataIn.modelName().c_str(),
@@ -293,7 +297,7 @@ namespace Import {
     }
 
     /// Load the material for the current SubMesh
-    Material_ptr MeshImporter::loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned) {
+    Material_ptr MeshImporter::loadSubMeshMaterial(ResourceCache* cache, const Import::MaterialData& importData, bool skinned, std::atomic_uint& taskCounter) {
         ResourceDescriptor materialDesc(importData.name());
         if (skinned) {
             materialDesc.enumValue(to_base(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED));
@@ -331,7 +335,10 @@ namespace Import {
                 texture.assetName(tex.textureName());
                 texture.assetLocation(tex.texturePath());
                 texture.propertyDescriptor(textureDescriptor);
-                Texture_ptr texPtr = CreateResource<Texture>(cache, texture);
+                // No need to fire off additional threads just to wait on the result immediately after
+                texture.threaded(Runtime::isMainThread());
+                texture.waitForReady(false);
+                Texture_ptr texPtr = CreateResource<Texture>(cache, texture, taskCounter);
                 texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
                     tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, textureSampler.getHash(),tex.operation());
                 });
@@ -348,7 +355,9 @@ namespace Import {
                 opacityDesc.assetName(diffuse->assetName());
                 opacityDesc.assetLocation(diffuse->assetLocation());
                 opacityDesc.propertyDescriptor(diffuse->descriptor());
-                Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc);
+                opacityDesc.threaded(Runtime::isMainThread());
+                opacityDesc.waitForReady(false);
+                Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc, taskCounter);
                 texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
                     tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, tempMaterial->getSampler(TextureUsage::UNIT0),TextureOperation::REPLACE);
                 });

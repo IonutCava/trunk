@@ -95,8 +95,6 @@ void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, const Buffe
             _indexBufferUsage,
             _indexBuffer,
             indices.data,
-            _indexBufferSize,
-             false,
             _name.empty() ? nullptr : (_name + "_index").c_str());
     }
 

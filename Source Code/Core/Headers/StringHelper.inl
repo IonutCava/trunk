@@ -202,6 +202,15 @@ T_str ReplaceString(std::string_view subject,
     return ret;
 }
 
+template<typename T_strA, typename T_strB>
+bool BeginsWith(const T_strA& input, const T_strB& compare, const bool ignoreWhitespace) {
+    if (ignoreWhitespace) {
+        return Ltrim(input).rfind(compare) == 0;
+    }
+
+    return input.rfind(compare) == 0;
+}
+
 template<typename T_str>
 T_str GetTrailingCharacters(const T_str& input, size_t count) {
     const size_t inputLength = input.length();

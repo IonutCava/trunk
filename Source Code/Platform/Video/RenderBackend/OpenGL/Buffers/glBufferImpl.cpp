@@ -8,6 +8,8 @@
 
 namespace Divide {
 namespace {
+    Mutex g_CreateBufferLock;
+
     constexpr size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
     constexpr I32 g_maxFlushQueueLength = 16;
 
@@ -73,8 +75,21 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         usePersistentMapping = false;
     }
 
+    static vectorEASTL<Byte> zeroMemData(1024, Byte{ 0 });
+
+    const bool initToZero = params._initToZero && params._initialData.second < _alignedSize;
+    if (initToZero && _alignedSize > zeroMemData.size()) {
+        UniqueLock<Mutex> w_lock(g_CreateBufferLock);
+        zeroMemData.resize(_alignedSize, Byte{ 0 });
+    }
+
+    // Create all buffers with zero mem and then write the actual data that we have (If we want to initialise all memory)
     if (!usePersistentMapping) {
-        GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData.first, params._initialData.second, true, params._name);
+        GLUtil::createAndAllocBuffer(_alignedSize,
+                                     _usage,
+                                     _handle,
+                                     initToZero ? zeroMemData.data() : params._initialData.first,
+                                     params._name);
     } else {
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
         MapBufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
@@ -100,16 +115,20 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
             case BufferUpdateFrequency::COUNT: {
                 DIVIDE_UNEXPECTED_CALL("Unknown buffer update frequency!");
             } break;
-        };
-  
-        _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData.first, params._initialData.second, params._name);
+        }
+
+        _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, 
+                                                                      storageMask,
+                                                                      accessMask,
+                                                                      _handle, 
+                                                                      initToZero ? zeroMemData.data() : params._initialData.first,
+                                                                      params._name);
 
         assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
+    }
 
-        if (params._initToZero && params._initialData.second < _alignedSize) {
-            const size_t sizeDiff = _alignedSize - params._initialData.second;
-            zeroMem(_alignedSize - sizeDiff, sizeDiff);
-        }
+    if (initToZero && params._initialData.second > 0) {
+        writeData(0, params._initialData.second, (Byte*)params._initialData.first);
     }
 
     if (_mappedBuffer != nullptr && !_unsynced) {
@@ -120,7 +139,9 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
 glBufferImpl::~glBufferImpl()
 {
     if (_handle > 0) {
-        (void)waitRange(0, _alignedSize, false);
+        if (!waitRange(0, _alignedSize, false)) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
         if (_mappedBuffer == nullptr) {
             glInvalidateBufferData(_handle);
         }
@@ -186,12 +207,24 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
     return bound;
 }
 
+void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
+    static vectorEASTL<Byte> newData(1024, Byte{ 0 });
+
+    if (rangeInBytes > newData.size()) {
+        UniqueLock<Mutex> w_lock(g_CreateBufferLock);
+        newData.resize(rangeInBytes, Byte{ 0 });
+    }
+
+    writeData(offsetInBytes, rangeInBytes, newData.data());
+}
+
 void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) {
 
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", static_cast<bool>(_mappedBuffer != nullptr));
     OPTICK_TAG("Offset", to_U32(offsetInBytes));
     OPTICK_TAG("Range", to_U32(rangeInBytes));
+    assert(rangeInBytes > 0);
 
     const bool waitOK = waitRange(offsetInBytes, rangeInBytes, true);
 
@@ -200,8 +233,8 @@ void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInByt
     if (_mappedBuffer) {
         if (waitOK) {
             const bufferPtr dest = _mappedBuffer + offsetInBytes;
-
             std::memcpy(dest, data, rangeInBytes);
+
             if (_useExplicitFlush) {
                 if (_flushQueue.enqueue(MapRange{offsetInBytes, rangeInBytes})) {
                     const I32 size = _flushQueueSize.fetch_add(1) + 1;
@@ -263,11 +296,6 @@ void glBufferImpl::invalidateData(const size_t offsetInBytes, const size_t range
     } else {
         glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
     }
-}
-
-void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
-    const vectorEASTL<Byte> newData(rangeInBytes, Byte{ 0 });
-    writeData(offsetInBytes, rangeInBytes, newData.data());
 }
 
 size_t glBufferImpl::elementSize() const noexcept {

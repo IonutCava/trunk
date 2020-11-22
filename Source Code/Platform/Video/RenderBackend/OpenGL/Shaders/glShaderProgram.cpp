@@ -317,9 +317,14 @@ vectorEASTL<ResourcePath> glShaderProgram::loadSourceCode(const Str128& stageNam
             } else {
                 sourceCodeOut.second = preProcess(srcTemp, fileName.c_str());
             }
-            shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
-                            ResourcePath(fileName),
-                            sourceCodeOut.second.c_str());
+
+            Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
+                [this, fileName, sourceCodeOut](const Task & /*parent*/) {
+                shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                                ResourcePath(fileName),
+                                sourceCodeOut.second.c_str());
+            }), _asyncLoad ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
+            
         }
     }
 
@@ -541,6 +546,7 @@ stringImpl glShaderProgram::preprocessIncludes(const ResourcePath& name,
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }
 
+
     size_t line_number = 1;
     boost::smatch matches;
 
@@ -550,7 +556,7 @@ stringImpl glShaderProgram::preprocessIncludes(const ResourcePath& name,
     istringstreamImpl input(source);
 
     while (std::getline(input, line)) {
-        if (!regex_search(line, matches, Paths::g_includePattern)) {
+        if (!Util::BeginsWith(line, "#include", true) || !regex_search(line, matches, Paths::g_includePattern)) {
             output.append(line);
         } else {
             include_file = ResourcePath(Util::Trim(matches[1].str()));

@@ -57,7 +57,7 @@ bool VBO::allocateChunks(const U32 count, const GLenum usage, size_t& offsetOut)
         for (U32 i = 0; i < MAX_VBO_CHUNK_COUNT; ++i) {
             if (checkChunksAvailability(i, count, crtOffset)) {
                 if (_handle == 0) {
-                    createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle, nullptr, 0, true, Util::StringFormat("VBO_CHUNK_%d", i).c_str());
+                    createAndAllocBuffer(MAX_VBO_SIZE_BYTES, usage, _handle, nullptr, Util::StringFormat("VBO_CHUNK_%d", i).c_str());
                     _usage = usage;
                 }
                 offsetOut = i;
@@ -81,7 +81,7 @@ bool VBO::allocateWhole(const U32 count, const GLenum usage) {
     static U32 idx = 0;
 
     assert(_handle == 0);
-    createAndAllocBuffer(static_cast<size_t>(count) * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, nullptr, 0, true, Util::StringFormat("VBO_WHOLE_CHUNK_%d", idx++).c_str());
+    createAndAllocBuffer(static_cast<size_t>(count) * MAX_VBO_CHUNK_SIZE_BYTES, usage, _handle, nullptr, Util::StringFormat("VBO_WHOLE_CHUNK_%d", idx++).c_str());
     _usage = usage;
     _chunkUsageState.fill(std::make_pair(true, 0));
     _chunkUsageState[0].second = count;
@@ -178,11 +178,8 @@ bufferPtr createAndAllocPersistentBuffer(const size_t bufferSize,
                                          const MapBufferAccessMask accessMask,
                                          GLuint& bufferIdOut,
                                          bufferPtr const data,
-                                         const size_t dataSize,
                                          const char* name)
 {
-    assert(dataSize <= bufferSize);
-
     glCreateBuffers(1, &bufferIdOut);
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glObjectLabel(GL_BUFFER,
@@ -204,12 +201,8 @@ void createAndAllocBuffer(const size_t bufferSize,
                           const GLenum usageMask,
                           GLuint& bufferIdOut,
                           const bufferPtr data,
-                          const size_t dataSize,
-                          const bool initToZeroFreeSpace,
                           const char* name)
 {
-    assert(dataSize <= bufferSize);
-
     glCreateBuffers(1, &bufferIdOut);
 
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
@@ -223,12 +216,6 @@ void createAndAllocBuffer(const size_t bufferSize,
 
     assert(bufferIdOut != 0 && "GLUtil::allocBuffer error: buffer creation failed");
     glNamedBufferData(bufferIdOut, bufferSize, data, usageMask);
-
-    if (initToZeroFreeSpace && dataSize < bufferSize) {
-        const size_t sizeDiff = bufferSize - dataSize;
-        const vectorEASTL<Byte> newData(sizeDiff, Byte{ 0 });
-        glNamedBufferSubData(bufferIdOut, bufferSize - sizeDiff, sizeDiff, newData.data());
-    }
 }
 
 void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
