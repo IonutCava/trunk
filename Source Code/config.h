@@ -106,7 +106,7 @@ constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
 constexpr bool USE_COLOURED_WOIT = false;
 
 /// Use OGL bindless textures
-constexpr bool USE_BINDLESS_TEXTURES = true;
+constexpr bool USE_BINDLESS_TEXTURES = false;
 
 /// Compute related options
 namespace Compute {

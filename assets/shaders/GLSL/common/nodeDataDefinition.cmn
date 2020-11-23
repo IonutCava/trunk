@@ -44,6 +44,9 @@ struct NodeData {
     sampler2D _texHeight;
     sampler2D _texProjected;
     sampler2D _texNormalMap;
+    sampler2D _texTemp;
+#else
+    vec4 _padding[4];
 #endif //USE_BINDLESS_TEXTURES
 };
 

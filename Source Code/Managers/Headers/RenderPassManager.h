@@ -156,8 +156,7 @@ private:
                             bool playAnimations,
                             D64 interpolationFactor,
                             bool needsInterp,
-                            NodeData& dataOut,
-                            NodeTextureData& texturesOut) const;
+                            NodeData& dataOut) const;
 
 private: //TEMP
     friend class RenderBin;

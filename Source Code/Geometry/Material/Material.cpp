@@ -1171,19 +1171,19 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-void Material::getMaterialMatrix(mat4<F32>& retMatrix, NodeTextureData& texturesOut) {
+void Material::getMaterialMatrix(mat4<F32>& retMatrix, NodeData& dataOut) {
     uploadTextures();
 
     constexpr F32 reserved = 1.f;
 
     const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
-    texturesOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)]                        == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::UNIT0)];
-    texturesOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)]                        == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::UNIT1)];
-    texturesOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)]                      == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::OPACITY)];
-    texturesOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-    texturesOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)]                    == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
-    texturesOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)]                   == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::PROJECTION)];
-    texturesOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)]                    == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::NORMALMAP)];
+    dataOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)]                        == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::UNIT0)];
+    dataOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)]                        == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::UNIT1)];
+    dataOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)]                      == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::OPACITY)];
+    dataOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
+    dataOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)]                    == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
+    dataOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)]                   == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::PROJECTION)];
+    dataOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)]                    == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::NORMALMAP)];
 
     retMatrix.setRow(0, baseColour());
     retMatrix.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });

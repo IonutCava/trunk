@@ -36,15 +36,9 @@ namespace Divide {
             RenderBin::SortedQueues _sortedQueues;
             DrawCommandContainer _drawCommands;
 
-            vectorEASTL<NodeData> _nodeData;
-            vectorEASTL<NodeTextureData> _nodeTextures;
-
-            vectorEASTL<NodeDataBindless> _nodeDataBindless;
+            std::array<NodeData, Config::MAX_VISIBLE_NODES> _nodeData;
 
             bufferPtr data() const {
-                if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-                    return (bufferPtr)_nodeDataBindless.data();
-                }
                 return (bufferPtr)_nodeData.data();
             }
         };
@@ -65,15 +59,6 @@ namespace Divide {
         _buildCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
         _drawCallCount.fill(0);
-
-        for (U8 i = 0; i < to_base(RenderStage::COUNT); ++i) {
-            if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-                g_passData[i]._nodeDataBindless.resize(Config::MAX_VISIBLE_NODES);
-            } else {
-                g_passData[i]._nodeData.resize(Config::MAX_VISIBLE_NODES);
-                g_passData[i]._nodeTextures.resize(Config::MAX_VISIBLE_NODES);
-            }
-        }
     }
 
     RenderPassManager::~RenderPassManager()
@@ -371,8 +356,7 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
                                            const bool playAnimations,
                                            const D64 interpolationFactor,
                                            const bool needsInterp,
-                                           NodeData& dataOut,
-                                           NodeTextureData& texturesOut) const {
+                                           NodeData& dataOut) const {
     OPTICK_EVENT();
 
     constexpr F32 reserved = 0.0f;
@@ -429,7 +413,7 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
     dataOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved ));
 
     // Get the colour matrix (base colour, metallic, etc)
-    rComp.getMaterialColourMatrix(dataOut._colourMatrix, texturesOut);
+    rComp.getMaterialColourMatrix(dataOut._colourMatrix, dataOut);
     dataOut._colourMatrix.element(3, 2) = reserved;
 
     // Temp: Make the hovered node brighter by setting emissive to something bright
@@ -504,15 +488,8 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             for (RenderingComponent* rComp : queue) {
                 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
-                    if_constexpr (Config::USE_BINDLESS_TEXTURES) {
-                        NodeDataBindless& data = passData._nodeDataBindless[bufferParams._dataIndex];
-                        processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data, data._textures);
-                    } else {
-                        NodeData& data = passData._nodeData[bufferParams._dataIndex];
-                        NodeTextureData& textures = passData._nodeTextures[bufferParams._dataIndex];
-                        processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data, textures);
-                    }
-                    
+                    NodeData& data = passData._nodeData[bufferParams._dataIndex];
+                    processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data);
                     ++bufferParams._dataIndex;
                     ++nodeCount;
                 }

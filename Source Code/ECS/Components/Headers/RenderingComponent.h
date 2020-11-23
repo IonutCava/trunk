@@ -41,9 +41,9 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
-    struct NodeTextureData;
+struct NodeData;
 
-    class Sky;
+class Sky;
 class SubMesh;
 class Material;
 class GFXDevice;
@@ -172,7 +172,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool lodLocked(const RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
     void instantiateMaterial(const Material_ptr& material);
 
-    void getMaterialColourMatrix(mat4<F32>& matOut, NodeTextureData& texturesOut) const;
+    void getMaterialColourMatrix(mat4<F32>& matOut, NodeData& dataOut) const;
 
     void getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const;
 

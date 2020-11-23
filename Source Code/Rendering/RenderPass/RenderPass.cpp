@@ -98,7 +98,7 @@ void RenderPass::initBufferData() {
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
         bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
-        bufferDescriptor._elementSize = Config::USE_BINDLESS_TEXTURES ? sizeof(NodeDataBindless) : sizeof(NodeData);
+        bufferDescriptor._elementSize = sizeof(NodeData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = DataBufferRingSize;
@@ -109,6 +109,7 @@ void RenderPass::initBufferData() {
             bufferDescriptor._name = Util::StringFormat("NODE_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
             _nodeData = _context.newSB(bufferDescriptor);
         }
+
     }
     {// Indirect draw command buffer
         ShaderBufferDescriptor bufferDescriptor = {};

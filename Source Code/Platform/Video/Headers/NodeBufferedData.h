@@ -35,7 +35,7 @@
 
 namespace Divide {
     using sampler2D = U64;
-
+#pragma pack(push, 1)
     struct NodeData
     {
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
@@ -67,10 +67,7 @@ namespace Divide {
         // [2][3]         = reserved
         // [3][3]         = reserved
         mat4<F32> _prevWorldMatrix = MAT4_ZERO;
-    };
 
-    struct NodeTextureData
-    {
         sampler2D _texDiffuse0 = 0u;
         sampler2D _texOpacityMap = 0u;
         sampler2D _texDiffuse1 = 0u;
@@ -78,12 +75,11 @@ namespace Divide {
         sampler2D _texHeight = 0u;
         sampler2D _texProjected = 0u;
         sampler2D _texNormalMap = 0u;
+        sampler2D _texTemp = 0u;
     };
+;
+#pragma pack(pop)
 
-    struct NodeDataBindless : NodeData
-    {
-        NodeTextureData _textures;
-    };
 } //namespace Divide
 
 #endif //_HARDWARE_VIDEO_NODE_BUFFERED_DATA_H_
