@@ -43,6 +43,8 @@
 #include "Platform/Video/Headers/RenderPackage.h"
 
 namespace Divide {
+struct NodeData;
+struct NodeTextureData;
 
 class Camera;
 class SceneGraph;
@@ -149,7 +151,13 @@ private:
     U32 buildDrawCommands(const RenderPassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
     // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
     U32  buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const RenderPassParams& passParams, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    void processVisibleNode(const RenderingComponent& rComp, const RenderStagePass& stagePass, bool playAnimations, D64 interpolationFactor, bool needsInterp, GFXDevice::NodeData& dataOut) const;
+    void processVisibleNode(const RenderingComponent& rComp, 
+                            const RenderStagePass& stagePass,
+                            bool playAnimations,
+                            D64 interpolationFactor,
+                            bool needsInterp,
+                            NodeData& dataOut,
+                            NodeTextureData& texturesOut) const;
 
 private: //TEMP
     friend class RenderBin;
@@ -160,9 +168,9 @@ private:
     GFXDevice& _context;
     RenderQueue _renderQueue;
 
-    vectorEASTL<Task*> _renderTasks;
-    vectorEASTL<RenderPass*> _renderPasses;
-    vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer;
+    vectorEASTL<Task*> _renderTasks{};
+    vectorEASTL<RenderPass*> _renderPasses{};
+    vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer{};
     GFX::CommandBuffer* _postFXCommandBuffer = nullptr;
     GFX::CommandBuffer* _postRenderBuffer = nullptr;
 
@@ -175,8 +183,9 @@ private:
         Time::ProfileTimer* _postFxRenderTimer = nullptr;
     Time::ProfileTimer* _blitToDisplayTimer = nullptr;
 
-    std::array<RenderQueuePackages, to_base(RenderStage::COUNT)> _renderQueues;
-    std::array<I32, to_base(RenderStage::COUNT)> _drawCallCount;
+    std::array<RenderQueuePackages, to_base(RenderStage::COUNT)> _renderQueues
+        {};
+    std::array<I32, to_base(RenderStage::COUNT)> _drawCallCount{};
 };
 
 } // namespace Divide

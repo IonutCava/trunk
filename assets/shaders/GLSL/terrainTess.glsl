@@ -5,10 +5,8 @@
 layout(location = ATTRIB_POSITION) in vec4 inVertexData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
-#if defined(USE_BINDLESS_TEXTURES)
-#define TexTerrainHeight  dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
-#else
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#if !defined(USE_BINDLESS_TEXTURES)
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
 #endif
 
 uniform vec2 dvd_textureWorldOffset;
@@ -50,7 +48,7 @@ vec4 ReconstructPosition() {
 
     VAR._texCoord = tempPos;
     const vec2 texCoords = worldXZtoHeightUV(tempPos);
-    const float height = (TERRAIN_HEIGHT * texture(TexTerrainHeight, texCoords).r) + TERRAIN_HEIGHT_OFFSET;
+    const float height = (TERRAIN_HEIGHT * texture(texHeight, texCoords).r) + TERRAIN_HEIGHT_OFFSET;
 
     return vec4(tempPos.x, height, tempPos.y, 1.0f);
 }
@@ -70,10 +68,8 @@ void main(void)
 uniform float dvd_tessTriangleWidth;
 uniform vec2 dvd_textureWorldOffset;
 
-#if defined(USE_BINDLESS_TEXTURES)
-#define TexTerrainHeight  dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
-#else
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#if !defined(USE_BINDLESS_TEXTURES)
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
 #endif
 
 layout(location = 10) in vec4 vtx_adjancency[];
@@ -142,7 +138,7 @@ float LargerNeighbourAdjacencyClamp(in float tess) {
 
 void MakeVertexHeightsAgree(in vec2 uv, inout vec3 p0, inout vec3 p1)
 {
-    p0.y = p1.y = (TERRAIN_HEIGHT * texture(TexTerrainHeight, uv).r) + TERRAIN_HEIGHT_OFFSET;
+    p0.y = p1.y = (TERRAIN_HEIGHT * texture(texHeight, uv).r) + TERRAIN_HEIGHT_OFFSET;
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
@@ -309,10 +305,8 @@ layout(quads, fractional_even_spacing, cw) in;
 
 #include "nodeBufferedInput.cmn"
 
-#if defined(USE_BINDLESS_TEXTURES)
-#define TexTerrainHeight  dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
-#else
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#if !defined(USE_BINDLESS_TEXTURES)
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
 #endif
 
 uniform vec2 dvd_textureWorldOffset;
@@ -362,7 +356,7 @@ vec3 LerpDebugColours(in vec3 cIn[5], vec2 uv) {
 #endif
 
 float getHeight(in vec2 tex_coord) {
-    return TERRAIN_HEIGHT * texture(TexTerrainHeight, tex_coord).r + TERRAIN_HEIGHT_OFFSET;
+    return TERRAIN_HEIGHT * texture(texHeight, tex_coord).r + TERRAIN_HEIGHT_OFFSET;
 }
 
 vec2 worldXZtoHeightUV(in vec2 worldXZ) {
@@ -374,10 +368,10 @@ vec2 worldXZtoHeightUV(in vec2 worldXZ) {
 vec3 getVertNormal(in vec2 tex_coord) {
     const ivec3 off = ivec3(-1, 0, 1);
 
-    const float s01 = textureOffset(TexTerrainHeight, tex_coord, off.xy).r; //-1,  0
-    const float s21 = textureOffset(TexTerrainHeight, tex_coord, off.zy).r; // 1,  0
-    const float s10 = textureOffset(TexTerrainHeight, tex_coord, off.yx).r; // 0, -1
-    const float s12 = textureOffset(TexTerrainHeight, tex_coord, off.yz).r; // 0,  1
+    const float s01 = textureOffset(texHeight, tex_coord, off.xy).r; //-1,  0
+    const float s21 = textureOffset(texHeight, tex_coord, off.zy).r; // 1,  0
+    const float s10 = textureOffset(texHeight, tex_coord, off.yx).r; // 0, -1
+    const float s12 = textureOffset(texHeight, tex_coord, off.yz).r; // 0,  1
 
     const float hL = TERRAIN_HEIGHT * s01 + TERRAIN_HEIGHT_OFFSET;
     const float hR = TERRAIN_HEIGHT * s21 + TERRAIN_HEIGHT_OFFSET;
@@ -456,11 +450,9 @@ void main()
 #include "nodeBufferedInput.cmn"
 
 #if defined(TOGGLE_NORMALS)
-#if defined(USE_BINDLESS_TEXTURES)
-#define TexTerrainHeight dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
-#else
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
-#endif //USE_BINDLESS_TEXTURES
+#if !defined(USE_BINDLESS_TEXTURES)
+layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
+#endif
 #endif //TOGGLE_NORMALS
 
 layout(triangles) in;
@@ -501,10 +493,10 @@ void PerVertex(in int i, in vec3 edge_dist) {
 vec3 getNormal(in vec2 tex_coord) {
     const ivec3 off = ivec3(-1, 0, 1);
 
-    const float s01 = (TERRAIN_HEIGHT * textureOffset(TexTerrainHeight, tex_coord, off.xy).r) + TERRAIN_HEIGHT_OFFSET;;
-    const float s21 = (TERRAIN_HEIGHT * textureOffset(TexTerrainHeight, tex_coord, off.zy).r) + TERRAIN_HEIGHT_OFFSET;;
-    const float s10 = (TERRAIN_HEIGHT * textureOffset(TexTerrainHeight, tex_coord, off.yx).r) + TERRAIN_HEIGHT_OFFSET;;
-    const float s12 = (TERRAIN_HEIGHT * textureOffset(TexTerrainHeight, tex_coord, off.yz).r) + TERRAIN_HEIGHT_OFFSET;;
+    const float s01 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.xy).r) + TERRAIN_HEIGHT_OFFSET;;
+    const float s21 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.zy).r) + TERRAIN_HEIGHT_OFFSET;;
+    const float s10 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.yx).r) + TERRAIN_HEIGHT_OFFSET;;
+    const float s12 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.yz).r) + TERRAIN_HEIGHT_OFFSET;;
 
     // deduce terrain normal
     return normalize(vec3(s01 - s21, 2.0f, s10 - s12));

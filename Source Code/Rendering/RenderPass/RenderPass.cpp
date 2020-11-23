@@ -19,6 +19,7 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
+#include "Platform/Video/Headers/NodeBufferedData.h"
 
 namespace Divide {
 
@@ -97,7 +98,7 @@ void RenderPass::initBufferData() {
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
         bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
-        bufferDescriptor._elementSize = sizeof(GFXDevice::NodeData);
+        bufferDescriptor._elementSize = Config::USE_BINDLESS_TEXTURES ? sizeof(NodeDataBindless) : sizeof(NodeData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = DataBufferRingSize;

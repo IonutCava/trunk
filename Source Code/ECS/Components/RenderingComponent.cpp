@@ -404,11 +404,11 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     return true;
 }
 
-void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
+void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut, NodeTextureData& texturesOut) const {
     matOut.zero();
 
     if (_materialInstance != nullptr) {
-        _materialInstance->getMaterialMatrix(matOut);
+        _materialInstance->getMaterialMatrix(matOut, texturesOut);
 
         SharedLock<SharedMutex> r_lock(_reflectionLock);
         matOut.element(2, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;

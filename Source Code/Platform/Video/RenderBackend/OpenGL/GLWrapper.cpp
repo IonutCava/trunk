@@ -129,13 +129,10 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
             s_texturePool.onFrameEnd();
             s_glFlushQueued = false;
             if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-                const GFXDevice::ResidentTextures& textures = _context.gpuTextures();
-                for (const U64 texture : textures._textureHandles) {
-                    if (texture > 0u && GL_API::s_residentTextures.find(texture) != eastl::cend(GL_API::s_residentTextures)) {
-                        glMakeTextureHandleNonResidentARB(texture);
-                        GL_API::s_residentTextures.erase(texture);
-                    }
+                for (const U64 texture : s_residentTextures) {
+                    glMakeTextureHandleNonResidentARB(texture);
                 }
+                s_residentTextures.clear();
             }
         }
     }
@@ -416,12 +413,6 @@ bool GL_API::initGLSW(Configuration& config) {
         ShaderType::COUNT,
         "#define BUFFER_GPU_BLOCK " +
         Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_RESIDENT_TEXTURES " +
-        Util::to_string(to_base(ShaderBufferLocation::RESIDENT_TEXTURES)),
         lineOffsets);
 
     appendToShaderHeader(

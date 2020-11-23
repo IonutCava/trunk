@@ -21,10 +21,10 @@ struct NodeData {
     // [1][3]     = parallax factor
     // [2][0]     = 4x8U: occlusion, metallic, roughness, reserved
     // [2][1]     = IBL texture size
-    // [2][2]     = 2x16F: textureIDs UNIT0, OPACITY
-    // [2][3]     = 2x16F: textureIDs UNIT1, OMR
-    // [3][0]     = 2x16F: textureIDs HEIGHT, PROJECTION
-    // [3][1]     = 2x16F: textureIDs NORMALS, reserved
+    // [2][2]     = reserved
+    // [2][3]     = reserved
+    // [3][0]     = reserved
+    // [3][1]     = reserved
     // [3][2]     = reserved
     // [3][3]     = reserved
     mat4 _colourMatrix;
@@ -35,17 +35,27 @@ struct NodeData {
     // [2][3]         = reserved
     // [3][3]         = reserved
     mat4 _prevWorldMatrix;
+
+#if defined(USE_BINDLESS_TEXTURES)
+    sampler2D _texDiffuse0;
+    sampler2D _texOpacityMap;
+    sampler2D _texDiffuse1;
+    sampler2D _texOcclusionMetallicRoughness;
+    sampler2D _texHeight;
+    sampler2D _texProjected;
+    sampler2D _texNormalMap;
+#endif //USE_BINDLESS_TEXTURES
 };
 
-#define TEX_ENTRIES(X, Y, Z) unpackHalf2x16(uint(dvd_Matrices[X]._colourMatrix[Y][Z]))
-
-#define TEX_IDX_UNIT0(X) uint(TEX_ENTRIES(X, 2, 2).x)
-#define TEX_IDX_OPACITY(X) uint(TEX_ENTRIES(X, 2, 2).y)
-#define TEX_IDX_UNIT1(X) uint(TEX_ENTRIES(X, 2, 3).x)
-#define TEX_IDX_OMR(X) uint(TEX_ENTRIES(X, 2, 3).y)
-#define TEX_IDX_HEIGHT(X) uint(TEX_ENTRIES(X, 3, 0).x)
-#define TEX_IDX_PROJECTION(X) uint(TEX_ENTRIES(X, 3, 0).y)
-#define TEX_IDX_NORMALMAP(X) uint(TEX_ENTRIES(X, 3, 1).x)
+#if defined(USE_BINDLESS_TEXTURES)
+#define texDiffuse0 dvd_Matrices[DATA_IDX]._texDiffuse0
+#define texOpacityMap dvd_Matrices[DATA_IDX]._texOpacityMap
+#define texDiffuse1 dvd_Matrices[DATA_IDX]._texDiffuse1
+#define texOcclusionMetallicRoughness dvd_Matrices[DATA_IDX]._texOcclusionMetallicRoughness
+#define texHeight dvd_Matrices[DATA_IDX]._texHeight
+#define texProjected dvd_Matrices[DATA_IDX]._texProjected
+#define texNormalMap dvd_Matrices[DATA_IDX]._texNormalMap
+#endif //USE_BINDLESS_TEXTURES
 
 #define PACKED_OMR(colourMat) unpackUnorm4x8(uint(colourMat[1][0]))
 
@@ -75,8 +85,8 @@ struct NodeData {
 
 #define dvd_cullNode(nodeData) (uint(unpackUnorm4x8(uint(nodeData._prevWorldMatrix[0][3])).y * 255) == 1)
 
-//#define dvd_parallaxFactor(X)  dvd_Matrices[X]._colourMatrix[1][3]
-#define dvd_parallaxFactor(X)  1.f
+#define dvd_parallaxFactor(X)  dvd_Matrices[X]._colourMatrix[1][3]
+
 #define dvd_dataFlag(X) unpackHalf2x16(uint(dvd_Matrices[X]._normalMatrixW[3][3])).x
 
 #endif //_NODE_DATA_DEFINITION_CMN_

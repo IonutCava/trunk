@@ -48,6 +48,7 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
+struct NodeTextureData;
 
 class RenderStateBlock;
 class ResourceDescriptor;
@@ -172,7 +173,7 @@ class Material final : public CachedResource {
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
 
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
-    void getMaterialMatrix(mat4<F32>& retMatrix);
+    void getMaterialMatrix(mat4<F32>& retMatrix, NodeTextureData& texturesOut);
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;
@@ -283,7 +284,7 @@ class Material final : public CachedResource {
     std::array<size_t, to_base(TextureUsage::COUNT)> _samplers = {};
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
-    std::array<size_t, to_base(TextureUsage::COUNT)> _textureIndex = {};
+    std::array<U64, to_base(TextureUsage::COUNT)> _textureAddresses = {};
     std::atomic_bool _texturesMadeResident;
 
     I32 _textureKeyCache = -1;

@@ -74,8 +74,8 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     virtual ~Texture() = default;
 
-    // Returns an index to use in shaders to look up the texture
-    virtual size_t makeResident(size_t samplerHash) = 0;
+    // Returns the GPU address of the texture
+    virtual U64 makeResident(size_t samplerHash) = 0;
 
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) = 0;

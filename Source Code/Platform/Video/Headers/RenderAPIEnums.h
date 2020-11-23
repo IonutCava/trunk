@@ -187,7 +187,6 @@ enum class ShaderBufferLocation : U8 {
     TREE_DATA,
     CMD_BUFFER,
     LUMINANCE_HISTOGRAM,
-    RESIDENT_TEXTURES,
     COUNT
 };
 

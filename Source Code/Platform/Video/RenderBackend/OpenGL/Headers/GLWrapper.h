@@ -143,14 +143,14 @@ protected:
     bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady) const;
     void sendPushConstants(const PushConstants & pushConstants) const;
 
-    size_t queueTextureResidency(U64 textureAddress, bool makeResident) override;
-
 public:
     static GLStateTracker& getStateTracker() noexcept;
 
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);
     static void dequeueComputeMipMap(GLuint textureHandle);
+
+    static void queueTextureResidency(U64 textureAddress, bool makeResident);
 
     static void pushDebugMessage(const char* message);
     static void popDebugMessage();

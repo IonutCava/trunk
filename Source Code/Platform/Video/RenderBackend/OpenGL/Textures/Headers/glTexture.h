@@ -51,7 +51,7 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
-    [[nodiscard]] size_t makeResident(size_t samplerHash) override;
+    [[nodiscard]] U64 makeResident(size_t samplerHash) override;
 
     bool unload() override;
 
