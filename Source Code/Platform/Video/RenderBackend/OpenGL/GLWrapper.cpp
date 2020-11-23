@@ -129,6 +129,14 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
             s_glFlushQueued = false;
+            if_constexpr(Config::USE_BINDLESS_TEXTURES) {
+                const GFXDevice::ResidentTextures& textures = _context.gpuTextures();
+                for (const U64 texture : textures._textureHandles) {
+                    if (texture > 0u) {
+                        glMakeTextureHandleNonResidentARB(texture);
+                    }
+                }
+            }
         }
     }
 
@@ -280,6 +288,9 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
 
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
+    if_constexpr(Config::USE_BINDLESS_TEXTURES) {
+        appendToShaderHeader(ShaderType::COUNT, "#extension  GL_ARB_bindless_texture : require", lineOffsets);
+    }
     if (!getStateTracker()._opengl46Supported) {
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
@@ -292,7 +303,7 @@ bool GL_API::initGLSW(Configuration& config) {
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawID", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstance", lineOffsets);
     }
-   
+
     appendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
 
     // Add current build environment information to the shaders
@@ -330,6 +341,9 @@ bool GL_API::initGLSW(Configuration& config) {
     if_constexpr(Config::USE_COLOURED_WOIT) {
         appendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
     }
+    if_constexpr(Config::USE_BINDLESS_TEXTURES) {
+        appendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES", lineOffsets);
+    }
 
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
@@ -343,6 +357,7 @@ bool GL_API::initGLSW(Configuration& config) {
     }
 
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_RESIDENT_TEXTURES " + Util::to_string(Config::MAX_ACTIVE_RESIDENT_TEXTURES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f", lineOffsets);
@@ -401,6 +416,12 @@ bool GL_API::initGLSW(Configuration& config) {
         ShaderType::COUNT,
         "#define BUFFER_GPU_BLOCK " +
         Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_RESIDENT_TEXTURES " +
+        Util::to_string(to_base(ShaderBufferLocation::RESIDENT_TEXTURES)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -611,12 +632,6 @@ bool GL_API::initGLSW(Configuration& config) {
         ShaderType::FRAGMENT,
         "#define TEXTURE_GBUFFER_EXTRA " +
         Util::to_string(to_base(TextureUsage::GBUFFER_EXTRA)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_ADDITIONAL_DATA " +
-        Util::to_string(to_base(TextureUsage::ADDITIONAL_DATA)),
         lineOffsets);
 
     appendToShaderHeader(
@@ -1562,22 +1577,30 @@ bool GL_API::setViewport(const Rect<I32>& viewport) {
 
 /// Return the OpenGL sampler object's handle for the given hash value
 GLuint GL_API::getSamplerHandle(const size_t samplerHash) {
-    assert(Runtime::isMainThread());
-
     // If the hash value is 0, we assume the code is trying to unbind a sampler object
     if (samplerHash > 0) {
-        // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
-        const SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
-        if (it != std::cend(s_samplerMap)) {
-            // Return the OpenGL handle for the sampler object matching the specified hash value
-            return it->second;
+        {
+            SharedLock<SharedMutex> r_lock(s_samplerMapLock);
+            // If we fail to find the sampler object for the given hash, we print an error and return the default OpenGL handle
+            const SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
+            if (it != std::cend(s_samplerMap)) {
+                // Return the OpenGL handle for the sampler object matching the specified hash value
+                return it->second;
+            }
         }
+        {
 
-        //Cache miss. Create the sampler object now.
-        // Create and store the newly created sample object. GL_API is responsible for deleting these!
-        const GLuint sampler = glSamplerObject::construct(SamplerDescriptor::get(samplerHash));
-        emplace(s_samplerMap, samplerHash, sampler);
-        return sampler;
+            UniqueLock<SharedMutex> w_lock(s_samplerMapLock);
+            // Check again
+            const SamplerObjectMap::const_iterator it = s_samplerMap.find(samplerHash);
+            if (it == std::cend(s_samplerMap)) {
+                //Cache miss. Create the sampler object now.
+                // Create and store the newly created sample object. GL_API is responsible for deleting these!
+                const GLuint sampler = glSamplerObject::construct(SamplerDescriptor::get(samplerHash));
+                emplace(s_samplerMap, samplerHash, sampler);
+                return sampler;
+            }
+        }
     }
 
     return 0u;

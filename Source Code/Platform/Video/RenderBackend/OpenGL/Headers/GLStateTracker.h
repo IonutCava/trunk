@@ -37,7 +37,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Headers/RenderStateBlock.h"
 
 namespace Divide {
-    constexpr U32 MAX_ACTIVE_TEXTURE_SLOTS = 64;
 
     class Pipeline;
     class glFramebuffer;
@@ -202,14 +201,14 @@ namespace Divide {
         bool _rasterizationEnabled = true;
 
         /// /*hash: texture slot  - array /*texture handle - texture type*/ hash
-        using TextureBoundMapDef = std::array<std::array<U32, to_base(TextureType::COUNT)>, MAX_ACTIVE_TEXTURE_SLOTS>;
+        using TextureBoundMapDef = std::array<std::array<U32, to_base(TextureType::COUNT)>, Config::MAX_ACTIVE_TEXTURE_SLOTS>;
         TextureBoundMapDef _textureBoundMap = {};
 
-        using ImageBoundMapDef = std::array<ImageBindSettings, MAX_ACTIVE_TEXTURE_SLOTS>;
+        using ImageBoundMapDef = std::array<ImageBindSettings, Config::MAX_ACTIVE_TEXTURE_SLOTS>;
         ImageBoundMapDef _imageBoundMap = {};
 
         /// /*texture slot*/ /*sampler handle*/
-        using SamplerBoundMapDef = std::array<GLuint, MAX_ACTIVE_TEXTURE_SLOTS>;
+        using SamplerBoundMapDef = std::array<GLuint, Config::MAX_ACTIVE_TEXTURE_SLOTS>;
         SamplerBoundMapDef _samplerBoundMap = {};
 
         VAOBindings _vaoBufferData;

@@ -152,6 +152,7 @@ namespace Divide {
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
 
+        [[nodiscard]] size_t makeResident(size_t samplerHash) override { return 0; }
         void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override {}
         void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override {}
         void loadData(const ImageTools::ImageData& imageLayers) override {}

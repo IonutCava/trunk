@@ -63,6 +63,28 @@ constexpr F32 Specular_Water = 0.255f;
 constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
 
+constexpr U8 g_TransparentSlots[] = {
+   to_base(TextureUsage::UNIT0),
+   to_base(TextureUsage::OPACITY)
+};
+
+constexpr U8 g_ExtraSlots[] = {
+    to_base(TextureUsage::UNIT1),
+    to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS),
+    to_base(TextureUsage::HEIGHTMAP),
+    to_base(TextureUsage::PROJECTION)
+};
+
+constexpr U8 g_AdditionalSlots[] = {
+    to_base(TextureUsage::NORMALMAP)
+};
+
+static constexpr [[nodiscard]] size_t GetMaterialTextureCount() noexcept {
+    return sizeof(g_TransparentSlots) / sizeof(TextureUsage) + 
+           sizeof(g_ExtraSlots) / sizeof(TextureUsage) +
+           sizeof(g_AdditionalSlots) / sizeof(TextureUsage);
+}
+
 namespace TypeUtil {
     const char* ShadingModeToString(ShadingMode shadingMode) noexcept;
     ShadingMode StringToShadingMode(const stringImpl& name);
@@ -157,6 +179,7 @@ class Material final : public CachedResource {
     size_t getSampler(const TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
 
     bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
+    bool uploadTextures(const RenderStagePass& renderStagePass);
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
     I64 computeAndGetProgramGUID(const RenderStagePass& renderStagePass);
 
@@ -246,24 +269,26 @@ class Material final : public CachedResource {
     using ShaderPerVariant = std::array<ShaderProgramInfo, g_maxVariantsPerPass>;
     using ShaderVariantsPerPass = eastl::array<ShaderPerVariant, to_base(RenderPassType::COUNT)>;
     using ShaderPassesPerStage = eastl::array<ShaderVariantsPerPass, to_base(RenderStage::COUNT)>;
-    ShaderPassesPerStage _shaderInfo;
+    ShaderPassesPerStage _shaderInfo{};
     
 
     using StatesPerVariant = std::array<size_t, g_maxVariantsPerPass>;
     using StateVariantsPerPass = eastl::array<StatesPerVariant, to_base(RenderPassType::COUNT)>;
     using StatePassesPerStage = eastl::array<StateVariantsPerPass, to_base(RenderStage::COUNT)>;
-    StatePassesPerStage _defaultRenderStates;
+    StatePassesPerStage _defaultRenderStates{};
 
     /// use this map to add textures to the material
-    mutable SharedMutex _textureLock;
+    mutable SharedMutex _textureLock{};
     std::array<Texture_ptr, to_base(TextureUsage::COUNT)> _textures = {};
     std::array<size_t, to_base(TextureUsage::COUNT)> _samplers = {};
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
-    I32 _textureKeyCache = -1;
-    std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines;
+    std::array<size_t, GetMaterialTextureCount()> _textureIndex = {};
 
-    vectorEASTL<Material*> _instances;
+    I32 _textureKeyCache = -1;
+    std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines{};
+
+    vectorEASTL<Material*> _instances{};
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Material);

@@ -51,6 +51,8 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
+    [[nodiscard]] size_t makeResident(size_t samplerHash) override;
+
     bool unload() override;
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override;
@@ -84,6 +86,12 @@ class glTexture final : public Texture,
     std::atomic_bool _allocatedStorage;
     TextureData _loadingData;
     glLockManager* _lockManager;
+
+
+    using TextureAddressMap = hashMap<size_t, U64>;
+    // One GPU address per handle + sampler combo
+    Mutex _gpuAddressesLock;
+    TextureAddressMap _gpuAddresses;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(glTexture);

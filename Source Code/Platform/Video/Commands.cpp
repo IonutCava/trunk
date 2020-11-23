@@ -148,7 +148,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d - %d ]\n", binding, data._textureHandle, samplerHash));
+        ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", binding, data._textureHandle, samplerHash));
     }
 
     for (const auto& it : cmd._set._textureViews) {

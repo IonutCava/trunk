@@ -382,7 +382,7 @@ void GL_API::closeRenderingAPI() {
     }
     // Destroy sampler objects
     {
-        for (auto sampler : s_samplerMap) {
+        for (auto &sampler : s_samplerMap) {
             glSamplerObject::destruct(sampler.second);
         }
         s_samplerMap.clear();
@@ -426,6 +426,19 @@ void GL_API::dequeueComputeMipMap(const GLuint textureHandle) {
     if (it != std::cend(s_mipmapQueue)) {
         s_mipmapQueue.erase(it);
     }
+}
+
+size_t GL_API::queueTextureResidency(const U64 textureAddress, const bool makeResident) {
+    UniqueLock<SharedMutex> w_lock(s_textureResidencyQueueSetLock);
+
+    const auto it = s_textureResidencyQueue.find(textureAddress);
+    if (it == std::cend(s_textureResidencyQueue)) {
+        hashAlg::emplace(s_textureResidencyQueue, textureAddress, makeResident);
+    } else {
+        it->second = makeResident;
+    }
+
+    return 1;
 }
 
 void GL_API::onThreadCreated(const std::thread::id& threadID) {

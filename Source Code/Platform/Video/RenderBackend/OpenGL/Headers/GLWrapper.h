@@ -142,6 +142,8 @@ protected:
     bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady) const;
     void sendPushConstants(const PushConstants & pushConstants) const;
 
+    size_t queueTextureResidency(U64 textureAddress, bool makeResident) override;
+
 public:
     static GLStateTracker& getStateTracker() noexcept;
 
@@ -219,6 +221,10 @@ private:
 
     static SharedMutex s_mipmapQueueSetLock;
     static eastl::unordered_set<GLuint> s_mipmapQueue;
+
+    static SharedMutex s_textureResidencyQueueSetLock;
+    static hashMap<U64, bool> s_textureResidencyQueue;
+
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
@@ -227,6 +233,8 @@ private:
     static GLuint s_anisoLevel;
     /// /*sampler hash value*/ /*sampler object*/
     using SamplerObjectMap = hashMap<size_t, GLuint, NoHash<size_t>>;
+
+    static SharedMutex s_samplerMapLock;
     static SamplerObjectMap s_samplerMap;
     static GLStateTracker  s_stateTracker;
 

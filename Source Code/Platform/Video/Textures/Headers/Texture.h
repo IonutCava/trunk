@@ -72,6 +72,9 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     virtual ~Texture() = default;
 
+    // Returns an index to use in shaders to look up the texture
+    virtual size_t makeResident(size_t samplerHash) = 0;
+
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) = 0;
     /// Change the texture's mip levels. This can be called at any time

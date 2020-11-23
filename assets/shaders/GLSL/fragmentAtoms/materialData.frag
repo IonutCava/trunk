@@ -10,11 +10,17 @@
 #endif
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D texDiffuse0 = dvd_materialTextures[TEX_IDX_UNIT0];
+sampler2D texDiffuse1 = dvd_materialTextures[TEX_IDX_UNIT1];
+#else //USE_BINDLESS_TEXTURES
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
-#endif
+#endif //USE_BINDLESS_TEXTURES
+#endif //!PRE_PASS || HAS_TRANSPARENCY
 
 #if !defined(PRE_PASS)
+layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
 
 #if defined(USE_PLANAR_REFRACTION)
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
@@ -22,22 +28,32 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 
 
 #if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D texOcclusionMetallicRoughness = dvd_materialTextures[TEX_IDX_OMR];
+#else
 layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOcclusionMetallicRoughness;
+#endif //USE_BINDLESS_TEXTURES
 #endif //USE_METALLIC_ROUGHNESS_MAP
-
-layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
 
 #endif  //PRE_PASS
 
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D texOpacityMap = dvd_materialTextures[TEX_IDX_OPACITY];
+#else
 layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
-#endif
+#endif //USE_BINDLESS_TEXTURES
+#endif //USE_OPACITY_MAP
 
 #if !defined(USE_CUSTOM_NORMAL_MAP)
 //Normal or BumpMap
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D texNormalMap = dvd_materialTextures[TEX_IDX_NORMALMAP];
+#else
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
-#endif
+#endif //USE_BINDLESS_TEXTURES
+#endif //!USE_CUSTOM_NORMAL_MAP
 
 #if defined(COMPUTE_TBN)
 #include "bumpMapping.frag"

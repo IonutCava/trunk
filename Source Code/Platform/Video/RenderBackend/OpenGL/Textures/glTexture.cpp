@@ -84,6 +84,29 @@ void glTexture::validateDescriptor() {
     _loadingData._textureType = _descriptor.texType();
 }
 
+size_t glTexture::makeResident(const size_t samplerHash) {
+    assert(_data._textureType != TextureType::COUNT);
+    if (samplerHash == 0) {
+        return 0;
+    }
+
+    U64 address = 0u;
+    {
+        UniqueLock<Mutex> w_lock(_gpuAddressesLock);
+        const auto it = _gpuAddresses.find(samplerHash);
+        if (it != std::cend(_gpuAddresses)) {
+            address = it->second;
+        } else {
+            //Cache miss. Grab a new address
+            const GLuint sampler = GL_API::getSamplerHandle(samplerHash);
+            address = glGetTextureSamplerHandleARB(_loadingData._textureHandle, sampler);
+            emplace(_gpuAddresses, samplerHash, address);
+        }
+    }
+
+    return _context.queueTextureResidency(address, true);
+}
+
 bool glTexture::unload() {
     assert(_data._textureType != TextureType::COUNT);
 
@@ -233,7 +256,7 @@ void glTexture::reserveStorage() const {
                 _numLayers * numFaces);
         } break;
         default: break;
-    };
+    }
 }
 
 void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) {

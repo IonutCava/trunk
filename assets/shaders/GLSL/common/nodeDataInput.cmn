@@ -148,6 +148,13 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneDa
 #define dvd_time int(dvd_otherData.x)
 #define dvd_deltaTime (int(dvd_otherData.y))
 
+#if defined(USE_BINDLESS_TEXTURES)
+layout(binding = BUFFER_RESIDENT_TEXTURES, std140) uniform dvd_ResidentTextures
+{
+    sampler2D dvd_materialTextures[MAX_RESIDENT_TEXTURES];
+};
+#endif //USE_BINDLESS_TEXTURES
+
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 
 #if defined(TESS_CTRL_SHADER)

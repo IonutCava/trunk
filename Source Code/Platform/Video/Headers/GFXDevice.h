@@ -184,6 +184,16 @@ public:
         REVEALAGE = NORMALS_AND_VELOCITY,
     };
 
+    struct ResidentTextures
+    {
+        using Storage = std::array<U64, Config::MAX_ACTIVE_RESIDENT_TEXTURES>;
+        Storage _textureHandles{};
+        std::array<bool, Config::MAX_ACTIVE_RESIDENT_TEXTURES> _freeList{};
+        std::atomic_size_t _index;
+        bool _dirty = true;
+        Mutex _lock;
+    };
+
     struct NodeData {
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
 
@@ -196,12 +206,16 @@ public:
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
 
         // [0][0...3] = base colour
-        // [1][0]     = 4x8U: occlusion, metallic, roughness, reserved
-        // [1][1]     = IBL texture size
-        // [1][2..3]  = reserved
-        // [2][0...2] = emissive
-        // [2][3]     = parallax factor
-        // [3][0...2] = reserved
+        // [1][0...2] = emissive
+        // [1][3]     = parallax factor
+        // [2][0]     = 4x8U: occlusion, metallic, roughness, reserved
+        // [2][1]     = IBL texture size
+        // [2][2]     = 2x16F: textureIDs 0, 1
+        // [2][3]     = 2x16F: textureIDs 2, 3
+        // [3][0]     = 2x16F: textureIDs 4, 5
+        // [3][1]     = 2x16F: textureIDs 6, reserved
+        // [3][2]     = reserved
+        // [3][3]     = reserved
         mat4<F32> _colourMatrix = MAT4_ZERO;
 
         // [0...3][0...2] = previous world matrix
@@ -245,6 +259,7 @@ public:  // GPU interface
     void idle(bool fast) const;
     void beginFrame(DisplayWindow& window, bool global);
     void endFrame(DisplayWindow& window, bool global);
+    size_t queueTextureResidency(U64 textureAddress, bool makeResident);
 
     void debugDraw(const SceneRenderState& sceneRenderState, const Camera* activeCamera, GFX::CommandBuffer& bufferInOut);
     void debugDrawLines(const Line* lines, size_t count);
@@ -523,11 +538,13 @@ private:
     vec2<U16> _renderingResolution;
 
     GFXShaderData _gpuBlock;
+    PROPERTY_R(ResidentTextures, gpuTextures);
 
     mutable Mutex _debugViewLock;
     vectorEASTL<DebugView_ptr> _debugViews;
     
     ShaderBuffer* _gfxDataBuffer = nullptr;
+    ShaderBuffer* _gfxTextureBuffer = nullptr;
    
     Mutex _pipelineCacheLock;
     hashMap<size_t, Pipeline, NoHash<size_t>> _pipelineCache;

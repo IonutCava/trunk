@@ -328,12 +328,16 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     TextureDataContainer<>& textures = pkg.descriptorSet(0)._textureData;
 
     if (pkg.textureDataDirty()) {
-        if (_materialInstance != nullptr) {
-            _materialInstance->getTextureData(renderStagePass, textures);
+        if_constexpr(!Config::USE_BINDLESS_TEXTURES) {
+            if (_materialInstance != nullptr) {
+                _materialInstance->getTextureData(renderStagePass, textures);
+            }
         }
         pkg.textureDataDirty(false);
     }
-
+    if (_materialInstance != nullptr) {
+        _materialInstance->uploadTextures(renderStagePass);
+    }
     if (!renderStagePass.isDepthPass()) {
         {
             SharedLock<SharedMutex> r_lock(_reflectionLock);
@@ -409,7 +413,7 @@ void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut) const {
         _materialInstance->getMaterialMatrix(matOut);
 
         SharedLock<SharedMutex> r_lock(_reflectionLock);
-        matOut.element(1, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
+        matOut.element(2, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
     }
 }
 

@@ -1,7 +1,12 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#endif //USE_BINDLESS_TEXTURES
+
 layout(binding = TEXTURE_SPLAT) uniform sampler2DArray texBlendMaps;
 layout(binding = TEXTURE_HELPER_TEXTURES) uniform sampler2DArray helperTextures;
 layout(binding = TEXTURE_EXTRA_TILE) uniform sampler2DArray texExtraMaps;

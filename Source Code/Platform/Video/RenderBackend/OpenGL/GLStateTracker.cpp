@@ -187,17 +187,33 @@ bool GLStateTracker::bindTextures(const GLushort unitOffset,
         unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
     {
         if (textureHandles != nullptr) {
-            UniqueLock<SharedMutex> w_lock(GL_API::s_mipmapQueueSetLock);
-            for (GLuint i = 0; i < textureCount; ++i) {
-                const GLuint crtHandle = textureHandles[i];
-                if (crtHandle > 0) {
-                    const auto it = GL_API::s_mipmapQueue.find(crtHandle);
-                    if (it == std::cend(GL_API::s_mipmapQueue)) {
-                        continue;
+            {
+                UniqueLock<SharedMutex> w_lock(GL_API::s_mipmapQueueSetLock);
+                for (GLuint i = 0; i < textureCount; ++i) {
+                    const GLuint crtHandle = textureHandles[i];
+                    if (crtHandle > 0) {
+                        const auto it = GL_API::s_mipmapQueue.find(crtHandle);
+                        if (it == std::cend(GL_API::s_mipmapQueue)) {
+                            continue;
+                        }
+                        glGenerateTextureMipmap(crtHandle);
+                        GL_API::s_mipmapQueue.erase(crtHandle);
                     }
-                    glGenerateTextureMipmap(crtHandle);
-                    GL_API::s_mipmapQueue.erase(crtHandle);
                 }
+            }
+            {
+                UniqueLock<SharedMutex> w_lock(GL_API::s_textureResidencyQueueSetLock);
+                if_constexpr(Config::USE_BINDLESS_TEXTURES) {
+                  for (const auto&[address, upload] : GL_API::s_textureResidencyQueue) {
+                      if (upload) {
+                          glMakeTextureHandleResidentARB(address);
+                      } else {
+                          glMakeTextureHandleNonResidentARB(address);
+                      }
+                  }
+                }
+
+                GL_API::s_textureResidencyQueue.clear();
             }
         }
 

@@ -93,6 +93,8 @@ GFXDevice::GFXDevice(Kernel & parent)
     PlatformContextComponent(parent.platformContext()),
     _clippingPlanes(Plane<F32>(0, 0, 0, 0))
 {
+    _gpuTextures._freeList.fill(true);
+
     _viewport.set(-1);
 
     Line temp = {};
@@ -212,19 +214,37 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     GFX::initPools();
 
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
-    ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-    bufferDescriptor._elementCount = 1;
-    bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
-    bufferDescriptor._ringBufferLength = TargetBufferSize;
-    bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    bufferDescriptor._initialData = { &_gpuBlock._data, bufferDescriptor._elementSize };
-    bufferDescriptor._name = "DVD_GPU_DATA";
-    bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-    bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
-    _gfxDataBuffer = newSB(bufferDescriptor);
+    {
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
+        bufferDescriptor._elementCount = 1;
+        bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
+        bufferDescriptor._ringBufferLength = TargetBufferSize;
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._initialData = { &_gpuBlock._data, bufferDescriptor._elementSize };
+        bufferDescriptor._name = "DVD_GPU_DATA";
+        bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
+        _gfxDataBuffer = newSB(bufferDescriptor);
+    }
+    // Create a shader buffer to hold our bindless textures
+    {
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
+        bufferDescriptor._elementCount = 1;
+        bufferDescriptor._elementSize = sizeof(ResidentTextures::Storage);
+        bufferDescriptor._ringBufferLength = 3;
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._initialData = { _gpuTextures._textureHandles.data(), bufferDescriptor._elementSize };
+        bufferDescriptor._name = "DVD_TEXTURE_DATA";
+        bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
+        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
+        _gfxTextureBuffer = newSB(bufferDescriptor);
+    }
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
 
@@ -898,6 +918,9 @@ void GFXDevice::endFrame(DisplayWindow& window, const bool global) {
     DIVIDE_ASSERT(_viewportStack.empty(), "Not all viewports have been cleared properly! Check command buffers for missmatched push/pop!");
     // Activate the default render states
     _api->endFrame(window, global);
+
+    UniqueLock<Mutex> w_lock(_gpuTextures._lock);
+    _gpuTextures._freeList.fill(true);
 }
 #pragma endregion
 
@@ -1302,6 +1325,13 @@ void GFXDevice::uploadGPUBlock() {
         _gfxDataBuffer->incQueue();
         _gpuBlock._needsUpload = false;
     }
+
+    if (_gpuTextures._dirty) {
+        _gfxTextureBuffer->writeData(_gpuTextures._textureHandles.data());
+        _gfxTextureBuffer->bind(ShaderBufferLocation::RESIDENT_TEXTURES);
+        _gfxTextureBuffer->incQueue();
+        _gpuTextures._dirty = false;
+    }
 }
 
 /// set a new list of clipping planes. The old one is discarded
@@ -1388,6 +1418,39 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         _gpuBlock._needsUpload = true;
         _activeCameraSnapshot = cameraSnapshot;
     }
+}
+
+size_t GFXDevice::queueTextureResidency(const U64 textureAddress, const bool makeResident) {
+
+    size_t idx = 0;
+    if (_api->queueTextureResidency(textureAddress, makeResident) > 0) {
+          UniqueLock<Mutex> w_lock(_gpuTextures._lock);
+          if (makeResident) {
+              for (size_t i = 0; i < Config::MAX_ACTIVE_RESIDENT_TEXTURES; ++i) {
+                  if (_gpuTextures._freeList[i]) {
+                      _gpuTextures._freeList[i] = false;
+                      _gpuTextures._textureHandles[i] = textureAddress;
+                      idx = i;
+                      break;
+                  }
+              }
+          } else {
+              for (size_t i = 0; i < Config::MAX_ACTIVE_RESIDENT_TEXTURES; ++i) {
+                  if (_gpuTextures._textureHandles[i] == textureAddress) {
+                      _gpuTextures._freeList[i] = true;
+                      idx = i;
+                      break;
+                  }
+              }
+          }
+          if (idx == Config::MAX_ACTIVE_RESIDENT_TEXTURES) {
+              DIVIDE_UNEXPECTED_CALL();
+          }
+
+          _gpuTextures._dirty = true;
+    }
+
+    return idx;
 }
 
 /// Update the rendering viewport

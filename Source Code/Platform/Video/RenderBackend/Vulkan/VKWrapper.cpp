@@ -22,6 +22,13 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(global);
     }
 
+    size_t VK_API::queueTextureResidency(U64 textureAddress, bool makeResident) {
+        ACKNOWLEDGE_UNUSED(textureAddress);
+        ACKNOWLEDGE_UNUSED(makeResident);
+
+        return 0;
+    }
+
     ErrorCode VK_API::initRenderingAPI(I32 argc, char** argv, Configuration& config) {
         ACKNOWLEDGE_UNUSED(argc);
         ACKNOWLEDGE_UNUSED(argv);

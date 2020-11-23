@@ -47,6 +47,7 @@ class VK_API final : public RenderAPIWrapper {
       void idle(bool fast) override;
       void beginFrame(DisplayWindow& window, bool global = false) override;
       void endFrame(DisplayWindow& window, bool global = false) override;
+      size_t queueTextureResidency(U64 textureAddress, bool makeResident) override;
 
       ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
       void closeRenderingAPI() override;

@@ -45,7 +45,11 @@ float overlay(float x, float y)
 
 uniform float projectedTextureMixWeight;
 
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D texDiffuseProjected = dvd_materialTextures[TEX_IDX_PROJECTION];
+#else
 layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
+#endif //USE_BINDLESS_TEXTURES
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     vec4 projectedTex = texture(texDiffuseProjected, vec2(PoxPosInMap.s, 1.0-PoxPosInMap.t));

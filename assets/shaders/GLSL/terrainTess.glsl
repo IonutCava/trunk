@@ -5,7 +5,11 @@
 layout(location = ATTRIB_POSITION) in vec4 inVertexData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#endif
 
 uniform vec2 dvd_textureWorldOffset;
 uniform vec2 dvd_tileWorldPosition;
@@ -64,7 +68,11 @@ void main(void)
 uniform float dvd_tessTriangleWidth;
 uniform vec2 dvd_textureWorldOffset;
 
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#endif
 
 layout(location = 10) in vec4 vtx_adjancency[];
 layout(location = 11) in float vtx_tileSize[];
@@ -299,7 +307,11 @@ layout(quads, fractional_even_spacing, cw) in;
 
 #include "nodeBufferedInput.cmn"
 
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#endif
 
 uniform vec2 dvd_textureWorldOffset;
 
@@ -442,7 +454,11 @@ void main()
 #include "nodeBufferedInput.cmn"
 
 #if defined(TOGGLE_NORMALS)
+#if defined(USE_BINDLESS_TEXTURES)
+sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
+#endif //USE_BINDLESS_TEXTURES
 #endif //TOGGLE_NORMALS
 
 layout(triangles) in;

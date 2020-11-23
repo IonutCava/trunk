@@ -82,6 +82,8 @@ protected:
     virtual void endFrame(DisplayWindow& window, bool global = false) = 0;
     virtual void idle(bool fast) = 0;
 
+    virtual size_t queueTextureResidency(U64 textureAddress, bool makeResident) = 0;
+
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 

@@ -75,6 +75,8 @@ constexpr unsigned int MAX_POOLED_TASKS = 16384;
 constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 128;
 /// Estimated maximum number of visible objects per render pass (this includes debug primitives)
 constexpr unsigned int MAX_VISIBLE_NODES = 4096 * 2;
+constexpr unsigned int MAX_ACTIVE_TEXTURE_SLOTS = 64;
+constexpr unsigned int MAX_ACTIVE_RESIDENT_TEXTURES = MAX_ACTIVE_TEXTURE_SLOTS * 2;
 /// How many clip planes should the shaders us
 /// How many reflective objects are we allowed to display on screen at the same time
 #   if defined(_DEBUG)
@@ -102,6 +104,9 @@ constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
 
 /// Use the coloured version of WOIT as detailed here: http://casual-effects.blogspot.com/2015/03/colored-blended-order-independent.html (Note: Not yet working!)
 constexpr bool USE_COLOURED_WOIT = false;
+
+/// Use OGL bindless textures
+constexpr bool USE_BINDLESS_TEXTURES = false;
 
 /// Compute related options
 namespace Compute {

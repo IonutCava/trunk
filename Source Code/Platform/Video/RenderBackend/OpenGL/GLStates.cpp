@@ -23,6 +23,10 @@ GLuint GL_API::s_anisoLevel = 0u;
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
+SharedMutex GL_API::s_textureResidencyQueueSetLock;
+hashMap<U64, bool> GL_API::s_textureResidencyQueue;
+
+SharedMutex GL_API::s_samplerMapLock;
 GL_API::SamplerObjectMap GL_API::s_samplerMap;
 GLUtil::glVAOPool GL_API::s_vaoPool;
 glHardwareQueryPool* GL_API::s_hardwareQueryPool = nullptr;

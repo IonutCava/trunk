@@ -24,10 +24,12 @@ namespace {
 
     constexpr TextureUsage g_materialTextures[] = {
         TextureUsage::UNIT0,
-        TextureUsage::UNIT1,
-        TextureUsage::NORMALMAP,
         TextureUsage::OPACITY,
+        TextureUsage::UNIT1,
         TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
+        TextureUsage::HEIGHTMAP,
+        TextureUsage::PROJECTION,
+        TextureUsage::NORMALMAP
     };
 };
 
@@ -119,8 +121,7 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
-      _parentCache(parentCache),
-      _defaultRenderStates{}
+      _parentCache(parentCache)
 {
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
@@ -679,6 +680,47 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     return false;
 }
 
+bool Material::uploadTextures(const RenderStagePass& renderStagePass) {
+    bool ret = false;
+    SharedLock<SharedMutex> r_lock(_textureLock);
+
+    U8 idx = 0;
+    const bool depthStage = renderStagePass.isDepthPass();
+    for (const U8 slot : g_TransparentSlots) {
+        if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                _textureIndex[idx] = crtTexture->makeResident(_samplers[slot]);
+                ret = _textureIndex[idx++] > 0 && ret;
+            }
+        }
+    }
+
+    for (const U8 slot : g_ExtraSlots) {
+        if (!depthStage || _textureUseForDepth[slot]) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                _textureIndex[idx] = crtTexture->makeResident(_samplers[slot]);
+                ret = _textureIndex[idx++] > 0 && ret;
+            }
+        }
+    }
+
+    if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
+        !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
+    {
+        for (const U8 slot : g_AdditionalSlots) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                _textureIndex[idx] = crtTexture->makeResident(_samplers[slot]);
+                ret = _textureIndex[idx++] > 0 && ret;
+            }
+        }
+    }
+
+    return ret;
+}
+
 bool Material::getTextureData(const TextureUsage slot, TextureDataContainer<>& container) {
     const U8 slotValue = to_U8(slot);
 
@@ -743,24 +785,11 @@ bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDat
 bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData) {
     OPTICK_EVENT();
 
-    constexpr U8 transparentSlots[] = {
-        to_base(TextureUsage::UNIT0),
-        to_base(TextureUsage::OPACITY)
-    };
-
-    constexpr U8 extraSlots[] = {
-        to_base(TextureUsage::UNIT1),
-        to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS),
-        to_base(TextureUsage::HEIGHTMAP),
-        to_base(TextureUsage::PROJECTION),
-        to_base(TextureUsage::ADDITIONAL_DATA)
-    };
-
     bool ret = false;
     SharedLock<SharedMutex> r_lock(_textureLock);
 
     const bool depthStage = renderStagePass.isDepthPass();
-    for (const U8 slot : transparentSlots) {
+    for (const U8 slot : g_TransparentSlots) {
         if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
@@ -770,7 +799,7 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
         }
     }
 
-    for (const U8 slot : extraSlots) {
+    for (const U8 slot : g_ExtraSlots) {
         if (!depthStage || _textureUseForDepth[slot]) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
@@ -783,11 +812,12 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
     if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
         !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
     {
-        constexpr U8 normalSlot = to_base(TextureUsage::NORMALMAP);
-        const Texture_ptr& crtNormalTexture = _textures[normalSlot];
-        if (crtNormalTexture != nullptr) {
-            textureData.setTexture(crtNormalTexture->data(), _samplers[normalSlot], normalSlot);
-            ret = true;
+        for (const U8 slot : g_ExtraSlots) {
+            const Texture_ptr& crtTexture = _textures[slot];
+            if (crtTexture != nullptr) {
+                textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
+                ret = true;
+            }
         }
     }
 
@@ -1152,12 +1182,31 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
 }
 
 void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
-    const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), 1.0f);
+    constexpr F32 reserved = 1.f;
+
+    const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
+
+    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
+        for (const size_t idx : _textureIndex) {
+            DIVIDE_ASSERT(idx < std::numeric_limits<U16>::max());
+        }
+    }
+
+    const U32 textureIndices1Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[0]), to_F32(_textureIndex[1]));
+    const U32 textureIndices2Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[2]), to_F32(_textureIndex[3]));
+    const U32 textureIndices3Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[4]), to_F32(_textureIndex[5]));
+    const U32 textureIndices4Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[6]), 1.f);
 
     retMatrix.setRow(0, baseColour());
-    retMatrix.setRow(2, vec4<F32>{ emissive(), parallaxFactor() });
-
-    retMatrix.element(1, 0) = to_F32(matPropertiesPacked);
+    retMatrix.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });
+    retMatrix.element(2, 0) = to_F32(matPropertiesPacked);
+    retMatrix.element(2, 1) = 1.f; //IBL Texture Size
+    retMatrix.element(2, 2) = to_F32(textureIndices1Packed);
+    retMatrix.element(2, 3) = to_F32(textureIndices2Packed);
+    retMatrix.element(3, 0) = to_F32(textureIndices3Packed);
+    retMatrix.element(3, 1) = to_F32(textureIndices4Packed);
+    retMatrix.element(3, 2) = reserved;
+    retMatrix.element(3, 3) = reserved;
 }
 
 void Material::rebuild() {
