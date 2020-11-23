@@ -15,7 +15,7 @@ goto run_Release
 :run_Release
 ECHO Running Release Mode
 ECHO Copying DLLs
-robocopy 3rdParty\assimp\bin\Release\ Build\ assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy 3rdParty\assimp\bin\Release\ Build\ assimp-vc142-mt.dll /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ Build\ PhysX_64.dll  /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ Build\ PhysXCommon_64.dll /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ Build\ PhysXFoundation_64.dll /NP /NJH /NJS
@@ -28,7 +28,7 @@ exit /b
 :run_Profile
 ECHO Running Profile Mode
 ECHO Copying DLLs
-robocopy 3rdParty\assimp\bin\Release\ Build\ assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy 3rdParty\assimp\bin\Release\ Build\ assimp-vc142-mt.dll /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ Build\ PhysX_64.dll  /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ Build\ PhysXCommon_64.dll /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ Build\ PhysXFoundation_64.dll /NP /NJH /NJS
@@ -41,7 +41,7 @@ exit /b
 :run_Debug
 ECHO Running Profile Mode
 ECHO Copying DLLs
-robocopy 3rdParty\assimp\bin\Debug\ Build\ assimp-vc141-mt.dll /NP /NJH /NJS
+robocopy 3rdParty\assimp\bin\Debug\ Build\ assimp-vc142-mt.dll /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ Build\ PhysX_64.dll  /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ Build\ PhysXCommon_64.dll /NP /NJH /NJS
 robocopy 3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ Build\ PhysXFoundation_64.dll /NP /NJH /NJS

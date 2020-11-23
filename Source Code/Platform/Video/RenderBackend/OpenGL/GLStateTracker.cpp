@@ -201,23 +201,7 @@ bool GLStateTracker::bindTextures(const GLushort unitOffset,
                     }
                 }
             }
-            {
-                UniqueLock<SharedMutex> w_lock(GL_API::s_textureResidencyQueueSetLock);
-                if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-                  for (const auto&[address, upload] : GL_API::s_textureResidencyQueue) {
-                      if (upload) {
-                          glMakeTextureHandleResidentARB(address);
-                      } else {
-                          glMakeTextureHandleNonResidentARB(address);
-                      }
-                  }
-                }
-
-                GL_API::s_textureResidencyQueue.clear();
-            }
         }
-
-        bindSamplers(unitOffset, textureCount, samplerHandles);
 
         if (textureCount == 1) {
             const GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
@@ -245,6 +229,7 @@ bool GLStateTracker::bindTextures(const GLushort unitOffset,
 
             bound = true;
         }
+        bindSamplers(unitOffset, textureCount, samplerHandles);
     }
 
     return bound;

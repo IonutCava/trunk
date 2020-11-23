@@ -172,14 +172,14 @@ class Material final : public CachedResource {
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
 
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
-    void getMaterialMatrix(mat4<F32>& retMatrix) const;
+    void getMaterialMatrix(mat4<F32>& retMatrix);
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;
     size_t getSampler(const TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
 
     bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
-    bool uploadTextures(const RenderStagePass& renderStagePass);
+    bool uploadTextures();
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
     I64 computeAndGetProgramGUID(const RenderStagePass& renderStagePass);
 
@@ -283,7 +283,8 @@ class Material final : public CachedResource {
     std::array<size_t, to_base(TextureUsage::COUNT)> _samplers = {};
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
-    std::array<size_t, GetMaterialTextureCount()> _textureIndex = {};
+    std::array<size_t, to_base(TextureUsage::COUNT)> _textureIndex = {};
+    std::atomic_bool _texturesMadeResident;
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines{};

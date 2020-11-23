@@ -233,13 +233,13 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     {
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-        bufferDescriptor._elementCount = 1;
-        bufferDescriptor._elementSize = sizeof(ResidentTextures::Storage);
-        bufferDescriptor._ringBufferLength = 3;
+        bufferDescriptor._elementCount = Config::MAX_ACTIVE_RESIDENT_TEXTURES;
+        bufferDescriptor._elementSize = sizeof(U64);
+        bufferDescriptor._ringBufferLength = 1;
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._initialData = { _gpuTextures._textureHandles.data(), bufferDescriptor._elementSize };
+        bufferDescriptor._initialData = { _gpuTextures._textureHandles.data(), _gpuTextures._textureHandles.size() * sizeof(U64) };
         bufferDescriptor._name = "DVD_TEXTURE_DATA";
         bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
         bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
@@ -1422,16 +1422,27 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
 size_t GFXDevice::queueTextureResidency(const U64 textureAddress, const bool makeResident) {
 
-    size_t idx = 0;
-    if (_api->queueTextureResidency(textureAddress, makeResident) > 0) {
+    size_t idx = INVALID_TEXTURE_IDX;
+    if (_api->queueTextureResidency(textureAddress, makeResident) != INVALID_TEXTURE_IDX) {
           UniqueLock<Mutex> w_lock(_gpuTextures._lock);
           if (makeResident) {
+              // Try and match it first
               for (size_t i = 0; i < Config::MAX_ACTIVE_RESIDENT_TEXTURES; ++i) {
-                  if (_gpuTextures._freeList[i]) {
-                      _gpuTextures._freeList[i] = false;
-                      _gpuTextures._textureHandles[i] = textureAddress;
+                  if (_gpuTextures._textureHandles[i] == textureAddress) {
+                      _gpuTextures._freeList[i] = false; // Bit redundant, but better safe
                       idx = i;
                       break;
+                  }
+              }
+              if (idx == INVALID_TEXTURE_IDX) {
+                  // New entry
+                  for (size_t i = 0; i < Config::MAX_ACTIVE_RESIDENT_TEXTURES; ++i) {
+                      if (_gpuTextures._freeList[i]) {
+                          _gpuTextures._freeList[i] = false;
+                          _gpuTextures._textureHandles[i] = textureAddress;
+                          idx = i;
+                          break;
+                      }
                   }
               }
           } else {
@@ -1443,7 +1454,7 @@ size_t GFXDevice::queueTextureResidency(const U64 textureAddress, const bool mak
                   }
               }
           }
-          if (idx == Config::MAX_ACTIVE_RESIDENT_TEXTURES) {
+          if (idx == Config::MAX_ACTIVE_RESIDENT_TEXTURES || idx == INVALID_TEXTURE_IDX) {
               DIVIDE_UNEXPECTED_CALL();
           }
 

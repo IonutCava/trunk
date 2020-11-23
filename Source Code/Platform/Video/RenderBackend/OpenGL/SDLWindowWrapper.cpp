@@ -430,15 +430,10 @@ void GL_API::dequeueComputeMipMap(const GLuint textureHandle) {
 
 size_t GL_API::queueTextureResidency(const U64 textureAddress, const bool makeResident) {
     UniqueLock<SharedMutex> w_lock(s_textureResidencyQueueSetLock);
+    s_textureResidencyQueue.insert_or_assign(textureAddress, makeResident);
+    s_residentTexturesNeedUpload.store(true);
 
-    const auto it = s_textureResidencyQueue.find(textureAddress);
-    if (it == std::cend(s_textureResidencyQueue)) {
-        hashAlg::emplace(s_textureResidencyQueue, textureAddress, makeResident);
-    } else {
-        it->second = makeResident;
-    }
-
-    return 1;
+    return 0;
 }
 
 void GL_API::onThreadCreated(const std::thread::id& threadID) {

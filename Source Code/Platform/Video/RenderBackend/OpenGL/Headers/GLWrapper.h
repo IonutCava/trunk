@@ -135,6 +135,7 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) const;
 
+    bool makeTexturesResident() const;
     bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const;
     bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
 
@@ -223,7 +224,9 @@ private:
     static eastl::unordered_set<GLuint> s_mipmapQueue;
 
     static SharedMutex s_textureResidencyQueueSetLock;
+    static std::atomic_bool s_residentTexturesNeedUpload;
     static hashMap<U64, bool> s_textureResidencyQueue;
+    static eastl::set<U64> s_residentTextures;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;

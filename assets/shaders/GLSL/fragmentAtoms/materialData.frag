@@ -11,8 +11,8 @@
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D texDiffuse0 = dvd_materialTextures[TEX_IDX_UNIT0];
-sampler2D texDiffuse1 = dvd_materialTextures[TEX_IDX_UNIT1];
+#define texDiffuse0 dvd_materialTextures[TEX_IDX_UNIT0(DATA_IDX)]
+#define texDiffuse1 dvd_materialTextures[TEX_IDX_UNIT1(DATA_IDX)]
 #else //USE_BINDLESS_TEXTURES
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
@@ -29,7 +29,7 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 
 #if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D texOcclusionMetallicRoughness = dvd_materialTextures[TEX_IDX_OMR];
+#define texOcclusionMetallicRoughness dvd_materialTextures[TEX_IDX_OMR(DATA_IDX)]
 #else
 layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOcclusionMetallicRoughness;
 #endif //USE_BINDLESS_TEXTURES
@@ -40,7 +40,7 @@ layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOccl
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D texOpacityMap = dvd_materialTextures[TEX_IDX_OPACITY];
+#define texOpacityMap dvd_materialTextures[TEX_IDX_OPACITY(DATA_IDX)]
 #else
 layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #endif //USE_BINDLESS_TEXTURES
@@ -49,7 +49,7 @@ layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
 #if !defined(USE_CUSTOM_NORMAL_MAP)
 //Normal or BumpMap
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D texNormalMap = dvd_materialTextures[TEX_IDX_NORMALMAP];
+#define texNormalMap dvd_materialTextures[TEX_IDX_NORMALMAP(DATA_IDX)]
 #else
 layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
 #endif //USE_BINDLESS_TEXTURES
@@ -132,14 +132,10 @@ vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
     return omr;
 #else
     // Convert specular to roughness ... roughly? really wrong, but should work I guesssssssssss. -Ionut
-    return saturate(vec3(Occlusion(colourMatrix),
-                         Metallic(colourMatrix),
-                         1.0f - omr[2]));
+    return saturate(vec3(PACKED_OMR(colourMatrix).rg, 1.0f - omr[2]));
 #endif
 #else
-    return saturate(vec3(Occlusion(colourMatrix),
-                         Metallic(colourMatrix),
-                         Roughness(colourMatrix)));
+    return saturate(PACKED_OMR(colourMatrix).rgb);
 #endif
 }
 #endif //USE_CUSTOM_ROUGHNESS

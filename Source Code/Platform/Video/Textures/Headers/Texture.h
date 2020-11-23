@@ -42,7 +42,9 @@
 #include "Utility/Headers/ImageTools.h"
 
 namespace Divide {
-    
+
+constexpr size_t INVALID_TEXTURE_IDX = Config::MAX_ACTIVE_RESIDENT_TEXTURES;
+
 namespace TypeUtil {
     const char* WrapModeToString(TextureWrap wrapMode) noexcept;
     TextureWrap StringToWrapMode(const stringImpl& wrapMode);

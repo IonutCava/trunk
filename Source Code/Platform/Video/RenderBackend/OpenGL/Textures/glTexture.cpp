@@ -12,6 +12,8 @@
 
 namespace Divide {
 
+Mutex glTexture::s_GLgpuAddressesLock;
+
 glTexture::glTexture(GFXDevice& context,
                      const size_t descriptorHash,
                      const Str256& name,
@@ -86,25 +88,33 @@ void glTexture::validateDescriptor() {
 
 size_t glTexture::makeResident(const size_t samplerHash) {
     assert(_data._textureType != TextureType::COUNT);
-    if (samplerHash == 0) {
-        return 0;
+    { //Fast path. We likely have the address already
+        SharedLock<SharedMutex> r_lock(_gpuAddressesLock);
+        const auto it = _gpuAddresses.find(samplerHash);
+        if (it != std::cend(_gpuAddresses)) {
+            return _context.queueTextureResidency(it->second, true);
+        }
     }
-
-    U64 address = 0u;
-    {
-        UniqueLock<Mutex> w_lock(_gpuAddressesLock);
+    { //Slow path. Cache miss
+        UniqueLock<SharedMutex> w_lock(_gpuAddressesLock);
+        // Check again as we may have updated this while switching locks
+        U64 address = 0u;
         const auto it = _gpuAddresses.find(samplerHash);
         if (it != std::cend(_gpuAddresses)) {
             address = it->second;
         } else {
-            //Cache miss. Grab a new address
-            const GLuint sampler = GL_API::getSamplerHandle(samplerHash);
-            address = glGetTextureSamplerHandleARB(_loadingData._textureHandle, sampler);
+            if (samplerHash == 0) {
+                UniqueLock<Mutex> w_lock2(s_GLgpuAddressesLock);
+                address = glGetTextureHandleARB(_data._textureHandle);
+            } else {
+                const GLuint sampler = GL_API::getSamplerHandle(samplerHash);
+                UniqueLock<Mutex> w_lock2(s_GLgpuAddressesLock);
+                address = glGetTextureSamplerHandleARB(_data._textureHandle, sampler);
+            }
             emplace(_gpuAddresses, samplerHash, address);
         }
+        return _context.queueTextureResidency(address, true);
     }
-
-    return _context.queueTextureResidency(address, true);
 }
 
 bool glTexture::unload() {

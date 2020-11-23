@@ -201,7 +201,7 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <PreBuildEvent>
-      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Debug\ $(OutDir)\ assimp-vc141-mtd.dll /NP /NJH /NJS
+      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Debug\ $(OutDir)\ assimp-vc142-mtd.dll /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\debug\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
@@ -273,7 +273,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Release\ $(OutDir) assimp-vc141-mt.dll /NP /NJH /NJS
+      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Release\ $(OutDir) assimp-vc142-mt.dll /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\release\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS
@@ -346,7 +346,7 @@ if %errorlevel% leq 1 exit 0 else exit %errorlevel%</Command>
       </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc141-mt.dll /NP /NJH /NJS
+      <Command>robocopy $(TargetDir)..\3rdParty\assimp\bin\Release\ $(OutDir)\ assimp-vc142-mt.dll /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysX_64.dll  /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXCommon_64.dll /NP /NJH /NJS
 robocopy $(TargetDir)..\3rdParty\physx4\physx\bin\win.x86_64.vc142.mt\profile\ $(OutDir) PhysXFoundation_64.dll /NP /NJH /NJS

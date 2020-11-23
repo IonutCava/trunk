@@ -46,7 +46,7 @@ float overlay(float x, float y)
 uniform float projectedTextureMixWeight;
 
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D texDiffuseProjected = dvd_materialTextures[TEX_IDX_PROJECTION];
+#define texDiffuseProjected dvd_materialTextures[TEX_IDX_PROJECTION(DATA_IDX)]
 #else
 layout(binding = TEXTURE_PROJECTION) uniform sampler2D texDiffuseProjected;
 #endif //USE_BINDLESS_TEXTURES

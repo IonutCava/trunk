@@ -90,7 +90,8 @@ class glTexture final : public Texture,
 
     using TextureAddressMap = hashMap<size_t, U64>;
     // One GPU address per handle + sampler combo
-    Mutex _gpuAddressesLock;
+    SharedMutex _gpuAddressesLock;
+    static Mutex s_GLgpuAddressesLock;
     TextureAddressMap _gpuAddresses;
 };
 

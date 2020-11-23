@@ -335,9 +335,7 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
         }
         pkg.textureDataDirty(false);
     }
-    if (_materialInstance != nullptr) {
-        _materialInstance->uploadTextures(renderStagePass);
-    }
+
     if (!renderStagePass.isDepthPass()) {
         {
             SharedLock<SharedMutex> r_lock(_reflectionLock);

@@ -6,7 +6,7 @@ layout(location = ATTRIB_POSITION) in vec4 inVertexData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#define TexTerrainHeight  dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
 #else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 #endif
@@ -64,12 +64,14 @@ void main(void)
 
 --TessellationC
 
+#include "nodeBufferedInput.cmn"
+
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
 uniform float dvd_tessTriangleWidth;
 uniform vec2 dvd_textureWorldOffset;
 
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#define TexTerrainHeight  dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
 #else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 #endif
@@ -308,7 +310,7 @@ layout(quads, fractional_even_spacing, cw) in;
 #include "nodeBufferedInput.cmn"
 
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#define TexTerrainHeight  dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
 #else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 #endif
@@ -455,7 +457,7 @@ void main()
 
 #if defined(TOGGLE_NORMALS)
 #if defined(USE_BINDLESS_TEXTURES)
-sampler2D TexTerrainHeight = dvd_materialTextures[TEX_IDX_HEIGHT];
+#define TexTerrainHeight dvd_materialTextures[TEX_IDX_HEIGHT(DATA_IDX)]
 #else
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D TexTerrainHeight;
 #endif //USE_BINDLESS_TEXTURES

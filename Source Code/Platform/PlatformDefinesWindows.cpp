@@ -29,7 +29,7 @@
 #pragma comment(lib, "DbgHelp.lib")
 #pragma comment(lib, "glbindingd.lib")
 #pragma comment(lib, "glbinding-auxd.lib")
-#pragma comment(lib, "assimp-vc141-mtd.lib")
+#pragma comment(lib, "assimp-vc142-mtd.lib")
 #pragma comment(lib, "IL_d.lib")
 #pragma comment(lib, "ILU_d.lib")
 #pragma comment(lib, "libpng_d.lib")
@@ -49,7 +49,7 @@
 #else  //_DEBUG
 #pragma comment(lib, "glbinding.lib")
 #pragma comment(lib, "glbinding-aux.lib")
-#pragma comment(lib, "assimp-vc141-mt.lib")
+#pragma comment(lib, "assimp-vc142-mt.lib")
 #pragma comment(lib, "IL.lib")
 #pragma comment(lib, "ILU.lib")
 #pragma comment(lib, "libpng.lib")

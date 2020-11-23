@@ -125,6 +125,9 @@ Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t 
 {
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
+    _textureIndex.fill(INVALID_TEXTURE_IDX);
+    std::atomic_init(&_texturesMadeResident, false);
+
     const ShaderProgramInfo defaultShaderInfo = {};
     // Could just direct copy the arrays, but this looks cool
     for (U8 s = 0u; s < to_U8(RenderStage::COUNT); ++s) {
@@ -197,6 +200,9 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
 
 bool Material::update(const U64 deltaTimeUS) {
     ACKNOWLEDGE_UNUSED(deltaTimeUS);
+
+    _textureIndex.fill(INVALID_TEXTURE_IDX);
+    _texturesMadeResident.store(false);
 
     if (_needsNewShader) {
         recomputeShaders();
@@ -680,45 +686,28 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     return false;
 }
 
-bool Material::uploadTextures(const RenderStagePass& renderStagePass) {
-    bool ret = false;
-    SharedLock<SharedMutex> r_lock(_textureLock);
+bool Material::uploadTextures() {
 
-    U8 idx = 0;
-    const bool depthStage = renderStagePass.isDepthPass();
-    for (const U8 slot : g_TransparentSlots) {
-        if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
+    bool expected = false;
+    if (_texturesMadeResident.compare_exchange_strong(expected, true)) {
+        bool ret = false;
+
+        SharedLock<SharedMutex> r_lock(_textureLock);
+
+        for (const TextureUsage textureUsage : g_materialTextures) {
+            const U8 slot = to_base(textureUsage);
+
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
-                _textureIndex[idx] = crtTexture->makeResident(_samplers[slot]);
-                ret = _textureIndex[idx++] > 0 && ret;
+                _textureIndex[slot] = crtTexture->makeResident(_samplers[slot]);
+                ret = true;
             }
         }
+        
+        return ret;
     }
 
-    for (const U8 slot : g_ExtraSlots) {
-        if (!depthStage || _textureUseForDepth[slot]) {
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                _textureIndex[idx] = crtTexture->makeResident(_samplers[slot]);
-                ret = _textureIndex[idx++] > 0 && ret;
-            }
-        }
-    }
-
-    if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
-        !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
-    {
-        for (const U8 slot : g_AdditionalSlots) {
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                _textureIndex[idx] = crtTexture->makeResident(_samplers[slot]);
-                ret = _textureIndex[idx++] > 0 && ret;
-            }
-        }
-    }
-
-    return ret;
+    return true;
 }
 
 bool Material::getTextureData(const TextureUsage slot, TextureDataContainer<>& container) {
@@ -1181,30 +1170,29 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-void Material::getMaterialMatrix(mat4<F32>& retMatrix) const {
+void Material::getMaterialMatrix(mat4<F32>& retMatrix) {
+    uploadTextures();
+
     constexpr F32 reserved = 1.f;
 
     const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
-
-    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-        for (const size_t idx : _textureIndex) {
-            DIVIDE_ASSERT(idx < std::numeric_limits<U16>::max());
-        }
-    }
-
-    const U32 textureIndices1Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[0]), to_F32(_textureIndex[1]));
-    const U32 textureIndices2Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[2]), to_F32(_textureIndex[3]));
-    const U32 textureIndices3Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[4]), to_F32(_textureIndex[5]));
-    const U32 textureIndices4Packed = Util::PACK_HALF2x16(to_F32(_textureIndex[6]), 1.f);
+    const F32 unit0   = to_F32(_textureIndex[to_base(TextureUsage::UNIT0)]                        == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::UNIT0)]);
+    const F32 unit1   = to_F32(_textureIndex[to_base(TextureUsage::UNIT1)]                        == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::UNIT1)]);
+    const F32 opacity = to_F32(_textureIndex[to_base(TextureUsage::OPACITY)]                      == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::OPACITY)]);
+    const F32 omr     = to_F32(_textureIndex[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)]);
+    const F32 height  = to_F32(_textureIndex[to_base(TextureUsage::HEIGHTMAP)]                    == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::HEIGHTMAP)]);
+    const F32 proj    = to_F32(_textureIndex[to_base(TextureUsage::PROJECTION)]                   == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::PROJECTION)]);
+    const F32 normal  = to_F32(_textureIndex[to_base(TextureUsage::NORMALMAP)]                    == INVALID_TEXTURE_IDX ? 0.f : _textureIndex[to_base(TextureUsage::NORMALMAP)]);
 
     retMatrix.setRow(0, baseColour());
-    retMatrix.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });
+    //retMatrix.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });
+    retMatrix.setRow(1, vec4<F32>{ emissive(), normal });
     retMatrix.element(2, 0) = to_F32(matPropertiesPacked);
     retMatrix.element(2, 1) = 1.f; //IBL Texture Size
-    retMatrix.element(2, 2) = to_F32(textureIndices1Packed);
-    retMatrix.element(2, 3) = to_F32(textureIndices2Packed);
-    retMatrix.element(3, 0) = to_F32(textureIndices3Packed);
-    retMatrix.element(3, 1) = to_F32(textureIndices4Packed);
+    retMatrix.element(2, 2) = to_F32(Util::PACK_HALF2x16(unit0, opacity));
+    retMatrix.element(2, 3) = to_F32(Util::PACK_HALF2x16(unit1, omr));
+    retMatrix.element(3, 0) = to_F32(Util::PACK_HALF2x16(height, proj));
+    retMatrix.element(3, 1) = to_F32(Util::PACK_HALF2x16(normal, reserved));
     retMatrix.element(3, 2) = reserved;
     retMatrix.element(3, 3) = reserved;
 }

@@ -49,7 +49,6 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
 /// Prepare the GPU for rendering a frame
 void GL_API::beginFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
-
     // Start a duration query in debug builds
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         if (global) {
@@ -132,8 +131,9 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
             if_constexpr(Config::USE_BINDLESS_TEXTURES) {
                 const GFXDevice::ResidentTextures& textures = _context.gpuTextures();
                 for (const U64 texture : textures._textureHandles) {
-                    if (texture > 0u) {
+                    if (texture > 0u && GL_API::s_residentTextures.find(texture) != eastl::cend(GL_API::s_residentTextures)) {
                         glMakeTextureHandleNonResidentARB(texture);
+                        GL_API::s_residentTextures.erase(texture);
                     }
                 }
             }
@@ -290,11 +290,11 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
     if_constexpr(Config::USE_BINDLESS_TEXTURES) {
         appendToShaderHeader(ShaderType::COUNT, "#extension  GL_ARB_bindless_texture : require", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     }
     if (!getStateTracker()._opengl46Supported) {
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
 
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawIDARB", lineOffsets);
@@ -1134,6 +1134,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 
     OPTICK_TAG("Type", to_base(cmdType));
 
+    makeTexturesResident();
+
     switch (cmdType) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
             GFX::BeginRenderPassCommand* crtCmd = commandBuffer.get<GFX::BeginRenderPassCommand>(entry);
@@ -1479,10 +1481,38 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) const {
     return true;
 }
 
+bool GL_API::makeTexturesResident() const {
+    bool expected = true;
+    if (s_residentTexturesNeedUpload.compare_exchange_strong(expected, false)) {
+
+        UniqueLock<SharedMutex> w_lock(GL_API::s_textureResidencyQueueSetLock);
+        if_constexpr(Config::USE_BINDLESS_TEXTURES) {
+            for (const auto&[address, upload] : GL_API::s_textureResidencyQueue) {
+                if (upload) {
+                    if (GL_API::s_residentTextures.find(address) == eastl::cend(GL_API::s_residentTextures)) {
+                        glMakeTextureHandleResidentARB(address);
+                        GL_API::s_residentTextures.insert(address);
+                    }
+                } else {
+                    if (GL_API::s_residentTextures.find(address) != eastl::cend(GL_API::s_residentTextures)) {
+                        glMakeTextureHandleNonResidentARB(address);
+                        GL_API::s_residentTextures.erase(address);
+                    }
+                }
+            }
+        }
+
+        GL_API::s_textureResidencyQueue.clear();
+    }
+
+    return true;
+}
+
 bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const {
     OPTICK_EVENT();
 
     bool bound = false;
+
 
     STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
 #if 0

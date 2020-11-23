@@ -1,13 +1,14 @@
 #ifndef _NODE_BUFFERED_INPUT_CMN_
 #define _NODE_BUFFERED_INPUT_CMN_
 
-#include "nodeDataDefinition.cmn"
-
 #if defined(OVERRIDE_DATA_IDX)
 uniform uint DATA_IDX = 0u;
 #else
 #define DATA_IDX VAR._baseInstance
 #endif
+
+#include "nodeDataDefinition.cmn"
+
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent ACCESS_R buffer dvd_MatrixBlock
 {

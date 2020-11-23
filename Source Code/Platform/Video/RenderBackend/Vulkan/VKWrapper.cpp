@@ -26,7 +26,7 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(textureAddress);
         ACKNOWLEDGE_UNUSED(makeResident);
 
-        return 0;
+        return INVALID_TEXTURE_IDX;
     }
 
     ErrorCode VK_API::initRenderingAPI(I32 argc, char** argv, Configuration& config) {
