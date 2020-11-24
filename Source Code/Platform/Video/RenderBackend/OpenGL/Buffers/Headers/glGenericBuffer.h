@@ -40,7 +40,6 @@ namespace Divide {
 struct BufferParams {
     GLenum _usage = GL_NONE;
     bool   _unsynced = true;
-    bool   _initToZero = false;
     GLuint _ringSizeFactor = 1;
     GLuint _elementCount = 0;
     size_t _elementSizeInBytes = 0;
@@ -48,7 +47,7 @@ struct BufferParams {
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     BufferStorageType _storageType = BufferStorageType::AUTO;
     const char* _name = "";
-    std::pair<bufferPtr, size_t> _initialData = { nullptr, 0 };
+    std::pair<Byte*, size_t> _initialData = { nullptr, 0 };
 };
 
 class glBufferImpl;

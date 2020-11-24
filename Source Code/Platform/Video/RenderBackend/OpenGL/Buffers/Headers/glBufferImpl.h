@@ -46,9 +46,8 @@ struct BufferImplParams {
     size_t _elementSize = 0;
     bool _explicitFlush = true;
     bool _unsynced = true;
-    bool _initToZero = false;
     const char* _name = nullptr;
-    std::pair<bufferPtr, size_t> _initialData = { nullptr, 0 };
+    std::pair<Byte*, size_t> _initialData = { nullptr, 0 };
     BufferStorageType _storageType = BufferStorageType::AUTO;
     BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
     BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
@@ -82,8 +81,10 @@ public:
 
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
 
+    static void CleanMemory() noexcept;
+
 protected:
-    void invalidateData(size_t offsetInBytes, size_t rangeInBytes) const;
+    void writeOrClearData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data, bool zeroMem);
 
 protected:
     GLenum _usage = GL_NONE;

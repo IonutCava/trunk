@@ -221,7 +221,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._initialData = { &_gpuBlock._data, bufferDescriptor._elementSize };
+        bufferDescriptor._initialData = { (Byte*)&_gpuBlock._data, bufferDescriptor._elementSize };
         bufferDescriptor._name = "DVD_GPU_DATA";
         bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
         bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
@@ -1442,6 +1442,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool
         DIVIDE_ASSERT(false, Util::StringFormat("GFXDevice::flushCommandBuffer error [ %s ]: Invalid command buffer. Check error log!", GFX::Names::errorType[to_base(error)]).c_str());
         return;
     }
+
+    _api->preFlushCommandBuffer(commandBuffer);
 
     const GFX::CommandBuffer::CommandOrderContainer& commands = commandBuffer();
     for (const GFX::CommandBuffer::CommandEntry& cmd : commands) {

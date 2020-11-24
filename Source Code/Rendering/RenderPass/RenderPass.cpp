@@ -87,7 +87,6 @@ void RenderPass::initBufferData() {
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = 5;
         bufferDescriptor._separateReadWrite = true;
-        bufferDescriptor._initToZero = true;
 
         if (_performanceCounters) {
             bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag));
@@ -103,7 +102,6 @@ void RenderPass::initBufferData() {
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = DataBufferRingSize;
         bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._initToZero = true;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         { 
             bufferDescriptor._name = Util::StringFormat("NODE_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
@@ -121,7 +119,6 @@ void RenderPass::initBufferData() {
         bufferDescriptor._ringBufferLength = DataBufferRingSize;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._initToZero = true;
         {
             bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
             _cmdBuffer = _context.newSB(bufferDescriptor);

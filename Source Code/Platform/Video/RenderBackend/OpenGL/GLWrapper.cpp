@@ -32,6 +32,13 @@
 
 namespace Divide {
 
+namespace {
+    // Keep resident textures in memory for a max of 32 frames
+    constexpr U8 g_maxTextureResidencyFrameCount = Config::TARGET_FRAME_RATE / 2;
+    // Will try and reduce memory usage by static data that we may not be need anymore
+    const U32 g_clearMemoryFrameInterval = Config::TARGET_FRAME_RATE;
+}
+
 GLStateTracker GL_API::s_stateTracker;
 bool GL_API::s_glFlushQueued = false;
 GLUtil::glTexturePool GL_API::s_texturePool = {};
@@ -43,6 +50,7 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
       _context(context),
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
+    ACKNOWLEDGE_UNUSED(glES);
 }
 
 
@@ -129,10 +137,21 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
             s_texturePool.onFrameEnd();
             s_glFlushQueued = false;
             if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-                for (const U64 texture : s_residentTextures) {
-                    glMakeTextureHandleNonResidentARB(texture);
+                for (ResidentTexture& texture : s_residentTextures) {
+                    if (texture._address == 0u) {
+                        // Most common case
+                        continue;
+                    }
+
+                    if (++texture._frameCount > g_maxTextureResidencyFrameCount) {
+                        glMakeTextureHandleNonResidentARB(texture._address);
+                        texture = {};
+                    }
                 }
-                s_residentTextures.clear();
+            }
+            if (_context.getFrameCount() % g_clearMemoryFrameInterval == 0) {
+                glBufferImpl::CleanMemory();
+                glTexture::CleanMemory();
             }
         }
     }
@@ -554,13 +573,7 @@ bool GL_API::initGLSW(Configuration& config) {
         lineOffsets);
     
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_UNIT1 " +
-        Util::to_string(to_base(TextureUsage::UNIT1)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::COMPUTE,
+        ShaderType::COUNT,
         "#define TEXTURE_UNIT1 " +
         Util::to_string(to_base(TextureUsage::UNIT1)),
         lineOffsets);
@@ -579,12 +592,12 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define TEXTURE_OCCLUSION_METALLIC_ROUGHNESS " +
+        "#define TEXTURE_OMR " +
         Util::to_string(to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)),
         lineOffsets);
 
     appendToShaderHeader(
-        ShaderType::FRAGMENT,
+        ShaderType::COUNT,
         "#define TEXTURE_PROJECTION " +
         Util::to_string(to_base(TextureUsage::PROJECTION)),
         lineOffsets);
@@ -1118,14 +1131,21 @@ void GL_API::popDebugMessage() {
     }
 }
 
+void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
+    OPTICK_EVENT();
+
+    ACKNOWLEDGE_UNUSED(commandBuffer);
+
+    // Process texture residency queue
+    MakeTexturesResident();
+}
+
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
     OPTICK_EVENT();
 
     const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
 
     OPTICK_TAG("Type", to_base(cmdType));
-
-    makeTexturesResident();
 
     switch (cmdType) {
         case GFX::CommandType::BEGIN_RENDER_PASS: {
@@ -1472,28 +1492,47 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) const {
     return true;
 }
 
-bool GL_API::makeTexturesResident() const {
+bool GL_API::MakeTexturesResident() {
     bool expected = true;
     if (s_residentTexturesNeedUpload.compare_exchange_strong(expected, false)) {
+        UniqueLock<Mutex> w_lock(s_textureResidencyQueueSetLock);
 
-        UniqueLock<SharedMutex> w_lock(GL_API::s_textureResidencyQueueSetLock);
         if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-            for (const auto&[address, upload] : GL_API::s_textureResidencyQueue) {
-                if (upload) {
-                    if (GL_API::s_residentTextures.find(address) == eastl::cend(GL_API::s_residentTextures)) {
-                        glMakeTextureHandleResidentARB(address);
-                        GL_API::s_residentTextures.insert(address);
-                    }
-                } else {
-                    if (GL_API::s_residentTextures.find(address) != eastl::cend(GL_API::s_residentTextures)) {
-                        glMakeTextureHandleNonResidentARB(address);
-                        GL_API::s_residentTextures.erase(address);
+            const auto SetTextureResidentState = [](const U64 address, const bool state) {
+                // Check for existing resident textures
+                for (ResidentTexture& texture : s_residentTextures) {
+                    if (texture._address == address) {
+                        if (!state) {
+                            glMakeTextureHandleNonResidentARB(address);
+                            texture._address = 0u;
+                            texture._frameCount = g_maxTextureResidencyFrameCount;
+                        } else {
+                            // Else the texture is already resident
+                            texture._frameCount = 0u;
+                        }
+                        return;
                     }
                 }
+
+                // Register a new resident texture
+                for (ResidentTexture& texture : s_residentTextures) {
+                    if (texture._address == 0u) {
+                        texture._address = address;
+                        texture._frameCount = 0u;
+                        glMakeTextureHandleResidentARB(address);
+                        return;
+                    }
+                }
+
+                DIVIDE_UNEXPECTED_CALL();
+            };
+
+            for (const auto&[address, upload] : s_textureResidencyQueue) {
+                SetTextureResidentState(address, upload);
             }
         }
 
-        GL_API::s_textureResidencyQueue.clear();
+        s_textureResidencyQueue.clear();
     }
 
     return true;

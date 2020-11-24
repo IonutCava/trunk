@@ -19,21 +19,14 @@ glGenericBuffer::glGenericBuffer(GFXDevice& context, const BufferParams& params)
     implParams._target = params._usage;
     implParams._name = params._name;
     implParams._initialData = params._initialData;
-    implParams._initToZero = params._initToZero;
     implParams._storageType = params._storageType;
     implParams._unsynced = params._unsynced;
 
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
 
-    const size_t dataLength = std::min(params._initialData.second, bufferSizeInBytes);
-    // Create sizeFactor copies of the data and store them in the buffer
-    if (dataLength > 0 && params._initialData.first != nullptr) {
-        for (GLuint i = 1; i < _ringSizeFactor; ++i) {
-            _buffer->writeData(i * bufferSizeInBytes, dataLength, (Byte*)params._initialData.first);
-
-            if (params._initialData.second < bufferSizeInBytes) {
-                _buffer->zeroMem(i * bufferSizeInBytes + dataLength, bufferSizeInBytes - dataLength);
-            }
+    if (params._initialData.second > 0) {
+        for (U32 i = 1; i < _ringSizeFactor; ++i) {
+          _buffer->writeData(i * bufferSizeInBytes, params._initialData.second, params._initialData.first);
         }
     }
 }

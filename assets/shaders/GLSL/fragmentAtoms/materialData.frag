@@ -1,54 +1,20 @@
 #ifndef _MATERIAL_DATA_FRAG_
 #define _MATERIAL_DATA_FRAG_
 
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
+#define PBR_SHADING
+#endif
+
 #include "nodeBufferedInput.cmn"
 #include "utility.frag"
 
-//Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
-#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
-#   define HAS_TRANSPARENCY
-#endif
-
-#if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_UNIT0) uniform samplerUnit0 texDiffuse0;
-layout(binding = TEXTURE_UNIT1) uniform samplerUnit1 texDiffuse1;
-#endif //USE_BINDLESS_TEXTURES
-#endif //!PRE_PASS || HAS_TRANSPARENCY
-
 #if !defined(PRE_PASS)
-layout(binding = TEXTURE_GBUFFER_EXTRA)  uniform sampler2D texGBufferExtra;
-
+layout(binding = TEXTURE_GBUFFER_EXTRA) uniform sampler2D texGBufferExtra;
+layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texSceneNormalMaps;
 #if defined(USE_PLANAR_REFRACTION)
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 #endif //USE_PLANAR_REFRACTION
-
-
-#if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform samplerOMR texOcclusionMetallicRoughness;
-#endif //USE_BINDLESS_TEXTURES
-#endif //USE_METALLIC_ROUGHNESS_MAP
-
-#endif  //PRE_PASS
-
-//Specular and opacity maps are available even for non-textured geometry
-#if defined(USE_OPACITY_MAP)
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texOpacityMap;
-#endif //USE_BINDLESS_TEXTURES
-#endif //USE_OPACITY_MAP
-
-#if !defined(USE_CUSTOM_NORMAL_MAP)
-//Normal or BumpMap
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_NORMALMAP) uniform samplerNormal texNormalMap;
-#endif //USE_BINDLESS_TEXTURES
-#endif //!USE_CUSTOM_NORMAL_MAP
-
-#if !defined(PRE_PASS)
-layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texSceneNormalMaps;
-#endif
+#endif //!PRE_PASS
 
 #if defined(COMPUTE_TBN)
 #include "bumpMapping.frag"

@@ -283,7 +283,6 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
     bufferDescriptor._ringBufferLength = 0;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._initToZero = true;
 
     _histogramBuffer = _context.newSB(bufferDescriptor);
 

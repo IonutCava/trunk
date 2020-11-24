@@ -80,7 +80,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
             params._updateFrequency = BufferUpdateFrequency::ONCE;
             params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
             params._sync = false;
-            params._initialData = { (bufferPtr)geometry.data(), geometry.size() * params._elementSize};
+            params._initialData = { (Byte*)geometry.data(), geometry.size() * params._elementSize};
 
             buffer.setBuffer(params);
 
@@ -88,7 +88,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
                 GenericVertexData::IndexBuffer idxBuff;
                 idxBuff.smallIndices = false;
                 idxBuff.count = to_U32(indices.size());
-                idxBuff.data = (bufferPtr)indices.data();
+                idxBuff.data = (Byte*)indices.data();
 
                 buffer.setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
             }

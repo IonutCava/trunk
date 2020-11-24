@@ -273,14 +273,14 @@ void Terrain::postBuild() {
                     vbData.insert(cend(vbData), cbegin(ringData), cend(ringData));
                 }
                 params._buffer = 0;
-                params._initialData = { vbData.data(), vbData.size() * params._elementSize };
+                params._initialData = { (Byte*)vbData.data(), vbData.size() * params._elementSize };
                 params._elementCount = to_U32(vbData.size());
                 _terrainBuffer->setBuffer(params);
             } else {
                 for (size_t i = 0; i < ringCount; ++i) {
                     vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
                     params._buffer = to_U32(i);
-                    params._initialData = { ringData.data(), ringData.size() * params._elementSize };
+                    params._initialData = { (Byte*)ringData.data(), ringData.size() * params._elementSize };
                     params._elementCount = to_U32(ringData.size());
                     _terrainBuffer->setBuffer(params);
                 }
