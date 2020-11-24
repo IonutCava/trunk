@@ -65,7 +65,7 @@ private:
     enum class TexOperatorBindPoint : U8 {
         TEX_BIND_POINT_SCREEN = to_base(TextureUsage::UNIT0),
         TEX_BIND_POINT_BORDER = to_base(TextureUsage::UNIT1),
-        TEX_BIND_POINT_NOISE = to_base(TextureUsage::NORMALMAP),
+        TEX_BIND_POINT_NOISE = to_base(TextureUsage::SCENE_NORMALS),
         TEX_BIND_POINT_UNDERWATER = to_base(TextureUsage::OPACITY),
         TEX_BIND_POINT_GBUFFER = to_base(TextureUsage::GBUFFER_EXTRA),
         COUNT

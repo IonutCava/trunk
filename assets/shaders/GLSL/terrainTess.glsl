@@ -6,7 +6,7 @@ layout(location = ATTRIB_POSITION) in vec4 inVertexData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
+layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
 #endif
 
 uniform vec2 dvd_textureWorldOffset;
@@ -69,7 +69,7 @@ uniform float dvd_tessTriangleWidth;
 uniform vec2 dvd_textureWorldOffset;
 
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
+layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
 #endif
 
 layout(location = 10) in vec4 vtx_adjancency[];
@@ -306,7 +306,7 @@ layout(quads, fractional_even_spacing, cw) in;
 #include "nodeBufferedInput.cmn"
 
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
+layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
 #endif
 
 uniform vec2 dvd_textureWorldOffset;
@@ -451,7 +451,7 @@ void main()
 
 #if defined(TOGGLE_NORMALS)
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
+layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
 #endif
 #endif //TOGGLE_NORMALS
 

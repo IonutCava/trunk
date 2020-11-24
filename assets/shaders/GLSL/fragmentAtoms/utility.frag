@@ -46,7 +46,7 @@ float overlay(float x, float y)
 uniform float projectedTextureMixWeight;
 
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_PROJECTION) uniform sampler2D texProjected;
+layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
 #endif //USE_BINDLESS_TEXTURES
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){

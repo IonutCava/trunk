@@ -759,7 +759,7 @@ void RenderPassManager::mainPass(const VisibleNodeList<>& nodes, const RenderPas
 
             const TextureData normals = normAtt->texture()->data();
             const TextureData extra = gbufferAtt->texture()->data();
-            descriptorSetCmd._set._textureData.setTexture(normals, normAtt->samplerHash(), TextureUsage::NORMALMAP);
+            descriptorSetCmd._set._textureData.setTexture(normals, normAtt->samplerHash(), TextureUsage::SCENE_NORMALS);
             descriptorSetCmd._set._textureData.setTexture(extra, gbufferAtt->samplerHash(), TextureUsage::GBUFFER_EXTRA);
         }
 

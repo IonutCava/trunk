@@ -11,8 +11,8 @@
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texDiffuse1;
+layout(binding = TEXTURE_UNIT0) uniform samplerUnit0 texDiffuse0;
+layout(binding = TEXTURE_UNIT1) uniform samplerUnit1 texDiffuse1;
 #endif //USE_BINDLESS_TEXTURES
 #endif //!PRE_PASS || HAS_TRANSPARENCY
 
@@ -26,7 +26,7 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 
 #if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOcclusionMetallicRoughness;
+layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform samplerOMR texOcclusionMetallicRoughness;
 #endif //USE_BINDLESS_TEXTURES
 #endif //USE_METALLIC_ROUGHNESS_MAP
 
@@ -35,16 +35,20 @@ layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2D texOccl
 //Specular and opacity maps are available even for non-textured geometry
 #if defined(USE_OPACITY_MAP)
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_OPACITY) uniform sampler2D texOpacityMap;
+layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texOpacityMap;
 #endif //USE_BINDLESS_TEXTURES
 #endif //USE_OPACITY_MAP
 
 #if !defined(USE_CUSTOM_NORMAL_MAP)
 //Normal or BumpMap
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormalMap;
+layout(binding = TEXTURE_NORMALMAP) uniform samplerNormal texNormalMap;
 #endif //USE_BINDLESS_TEXTURES
 #endif //!USE_CUSTOM_NORMAL_MAP
+
+#if !defined(PRE_PASS)
+layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texSceneNormalMaps;
+#endif
 
 #if defined(COMPUTE_TBN)
 #include "bumpMapping.frag"
@@ -228,7 +232,11 @@ vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
 #endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 
 // Computed normals are NOT normalized. Retrieved normals ARE.
+#if defined(SAMPLER_NORMALMAP_IS_ARRAY) && (defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS))
+vec3 getNormalWV(in vec3 uv) {
+#else
 vec3 getNormalWV(in vec2 uv) {
+#endif
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
 
 #if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
@@ -252,7 +260,7 @@ vec3 getNormalWV(in vec2 uv) {
     return normalWV;
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 #else //PRE_PASS
-    return normalize(unpackNormal(texture(texNormalMap, dvd_screenPositionNormalised).rg));
+    return normalize(unpackNormal(texture(texSceneNormalMaps, dvd_screenPositionNormalised).rg));
 #endif //PRE_PASS
 }
 

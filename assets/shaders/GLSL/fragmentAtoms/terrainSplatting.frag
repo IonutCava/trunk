@@ -2,22 +2,20 @@
 #define _TERRAIN_SPLATTING_FRAG_
 
 #if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
-layout(binding = TEXTURE_OPACITY) uniform sampler2DArray texBlendMaps;
-layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2DArray helperTextures;
-layout(binding = TEXTURE_PROJECTION) uniform sampler2DArray texExtraMaps;
+layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
+layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texBlendMaps;
+layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform samplerOMR helperTextures;
+layout(binding = TEXTURE_PROJECTION) uniform samplerProj texExtraMaps;
 #if defined(PRE_PASS)
-layout(binding = TEXTURE_UNIT1) uniform sampler2DArray texNormalMaps;
+layout(binding = TEXTURE_UNIT1) uniform samplerUnit1 texNormalMap;
 #else  //PRE_PASS
-layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texTileMaps;
+layout(binding = TEXTURE_UNIT0) uniform samplerUnit0 texTileMaps;
 #endif //PRE_PASS
 #else
 #define texBlendMaps texOpacityMap
 #define helperTextures texOcclusionMetallicRoughness
 #define texExtraMaps texProjected
-#if defined(PRE_PASS)
-#define texNormalMaps texNormalMap
-#else  //PRE_PASS
+#if !defined(PRE_PASS)
 #define texTileMaps texDiffuse0
 #endif //PRE_PASS
 #endif
@@ -229,7 +227,7 @@ vec3 getTerrainNormal(in vec2 uv) {
     const vec2 scaledUV = getScaledCoords(uv, blendAmount);
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, sampleTexture(texNormalMaps, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
+        normal = mix(normal, sampleTexture(texNormalMap, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
     return normal;

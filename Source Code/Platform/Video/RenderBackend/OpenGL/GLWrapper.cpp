@@ -618,6 +618,12 @@ bool GL_API::initGLSW(Configuration& config) {
         "#define TEXTURE_GBUFFER_EXTRA " +
         Util::to_string(to_base(TextureUsage::GBUFFER_EXTRA)),
         lineOffsets);
+    
+    appendToShaderHeader(
+        ShaderType::FRAGMENT,
+        "#define TEXTURE_SCENE_NORMALS " +
+        Util::to_string(to_base(TextureUsage::SCENE_NORMALS)),
+        lineOffsets);
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,

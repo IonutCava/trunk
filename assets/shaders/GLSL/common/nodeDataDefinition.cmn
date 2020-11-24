@@ -4,48 +4,47 @@
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #define PBR_SHADING
 #endif
-#if defined(USE_BINDLESS_TEXTURES)
+
 #if defined(SAMPLER_UNIT0_IS_ARRAY)
-#define sampler0 sampler2DArray
+#define samplerUnit0 sampler2DArray
 #else
-#define sampler0 sampler2D
+#define samplerUnit0 sampler2D
 #endif
 #if defined(SAMPLER_OPACITY_IS_ARRAY)
-#define sampler1 sampler2DArray
+#define samplerOpacity sampler2DArray
 #else
-#define sampler1 sampler2D
+#define samplerOpacity sampler2D
 #endif
 #if defined(SAMPLER_UNIT1_IS_ARRAY)
-#define sampler2 sampler2DArray
+#define samplerUnit1 sampler2DArray
 #else
-#define sampler2 sampler2D
+#define samplerUnit1 sampler2D
 #endif
 #if defined(SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY)
-#define sampler3 sampler2DArray
+#define samplerOMR sampler2DArray
 #else
-#define sampler3 sampler2D
+#define samplerOMR sampler2D
 #endif
 #if defined(SAMPLER_HEIGHTMAP_IS_ARRAY)
-#define sampler4 sampler2DArray
+#define samplerHeight sampler2DArray
 #else
-#define sampler4 sampler2D
+#define samplerHeight sampler2D
 #endif
 #if defined(SAMPLER_PROJECTION_IS_ARRAY)
-#define sampler5 sampler2DArray
+#define samplerProj sampler2DArray
 #else
-#define sampler5 sampler2D
+#define samplerProj sampler2D
 #endif
 #if defined(SAMPLER_NORMALMAP_IS_ARRAY)
-#define sampler6 sampler2DArray
+#define samplerNormal sampler2DArray
 #else
-#define sampler6 sampler2D
+#define samplerNormal sampler2D
 #endif
 #if defined(SAMPLER_TEMP_IS_ARRAY)
-#define sampler7 sampler2DArray
+#define samplerTemp sampler2DArray
 #else
-#define sampler7 sampler2D
+#define samplerTemp sampler2D
 #endif
-#endif //USE_BINDLESS_TEXTURES
 
 struct NodeData {
     mat4 _worldMatrix;
@@ -79,14 +78,14 @@ struct NodeData {
     mat4 _prevWorldMatrix;
 
 #if defined(USE_BINDLESS_TEXTURES)
-    sampler0 _texDiffuse0;
-    sampler1 _texOpacityMap;
-    sampler2 _texDiffuse1;
-    sampler3 _texOcclusionMetallicRoughness;
-    sampler4 _texHeight;
-    sampler5 _texProjected;
-    sampler6 _texNormalMap;
-    sampler7 _texTemp;
+    samplerUnit0 _texDiffuse0;
+    samplerOpacity _texOpacityMap;
+    samplerUnit1 _texDiffuse1;
+    samplerOMR _texOcclusionMetallicRoughness;
+    samplerHeight _texHeight;
+    samplerProj _texProjected;
+    samplerNormal _texNormalMap;
+    samplerTemp _texTemp;
 #else
     vec4 _padding[4];
 #endif //USE_BINDLESS_TEXTURES

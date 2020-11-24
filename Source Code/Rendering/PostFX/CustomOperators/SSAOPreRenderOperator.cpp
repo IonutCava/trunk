@@ -204,7 +204,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
 
             const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
-            descriptorSetCmd._set._textureData.setTexture(screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::NORMALMAP);
+            descriptorSetCmd._set._textureData.setTexture(screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS);
             EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });

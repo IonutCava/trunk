@@ -27,9 +27,9 @@ uniform mat4 invProjectionMatrix;
 uniform vec2 noiseScale;
 
 // Input screen texture
-layout(binding = TEXTURE_UNIT0)     uniform sampler2D texNoise;
-layout(binding = TEXTURE_NORMALMAP) uniform sampler2D texNormal;
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
+layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
+layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
 
 out float _ssaoOut;
 
