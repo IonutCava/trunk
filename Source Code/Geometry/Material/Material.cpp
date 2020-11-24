@@ -485,6 +485,15 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
                        std::cbegin(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]),
                        std::cend(_extraShaderDefines[to_base(ShaderType::FRAGMENT)]));
 
+    for(const TextureUsage usage : g_materialTextures) {
+        const U8 slot = to_base(usage);
+        if (_textures[slot] != nullptr) {
+            if (_textures[slot]->data()._textureType == TextureType::TEXTURE_2D_ARRAY) {
+                  globalDefines.emplace_back(Util::StringFormat("SAMPLER_%s_IS_ARRAY", Names::textureUsage[slot]), true);
+            }
+        }
+    }
+
     if (_textures[slot1]) {
         if (!_textures[slot0]) {
             std::swap(_textures[slot0], _textures[slot1]);

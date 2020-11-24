@@ -628,7 +628,6 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif //HAS_PARALLAX
 #endif //LOW_QUALITY
 
-#include "nodeBufferedInput.cmn"
 #if defined(PRE_PASS)
 #include "prePass.frag"
 #if defined(HAS_PRE_PASS_DATA)
@@ -636,8 +635,8 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 #endif  //HAS_PRE_PASS_DATA
 #else //PRE_PASS
 #include "BRDF.frag"
-#include "output.frag"
 #include "terrainSplatting.frag"
+#include "output.frag"
 #endif //PRE_PASS
 
 #if !defined(PRE_PASS)

@@ -3,17 +3,24 @@
 
 #if !defined(USE_BINDLESS_TEXTURES)
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D texHeight;
-#endif //USE_BINDLESS_TEXTURES
-
-layout(binding = TEXTURE_SPLAT) uniform sampler2DArray texBlendMaps;
-layout(binding = TEXTURE_HELPER_TEXTURES) uniform sampler2DArray helperTextures;
-layout(binding = TEXTURE_EXTRA_TILE) uniform sampler2DArray texExtraMaps;
-
+layout(binding = TEXTURE_OPACITY) uniform sampler2DArray texBlendMaps;
+layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform sampler2DArray helperTextures;
+layout(binding = TEXTURE_PROJECTION) uniform sampler2DArray texExtraMaps;
 #if defined(PRE_PASS)
-layout(binding = TEXTURE_NORMAL_TILE) uniform sampler2DArray texNormalMaps;
+layout(binding = TEXTURE_UNIT1) uniform sampler2DArray texNormalMaps;
 #else  //PRE_PASS
-layout(binding = TEXTURE_ALBEDO_TILE) uniform sampler2DArray texTileMaps;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texTileMaps;
 #endif //PRE_PASS
+#else
+#define texBlendMaps texOpacityMap
+#define helperTextures texOcclusionMetallicRoughness
+#define texExtraMaps texProjected
+#if defined(PRE_PASS)
+#define texNormalMaps texNormalMap
+#else  //PRE_PASS
+#define texTileMaps texDiffuse0
+#endif //PRE_PASS
+#endif
 
 #include "texturing.frag"
 #include "waterData.cmn"

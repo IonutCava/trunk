@@ -293,23 +293,23 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     heightMapTexture.propertyDescriptor(heightMapDescriptor);
     heightMapTexture.flag(true);
 
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_SPLAT, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap), blendMapHash);
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_ALBEDO_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps), albedoHash);
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_NORMAL_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), albedoHash);
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_EXTRA_TILE, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps), albedoHash);
-    terrainMaterial->setTexture(TextureUsage::TERRAIN_HELPER_TEXTURES, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::OPACITY, CreateResource<Texture>(terrain->parentResourceCache(), textureBlendMap), blendMapHash);
+    terrainMaterial->setTexture(TextureUsage::UNIT0, CreateResource<Texture>(terrain->parentResourceCache(), textureAlbedoMaps), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::UNIT1, CreateResource<Texture>(terrain->parentResourceCache(), textureNormalMaps), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::PROJECTION, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps), albedoHash);
+    terrainMaterial->setTexture(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
     terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture), heightSamplerHash);
     
-    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_SPLAT, true);
-    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_NORMAL_TILE, true);
-    terrainMaterial->textureUseForDepth(TextureUsage::TERRAIN_HELPER_TEXTURES, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::OPACITY, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::UNIT1, true);
+    terrainMaterial->textureUseForDepth(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS, true);
     terrainMaterial->textureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
     const Configuration::Terrain terrainConfig = context.config().terrain;
     ResourceCache* resCache = terrain->parentResourceCache();
     const vec2<F32> WorldScale = terrain->tessParams().WorldScale();
     const vec2<F32> TerDim = terrainDescriptor->dimensions().width;
-    Texture_ptr albedoTile = terrainMaterial->getTexture(TextureUsage::TERRAIN_ALBEDO_TILE).lock();
+    Texture_ptr albedoTile = terrainMaterial->getTexture(TextureUsage::UNIT0).lock();
     WAIT_FOR_CONDITION(albedoTile->getState() == ResourceState::RES_LOADED);
 
     const U16 tileMapSize = albedoTile->width();
@@ -369,9 +369,6 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 }
             }
 
-            shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", TessellationParams::VTX_PER_TILE_EDGE), true);
-
             if (terrainConfig.detailLevel > 0) {
                 if (pMode != Terrain::ParallaxMode::NONE) {
                     shaderPropName += ".Parallax";
@@ -409,14 +406,14 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width), true);
             shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height), true);
             shaderModule._defines.emplace_back("NODE_STATIC", true);
+            shaderModule._defines.emplace_back("SAMPLER_OPACITY_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_UNIT0_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_PROJECTION_IS_ARRAY", true);
+            shaderModule._defines.emplace_back("SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY", true);
 
             shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_SPLAT %d", to_base(TextureUsage::TERRAIN_SPLAT)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_ALBEDO_TILE %d", to_base(TextureUsage::TERRAIN_ALBEDO_TILE)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_NORMAL_TILE %d", to_base(TextureUsage::TERRAIN_NORMAL_TILE)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_EXTRA_TILE %d", to_base(TextureUsage::TERRAIN_EXTRA_TILE)), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("TEXTURE_HELPER_TEXTURES %d", to_base(TextureUsage::TERRAIN_HELPER_TEXTURES)), true);
-
+            shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", TessellationParams::VTX_PER_TILE_EDGE), true);
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
                 shaderModule._defines.emplace_back(blendAmntStr, true);
 
@@ -482,6 +479,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
         for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
             shaderModule._defines.emplace_back("PRE_PASS", true);
+            shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
         }
 
         ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name + propName);
@@ -498,6 +496,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("LOW_QUALITY", true);
             shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
+            shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
         }
 
         ResourceDescriptor terrainShaderPrePassLQ("Terrain_PrePass_LowQuality-" + name + propName);

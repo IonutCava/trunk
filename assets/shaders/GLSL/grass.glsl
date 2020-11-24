@@ -1,7 +1,6 @@
 -- Vertex
 
 #include "vbInputData.vert"
-#include "nodeBufferedInput.cmn"
 #include "vegetationData.cmn"
 
 layout(location = 0) flat out int _arrayLayerFrag;

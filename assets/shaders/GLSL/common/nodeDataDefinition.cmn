@@ -4,6 +4,48 @@
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #define PBR_SHADING
 #endif
+#if defined(USE_BINDLESS_TEXTURES)
+#if defined(SAMPLER_UNIT0_IS_ARRAY)
+#define sampler0 sampler2DArray
+#else
+#define sampler0 sampler2D
+#endif
+#if defined(SAMPLER_OPACITY_IS_ARRAY)
+#define sampler1 sampler2DArray
+#else
+#define sampler1 sampler2D
+#endif
+#if defined(SAMPLER_UNIT1_IS_ARRAY)
+#define sampler2 sampler2DArray
+#else
+#define sampler2 sampler2D
+#endif
+#if defined(SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY)
+#define sampler3 sampler2DArray
+#else
+#define sampler3 sampler2D
+#endif
+#if defined(SAMPLER_HEIGHTMAP_IS_ARRAY)
+#define sampler4 sampler2DArray
+#else
+#define sampler4 sampler2D
+#endif
+#if defined(SAMPLER_PROJECTION_IS_ARRAY)
+#define sampler5 sampler2DArray
+#else
+#define sampler5 sampler2D
+#endif
+#if defined(SAMPLER_NORMALMAP_IS_ARRAY)
+#define sampler6 sampler2DArray
+#else
+#define sampler6 sampler2D
+#endif
+#if defined(SAMPLER_TEMP_IS_ARRAY)
+#define sampler7 sampler2DArray
+#else
+#define sampler7 sampler2D
+#endif
+#endif //USE_BINDLESS_TEXTURES
 
 struct NodeData {
     mat4 _worldMatrix;
@@ -37,14 +79,14 @@ struct NodeData {
     mat4 _prevWorldMatrix;
 
 #if defined(USE_BINDLESS_TEXTURES)
-    sampler2D _texDiffuse0;
-    sampler2D _texOpacityMap;
-    sampler2D _texDiffuse1;
-    sampler2D _texOcclusionMetallicRoughness;
-    sampler2D _texHeight;
-    sampler2D _texProjected;
-    sampler2D _texNormalMap;
-    sampler2D _texTemp;
+    sampler0 _texDiffuse0;
+    sampler1 _texOpacityMap;
+    sampler2 _texDiffuse1;
+    sampler3 _texOcclusionMetallicRoughness;
+    sampler4 _texHeight;
+    sampler5 _texProjected;
+    sampler6 _texNormalMap;
+    sampler7 _texTemp;
 #else
     vec4 _padding[4];
 #endif //USE_BINDLESS_TEXTURES

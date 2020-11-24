@@ -585,12 +585,6 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::FRAGMENT,
-        "#define TEXTURE_GLOSS " +
-        Util::to_string(to_base(TextureUsage::GLOSS)),
-        lineOffsets);
-
-    appendToShaderHeader(
-        ShaderType::FRAGMENT,
         "#define TEXTURE_PROJECTION " +
         Util::to_string(to_base(TextureUsage::PROJECTION)),
         lineOffsets);
