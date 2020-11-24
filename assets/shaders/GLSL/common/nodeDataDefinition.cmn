@@ -1,10 +1,6 @@
 #ifndef _NODE_DATA_DEFINITION_CMN_
 #define _NODE_DATA_DEFINITION_CMN_
 
-#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-#define PBR_SHADING
-#endif
-
 #if defined(SAMPLER_UNIT0_IS_ARRAY)
 #define samplerUnit0 sampler2DArray
 #else
@@ -39,11 +35,6 @@
 #define samplerNormal sampler2DArray
 #else
 #define samplerNormal sampler2D
-#endif
-#if defined(SAMPLER_TEMP_IS_ARRAY)
-#define samplerTemp sampler2DArray
-#else
-#define samplerTemp sampler2D
 #endif
 
 struct NodeData {
@@ -85,21 +76,11 @@ struct NodeData {
     samplerHeight _texHeight;
     samplerProj _texProjected;
     samplerNormal _texNormalMap;
-    samplerTemp _texTemp;
+    float _padding[2];
 #else
     vec4 _padding[4];
 #endif //USE_BINDLESS_TEXTURES
 };
-
-#if defined(USE_BINDLESS_TEXTURES)
-#define texDiffuse0 dvd_Matrices[DATA_IDX]._texDiffuse0
-#define texOpacityMap dvd_Matrices[DATA_IDX]._texOpacityMap
-#define texDiffuse1 dvd_Matrices[DATA_IDX]._texDiffuse1
-#define texOcclusionMetallicRoughness dvd_Matrices[DATA_IDX]._texOcclusionMetallicRoughness
-#define texHeight dvd_Matrices[DATA_IDX]._texHeight
-#define texProjected dvd_Matrices[DATA_IDX]._texProjected
-#define texNormalMap dvd_Matrices[DATA_IDX]._texNormalMap
-#endif //USE_BINDLESS_TEXTURES
 
 #define PACKED_OMR(colourMat) unpackUnorm4x8(uint(colourMat[1][0]))
 

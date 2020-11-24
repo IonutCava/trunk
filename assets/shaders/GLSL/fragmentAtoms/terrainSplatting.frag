@@ -1,23 +1,14 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
-layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texBlendMaps;
-layout(binding = TEXTURE_OCCLUSION_METALLIC_ROUGHNESS) uniform samplerOMR helperTextures;
-layout(binding = TEXTURE_PROJECTION) uniform samplerProj texExtraMaps;
-#if defined(PRE_PASS)
-layout(binding = TEXTURE_UNIT1) uniform samplerUnit1 texNormalMap;
-#else  //PRE_PASS
-layout(binding = TEXTURE_UNIT0) uniform samplerUnit0 texTileMaps;
-#endif //PRE_PASS
-#else
-#define texBlendMaps texOpacityMap
+#define texBlendMaps   texOpacityMap
 #define helperTextures texOcclusionMetallicRoughness
-#define texExtraMaps texProjected
-#if !defined(PRE_PASS)
+#define texExtraMaps   texProjected
+
+#if defined(PRE_PASS)
+#define texNormalMap texDiffuse1
+#else
 #define texTileMaps texDiffuse0
-#endif //PRE_PASS
 #endif
 
 #include "texturing.frag"

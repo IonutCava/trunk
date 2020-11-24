@@ -89,8 +89,8 @@ protected:
     // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
     [[nodiscard]] virtual F32 getFrameDurationGPU() const noexcept = 0;
 
+    virtual void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;
-
     virtual void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
 
     [[nodiscard]] virtual vec2<U16> getDrawableSize(const DisplayWindow& window) const = 0;

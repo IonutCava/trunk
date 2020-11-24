@@ -24,9 +24,9 @@ SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
 std::atomic_bool GL_API::s_residentTexturesNeedUpload;
-SharedMutex GL_API::s_textureResidencyQueueSetLock;
+Mutex GL_API::s_textureResidencyQueueSetLock;
 hashMap<U64, bool> GL_API::s_textureResidencyQueue;
-eastl::set<U64> GL_API::s_residentTextures;
+std::array<GL_API::ResidentTexture, Config::MAX_ACTIVE_RESIDENT_TEXTURES> GL_API::s_residentTextures;
 
 SharedMutex GL_API::s_samplerMapLock;
 GL_API::SamplerObjectMap GL_API::s_samplerMap;

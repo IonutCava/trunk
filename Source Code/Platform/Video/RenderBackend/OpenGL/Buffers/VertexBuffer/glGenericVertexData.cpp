@@ -149,7 +149,6 @@ void glGenericVertexData::setBuffer(const SetBufferParams& params) {
     paramsOut._updateUsage = params._updateUsage;
     paramsOut._ringSizeFactor = params._useRingBuffer ? queueLength() : 1;
     paramsOut._initialData = params._initialData;
-    paramsOut._initToZero = params._initToZero;
     paramsOut._name = _name.empty() ? nullptr : _name.c_str();
     paramsOut._unsynced = !params._sync;
     paramsOut._storageType = params._storageType;

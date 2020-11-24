@@ -7,13 +7,37 @@ uniform uint DATA_IDX = 0u;
 #define DATA_IDX VAR._baseInstance
 #endif
 
-#include "nodeDataDefinition.cmn"
+//Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
+#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
+#   define HAS_TRANSPARENCY
+#endif
 
+#include "nodeDataDefinition.cmn"
 
 layout(binding = BUFFER_NODE_INFO, std430) coherent ACCESS_R buffer dvd_MatrixBlock
 {
     NodeData dvd_Matrices[];
 };
+
+
+#if defined(USE_BINDLESS_TEXTURES)
+#define texDiffuse0 dvd_Matrices[DATA_IDX]._texDiffuse0
+#define texOpacityMap dvd_Matrices[DATA_IDX]._texOpacityMap
+#define texDiffuse1 dvd_Matrices[DATA_IDX]._texDiffuse1
+#define texOcclusionMetallicRoughness dvd_Matrices[DATA_IDX]._texOcclusionMetallicRoughness
+#define texHeight dvd_Matrices[DATA_IDX]._texHeight
+#define texProjected dvd_Matrices[DATA_IDX]._texProjected
+#define texNormalMap dvd_Matrices[DATA_IDX]._texNormalMap
+#else
+layout(binding = TEXTURE_UNIT0)  uniform samplerUnit0 texDiffuse0;
+layout(binding = TEXTURE_UNIT1)  uniform samplerUnit1 texDiffuse1;
+layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
+layout(binding = TEXTURE_OMR) uniform samplerOMR texOcclusionMetallicRoughness;
+layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texOpacityMap;
+layout(binding = TEXTURE_NORMALMAP) uniform samplerNormal texNormalMap;
+layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
+
+#endif //USE_BINDLESS_TEXTURES
 
 #if defined(FRAG_SHADER)
 

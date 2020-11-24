@@ -5,10 +5,6 @@
 layout(location = ATTRIB_POSITION) in vec4 inVertexData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
-#endif
-
 uniform vec2 dvd_textureWorldOffset;
 uniform vec2 dvd_tileWorldPosition;
 
@@ -67,10 +63,6 @@ void main(void)
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
 uniform float dvd_tessTriangleWidth;
 uniform vec2 dvd_textureWorldOffset;
-
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
-#endif
 
 layout(location = 10) in vec4 vtx_adjancency[];
 layout(location = 11) in float vtx_tileSize[];
@@ -305,10 +297,6 @@ layout(quads, fractional_even_spacing, cw) in;
 
 #include "nodeBufferedInput.cmn"
 
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
-#endif
-
 uniform vec2 dvd_textureWorldOffset;
 
 layout(location = 10) in float tcs_tileSize[];
@@ -448,12 +436,6 @@ void main()
 --Geometry
 
 #include "nodeBufferedInput.cmn"
-
-#if defined(TOGGLE_NORMALS)
-#if !defined(USE_BINDLESS_TEXTURES)
-layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
-#endif
-#endif //TOGGLE_NORMALS
 
 layout(triangles) in;
 

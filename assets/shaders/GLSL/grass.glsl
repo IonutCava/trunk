@@ -73,6 +73,7 @@ void main() {
 
 layout(early_fragment_tests) in;
 
+#define SAMPLER_UNIT0_IS_ARRAY
 #define USE_SHADING_BLINN_PHONG
 #define NO_IBL
 
@@ -84,7 +85,7 @@ layout(early_fragment_tests) in;
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) in float _alphaFactor;
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
+#define texDiffuseGrass texDiffuse0
 
 void main (void){
     NodeData data = dvd_Matrices[DATA_IDX];
@@ -105,13 +106,13 @@ void main (void){
 #if defined(USE_ALPHA_DISCARD)
 #undef USE_ALPHA_DISCARD
 #endif
-
+#define SAMPLER_UNIT0_IS_ARRAY
 #include "prePass.frag"
 
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) in float _alphaFactor;
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
+#define texDiffuseGrass texDiffuse0
 
 void main() {
     const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;

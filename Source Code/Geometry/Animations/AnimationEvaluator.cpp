@@ -91,7 +91,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
     bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
     bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._name = Util::StringFormat("BONE_%d_BONES", boneCount);
-    bufferDescriptor._initialData = { animationData.data(), animationData.size()* bufferDescriptor._elementSize };
+    bufferDescriptor._initialData = { (Byte*)animationData.data(), animationData.size()* bufferDescriptor._elementSize };
 
     boneBuffer(context.newSB(bufferDescriptor));
 

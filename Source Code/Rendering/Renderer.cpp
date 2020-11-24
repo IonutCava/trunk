@@ -61,7 +61,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
         bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "LIGHT_INDEX_SSBO";
         bufferDescriptor._initialData = { nullptr, 0 };
-        bufferDescriptor._initToZero = true;
         _lightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
         _lightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
     }
@@ -75,7 +74,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
         bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "LIGHT_GRID_SSBO";
         bufferDescriptor._initialData = { nullptr, 0 };
-        bufferDescriptor._initToZero = true;
         _lightGridBuffer = _context.gfx().newSB(bufferDescriptor);
         _lightGridBuffer->bind(ShaderBufferLocation::LIGHT_GRID);
     }
@@ -89,7 +87,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
         bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "GLOBAL_INDEX_COUNT_SSBO";
         bufferDescriptor._initialData = { nullptr, 0 };
-        bufferDescriptor._initToZero = true;
         _globalIndexCountBuffer = _context.gfx().newSB(bufferDescriptor);
         _globalIndexCountBuffer->bind(ShaderBufferLocation::LIGHT_INDEX_COUNT);
     }
@@ -103,7 +100,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
         bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "LIGHT_CLUSTER_AABBs_SSBO";
         bufferDescriptor._initialData = { nullptr, 0 };
-        bufferDescriptor._initToZero = true;
         _lightClusterAABBsBuffer = _context.gfx().newSB(bufferDescriptor);
         _lightClusterAABBsBuffer->bind(ShaderBufferLocation::LIGHT_CLUSTER_AABBS);
     }

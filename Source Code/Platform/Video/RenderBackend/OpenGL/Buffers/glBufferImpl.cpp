@@ -8,10 +8,13 @@
 
 namespace Divide {
 namespace {
-    Mutex g_CreateBufferLock;
+    SharedMutex g_CreateBufferLock;
 
+    constexpr size_t g_MinZeroDataSize = 1 * 1024; //1Kb
     constexpr size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
     constexpr I32 g_maxFlushQueueLength = 16;
+
+    vectorEASTL<Byte> zeroMemData(g_MinZeroDataSize, Byte{ 0 });
 
     struct BindConfigEntry {
         U32 _handle = 0;
@@ -75,21 +78,33 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         usePersistentMapping = false;
     }
 
-    static vectorEASTL<Byte> zeroMemData(1024, Byte{ 0 });
+    // Initial data may not fill the entire buffer
+     const bool needsAdditionalData = params._initialData.second < _alignedSize;
 
-    const bool initToZero = params._initToZero && params._initialData.second < _alignedSize;
-    if (initToZero && _alignedSize > zeroMemData.size()) {
-        UniqueLock<Mutex> w_lock(g_CreateBufferLock);
-        zeroMemData.resize(_alignedSize, Byte{ 0 });
-    }
+     if (needsAdditionalData) {
+         bool resizeVec;
+         // If the buffer is larger than our initial data, we need to create a zero filled container large enough for proper initialization
+         {
+            SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
+            resizeVec = _alignedSize > zeroMemData.size();
+         }
 
+         if (resizeVec) {
+             UniqueLock<SharedMutex> w_lock(g_CreateBufferLock);
+             if (_alignedSize > zeroMemData.size()) {
+                 zeroMemData.resize(_alignedSize, Byte{ 0 });
+             }
+         }
+     }
     // Create all buffers with zero mem and then write the actual data that we have (If we want to initialise all memory)
     if (!usePersistentMapping) {
-        GLUtil::createAndAllocBuffer(_alignedSize,
-                                     _usage,
-                                     _handle,
-                                     initToZero ? zeroMemData.data() : params._initialData.first,
-                                     params._name);
+        if (needsAdditionalData) {
+            // This should be safe as we are only INCREASING the zeroMemData container size if needed so the range we need should be fine
+            SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
+             GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, zeroMemData.data(), params._name);
+        } else {
+            GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData.first, params._name);
+        }
     } else {
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
         MapBufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
@@ -117,22 +132,23 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
             } break;
         }
 
-        _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, 
-                                                                      storageMask,
-                                                                      accessMask,
-                                                                      _handle, 
-                                                                      initToZero ? zeroMemData.data() : params._initialData.first,
-                                                                      params._name);
+        if (needsAdditionalData) {
+            // This should be safe as we are only INCREASING the zeroMemData container size if needed so the range we need should be fine
+            SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
+            _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, zeroMemData.data(), params._name);
+        } else {
+            _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData.first, params._name);
+        }
 
         assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
+        if (!_unsynced) {
+            _lockManager = MemoryManager_NEW glBufferLockManager();
+        }
     }
 
-    if (initToZero && params._initialData.second > 0) {
-        writeData(0, params._initialData.second, (Byte*)params._initialData.first);
-    }
-
-    if (_mappedBuffer != nullptr && !_unsynced) {
-        _lockManager = MemoryManager_NEW glBufferLockManager();
+    // Write our initial data now
+    if (needsAdditionalData && params._initialData.second > 0) {
+        writeData(0, params._initialData.second, params._initialData.first);
     }
 }
 
@@ -191,9 +207,10 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
     }
 
     if (_useExplicitFlush) {
-        MapRange range;
         size_t minOffset = std::numeric_limits<size_t>::max();
         size_t maxRange = 0;
+
+        MapRange range;
         while (_flushQueue.try_dequeue(range)) {
             minOffset = std::min(minOffset, range.offset);
             maxRange = std::max(maxRange, range.range);
@@ -208,18 +225,35 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
 }
 
 void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
-    static vectorEASTL<Byte> newData(1024, Byte{ 0 });
-
-    if (rangeInBytes > newData.size()) {
-        UniqueLock<Mutex> w_lock(g_CreateBufferLock);
-        newData.resize(rangeInBytes, Byte{ 0 });
+    if (_mappedBuffer) {
+        writeOrClearData(offsetInBytes, rangeInBytes, nullptr, true);
+        return;
     }
 
-    writeData(offsetInBytes, rangeInBytes, newData.data());
+    const size_t targetSize = rangeInBytes - offsetInBytes;
+
+    {
+        SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
+        if (targetSize <= zeroMemData.size()) {
+            writeOrClearData(offsetInBytes, rangeInBytes, zeroMemData.data(), true);
+            return;
+        }
+    }
+
+    UniqueLock<SharedMutex> w_lock(g_CreateBufferLock);
+    // Check again to prevent race conditions from screwing this up
+    if (targetSize > zeroMemData.size()) {
+        zeroMemData.resize(targetSize, Byte{ 0 });
+    }
+
+    writeOrClearData(offsetInBytes, rangeInBytes, zeroMemData.data(), true);
 }
 
 void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) {
+    writeOrClearData(offsetInBytes, rangeInBytes, data, false);
+}
 
+void glBufferImpl::writeOrClearData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte * data, const bool zeroMem) {
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", static_cast<bool>(_mappedBuffer != nullptr));
     OPTICK_TAG("Offset", to_U32(offsetInBytes));
@@ -228,17 +262,19 @@ void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInByt
 
     const bool waitOK = waitRange(offsetInBytes, rangeInBytes, true);
 
-    invalidateData(offsetInBytes, rangeInBytes);
-
     if (_mappedBuffer) {
         if (waitOK) {
             const bufferPtr dest = _mappedBuffer + offsetInBytes;
-            std::memcpy(dest, data, rangeInBytes);
+            if (zeroMem) {
+                std::memset(dest, 0, rangeInBytes);
+            } else {
+                std::memcpy(dest, data, rangeInBytes);
+            }
 
             if (_useExplicitFlush) {
                 if (_flushQueue.enqueue(MapRange{offsetInBytes, rangeInBytes})) {
-                    const I32 size = _flushQueueSize.fetch_add(1) + 1;
-                    if (size > g_maxFlushQueueLength) {
+                    const I32 size = _flushQueueSize.fetch_add(1);
+                    if (size >= g_maxFlushQueueLength) {
                         MapRange temp;
                         _flushQueue.try_dequeue(temp);
                     }
@@ -249,8 +285,10 @@ void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInByt
         }
     } else {
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
+            glInvalidateBufferData(_handle);
             glNamedBufferData(_handle, _alignedSize, data, _usage);
         } else {
+            glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
             glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
         }
     }
@@ -280,21 +318,6 @@ void glBufferImpl::readData(const size_t offsetInBytes, const size_t rangeInByte
             std::memcpy(data, (Byte*)bufferData+offsetInBytes, rangeInBytes);
         }
         glUnmapNamedBuffer(_handle);
-    }
-}
-
-void glBufferImpl::invalidateData(const size_t offsetInBytes, const size_t rangeInBytes) const {
-
-    OPTICK_EVENT();
-
-    if (_mappedBuffer != nullptr) {
-        return;
-    }
-
-    if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
-        glInvalidateBufferData(_handle);
-    } else {
-        glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
     }
 }
 
@@ -334,4 +357,22 @@ GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const
     DIVIDE_UNEXPECTED_CALL();
     return GL_NONE;
 }
+
+void glBufferImpl::CleanMemory() noexcept {
+    {
+        SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
+        const size_t crtSize = zeroMemData.size();
+        if (crtSize <= g_MinZeroDataSize) {
+            return;
+        }
+    }
+
+    UniqueLock<SharedMutex> w_lock(g_CreateBufferLock);
+    const size_t crtSize = zeroMemData.size();
+    // Speed things along if we are in the megabyte range. Not really needed, but still helps.
+    const U8 reduceFactor = crtSize > g_MinZeroDataSize * 100 ? 4 : 2;
+    
+    zeroMemData.resize(std::max(zeroMemData.size() / reduceFactor, g_MinZeroDataSize));
+}
+
 }; //namespace Divide

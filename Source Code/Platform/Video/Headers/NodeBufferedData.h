@@ -34,7 +34,8 @@
 #define _HARDWARE_VIDEO_NODE_BUFFERED_DATA_H_
 
 namespace Divide {
-    using sampler2D = U64;
+    using SamplerAddress = U64;
+
 #pragma pack(push, 1)
     struct NodeData
     {
@@ -68,14 +69,15 @@ namespace Divide {
         // [3][3]         = reserved
         mat4<F32> _prevWorldMatrix = MAT4_ZERO;
 
-        sampler2D _texDiffuse0 = 0u;
-        sampler2D _texOpacityMap = 0u;
-        sampler2D _texDiffuse1 = 0u;
-        sampler2D _texOMR = 0u;
-        sampler2D _texHeight = 0u;
-        sampler2D _texProjected = 0u;
-        sampler2D _texNormalMap = 0u;
-        sampler2D _texTemp = 0u;
+        SamplerAddress _texDiffuse0   = 0u;
+        SamplerAddress _texOpacityMap = 0u;
+        SamplerAddress _texDiffuse1   = 0u;
+        SamplerAddress _texOMR        = 0u;
+        SamplerAddress _texHeight     = 0u;
+        SamplerAddress _texProjected  = 0u;
+        SamplerAddress _texNormalMap  = 0u;
+
+        F32 _padding[2] = { 0u, 0u };
     };
 ;
 #pragma pack(pop)

@@ -26,7 +26,6 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
     implParams._elementSize = _elementSize;
     implParams._frequency = _frequency;
     implParams._initialData = descriptor._initialData;
-    implParams._initToZero = descriptor._initToZero;
     implParams._name = _name.empty() ? nullptr : _name.c_str();
     implParams._updateUsage = descriptor._updateUsage;
     implParams._explicitFlush = !BitCompare(_flags, Flags::AUTO_RANGE_FLUSH);
@@ -54,6 +53,14 @@ glUniformBuffer::glUniformBuffer(GFXDevice& context,
                             _frequency == BufferUpdateFrequency::ONCE;
 
     _buffer = MemoryManager_NEW glBufferImpl(context, implParams);
+
+    // Just to avoid issues with reading undefined or zero-initialised memory.
+    // This is quite fast so far so worth it for now.
+    if (descriptor._separateReadWrite && descriptor._initialData.second > 0) {
+        for (U32 i = 1; i < descriptor._ringBufferLength; ++i) {
+            _buffer->writeData(_alignedBufferSize * i, descriptor._initialData.second, descriptor._initialData.first);
+        }
+    }
 }
 
 glUniformBuffer::~glUniformBuffer() 

@@ -114,6 +114,8 @@ protected:
 
     bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const;
 
+    void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
+
     void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
 
     void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
@@ -135,7 +137,6 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) const;
 
-    bool makeTexturesResident() const;
     bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const;
     bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
 
@@ -150,6 +151,7 @@ public:
     static void queueComputeMipMap(GLuint textureHandle);
     static void dequeueComputeMipMap(GLuint textureHandle);
 
+    static bool MakeTexturesResident();
     static void queueTextureResidency(U64 textureAddress, bool makeResident);
 
     static void pushDebugMessage(const char* message);
@@ -223,10 +225,15 @@ private:
     static SharedMutex s_mipmapQueueSetLock;
     static eastl::unordered_set<GLuint> s_mipmapQueue;
 
-    static SharedMutex s_textureResidencyQueueSetLock;
+    struct ResidentTexture {
+        U64 _address = 0u;
+        U8  _frameCount = 0u;
+    };
+
+    static Mutex s_textureResidencyQueueSetLock;
     static std::atomic_bool s_residentTexturesNeedUpload;
     static hashMap<U64, bool> s_textureResidencyQueue;
-    static eastl::set<U64> s_residentTextures;
+    static std::array<ResidentTexture, Config::MAX_ACTIVE_RESIDENT_TEXTURES> s_residentTextures;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
