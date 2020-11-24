@@ -6,7 +6,7 @@
 #define texExtraMaps   texProjected
 
 #if defined(PRE_PASS)
-#define texNormalMap texDiffuse1
+#define texNormalArray texDiffuse1
 #else
 #define texTileMaps texDiffuse0
 #endif
@@ -218,7 +218,7 @@ vec3 getTerrainNormal(in vec2 uv) {
     const vec2 scaledUV = getScaledCoords(uv, blendAmount);
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, sampleTexture(texNormalMap, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
+        normal = mix(normal, sampleTexture(texNormalArray, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
     return normal;
