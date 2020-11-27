@@ -178,15 +178,18 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
-    s_maxTextureUnits = std::max(GLUtil::getGLValue(GL_MAX_TEXTURE_IMAGE_UNITS), 8);
+    s_maxTextureUnits = static_cast<GLuint>(std::max(GLUtil::getGLValue(GL_MAX_TEXTURE_IMAGE_UNITS), 16));
+    s_residentTextures.resize(s_maxTextureUnits * 2);
+
+
     GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIB_BINDINGS, s_maxAttribBindings);
 
-    if (to_base(TextureUsage::COUNT) >= to_U32(s_maxTextureUnits)) {
+    if (to_base(TextureUsage::COUNT) >= s_maxTextureUnits) {
         Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
 
-    if (to_base(AttribLocation::COUNT) >= to_U32(s_maxAttribBindings)) {
+    if (to_base(AttribLocation::COUNT) >= s_maxAttribBindings) {
         Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_ATTRIB_BINDS")));
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
@@ -300,13 +303,15 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     s_texturePool.init(
         {
-            {GL_NONE, 256}, //Generic texture handles (created with glGen instead of glCreate)
-            {GL_TEXTURE_2D, 1024}, //Used by most renderable items
-            {GL_TEXTURE_2D_ARRAY, 256}, //Used mainly by shadow maps and some materials
-            {GL_TEXTURE_2D_MULTISAMPLE, 128}, //Used by render targets
-            {GL_TEXTURE_CUBE_MAP, 64}, //Used for reflections and environment probes
-            {GL_TEXTURE_2D_MULTISAMPLE_ARRAY, 16}, //Used by the CSM system mostly
-            {GL_TEXTURE_3D, 8} //Will eventually be useful for volumetric stuff
+            8,    //TextureType::TEXTURE_1D:          Hardly used
+            2048, //TextureType::TEXTURE_2D:          Used by most renderable items
+            8,    //TextureType::TEXTURE_3D:          Will eventually be useful for volumetric stuff
+            64,   //TextureType::TEXTURE_CUBE_MAP:    Used for reflections and environment probes
+            256,  //TextureType::TEXTURE_2D_ARRAY:    Used mainly by shadow maps and some materials
+            32,   //TextureType::TEXTURE_CUBE_ARRAY:  Used for reflections and environment probes
+            128,  //TextureType::TEXTURE_2D_MS:       Used by render targets
+            16,   //TextureType::TEXTURE_2D_ARRAY_MS: Used by the CSM system mostly
+            256,  //TextureType::COUNT:               Generic texture handles (created with glGen instead of glCreate)
         }
     );
 
@@ -411,6 +416,10 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
     int w = 1, h = 1;
     SDL_GL_GetDrawableSize(window.getRawWindow(), &w, &h);
     return vec2<U16>(w, h);
+}
+
+void GL_API::queueFlush() {
+    s_glFlushQueued.store(true);
 }
 
 void GL_API::queueComputeMipMap(const GLuint textureHandle) {

@@ -10,14 +10,14 @@
 namespace Divide {
 
 /// The following static variables are used to remember the current OpenGL state
-GLuint GL_API::s_UBOffsetAlignment = 0;
-GLuint GL_API::s_UBMaxSize = 0;
-GLuint GL_API::s_SSBOffsetAlignment = 0;
-GLuint GL_API::s_SSBMaxSize = 0;
+GLuint GL_API::s_UBOffsetAlignment = 0u;
+GLuint GL_API::s_UBMaxSize = 0u;
+GLuint GL_API::s_SSBOffsetAlignment = 0u;
+GLuint GL_API::s_SSBMaxSize = 0u;
 GLuint GL_API::s_dummyVAO = 0u;
-GLint  GL_API::s_maxTextureUnits = 0;
-GLint  GL_API::s_maxAttribBindings = 0;
-GLint  GL_API::s_maxFBOAttachments = 0;
+GLuint GL_API::s_maxTextureUnits = 0;
+GLuint GL_API::s_maxAttribBindings = 0u;
+GLuint GL_API::s_maxFBOAttachments = 0u;
 GLuint GL_API::s_anisoLevel = 0u;
 
 SharedMutex GL_API::s_mipmapQueueSetLock;
@@ -26,7 +26,7 @@ eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 std::atomic_bool GL_API::s_residentTexturesNeedUpload;
 Mutex GL_API::s_textureResidencyQueueSetLock;
 hashMap<U64, bool> GL_API::s_textureResidencyQueue;
-std::array<GL_API::ResidentTexture, Config::MAX_ACTIVE_RESIDENT_TEXTURES> GL_API::s_residentTextures;
+vectorEASTL<GL_API::ResidentTexture> GL_API::s_residentTextures;
 
 SharedMutex GL_API::s_samplerMapLock;
 GL_API::SamplerObjectMap GL_API::s_samplerMap;
@@ -40,7 +40,7 @@ GLStateTracker& GL_API::getStateTracker() noexcept {
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, const bool global) const {
     if (global) {
-        stateTracker.bindTextures(0, s_maxTextureUnits - 1, nullptr, nullptr, nullptr);
+        stateTracker.bindTextures(0, s_maxTextureUnits - 1, TextureType::COUNT, nullptr, nullptr);
         stateTracker.setPixelPackUnpackAlignment();
         stateTracker._activePixelBuffer = nullptr;
     }
@@ -160,8 +160,8 @@ bool GL_API::deleteTextures(const GLuint count, GLuint* textures, const TextureT
             if (crtTex != 0) {
                 GLStateTracker& stateTracker = getStateTracker();
 
-                for (auto bindingIt : stateTracker._textureBoundMap) {
-                    U32& handle = bindingIt[to_base(texType)];
+                auto bindingIt = stateTracker._textureBoundMap[to_base(texType)];
+                for (GLuint& handle : bindingIt) {
                     if (handle == crtTex) {
                         handle = 0u;
                     }

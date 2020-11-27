@@ -63,11 +63,11 @@ void SceneEnvironmentProbePool::OnStartup(GFXDevice& context) {
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
-    environmentDescriptor.hasMipMaps(false);
+    environmentDescriptor.mipCount(1u);
 
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
     depthDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
-    depthDescriptor.hasMipMaps(false);
+    depthDescriptor.mipCount(1u);
 
     reflectionSampler.minFilter(TextureFilter::LINEAR);
     reflectionSampler.anisotropyLevel(0u);

@@ -112,7 +112,6 @@ class TextureDescriptor final : public PropertyDescriptor {
                       const GFXImageFormat format,
                       const GFXDataFormat dataType) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TEXTURE),
-          _mipLevels(0u, 1u),
           _dataType(dataType),
           _baseFormat(format),
           _texType(type)
@@ -121,11 +120,13 @@ class TextureDescriptor final : public PropertyDescriptor {
 
     bool isCubeTexture() const noexcept {
         return _texType == TextureType::TEXTURE_CUBE_MAP ||
-            _texType == TextureType::TEXTURE_CUBE_ARRAY;
+               _texType == TextureType::TEXTURE_CUBE_ARRAY;
     }
 
     bool isArrayTexture() const noexcept {
-        return _texType == TextureType::TEXTURE_2D_ARRAY;
+        return _texType == TextureType::TEXTURE_2D_ARRAY ||
+               _texType == TextureType::TEXTURE_2D_ARRAY_MS ||
+               _texType == TextureType::TEXTURE_CUBE_ARRAY;
     }
 
     bool isMultisampledTexture() const noexcept {
@@ -165,15 +166,14 @@ class TextureDescriptor final : public PropertyDescriptor {
     size_t getHash() const noexcept override;
 
     PROPERTY_RW(U16, layerCount, 1);
-    PROPERTY_RW(vec2<U16>, mipLevels);
-    PROPERTY_RW(U16, mipCount, 1);
+    PROPERTY_RW(U16, mipBaseLevel, 0);
+    PROPERTY_RW(U16, mipCount, std::numeric_limits<U16>::max());
     PROPERTY_RW(U8, msaaSamples, 0);
     PROPERTY_RW(GFXDataFormat, dataType, GFXDataFormat::COUNT);
     PROPERTY_RW(GFXImageFormat, baseFormat, GFXImageFormat::COUNT);
     PROPERTY_RW(TextureType, texType, TextureType::COUNT);
     /// Automatically compute mip maps (overwrites any manual mipmap computation)
     PROPERTY_RW(bool, autoMipMaps, true);
-    PROPERTY_RW(bool, hasMipMaps, true);
     /// Use SRGB colour space
     PROPERTY_RW(bool, srgb, false);
     PROPERTY_RW(bool, normalized, true);

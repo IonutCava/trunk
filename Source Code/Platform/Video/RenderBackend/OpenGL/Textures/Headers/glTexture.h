@@ -57,8 +57,6 @@ class glTexture final : public Texture,
 
     void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override;
 
-    void setMipMapRange(U16 base = 0, U16 max = 1000) noexcept override;
-
     void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override;
 
     void loadData(const ImageTools::ImageData& imageData) override;
@@ -80,8 +78,6 @@ class glTexture final : public Texture,
     void loadDataCompressed(const ImageTools::ImageData& imageData);
 
     void loadDataUncompressed(const ImageTools::ImageData& imageData) const;
-
-    void setMipRangeInternal(U16 base, U16 max) const noexcept;
 
    private:
     GLenum _type;

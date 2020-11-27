@@ -31,9 +31,12 @@ void GLStateTracker::init() noexcept
 {
     _opengl46Supported = GLUtil::getGLValue<GLint>(GL_MINOR_VERSION) == 6;
     _vaoBufferData.init(GL_API::s_maxAttribBindings);
-    _samplerBoundMap.fill(0u);
-    for (std::array<U32, to_base(TextureType::COUNT)>& it : _textureBoundMap) {
-        it.fill(0u);
+    _samplerBoundMap.resize(GL_API::s_maxTextureUnits, 0u);
+    _textureTypeBoundMap.resize(GL_API::s_maxTextureUnits, TextureType::COUNT);
+
+    _imageBoundMap.resize(GL_API::s_maxTextureUnits);
+    for (auto& it : _textureBoundMap) {
+        it.resize(GL_API::s_maxTextureUnits, 0u);
     }
 
     _blendProperties.resize(GL_API::s_maxFBOAttachments, BlendingProperties());
@@ -150,9 +153,9 @@ void GLStateTracker::toggleRasterization(const bool state) {
 
 bool GLStateTracker::bindSamplers(const GLushort unitOffset,
                                   const GLuint samplerCount,
-                                  GLuint* samplerHandles) {
-    if (samplerCount > 0 &&
-        unitOffset + samplerCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
+                                  GLuint* const samplerHandles) 
+{
+    if (samplerCount > 0 && unitOffset + samplerCount < GL_API::s_maxTextureUnits)
     {
         if (samplerCount == 1) {
             GLuint& handle = _samplerBoundMap[unitOffset];
@@ -176,76 +179,100 @@ bool GLStateTracker::bindSamplers(const GLushort unitOffset,
     return false;
 }
 
+void GLStateTracker::ProcessMipMapQueue(const GLuint textureCount, GLuint* const textureHandles) {
+    static vectorEASTL<GLuint> tempHandles;
+
+    if (textureCount == 0 || textureHandles == nullptr) {
+        return;
+    }
+
+    if (!GL_API::s_mipmapQueue.empty()) {
+        // Avoids a lock, but we still need to double check if we get here
+        SharedLock<SharedMutex> r_lock(GL_API::s_mipmapQueueSetLock);
+        if (!GL_API::s_mipmapQueue.empty()) {
+            for (GLuint i = 0; i < textureCount; ++i) {
+                const GLuint crtHandle = textureHandles[i];
+                if (crtHandle > 0) {
+                    const auto it = GL_API::s_mipmapQueue.find(crtHandle);
+                    if (it == std::cend(GL_API::s_mipmapQueue)) {
+                        continue;
+                    }
+                    glGenerateTextureMipmap(crtHandle);
+                    tempHandles.push_back(crtHandle);
+                }
+            }
+        }
+    }
+
+    if (!tempHandles.empty()) {
+        UniqueLock<SharedMutex> w_lock(GL_API::s_mipmapQueueSetLock);
+        for (GLuint handle : tempHandles) {
+            GL_API::s_mipmapQueue.erase(handle);
+        }
+        tempHandles.resize(0);
+    }
+}
+
 bool GLStateTracker::bindTextures(const GLushort unitOffset,
                                   const GLuint textureCount,
-                                  TextureType* textureTypes,
-                                  GLuint* textureHandles,
-                                  GLuint* samplerHandles) {
+                                  const TextureType texturesType,
+                                  GLuint* const textureHandles,
+                                  GLuint* const samplerHandles) {
 
-    bool bound = false;
-    if (textureCount > 0 &&
-        unitOffset + textureCount < static_cast<GLuint>(GL_API::s_maxTextureUnits))
-    {
-        if (textureHandles != nullptr) {
-            {
-                UniqueLock<SharedMutex> w_lock(GL_API::s_mipmapQueueSetLock);
-                for (GLuint i = 0; i < textureCount; ++i) {
-                    const GLuint crtHandle = textureHandles[i];
-                    if (crtHandle > 0) {
-                        const auto it = GL_API::s_mipmapQueue.find(crtHandle);
-                        if (it == std::cend(GL_API::s_mipmapQueue)) {
-                            continue;
-                        }
-                        glGenerateTextureMipmap(crtHandle);
-                        GL_API::s_mipmapQueue.erase(crtHandle);
-                    }
-                }
-            }
-        }
+    // This trick will save us from looking up the desired handle from the array twice (for single textures)
+    // and also provide an easy way of figuring out if we bound anything
+    GLuint lastValidHandle = GLUtil::k_invalidObjectID;
+    if (textureCount > 0 && unitOffset + textureCount < GL_API::s_maxTextureUnits) {
 
-        if (textureCount == 1) {
-            const GLuint targetHandle = textureHandles ? textureHandles[0] : 0u;
-            const TextureType type = textureTypes ? textureTypes[0] : TextureType::TEXTURE_2D;
+          if (texturesType == TextureType::COUNT) {
+              // Due to the use of DSA we can't specify the texture type directly.
+              // We have to actually specify the type for single textures
+              assert(textureCount > 1);
 
-            GLuint& crtHandle = _textureBoundMap[unitOffset][to_base(type)];
+              lastValidHandle = 0u;
+              for (U8 type = 0; type < to_base(TextureType::COUNT); ++type) {
+                  std::memset(&_textureBoundMap[type][unitOffset], 0, textureCount * sizeof(GLuint));
+              }
+          } else {
+              auto& boundMap = _textureBoundMap[to_base(texturesType)];
 
-            if (crtHandle != targetHandle) {
-                glBindTextureUnit(unitOffset, targetHandle);
-                crtHandle = targetHandle;
-                bound = true;
-            }
-        } else {
-            const TextureType type = textureTypes ? textureTypes[0] : TextureType::COUNT;
+              for (GLuint idx = 0; idx < textureCount; ++idx) {
+                  // Handles should always contain just the range we need regardless of unitOffset
+                  // First handle should always be the first element in the array
+                  const GLuint targetHandle = textureHandles ? textureHandles[idx] : 0u;
 
-            glBindTextures(unitOffset, textureCount, textureHandles);
-            if (textureHandles != nullptr) {
-                assert(type != TextureType::COUNT);
-                memcpy(_textureBoundMap[unitOffset].data(), textureHandles, sizeof(GLuint) * textureCount);
-            } else {
-                for (auto& map : _textureBoundMap) {
-                    memset(map.data(), 0u, sizeof(GLuint) * textureCount);
-                }
-            }
+                  GLuint& crtHandle = boundMap[unitOffset + idx];
+                  if (targetHandle != crtHandle) {
+                      crtHandle = targetHandle;
+                      lastValidHandle = targetHandle;
+                  }
+              }
+          }
 
-            bound = true;
-        }
+          ProcessMipMapQueue(textureCount, textureHandles);
+
+          if (lastValidHandle != GLUtil::k_invalidObjectID) {
+              if (textureCount == 1) {
+                  glBindTextureUnit(unitOffset, lastValidHandle);
+              } else {
+                  glBindTextures(unitOffset, textureCount, textureHandles);
+              }
+              eastl::fill_n(&_textureTypeBoundMap[unitOffset], textureCount, texturesType);
+          }
+
         bindSamplers(unitOffset, textureCount, samplerHandles);
     }
 
-    return bound;
+    return (lastValidHandle != GLUtil::k_invalidObjectID);
 }
 
 /// Bind a texture specified by a GL handle and GL type to the specified unit
 /// using the sampler object defined by hash value
-bool GLStateTracker::bindTexture(const GLushort unit,
-                                 TextureType type,
-                                 GLuint handle,
-                                 GLuint samplerHandle) {
+bool GLStateTracker::bindTexture(const GLushort unit, const TextureType type, GLuint handle, GLuint samplerHandle) {
     // Fail if we specified an invalid unit. Assert instead of returning false
     // because this might be related to a bad algorithm
-    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits),
-                  "GLStates error: invalid texture unit specified as a texture binding slot!");
-    return bindTextures(unit, 1, &type, &handle, &samplerHandle);
+    DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits), "GLStates error: invalid texture unit specified as a texture binding slot!");
+    return bindTextures(unit, 1, type, &handle, &samplerHandle);
 }
 
 bool GLStateTracker::bindTextureImage(const GLushort unit, const GLuint handle, const GLint level,
@@ -506,7 +533,7 @@ void GLStateTracker::setBlending(const BlendingProperties& blendingProperties) {
 void GLStateTracker::setBlending(const GLuint drawBufferIdx,const BlendingProperties& blendingProperties) {
     const bool enable = blendingProperties.blendEnabled();
 
-    assert(drawBufferIdx < static_cast<GLuint>(GL_API::s_maxFBOAttachments));
+    assert(drawBufferIdx < GL_API::s_maxFBOAttachments);
 
     if (_blendEnabled[drawBufferIdx] == GL_TRUE != enable) {
         enable ? glEnablei(GL_BLEND, drawBufferIdx) : glDisablei(GL_BLEND, drawBufferIdx);
@@ -606,11 +633,19 @@ bool GLStateTracker::setScissor(const Rect<I32>& rect) {
     return false;
 }
 
-U32 GLStateTracker::getBoundTextureHandle(const U8 slot, const TextureType type) {
-    return _textureBoundMap[slot][to_base(type)];
+GLuint GLStateTracker::getBoundTextureHandle(const U8 slot, const TextureType type)  const {
+    return type == TextureType::COUNT ? 0u : _textureBoundMap[to_base(type)][slot];
 }
 
-void GLStateTracker::getActiveViewport(GLint* const vp) {
+GLuint GLStateTracker::getBoundSamplerHandle(const U8 slot) const {
+    return _samplerBoundMap[slot];
+}
+
+TextureType GLStateTracker::getBoundTextureType(const U8 slot) const {
+    return _textureTypeBoundMap[slot];
+}
+
+void GLStateTracker::getActiveViewport(GLint* const vp) const {
     if (vp != nullptr) {
         *vp = *_activeViewport._v;
     }

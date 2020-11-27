@@ -219,7 +219,7 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
             entry._binding = bindSlot;
             entry._view._texture = shadowTexture.texture().get();
             entry._view._samplerHash = shadowTexture.samplerHash();
-            entry._view._mipLevels.set(texDescriptor.mipLevels().min, texDescriptor.mipLevels().max);
+            entry._view._mipLevels.set(0, texDescriptor.mipCount());
             entry._view._layerRange.set(0, useCount);
             descriptorSetCmd._set._textureViews.push_back(entry);
         } else {

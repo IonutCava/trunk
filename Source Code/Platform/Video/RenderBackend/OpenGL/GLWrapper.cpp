@@ -20,14 +20,12 @@
 #include "Core/Time/Headers/ProfileTimer.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "GUI/Headers/GUIText.h"
+#include "Platform/Headers/PlatformRuntime.h"
 #include "Utility/Headers/Localization.h"
 
 #include <SDL_video.h>
-
-
 #include <CEGUI/CEGUI.h>
 
-#include "Platform/Headers/PlatformRuntime.h"
 #include "Text/Headers/fontstash.h"
 
 namespace Divide {
@@ -40,7 +38,7 @@ namespace {
 }
 
 GLStateTracker GL_API::s_stateTracker;
-bool GL_API::s_glFlushQueued = false;
+std::atomic_bool GL_API::s_glFlushQueued;
 GLUtil::glTexturePool GL_API::s_texturePool = {};
 GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool = {};
 eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueue;
@@ -51,6 +49,7 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
       _swapBufferTimer(Time::ADD_TIMER("Swap Buffer Timer"))
 {
     ACKNOWLEDGE_UNUSED(glES);
+    std::atomic_init(&s_glFlushQueued, false);
 }
 
 
@@ -135,7 +134,7 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
         if (global) {
             _swapBufferTimer.stop();
             s_texturePool.onFrameEnd();
-            s_glFlushQueued = false;
+            s_glFlushQueued.store(false);
             if_constexpr(Config::USE_BINDLESS_TEXTURES) {
                 for (ResidentTexture& texture : s_residentTextures) {
                     if (texture._address == 0u) {
@@ -373,7 +372,6 @@ bool GL_API::initGLSW(Configuration& config) {
     }
 
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
-    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_RESIDENT_TEXTURES " + Util::to_string(Config::MAX_ACTIVE_RESIDENT_TEXTURES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f", lineOffsets);
@@ -906,8 +904,6 @@ I32 GL_API::getFont(const Str64& fontName) {
 void GL_API::drawText(const TextElementBatch& batch) {
     OPTICK_EVENT();
 
-    pushDebugMessage("OpenGL render text start!");
-
     getStateTracker().setBlending(0,
         BlendingProperties{
             BlendProperty::SRC_ALPHA,
@@ -970,8 +966,6 @@ void GL_API::drawText(const TextElementBatch& batch) {
         // Register each label rendered as a draw call
         _context.registerDrawCalls(to_U32(drawCount));
     }
-
-    popDebugMessage();
 }
 
 void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
@@ -1100,19 +1094,25 @@ bool GL_API::draw(const GenericDrawCommand& cmd, const U32 cmdBufferOffset) cons
 
         U32 indexCount = 0u;
         switch (cmd._primitiveType) {
-            case PrimitiveType::TRIANGLES: indexCount = cmd._drawCount * 3; break;
-            case PrimitiveType::API_POINTS: indexCount = cmd._drawCount; break;
-            case PrimitiveType::COUNT: DIVIDE_UNEXPECTED_CALL(); break;
-            default: indexCount = cmd._cmd.indexCount; break;
+            case PrimitiveType::TRIANGLES  : indexCount = cmd._drawCount * 3; break;
+            case PrimitiveType::API_POINTS : indexCount = cmd._drawCount; break;
+            case PrimitiveType::COUNT      : DIVIDE_UNEXPECTED_CALL(); break;
+            default                        : indexCount = cmd._cmd.indexCount; break;
         }
 
         glDrawArrays(GLUtil::glPrimitiveTypeTable[to_U32(cmd._primitiveType)], cmd._cmd.firstIndex, indexCount);
     } else {
-        VertexDataInterface* buffer = VertexDataInterface::s_VDIPool.find(cmd._sourceBuffer);
-        assert(buffer != nullptr);
-        buffer->draw(cmd, cmdBufferOffset);
+        // Because this can only happen on the main thread, try and avoid costly lookups for hot-loop drawing
+        static PoolHandle lastID = { std::numeric_limits<U16>::max(), 0 };
+        static VertexDataInterface* lastBuffer = nullptr;
+        if (lastID != cmd._sourceBuffer) {
+            lastID = cmd._sourceBuffer;
+            lastBuffer = VertexDataInterface::s_VDIPool.find(lastID);
+        }
+
+        assert(lastBuffer != nullptr);
+        lastBuffer->draw(cmd, cmdBufferOffset);
     }
-    lockBuffers(_context.getFrameCount());
 
     return true;
 }
@@ -1127,7 +1127,7 @@ void GL_API::pushDebugMessage(const char* message) {
 void GL_API::popDebugMessage() {
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         glPopDebugGroup();
-        getStateTracker()._debugScope = "";
+        getStateTracker()._debugScope.clear();
     }
 }
 
@@ -1143,7 +1143,7 @@ void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
     OPTICK_EVENT();
 
-    const GFX::CommandType cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
+    const auto cmdType = static_cast<GFX::CommandType>(entry._typeIndex);
 
     OPTICK_TAG("Type", to_base(cmdType));
 
@@ -1198,7 +1198,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
             GFX::BindDescriptorSetsCommand* crtCmd = commandBuffer.get<GFX::BindDescriptorSetsCommand>(entry);
-            const DescriptorSet& set = crtCmd->_set;
+            DescriptorSet& set = crtCmd->_set;
 
             if (!makeTexturesResident(set._textureData, set._textureViews)) {
                 //Error
@@ -1254,35 +1254,50 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 }
             } else {
                 OPTICK_EVENT("GL: View-based computation");
+
+                const TextureDescriptor& descriptor = crtCmd->_texture->descriptor();
+                const TextureData data = crtCmd->_texture->data();
+                const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
+                assert(IsValid(data));
+
                 TextureView view = {};
                 view._texture = crtCmd->_texture;
-                view._layerRange.set(crtCmd->_layerRange.x, crtCmd->_layerRange.y);
-                view._mipLevels.set(view._texture->descriptor().mipLevels());
+                view._layerRange.set(crtCmd->_layerRange);
+                view._mipLevels.set(0, descriptor.mipCount());
 
-                const TextureDescriptor& descriptor = view._texture->descriptor();
-                const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
+                TextureType viewType = data._textureType;
+                if (descriptor.isArrayTexture() && view._layerRange.max == 1) {
+                    switch (viewType) {
+                      case TextureType::TEXTURE_2D_ARRAY:
+                          viewType = TextureType::TEXTURE_2D;
+                          break;
+                      case TextureType::TEXTURE_2D_ARRAY_MS:
+                          viewType = TextureType::TEXTURE_2D_MS;
+                          break;
+                      case TextureType::TEXTURE_CUBE_ARRAY:
+                          viewType = TextureType::TEXTURE_CUBE_MAP;
+                          break;
+                    };
+                }
 
-                const TextureData& data = view._texture->data();
-                assert(IsValid(data));
-                if (data._textureType == TextureType::TEXTURE_CUBE_MAP) {
-                    view._layerRange.max *= 6;
-                } else if (data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+                
+                if (descriptor.isCubeTexture()) {
                     view._layerRange.min *= 6; //offset
                     view._layerRange.max *= 6; //count
                 }
-                const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
+                
+                auto[handle, cacheHit] = s_texturePool.allocate(view.getHash(), TextureType::COUNT);
 
-                auto[handle, cacheHit] = s_texturePool.allocate(view.getHash(), GL_NONE);
                 if (!cacheHit) {
                     OPTICK_EVENT("GL: View cache miss");
                     glTextureView(handle,
-                        type,
-                        data._textureHandle,
-                        glInternalFormat,
-                        static_cast<GLuint>(view._mipLevels.x),
-                        static_cast<GLuint>(view._mipLevels.y),
-                        static_cast<GLuint>(view._layerRange.x),
-                        static_cast<GLuint>(view._layerRange.y));
+                                  GLUtil::glTextureTypeTable[to_base(viewType)],
+                                  data._textureHandle,
+                                  glInternalFormat,
+                                  static_cast<GLuint>(view._mipLevels.x),
+                                  static_cast<GLuint>(view._mipLevels.y),
+                                  static_cast<GLuint>(view._layerRange.x),
+                                  static_cast<GLuint>(view._layerRange.y));
                 }
                 if (crtCmd->_defer) {
                     OPTICK_EVENT("GL: Deferred computation");
@@ -1291,7 +1306,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     OPTICK_EVENT("GL: In-place computation");
                     glGenerateTextureMipmap(handle);
                 }
-                s_texturePool.deallocate(handle, GL_NONE, 3);
+                s_texturePool.deallocate(handle, TextureType::COUNT, 3);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
@@ -1310,20 +1325,21 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const GLStateTracker& stateTracker = getStateTracker();
-            if (stateTracker._activePipeline != nullptr) {
-                GFX::DrawCommand* crtCmd = commandBuffer.get<GFX::DrawCommand>(entry);
-                const GFX::DrawCommand::CommandContainer& drawCommands = crtCmd->_drawCommands;
-                for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
-                    if (draw(currentDrawCommand, stateTracker._commandBufferOffset)) {
-                        if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY)) {
-                            if (isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-                                _context.registerDrawCalls(2);
-                            } else {
-                                _context.registerDrawCall();
-                            }
-                        }
-                    }
+            DIVIDE_ASSERT(stateTracker._activePipeline != nullptr);
+
+            const auto& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)->_drawCommands;
+
+            U32 drawCount = 0u;
+            for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
+                if (draw(currentDrawCommand, stateTracker._commandBufferOffset)) {
+                    drawCount += isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME) 
+                                       ? 2 
+                                       : isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY) ? 1 : 0;
                 }
+            }
+            if (drawCount > 0u) {
+                lockBuffers(_context.getFrameCount());
+                _context.registerDrawCalls(drawCount);
             }
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
@@ -1414,8 +1430,9 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
 void GL_API::lockBuffers(const U32 frameID) {
     OPTICK_EVENT();
     for (const BufferLockEntry& entry : s_bufferLockQueue) {
-        entry._buffer->lockRange(entry._offset, entry._length, frameID);
-        s_glFlushQueued = s_glFlushQueued || entry._flush;
+        if (!entry._buffer->lockRange(entry._offset, entry._length, frameID)) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
     }
     s_bufferLockQueue.resize(0);
 }
@@ -1428,10 +1445,11 @@ void GL_API::registerBufferBind(BufferLockEntry&& data) {
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
-    if (s_glFlushQueued) {
+
+    bool expected = true;
+    if (s_glFlushQueued.compare_exchange_strong(expected, false)) {
         OPTICK_EVENT("GL_FLUSH");
         glFlush();
-        s_glFlushQueued = false;
     }
 }
 
@@ -1493,6 +1511,8 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) const {
 }
 
 bool GL_API::MakeTexturesResident() {
+    OPTICK_EVENT();
+
     bool expected = true;
     if (s_residentTexturesNeedUpload.compare_exchange_strong(expected, false)) {
         UniqueLock<Mutex> w_lock(s_textureResidencyQueueSetLock);
@@ -1538,80 +1558,131 @@ bool GL_API::MakeTexturesResident() {
     return true;
 }
 
-bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const {
-    OPTICK_EVENT();
+bool GL_API::makeTexturesResidentInternal(TextureDataContainer<>& textureData, const U8 offset, U8 count) const {
+    // All of the complicate and fragile code bellow does actually provide a measurable performance increase 
+    // (micro second range for a typical scene, nothing amazing, but still ...)
+    // CPU cost is comparable to the multiple glBind calls on some specific driver + GPU combos.
+
+    constexpr GLuint k_textureThreshold = 3;
+    GLStateTracker& stateTracker = getStateTracker();
+
+    const U8 totalTextureCount = textureData.count();
+
+    count = std::min(count, to_U8(totalTextureCount - offset));
+    assert(offset + count <= totalTextureCount);
+    const auto& textures = textureData.textures();
 
     bool bound = false;
+    if (count > 1) {
+        // If we have 3 or more textures, there's a chance we might get a binding gap, so just sort
+        if (totalTextureCount > 2) {
+            textureData.sortByBinding();
+        }
 
+        const auto& firstEntry = textures.front();
 
-    STUBBED("ToDo: Optimise this: If over n textures, get max binding slot, create [0...maxSlot] bindings, fill unused with 0 and send as one command with glBindTextures -Ionut")
-#if 0
-    constexpr size_t k_textureThreshold = 3;
-    const U8 texCount = textureData.count();
+        const TextureType targetType = std::get<1>(firstEntry)._textureType;
+        U8 prevBinding = std::get<0>(firstEntry);
 
-    if (texCount > k_textureThreshold) {
-        constexpr GLushort offset = 0;
-        vectorEASTL<TextureType> types;
-        vectorEASTL<GLuint> handles;
-        vectorEASTL<GLuint> samplers;
+        U8 matchingTexCount = 0u;
+        U8 startBinding = std::numeric_limits<U8>::max();
+        U8 endBinding = 0u; 
         
-        types.reserve(texCount);
-        handles.reserve(texCount);
-        samplers.reserve(texCount);
-
-        for (const auto& [binding, data] : textureData.textures()) {
-            if (binding == TextureDataContainer<>::INVALID_BINDING) {
-                continue;
-            }
+        for (U8 idx = offset; idx < offset + count; ++idx) {
+            const auto& [binding, data, samplerHash] = textures[idx];
             assert(IsValid(data));
-            types.push_back(data._textureType);
-            handles.push_back(data._textureHandle);
-            samplers.push_back(data._samplerHandle);
+            if (binding != TextureDataContainer<>::INVALID_BINDING && targetType != data._textureType) {
+                break;
+            }
+            // Avoid large gaps between bindings. It's faster to just bind them individually.
+            if (matchingTexCount > 0 && binding - prevBinding > k_textureThreshold) {
+                break;
+            }
+            // We mainly want to handle ONLY consecutive units
+            prevBinding = binding;
+            startBinding = std::min(startBinding, binding);
+            endBinding = std::max(endBinding, binding);
+            ++matchingTexCount;
         }
 
-        bound = getStateTracker().bindTextures(offset, (GLuint)texCount, types.data(), handles.data(), samplers.data());
-    } else
-#endif
-    {
-        GLStateTracker& stateTracker = getStateTracker();
-        for (const auto&[binding, data, samplerHash] : textureData.textures()) {
-            if (binding == TextureDataContainer<>::INVALID_BINDING) {
-                continue;
+        if (matchingTexCount >= k_textureThreshold) {
+            static vectorEASTL<GLuint> handles{};
+            static vectorEASTL<GLuint> samplers{};
+            static bool init = false;
+            if (!init) {
+                init = true;
+                handles.resize(GL_API::s_maxTextureUnits, GLUtil::k_invalidObjectID);
+                samplers.resize(GL_API::s_maxTextureUnits, GLUtil::k_invalidObjectID);
+            } else {
+                std::memset(&handles[startBinding], GLUtil::k_invalidObjectID, (endBinding - startBinding + 1) * sizeof(GLuint));
             }
-            assert(IsValid(data));
-            bound = stateTracker.bindTexture(static_cast<GLushort>(binding),
-                                             data._textureType,
-                                             data._textureHandle,
-                                             getSamplerHandle(samplerHash)) || bound;
+
+            for (U8 idx = offset; idx < offset + matchingTexCount; ++idx) {
+                const auto& [binding, data, samplerHash] = textures[idx];
+                if (binding != TextureDataContainer<>::INVALID_BINDING) {
+                    handles[binding]  = data._textureHandle;
+                    samplers[binding] = getSamplerHandle(samplerHash);
+                }
+            }
+
+            
+            for (U8 binding = startBinding; binding < endBinding; ++binding) {
+                if (handles[binding] == GLUtil::k_invalidObjectID) {
+                    const TextureType crtType = stateTracker.getBoundTextureType(binding);
+                    samplers[binding] = stateTracker.getBoundSamplerHandle(binding);
+                    handles[binding] = stateTracker.getBoundTextureHandle(binding, crtType);
+                }
+            }
+
+            bound = stateTracker.bindTextures(startBinding, endBinding - startBinding + 1, targetType, &handles[startBinding], &samplers[startBinding]);
+        } else {
+            matchingTexCount = 1;
+            bound = makeTexturesResidentInternal(textureData, offset, 1) || bound;
         }
+
+        // Recurse to try and get more matches
+        bound = makeTexturesResidentInternal(textureData, offset + matchingTexCount, count - matchingTexCount) || bound;
+    } else if (count == 1) {
+        // Normal usage. Bind a single texture at a time
+        const auto&[binding, data, samplerHash] = textures[offset];
+        if (binding != TextureDataContainer<>::INVALID_BINDING) {
+            assert(IsValid(data));
+            GLuint handle = data._textureHandle;
+            GLuint sampler = getSamplerHandle(samplerHash);
+            bound = stateTracker.bindTextures(binding, 1, data._textureType, &handle, &sampler) || bound;
+        }
+    } else {
+        // Used for breaking the debugger if we get missing textures or similar issues
+        NOP();
     }
 
-    for (const auto& it : textureViews) {
-        const size_t viewHash = it.getHash();
+    return bound;
+}
 
-        auto [textureID, cacheHit] = s_texturePool.allocate(viewHash, GL_NONE);
-        if (textureID == 0u) {
-            DIVIDE_UNEXPECTED_CALL();
-            continue;
-        }
+bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewEntry>& textureViews, const U8 offset, U8 count) const {
+    count = std::min(count, to_U8(textureViews.size()));
+
+    bool bound = false;
+    for (U8 i = offset; i < count + offset; ++i) {
+        const auto& it = textureViews[i];
+        const size_t viewHash = it.getHash();
 
         const Texture* tex = it._view._texture;
         assert(tex != nullptr);
+
         const TextureData& data = tex->data();
         assert(IsValid(data));
+
+        auto [textureID, cacheHit] = s_texturePool.allocate(viewHash, TextureType::COUNT);
+        DIVIDE_ASSERT(textureID != 0u);
 
         if (!cacheHit) {
             const TextureDescriptor& descriptor = tex->descriptor();
             const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
             const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
 
-            vec2<GLuint> layerRange = it._view._layerRange;
-            if (data._textureType == TextureType::TEXTURE_CUBE_MAP) {
-                layerRange.max *= 6;
-            } else if (data._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
-                layerRange.min *= 6; //offset
-                layerRange.max *= 6; //count
-            }
+            const vec2<GLuint> layerRange = descriptor.isCubeTexture() ? it._view._layerRange * 6 : it._view._layerRange;
+
             glTextureView(textureID,
                 type,
                 data._textureHandle,
@@ -1621,11 +1692,19 @@ bool GL_API::makeTexturesResident(const TextureDataContainer<>& textureData, con
                 layerRange.min,
                 layerRange.max);
         }
+
         bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, textureID, getSamplerHandle(it._view._samplerHash)) || bound;
         // Self delete after 3 frames unless we use it again
-        s_texturePool.deallocate(textureID, GL_NONE, 3u);
+        s_texturePool.deallocate(textureID, TextureType::COUNT, 3u);
     }
 
+    return bound;
+}
+
+bool GL_API::makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset, U8 count) const {
+    OPTICK_EVENT();
+    bool bound = makeTextureViewsResidentInternal(textureViews, offset, count);
+    bound = makeTexturesResidentInternal(textureData, offset, count) || bound;
     return bound;
 }
 

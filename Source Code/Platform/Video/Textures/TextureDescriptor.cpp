@@ -102,8 +102,7 @@ namespace Divide {
         _hash = PropertyDescriptor::getHash();
 
         Util::Hash_combine(_hash, _layerCount);
-        Util::Hash_combine(_hash, _mipLevels.x);
-        Util::Hash_combine(_hash, _mipLevels.y);
+        Util::Hash_combine(_hash, _mipBaseLevel);
         Util::Hash_combine(_hash, _mipCount);
         Util::Hash_combine(_hash, _msaaSamples);
         Util::Hash_combine(_hash, to_U32(_dataType));

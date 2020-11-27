@@ -184,7 +184,6 @@ void glGenericVertexData::setBufferBindings(const GenericDrawCommand& command) {
         entry._buffer = buffer->bufferImpl();
         entry._length = buffer->elementCount() * elementSize;
         entry._offset = buffer->getBindOffset(queueIndex());
-        entry._flush = true;
 
         GL_API::getStateTracker().bindActiveBuffer(_vertexArray, location, buffer->bufferHandle(), _instanceDivisor[bufferIdx], entry._offset, elementSize);
         GL_API::registerBufferBind(MOV(entry));
@@ -216,7 +215,7 @@ void glGenericVertexData::setAttributeInternal(const GenericDrawCommand& command
 
     // If the attribute wasn't activate until now, enable it
     if (!descriptor.wasSet()) {
-        assert(descriptor.attribIndex() < to_U32(GL_API::s_maxAttribBindings) &&
+        assert(descriptor.attribIndex() < GL_API::s_maxAttribBindings &&
                "GL Wrapper: insufficient number of attribute binding locations available on current hardware!");
 
         glEnableVertexArrayAttrib(_vertexArray, descriptor.attribIndex());

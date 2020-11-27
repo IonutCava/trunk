@@ -13,34 +13,34 @@ namespace Divide {
 namespace {
 // Once vertex buffers reach a certain size, the for loop grows really really fast up to millions of iterations.
 // Multiple if-checks per loop are not an option, so do some template hacks to speed this function up
-template<bool texCoords, bool normals, bool tangents, bool colour, bool bones>
-void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut) noexcept
+template<bool TexCoords, bool Normals, bool Tangents, bool Colour, bool Bones>
+void FillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut) noexcept
 {
     for (const VertexBuffer::Vertex& data : dataIn) {
         std::memcpy(dataOut, data._position._v, sizeof data._position);
         dataOut += sizeof data._position;
 
-        if (texCoords) {
+        if_constexpr (TexCoords) {
             std::memcpy(dataOut, data._texcoord._v, sizeof data._texcoord);
             dataOut += sizeof data._texcoord;
         }
 
-        if (normals) {
+        if_constexpr(Normals) {
             std::memcpy(dataOut, &data._normal, sizeof data._normal);
             dataOut += sizeof data._normal;
         }
 
-        if (tangents) {
+        if_constexpr(Tangents) {
             std::memcpy(dataOut, &data._tangent, sizeof data._tangent);
             dataOut += sizeof data._tangent;
         }
 
-        if (colour) {
+        if_constexpr(Colour) {
             std::memcpy(dataOut, data._colour._v, sizeof data._colour);
             dataOut += sizeof data._colour;
         }
 
-        if (bones) {
+        if_constexpr(Bones) {
             std::memcpy(dataOut, &data._weights.i, sizeof data._weights.i);
             dataOut += sizeof data._weights.i;
 
@@ -50,55 +50,55 @@ void fillSmallData5(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataO
     }
 }
 
-template <bool texCoords, bool normals, bool tangents, bool colour>
-void fillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool bones) noexcept
+template <bool TexCoords, bool Normals, bool Tangents, bool Colour>
+void FillSmallData4(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool bones) noexcept
 {
     if (bones) {
-        fillSmallData5<texCoords, normals, tangents, colour, true>(dataIn, dataOut);
+        FillSmallData5<TexCoords, Normals, Tangents, Colour, true>(dataIn, dataOut);
     } else {
-        fillSmallData5<texCoords, normals, tangents, colour, false>(dataIn, dataOut);
+        FillSmallData5<TexCoords, Normals, Tangents, Colour, false>(dataIn, dataOut);
     }
 }
 
-template <bool texCoords, bool normals, bool tangents>
-void fillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool colour, const bool bones) noexcept
+template <bool TexCoords, bool Normals, bool Tangents>
+void FillSmallData3(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool colour, const bool bones) noexcept
 {
     if (colour) {
-        fillSmallData4<texCoords, normals, tangents, true>(dataIn, dataOut, bones);
+        FillSmallData4<TexCoords, Normals, Tangents, true>(dataIn, dataOut, bones);
     } else {
-        fillSmallData4<texCoords, normals, tangents, false>(dataIn, dataOut, bones);
+        FillSmallData4<TexCoords, Normals, Tangents, false>(dataIn, dataOut, bones);
     }
 }
 
-template <bool texCoords, bool normals>
-void fillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool tangents, const bool colour, const bool bones) noexcept
+template <bool TexCoords, bool Normals>
+void FillSmallData2(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool tangents, const bool colour, const bool bones) noexcept
 {
     if (tangents) {
-        fillSmallData3<texCoords, normals, true>(dataIn, dataOut, colour, bones);
+        FillSmallData3<TexCoords, Normals, true>(dataIn, dataOut, colour, bones);
     } else {
-        fillSmallData3<texCoords, normals, false>(dataIn, dataOut, colour, bones);
+        FillSmallData3<TexCoords, Normals, false>(dataIn, dataOut, colour, bones);
     }
 }
 
-template <bool texCoords>
-void fillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool normals, const bool tangents, const bool colour, const bool bones) noexcept
+template <bool TexCoords>
+void FillSmallData1(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool normals, const bool tangents, const bool colour, const bool bones) noexcept
 {
     if (normals) {
-        fillSmallData2<texCoords, true>(dataIn, dataOut, tangents, colour, bones);
+        FillSmallData2<TexCoords, true>(dataIn, dataOut, tangents, colour, bones);
     } else {
-        fillSmallData2<texCoords, false>(dataIn, dataOut, tangents, colour, bones);
+        FillSmallData2<TexCoords, false>(dataIn, dataOut, tangents, colour, bones);
     }
 }
 
-void fillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool texCoords, const bool normals, const bool tangents, const bool colour, const bool bones) noexcept
+void FillSmallData(const vectorEASTL<VertexBuffer::Vertex>& dataIn, Byte* dataOut, const bool texCoords, const bool normals, const bool tangents, const bool colour, const bool bones) noexcept
 {
     if (texCoords) {
-        fillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);
+        FillSmallData1<true>(dataIn, dataOut, normals, tangents, colour, bones);
     } else {
-        fillSmallData1<false>(dataIn, dataOut, normals, tangents, colour, bones);
+        FillSmallData1<false>(dataIn, dataOut, normals, tangents, colour, bones);
     }
 }
-};
+}
 
 GLUtil::glVAOCache glVertexArray::_VAOMap;
 
@@ -108,16 +108,8 @@ void glVertexArray::cleanup() {
 
 /// Default destructor
 glVertexArray::glVertexArray(GFXDevice& context)
-    : VertexBuffer(context),
-     _useAttribute{},
-     _attributeOffset{},
-     _vaoCaches{}
+    : VertexBuffer(context)
 {
-    _countData.fill(0);
-    _vaoCaches.fill(0);
-    _useAttribute.fill(false);
-    _attributeOffset.fill(0);
-    reset();
 }
 
 glVertexArray::~glVertexArray()
@@ -136,35 +128,29 @@ void glVertexArray::reset() {
 }
 
 size_t glVertexArray::populateAttributeSize() {
-    const bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
-    const bool useNormals = _useAttribute[to_base(AttribLocation::NORMAL)];
-    const bool useTangents = _useAttribute[to_base(AttribLocation::TANGENT)];
-    const bool useColour = _useAttribute[to_base(AttribLocation::COLOR)];
-    const bool useBoneData = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
-
     size_t prevOffset = sizeof(vec3<F32>);
 
-    if (useTexcoords) {
+    if (_useAttribute[to_base(AttribLocation::TEXCOORD)]) {
         _attributeOffset[to_base(AttribLocation::TEXCOORD)] = to_U32(prevOffset);
         prevOffset += sizeof(vec2<F32>);
     }
 
-    if (useNormals) {
+    if (_useAttribute[to_base(AttribLocation::NORMAL)]) {
         _attributeOffset[to_base(AttribLocation::NORMAL)] = to_U32(prevOffset);
         prevOffset += sizeof(F32);
     }
 
-    if (useTangents) {
+    if (_useAttribute[to_base(AttribLocation::TANGENT)]) {
         _attributeOffset[to_base(AttribLocation::TANGENT)] = to_U32(prevOffset);
         prevOffset += sizeof(F32);
     }
 
-    if (useColour) {
+    if (_useAttribute[to_base(AttribLocation::COLOR)]) {
         _attributeOffset[to_base(AttribLocation::COLOR)] = to_U32(prevOffset);
         prevOffset += sizeof(UColour4);
     }
 
-    if (useBoneData) {
+    if (_useAttribute[to_base(AttribLocation::BONE_INDICE)]) {
         _attributeOffset[to_base(AttribLocation::BONE_WEIGHT)] = to_U32(prevOffset);
         prevOffset += sizeof(U32);
         _attributeOffset[to_base(AttribLocation::BONE_INDICE)] = to_U32(prevOffset);
@@ -179,13 +165,13 @@ bool glVertexArray::getMinimalData(const vectorEASTL<Vertex>& dataIn, Byte* data
     assert(dataOut != nullptr);
 
     if (dataOutBufferLength == dataIn.size() * _effectiveEntrySize) {
-
-        const bool useTexcoords = _useAttribute[to_base(AttribLocation::TEXCOORD)];
-        const bool useNormals = _useAttribute[to_base(AttribLocation::NORMAL)];
-        const bool useTangents = _useAttribute[to_base(AttribLocation::TANGENT)];
-        const bool useColour = _useAttribute[to_base(AttribLocation::COLOR)];
-        const bool useBoneData = _useAttribute[to_base(AttribLocation::BONE_INDICE)];
-        fillSmallData(dataIn, dataOut, useTexcoords, useNormals, useTangents, useColour, useBoneData);
+        FillSmallData(dataIn,
+                      dataOut,
+                      _useAttribute[to_base(AttribLocation::TEXCOORD)],
+                      _useAttribute[to_base(AttribLocation::NORMAL)],
+                      _useAttribute[to_base(AttribLocation::TANGENT)],
+                      _useAttribute[to_base(AttribLocation::COLOR)],
+                      _useAttribute[to_base(AttribLocation::BONE_INDICE)]);
 
         return true;
     }
@@ -373,17 +359,13 @@ void glVertexArray::draw(const GenericDrawCommand& command, const U32 cmdBufferO
 
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
-    if (_IBid == 0) {
-        if (!createInternal()) {
-            return;
-        }
+    if (_IBid == 0 && !createInternal()) {
+        return;
     }
 
     // Check if we have a refresh request queued up
-    if (_refreshQueued) {
-        if (!refresh()) {
-            return;
-        }
+    if (_refreshQueued && !refresh()) {
+        return;
     }
 
     if (_uploadQueued) {
@@ -394,9 +376,12 @@ void glVertexArray::draw(const GenericDrawCommand& command, const U32 cmdBufferO
     // Bind the vertex array object that in turn activates all of the bindings and pointers set on creation
     const GLuint vao = _vaoCaches[command._bufferIndex == GenericDrawCommand::INVALID_BUFFER_INDEX ? 0u : command._bufferIndex];
     stateTracker.setActiveVAO(vao);
+
     stateTracker.togglePrimitiveRestart(_primitiveRestartEnabled);
+
     // VAOs store vertex formats and are reused by multiple 3d objects, so the Index Buffer and Vertex Buffers need to be double checked
     stateTracker.setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, _IBid);
+
     stateTracker.bindActiveBuffer(vao, 0u, _VBHandle._id, 0u, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {

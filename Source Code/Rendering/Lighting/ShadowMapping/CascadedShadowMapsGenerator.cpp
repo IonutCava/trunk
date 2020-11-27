@@ -107,12 +107,12 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
         TextureDescriptor colourDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, texDescriptor.baseFormat(), texDescriptor.dataType());
         colourDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         colourDescriptor.msaaSamples(g_shadowSettings.csm.MSAASamples);
-        colourDescriptor.hasMipMaps(false);
+        colourDescriptor.mipCount(1u);
 
         TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_ARRAY_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
         depthDescriptor.msaaSamples(g_shadowSettings.csm.MSAASamples);
-        depthDescriptor.hasMipMaps(false);
+        depthDescriptor.mipCount(1u);
 
         RTAttachmentDescriptors att = {
             { colourDescriptor, samplerHash, RTAttachmentType::Colour },
@@ -133,7 +133,7 @@ CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     {
         TextureDescriptor blurMapDescriptor(TextureType::TEXTURE_2D_ARRAY, texDescriptor.baseFormat(), texDescriptor.dataType());
         blurMapDescriptor.layerCount(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
-        blurMapDescriptor.hasMipMaps(false);
+        blurMapDescriptor.mipCount(1u);
 
         RTAttachmentDescriptors att = {
             { blurMapDescriptor, samplerHash, RTAttachmentType::Colour }
@@ -466,7 +466,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
     GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
     computeMipMapsCommand._texture = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture().get();
-    computeMipMapsCommand._layerRange = vec2<U32>(light.getShadowOffset(), light.csmSplitCount());
+    computeMipMapsCommand._layerRange = { light.getShadowOffset(), to_U16(light.csmSplitCount()) };
     computeMipMapsCommand._defer = false;
     EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }

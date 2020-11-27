@@ -215,10 +215,6 @@ void CommandBuffer::batch() {
             case CommandType::SWITCH_WINDOW: {
                 hasWork = true;
             } break;
-            case CommandType::SET_MIP_LEVELS: {
-                const SetTextureMipLevelsCommand* crtCmd = get<SetTextureMipLevelsCommand>(cmd);
-                hasWork = crtCmd->_texture != nullptr && (crtCmd->_baseLevel != crtCmd->_texture->getBaseMipLevel() || crtCmd->_maxLevel != crtCmd->_texture->getMaxMipLevel());
-            } break;
             case CommandType::COPY_TEXTURE: {
                 const CopyTextureCommand* crtCmd = get<CopyTextureCommand>(cmd);
                 hasWork = crtCmd->_source._textureType != TextureType::COUNT && crtCmd->_destination._textureType != TextureType::COUNT;

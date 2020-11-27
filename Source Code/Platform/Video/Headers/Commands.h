@@ -92,7 +92,6 @@ enum class CommandType : U8 {
     RESET_AND_CLEAR_RT,
     BLIT_RT,
     COPY_TEXTURE,
-    SET_MIP_LEVELS,
     COMPUTE_MIPMAPS,
     SET_CAMERA,
     PUSH_CAMERA,
@@ -120,7 +119,7 @@ namespace Names {
     static const char* commandType[] = {
         "BEGIN_RENDER_PASS", "END_RENDER_PASS", "BEGIN_PIXEL_BUFFER", "END_PIXEL_BUFFER", "BEGIN_RENDER_SUB_PASS",
         "END_RENDER_SUB_PASS", "SET_BLEND_STATE", "SET_VIEWPORT", "PUSH_VIEWPORT","POP_VIEWPORT", "SET_SCISSOR", "SET_BLEND", "CLEAR_RT",
-        "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "SET_MIP_LEVELS", "COMPUTE_MIPMAPS", "SET_CAMERA",
+        "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "COMPUTE_MIPMAPS", "SET_CAMERA",
         "PUSH_CAMERA", "POP_CAMERA", "SET_CLIP_PLANES", "BIND_PIPELINE", "BIND_DESCRIPTOR_SETS", "SEND_PUSH_CONSTANTS",
         "DRAW_COMMANDS", "DRAW_TEXT", "DRAW_IMGUI", "DISPATCH_COMPUTE", "MEMORY_BARRIER", "READ_BUFFER_DATA", "CLEAR_BUFFER_DATA",
         "BEGIN_DEBUG_SCOPE","END_DEBUG_SCOPE", "SWITCH_WINDOW", "SET_CLIPING_STATE", "EXTERNAL", "UNKNOWN"
@@ -289,7 +288,7 @@ END_COMMAND(CopyTextureCommand);
 
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     Texture* _texture = nullptr;
-    vec2<U32> _layerRange = { 0, 1 };
+    vec2<U16> _layerRange = { 0, 1 };
     bool _defer = true;
 END_COMMAND(ComputeMipMapsCommand);
 
@@ -325,12 +324,6 @@ END_COMMAND(SetClipPlanesCommand);
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
     DescriptorSet _set;
 END_COMMAND(BindDescriptorSetsCommand);
-
-BEGIN_COMMAND(SetTextureMipLevelsCommand, CommandType::SET_MIP_LEVELS);
-    Texture* _texture = nullptr;
-    U16 _baseLevel = 0;
-    U16 _maxLevel = 1000;
-END_COMMAND(SetTextureMipLevelsCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
     BeginDebugScopeCommand(const char* scopeName) noexcept : _scopeName(scopeName) {}

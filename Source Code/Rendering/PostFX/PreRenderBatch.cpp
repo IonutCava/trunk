@@ -85,7 +85,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     }
     {
         TextureDescriptor edgeDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
-        edgeDescriptor.hasMipMaps(false);
+        edgeDescriptor.mipCount(1u);
 
         RTAttachmentDescriptors att = { { edgeDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
 
@@ -95,7 +95,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     }
     {
         TextureDescriptor lumaDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-        lumaDescriptor.hasMipMaps(false);
+        lumaDescriptor.mipCount(1u);
         lumaDescriptor.srgb(false);
 
         ResourceDescriptor texture("Luminance Texture");

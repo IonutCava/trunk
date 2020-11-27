@@ -388,19 +388,19 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
    protected:
     /// Flag used to prevent clearing of the _data vector for static buffers
-    bool _keepDataInMemory;
+    bool _keepDataInMemory = false;
     /// If this flag is true, no further modification are allowed on the buffer (static geometry)
-    bool _staticBuffer;
+    bool _staticBuffer = false;
     /// The format of the buffer data
-    GFXDataFormat _format;
+    GFXDataFormat _format = GFXDataFormat::UNSIGNED_SHORT;
     // first: offset, second: count
-    vectorEASTL<std::pair<size_t, size_t> > _partitions;
+    vectorEASTL<std::pair<size_t, size_t>> _partitions;
     /// Used for creating an "IB". If it's empty, then an outside source should provide the indices
     vectorEASTL<U32> _indices;
     vectorEASTL<Vertex> _data;
     /// Cache system to update only required data
-    std::array<bool, to_base(AttribLocation::COUNT)> _attribDirty;
-    bool _primitiveRestartEnabled;
+    std::array<bool, to_base(AttribLocation::COUNT)> _attribDirty{};
+    bool _primitiveRestartEnabled = false;;
 };
 
 };  // namespace Divide

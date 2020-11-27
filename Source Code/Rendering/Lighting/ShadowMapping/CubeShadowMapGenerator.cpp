@@ -58,11 +58,10 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
     }
 
     const RenderTarget& shadowMapRT = _context.renderTargetPool().renderTarget(g_depthMapID);
-    const I32 layerCount = 1;
 
     GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
     computeMipMapsCommand._texture = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture().get();
-    computeMipMapsCommand._layerRange = vec2<U32>(light.getShadowOffset(), layerCount);
+    computeMipMapsCommand._layerRange = { light.getShadowOffset(), 1 };
     computeMipMapsCommand._defer = false;
     EnqueueCommand(bufferInOut, computeMipMapsCommand);
 

@@ -118,7 +118,7 @@ struct glVertexDataContainer {
     GLuint _lastDrawCount = 0;
     GLuint _lastIndexCount = 0;
     GLuint _lastFirstIndex = 0;
-    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData;
+    std::array<size_t, Config::MAX_VISIBLE_NODES> _countData{};
     eastl::fixed_vector<GLuint, Config::MAX_VISIBLE_NODES * 256> _indexOffsetData;
 
     void rebuildCountAndIndexData(U32 drawCount, U32 indexCount, U32 firstIndex, size_t indexBufferSize);
@@ -166,32 +166,27 @@ private:
 
         hashMap<size_t, U32> _cache;
 
-        GLenum _type = GL_NONE;
+        TextureType _type = TextureType::COUNT;
     };
 
 
 public:
     void onFrameEnd();
-    void init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes);
+    void init(const std::array<U32, to_base(TextureType::COUNT) + 1>& poolSizes);
     void destroy();
-    inline bool typeSupported(GLenum type) const;
 
-    //Use GL_NONE for textures created with glGen instead of glCreate (e.g. for texture views)
+    //Use TextureType::COUNT for textures created with glGen instead of glCreate (e.g. for texture views)
     //If the texture was hashed, it's deallocation time gets incremented by 1
     //Return a pair of the newly allocated texture handle and a flag if it was retrieved from cache or not
-    std::pair<GLuint, bool> allocate(size_t hash, GLenum type, bool retry = false);
+    std::pair<GLuint, bool> allocate(size_t hash, TextureType type, bool retry = false);
     // no-hash version
-    GLuint allocate(GLenum type, bool retry = false);
-
-    void deallocate(GLuint& handle, GLenum type, U32 frameDelay = 1);
-
-    bool hasPool(GLenum type) const;
+    GLuint allocate(TextureType type, bool retry = false);
+    void   deallocate(GLuint& handle, TextureType type, U32 frameDelay = 1);
 protected:
     static void OnFrameEndInternal(poolImpl& impl);
 
 private:
-    vectorEASTL<GLenum> _types;
-    hashMap<GLenum, poolImpl> _pools;
+    std::array<poolImpl, to_base(TextureType::COUNT) + 1> _pools{};
 };
 /// Wrapper for glGetIntegerv
 template<typename T = GLint>

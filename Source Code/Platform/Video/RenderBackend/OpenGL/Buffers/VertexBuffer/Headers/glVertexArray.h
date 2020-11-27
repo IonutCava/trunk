@@ -67,8 +67,7 @@ class glVertexArray final : public VertexBuffer,
     }
 
    protected:
-    friend class GFXDevice;
-    void draw(const GenericDrawCommand& commands, U32 cmdBufferOffset) override;
+    void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override;
 
    protected:
     friend class GL_API;
@@ -102,12 +101,12 @@ class glVertexArray final : public VertexBuffer,
     size_t _prevSize = 0;
     size_t _prevSizeIndices = 0;
     size_t _effectiveEntrySize = 0;
-    AttribFlags _useAttribute;
+    AttribFlags _useAttribute{};
     using AttribValues = std::array<GLuint, to_base(AttribLocation::COUNT)>;
-    AttribValues _attributeOffset;
+    AttribValues _attributeOffset{};
 
     // Both for forward pass and pre-pass
-    std::array<GLuint, to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT)> _vaoCaches;
+    std::array<GLuint, to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT)> _vaoCaches{};
     
     static GLUtil::glVAOCache _VAOMap;
 };

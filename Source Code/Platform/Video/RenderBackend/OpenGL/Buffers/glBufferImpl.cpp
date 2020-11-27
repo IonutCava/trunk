@@ -14,7 +14,7 @@ namespace {
     constexpr size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
     constexpr I32 g_maxFlushQueueLength = 16;
 
-    vectorEASTL<Byte> zeroMemData(g_MinZeroDataSize, Byte{ 0 });
+    vectorEASTL<Byte> g_zeroMemData(g_MinZeroDataSize, Byte{ 0 });
 
     struct BindConfigEntry {
         U32 _handle = 0;
@@ -25,7 +25,7 @@ namespace {
     using BindConfig = std::array<BindConfigEntry, to_base(ShaderBufferLocation::COUNT)>;
     BindConfig g_currentBindConfig;
 
-    bool setIfDifferentBindRange(const U32 UBOid,
+    bool SetIfDifferentBindRange(const U32 UBOid,
                                  const U32 bindIndex,
                                  const size_t offsetInBytes,
                                  const size_t rangeInBytes) noexcept {
@@ -47,14 +47,14 @@ namespace {
 glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     : glObject(glObjectType::TYPE_BUFFER, context),
       GUIDWrapper(),
-      _context(context),
       _elementSize(params._elementSize),
       _alignedSize(params._dataSize),
       _target(params._target),
       _unsynced(params._unsynced),
       _useExplicitFlush(_target == GL_ATOMIC_COUNTER_BUFFER ? false : params._explicitFlush),
       _updateFrequency(params._frequency),
-      _updateUsage(params._updateUsage)
+      _updateUsage(params._updateUsage),
+      _context(context)
 {
 
     std::atomic_init(&_flushQueueSize, 0);
@@ -86,13 +86,13 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
          // If the buffer is larger than our initial data, we need to create a zero filled container large enough for proper initialization
          {
             SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
-            resizeVec = _alignedSize > zeroMemData.size();
+            resizeVec = _alignedSize > g_zeroMemData.size();
          }
 
          if (resizeVec) {
              UniqueLock<SharedMutex> w_lock(g_CreateBufferLock);
-             if (_alignedSize > zeroMemData.size()) {
-                 zeroMemData.resize(_alignedSize, Byte{ 0 });
+             if (_alignedSize > g_zeroMemData.size()) {
+                 g_zeroMemData.resize(_alignedSize, Byte{ 0 });
              }
          }
      }
@@ -101,9 +101,9 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         if (needsAdditionalData) {
             // This should be safe as we are only INCREASING the zeroMemData container size if needed so the range we need should be fine
             SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
-             GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, zeroMemData.data(), params._name);
+             GLUtil::createAndAllocBuffer(_alignedSize, _usage, _bufferID, g_zeroMemData.data(), params._name);
         } else {
-            GLUtil::createAndAllocBuffer(_alignedSize, _usage, _handle, params._initialData.first, params._name);
+            GLUtil::createAndAllocBuffer(_alignedSize, _usage, _bufferID, params._initialData.first, params._name);
         }
     } else {
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
@@ -135,9 +135,9 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
         if (needsAdditionalData) {
             // This should be safe as we are only INCREASING the zeroMemData container size if needed so the range we need should be fine
             SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
-            _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, zeroMemData.data(), params._name);
+            _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _bufferID, g_zeroMemData.data(), params._name);
         } else {
-            _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _handle, params._initialData.first, params._name);
+            _mappedBuffer = (Byte*)GLUtil::createAndAllocPersistentBuffer(_alignedSize, storageMask, accessMask, _bufferID, params._initialData.first, params._name);
         }
 
         assert(_mappedBuffer != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
@@ -154,15 +154,15 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
 
 glBufferImpl::~glBufferImpl()
 {
-    if (_handle > 0) {
+    if (bufferID() > 0) {
         if (!waitRange(0, _alignedSize, false)) {
             DIVIDE_UNEXPECTED_CALL();
         }
         if (_mappedBuffer == nullptr) {
-            glInvalidateBufferData(_handle);
+            glInvalidateBufferData(_bufferID);
         }
 
-        GLUtil::freeBuffer(_handle, _mappedBuffer);
+        GLUtil::freeBuffer(_bufferID, _mappedBuffer);
     }
 
     MemoryManager::SAFE_DELETE(_lockManager);
@@ -178,31 +178,31 @@ bool glBufferImpl::waitRange(const size_t offsetInBytes, const size_t rangeInByt
     return true;
 }
 
-void glBufferImpl::lockRange(const size_t offsetInBytes, const size_t rangeInBytes, const U32 frameID) const {
-    if (_lockManager) {
-        _lockManager->LockRange(offsetInBytes, rangeInBytes, frameID);
-    }
-}
+bool glBufferImpl::lockRange(const size_t offsetInBytes, const size_t rangeInBytes, const U32 frameID) const {
+    OPTICK_EVENT();
 
-GLuint glBufferImpl::bufferID() const noexcept {
-    return _handle;
+    if (_lockManager) {
+        return _lockManager->LockRange(offsetInBytes, rangeInBytes, frameID);
+    }
+
+    return true;
 }
 
 bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) {
-    assert(_handle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
+    assert(bufferID() != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
     bool bound = false;
     if (bindIndex == to_base(ShaderBufferLocation::CMD_BUFFER)) {
         GLStateTracker& stateTracker = GL_API::getStateTracker();
         const GLuint newOffset = static_cast<GLuint>(offsetInBytes / sizeof(IndirectDrawCommand));
 
-        bound = stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _handle);
+        bound = stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, bufferID());
         if (stateTracker._commandBufferOffset != newOffset) {
             stateTracker._commandBufferOffset = newOffset;
             bound = true;
         }
-    } else if (setIfDifferentBindRange(_handle, bindIndex, offsetInBytes, rangeInBytes)) {
-        glBindBufferRange(_target, bindIndex, _handle, offsetInBytes, rangeInBytes);
+    } else if (SetIfDifferentBindRange(bufferID(), bindIndex, offsetInBytes, rangeInBytes)) {
+        glBindBufferRange(_target, bindIndex, bufferID(), offsetInBytes, rangeInBytes);
         bound = true;
     }
 
@@ -210,14 +210,14 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
         size_t minOffset = std::numeric_limits<size_t>::max();
         size_t maxRange = 0;
 
-        MapRange range;
+        BufferMapRange range;
         while (_flushQueue.try_dequeue(range)) {
-            minOffset = std::min(minOffset, range.offset);
-            maxRange = std::max(maxRange, range.range);
+            minOffset = std::min(minOffset, range._offset);
+            maxRange = std::max(maxRange, range._range);
             _flushQueueSize.fetch_sub(1);
         }
         if (minOffset < maxRange) {
-            glFlushMappedNamedBufferRange(_handle, minOffset, maxRange);
+            glFlushMappedNamedBufferRange(bufferID(), minOffset, maxRange);
         }
     }
 
@@ -234,19 +234,19 @@ void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes
 
     {
         SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
-        if (targetSize <= zeroMemData.size()) {
-            writeOrClearData(offsetInBytes, rangeInBytes, zeroMemData.data(), true);
+        if (targetSize <= g_zeroMemData.size()) {
+            writeOrClearData(offsetInBytes, rangeInBytes, g_zeroMemData.data(), true);
             return;
         }
     }
 
     UniqueLock<SharedMutex> w_lock(g_CreateBufferLock);
     // Check again to prevent race conditions from screwing this up
-    if (targetSize > zeroMemData.size()) {
-        zeroMemData.resize(targetSize, Byte{ 0 });
+    if (targetSize > g_zeroMemData.size()) {
+        g_zeroMemData.resize(targetSize, Byte{ 0 });
     }
 
-    writeOrClearData(offsetInBytes, rangeInBytes, zeroMemData.data(), true);
+    writeOrClearData(offsetInBytes, rangeInBytes, g_zeroMemData.data(), true);
 }
 
 void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) {
@@ -272,10 +272,10 @@ void glBufferImpl::writeOrClearData(const size_t offsetInBytes, const size_t ran
             }
 
             if (_useExplicitFlush) {
-                if (_flushQueue.enqueue(MapRange{offsetInBytes, rangeInBytes})) {
+                if (_flushQueue.enqueue(BufferMapRange{offsetInBytes, rangeInBytes})) {
                     const I32 size = _flushQueueSize.fetch_add(1);
                     if (size >= g_maxFlushQueueLength) {
-                        MapRange temp;
+                        BufferMapRange temp;
                         _flushQueue.try_dequeue(temp);
                     }
                 }
@@ -285,11 +285,11 @@ void glBufferImpl::writeOrClearData(const size_t offsetInBytes, const size_t ran
         }
     } else {
         if (offsetInBytes == 0 && rangeInBytes == _alignedSize) {
-            glInvalidateBufferData(_handle);
-            glNamedBufferData(_handle, _alignedSize, data, _usage);
+            glInvalidateBufferData(bufferID());
+            glNamedBufferData(bufferID(), _alignedSize, data, _usage);
         } else {
-            glInvalidateBufferSubData(_handle, offsetInBytes, rangeInBytes);
-            glNamedBufferSubData(_handle, offsetInBytes, rangeInBytes, data);
+            glInvalidateBufferSubData(bufferID(), offsetInBytes, rangeInBytes);
+            glNamedBufferSubData(bufferID(), offsetInBytes, rangeInBytes, data);
         }
     }
 }
@@ -313,16 +313,12 @@ void glBufferImpl::readData(const size_t offsetInBytes, const size_t rangeInByte
         }
 
     } else {
-        void* bufferData = glMapNamedBufferRange(_handle, offsetInBytes, rangeInBytes, MapBufferAccessMask::GL_MAP_READ_BIT);
+        void* bufferData = glMapNamedBufferRange(bufferID(), offsetInBytes, rangeInBytes, MapBufferAccessMask::GL_MAP_READ_BIT);
         if (bufferData != nullptr) {
             std::memcpy(data, (Byte*)bufferData+offsetInBytes, rangeInBytes);
         }
-        glUnmapNamedBuffer(_handle);
+        glUnmapNamedBuffer(bufferID());
     }
-}
-
-size_t glBufferImpl::elementSize() const noexcept {
-    return _elementSize;
 }
 
 GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const BufferUpdateUsage usage) noexcept {
@@ -361,18 +357,18 @@ GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const
 void glBufferImpl::CleanMemory() noexcept {
     {
         SharedLock<SharedMutex> r_lock(g_CreateBufferLock);
-        const size_t crtSize = zeroMemData.size();
+        const size_t crtSize = g_zeroMemData.size();
         if (crtSize <= g_MinZeroDataSize) {
             return;
         }
     }
 
     UniqueLock<SharedMutex> w_lock(g_CreateBufferLock);
-    const size_t crtSize = zeroMemData.size();
+    const size_t crtSize = g_zeroMemData.size();
     // Speed things along if we are in the megabyte range. Not really needed, but still helps.
     const U8 reduceFactor = crtSize > g_MinZeroDataSize * 100 ? 4 : 2;
     
-    zeroMemData.resize(std::max(zeroMemData.size() / reduceFactor, g_MinZeroDataSize));
+    g_zeroMemData.resize(std::max(g_zeroMemData.size() / reduceFactor, g_MinZeroDataSize));
 }
 
 }; //namespace Divide

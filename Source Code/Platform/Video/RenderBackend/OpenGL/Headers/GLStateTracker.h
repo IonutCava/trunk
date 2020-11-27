@@ -103,7 +103,7 @@ namespace Divide {
                               bool layered, GLint layer, GLenum access,
                               GLenum format);
         /// Bind multiple textures specified by an array of handles and an offset unit
-        bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType* textureTypes, GLuint* textureHandles, GLuint* samplerHandles);
+        bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType texturesType, GLuint* textureHandles, GLuint* samplerHandles);
 
         void setStateBlock(size_t stateBlockHash);
 
@@ -144,14 +144,17 @@ namespace Divide {
             return setViewport({ x, y, width, height });
         }
 
-        U32 getBoundTextureHandle(U8 slot, TextureType type);
+        GLuint getBoundTextureHandle(U8 slot, TextureType type) const;
+        GLuint getBoundSamplerHandle(U8 slot) const;
+        TextureType getBoundTextureType(U8 slot) const;
 
-        void getActiveViewport(GLint* vp);
+        void getActiveViewport(GLint* vp) const;
 
+        static void ProcessMipMapQueue(GLuint textureCount, GLuint* textureHandles);
       public:
-        RenderStateBlock _activeState = {};
+        RenderStateBlock _activeState{};
 
-        Str64 _debugScope = "";
+        Str64 _debugScope;
         Pipeline const* _activePipeline = nullptr;
         glFramebuffer*  _activeRenderTarget = nullptr;
         glPixelBuffer*  _activePixelBuffer = nullptr;
@@ -201,15 +204,18 @@ namespace Divide {
         bool _rasterizationEnabled = true;
 
         /// /*hash: texture slot  - array /*texture handle - texture type*/ hash
-        using TextureBoundMapDef = std::array<std::array<U32, to_base(TextureType::COUNT)>, Config::MAX_ACTIVE_TEXTURE_SLOTS>;
+        using TextureBoundMapDef = std::array<vectorEASTL<GLuint>, to_base(TextureType::COUNT)>;
         TextureBoundMapDef _textureBoundMap = {};
 
-        using ImageBoundMapDef = std::array<ImageBindSettings, Config::MAX_ACTIVE_TEXTURE_SLOTS>;
+        using ImageBoundMapDef = vectorEASTL<ImageBindSettings>;
         ImageBoundMapDef _imageBoundMap = {};
 
         /// /*texture slot*/ /*sampler handle*/
-        using SamplerBoundMapDef = std::array<GLuint, Config::MAX_ACTIVE_TEXTURE_SLOTS>;
+        using SamplerBoundMapDef = vectorEASTL<GLuint>;
         SamplerBoundMapDef _samplerBoundMap = {};
+
+        using TextureTypeBoundMapDef = vectorEASTL<TextureType>;
+        TextureTypeBoundMapDef _textureTypeBoundMap = {};
 
         VAOBindings _vaoBufferData;
         bool _opengl46Supported = false;

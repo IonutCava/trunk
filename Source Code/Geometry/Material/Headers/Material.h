@@ -81,9 +81,7 @@ constexpr U8 g_AdditionalSlots[] = {
 };
 
 static constexpr [[nodiscard]] size_t GetMaterialTextureCount() noexcept {
-    return sizeof(g_TransparentSlots) / sizeof(TextureUsage) + 
-           sizeof(g_ExtraSlots) / sizeof(TextureUsage) +
-           sizeof(g_AdditionalSlots) / sizeof(TextureUsage);
+    return (sizeof(g_TransparentSlots) + sizeof(g_ExtraSlots) + sizeof(g_AdditionalSlots)) / sizeof(TextureUsage);
 }
 
 namespace TypeUtil {
@@ -285,7 +283,7 @@ class Material final : public CachedResource {
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
     std::array<U64, to_base(TextureUsage::COUNT)> _textureAddresses = {};
-    std::atomic_bool _texturesMadeResident;
+    std::atomic_bool _texturesMadeResident{};
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines{};

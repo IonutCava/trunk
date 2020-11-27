@@ -497,36 +497,36 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     }
 }
 
-void glTexturePool::init(const vectorEASTL<std::pair<GLenum, U32>>& poolSizes)
+void glTexturePool::init(const std::array<U32, to_base(TextureType::COUNT) + 1>& poolSizes)
 {
-    _types.reserve(poolSizes.size());
-    //_pools.reserve(poolSizes.size());
+    for (U8 textureType = 0; textureType < poolSizes.size(); ++textureType) {
+        const U32 poolSize = poolSizes[textureType];
 
-    for (const auto& [textureType, poolSize] : poolSizes) {
-        poolImpl pool;
-        pool._usageMap.reserve(poolSize); 
+        poolImpl& pool = _pools[textureType];
+
+        pool._usageMap.reserve(poolSize);
+
         for (U32 i = 0; i < poolSize; ++i) {
             pool._usageMap.push_back(AtomicWrapper<State>{ State::FREE });
         }
-        pool._type = textureType;
+
+        pool._type = static_cast<TextureType>(textureType);
         pool._handles.resize(poolSize, 0u);
         pool._lifeLeft.resize(poolSize, 0u);
         pool._tempBuffer.resize(poolSize, 0u);
-        if (textureType != GL_NONE) {
-            glCreateTextures(textureType, static_cast<GLsizei>(poolSize), pool._handles.data());
+
+        if (pool._type != TextureType::COUNT) {
+            glCreateTextures(glTextureTypeTable[textureType], static_cast<GLsizei>(poolSize), pool._handles.data());
         } else {
             glGenTextures(static_cast<GLsizei>(poolSize), pool._handles.data());
         }
-        _types.push_back(textureType);
-
-        insert(_pools, textureType, MOV(pool));
     }
 }
 
 void glTexturePool::onFrameEnd() {
     OPTICK_EVENT("Texture Pool: onFrameEnd");
-    for (auto& it : _pools) {
-        OnFrameEndInternal(it.second);
+    for (auto& pool : _pools) {
+        OnFrameEndInternal(pool);
     }
 }
 
@@ -546,15 +546,15 @@ void glTexturePool::OnFrameEndInternal(poolImpl & impl) {
         }
 
         if (lifeLeft == 0) {
-            impl._tempBuffer[count++] = impl._handles[i];
+            impl._tempBuffer[++count] = impl._handles[i];
             GL_API::dequeueComputeMipMap(impl._handles[i]);
         }
     }
 
     if (count > 0) {
         glDeleteTextures(count, impl._tempBuffer.data());
-        if (impl._type != GL_NONE) {
-            glCreateTextures(impl._type, count, impl._tempBuffer.data());
+        if (impl._type != TextureType::COUNT) {
+            glCreateTextures(glTextureTypeTable[to_base(impl._type)], count, impl._tempBuffer.data());
         } else {
             glGenTextures(count, impl._tempBuffer.data());
         }
@@ -565,6 +565,7 @@ void glTexturePool::OnFrameEndInternal(poolImpl & impl) {
                 for (auto& [hash, handle] : impl._cache) {
                     if (handle == impl._handles[i]) {
                         handle = poolImpl::INVALID_IDX;
+                        break;
                     }
                 }
                 impl._handles[i] = impl._tempBuffer[newIndex++];
@@ -576,54 +577,54 @@ void glTexturePool::OnFrameEndInternal(poolImpl & impl) {
 }
 
 void glTexturePool::destroy() {
-    for (auto& [type, impl] : _pools) {
+    for (auto& pool : _pools) {
 
-        const U32 entryCount = to_U32(impl._tempBuffer.size());
-        glDeleteTextures(static_cast<GLsizei>(entryCount), impl._handles.data());
-        std::memset(impl._handles.data(), 0, sizeof(GLuint) * entryCount);
-        std::memset(impl._lifeLeft.data(), 0, sizeof(U32) * entryCount);
+        const U32 entryCount = to_U32(pool._tempBuffer.size());
+        glDeleteTextures(static_cast<GLsizei>(entryCount), pool._handles.data());
+        std::memset(pool._handles.data(), 0, sizeof(GLuint) * entryCount);
+        std::memset(pool._lifeLeft.data(), 0, sizeof(U32) * entryCount);
 
-        for (auto& state : impl._usageMap) {
+        for (auto& state : pool._usageMap) {
             state._a.store(State::CLEAN);
         }
-        impl._cache.clear();
+        pool._cache.clear();
     }
 }
 
-GLuint glTexturePool::allocate(const GLenum type, const bool retry) {
+GLuint glTexturePool::allocate(const TextureType type, const bool retry) {
     return allocate(0u, type, retry).first;
 }
 
-std::pair<GLuint, bool> glTexturePool::allocate(const size_t hash, const GLenum type, const bool retry) {
-    auto it = _pools.find(type);
-    assert(it != _pools.cend());
+std::pair<GLuint, bool> glTexturePool::allocate(const size_t hash, const TextureType type, const bool retry) {
+    poolImpl& impl = _pools[to_base(type)];
 
-    poolImpl& impl = it->second;
-
-    U32 idx = poolImpl::INVALID_IDX;
     if (hash != 0u) {
+        U32 idx = poolImpl::INVALID_IDX;
         const auto& cacheIt = impl._cache.find(hash);
         if (cacheIt != cend(impl._cache)) {
             idx = cacheIt->second;
         }
-    }
-    if (idx != poolImpl::INVALID_IDX) {
-        impl._usageMap[idx]._a.store(State::USED);
-        impl._lifeLeft[idx] += 1;
-        return std::make_pair(impl._handles[idx], true);
-    } else {
-        const U32 count = to_U32(impl._handles.size());
-        for (U32 i = 0; i < count; ++i) {
-            State expected = State::FREE;
-            if (impl._usageMap[i]._a.compare_exchange_strong(expected, State::USED)) {
-                if (hash != 0) {
-                    impl._cache[hash] = i;
-                }
 
-                return std::make_pair(impl._handles[i], false);
-            }
+
+        if (idx != poolImpl::INVALID_IDX) {
+            impl._usageMap[idx]._a.store(State::USED);
+            impl._lifeLeft[idx] += 1;
+            return std::make_pair(impl._handles[idx], true);
         }
     }
+
+    const U32 count = to_U32(impl._handles.size());
+    for (U32 i = 0; i < count; ++i) {
+        State expected = State::FREE;
+        if (impl._usageMap[i]._a.compare_exchange_strong(expected, State::USED)) {
+            if (hash != 0) {
+                impl._cache[hash] = i;
+            }
+
+            return std::make_pair(impl._handles[i], false);
+        }
+    }
+    
     if (!retry) {
         onFrameEnd();
         return allocate(hash, type, true);
@@ -633,11 +634,9 @@ std::pair<GLuint, bool> glTexturePool::allocate(const size_t hash, const GLenum 
     return std::make_pair(0u, false);
 }
 
-void glTexturePool::deallocate(GLuint& handle, const GLenum type, const U32 frameDelay) {
-    const auto it = _pools.find(type);
-    assert(it != _pools.cend());
+void glTexturePool::deallocate(GLuint& handle, const TextureType type, const U32 frameDelay) {
 
-    poolImpl& impl = it->second;
+    poolImpl& impl = _pools[to_base(type)];
 
     const U32 count = to_U32(impl._handles.size());
     for (U32 i = 0; i < count; ++i) {
@@ -652,10 +651,6 @@ void glTexturePool::deallocate(GLuint& handle, const GLenum type, const U32 fram
     DIVIDE_UNEXPECTED_CALL();
 }
 
-bool glTexturePool::hasPool(const GLenum type) const {
-    return _pools.find(type) != cend(_pools);
-}
+}  // namespace GLUtil
 
-};  // namespace GLutil
-
-}; //namespace Divide
+}  //namespace Divide

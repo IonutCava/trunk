@@ -34,7 +34,6 @@ IMPLEMENT_COMMAND(PushCameraCommand);
 IMPLEMENT_COMMAND(PopCameraCommand);
 IMPLEMENT_COMMAND(SetClipPlanesCommand);
 IMPLEMENT_COMMAND(BindDescriptorSetsCommand);
-IMPLEMENT_COMMAND(SetTextureMipLevelsCommand);
 IMPLEMENT_COMMAND(BeginDebugScopeCommand);
 IMPLEMENT_COMMAND(EndDebugScopeCommand);
 IMPLEMENT_COMMAND(DrawTextCommand);
@@ -169,10 +168,6 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
     return ret;
 }
 
-stringImpl ToString(const SetTextureMipLevelsCommand& cmd, U16 indent) {
-    return Util::StringFormat(" [ %d - %d ]" , cmd._baseLevel, cmd._maxLevel);
-}
-
 stringImpl ToString(const BeginDebugScopeCommand& cmd, U16 indent) {
     return " [ " + stringImpl(cmd._scopeName.c_str()) + " ]";
 }
@@ -250,10 +245,6 @@ stringImpl ToString(const CommandBase& cmd, const U16 indent) {
         case CommandType::BIND_DESCRIPTOR_SETS:
         {
             ret.append(ToString(static_cast<const BindDescriptorSetsCommand&>(cmd), indent));
-        }break;
-        case CommandType::SET_MIP_LEVELS:
-        {
-            ret.append(ToString(static_cast<const SetTextureMipLevelsCommand&>(cmd), indent));
         }break;
         case CommandType::BEGIN_DEBUG_SCOPE:
         {

@@ -269,10 +269,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
-    screenDescriptor.hasMipMaps(false);
-    normAndVelDescriptor.hasMipMaps(false);
-    gbufferDescriptor.hasMipMaps(false);
-    depthDescriptor.hasMipMaps(false);
+    screenDescriptor.mipCount(1u);
+    normAndVelDescriptor.mipCount(1u);
+    gbufferDescriptor.mipCount(1u);
+    depthDescriptor.mipCount(1u);
 
     // Normal and MSAA
     for (U8 i = 0; i < 2; ++i) {
@@ -339,7 +339,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         editorSampler.anisotropyLevel(0);
 
         TextureDescriptor editorDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-        editorDescriptor.hasMipMaps(false);
+        editorDescriptor.mipCount(1u);
 
         RTAttachmentDescriptors attachments = {
             { editorDescriptor, editorSampler.getHash(), RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE }
@@ -364,8 +364,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
         TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
-        environmentDescriptorPlanar.hasMipMaps(false);
-        depthDescriptorPlanar.hasMipMaps(false);
+        environmentDescriptorPlanar.mipCount(1u);
+        depthDescriptorPlanar.mipCount(1u);
 
         RenderTargetDescriptor hizRTDesc = {};
         hizRTDesc._resolution = reflectRes;
@@ -407,10 +407,10 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     const size_t accumulationSamplerHash = accumulationSampler.getHash();
 
     TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    accumulationDescriptor.hasMipMaps(false);
+    accumulationDescriptor.mipCount(1u);
 
     TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-    revealageDescriptor.hasMipMaps(false);
+    revealageDescriptor.mipCount(1u);
 
     RTAttachmentDescriptors oitAttachments = {
         { accumulationDescriptor, accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
@@ -482,8 +482,8 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
-        environmentDescriptorCube.hasMipMaps(false);
-        depthDescriptorCube.hasMipMaps(false);
+        environmentDescriptorCube.mipCount(1u);
+        depthDescriptorCube.mipCount(1u);
 
         RTAttachmentDescriptors attachments = {
             { environmentDescriptorCube, reflectionSamplerHash, RTAttachmentType::Colour },
@@ -1515,12 +1515,6 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool
                 renderFromCamera(_cameraSnapshots.top());
                 _cameraSnapshots.pop();
             } break;
-            case GFX::CommandType::SET_MIP_LEVELS: {
-                GFX::SetTextureMipLevelsCommand* crtCmd = commandBuffer.get<GFX::SetTextureMipLevelsCommand>(cmd);
-                if (crtCmd->_texture != nullptr) {
-                    crtCmd->_texture->setMipMapRange(crtCmd->_baseLevel, crtCmd->_maxLevel);
-                }
-            }break;
             case GFX::CommandType::SET_CLIP_PLANES:
                 setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)->_clippingPlanes);
                 break;
@@ -1855,7 +1849,7 @@ void GFXDevice::initDebugViews() {
         HiZ->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).texture();
         HiZ->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z)).getAttachment(RTAttachmentType::Depth, 0).samplerHash();
         HiZ->_name = "Hierarchical-Z";
-        HiZ->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->getMaxMipLevel() - 1));
+        HiZ->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(HiZ->_texture->descriptor().mipCount() - 1));
         HiZ->_shaderData.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(Camera::s_minNearZ, _context.config().runtime.cameraViewDistance));
 
         DebugView_ptr DepthPreview = std::make_shared<DebugView>();
@@ -2010,7 +2004,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         //HiZ preview
         I32 LoDLevel = 0;
         RenderTarget& HiZRT = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::HI_Z));
-        LoDLevel = to_I32(std::ceil(Time::Game::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->getMaxMipLevel() - 1);
+        LoDLevel = to_I32(std::ceil(Time::Game::ElapsedMilliseconds() / 750.0f)) % (HiZRT.getAttachment(RTAttachmentType::Depth, 0).texture()->descriptor().mipCount() - 1);
         HiZView->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, to_F32(LoDLevel));
     }
 

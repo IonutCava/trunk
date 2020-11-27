@@ -126,7 +126,7 @@ Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t 
 {
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
-    _textureAddresses.fill(INVALID_TEXTURE_IDX);
+    _textureAddresses.fill(0u);
     std::atomic_init(&_texturesMadeResident, false);
 
     const ShaderProgramInfo defaultShaderInfo = {};
@@ -202,7 +202,7 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
 bool Material::update(const U64 deltaTimeUS) {
     ACKNOWLEDGE_UNUSED(deltaTimeUS);
 
-    _textureAddresses.fill(INVALID_TEXTURE_IDX);
+    _textureAddresses.fill(0u);
     _texturesMadeResident.store(false);
 
     if (_needsNewShader) {
@@ -703,7 +703,7 @@ bool Material::uploadTextures() {
         bool ret = false;
 
         SharedLock<SharedMutex> r_lock(_textureLock);
-
+        
         for (const TextureUsage textureUsage : g_materialTextures) {
             const U8 slot = to_base(textureUsage);
 
@@ -711,6 +711,8 @@ bool Material::uploadTextures() {
             if (crtTexture != nullptr) {
                 _textureAddresses[slot] = crtTexture->makeResident(_samplers[slot]);
                 ret = true;
+            } else {
+                _textureAddresses[slot] = 0u;
             }
         }
         
@@ -811,7 +813,7 @@ bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, Textur
     if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
         !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
     {
-        for (const U8 slot : g_ExtraSlots) {
+        for (const U8 slot : g_AdditionalSlots) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
                 textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
@@ -1096,18 +1098,6 @@ void Material::updateTransparency() {
         usingOpacityTexAlpha = oldSource != _translucencySource;
     }
 
-    if (usingAlbedoTexAlpha || usingOpacityTexAlpha) {
-        Texture* tex = usingOpacityTexAlpha ? opacity.get() : albedo.get();
-
-        const U16 baseLevel = tex->getBaseMipLevel();
-        const U16 maxLevel = tex->getMaxMipLevel();
-        const U16 baseOffset = maxLevel > g_numMipsToKeepFromAlphaTextures ? g_numMipsToKeepFromAlphaTextures : maxLevel;
-        STUBBED("HACK! Limit mip range for textures that have alpha values used by the material -Ionut");
-        if (tex->getMipCount() == maxLevel) {
-            tex->setMipMapRange(baseLevel, baseOffset);
-        }
-    }
-
     _needsNewShader = oldSource != _translucencySource;
 }
 
@@ -1180,19 +1170,19 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-void Material::getMaterialMatrix(mat4<F32>& retMatrix, NodeData& dataOut) {
+void Material::getMaterialMatrix(mat4<F32>& retMatrix, NodeData& texturesOut) {
     uploadTextures();
 
     constexpr F32 reserved = 1.f;
 
     const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
-    dataOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)]                        == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::UNIT0)];
-    dataOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)]                        == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::UNIT1)];
-    dataOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)]                      == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::OPACITY)];
-    dataOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)] == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-    dataOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)]                    == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
-    dataOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)]                   == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::PROJECTION)];
-    dataOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)]                    == INVALID_TEXTURE_IDX ? 0u : _textureAddresses[to_base(TextureUsage::NORMALMAP)];
+    texturesOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
+    texturesOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
+    texturesOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
+    texturesOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
+    texturesOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
+    texturesOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
+    texturesOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
 
     retMatrix.setRow(0, baseColour());
     retMatrix.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });

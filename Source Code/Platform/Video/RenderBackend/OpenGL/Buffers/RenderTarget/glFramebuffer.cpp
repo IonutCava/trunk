@@ -165,7 +165,7 @@ bool glFramebuffer::create() {
     }
 
     // For every attachment, be it a colour or depth attachment ...
-    I32 attachmentCountTotal = 0;
+    GLuint attachmentCountTotal = 0u;
     for (U8 i = 0; i < to_base(RTAttachmentType::COUNT); ++i) {
         for (U8 j = 0; j < _attachmentPool->attachmentCount(static_cast<RTAttachmentType>(i)); ++j) {
             initAttachment(static_cast<RTAttachmentType>(i), j);
@@ -502,7 +502,10 @@ void glFramebuffer::queueMipMapRecomputation() const {
 
 void glFramebuffer::QueueMipMapRecomputation(const RTAttachment& attachment) {
     const Texture_ptr& texture = attachment.texture(false);
-    if (attachment.used() && texture->automaticMipMapGeneration() && texture->hasMipMaps()) {
+    if (attachment.used() && 
+        texture->descriptor().autoMipMaps() &&
+        texture->descriptor().mipCount() > 1)
+    {
         GL_API::queueComputeMipMap(texture->data()._textureHandle);
     }
 }
@@ -620,7 +623,7 @@ void glFramebuffer::setMipLevel(const U16 writeLevel) {
 
         for (const RTAttachment_ptr& attachment : attachments) {
             const Texture_ptr& texture = attachment->texture(false);
-            if (texture->getMipCount() > writeLevel && !texture->descriptor().isMultisampledTexture())
+            if (texture->descriptor().mipCount() > writeLevel && !texture->descriptor().isMultisampledTexture())
             {
                 const BindingState& state = getAttachmentState(static_cast<GLenum>(attachment->binding()));
                 attachment->mipWriteLevel(writeLevel);

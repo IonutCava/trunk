@@ -115,6 +115,13 @@ namespace Divide {
     }
 
     template<size_t Size>
+    void TextureDataContainer<Size>::sortByBinding() {
+        std::sort(_textures.begin(), _textures.begin() + count(), [](const TextureEntry& lhs, const TextureEntry& rhs) {
+            return std::get<0>(lhs) < std::get<0>(rhs);
+        });
+    }
+
+    template<size_t Size>
     TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, size_t samplerHash, U8 binding) {
         OPTICK_EVENT();
         if (binding != INVALID_BINDING) {

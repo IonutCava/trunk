@@ -79,7 +79,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     screenSampler.anisotropyLevel(0);
 
     TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
-    outputDescriptor.hasMipMaps(false);
+    outputDescriptor.mipCount(1u);
 
     {
         RTAttachmentDescriptors att = {

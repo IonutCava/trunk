@@ -101,11 +101,11 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
 
         TextureDescriptor colourDescriptor(TextureType::TEXTURE_2D_MS, texDescriptor.baseFormat(), texDescriptor.dataType());
         colourDescriptor.msaaSamples(g_shadowSettings.spot.MSAASamples);
-        colourDescriptor.hasMipMaps(false);
+        colourDescriptor.mipCount(1u);
 
         TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
         depthDescriptor.msaaSamples(g_shadowSettings.spot.MSAASamples);
-        depthDescriptor.hasMipMaps(false);
+        depthDescriptor.mipCount(1u);
 
         RTAttachmentDescriptors att = {
             { colourDescriptor, samplerHash, RTAttachmentType::Colour },
@@ -193,6 +193,8 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
 
 void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::CommandBuffer& bufferInOut) {
     const RenderTarget& shadowMapRT = _context.renderTargetPool().renderTarget(g_depthMapID);
+    const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
+
     const U16 layerOffset = light.getShadowOffset();
     const I32 layerCount = 1;
 
@@ -201,6 +203,7 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
     blitRenderTargetCommand._destination = g_depthMapID;
     blitRenderTargetCommand._blitColours[0].set(0u, 0u, 0u, layerOffset);
     EnqueueCommand(bufferInOut, blitRenderTargetCommand);
+
 
     // Now we can either blur our target or just skip to mipmap computation
     if (g_shadowSettings.spot.enableBlurring) {
@@ -223,7 +226,6 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
 
         EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
 
-        const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
         TextureData texData = shadowAtt.texture()->data();
         descriptorSetCmd._set._textureData.setTexture(texData, shadowAtt.samplerHash(), TextureUsage::UNIT0);
         EnqueueCommand(bufferInOut, descriptorSetCmd);
@@ -263,8 +265,8 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
     }
 
     GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
-    computeMipMapsCommand._texture = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture().get();
-    computeMipMapsCommand._layerRange = vec2<U32>(light.getShadowOffset(), layerCount);
+    computeMipMapsCommand._texture = shadowAtt.texture().get();
+    computeMipMapsCommand._layerRange = { layerOffset, layerCount };
     computeMipMapsCommand._defer = false;
     EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }

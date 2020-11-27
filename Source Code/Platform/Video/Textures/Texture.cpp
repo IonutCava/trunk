@@ -98,8 +98,6 @@ void Texture::threadedLoad() {
 
     if (loadedFromFile) {
         // Create a new Rendering API-dependent texture object
-        _descriptor._mipLevels.max = to_U16(dataStorage.mipCount());
-        _descriptor._mipCount = _descriptor.mipLevels().max;
         _descriptor._compressed = dataStorage.compressed();
         _descriptor.baseFormat(dataStorage.format());
         _descriptor.dataType(dataStorage.dataType());
@@ -238,7 +236,7 @@ void Texture::validateDescriptor() {
     // Select the proper colour space internal format
     if (_descriptor.baseFormat() == GFXImageFormat::RED ||
         _descriptor.baseFormat() == GFXImageFormat::RG ||
-        _descriptor.baseFormat() == GFXImageFormat::DEPTH_COMPONENT)             
+        _descriptor.baseFormat() == GFXImageFormat::DEPTH_COMPONENT)
     {
         // We only support 8 bit per pixel - 3 & 4 channel textures
         assert(!_descriptor.srgb());
@@ -254,18 +252,13 @@ void Texture::validateDescriptor() {
         default: break;
     }
 
-    if (!_descriptor._compressed) {
-        if (_descriptor.hasMipMaps()) {
-            if (_descriptor._mipLevels.max <= 1) {
-                _descriptor._mipLevels.max = computeMipCount(_width, _height) + 1;
-                _descriptor._mipCount = _descriptor.mipLevels().max;
-            }
-        }
-    }
+    // Cap upper mip count limit
+    _descriptor.mipCount(std::min(ComputeMipCount(_width, _height), _descriptor.mipCount()));
 }
 
-U16 Texture::computeMipCount(const U16 width, const U16 height) noexcept {
-    return to_U16(std::floorf(std::log2f(std::fmaxf(to_F32(width), to_F32(height)))));
+U16 Texture::ComputeMipCount(const U16 width, const U16 height) noexcept {
+    //http://www.opengl.org/registry/specs/ARB/texture_non_power_of_two.txt
+    return to_U16(std::floorf(std::log2f(std::fmaxf(to_F32(width), to_F32(height))))) + 1;
 }
 
 };

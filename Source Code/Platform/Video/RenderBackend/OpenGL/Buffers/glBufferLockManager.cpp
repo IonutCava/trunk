@@ -22,13 +22,12 @@ glBufferLockManager::glBufferLockManager()
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-glBufferLockManager::~glBufferLockManager() {
+glBufferLockManager::~glBufferLockManager()
+{
     const UniqueLock<Mutex> w_lock(_lock);
     for (const BufferLock& lock : _bufferLocks) {
         glDeleteSync(lock._syncObj);
     }
-
-    _bufferLocks.clear();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -46,18 +45,19 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
     UniqueLock<Mutex> w_lock(_lock);
     _swapLocks.resize(0);
     for (BufferLock& lock : _bufferLocks) {
-        if (!lock._valid || testRange.Overlaps(lock._range)) {
+        if (lock._valid && !testRange.Overlaps(lock._range)) {
+            _swapLocks.push_back(lock);
+        } else {
             U8 retryCount = 0;
             if (!lock._valid || wait(lock._syncObj, blockClient, quickCheck, retryCount)) {
                 glDeleteSync(lock._syncObj);
+
                 if (retryCount > 4) {
                     Console::errorfn("glBufferLockManager: Wait (%p) [%d - %d] %s - %d retries", this, lockBeginBytes, lockLength, blockClient ? "true" : "false", retryCount);
                 }
             } else if (!quickCheck) {
                 error = true;
             }
-        } else {
-            _swapLocks.push_back(lock);
         }
     }
 
@@ -67,7 +67,7 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-void glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lockLength, const U32 frameID) {
+bool glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lockLength, const U32 frameID) {
     OPTICK_EVENT();
 
     const BufferRange testRange{ lockBeginBytes, lockLength };
@@ -81,8 +81,8 @@ void glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lo
         }
     }
 
-    WaitForLockedRange(lockBeginBytes, lockLength, true, true);
-
+    const bool error = !WaitForLockedRange(lockBeginBytes, lockLength, true, true);
+    
     BufferLock newLock;
     newLock._range = { lockBeginBytes, lockLength };
     newLock._frameID = frameID;
@@ -93,6 +93,8 @@ void glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lo
         UniqueLock<Mutex> w_lock(_lock);
         _bufferLocks.push_back(newLock);
     }
+
+    return !error;
 }
 
 };

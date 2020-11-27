@@ -65,9 +65,11 @@ class glBufferLockManager final : public glLockManager {
     glBufferLockManager();
     ~glBufferLockManager();
 
-    // Return true if we found a lock to wait on
+    /// Returns false if we encountered an error
     bool WaitForLockedRange(size_t lockBeginBytes, size_t lockLength, bool blockClient, bool quickCheck = false);
-    void LockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID);
+
+    /// Returns false if we encountered an error
+    bool LockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID);
 
    private:
     mutable Mutex _lock;

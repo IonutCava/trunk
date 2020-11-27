@@ -35,12 +35,9 @@ glTexture::glTexture(GFXDevice& context,
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.texType())];
 
-    U32 tempHandle = 0;
-    if (GL_API::s_texturePool.typeSupported(_type)) {
-        tempHandle = GL_API::s_texturePool.allocate(_type);
-    } else {
-        glCreateTextures(_type, 1, &tempHandle);
-    }
+    const U32 tempHandle = GL_API::s_texturePool.allocate(_descriptor.texType(), false);
+    assert(tempHandle != 0u);
+
     _loadingData._textureHandle = tempHandle;
 
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
@@ -48,10 +45,7 @@ glTexture::glTexture(GFXDevice& context,
     }
 
     // Loading from file usually involves data that doesn't change, so call this here.
-    addStateCallback(ResourceState::RES_LOADED, [this](CachedResource* res) {
-        if (automaticMipMapGeneration() && hasMipMaps()) {
-            GL_API::queueComputeMipMap(_loadingData._textureHandle);
-        }
+    addStateCallback(ResourceState::RES_LOADED, [this](CachedResource*) {
         _data = _loadingData;
     });
 }
@@ -128,11 +122,7 @@ bool glTexture::unload() {
             _lockManager->Wait(false);
         }
         GL_API::dequeueComputeMipMap(_data._textureHandle);
-        if (GL_API::s_texturePool.typeSupported(_type)) {
-            GL_API::s_texturePool.deallocate(textureID, _type);
-        } else {
-            GL_API::deleteTextures(1, &textureID, _descriptor.texType());
-        }
+        GL_API::s_texturePool.deallocate(textureID, _data._textureType);
         _data._textureHandle = 0u;
     }
 
@@ -146,22 +136,7 @@ void glTexture::threadedLoad() {
     CachedResource::load();
 }
 
-void glTexture::setMipMapRange(const U16 base, const U16 max) noexcept {
-    if (_descriptor.mipLevels() == vec2<U16>(base, max)) {
-        return;
-    }
-
-    setMipRangeInternal(base, max);
-    Texture::setMipMapRange(base, max);
-}
-
-void glTexture::setMipRangeInternal(const U16 base, const U16 max) const noexcept {
-    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, base);
-    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, max);
-}
-
 void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) {
-    const GLenum oldTexType = _type;
     const TextureType oldTexTypeDescriptor = _descriptor.texType();
     _loadingData = _data;
     _data = {};
@@ -172,35 +147,18 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
 
     if (_loadingData._textureHandle > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
-        U32 tempHandle = 0;
-        if (GL_API::s_texturePool.typeSupported(_type)) {
-            tempHandle = GL_API::s_texturePool.allocate(_type);
-        } else {
-            glCreateTextures(_type, 1, &tempHandle);
-        }
+        const U32 tempHandle =  GL_API::s_texturePool.allocate(_descriptor.texType(), false);
+
         assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
         U32 handle = _loadingData._textureHandle;
-        if (GL_API::s_texturePool.typeSupported(oldTexType)) {
-            GL_API::s_texturePool.deallocate(handle, oldTexType);
-        } else {
-            GL_API::deleteTextures(1, &handle, oldTexTypeDescriptor);
-        }
+        GL_API::s_texturePool.deallocate(handle, oldTexTypeDescriptor);
         _loadingData._textureHandle = tempHandle;
     }
 
-    const vec2<U16> mipLevels(0, hasMipMaps() ? 1 + computeMipCount(_width, _height) : 1);
-
     _allocatedStorage = false;
-    // We may have limited the number of mips
-    _descriptor.mipLevels({ mipLevels.x, std::min(_descriptor.mipLevels().y, mipLevels.y)});
-    _descriptor.mipCount(mipLevels.y);
-
     loadData(ptr, dimensions);
 
-    if (automaticMipMapGeneration() && hasMipMaps()) {
-        GL_API::queueComputeMipMap(_loadingData._textureHandle);
-    }
     _data = _loadingData;
 }
 
@@ -212,7 +170,7 @@ void glTexture::reserveStorage() const {
     const GLenum glInternalFormat = GLUtil::internalFormat(_descriptor.baseFormat(), _descriptor.dataType(), _descriptor.srgb(), _descriptor.normalized());
     const GLuint handle = _loadingData._textureHandle;
     const GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
-    const GLushort mipMaxLevel = _descriptor.mipLevels().max;
+    const GLushort mipMaxLevel = _descriptor.mipCount();
 
     switch (_loadingData._textureType) {
         case TextureType::TEXTURE_1D: {
@@ -281,8 +239,6 @@ void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& 
     _height = dimensions.height;
  
     validateDescriptor();
-    setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
-
     assert(_width > 0 && _height > 0);
 
     bool expected = false;
@@ -302,6 +258,12 @@ void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& 
 
     if (getState() == ResourceState::RES_LOADED) {
         _data = _loadingData;
+    }
+
+    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, _descriptor.mipBaseLevel());
+    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, _descriptor.mipCount());
+    if (_descriptor.autoMipMaps() && _descriptor.mipCount() > 1) {
+        GL_API::queueComputeMipMap(_loadingData._textureHandle);
     }
 }
 
@@ -330,7 +292,11 @@ void glTexture::loadData(const ImageTools::ImageData& imageData) {
         _data = _loadingData;
     }
 
-    setMipRangeInternal(_descriptor.mipLevels().min, _descriptor.mipLevels().max);
+    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, _descriptor.mipBaseLevel());
+    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, _descriptor.mipCount());
+    if (_descriptor.autoMipMaps() && _descriptor.mipCount() > 1) {
+        GL_API::queueComputeMipMap(_loadingData._textureHandle);
+    }
 }
 
 void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
@@ -526,7 +492,7 @@ std::pair<std::shared_ptr<Byte[]>, size_t> glTexture::readData(U16 mipLevel, con
         return {nullptr, 0};
     }
 
-    CLAMP(mipLevel, to_U16(0u), _descriptor.mipLevels().max);
+    CLAMP(mipLevel, to_U16(0u), _descriptor.mipCount());
 
     GLint texWidth = _width, texHeight = _height;
     glGetTextureLevelParameteriv(_data._textureHandle, static_cast<GLint>(mipLevel), GL_TEXTURE_WIDTH, &texWidth);

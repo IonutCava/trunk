@@ -58,7 +58,12 @@ struct BufferLockEntry {
     glBufferImpl* _buffer = nullptr;
     size_t _offset = 0;
     size_t _length = 0;
-    bool   _flush = false;
+};
+
+struct BufferMapRange
+{
+    size_t _offset = 0;
+    size_t _range = 0;
 };
 
 class glBufferLockManager;
@@ -67,46 +72,43 @@ public:
     explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
 
-    [[nodiscard]] GLuint bufferID() const noexcept;
-
     [[nodiscard]] bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
-    void lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
+
+    // Returns false if we encounter an error
+    [[nodiscard]] bool lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
+
+    // Returns false if we encounter an error
     [[nodiscard]] bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
 
     void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data);
     void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data) const;
     void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
 
-    [[nodiscard]] size_t elementSize() const noexcept;
-
+public:
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
-
     static void CleanMemory() noexcept;
+
+public:
+    PROPERTY_R(GLuint, bufferID, 0);
+    PROPERTY_R(size_t, elementSize, 0);
+    PROPERTY_R(size_t, alignedSize, 0);
+    PROPERTY_R(GLenum, target, GL_NONE);
+    PROPERTY_R(bool, unsynced, false);
+    PROPERTY_R(bool, useExplicitFlush, false);
+    PROPERTY_R(BufferUpdateFrequency, updateFrequency, BufferUpdateFrequency::COUNT);
+    PROPERTY_R(BufferUpdateUsage, updateUsage, BufferUpdateUsage::COUNT);
+    PROPERTY_R(GLenum, usage, GL_NONE);
 
 protected:
     void writeOrClearData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data, bool zeroMem);
 
 protected:
-    GLenum _usage = GL_NONE;
-    GLuint _handle = 0;
-    Byte*  _mappedBuffer = nullptr;
     GFXDevice& _context;
-    const size_t _elementSize = 0;
-    const size_t _alignedSize = 0;
-    const GLenum _target = GL_NONE;
-    const bool _unsynced = false;
-    const bool _useExplicitFlush = false;
-    const BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
-    const BufferUpdateUsage _updateUsage = BufferUpdateUsage::COUNT;
 
-    struct MapRange {
-        size_t offset = 0;
-        size_t range = 0;
-    };
-    moodycamel::BlockingConcurrentQueue<MapRange> _flushQueue;
     std::atomic_int _flushQueueSize;
-
+    Byte*  _mappedBuffer = nullptr;
     glBufferLockManager* _lockManager = nullptr;
+    moodycamel::BlockingConcurrentQueue<BufferMapRange> _flushQueue;
 };
 }; //namespace Divide
 

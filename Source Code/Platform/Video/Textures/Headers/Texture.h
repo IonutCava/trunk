@@ -43,8 +43,6 @@
 
 namespace Divide {
 
-constexpr size_t INVALID_TEXTURE_IDX = Config::MAX_ACTIVE_RESIDENT_TEXTURES;
-
 namespace TypeUtil {
     const char* WrapModeToString(TextureWrap wrapMode) noexcept;
     TextureWrap StringToWrapMode(const stringImpl& wrapMode);
@@ -79,8 +77,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
     /// Bind a single level
     virtual void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) = 0;
-    /// Change the texture's mip levels. This can be called at any time
-    virtual void setMipMapRange(const U16 base = 0, const U16 max = 1000) noexcept { _descriptor.mipLevels({ base, max }); }
+
     /// Resize the texture to the specified dimensions and upload the new data
     virtual void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) = 0;
     /// Change the number of MSAA samples for this current texture
@@ -90,15 +87,6 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     // specified parameters
     virtual void loadData(const ImageTools::ImageData& imageData) = 0;
     virtual void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) = 0;
-
-    /// Texture base mip level
-    U16 getBaseMipLevel() const noexcept { return _descriptor.mipLevels().x; }
-    /// Texture max mip level
-    U16 getMaxMipLevel() const noexcept { return _descriptor.mipLevels().y; }
-    /// Number of loaded mip levels in VRAM
-    U16 getMipCount() const noexcept { return _descriptor._mipCount; }
-    bool automaticMipMapGeneration() const noexcept { return _descriptor.autoMipMaps(); }
-    bool hasMipMaps() const noexcept { return _descriptor.hasMipMaps(); }
 
     // MipLevel will automatically clamped to the texture's internal limits
     virtual std::pair<std::shared_ptr<Byte[]>, size_t> readData(U16 mipLevel, GFXDataFormat desiredFormat = GFXDataFormat::COUNT) const = 0;
@@ -118,7 +106,7 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     /// Flipped Y-coord
     PROPERTY_R(bool, flipped, false);
 
-    static U16 computeMipCount(U16 width, U16 height) noexcept;
+    static U16 ComputeMipCount(U16 width, U16 height) noexcept;
 
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object

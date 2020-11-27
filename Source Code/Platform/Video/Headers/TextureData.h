@@ -98,6 +98,7 @@ struct TextureDataContainer {
     bool removeTexture(U8 binding);
     bool removeTexture(const TextureData& data);
     void clear();
+    void sortByBinding();
 
     PROPERTY_RW(DataEntries, textures, create_array<Size>(DefaultEntry));
     PROPERTY_RW(U8, count, 0u);

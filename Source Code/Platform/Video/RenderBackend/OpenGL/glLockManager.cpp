@@ -56,39 +56,45 @@ bool glLockManager::wait(const GLsync syncObj, const bool blockClient, const boo
     OPTICK_TAG("QuickCheck", quickCheck);
     OPTICK_TAG("RetryCount", retryCount);
 
-    if (blockClient) {
-        GLuint64 waitTimeout = 0u;
-        SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
-        while (true) {
-            OPTICK_EVENT("Wait - OnLoop");
-            OPTICK_TAG("RetryCount", retryCount);
-            const GLenum waitRet = glClientWaitSync(syncObj, waitFlags, waitTimeout);
-            if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
-                return true;
-            }
-            DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "glLockManager::wait error: Not sure what to do here. Probably raise an exception or something.");
-
-            if (quickCheck) {
-                return false;
-            }
-
-            // After the first time, need to start flushing, and wait for a looong time.
-            waitFlags = SyncObjectMask::GL_SYNC_FLUSH_COMMANDS_BIT;
-            waitTimeout = kOneSecondInNanoSeconds;
-
-            if (++retryCount > kMaxWaitRetry) {
-                if (waitRet != GL_TIMEOUT_EXPIRED) {
-                    Console::errorfn("glLockManager::wait error: Lock timeout");
-                }
-
-                return false;
-            }
-        }
-    } else {
+    if (!blockClient) {
         glWaitSync(syncObj, 0, GL_TIMEOUT_IGNORED);
+        GL_API::queueFlush();
+
+        return true;
     }
 
-    return true;
+    GLuint64 waitTimeout = 0u;
+    SyncObjectMask waitFlags = SyncObjectMask::GL_NONE_BIT;
+    while (true) {
+        OPTICK_EVENT("Wait - OnLoop");
+        OPTICK_TAG("RetryCount", retryCount);
+        const GLenum waitRet = glClientWaitSync(syncObj, waitFlags, waitTimeout);
+        if (waitRet == GL_ALREADY_SIGNALED || waitRet == GL_CONDITION_SATISFIED) {
+            return true;
+        }
+        DIVIDE_ASSERT(waitRet != GL_WAIT_FAILED, "glLockManager::wait error: Not sure what to do here. Probably raise an exception or something.");
+
+        if (quickCheck) {
+            return false;
+        }
+
+        //ToDo: Do I need this here? -Ionut
+        GL_API::queueFlush();
+
+        // After the first time, need to start flushing, and wait for a looong time.
+        waitFlags = SyncObjectMask::GL_SYNC_FLUSH_COMMANDS_BIT;
+        waitTimeout = kOneSecondInNanoSeconds;
+
+        if (++retryCount > kMaxWaitRetry) {
+            if (waitRet != GL_TIMEOUT_EXPIRED) {
+                Console::errorfn("glLockManager::wait error: Lock timeout");
+            }
+
+            break;
+        }
+    }
+    
+    return false;
 }
 
 };//namespace Divide

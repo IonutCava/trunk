@@ -35,9 +35,6 @@
 
 namespace Divide {
 namespace GLUtil {
-inline bool glTexturePool::typeSupported(const GLenum type) const {
-    return eastl::find(cbegin(_types), cend(_types), type) != cend(_types);
-}
 
 template<typename T>
 void getGLValue(const GLenum param, T& value, const GLint index) {

@@ -161,7 +161,6 @@ void glUniformBuffer::writeBytes(ptrdiff_t offsetInBytes,
 bool glUniformBuffer::bindRange(const U8 bindIndex, const U32 offsetElementCount, U32 rangeElementCount) {
     BufferLockEntry data;
     data._buffer = bufferImpl();
-    data._flush = BitCompare(_flags, Flags::ALLOW_THREADED_WRITES);
 
     if (rangeElementCount == 0) {
         rangeElementCount = _elementCount;

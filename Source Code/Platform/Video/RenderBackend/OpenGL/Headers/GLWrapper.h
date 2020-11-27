@@ -137,7 +137,9 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) const;
 
-    bool makeTexturesResident(const TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews) const;
+    bool makeTexturesResidentInternal(TextureDataContainer<>& textureData, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
+    bool makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
+    bool makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
     bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
 
     bool setViewport(const Rect<I32>& viewport) override;
@@ -147,6 +149,7 @@ protected:
 public:
     static GLStateTracker& getStateTracker() noexcept;
 
+    static void queueFlush();
     /// Queue a mipmap recalculation
     static void queueComputeMipMap(GLuint textureHandle);
     static void dequeueComputeMipMap(GLuint textureHandle);
@@ -175,6 +178,7 @@ public:
 
     /// Return the OpenGL sampler object's handle for the given hash value
     static GLuint getSamplerHandle(size_t samplerHash);
+
 private:
     static bool initGLSW(Configuration& config);
     static bool deInitGLSW();
@@ -185,11 +189,11 @@ private:
 
 protected:
     /// Number of available texture units
-    static GLint s_maxTextureUnits;
+    static GLuint s_maxTextureUnits;
     /// Number of available attribute binding indices
-    static GLint s_maxAttribBindings;
+    static GLuint s_maxAttribBindings;
     /// Max number of texture attachments to an FBO
-    static GLint s_maxFBOAttachments;
+    static GLuint s_maxFBOAttachments;
 
 public:
     /// Shader block data
@@ -220,7 +224,7 @@ private:
     std::pair<I64, SDL_GLContext> _currentContext = {-1, nullptr};
 
 private:
-    static bool s_glFlushQueued;
+    static std::atomic_bool s_glFlushQueued;
 
     static SharedMutex s_mipmapQueueSetLock;
     static eastl::unordered_set<GLuint> s_mipmapQueue;
@@ -233,7 +237,7 @@ private:
     static Mutex s_textureResidencyQueueSetLock;
     static std::atomic_bool s_residentTexturesNeedUpload;
     static hashMap<U64, bool> s_textureResidencyQueue;
-    static std::array<ResidentTexture, Config::MAX_ACTIVE_RESIDENT_TEXTURES> s_residentTextures;
+    static vectorEASTL<ResidentTexture> s_residentTextures;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;
