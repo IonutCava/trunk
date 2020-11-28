@@ -273,37 +273,40 @@ namespace Divide {
                              max_ms_per_frame,
                              ImVec2(0, 50));
 
-        static U32 cullCount = 0;
-        static U32 updateCount = 3;
-        static U32 crtUpdate = 0;
-        static PerformanceMetrics perfMetrics{};
-
-        if (crtUpdate++ == updateCount) {
-            cullCount = context().gfx().getLastCullCount();
-            perfMetrics = context().gfx().getPerformanceMetrics();
-            crtUpdate = 0;
-        }
-
         static bool performanceStatsWereEnabled = false;
         if (ImGui::CollapsingHeader("Performance Stats")) {
             performanceStatsWereEnabled = context().gfx().queryPerformanceStats();
             context().gfx().queryPerformanceStats(true);
             const auto& rpm = _context.kernel().renderPassManager();
 
+            static I32 prevDrawCallCount[4] = {0, 0, 0, 0};
+            static I32 crtDrawCallCount[4] = {0, 0, 0, 0};
+
+            crtDrawCallCount[0] = rpm->drawCallCount(RenderStage::DISPLAY);
+            crtDrawCallCount[1] = rpm->drawCallCount(RenderStage::SHADOW);
+            crtDrawCallCount[2] = rpm->drawCallCount(RenderStage::REFLECTION);
+            crtDrawCallCount[3] = rpm->drawCallCount(RenderStage::REFRACTION);
+
             ImGui::NewLine();
             ImGui::Columns(5, "draw_call_columns");
             ImGui::Separator();
+
             ImGui::Text("Data");        ImGui::NextColumn();
             ImGui::Text("Display");     ImGui::NextColumn();
             ImGui::Text("Shadows");     ImGui::NextColumn();
             ImGui::Text("Reflections"); ImGui::NextColumn();
             ImGui::Text("Refractions"); ImGui::NextColumn();
             ImGui::Separator();
-            ImGui::Text("Draw Calls");                                            ImGui::NextColumn();
-            ImGui::Text("%d", rpm->drawCallCount(RenderStage::DISPLAY));          ImGui::NextColumn();
-            ImGui::Text("%d", rpm->drawCallCount(RenderStage::SHADOW));           ImGui::NextColumn();
-            ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFLECTION));       ImGui::NextColumn();
-            ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFRACTION));       ImGui::NextColumn();
+
+            ImGui::Text("Draw Calls");                                               ImGui::NextColumn();
+            for (U8 i = 0; i < 4; ++i) {
+                if (crtDrawCallCount[i] == prevDrawCallCount[i]) {
+                    ImGui::Text("%d", crtDrawCallCount[i]); ImGui::NextColumn();
+                } else {
+                    ImGui::Text("%d (prev: %d)", crtDrawCallCount[i], prevDrawCallCount[i]); ImGui::NextColumn();
+                }
+            }
+
             ImGui::Text("Visible Nodes");                                         ImGui::NextColumn();
             ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::DISPLAY));    ImGui::NextColumn();
             ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::SHADOW));     ImGui::NextColumn();
@@ -312,16 +315,27 @@ namespace Divide {
             ImGui::Columns(1);
             ImGui::Separator();
 
+            const PerformanceMetrics perfMetrics = context().gfx().getPerformanceMetrics();
+
             ImGui::NewLine();
-            ImGui::Text("HiZ Cull Count: %d", cullCount);
+            ImGui::Text("HiZ Cull Count: %d", context().gfx().getLastCullCount());
             ImGui::NewLine();
-            ImGui::Text("GPU Frame Time (ms): %5.2f", perfMetrics._gpuTimeInMS);
+            ImGui::Text("GPU Frame Time: %5.2f ms", perfMetrics._gpuTimeInMS);
             ImGui::NewLine();
-            ImGui::Text("Submitted Vertices: %zu", perfMetrics._verticesSubmitted);
+            ImGui::Text("Submitted Vertices: %s", Util::commaprint(perfMetrics._verticesSubmitted));
             ImGui::NewLine();
-            ImGui::Text("Primitves Generated: %zu", perfMetrics._verticesSubmitted);
+            ImGui::Text("Primitves Generated: %s", Util::commaprint(perfMetrics._primitivesGenerated));
+            ImGui::NewLine();
+            ImGui::Text("Tessellation Patches: %s", Util::commaprint(perfMetrics._tessellationPatches));
+            ImGui::NewLine();
+            ImGui::Text("Tessellation Invocations: %s", Util::commaprint(perfMetrics._tessellationInvocations));
             ImGui::Separator();
             ImGui::NewLine();
+
+            prevDrawCallCount[0] = rpm->drawCallCount(RenderStage::DISPLAY);
+            prevDrawCallCount[1] = rpm->drawCallCount(RenderStage::SHADOW);
+            prevDrawCallCount[2] = rpm->drawCallCount(RenderStage::REFLECTION);
+            prevDrawCallCount[3] = rpm->drawCallCount(RenderStage::REFRACTION);
         } else {
             if (!performanceStatsWereEnabled && context().gfx().queryPerformanceStats()) {
                 context().gfx().queryPerformanceStats(false);

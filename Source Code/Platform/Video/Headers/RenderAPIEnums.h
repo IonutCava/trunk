@@ -530,6 +530,8 @@ enum class BufferUpdateFrequency : U8 {
 enum class QueryType : U8 {
     VERTICES_SUBMITTED = 0,
     PRIMITIVES_GENERATED,
+    TESSELLATION_PATCHES,
+    TESSELLATION_CTRL_INVOCATIONS,
     GPU_TIME,
     COUNT
 };

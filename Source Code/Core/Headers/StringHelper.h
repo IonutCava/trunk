@@ -117,6 +117,8 @@ namespace Divide {
         void CStringRemoveChar(char* str, char charToRemove) noexcept;
 
         bool IsEmptyOrNull(const char* str) noexcept;
+
+        [[nodiscard]] char *commaprint(U64 number) noexcept;
     } //namespace Util
 } //namespace Divide
 

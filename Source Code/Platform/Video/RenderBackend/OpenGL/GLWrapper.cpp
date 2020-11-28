@@ -179,22 +179,12 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
           }
           _queryIdxForCurrentFrame = (_queryIdxForCurrentFrame + 1) % to_base(QueryType::COUNT);
 
-          if_constexpr(g_runAllQueriesInSameFrame) {
+          if (g_runAllQueriesInSameFrame || _queryIdxForCurrentFrame == 0) {
               _perfMetrics._gpuTimeInMS = Time::NanosecondsToMilliseconds<F32>(results[to_base(QueryType::GPU_TIME)]);
               _perfMetrics._verticesSubmitted = to_U64(results[to_base(QueryType::VERTICES_SUBMITTED)]);
               _perfMetrics._primitivesGenerated = to_U64(results[to_base(QueryType::PRIMITIVES_GENERATED)]);
-          } else {
-              switch(_queryIdxForCurrentFrame) {
-                  case to_U8(QueryType::GPU_TIME) :
-                      _perfMetrics._gpuTimeInMS = Time::NanosecondsToMilliseconds<F32>(results[_queryIdxForCurrentFrame]);
-                      break;
-                  case to_U8(QueryType::VERTICES_SUBMITTED):
-                      _perfMetrics._verticesSubmitted = to_U64(results[_queryIdxForCurrentFrame]);
-                      break;
-                  case to_U8(QueryType::PRIMITIVES_GENERATED):
-                      _perfMetrics._primitivesGenerated = to_U64(results[_queryIdxForCurrentFrame]);
-                      break;
-              }
+              _perfMetrics._tessellationPatches = to_U64(results[to_base(QueryType::TESSELLATION_PATCHES)]);
+              _perfMetrics._tessellationInvocations = to_U64(results[to_base(QueryType::TESSELLATION_CTRL_INVOCATIONS)]);
           }
     }
 

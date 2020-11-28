@@ -743,7 +743,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
                                                        RelativeValue(0.2f, 0.0f)), // Position
                                     Font::DROID_SERIF_BOLD,                        // Font
                                     UColour4(255,  50, 0, 255),                    // Colour
-                                    "PROFILE DATA",                                // Text
+                                    "",                                            // Text
                                     true,                                          // Multiline
                                     12);                                           // Font size
 

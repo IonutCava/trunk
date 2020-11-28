@@ -340,7 +340,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
             { GL_ANY_SAMPLES_PASSED, 6 },
             { GL_PRIMITIVES_GENERATED, 6 },
             { GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, 6 },
-            { GL_ANY_SAMPLES_PASSED_CONSERVATIVE, 6 }
+            { GL_ANY_SAMPLES_PASSED_CONSERVATIVE, 6 },
+            { GL_TESS_CONTROL_SHADER_PATCHES, 6},
+            { GL_TESS_EVALUATION_SHADER_INVOCATIONS, 6}
         }
     );
 
@@ -364,6 +366,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     _performanceQueries[to_base(QueryType::GPU_TIME)] = eastl::make_unique<glHardwareQueryRing>(_context, GL_TIME_ELAPSED, 6);
     _performanceQueries[to_base(QueryType::VERTICES_SUBMITTED)] = eastl::make_unique<glHardwareQueryRing>(_context, GL_VERTICES_SUBMITTED, 6);
     _performanceQueries[to_base(QueryType::PRIMITIVES_GENERATED)] = eastl::make_unique<glHardwareQueryRing>(_context, GL_PRIMITIVES_GENERATED, 6);
+    _performanceQueries[to_base(QueryType::TESSELLATION_PATCHES)] = eastl::make_unique<glHardwareQueryRing>(_context, GL_TESS_CONTROL_SHADER_PATCHES, 6);
+    _performanceQueries[to_base(QueryType::TESSELLATION_CTRL_INVOCATIONS)] = eastl::make_unique<glHardwareQueryRing>(_context, GL_TESS_EVALUATION_SHADER_INVOCATIONS, 6);
 
     // Prepare shader headers and various shader related states
     glShaderProgram::initStaticData();

@@ -74,6 +74,10 @@ struct PerformanceMetrics
     /// Returns the total number of vertices submitted between frame start and end (before swap buffers)
     /// Includes all vertices, including GUI and debug stuff (but the delta should still be useful)
     U64 _primitivesGenerated = 0u;
+    ///  Number of patches processed by the tessellation control shader
+    U64 _tessellationPatches = 0u;
+    /// Number of times the tessellation control shader has been invoked
+    U64 _tessellationInvocations = 0u;
 };
 
 using AttribFlags = std::array<bool, to_base(AttribLocation::COUNT)>;

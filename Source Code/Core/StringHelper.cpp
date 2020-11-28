@@ -38,4 +38,34 @@ bool IsEmptyOrNull(const char* str) noexcept {
     return str == nullptr || str[0] == '\0';
 }
 
+//ref: http://c-faq.com/stdio/commaprint.html
+char *commaprint(U64 number) noexcept {
+    static int comma = '\0';
+    static char retbuf[30];
+    char *p = &retbuf[sizeof(retbuf) - 1];
+    int i = 0;
+
+    if (comma == '\0') {
+        struct lconv *lcp = localeconv();
+        if (lcp != NULL) {
+            if (lcp->thousands_sep != NULL &&
+                *lcp->thousands_sep != '\0')
+                comma = *lcp->thousands_sep;
+            else	comma = ',';
+        }
+    }
+
+    *p = '\0';
+
+    do {
+        if (i % 3 == 0 && i != 0)
+            *--p = (char)comma;
+        *--p = '0' + number % 10;
+        number /= 10;
+        i++;
+    } while (number != 0);
+
+    return p;
+}
+
 } //namespace Divide::Util
