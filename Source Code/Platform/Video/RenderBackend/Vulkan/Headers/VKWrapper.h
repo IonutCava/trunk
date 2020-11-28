@@ -50,7 +50,7 @@ class VK_API final : public RenderAPIWrapper {
 
       ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) override;
       void closeRenderingAPI() override;
-      [[nodiscard]] F32 getFrameDurationGPU() const noexcept override;
+      [[nodiscard]] PerformanceMetrics getPerformanceMetrics() const noexcept override;
       void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
       void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) override;
       void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;

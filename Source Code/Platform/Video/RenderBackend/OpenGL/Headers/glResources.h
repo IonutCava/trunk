@@ -239,8 +239,6 @@ extern std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 extern std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 extern std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 extern std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
-extern std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
-
 };  // namespace GLUtil
 };  // namespace Divide
 

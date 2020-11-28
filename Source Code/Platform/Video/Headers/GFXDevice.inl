@@ -104,7 +104,7 @@ GFXDevice::getDrawCallCount() const noexcept {
 /// Return the last number of HIZ culled items
 inline U32
 GFXDevice::getLastCullCount() const noexcept {
-    _queueCullRead = true; return LAST_CULL_COUNT;
+    return LAST_CULL_COUNT;
 }
 
 inline Arena::Statistics
@@ -127,9 +127,9 @@ GFXDevice::getCurrentViewport() const noexcept {
     return _viewport;
 }
 
-inline F32
-GFXDevice::getFrameDurationGPU() const noexcept {
-    return _api->getFrameDurationGPU();
+inline PerformanceMetrics 
+GFXDevice::getPerformanceMetrics() const noexcept {
+    return _api->getPerformanceMetrics();
 }
 
 inline vec2<U16>

@@ -65,6 +65,17 @@ struct VideoModes {
     I32 BlueBits;
 };
 
+/// Queries are expensive, so this result MAY BE SEVERAL frames out of date!
+struct PerformanceMetrics
+{
+    F32 _gpuTimeInMS = 0.f;
+    /// Returns the time in milliseconds that it took to render one frame
+    U64 _verticesSubmitted = 0u;
+    /// Returns the total number of vertices submitted between frame start and end (before swap buffers)
+    /// Includes all vertices, including GUI and debug stuff (but the delta should still be useful)
+    U64 _primitivesGenerated = 0u;
+};
+
 using AttribFlags = std::array<bool, to_base(AttribLocation::COUNT)>;
 
 /// Renderer Programming Interface
@@ -85,9 +96,7 @@ protected:
     virtual ErrorCode initRenderingAPI(I32 argc, char** argv, Configuration& config) = 0;
     virtual void closeRenderingAPI() = 0;
 
-    // Returns the time in milliseconds that it took to render one frame
-    // Queries are expensive, so this result MAY BE SEVERAL frames out of date!
-    [[nodiscard]] virtual F32 getFrameDurationGPU() const noexcept = 0;
+    [[nodiscard]] virtual PerformanceMetrics getPerformanceMetrics() const noexcept = 0;
 
     virtual void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) = 0;
     virtual void flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) = 0;

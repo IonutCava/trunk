@@ -33,8 +33,8 @@ namespace Divide {
     void VK_API::closeRenderingAPI() {
     }
 
-    F32 VK_API::getFrameDurationGPU() const noexcept {
-        return 0.f;
+    PerformanceMetrics VK_API::getPerformanceMetrics() const noexcept {
+        return {};
     }
 
     void VK_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {

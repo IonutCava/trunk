@@ -47,7 +47,7 @@ public:
     void idle();
 
 private:
-    stringImpl _output;
+    stringImpl _output{};
     bool _enabled = false;
 };
 

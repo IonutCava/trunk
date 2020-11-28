@@ -297,8 +297,8 @@ public:  // Accessors and Mutators
     bool getDebugGroupState(I16 groupID) const;
     void getDebugViewNames(vectorEASTL<std::tuple<stringImpl, I16, I16, bool>>& namesOut);
 
-    /// In milliseconds
-    inline F32 getFrameDurationGPU() const noexcept;
+    [[nodiscard]] inline PerformanceMetrics getPerformanceMetrics() const noexcept;
+
     inline vec2<U16> getDrawableSize(const DisplayWindow& window) const;
     inline U32 getHandleFromCEGUITexture(const CEGUI::Texture& textureIn) const;
     inline void onThreadCreated(const std::thread::id& threadID) const;
@@ -312,7 +312,7 @@ public:  // Accessors and Mutators
 
 public:
     Mutex&       objectArenaMutex() noexcept;
-    ObjectArena&      objectArena() noexcept;
+    ObjectArena& objectArena() noexcept;
 
     /// Create and return a new immediate mode emulation primitive.
     IMPrimitive*       newIMP();
@@ -368,6 +368,7 @@ public:
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
     PROPERTY_RW(I32, csmPreviewIndex, -1);
     PROPERTY_RW(RenderAPI, renderAPI, RenderAPI::COUNT);
+    PROPERTY_RW(bool, queryPerformanceStats, false);
 
 protected:
     /// Create and return a new framebuffer.
@@ -455,8 +456,6 @@ private:
     I32 FRAME_DRAW_CALLS = 0;
     U32 FRAME_DRAW_CALLS_PREV = 0u;
     U32 FRAME_COUNT = 0u;
-
-    mutable bool _queueCullRead = false;
     U32 LAST_CULL_COUNT = 0;
 
     /// shader used to preview the depth buffer

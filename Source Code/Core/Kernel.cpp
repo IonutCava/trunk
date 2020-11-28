@@ -230,13 +230,24 @@ void Kernel::onLoop() {
     }
 
     const U32 frameCount = _platformContext.gfx().getFrameCount();
-    // Should equate to approximately once every 10 seconds
-    if (platformContext().debug().enabled() && frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
-        Console::printfn(platformContext().debug().output().c_str());
-    }
+    if (platformContext().debug().enabled()) {
+        static bool statsEnabled = false;
+        // Turn on perf metric measuring 2 seconds before perf dump
+        if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(8)) == 0) {
+            statsEnabled = platformContext().gfx().queryPerformanceStats();
+            platformContext().gfx().queryPerformanceStats(true);
+        }
+        // Our stats should be up to date now
+        if (frameCount % (Config::TARGET_FRAME_RATE * Time::Seconds(10)) == 0) {
+            Console::printfn(platformContext().debug().output().c_str());
+            if (!statsEnabled) {
+                platformContext().gfx().queryPerformanceStats(false);
+            }
+        }
 
-    if (frameCount % (Config::TARGET_FRAME_RATE / 8) == 0u) {
-        _platformContext.gui().modifyText("ProfileData", platformContext().debug().output(), true);
+        if (frameCount % (Config::TARGET_FRAME_RATE / 8) == 0u) {
+            _platformContext.gui().modifyText("ProfileData", platformContext().debug().output(), true);
+        }
     }
 
     if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {

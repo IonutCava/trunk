@@ -120,9 +120,7 @@ protected:
 
     void postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
 
-    /// Return the time it took to render a single frame (in nanoseconds). Only
-    /// works in GPU validation builds
-    F32 getFrameDurationGPU() const noexcept override;
+    [[nodiscard]] PerformanceMetrics getPerformanceMetrics() const noexcept override;
 
     /// Return the size in pixels that we can render to. This differs from the window size on Retina displays
     vec2<U16> getDrawableSize(const DisplayWindow& window) const override;
@@ -212,9 +210,12 @@ private:
     hashAlg::pair<Str64, I32> _fontCache = {"", -1};
 
     /// Hardware query objects used for performance measurements
-    eastl::unique_ptr<glHardwareQueryRing> _elapsedTimeQuery = nullptr;
-    /// Duration in milliseconds to render a frame
-    F32 FRAME_DURATION_GPU = 0.f;
+    std::array<eastl::unique_ptr<glHardwareQueryRing>, to_base(QueryType::COUNT)> _performanceQueries;
+    PerformanceMetrics _perfMetrics{};
+    //Because GFX::queryPerfStats can change mid-frame, we need to cache that value and apply in beginFrame() properly
+    bool _runQueries = false;
+    U8 _queryIdxForCurrentFrame = 0u;
+
     /// FontStash's context
     FONScontext* _fonsContext = nullptr;
 

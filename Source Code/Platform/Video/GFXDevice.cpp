@@ -1733,18 +1733,14 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
 }
 
 void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut) {
-    if (_queueCullRead) {
-        if (bufferData._cullCounter != nullptr) {
-            GFX::ReadBufferDataCommand readAtomicCounter;
-            readAtomicCounter._buffer = bufferData._cullCounter;
-            readAtomicCounter._target = &LAST_CULL_COUNT;
-            readAtomicCounter._offsetElementCount = 0;
-            readAtomicCounter._elementCount = 1;
-            EnqueueCommand(cmdBufferInOut, readAtomicCounter);
-        }
-
-        _queueCullRead = false;
-    }
+    if (queryPerformanceStats() && bufferData._cullCounter != nullptr) {
+          GFX::ReadBufferDataCommand readAtomicCounter;
+          readAtomicCounter._buffer = bufferData._cullCounter;
+          readAtomicCounter._target = &LAST_CULL_COUNT;
+          readAtomicCounter._offsetElementCount = 0;
+          readAtomicCounter._elementCount = 1;
+          EnqueueCommand(cmdBufferInOut, readAtomicCounter);
+      }
 }
 #pragma endregion
 

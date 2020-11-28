@@ -33,8 +33,8 @@ namespace Divide {
     void NONE_API::closeRenderingAPI() {
     }
 
-    F32 NONE_API::getFrameDurationGPU() const noexcept {
-        return 0.f;
+    PerformanceMetrics NONE_API::getPerformanceMetrics() const noexcept {
+        return {};
     }
 
     void NONE_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {

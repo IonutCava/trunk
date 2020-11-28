@@ -528,7 +528,7 @@ enum class BufferUpdateFrequency : U8 {
 };
 
 enum class QueryType : U8 {
-    TIME = 0,
+    VERTICES_SUBMITTED = 0,
     PRIMITIVES_GENERATED,
     GPU_TIME,
     COUNT

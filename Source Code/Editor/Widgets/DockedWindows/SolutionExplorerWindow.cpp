@@ -273,80 +273,99 @@ namespace Divide {
                              max_ms_per_frame,
                              ImVec2(0, 50));
 
-        const auto& rpm = _context.kernel().renderPassManager();
-
-        ImGui::NewLine();
-        ImGui::Columns(5, "draw_call_columns");
-        ImGui::Separator();
-        ImGui::Text("Data");        ImGui::NextColumn();
-        ImGui::Text("Display");     ImGui::NextColumn();
-        ImGui::Text("Shadows");     ImGui::NextColumn();
-        ImGui::Text("Reflections"); ImGui::NextColumn();
-        ImGui::Text("Refractions"); ImGui::NextColumn();
-        ImGui::Separator();
-        ImGui::Text("Draw Calls");                                            ImGui::NextColumn();
-        ImGui::Text("%d", rpm->drawCallCount(RenderStage::DISPLAY));          ImGui::NextColumn();
-        ImGui::Text("%d", rpm->drawCallCount(RenderStage::SHADOW));           ImGui::NextColumn();
-        ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFLECTION));       ImGui::NextColumn();
-        ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFRACTION));       ImGui::NextColumn();
-        ImGui::Text("Visible Nodes");                                         ImGui::NextColumn();
-        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::DISPLAY));    ImGui::NextColumn();
-        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::SHADOW));     ImGui::NextColumn();
-        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::REFLECTION)); ImGui::NextColumn();
-        ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::REFRACTION)); ImGui::NextColumn();
-        ImGui::Columns(1);
-        ImGui::Separator();
-
         static U32 cullCount = 0;
         static U32 updateCount = 3;
         static U32 crtUpdate = 0;
+        static PerformanceMetrics perfMetrics{};
+
         if (crtUpdate++ == updateCount) {
             cullCount = context().gfx().getLastCullCount();
+            perfMetrics = context().gfx().getPerformanceMetrics();
             crtUpdate = 0;
         }
 
-        ImGui::NewLine();
-        ImGui::Text("HiZ Cull Count: %d", cullCount);
-        ImGui::Separator();
-        ImGui::NewLine();
+        static bool performanceStatsWereEnabled = false;
+        if (ImGui::CollapsingHeader("Performance Stats")) {
+            performanceStatsWereEnabled = context().gfx().queryPerformanceStats();
+            context().gfx().queryPerformanceStats(true);
+            const auto& rpm = _context.kernel().renderPassManager();
 
-        bool dayNightEnabled = activeScene.dayNightCycleEnabled();
-        if (ImGui::Checkbox("Enable day/night cycle", &dayNightEnabled)) {
-            activeScene.dayNightCycleEnabled(dayNightEnabled);
+            ImGui::NewLine();
+            ImGui::Columns(5, "draw_call_columns");
+            ImGui::Separator();
+            ImGui::Text("Data");        ImGui::NextColumn();
+            ImGui::Text("Display");     ImGui::NextColumn();
+            ImGui::Text("Shadows");     ImGui::NextColumn();
+            ImGui::Text("Reflections"); ImGui::NextColumn();
+            ImGui::Text("Refractions"); ImGui::NextColumn();
+            ImGui::Separator();
+            ImGui::Text("Draw Calls");                                            ImGui::NextColumn();
+            ImGui::Text("%d", rpm->drawCallCount(RenderStage::DISPLAY));          ImGui::NextColumn();
+            ImGui::Text("%d", rpm->drawCallCount(RenderStage::SHADOW));           ImGui::NextColumn();
+            ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFLECTION));       ImGui::NextColumn();
+            ImGui::Text("%d", rpm->drawCallCount(RenderStage::REFRACTION));       ImGui::NextColumn();
+            ImGui::Text("Visible Nodes");                                         ImGui::NextColumn();
+            ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::DISPLAY));    ImGui::NextColumn();
+            ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::SHADOW));     ImGui::NextColumn();
+            ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::REFLECTION)); ImGui::NextColumn();
+            ImGui::Text("%d", rpm->getLastTotalBinSize(RenderStage::REFRACTION)); ImGui::NextColumn();
+            ImGui::Columns(1);
+            ImGui::Separator();
+
+            ImGui::NewLine();
+            ImGui::Text("HiZ Cull Count: %d", cullCount);
+            ImGui::NewLine();
+            ImGui::Text("GPU Frame Time (ms): %5.2f", perfMetrics._gpuTimeInMS);
+            ImGui::NewLine();
+            ImGui::Text("Submitted Vertices: %zu", perfMetrics._verticesSubmitted);
+            ImGui::NewLine();
+            ImGui::Text("Primitves Generated: %zu", perfMetrics._verticesSubmitted);
+            ImGui::Separator();
+            ImGui::NewLine();
+        } else {
+            if (!performanceStatsWereEnabled && context().gfx().queryPerformanceStats()) {
+                context().gfx().queryPerformanceStats(false);
+            }
         }
 
-        ImGui::Text("Time of Day:");
-        SimpleTime time = activeScene.getTimeOfDay();
-        constexpr U8 min = 0u;
-        constexpr U8 maxHour = 24u;
-        constexpr U8 maxMinute = 59u;
+        if (ImGui::CollapsingHeader("Day/Night Settings")) {
+            bool dayNightEnabled = activeScene.dayNightCycleEnabled();
+            if (ImGui::Checkbox("Enable day/night cycle", &dayNightEnabled)) {
+                activeScene.dayNightCycleEnabled(dayNightEnabled);
+            }
 
-        if (ImGui::SliderScalar("Hour", ImGuiDataType_U8, &time._hour, &min, &maxHour, "%02d") ||
-            ImGui::SliderScalar("Minute", ImGuiDataType_U8, &time._minutes, &min, &maxMinute, "%02d"))
-        {
-            activeScene.setTimeOfDay(time);
+            ImGui::Text("Time of Day:");
+            SimpleTime time = activeScene.getTimeOfDay();
+            constexpr U8 min = 0u;
+            constexpr U8 maxHour = 24u;
+            constexpr U8 maxMinute = 59u;
+
+            if (ImGui::SliderScalar("Hour", ImGuiDataType_U8, &time._hour, &min, &maxHour, "%02d") ||
+                ImGui::SliderScalar("Minute", ImGuiDataType_U8, &time._minutes, &min, &maxMinute, "%02d"))         {
+                activeScene.setTimeOfDay(time);
+            }
+
+            if (!dayNightEnabled) {
+                PushReadOnly();
+            }
+
+            F32 timeFactor = activeScene.getDayNightCycleTimeFactor();
+            if (ImGui::InputFloat("Time factor", &timeFactor)) {
+                activeScene.setDayNightCycleTimeFactor(CLAMPED(timeFactor, -500.f, 500.f));
+            }
+
+            const SunDetails sun = activeScene.getCurrentSunDetails();
+            ImGui::Text("Sunset: %02d:%02d", sun._info.sunsetTime._hour, sun._info.sunsetTime._minutes);
+            ImGui::SameLine(); ImGui::Text(" | "); ImGui::SameLine();
+            ImGui::Text("Sunrise: %02d:%02d", sun._info.sunriseTime._hour, sun._info.sunriseTime._minutes);
+            ImGui::SameLine();  ImGui::Text(" | "); ImGui::SameLine();
+            ImGui::Text("Noon: %02d:%02d", sun._info.noonTime._hour, sun._info.noonTime._minutes);
+
+            if (!dayNightEnabled) {
+                PopReadOnly();
+            }
         }
-
-        if (!dayNightEnabled) {
-            PushReadOnly();
-        }
-
-        F32 timeFactor = activeScene.getDayNightCycleTimeFactor();
-        if (ImGui::InputFloat("Time factor", &timeFactor)) {
-            activeScene.setDayNightCycleTimeFactor(CLAMPED(timeFactor, -500.f, 500.f));
-        }
-
-        const SunDetails sun = activeScene.getCurrentSunDetails();
-        ImGui::Text("Sunset: %02d:%02d", sun._info.sunsetTime._hour, sun._info.sunsetTime._minutes);
-        ImGui::SameLine(); ImGui::Text(" | "); ImGui::SameLine();
-        ImGui::Text("Sunrise: %02d:%02d", sun._info.sunriseTime._hour, sun._info.sunriseTime._minutes);
-        ImGui::SameLine();  ImGui::Text(" | "); ImGui::SameLine();
-        ImGui::Text("Noon: %02d:%02d", sun._info.noonTime._hour, sun._info.noonTime._minutes);
-
-        if (!dayNightEnabled) {
-            PopReadOnly();
-        }
-
+        
         drawRemoveNodeDialog();
         drawAddNodeDialog();
         drawChangeParentWindow();

@@ -31,6 +31,8 @@
 namespace Divide {
 
 namespace {
+    // Weird stuff happens if this is enabled (i.e. certain draw calls hang forever)
+    constexpr bool g_runAllQueriesInSameFrame = false;
     // Keep resident textures in memory for a max of 32 frames
     constexpr U8 g_maxTextureResidencyFrameCount = Config::TARGET_FRAME_RATE / 2;
     // Will try and reduce memory usage by static data that we may not be need anymore
@@ -57,9 +59,13 @@ GL_API::GL_API(GFXDevice& context, const bool glES)
 void GL_API::beginFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
     // Start a duration query in debug builds
-    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-        if (global) {
-            _elapsedTimeQuery->begin();
+    if (global && _runQueries) {
+        if_constexpr(g_runAllQueriesInSameFrame) {
+            for (U8 i = 0; i < to_base(QueryType::COUNT); ++i) {
+                _performanceQueries[i]->begin();
+            }
+        } else {
+            _performanceQueries[_queryIdxForCurrentFrame]->begin();
         }
     }
 
@@ -102,13 +108,14 @@ void GL_API::beginFrame(DisplayWindow& window, const bool global) {
 void GL_API::endFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT("GL_API: endFrame");
 
-    // Revert back to the default OpenGL states
-    //clearStates(window, global);
-
     // End the timing query started in beginFrame() in debug builds
-    if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-        if (global) {
-            _elapsedTimeQuery->end();
+    if (global && _runQueries) {
+        if_constexpr(g_runAllQueriesInSameFrame) {
+            for (U8 i = 0; i < to_base(QueryType::COUNT); ++i) {
+                _performanceQueries[i]->end();
+            }
+        } else {
+            _performanceQueries[_queryIdxForCurrentFrame]->end();
         }
     }
     // Swap buffers
@@ -158,14 +165,43 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
         }
     }
 
-    if_constexpr (Config::ENABLE_GPU_VALIDATION) {
-        if (global) {
-            OPTICK_EVENT("GL_API: Time Query");
-            const I64 time = _elapsedTimeQuery->getResultNoWait();
-            FRAME_DURATION_GPU = Time::NanosecondsToMilliseconds<F32>(time);
-            _elapsedTimeQuery->incQueue();
-        }
+    if (global && _runQueries) {
+          OPTICK_EVENT("GL_API: Time Query");
+          static std::array<I64, to_base(QueryType::COUNT)> results{};
+          if_constexpr(g_runAllQueriesInSameFrame) {
+              for (U8 i = 0; i < to_base(QueryType::COUNT); ++i) {
+                  results[i] = _performanceQueries[i]->getResultNoWait();
+                  _performanceQueries[i]->incQueue();
+              }
+          } else {
+              results[_queryIdxForCurrentFrame] = _performanceQueries[_queryIdxForCurrentFrame]->getResultNoWait();
+              _performanceQueries[_queryIdxForCurrentFrame]->incQueue();
+          }
+          _queryIdxForCurrentFrame = (_queryIdxForCurrentFrame + 1) % to_base(QueryType::COUNT);
+
+          if_constexpr(g_runAllQueriesInSameFrame) {
+              _perfMetrics._gpuTimeInMS = Time::NanosecondsToMilliseconds<F32>(results[to_base(QueryType::GPU_TIME)]);
+              _perfMetrics._verticesSubmitted = to_U64(results[to_base(QueryType::VERTICES_SUBMITTED)]);
+              _perfMetrics._primitivesGenerated = to_U64(results[to_base(QueryType::PRIMITIVES_GENERATED)]);
+          } else {
+              switch(_queryIdxForCurrentFrame) {
+                  case to_U8(QueryType::GPU_TIME) :
+                      _perfMetrics._gpuTimeInMS = Time::NanosecondsToMilliseconds<F32>(results[_queryIdxForCurrentFrame]);
+                      break;
+                  case to_U8(QueryType::VERTICES_SUBMITTED):
+                      _perfMetrics._verticesSubmitted = to_U64(results[_queryIdxForCurrentFrame]);
+                      break;
+                  case to_U8(QueryType::PRIMITIVES_GENERATED):
+                      _perfMetrics._primitivesGenerated = to_U64(results[_queryIdxForCurrentFrame]);
+                      break;
+              }
+          }
     }
+
+    _runQueries = _context.queryPerformanceStats();
+}
+PerformanceMetrics GL_API::getPerformanceMetrics() const noexcept {
+    return _perfMetrics;
 }
 
 void GL_API::idle(const bool fast) {
@@ -181,10 +217,6 @@ void GL_API::idle(const bool fast) {
             s_mipmapQueue.erase(it);
         }
     }
-}
-
-F32 GL_API::getFrameDurationGPU() const noexcept {
-    return FRAME_DURATION_GPU;
 }
 
 void GL_API::appendToShaderHeader(const ShaderType type,

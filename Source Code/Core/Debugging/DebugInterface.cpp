@@ -36,10 +36,16 @@ void DebugInterface::idle() {
         _output = Util::StringFormat("Scene Update Loops: %d", timingData.updateLoops());
 
         if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
+            const PerformanceMetrics perfMetrics = gfx.getPerformanceMetrics();
+
             _output.append("\n");
             _output.append(app.timer().benchmarkReport());
             _output.append("\n");
-            _output.append(Util::StringFormat("GPU: [ %5.5f ms] [DrawCalls: %d]", gfx.getFrameDurationGPU(), gfx.getDrawCallCountLastFrame()));
+            _output.append(Util::StringFormat("GPU: [ %5.5f ms] [DrawCalls: %d] [Vertices: %zu] [Primitives: %zu]", 
+                perfMetrics._gpuTimeInMS,
+                gfx.getDrawCallCountLastFrame(),
+                perfMetrics._verticesSubmitted,
+                perfMetrics._primitivesGenerated));
         }
         if_constexpr (Config::Profile::ENABLE_FUNCTION_PROFILING) {
             _output.append("\n");

@@ -103,7 +103,6 @@ std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
-std::array<GLenum, to_base(QueryType::COUNT)> glQueryTypeTable;
 
 void fillEnumTables() {
     glBlendTable[to_base(BlendProperty::ZERO)] = GL_ZERO;
@@ -232,10 +231,6 @@ void fillEnumTables() {
     glProgramStageMask[to_base(ShaderType::TESSELLATION_EVAL)] = GL_TESS_EVALUATION_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COUNT)] = GL_NONE_BIT;
-
-    glQueryTypeTable[to_base(QueryType::TIME)] = GL_TIME_ELAPSED;
-    glQueryTypeTable[to_base(QueryType::PRIMITIVES_GENERATED)] = GL_PRIMITIVES_GENERATED;
-    glQueryTypeTable[to_base(QueryType::GPU_TIME)] = GL_TIMESTAMP;
 }
 
 GLenum internalFormat(const GFXImageFormat baseFormat, const GFXDataFormat dataType, const bool srgb, const bool normalized) {
