@@ -1477,6 +1477,16 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool
                 source.setDefaultState(crtCmd._drawDescriptor);
                 source.clear(crtCmd._clearDescriptor);
             } break;
+            case GFX::CommandType::CLEAR_TEXTURE: {
+                const GFX::ClearTextureCommand& crtCmd = *commandBuffer.get<GFX::ClearTextureCommand>(cmd);
+                if (crtCmd._texture != nullptr) {
+                    if (crtCmd._clearRect) {
+                        crtCmd._texture->clearSubData(crtCmd._clearColour, crtCmd._level, crtCmd._reactToClear, crtCmd._depthRange);
+                    } else {
+                        crtCmd._texture->clearData(crtCmd._clearColour, crtCmd._level);
+                    }
+                }
+            }break;
             case GFX::CommandType::READ_BUFFER_DATA: {
                 const GFX::ReadBufferDataCommand& crtCmd = *commandBuffer.get<GFX::ReadBufferDataCommand>(cmd);
                 if (crtCmd._buffer != nullptr && crtCmd._target != nullptr) {

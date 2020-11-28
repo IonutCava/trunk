@@ -30,14 +30,10 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include "GL3GeometryBuffer.h"
 #include "GL3Renderer.h"
 #include "CEGUI/RenderEffect.h"
-#include "Texture.h"
 #include "CEGUI/Vertex.h"
-#include "ShaderManager.h"
-#include "Shader.h"
 #include "StateChangeWrapper.h"
 #include "GlmPimpl.h"
 
@@ -141,27 +137,14 @@ void OpenGL3GeometryBuffer::reset()
 void OpenGL3GeometryBuffer::initialiseOpenGLBuffers()
 {
     glCreateVertexArrays(1, &d_verticesVAO);
-    Divide::GL_API::getStateTracker().setActiveVAO(d_verticesVAO);
 
     // Generate position vbo
     glCreateBuffers(1, &d_verticesVBO);
-
+    glNamedBufferData(d_verticesVBO, 0, nullptr, GL_DYNAMIC_DRAW);
     // This binds and sets up a vbo. The 
-    configureVertexArray();
-    glBufferData(GL_ARRAY_BUFFER, 0, nullptr, GL_DYNAMIC_DRAW);
-
-    // Unbind Vertex Attribute Array (VAO)
-    Divide::GL_API::getStateTracker().setActiveVAO(0);
-
-    // Unbind array and element array buffers
-    Divide::GL_API::getStateTracker().setActiveBuffer(GL_ARRAY_BUFFER, 0);
-}
-
-//----------------------------------------------------------------------------//
-void OpenGL3GeometryBuffer::configureVertexArray() const
-{
     const GLsizei stride = 9 * sizeof(GLfloat);
 
+    Divide::GL_API::getStateTracker().setActiveVAO(d_verticesVAO);
     Divide::GL_API::getStateTracker().setActiveBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
     Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
@@ -173,6 +156,12 @@ void OpenGL3GeometryBuffer::configureVertexArray() const
 
     glVertexAttribPointer(d_shaderPosLoc, 3, GL_FLOAT, GL_FALSE, stride, BUFFER_OFFSET(6 * sizeof(GLfloat)));
     glEnableVertexAttribArray(d_shaderPosLoc);
+
+    // Unbind Vertex Attribute Array (VAO)
+    Divide::GL_API::getStateTracker().setActiveVAO(0);
+
+    // Unbind array and element array buffers
+    Divide::GL_API::getStateTracker().setActiveBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 //----------------------------------------------------------------------------//
@@ -194,8 +183,6 @@ void OpenGL3GeometryBuffer::updateOpenGLBuffers()
         d_bufferSize = vertexCount;
     }
 
-    d_glStateChanger->bindBuffer(GL_ARRAY_BUFFER, d_verticesVBO);
-
     const GLsizei dataSize = vertexCount * sizeof(GLVertex);
 
     GLVertex* data;
@@ -206,11 +193,11 @@ void OpenGL3GeometryBuffer::updateOpenGLBuffers()
 
     if(needNewBuffer)
     {
-        glBufferData(GL_ARRAY_BUFFER, dataSize, data, GL_DYNAMIC_DRAW);
+        glNamedBufferData(d_verticesVBO, dataSize, data, GL_DYNAMIC_DRAW);
     }
     else
     {
-        glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, data);
+        glNamedBufferSubData(d_verticesVBO, 0, dataSize, data);
     }
 }
 

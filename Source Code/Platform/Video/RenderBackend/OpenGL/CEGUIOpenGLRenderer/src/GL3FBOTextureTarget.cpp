@@ -28,9 +28,6 @@
  ***************************************************************************/
 #include "GL.h"
 #include "GL3FBOTextureTarget.h"
-#include "CEGUI/Exceptions.h"
-#include "CEGUI/RenderQueue.h"
-#include "CEGUI/GeometryBuffer.h"
 
 #include "GL3Renderer.h"
 #include "Texture.h"
@@ -118,15 +115,11 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
     glTextureParameteri(d_texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTextureParameteri(d_texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_texture, 0);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ?
-                   GL_RGBA8 : GL_RGBA,
-                 static_cast<GLsizei>(DEFAULT_SIZE),
-                 static_cast<GLsizei>(DEFAULT_SIZE),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTextureStorage2D(d_texture,
+                       1,
+                       OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ? GL_RGBA8 : GL_RGBA,
+                       static_cast<GLsizei>(DEFAULT_SIZE),
+                       static_cast<GLsizei>(DEFAULT_SIZE));
 
     glNamedFramebufferTexture(d_frameBuffer, GL_COLOR_ATTACHMENT0, d_texture, 0);
 
@@ -135,17 +128,11 @@ void OpenGL3FBOTextureTarget::initialiseRenderTexture()
 
     // ensure the CEGUI::Texture is wrapping the gl texture and has correct size
     d_CEGUITexture->setOpenGLTexture(d_texture, d_area.getSize());
-
-    // restore previous texture binding.
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, old_tex);
 }
 
 //----------------------------------------------------------------------------//
 void OpenGL3FBOTextureTarget::resizeRenderTexture()
 {
-    // save old texture binding
-    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
-
     // Some drivers (hint: Intel) segfault when glTexImage2D is called with
     // any of the dimensions being 0. The downside of this workaround is very
     // small. We waste a tiny bit of VRAM on cards with sane drivers and
@@ -157,22 +144,20 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
         sz.d_height = 1.0f;
     }
 
-    // set the texture to the required size
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_texture, 0);
+    // set the texture to the required size (delete and create a new one due to immutable storage use)
+    glDeleteTextures(1, &d_texture);
+    glCreateTextures(GL_TEXTURE_2D, 1, &d_texture);
+    glTextureStorage2D(d_texture, 
+                       1,
+                       OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ? GL_RGBA8 : GL_RGBA,
+                       static_cast<GLsizei>(sz.d_width),
+                       static_cast<GLsizei>(sz.d_height));
+    glNamedFramebufferTexture(d_frameBuffer, GL_COLOR_ATTACHMENT0, d_texture, 0);
 
-    glTexImage2D(GL_TEXTURE_2D, 0,
-                 OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ?
-                   GL_RGBA8 : GL_RGBA,
-                 static_cast<GLsizei>(sz.d_width),
-                 static_cast<GLsizei>(sz.d_height),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     clear();
 
     // ensure the CEGUI::Texture is wrapping the gl texture and has correct size
     d_CEGUITexture->setOpenGLTexture(d_texture, sz);
-
-    // restore previous texture binding.
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, old_tex);
 }
 
 //----------------------------------------------------------------------------//

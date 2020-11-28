@@ -32,18 +32,12 @@
 #include "Texture.h"
 #include "Shader.h"
 #include "CEGUI/Exceptions.h"
-#include "CEGUI/ImageCodec.h"
 #include "CEGUI/DynamicModule.h"
-#include "ViewportTarget.h"
 #include "GL3GeometryBuffer.h"
-#include "CEGUI/GUIContext.h"
 #include "GL3FBOTextureTarget.h"
 #include "CEGUI/System.h"
 #include "CEGUI/DefaultResourceProvider.h"
-#include "CEGUI/Logger.h"
 #include "StateChangeWrapper.h"
-
-#include <algorithm>
 
 // Start of CEGUI namespace section
 namespace CEGUI
@@ -167,10 +161,6 @@ OpenGL3Renderer::OpenGL3Renderer(const Sizef& display_size) :
 //----------------------------------------------------------------------------//
 void OpenGL3Renderer::init()
 {
-    if (      OpenGLInfo::getSingleton().isUsingOpenglEs()
-          &&  OpenGLInfo::getSingleton().verMajor() < 3)
-        CEGUI_THROW(RendererException("Only version 3 and up of OpenGL ES is "
-                                      "supported by this type of renderer."));
     initialiseRendererIDString();
     initialiseTextureTargetFactory();
     initialiseOpenGLShaders();

@@ -272,7 +272,7 @@ void OpenGLTexture::loadUncompressedTextureBuffer(const Rectf& dest_area,
 {
 
     Divide::GL_API::getStateTracker().setPixelUnpackAlignment(1);
-    glTexSubImage2D(GL_TEXTURE_2D, 0,
+    glTextureSubImage2D(d_ogltexture, 0,
                     static_cast<GLint>(dest_area.left()),
                     static_cast<GLint>(dest_area.top()),
                     static_cast<GLsizei>(dest_area.getWidth()),
@@ -287,7 +287,7 @@ void OpenGLTexture::loadCompressedTextureBuffer(const Rectf& dest_area,
 {
     const GLsizei image_size = getCompressedTextureSize(dest_area.getSize());
 
-    glCompressedTexSubImage2D(GL_TEXTURE_2D, 0, 
+    glCompressedTextureSubImage2D(d_ogltexture, 0,
                               static_cast<GLint>(dest_area.left()),
                               static_cast<GLint>(dest_area.top()),
                               static_cast<GLsizei>(dest_area.getWidth()),
@@ -364,36 +364,26 @@ void OpenGLTexture::setTextureSize_impl(const Sizef& sz)
 }
 
 //----------------------------------------------------------------------------//
+size_t OpenGLTexture::getBufferSize() {
+    const std::size_t buffer_size = static_cast<std::size_t>(d_size.d_width)  *
+                                    static_cast<std::size_t>(d_size.d_height) * 
+                                    4;
+
+    return buffer_size;
+}
+
 void OpenGLTexture::grabTexture()
 {
     // if texture has already been grabbed, do nothing.
     if (d_grabBuffer)
         return;
 
-    std::size_t buffer_size(0);
-    if (OpenGLInfo::getSingleton().isUsingOpenglEs())
-    {
-        /* OpenGL ES 3.1 or below doesn't support
-           "glGetTexImage"/"glGetCompressedTexImage", so we need to emulate it
-           with "glReadPixels", which will return the data in (umcompressed)
-           format (GL_RGBA, GL_UNSIGNED_BYTE). */
-        buffer_size = static_cast<std::size_t>(d_dataSize.d_width)
-          *static_cast<std::size_t>(d_dataSize.d_height) *4;
-        d_isCompressed = false;
-        d_format = GL_RGBA;
-        d_subpixelFormat = GL_UNSIGNED_BYTE;
-    }
-    else // Desktop OpenGL
-    {
-        buffer_size = static_cast<std::size_t>(d_size.d_width)
-          *static_cast<std::size_t>(d_size.d_height) *4;
-    }
-
+    size_t buffer_size = getBufferSize();
     d_grabBuffer = new uint8[buffer_size];
+    blitToMemory(d_grabBuffer, buffer_size);
 
-    blitToMemory(d_grabBuffer);
-
-    Divide::GL_API::deleteTextures(1, &d_ogltexture, Divide::TextureType::TEXTURE_2D);
+    glDeleteTextures(1, &d_ogltexture);
+    d_ogltexture = 0u;
 }
 
 //----------------------------------------------------------------------------//
@@ -405,10 +395,7 @@ void OpenGLTexture::restoreTexture()
     generateOpenGLTexture();
     setTextureSize_impl(d_size);
 
-    /* In OpenGL ES we used "glReadPixels" to grab the texture, reading just the
-       relevant rectangle. */
-    Sizef blit_size = OpenGLInfo::getSingleton().isUsingOpenglEs() ? d_dataSize : d_size;
-    blitFromMemory(d_grabBuffer, Rectf(Vector2f(0, 0), blit_size));
+    blitFromMemory(d_grabBuffer, Rectf(Vector2f(0, 0), d_size));
 
     // free the grabbuffer
     delete [] d_grabBuffer;
@@ -418,82 +405,31 @@ void OpenGLTexture::restoreTexture()
 //----------------------------------------------------------------------------//
 void OpenGLTexture::blitFromMemory(const void* sourceData, const Rectf& area)
 {
-    // save old texture binding
-    // save old texture binding
-    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
-
-    // set texture to required size
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_ogltexture);
-
     if (d_isCompressed)
         loadCompressedTextureBuffer(area, sourceData);
     else
         loadUncompressedTextureBuffer(area, sourceData);
-
-    // restore previous texture binding.
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, old_tex);
 }
 
 //----------------------------------------------------------------------------//
-void OpenGLTexture::blitToMemory(void* targetData)
+void OpenGLTexture::blitToMemory(void* targetData) {
+    blitToMemory(targetData, getBufferSize());
+}
+
+void OpenGLTexture::blitToMemory(void* targetData, size_t buffSize)
 {
-    if (OpenGLInfo::getSingleton().isUsingOpenglEs())
-    {
-        /* OpenGL ES 3.1 or below doesn't support
-           "glGetTexImage"/"glGetCompressedTexImage", so we need to emulate it
-           using "glReadPixels". */
-        
-        GLuint texture_framebuffer(0);
-        GLuint framebuffer_old(0);
-
-        glCreateFramebuffers(1, &texture_framebuffer);
-        //glNamedFramebufferTexture(texture_framebuffer, GL_COLOR_ATTACHMENT0, d_ogltexture, 0);
-
-        Divide::GL_API::getStateTracker().setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_ONLY, texture_framebuffer, framebuffer_old);
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, d_ogltexture, 0);
-        GLenum read_buffer_old(GL_NONE);
-        GLint pixel_pack_buffer_old(0);
   
-        glGetIntegerv(GL_READ_BUFFER, &read_buffer_old);
-        glReadBuffer(GL_COLOR_ATTACHMENT0);
-        glGetIntegerv(GL_PIXEL_PACK_BUFFER_BINDING, &pixel_pack_buffer_old);
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
-        Divide::GL_API::getStateTracker().setPixelPackAlignment(1);
-        glReadPixels(0, 0, static_cast<GLsizei>(d_dataSize.d_width),
-          static_cast<GLsizei>(d_dataSize.d_height), GL_RGBA, GL_UNSIGNED_BYTE, targetData);
-
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, pixel_pack_buffer_old);
-        glReadBuffer(read_buffer_old);
-
-        Divide::GL_API::getStateTracker().setActiveFB(Divide::RenderTarget::RenderTargetUsage::RT_READ_ONLY, framebuffer_old);
-        Divide::GL_API::deleteFramebuffers(1, &texture_framebuffer);
-        Divide::GL_API::getStateTracker().setPixelPackAlignment();
-
-    }
-    else // Desktop OpenGL
-    {
-
-        // save existing config
-        const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
-
-        Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_ogltexture);
-
-        if (d_isCompressed)
-        {
-            glGetCompressedTexImage(GL_TEXTURE_2D, 0, targetData);
-        }
-        else
-        {
-            Divide::GL_API::getStateTracker().setPixelPackAlignment(1);
-            glGetTexImage(GL_TEXTURE_2D, 0, d_format, d_subpixelFormat, targetData);
-            Divide::GL_API::getStateTracker().setPixelPackAlignment();
-        }
-
-        // restore previous config.
-        Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, old_tex);
-
-    }
+      if (d_isCompressed)
+      {
+          glGetCompressedTextureImage(d_ogltexture, 0, (gl::GLsizei)buffSize, targetData);
+      }
+      else
+      {
+          Divide::GL_API::getStateTracker().setPixelPackAlignment(1);
+          glGetTextureImage(d_ogltexture, 0, d_format, d_subpixelFormat, (gl::GLsizei)buffSize, targetData);
+          Divide::GL_API::getStateTracker().setPixelPackAlignment();
+      }
+    
 }
 
 //----------------------------------------------------------------------------//
@@ -506,25 +442,12 @@ void OpenGLTexture::updateCachedScaleValues()
 //----------------------------------------------------------------------------//
 void OpenGLTexture::generateOpenGLTexture()
 {
-    // save old texture binding
-    const Divide::U32 old_tex = Divide::GL_API::getStateTracker().getBoundTextureHandle(0, Divide::TextureType::TEXTURE_2D);
-
     glCreateTextures(GL_TEXTURE_2D, 1, &d_ogltexture);
-
     // set some parameters for this texture.
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, d_ogltexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    // FIXME: This hack was needed to fix #980 in a way that maintains binary
-    // compatibility in v0-8 branch.
-    if (d_owner.getIdentifierString().find("CEGUI::OpenGLRenderer -") == 0)
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, (float)GL_MODULATE);
-
-    // restore previous texture binding.
-    Divide::GL_API::getStateTracker().bindTexture(0, Divide::TextureType::TEXTURE_2D, old_tex);
+    glTextureParameteri(d_ogltexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTextureParameteri(d_ogltexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTextureParameteri(d_ogltexture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(d_ogltexture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 }
 
 //----------------------------------------------------------------------------//
@@ -539,7 +462,8 @@ void OpenGLTexture::cleanupOpenGLTexture()
     // otherwise delete any OpenGL texture associated with this object.
     else
     {
-        Divide::GL_API::deleteTextures(1, &d_ogltexture, Divide::TextureType::TEXTURE_2D);
+        glDeleteTextures(1, &d_ogltexture);
+        d_ogltexture = 0u;
     }
 }
 

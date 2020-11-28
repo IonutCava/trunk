@@ -35,7 +35,6 @@
 
 #include "Platform/Video/Buffers/PixelBuffer/Headers/PixelBuffer.h"
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
-#include "Platform/Video/Buffers/RenderTarget/Headers/RTAttachment.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
@@ -51,10 +50,24 @@ namespace Divide {
             : RenderTarget(context, descriptor)
         {}
 
-        void clear(const RTClearDescriptor& descriptor) override {}
-        void setDefaultState(const RTDrawDescriptor& drawPolicy) override {}
-        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const override {}
-        void blitFrom(const RTBlitParams& params) override {}
+        void clear(const RTClearDescriptor& descriptor) override {
+            ACKNOWLEDGE_UNUSED(descriptor);
+        }
+
+        void setDefaultState(const RTDrawDescriptor& drawPolicy) override {
+            ACKNOWLEDGE_UNUSED(drawPolicy);
+        }
+
+        void readData(const vec4<U16>& rect, GFXImageFormat imageFormat, GFXDataFormat dataType, bufferPtr outData) const override {
+            ACKNOWLEDGE_UNUSED(rect);
+            ACKNOWLEDGE_UNUSED(imageFormat);
+            ACKNOWLEDGE_UNUSED(dataType);
+            ACKNOWLEDGE_UNUSED(outData);
+        }
+
+        void blitFrom(const RTBlitParams& params) override {
+            ACKNOWLEDGE_UNUSED(params);
+        }
     };
 
     class vkIMPrimitive final : public IMPrimitive {
@@ -63,17 +76,52 @@ namespace Divide {
             : IMPrimitive(context)
         {}
 
-        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override {}
+        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override {
+            ACKNOWLEDGE_UNUSED(cmd);
+            ACKNOWLEDGE_UNUSED(cmdBufferOffset);
+        }
 
-        void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override {}
+        void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override {
+            ACKNOWLEDGE_UNUSED(reserveBuffers);
+            ACKNOWLEDGE_UNUSED(vertexCount);
+            ACKNOWLEDGE_UNUSED(attributeCount);
+        }
 
-        void begin(PrimitiveType type) override {}
-        void vertex(F32 x, F32 y, F32 z) override {}
+        void begin(PrimitiveType type) override {
+            ACKNOWLEDGE_UNUSED(type);
+        }
 
-        void attribute1i(U32 attribLocation, I32 value) override {}
-        void attribute1f(U32 attribLocation, F32 value) override {}
-        void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) override {}
-        void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) override {}
+        void vertex(F32 x, F32 y, F32 z) override {
+            ACKNOWLEDGE_UNUSED(x);
+            ACKNOWLEDGE_UNUSED(y);
+            ACKNOWLEDGE_UNUSED(z);
+        }
+
+        void attribute1i(U32 attribLocation, I32 value) override {
+            ACKNOWLEDGE_UNUSED(attribLocation);
+            ACKNOWLEDGE_UNUSED(value);
+        }
+
+        void attribute1f(U32 attribLocation, F32 value) override {
+            ACKNOWLEDGE_UNUSED(attribLocation);
+            ACKNOWLEDGE_UNUSED(value);
+        }
+
+        void attribute4ub(U32 attribLocation, U8 x, U8 y, U8 z, U8 w) override {
+            ACKNOWLEDGE_UNUSED(attribLocation);
+            ACKNOWLEDGE_UNUSED(x);
+            ACKNOWLEDGE_UNUSED(y);
+            ACKNOWLEDGE_UNUSED(z);
+            ACKNOWLEDGE_UNUSED(w);
+        }
+
+        void attribute4f(U32 attribLocation, F32 x, F32 y, F32 z, F32 w) override {
+            ACKNOWLEDGE_UNUSED(attribLocation);
+            ACKNOWLEDGE_UNUSED(x);
+            ACKNOWLEDGE_UNUSED(y);
+            ACKNOWLEDGE_UNUSED(z);
+            ACKNOWLEDGE_UNUSED(w);
+        }
 
         void end() override {}
         void endBatch() override {}
@@ -89,7 +137,11 @@ namespace Divide {
             : VertexBuffer(context)
         {}
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {
+            ACKNOWLEDGE_UNUSED(command);
+            ACKNOWLEDGE_UNUSED(cmdBufferOffset);
+        }
+
         bool queueRefresh() override { return refresh(); }
 
       protected:
@@ -103,16 +155,24 @@ namespace Divide {
             : PixelBuffer(context, type, name)
         {}
 
-        bool create(
-            U16 width, U16 height, U16 depth = 0,
-            GFXImageFormat formatEnum = GFXImageFormat::RGBA,
-            GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
-            bool normalized = true) override
+        bool create(U16 width, U16 height, U16 depth = 0,
+                    GFXImageFormat formatEnum = GFXImageFormat::RGBA,
+                    GFXDataFormat dataTypeEnum = GFXDataFormat::FLOAT_32,
+                    bool normalized = true) override
         {
+            ACKNOWLEDGE_UNUSED(width);
+            ACKNOWLEDGE_UNUSED(height);
+            ACKNOWLEDGE_UNUSED(depth);
+            ACKNOWLEDGE_UNUSED(formatEnum);
+            ACKNOWLEDGE_UNUSED(dataTypeEnum);
+            ACKNOWLEDGE_UNUSED(normalized);
             return true;
         }
 
-        void updatePixels(const F32* pixels, U32 pixelCount) override {}
+        void updatePixels(const F32* pixels, U32 pixelCount) override {
+            ACKNOWLEDGE_UNUSED(pixels);
+            ACKNOWLEDGE_UNUSED(pixelCount);
+        }
     };
 
 
@@ -122,18 +182,33 @@ namespace Divide {
             : GenericVertexData(context, ringBufferLength, name)
         {}
 
-        void create(U8 numBuffers = 1) override {}
+        void create(U8 numBuffers = 1) override {
+            ACKNOWLEDGE_UNUSED(numBuffers);
+        }
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {}
+        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {
+            ACKNOWLEDGE_UNUSED(command);
+            ACKNOWLEDGE_UNUSED(cmdBufferOffset);
+        }
 
-        void setBuffer(const SetBufferParams& params) override {}
+        void setBuffer(const SetBufferParams& params) override {
+            ACKNOWLEDGE_UNUSED(params);
+        }
 
         void updateBuffer(U32 buffer,
-            U32 elementCount,
-            U32 elementCountOffset,
-            bufferPtr data) override {}
+                          U32 elementCount,
+                          U32 elementCountOffset,
+                          bufferPtr data) override {
+            ACKNOWLEDGE_UNUSED(buffer);
+            ACKNOWLEDGE_UNUSED(elementCount);
+            ACKNOWLEDGE_UNUSED(elementCountOffset);
+            ACKNOWLEDGE_UNUSED(data);
+        }
 
-        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override {}
+        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override {
+            ACKNOWLEDGE_UNUSED(buffer);
+            ACKNOWLEDGE_UNUSED(elementCountOffset);
+        }
 
 
         void incQueryQueue() {}
@@ -152,12 +227,50 @@ namespace Divide {
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
 
-        [[nodiscard]] U64 makeResident(size_t samplerHash) override { return 0u; }
-        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override {}
-        void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override {}
-        void loadData(const ImageTools::ImageData& imageLayers) override {}
-        void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override {}
-        std::pair<std::shared_ptr<Byte[]>, size_t> readData(U16 mipLevel, GFXDataFormat desiredFormat) const override { ACKNOWLEDGE_UNUSED(mipLevel); ACKNOWLEDGE_UNUSED(desiredFormat); return { nullptr, 0 }; }
+        [[nodiscard]] U64 makeResident(size_t samplerHash) override {
+            ACKNOWLEDGE_UNUSED(samplerHash);
+            return 0u;
+        }
+
+        void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override { 
+            ACKNOWLEDGE_UNUSED(slot); 
+            ACKNOWLEDGE_UNUSED(level);
+            ACKNOWLEDGE_UNUSED(layer);
+            ACKNOWLEDGE_UNUSED(layered);
+            ACKNOWLEDGE_UNUSED(rw_flag);
+        }
+
+        void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override {
+            ACKNOWLEDGE_UNUSED(ptr);
+            ACKNOWLEDGE_UNUSED(dimensions);
+        }
+
+        void loadData(const ImageTools::ImageData& imageLayers) override {
+            ACKNOWLEDGE_UNUSED(imageLayers);
+        }
+
+        void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override {
+            ACKNOWLEDGE_UNUSED(data);
+            ACKNOWLEDGE_UNUSED(dimensions);
+        }
+
+        void clearData(const UColour4& clearColour, U8 level) const override {
+            ACKNOWLEDGE_UNUSED(clearColour);
+            ACKNOWLEDGE_UNUSED(level);
+        }
+
+        void clearSubData(const UColour4& clearColour, U8 level, const vec4<I32>& rectToClear, const vec2<I32>& depthRange) const override {
+            ACKNOWLEDGE_UNUSED(clearColour);
+            ACKNOWLEDGE_UNUSED(level);
+            ACKNOWLEDGE_UNUSED(rectToClear);
+            ACKNOWLEDGE_UNUSED(depthRange);
+        }
+
+        std::pair<std::shared_ptr<Byte[]>, size_t> readData(U16 mipLevel, GFXDataFormat desiredFormat) const override {
+            ACKNOWLEDGE_UNUSED(mipLevel);
+            ACKNOWLEDGE_UNUSED(desiredFormat);
+            return { nullptr, 0 };
+        }
     };
 
     class vkShaderProgram final : public ShaderProgram {
@@ -182,18 +295,42 @@ namespace Divide {
             : ShaderBuffer(context, descriptor)
         {}
 
+        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) override {
+            ACKNOWLEDGE_UNUSED(offsetElementCount);
+            ACKNOWLEDGE_UNUSED(rangeElementCount);
+            ACKNOWLEDGE_UNUSED(data);
+        }
+        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) override {
+            ACKNOWLEDGE_UNUSED(offsetInBytes);
+            ACKNOWLEDGE_UNUSED(rangeInBytes);
+            ACKNOWLEDGE_UNUSED(data);
+        }
+        void writeData(bufferPtr data) override {
+            ACKNOWLEDGE_UNUSED(data);
+        }
 
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) override {}
-        void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) override {}
-        void writeData(bufferPtr data) override {}
+        void clearData(U32 offsetElementCount, U32 rangeElementCount) override {
+            ACKNOWLEDGE_UNUSED(offsetElementCount);
+            ACKNOWLEDGE_UNUSED(rangeElementCount);
+        }
 
-        void clearData(U32 offsetElementCount, U32 rangeElementCount) override {}
+        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override {
+            ACKNOWLEDGE_UNUSED(offsetElementCount);
+            ACKNOWLEDGE_UNUSED(rangeElementCount);
+            ACKNOWLEDGE_UNUSED(result);
+        }
 
-        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override {}
+        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { 
+            ACKNOWLEDGE_UNUSED(bindIndex);
+            ACKNOWLEDGE_UNUSED(offsetElementCount);
+            ACKNOWLEDGE_UNUSED(rangeElementCount);
+            return true; 
+        }
 
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { return true; }
-
-        bool bind(U8 bindIndex) override { return true; }
+        bool bind(U8 bindIndex) override { 
+            ACKNOWLEDGE_UNUSED(bindIndex);
+            return true;
+        }
     };
 };  // namespace Divide
 #endif //_VK_PLACEHOLDER_OBJECTS_H_

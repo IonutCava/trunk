@@ -27,10 +27,7 @@
  *   OTHER DEALINGS IN THE SOFTWARE.
  ***************************************************************************/
 #include "ViewportTarget.h"
-#include "CEGUI/RenderQueue.h"
-#include "CEGUI/GeometryBuffer.h"
 #include "GL.h"
-#include "CEGUI/Exceptions.h"
 
 // Start of CEGUI namespace section
 namespace CEGUI

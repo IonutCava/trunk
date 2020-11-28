@@ -36,11 +36,8 @@
 #include "GlmPimpl.h"
 #include "CEGUI/Exceptions.h"
 #include "CEGUI/ImageCodec.h"
-#include "CEGUI/DynamicModule.h"
-#include "CEGUI/System.h"
 #include "CEGUI/Logger.h"
 
-#include <sstream>
 #include <algorithm>
 
 namespace CEGUI

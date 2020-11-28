@@ -229,6 +229,14 @@ void glTexture::reserveStorage() const {
     }
 }
 
+void glTexture::updateMipsInternal() const  {
+    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, _descriptor.mipBaseLevel());
+    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, _descriptor.mipCount());
+    if (_descriptor.autoMipMaps() && _descriptor.mipCount() > 1) {
+        GL_API::queueComputeMipMap(_loadingData._textureHandle);
+    }
+}
+
 void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) {
     // Create a new Rendering API-dependent texture object
     _descriptor.texType( _loadingData._textureType);
@@ -260,11 +268,7 @@ void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& 
         _data = _loadingData;
     }
 
-    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, _descriptor.mipBaseLevel());
-    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, _descriptor.mipCount());
-    if (_descriptor.autoMipMaps() && _descriptor.mipCount() > 1) {
-        GL_API::queueComputeMipMap(_loadingData._textureHandle);
-    }
+    updateMipsInternal();
 }
 
 void glTexture::loadData(const ImageTools::ImageData& imageData) {
@@ -292,11 +296,7 @@ void glTexture::loadData(const ImageTools::ImageData& imageData) {
         _data = _loadingData;
     }
 
-    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, _descriptor.mipBaseLevel());
-    glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, _descriptor.mipCount());
-    if (_descriptor.autoMipMaps() && _descriptor.mipCount() > 1) {
-        GL_API::queueComputeMipMap(_loadingData._textureHandle);
-    }
+    updateMipsInternal();
 }
 
 void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
@@ -433,11 +433,66 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
     }
 }
 
-void glTexture::bindLayer(const U8 slot, const U8 level, const U8 layer, const bool layered, const Image::Flag rw_flag) {
+void glTexture::clearData(const UColour4& clearColour, const U8 level) const {
+    clearDataInternal(clearColour, level, false, {}, {});
+}
+
+void glTexture::clearSubData(const UColour4& clearColour, const U8 level, const vec4<I32>& rectToClear, const vec2<I32>& depthRange) const {
+    clearDataInternal(clearColour, level, true, rectToClear, depthRange);
+}
+
+void glTexture::clearDataInternal(const UColour4& clearColour, U8 level, bool clearRect, const vec4<I32>& rectToClear, const vec2<I32>& depthRange) const{
+
+    FColour4 floatData;
+    vec4<U16> shortData;
+    vec4<U32> intData;
+
+    const auto GetClearData = [clearColour, &floatData, &shortData, &intData](const GFXDataFormat format) {
+        switch (format) {
+            case GFXDataFormat::UNSIGNED_BYTE:
+            case GFXDataFormat::SIGNED_BYTE:
+            {
+                return (bufferPtr)clearColour._v;
+            }
+            case GFXDataFormat::UNSIGNED_SHORT:
+            case GFXDataFormat::SIGNED_SHORT:
+            {
+                shortData = { clearColour.r, clearColour.g, clearColour.b, clearColour.a };
+                return (bufferPtr)shortData._v;
+            }
+
+            case GFXDataFormat::UNSIGNED_INT:
+            case GFXDataFormat::SIGNED_INT:
+            {
+                intData = { clearColour.r, clearColour.g, clearColour.b, clearColour.a };
+                return (bufferPtr)intData._v;
+            }
+
+            case GFXDataFormat::FLOAT_16:
+            case GFXDataFormat::FLOAT_32:
+            {
+                floatData = Util::ToFloatColour(clearColour);
+                return (bufferPtr)floatData._v;
+            }
+        }
+
+        return (bufferPtr)nullptr;
+    };
+
+    const GLenum glFormat = GLUtil::glImageFormatTable[to_U32(_descriptor.baseFormat())];
+    const GLenum glType = GLUtil::glDataFormat[to_U32(_descriptor.dataType())];
+    if (clearRect) {
+        glClearTexSubImage(_data._textureHandle, level, rectToClear.x, rectToClear.y, depthRange.min, rectToClear.z, rectToClear.w, depthRange.max, glFormat, glType, GetClearData(_descriptor.dataType()));
+    } else {
+        glClearTexImage(_data._textureHandle, level, glFormat, glType, GetClearData(_descriptor.dataType()));
+    }
+}
+
+void glTexture::bindLayer(const U8 slot, const U8 level, const U8 layer, const bool layered, const Image::Flag rwFlag) {
     assert(_data._textureType != TextureType::COUNT);
 
     GLenum access = GL_NONE;
-    switch (rw_flag) {
+    switch (rwFlag) {
         case Image::Flag::READ       : access = GL_READ_ONLY; break;
         case Image::Flag::WRITE      : access = GL_WRITE_ONLY; break;
         case Image::Flag::READ_WRITE : access = GL_READ_WRITE; break;

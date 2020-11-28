@@ -55,13 +55,16 @@ class glTexture final : public Texture,
 
     bool unload() override;
 
-    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rw_flag) override;
+    void bindLayer(U8 slot, U8 level, U8 layer, bool layered, Image::Flag rwFlag) override;
 
     void resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) override;
 
     void loadData(const ImageTools::ImageData& imageData) override;
 
     void loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& dimensions) override;
+
+    void clearData(const UColour4& clearColour, U8 level) const override;
+    void clearSubData(const UColour4& clearColour, U8 level, const vec4<I32>& rectToClear, const vec2<I32>& depthRange) const override;
 
     static void copy(const TextureData& source, const TextureData& destination, const CopyTexParams& params);
 
@@ -72,12 +75,14 @@ class glTexture final : public Texture,
    protected:
     void threadedLoad() override;
     void reserveStorage() const;
+    void updateMipsInternal() const;
 
     void processTextureType() noexcept;
     void validateDescriptor() override;
     void loadDataCompressed(const ImageTools::ImageData& imageData);
 
     void loadDataUncompressed(const ImageTools::ImageData& imageData) const;
+    void clearDataInternal(const UColour4& clearColour, U8 level, bool clearRect, const vec4<I32>& rectToClear, const vec2<I32>& depthRange) const;
 
    private:
     GLenum _type;

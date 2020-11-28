@@ -114,6 +114,9 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
     // Swap buffers
     {
         if (global) {
+            if (glGetGraphicsResetStatus() != GL_NO_ERROR) { 
+                DIVIDE_UNEXPECTED_CALL("OpenGL Reset Status raised!");
+            }
             _swapBufferTimer.start();
         }
 

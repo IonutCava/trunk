@@ -26,6 +26,7 @@ IMPLEMENT_COMMAND(ClearRenderTargetCommand);
 IMPLEMENT_COMMAND(ResetRenderTargetCommand);
 IMPLEMENT_COMMAND(ResetAndClearRenderTargetCommand);
 IMPLEMENT_COMMAND(CopyTextureCommand);
+IMPLEMENT_COMMAND(ClearTextureCommand);
 IMPLEMENT_COMMAND(ComputeMipMapsCommand);
 IMPLEMENT_COMMAND(SetScissorCommand);
 IMPLEMENT_COMMAND(SetBlendCommand);

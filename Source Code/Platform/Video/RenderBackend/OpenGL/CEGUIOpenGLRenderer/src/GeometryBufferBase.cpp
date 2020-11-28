@@ -98,8 +98,7 @@ void OpenGLGeometryBufferBase::setClippingRegion(const Rectf& region)
 }
 
 //----------------------------------------------------------------------------//
-void OpenGLGeometryBufferBase::appendGeometry(const Vertex* const vbuff,
-    uint vertex_count)
+void OpenGLGeometryBufferBase::appendGeometry(const Vertex* const vbuff, uint vertex_count)
 {
     performBatchManagement();
 

@@ -181,6 +181,14 @@ bool GUIConsole::isVisible() const {
 
 void GUIConsole::printText(const Console::OutputEntry& entry) {
     _outputBuffer.enqueue(entry);
+    if (_outputBuffer.size_approx() > _CEGUI_MAX_CONSOLE_ENTRIES) {
+        for (U8 i = 0; i < _CEGUI_MAX_CONSOLE_ENTRIES; ++i) {
+            Console::OutputEntry message;
+            if (!_outputBuffer.try_dequeue(message)) {
+                break;
+            }
+        }
+    }
 }
 
 void GUIConsole::OutputText(const Console::OutputEntry& text) const {

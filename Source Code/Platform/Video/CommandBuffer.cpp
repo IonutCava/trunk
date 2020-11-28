@@ -219,6 +219,10 @@ void CommandBuffer::batch() {
                 const CopyTextureCommand* crtCmd = get<CopyTextureCommand>(cmd);
                 hasWork = crtCmd->_source._textureType != TextureType::COUNT && crtCmd->_destination._textureType != TextureType::COUNT;
             }break;
+            case CommandType::CLEAR_TEXTURE: {
+                const ClearTextureCommand* crtCmd = get<ClearTextureCommand>(cmd);
+                hasWork = crtCmd->_texture != nullptr;
+            }break;
             case CommandType::BIND_PIPELINE: {
                 const BindPipelineCommand* crtCmd = get<BindPipelineCommand>(cmd);
                 hasWork = crtCmd->_pipeline != nullptr && crtCmd->_pipeline->getHash() != 0;

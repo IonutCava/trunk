@@ -112,6 +112,9 @@ public:
     bool isPixelFormatSupported(PixelFormat fmt) const override;
 
 protected:
+    void blitToMemory(void* targetData, size_t buffSize);
+    size_t getBufferSize();
+
     // Friends (to allow construction and destruction)
     friend Texture& OpenGLRendererBase::createTexture(const String&);
     friend Texture& OpenGLRendererBase::createTexture(const String&, const String&, const String&);

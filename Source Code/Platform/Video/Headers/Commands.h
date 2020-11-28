@@ -92,6 +92,7 @@ enum class CommandType : U8 {
     RESET_AND_CLEAR_RT,
     BLIT_RT,
     COPY_TEXTURE,
+    CLEAR_TEXTURE,
     COMPUTE_MIPMAPS,
     SET_CAMERA,
     PUSH_CAMERA,
@@ -119,7 +120,7 @@ namespace Names {
     static const char* commandType[] = {
         "BEGIN_RENDER_PASS", "END_RENDER_PASS", "BEGIN_PIXEL_BUFFER", "END_PIXEL_BUFFER", "BEGIN_RENDER_SUB_PASS",
         "END_RENDER_SUB_PASS", "SET_BLEND_STATE", "SET_VIEWPORT", "PUSH_VIEWPORT","POP_VIEWPORT", "SET_SCISSOR", "SET_BLEND", "CLEAR_RT",
-        "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "COMPUTE_MIPMAPS", "SET_CAMERA",
+        "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "CLEAR_TEXTURE", "COMPUTE_MIPMAPS", "SET_CAMERA",
         "PUSH_CAMERA", "POP_CAMERA", "SET_CLIP_PLANES", "BIND_PIPELINE", "BIND_DESCRIPTOR_SETS", "SEND_PUSH_CONSTANTS",
         "DRAW_COMMANDS", "DRAW_TEXT", "DRAW_IMGUI", "DISPATCH_COMPUTE", "MEMORY_BARRIER", "READ_BUFFER_DATA", "CLEAR_BUFFER_DATA",
         "BEGIN_DEBUG_SCOPE","END_DEBUG_SCOPE", "SWITCH_WINDOW", "SET_CLIPING_STATE", "EXTERNAL", "UNKNOWN"
@@ -285,6 +286,15 @@ BEGIN_COMMAND(CopyTextureCommand, CommandType::COPY_TEXTURE);
     TextureData _destination;
     CopyTexParams _params;
 END_COMMAND(CopyTextureCommand);
+
+BEGIN_COMMAND(ClearTextureCommand, CommandType::CLEAR_TEXTURE);
+    Texture* _texture = nullptr;
+    UColour4 _clearColour;
+    vec2<I32> _depthRange;
+    vec4<I32> _reactToClear;
+    U8 _level = 0;
+    bool _clearRect = false;
+END_COMMAND(ClearTextureCommand);
 
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     Texture* _texture = nullptr;
