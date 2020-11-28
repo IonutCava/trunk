@@ -78,14 +78,22 @@ enum class TextureUpdateState : U8 {
     COUNT
 };
 
-using TextureEntry = std::tuple<U8/*binding*/, TextureData, size_t/*sampler*/>;
+struct TextureEntry
+{
+    TextureData _data;
+    size_t _sampler = 0u;
+    U8 _binding = 0u;
+};
+
+bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept;
+bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept;
 
 template<size_t Size = to_size(TextureUsage::COUNT)>
 struct TextureDataContainer {
     static constexpr U8 INVALID_BINDING = std::numeric_limits<U8>::max();
-    static constexpr TextureEntry DefaultEntry = { INVALID_BINDING, {}, 0 };
+    static constexpr TextureEntry DefaultEntry = { TextureData{}, 0, INVALID_BINDING };
 
-    using DataEntries = std::array<TextureEntry, Size>;
+    using DataEntries = eastl::array<TextureEntry, Size>;
 
     static constexpr size_t ContainerSize() noexcept { return Size; }
 
@@ -100,7 +108,7 @@ struct TextureDataContainer {
     void clear();
     void sortByBinding();
 
-    PROPERTY_RW(DataEntries, textures, create_array<Size>(DefaultEntry));
+    PROPERTY_RW(DataEntries, textures, create_eastl_array<Size>(DefaultEntry));
     PROPERTY_RW(U8, count, 0u);
 
 protected:

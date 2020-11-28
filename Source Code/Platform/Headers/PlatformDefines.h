@@ -306,6 +306,13 @@ namespace detail
         // cast Is to void to remove the warning: unused value
         return { {(static_cast<void>(Is), value)...} };
     }
+
+    template <typename T, std::size_t ... Is>
+    constexpr eastl::array<T, sizeof...(Is)>
+        create_eastl_array(T value, index_sequence<Is...>)     {
+        // cast Is to void to remove the warning: unused value
+        return { {(static_cast<void>(Is), value)...} };
+    }
 }
 
 
@@ -313,6 +320,11 @@ template <std::size_t N, typename T>
 constexpr std::array<T, N> create_array(const T& value)
 {
     return detail::create_array(value, make_index_sequence<N>());
+}
+
+template <std::size_t N, typename T>
+constexpr eastl::array<T, N> create_eastl_array(const T& value) {
+    return detail::create_eastl_array(value, make_index_sequence<N>());
 }
 
 /* See

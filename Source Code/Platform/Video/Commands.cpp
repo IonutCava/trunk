@@ -139,8 +139,8 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
         }
         ret.append(Util::StringFormat("Buffer [ %d - %d ] Range [%d - %d] ]\n", to_base(it._binding), it._buffer->getGUID(), it._elementRange.x, it._elementRange.y));
     }
-    for (const auto&[binding, data, samplerHash] : cmd._set._textureData.textures()) {
-        if (binding == TextureDataContainer<>::INVALID_BINDING) {
+    for (const TextureEntry& entry : cmd._set._textureData.textures()) {
+        if (entry._binding == TextureDataContainer<>::INVALID_BINDING) {
             continue;
         }
 
@@ -148,7 +148,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", binding, data._textureHandle, samplerHash));
+        ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", entry._binding, entry._data._textureHandle, entry._sampler));
     }
 
     for (const auto& it : cmd._set._textureViews) {

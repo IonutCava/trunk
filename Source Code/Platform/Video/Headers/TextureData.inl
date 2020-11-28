@@ -34,6 +34,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEXTURE_DATA_INL_
 
 namespace Divide {
+    inline bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
+        return lhs._binding == rhs._binding &&
+               lhs._sampler == rhs._sampler &&
+               lhs._data == rhs._data;
+    }
+
+    inline bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
+        return lhs._binding != rhs._binding ||
+               lhs._sampler != rhs._sampler ||
+               lhs._data != rhs._data;
+    }
 
     template<size_t Size>
     bool TextureDataContainer<Size>::set(const TextureDataContainer<Size>& other) {
@@ -67,8 +78,8 @@ namespace Divide {
     template<size_t Size>
     TextureUpdateState TextureDataContainer<Size>::setTextures(const DataEntries& textureEntries) {
         TextureUpdateState ret = TextureUpdateState::COUNT;
-        for (auto entry : textureEntries) {
-            const TextureUpdateState state = setTextureInternal(std::get<2>(entry), std::get<1>(entry), std::get<0>(entry));
+        for (const TextureEntry& entry : textureEntries) {
+            const TextureUpdateState state = setTextureInternal(entry._data, entry._sampler, entry._binding);
             if (ret == TextureUpdateState::COUNT || state != TextureUpdateState::NOTHING) {
                 ret = state;
             }
@@ -78,9 +89,9 @@ namespace Divide {
     }
 
     template<size_t Size>
-    bool TextureDataContainer<Size>::removeTexture(U8 binding) {
-        for (auto& it : _textures) {
-            auto& crtBinding = std::get<0>(it);
+    bool TextureDataContainer<Size>::removeTexture(const U8 binding) {
+        for (TextureEntry& it : _textures) {
+            U8& crtBinding = it._binding;
             assert(_count > 0u);
             if (crtBinding == binding) {
                 crtBinding = INVALID_BINDING;
@@ -95,9 +106,9 @@ namespace Divide {
     template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(const TextureData& data) {
         assert(_count > 0u);
-        for (auto& it : _textures) {
-            auto& crtBinding = std::get<0>(it);
-            if (it.second == data) {
+        for (TextureEntry& it : _textures) {
+            U8& crtBinding = it._binding;
+            if (it._data == data) {
                 crtBinding = INVALID_BINDING;
                 --_count;
                 return true;
@@ -109,41 +120,41 @@ namespace Divide {
 
     template<size_t Size>
     void TextureDataContainer<Size>::clear() {
-        for (const auto& it : _textures) {
-            removeTexture(std::get<0>(it));
+        for (const TextureEntry& it : _textures) {
+            removeTexture(it._binding);
         }
     }
 
     template<size_t Size>
     void TextureDataContainer<Size>::sortByBinding() {
-        std::sort(_textures.begin(), _textures.begin() + count(), [](const TextureEntry& lhs, const TextureEntry& rhs) {
-            return std::get<0>(lhs) < std::get<0>(rhs);
+        eastl::sort(_textures.begin(), _textures.begin() + count(), [](const TextureEntry& lhs, const TextureEntry& rhs) {
+            return lhs._binding < rhs._binding;
         });
     }
 
     template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, size_t samplerHash, U8 binding) {
+    TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, const size_t samplerHash, const U8 binding) {
         OPTICK_EVENT();
         if (binding != INVALID_BINDING) {
-            for (auto& it : _textures) {
-                if (std::get<0>(it) == binding) {
-                    auto& crtData = std::get<1>(it);
-                    auto& crtSamp = std::get<2>(it);
+            for (TextureEntry& it : _textures) {
+                if (it._binding == binding) {
+                    TextureData& crtData = it._data;
+                    size_t& crtSamp = it._sampler;
                     if (crtData != data || crtSamp != samplerHash) {
                         crtData = data;
                         crtSamp = samplerHash;
                         return TextureUpdateState::REPLACED;
-                    } else {
-                        return TextureUpdateState::NOTHING;
                     }
+                     
+                    return TextureUpdateState::NOTHING;
                 }
             }
-            for (auto& it : _textures) {
-                auto& crtBinding = std::get<0>(it);
+            for (TextureEntry& it : _textures) {
+                U8& crtBinding = it._binding;
                 if (crtBinding == INVALID_BINDING) {
                     crtBinding = binding;
-                    std::get<1>(it) = data;
-                    std::get<2>(it) = samplerHash;
+                    it._data = data;
+                    it._sampler = samplerHash;
                     ++_count;
                     return TextureUpdateState::ADDED;
                 }
@@ -169,11 +180,9 @@ namespace Divide {
         for (size_t i = 0; i < lhsCount; ++i) {
             const auto & lhsEntry = lhsTextures[i];
         
-            for (const auto& rhsEntry : rhsTextures) {
-                if (std::get<0>(rhsEntry) == std::get<0>(lhsEntry)) {
-                    if (std::get<1>(rhsEntry) != std::get<1>(lhsEntry) ||
-                        std::get<2>(rhsEntry) != std::get<2>(lhsEntry))
-                    {
+            for (const TextureEntry& rhsEntry : rhsTextures) {
+                if (rhsEntry._binding == lhsEntry._binding) {
+                    if (rhsEntry._sampler != lhsEntry._sampler || rhsEntry._data != lhsEntry._data) {
                         return false;
                     }
                     foundEntry = true;
@@ -201,10 +210,8 @@ namespace Divide {
             const auto & lhsEntry = lhsTextures[i];
 
             for (const auto& rhsEntry : rhsTextures) {
-                if (std::get<0>(rhsEntry) == std::get<0>(lhsEntry)) {
-                    if (std::get<1>(rhsEntry) != std::get<1>(lhsEntry) ||
-                        std::get<2>(rhsEntry) != std::get<2>(lhsEntry)) 
-                    {
+                if (rhsEntry._binding == lhsEntry._binding) {
+                    if (rhsEntry._sampler != lhsEntry._sampler || rhsEntry._data != lhsEntry._data) {
                         return true;
                     }
                     foundEntry = true;

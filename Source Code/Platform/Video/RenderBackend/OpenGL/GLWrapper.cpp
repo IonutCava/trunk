@@ -1280,6 +1280,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                       case TextureType::TEXTURE_CUBE_ARRAY:
                           viewType = TextureType::TEXTURE_CUBE_MAP;
                           break;
+                      default: break;
                     };
                 }
 
@@ -1584,27 +1585,27 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer<>& textureData, c
 
         const auto& firstEntry = textures.front();
 
-        const TextureType targetType = std::get<1>(firstEntry)._textureType;
-        U8 prevBinding = std::get<0>(firstEntry);
+        const TextureType targetType = firstEntry._data._textureType;
+        U8 prevBinding = firstEntry._binding;
 
         U8 matchingTexCount = 0u;
         U8 startBinding = std::numeric_limits<U8>::max();
         U8 endBinding = 0u; 
         
         for (U8 idx = offset; idx < offset + count; ++idx) {
-            const auto& [binding, data, samplerHash] = textures[idx];
-            assert(IsValid(data));
-            if (binding != TextureDataContainer<>::INVALID_BINDING && targetType != data._textureType) {
+            const TextureEntry& entry = textures[idx];
+            assert(IsValid(entry._data));
+            if (entry._binding != TextureDataContainer<>::INVALID_BINDING && targetType != entry._data._textureType) {
                 break;
             }
             // Avoid large gaps between bindings. It's faster to just bind them individually.
-            if (matchingTexCount > 0 && binding - prevBinding > k_textureThreshold) {
+            if (matchingTexCount > 0 && entry._binding - prevBinding > k_textureThreshold) {
                 break;
             }
             // We mainly want to handle ONLY consecutive units
-            prevBinding = binding;
-            startBinding = std::min(startBinding, binding);
-            endBinding = std::max(endBinding, binding);
+            prevBinding = entry._binding;
+            startBinding = std::min(startBinding, entry._binding);
+            endBinding = std::max(endBinding, entry._binding);
             ++matchingTexCount;
         }
 
@@ -1621,10 +1622,10 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer<>& textureData, c
             }
 
             for (U8 idx = offset; idx < offset + matchingTexCount; ++idx) {
-                const auto& [binding, data, samplerHash] = textures[idx];
-                if (binding != TextureDataContainer<>::INVALID_BINDING) {
-                    handles[binding]  = data._textureHandle;
-                    samplers[binding] = getSamplerHandle(samplerHash);
+                const TextureEntry& entry = textures[idx];
+                if (entry._binding != TextureDataContainer<>::INVALID_BINDING) {
+                    handles[entry._binding]  = entry._data._textureHandle;
+                    samplers[entry._binding] = getSamplerHandle(entry._sampler);
                 }
             }
 
@@ -1647,12 +1648,12 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer<>& textureData, c
         bound = makeTexturesResidentInternal(textureData, offset + matchingTexCount, count - matchingTexCount) || bound;
     } else if (count == 1) {
         // Normal usage. Bind a single texture at a time
-        const auto&[binding, data, samplerHash] = textures[offset];
-        if (binding != TextureDataContainer<>::INVALID_BINDING) {
-            assert(IsValid(data));
-            GLuint handle = data._textureHandle;
-            GLuint sampler = getSamplerHandle(samplerHash);
-            bound = stateTracker.bindTextures(binding, 1, data._textureType, &handle, &sampler) || bound;
+        const TextureEntry& entry = textures[offset];
+        if (entry._binding != TextureDataContainer<>::INVALID_BINDING) {
+            assert(IsValid(entry._data));
+            GLuint handle = entry._data._textureHandle;
+            GLuint sampler = getSamplerHandle(entry._sampler);
+            bound = stateTracker.bindTextures(entry._binding, 1, entry._data._textureType, &handle, &sampler) || bound;
         }
     } else {
         // Used for breaking the debugger if we get missing textures or similar issues

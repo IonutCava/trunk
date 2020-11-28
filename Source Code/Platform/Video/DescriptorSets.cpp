@@ -26,8 +26,8 @@ namespace Divide {
 
     const TextureEntry* DescriptorSet::findTexture(const U8 binding) const noexcept {
         const auto& textures = _textureData.textures();
-        for (const auto& it : textures) {
-            if (std::get<0>(it) == binding) {
+        for (const TextureEntry& it : textures) {
+            if (it._binding == binding) {
                 return &it;
             }
         }
@@ -112,14 +112,13 @@ namespace Divide {
             for (size_t i = 0; i < texCount; ++i) {
                 const TextureEntry& it = rhsTextures[i];
 
-                const U8 binding = std::get<0>(it);
-                if (binding == TextureDataContainer<>::INVALID_BINDING) {
+                if (it._binding == TextureDataContainer<>::INVALID_BINDING) {
                     continue;
                 }
 
-                const TextureEntry* texData = lhs.findTexture(binding);
+                const TextureEntry* texData = lhs.findTexture(it._binding);
                 if (texData != nullptr && *texData == it) {
-                    partial = rhs._textureData.removeTexture(binding) || partial;
+                    partial = rhs._textureData.removeTexture(it._binding) || partial;
                 }
             }
         }
