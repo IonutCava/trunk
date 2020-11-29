@@ -85,15 +85,15 @@ class LightPool : public SceneComponent,
       struct CSMShadowProperties
       {
           vec4<F32> _details;
-          std::array<vec4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _position;
-          std::array<mat4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _vpMatrix;
+          std::array<vec4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _position{};
+          std::array<mat4<F32>, Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT> _vpMatrix{};
       };
       struct ShadowProperties {
-          std::array<PointShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS> _pointLights;
-          std::array<SpotShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS> _spotLights;
-          std::array<CSMShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS> _dirLights;
+          std::array<PointShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS> _pointLights{};
+          std::array<SpotShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS> _spotLights{};
+          std::array<CSMShadowProperties, Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS> _dirLights{};
 
-          [[nodiscard]] bufferPtr data() const noexcept { return (bufferPtr)_pointLights.data(); }
+          [[nodiscard]] Byte* data() const noexcept { return (Byte*)_pointLights.data(); }
       };
 #pragma pack(pop)
 
@@ -136,7 +136,7 @@ class LightPool : public SceneComponent,
     void drawLightImpostors(RenderStage stage, GFX::CommandBuffer& bufferInOut) const;
 
     void preRenderAllPasses(const Camera* playerCamera);
-    void postRenderAllPasses(const Camera* playerCamera);
+    void postRenderAllPasses();
 
     /// nullptr = disabled
     void debugLight(Light* light);
@@ -201,21 +201,22 @@ class LightPool : public SceneComponent,
          std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightProperties;
      };
 
-    std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount;
-    std::array<LightList, to_base(RenderStage::COUNT)> _sortedLights;
-    std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties;
-    std::array<LightList, to_base(LightType::COUNT)> _lights;
-    std::array<bool, to_base(LightType::COUNT)> _lightTypeState;
+    std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount{};
+    std::array<LightList, to_base(RenderStage::COUNT)> _sortedLights{};
+    std::array<BufferData, to_base(RenderStage::COUNT)> _sortedLightProperties{};
+    std::array<LightList, to_base(LightType::COUNT)> _lights{};
+    std::array<bool, to_base(LightType::COUNT)> _lightTypeState{};
 
     ShadowLightList _sortedShadowLights = {};
     ShadowProperties _shadowBufferData;
 
-    mutable SharedMutex _lightLock;
+    mutable SharedMutex _lightLock{};
 
     Texture_ptr _lightIconsTexture = nullptr;
     ShaderProgram_ptr _lightImpostorShader = nullptr;
     ShaderBuffer* _lightShaderBuffer = nullptr;
     ShaderBuffer* _shadowBuffer = nullptr;
+    bool _shadowBufferDirty = false;
     Time::ProfileTimer& _shadowPassTimer;
     bool _init = false;
 

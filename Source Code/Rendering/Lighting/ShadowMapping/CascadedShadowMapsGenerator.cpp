@@ -324,7 +324,7 @@ void CascadedShadowMapsGenerator::applyFrustumSplits(DirectionalLightComponent& 
         }
         lightCam->updateLookAt();
 
-        mat4<F32>& lightVP = light.getShadowVPMatrix(cascadeIterator);
+        mat4<F32> lightVP = light.getShadowVPMatrix(cascadeIterator);
         mat4<F32>::Multiply(lightViewMatrix, lightOrthoMatrix, lightVP);
 
         light.setShadowLightPos(cascadeIterator, lightPosition);

@@ -60,9 +60,11 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         // x = light type, y = arrayOffset, z - bias, w - strength
         vec4<F32> _lightDetails;
         /// light's position in world space. w - csm split distances (or whatever else might be needed)
-        std::array<vec4<F32>, 6> _lightPosition;
+        std::array<vec4<F32>, 6> _lightPosition{};
         /// light viewProjection matrices
-        std::array<mat4<F32>, 6> _lightVP;
+        std::array<mat4<F32>, 6> _lightVP{};
+        U32 _lastShadowIndex = std::numeric_limits<U32>::max();
+        bool _dirty = false;
     };
 
     /// Create a new light assigned to the specified slot with the specified range
@@ -104,12 +106,6 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
         return _shadowProperties._lightVP[index];
     }
 
-    [[nodiscard]] mat4<F32>& getShadowVPMatrix(const U8 index) noexcept {
-        assert(index < 6);
-
-        return _shadowProperties._lightVP[index];
-    }
-
     [[nodiscard]] F32 getShadowFloatValues(const U8 index) const noexcept {
         assert(index < 6);
 
@@ -128,23 +124,39 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
 
     void setShadowVPMatrix(const U8 index, const mat4<F32>& newValue) {
         assert(index < 6);
-
-        _shadowProperties._lightVP[index].set(newValue);
+        
+        if (_shadowProperties._lightVP[index] != newValue) {
+            _shadowProperties._lightVP[index].set(newValue);
+            _shadowProperties._dirty = true;
+        }
     }
 
     void setShadowFloatValue(const U8 index, const F32 newValue) noexcept {
         assert(index < 6);
-
-        _shadowProperties._lightPosition[index].w = newValue;
+        
+        if (_shadowProperties._lightPosition[index].w != newValue) {
+            _shadowProperties._lightPosition[index].w = newValue;
+            _shadowProperties._dirty = true;
+        }
     }
 
     void setShadowLightPos(const U8 index, const vec3<F32>& newValue) {
-        vec4<F32>& lightPos = _shadowProperties._lightPosition[index];
-        lightPos.set(newValue, lightPos.w);
+        if (_shadowProperties._lightPosition[index].xyz != newValue) {
+            _shadowProperties._lightPosition[index].xyz = newValue;
+            _shadowProperties._dirty = true;
+        }
     }
 
     void setShadowOffset(const U16 offset) noexcept {
-        _shadowProperties._lightDetails.y = to_F32(offset);
+        if (to_U16(_shadowProperties._lightDetails.y) != offset) {
+            _shadowProperties._lightDetails.y = to_F32(offset);
+            _shadowProperties._dirty = true;
+        }
+    }
+
+    void cleanShadowProperties(const U32 newShadowIndex) noexcept {
+        _shadowProperties._dirty = false;
+        _shadowProperties._lastShadowIndex = newShadowIndex;
     }
 
     [[nodiscard]] SceneGraphNode* getSGN()       noexcept { return _sgn; }

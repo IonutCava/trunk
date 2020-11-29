@@ -276,7 +276,7 @@ namespace Divide {
             _renderPasses[i]->postRender();
         }
 
-        activeLightPool.postRenderAllPasses(cam);
+        activeLightPool.postRenderAllPasses();
 
         Time::ScopedTimer time(*_blitToDisplayTimer);
         gfx.flushCommandBuffer(*_postRenderBuffer);

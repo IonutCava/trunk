@@ -78,8 +78,10 @@ bool glLockManager::wait(const GLsync syncObj, const bool blockClient, const boo
             return false;
         }
 
-        //ToDo: Do I need this here? -Ionut
-        GL_API::queueFlush();
+        if (retryCount == 1) {
+            //ToDo: Do I need this here? -Ionut
+            GL_API::queueFlush();
+        }
 
         // After the first time, need to start flushing, and wait for a looong time.
         waitFlags = SyncObjectMask::GL_SYNC_FLUSH_COMMANDS_BIT;

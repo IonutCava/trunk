@@ -42,7 +42,13 @@ void DebugCallback(const GLenum source, const GLenum type, GLuint id, const GLen
         } else if (type == GL_DEBUG_TYPE_PERFORMANCE) {
             gl_type = "Performance";
         } else if (type == GL_DEBUG_TYPE_OTHER) {
-            gl_type = "Other";
+            gl_type = "Performance";
+        } else if (type == GL_DEBUG_TYPE_MARKER) {
+            gl_type = "Marker";
+        } else if (type == GL_DEBUG_TYPE_PUSH_GROUP) {
+            gl_type = "Push";
+        } else if (type == GL_DEBUG_TYPE_POP_GROUP) {
+            gl_type = "Pop";
         }
 
         // Translate message severity
@@ -56,15 +62,21 @@ void DebugCallback(const GLenum source, const GLenum type, GLuint id, const GLen
         } else if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) {
             gl_severity = "Info";
         }
+
         // Print the message and the details
-        Console::errorfn(Util::StringFormat(Locale::get(_ID("ERROR_GENERIC_GL_DEBUG")),
-                                            userParam == nullptr
-                                                       ? " [Main Thread] "
-                                                       : " [Worker Thread] ",
-                                            gl_source, gl_type, id, gl_severity, 
-                                            GL_API::getStateTracker()._activeShaderProgram,
-                                            GL_API::getStateTracker()._activeShaderPipeline,
-                                            message).c_str());
+        const stringImpl outputError = Util::StringFormat(
+            "[%s Thread][Source: %s][Type: %s][ID: %d][Severity: %s][Bound Program : %d][Bound Pipeline : %d][DebugGroup: %s][Message: %s]",
+            userParam == nullptr ? "Main" : "Worker",
+            gl_source,
+            gl_type,
+            id, 
+            gl_severity, 
+            GL_API::getStateTracker()._activeShaderProgram,
+            GL_API::getStateTracker()._activeShaderPipeline,
+            GL_API::getStateTracker()._debugScope.c_str(),
+            message);
+
+        Console::errorfn(outputError.c_str());
     }
 
 }
