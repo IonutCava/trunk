@@ -62,6 +62,9 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     [[nodiscard]] bool blurResults() const noexcept { return _blur[_genHalfRes ? 1 : 0]; }
     void blurResults(bool state);
 
+    [[nodiscard]] F32 blurThreshold() const noexcept { return _blurThreshold; }
+    void blurThreshold(F32 val);
+
     [[nodiscard]] bool ready() const override;
 
    private:
@@ -69,6 +72,7 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
 
    private:
     PushConstants _ssaoGenerateConstants;
+    PushConstants _ssaoBlurConstants;
     ShaderProgram_ptr _ssaoGenerateShader = nullptr;
     ShaderProgram_ptr _ssaoGenerateHalfResShader = nullptr;
     ShaderProgram_ptr _ssaoBlurShader = nullptr;
@@ -83,6 +87,7 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     F32 _radius[2] = { 0.0f, 0.0f };
     F32 _bias[2] = { 0.0f, 0.0f };
     F32 _power[2] = { 0.0f, 0.0f };
+    F32 _blurThreshold = 0.05f;
     U8 _kernelSampleCount[2] = { 0u, 0u };
     bool _blur[2] = { false, false };
 

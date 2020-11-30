@@ -125,7 +125,10 @@ namespace {
             if (ImGui::Checkbox("Blur results", &blur)) {
                 ssaoOp.blurResults(blur);
             }
-
+            F32 blurThreshold = ssaoOp.blurThreshold();
+            if (ImGui::SliderFloat("Blur threshold", &blurThreshold, 0.001f, 0.9f)) {
+                ssaoOp.blurThreshold(blurThreshold);
+            }
             ImGui::Text("SSAO Sample Count: %d", 
                 halfRes ? context().config().rendering.postFX.ssao.HalfRes.KernelSampleCount
                         : context().config().rendering.postFX.ssao.FullRes.KernelSampleCount);

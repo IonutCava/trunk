@@ -72,6 +72,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.velocityScale);
         GET_PARAM(rendering.postFX.ssao.enable);
         GET_PARAM(rendering.postFX.ssao.UseHalfResolution);
+        GET_PARAM(rendering.postFX.ssao.blurThreshold);
         GET_PARAM(rendering.postFX.ssao.FullRes.Radius);
         GET_PARAM(rendering.postFX.ssao.FullRes.Bias);
         GET_PARAM(rendering.postFX.ssao.FullRes.Power);
@@ -187,6 +188,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.velocityScale);
         PUT_PARAM(rendering.postFX.ssao.enable);
         PUT_PARAM(rendering.postFX.ssao.UseHalfResolution);
+        PUT_PARAM(rendering.postFX.ssao.blurThreshold);
         PUT_PARAM(rendering.postFX.ssao.FullRes.Radius);
         PUT_PARAM(rendering.postFX.ssao.FullRes.Bias);
         PUT_PARAM(rendering.postFX.ssao.FullRes.Power);

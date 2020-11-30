@@ -95,27 +95,52 @@ void main(void) {
 
 --Fragment.SSAOBlur
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
+#include "utility.frag"
+
+//ref: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao-blur.deferred.frag.input
+layout(binding = TEXTURE_UNIT0)      uniform sampler2D texSSAO;
+layout(binding = TEXTURE_DEPTH_MAP)  uniform sampler2D texDepthMap;
+
+uniform vec2 zPlanes;
+uniform float depthThreshold;
 
 //r - ssao
 layout(location = TARGET_EXTRA) out vec4 _output;
 
+/**
+ * Does a simple blur pass over the input SSAO texture. To prevent the "halo"
+ * effect at the edges of geometry caused by blurring together pixels with
+ * and without occlusion, we only blur together pixels that have "similar"
+ * depth values.
+ */
 void main() {
 #   define _colourOut (_output.r)
-    vec2 texelSize = 1.0 / vec2(textureSize(texSSAO, 0));
+    vec2 texel_size = 1.0 / vec2(textureSize(texSSAO, 0));
 
-    const int end = int(BLUR_SIZE / 2);
-    const int start = int(end * -1);
+    float result = texture(texSSAO, VAR._texCoord).r;
+    float depth_ref = texture(texDepthMap, VAR._texCoord).r;
 
-    float colourOut = 0.0;
-    for (int x = start; x < end; ++x) {
-        for (int y = start; y < end; ++y) {
-            vec2 offset = vec2(float(x), float(y)) * texelSize;
-            colourOut += texture(texSSAO, VAR._texCoord + offset).r;
+    float linear_depth_ref = ToLinearDepth(depth_ref, zPlanes);
+
+    int sample_count = 1;
+
+    for (int x = -BLUR_SIZE; x < BLUR_SIZE; ++x) {
+        for (int y = -BLUR_SIZE; y < BLUR_SIZE; ++y) {
+            if (x != 0 || y != 0) {
+                vec2 tex_offset = VAR._texCoord + vec2(x, y) * texel_size;
+                tex_offset = min(vec2(1.0), max(vec2(0.0), tex_offset));
+                float depth = texture(texDepthMap, tex_offset).r;
+                float linear_depth = ToLinearDepth(depth, zPlanes);
+                if (abs(linear_depth - linear_depth_ref) < depthThreshold) {
+                    float value = texture(texSSAO, tex_offset).r;
+                    result += value;
+                    sample_count++;
+                }
+            }
         }
     }
 
-    _colourOut = colourOut / float(BLUR_SIZE * BLUR_SIZE);
+    _colourOut = result / float(sample_count);
    
 }
 

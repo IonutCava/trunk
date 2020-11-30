@@ -93,6 +93,7 @@
 		<ssao>
 			<enable>true</enable>
 			<UseHalfResolution>false</UseHalfResolution>
+			<blurThreshold>0.0549999997</blurThreshold>
 			<FullRes>
 				<Radius>2</Radius>
 				<Bias>0.0500000007</Bias>
@@ -101,8 +102,8 @@
 				<Blur>true</Blur>
 			</FullRes>
 			<HalfRes>
-				<Radius>1.25</Radius>
-				<Bias>0.0500000007</Bias>
+				<Radius>2.15100002</Radius>
+				<Bias>0.0520000011</Bias>
 				<Power>3</Power>
 				<KernelSampleCount>32</KernelSampleCount>
 				<Blur>true</Blur>

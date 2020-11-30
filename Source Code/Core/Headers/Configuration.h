@@ -129,6 +129,7 @@ struct Configuration final : public XML::IXMLSerializable {
             {
                 bool enable = false;
                 bool UseHalfResolution = true;
+                F32 blurThreshold = 0.05f;
                 SSAOSettings FullRes;
                 SSAOSettings HalfRes;
             } ssao;
