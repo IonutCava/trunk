@@ -47,17 +47,8 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept {
 GUI::GUI(Kernel& parent)
   : GUIInterface(*this),
     KernelComponent(parent),
-    _rootSheet(nullptr),
-    _ceguiContext(nullptr),
-    _ceguiRenderTextureTarget(nullptr),
-    _init(false),
     _ceguiInput(*this),
-    _ceguiRenderer(nullptr),
-    _console(nullptr),
-    _defaultMsgBox(nullptr),
-    _textRenderInterval(Time::MillisecondsToMicroseconds(10)),
-    _activeScene(nullptr),
-    _debugVarCacheCount(0)
+    _textRenderInterval(Time::MillisecondsToMicroseconds(10))
 {
     // 500ms
     _ceguiInput.setInitialDelay(0.500f);

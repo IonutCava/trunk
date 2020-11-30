@@ -160,32 +160,32 @@ protected:
 
 protected:
     friend class SceneGUIElements;
-    CEGUI::Window* _rootSheet;  ///< gui root Window
-    stringImpl _defaultGUIScheme;
-    CEGUI::GUIContext* _ceguiContext;
-    CEGUI::TextureTarget* _ceguiRenderTextureTarget;
+    CEGUI::Window* _rootSheet = nullptr;  ///< gui root Window
+    stringImpl _defaultGUIScheme{};
+    CEGUI::GUIContext* _ceguiContext = nullptr;
+    CEGUI::TextureTarget* _ceguiRenderTextureTarget = nullptr;
 
 private:
-    bool _init;              ///< Set to true when the GUI has finished loading
+    bool _init = false;              ///< Set to true when the GUI has finished loading
                              /// Toggle CEGUI rendering on/off (e.g. to check raw application rendering
                              /// performance)
     CEGUIInput _ceguiInput;  ///< Used to implement key repeat
-    CEGUI::Renderer* _ceguiRenderer; ///<Used to render CEGUI to a texture;
-    GUIConsole* _console;    ///< Pointer to the GUIConsole object
-    GUIMessageBox* _defaultMsgBox;  ///< Pointer to a default message box used for general purpose messages
-    U64 _textRenderInterval;  ///< We should avoid rendering text as fast as possible
+    CEGUI::Renderer* _ceguiRenderer = nullptr; ///<Used to render CEGUI to a texture;
+    GUIConsole* _console = nullptr;    ///< Pointer to the GUIConsole object
+    GUIMessageBox* _defaultMsgBox = nullptr;  ///< Pointer to a default message box used for general purpose messages
+    U64 _textRenderInterval{};  ///< We should avoid rendering text as fast as possible
                               ///for performance reasons
 
     /// Each scene has its own gui elements! (0 = global)
-    Scene* _activeScene;
+    Scene* _activeScene = nullptr;
     Pipeline* _postCEGUIPipeline = nullptr;
-    U32 _debugVarCacheCount;
+    U32 _debugVarCacheCount = 0;
     // GROUP, VAR
-    vectorEASTL<std::pair<I64, I64>> _debugDisplayEntries;
+    vectorEASTL<std::pair<I64, I64>> _debugDisplayEntries{};
 
     /// All the GUI elements created per scene
-    GUIMapPerScene _guiStack;
-    mutable SharedMutex _guiStackLock;
+    GUIMapPerScene _guiStack{};
+    mutable SharedMutex _guiStackLock{};
 };
 
 };  // namespace Divide

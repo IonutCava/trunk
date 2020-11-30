@@ -90,11 +90,24 @@
 		<bloomFactor>0.800000012</bloomFactor>
 		<bloomThreshold>0.850000024</bloomThreshold>
 		<velocityScale>1</velocityScale>
-		<enableSSAO>true</enableSSAO>
-		<ssaoRadius>0.5</ssaoRadius>
-		<ssaoPower>2</ssaoPower>
-		<!-- Kernel size = [64 = 0, 32 = 1, 16 = 2, 8 = 3]. Clamped to [0, 3]-->
-		<ssaoKernelSizeIndex>1</ssaoKernelSizeIndex>
+		<ssao>
+			<enable>true</enable>
+			<UseHalfResolution>false</UseHalfResolution>
+			<FullRes>
+				<Radius>2</Radius>
+				<Bias>0.0500000007</Bias>
+				<Power>2</Power>
+				<KernelSampleCount>32</KernelSampleCount>
+				<Blur>true</Blur>
+			</FullRes>
+			<HalfRes>
+				<Radius>1.25</Radius>
+				<Bias>0.0500000007</Bias>
+				<Power>3</Power>
+				<KernelSampleCount>32</KernelSampleCount>
+				<Blur>true</Blur>
+			</HalfRes>
+		</ssao>
 	</postFX>
 	<shadowMapping>
 		<enabled>true</enabled>

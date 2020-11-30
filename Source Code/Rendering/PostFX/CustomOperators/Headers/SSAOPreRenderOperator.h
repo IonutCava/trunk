@@ -43,17 +43,24 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     ~SSAOPreRenderOperator();
 
     void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) override;
+
     [[nodiscard]] bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) override;
     void reshape(U16 width, U16 height) override;
 
-    [[nodiscard]] F32 radius() const noexcept { return _radius; }
+    [[nodiscard]] F32 radius() const noexcept { return _radius[_genHalfRes ? 1 : 0]; }
     void radius(F32 val);
 
-    [[nodiscard]] F32 power() const noexcept { return _power; }
+    [[nodiscard]] F32 power() const noexcept { return _power[_genHalfRes ? 1 : 0]; }
     void power(F32 val);
 
-    [[nodiscard]] U8 kernelIndex(U8& minOut, U8& maxOut) const noexcept { minOut = 0u; maxOut = 3u; return _kernelIndex; }
-    void kernelIndex(U8 val);
+    [[nodiscard]] F32 bias() const noexcept { return _bias[_genHalfRes ? 1 : 0]; }
+    void bias(F32 val);
+
+    [[nodiscard]] bool genHalfRes() const noexcept { return _genHalfRes; }
+    void genHalfRes(bool state);
+
+    [[nodiscard]] bool blurResults() const noexcept { return _blur[_genHalfRes ? 1 : 0]; }
+    void blurResults(bool state);
 
     [[nodiscard]] bool ready() const override;
 
@@ -61,17 +68,25 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
      void onToggle(bool state) override;
 
    private:
-    PushConstants _ssaoBlurConstants;
     PushConstants _ssaoGenerateConstants;
     ShaderProgram_ptr _ssaoGenerateShader = nullptr;
+    ShaderProgram_ptr _ssaoGenerateHalfResShader = nullptr;
     ShaderProgram_ptr _ssaoBlurShader = nullptr;
+    ShaderProgram_ptr _ssaoPassThroughShader = nullptr;
+    ShaderProgram_ptr _ssaoDownSampleShader = nullptr;
+    ShaderProgram_ptr _ssaoUpSampleShader = nullptr;
     Texture_ptr _noiseTexture = nullptr;
     size_t _noiseSampler = 0;
     RenderTargetHandle _ssaoOutput;
-    F32 _radius = 1.0f;
-    F32 _power = 1.0f;
-    U8 _kernelIndex = 0u;
+    RenderTargetHandle _ssaoHalfResOutput;
+    RenderTargetHandle _halfDepthAndNormals;
+    F32 _radius[2] = { 0.0f, 0.0f };
+    F32 _bias[2] = { 0.0f, 0.0f };
+    F32 _power[2] = { 0.0f, 0.0f };
+    U8 _kernelSampleCount[2] = { 0u, 0u };
+    bool _blur[2] = { false, false };
 
+    bool _genHalfRes = false;
     bool _enabled = true;
 };
 

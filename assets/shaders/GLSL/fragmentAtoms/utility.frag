@@ -120,6 +120,10 @@ float ToLinearDepth(in float depthIn, in mat4 projMatrix) {
     return projMatrix[3][2] / (depthIn - projMatrix[2][2]);
 }
 
+float ViewSpaceZ(in float depthIn, in mat4 projMatrix) {
+    return projMatrix[3][2] / (2.0f * depthIn - 1.0f - projMatrix[2][2]);
+}
+
 bool InRangeExclusive(in float value, in float min, in float max) {
     return value > min && value < max;
 }
@@ -194,20 +198,19 @@ float computeDepth(in vec4 posWV) {
     return (((far - near) * ndc_depth) + near + far) * 0.5f;
 }
 
-vec4 viewPositionFromDepth(in float depth,
+vec3 homogenize(vec4 v) { return vec3((1.0f / v.w) * v); }
+
+vec3 viewPositionFromDepth(in float depth,
                            in mat4 invProjectionMatrix,
                            in vec2 uv) {
     //to clip space
-    float x = uv.x * 2.0f - 1.0f;
-    float y = uv.y * 2.0f - 1.0f;
+    float x = 2.0f * uv.x  - 1.0f;
+    float y = 2.0f * uv.y  - 1.0f;
     float z = 2.0f * depth - 1.0f;
-    vec4 pos = vec4(x, y, z, 1.0f);
+    vec4 ndc = vec4(x, y, z, 1.0f);
 
     // to view space
-    pos = invProjectionMatrix * pos;
-    pos /= pos.w;
-
-    return pos;
+    return homogenize(invProjectionMatrix * ndc);
 }
 
 

@@ -111,7 +111,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     if_constexpr (false) {
         _postFX->pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
-    if (config.rendering.postFX.enableSSAO) {
+    if (config.rendering.postFX.ssao.enable) {
         _postFX->pushFilter(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
     }
     if (config.rendering.postFX.enableDepthOfField) {

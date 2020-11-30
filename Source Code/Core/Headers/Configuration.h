@@ -96,6 +96,14 @@ struct Configuration final : public XML::IXMLSerializable {
         bool perPixelNormals = false;
     } terrain;
 
+    struct SSAOSettings{
+        F32  Radius = 0.5f;
+        F32  Bias = 0.05f;
+        F32  Power = 2.0f;
+        U8   KernelSampleCount = 0u;
+        bool Blur = true;
+    };
+
     struct Rendering {
         U8 MSAASamples = 0u;
         U8 anisotropicFilteringLevel = 16;
@@ -117,10 +125,13 @@ struct Configuration final : public XML::IXMLSerializable {
             F32 bloomFactor = 0.8f;
             F32 bloomThreshold = 0.75f;
             F32 velocityScale = 1.f;
-            bool enableSSAO = false;
-            F32 ssaoRadius = 0.5f;
-            F32 ssaoPower = 2.0f;
-            U8 ssaoKernelSizeIndex = 0u;
+            struct SSAO
+            {
+                bool enable = false;
+                bool UseHalfResolution = true;
+                SSAOSettings FullRes;
+                SSAOSettings HalfRes;
+            } ssao;
         } postFX = {};
         struct ShadowMapping {
             bool enabled = true;

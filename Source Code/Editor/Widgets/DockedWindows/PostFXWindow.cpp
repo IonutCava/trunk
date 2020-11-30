@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/PostFXWindow.h"
+
+#include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Editor/Headers/Editor.h"
 #include "Platform/Video/Headers/GFXDevice.h"
@@ -104,18 +106,29 @@ namespace {
             SSAOPreRenderOperator& ssaoOp = static_cast<SSAOPreRenderOperator&>(*op);
             F32 radius = ssaoOp.radius();
             F32 power = ssaoOp.power();
+            F32 bias = ssaoOp.bias();
+            bool halfRes = ssaoOp.genHalfRes();
+
+            if (ImGui::Checkbox("Generate Half Resolution", &halfRes)) {
+                ssaoOp.genHalfRes(halfRes);
+            }
             if (ImGui::SliderFloat("Radius", &radius, 0.01f, 10.0f)) {
                 ssaoOp.radius(radius);
             }
             if (ImGui::SliderFloat("Power", &power, 1.0f, 5.0f)) {
                 ssaoOp.power(power);
             }
-
-            U8 minIndex = 0u, maxIndex = 0u;
-            U8 index = ssaoOp.kernelIndex(minIndex, maxIndex);
-            if (ImGui::SliderScalar("Kernel Size Index", ImGuiDataType_U8, &index, &minIndex, &maxIndex)) {
-                ssaoOp.kernelIndex(index);
+            if (ImGui::SliderFloat("Bias", &bias, 0.001f, 0.9f)) {
+                ssaoOp.bias(bias);
             }
+            bool blur = ssaoOp.blurResults();
+            if (ImGui::Checkbox("Blur results", &blur)) {
+                ssaoOp.blurResults(blur);
+            }
+
+            ImGui::Text("SSAO Sample Count: %d", 
+                halfRes ? context().config().rendering.postFX.ssao.HalfRes.KernelSampleCount
+                        : context().config().rendering.postFX.ssao.FullRes.KernelSampleCount);
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);
