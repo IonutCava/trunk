@@ -540,7 +540,7 @@ stringImpl CommandBuffer::toString() const {
 
 
 
-bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) noexcept {
+bool BatchDrawCommands(GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) noexcept {
     // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
     if (previousIDC._cmd.primCount != currentIDC._cmd.primCount && (previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1)) {
         return false;
@@ -548,11 +548,8 @@ bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousID
 
     // Batch-able commands must share the same buffer and other various state
     if (compatible(previousIDC, currentIDC)) {
-        const U32 diff = byBaseInstance 
-                            ? (currentIDC._cmd.baseInstance >> 16) - (previousIDC._cmd.baseInstance >> 16)
-                            : to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
-        const U32 matDiff = byBaseInstance ? (currentIDC._cmd.baseInstance & 0xFFFF) - (previousIDC._cmd.baseInstance & 0xFFFF) : 0u;
-        if (diff == previousIDC._drawCount && matDiff == 0u) {
+        const U32 diff = to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
+        if (diff == previousIDC._drawCount) {
             // If the rendering commands are batch-able, increase the draw count for the previous one
             previousIDC._drawCount += currentIDC._drawCount;
             // And set the current command's draw count to zero so it gets removed from the list later on
@@ -567,13 +564,13 @@ bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousID
 bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     OPTICK_EVENT();
 
-    const auto BatchCommands = [](DrawCommand::CommandContainer& commands, const bool byBaseInstance) {
+    const auto BatchCommands = [](DrawCommand::CommandContainer& commands) {
         const size_t commandCount = commands.size();
         for (size_t previousCommandIndex = 0, currentCommandIndex = 1;
              currentCommandIndex < commandCount;
              ++currentCommandIndex)
         {
-            if (!BatchDrawCommands(byBaseInstance, commands[previousCommandIndex], commands[currentCommandIndex])) {
+            if (!BatchDrawCommands(commands[previousCommandIndex], commands[currentCommandIndex])) {
                 previousCommandIndex = currentCommandIndex;
             }
         }
@@ -586,18 +583,6 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
     crtCommand->_drawCommands.resize(0);
 
     {
-        OPTICK_EVENT("Merge by instance");
-        eastl::sort(begin(commands),
-                    end(commands),
-                    [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
-                        return (a._cmd.baseInstance >> 16) < (b._cmd.baseInstance >> 16);
-                    });
-        do {
-            BatchCommands(commands, true);
-        } while (RemoveEmptyDrawCommands(commands));
-    }
-
-    {
         OPTICK_EVENT("Merge by offset");
         eastl::sort(begin(commands),
                     end(commands),
@@ -606,7 +591,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
                     });
 
         do {
-            BatchCommands(commands, false);
+            BatchCommands(commands);
         } while (RemoveEmptyDrawCommands(commands));
     }
 

@@ -80,7 +80,7 @@ struct GenericDrawCommand {
     IndirectDrawCommand _cmd = {};                                        // 32 bytes
     PoolHandle _sourceBuffer = {};                                        // 12 bytes
     U24 _commandOffset = 0u;                                              // 9  bytes
-    U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY); // 6  bytes
+    U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY);      // 6  bytes
     U16 _drawCount = 1u;                                                  // 4  bytes
     U8  _bufferIndex  = INVALID_BUFFER_INDEX;                             // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::COUNT;                  // 1  bytes
