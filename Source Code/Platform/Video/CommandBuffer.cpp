@@ -549,10 +549,10 @@ bool BatchDrawCommands(const bool byBaseInstance, GenericDrawCommand& previousID
     // Batch-able commands must share the same buffer and other various state
     if (compatible(previousIDC, currentIDC)) {
         const U32 diff = byBaseInstance 
-                            ? currentIDC._cmd.baseInstance - previousIDC._cmd.baseInstance 
+                            ? (currentIDC._cmd.baseInstance >> 16) - (previousIDC._cmd.baseInstance >> 16)
                             : to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
-
-        if (diff == previousIDC._drawCount) {
+        const U32 matDiff = byBaseInstance ? (currentIDC._cmd.baseInstance & 0xFFFF) - (previousIDC._cmd.baseInstance & 0xFFFF) : 0u;
+        if (diff == previousIDC._drawCount && matDiff == 0u) {
             // If the rendering commands are batch-able, increase the draw count for the previous one
             previousIDC._drawCount += currentIDC._drawCount;
             // And set the current command's draw count to zero so it gets removed from the list later on
@@ -590,7 +590,7 @@ bool Merge(DrawCommand* prevCommand, DrawCommand* crtCommand) {
         eastl::sort(begin(commands),
                     end(commands),
                     [](const GenericDrawCommand& a, const GenericDrawCommand& b) noexcept -> bool {
-                        return a._cmd.baseInstance < b._cmd.baseInstance;
+                        return (a._cmd.baseInstance >> 16) < (b._cmd.baseInstance >> 16);
                     });
         do {
             BatchCommands(commands, true);

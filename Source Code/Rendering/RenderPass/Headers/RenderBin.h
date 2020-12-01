@@ -39,6 +39,7 @@
 #ifndef _RENDER_BIN_H_
 #define _RENDER_BIN_H_
 
+#include "Platform/Video/Headers/GenericDrawCommand.h"
 #include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
@@ -58,7 +59,7 @@ struct RenderBinItem {
     size_t _stateHash = 0;
     I64 _sortKeyA = -1; ///< Shader key
     I32 _sortKeyB = -1; ///< Texture key
-    U32 _dataIndex = 0u;///< Node Data entry
+    NodeDataIdx _dataIndex = {0u, 0u};///< Node Data entry
     F32 _distanceToCameraSq = 0.0f;
 };
 

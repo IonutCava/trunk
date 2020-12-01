@@ -46,23 +46,23 @@ void main()
         return;
     }
 
-    const uint nodeIndex = dvd_drawCommands[ident].baseInstance;
+    const uint transformIndex = dvd_drawCommands[ident].baseInstance >> 16;
     // We dont currently handle instanced nodes with this. We might need to in the future
     // Usually this is just terrain, vegetation and the skybox. So not that bad all in all since those have
     // their own culling routines
-    if (nodeIndex == 0u) {
+    if (transformIndex == 0u) {
         return;
     }
 
     // Skip occlusion cull if the flag is negative
-    if (dvd_cullNode(dvd_Matrices[nodeIndex])) {
+    if (dvd_cullNode(dvd_Matrices[transformIndex])) {
         return;
     }
 
 
-    const vec3 boundsCenter = dvd_Matrices[nodeIndex]._normalMatrixW[3].xyz;
-    const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Matrices[nodeIndex]._normalMatrixW[1][3]));
-    const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Matrices[nodeIndex]._normalMatrixW[2][3]));
+    const vec3 boundsCenter = dvd_Matrices[transformIndex]._normalMatrixW[3].xyz;
+    const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Matrices[transformIndex]._normalMatrixW[1][3]));
+    const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Matrices[transformIndex]._normalMatrixW[2][3]));
 
     const vec3 bBoxHExtents = vec3(bboxHalfExtentsXY, bboxHalfExtentsZRadius.x);
 

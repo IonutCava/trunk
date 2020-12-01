@@ -382,7 +382,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     const U8 lodLevel = _lodLevels[to_base(stage)];
 
     const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
-    const U32 dataIndex = bufferParams._dataIndex;
+    const NodeDataIdx dataIndex = bufferParams._dataIndex;
 
     Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
     if (stage != RenderStage::SHADOW) {

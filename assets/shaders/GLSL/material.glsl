@@ -10,7 +10,7 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     vec4 albedo = getAlbedo(data._colourMatrix, VAR._texCoord);

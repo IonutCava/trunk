@@ -88,7 +88,7 @@ layout(location = 1) in float _alphaFactor;
 #define texDiffuseGrass texDiffuse0
 
 void main (void){
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     const vec2 uv = VAR._texCoord;
@@ -121,7 +121,7 @@ void main() {
     }
 
 #if defined(HAS_PRE_PASS_DATA)
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     writeOutput(data,

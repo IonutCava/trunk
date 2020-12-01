@@ -464,7 +464,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         const bool needsInterp = interpFactor < 0.985;
 
         bufferParams._writeIndex = bufferData._cmdBuffer->queueWriteIndex();
-        bufferParams._dataIndex = 0u;
+        bufferParams._dataIndex = { 0u, 0u };
 
         U32 nodeCount = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
@@ -484,9 +484,10 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             for (RenderingComponent* rComp : queue) {
                 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
-                    NodeData& data = passData._nodeData[bufferParams._dataIndex];
+                    NodeData& data = passData._nodeData[bufferParams._dataIndex._transformIDX];
                     processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data);
-                    ++bufferParams._dataIndex;
+                    ++bufferParams._dataIndex._transformIDX;
+                    ++bufferParams._dataIndex._materialIDX;
                     ++nodeCount;
                 }
             }

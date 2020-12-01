@@ -56,8 +56,11 @@ void RenderBin::sort(const RenderStage stage, const RenderingOrder renderOrder) 
                                 return a._sortKeyB < b._sortKeyB;
                             }
                             // If the data indices aren't consecutive, handle that first ...
-                            if (a._dataIndex > b._dataIndex) {
-                                return a._dataIndex < b._dataIndex;
+                            if (a._dataIndex._transformIDX > b._dataIndex._transformIDX) {
+                                return a._dataIndex._transformIDX < b._dataIndex._transformIDX;
+                            }
+                            if (a._dataIndex._materialIDX > b._dataIndex._materialIDX) {
+                                return a._dataIndex._materialIDX < b._dataIndex._materialIDX;
                             }
                             // ... and then finally fallback to front to back
                             return a._distanceToCameraSq < b._distanceToCameraSq;

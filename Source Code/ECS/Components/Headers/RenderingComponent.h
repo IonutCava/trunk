@@ -76,7 +76,7 @@ struct TargetDataBufferParams {
     GFX::CommandBuffer* _targetBuffer = nullptr;
     const Camera* _camera = nullptr;
     I32 _writeIndex = 0;
-    U32 _dataIndex = 0u;
+    NodeDataIdx _dataIndex;
 };
 
 using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;

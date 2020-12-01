@@ -48,7 +48,7 @@ NodeData fetchInputData() {
 
     VAR._baseInstance = DVD_GL_BASE_INSTANCE;
 
-    return dvd_Matrices[DATA_IDX];
+    return dvd_Matrices[TRANSFORM_IDX];
 }
 
 void computeData(in NodeData data) {

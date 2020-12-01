@@ -4,7 +4,7 @@
 
 void main() {
 #if defined(HAS_PRE_PASS_DATA)
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     writeOutput(data,
@@ -25,7 +25,7 @@ void main() {
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     mat4 colourMatrix = data._colourMatrix;
@@ -51,7 +51,7 @@ out vec2 _colourOut;
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     mat4 colourMatrix = data._colourMatrix;

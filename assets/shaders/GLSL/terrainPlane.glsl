@@ -55,7 +55,7 @@ void main(void) {
 
 void main() {
 #if defined(HAS_PRE_PASS_DATA)
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
     writeOutput(data, 

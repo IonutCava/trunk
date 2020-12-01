@@ -2,10 +2,13 @@
 #define _NODE_BUFFERED_INPUT_CMN_
 
 #if defined(OVERRIDE_DATA_IDX)
-uniform uint DATA_IDX = 0u;
+uniform uint DATA_INDICES = 0u;
 #else
-#define DATA_IDX VAR._baseInstance
+#define DATA_INDICES VAR._baseInstance
 #endif
+
+#define TRANSFORM_IDX (DATA_INDICES >> 16)
+#define MATERIAL_IDX (DATA_INDICES & 0xFFFF)
 
 //Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
 #if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
@@ -21,13 +24,13 @@ layout(binding = BUFFER_NODE_INFO, std430) coherent ACCESS_R buffer dvd_MatrixBl
 
 
 #if defined(USE_BINDLESS_TEXTURES)
-#define texDiffuse0 dvd_Matrices[DATA_IDX]._texDiffuse0
-#define texOpacityMap dvd_Matrices[DATA_IDX]._texOpacityMap
-#define texDiffuse1 dvd_Matrices[DATA_IDX]._texDiffuse1
-#define texOcclusionMetallicRoughness dvd_Matrices[DATA_IDX]._texOcclusionMetallicRoughness
-#define texHeight dvd_Matrices[DATA_IDX]._texHeight
-#define texProjected dvd_Matrices[DATA_IDX]._texProjected
-#define texNormalMap dvd_Matrices[DATA_IDX]._texNormalMap
+#define texDiffuse0 dvd_Matrices[MATERIAL_IDX]._texDiffuse0
+#define texOpacityMap dvd_Matrices[MATERIAL_IDX]._texOpacityMap
+#define texDiffuse1 dvd_Matrices[MATERIAL_IDX]._texDiffuse1
+#define texOcclusionMetallicRoughness dvd_Matrices[MATERIAL_IDX]._texOcclusionMetallicRoughness
+#define texHeight dvd_Matrices[MATERIAL_IDX]._texHeight
+#define texProjected dvd_Matrices[MATERIAL_IDX]._texProjected
+#define texNormalMap dvd_Matrices[MATERIAL_IDX]._texNormalMap
 #else
 layout(binding = TEXTURE_UNIT0)  uniform samplerUnit0 texDiffuse0;
 layout(binding = TEXTURE_UNIT1)  uniform samplerUnit1 texDiffuse1;

@@ -62,7 +62,7 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 
 void main()
 {
-    NodeData data = dvd_Matrices[DATA_IDX];
+    NodeData data = dvd_Matrices[TRANSFORM_IDX];
     prepareData(data);
 
 #if defined(PRE_PASS)
