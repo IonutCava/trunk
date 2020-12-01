@@ -22,6 +22,7 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
+#include "Platform/Video/Headers/NodeBufferedData.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
@@ -404,14 +405,12 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     return true;
 }
 
-void RenderingComponent::getMaterialColourMatrix(mat4<F32>& matOut, NodeData& dataOut) const {
-    matOut.zero();
-
+void RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
     if (_materialInstance != nullptr) {
-        _materialInstance->getMaterialMatrix(matOut, dataOut);
+        _materialInstance->getData(dataOut);
 
         SharedLock<SharedMutex> r_lock(_reflectionLock);
-        matOut.element(2, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
+        dataOut._colourMatrix.element(2, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
     }
 }
 
@@ -429,10 +428,6 @@ void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass
     {
         SharedLock<SharedMutex> r_lock(_refractionLock);
         propertiesOut._refractionIndex = _refractionIndex == g_invalidRefIndex ? 0 : _refractionIndex;
-    }
-    if (_materialInstance != nullptr) {
-        propertiesOut._texOperation = _materialInstance->textureOperation();
-        propertiesOut._bumpMethod = _materialInstance->bumpMethod();
     }
 }
 

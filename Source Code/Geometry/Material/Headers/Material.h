@@ -48,7 +48,7 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
-struct NodeData;
+struct NodeMaterialData;
 
 class RenderStateBlock;
 class ResourceDescriptor;
@@ -171,7 +171,7 @@ class Material final : public CachedResource {
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
 
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
-    void getMaterialMatrix(mat4<F32>& retMatrix, NodeData& texturesOut);
+    void getData(NodeMaterialData& dataOut);
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;

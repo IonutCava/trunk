@@ -22,7 +22,7 @@ vec4   dvd_Colour;
 #include "boneTransforms.vert"
 #endif // USE_GPU_SKINNING
 
-NodeData fetchInputData() {
+NodeTransformData fetchInputData() {
     dvd_Vertex = vec4(inVertexData, 1.0);
 
 #if !defined(USE_MIN_SHADING)
@@ -48,10 +48,10 @@ NodeData fetchInputData() {
 
     VAR._baseInstance = DVD_GL_BASE_INSTANCE;
 
-    return dvd_Matrices[TRANSFORM_IDX];
+    return dvd_Transforms[TRANSFORM_IDX];
 }
 
-void computeData(in NodeData data) {
+void computeData(in NodeTransformData data) {
 #if defined(USE_GPU_SKINNING)
     if (dvd_boneCount(data) > 0) {
         applyBoneTransforms();

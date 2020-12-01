@@ -269,9 +269,15 @@ vec3 getLitColour(in vec3 albedo, in mat4 colourMatrix, in vec3 normalWV, in vec
     return oColour;
 }
 
-vec4 getPixelColour(in vec4 albedo, in NodeData data, in vec3 normalWV, in vec2 uv) {
-    const mat4 colourMatrix = data._colourMatrix;
-    const uint lodLevel = dvd_lodLevel(data);
+vec4 getPixelColour(in vec4 albedo, in NodeMaterialData data, in vec3 normalWV, in vec2 uv) {
+    mat4 colourMatrix = data._colourMatrix;
+    uint lodLevel = 0;
+    { //ToDo: Fix this. Don't look up transforms in the fragment shader -Ionut
+        NodeTransformData transformData = dvd_Transforms[TRANSFORM_IDX];
+        lodLevel = dvd_lodLevel(transformData);
+        const bool isHovered = dvd_isHovered(transformData);
+        colourMatrix[1].g += isHovered ? 0.25f : 0.0f;
+    }
 
     vec4 colour = vec4(getLitColour(albedo.rgb, colourMatrix, normalWV, uv, lodLevel), albedo.a);
 #if !defined(DISABLE_SHADOW_MAPPING)

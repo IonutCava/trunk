@@ -119,7 +119,7 @@ void computeTBN(in vec2 uv) {
     ///  Decoupling the tasks simplifies the whole."
     ///
     /// So ... yeah :/
-    const mat3 normalMatrix = NormalMatrixW(dvd_Matrices[TRANSFORM_IDX]);
+    const mat3 normalMatrix = NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]);
 
     const vec3 N = getVertNormal(uv);
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);

@@ -34,7 +34,7 @@ void main(void)
 #include "lightingDefaults.vert"
 
 void main() {
-    const NodeData data = fetchInputData();
+    const NodeTransformData data = fetchInputData();
     computeData(data);
     setClipPlanes();
     computeLightVectors(data);

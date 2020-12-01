@@ -18,9 +18,9 @@ struct IndirectDrawCommand {
     uint baseInstance;
 };
 
-layout(binding = BUFFER_NODE_INFO, std430) coherent COMP_ONLY_R buffer dvd_MatrixBlock
+layout(binding = BUFFER_NODE_TRANSFORM_DATA, std430) coherent COMP_ONLY_R buffer dvd_TransformBlock
 {
-    NodeData dvd_Matrices[MAX_VISIBLE_NODES];
+    NodeTransformData dvd_Transforms[MAX_VISIBLE_NODES];
 };
 
 
@@ -55,14 +55,14 @@ void main()
     }
 
     // Skip occlusion cull if the flag is negative
-    if (dvd_cullNode(dvd_Matrices[transformIndex])) {
+    if (dvd_cullNode(dvd_Transforms[transformIndex])) {
         return;
     }
 
 
-    const vec3 boundsCenter = dvd_Matrices[transformIndex]._normalMatrixW[3].xyz;
-    const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Matrices[transformIndex]._normalMatrixW[1][3]));
-    const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Matrices[transformIndex]._normalMatrixW[2][3]));
+    const vec3 boundsCenter = dvd_Transforms[transformIndex]._normalMatrixW[3].xyz;
+    const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Transforms[transformIndex]._normalMatrixW[1][3]));
+    const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Transforms[transformIndex]._normalMatrixW[2][3]));
 
     const vec3 bBoxHExtents = vec3(bboxHalfExtentsXY, bboxHalfExtentsZRadius.x);
 

@@ -15,7 +15,7 @@ void computeViewDirection(in vec3 toCamera) {
 #endif //!PRE_PASS && !SHADOW_PASS
 }
 
-void computeLightVectors(in NodeData data) {
+void computeLightVectors(in NodeTransformData data) {
 #if !defined(USE_MIN_SHADING)
 
 #if (!defined(PRE_PASS) && !defined(SHADOW_PASS)) || defined(COMPUTE_TBN)

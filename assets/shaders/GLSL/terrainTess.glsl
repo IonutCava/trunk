@@ -52,7 +52,7 @@ vec4 ReconstructPosition() {
 void main(void)
 {
     const vec4 displacedPos = ReconstructPosition();
-    _out._vertexW = dvd_Matrices[TRANSFORM_IDX]._worldMatrix * displacedPos;
+    _out._vertexW = dvd_Transforms[TRANSFORM_IDX]._worldMatrix * displacedPos;
     gl_Position = displacedPos;
 }
 
@@ -377,7 +377,7 @@ void computeNormalData(in vec2 uv) {
 #if !defined(USE_DEFERRED_NORMALS)
     _out._tbnViewDir = vec3(0.0f);
 #else //!USE_DEFERRED_NORMALS
-    const mat3 normalMatrix = NormalMatrixW(dvd_Matrices[TRANSFORM_IDX]);
+    const mat3 normalMatrix = NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]);
 
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
     const vec3 T = cross(N, B);
@@ -401,7 +401,7 @@ void main()
                             gl_TessCoord.xy);
 
     _out._texCoord = worldXZtoHeightUV(pos.xz);
-    _out._vertexW = dvd_Matrices[TRANSFORM_IDX]._worldMatrix * vec4(pos.x, getHeight(_out._texCoord), pos.z, 1.0f);
+    _out._vertexW = dvd_Transforms[TRANSFORM_IDX]._worldMatrix * vec4(pos.x, getHeight(_out._texCoord), pos.z, 1.0f);
     setClipPlanes();
     
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
@@ -511,7 +511,6 @@ void main(void)
     const int count = gl_in.length();
 
 #if defined(TOGGLE_NORMALS)
-    NodeData nodeData = dvd_Matrices[TRANSFORM_IDX];
     const float sizeFactor = 0.75f;
     for (int i = 0; i < count; ++i) {
         // In world space
@@ -642,8 +641,8 @@ void main(void)
 {
 #if defined(PRE_PASS)
 #if defined(HAS_PRE_PASS_DATA)
-    NodeData data = dvd_Matrices[TRANSFORM_IDX];
-    prepareData(data);
+    NodeMaterialData data = prepareData();
+
     computeTBN(VAR._texCoord);
 
     writeOutput(data, 
@@ -652,8 +651,7 @@ void main(void)
 #endif //HAS_PRE_PASS_DATA
 #else //PRE_PASS
 
-    NodeData data = dvd_Matrices[TRANSFORM_IDX];
-    prepareData(data);
+    NodeMaterialData data = prepareData();
 
     computeTBN(VAR._texCoord);
 

@@ -43,7 +43,8 @@
 #include "Platform/Video/Headers/RenderPackage.h"
 
 namespace Divide {
-struct NodeData;
+struct NodeTransformData;
+struct NodeMaterialData;
 struct NodeTextureData;
 
 class Camera;
@@ -156,7 +157,8 @@ private:
                             bool playAnimations,
                             D64 interpolationFactor,
                             bool needsInterp,
-                            NodeData& dataOut) const;
+                            NodeTransformData& transformOut,
+                            NodeMaterialData& materialOut) const;
 
 private: //TEMP
     friend class RenderBin;

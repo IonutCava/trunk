@@ -17,20 +17,23 @@ uniform uint DATA_INDICES = 0u;
 
 #include "nodeDataDefinition.cmn"
 
-layout(binding = BUFFER_NODE_INFO, std430) coherent ACCESS_R buffer dvd_MatrixBlock
+layout(binding = BUFFER_NODE_TRANSFORM_DATA, std430) coherent ACCESS_R buffer dvd_TransformBlock
 {
-    NodeData dvd_Matrices[];
+    NodeTransformData dvd_Transforms[];
 };
 
+layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd_MaterialBlock {
+    NodeMaterialData dvd_Materials[];
+};
 
 #if defined(USE_BINDLESS_TEXTURES)
-#define texDiffuse0 dvd_Matrices[MATERIAL_IDX]._texDiffuse0
-#define texOpacityMap dvd_Matrices[MATERIAL_IDX]._texOpacityMap
-#define texDiffuse1 dvd_Matrices[MATERIAL_IDX]._texDiffuse1
-#define texOcclusionMetallicRoughness dvd_Matrices[MATERIAL_IDX]._texOcclusionMetallicRoughness
-#define texHeight dvd_Matrices[MATERIAL_IDX]._texHeight
-#define texProjected dvd_Matrices[MATERIAL_IDX]._texProjected
-#define texNormalMap dvd_Matrices[MATERIAL_IDX]._texNormalMap
+#define texDiffuse0 dvd_Materials[MATERIAL_IDX]._texDiffuse0
+#define texOpacityMap dvd_Materials[MATERIAL_IDX]._texOpacityMap
+#define texDiffuse1 dvd_Materials[MATERIAL_IDX]._texDiffuse1
+#define texOcclusionMetallicRoughness dvd_Materials[MATERIAL_IDX]._texOcclusionMetallicRoughness
+#define texHeight dvd_Materials[MATERIAL_IDX]._texHeight
+#define texProjected dvd_Materials[MATERIAL_IDX]._texProjected
+#define texNormalMap dvd_Materials[MATERIAL_IDX]._texNormalMap
 #else
 layout(binding = TEXTURE_UNIT0)  uniform samplerUnit0 texDiffuse0;
 layout(binding = TEXTURE_UNIT1)  uniform samplerUnit1 texDiffuse1;
@@ -46,9 +49,11 @@ layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
 
 uint TexOperation = 0;
 uint BumpMethod = 0;
-void prepareData(in NodeData data) {
+NodeMaterialData prepareData() {
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
     TexOperation = dvd_texOperation(data);
     BumpMethod = dvd_bumpMethod(data);
+    return data;
 }
 #endif
 

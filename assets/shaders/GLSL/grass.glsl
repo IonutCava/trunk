@@ -24,7 +24,7 @@ vec3 rotate_vertex_position(vec3 position, vec4 q) {
 }
 
 void main() {
-    const NodeData nodeData = fetchInputData();
+    const NodeTransformData nodeData = fetchInputData();
 
     VegetationData data = GrassData(gl_InstanceID);
 
@@ -88,8 +88,7 @@ layout(location = 1) in float _alphaFactor;
 #define texDiffuseGrass texDiffuse0
 
 void main (void){
-    NodeData data = dvd_Matrices[TRANSFORM_IDX];
-    prepareData(data);
+    NodeMaterialData data = prepareData();
 
     const vec2 uv = VAR._texCoord;
 
@@ -121,8 +120,7 @@ void main() {
     }
 
 #if defined(HAS_PRE_PASS_DATA)
-    NodeData data = dvd_Matrices[TRANSFORM_IDX];
-    prepareData(data);
+    NodeMaterialData data = prepareData();
 
     writeOutput(data,
                 VAR._texCoord,

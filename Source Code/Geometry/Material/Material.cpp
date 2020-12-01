@@ -1170,30 +1170,33 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-void Material::getMaterialMatrix(mat4<F32>& retMatrix, NodeData& texturesOut) {
+void Material::getData(NodeMaterialData& dataOut) {
     uploadTextures();
 
     constexpr F32 reserved = 1.f;
 
     const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
-    texturesOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
-    texturesOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
-    texturesOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
-    texturesOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-    texturesOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
-    texturesOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
-    texturesOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
+    dataOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
+    dataOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
+    dataOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
+    dataOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
+    dataOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
+    dataOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
+    dataOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
 
-    retMatrix.setRow(0, baseColour());
-    retMatrix.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });
-    retMatrix.element(2, 0) = to_F32(matPropertiesPacked);
-    retMatrix.element(2, 1) = 1.f; //IBL Texture Size
-    retMatrix.element(2, 2) = reserved;
-    retMatrix.element(2, 3) = reserved;
-    retMatrix.element(3, 0) = reserved;
-    retMatrix.element(3, 1) = reserved;
-    retMatrix.element(3, 2) = reserved;
-    retMatrix.element(3, 3) = reserved;
+    const U32 matTexturingPropertiesPacked = Util::PACK_UNORM4x8(to_U8(textureOperation()), to_U8(bumpMethod()), 1u, 1u);
+
+    mat4<F32>& mat = dataOut._colourMatrix;
+    mat.setRow(0, baseColour());
+    mat.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });
+    mat.element(2, 0) = to_F32(matPropertiesPacked);
+    mat.element(2, 1) = 1.f; //IBL Texture Size
+    mat.element(2, 2) = to_F32(matTexturingPropertiesPacked);
+    mat.element(2, 3) = reserved;
+    mat.element(3, 0) = reserved;
+    mat.element(3, 1) = reserved;
+    mat.element(3, 2) = reserved;
+    mat.element(3, 3) = reserved;
 }
 
 void Material::rebuild() {

@@ -20,7 +20,7 @@ void computeFoliageMovementTree(inout vec4 vertex, in float heightExtent) {
 
 void main(void){
 
-    const NodeData nodeData = fetchInputData();
+    const NodeTransformData nodeData = fetchInputData();
 
     const VegetationData data = TreeData(gl_InstanceID);
 

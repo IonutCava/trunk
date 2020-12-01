@@ -55,8 +55,7 @@ void main(void) {
 
 void main() {
 #if defined(HAS_PRE_PASS_DATA)
-    NodeData data = dvd_Matrices[TRANSFORM_IDX];
-    prepareData(data);
+    NodeMaterialData data = prepareData();
 
     writeOutput(data, 
                 VAR._texCoord,

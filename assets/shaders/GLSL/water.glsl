@@ -7,7 +7,7 @@ layout(location = 0) out flat int _underwater;
 
 void main(void)
 {
-    const NodeData data = fetchInputData();
+    const NodeTransformData data = fetchInputData();
     computeData(data);
     setClipPlanes();
     computeLightVectors(data);
@@ -62,8 +62,7 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 
 void main()
 {
-    NodeData data = dvd_Matrices[TRANSFORM_IDX];
-    prepareData(data);
+    NodeMaterialData data = prepareData();
 
 #if defined(PRE_PASS)
 #if defined(HAS_PRE_PASS_DATA)

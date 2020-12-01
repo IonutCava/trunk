@@ -507,8 +507,14 @@ bool GL_API::initGLSW(Configuration& config) {
 
     appendToShaderHeader(
         ShaderType::COUNT,
-        "#define BUFFER_NODE_INFO " +
-        Util::to_string(to_base(ShaderBufferLocation::NODE_INFO)),
+        "#define BUFFER_NODE_TRANSFORM_DATA " +
+        Util::to_string(to_base(ShaderBufferLocation::NODE_TRANSFORM_DATA)),
+        lineOffsets);
+    
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_NODE_MATERIAL_DATA " +
+        Util::to_string(to_base(ShaderBufferLocation::NODE_MATERIAL_DATA)),
         lineOffsets);
 
     appendToShaderHeader(

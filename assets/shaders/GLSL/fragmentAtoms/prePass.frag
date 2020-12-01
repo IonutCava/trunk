@@ -26,7 +26,7 @@ layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
 #include "velocityCalc.frag"
 #endif
 
-void writeOutput(in NodeData nodeData,
+void writeOutput(in NodeMaterialData nodeData,
                  vec2 uv,
                  vec3 normal,
                  float alphaFactor,
@@ -44,7 +44,7 @@ void writeOutput(in NodeData nodeData,
     _extraDetailsOut.rg = vec2(1.0f, extraFlag);
 #endif
 }
-void writeOutput(in NodeData nodeData,
+void writeOutput(in NodeMaterialData nodeData,
                 vec2 uv,
                 vec3 normal,
                 float alphaFactor)
@@ -54,7 +54,7 @@ void writeOutput(in NodeData nodeData,
 #endif //HAS_PRE_PASS_DATA
 }
 
-void writeOutput(in NodeData nodeData,
+void writeOutput(in NodeMaterialData nodeData,
                  vec2 uv,
                  vec3 normal) 
 {

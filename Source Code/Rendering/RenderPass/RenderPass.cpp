@@ -93,19 +93,35 @@ void RenderPass::initBufferData() {
             _cullCounter = _context.newSB(bufferDescriptor);
         }
     }
-    {// Node Data buffer
+    {// Node Transform buffer
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
         bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
-        bufferDescriptor._elementSize = sizeof(NodeData);
+        bufferDescriptor._elementSize = sizeof(NodeTransformData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = DataBufferRingSize;
         bufferDescriptor._separateReadWrite = false;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
         { 
-            bufferDescriptor._name = Util::StringFormat("NODE_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
-            _nodeData = _context.newSB(bufferDescriptor);
+            bufferDescriptor._name = Util::StringFormat("NODE_TRANSFORM_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
+            _transformData = _context.newSB(bufferDescriptor);
+        }
+
+    }
+    {// Node Material buffer
+        ShaderBufferDescriptor bufferDescriptor = {};
+        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementSize = sizeof(NodeMaterialData);
+        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._ringBufferLength = DataBufferRingSize;
+        bufferDescriptor._separateReadWrite = false;
+        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+        {
+            bufferDescriptor._name = Util::StringFormat("NODE_MATERIAL_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
+            _materialData = _context.newSB(bufferDescriptor);
         }
 
     }
@@ -166,7 +182,8 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
 
     BufferData ret;
     ret._cullCounter = _cullCounter;
-    ret._nodeData = _nodeData;
+    ret._transformData = _transformData;
+    ret._materialData = _materialData;
     ret._cmdBuffer = _cmdBuffer;
     ret._elementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
     ret._lastCommandCount = &_lastCmdCount;
@@ -347,7 +364,8 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 void RenderPass::postRender() const {
     OPTICK_EVENT();
 
-    _nodeData->incQueue();
+    _transformData->incQueue();
+    _materialData->incQueue();
     _cmdBuffer->incQueue();
 }
 

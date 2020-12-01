@@ -51,12 +51,13 @@ class RenderPassManager;
 enum class RenderStage : U8;
 
 // A RenderPass may contain multiple linked stages.
-// Useful to avoid having multiple renderqueues per pass if 2 stages depend on one:
-// E.g.: PRE_PASS + MAIN_PASS share the same renderqueue
+// Useful to avoid having multiple RenderQueues per pass if 2 stages depend on one:
+// E.g.: PRE_PASS + MAIN_PASS share the same RenderQueue
 class RenderPass : NonCopyable {
    public:
        struct BufferData {
-           ShaderBuffer* _nodeData = nullptr;
+           ShaderBuffer* _transformData = nullptr;
+           ShaderBuffer* _materialData = nullptr;
            ShaderBuffer* _cullCounter = nullptr;
            ShaderBuffer* _cmdBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
@@ -96,7 +97,8 @@ class RenderPass : NonCopyable {
     Str64 _name = "";
     RenderStage _stageFlag = RenderStage::COUNT;
 
-    ShaderBuffer* _nodeData = nullptr;
+    ShaderBuffer* _transformData = nullptr;
+    ShaderBuffer* _materialData = nullptr;
     ShaderBuffer* _cullCounter = nullptr;
     ShaderBuffer* _cmdBuffer = nullptr;
 

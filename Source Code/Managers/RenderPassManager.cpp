@@ -36,10 +36,15 @@ namespace Divide {
             RenderBin::SortedQueues _sortedQueues;
             DrawCommandContainer _drawCommands;
 
-            std::array<NodeData, Config::MAX_VISIBLE_NODES> _nodeData;
+            std::array<NodeTransformData, Config::MAX_VISIBLE_NODES> _nodeTransformData;
+            std::array<NodeMaterialData, Config::MAX_VISIBLE_NODES>  _nodeMaterialData;
 
-            bufferPtr data() const {
-                return (bufferPtr)_nodeData.data();
+            bufferPtr transformData() const {
+                return (bufferPtr)_nodeTransformData.data();
+            }
+
+            bufferPtr materialData() const {
+                return (bufferPtr)_nodeMaterialData.data();
             }
         };
 
@@ -356,29 +361,34 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
                                            const bool playAnimations,
                                            const D64 interpolationFactor,
                                            const bool needsInterp,
-                                           NodeData& dataOut) const {
+                                           NodeTransformData& transformOut,
+                                           NodeMaterialData& materialOut) const {
     OPTICK_EVENT();
 
     constexpr F32 reserved = 0.0f;
 
     const SceneGraphNode* node = rComp.getSGN();
+
+    // Get the colour matrix (base colour, metallic, etc)
+    rComp.getMaterialData(materialOut);
+
     const TransformComponent* const transform = node->get<TransformComponent>();
     assert(transform != nullptr);
 
     // ... get the node's world matrix properly interpolated
-    transform->getPreviousWorldMatrix(dataOut._prevWorldMatrix);
+    transform->getPreviousWorldMatrix(transformOut._prevWorldMatrix);
     if (needsInterp) {
-        transform->getWorldMatrix(interpolationFactor, dataOut._worldMatrix);
+        transform->getWorldMatrix(interpolationFactor, transformOut._worldMatrix);
     } else {
-        transform->getWorldMatrix(dataOut._worldMatrix);
+        transform->getWorldMatrix(transformOut._worldMatrix);
     }
 
-    dataOut._normalMatrixW.set(dataOut._worldMatrix);
-    dataOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
+    transformOut._normalMatrixW.set(transformOut._worldMatrix);
+    transformOut._normalMatrixW.setRow(3, 0.0f, 0.0f, 0.0f, 1.0f);
     if (!transform->isUniformScaled()) {
         // Non-uniform scaling requires an inverseTranspose to negate
         // scaling contribution but preserve rotation
-        dataOut._normalMatrixW.inverseTranspose();
+        transformOut._normalMatrixW.inverseTranspose();
     }
 
     // Get the material property matrix (alpha test, texture count, texture operation, etc.)
@@ -391,41 +401,30 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
             frameTicked = animComp->frameTicked();
         }
     }
-
+    
     RenderingComponent::NodeRenderingProperties properties = {};
     rComp.getRenderingProperties(stagePass, properties);
-
+    const bool isHovered = stagePass._stage == RenderStage::DISPLAY && properties._isHovered;
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     const BoundsComponent* const bounds = node->get<BoundsComponent>();
     const vec4<F32> bSphere = bounds->getBoundingSphere().asVec4();
     const vec3<F32> bBoxHalfExtents = bounds->getBoundingBox().getHalfExtent();
 
-    dataOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, 0.f});
+    transformOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, 0.f});
 
-    dataOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod,  to_U8(properties._texOperation),  to_U8(properties._bumpMethod)));
-    dataOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
-    dataOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
-    dataOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved ));
+    transformOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, isHovered ? 1u : 0u, 1u));
+    transformOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
+    transformOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
+    transformOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved ));
 
-    // Get the colour matrix (base colour, metallic, etc)
-    rComp.getMaterialColourMatrix(dataOut._colourMatrix, dataOut);
-    dataOut._colourMatrix.element(3, 2) = reserved;
-
-    // Temp: Make the hovered node brighter by setting emissive to something bright
-    if (stagePass._stage == RenderStage::DISPLAY && properties._isHovered) {
-        FColour4 matColour = dataOut._colourMatrix.getRow(2);
-        matColour.g += 0.25f;
-        dataOut._colourMatrix.setRow(2, matColour);
-    }
-
-    dataOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1.0f : 0.0f,
-                                                                        properties._occlusionCull ? 1.0f : 0.0f,
-                                                                        reserved,
-                                                                        reserved));
-    dataOut._prevWorldMatrix.element(1, 3) = reserved;
-    dataOut._prevWorldMatrix.element(2, 3) = reserved;
-    dataOut._prevWorldMatrix.element(3, 3) = reserved;
+    transformOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1.0f : 0.0f,
+                                                                             properties._occlusionCull ? 1.0f : 0.0f,
+                                                                             reserved,
+                                                                             reserved));
+    transformOut._prevWorldMatrix.element(1, 3) = reserved;
+    transformOut._prevWorldMatrix.element(2, 3) = reserved;
+    transformOut._prevWorldMatrix.element(3, 3) = reserved;
 }
 
 U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
@@ -484,8 +483,9 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             for (RenderingComponent* rComp : queue) {
                 
                 if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
-                    NodeData& data = passData._nodeData[bufferParams._dataIndex._transformIDX];
-                    processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, data);
+                    NodeTransformData& transform = passData._nodeTransformData[bufferParams._dataIndex._transformIDX];
+                    NodeMaterialData& material = passData._nodeMaterialData[bufferParams._dataIndex._materialIDX];
+                    processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, transform, material);
                     ++bufferParams._dataIndex._transformIDX;
                     ++bufferParams._dataIndex._materialIDX;
                     ++nodeCount;
@@ -498,10 +498,15 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
 
         {
             OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
-            bufferData._nodeData->writeData(
+            bufferData._transformData->writeData(
                 bufferData._elementOffset,
                 *bufferData._lastNodeCount,
-                passData.data());
+                passData.transformData());
+
+            bufferData._materialData->writeData(
+                bufferData._elementOffset,
+                *bufferData._lastNodeCount,
+                passData.materialData());
 
             bufferData._cmdBuffer->writeData(
                 bufferData._elementOffset,
@@ -514,15 +519,20 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         cmdBuffer._buffer = bufferData._cmdBuffer;
         cmdBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastCommandCount };
 
-        ShaderBufferBinding dataBuffer = {};
-        dataBuffer._binding = ShaderBufferLocation::NODE_INFO;
-        dataBuffer._buffer = bufferData._nodeData;
-        dataBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
+        ShaderBufferBinding transformBuffer = {};
+        transformBuffer._binding = ShaderBufferLocation::NODE_TRANSFORM_DATA;
+        transformBuffer._buffer = bufferData._transformData;
+        transformBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
 
+        ShaderBufferBinding materialBuffer = {};
+        materialBuffer._binding = ShaderBufferLocation::NODE_MATERIAL_DATA;
+        materialBuffer._buffer = bufferData._materialData;
+        materialBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
-        descriptorSetCmd._set.addShaderBuffer(dataBuffer);
+        descriptorSetCmd._set.addShaderBuffer(transformBuffer);
+        descriptorSetCmd._set.addShaderBuffer(materialBuffer);
         EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
