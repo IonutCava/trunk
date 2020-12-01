@@ -71,63 +71,36 @@ float specularAntiAliasing(vec3 N, float a) {
     return saturate(a + kernelRoughness2);
 }
 
-float getSSAO() {
 #if defined(USE_SSAO)
-    return texture(texGBufferExtra, dvd_screenPositionNormalised).r;
+#define SSAOFactor texture(texGBufferExtra, dvd_screenPositionNormalised).r
 #else
-    return 1.0f;
+#define SSAOFactor 1.0f
 #endif
-}
 
-vec3 getSpecular(in vec3 diffColour, in float metallic) {
-    return mix(F0, diffColour, metallic);
-}
+#define SpecularColour(diffColour, metallic) mix(F0, diffColour, metallic)
 
 #if defined(USE_CUSTOM_ROUGHNESS)
-vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv);
+vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv);
 #else //USE_CUSTOM_ROUGHNESS
-vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 #if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
     vec3 omr = saturate(texture(texOcclusionMetallicRoughness, uv).rgb);
 #if defined(PBR_SHADING)
     return omr;
 #else
     // Convert specular to roughness ... roughly? really wrong, but should work I guesssssssssss. -Ionut
-    return saturate(vec3(PACKED_OMR(colourMatrix).rg, 1.0f - omr[2]));
+    return saturate(vec3(PACKED_OMR(data).rg, 1.0f - omr[2]));
 #endif
 #else
-    return saturate(PACKED_OMR(colourMatrix).rgb);
+    return saturate(PACKED_OMR(data).rgb);
 #endif
 }
 #endif //USE_CUSTOM_ROUGHNESS
 
-vec3 getEmissive(in mat4 colourMatrix) {
-    return EmissiveColour(colourMatrix);
-}
-
-void setEmissive(in mat4 colourMatrix, in vec3 value) {
-    EmissiveColour(colourMatrix) = value;
-}
-
 #endif //PRE_PASS
-float getOpacity(in mat4 colourMatrix, in float albedoAlpha, in vec2 uv) {
-#if defined(HAS_TRANSPARENCY)
-#   if defined(USE_OPACITY_MAP)
-#       if defined(USE_OPACITY_MAP_RED_CHANNEL)
-            return texture(texOpacityMap, uv).r;
-#       else
-            return texture(texOpacityMap, uv).a;
-#       endif
-#   else
-        return albedoAlpha;
-#   endif
-#else
-    return 1.0;
-#endif
-}
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
-vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
+vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
 #define TEX_NONE 0
 #define TEX_MODULATE 1
 #define TEX_ADD  2
@@ -139,7 +112,7 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
 #define TEX_REPLACE  8
 
 #if defined(SKIP_TEX0)
-    if (TexOperation != TEX_NONE) {
+    if (texOperation != TEX_NONE) {
         return texture(texDiffuse1, uv);
     }
         
@@ -147,7 +120,7 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
 #else
     vec4 colour = texture(texDiffuse0, uv);
     // Read from the second texture (if any)
-    switch (TexOperation) {
+    switch (texOperation) {
         default:
             //hot pink to easily spot it in a crowd
             colour = vec4(0.7743, 0.3188, 0.5465, 1.0);
@@ -189,10 +162,17 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv) {
 #endif
 }
 
-vec4 getAlbedo(in mat4 colourMatrix, in vec2 uv) {
-    vec4 albedo = getTextureColour(BaseColour(colourMatrix), uv);
-    albedo.a = getOpacity(colourMatrix, albedo.a, uv);
-
+vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {
+    vec4 albedo = getTextureColour(BaseColour(data), uv, dvd_texOperation(data));
+#if defined(HAS_TRANSPARENCY)
+#   if defined(USE_OPACITY_MAP)
+#       if defined(USE_OPACITY_MAP_RED_CHANNEL)
+            albedo.a = texture(texOpacityMap, uv).r;
+#       else
+            albedo.a = texture(texOpacityMap, uv).a;
+#       endif
+#   endif
+#endif
     return albedo;
 }
 #endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
@@ -212,7 +192,7 @@ vec3 getNormalWV(in vec2 uv) {
     vec3 normalWV = VAR._normalWV;
 
 #   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
-        if (BumpMethod != BUMP_NONE) {
+        if (dvd_bumpMethod(MATERIAL_IDX) != BUMP_NONE) {
             normalWV = getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f);
         }
 #   endif //COMPUTE_TBN

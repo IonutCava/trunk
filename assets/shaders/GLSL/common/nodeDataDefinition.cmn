@@ -60,18 +60,16 @@ struct NodeTransformData {
 
 struct NodeMaterialData
 {
-    // [0][0...3] = base colour
-    // [1][0...2] = emissive
-    // [1][3]     = parallax factor
-    // [2][0]     = 4x8U: occlusion, metallic, roughness, reserved
-    // [2][1]     = IBL texture size
-    // [2][2]     = 4x8U: tex op, bump method, reserved, reserved
-    // [2][3]     = reserved
-    // [3][0]     = reserved
-    // [3][1]     = reserved
-    // [3][2]     = reserved
-    // [3][3]     = reserved
-    mat4 _colourMatrix;
+    //base colour
+    vec4 _albedo;
+    //rgb - emissive, 
+    //a   - parallax factor
+    vec4 _emissiveAndParallax;
+    //x = 4x8U: occlusion, metallic, roughness, reserved
+    //y = IBL texture size
+    //z = 4x8U: tex op, bump method, reserved, reserved
+    //w = reserved
+    uvec4 _data;  
 
 #if defined(USE_BINDLESS_TEXTURES)
     samplerUnit0 _texDiffuse0;
@@ -87,20 +85,25 @@ struct NodeMaterialData
 #endif //USE_BINDLESS_TEXTURES
 };
 
-#define PACKED_OMR(colourMat) unpackUnorm4x8(uint(colourMat[1][0]))
+#define PACKED_OMR(materialData) unpackUnorm4x8(materialData._data.x)
 
-#define BaseColour(colourMat) colourMat[0].rgba
+#define BaseColour(materialData) materialData._albedo
 
-#define EmissiveColour(colourMat) colourMat[1].rgb
+#define EmissiveColour(materialData) materialData._emissiveAndParallax.rgb
 
-#define Occlusion(colourMat) PACKED_OMR(colourMat).r
+#define Occlusion(materialData) PACKED_OMR(materialData).r
 
-#define Metallic(colourMat) PACKED_OMR(colourMat).g
+#define Metallic(materialData) PACKED_OMR(materialData).g
 
-#define Roughness(colourMat) PACKED_OMR(colourMat).b
+#define Roughness(materialData) PACKED_OMR(materialData).b
 
-#define IBLSize(colourMat) uint(colourMat[2][1])
+#define IBLSize(materialData) materialData._data.y
 
+#define dvd_texOperation(materialData) uint(unpackUnorm4x8(materialData._data.z).x * 255)
+
+#define dvd_bumpMethod(X)  uint(unpackUnorm4x8(dvd_Materials[X]._data.z).y * 255)
+
+#define dvd_parallaxFactor(X)  dvd_Materials[X]._emissiveAndParallax.a
 
 #define NormalMatrixW(transformData) mat3(transformData._normalMatrixW)
 
@@ -116,10 +119,5 @@ struct NodeMaterialData
 
 #define dvd_cullNode(transformData) (uint(unpackUnorm4x8(uint(transformData._prevWorldMatrix[0][3])).y * 255) == 1)
 
-#define dvd_texOperation(materialData) uint(unpackUnorm4x8(uint(materialData._colourMatrix[2][2])).x * 255)
-
-#define dvd_bumpMethod(materialData)  uint(unpackUnorm4x8(uint(materialData._colourMatrix[2][2])).y * 255)
-
-#define dvd_parallaxFactor(X)  dvd_Materials[X]._colourMatrix[1][3]
 
 #endif //_NODE_DATA_DEFINITION_CMN_

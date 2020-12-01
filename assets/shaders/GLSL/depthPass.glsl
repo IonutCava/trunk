@@ -4,7 +4,7 @@
 
 void main() {
 #if defined(HAS_PRE_PASS_DATA)
-    NodeMaterialData data = prepareData();
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
     writeOutput(data,
                 VAR._texCoord,
@@ -24,10 +24,8 @@ void main() {
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    NodeMaterialData data = prepareData();
-
-    mat4 colourMatrix = data._colourMatrix;
-    if (getAlbedo(colourMatrix, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
+    if (getAlbedo(data, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif
@@ -49,10 +47,8 @@ out vec2 _colourOut;
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    NodeMaterialData data = prepareData();
-
-    mat4 colourMatrix = data._colourMatrix;
-    if (getAlbedo(colourMatrix, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
+    if (getAlbedo(data, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif

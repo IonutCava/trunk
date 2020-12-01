@@ -10,9 +10,9 @@ layout(early_fragment_tests) in;
 #include "output.frag"
 
 void main (void) {
-    NodeMaterialData data = prepareData();
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
-    vec4 albedo = getAlbedo(data._colourMatrix, VAR._texCoord);
+    vec4 albedo = getAlbedo(data, VAR._texCoord);
   
 #if !defined(OIT_PASS) && defined(USE_ALPHA_DISCARD)
     float alpha = albedo.a;

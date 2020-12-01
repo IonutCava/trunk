@@ -33,7 +33,7 @@ void writeOutput(in NodeMaterialData nodeData,
                  float extraFlag)
 {
 #if defined(USE_ALPHA_DISCARD)
-    float alpha = getAlbedo(nodeData._colourMatrix, uv).a;
+    float alpha = getAlbedo(nodeData, uv).a;
     if (alpha * alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }

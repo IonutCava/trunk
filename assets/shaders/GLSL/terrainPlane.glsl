@@ -55,7 +55,7 @@ void main(void) {
 
 void main() {
 #if defined(HAS_PRE_PASS_DATA)
-    NodeMaterialData data = prepareData();
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
     writeOutput(data, 
                 VAR._texCoord,

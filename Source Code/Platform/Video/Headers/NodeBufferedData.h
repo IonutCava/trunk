@@ -59,18 +59,16 @@ namespace Divide {
 
     struct NodeMaterialData
     {
-        // [0][0...3] = base colour
-        // [1][0...2] = emissive
-        // [1][3]     = parallax factor
-        // [2][0]     = 4x8U: occlusion, metallic, roughness, reserved
-        // [2][1]     = IBL texture size
-        // [2][2]     = 4x8U: tex op, bump method, reserved, reserved
-        // [2][3]     = reserved
-        // [3][0]     = reserved
-        // [3][1]     = reserved
-        // [3][2]     = reserved
-        // [3][3]     = reserved
-        mat4<F32> _colourMatrix = MAT4_ZERO;
+        //base colour
+        vec4<F32> _albedo;
+        //rgb - emissive, 
+        //a   - parallax factor
+        vec4<F32> _emissiveAndParallax;
+        //x = 4x8U: occlusion, metallic, roughness, reserved
+        //y = IBL texture size
+        //z = 4x8U: tex op, bump method, reserved, reserved
+        //w = reserved
+        vec4<U32> _data;
 
         SamplerAddress _texDiffuse0 = 0u;
         SamplerAddress _texOpacityMap = 0u;
@@ -79,7 +77,6 @@ namespace Divide {
         SamplerAddress _texHeight = 0u;
         SamplerAddress _texProjected = 0u;
         SamplerAddress _texNormalMap = 0u;
-
         F32 _padding[2] = { 0u, 0u };
     };
 ;

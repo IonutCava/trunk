@@ -410,7 +410,7 @@ void RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
         _materialInstance->getData(dataOut);
 
         SharedLock<SharedMutex> r_lock(_reflectionLock);
-        dataOut._colourMatrix.element(2, 1) = _reflectionTexture != nullptr ? to_F32(_reflectionTexture->width()) : 1.0f;
+        dataOut._data.y = _reflectionTexture != nullptr ? _reflectionTexture->width() : 1u;
     }
 }
 

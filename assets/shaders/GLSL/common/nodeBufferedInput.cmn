@@ -45,16 +45,4 @@ layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
 
 #endif //USE_BINDLESS_TEXTURES
 
-#if defined(FRAG_SHADER)
-
-uint TexOperation = 0;
-uint BumpMethod = 0;
-NodeMaterialData prepareData() {
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    TexOperation = dvd_texOperation(data);
-    BumpMethod = dvd_bumpMethod(data);
-    return data;
-}
-#endif
-
 #endif //_NODE_BUFFERED_INPUT_CMN_

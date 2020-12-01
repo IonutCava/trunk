@@ -1175,7 +1175,6 @@ void Material::getData(NodeMaterialData& dataOut) {
 
     constexpr F32 reserved = 1.f;
 
-    const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
     dataOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
     dataOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
     dataOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
@@ -1184,19 +1183,14 @@ void Material::getData(NodeMaterialData& dataOut) {
     dataOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
     dataOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
 
+    const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
     const U32 matTexturingPropertiesPacked = Util::PACK_UNORM4x8(to_U8(textureOperation()), to_U8(bumpMethod()), 1u, 1u);
 
-    mat4<F32>& mat = dataOut._colourMatrix;
-    mat.setRow(0, baseColour());
-    mat.setRow(1, vec4<F32>{ emissive(), parallaxFactor() });
-    mat.element(2, 0) = to_F32(matPropertiesPacked);
-    mat.element(2, 1) = 1.f; //IBL Texture Size
-    mat.element(2, 2) = to_F32(matTexturingPropertiesPacked);
-    mat.element(2, 3) = reserved;
-    mat.element(3, 0) = reserved;
-    mat.element(3, 1) = reserved;
-    mat.element(3, 2) = reserved;
-    mat.element(3, 3) = reserved;
+    dataOut._albedo.set(baseColour());
+    dataOut._emissiveAndParallax.set(emissive(), parallaxFactor());
+    dataOut._data.x = matPropertiesPacked;
+    dataOut._data.y = 1; //IBL Texture Size
+    dataOut._data.z = matTexturingPropertiesPacked;
 }
 
 void Material::rebuild() {

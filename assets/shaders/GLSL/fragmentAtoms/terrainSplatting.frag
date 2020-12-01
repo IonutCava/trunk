@@ -199,11 +199,13 @@ vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
     vec2 scaledCoords = scaledTextureCoords(uv);
 
 #if !defined(LOW_QUALITY) && defined(HAS_PARALLAX)
-    if (dvd_LoD < 2 && BumpMethod != BUMP_NONE) {
+    uint bumpMethod = dvd_bumpMethod(MATERIAL_IDX);
+
+    if (dvd_LoD < 2 && bumpMethod != BUMP_NONE) {
         float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-        if (BumpMethod == BUMP_PARALLAX) {
+        if (bumpMethod == BUMP_PARALLAX) {
             return ParallaxOffset(scaledCoords, currentHeight);
-        } else if (BumpMethod == BUMP_PARALLAX_OCCLUSION) {
+        } else if (bumpMethod == BUMP_PARALLAX_OCCLUSION) {
             return ParallaxOcclusionMapping(uv, currentHeight, amnt);
         }
     }

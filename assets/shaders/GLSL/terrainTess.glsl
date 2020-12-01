@@ -623,14 +623,14 @@ layout(location = 13) noperspective in vec3 gs_edgeDist;
 #if !defined(PRE_PASS)
 #if defined(LOW_QUALITY)
 
-vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
     return vec3(0.0f, 0.0f, 0.8f);
 }
 
 #else //LOW_QUALITY
 
 float _private_roughness = 0.0f;
-vec3 getOcclusionMetallicRoughness(in mat4 colourMatrix, in vec2 uv) {
+vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
     return vec3(0.0f, 0.0f, _private_roughness);
 }
 
@@ -641,7 +641,7 @@ void main(void)
 {
 #if defined(PRE_PASS)
 #if defined(HAS_PRE_PASS_DATA)
-    NodeMaterialData data = prepareData();
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
     computeTBN(VAR._texCoord);
 
@@ -651,7 +651,7 @@ void main(void)
 #endif //HAS_PRE_PASS_DATA
 #else //PRE_PASS
 
-    NodeMaterialData data = prepareData();
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
     computeTBN(VAR._texCoord);
 

@@ -59,7 +59,6 @@ void main()
         return;
     }
 
-
     const vec3 boundsCenter = dvd_Transforms[transformIndex]._normalMatrixW[3].xyz;
     const vec2 bboxHalfExtentsXY = unpackHalf2x16(uint(dvd_Transforms[transformIndex]._normalMatrixW[1][3]));
     const vec2 bboxHalfExtentsZRadius = unpackHalf2x16(uint(dvd_Transforms[transformIndex]._normalMatrixW[2][3]));
