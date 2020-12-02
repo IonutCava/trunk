@@ -37,7 +37,6 @@ namespace {
 
 RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<RenderingComponent, ComponentType::RENDERING>(parentSGN, context),
-      _rebuildDrawCommandsFlags{},
       _context(context.gfx()),
       _config(context.config())
 {
@@ -357,17 +356,18 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     }
 }
 
-bool RenderingComponent::setDataIndex(NodeDataIdx& dataIndex, RefreshNodeDataParams& refreshParams) {
-    const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
+void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderStagePass& stagePass, DrawCommandContainer& drawCommandsInOut) {
+    const U32 startOffset = to_U32(drawCommandsInOut.size());
 
-    RenderStagePass tempStagePass = *refreshParams._stagePass;
-    const RenderStage stage = tempStagePass._stage;
+    const RenderStage stage = stagePass._stage;
 
     const U8 lodLevel = _lodLevels[to_base(stage)];
-    RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
+    RenderPackage& pkg = getDrawPackage(stagePass);
     Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
     if (stage != RenderStage::SHADOW) {
-        const RenderPassType passType = tempStagePass._passType;
+        const RenderPassType passType = stagePass._passType;
+
+        RenderStagePass tempStagePass = stagePass;
         for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
             if (i == to_U8(passType)) {
                 continue;
@@ -380,28 +380,15 @@ bool RenderingComponent::setDataIndex(NodeDataIdx& dataIndex, RefreshNodeDataPar
 
     const I32 drawCommandCount = pkg.drawCommandCount();
     for (I32 i = 0; i < drawCommandCount; ++i) {
-        refreshParams._drawCommandsInOut->push_back(pkg.drawCommand(i, 0)._cmd);
+        drawCommandsInOut.push_back(pkg.drawCommand(i, 0)._cmd);
     }
-
-    return true;
 }
 
-bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, Camera* camera, const bool quick, GFX::CommandBuffer& bufferInOut) {
+bool RenderingComponent::onRefreshNodeData(const RenderStagePass& stagePass, Camera* camera, const bool quick, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *camera, !quick, bufferInOut);
-
-    if (quick) {
-        // Nothing yet
-        return true;
-    }
-
-    RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
-    if (pkg.empty()) {
-        return false;
-    }
-
-    return pkg.drawCommandCount() > 0u;
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, stagePass, *camera, !quick, bufferInOut);
+    return quick ? true : getDrawPackage(stagePass).hasDrawComands();
 }
 
 size_t RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
@@ -507,7 +494,7 @@ bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
 
         if (pkg.empty() || getRebuildFlag(renderStagePass)) {
             rebuildDrawCommands(renderStagePass, camera, pkg);
-            getRebuildFlag(renderStagePass) = false;
+            setRebuildFlag(renderStagePass, false);
         }
 
         if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
@@ -544,15 +531,15 @@ const RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& r
     return _renderPackages[s][p][i];
 }
 
-bool& RenderingComponent::getRebuildFlag(const RenderStagePass& renderStagePass) {
+void RenderingComponent::setRebuildFlag(const RenderStagePass& renderStagePass, const bool state) {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
     const U16 i = RenderStagePass::indexForStage(renderStagePass);
 
-    return _rebuildDrawCommandsFlags[s][p][i];
+    _rebuildDrawCommandsFlags[s][p][i] = state;
 }
 
-const bool& RenderingComponent::getRebuildFlag(const RenderStagePass& renderStagePass) const {
+const bool RenderingComponent::getRebuildFlag(const RenderStagePass& renderStagePass) const {
     const U8 s = to_U8(renderStagePass._stage);
     const U8 p = to_U8(renderStagePass._stage == RenderStage::SHADOW ? RenderPassType::MAIN_PASS : renderStagePass._passType);
     const U16 i = RenderStagePass::indexForStage(renderStagePass);

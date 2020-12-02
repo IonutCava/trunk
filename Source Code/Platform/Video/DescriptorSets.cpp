@@ -160,11 +160,7 @@ namespace Divide {
     }
 
     size_t TextureView::getHash() const noexcept {
-        _hash = 109;
-        if (_texture != nullptr) {
-            Util::Hash_combine(_hash, _texture->data()._textureHandle);
-            Util::Hash_combine(_hash, to_base(_texture->data()._textureType));
-        }
+        _hash = GetHash(_textureData);
 
         Util::Hash_combine(_hash, _mipLevels.x);
         Util::Hash_combine(_hash, _mipLevels.y);

@@ -41,7 +41,7 @@ namespace {
 
 GLStateTracker GL_API::s_stateTracker;
 std::atomic_bool GL_API::s_glFlushQueued;
-GLUtil::glTexturePool GL_API::s_texturePool = {};
+GLUtil::glTextureViewCache GL_API::s_textureViewCache = {};
 GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool = {};
 eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueue;
 
@@ -143,7 +143,7 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
         }
         if (global) {
             _swapBufferTimer.stop();
-            s_texturePool.onFrameEnd();
+            s_textureViewCache.onFrameEnd();
             s_glFlushQueued.store(false);
             if_constexpr(Config::USE_BINDLESS_TEXTURES) {
                 for (ResidentTexture& texture : s_residentTextures) {
@@ -1288,44 +1288,45 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 OPTICK_EVENT("GL: View-based computation");
 
                 const TextureDescriptor& descriptor = crtCmd->_texture->descriptor();
-                const TextureData data = crtCmd->_texture->data();
                 const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
-                assert(IsValid(data));
 
                 TextureView view = {};
-                view._texture = crtCmd->_texture;
+                view._textureData = crtCmd->_texture->data();
                 view._layerRange.set(crtCmd->_layerRange);
-                view._mipLevels.set(0, descriptor.mipCount());
+                if (crtCmd->_mipRange.max == 0u) {
+                    view._mipLevels.set(0, descriptor.mipCount());
+                } else {
+                    view._mipLevels.set(crtCmd->_mipRange);
+                }
+                assert(IsValid(view._textureData));
 
-                TextureType viewType = data._textureType;
-                if (descriptor.isArrayTexture() && view._layerRange.max == 1) {
-                    switch (viewType) {
+                if (IsArrayTexture(view._textureData._textureType) && view._layerRange.max == 1) {
+                    switch (view._textureData._textureType) {
                       case TextureType::TEXTURE_2D_ARRAY:
-                          viewType = TextureType::TEXTURE_2D;
+                          view._textureData._textureType = TextureType::TEXTURE_2D;
                           break;
                       case TextureType::TEXTURE_2D_ARRAY_MS:
-                          viewType = TextureType::TEXTURE_2D_MS;
+                          view._textureData._textureType = TextureType::TEXTURE_2D_MS;
                           break;
                       case TextureType::TEXTURE_CUBE_ARRAY:
-                          viewType = TextureType::TEXTURE_CUBE_MAP;
+                          view._textureData._textureType = TextureType::TEXTURE_CUBE_MAP;
                           break;
                       default: break;
                     };
                 }
 
-                
-                if (descriptor.isCubeTexture()) {
-                    view._layerRange.min *= 6; //offset
-                    view._layerRange.max *= 6; //count
+                if (IsCubeTexture(view._textureData._textureType)) {
+                    view._layerRange *= 6; //offset and count
                 }
-                
-                auto[handle, cacheHit] = s_texturePool.allocate(view.getHash(), TextureType::COUNT);
 
-                if (!cacheHit) {
+                auto[handle, cacheHit] = s_textureViewCache.allocate(view.getHash());
+
+                if (!cacheHit)
+                {
                     OPTICK_EVENT("GL: View cache miss");
                     glTextureView(handle,
-                                  GLUtil::glTextureTypeTable[to_base(viewType)],
-                                  data._textureHandle,
+                                  GLUtil::glTextureTypeTable[to_base(view._textureData._textureType)],
+                                  view._textureData._textureHandle,
                                   glInternalFormat,
                                   static_cast<GLuint>(view._mipLevels.x),
                                   static_cast<GLuint>(view._mipLevels.y),
@@ -1339,7 +1340,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     OPTICK_EVENT("GL: In-place computation");
                     glGenerateTextureMipmap(handle);
                 }
-                s_texturePool.deallocate(handle, TextureType::COUNT, 3);
+                s_textureViewCache.deallocate(handle, 3);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
@@ -1700,24 +1701,20 @@ bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewE
         const auto& it = textureViews[i];
         const size_t viewHash = it.getHash();
 
-        const Texture* tex = it._view._texture;
-        assert(tex != nullptr);
-
-        const TextureData& data = tex->data();
+        const TextureData& data = it._view._textureData;
         assert(IsValid(data));
 
-        auto [textureID, cacheHit] = s_texturePool.allocate(viewHash, TextureType::COUNT);
+        auto [textureID, cacheHit] = s_textureViewCache.allocate(viewHash);
         DIVIDE_ASSERT(textureID != 0u);
 
-        if (!cacheHit) {
-            const TextureDescriptor& descriptor = tex->descriptor();
-            const GLenum type = GLUtil::glTextureTypeTable[to_base(data._textureType)];
-            const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
+        if (!cacheHit)
+        {
+            const GLenum glInternalFormat = GLUtil::internalFormat(it._descriptor.baseFormat(), it._descriptor.dataType(), it._descriptor.srgb(), it._descriptor.normalized());
 
-            const vec2<GLuint> layerRange = descriptor.isCubeTexture() ? it._view._layerRange * 6 : it._view._layerRange;
+            const vec2<GLuint> layerRange = IsCubeTexture(data._textureType) ? it._view._layerRange * 6 : it._view._layerRange;
 
             glTextureView(textureID,
-                type,
+                GLUtil::glTextureTypeTable[to_base(data._textureType)],
                 data._textureHandle,
                 glInternalFormat,
                 static_cast<GLuint>(it._view._mipLevels.x),
@@ -1728,7 +1725,7 @@ bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewE
 
         bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, textureID, getSamplerHandle(it._view._samplerHash)) || bound;
         // Self delete after 3 frames unless we use it again
-        s_texturePool.deallocate(textureID, TextureType::COUNT, 3u);
+        s_textureViewCache.deallocate(textureID, 3u);
     }
 
     return bound;

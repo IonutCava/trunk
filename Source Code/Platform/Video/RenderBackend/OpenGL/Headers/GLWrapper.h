@@ -253,7 +253,7 @@ private:
     static SamplerObjectMap s_samplerMap;
     static GLStateTracker  s_stateTracker;
 
-    static GLUtil::glTexturePool s_texturePool;
+    static GLUtil::glTextureViewCache s_textureViewCache;
 
     static IMPrimitivePool s_IMPrimitivePool;
     static eastl::fixed_vector<BufferLockEntry, 64, true> s_bufferLockQueue;

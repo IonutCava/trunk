@@ -58,7 +58,9 @@ void Texture::threadedLoad() {
     stringstreamImpl textureLocationList(assetLocation().str());
     stringstreamImpl textureFileList(assetName().c_str());
 
-    _descriptor._sourceFileList.reserve(6);
+#if defined(_DEBUG)
+    _sourceFileList.reserve(6);
+#endif
 
     ImageTools::ImageData dataStorage = {};
     // Flip image if needed
@@ -83,8 +85,9 @@ void Texture::threadedLoad() {
             currentTextureFullPath = currentTextureLocation.empty() ? Paths::g_texturesLocation : ResourcePath{currentTextureLocation};
             currentTextureFullPath.append("/" + currentTextureFile);
             Util::ReplaceStringInPlace(currentTextureFullPath, searchPattern, "/");
-            _descriptor._sourceFileList.push_back(currentTextureFile);
-
+#if defined(_DEBUG)
+            _sourceFileList.push_back(currentTextureFile);
+#endif
             // Attempt to load the current entry
             if (!loadFile(currentTextureFullPath, dataStorage)) {
                 // Invalid texture files are not handled yet, so stop loading
@@ -94,7 +97,10 @@ void Texture::threadedLoad() {
             loadedFromFile = true;
         }
     }
-    _descriptor._sourceFileList.shrink_to_fit();
+
+#if defined(_DEBUG)
+    _sourceFileList.shrink_to_fit();
+#endif
 
     if (loadedFromFile) {
         // Create a new Rendering API-dependent texture object

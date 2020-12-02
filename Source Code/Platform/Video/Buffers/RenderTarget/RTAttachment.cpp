@@ -60,7 +60,7 @@ U16 RTAttachment::mipWriteLevel() const {
 }
 
 bool RTAttachment::writeLayer(const U16 layer) {
-    const U16 layerCount = texture()->descriptor().isCubeTexture() ? numLayers() * 6 : numLayers();
+    const U16 layerCount = IsCubeTexture(texture()->descriptor().texType()) ? numLayers() * 6 : numLayers();
     if (layerCount > layer && _writeLayer != layer) {
         _writeLayer = layer;
         return true;

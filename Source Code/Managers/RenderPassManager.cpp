@@ -527,12 +527,6 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     OPTICK_TAG("FULL_REFRESH", fullRefresh);
 
     PerPassData& passData = g_passData[to_base(stagePass._stage)];
-    RefreshNodeDataParams params = {};
-    params._drawCommandsInOut = &passData._drawCommands;
-    params._bufferInOut = &bufferInOut;
-    params._camera = passParams._camera;
-    params._stagePass = &stagePass;
-
     RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
 
     if (fullRefresh) {
@@ -543,7 +537,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                    type == RenderBinType::RBT_TERRAIN_AUX;
         };
 
-        params._drawCommandsInOut->clear();
+        passData._drawCommands.clear();
 
         const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
@@ -570,9 +564,9 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             RenderBin::SortedQueue& queue = passData._sortedQueues[i];
             for (RenderingComponent* rComp : queue) {
                 
-                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, passParams._camera, false, bufferInOut)) {
-                    NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, nodeCount++, passData);
-                    Attorney::RenderingCompRenderPass::setDataIndex(*rComp, newDataIdx, params);
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, stagePass, passParams._camera, false, bufferInOut)) {
+                    const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, nodeCount++, passData);
+                    Attorney::RenderingCompRenderPass::setDataIndex(*rComp, newDataIdx, stagePass, passData._drawCommands);
                 }
             }
         }
@@ -630,7 +624,9 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
             for (RenderingComponent* rComp : queue) {
-                Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, passParams._camera, true, bufferInOut);
+                if (!Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, stagePass, passParams._camera, true, bufferInOut)) {
+                    NOP();
+                }
             }
         }
     }
@@ -675,7 +671,9 @@ void RenderPassManager::prepareRenderQueues(const RenderPassParams& params, cons
     descriptor._cbk = [&nodes, &cam, &sceneRenderState, &stagePass, refreshNodeData](const Task* /*parentTask*/, const U32 start, const U32 end) {
                         for (U32 i = start; i < end; ++i) {
                             RenderingComponent * rComp = nodes.node(i)._node->get<RenderingComponent>();
-                            Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, refreshNodeData);
+                            if (!Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, refreshNodeData)) {
+                                NOP();
+                            }
                         }
                     };
 

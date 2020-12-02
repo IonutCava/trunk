@@ -133,7 +133,7 @@ void glFramebuffer::toggleAttachment(const RTAttachment& attachment, const Attac
     }
 
     const Texture_ptr& tex = attachment.texture(false);
-    if (layeredRendering && tex->numLayers() == 1 && !tex->descriptor().isCubeTexture()) {
+    if (layeredRendering && tex->numLayers() == 1 && !IsCubeTexture(tex->descriptor().texType())) {
         layeredRendering = false;
     }
 
@@ -623,7 +623,7 @@ void glFramebuffer::setMipLevel(const U16 writeLevel) {
 
         for (const RTAttachment_ptr& attachment : attachments) {
             const Texture_ptr& texture = attachment->texture(false);
-            if (texture->descriptor().mipCount() > writeLevel && !texture->descriptor().isMultisampledTexture())
+            if (texture->descriptor().mipCount() > writeLevel && !IsMultisampledTexture(texture->descriptor().texType()))
             {
                 const BindingState& state = getAttachmentState(static_cast<GLenum>(attachment->binding()));
                 attachment->mipWriteLevel(writeLevel);

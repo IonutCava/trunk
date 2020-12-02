@@ -35,13 +35,11 @@ glTexture::glTexture(GFXDevice& context,
 
     _type = GLUtil::glTextureTypeTable[to_U32(_descriptor.texType())];
 
-    const U32 tempHandle = GL_API::s_texturePool.allocate(_descriptor.texType(), false);
-    assert(tempHandle != 0u);
-
-    _loadingData._textureHandle = tempHandle;
+    glCreateTextures(GLUtil::glTextureTypeTable[to_base(_descriptor.texType())], 1, &_loadingData._textureHandle);
+    assert(_loadingData._textureHandle != 0u);
 
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-        glObjectLabel(GL_TEXTURE, tempHandle, -1, name.c_str());
+        glObjectLabel(GL_TEXTURE, _loadingData._textureHandle, -1, name.c_str());
     }
 
     // Loading from file usually involves data that doesn't change, so call this here.
@@ -122,7 +120,7 @@ bool glTexture::unload() {
             _lockManager->Wait(false);
         }
         GL_API::dequeueComputeMipMap(_data._textureHandle);
-        GL_API::s_texturePool.deallocate(textureID, _data._textureType);
+        glDeleteTextures(1, &textureID);
         _data._textureHandle = 0u;
     }
 
@@ -147,12 +145,12 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
 
     if (_loadingData._textureHandle > 0 && _allocatedStorage) {
         // Immutable storage requires us to create a new texture object 
-        const U32 tempHandle =  GL_API::s_texturePool.allocate(_descriptor.texType(), false);
+        U32 tempHandle = 0u;
+        glCreateTextures(GLUtil::glTextureTypeTable[to_base(_descriptor.texType())], 1, &tempHandle);
 
         assert(tempHandle != 0 && "glTexture error: failed to generate new texture handle!");
 
-        U32 handle = _loadingData._textureHandle;
-        GL_API::s_texturePool.deallocate(handle, oldTexTypeDescriptor);
+        glDeleteTextures(1, &_loadingData._textureHandle);
         _loadingData._textureHandle = tempHandle;
     }
 

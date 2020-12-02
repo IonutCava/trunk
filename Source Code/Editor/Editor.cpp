@@ -1350,7 +1350,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         data._flip = false;
         data._isDepthTexture = tex->descriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
-        const U8 numChannels = tex->descriptor().numChannels();
+        const U8 numChannels = NumChannels(tex->descriptor().baseFormat());
 
         assert(numChannels > 0);
 

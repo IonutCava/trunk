@@ -110,7 +110,9 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
     PROPERTY_R(bool, flipped, false);
 
     static U16 ComputeMipCount(U16 width, U16 height) noexcept;
-
+#if defined(_DEBUG)
+    const vectorEASTL<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
+#endif
    protected:
     /// Use STB/NV_DDS to load a file into a Texture Object
     bool loadFile(const ResourcePath& name, ImageTools::ImageData& fileData);
@@ -125,9 +127,11 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
   protected:
     bool _asyncLoad;
-
+    vectorEASTL<stringImpl> _sourceFileList;
+#if defined(_DEBUG)
   protected:
     static const char* s_missingTextureFileName;
+#endif
 };
 
 };  // namespace Divide

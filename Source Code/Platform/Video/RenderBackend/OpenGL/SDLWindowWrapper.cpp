@@ -301,19 +301,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glEnable(static_cast<GLenum>(static_cast<U32>(GL_CLIP_DISTANCE0) + i));
     }
 
-    s_texturePool.init(
-        {
-            8,    //TextureType::TEXTURE_1D:          Hardly used
-            2048, //TextureType::TEXTURE_2D:          Used by most renderable items
-            8,    //TextureType::TEXTURE_3D:          Will eventually be useful for volumetric stuff
-            64,   //TextureType::TEXTURE_CUBE_MAP:    Used for reflections and environment probes
-            256,  //TextureType::TEXTURE_2D_ARRAY:    Used mainly by shadow maps and some materials
-            32,   //TextureType::TEXTURE_CUBE_ARRAY:  Used for reflections and environment probes
-            128,  //TextureType::TEXTURE_2D_MS:       Used by render targets
-            16,   //TextureType::TEXTURE_2D_ARRAY_MS: Used by the CSM system mostly
-            256,  //TextureType::COUNT:               Generic texture handles (created with glGen instead of glCreate)
-        }
-    );
+    s_textureViewCache.init(256);
 
     // FontStash library initialization
     // 512x512 atlas with bottom-left origin
@@ -406,7 +394,7 @@ void GL_API::closeRenderingAPI() {
     if (s_dummyVAO > 0) {
         deleteVAOs(1, &s_dummyVAO);
     }
-    s_texturePool.destroy();
+    s_textureViewCache.destroy();
     glVertexArray::cleanup();
     GLUtil::clearVBOs();
     s_vaoPool.destroy();

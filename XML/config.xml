@@ -95,8 +95,8 @@
 			<UseHalfResolution>false</UseHalfResolution>
 			<blurThreshold>0.0549999997</blurThreshold>
 			<FullRes>
-				<Radius>2</Radius>
-				<Bias>0.0500000007</Bias>
+				<Radius>2.75200009</Radius>
+				<Bias>0.0480000004</Bias>
 				<Power>2</Power>
 				<KernelSampleCount>32</KernelSampleCount>
 				<Blur>true</Blur>

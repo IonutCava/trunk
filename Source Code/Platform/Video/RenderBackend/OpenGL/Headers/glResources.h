@@ -147,46 +147,36 @@ private:
 namespace GLUtil {
 
 // Not thread-safe!
-class glTexturePool {
+class glTextureViewCache {
 private:
     enum class State : U8 {
         USED = 0,
         FREE,
         CLEAN
     };
-
-    struct poolImpl {
-        static constexpr U32 INVALID_IDX = std::numeric_limits<U32>::max();
-
-        vectorEASTL<AtomicWrapper<State>>  _usageMap;
-
-        vectorEASTL<U32>    _lifeLeft;
-        vectorEASTL<GLuint> _handles;
-        vectorEASTL<GLuint> _tempBuffer;
-
-        hashMap<size_t, U32> _cache;
-
-        TextureType _type = TextureType::COUNT;
-    };
-
-
 public:
     void onFrameEnd();
-    void init(const std::array<U32, to_base(TextureType::COUNT) + 1>& poolSizes);
+    void init(U32 poolSize);
     void destroy();
 
-    //Use TextureType::COUNT for textures created with glGen instead of glCreate (e.g. for texture views)
-    //If the texture was hashed, it's deallocation time gets incremented by 1
-    //Return a pair of the newly allocated texture handle and a flag if it was retrieved from cache or not
-    std::pair<GLuint, bool> allocate(size_t hash, TextureType type, bool retry = false);
+    std::pair<GLuint, bool> allocate(size_t hash, bool retry = false);
     // no-hash version
-    GLuint allocate(TextureType type, bool retry = false);
-    void   deallocate(GLuint& handle, TextureType type, U32 frameDelay = 1);
-protected:
-    static void OnFrameEndInternal(poolImpl& impl);
+    GLuint allocate(bool retry = false);
+    void   deallocate(GLuint& handle, U32 frameDelay = 1);
 
 private:
-    std::array<poolImpl, to_base(TextureType::COUNT) + 1> _pools{};
+    static constexpr U32 INVALID_IDX = std::numeric_limits<U32>::max();
+
+    vectorEASTL<State>  _usageMap;
+
+    vectorEASTL<U32>    _lifeLeft;
+    vectorEASTL<GLuint> _handles;
+    vectorEASTL<GLuint> _tempBuffer;
+
+    hashMap<size_t, U32> _cache;
+
+    //Heavy-handed general purpose lock
+    SharedMutex _lock;
 };
 /// Wrapper for glGetIntegerv
 template<typename T = GLint>

@@ -119,6 +119,7 @@ public:
     void disableOptions(U16 optionMask);
 
     [[nodiscard]] bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
+    [[nodiscard]] bool hasDrawComands() const noexcept { return _drawCommandCount > 0u; }
 
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
 

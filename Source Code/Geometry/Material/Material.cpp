@@ -1077,25 +1077,19 @@ void Material::updateTransparency() {
         _translucencySource = TranslucencySource::ALBEDO;
     }
 
-    bool usingAlbedoTexAlpha = false;
-    bool usingOpacityTexAlpha = false;
     // base texture is translucent
     const Texture_ptr& albedo = _textures[to_base(TextureUsage::UNIT0)];
     if (albedo && albedo->hasTransparency()) {
         _translucencySource = TranslucencySource::ALBEDO;
-
-        usingAlbedoTexAlpha = oldSource != _translucencySource;
     }
 
     // opacity map
     const Texture_ptr& opacity = _textures[to_base(TextureUsage::OPACITY)];
     if (opacity && opacity->hasTransparency()) {
-        const U8 channelCount = opacity->descriptor().numChannels();
+        const U8 channelCount = NumChannels(opacity->descriptor().baseFormat());
         DIVIDE_ASSERT(channelCount == 1 || channelCount == 4, "Material::updateTranslucency: Opacity textures must be either single-channel or RGBA!");
 
         _translucencySource = channelCount == 4 ? TranslucencySource::OPACITY_MAP_A : TranslucencySource::OPACITY_MAP_R;
-        usingAlbedoTexAlpha = false;
-        usingOpacityTexAlpha = oldSource != _translucencySource;
     }
 
     _needsNewShader = oldSource != _translucencySource;
@@ -1129,11 +1123,8 @@ void Material::getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKe
     textureKey = _textureKeyCache == -1 ? std::numeric_limits<I32>::lowest() : _textureKeyCache;
 
     const ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    if (info._shaderCompStage == ShaderBuildStage::READY) {
-        shaderKey = info._shaderRef->getGUID();
-    } else {
-        shaderKey = std::numeric_limits<I64>::lowest();
-    }
+    shaderKey = info._shaderCompStage == ShaderBuildStage::READY ? info._shaderRef->getGUID()
+                                                                 : std::numeric_limits<I64>::lowest();
 }
 
 FColour4 Material::getBaseColour(bool& hasTextureOverride, Texture*& textureOut) const noexcept {

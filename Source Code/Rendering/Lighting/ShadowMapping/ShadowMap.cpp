@@ -217,7 +217,8 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
         if (IS_IN_RANGE_EXCLUSIVE(useCount, to_U16(0u), texDescriptor.layerCount())) {
             TextureViewEntry entry = {};
             entry._binding = bindSlot;
-            entry._view._texture = shadowTexture.texture().get();
+            entry._view._textureData = shadowTexture.texture().get()->data();
+            entry._descriptor = shadowTexture.texture().get()->descriptor();
             entry._view._samplerHash = shadowTexture.samplerHash();
             entry._view._mipLevels.set(0, texDescriptor.mipCount());
             entry._view._layerRange.set(0, useCount);

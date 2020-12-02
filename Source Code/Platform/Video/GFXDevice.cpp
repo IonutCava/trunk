@@ -926,11 +926,11 @@ void GFXDevice::generateCubeMap(RenderPassParams& params,
     if (hasColour) {
         const RTAttachment& colourAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Colour, 0);
         // We only need the colour attachment
-        isValidFB = colourAttachment.texture()->descriptor().isCubeTexture();
+        isValidFB = IsCubeTexture(colourAttachment.texture()->descriptor().texType());
     } else {
         const RTAttachment& depthAttachment = cubeMapTarget.getAttachment(RTAttachmentType::Depth, 0);
         // We don't have a colour attachment, so we require a cube map depth attachment
-        isValidFB = hasDepth && depthAttachment.texture()->descriptor().isCubeTexture();
+        isValidFB = hasDepth && IsCubeTexture(depthAttachment.texture()->descriptor().texType());
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
@@ -1005,11 +1005,11 @@ void GFXDevice::generateDualParaboloidMap(RenderPassParams& params,
     if (hasColour) {
         const RTAttachment& colourAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Colour, 0);
         // We only need the colour attachment
-        isValidFB = colourAttachment.texture()->descriptor().isArrayTexture();
+        isValidFB = IsArrayTexture(colourAttachment.texture()->descriptor().texType());
     } else {
         const RTAttachment& depthAttachment = paraboloidTarget.getAttachment(RTAttachmentType::Depth, 0);
         // We don't have a colour attachment, so we require a cube map depth attachment
-        isValidFB = hasDepth && depthAttachment.texture()->descriptor().isArrayTexture();
+        isValidFB = hasDepth && IsArrayTexture(depthAttachment.texture()->descriptor().texType());
     }
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {

@@ -46,11 +46,9 @@ struct SamplerDescriptor final : Hashable {
     SamplerDescriptor();
     ~SamplerDescriptor() = default;
 
-    size_t getHash() const noexcept override;
+    [[nodiscard]] size_t getHash() const noexcept override;
 
-    void wrapUVW(const TextureWrap wrap) noexcept {
-        wrapU(wrap); wrapV(wrap); wrapW(wrap);
-    }
+    void wrapUVW(const TextureWrap wrap) noexcept { wrapU(wrap); wrapV(wrap); wrapW(wrap); }
 
     /// Texture filtering mode
     PROPERTY_RW(TextureFilter, minFilter, TextureFilter::LINEAR_MIPMAP_LINEAR);
@@ -118,58 +116,13 @@ class TextureDescriptor final : public PropertyDescriptor {
     {
     }
 
-    bool isCubeTexture() const noexcept {
-        return _texType == TextureType::TEXTURE_CUBE_MAP ||
-               _texType == TextureType::TEXTURE_CUBE_ARRAY;
-    }
-
-    bool isArrayTexture() const noexcept {
-        return _texType == TextureType::TEXTURE_2D_ARRAY ||
-               _texType == TextureType::TEXTURE_2D_ARRAY_MS ||
-               _texType == TextureType::TEXTURE_CUBE_ARRAY;
-    }
-
-    bool isMultisampledTexture() const noexcept {
-        return _texType == TextureType::TEXTURE_2D_MS ||
-               _texType == TextureType::TEXTURE_2D_ARRAY_MS;
-    }
-
-    U8 numChannels() const noexcept {
-        switch (baseFormat()) {
-            case GFXImageFormat::RED:
-            case GFXImageFormat::DEPTH_COMPONENT:
-                return 1;
-            case GFXImageFormat::RG:
-                return 2;
-            case GFXImageFormat::BGR:
-            case GFXImageFormat::RGB:
-            case GFXImageFormat::COMPRESSED_RGB_DXT1:
-                return 3;
-            case GFXImageFormat::BGRA:
-            case GFXImageFormat::RGBA:
-            case GFXImageFormat::COMPRESSED_RGBA_DXT1 :
-            case GFXImageFormat::COMPRESSED_RGBA_DXT3 :
-            case GFXImageFormat::COMPRESSED_RGBA_DXT5 :
-                return 4;
-
-            default:
-            case GFXImageFormat::COUNT:
-                DIVIDE_UNEXPECTED_CALL();
-                break;
-        }
-
-        return 0;
-    }
-
-    const vectorEASTL<stringImpl>& sourceFileList() const noexcept { return _sourceFileList; }
-
-    size_t getHash() const noexcept override;
+    [[nodiscard]] size_t getHash() const noexcept override;
 
     PROPERTY_RW(U16, layerCount, 1);
     PROPERTY_RW(U16, mipBaseLevel, 0);
     PROPERTY_RW(U16, mipCount, std::numeric_limits<U16>::max());
-    PROPERTY_RW(U8, msaaSamples, 0);
-    PROPERTY_RW(GFXDataFormat, dataType, GFXDataFormat::COUNT);
+    PROPERTY_RW(U8,  msaaSamples, 0);
+    PROPERTY_RW(GFXDataFormat,  dataType, GFXDataFormat::COUNT);
     PROPERTY_RW(GFXImageFormat, baseFormat, GFXImageFormat::COUNT);
     PROPERTY_RW(TextureType, texType, TextureType::COUNT);
     /// Automatically compute mip maps (overwrites any manual mipmap computation)
@@ -178,14 +131,61 @@ class TextureDescriptor final : public PropertyDescriptor {
     PROPERTY_RW(bool, srgb, false);
     PROPERTY_RW(bool, normalized, true);
     PROPERTY_RW(bool, compressed, false);
-
-   private:
-       vectorEASTL<stringImpl> _sourceFileList;
 };
 
+inline bool operator==(const TextureDescriptor& lhs, const TextureDescriptor& rhs) {
+    return lhs.getHash() == rhs.getHash();
+}
+
+inline bool operator!=(const TextureDescriptor& lhs, const TextureDescriptor& rhs) {
+    return lhs.getHash() != rhs.getHash();
+}
+
+[[nodiscard]] inline bool IsCubeTexture(const TextureType texType) noexcept {
+    return texType == TextureType::TEXTURE_CUBE_MAP ||
+           texType == TextureType::TEXTURE_CUBE_ARRAY;
+}
+
+[[nodiscard]] inline bool IsArrayTexture(const TextureType texType) noexcept {
+    return texType == TextureType::TEXTURE_2D_ARRAY ||
+           texType == TextureType::TEXTURE_2D_ARRAY_MS ||
+           texType == TextureType::TEXTURE_CUBE_ARRAY;
+}
+
+[[nodiscard]] inline bool IsMultisampledTexture(const TextureType texType) noexcept {
+    return texType == TextureType::TEXTURE_2D_MS ||
+           texType == TextureType::TEXTURE_2D_ARRAY_MS;
+}
+
+[[nodiscard]] inline U8 NumChannels(const GFXImageFormat format) noexcept {
+    switch (format) {
+        case GFXImageFormat::RED:
+        case GFXImageFormat::DEPTH_COMPONENT:
+            return 1u;
+        case GFXImageFormat::RG:
+            return 2u;
+        case GFXImageFormat::BGR:
+        case GFXImageFormat::RGB:
+        case GFXImageFormat::COMPRESSED_RGB_DXT1:
+            return 3u;
+        case GFXImageFormat::BGRA:
+        case GFXImageFormat::RGBA:
+        case GFXImageFormat::COMPRESSED_RGBA_DXT1:
+        case GFXImageFormat::COMPRESSED_RGBA_DXT3:
+        case GFXImageFormat::COMPRESSED_RGBA_DXT5:
+            return 4u;
+
+        default:
+        case GFXImageFormat::COUNT:
+            DIVIDE_UNEXPECTED_CALL();
+            break;
+    }
+
+    return 0u;
+}
 namespace XMLParser {
     void saveToXML(const SamplerDescriptor& sampler, const stringImpl& entryName, boost::property_tree::ptree& pt);
-    size_t loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
+    [[nodiscard]] size_t loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
 };
 };  // namespace Divide
 #endif

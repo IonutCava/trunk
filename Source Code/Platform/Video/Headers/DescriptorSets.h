@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "TextureData.h"
 #include "Core/Headers/Hashable.h"
+#include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
     class ShaderBuffer;
@@ -42,7 +43,7 @@ namespace Divide {
 
     class Texture;
     struct TextureView final : Hashable {
-        Texture* _texture = nullptr;
+        TextureData _textureData = {};
         size_t _samplerHash = 0u;
         vec2<U16> _mipLevels = {};
         vec2<U16> _layerRange = {};
@@ -51,14 +52,14 @@ namespace Divide {
             return _samplerHash == other._samplerHash&&
                    _mipLevels == other._mipLevels &&
                    _layerRange == other._layerRange &&
-                   _texture == other._texture;
+                   _textureData == other._textureData;
         }
 
         bool operator!=(const TextureView& other) const noexcept {
             return _samplerHash != other._samplerHash ||
                    _mipLevels != other._mipLevels ||
                    _layerRange != other._layerRange ||
-                   _texture != other._texture;
+                   _textureData != other._textureData;
         }
 
         size_t getHash() const noexcept override;
@@ -67,15 +68,18 @@ namespace Divide {
     struct TextureViewEntry final : Hashable {
         TextureView _view = {};
         U8 _binding = 0;
+        TextureDescriptor _descriptor;
 
         bool operator==(const TextureViewEntry& other) const noexcept {
             return _binding == other._binding &&
-                   _view == other._view;
+                   _view == other._view &&
+                   _descriptor == other._descriptor;
         }
 
         bool operator!=(const TextureViewEntry& other) const noexcept {
             return _binding != other._binding ||
-                   _view != other._view;
+                   _view != other._view ||
+                   _descriptor != other._descriptor;
         }
 
         size_t getHash() const noexcept override;

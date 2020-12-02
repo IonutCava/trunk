@@ -298,7 +298,8 @@ END_COMMAND(ClearTextureCommand);
 
 BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     Texture* _texture = nullptr;
-    vec2<U16> _layerRange = { 0, 1 };
+    vec2<U16> _layerRange = { 0u, 1u };
+    vec2<U16> _mipRange = { 0u, 0u };
     bool _defer = true;
 END_COMMAND(ComputeMipMapsCommand);
 
