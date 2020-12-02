@@ -12,7 +12,7 @@
 #include "Core/Headers/Kernel.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"
-#include "Platform/Video/Headers/NodeBufferedData.h"
+#include "Rendering/RenderPass/Headers/NodeBufferedData.h"
 
 namespace Divide {
 
@@ -1170,7 +1170,7 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-void Material::getData(NodeMaterialData& dataOut) {
+size_t Material::getData(NodeMaterialData& dataOut) {
     uploadTextures();
 
     constexpr F32 reserved = 1.f;
@@ -1191,6 +1191,10 @@ void Material::getData(NodeMaterialData& dataOut) {
     dataOut._data.x = matPropertiesPacked;
     dataOut._data.y = 1; //IBL Texture Size
     dataOut._data.z = matTexturingPropertiesPacked;
+
+    // ToDo: Add a dirty flag
+    const size_t tempHash = HashMaterialData(dataOut);
+    return tempHash;
 }
 
 void Material::rebuild() {

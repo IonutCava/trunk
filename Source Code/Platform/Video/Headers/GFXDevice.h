@@ -198,6 +198,7 @@ public:
         DEBUG_LIGHT_HEATMAP,
         DEBUG_LIGHT_DEPTH_CLUSTERS,
         DEBUG_REFLECTIONS,
+        DEBUG_MATERIAL_IDS,
         COUNT
     };
 

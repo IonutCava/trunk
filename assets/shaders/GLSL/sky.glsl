@@ -99,14 +99,15 @@ vec3 finalColour(in vec3 rayDirection, in float lerpValue) {
         case DEBUG_UV:                   return vec3(fract(rayDirection));
         case DEBUG_SSAO:                 return vec3(1.0f);
         case DEBUG_EMISSIVE:             return atmosphereColour(rayDirection);
-        case DEBUG_ROUGHNESS:            return vec3(0.0f);
-        case DEBUG_METALLIC:             return vec3(0.0f);
+        case DEBUG_ROUGHNESS:
+        case DEBUG_METALLIC:
         case DEBUG_NORMALS:              return vec3(0.0f);
         case DEBUG_TBN_VIEW_DIRECTION:   return rayDirection;
         case DEBUG_SHADOW_MAPS:          return vec3(1.0f);
-        case DEBUG_LIGHT_HEATMAP:        return vec3(0.0f);
-        case DEBUG_LIGHT_DEPTH_CLUSTERS: return vec3(0.0f);
-        case DEBUG_REFLECTIONS:          return vec3(0.0f);
+        case DEBUG_LIGHT_HEATMAP:
+        case DEBUG_LIGHT_DEPTH_CLUSTERS:
+        case DEBUG_REFLECTIONS:
+        case DEBUG_MATERIAL_IDS:         return vec3(0.0f);
     }
 
     return mix(dayColour(rayDirection), nightColour(rayDirection), lerpValue);

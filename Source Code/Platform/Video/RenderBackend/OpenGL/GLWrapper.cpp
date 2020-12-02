@@ -397,6 +397,7 @@ bool GL_API::initGLSW(Configuration& config) {
     }
 
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
+    appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CONCURRENT_MATERIALS " + Util::to_string(Config::MAX_CONCURRENT_MATERIALS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f", lineOffsets);

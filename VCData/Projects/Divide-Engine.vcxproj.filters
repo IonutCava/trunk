@@ -587,6 +587,9 @@
     <ClCompile Include="..\..\Source Code\ECS\Components\EnvironmentProbeComponent.cpp">
       <Filter>ECS\Components</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\NodeBufferedData.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1034,6 +1037,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\EnvironmentProbeComponent.h">
       <Filter>ECS\Components\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\NodeBufferedData.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

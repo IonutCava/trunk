@@ -22,10 +22,10 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Geometry/Shapes/Headers/Mesh.h"
-#include "Platform/Video/Headers/NodeBufferedData.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Rendering/Camera/Headers/Camera.h"
 #include "Rendering/Lighting/Headers/LightPool.h"
+#include "Rendering/RenderPass/Headers/NodeBufferedData.h"
 
 namespace Divide {
 
@@ -357,34 +357,14 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
     }
 }
 
-bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, const bool quick) {
-    OPTICK_EVENT();
-
-    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *bufferParams._camera, !quick, *bufferParams._targetBuffer);
-
-    if (quick) {
-        // Nothing yet
-        return true;
-    }
-
-    RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
-    if (pkg.empty()) {
-        return false;
-    }
-
-    const I32 drawCommandCount = pkg.drawCommandCount();
-    if (drawCommandCount == 0) {
-        return false;
-    }
+bool RenderingComponent::setDataIndex(NodeDataIdx& dataIndex, RefreshNodeDataParams& refreshParams) {
+    const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
 
     RenderStagePass tempStagePass = *refreshParams._stagePass;
     const RenderStage stage = tempStagePass._stage;
 
     const U8 lodLevel = _lodLevels[to_base(stage)];
-
-    const U32 startOffset = to_U32(refreshParams._drawCommandsInOut->size());
-    const NodeDataIdx dataIndex = bufferParams._dataIndex;
-
+    RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
     Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
     if (stage != RenderStage::SHADOW) {
         const RenderPassType passType = tempStagePass._passType;
@@ -398,6 +378,7 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
         }
     }
 
+    const I32 drawCommandCount = pkg.drawCommandCount();
     for (I32 i = 0; i < drawCommandCount; ++i) {
         refreshParams._drawCommandsInOut->push_back(pkg.drawCommand(i, 0)._cmd);
     }
@@ -405,13 +386,36 @@ bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams,
     return true;
 }
 
-void RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
-    if (_materialInstance != nullptr) {
-        _materialInstance->getData(dataOut);
+bool RenderingComponent::onRefreshNodeData(RefreshNodeDataParams& refreshParams, Camera* camera, const bool quick, GFX::CommandBuffer& bufferInOut) {
+    OPTICK_EVENT();
 
-        SharedLock<SharedMutex> r_lock(_reflectionLock);
-        dataOut._data.y = _reflectionTexture != nullptr ? _reflectionTexture->width() : 1u;
+    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, *refreshParams._stagePass, *camera, !quick, bufferInOut);
+
+    if (quick) {
+        // Nothing yet
+        return true;
     }
+
+    RenderPackage& pkg = getDrawPackage(*refreshParams._stagePass);
+    if (pkg.empty()) {
+        return false;
+    }
+
+    return pkg.drawCommandCount() > 0u;
+}
+
+size_t RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
+    if (_materialInstance != nullptr) {
+        size_t matHash = _materialInstance->getData(dataOut);
+        {
+            SharedLock<SharedMutex> r_lock(_reflectionLock);
+            dataOut._data.y = _reflectionTexture != nullptr ? _reflectionTexture->width() : 1u;
+        }
+        Util::Hash_combine(matHash, dataOut._data.y);
+        return matHash;
+    }
+
+    return std::numeric_limits<size_t>::max();
 }
 
 void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {

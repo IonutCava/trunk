@@ -17,9 +17,9 @@
 
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "Headers/NodeBufferedData.h"
 
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
-#include "Platform/Video/Headers/NodeBufferedData.h"
 
 namespace Divide {
 
@@ -28,22 +28,22 @@ namespace {
     namespace ReflectionUtil {
         U16 g_reflectionBudget = 0;
 
-        bool isInBudget() noexcept { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
-        void resetBudget() noexcept { g_reflectionBudget = 0; }
-        void updateBudget() noexcept { ++g_reflectionBudget; }
-        U16  currentEntry() noexcept { return g_reflectionBudget; }
+        [[nodiscard]] bool isInBudget() noexcept { return g_reflectionBudget < Config::MAX_REFLECTIVE_NODES_IN_VIEW; }
+                      void resetBudget() noexcept { g_reflectionBudget = 0; }
+                      void updateBudget() noexcept { ++g_reflectionBudget; }
+        [[nodiscard]] U16  currentEntry() noexcept { return g_reflectionBudget; }
     };
 
     namespace RefractionUtil {
         U16 g_refractionBudget = 0;
 
-        bool isInBudget() noexcept { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
-        void resetBudget() noexcept { g_refractionBudget = 0; }
-        void updateBudget() noexcept { ++g_refractionBudget;  }
-        U16  currentEntry() noexcept { return g_refractionBudget; }
+        [[nodiscard]] bool isInBudget() noexcept { return g_refractionBudget < Config::MAX_REFRACTIVE_NODES_IN_VIEW;  }
+                      void resetBudget() noexcept { g_refractionBudget = 0; }
+                      void updateBudget() noexcept { ++g_refractionBudget;  }
+        [[nodiscard]] U16  currentEntry() noexcept { return g_refractionBudget; }
     };
 
-    U32 getBufferFactor(const RenderStage stage) noexcept {
+    [[nodiscard]] U32 getBufferFactor(const RenderStage stage) noexcept {
         //We only care about the first parameter as it will determine the properties for the rest of the stages
         switch (stage) {
             // PrePass, MainPass and OitPass should share buffers
@@ -58,10 +58,6 @@ namespace {
         DIVIDE_UNEXPECTED_CALL();
         return 0u;
     }
-
-    // Size factor for command and data buffers
-    constexpr U8 DataBufferRingSize = 3;
-
 };
 
 
@@ -112,7 +108,7 @@ void RenderPass::initBufferData() {
     {// Node Material buffer
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
         bufferDescriptor._elementSize = sizeof(NodeMaterialData);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
@@ -181,13 +177,15 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
     }
 
     BufferData ret;
-    ret._cullCounter = _cullCounter;
-    ret._transformData = _transformData;
-    ret._materialData = _materialData;
-    ret._cmdBuffer = _cmdBuffer;
-    ret._elementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
+    ret._cullCounterBuffer = _cullCounter;
+    ret._transformBuffer = _transformData;
+    ret._materialBuffer = _materialData;
+    ret._commmandBuffer = _cmdBuffer;
     ret._lastCommandCount = &_lastCmdCount;
     ret._lastNodeCount = &_lastNodeCount;
+    ret._materialData  = { _materialData->queueWriteIndex() , cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS };
+    ret._transformData = { _transformData->queueWriteIndex(), cmdBufferIdx * Config::MAX_VISIBLE_NODES };
+    ret._commandData   = { _cmdBuffer->queueWriteIndex()    , cmdBufferIdx * Config::MAX_VISIBLE_NODES };
     return ret;
 }
 

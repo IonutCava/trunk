@@ -1702,16 +1702,16 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
 
     ShaderBufferBinding shaderBuffer = {};
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
-    shaderBuffer._buffer = bufferData._cmdBuffer;
-    shaderBuffer._elementRange = { bufferData._elementOffset, cmdCount };
+    shaderBuffer._buffer = bufferData._commmandBuffer;
+    shaderBuffer._elementRange = { bufferData._commandData._elementOffset, cmdCount };
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
     bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
 
-    if (bufferData._cullCounter != nullptr) {
+    if (bufferData._cullCounterBuffer != nullptr) {
         ShaderBufferBinding atomicCount = {};
         atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
-        atomicCount._buffer = bufferData._cullCounter;
+        atomicCount._buffer = bufferData._cullCounterBuffer;
         atomicCount._elementRange.set(0, 1);
         bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
     }
@@ -1719,7 +1719,7 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
     bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), samplerHash, TextureUsage::UNIT0);
     EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
-    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounter != nullptr ? 1u : 0u);
+    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounterBuffer != nullptr ? 1u : 0u);
     HIZPushConstantsCMDInOut._constants.set(_ID("dvd_numEntities"), GFX::PushConstantType::UINT, cmdCount);
     HIZPushConstantsCMDInOut._constants.set(_ID("dvd_viewSize"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
 
@@ -1733,9 +1733,9 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
 }
 
 void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::CommandBuffer& cmdBufferInOut) {
-    if (queryPerformanceStats() && bufferData._cullCounter != nullptr) {
+    if (queryPerformanceStats() && bufferData._cullCounterBuffer != nullptr) {
           GFX::ReadBufferDataCommand readAtomicCounter;
-          readAtomicCounter._buffer = bufferData._cullCounter;
+          readAtomicCounter._buffer = bufferData._cullCounterBuffer;
           readAtomicCounter._target = &LAST_CULL_COUNT;
           readAtomicCounter._offsetElementCount = 0;
           readAtomicCounter._elementCount = 1;

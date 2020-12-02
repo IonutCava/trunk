@@ -255,6 +255,7 @@ vec3 getLitColour(in vec3 albedo, in NodeMaterialData materialData, in vec3 norm
         case DEBUG_LIGHT_HEATMAP:        return lightClusterColours(false);
         case DEBUG_LIGHT_DEPTH_CLUSTERS: return lightClusterColours(true);
         case DEBUG_REFLECTIONS:          return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(materialData));
+        case DEBUG_MATERIAL_IDS:         return turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS);
     }
 
 #if defined(USE_SHADING_FLAT)

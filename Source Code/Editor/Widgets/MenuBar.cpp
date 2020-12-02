@@ -498,6 +498,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug Reflections", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_MATERIAL_IDS;
+            if (ImGui::MenuItem("Debug Material IDs", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_MATERIAL_IDS : GFXDevice::MaterialDebugFlag::COUNT);
+            }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP;
             if (ImGui::MenuItem("Debug Light Heatmap", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP : GFXDevice::MaterialDebugFlag::COUNT);

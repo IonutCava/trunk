@@ -334,9 +334,6 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include\ViewportTarget.h">
       <Filter>Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\Platform\Video\Headers\NodeBufferedData.h">
-      <Filter>Video\Headers</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Platform\Input\AutoKeyRepeat.cpp">

@@ -30,8 +30,8 @@
  */
 
 #pragma once
-#ifndef _HARDWARE_VIDEO_NODE_BUFFERED_DATA_H_
-#define _HARDWARE_VIDEO_NODE_BUFFERED_DATA_H_
+#ifndef _RENDER_PASS_NODE_BUFFERED_DATA_H_
+#define _RENDER_PASS_NODE_BUFFERED_DATA_H_
 
 namespace Divide {
     using SamplerAddress = U64;
@@ -79,9 +79,11 @@ namespace Divide {
         SamplerAddress _texNormalMap = 0u;
         F32 _padding[2] = { 0u, 0u };
     };
-;
+
+    [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;
+
 #pragma pack(pop)
 
 } //namespace Divide
 
-#endif //_HARDWARE_VIDEO_NODE_BUFFERED_DATA_H_
+#endif //_RENDER_PASS_NODE_BUFFERED_DATA_H_

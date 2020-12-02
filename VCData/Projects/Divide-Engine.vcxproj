@@ -435,6 +435,7 @@
     <ClCompile Include="..\..\3rdParty\EntityComponentSystem\src\util\Timer.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\FrameListener.cpp" />
     <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\MotionBlurPreRenderOperator.cpp" />
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\NodeBufferedData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Core\Headers\Application.h" />
@@ -587,6 +588,7 @@
     <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\Handle.h" />
     <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\util\Timer.h" />
     <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\MotionBlurPreRenderOperator.h" />
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\NodeBufferedData.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="../../localisation\enGB.ini" />

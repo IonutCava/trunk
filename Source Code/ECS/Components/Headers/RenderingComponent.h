@@ -72,13 +72,6 @@ struct RenderParams {
     Pipeline _pipeline;
 };
 
-struct TargetDataBufferParams {
-    GFX::CommandBuffer* _targetBuffer = nullptr;
-    const Camera* _camera = nullptr;
-    I32 _writeIndex = 0;
-    NodeDataIdx _dataIndex;
-};
-
 using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;
 
 struct RefreshNodeDataParams {
@@ -170,7 +163,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     bool lodLocked(const RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
     void instantiateMaterial(const Material_ptr& material);
 
-    void getMaterialData(NodeMaterialData& dataOut) const;
+    size_t getMaterialData(NodeMaterialData& dataOut) const;
 
     void getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const;
 
@@ -205,7 +198,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
-    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, bool quick);
+    bool setDataIndex(NodeDataIdx& dataIndex, RefreshNodeDataParams& refreshParams);
+    bool onRefreshNodeData(RefreshNodeDataParams& refreshParams, Camera* camera, bool quick, GFX::CommandBuffer& bufferInOut);
     void onRenderOptionChanged(RenderOptions option, bool state);
     bool canDraw(const RenderStagePass& renderStagePass, U8 LoD) const;
 
@@ -345,8 +339,12 @@ class RenderingCompRenderPass {
             return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
-        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, const TargetDataBufferParams& bufferParams, const bool quick) {
-            return renderable.onRefreshNodeData(refreshParams, bufferParams, quick);
+        static bool onRefreshNodeData(RenderingComponent& renderable, RefreshNodeDataParams& refreshParams, Camera* camera, bool quick, GFX::CommandBuffer& bufferInOut) {
+            return renderable.onRefreshNodeData(refreshParams, camera, quick, bufferInOut);
+        }
+
+        static bool setDataIndex(RenderingComponent& renderable, NodeDataIdx& dataIndex, RefreshNodeDataParams& refreshParams) {
+            return renderable.setDataIndex(dataIndex, refreshParams);
         }
 
         friend class Divide::RenderPass;

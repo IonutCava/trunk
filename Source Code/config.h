@@ -75,6 +75,7 @@ constexpr unsigned int MAX_POOLED_TASKS = 16384;
 constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 128;
 /// Estimated maximum number of visible objects per render pass (this includes debug primitives)
 constexpr unsigned int MAX_VISIBLE_NODES = 4096 * 2;
+constexpr unsigned int MAX_CONCURRENT_MATERIALS = 1024;
 /// How many clip planes should the shaders us
 /// How many reflective objects are we allowed to display on screen at the same time
 #   if defined(_DEBUG)

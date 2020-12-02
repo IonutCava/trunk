@@ -55,16 +55,26 @@ enum class RenderStage : U8;
 // E.g.: PRE_PASS + MAIN_PASS share the same RenderQueue
 class RenderPass : NonCopyable {
    public:
+       // Size factor for command and data buffers
+       constexpr static U8 DataBufferRingSize = 3;
+
+       struct BufferDataPerType
+       {
+           I32 _dataRingIndex = 0u;
+           U32 _elementOffset = 0u;
+       };
        struct BufferData {
-           ShaderBuffer* _transformData = nullptr;
-           ShaderBuffer* _materialData = nullptr;
-           ShaderBuffer* _cullCounter = nullptr;
-           ShaderBuffer* _cmdBuffer = nullptr;
+           ShaderBuffer* _transformBuffer = nullptr;
+           ShaderBuffer* _materialBuffer = nullptr;
+           ShaderBuffer* _commmandBuffer = nullptr;
+           ShaderBuffer* _cullCounterBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
            U32* _lastNodeCount = nullptr;
-
-           U32 _elementOffset = 0;
+           BufferDataPerType _transformData = {};
+           BufferDataPerType _materialData = {};
+           BufferDataPerType _commandData = {};
        };
+
   public:
     // passStageFlags: the first stage specified will determine the data format used by the additional stages in the list
     explicit RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, U8 sortKey, RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, bool performanceCounters = false);
@@ -93,7 +103,7 @@ class RenderPass : NonCopyable {
     mutable U32 _lastNodeCount = 0u;
 
     U8 _sortKey = 0;
-    vectorEASTL<U8> _dependencies;
+    vectorEASTL<U8> _dependencies{};
     Str64 _name = "";
     RenderStage _stageFlag = RenderStage::COUNT;
 

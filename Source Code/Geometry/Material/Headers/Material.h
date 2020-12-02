@@ -101,7 +101,8 @@ namespace TypeUtil {
 class Material final : public CachedResource {
    public:
     /// Since most variants come from different light sources, this seems like a good idea (famous last words ...)
-    static const size_t g_maxVariantsPerPass = 3;
+    static constexpr size_t g_maxVariantsPerPass = 3;
+    static constexpr size_t INVALID_MAT_HASH = std::numeric_limits<size_t>::max();
 
     struct ShaderData {
         Str64 _depthShaderVertSource = "baseVertexShaders";
@@ -171,7 +172,9 @@ class Material final : public CachedResource {
     void setRenderStateBlock(size_t renderStateBlockHash, RenderStage stage, RenderPassType pass, U8 variant = g_AllVariantsID);
 
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
-    void getData(NodeMaterialData& dataOut);
+
+    // Returns the material's hash value (just for the uploadable data)
+    size_t getData(NodeMaterialData& dataOut);
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;

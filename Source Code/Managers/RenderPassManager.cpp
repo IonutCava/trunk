@@ -21,33 +21,57 @@
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
+#include "Geometry/Material/Headers/Material.h"
 #include "Platform/Video/Headers/CommandBufferPool.h"
-#include "Platform/Video/Headers/NodeBufferedData.h"
+#include "Rendering/RenderPass/Headers/NodeBufferedData.h"
 
 namespace Divide {
-
     namespace {
         // Just an upper cap for containers. Increasing it will not break anything
         constexpr U32 g_maxRenderPasses = 16u;
+        // Remove materials that haven't been indexed in this amount of frames to make space for new ones
+        constexpr U16 g_maxMaterialFrameLifetime = 6u;
+        // Use to partition parallel jobs
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
+    };
 
-        struct PerPassData {
-            U16 _sortedNodeCount = 0u;
-            RenderBin::SortedQueues _sortedQueues;
-            DrawCommandContainer _drawCommands;
+    struct PerPassData
+    {
+        U16 _sortedNodeCount = 0u;
+        U32 _materialBufferIndex = 0u;
+        U32 _prevMaterialBufferIndex = RenderPass::DataBufferRingSize - 1u;
+        U32 _updateCounter = RenderPass::DataBufferRingSize;
+        U32 _transformBufferIndex = 0u;
+        U32 _commandsBufferIndex = 0u;
 
-            std::array<NodeTransformData, Config::MAX_VISIBLE_NODES> _nodeTransformData;
-            std::array<NodeMaterialData, Config::MAX_VISIBLE_NODES>  _nodeMaterialData;
+        RenderBin::SortedQueues _sortedQueues{};
+        DrawCommandContainer _drawCommands{};
 
-            bufferPtr transformData() const {
-                return (bufferPtr)_nodeTransformData.data();
-            }
+        std::array<NodeTransformData, Config::MAX_VISIBLE_NODES> _nodeTransformData{};
 
-            bufferPtr materialData() const {
-                return (bufferPtr)_nodeMaterialData.data();
+        std::array<NodeMaterialData, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialData{};
+        std::array<std::pair<size_t, U16>, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialLookupInfo{};
+
+        struct MaterialUpdateRange 
+        {
+            U32 _firstIDX = std::numeric_limits<U32>::max();
+            U32 _lastIDX = 0u;
+
+            [[nodiscard]] U32 range() const noexcept { return _lastIDX >= _firstIDX ? _lastIDX - _firstIDX + 1u : 0u; }
+
+            void reset() noexcept {
+                _firstIDX = std::numeric_limits<U32>::max();
+                _lastIDX = 0u;
             }
         };
 
+        std::array<MaterialUpdateRange, RenderPass::DataBufferRingSize> _matUpdateRange{};
+
+        bufferPtr transformData(const U32 offset) const { return (bufferPtr)&_nodeTransformData[offset]; }
+        bufferPtr materialData(const U32 offset)  const { return (bufferPtr)&_nodeMaterialData[offset]; }
+    };
+
+    namespace {
         std::array<PerPassData, to_base(RenderStage::COUNT)> g_passData;
     };
 
@@ -64,6 +88,10 @@ namespace Divide {
         _buildCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
         _drawCallCount.fill(0);
+
+        for (auto& it : g_passData) {
+            it._nodeMaterialLookupInfo.fill({ Material::INVALID_MAT_HASH, 0u });
+        }
     }
 
     RenderPassManager::~RenderPassManager()
@@ -356,21 +384,81 @@ RenderPass::BufferData RenderPassManager::getBufferData(const RenderStagePass& s
 }
 
 /// Prepare the list of visible nodes for rendering
-void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
-                                           const RenderStagePass& stagePass,
-                                           const bool playAnimations,
-                                           const D64 interpolationFactor,
-                                           const bool needsInterp,
-                                           NodeTransformData& transformOut,
-                                           NodeMaterialData& materialOut) const {
+NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
+                                                  const RenderStagePass& stagePass,
+                                                  const bool playAnimations,
+                                                  const D64 interpolationFactor,
+                                                  const bool needsInterp,
+                                                  U16 nodeIndex,
+                                                  PerPassData& passData) const {
     OPTICK_EVENT();
+
+    // Rewrite all transforms
+    // ToDo: Cache transforms for static nodes -Ionut
+    NodeDataIdx ret = {};
+    ret._transformIDX = nodeIndex;
+
+    NodeTransformData& transformOut = passData._nodeTransformData[ret._transformIDX];
 
     constexpr F32 reserved = 0.0f;
 
     const SceneGraphNode* node = rComp.getSGN();
 
+    NodeMaterialData tempData;
     // Get the colour matrix (base colour, metallic, etc)
-    rComp.getMaterialData(materialOut);
+    const size_t materialHash = rComp.getMaterialData(tempData);
+
+    auto& materialInfo = passData._nodeMaterialLookupInfo;
+    // Try and match an existing material
+    bool foundMatch = false;
+    U16 idx = 0;
+    for (; idx < materialInfo.size(); ++idx) {
+        if (materialInfo[idx].first == materialHash) {
+            // Increment lifetime (but clamp it so we don't overflow in time)
+            materialInfo[idx].second = std::min(++materialInfo[idx].second, g_maxMaterialFrameLifetime);
+            foundMatch = true;
+            break;
+        }
+    }
+    
+    // If we fail, try and find an empty slot
+    if (!foundMatch) {
+        std::pair<U16, U16> bestCandidate = { 0u, 0u };
+
+        idx = 0;
+        for (; idx < materialInfo.size(); ++idx) {
+            auto& [hash, lifetime] = materialInfo[idx];
+            if (hash == Material::INVALID_MAT_HASH) {
+                foundMatch = true;
+                break;
+            }
+            // Find a candidate to replace in case we fail
+            if (lifetime >= g_maxMaterialFrameLifetime && lifetime > bestCandidate.second) {
+                bestCandidate.first = idx;
+                bestCandidate.second = lifetime;
+            }
+        }
+        if (!foundMatch) {
+            foundMatch = bestCandidate.second > 0u;
+            idx = bestCandidate.first;
+        }
+
+        DIVIDE_ASSERT(foundMatch, "RenderPassManager::processVisibleNode error: too many concurrent materials! Increase Config::MAX_CONCURRENT_MATERIALS");
+
+        auto& range = passData._matUpdateRange[passData._materialBufferIndex];
+        if (range._firstIDX > idx) {
+            range._firstIDX = idx;
+        }
+        if (range._lastIDX < idx) {
+            range._lastIDX = idx;
+        }
+        passData._nodeMaterialData[idx] = tempData;
+        materialInfo[idx].first = materialHash;
+        materialInfo[idx].second = 0u;
+        passData._updateCounter = RenderPass::DataBufferRingSize;
+    }
+
+    ret._materialIDX = idx;
 
     const TransformComponent* const transform = node->get<TransformComponent>();
     assert(transform != nullptr);
@@ -425,6 +513,8 @@ void RenderPassManager::processVisibleNode(const RenderingComponent& rComp,
     transformOut._prevWorldMatrix.element(1, 3) = reserved;
     transformOut._prevWorldMatrix.element(2, 3) = reserved;
     transformOut._prevWorldMatrix.element(3, 3) = reserved;
+
+    return ret;
 }
 
 U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
@@ -443,10 +533,6 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     params._camera = passParams._camera;
     params._stagePass = &stagePass;
 
-    TargetDataBufferParams bufferParams = {};
-    bufferParams._targetBuffer = &bufferInOut;
-    bufferParams._camera = passParams._camera;
-
     RenderPass::BufferData bufferData = getPassForStage(stagePass._stage).getBufferData(stagePass);
 
     if (fullRefresh) {
@@ -462,12 +548,14 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
 
-        bufferParams._writeIndex = bufferData._cmdBuffer->queueWriteIndex();
-        bufferParams._dataIndex = { 0u, 0u };
-
-        U32 nodeCount = 0u;
         const bool playAnimations = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
 
+        passData._materialBufferIndex  = bufferData._materialData._dataRingIndex;
+        passData._transformBufferIndex = bufferData._transformData._dataRingIndex;
+        passData._commandsBufferIndex  = bufferData._commandData._dataRingIndex;
+        passData._matUpdateRange[passData._materialBufferIndex].reset();
+
+        U16 nodeCount = 0u;
         bool isOccluder = true;
         bool hasHiZTarget = passParams._targetHIZ._usage != RenderTargetUsage::COUNT;
         for (U8 i = 0; i < to_U8(RenderBinType::RBT_COUNT); ++i) {
@@ -482,13 +570,9 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
             RenderBin::SortedQueue& queue = passData._sortedQueues[i];
             for (RenderingComponent* rComp : queue) {
                 
-                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, false)) {
-                    NodeTransformData& transform = passData._nodeTransformData[bufferParams._dataIndex._transformIDX];
-                    NodeMaterialData& material = passData._nodeMaterialData[bufferParams._dataIndex._materialIDX];
-                    processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, transform, material);
-                    ++bufferParams._dataIndex._transformIDX;
-                    ++bufferParams._dataIndex._materialIDX;
-                    ++nodeCount;
+                if (Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, passParams._camera, false, bufferInOut)) {
+                    NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass, playAnimations, interpFactor, needsInterp, nodeCount++, passData);
+                    Attorney::RenderingCompRenderPass::setDataIndex(*rComp, newDataIdx, params);
                 }
             }
         }
@@ -496,38 +580,47 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         *bufferData._lastCommandCount = to_U32(passData._drawCommands.size());
         *bufferData._lastNodeCount = nodeCount;
 
+
+        const size_t materialRange = std::count_if(std::begin(passData._nodeMaterialLookupInfo),
+                                                   std::end(passData._nodeMaterialLookupInfo),
+                                                   [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
         {
             OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
-            bufferData._transformData->writeData(
-                bufferData._elementOffset,
-                *bufferData._lastNodeCount,
-                passData.transformData());
+            bufferData._commmandBuffer->writeData(bufferData._commandData._elementOffset, *bufferData._lastCommandCount, passData._drawCommands.data());
+            bufferData._transformBuffer->writeData(bufferData._transformData._elementOffset, *bufferData._lastNodeCount, passData.transformData(0));
 
-            bufferData._materialData->writeData(
-                bufferData._elementOffset,
-                *bufferData._lastNodeCount,
-                passData.materialData());
+            // Copy the same data to the entire ring buffer
+            PerPassData::MaterialUpdateRange& crtRange = passData._matUpdateRange[passData._materialBufferIndex];
+            PerPassData::MaterialUpdateRange& prevRange = passData._matUpdateRange[passData._prevMaterialBufferIndex];
 
-            bufferData._cmdBuffer->writeData(
-                bufferData._elementOffset,
-                *bufferData._lastCommandCount,
-                passData._drawCommands.data());
+            if (crtRange.range() > 0u || prevRange.range() > 0u) {
+                crtRange._firstIDX = std::min(crtRange._firstIDX, prevRange._firstIDX);
+                crtRange._lastIDX = std::max(crtRange._lastIDX, prevRange._lastIDX);
+
+                bufferData._materialBuffer->writeData(bufferData._materialData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.materialData(crtRange._firstIDX));
+            }
+            prevRange.reset();
+            if (passData._updateCounter == 0u || --passData._updateCounter == 0u) {
+                crtRange.reset();
+                
+            }
+            passData._prevMaterialBufferIndex = passData._materialBufferIndex;
         }
 
         ShaderBufferBinding cmdBuffer = {};
         cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
-        cmdBuffer._buffer = bufferData._cmdBuffer;
-        cmdBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastCommandCount };
+        cmdBuffer._buffer = bufferData._commmandBuffer;
+        cmdBuffer._elementRange = { bufferData._commandData._elementOffset, *bufferData._lastCommandCount };
 
         ShaderBufferBinding transformBuffer = {};
         transformBuffer._binding = ShaderBufferLocation::NODE_TRANSFORM_DATA;
-        transformBuffer._buffer = bufferData._transformData;
-        transformBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
+        transformBuffer._buffer = bufferData._transformBuffer;
+        transformBuffer._elementRange = { bufferData._transformData._elementOffset, *bufferData._lastNodeCount };
 
         ShaderBufferBinding materialBuffer = {};
         materialBuffer._binding = ShaderBufferLocation::NODE_MATERIAL_DATA;
-        materialBuffer._buffer = bufferData._materialData;
-        materialBuffer._elementRange = { bufferData._elementOffset, *bufferData._lastNodeCount };
+        materialBuffer._buffer = bufferData._materialBuffer;
+        materialBuffer._elementRange = { bufferData._materialData._elementOffset, materialRange };
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
@@ -537,7 +630,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
             for (RenderingComponent* rComp : queue) {
-                Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, bufferParams, true);
+                Attorney::RenderingCompRenderPass::onRefreshNodeData(*rComp, params, passParams._camera, true, bufferInOut);
             }
         }
     }
@@ -707,16 +800,16 @@ bool RenderPassManager::occlusionPass(const VisibleNodeList<>& nodes,
     memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
                           to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
 
-    if (bufferData._cullCounter != nullptr) {
+    if (bufferData._cullCounterBuffer != nullptr) {
         memCmd._barrierMask |= to_base(MemoryBarrierType::ATOMIC_COUNTER);
         EnqueueCommand(bufferInOut, memCmd);
 
         _context.updateCullCount(bufferData, bufferInOut);
 
-        bufferData._cullCounter->incQueue();
+        bufferData._cullCounterBuffer->incQueue();
 
         GFX::ClearBufferDataCommand clearAtomicCounter = {};
-        clearAtomicCounter._buffer = bufferData._cullCounter;
+        clearAtomicCounter._buffer = bufferData._cullCounterBuffer;
         clearAtomicCounter._offsetElementCount = 0;
         clearAtomicCounter._elementCount = 1;
         EnqueueCommand(bufferInOut, clearAtomicCounter);
