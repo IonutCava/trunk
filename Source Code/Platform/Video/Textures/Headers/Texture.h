@@ -127,11 +127,12 @@ class NOINITVTABLE Texture : public CachedResource, public GraphicsResource {
 
   protected:
     bool _asyncLoad;
-    vectorEASTL<stringImpl> _sourceFileList;
 #if defined(_DEBUG)
+    vectorEASTL<stringImpl> _sourceFileList;
+#endif
+
   protected:
     static const char* s_missingTextureFileName;
-#endif
 };
 
 };  // namespace Divide
