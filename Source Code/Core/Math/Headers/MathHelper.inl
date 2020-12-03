@@ -31,6 +31,7 @@
 
 #ifndef _CORE_MATH_MATH_HELPER_INL_
 #define _CORE_MATH_MATH_HELPER_INL_
+#include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
 

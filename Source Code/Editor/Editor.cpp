@@ -270,7 +270,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
                 viewport->PlatformHandle = (void*)newWindow;
                 viewport->PlatformUserData = IM_NEW(ImGuiViewportData){newWindow, true};
             } else {
-                DIVIDE_UNEXPECTED_CALL("Editor::Platform_CreateWindow failed!");
+                DIVIDE_UNEXPECTED_CALL_MSG("Editor::Platform_CreateWindow failed!");
                 g_windowManager->destroyWindow(newWindow);
             }
         }
@@ -311,7 +311,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             const vec2<I32>& pos = data->_window->getPosition();
             return ImVec2((F32)pos.x, (F32)pos.y);
         }
-        DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowPos failed!");
+        DIVIDE_UNEXPECTED_CALL_MSG("Editor::Platform_GetWindowPos failed!");
         return {};
     };
 
@@ -320,7 +320,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             const vec2<U16>& dim = data->_window->getDimensions();
             return ImVec2((F32)dim.width, (F32)dim.height);
         }
-        DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowSize failed!");
+        DIVIDE_UNEXPECTED_CALL_MSG("Editor::Platform_GetWindowSize failed!");
         return {};
     };
 
@@ -328,7 +328,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
         if (ImGuiViewportData* data = (ImGuiViewportData*)viewport->PlatformUserData) {
             return data->_window->hasFocus();
         }
-        DIVIDE_UNEXPECTED_CALL("Editor::Platform_GetWindowFocus failed!");
+        DIVIDE_UNEXPECTED_CALL_MSG("Editor::Platform_GetWindowFocus failed!");
         return false;
     };
 

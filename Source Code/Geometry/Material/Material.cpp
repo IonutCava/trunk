@@ -697,8 +697,8 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
 }
 
 bool Material::uploadTextures() {
-
     bool expected = false;
+
     if (_texturesMadeResident.compare_exchange_strong(expected, true)) {
         bool ret = false;
 

@@ -264,7 +264,7 @@ void tcp_session_tpl::handlePacket(WorldPacket& p) {
             HandleEntityUpdateOpCode(p);
             break;
         default:
-            DIVIDE_UNEXPECTED_CALL("Unknown network message!");
+            DIVIDE_UNEXPECTED_CALL_MSG("Unknown network message!");
             break;
     }
 }

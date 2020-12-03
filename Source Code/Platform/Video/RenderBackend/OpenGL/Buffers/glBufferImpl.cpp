@@ -128,7 +128,7 @@ glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
           
             } break;
             case BufferUpdateFrequency::COUNT: {
-                DIVIDE_UNEXPECTED_CALL("Unknown buffer update frequency!");
+                DIVIDE_UNEXPECTED_CALL();
             } break;
         }
 

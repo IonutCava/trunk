@@ -36,6 +36,13 @@
 #include "config.h"
 #include "Core/Headers/ErrorCodes.h"
 
+#define EXP( x ) x
+
+#define GET_3RD_ARG(arg1, arg2, arg3, ...) arg3
+#define GET_4TH_ARG(arg1, arg2, arg3, arg4, ...) arg4
+#define GET_5TH_ARG(arg1, arg2, arg3, arg4, arg5, ...) arg5
+#define GET_6TH_ARG(arg1, arg2, arg3, arg4, arg5, arg6, ...) arg6
+
 #if defined(_DEBUG)
 #define STUBBED(x)                                  \
 do {                                                \
@@ -80,6 +87,28 @@ do {                                                \
 #define if_constexpr if constexpr
 #endif
 #endif
+
+#define ACKNOWLEDGE_UNUSED(p) ((void)(p))
+
+#define CONCATENATE_IMPL(s1, s2) s1##s2
+#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
+#ifdef __COUNTER__
+#define ANONYMOUS_VARIABLE(str) \
+    CONCATENATE(str, __COUNTER__)
+#else
+#define ANONYMOUSE_VARIABLE(str) \
+    CONCATENATE(str, __LINE__)
+#endif
+
+ // Multumesc Andrei A.!
+#if defined(_MSC_VER)
+#define _FUNCTION_NAME_AND_SIG_ __FUNCSIG__
+#elif defined(__GNUC__)
+#define _FUNCTION_NAME_AND_SIG_ __PRETTY_FUNCTION__
+#else
+#define _FUNCTION_NAME_AND_SIG_ __FUNCTION__
+#endif
+
 
  //ref: https://foonathan.net/2020/09/move-forward/
  // static_cast to rvalue reference
@@ -424,28 +453,6 @@ constexpr void NOP() noexcept {
     }
 }
 
-#define ACKNOWLEDGE_UNUSED(p) ((void)(p))
-
-#define CONCATENATE_IMPL(s1, s2) s1##s2
-#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
-#ifdef __COUNTER__
-#define ANONYMOUS_VARIABLE(str) \
-    CONCATENATE(str, __COUNTER__)
-#else
-#define ANONYMOUSE_VARIABLE(str) \
-    CONCATENATE(str, __LINE__)
-#endif
-
-
-// Multumesc Andrei A.!
-#if defined(_MSC_VER)
-#define _FUNCTION_NAME_AND_SIG_ __FUNCSIG__
-#elif defined(__GNUC__)
-#define _FUNCTION_NAME_AND_SIG_ __PRETTY_FUNCTION__
-#else
-#define _FUNCTION_NAME_AND_SIG_ __FUNCTION__
-#endif
-
 namespace detail {
     class ScopeGuardImplBase
     {
@@ -690,27 +697,43 @@ TO safe_static_cast(D64 from)
 
 extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept;
 
-/// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
-FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* failMessage = "UNEXPECTED CALL") noexcept {
-    if_constexpr(!Config::Build::IS_RELEASE_BUILD) {
-        if (!expression) {
-            DIVIDE_ASSERT_MSG_BOX(failMessage);
+namespace Assert {
+    /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
+    FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* file, const I32 line, const char* failMessage = "UNEXPECTED CALL") noexcept {
+        if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
+            static char buf[1024];
+            std::snprintf(buf, sizeof(buf), "[ %s ] [ %s ] AT [ %d ]", failMessage, file, line);
 
-            if_constexpr (!Config::Assert::CONTINUE_ON_ASSERT) {
-                assert(expression && failMessage);
+            if (!expression) {
+                DIVIDE_ASSERT_MSG_BOX(buf);
+
+                if_constexpr(!Config::Build::IS_RELEASE_BUILD) {
+                    if_constexpr(!Config::Assert::CONTINUE_ON_ASSERT) {
+                        assert(expression && buf);
+                    } else {
+                        DebugBreak();
+                    }
+                }
             }
+        } else {
+            ACKNOWLEDGE_UNUSED(expression);
+            ACKNOWLEDGE_UNUSED(file);
+            ACKNOWLEDGE_UNUSED(line);
+            ACKNOWLEDGE_UNUSED(failMessage);
         }
-    } else {
-        ACKNOWLEDGE_UNUSED(expression);
-        ACKNOWLEDGE_UNUSED(failMessage);
     }
 }
 
-FORCE_INLINE void DIVIDE_UNEXPECTED_CALL(const char* failMessage = "UNEXPECTED CALL") noexcept {
-    DIVIDE_ASSERT(false, failMessage);
-    DebugBreak();
-}
+#define DIVIDE_ASSERT_2_ARGS(expression, msg) Assert::DIVIDE_ASSERT(expression, __FILE__, __LINE__, msg)
+#define DIVIDE_ASSERT_1_ARGS(expression) DIVIDE_ASSERT_2_ARGS(expression, "UNEXPECTED CALL")
 
+#define ___DETAIL_DIVIDE_ASSERT(...) EXP(GET_3RD_ARG(__VA_ARGS__, DIVIDE_ASSERT_2_ARGS, DIVIDE_ASSERT_1_ARGS, ))
+#define DIVIDE_ASSERT(...) EXP(___DETAIL_DIVIDE_ASSERT(__VA_ARGS__)(__VA_ARGS__))
+
+#define DIVIDE_UNEXPECTED_CALL_MSG(X) DIVIDE_ASSERT(false, X)
+#define DIVIDE_UNEXPECTED_CALL() DIVIDE_UNEXPECTED_CALL_MSG("UNEXPECTED CALL")
+
+                                    
 template <typename Ret, typename... Args >
 using DELEGATE = std::function< Ret(Args...) >;
 

@@ -94,7 +94,7 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
             _bpp = 32;
         } break;
         default:
-            DIVIDE_UNEXPECTED_CALL("Invalid file format!");
+            DIVIDE_UNEXPECTED_CALL();
             break;
     }
 
@@ -233,7 +233,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
                 _alpha = true;
             } break;
             default: {
-                DIVIDE_UNEXPECTED_CALL("Unsupported compressed format!");
+                DIVIDE_UNEXPECTED_CALL();
                 ilDeleteImage(ilTexture);
                 CheckError();
                 return false;
@@ -260,7 +260,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
                 assert(false && "LUMINANCE image format is no longer supported!");
             } break;
             default: {
-                DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
+                DIVIDE_UNEXPECTED_CALL();
                 ilDeleteImage(ilTexture);
                 CheckError();
                 return false;
@@ -341,7 +341,7 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
             _compressedTextureType = TextureType::TEXTURE_CUBE_MAP;
             break;
         case nv_dds::TextureNone:
-            DIVIDE_UNEXPECTED_CALL("Unsupported texture type!");
+            DIVIDE_UNEXPECTED_CALL();
             break;
     }
 
@@ -377,7 +377,7 @@ bool ImageData::loadDDS_NV(const bool srgb, const U16 refWidth, const U16 refHei
           assert(false && "LUMINANCE image format is no longer supported!");
       } break;
       case nv_dds::Format::COUNT:
-          DIVIDE_UNEXPECTED_CALL("Unsupported image format!");
+          DIVIDE_UNEXPECTED_CALL();
           break;
     }
 

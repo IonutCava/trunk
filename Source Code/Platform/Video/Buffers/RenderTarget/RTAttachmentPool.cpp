@@ -154,7 +154,7 @@ RTAttachment_ptr& RTAttachmentPool::getInternal(AttachmentPool& pool, const RTAt
         default: break;
     }
 
-    DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
+    DIVIDE_UNEXPECTED_CALL();
     return pool[0][0];
 }
 
@@ -178,7 +178,7 @@ const RTAttachment_ptr& RTAttachmentPool::getInternal(const AttachmentPool& pool
         default: break;
     }
 
-    DIVIDE_UNEXPECTED_CALL("Invalid render target attachment type");
+    DIVIDE_UNEXPECTED_CALL();
     return pool[0][0];
 }
 

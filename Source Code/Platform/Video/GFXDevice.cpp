@@ -2462,7 +2462,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
                 temp = new (objectArena()) noRenderTarget(*this, descriptor);
             } break;
             default: {
-                DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+                DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
             } break;
         };
 
@@ -2491,7 +2491,7 @@ IMPrimitive* GFXDevice::newIMP() {
             return nullptr;
         };
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2509,7 +2509,7 @@ bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
             return false;
         };
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2533,7 +2533,7 @@ VertexBuffer* GFXDevice::newVB() {
             temp = new (objectArena()) noVertexBuffer(*this);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2561,7 +2561,7 @@ PixelBuffer* GFXDevice::newPB(const PBType type, const char* name) {
             temp = new (objectArena()) noPixelBuffer(*this, type, name);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2589,7 +2589,7 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
             temp = new (objectArena()) noGenericVertexData(*this, ringBufferLength, name);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2624,7 +2624,7 @@ Texture* GFXDevice::newTexture(const size_t descriptorHash,
             temp = new (objectArena()) noTexture(*this, descriptorHash, resourceName, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2672,7 +2672,7 @@ ShaderProgram* GFXDevice::newShaderProgram(const size_t descriptorHash,
             temp = new (objectArena()) noShaderProgram(*this, descriptorHash, resourceName, assetName, assetLocation, descriptor, asyncLoad);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2700,7 +2700,7 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) {
             temp = new (objectArena()) noUniformBuffer(*this, descriptor);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 

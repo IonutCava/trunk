@@ -1271,7 +1271,7 @@ U8 Scene::getSceneIndexForPlayer(const PlayerIndex idx) const {
         }
     }
 
-    DIVIDE_UNEXPECTED_CALL("Player not found!");
+    DIVIDE_UNEXPECTED_CALL();
     return 0;
 }
 

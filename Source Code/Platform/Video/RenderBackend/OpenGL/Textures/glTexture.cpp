@@ -357,7 +357,7 @@ void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
                         mip->data());
                 } break;
                 default:
-                    DIVIDE_UNEXPECTED_CALL("Unsupported texture format!");
+                    DIVIDE_UNEXPECTED_CALL();
                     break;
             }
         }

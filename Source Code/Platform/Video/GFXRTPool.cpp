@@ -98,7 +98,7 @@ RenderTargetHandle GFXRTPool::add(const RenderTargetUsage targetUsage, const std
                 return RenderTargetHandle(RenderTargetID(targetUsage, i), newTarget.get());
             }
         }
-        DIVIDE_UNEXPECTED_CALL("No more render targets available!");
+        DIVIDE_UNEXPECTED_CALL();
         return RenderTargetHandle();
     }
 

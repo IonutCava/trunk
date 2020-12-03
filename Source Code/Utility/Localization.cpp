@@ -77,7 +77,7 @@ const char* LanguageData::get(const U64 key, const char* defaultValue) {
         return entry->second.c_str();
     }
 
-    DIVIDE_UNEXPECTED_CALL("Locale error: INVALID STRING KEY!");
+    DIVIDE_UNEXPECTED_CALL_MSG("Locale error: INVALID STRING KEY!");
 
     return defaultValue;
 }

@@ -49,7 +49,7 @@ void glHardwareQueryPool::deallocate(glHardwareQueryRing& query) {
         }
     }
 
-    DIVIDE_UNEXPECTED_CALL("Target deallocation query not part of the pool!");
+    DIVIDE_UNEXPECTED_CALL();
 }
 
 }; //namespace Divide
