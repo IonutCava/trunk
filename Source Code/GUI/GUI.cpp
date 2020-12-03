@@ -28,16 +28,14 @@ namespace {
 };
 
 void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept {
-    const stringImpl assertMsg = Util::StringFormat("Assert: %s", failMessage);
-
     if_constexpr(Config::Assert::LOG_ASSERTS) {
-        Console::errorfn(assertMsg.c_str());
+        Console::errorfn(failMessage);
     }
 
     if_constexpr(Config::Assert::SHOW_MESSAGE_BOX) {
         if (g_assertMsgBox) {
             g_assertMsgBox->setTitle("Assertion Failed!");
-            g_assertMsgBox->setMessage(assertMsg);
+            g_assertMsgBox->setMessage(failMessage);
             g_assertMsgBox->setMessageType(GUIMessageBox::MessageType::MESSAGE_ERROR);
             g_assertMsgBox->show();
         }

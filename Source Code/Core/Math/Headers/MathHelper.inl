@@ -367,6 +367,11 @@ namespace Divide {
 #endif
     }
 
+    template <typename T, typename U>
+    T FastLerp(const T v1, const T v2, const U t) {
+        return v1 + t * (v2 - v1);
+    }
+
     template <typename T>
     T Sqrt(T input) noexcept {
         return static_cast<T>(std::sqrt(input));

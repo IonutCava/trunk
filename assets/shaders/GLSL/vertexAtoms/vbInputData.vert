@@ -22,6 +22,7 @@ vec4   dvd_Colour;
 
 NodeTransformData fetchInputData() {
     VAR._baseInstance = DVD_GL_BASE_INSTANCE;
+    NodeTransformData data = dvd_Transforms[TRANSFORM_IDX];
 
 #if !defined(USE_MIN_SHADING)
 
@@ -46,7 +47,7 @@ NodeTransformData fetchInputData() {
     dvd_Vertex = vec4(inVertexData, 1.0);
 #endif //USE_GPU_SKINNING
 
-    return dvd_Transforms[TRANSFORM_IDX];
+    return data;
 }
 
 vec4 computeData(in NodeTransformData data) {

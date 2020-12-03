@@ -258,6 +258,9 @@ template<typename T>
 template <typename T, typename U>
 [[nodiscard]] T Lerp(T v1, T v2, U t);
 
+template <typename T, typename U>
+[[nodiscard]] T FastLerp(T v1, T v2, U t);
+
 template <typename T>
 [[nodiscard]] T Sqrt(T input) noexcept;
 
