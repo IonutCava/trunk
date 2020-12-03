@@ -405,7 +405,6 @@ void main()
     setClipPlanes();
     
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
-    _out._vertexWVP = dvd_ProjectionMatrix * _out._vertexWV;
 
 #if !defined(PER_PIXEL_NORMALS)
     computeNormalData(_out._texCoord);
@@ -429,7 +428,7 @@ void main()
     gl_Position = _out._vertexW;
 #else //TOGGLE_DEBUG
     dvd_LoD = tcs_ringID[0];
-    gl_Position = _out._vertexWVP;
+    gl_Position = dvd_ProjectionMatrix * _out._vertexWV;
 #endif //TOGGLE_DEBUG
 }
 

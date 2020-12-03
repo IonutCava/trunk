@@ -9,18 +9,14 @@
 #define COMPUTE_NORMALS
 #endif //!PRE_PASS || !USE_DEFFERED_NORMALS
 
-void computeViewDirection(in vec3 toCamera) {
-#if !defined(PRE_PASS) && !defined(SHADOW_PASS)
-    VAR._viewDirectionWV = normalize(mat3(dvd_ViewMatrix) * toCamera);
-#endif //!PRE_PASS && !SHADOW_PASS
-}
-
 void computeLightVectors(in NodeTransformData data) {
 #if !defined(USE_MIN_SHADING)
 
 #if (!defined(PRE_PASS) && !defined(SHADOW_PASS)) || defined(COMPUTE_TBN)
     const vec3 toCamera = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
-    computeViewDirection(toCamera);
+#if !defined(PRE_PASS) && !defined(SHADOW_PASS)
+    VAR._viewDirectionWV = normalize(mat3(dvd_ViewMatrix) * toCamera);
+#endif //!PRE_PASS && !SHADOW_PASS
 #endif
 
 const mat3 normalMatrixW = NormalMatrixW(data);

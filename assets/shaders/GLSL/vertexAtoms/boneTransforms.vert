@@ -7,7 +7,7 @@ layout(binding = BUFFER_BONE_TRANSFORMS_PREV, std140) uniform dvd_BoneTransforms
     mat4 boneTransformsPrev[MAX_BONE_COUNT_PER_NODE];
 };
 
-void applyPrevBoneTransforms() {
+vec4 applyPrevBoneTransforms(in vec4 vertex) {
     const mat4 transformMatrix[4] = mat4[](
         inBoneWeightData.x * boneTransformsPrev[inBoneIndiceData.x],
         inBoneWeightData.y * boneTransformsPrev[inBoneIndiceData.y],
@@ -15,8 +15,8 @@ void applyPrevBoneTransforms() {
         inBoneWeightData.w * boneTransformsPrev[inBoneIndiceData.w]
     );
 
-    dvd_PrevVertex = (transformMatrix[0] * dvd_PrevVertex + transformMatrix[1] * dvd_PrevVertex +
-                      transformMatrix[2] * dvd_PrevVertex + transformMatrix[3] * dvd_PrevVertex);
+    return (transformMatrix[0] * vertex + transformMatrix[1] * vertex +
+            transformMatrix[2] * vertex + transformMatrix[3] * vertex);
 }
 #endif //HAS_VELOCITY
 
@@ -24,7 +24,7 @@ layout(binding = BUFFER_BONE_TRANSFORMS, std140) uniform dvd_BoneTransforms {
     mat4 boneTransforms[MAX_BONE_COUNT_PER_NODE];
 };
 
-void applyBoneTransforms() {
+vec4 applyBoneTransforms(in vec4 vertex) {
     const mat4 transformMatrix[4] = mat4[](
         inBoneWeightData.x * boneTransforms[inBoneIndiceData.x],
         inBoneWeightData.y * boneTransforms[inBoneIndiceData.y],
@@ -32,8 +32,8 @@ void applyBoneTransforms() {
         inBoneWeightData.w * boneTransforms[inBoneIndiceData.w]
     );
 
-    dvd_Vertex = (transformMatrix[0] * dvd_Vertex + transformMatrix[1] * dvd_Vertex +
-                  transformMatrix[2] * dvd_Vertex + transformMatrix[3] * dvd_Vertex);
+    const vec4 ret = (transformMatrix[0] * vertex + transformMatrix[1] * vertex +
+                      transformMatrix[2] * vertex + transformMatrix[3] * vertex);
 
 #if !defined(SHADOW_PASS)
     vec4 tempNormal = vec4(dvd_Normal, 0.0f);
@@ -46,5 +46,7 @@ void applyBoneTransforms() {
 #endif //COMPUTE_TBN
 
 #endif //SHADOW_PASS
+
+    return ret;
 }
 #endif //_BONE_TRANSFORM_VERT_

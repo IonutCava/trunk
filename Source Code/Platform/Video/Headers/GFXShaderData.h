@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _HARDWARE_VIDEO_GFX_SHADER_DATA_H_
 #define _HARDWARE_VIDEO_GFX_SHADER_DATA_H_
 
+#include "config.h"
 #include "Rendering/Camera/Headers/Frustum.h"
 
 namespace Divide {
@@ -64,7 +65,7 @@ class GFXShaderData {
           //x - material debug flag, y - CSM splits view index, z - camera flag, w - active clip plane count
           vec4<F32> _otherProperties;
           std::array<Plane<F32>, to_base(FrustumPlane::COUNT)> _frustumPlanes;
-          std::array<Plane<F32>, to_base(FrustumPlane::COUNT)> _clipPlanes;
+          std::array<Plane<F32>, Config::MAX_CLIP_DISTANCES> _clipPlanes;
 
           [[nodiscard]] inline F32 aspectRatio() const noexcept;
           [[nodiscard]] inline vec2<F32> cameraZPlanes() const noexcept;

@@ -70,17 +70,15 @@ void main(){
 uniform mat4 dvd_WorldMatrixOverride;
 
 void main(void) {
-    vec4 dvd_Vertex = vec4(inVertexData, 1.0);
     vec3 dvd_Normal = UNPACK_VEC3(inNormalData);
-    VAR._vertexW = dvd_WorldMatrixOverride * dvd_Vertex;
+    VAR._vertexW = dvd_WorldMatrixOverride * vec4(inVertexData, 1.0);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     VAR._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
     NodeTransformData nodeData = dvd_Transforms[DVD_GL_BASE_INSTANCE];
     mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * NormalMatrixW(nodeData);
     VAR._normalWV = normalize(normalMatrixWV * dvd_Normal);
     //Compute the final vert position
-    gl_Position = VAR._vertexWVP;
+    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }
 
 --Fragment.EnvironmentProbe

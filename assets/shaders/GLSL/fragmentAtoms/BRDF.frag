@@ -29,9 +29,9 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, in uint
     vec3 ret = vec3(0.0);
     float specularFactor = 0.0f;
 
-    const vec3 specColour = SpecularColour(albedo, OMR.g);
+    const vec3 specColour = SpecularColour(albedo, METALLIC(OMR));
     const vec3 toCamera = normalize(VAR._viewDirectionWV);
-    const float roughness = OMR.b;
+    const float roughness = ROUGHNESS(OMR);
 
     const uint dirLightCount = dvd_LightData.x;
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
@@ -239,37 +239,56 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 }
 #endif
 
-vec3 getLitColour(in vec3 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, in uint lodLevel) {
+/// RGB - lit colour, A - reflectivity
+vec4 getLitColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, in uint lodLevel) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
+
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:               return albedo;
-        case DEBUG_SPECULAR:             return SpecularColour(albedo, OMR.g);
-        case DEBUG_UV:                   return vec3(fract(uv), 0.0f);
-        case DEBUG_SSAO:                 return vec3(SSAOFactor);
-        case DEBUG_EMISSIVE:             return EmissiveColour(materialData);
-        case DEBUG_ROUGHNESS:            return vec3(OMR.b);
-        case DEBUG_METALLIC:             return vec3(OMR.g);
-        case DEBUG_NORMALS:              return (dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz;
-        case DEBUG_TBN_VIEW_DIRECTION:   return getTBNViewDir();
-        case DEBUG_SHADOW_MAPS:          return vec3(getShadowFactor(normalWV, lodLevel));
-        case DEBUG_LIGHT_HEATMAP:        return lightClusterColours(false);
-        case DEBUG_LIGHT_DEPTH_CLUSTERS: return lightClusterColours(true);
-        case DEBUG_REFLECTIONS:          return ImageBasedLighting(vec3(0.f), normalWV, OMR.g, OMR.b, IBLSize(materialData));
-        case DEBUG_MATERIAL_IDS:         return turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS);
+        case DEBUG_ALBEDO:
+            return vec4(albedo.rgb, 0.0f);
+        case DEBUG_SPECULAR:
+            return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
+        case DEBUG_UV:
+            return vec4(fract(uv), 0.0f, 0.0f);
+        case DEBUG_SSAO:
+            return vec4(vec3(SSAOFactor), 1.0f);
+        case DEBUG_EMISSIVE:
+            return vec4(EmissiveColour(materialData), 1.0f);
+        case DEBUG_ROUGHNESS:
+            return vec4(vec3(ROUGHNESS(OMR)), 1.0f);
+        case DEBUG_METALLIC:
+            return vec4(vec3(METALLIC(OMR)), 1.0f);
+        case DEBUG_NORMALS:
+            return vec4((dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz, 1.0f);
+        case DEBUG_TBN_VIEW_DIRECTION:
+            return vec4(getTBNViewDir(), 1.0f);
+        case DEBUG_SHADOW_MAPS:
+            return vec4(vec3(getShadowFactor(normalWV, lodLevel)), 1.0f);
+        case DEBUG_LIGHT_HEATMAP:
+            return vec4(lightClusterColours(false), 1.0f);
+        case DEBUG_LIGHT_DEPTH_CLUSTERS:
+            return vec4(lightClusterColours(true), 1.0f);
+        case DEBUG_REFLECTIONS:
+            return vec4(ImageBasedLighting(vec3(0.f), normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData)), 1.0f);
+        case DEBUG_MATERIAL_IDS:
+            return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.0f);
     }
 
 #if defined(USE_SHADING_FLAT)
-    vec3 oColour = albedo;
+    vec3 oColour = albedo.rgb;
 #else //USE_SHADING_FLAT
-    vec3 oColour = getLightContribution(albedo, OMR, normalWV, lodLevel);
+    vec3 oColour = getLightContribution(albedo.rgb, OMR, normalWV, lodLevel);
 #endif //USE_SHADING_FLAT
+    const float reflectivity = 1.0f - ROUGHNESS(OMR);
 
-    oColour = ImageBasedLighting(oColour, normalWV, OMR.g, OMR.b, IBLSize(materialData));
+    oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData));
     oColour *= SSAOFactor;
     oColour += EmissiveColour(materialData);
-    return oColour;
+    
+    return vec4(oColour, reflectivity);
 }
 
+/// returns RGB - pixel lit colour, A - reflectivity (e.g. for SSR)
 vec4 getPixelColour(in vec4 albedo, in NodeMaterialData data, in vec3 normalWV, in vec2 uv) {
     uint lodLevel = 0;
     bool isHovered = false;
@@ -279,7 +298,7 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData data, in vec3 normalWV, 
         isHovered = dvd_isHovered(transformData);
     }
 
-    vec4 colour = vec4(getLitColour(albedo.rgb, data, normalWV, uv, lodLevel), albedo.a);
+    vec4 colour = getLitColour(albedo, data, normalWV, uv, lodLevel);
     colour.g += isHovered ? 0.25f : 0.0f;
 
 #if !defined(DISABLE_SHADOW_MAPPING)

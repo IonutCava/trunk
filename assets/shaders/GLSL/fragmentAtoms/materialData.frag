@@ -79,6 +79,10 @@ float specularAntiAliasing(vec3 N, float a) {
 
 #define SpecularColour(diffColour, metallic) mix(F0, diffColour, metallic)
 
+#define OCCLUSSION(OMR_IN) OMR_IN.r
+#define METALLIC(OMR_IN) OMR_IN.g
+#define ROUGHNESS(OMR_IN) OMR_IN.b
+
 #if defined(USE_CUSTOM_ROUGHNESS)
 vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv);
 #else //USE_CUSTOM_ROUGHNESS
@@ -96,6 +100,7 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 #endif
 }
 #endif //USE_CUSTOM_ROUGHNESS
+
 
 #endif //PRE_PASS
 

@@ -19,9 +19,7 @@ void main()
     // Even though the variable ends with WV, we'll store WVP to skip adding a new varying variable
 
     VAR._vertexWV = vec4(vertexPositionWV, 1.0f);
-    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
-
-    gl_Position = VAR._vertexWVP;
+    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
     
     // UV of the vertex. No special space for this one.
     VAR._texCoord = inVertexData.xy + vec2(0.5, 0.5);

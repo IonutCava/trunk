@@ -230,7 +230,6 @@ bool GL_API::initGLSW(Configuration& config) {
     {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
-        { "vec4"       , "_vertexWVP"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
         { "vec2"       , "_texCoord"},
@@ -245,7 +244,7 @@ bool GL_API::initGLSW(Configuration& config) {
 
     constexpr std::pair<const char*, const char*> shaderVaryingsVelocity[] =
     {
-        { "vec4" , "_prevVertexWVP"},
+        { "vec3" , "_prevVertexWVP_XYW"},
     };
 
     constexpr const char* crossTypeGLSLHLSL = "#define float2 vec2\n"
@@ -392,10 +391,6 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_SPOT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_POSSIBLE_LIGHTS), lineOffsets);
 
-    if (config.rendering.postFX.enableCameraBlur) {
-        appendToShaderHeader(ShaderType::COUNT, "#define USE_CAMERA_BLUR", lineOffsets);
-    }
-
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define MAX_CONCURRENT_MATERIALS " + Util::to_string(Config::MAX_CONCURRENT_MATERIALS), lineOffsets);
     appendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
@@ -407,14 +402,16 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CLIP_PLANES " + 
-        Util::to_string(to_base(FrustumPlane::COUNT)),
+        Util::to_string(Config::MAX_CLIP_DISTANCES),
         lineOffsets);
 
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define MAX_CULL_DISTANCES " + 
-         Util::to_string(maxClipCull - to_base(FrustumPlane::COUNT)),
+         Util::to_string(Config::MAX_CULL_DISTANCES),
         lineOffsets);
+
+    DIVIDE_ASSERT(Config::MAX_CULL_DISTANCES <= maxClipCull - Config::MAX_CLIP_DISTANCES, "GLWrapper error: incorrect combination of clip and cull distance counts");
 
     appendToShaderHeader(
         ShaderType::COUNT,

@@ -4,22 +4,24 @@
 #include "lightingDefaults.vert"
 
 layout(location = 0) out flat int _underwater;
+layout(location = 1) out vec4 _vertexWVP;
 
 void main(void)
 {
     const NodeTransformData data = fetchInputData();
-    computeData(data);
+    _vertexWVP = computeData(data);
     setClipPlanes();
     computeLightVectors(data);
 
     _underwater = dvd_cameraPosition.y < VAR._vertexW.y ? 1 : 0;
 
-    gl_Position = VAR._vertexWVP;
+    gl_Position = _vertexWVP;
 }
 
 -- Fragment
 
 layout(location = 0) in flat int _underwater;
+layout(location = 1) in vec4 _vertexWVP;
 
 uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
@@ -78,34 +80,26 @@ void main()
     const vec3 normal1 = texture(texNormalMap, uvNormal1).rgb;
     const vec3 normal = normalize(2.0f * ((normal0 + normal1) * 0.5f) - 1.0f);
     //vec3 normal = normalPartialDerivativesBlend(normal0, normal1);
-    writeOutput(data, 
-                VAR._texCoord,
-                getTBNWV() * normal);
+
+    writeOutput(data,  VAR._texCoord, getTBNWV() * normal);
 #endif //HAS_PRE_PASS_DATA
 #else //PRE_PASS
-    const vec3 uvReflection = clamp(((VAR._vertexWVP.xyz / VAR._vertexWVP.w) + 1.0f) * 0.5f,
-                                    vec3(0.001f),
-                                    vec3(0.999f));
-
-    const vec2 uvFinalReflect = uvReflection.xy;
-    const vec2 uvFinalRefract = uvReflection.xy;
-
-    const vec4 refractionColour = texture(texRefractPlanar, uvFinalReflect) + vec4(_refractionTint, 1.0f);
-    const vec4 reflectionColour = texture(texReflectPlanar, uvFinalReflect);
-    _private_reflect = reflectionColour.rgb;
-
-    const vec3 worldToEye = dvd_cameraPosition.xyz - VAR._vertexW.xyz;
-    const vec3 incident = normalize(worldToEye);
+    const vec3 incident = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
     const vec3 normalWV = getNormalWV(VAR._texCoord);
 
-    const vec4 texColour = (_underwater == 1) ? refractionColour
-                                              : mix(refractionColour,
-                                                    reflectionColour,
-                                                    Fresnel(incident, mat3(dvd_InverseViewMatrix) * normalWV));
-    
-    vec4 outColour = getPixelColour(vec4(texColour.rgb, 1.0f), data, normalWV, VAR._texCoord);
+    const vec2 waterUV = clamp(0.5f * homogenize(_vertexWVP).xy + 0.5f, vec2(0.001f), vec2(0.999f));
+    const vec3 refractionColour = texture(texRefractPlanar, waterUV).rgb + _refractionTint;
 
-    
+    vec3 texColour;
+    if (_underwater == 1) {
+        texColour = refractionColour;
+    } else {
+        _private_reflect = texture(texReflectPlanar, waterUV).rgb;
+        texColour = mix(refractionColour, _private_reflect, Fresnel(incident, mat3(dvd_InverseViewMatrix) * normalWV));
+    }
+
+    vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord);
+
     // Calculate the reflection vector using the normal and the direction of the light.
     vec3 reflection = -reflect(-dvd_sunDirection.xyz, mat3(dvd_InverseViewMatrix) * normalWV);
     // Calculate the specular light based on the reflection and the camera position.
@@ -117,9 +111,10 @@ void main()
         specular = pow(specular, _specularShininess);
 
         // Add the specular to the final color.
-        outColour = saturate(outColour + specular);
+        //outColour = saturate(outColour + specular);
+        outColour = outColour + specular;
     }
 
-    writeOutput(vec4(outColour.rgb, 1.0f));
+    writeOutput(outColour);
 #endif
 }

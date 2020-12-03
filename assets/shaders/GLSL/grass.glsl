@@ -51,6 +51,11 @@ void main() {
     }
     dvd_Vertex.y += 0.25f;
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
+
+#if !defined(SHADOW_PASS)
+    setClipPlanes();
+#endif
+
     if (dvd_Vertex.y > 0.5f && data.data.w < GRASS_DISPLACEMENT_DISTANCE) {
         const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
         VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
@@ -59,14 +64,9 @@ void main() {
     mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * NormalMatrixW(nodeData);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    VAR._vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     VAR._normalWV = normalize(normalMatrixWV * rotate_vertex_position(dvd_Normal, data.orientationQuad));
 
-#if !defined(SHADOW_PASS)
-    setClipPlanes();
-#endif
-
-    gl_Position = VAR._vertexWVP;
+    gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }
 
 -- Fragment.Colour

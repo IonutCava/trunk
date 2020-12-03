@@ -3,9 +3,9 @@
 #include "vbInputData.vert"
 
 void main(void) {
-    computeData(fetchInputData());
+    const vec4 vertexWVP = computeData(fetchInputData());
     setClipPlanes();
-    gl_Position = VAR._vertexWVP;
+    gl_Position = vertexWVP;
 }
 
 -- Vertex.Colour
@@ -15,7 +15,7 @@ void main(void) {
 layout(location = 0) out vec4 _scrollingUV;
 
 void main(void) {
-    computeData(fetchInputData());
+    const vec4 vertexWVP = computeData(fetchInputData());
     setClipPlanes();
 
     const float time2 = MSToSeconds(dvd_time) * 0.01f;
@@ -26,7 +26,7 @@ void main(void) {
     _scrollingUV.p -= time2;
     _scrollingUV.q += time2;
 
-    gl_Position = VAR._vertexWVP;
+    gl_Position = vertexWVP;
 }
 
 --Fragment.Colour

@@ -23,9 +23,9 @@ void main(void)
 
 void main(void)
 {
-    computeData(fetchInputData());
+    const vec4 vertexWVP = computeData(fetchInputData());
     setClipPlanes();
-    gl_Position = VAR._vertexWVP;
+    gl_Position = vertexWVP;
 }
 
 --Vertex.BasicLightData
@@ -35,8 +35,8 @@ void main(void)
 
 void main() {
     const NodeTransformData data = fetchInputData();
-    computeData(data);
+    const vec4 vertexWVP = computeData(data);
     setClipPlanes();
     computeLightVectors(data);
-    gl_Position = VAR._vertexWVP;
+    gl_Position = vertexWVP;
 }

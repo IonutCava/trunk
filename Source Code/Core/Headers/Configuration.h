@@ -120,7 +120,6 @@ struct Configuration final : public XML::IXMLSerializable {
             bool enableAdaptiveToneMapping = true;
             bool enableDepthOfField = false;
             bool enablePerObjectMotionBlur = true;
-            bool enableCameraBlur = true;
             bool enableBloom = false;
             F32 bloomFactor = 0.8f;
             F32 bloomThreshold = 0.75f;

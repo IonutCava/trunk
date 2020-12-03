@@ -157,7 +157,7 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneDa
 #define CLIP_OUTPUT(X) gl_ClipDistance[X]
 #endif
 
-#define CLIP_INDEX(X) CLIP_OUTPUT(X) = (count > X) ? dot(_out._vertexW, dvd_clipPlanes[X]) : 0.0f;
+#define CLIP_INDEX(X) CLIP_OUTPUT(X) = (count > X) ? dot(_out._vertexW, dvd_clipPlanes[X]) : 0.0f
 
 void setClipPlanes() {
 

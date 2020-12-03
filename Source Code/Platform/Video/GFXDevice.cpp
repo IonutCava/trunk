@@ -1312,16 +1312,17 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
     {
         _clippingPlanes = clipPlanes;
 
+        // We only copy the max we have configured. The rest are ignored
         memcpy(&_gpuBlock._data._clipPlanes[0],
                _clippingPlanes._planes.data(),
-               sizeof(vec4<F32>) * to_base(ClipPlaneIndex::COUNT));
+               sizeof(vec4<F32>) * Config::MAX_CLIP_DISTANCES);
 
 
         const auto count = std::count_if(std::cbegin(_gpuBlock._data._clipPlanes),
                                          std::cend(_gpuBlock._data._clipPlanes),
                                          [](const Plane<F32>& plane) {return !IS_ZERO(plane._distance); });
 
-        _gpuBlock._data._otherProperties.w = to_F32(count);
+        _gpuBlock._data._otherProperties.w = to_F32(std::min(to_U32(count), Config::MAX_CLIP_DISTANCES));
 
         _gpuBlock._needsUpload = true;
     }

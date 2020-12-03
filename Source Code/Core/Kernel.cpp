@@ -254,7 +254,10 @@ void Kernel::onLoop() {
         if (frameCount % 4 == 0u) {
         
             DisplayWindow& window = _platformContext.mainWindow();
-            static stringImpl originalTitle = window.title();
+            static stringImpl originalTitle;
+            if (originalTitle.empty()) {
+                originalTitle = window.title();
+            }
 
             F32 fps = 0.f, frameTime = 0.f;
             _platformContext.app().timer().getFrameRateAndTime(fps, frameTime);

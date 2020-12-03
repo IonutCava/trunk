@@ -645,7 +645,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
         shaderName += ".DNrmls";
         hasPrePassData = true;
-        if (!hasTransparency()) {
+        if (!hasTransparency() && !isStatic()) {
             fragDefines.emplace_back("HAS_VELOCITY", true);
             vertDefines.emplace_back("HAS_VELOCITY", true);
             shaderName += ".Vel";
