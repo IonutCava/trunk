@@ -363,13 +363,8 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
                 offset[i]  = std::floorf(offset[i] / grid[i]) * grid[i];
             }
         }
-#if 0
-        // Why the 2x?  I'm confused.  But it works.
-        snapped = eye - ((eye - snapped)/* * 2*/);
-#else
-        // The 2x DOES NOT WORK here. Causes awful "swimming" artifacts. Now I'm confused ... -Ionut
+
         snapped = eye - (eye - snapped);
-#endif
 
         PushConstants& constants = pkg.pushConstants(0);
         constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);

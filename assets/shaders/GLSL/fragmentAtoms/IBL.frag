@@ -4,7 +4,7 @@
 #if defined(USE_PLANAR_REFLECTION)
 layout(binding = TEXTURE_REFLECTION_PLANAR) uniform sampler2D texReflectPlanar;
 #else //USE_PLANAR_REFLECTION
-layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
+layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCube texEnvironmentCube;
 #endif //USE_PLANAR_REFLECTION
 
 //ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/IBL.glsl
@@ -27,7 +27,7 @@ vec3 EnvBRDFApprox(vec3 SpecularColor, float Roughness, float NoV) {
     return SpecularColor * AB.x + AB.y;
 }
 
-vec4 FixCubeLookup(in vec3 v, in uint textureSize) {
+vec3 FixCubeLookup(in vec3 v, in uint textureSize) {
     float M = max(max(abs(v.x), abs(v.y)), abs(v.z));
     float scale = (textureSize - 1) / textureSize;
 
@@ -35,7 +35,7 @@ vec4 FixCubeLookup(in vec3 v, in uint textureSize) {
     if (abs(v.y) != M) v.y += scale;
     if (abs(v.z) != M) v.z += scale;
 
-    return vec4(v, 0.f);
+    return v;
 }
 
 /// Calculate IBL contributation

@@ -179,6 +179,7 @@ void glTexture::reserveStorage() const {
                 _width);
 
         } break;
+        case TextureType::TEXTURE_CUBE_MAP:
         case TextureType::TEXTURE_2D: {
             glTextureStorage2D(
                 handle,
@@ -208,11 +209,9 @@ void glTexture::reserveStorage() const {
         } break;
         case TextureType::TEXTURE_3D:
         case TextureType::TEXTURE_2D_ARRAY:
-        case TextureType::TEXTURE_CUBE_MAP:
         case TextureType::TEXTURE_CUBE_ARRAY: {
             U32 numFaces = 1;
-            if (_loadingData._textureType == TextureType::TEXTURE_CUBE_MAP ||
-                _loadingData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (_loadingData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
                 numFaces = 6;
             }
             glTextureStorage3D(
@@ -323,6 +322,7 @@ void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
                         static_cast<GLsizei>(mip->_size),
                         mip->data());
                 } break;
+                case TextureType::TEXTURE_CUBE_MAP:
                 case TextureType::TEXTURE_2D: {
                     assert(numLayers == 1);
 
@@ -341,7 +341,6 @@ void glTexture::loadDataCompressed(const ImageTools::ImageData& imageData) {
                 case TextureType::TEXTURE_3D:
                 case TextureType::TEXTURE_2D_ARRAY:
                 case TextureType::TEXTURE_2D_ARRAY_MS:
-                case TextureType::TEXTURE_CUBE_MAP:
                 case TextureType::TEXTURE_CUBE_ARRAY: {
                     glCompressedTextureSubImage3D(
                         _loadingData._textureHandle,
@@ -406,7 +405,6 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
                         glType,
                         mip->_size == 0 ? nullptr : mip->data());
                 } break;
-
                 case TextureType::TEXTURE_3D:
                 case TextureType::TEXTURE_2D_ARRAY:
                 case TextureType::TEXTURE_2D_ARRAY_MS:

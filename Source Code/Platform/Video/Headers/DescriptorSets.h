@@ -44,12 +44,14 @@ namespace Divide {
     class Texture;
     struct TextureView final : Hashable {
         TextureData _textureData = {};
+        TextureType _targetType = TextureType::COUNT;
         size_t _samplerHash = 0u;
         vec2<U16> _mipLevels = {};
         vec2<U16> _layerRange = {};
 
         bool operator==(const TextureView& other) const noexcept {
-            return _samplerHash == other._samplerHash&&
+            return _samplerHash == other._samplerHash &&
+                   _targetType == other._targetType &&
                    _mipLevels == other._mipLevels &&
                    _layerRange == other._layerRange &&
                    _textureData == other._textureData;
@@ -57,6 +59,7 @@ namespace Divide {
 
         bool operator!=(const TextureView& other) const noexcept {
             return _samplerHash != other._samplerHash ||
+                   _targetType != other._targetType ||
                    _mipLevels != other._mipLevels ||
                    _layerRange != other._layerRange ||
                    _textureData != other._textureData;
@@ -80,6 +83,16 @@ namespace Divide {
             return _binding != other._binding ||
                    _view != other._view ||
                    _descriptor != other._descriptor;
+        }
+
+        [[nodiscard]] bool isValid() const noexcept {
+            return IsValid(_view._textureData);
+        }
+
+        void reset() noexcept {
+            _view = {};
+            _binding = 0;
+            _descriptor = {};
         }
 
         size_t getHash() const noexcept override;
@@ -149,11 +162,12 @@ namespace Divide {
         TextureViews _textureViews = {};
         Images _images = {};
 
+        void addTextureViewEntry(const TextureViewEntry& view) noexcept;
         bool addShaderBuffer(const ShaderBufferBinding& entry);
         bool addShaderBuffers(const ShaderBufferList& entries);
         [[nodiscard]] const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const noexcept;
         [[nodiscard]] const TextureEntry* findTexture(U8 binding) const noexcept;
-        [[nodiscard]] const TextureView* findTextureView(U8 binding) const noexcept;
+        [[nodiscard]] const TextureViewEntry* findTextureViewEntry(U8 binding) const noexcept;
         [[nodiscard]] const Image* findImage(U8 binding) const noexcept;
 
         bool operator==(const DescriptorSet &other) const noexcept {

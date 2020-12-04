@@ -304,8 +304,8 @@ bool ShadowMap::freeDepthMapOffset(const ShadowType shadowType, const U32 layerO
 U32 ShadowMap::getLightLayerRequirements(const Light& light) {
     switch (light.getLightType()) {
         case LightType::DIRECTIONAL: return to_U32(static_cast<const DirectionalLightComponent&>(light).csmSplitCount());
-        case LightType::SPOT: return 1u;
-        case LightType::POINT: return 6u;
+        case LightType::SPOT:
+        case LightType::POINT: return 1u;
         case LightType::COUNT: break;
     }
 

@@ -118,7 +118,9 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
 
 #if defined(SKIP_TEX0)
     if (texOperation != TEX_NONE) {
+#if !defined(SKIP_TEX1)
         return texture(texDiffuse1, uv);
+#endif
     }
         
     return albedo;
@@ -133,6 +135,7 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
         case TEX_NONE:
             //NOP
             break;
+#if !defined(SKIP_TEX1)
         case TEX_MODULATE:
             colour *= texture(texDiffuse1, uv);
             break;
@@ -160,7 +163,8 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
         case TEX_SMOOTH_ADD: {
             vec4 colour2 = texture(texDiffuse1, uv);
             colour = (colour + colour2) - (colour * colour2);
-        }break;
+        } break;
+#endif
     }
 
     return saturate(colour);

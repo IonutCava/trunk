@@ -103,8 +103,6 @@ struct RenderCbkParams {
 
 using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
 
-constexpr U16 g_invalidRefIndex = std::numeric_limits<U16>::max();
-
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
     friend class Attorney::RenderingCompRenderPass;
     friend class Attorney::RenderingCompGFXDevice;
@@ -124,8 +122,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
        };
 
        struct NodeRenderingProperties {
-           U32 _reflectionIndex = 0u;
-           U32 _refractionIndex = 0u;
            F32 _nodeFlagValue = 1.0f;
            U8 _lod = 0u;
            bool _occlusionCull = true;
@@ -163,8 +159,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     [[nodiscard]] RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
     [[nodiscard]] const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
 
-                        void setRebuildFlag(const RenderStagePass& renderStagePass, bool state);
-    [[nodiscard]] const bool getRebuildFlag(const RenderStagePass& renderStagePass) const;
+                  void setRebuildFlag(const RenderStagePass& renderStagePass, bool state);
+    [[nodiscard]] bool getRebuildFlag(const RenderStagePass& renderStagePass) const;
 
     [[nodiscard]] size_t getSortKeyHash(const RenderStagePass& renderStagePass) const;
 
@@ -220,6 +216,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                                         GFX::CommandBuffer& bufferInOut);
 
     void updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position);
+    void useSkyReflection();
 
     PROPERTY_R(bool, showAxis, false);
     PROPERTY_R(bool, receiveShadows, false);
@@ -247,13 +244,12 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     RenderCallback _reflectionCallback{};
     RenderCallback _refractionCallback{};
-    size_t _reflectionSampler = 0u;
-    size_t _refractionSampler = 0u;
 
     mutable SharedMutex _reflectionLock{};
     mutable SharedMutex _refractionLock{};
-    Texture* _reflectionTexture = nullptr;
-    Texture* _refractionTexture = nullptr;
+    TextureViewEntry _reflectionTexture;
+    TextureViewEntry _refractionTexture;
+    U16 _reflectionTextureWidth = 2u;
 
     vectorEASTL<EnvironmentProbeComponent*> _envProbes{};
     ShaderBufferList _externalBufferBindings{};
@@ -276,9 +272,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     IMPrimitive* _axisGizmo = nullptr;
     IMPrimitive* _selectionGizmo = nullptr;
 
-    /// used to keep track of what GFXDevice::ReflectionTarget we are using for this rendering pass
-    U16 _reflectionIndex = 0u;
-    U16 _refractionIndex = 0u;
     U32 _renderMask = 0u;
 
     bool _drawAABB = false;

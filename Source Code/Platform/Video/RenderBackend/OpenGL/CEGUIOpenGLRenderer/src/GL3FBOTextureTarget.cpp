@@ -145,8 +145,10 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
     }
 
     // set the texture to the required size (delete and create a new one due to immutable storage use)
+    GLuint tempTexture = 0u;
+    glCreateTextures(GL_TEXTURE_2D, 1, &tempTexture);
     glDeleteTextures(1, &d_texture);
-    glCreateTextures(GL_TEXTURE_2D, 1, &d_texture);
+    d_texture = tempTexture;
     glTextureStorage2D(d_texture, 
                        1,
                        OpenGLInfo::getSingleton().isSizedInternalFormatSupported() ? GL_RGBA8 : GL_RGBA,

@@ -17,8 +17,8 @@ void main(void){
 
 layout(early_fragment_tests) in;
 
-layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSkyDay;
-layout(binding = TEXTURE_UNIT1) uniform samplerCubeArray texSkyNight;
+layout(binding = TEXTURE_UNIT0) uniform samplerCube texSkyDay;
+layout(binding = TEXTURE_UNIT1) uniform samplerCube texSkyNight;
 
 uniform vec3 dvd_nightSkyColour;
 uniform ivec2 dvd_useSkyboxes;
@@ -70,7 +70,7 @@ vec3 dayColour(in vec3 rayDirection) {
     vec3 atmoColour = atmosphereColour(rayDirection);
 
     if (dvd_useDaySkybox) {
-        const vec3 sky = texture(texSkyDay, vec4(rayDirection, 0)).rgb;
+        const vec3 sky = texture(texSkyDay, rayDirection).rgb;
 
         atmoColour = mix((atmoColour + sky) - (atmoColour * sky),
                           atmoColour,
@@ -81,12 +81,12 @@ vec3 dayColour(in vec3 rayDirection) {
 }
 
 vec3 nightColour(in vec3 rayDirection) {
-    return dvd_useNightSkybox ? texture(texSkyNight, vec4(rayDirection, 0.f)).rgb
+    return dvd_useNightSkybox ? texture(texSkyNight, rayDirection).rgb
                               : dvd_nightSkyColour;
 }
 
 vec3 albedoOnly(in vec3 rayDirection, in float lerpValue) {
-    return mix(dvd_useDaySkybox ? texture(texSkyDay, vec4(rayDirection, 0)).rgb : vec3(1.0f),
+    return mix(dvd_useDaySkybox ? texture(texSkyDay, rayDirection).rgb : vec3(1.0f),
                nightColour(rayDirection),
                lerpValue);
 }

@@ -1290,6 +1290,8 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 TextureView view = {};
                 view._textureData = crtCmd->_texture->data();
                 view._layerRange.set(crtCmd->_layerRange);
+                view._targetType = view._textureData._textureType;
+
                 if (crtCmd->_mipRange.max == 0u) {
                     view._mipLevels.set(0, descriptor.mipCount());
                 } else {
@@ -1297,22 +1299,22 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 }
                 assert(IsValid(view._textureData));
 
-                if (IsArrayTexture(view._textureData._textureType) && view._layerRange.max == 1) {
-                    switch (view._textureData._textureType) {
+                if (IsArrayTexture(view._targetType) && view._layerRange.max == 1) {
+                    switch (view._targetType) {
                       case TextureType::TEXTURE_2D_ARRAY:
-                          view._textureData._textureType = TextureType::TEXTURE_2D;
+                          view._targetType = TextureType::TEXTURE_2D;
                           break;
                       case TextureType::TEXTURE_2D_ARRAY_MS:
-                          view._textureData._textureType = TextureType::TEXTURE_2D_MS;
+                          view._targetType = TextureType::TEXTURE_2D_MS;
                           break;
                       case TextureType::TEXTURE_CUBE_ARRAY:
-                          view._textureData._textureType = TextureType::TEXTURE_CUBE_MAP;
+                          view._targetType = TextureType::TEXTURE_CUBE_MAP;
                           break;
                       default: break;
-                    };
+                    }
                 }
 
-                if (IsCubeTexture(view._textureData._textureType)) {
+                if (IsCubeTexture(view._targetType)) {
                     view._layerRange *= 6; //offset and count
                 }
 
@@ -1322,7 +1324,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                 {
                     OPTICK_EVENT("GL: View cache miss");
                     glTextureView(handle,
-                                  GLUtil::glTextureTypeTable[to_base(view._textureData._textureType)],
+                                  GLUtil::glTextureTypeTable[to_base(view._targetType)],
                                   view._textureData._textureHandle,
                                   glInternalFormat,
                                   static_cast<GLuint>(view._mipLevels.x),
@@ -1697,8 +1699,11 @@ bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewE
     for (U8 i = offset; i < count + offset; ++i) {
         const auto& it = textureViews[i];
         const size_t viewHash = it.getHash();
-
-        const TextureData& data = it._view._textureData;
+        TextureView view = it._view;
+        if (view._targetType == TextureType::COUNT) {
+            view._targetType = view._textureData._textureType;
+        }
+        const TextureData& data = view._textureData;
         assert(IsValid(data));
 
         auto [textureID, cacheHit] = s_textureViewCache.allocate(viewHash);
@@ -1708,19 +1713,21 @@ bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewE
         {
             const GLenum glInternalFormat = GLUtil::internalFormat(it._descriptor.baseFormat(), it._descriptor.dataType(), it._descriptor.srgb(), it._descriptor.normalized());
 
-            const vec2<GLuint> layerRange = IsCubeTexture(data._textureType) ? it._view._layerRange * 6 : it._view._layerRange;
+            if (IsCubeTexture(view._targetType)) {
+                view._layerRange *= 6;
+            }
 
             glTextureView(textureID,
-                GLUtil::glTextureTypeTable[to_base(data._textureType)],
+                GLUtil::glTextureTypeTable[to_base(view._targetType)],
                 data._textureHandle,
                 glInternalFormat,
                 static_cast<GLuint>(it._view._mipLevels.x),
                 static_cast<GLuint>(it._view._mipLevels.y),
-                layerRange.min,
-                layerRange.max);
+                view._layerRange.min,
+                view._layerRange.max);
         }
 
-        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), data._textureType, textureID, getSamplerHandle(it._view._samplerHash)) || bound;
+        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), view._targetType, textureID, getSamplerHandle(it._view._samplerHash)) || bound;
         // Self delete after 3 frames unless we use it again
         s_textureViewCache.deallocate(textureID, 3u);
     }
@@ -1728,7 +1735,7 @@ bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewE
     return bound;
 }
 
-bool GL_API::makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset, U8 count) const {
+bool GL_API::makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, const U8 offset, const U8 count) const {
     OPTICK_EVENT();
     bool bound = makeTextureViewsResidentInternal(textureViews, offset, count);
     bound = makeTexturesResidentInternal(textureData, offset, count) || bound;

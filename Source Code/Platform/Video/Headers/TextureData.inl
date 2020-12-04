@@ -89,10 +89,22 @@ namespace Divide {
     }
 
     template<size_t Size>
+    const TextureEntry* TextureDataContainer<Size>::findEntry(const U8 binding) const {
+        for (const TextureEntry& it : _textures) {
+            if (it._binding == binding) {
+                return &it;
+            }
+        }
+
+        return nullptr;
+    }
+
+    template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(const U8 binding) {
         for (TextureEntry& it : _textures) {
-            U8& crtBinding = it._binding;
             assert(_count > 0u);
+
+            U8& crtBinding = it._binding;
             if (crtBinding == binding) {
                 crtBinding = INVALID_BINDING;
                 --_count;
@@ -105,8 +117,9 @@ namespace Divide {
 
     template<size_t Size>
     bool TextureDataContainer<Size>::removeTexture(const TextureData& data) {
-        assert(_count > 0u);
         for (TextureEntry& it : _textures) {
+            assert(_count > 0u);
+
             U8& crtBinding = it._binding;
             if (it._data == data) {
                 crtBinding = INVALID_BINDING;

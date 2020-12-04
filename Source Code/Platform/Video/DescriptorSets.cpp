@@ -25,8 +25,11 @@ namespace Divide {
     }
 
     const TextureEntry* DescriptorSet::findTexture(const U8 binding) const noexcept {
-        const auto& textures = _textureData.textures();
-        for (const TextureEntry& it : textures) {
+        return _textureData.findEntry(binding);
+    }
+
+    const TextureViewEntry* DescriptorSet::findTextureViewEntry(const U8 binding) const noexcept {
+        for (const auto& it : _textureViews) {
             if (it._binding == binding) {
                 return &it;
             }
@@ -35,14 +38,20 @@ namespace Divide {
         return nullptr;
     }
 
-    const TextureView* DescriptorSet::findTextureView(const U8 binding) const noexcept {
-        for (const auto& it : _textureViews) {
-            if (it._binding == binding) {
-                return &it._view;
+    void DescriptorSet::addTextureViewEntry(const TextureViewEntry& view) noexcept {
+        TextureViewEntry* existingEntry = nullptr;
+        for (auto& it : _textureViews) {
+            if (it._binding == view._binding) {
+                existingEntry = &it;
+                break;
             }
         }
 
-        return nullptr;
+        if (existingEntry != nullptr) {
+            *existingEntry = view;
+        } else {
+            _textureViews.push_back(view);
+        }
     }
 
     const Image* DescriptorSet::findImage(const U8 binding) const noexcept {
@@ -125,8 +134,8 @@ namespace Divide {
 
         TextureViews& otherViewList = rhs._textureViews;
         for (auto* it = begin(otherViewList); it != end(otherViewList);) {
-            const TextureView* texViewData = lhs.findTextureView(it->_binding);
-            if (texViewData != nullptr && *texViewData == it->_view) {
+            const TextureViewEntry* texViewData = lhs.findTextureViewEntry(it->_binding);
+            if (texViewData != nullptr && texViewData->_view == it->_view) {
                 it = otherViewList.erase(it);
                 partial = true;
             } else {
@@ -162,6 +171,7 @@ namespace Divide {
     size_t TextureView::getHash() const noexcept {
         _hash = GetHash(_textureData);
 
+        Util::Hash_combine(_hash, _targetType);
         Util::Hash_combine(_hash, _mipLevels.x);
         Util::Hash_combine(_hash, _mipLevels.y);
         Util::Hash_combine(_hash, _layerRange.x);

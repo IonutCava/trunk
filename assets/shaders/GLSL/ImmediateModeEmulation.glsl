@@ -87,11 +87,11 @@ void main(void) {
 #include "output.frag"
 
 uniform uint dvd_LayerIndex;
-layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCubeArray texEnvironmentCube;
+layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCube texEnvironmentCube;
 
 void main() {
     vec3 reflectDirection = reflect(-VAR._viewDirectionWV, VAR._normalWV);
-    vec4 colour = vec4(texture(texEnvironmentCube, vec4(reflectDirection, dvd_LayerIndex)).rgb, 1.0);
+    vec4 colour = vec4(texture(texEnvironmentCube, vec3(reflectDirection).rgb, 1.0);
 
     writeOutput(colour);
 }

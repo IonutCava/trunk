@@ -222,19 +222,15 @@ vec3 lightClusterColours(const bool debugDepthClusters) {
 #ifdef CUSTOM_IBL
 vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize);
 #else
-vec3 CubeLookup(in vec3 normalWV, in float roughness, in uint textureSize) {
-    const vec3 normal = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
-    const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
-    const vec3 reflection = normalize(reflect(toCamera, normal));
-
-    return ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize);
-}
-
 vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize) {
 #if defined(USE_PLANAR_REFLECTION) || defined(NO_IBL)
     return colour; 
 #else
-    return mix(colour, CubeLookup(normalWV, roughness, textureSize), metallic);
+    const vec3 normal = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
+    const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
+    const vec3 reflection = normalize(reflect(toCamera, normal));
+
+    return mix(colour, ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize), metallic);
 #endif
 }
 #endif

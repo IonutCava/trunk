@@ -103,6 +103,7 @@ struct TextureDataContainer {
     TextureUpdateState setTexture(const TextureData& data, size_t samplerHash, U8 binding);
     TextureUpdateState setTexture(const TextureData& data, size_t samplerHash, TextureUsage binding);
 
+    [[nodiscard]] const TextureEntry* findEntry(U8 binding) const;
     bool removeTexture(U8 binding);
     bool removeTexture(const TextureData& data);
     void clear();

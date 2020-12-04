@@ -21,8 +21,6 @@ namespace {
 
     constexpr size_t g_invalidStateHash = std::numeric_limits<size_t>::max();
 
-    constexpr U16 g_numMipsToKeepFromAlphaTextures = 1;
-
     constexpr TextureUsage g_materialTextures[] = {
         TextureUsage::UNIT0,
         TextureUsage::OPACITY,
@@ -494,12 +492,11 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         }
     }
 
-    if (_textures[slot1]) {
-        if (!_textures[slot0]) {
-            std::swap(_textures[slot0], _textures[slot1]);
-            updateTransparency();
-        }
+    if (_textures[slot1] && !_textures[slot0]) {
+        std::swap(_textures[slot0], _textures[slot1]);
+        updateTransparency();
     }
+
     const Str64 vertSource = isDepthPass ? baseShaderData()._depthShaderVertSource : baseShaderData()._colourShaderVertSource;
     const Str64 fragSource = isDepthPass ? baseShaderData()._depthShaderFragSource : baseShaderData()._colourShaderFragSource;
 
@@ -535,7 +532,10 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
         fragDefines.emplace_back("SKIP_TEX0", true);
         shaderName += ".NTex0";
     }
-
+    if (!_textures[slot1]) {
+        fragDefines.emplace_back("SKIP_TEX1", true);
+        shaderName += ".NTex1";
+    }
     // Display pre-pass caches normal maps in a GBuffer, so it's the only exception
     if ((!isDepthPass || renderStagePass._stage == RenderStage::DISPLAY) &&
         _textures[to_base(TextureUsage::NORMALMAP)] != nullptr &&
