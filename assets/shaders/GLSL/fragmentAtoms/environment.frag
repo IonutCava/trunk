@@ -1,6 +1,7 @@
 #ifndef _ENVIRONMENT_FRAG_
 #define _ENVIRONMENT_FRAG_
 
+#include "sceneData.cmn"
 #include "utility.frag"
 
 uniform uint dvd_raySteps = 16;

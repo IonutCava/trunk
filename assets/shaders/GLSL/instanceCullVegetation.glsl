@@ -12,6 +12,7 @@ uniform vec4 grassExtents;
 
 uniform uint  dvd_terrainChunkOffset;
 
+#define NEED_SCENE_DATA
 #include "HiZCullingAlgorithm.cmn";
 #include "vegetationData.cmn"
 #include "waterData.cmn"

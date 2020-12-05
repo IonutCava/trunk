@@ -48,18 +48,17 @@ void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
 }
 #endif //OIT_PASS
 
-void writeOutput(vec4 colour) {
 #if defined(OIT_PASS)
+void writeOutput(vec4 colour) {
     colour.rgb *= colour.a;
     vec3 transmit = /*colour.rgb - */vec3(0.0f);
     float linearDepth = ToLinearDepth(textureLod(texDepthMap, dvd_screenPositionNormalised, 0).r);
 
     writePixel(colour, transmit, linearDepth);
-
-#else //OIT_PASS
-    _colourOut = colour;
-    // write depth value to alpha for refraction?
-#endif //OIT_PASS
 }
+#else //OIT_PASS
+// write depth value to alpha for refraction?
+#define writeOutput(colour) _colourOut = colour
+#endif //OIT_PASS
 
 #endif //_OUTPUT_FRAG_

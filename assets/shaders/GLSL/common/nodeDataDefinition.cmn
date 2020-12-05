@@ -42,7 +42,7 @@ struct NodeTransformData {
 
     // [0...2][0...2] = normal matrix
     // [3][0...2]     = bounds center
-    // [0][3]         = 4x8U: bone count, lod level, isHovered, reserved
+    // [0][3]         = 4x8U: bone count, lod level, reserved, reserved
     // [1][3]         = 2x16F: BBox HalfExtent (X, Y) 
     // [2][3]         = 2x16F: BBox HalfExtent (Z), BSphere Radius
     // [3][3]         = 2x16F: (Data Flag, reserved)
@@ -58,6 +58,7 @@ struct NodeTransformData {
 
 };
 
+#if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)
 struct NodeMaterialData
 {
     //base colour
@@ -104,14 +105,13 @@ struct NodeMaterialData
 #define dvd_bumpMethod(X)  uint(unpackUnorm4x8(dvd_Materials[X]._data.z).y * 255)
 
 #define dvd_parallaxFactor(X)  dvd_Materials[X]._emissiveAndParallax.a
+#endif //FRAG_SHADER || NEED_MATERIAL_DATA
 
 #define NormalMatrixW(transformData) mat3(transformData._normalMatrixW)
 
 #define dvd_boneCount(transformData) uint(unpackUnorm4x8(uint(transformData._normalMatrixW[0][3])).x * 255)
 
 #define dvd_lodLevel(transformData)  uint(unpackUnorm4x8(uint(transformData._normalMatrixW[0][3])).y * 255)
-
-#define dvd_isHovered(transformData) (uint(unpackUnorm4x8(uint(transformData._normalMatrixW[0][3])).z * 255) == 1)
 
 #define dvd_dataFlag(X) unpackHalf2x16(uint(dvd_Transforms[X]._normalMatrixW[3][3])).x
 

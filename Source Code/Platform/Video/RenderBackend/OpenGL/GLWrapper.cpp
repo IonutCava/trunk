@@ -337,9 +337,11 @@ bool GL_API::initGLSW(Configuration& config) {
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
 
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawIDARB", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_VERTEX gl_BaseVertexARB", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstanceARB", lineOffsets);
     } else {
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawID", lineOffsets);
+        appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_VERTEX gl_BaseVertex", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstance", lineOffsets);
     }
 
@@ -1358,11 +1360,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
             const GLStateTracker& stateTracker = getStateTracker();
-            DIVIDE_ASSERT(stateTracker._activePipeline != nullptr);
-
             const auto& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)->_drawCommands;
 
             U32 drawCount = 0u;
+
+            DIVIDE_ASSERT(drawCount == 0u || stateTracker._activePipeline != nullptr);
+
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
                 if (draw(currentDrawCommand, stateTracker._commandBufferOffset)) {
                     drawCount += isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME) 

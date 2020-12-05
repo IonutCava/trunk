@@ -1,5 +1,6 @@
 --Vertex
 
+#define NEED_SCENE_DATA
 #include "vbInputData.vert"
 #include "vegetationData.cmn"
 #include "lightingDefaults.vert"

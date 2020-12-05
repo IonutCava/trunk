@@ -108,24 +108,16 @@ float detail_getShadowFactorPoint(in uint shadowIndex, in float TanAcosNdotL) {
 #endif
 }
 
-#define CAN_CAST_SHADOWS(IDX, LOD) (IDX >= 0 && IDX < MAX_SHADOW_CASTING_LIGHTS && LOD <= 2)
-
-float getShadowFactorDirectional(in int shadowIndex, in float TanAcosNdotL, in uint lodLevel) {
-    return CAN_CAST_SHADOWS(shadowIndex, lodLevel) 
-                ? detail_getShadowFactorDirectional(shadowIndex, TanAcosNdotL)
-                : 1.0f;
+float getShadowFactorDirectional(in int shadowIndex, in float TanAcosNdotL) {
+    return shadowIndex >= 0 ? detail_getShadowFactorDirectional(shadowIndex, TanAcosNdotL) : 1.0f;
 }
 
-float getShadowFactorPoint(in int shadowIndex, in float TanAcosNdotL, in uint lodLevel) {
-    return CAN_CAST_SHADOWS(shadowIndex, lodLevel)
-                ? detail_getShadowFactorPoint(shadowIndex, TanAcosNdotL)
-                : 1.0f;
+float getShadowFactorPoint(in int shadowIndex, in float TanAcosNdotL) {
+    return shadowIndex >= 0 ? detail_getShadowFactorPoint(shadowIndex, TanAcosNdotL) : 1.0f;
 }
 
-float getShadowFactorSpot(in int shadowIndex, in float TanAcosNdotL, in uint lodLevel) {
-    return CAN_CAST_SHADOWS(shadowIndex, lodLevel)
-                ? detail_getShadowFactorSpot(shadowIndex, TanAcosNdotL)
-                : 1.0f;
+float getShadowFactorSpot(in int shadowIndex, in float TanAcosNdotL) {
+    return shadowIndex >= 0 ? detail_getShadowFactorSpot(shadowIndex, TanAcosNdotL) : 1.0f;
 }
 
 #else //DISABLE_SHADOW_MAPPING
@@ -134,13 +126,13 @@ int getCSMSlice(in vec4 props[MAX_CSM_SPLITS_PER_LIGHT]) {
     return 0;
 }
 
-float getShadowFactorDirectional(in int shadowIndex, in float TanAcosNdotL, in uint lodLevel) {
+float getShadowFactorDirectional(in int shadowIndex, in float TanAcosNdotL) {
     return 1.0f;
 }
-float getShadowFactorPoint(in int shadowIndex, in float TanAcosNdotL, in uint lodLevel) {
+float getShadowFactorPoint(in int shadowIndex, in float TanAcosNdotL) {
     return 1.0f;
 }
-float getShadowFactorSpot(in int shadowIndex, in float TanAcosNdotL,  in uint lodLevel) {
+float getShadowFactorSpot(in int shadowIndex, in float TanAcosNdotL) {
     return 1.0f;
 }
 #endif //DISABLE_SHADOW_MAPPING

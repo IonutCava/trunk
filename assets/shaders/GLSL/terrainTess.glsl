@@ -1,5 +1,7 @@
 --Vertex
 
+#define NEED_MATERIAL_DATA
+
 #include "nodeBufferedInput.cmn"
 
 layout(location = ATTRIB_POSITION) in vec4 inVertexData;
@@ -12,22 +14,14 @@ layout(location = 10) out vec4 vtx_adjancency;
 layout(location = 11) out float vtx_tileSize;
 layout(location = 12) out flat int vtx_ringID;
 
-vec2 worldXZtoHeightUV(vec2 worldXZ) {
-    // Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
-    const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
-    return saturate(0.5f * uv + 0.5f);
-}
+#define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
+// Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
+#define WorldXZtoHeightUV(WorldXZ) saturate(0.5f * ((WorldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z)) + 0.5f)
 
 vec4 ReconstructPosition() {
-#if defined(USE_BASE_VERTEX_OFFSET)
-    const int vertID = gl_VertexID - gl_BaseVertex;
-#else
-    const int vertID = gl_VertexID;
-#endif
-
     // Calculate texture coordinates (u,v) relative to entire terrain
-    const float iv = floor(vertID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
-    const float iu = vertID - iv * CONTROL_VTX_PER_TILE_EDGE;
+    const float iv = floor(gl_VertexID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
+    const float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
     const float u = iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
     const float v = iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
 
@@ -35,18 +29,11 @@ vec4 ReconstructPosition() {
     vtx_adjancency = inColourData;
     vtx_ringID = int(inVertexData.w);
 
-    vec2 tempPos = vec2(u * vtx_tileSize + inVertexData.x,
-                        v * vtx_tileSize + inVertexData.y);
+    VAR._texCoord = vec2((u * vtx_tileSize + inVertexData.x) * WORLD_SCALE_X,
+                         (v * vtx_tileSize + inVertexData.y) * WORLD_SCALE_Z) +
+                    dvd_tileWorldPosition;
 
-    tempPos.x *= WORLD_SCALE_X;
-    tempPos.y *= WORLD_SCALE_Z;
-    tempPos += 2 * vec2(dvd_tileWorldPosition.x, -dvd_tileWorldPosition.y);
-
-    VAR._texCoord = tempPos;
-    const vec2 texCoords = worldXZtoHeightUV(tempPos);
-    const float height = (TERRAIN_HEIGHT * texture(texHeight, texCoords).r) + TERRAIN_HEIGHT_OFFSET;
-
-    return vec4(tempPos.x, height, tempPos.y, 1.0f);
+    return vec4(VAR._texCoord.x, GetHeight(WorldXZtoHeightUV(VAR._texCoord)), VAR._texCoord.y, 1.0f);
 }
 
 void main(void)
@@ -58,6 +45,7 @@ void main(void)
 
 --TessellationC
 
+#define NEED_MATERIAL_DATA
 #include "nodeBufferedInput.cmn"
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
@@ -85,10 +73,9 @@ layout(location = 12) out vec3[5] tcs_debugColour[];
 #define MAX_TESS_LEVEL 64.0f
 #endif //MAX_TESS_LEVEL
 
-vec2 worldXZtoHeightUV(vec2 worldXZ) {
-    const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
-    return saturate(0.5f * uv + 0.5f);
-}
+#define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
+// Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
+#define WorldXZtoHeightUV(WorldXZ) saturate(0.5f * ((WorldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z)) + 0.5f)
 
 float SphereToScreenSpaceTessellation(in vec3 w0, in vec3 w1, in float diameter)
 {
@@ -130,13 +117,13 @@ float LargerNeighbourAdjacencyClamp(in float tess) {
 
 void MakeVertexHeightsAgree(in vec2 uv, inout vec3 p0, inout vec3 p1)
 {
-    p0.y = p1.y = (TERRAIN_HEIGHT * texture(texHeight, uv).r) + TERRAIN_HEIGHT_OFFSET;
+    p0.y = p1.y = GetHeight(uv);
 }
 
 float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
     vec3 p0 = _in[idx0]._vertexW.xyz;
     vec3 p1 = _in[idx1]._vertexW.xyz;
-    const vec2 uv = worldXZtoHeightUV(gl_in[idx0].gl_Position.xz);
+    const vec2 uv = WorldXZtoHeightUV(gl_in[idx0].gl_Position.xz);
 
     MakeVertexHeightsAgree(uv, p0, p1);
     const float t = SphereToScreenSpaceTessellation(p0, p1, diameter);
@@ -146,7 +133,7 @@ float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) 
 float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in float diameter) {
     vec3 p0 = _in[idx0]._vertexW.xyz;
     vec3 p1 = _in[idx1]._vertexW.xyz;
-    const vec2 uv = worldXZtoHeightUV(gl_in[idx0].gl_Position.xz);
+    const vec2 uv = WorldXZtoHeightUV(gl_in[idx0].gl_Position.xz);
 
     // We move one of the corner vertices in 2D (x,z) to match where the corner vertex is 
     // on our larger neighbour.  We move p0 or p1 depending on the even/odd patch index.
@@ -295,6 +282,7 @@ layout(quads, fractional_even_spacing, cw) in;
 layout(quads, fractional_even_spacing, cw) in;
 #endif
 
+#define NEED_MATERIAL_DATA
 #include "nodeBufferedInput.cmn"
 
 uniform vec2 dvd_textureWorldOffset;
@@ -343,28 +331,15 @@ vec3 LerpDebugColours(in vec3 cIn[5], vec2 uv) {
 }
 #endif
 
-float getHeight(in vec2 tex_coord) {
-    return TERRAIN_HEIGHT * texture(texHeight, tex_coord).r + TERRAIN_HEIGHT_OFFSET;
-}
+#define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
+// Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
+#define WorldXZtoHeightUV(WorldXZ) saturate(0.5f * ((WorldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z)) + 0.5f)
 
-vec2 worldXZtoHeightUV(in vec2 worldXZ) {
-    const vec2 uv = (worldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z);
-    return saturate(0.5f * uv + 0.5f);
-}
-
-#if !defined(PER_PIXEL_NORMALS)
 vec3 getVertNormal(in vec2 tex_coord) {
-    const ivec3 off = ivec3(-1, 0, 1);
-
-    const float s01 = textureOffset(texHeight, tex_coord, off.xy).r; //-1,  0
-    const float s21 = textureOffset(texHeight, tex_coord, off.zy).r; // 1,  0
-    const float s10 = textureOffset(texHeight, tex_coord, off.yx).r; // 0, -1
-    const float s12 = textureOffset(texHeight, tex_coord, off.yz).r; // 0,  1
-
-    const float hL = TERRAIN_HEIGHT * s01 + TERRAIN_HEIGHT_OFFSET;
-    const float hR = TERRAIN_HEIGHT * s21 + TERRAIN_HEIGHT_OFFSET;
-    const float hD = TERRAIN_HEIGHT * s10 + TERRAIN_HEIGHT_OFFSET;
-    const float hU = TERRAIN_HEIGHT * s12 + TERRAIN_HEIGHT_OFFSET;
+    const float hL = textureOffset(texHeight, tex_coord, ivec2(-1,  0)).r;
+    const float hR = textureOffset(texHeight, tex_coord, ivec2( 1,  0)).r;
+    const float hD = textureOffset(texHeight, tex_coord, ivec2( 0, -1)).r;
+    const float hU = textureOffset(texHeight, tex_coord, ivec2( 0,  1)).r;
 
     // deduce terrain normal
     return normalize(vec3(hL - hR, 2.0f, hD - hU));
@@ -377,18 +352,13 @@ void computeNormalData(in vec2 uv) {
 #if !defined(USE_DEFERRED_NORMALS)
     _out._tbnViewDir = vec3(0.0f);
 #else //!USE_DEFERRED_NORMALS
-    const mat3 normalMatrix = NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]);
-
     const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
-    const vec3 T = cross(N, B);
 
-    const mat3 TBN = mat3(normalMatrix * T, normalMatrix * B, normalMatrix * N);
+    const mat3 TBN = NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]) * mat3(cross(N, B), B, N);
     _out._tbnWV = mat3(dvd_ViewMatrix) * TBN;
     _out._tbnViewDir = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - _out._vertexW.xyz));
 #endif//!USE_DEFERRED_NORMALS
 }
-
-#endif //PER_PIXEL_NORMALS
 
 void main()
 {
@@ -400,15 +370,13 @@ void main()
                             gl_in[3].gl_Position.xyz,
                             gl_TessCoord.xy);
 
-    _out._texCoord = worldXZtoHeightUV(pos.xz);
-    _out._vertexW = dvd_Transforms[TRANSFORM_IDX]._worldMatrix * vec4(pos.x, getHeight(_out._texCoord), pos.z, 1.0f);
+    _out._texCoord = WorldXZtoHeightUV(pos.xz);
+    _out._vertexW = dvd_Transforms[TRANSFORM_IDX]._worldMatrix * vec4(pos.x, GetHeight(_out._texCoord), pos.z, 1.0f);
     setClipPlanes();
     
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
 
-#if !defined(PER_PIXEL_NORMALS)
     computeNormalData(_out._texCoord);
-#endif //PER_PIXEL_NORMALS
 
 #if !defined(PRE_PASS) && !defined(SHADOW_PASS)
     _out._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - _out._vertexW.xyz);
@@ -434,6 +402,7 @@ void main()
 
 --Geometry
 
+#define NEED_MATERIAL_DATA
 #include "nodeBufferedInput.cmn"
 
 layout(triangles) in;
@@ -444,9 +413,8 @@ layout(location = 12) in vec3 tes_debugColour[];
 layout(location = 13) in float tes_PatternValue[];
 
 layout(location = 10) out flat int dvd_LoD;
-layout(location = 11) out float dvd_PatternValue;
-layout(location = 12) out vec3 gs_wireColor;
-layout(location = 13) noperspective out vec3 gs_edgeDist;
+layout(location = 11) out vec3 gs_wireColor;
+layout(location = 12) noperspective out vec4 gs_edgeDist;  //w - patternValue
 
 #if defined(TOGGLE_NORMALS)
 layout(line_strip, max_vertices = 18) out;
@@ -463,24 +431,23 @@ void PerVertex(in int i, in vec3 edge_dist) {
     gl_Position = getWVPPositon(i);
 
     dvd_LoD = tes_ringID[i];
-    dvd_PatternValue = tes_PatternValue[i];
-    gs_edgeDist = vec3(i == 0 ? edge_dist.x : 0.0,
+    
+    gs_edgeDist = vec4(i == 0 ? edge_dist.x : 0.0,
                        i == 1 ? edge_dist.y : 0.0,
-                       i >= 2 ? edge_dist.z : 0.0);
+                       i >= 2 ? edge_dist.z : 0.0,
+                       tes_PatternValue[i]);
     setClipPlanes();
 }
 
 #if defined(TOGGLE_NORMALS)
 vec3 getNormal(in vec2 tex_coord) {
-    const ivec3 off = ivec3(-1, 0, 1);
-
-    const float s01 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.xy).r) + TERRAIN_HEIGHT_OFFSET;;
-    const float s21 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.zy).r) + TERRAIN_HEIGHT_OFFSET;;
-    const float s10 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.yx).r) + TERRAIN_HEIGHT_OFFSET;;
-    const float s12 = (TERRAIN_HEIGHT * textureOffset(texHeight, tex_coord, off.yz).r) + TERRAIN_HEIGHT_OFFSET;;
+    const float hL = textureOffset(texHeight, tex_coord, ivec2(-1,  0)).r;
+    const float hR = textureOffset(texHeight, tex_coord, ivec2( 1,  0)).r;
+    const float hD = textureOffset(texHeight, tex_coord, ivec2( 0, -1)).r;
+    const float hU = textureOffset(texHeight, tex_coord, ivec2( 0,  1)).r;
 
     // deduce terrain normal
-    return normalize(vec3(s01 - s21, 2.0f, s10 - s12));
+    return normalize(vec3(hL - hR, 2.0f, hD - hU));
 }
 #endif
 
@@ -593,9 +560,8 @@ layout(early_fragment_tests) in;
 layout(location = 10) in flat int dvd_LoD;
 
 #if defined(TOGGLE_DEBUG)
-layout(location = 11) in float dvd_PatternValue;
-layout(location = 12) in vec3 gs_wireColor;
-layout(location = 13) noperspective in vec3 gs_edgeDist;
+layout(location = 11) in vec3 gs_wireColor;
+layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
 #endif //TOGGLE_DEBUG
 
 #if defined(LOW_QUALITY)
@@ -642,8 +608,6 @@ void main(void)
 #if defined(HAS_PRE_PASS_DATA)
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
-    computeTBN(VAR._texCoord);
-
     writeOutput(data, 
                 VAR._texCoord,
                 getMixedNormalWV(VAR._texCoord));
@@ -651,8 +615,6 @@ void main(void)
 #else //PRE_PASS
 
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-
-    computeTBN(VAR._texCoord);
 
     vec4 albedo;
     vec3 normalWV;
@@ -669,7 +631,7 @@ void main(void)
 #if defined(TOGGLE_NORMALS)
     colourOut = vec4(gs_wireColor, 1.0f);
 #else //TOGGLE_NORMALS
-    float val = 0.5f * dvd_PatternValue;
+    float val = 0.5f * gs_edgeDist.w;
     colourOut.rgb *= val;// vec4(vec3(val), 1.0f);
 
     const float LineWidth = 0.75f;

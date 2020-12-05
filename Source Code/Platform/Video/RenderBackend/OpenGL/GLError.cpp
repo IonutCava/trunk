@@ -9,7 +9,13 @@ namespace Divide {
 namespace GLUtil {
 
 /// Print OpenGL specific messages
-void DebugCallback(const GLenum source, const GLenum type, GLuint id, const GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+void DebugCallback(const GLenum source,
+                   const GLenum type,
+                   const GLuint id,
+                   const GLenum severity,
+                   const GLsizei length,
+                   const GLchar* message,
+                   const void* userParam) {
 
     ACKNOWLEDGE_UNUSED(length);
 

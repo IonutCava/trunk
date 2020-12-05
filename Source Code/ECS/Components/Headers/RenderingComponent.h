@@ -125,8 +125,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
            F32 _nodeFlagValue = 1.0f;
            U8 _lod = 0u;
            bool _occlusionCull = true;
-           bool _isHovered = false;
-           bool _isSelected = false;
        };
 
    public:

@@ -340,7 +340,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
             // Update the scene state based on current time (e.g. animation matrices)
             _sceneManager->updateSceneState(deltaTimeUS);
             // Update visual effect timers as well
-            _platformContext.gfx().getRenderer().postFX().update(deltaTimeUS);
+            Attorney::GFXDeviceKernel::update(_platformContext.gfx(), deltaTimeUS);
 
             if (loopCount == 0) {
                 _sceneUpdateLoopTimer.stop();

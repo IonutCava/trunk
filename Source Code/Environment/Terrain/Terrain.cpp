@@ -28,13 +28,7 @@ namespace {
     constexpr bool USE_BASE_VERTEX_OFFSETS = false;
 
     // This array defines the outer width of each successive terrain ring.
-    constexpr I32 g_RingWidths[] = {
-        0,
-        8,
-        16,
-        16,
-        16
-    };
+    constexpr I32 g_RingWidths[] = { 0, 8, 16, 16, 16 };
 
     constexpr F32 g_StartTileSize = 0.35f;
 
@@ -240,8 +234,7 @@ void Terrain::postBuild() {
         // snap size equal to one patch width, purely to stop the patches dancing around like crazy.
         // The non-debug rendering works fine either way, but crazy flickering of the debug patches 
         // makes understanding much harder.
-        const vec2<F32> snapGridSize = tessParams().WorldScale() * _tileRings[ringCount - 1]->tileSize();
-        _tessParams.SnapGridSize(snapGridSize / TessellationParams::PATCHES_PER_TILE_EDGE);
+        _tessParams.SnapGridSize(tessParams().WorldScale() * _tileRings[ringCount - 1]->tileSize() / TessellationParams::PATCHES_PER_TILE_EDGE);
 
         vectorEASTLFast<U16> indices = CreateTileQuadListIB();
 
@@ -268,19 +261,22 @@ void Terrain::postBuild() {
             _terrainBuffer->setIndexBuffer(idxBuff, BufferUpdateFrequency::ONCE);
             if_constexpr(USE_BASE_VERTEX_OFFSETS) {
                 vectorEASTL<TileRing::InstanceData> vbData;
+                vbData.reserve(TessellationParams::QUAD_LIST_INDEX_COUNT * ringCount);
+
                 for (size_t i = 0; i < ringCount; ++i) {
                     vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
                     vbData.insert(cend(vbData), cbegin(ringData), cend(ringData));
+                    params._elementCount += to_U32(ringData.size());
                 }
                 params._buffer = 0;
-                params._initialData = { (Byte*)vbData.data(), vbData.size() * params._elementSize };
-                params._elementCount = to_U32(vbData.size());
+                params._initialData = { (Byte*)vbData.data(), vbData.size() * sizeof(TileRing::InstanceData) };
                 _terrainBuffer->setBuffer(params);
             } else {
+
                 for (size_t i = 0; i < ringCount; ++i) {
                     vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
                     params._buffer = to_U32(i);
-                    params._initialData = { (Byte*)ringData.data(), ringData.size() * params._elementSize };
+                    params._initialData = { (Byte*)ringData.data(), ringData.size() * sizeof(TileRing::InstanceData) };
                     params._elementCount = to_U32(ringData.size());
                     _terrainBuffer->setBuffer(params);
                 }
@@ -350,7 +346,7 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
             triangleWidth *= 2.0f;
         }
 
-        const vec2<F32>& grid  = tessParams().SnapGridSize();
+        const vec2<F32>& SNAP_GRID_SIZE = tessParams().SnapGridSize();
         const vec2<F32>& scale = tessParams().WorldScale();
 
         const vec2<F32> eye = camera.getEye().xz();
@@ -358,13 +354,13 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
         vec2<F32> snapped = eye;
         vec2<F32> offset  = eye;
         for (U8 i = 0; i < 2; ++i) {
-            if (grid[i] > 0.f) {
-                snapped[i] = std::floorf(snapped[i] / grid[i]) * grid[i];
-                offset[i]  = std::floorf(offset[i] / grid[i]) * grid[i];
+            if (SNAP_GRID_SIZE[i] > 0.f) {
+                snapped[i] = std::floorf(snapped[i] / SNAP_GRID_SIZE[i]) * SNAP_GRID_SIZE[i];
+                offset[i]  = std::floorf(offset[i]  / SNAP_GRID_SIZE[i]) * SNAP_GRID_SIZE[i];
             }
         }
 
-        snapped = eye - (eye - snapped);
+        snapped = eye - (eye - snapped) * 2;
 
         PushConstants& constants = pkg.pushConstants(0);
         constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);

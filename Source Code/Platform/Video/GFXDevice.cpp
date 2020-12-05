@@ -865,6 +865,12 @@ void GFXDevice::idle(const bool fast) const {
     ShaderProgram::idle();
 }
 
+void GFXDevice::update(const U64 deltaTimeUS) {
+    getRenderer().postFX().update(deltaTimeUS);
+    _gpuBlock._data._renderProperties.w += Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS);
+    _gpuBlock._needsUpload = true;
+}
+
 void GFXDevice::beginFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 

@@ -387,10 +387,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                     }
                 }
             }
-            if (terrainConfig.perPixelNormals) {
-                shaderPropName += ".PerPixelNormals";
-                shaderModule._defines.emplace_back("PER_PIXEL_NORMALS", true);
-            }
+
             const vec2<F32> uvDivisor = WorldScale * TessellationParams::PATCHES_PER_TILE_EDGE - TessellationParams::PATCHES_PER_TILE_EDGE;
 
             shaderModule._defines.emplace_back("COMPUTE_TBN", true);

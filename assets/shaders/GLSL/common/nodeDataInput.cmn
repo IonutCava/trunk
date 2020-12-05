@@ -61,7 +61,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     ///xyz - position, w - aspect ratio
     vec4  dvd_cameraPosition; 
     vec4  dvd_ViewPort;
-    //x - nearPlane, y - farPlane, z - FoV, w - reserved
+    //x - nearPlane, y - farPlane, z - FoV, w - elapsed time (ms)
     vec4  dvd_renderProperties;
     //x - cluster size X, y - cluster size Y, z - scale, w - bias
     vec4  dvd_lightingProperties;
@@ -105,49 +105,14 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define dvd_ClusterSizes vec2(dvd_ClusterSizeX, dvd_ClusterSizeY)
 
 #define dvd_invScreenDimensions (1.0f / dvd_ViewPort.zw)
-#define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_aspectRatio dvd_cameraPosition.w
+#define dvd_zPlanes vec2(dvd_renderProperties.xy)
 #define dvd_fieldOfView dvd_renderProperties.z
+#define dvd_time int(dvd_renderProperties.w)
 
 #define dvd_materialDebugFlag int(dvd_otherProperties.x)
 #define dvd_CSMSplitsViewIndex int(dvd_otherProperties.y)
 #define dvd_ClipPlaneCount int(dvd_otherProperties.w)
-
-struct WaterBodyData {
-    vec4 positionW;
-    ///length, depth, width
-    vec4 extents;
-};
-
-#define GLOBAL_WATER_BODIES 2
-
-layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneData
-{
-    // w - reserved
-    vec4 dvd_sunDirection;
-    // w - reserved
-    vec4 dvd_sunColour;
-    // w - reserved
-    vec4 dvd_zenithColour;
-    // w - reserved
-    vec4 dvd_horizonColour;
-    // x,y,z - colour, w - density
-    vec4   dvd_fogDetails;
-    // x,y,z - direction, w - speed
-    vec4   dvd_windDetails;
-    //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
-    vec4   dvd_shadowingSettings;
-    //x - elapsed time (ms), y - delta time (ms), z,w - reserved
-    vec4   dvd_otherData;
-    WaterBodyData dvd_waterEntities[GLOBAL_WATER_BODIES];
-};
-
-#define dvd_LightBleedBias dvd_shadowingSettings.x
-#define dvd_MinVariance dvd_shadowingSettings.y
-#define dvd_fogColour dvd_fogDetails.rgb
-#define dvd_fogDensity dvd_fogDetails.w
-#define dvd_time int(dvd_otherData.x)
-#define dvd_deltaTime (int(dvd_otherData.y))
 
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)
 
@@ -159,9 +124,8 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneDa
 
 #define CLIP_INDEX(X) CLIP_OUTPUT(X) = (count > X) ? dot(_out._vertexW, dvd_clipPlanes[X]) : 0.0f
 
-void setClipPlanes() {
-
 #if defined(HAS_CLIPPING_OUT) && MAX_CLIP_PLANES > 0
+void setClipPlanes() {
     const int count = dvd_ClipPlaneCount;
     CLIP_INDEX(0);
 #if MAX_CLIP_PLANES > 1
@@ -179,8 +143,10 @@ void setClipPlanes() {
 #endif
 #endif
 #endif
-#endif
 }
+#else //HAS_CLIPPING_OUT && MAX_CLIP_PLANES > 0
+#define setClipPlanes()
+#endif //HAS_CLIPPING_OUT && MAX_CLIP_PLANES > 0
 #endif //!COMPUTE_SHADER && !FRAG_SHADER
 
 #endif //_NODE_DATA_INPUT_CMN_

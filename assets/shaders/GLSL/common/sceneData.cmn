@@ -1,0 +1,38 @@
+#ifndef _SCENE_DATA_INPUT_CMN_
+#define _SCENE_DATA_INPUT_CMN_
+
+#if defined(FRAG_SHADER) || defined(NEED_SCENE_DATA)
+struct WaterBodyData
+{
+    vec4 positionW;
+    ///length, depth, width
+    vec4 extents;
+};
+
+#define GLOBAL_WATER_BODIES 2
+
+layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneData {
+    // w - reserved
+    vec4 dvd_sunDirection;
+    // w - reserved
+    vec4 dvd_sunColour;
+    // w - reserved
+    vec4 dvd_zenithColour;
+    // w - reserved
+    vec4 dvd_horizonColour;
+    // x,y,z - colour, w - density
+    vec4   dvd_fogDetails;
+    // x,y,z - direction, w - speed
+    vec4   dvd_windDetails;
+    //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
+    vec4   dvd_shadowingSettings;
+    WaterBodyData dvd_waterEntities[GLOBAL_WATER_BODIES];
+};
+
+#define dvd_LightBleedBias dvd_shadowingSettings.x
+#define dvd_MinVariance dvd_shadowingSettings.y
+#define dvd_fogColour dvd_fogDetails.rgb
+#define dvd_fogDensity dvd_fogDetails.w
+#endif //FRAG_SHADER || NEED_SCENE_DATA
+
+#endif //_SCENE_DATA_INPUT_CMN_

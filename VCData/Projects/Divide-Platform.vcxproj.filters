@@ -1026,6 +1026,9 @@
     <None Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include\RenderTarget.inl">
       <Filter>Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include</Filter>
     </None>
+    <None Include="..\..\assets\shaders\GLSL\common\sceneData.cmn">
+      <Filter>Video\ShaderSource\GLSL\common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl">

@@ -93,7 +93,6 @@ struct Configuration final : public XML::IXMLSerializable {
         U8 textureQuality = 0;
         U8 parallaxMode = 0;
         bool wireframe = false;
-        bool perPixelNormals = false;
     } terrain;
 
     struct SSAOSettings{

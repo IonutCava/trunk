@@ -518,9 +518,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     // Update internal timers
     _elapsedTime += deltaTimeUS;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
-    // Time, fog, etc
-    _sceneData->elapsedTime(_elapsedTimeMS);
-    _sceneData->deltaTime(Time::MicrosecondsToMilliseconds<F32>(deltaTimeUS));
 
     FogDescriptor& fog = activeScene.state()->renderState().fogDescriptor();
     const bool fogEnabled = _platformContext->config().rendering.enableFog;

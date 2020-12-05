@@ -404,7 +404,7 @@ bool RenderingComponent::onRefreshNodeData(const RenderStagePass& stagePass, Cam
 
 size_t RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
     if (_materialInstance != nullptr) {
-        size_t matHash = _materialInstance->getData(dataOut);
+        size_t matHash = _materialInstance->getData(dataOut, *this);
         {
             SharedLock<SharedMutex> r_lock(_reflectionLock);
             dataOut._data.y = _reflectionTextureWidth;
@@ -417,8 +417,6 @@ size_t RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
 }
 
 void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {
-    propertiesOut._isHovered = _parentSGN->hasFlag(SceneGraphNode::Flags::HOVERED);
-    propertiesOut._isSelected = _parentSGN->hasFlag(SceneGraphNode::Flags::SELECTED);
     propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
     propertiesOut._nodeFlagValue = dataFlag();
     propertiesOut._occlusionCull = occlusionCull();

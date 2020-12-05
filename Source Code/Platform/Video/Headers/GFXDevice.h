@@ -372,6 +372,8 @@ public:
     PROPERTY_RW(bool, queryPerformanceStats, false);
 
 protected:
+    void update(U64 deltaTimeUS);
+
     /// Create and return a new framebuffer.
     RenderTarget* newRT(const RenderTargetDescriptor& descriptor);
 
@@ -535,6 +537,10 @@ namespace Attorney {
             return device.onSizeChange(params);
         }
         
+        static void update(GFXDevice& device, const U64 deltaTimeUS) {
+            device.update(deltaTimeUS);
+        }
+
         friend class Kernel;
         friend class KernelApplication;
     };

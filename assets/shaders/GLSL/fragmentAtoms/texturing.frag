@@ -24,6 +24,7 @@ vec4 hash4(in vec2 p) {
 float sum(vec3 v) { return v.x + v.y + v.z; }
 float sum(vec4 v) { return v.x + v.y + v.z + v.w; }
 
+#if defined(SAMPLE_NO_TILE)
 vec4 textureNoTile(sampler2D samp, in vec2 uv) {
     vec2 ddx = dFdx(uv);
     vec2 ddy = dFdy(uv);
@@ -57,70 +58,9 @@ vec4 textureNoTile(sampler2D samp, in vec2 uv) {
                mix(textureGrad(samp, uvc, ddxc, ddyc),
                    textureGrad(samp, uvd, ddxd, ddyd), b.x), b.y);
 }
+#endif //SAMPLE_NO_TILE
 
-vec4 textureNoTileSLOW(sampler2D samp, in vec2 uv, in float v) {
-    vec2 p = floor(uv);
-    vec2 f = fract(uv);
-
-    // derivatives (for correct mipmapping)
-    vec2 ddx = dFdx(uv);
-    vec2 ddy = dFdy(uv);
-
-    vec4 va = vec4(0.0);
-    float w1 = 0.0;
-    float w2 = 0.0;
-    for (int j = -1; j <= 1; j++)
-        for (int i = -1; i <= 1; i++)
-        {
-            vec2 g = vec2(float(i), float(j));
-            vec4 o = hash4(p + g);
-            vec2 r = g - f + o.xy;
-            float d = dot(r, r);
-            float w = exp(-5.0 * d);
-            vec4 c = textureGrad(samp, uv + v * o.zw, ddx, ddy);
-            va += w * c;
-            w1 += w;
-            w2 += w * w;
-        }
-
-    // normal averaging --> lowers contrasts
-    //return va/w1;
-
-    // contrast preserving average
-    float mean = 0.3;// textureGrad( samp, uv, ddx*16.0, ddy*16.0 ).x;
-    vec4 res = mean + (va - w1 * mean) / sqrt(w2);
-    return mix(va / w1, res, v);
-}
-
-vec4 textureNoTile(sampler2D samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec2 uv, in float v) {
-    // sample variation pattern    
-    float k = texture(noiseSampler, vec3(0.005 * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup    
-
-    vec2 duvdx = dFdx(uv);
-    vec2 duvdy = dFdy(uv);
-
-    float l = k * 8.0;
-    float f = fract(l);
-
-#if 1
-    float ia = floor(l); // my method
-    float ib = ia + 1.0;
-#else
-    float ia = floor(l + 0.5); // suslik's method (see comments)
-    float ib = floor(l);
-    f = min(f, 1.0 - f) * 2.0;
-#endif    
-
-    vec2 offa = sin(vec2(3.0, 7.0) * ia); // can replace with any other hash
-    vec2 offb = sin(vec2(3.0, 7.0) * ib); // can replace with any other hash
-
-    vec4 cola = textureGrad(samp, uv + v * offa, duvdx, duvdy);
-    vec4 colb = textureGrad(samp, uv + v * offb, duvdx, duvdy);
-
-    // interpolate between the two virtual patterns    
-    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola - colb)));
-}
-
+#if defined(SAMPLE_NO_TILE_ARRAYS)
 vec4 textureNoTile(sampler2DArray samp, in vec3 uvIn) {
     const vec2 uv = uvIn.xy;
 
@@ -156,7 +96,96 @@ vec4 textureNoTile(sampler2DArray samp, in vec3 uvIn) {
                mix(textureGrad(samp, vec3(uvc, uvIn.z), ddxc, ddyc),
                    textureGrad(samp, vec3(uvd, uvIn.z), ddxd, ddyd), b.x), b.y);
 }
+#endif //SAMPLE_NO_TILE_ARRAYS
 
+#if defined(SAMPLE_NO_TILE)
+vec4 textureNoTile(sampler2D samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec2 uv, in float v) {
+    // sample variation pattern    
+    float k = texture(noiseSampler, vec3(0.005 * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup    
+
+    vec2 duvdx = dFdx(uv);
+    vec2 duvdy = dFdy(uv);
+
+    float l = k * 8.0;
+    float f = fract(l);
+    float ia = floor(l); d
+    float ib = ia + 1.0;
+
+    vec2 offa = sin(vec2(3.0, 7.0) * ia); // can replace with any other hash
+    vec2 offb = sin(vec2(3.0, 7.0) * ib); // can replace with any other hash
+
+    vec4 cola = textureGrad(samp, uv + v * offa, duvdx, duvdy);
+    vec4 colb = textureGrad(samp, uv + v * offb, duvdx, duvdy);
+
+    // interpolate between the two virtual patterns    
+    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola - colb)));
+}
+#endif //SAMPLE_NO_TILE
+
+#if defined(SAMPLE_NO_TILE_ARRAYS)
+vec4 textureNoTile(sampler2DArray samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec3 uvIn, in float v) {
+    const vec2 uv = uvIn.xy;
+
+    // sample variation pattern
+    float k = texture(noiseSampler, vec3(0.005f * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup 
+
+    vec2 duvdx = dFdx(uv);
+    vec2 duvdy = dFdy(uv);
+
+    float l = k * 8.0;
+    float f = fract(l);
+    float ia = floor(l);
+    float ib = ia + 1.0;
+
+    vec2 offa = sin(vec2(3.0, 7.0) * ia); // can replace with any other hash
+    vec2 offb = sin(vec2(3.0, 7.0) * ib); // can replace with any other hash
+
+    // sample the two closest virtual patterns    
+    vec4 cola = textureGrad(samp, vec3(uv + v * offa, uvIn.z), duvdx, duvdy);
+    vec4 colb = textureGrad(samp, vec3(uv + v * offb, uvIn.z), duvdx, duvdy);
+
+    // interpolate between the two virtual patterns    
+    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola - colb)));
+}
+#endif //SAMPLE_NO_TILE_ARRAYS
+
+#if defined(ENABLE_SLOW_SAMPLER_FUNCTIONS)
+#if defined(SAMPLE_NO_TILE)
+vec4 textureNoTileSLOW(sampler2D samp, in vec2 uv, in float v) {
+    vec2 p = floor(uv);
+    vec2 f = fract(uv);
+
+    // derivatives (for correct mipmapping)
+    vec2 ddx = dFdx(uv);
+    vec2 ddy = dFdy(uv);
+
+    vec4 va = vec4(0.0);
+    float w1 = 0.0;
+    float w2 = 0.0;
+    for (int j = -1; j <= 1; j++)
+        for (int i = -1; i <= 1; i++) {
+            vec2 g = vec2(float(i), float(j));
+            vec4 o = hash4(p + g);
+            vec2 r = g - f + o.xy;
+            float d = dot(r, r);
+            float w = exp(-5.0 * d);
+            vec4 c = textureGrad(samp, uv + v * o.zw, ddx, ddy);
+            va += w * c;
+            w1 += w;
+            w2 += w * w;
+        }
+
+    // normal averaging --> lowers contrasts
+    //return va/w1;
+
+    // contrast preserving average
+    float mean = 0.3;// textureGrad( samp, uv, ddx*16.0, ddy*16.0 ).x;
+    vec4 res = mean + (va - w1 * mean) / sqrt(w2);
+    return mix(va / w1, res, v);
+}
+#endif //SAMPLE_NO_TILE
+
+#if defined(SAMPLE_NO_TILE_ARRAYS)
 //float v = smoothstep( 0.4, 0.6, sin(iTime    ) );
 vec4 textureNoTileSLOW(sampler2DArray samp, in vec3 uvIn, float v) {
     const vec2 uv = uvIn.xy;
@@ -172,8 +201,7 @@ vec4 textureNoTileSLOW(sampler2DArray samp, in vec3 uvIn, float v) {
     float w1 = 0.0;
     float w2 = 0.0;
     for (int j = -1; j <= 1; j++)
-        for (int i = -1; i <= 1; i++)
-        {
+        for (int i = -1; i <= 1; i++)         {
             vec2 g = vec2(float(i), float(j));
             vec4 o = hash4(p + g);
             vec2 r = g - f + o.xy;
@@ -193,37 +221,6 @@ vec4 textureNoTileSLOW(sampler2DArray samp, in vec3 uvIn, float v) {
     vec4 res = mean + (va - w1 * mean) / sqrt(w2);
     return mix(va / w1, res, v);
 }
-
-vec4 textureNoTile(sampler2DArray samp, sampler2DArray noiseSampler, in int noiseSamplerIdx, in vec3 uvIn, in float v) {
-    const vec2 uv = uvIn.xy;
-
-    // sample variation pattern    
-    float k = texture(noiseSampler, vec3(0.005f * uv, noiseSamplerIdx)).x; // cheap (cache friendly) lookup 
-
-    vec2 duvdx = dFdx(uv);
-    vec2 duvdy = dFdy(uv);
-
-    float l = k * 8.0;
-    float f = fract(l);
-
-#if 1
-    float ia = floor(l); // my method
-    float ib = ia + 1.0;
-#else
-    float ia = floor(l + 0.5); // suslik's method (see comments)
-    float ib = floor(l);
-    f = min(f, 1.0 - f) * 2.0;
-#endif    
-
-    vec2 offa = sin(vec2(3.0, 7.0) * ia); // can replace with any other hash
-    vec2 offb = sin(vec2(3.0, 7.0) * ib); // can replace with any other hash
-
-    // sample the two closest virtual patterns    
-    vec4 cola = textureGrad(samp, vec3(uv + v * offa, uvIn.z), duvdx, duvdy);
-    vec4 colb = textureGrad(samp, vec3(uv + v * offb, uvIn.z), duvdx, duvdy);
-
-    // interpolate between the two virtual patterns    
-    return mix(cola, colb, smoothstep(0.2, 0.8, f - 0.1 * sum(cola - colb)));
-}
-
+#endif //SAMPLE_NO_TILE_ARRAYS
+#endif //ENABLE_SLOW_SAMPLER_FUNCTIONS
 #endif //_TEXTURING_FRAG_

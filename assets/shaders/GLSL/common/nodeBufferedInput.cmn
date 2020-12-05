@@ -22,6 +22,7 @@ layout(binding = BUFFER_NODE_TRANSFORM_DATA, std430) coherent ACCESS_R buffer dv
     NodeTransformData dvd_Transforms[];
 };
 
+#if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)
 layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd_MaterialBlock {
     NodeMaterialData dvd_Materials[];
 };
@@ -42,7 +43,10 @@ layout(binding = TEXTURE_OMR) uniform samplerOMR texOcclusionMetallicRoughness;
 layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texOpacityMap;
 layout(binding = TEXTURE_NORMALMAP) uniform samplerNormal texNormalMap;
 layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
-
 #endif //USE_BINDLESS_TEXTURES
+#endif //FRAG_SHADER || NEED_MATERIAL_DATA
+
+
+#include "sceneData.cmn"
 
 #endif //_NODE_BUFFERED_INPUT_CMN_

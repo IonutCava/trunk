@@ -11,43 +11,35 @@
 #define texTileMaps texDiffuse0
 #endif
 
+#define SAMPLE_NO_TILE_ARRAYS
 #include "texturing.frag"
 #include "waterData.cmn"
 
-const float tiling[] = {
-    1.5f, //LoD 0
-    1.0f, //LoD 1
-    0.75f,
-    0.5f,
-    0.25f,
-    0.1625f,
-    0.083125f,
-};
-
-#if defined(LOW_QUALITY)
+#if defined(LOW_QUALITY) || !defined(REDUCE_TEXTURE_TILE_ARTIFACT)
 #define sampleTexture texture
-#else //LOW_QUALITY
+#else //LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
 
 vec4 sampleTexture(in sampler2DArray tex, in vec3 texUV) {
-#if defined(REDUCE_TEXTURE_TILE_ARTIFACT) 
+#if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
 
 #if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
-    if (dvd_LoD < 2)
+    return dvd_LoD < 2 ? textureNoTile(tex, helperTextures, 3, texUV, 0.5f) : texture(tex, texUV);
+#else 
+    return textureNoTile(tex, helperTextures, 3, texUV, 0.5f);
 #endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
 
-    {
-#if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
-        return textureNoTile(tex, helperTextures, 3, texUV, 0.5f);
 #else  //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
-        return textureNoTile(tex, texUV);
+
+#if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
+    return dvd_LoD < 2 ? textureNoTile(tex, texUV) : texture(tex, texUV);
+#else 
+    return textureNoTile(tex, texUV);
+#endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
+
 #endif //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
-    }
-
-#endif //REDUCE_TEXTURE_TILE_ARTIFACT
-
-    return texture(tex, texUV);
 }
-#endif //LOW_QUALITY
+
+#endif ///LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
 
 float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
     INSERT_BLEND_AMNT_ARRAY
@@ -55,99 +47,29 @@ float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
         const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
-        const uint layerCount = CURRENT_LAYER_COUNT[i];
-        for (uint j = 0; j < layerCount; ++j) {
+        for (uint j = 0; j < CURRENT_LAYER_COUNT[i]; ++j) {
             blendAmount[offset + j] = blendColour[j];
         }
-        offset += layerCount;
+        offset += CURRENT_LAYER_COUNT[i];
     }
 
     return blendAmount;
 }
 
-vec2 scaledTextureCoords(in vec2 uv) {
-    return scaledTextureCoords(uv, TEXTURE_TILE_SIZE * tiling[dvd_LoD]);
-}
-#if defined(PER_PIXEL_NORMALS)
-vec3 getVertNormal(in vec2 tex_coord) {
-    const ivec3 off = ivec3(-1, 0, 1);
+const float tiling[] = {
+        1.5f, //LoD 0
+        1.0f, //LoD 1
+        0.75f,
+        0.5f,
+        0.25f,
+        0.1625f,
+        0.083125f,
+};
 
-    const float s01 = textureOffset(texHeight, tex_coord, off.xy).r; //-1,  0
-    const float s21 = textureOffset(texHeight, tex_coord, off.zy).r; // 1,  0
-    const float s10 = textureOffset(texHeight, tex_coord, off.yx).r; // 0, -1
-    const float s12 = textureOffset(texHeight, tex_coord, off.yz).r; // 0,  1
+#define scaledTextureCoords(UV) scaledTextureCoords(UV, TEXTURE_TILE_SIZE * tiling[dvd_LoD])
 
-    const float hL = TERRAIN_HEIGHT * s01 + TERRAIN_HEIGHT_OFFSET;
-    const float hR = TERRAIN_HEIGHT * s21 + TERRAIN_HEIGHT_OFFSET;
-    const float hD = TERRAIN_HEIGHT * s10 + TERRAIN_HEIGHT_OFFSET;
-    const float hU = TERRAIN_HEIGHT * s12 + TERRAIN_HEIGHT_OFFSET;
-
-    // deduce terrain normal
-    return normalize(vec3(hL - hR, 2.0f, hD - hU));
-}
-
-vec3 getVertNormalWV(in vec2 tex_coord) {
-    return mat3(dvd_ViewMatrix) * getVertNormal(tex_coord);
-}
-
-mat3 dvd_TBNWV;
-vec3 dvd_TBNViewDir;
-mat3 getTBNWV() {
-    return dvd_TBNWV;
-}
-
-vec3 getTBNViewDir() {
-    return dvd_TBNViewDir;
-}
-
-void computeTBN(in vec2 uv) {
-#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
-    dvd_TBNViewDir = vec3(0.0f);
-#else //PRE_PASS && !HAS_PRE_PASS_DATA
-
-#if !defined(LOW_QUALITY)
-    /// We need to compute normals per-pixels (sadly). The nvidia whitepaper on terrain tessellation has this to say about the issue:
-    ///
-    /// "Normals  can  be  computed  in  the  domain  shader  and  this  might be  more  efficient than per-pixel normals. 
-    ///  But we prefer fractional_even partitioning because it leads to  smooth  transitions  between  tessellation  factors.
-    ///  Fractional partioning  gives tessellated geometry that moves continuously.
-    ///  If geometric normals are computed from the tessellated polygons, the shading aliases significantly.
-    ///
-    ///  The tessellation can be designed such that the vertices and normals move less –see the  geo - morphing  ideas  in(Cantlay, 2008).
-    ///  However, this  would  impose  further constraints  on  an  already - complex  hull  shader.
-    ///  We prefer to limit the hull and domain shaders to geometry and LOD and place the shading in the pixel shader.
-    ///  Decoupling the tasks simplifies the whole."
-    ///
-    /// So ... yeah :/
-    const mat3 normalMatrix = NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]);
-
-    const vec3 N = getVertNormal(uv);
-    const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
-    const vec3 T = cross(N, B);
-
-    const mat3 TBN = mat3(normalMatrix * T, normalMatrix * B, normalMatrix * N);
-    dvd_TBNWV = mat3(dvd_ViewMatrix) * TBN;
-    dvd_TBNViewDir = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - VAR._vertexW.xyz));
-#else //LOW_QUALITY
-    dvd_TBNViewDir = vec3(0.0f);
-#endif //LOW_QUALITY
-
-#endif //PRE_PASS && !HAS_PRE_PASS_DATA
-}
-#else //PER_PIXEL_NORMALS
-mat3 getTBNWV() {
-    return VAR._tbnWV;
-}
-
-vec3 getTBNViewDir() {
-    return VAR._tbnViewDir;
-}
-void computeTBN(in vec2 uv) {
-}
-vec3 getVertNormalWV(in vec2 tex_coord) {
-    return VAR._normalWV;
-}
-#endif //PER_PIXEL_NORMALS
+mat3 getTBNWV() { return VAR._tbnWV; }
+vec3 getTBNViewDir() { return VAR._tbnViewDir; }
 
 #if defined(HAS_PARALLAX)
 float getDisplacementValueFromCoords(in vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
@@ -195,24 +117,31 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, float currentDepthMapValue, in floa
 }
 
 #endif //HAS_PARALLAX
-vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
-    vec2 scaledCoords = scaledTextureCoords(uv);
-
 #if !defined(LOW_QUALITY) && defined(HAS_PARALLAX)
-    uint bumpMethod = dvd_bumpMethod(MATERIAL_IDX);
+vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
+    const vec2 scaledCoords = scaledTextureCoords(uv);
 
-    if (dvd_LoD < 2 && bumpMethod != BUMP_NONE) {
-        float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-        if (bumpMethod == BUMP_PARALLAX) {
+    const uint bumpMethod = dvd_LoD < 2 ? BUMP_NONE : dvd_bumpMethod(MATERIAL_IDX);
+
+    switch(bumpMethod) {
+        case BUMP_NONE: break;
+        case BUMP_PARALLAX:
+        {
+            const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
             return ParallaxOffset(scaledCoords, currentHeight);
-        } else if (bumpMethod == BUMP_PARALLAX_OCCLUSION) {
+        }
+        case BUMP_PARALLAX_OCCLUSION:
+        {
+            const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
             return ParallaxOcclusionMapping(uv, currentHeight, amnt);
         }
     }
-#endif //HAS_PARALLAX
 
     return scaledCoords;
 }
+#else
+#define getScaledCoords(UV, AMNT) scaledTextureCoords(UV)
+#endif
 
 #if defined(PRE_PASS)
 vec3 getTerrainNormal(in vec2 uv) {
@@ -226,22 +155,22 @@ vec3 getTerrainNormal(in vec2 uv) {
     return normal;
 }
 
-vec3 getMixedNormalWV(in vec2 uv) {
 #if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
-    return vec3(0.0f);
-#else //PRE_PASS && !HAS_PRE_PASS_DATA
+#define getMixedNormalWV(UV) vec3(0.0f)
+#else//PRE_PASS && !HAS_PRE_PASS_DATA
 #if defined(LOW_QUALITY)
-    return getVertNormalWV(uv);
+#define getMixedNormalWV(UV) VAR._normalWV
 #else //LOW_QUALITY
-    const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
+vec3 getMixedNormalWV(in vec2 uv) {
+    const float waterDist = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET).x;
     const vec3 normalTBN = mix(texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
                                getTerrainNormal(uv),
-                               saturate(1.0f - waterData.x));
+                               saturate(1.0f - waterDist));
 
-    return getTBNWV() * (2.0f * normalTBN - 1.0f);
+    return VAR._tbnWV * (2.0f * normalTBN - 1.0f);
+}
 #endif //LOW_QUALITY
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
-}
 
 #else //PRE_PASS
 
@@ -263,7 +192,7 @@ vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
 }
 
 vec4 getTerrainAlbedo(in vec2 uv) {
-    float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(uv);
+    const float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(uv);
     const vec2 scaledUV = getScaledCoords(uv, blendAmount);
 
     vec4 ret = vec4(0.0f);
@@ -277,16 +206,14 @@ vec4 getTerrainAlbedo(in vec2 uv) {
 
 void BuildTerrainData(in vec2 uv, out vec4 albedo, out vec3 normalWV) {
 #if defined(LOW_QUALITY)
-    normalWV = getVertNormalWV(uv);
+    normalWV = VAR._normalWV;
 #else //LOW_QUALITY
     normalWV = getNormalWV(uv);
 #endif //LOW_QUALITY
 
-    vec3 vertW = vec3(uv.x * TERRAIN_WIDTH,
-                      VAR._vertexW.y,
-                      uv.y * TERRAIN_LENGTH);
-
-    vertW.xz -= ((TERRAIN_WIDTH, TERRAIN_LENGTH) * 0.5f);
+    const vec3 vertW = vec3(uv.x * TERRAIN_WIDTH - (TERRAIN_WIDTH * 0.5f),
+                            VAR._vertexW.y,
+                            uv.y * TERRAIN_LENGTH - (TERRAIN_LENGTH * 0.5f));
 
     const vec2 waterData = GetWaterDetails(vertW, TERRAIN_HEIGHT_OFFSET);
     albedo = mix(getTerrainAlbedo(uv),

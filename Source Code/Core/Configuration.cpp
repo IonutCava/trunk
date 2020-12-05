@@ -42,7 +42,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(terrain.detailLevel);
         GET_PARAM(terrain.textureQuality);
         GET_PARAM(terrain.parallaxMode);
-        GET_PARAM(terrain.perPixelNormals);
         GET_PARAM(terrain.wireframe);
         GET_PARAM(rendering.MSAASamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
@@ -157,7 +156,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(terrain.detailLevel);
         PUT_PARAM(terrain.textureQuality);
         PUT_PARAM(terrain.parallaxMode);
-        PUT_PARAM(terrain.perPixelNormals);
         PUT_PARAM(terrain.wireframe);
         PUT_PARAM(rendering.MSAASamples);
         PUT_PARAM(rendering.anisotropicFilteringLevel);

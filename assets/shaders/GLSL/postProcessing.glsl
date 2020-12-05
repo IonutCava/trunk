@@ -2,6 +2,8 @@
 
 #include "utility.frag"
 
+#define NEED_SCENE_DATA
+#include "sceneData.cmn"
 out vec4 _colourOut;
 
 layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;

@@ -1,7 +1,9 @@
 -- Vertex
 
+#define NEED_SCENE_DATA
 #include "vbInputData.vert"
 #include "vegetationData.cmn"
+#include "sceneData.cmn"
 
 layout(location = 0) flat out int _arrayLayerFrag;
 layout(location = 1) out float _alphaFactor;

@@ -1161,7 +1161,7 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-size_t Material::getData(NodeMaterialData& dataOut) {
+size_t Material::getData(NodeMaterialData& dataOut, const RenderingComponent& parentComp) {
     uploadTextures();
 
     constexpr F32 reserved = 1.f;
@@ -1180,12 +1180,18 @@ size_t Material::getData(NodeMaterialData& dataOut) {
     dataOut._albedo.set(baseColour());
     dataOut._emissiveAndParallax.set(emissive(), parallaxFactor());
     dataOut._data.x = matPropertiesPacked;
-    dataOut._data.y = 1; //IBL Texture Size
+    dataOut._data.y = 2u; //IBL Texture Size
     dataOut._data.z = matTexturingPropertiesPacked;
 
-    // ToDo: Add a dirty flag
-    const size_t tempHash = HashMaterialData(dataOut);
-    return tempHash;
+    // Hacky, but do this here, before the hashing so that we generate unique materials for selected/hovered nodes
+    if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::HOVERED)) {
+        dataOut._emissiveAndParallax.g += 1.25f;
+    } 
+    if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
+        dataOut._emissiveAndParallax.b += 1.25f;
+    }
+
+    return HashMaterialData(dataOut);
 }
 
 void Material::rebuild() {

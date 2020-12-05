@@ -79,14 +79,21 @@ namespace Divide {
         : KernelComponent(parent),
           _context(context),
           _renderQueue(parent),
-          _renderPassTimer(&Time::ADD_TIMER("RenderPasses Timer")),
-          _buildCommandBufferTimer(&Time::ADD_TIMER("BuildCommandBuffers Timer")),
-          _flushCommandBufferTimer(&Time::ADD_TIMER("FlushCommandBuffers Timer")),
+          _renderPassTimer(&Time::ADD_TIMER("Render Passes")),
+          _buildCommandBufferTimer(&Time::ADD_TIMER("Build Command Buffers")),
+          _processGUITimer(&Time::ADD_TIMER("Process GUI")),
+          _flushCommandBufferTimer(&Time::ADD_TIMER("Flush Command Buffers")),
           _postFxRenderTimer(&Time::ADD_TIMER("PostFX Timer")),
-          _blitToDisplayTimer(&Time::ADD_TIMER("Flush Buffers Timer"))
+          _blitToDisplayTimer(&Time::ADD_TIMER("Flush To Display Timer"))
     {
-        _buildCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _flushCommandBufferTimer->addChildTimer(*_buildCommandBufferTimer);
+        for (U8 i = 0; i < to_base(RenderStage::COUNT); ++i) {
+            const stringImpl timerName = Util::StringFormat("Process Command Buffers [ %s ]", TypeUtil::RenderStageToString(static_cast<RenderStage>(i)));
+            _processCommandBufferTimer[i] = &Time::ADD_TIMER(timerName.c_str());
+            _flushCommandBufferTimer->addChildTimer(*_processCommandBufferTimer[i]);
+        }
+        _flushCommandBufferTimer->addChildTimer(*_processGUITimer);
+        _flushCommandBufferTimer->addChildTimer(*_blitToDisplayTimer);
         _drawCallCount.fill(0);
 
         for (auto& it : g_passData) {
@@ -226,16 +233,20 @@ namespace Divide {
            const Rect<I32>& targetViewport = params._targetViewport;
            // DO NOT CONVERT TO SRGB! Already handled in the tone mapping stage
            gfx.drawTextureInViewport(texData, screenAtt.samplerHash(), targetViewport, false, false, buf);
-           Attorney::SceneManagerRenderPass::drawCustomUI(sceneManager, targetViewport, buf);
-           if_constexpr(Config::Build::ENABLE_EDITOR) {
-               context.editor().drawScreenOverlay(cam, targetViewport, buf);
-           }
-           context.gui().draw(gfx, targetViewport, buf);
-           gfx.renderDebugUI(targetViewport, buf);
 
-           EnqueueCommand(buf, GFX::EndDebugScopeCommand{});
-           if (params._editorRunning) {
-               EnqueueCommand(buf, GFX::EndRenderPassCommand{});
+           {
+               Time::ScopedTimer timeGUIBuffer(*_processGUITimer);
+               Attorney::SceneManagerRenderPass::drawCustomUI(sceneManager, targetViewport, buf);
+               if_constexpr(Config::Build::ENABLE_EDITOR) {
+                   context.editor().drawScreenOverlay(cam, targetViewport, buf);
+               }
+               context.gui().draw(gfx, targetViewport, buf);
+               gfx.renderDebugUI(targetViewport, buf);
+
+               EnqueueCommand(buf, GFX::EndDebugScopeCommand{});
+               if (params._editorRunning) {
+                   EnqueueCommand(buf, GFX::EndRenderPassCommand{});
+               }
            }
         }
         {
@@ -277,6 +288,8 @@ namespace Divide {
 
                         if (!dependenciesRunning) {
                             OPTICK_TAG("Buffer ID: ", i);
+                            Time::ScopedTimer timeGPUFlush(*_processCommandBufferTimer[i]);
+
                             //Start(*whileRendering);
                             // No running dependency so we can flush the command buffer and add the pass to the skip list
                             _drawCallCount[i] = _context.getDrawCallCount();
@@ -492,7 +505,6 @@ NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rCom
     
     RenderingComponent::NodeRenderingProperties properties = {};
     rComp.getRenderingProperties(stagePass, properties);
-    const bool isHovered = stagePass._stage == RenderStage::DISPLAY && properties._isHovered;
 
     // Since the normal matrix is 3x3, we can use the extra row and column to store additional data
     const BoundsComponent* const bounds = node->get<BoundsComponent>();
@@ -501,7 +513,7 @@ NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rCom
 
     transformOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, 0.f});
 
-    transformOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, isHovered ? 1u : 0u, 1u));
+    transformOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, 1u, 1u));
     transformOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
     transformOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
     transformOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved ));

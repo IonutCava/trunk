@@ -58,7 +58,7 @@ class GFXShaderData {
           // xyz - position, w - aspect ratio
           vec4<F32> _cameraPosition = { 0.0f, 0.0f, 0.0f, 1.0f };
           vec4<F32> _ViewPort = { 0.0f, 0.0f, 1.0f, 1.0f };
-          //x - near plane, y - far plane, z - FoV, w - reserved
+          //x - near plane, y - far plane, z - FoV, w - elapsed time (ms)
           vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f };
           //x - cluster size X, y - cluster size Y, z - scale, w - bias
           vec4<F32> _lightingProperties = { 120.0f, 100.0f, 1.0f, 1.0f };

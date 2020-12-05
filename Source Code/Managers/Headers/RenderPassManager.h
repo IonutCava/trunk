@@ -181,8 +181,10 @@ private:
     ShaderProgram_ptr _OITCompositionShader = nullptr;
     Time::ProfileTimer* _renderPassTimer = nullptr;
     Time::ProfileTimer* _buildCommandBufferTimer = nullptr;
+    std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _processCommandBufferTimer{};
+    Time::ProfileTimer* _processGUITimer = nullptr;
     Time::ProfileTimer* _flushCommandBufferTimer = nullptr;
-        Time::ProfileTimer* _postFxRenderTimer = nullptr;
+    Time::ProfileTimer* _postFxRenderTimer = nullptr;
     Time::ProfileTimer* _blitToDisplayTimer = nullptr;
 
     std::array<RenderQueuePackages, to_base(RenderStage::COUNT)> _renderQueues

@@ -59,8 +59,7 @@ class SceneShaderData {
         vec4<F32> _windDetails = {0.0f};
         //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
         vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1000.0f, 1000.0f};
-        //x - elapsed time, y - delta time, z,w - reserved
-        vec4<F32> _otherData = {0.0f};
+
         WaterBodyData _waterEntities[GLOBAL_WATER_BODIES] = {};
 
         //RenderDoc: vec4 fogDetails; vec4 windDetails; vec4 shadowSettings; vec4 otherData;
@@ -104,16 +103,6 @@ class SceneShaderData {
 
     void windDetails(const F32 directionX, const F32 directionY, const F32 directionZ, const F32 speed) noexcept {
         _bufferData._windDetails.set(directionX, directionY, directionZ, speed);
-        _dirty = true;
-    }
-
-    void elapsedTime(const U32 timeMS) noexcept {
-        _bufferData._otherData.x = to_F32(timeMS);
-        _dirty = true;
-    }
-
-    void deltaTime(const F32 deltaTimeMS) noexcept {
-        _bufferData._otherData.y = deltaTimeMS;
         _dirty = true;
     }
 

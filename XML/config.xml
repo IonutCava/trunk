@@ -61,7 +61,6 @@
 	<detailLevel>2</detailLevel>
 	<!-- higher => better. 0,1 or 2 -->
 	<parallaxMode>0</parallaxMode>
-	<perPixelNormals>false</perPixelNormals>
 	<wireframe>false</wireframe>
 </terrain>
 <rendering>
