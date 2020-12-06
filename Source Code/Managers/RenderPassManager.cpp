@@ -253,11 +253,11 @@ namespace Divide {
             OPTICK_EVENT("RenderPassManager::FlushCommandBuffers");
             Time::ScopedTimer timeCommands(*_flushCommandBufferTimer);
 
-            std::array<bool, g_maxRenderPasses> completedPasses{};
+            eastl::array<bool, g_maxRenderPasses> completedPasses{};
             {
                 OPTICK_EVENT("FLUSH_PASSES_WHEN_READY");
                 U8 idleCount = 0u;
-                while (!std::all_of(std::cbegin(completedPasses), std::cbegin(completedPasses) + renderPassCount, [](const bool v) { return v; })) {
+                while (!eastl::all_of(cbegin(completedPasses), cbegin(completedPasses) + renderPassCount, [](const bool v) { return v; })) {
 
                     // For every render pass
                     bool finished = true;

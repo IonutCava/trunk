@@ -18,6 +18,7 @@ GUIMessageBox::GUIMessageBox(const stringImpl& name,
     // load the messageBox Window from the layout file
     _msgBoxWindow = pWindowManager->loadLayoutFromFile("messageBox.layout");
     _msgBoxWindow->setName((title + "_MesageBox").c_str());
+    _msgBoxWindow->setTextParsingEnabled(false);
     _parent->addChild(_msgBoxWindow);
     CEGUI::PushButton* confirmBtn = dynamic_cast<CEGUI::PushButton*>(_msgBoxWindow->getChild("ConfirmBtn"));
     _confirmEvent = confirmBtn->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GUIMessageBox::onConfirm, this));

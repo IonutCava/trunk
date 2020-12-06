@@ -53,7 +53,7 @@ LightPool::LightPool(Scene& parentScene, PlatformContext& context)
 
     for (U8 i = 0; i < to_U8(RenderStage::COUNT); ++i) {
         _activeLightCount[i].fill(0);
-        _sortedLights[i].reserve(Config::Lighting::MAX_POSSIBLE_LIGHTS);
+        _sortedLights[i].reserve(Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME);
     }
 
     _lightTypeState.fill(true);
@@ -264,7 +264,7 @@ U32 LightPool::uploadLightList(const RenderStage stage, const LightList& lights,
         const U32 typeIndex = to_U32(type);
 
         if (_lightTypeState[typeIndex] && light->enabled()) {
-            if (++ret > Config::Lighting::MAX_POSSIBLE_LIGHTS) {
+            if (++ret > Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME) {
                 break;
             }
 
@@ -343,7 +343,7 @@ void LightPool::prepareLightData(const RenderStage stage, const vec3<F32>& eyePo
     }
 
     {
-        const U32 lightDiff = Config::Lighting::MAX_POSSIBLE_LIGHTS - totalLightCount;
+        const U32 lightDiff = Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME - totalLightCount;
 
         OPTICK_EVENT("LightPool::UploadLightDataToGPU");
         _lightShaderBuffer->writeBytes(LightBufferIndex(stage) * sizeof(BufferData),
@@ -371,6 +371,31 @@ void LightPool::uploadLightData(const RenderStage stage, GFX::CommandBuffer& buf
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
+[[nodiscard]] bool LightPool::IsLightInViewFrustum(const Frustum& frustum, Light* light) {
+    switch (light->getLightType()) {
+        case LightType::DIRECTIONAL:
+            return true;
+        case LightType::POINT:
+            return frustum.ContainsSphere(light->positionCache(), light->range()) != FrustumCollision::FRUSTUM_OUT;
+        case LightType::SPOT: {
+            const F32 range = light->range();
+
+            const Angle::RADIANS<F32> angle = Angle::DegreesToRadians(static_cast<SpotLightComponent*>(light)->outerConeCutoffAngle());
+
+            const F32 radius = angle > M_PI_4 ? range * tan(angle) : range * 0.5f / pow(cos(angle), 2.0f);
+
+            const vec3<F32> position = light->positionCache() + light->directionCache() * radius;
+
+            return frustum.ContainsSphere(position, radius) != FrustumCollision::FRUSTUM_OUT;
+        };
+
+        default: break;
+    }
+
+    DIVIDE_UNEXPECTED_CALL();
+    return false;
+}
+
 void LightPool::preRenderAllPasses(const Camera* playerCamera) {
     OPTICK_EVENT();
 
@@ -395,30 +420,6 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
                     return a->positionCache().distanceSquared(eyePos) < b->positionCache().distanceSquared(eyePos);
                 });
 
-    const auto isInViewFrustum = [](const Frustum& frustum, Light* light) {
-        const LightType lType = light->getLightType();
-
-        if (lType != LightType::DIRECTIONAL) {
-            vec3<F32> position = light->positionCache();
-            F32 radius = 0.f;
-
-            if (lType == LightType::POINT) {
-                radius = light->range();
-            } else if (lType == LightType::SPOT) {
-                const F32 range = light->range();
-                const Angle::RADIANS<F32> angle = Angle::DegreesToRadians(static_cast<SpotLightComponent*>(light)->outerConeCutoffAngle());
-                radius = angle > M_PI_4 ? range * tan(angle) : range * 0.5f / pow(cos(angle), 2.0f);
-                position += light->directionCache() * radius;
-            } else {
-                DIVIDE_UNEXPECTED_CALL();
-            }
-
-            return frustum.ContainsSphere(position, radius) != FrustumCollision::FRUSTUM_OUT;
-        }
-
-        return true;
-    };
-
     const Frustum& camFrustum = playerCamera->getFrustum();
     _sortedShadowLights._count = 0;
     std::array<I32, to_base(LightType::COUNT)> indexCounter = {};
@@ -427,7 +428,7 @@ void LightPool::preRenderAllPasses(const Camera* playerCamera) {
         if (light->enabled() && light->castsShadows()) {
             const LightType lType = light->getLightType();
             I32& counter = indexCounter[to_base(lType)];
-            if (counter == MaxLights(lType) || !isInViewFrustum(camFrustum, light)) {
+            if (counter == MaxLights(lType) || !IsLightInViewFrustum(camFrustum, light)) {
                 continue;
             }
 

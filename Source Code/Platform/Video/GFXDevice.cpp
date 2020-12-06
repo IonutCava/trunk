@@ -303,7 +303,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         }
     }
 
-    const U16 reflectRes = 512 * config.rendering.reflectionResolutionFactor;
+    const U32 reflectRes = nextPOW2(CLAMPED(to_U32(config.rendering.reflectionPlaneResolution), 16u, 4096u) - 1u);
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
     hiZDescriptor.autoMipMaps(false);
@@ -326,7 +326,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         hizRTDesc._attachments = hiZAttachments.data();
         _rtPool->allocateRT(RenderTargetUsage::HI_Z, hizRTDesc);
 
-        hizRTDesc._resolution = reflectRes;
+        hizRTDesc._resolution.set(reflectRes, reflectRes);
         hizRTDesc._name = "HiZ_Reflect";
         _rtPool->allocateRT(RenderTargetUsage::HI_Z_REFLECT, hizRTDesc);
     }
@@ -368,7 +368,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         depthDescriptorPlanar.mipCount(1u);
 
         RenderTargetDescriptor hizRTDesc = {};
-        hizRTDesc._resolution = reflectRes;
+        hizRTDesc._resolution.set(reflectRes, reflectRes);
         hizRTDesc._attachmentCount = to_U8(hiZAttachments.size());
         hizRTDesc._attachments = hiZAttachments.data();
 
@@ -1969,7 +1969,7 @@ void GFXDevice::initDebugViews() {
 
         DebugView_ptr Luminance = std::make_shared<DebugView>();
         Luminance->_shader = _renderTargetDraw;
-        Luminance->_texture = getRenderer().postFX().getFilterBatch()->luminanceTex();
+        Luminance->_texture = getRenderer().postFX().getFilterBatch().luminanceTex();
         Luminance->_samplerHash = lumanSampler.getHash();
         Luminance->_name = "Luminance";
         Luminance->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
@@ -1980,8 +1980,8 @@ void GFXDevice::initDebugViews() {
 
         DebugView_ptr Edges = std::make_shared<DebugView>();
         Edges->_shader = _renderTargetDraw;
-        Edges->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
-        Edges->_samplerHash = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch()->edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
+        Edges->_texture = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch().edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).texture();
+        Edges->_samplerHash = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch().edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
         Edges->_name = "Edges";
         Edges->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         Edges->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);

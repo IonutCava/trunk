@@ -77,9 +77,11 @@ void SceneEnvironmentProbePool::OnStartup(GFXDevice& context) {
         { depthDescriptor, samplerHash, RTAttachmentType::Depth },
     };
 
+    const U32 reflectRes = nextPOW2(CLAMPED(to_U32(context.context().config().rendering.reflectionProbeResolution), 16u, 4096u) - 1u);
+
     RenderTargetDescriptor desc = {};
     desc._name = "EnvironmentProbe";
-    desc._resolution = vec2<U16>(Config::REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE);
+    desc._resolution.set(reflectRes, reflectRes);
     desc._attachmentCount = to_U8(att.size());
     desc._attachments = att.data();
 

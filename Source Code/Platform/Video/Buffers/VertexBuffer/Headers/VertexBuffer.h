@@ -47,6 +47,9 @@ namespace Divide {
 /// OGL uses a vertex array object for this)
 class NOINITVTABLE VertexBuffer : public VertexDataInterface {
    public:
+    constexpr static U32 PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
+    constexpr static U32 PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
+
     struct Vertex {
         UColour4  _colour;
         vec3<F32> _position;
@@ -195,7 +198,7 @@ class NOINITVTABLE VertexBuffer : public VertexDataInterface {
 
     void addRestartIndex() {
         hasRestartIndex(true);
-        addIndex(usesLargeIndices() ? Config::PRIMITIVE_RESTART_INDEX_L : Config::PRIMITIVE_RESTART_INDEX_S);
+        addIndex(usesLargeIndices() ? PRIMITIVE_RESTART_INDEX_L : PRIMITIVE_RESTART_INDEX_S);
      }
 
     void modifyPositionValues(const U32 indexOffset, const vectorEASTL<vec3<F32>>& newValues) {

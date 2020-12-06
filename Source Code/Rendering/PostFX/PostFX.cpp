@@ -35,7 +35,8 @@ const char* PostFX::FilterName(const FilterType filter) noexcept {
 };
 
 PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
-    : PlatformContextComponent(context)
+    : PlatformContextComponent(context),
+     _preRenderBatch(context.gfx(), *this, cache)
 {
     std::atomic_uint loadTasks = 0u;
 
@@ -92,8 +93,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     borderTexture.waitForReady(false);
     _screenBorder = CreateResource<Texture>(cache, borderTexture), loadTasks;
 
-    _preRenderBatch = eastl::make_unique<PreRenderBatch>(context.gfx(), *this, cache);
-
     _noiseTimer = 0.0;
     _tickInterval = 1.0f / 24.0f;
     _randomNoiseCoefficient = 0;
@@ -122,7 +121,7 @@ void PostFX::updateResolution(const U16 newWidth, const U16 newHeight) {
 
     _resolutionCache.set(newWidth, newHeight);
 
-    _preRenderBatch->reshape(newWidth, newHeight);
+    _preRenderBatch.reshape(newWidth, newHeight);
 }
 
 void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
@@ -138,7 +137,7 @@ void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Prepare" });
 
     EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
-    _preRenderBatch->prepare(camera, _filterStack | _overrideFilterStack, bufferInOut);
+    _preRenderBatch.prepare(camera, _filterStack | _overrideFilterStack, bufferInOut);
     EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
 
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -156,9 +155,9 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
 
     EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
-    _preRenderBatch->execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
+    _preRenderBatch.execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
 
-    const auto& prbAtt = _preRenderBatch->getOutput(false)._rt->getAttachment(RTAttachmentType::Colour, 0);
+    const auto& prbAtt = _preRenderBatch.getOutput(false)._rt->getAttachment(RTAttachmentType::Colour, 0);
     const TextureData output = prbAtt.texture()->data();
     const TextureData data0 = _underwaterTexture->data();
     const TextureData data1 = _noise->data();
@@ -219,7 +218,7 @@ void PostFX::idle(const Configuration& config) {
         _drawConstants.set(_ID("randomCoeffNoise"), GFX::PushConstantType::FLOAT, _randomFlashCoefficient);
     }
 
-    _preRenderBatch->idle(config);
+    _preRenderBatch.idle(config);
 }
 
 void PostFX::update(const U64 deltaTimeUS) {
@@ -255,7 +254,7 @@ void PostFX::update(const U64 deltaTimeUS) {
         }
     }
 
-    _preRenderBatch->update(deltaTimeUS);
+    _preRenderBatch.update(deltaTimeUS);
 }
 
 void PostFX::setFadeOut(const UColour3& targetColour, const D64 durationMS, const D64 waitDurationMS, DELEGATE<void> onComplete) {

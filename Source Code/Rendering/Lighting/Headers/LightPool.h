@@ -186,6 +186,8 @@ class LightPool : public SceneComponent,
                               });
     }
 
+    [[nodiscard]] static bool IsLightInViewFrustum(const Frustum& frustum, Light* light);
+
   private:
       void init();
       U32 uploadLightList(RenderStage stage,
@@ -198,7 +200,7 @@ class LightPool : public SceneComponent,
          vec4<U32> _globalData = {0, 0, 0, 0};
          // a = reserved
          vec4<F32> _ambientColour = DefaultColours::BLACK;
-         std::array<LightProperties, Config::Lighting::MAX_POSSIBLE_LIGHTS> _lightProperties;
+         std::array<LightProperties, Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME> _lightProperties;
      };
 
     std::array<std::array<U32, to_base(LightType::COUNT)>, to_base(RenderStage::COUNT)> _activeLightCount{};

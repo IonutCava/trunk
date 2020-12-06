@@ -193,6 +193,14 @@ void Sun::SetDate(struct tm *dateTime) {
     _dateTime = dateTime;
 }
 
+SimpleTime Sun::GetTimeOfDay() const noexcept {
+    assert(_dateTime != nullptr);
+
+    return SimpleTime{
+        to_U8(_dateTime->tm_hour),
+        to_U8(_dateTime->tm_min)
+    };
+}
 SunDetails Sun::GetDetails() const {
     SunDetails ret = {};
     ret._info = SunPosition::CalculateSunPosition(_dateTime, _latitude, _longitude);

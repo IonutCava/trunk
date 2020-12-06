@@ -18,7 +18,7 @@ DebugInterface::DebugInterface(Kernel& parent) noexcept
 }
 
 void DebugInterface::idle() {
-    if_constexpr (!Config::Profile::BENCHMARK_PERFORMANCE && !Config::Profile::ENABLE_FUNCTION_PROFILING) {
+    if_constexpr (!Config::Profile::ENABLE_FUNCTION_PROFILING) {
         return;
     }
 
@@ -35,7 +35,7 @@ void DebugInterface::idle() {
     {
         _output = Util::StringFormat("Scene Update Loops: %d", timingData.updateLoops());
 
-        if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
+        if_constexpr (Config::Profile::ENABLE_FUNCTION_PROFILING) {
             const PerformanceMetrics perfMetrics = gfx.getPerformanceMetrics();
 
             _output.append("\n");
@@ -46,8 +46,7 @@ void DebugInterface::idle() {
                 gfx.getDrawCallCountLastFrame(),
                 perfMetrics._verticesSubmitted,
                 perfMetrics._primitivesGenerated));
-        }
-        if_constexpr (Config::Profile::ENABLE_FUNCTION_PROFILING) {
+
             _output.append("\n");
             _output.append(Time::ProfileTimer::printAll());
         }

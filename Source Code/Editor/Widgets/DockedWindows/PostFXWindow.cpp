@@ -48,7 +48,7 @@ namespace {
     }
 
     void PostFXWindow::drawInternal() {
-        PreRenderBatch* batch = _postFX.getFilterBatch();
+        PreRenderBatch& batch = _postFX.getFilterBatch();
 
         const auto checkBox = [this](const FilterType filter, const char* label = "Enabled", const bool overrideScene = false) {
             bool filterEnabled = _postFX.getFilterState(filter);
@@ -63,16 +63,16 @@ namespace {
             ImGui::PopID();
         };
 
-        F32 edgeThreshold = batch->edgeDetectionThreshold();
+        F32 edgeThreshold = batch.edgeDetectionThreshold();
         ImGui::AlignTextToFramePadding();
         ImGui::Text("Edge Threshold: "); ImGui::SameLine();
         ImGui::PushItemWidth(170);
         if (ImGui::SliderFloat("##hidelabel", &edgeThreshold, 0.01f, 1.0f)) {
-            batch->edgeDetectionThreshold(edgeThreshold);
+            batch.edgeDetectionThreshold(edgeThreshold);
         }
         ImGui::PopItemWidth();
         if (ImGui::CollapsingHeader("SS Antialiasing")) {
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_SS_ANTIALIASING);
+            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_SS_ANTIALIASING);
             PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(*op);
             I32 level = to_I32(aaOp.postAAQualityLevel());
 
@@ -102,7 +102,7 @@ namespace {
         }
         if (ImGui::CollapsingHeader("SS Ambient Occlusion")) {
             checkBox(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
+            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_SS_AMBIENT_OCCLUSION);
             SSAOPreRenderOperator& ssaoOp = static_cast<SSAOPreRenderOperator&>(*op);
             F32 radius = ssaoOp.radius();
             F32 power = ssaoOp.power();
@@ -135,7 +135,7 @@ namespace {
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
+            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_DEPTH_OF_FIELD);
             DoFPreRenderOperator& dofOp = static_cast<DoFPreRenderOperator&>(*op);
             DoFPreRenderOperator::Parameters params = dofOp.parameters();
             bool dirty = false;
@@ -235,7 +235,7 @@ namespace {
 
         if (ImGui::CollapsingHeader("Bloom")) {
             checkBox(FilterType::FILTER_BLOOM);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_BLOOM);
+            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_BLOOM);
             BloomPreRenderOperator& bloomOp = static_cast<BloomPreRenderOperator&>(*op);
             F32 factor = bloomOp.factor();
             F32 threshold = bloomOp.luminanceThreshold();
@@ -249,7 +249,7 @@ namespace {
 
         if (ImGui::CollapsingHeader("Motion Blur")) {
             checkBox(FilterType::FILTER_MOTION_BLUR);
-            PreRenderOperator* op = batch->getOperator(FilterType::FILTER_MOTION_BLUR);
+            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_MOTION_BLUR);
             MotionBlurPreRenderOperator& blurOP = static_cast<MotionBlurPreRenderOperator&>(*op);
             F32 velocity = blurOP.velocityScale();
             if (ImGui::SliderFloat("Veclocity Scale", &velocity, 0.01f, 3.0f)) {
@@ -262,13 +262,13 @@ namespace {
         }
 
         if (ImGui::CollapsingHeader("Tone Mapping")) {
-            bool adaptiveExposure = batch->adaptiveExposureControl();
+            bool adaptiveExposure = batch.adaptiveExposureControl();
             if (ImGui::Checkbox("Adaptive Exposure", &adaptiveExposure)) {
-                batch->adaptiveExposureControl(adaptiveExposure);
+                batch.adaptiveExposureControl(adaptiveExposure);
             }
 
             bool dirty = false;
-            ToneMapParams params = batch->toneMapParams();
+            ToneMapParams params = batch.toneMapParams();
             if (adaptiveExposure) {
                 if (ImGui::SliderFloat("Min Log Luminance", &params._minLogLuminance, -16.0f, 0.0f)) {
                     dirty = true;
@@ -283,14 +283,14 @@ namespace {
                 static I32 exposureRefreshFrameCount = 1;
                 static F32 exposure = 1.0f;
                 if (--exposureRefreshFrameCount == 0) {
-                    exposure = batch->adaptiveExposureValue();
+                    exposure = batch.adaptiveExposureValue();
                     exposureRefreshFrameCount = g_exposureRefreshFrameCount;
                 }
 
                 ImGui::Text("Current exposure value: %5.2f", exposure);
                 I32 id = 32132131;
-                if (PreviewTextureButton(id, batch->luminanceTex().get(), false)) {
-                    _previewTexture = batch->luminanceTex().get();
+                if (PreviewTextureButton(id, batch.luminanceTex().get(), false)) {
+                    _previewTexture = batch.luminanceTex().get();
                 }
             }
 
@@ -306,7 +306,7 @@ namespace {
             }
 
             if (dirty) {
-                batch->toneMapParams(params);
+                batch.toneMapParams(params);
             }
             checkBox(FilterType::FILTER_LUT_CORECTION, PostFX::FilterName(FilterType::FILTER_LUT_CORECTION), false);
         }

@@ -66,8 +66,10 @@
 <rendering>
 	<MSAASamples>2</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
-	<!-- base reflection resolution is 512p. Min factor 1. (e.g. factor 2 = 1024p targets) -->
-	<reflectionResolutionFactor>2</reflectionResolutionFactor>
+	<!-- Environment probe resolution. Clamped between 16 and 4096 and rounded to a power of 2 -->
+	<reflectionProbeResolution>256</reflectionProbeResolution>
+	<!-- Planar reflector resolution. Clamped between 16 and 4096 and rounded to a power of 2 -->
+	<reflectionPlaneResolution>512</reflectionPlaneResolution>
 	<numLightsPerCluster>100</numLightsPerCluster>
 	<lightClusteredSizes width="16" height="9" depth="24"/>
 	<enableFog>false</enableFog>
@@ -92,9 +94,9 @@
 			<UseHalfResolution>false</UseHalfResolution>
 			<blurThreshold>0.0480000004</blurThreshold>
 			<FullRes>
-				<Radius>1.09899998</Radius>
-				<Bias>0.0549999997</Bias>
-				<Power>1.04499996</Power>
+				<Radius>1.36199999</Radius>
+				<Bias>0.0350000001</Bias>
+				<Power>1.14999998</Power>
 				<KernelSampleCount>32</KernelSampleCount>
 				<Blur>true</Blur>
 			</FullRes>

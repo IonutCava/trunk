@@ -91,7 +91,7 @@ public:
                 SetBit(_filterStack, to_U32(filter));
             }
             _filtersDirty = true;
-            getFilterBatch()->onFilterEnabled(filter);
+            getFilterBatch().onFilterEnabled(filter);
         }
     }
 
@@ -103,7 +103,7 @@ public:
                 ClearBit(_filterStack, to_U32(filter));
             }
             _filtersDirty = true;
-            getFilterBatch()->onFilterDisabled(filter);
+            getFilterBatch().onFilterDisabled(filter);
         }
     }
 
@@ -112,8 +112,8 @@ public:
                BitCompare(_overrideFilterStack, to_U32(filter));
     }
 
-    [[nodiscard]] PreRenderBatch* getFilterBatch() const noexcept {
-        return _preRenderBatch.get();
+    [[nodiscard]] PreRenderBatch& getFilterBatch() noexcept {
+        return _preRenderBatch;
     }
 
     // fade the screen to the specified colour lerping over the specified time interval
@@ -132,9 +132,9 @@ public:
     void setFadeOutIn(const UColour3& targetColour, D64 durationFadeOutMS, D64 durationFadeInMS, D64 waitDurationMS);
 
     [[nodiscard]] static const char* FilterName(FilterType filter) noexcept;
-private:
 
-    eastl::unique_ptr<PreRenderBatch> _preRenderBatch = nullptr;
+private:
+    PreRenderBatch _preRenderBatch;
     /// Screen Border
     Texture_ptr _screenBorder = nullptr;
     /// Noise

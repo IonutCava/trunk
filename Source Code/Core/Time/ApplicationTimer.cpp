@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "config.h"
-
 #include "Headers/ApplicationTimer.h"
 
 #include "Utility/Headers/Localization.h"
@@ -16,6 +14,9 @@ namespace {
     // Previous frame's time stamp
     TimeValue g_frameDelay;
     std::atomic<U64> g_elapsedTimeUs;
+
+    /// Benchmark reset frequency in milliseconds
+    constexpr U64 g_benchmarkFrequencyUS = MillisecondsToMicroseconds<U64>(500);
 }
 
 ApplicationTimer::ApplicationTimer() noexcept
@@ -40,24 +41,22 @@ void ApplicationTimer::update() {
     _speedfactor = Time::MicrosecondsToSeconds<F32>(duration * _targetFrameRate);
     _frameRateHandler.tick(g_elapsedTimeUs);
     
-    if_constexpr (Config::Profile::BENCHMARK_PERFORMANCE) {
+    if (g_elapsedTimeUs - _lastBenchmarkTimeStamp > g_benchmarkFrequencyUS)
+    {
+        F32 fps = 0.f;
+        F32 frameTime = 0.f;
+        _frameRateHandler.frameRateAndTime(fps, frameTime);
 
-        if (g_elapsedTimeUs - _lastBenchmarkTimeStamp > MillisecondsToMicroseconds(Config::Profile::BENCHMARK_FREQUENCY))
-        {
-            F32 fps = 0.f;
-            F32 frameTime = 0.f;
-            _frameRateHandler.frameRateAndTime(fps, frameTime);
-
-            _lastBenchmarkTimeStamp = g_elapsedTimeUs;
-            _benchmarkReport = Util::StringFormat(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")),
-                                                  fps,
-                                                  _frameRateHandler.averageFrameRate(),
-                                                  _frameRateHandler.maxFrameRate(),
-                                                  _frameRateHandler.minFrameRate(),
-                                                  frameTime);
-        }
+        _lastBenchmarkTimeStamp = g_elapsedTimeUs;
+        _benchmarkReport = Util::StringFormat(Locale::get(_ID("FRAMERATE_FPS_OUTPUT")),
+                                              fps,
+                                              _frameRateHandler.averageFrameRate(),
+                                              _frameRateHandler.maxFrameRate(),
+                                              _frameRateHandler.minFrameRate(),
+                                              frameTime);
     }
 }
+
 namespace Game {
     /// The following functions return the time updated in the main app loop only!
     U64 ElapsedNanoseconds() {

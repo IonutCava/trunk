@@ -106,7 +106,8 @@ struct Configuration final : public XML::IXMLSerializable {
     struct Rendering {
         U8 MSAASamples = 0u;
         U8 anisotropicFilteringLevel = 16;
-        U8 reflectionResolutionFactor = 1;
+        U16 reflectionProbeResolution = 256;
+        U16 reflectionPlaneResolution = 512;
         I32 numLightsPerCluster = -1;
         vec3<U8> lightClusteredSizes = { 16, 9, 24 };
         bool enableFog = true;

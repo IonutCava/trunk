@@ -74,12 +74,10 @@
 #include <SDL_syswm.h>
 #endif
 
-#ifdef FORCE_HIGHPERFORMANCE_GPU
 extern "C" {
     _declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
     _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0x00000001;
 }
-#endif
 
 void* malloc_aligned(const size_t size, const size_t alignment) {
     return _aligned_malloc(size, alignment);

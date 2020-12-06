@@ -704,18 +704,18 @@ void MenuBar::drawDebugMenu() {
 
         if (ImGui::BeginMenu("Edge Detection Method")) {
 
-            PreRenderBatch* batch = _context.gfx().getRenderer().postFX().getFilterBatch();
-            bool noneSelected = batch->edgeDetectionMethod() == PreRenderBatch::EdgeDetectionMethod::COUNT;
+            PreRenderBatch& batch = _context.gfx().getRenderer().postFX().getFilterBatch();
+            bool noneSelected = batch.edgeDetectionMethod() == PreRenderBatch::EdgeDetectionMethod::COUNT;
             if (ImGui::MenuItem("None", "", &noneSelected)) {
-                batch->edgeDetectionMethod(PreRenderBatch::EdgeDetectionMethod::COUNT);
+                batch.edgeDetectionMethod(PreRenderBatch::EdgeDetectionMethod::COUNT);
             }
 
             for (U8 i = 0; i < to_U8(PreRenderBatch::EdgeDetectionMethod::COUNT) + 1; ++i) {
                 PreRenderBatch::EdgeDetectionMethod method = static_cast<PreRenderBatch::EdgeDetectionMethod>(i);
 
-                bool selected = batch->edgeDetectionMethod() == method;
+                bool selected = batch.edgeDetectionMethod() == method;
                 if (ImGui::MenuItem(EdgeMethodName(method), "", &selected)) {
-                    batch->edgeDetectionMethod(method);
+                    batch.edgeDetectionMethod(method);
                 }
             }
 

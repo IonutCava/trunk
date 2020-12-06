@@ -45,7 +45,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(terrain.wireframe);
         GET_PARAM(rendering.MSAASamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
-        GET_PARAM(rendering.reflectionResolutionFactor);
+        GET_PARAM(rendering.reflectionProbeResolution);
+        GET_PARAM(rendering.reflectionPlaneResolution);
         GET_PARAM(rendering.numLightsPerCluster);
         GET_PARAM_ATTRIB(rendering.lightClusteredSizes, width);
         GET_PARAM_ATTRIB(rendering.lightClusteredSizes, height);
@@ -159,7 +160,8 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(terrain.wireframe);
         PUT_PARAM(rendering.MSAASamples);
         PUT_PARAM(rendering.anisotropicFilteringLevel);
-        PUT_PARAM(rendering.reflectionResolutionFactor);
+        PUT_PARAM(rendering.reflectionProbeResolution);
+        PUT_PARAM(rendering.reflectionPlaneResolution);
         PUT_PARAM(rendering.numLightsPerCluster);
         PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, width);
         PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, height);

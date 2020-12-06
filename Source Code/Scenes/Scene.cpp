@@ -320,6 +320,7 @@ bool Scene::loadXML(const Str256& name) {
     _dayNightData._time._hour = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.hour", 14u);
     _dayNightData._time._minutes = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.minute", 30u);
     _dayNightData._speedFactor = pt.get("dayNight.timeOfDay.<xmlattr>.timeFactor", 1.0f);
+    _dayNightData._resetTime = true;
 
     if (pt.get_child_optional("options.cameraStartPosition")) {
         par.setParam(_ID((name + ".options.cameraStartPosition.x").c_str()), pt.get("options.cameraStartPosition.<xmlattr>.x", 0.0f));
@@ -1839,6 +1840,11 @@ void Scene::endDragSelection(const PlayerIndex idx, const bool clearSelection) {
 void Scene::initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) noexcept {
     _dayNightData._skyInstance = &skyInstance;
     _dayNightData._dirLight = &sunLight;
+    if (!_dayNightData._resetTime) {
+        // Usually loaded from XML/save data
+        _dayNightData._time = skyInstance.GetTimeOfDay();
+        _dayNightData._resetTime = true;
+    }
     _dayNightData._timeAccumulator = Time::Seconds(1.1f);
 }
 

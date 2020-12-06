@@ -52,7 +52,7 @@ GFXDevice::renderingData() const noexcept {
 
 inline Renderer& 
 GFXDevice::getRenderer() const {
-    DIVIDE_ASSERT(_renderer != nullptr, "GFXDevice error: Renderer requested but not created!");
+    assert(_renderer != nullptr);
     return *_renderer;
 }
 

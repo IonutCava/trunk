@@ -35,187 +35,153 @@
 
 namespace Divide {
 namespace Config {
-namespace Build {
 
+namespace Build {
 #if defined(_DEBUG)
-    constexpr bool IS_SHIPPING_BUILD = false;
-    constexpr bool IS_DEBUG_BUILD = true;
+    constexpr bool IS_DEBUG_BUILD   = true;
+
     constexpr bool IS_PROFILE_BUILD = false;
     constexpr bool IS_RELEASE_BUILD = false;
 #elif defined(_PROFILE)
-    constexpr bool IS_SHIPPING_BUILD = false;
-    constexpr bool IS_DEBUG_BUILD = false;
     constexpr bool IS_PROFILE_BUILD = true;
+
+    constexpr bool IS_DEBUG_BUILD   = false;
     constexpr bool IS_RELEASE_BUILD = false;
 #else
-    // Set IS_SHIPPING_BUILD to true to disable non-required functionality for shipped games: editors, debug code, etc
-    constexpr bool IS_SHIPPING_BUILD = true;
-    constexpr bool IS_DEBUG_BUILD = false;
-    constexpr bool IS_PROFILE_BUILD = false;
     constexpr bool IS_RELEASE_BUILD = true;
+
+    constexpr bool IS_DEBUG_BUILD   = false;
+    constexpr bool IS_PROFILE_BUILD = false;
 #endif
 
+    // Set IS_SHIPPING_BUILD to true to disable non-required functionality for shipped games: editors, debug code, etc
+    constexpr bool IS_SHIPPING_BUILD = IS_RELEASE_BUILD && false;
     constexpr bool ENABLE_EDITOR = !IS_SHIPPING_BUILD;
-}
+} //namespace Build
+
+namespace Assert {
+    /// Log assert fails messages to the error log file
+    constexpr bool LOG_ASSERTS = !Build::IS_RELEASE_BUILD;
+
+    /// Popup a GUI Message Box on asserts;
+    constexpr bool SHOW_MESSAGE_BOX = LOG_ASSERTS;
+
+    /// Do not call the platform "assert" function in order to continue application execution
+    constexpr bool CONTINUE_ON_ASSERT = false;
+} // namespace Assert
+
+namespace Profile {
+    /// How many profiling timers are we allowed to use in our applications. We allocate them upfront, so a max limit is needed
+    constexpr unsigned int MAX_PROFILE_TIMERS = 1 << 10;
+
+    /// Enable function level profiling
+    constexpr bool ENABLE_FUNCTION_PROFILING = !Build::IS_SHIPPING_BUILD;
+} // namespace Profile
+
 
 /// Application desired framerate for physics and input simulations
 constexpr unsigned int TARGET_FRAME_RATE = 60;
+
 /// Application update rate divisor (how many many times should we update our state per second)
 /// e.g. For TARGET_FRAME_RATE = 60, TICK_DIVISOR = 2 => update at 30Hz, render at 60Hz.
 constexpr unsigned int TICK_DIVISOR = 2;
-/// Maximum frameskip
+
+/// Maximum frame skip count. How many update calls are we allowed to catch up before fast-forwarding and rendering the frame regardless
 constexpr unsigned int MAX_FRAMESKIP = 3;
+
 /// The minimum threshold needed for a threaded loop to use sleep. Update intervals bellow this threshold will not use sleep!
 constexpr unsigned int MIN_SLEEP_THRESHOLD_MS = 5;
-/// Minimum required RAM size (in bytes) for the current build
-constexpr unsigned int REQUIRED_RAM_SIZE = 2 * 1024 * 1024; //2Gb
-/// How many tasks should we keep in a pool to avoid using new/delete (must be power of two)
-constexpr unsigned int MAX_POOLED_TASKS = 16384;
+
+/// Minimum required RAM size (in bytes) for the current build. We will probably fail to initialise if this is too low.
+/// Per frame memory arena and GPU object arena both depend on this value for up-front allocations
+constexpr unsigned int REQUIRED_RAM_SIZE = 1 << 11;
+
+/// How many tasks should we keep in a per-thread pool to avoid using new/delete (must be power of two)
+constexpr unsigned int MAX_POOLED_TASKS = 1 << 14;
+
 /// Maximum number of bones available per node
-constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 128;
+constexpr unsigned int MAX_BONE_COUNT_PER_NODE = 1 << 7;
+
 /// Estimated maximum number of visible objects per render pass (this includes debug primitives)
-constexpr unsigned int MAX_VISIBLE_NODES = 4096 * 2;
-constexpr unsigned int MAX_CONCURRENT_MATERIALS = 1024;
+constexpr unsigned int MAX_VISIBLE_NODES = 1 << 13;
+
+/// Estimated maximum number of materials used in a single frame
+constexpr unsigned int MAX_CONCURRENT_MATERIALS = 1 << 10;
+
+/// Maximum number of concurrent clipping planes active at any time (can be changed per-call)
 /// High numbers for CLIP/CULL negatively impact number of threads run on the GPU. Max of 6 for each (ref: nvidia's "GPU-DRIVEN RENDERING" 2016)
 constexpr unsigned int MAX_CLIP_DISTANCES = 3;
+
+/// Same as MAX_CLIP_DISTANCES, but for culling instead. This number counts towards the maximum combined clip&cull distances the GPU supports
+/// Value is capped between [0, GPU_MAX_DISTANCES - MAX_CLIP_DISTANCES)
 constexpr unsigned int MAX_CULL_DISTANCES = 1;
-/// How many clip planes should the shaders us
-/// How many reflective objects are we allowed to display on screen at the same time
-#   if defined(_DEBUG)
-constexpr unsigned int MAX_REFLECTIVE_NODES_IN_VIEW = 3;
-#   else
-constexpr unsigned int  MAX_REFLECTIVE_NODES_IN_VIEW = 5;
-#   endif
-#   if defined(_DEBUG)
-constexpr unsigned int MAX_REFRACTIVE_NODES_IN_VIEW = 2;
-#   else
-constexpr unsigned int  MAX_REFRACTIVE_NODES_IN_VIEW = 4;
-#   endif
+
+/// How many reflective objects with custom draw pass are we allowed to display on screen at the same time (e.g. Water, mirrors, etc)
+/// SSR and Environment mapping do not count towards this limit. Should probably be removed in the future.
+constexpr unsigned int MAX_REFLECTIVE_NODES_IN_VIEW = Build::IS_DEBUG_BUILD ? 3 : 5;
+
+/// Similar to MAX_REFLECTIVE_NODES_IN_VIEW but for custom refraction passes (e.g. Water, special glass, etc). Also a candidate for removal
+constexpr unsigned int MAX_REFRACTIVE_NODES_IN_VIEW = Build::IS_DEBUG_BUILD ? 2 : 4;
+
+/// Maximum number of environment probes we are allowed to update per frame
 constexpr unsigned int MAX_REFLECTIVE_PROBES_PER_PASS = 6;
 
-/// Resolution used for environment probe rendering
-constexpr unsigned int REFLECTION_TARGET_RESOLUTION_ENVIRONMENT_PROBE = 256;
-
-/// Generic index value used to separate primitives within the same vertex
-/// buffer
-constexpr unsigned int PRIMITIVE_RESTART_INDEX_L = 0xFFFFFFFF;
-constexpr unsigned int PRIMITIVE_RESTART_INDEX_S = 0xFFFF;
-
-/// Maximum number of players we support locally
+/// Maximum number of players we support locally. We store per-player data such as key-bindings, camera positions, etc.
 constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
 
 /// Use the coloured version of WOIT as detailed here: http://casual-effects.blogspot.com/2015/03/colored-blended-order-independent.html (Note: Not yet working!)
 constexpr bool USE_COLOURED_WOIT = false;
 
-/// Use OGL bindless textures
+/// Use OGL bindless textures. If false, the old "bind a texture+sampler per slot" system is used
 constexpr bool USE_BINDLESS_TEXTURES = false;
 
-/// Compute related options
-namespace Compute {
-
-} //namespace Compute
-
-/// Profiling options
-namespace Profile {
-/// how many profiling timers are we allowed to use in our applications
-constexpr unsigned int MAX_PROFILE_TIMERS = 1024;
-/// enable function level profiling
-#if defined(_DEBUG) || defined(_PROFILE)
-    constexpr bool ENABLE_FUNCTION_PROFILING = true;
-#else
-    constexpr bool ENABLE_FUNCTION_PROFILING = false;
-#endif
-/// run performance profiling code
-#if defined(_DEBUG) || defined(_PROFILE)
-    constexpr bool BENCHMARK_PERFORMANCE = true;
-#else
-    constexpr bool BENCHMARK_PERFORMANCE = false;
-#endif
-/// Benchmark reset frequency in milliseconds
-constexpr unsigned int BENCHMARK_FREQUENCY = 500;
-}  // namespace Profile
-
-namespace Assert {
-#if defined(_RELEASE)
-    constexpr bool LOG_ASSERTS = false;
-    constexpr bool SHOW_MESSAGE_BOX = false;
-#else
-    /// Log assert fails messages to the error log file
-    constexpr bool LOG_ASSERTS = true;
-    /// Popup a GUI Message Box on asserts;
-    constexpr bool SHOW_MESSAGE_BOX = true;
-#endif
-
-/// Do not call the platform "assert" function in order to continue application execution
-constexpr bool CONTINUE_ON_ASSERT = false;
-}  // namespace Assert
-
 namespace Lighting {
-// How many lights (in order as passed to the shader for the node) should cast shadows
+    /// How many lights (in order as passed to the shader for the node) should cast shadows
+    constexpr unsigned short MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS = 2;
+    constexpr unsigned short MAX_SHADOW_CASTING_POINT_LIGHTS = 4;
+    constexpr unsigned short MAX_SHADOW_CASTING_SPOT_LIGHTS = 6;
 
-constexpr unsigned short MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS = 2;
-constexpr unsigned short MAX_SHADOW_CASTING_POINT_LIGHTS = 4;
-constexpr unsigned short MAX_SHADOW_CASTING_SPOT_LIGHTS = 6;
-constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS + MAX_SHADOW_CASTING_POINT_LIGHTS + MAX_SHADOW_CASTING_SPOT_LIGHTS;
-/// Used for cube map shadows and for CSM or PSSM to determine the maximum number of frustum splits
-constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
+    /// Maximum number of shadow casting lights processed per frame
+    constexpr unsigned short MAX_SHADOW_CASTING_LIGHTS = MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS + MAX_SHADOW_CASTING_POINT_LIGHTS + MAX_SHADOW_CASTING_SPOT_LIGHTS;
 
-static constexpr U32 MAX_SHADOW_PASSES =
-    MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * MAX_CSM_SPLITS_PER_LIGHT +
-    MAX_SHADOW_CASTING_POINT_LIGHTS * 6 +
-    MAX_SHADOW_CASTING_SPOT_LIGHTS;
+    /// Used for CSM or PSSM to determine the maximum number of frustum splits
+    constexpr unsigned short MAX_CSM_SPLITS_PER_LIGHT = 4;
 
-/// Used mainly for caching/memory efficiency reasons
-constexpr unsigned short MAX_POSSIBLE_LIGHTS = 4096u;
+    /// Maximum possible number of shadow passes per frame
+    static constexpr U32 MAX_SHADOW_PASSES = MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * MAX_CSM_SPLITS_PER_LIGHT +
+                                             MAX_SHADOW_CASTING_POINT_LIGHTS * 6 +
+                                             MAX_SHADOW_CASTING_SPOT_LIGHTS;
 
-static_assert(MAX_CSM_SPLITS_PER_LIGHT < 6, "Maximum splits per light can't be more than 6 (cube shadows). Consider moving to a different system for CSM!");
+    /// Maximum number of lights we process per frame. We need this upper bound for pre-allocating arrays and setting up shaders. Increasing it shouldn't hurt performance in a linear fashion
+    constexpr unsigned short MAX_ACTIVE_LIGHTS_PER_FRAME = 1 << 12;
 
-namespace ClusteredForward {
-    constexpr unsigned short MAX_LIGHTS_PER_CLUSTER = 100u;
-    constexpr unsigned short CLUSTER_Z_THREADS = 4u;
-}
+    /// These settings control the clustered renderer and how we batch lights per tile & cluster
+    namespace ClusteredForward {
+        /// Upper limit of lights used in a cluster. The lower, the better performance at the cost of pop-in/glitches. At ~100, any temporal issues should remain fairly hidden
+        constexpr unsigned short MAX_LIGHTS_PER_CLUSTER = 100u;
 
-}  // namespace Lighting
+        /// Controls compute shader dispatch. Dispatch Z count = GRID_SIZE_Z / CLUSTER_Z_THREADS
+        constexpr unsigned short CLUSTER_Z_THREADS = 4u;
+    } // namespace ClusteredForward
+} // namespace Lighting
 
 namespace Networking {
-/// How often should the client send messages to the server
-constexpr unsigned int NETWORK_SEND_FREQUENCY_HZ = 20;
-/// How many times should we try to send an update to the server before giving up?
-constexpr unsigned int NETWORK_SEND_RETRY_COUNT = 3;
-}
-#ifndef GPU_VALIDATION_IN_RELEASE_BUILD
-    //#define GPU_VALIDATION_IN_RELEASE_BUILD
-#endif
+    /// How often should the client send messages to the server
+    constexpr unsigned int NETWORK_SEND_FREQUENCY_HZ = 20;
 
-#ifndef GPU_VALIDATION_IN_PROFILE_BUILD
-    #define GPU_VALIDATION_IN_PROFILE_BUILD
-#endif
+    /// How many times should we try to send an update to the server before giving up?
+    constexpr unsigned int NETWORK_SEND_RETRY_COUNT = 3;
+} // namespace Networking
 
-#ifndef GPU_VALIDATION_IN_DEBUG_BUILD
-#define GPU_VALIDATION_IN_DEBUG_BUILD
-#endif
+/// Error callbacks, validations, buffer checks, etc. are controlled by this flag. Heavy performance impact!
+constexpr bool ENABLE_GPU_VALIDATION = !Build::IS_SHIPPING_BUILD;
 
-
-#if (defined(_RELEASE) && defined(GPU_VALIDATION_IN_RELEASE_BUILD)) || \
-    (defined(_PROFILE) && defined(GPU_VALIDATION_IN_PROFILE_BUILD)) || \
-    (defined(_DEBUG) && defined(GPU_VALIDATION_IN_DEBUG_BUILD))
-constexpr bool ENABLE_GPU_VALIDATION = true;
-#else
-constexpr bool ENABLE_GPU_VALIDATION = false;
-#endif
-
-constexpr bool ENABLE_LOCALE_FILE_WATCHER = false;
+/// Scan changes to shader source files, script files, etc to hot-reload assets. Isn't needed in shipping builds or without the editor enabled
+constexpr bool ENABLE_LOCALE_FILE_WATCHER = !Build::IS_SHIPPING_BUILD && Build::ENABLE_EDITOR;
 
 }  // namespace Config
 }  // namespace Divide
 
-/// If the target machine uses the nVidia Optimus layout (IntelHD + nVidiadiscreet GPU)
-/// or the AMD PowerXPress system, this forces the client to use the high performance GPU
-#ifndef FORCE_HIGHPERFORMANCE_GPU
-#define FORCE_HIGHPERFORMANCE_GPU
-#endif
-
-/// Please enter the desired log file name
 constexpr auto OUTPUT_LOG_FILE = "console.log";
 constexpr auto ERROR_LOG_FILE = "errors.log";
 

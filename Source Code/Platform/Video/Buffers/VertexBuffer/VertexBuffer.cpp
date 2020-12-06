@@ -47,8 +47,7 @@ void VertexBuffer::computeNormals() {
     for (U32 i = 0; i < indexCount; i += 3) {
 
         const U32 idx0 = getIndex(i + 0);
-        if (idx0 == Config::PRIMITIVE_RESTART_INDEX_L ||
-            idx0 == Config::PRIMITIVE_RESTART_INDEX_S) {
+        if (idx0 == PRIMITIVE_RESTART_INDEX_L || idx0 == PRIMITIVE_RESTART_INDEX_S) {
             assert(i > 2);
             i -= 2;
             continue;
@@ -87,8 +86,7 @@ void VertexBuffer::computeTangents() {
     for (U32 i = 0; i < indexCount; i += 3) {
         // get the three vertices that make the faces
         const U32 idx0 = getIndex(i + 0);
-        if (idx0 == Config::PRIMITIVE_RESTART_INDEX_L ||
-            idx0 == Config::PRIMITIVE_RESTART_INDEX_S) {
+        if (idx0 == PRIMITIVE_RESTART_INDEX_L || idx0 == PRIMITIVE_RESTART_INDEX_S) {
             assert(i > 2);
             i -= 2;
             continue;

@@ -22,11 +22,9 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
       _context(context),
       _diameter(diameter)
 {
-    _sun = eastl::make_unique<Sun>();
-
     time_t t = time(nullptr);
-    _sun->SetLocation(-2.589910f, 51.45414f); // Bristol :D
-    _sun->SetDate(localtime(&t));
+    _sun.SetLocation(-2.589910f, 51.45414f); // Bristol :D
+    _sun.SetDate(localtime(&t));
 
     _renderState.addToDrawExclusionMask(RenderStage::SHADOW);
 
@@ -325,13 +323,17 @@ void Sky::postLoad(SceneGraphNode* sgn) {
     SceneNode::postLoad(sgn);
 }
 
-SunDetails Sky::setDateTime(struct tm *dateTime) const {
-    _sun->SetDate(dateTime);
+SunDetails Sky::setDateTime(struct tm *dateTime) {
+    _sun.SetDate(dateTime);
     return getCurrentDetails();
 }
 
 SunDetails Sky::getCurrentDetails() const noexcept {
-    return _sun->GetDetails();
+    return _sun.GetDetails();
+}
+
+SimpleTime Sky::GetTimeOfDay() const noexcept {
+    return _sun.GetTimeOfDay();
 }
 
 void Sky::setAtmosphere(const Atmosphere& atmosphere) noexcept {
