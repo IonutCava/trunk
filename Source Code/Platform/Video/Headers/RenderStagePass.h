@@ -86,29 +86,32 @@ struct RenderStagePass {
             
             if (renderStagePass._variant == to_base(LightType::DIRECTIONAL)) {
                 return offsetDir + renderStagePass._index * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT + renderStagePass._pass;
-            } else if (renderStagePass._variant == to_base(LightType::POINT)) {
+            } 
+            if (renderStagePass._variant == to_base(LightType::POINT)) {
                 return offsetPoint + renderStagePass._index * 6 + renderStagePass._pass;
-            } else /*if (renderStagePass._variant == to_base(LightType::SPOT)*/{
+            } 
+            /*if (renderStagePass._variant == to_base(LightType::SPOT)*/{
                 return offsetSpot + renderStagePass._index;
             }
-        } else if (renderStagePass._stage == RenderStage::REFLECTION) {
+        } 
+        if (renderStagePass._stage == RenderStage::REFLECTION) {
             if (renderStagePass._variant == to_base(ReflectorType::PLANAR)) {
                 return renderStagePass._index;
-            } else {
-                return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + (renderStagePass._index * 6 + renderStagePass._pass);
+            } 
 
-            }
-        } else {
-            assert(renderStagePass._pass == 0u);
-            return renderStagePass._index;
-        }
+            return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + (renderStagePass._index * 6 + renderStagePass._pass);
+        } 
+        
+        assert(renderStagePass._pass == 0u);
+        return renderStagePass._index;
     }
 
     static U8 passCountForStage(const RenderStage renderStage) noexcept {
         if (renderStage == RenderStage::REFLECTION) {
             return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
                    Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;
-        } else if (renderStage == RenderStage::SHADOW) {
+        } 
+        if (renderStage == RenderStage::SHADOW) {
             return Config::Lighting::MAX_SHADOW_PASSES;
         }
 

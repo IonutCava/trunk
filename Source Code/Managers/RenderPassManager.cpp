@@ -595,11 +595,14 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         *bufferData._lastCommandCount = to_U32(passData._drawCommands.size());
         *bufferData._lastNodeCount = nodeCount;
 
+
+        const size_t materialRange = std::count_if(std::begin(passData._nodeMaterialLookupInfo),
+                                                   std::end(passData._nodeMaterialLookupInfo),
+                                                   [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
         {
             OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
             bufferData._commmandBuffer->writeData(bufferData._commandData._elementOffset, *bufferData._lastCommandCount, passData._drawCommands.data());
             bufferData._transformBuffer->writeData(bufferData._transformData._elementOffset, *bufferData._lastNodeCount, passData.transformData(0u));
-            bufferData._texturesBuffer->writeData(bufferData._texturesData._elementOffset, *bufferData._lastNodeCount, passData.texturesData(0u));
 
             // Copy the same data to the entire ring buffer
             PerPassData::MaterialUpdateRange& crtRange = passData._matUpdateRange[passData._materialBufferIndex];
@@ -610,11 +613,11 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 crtRange._lastIDX = std::max(crtRange._lastIDX, prevRange._lastIDX);
 
                 bufferData._materialBuffer->writeData(bufferData._materialData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.materialData(crtRange._firstIDX));
+                bufferData._texturesBuffer->writeData(bufferData._texturesData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.texturesData(crtRange._firstIDX));
             }
             prevRange.reset();
             if (passData._updateCounter == 0u || --passData._updateCounter == 0u) {
                 crtRange.reset();
-                
             }
             passData._prevMaterialBufferIndex = passData._materialBufferIndex;
         }
@@ -632,7 +635,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         ShaderBufferBinding materialBuffer = {};
         materialBuffer._binding = ShaderBufferLocation::NODE_MATERIAL_DATA;
         materialBuffer._buffer = bufferData._materialBuffer;
-        materialBuffer._elementRange = { bufferData._materialData._elementOffset, Config::MAX_CONCURRENT_MATERIALS };
+        materialBuffer._elementRange = { bufferData._materialData._elementOffset, materialRange };
 
         ShaderBufferBinding texturesBuffer = {};
         texturesBuffer._binding = ShaderBufferLocation::NODE_MATERIAL_TEXTURES;

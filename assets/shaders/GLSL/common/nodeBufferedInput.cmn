@@ -24,7 +24,7 @@ layout(binding = BUFFER_NODE_TRANSFORM_DATA, std430) coherent ACCESS_R buffer dv
 
 #if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)
 layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd_MaterialBlock {
-    NodeMaterialData dvd_Materials[MAX_CONCURRENT_MATERIALS];
+    NodeMaterialData dvd_Materials[];
 };
 
 #if defined(USE_BINDLESS_TEXTURES)
