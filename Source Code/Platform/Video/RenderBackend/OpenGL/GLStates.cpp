@@ -23,9 +23,6 @@ GLuint GL_API::s_anisoLevel = 0u;
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
-std::atomic_bool GL_API::s_residentTexturesNeedUpload;
-Mutex GL_API::s_textureResidencyQueueSetLock;
-hashMap<U64, bool> GL_API::s_textureResidencyQueue;
 vectorEASTL<GL_API::ResidentTexture> GL_API::s_residentTextures;
 
 SharedMutex GL_API::s_samplerMapLock;

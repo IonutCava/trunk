@@ -33,7 +33,7 @@ namespace Divide {
 namespace {
     // Weird stuff happens if this is enabled (i.e. certain draw calls hang forever)
     constexpr bool g_runAllQueriesInSameFrame = false;
-    // Keep resident textures in memory for a max of 32 frames
+    // Keep resident textures in memory for a max of 30 frames
     constexpr U8 g_maxTextureResidencyFrameCount = Config::TARGET_FRAME_RATE / 2;
     // Will try and reduce memory usage by static data that we may not be need anymore
     const U32 g_clearMemoryFrameInterval = Config::TARGET_FRAME_RATE;
@@ -1237,7 +1237,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             GFX::BindDescriptorSetsCommand* crtCmd = commandBuffer.get<GFX::BindDescriptorSetsCommand>(entry);
             DescriptorSet& set = crtCmd->_set;
 
-            if (!makeTexturesResident(set._textureData, set._textureViews)) {
+            if (!makeTexturesResident(set._textureData, set._textureViews, set._textureResidencyQueue)) {
                 //Error
             }
             if (!makeImagesResident(set._images)) {
@@ -1555,47 +1555,7 @@ bool GL_API::makeImagesResident(const vectorEASTLFast<Image>& images) const {
 bool GL_API::MakeTexturesResident() {
     OPTICK_EVENT();
 
-    bool expected = true;
-    if (s_residentTexturesNeedUpload.compare_exchange_strong(expected, false)) {
-        UniqueLock<Mutex> w_lock(s_textureResidencyQueueSetLock);
-
-        if_constexpr(Config::USE_BINDLESS_TEXTURES) {
-            const auto SetTextureResidentState = [](const U64 address, const bool state) {
-                // Check for existing resident textures
-                for (ResidentTexture& texture : s_residentTextures) {
-                    if (texture._address == address) {
-                        if (!state) {
-                            glMakeTextureHandleNonResidentARB(address);
-                            texture._address = 0u;
-                            texture._frameCount = g_maxTextureResidencyFrameCount;
-                        } else {
-                            // Else the texture is already resident
-                            texture._frameCount = 0u;
-                        }
-                        return;
-                    }
-                }
-
-                // Register a new resident texture
-                for (ResidentTexture& texture : s_residentTextures) {
-                    if (texture._address == 0u) {
-                        texture._address = address;
-                        texture._frameCount = 0u;
-                        glMakeTextureHandleResidentARB(address);
-                        return;
-                    }
-                }
-
-                DIVIDE_UNEXPECTED_CALL();
-            };
-
-            for (const auto&[address, upload] : s_textureResidencyQueue) {
-                SetTextureResidentState(address, upload);
-            }
-        }
-
-        s_textureResidencyQueue.clear();
-    }
+   
 
     return true;
 }
@@ -1744,8 +1704,38 @@ bool GL_API::makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewE
     return bound;
 }
 
-bool GL_API::makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, const U8 offset, const U8 count) const {
+bool GL_API::makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, const eastl::set<SamplerAddress>& addresses, const U8 offset, const U8 count) const {
     OPTICK_EVENT();
+    {
+        if_constexpr(Config::USE_BINDLESS_TEXTURES) {
+            for (const SamplerAddress textureAddress : addresses) {
+                bool valid = false;
+                // Check for existing resident textures
+                for (ResidentTexture& texture : s_residentTextures) {
+                    if (texture._address == textureAddress) {
+                        texture._frameCount = 0u;
+                        valid = true;
+                        break;
+                    }
+                }
+
+                if (!valid) {
+                    // Register a new resident texture
+                    for (ResidentTexture& texture : s_residentTextures) {
+                        if (texture._address == 0u) {
+                            texture._address = textureAddress;
+                            texture._frameCount = 0u;
+                            glMakeTextureHandleResidentARB(textureAddress);
+                            valid = true;
+                            break;
+                        }
+                    }
+                }
+                DIVIDE_ASSERT(valid);
+            }
+        }
+    }
+
     bool bound = makeTextureViewsResidentInternal(textureViews, offset, count);
     bound = makeTexturesResidentInternal(textureData, offset, count) || bound;
     return bound;

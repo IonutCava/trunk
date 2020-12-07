@@ -165,6 +165,18 @@ namespace Divide {
             }
         }
         
+        if (!rhs._textureResidencyQueue.empty()) {
+            auto& otherResidentTextures = rhs._textureResidencyQueue;
+            for (auto it = begin(otherResidentTextures); it != end(otherResidentTextures);) {
+                if (lhs._textureResidencyQueue.find(*it) != end(lhs._textureResidencyQueue)) {
+                    it = otherResidentTextures.erase(it);
+                    partial = true;
+                } else {
+                    ++it;
+                }
+            }
+        }
+
         return rhs.empty();
     }
 

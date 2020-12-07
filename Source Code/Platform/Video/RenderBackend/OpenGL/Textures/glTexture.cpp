@@ -78,13 +78,12 @@ void glTexture::validateDescriptor() {
     _loadingData._textureType = _descriptor.texType();
 }
 
-U64 glTexture::makeResident(const size_t samplerHash) {
+U64 glTexture::getGPUAddress(const size_t samplerHash) {
     assert(_data._textureType != TextureType::COUNT);
     { //Fast path. We likely have the address already
         SharedLock<SharedMutex> r_lock(_gpuAddressesLock);
         const auto it = _gpuAddresses.find(samplerHash);
         if (it != std::cend(_gpuAddresses)) {
-            GL_API::queueTextureResidency(it->second, true);
             return it->second;
         }
     }
@@ -106,7 +105,6 @@ U64 glTexture::makeResident(const size_t samplerHash) {
             }
             emplace(_gpuAddresses, samplerHash, address);
         }
-        GL_API::queueTextureResidency(address, true);
         return address;
     }
 }

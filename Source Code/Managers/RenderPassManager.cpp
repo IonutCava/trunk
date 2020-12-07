@@ -55,6 +55,8 @@ namespace Divide {
 
         std::array<NodeMaterialTextures, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialTextures{};
 
+        eastl::set<SamplerAddress> _texturesGPUAddressesForPass{};
+
         struct MaterialUpdateRange 
         {
             U32 _firstIDX = std::numeric_limits<U32>::max();
@@ -474,6 +476,13 @@ NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rCom
             materialInfo[idx].first = materialHash;
             materialInfo[idx].second = 0u;
             passData._updateCounter = RenderPass::DataBufferRingSize;
+
+            for (const TextureUsage usage : g_materialTextures) {
+                const SamplerAddress textureAddress = GetTextureAddress(tempTextures, usage);
+                if (textureAddress > 0u) {
+                    passData._texturesGPUAddressesForPass.insert(textureAddress);
+                }
+            }
         }
 
         ret._materialIDX = idx;
@@ -558,6 +567,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         };
 
         passData._drawCommands.clear();
+        passData._texturesGPUAddressesForPass.clear();
 
         const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
@@ -647,6 +657,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         descriptorSetCmd._set.addShaderBuffer(transformBuffer);
         descriptorSetCmd._set.addShaderBuffer(materialBuffer);
         descriptorSetCmd._set.addShaderBuffer(texturesBuffer);
+        descriptorSetCmd._set._textureResidencyQueue = passData._texturesGPUAddressesForPass;
         EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {

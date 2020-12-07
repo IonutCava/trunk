@@ -186,6 +186,7 @@ public:
 
     enum class MaterialDebugFlag : U8 {
         DEBUG_ALBEDO = 0,
+        DEBUG_LIGHTING,
         DEBUG_SPECULAR,
         DEBUG_UV,
         DEBUG_SSAO,
@@ -195,6 +196,7 @@ public:
         DEBUG_NORMALS,
         DEBUG_TBN_VIEW_DIRECTION, //Used for parallax occlusion mapping
         DEBUG_SHADOW_MAPS,
+        DEBUG_CSM_SPLITS,
         DEBUG_LIGHT_HEATMAP,
         DEBUG_LIGHT_DEPTH_CLUSTERS,
         DEBUG_REFLECTIONS,
@@ -367,7 +369,6 @@ public:
                     GFX::CommandBuffer& bufferInOut);
 
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
-    PROPERTY_RW(I32, csmPreviewIndex, -1);
     PROPERTY_RW(RenderAPI, renderAPI, RenderAPI::COUNT);
     PROPERTY_RW(bool, queryPerformanceStats, false);
 

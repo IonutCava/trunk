@@ -94,15 +94,17 @@ vec3 albedoOnly(in vec3 rayDirection, in float lerpValue) {
 vec3 finalColour(in vec3 rayDirection, in float lerpValue) {
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:               return albedoOnly(rayDirection, lerpValue);
+        case DEBUG_LIGHTING:             return ACESFilm(atmosphereColour(rayDirection));
         case DEBUG_SPECULAR:             return vec3(0.0f);
         case DEBUG_UV:                   return vec3(fract(rayDirection));
         case DEBUG_SSAO:                 return vec3(1.0f);
-        case DEBUG_EMISSIVE:             return atmosphereColour(rayDirection);
+        case DEBUG_EMISSIVE:             return ACESFilm(atmosphereColour(rayDirection));
         case DEBUG_ROUGHNESS:
         case DEBUG_METALLIC:
         case DEBUG_NORMALS:              return vec3(0.0f);
         case DEBUG_TBN_VIEW_DIRECTION:   return rayDirection;
-        case DEBUG_SHADOW_MAPS:          return vec3(1.0f);
+        case DEBUG_SHADOW_MAPS:
+        case DEBUG_CSM_SPLITS:           return vec3(1.0f);
         case DEBUG_LIGHT_HEATMAP:
         case DEBUG_LIGHT_DEPTH_CLUSTERS:
         case DEBUG_REFLECTIONS:

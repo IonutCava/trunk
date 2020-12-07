@@ -137,7 +137,7 @@ protected:
 
     bool makeTexturesResidentInternal(TextureDataContainer<>& textureData, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
     bool makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
-    bool makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
+    bool makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, const eastl::set<SamplerAddress>& addresses, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
     bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
 
     bool setViewport(const Rect<I32>& viewport) override;
@@ -153,7 +153,6 @@ public:
     static void dequeueComputeMipMap(GLuint textureHandle);
 
     static bool MakeTexturesResident();
-    static void queueTextureResidency(U64 textureAddress, bool makeResident);
 
     static void pushDebugMessage(const char* message);
     static void popDebugMessage();
@@ -231,13 +230,10 @@ private:
     static eastl::unordered_set<GLuint> s_mipmapQueue;
 
     struct ResidentTexture {
-        U64 _address = 0u;
+        SamplerAddress _address = 0u;
         U8  _frameCount = 0u;
     };
 
-    static Mutex s_textureResidencyQueueSetLock;
-    static std::atomic_bool s_residentTexturesNeedUpload;
-    static hashMap<U64, bool> s_textureResidencyQueue;
     static vectorEASTL<ResidentTexture> s_residentTextures;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states

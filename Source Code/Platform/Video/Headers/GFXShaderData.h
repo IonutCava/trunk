@@ -62,7 +62,7 @@ class GFXShaderData {
           vec4<F32> _renderProperties = { 0.01f, 1.0f, 40.0f, 0.0f };
           //x - cluster size X, y - cluster size Y, z - scale, w - bias
           vec4<F32> _lightingProperties = { 120.0f, 100.0f, 1.0f, 1.0f };
-          //x - material debug flag, y - CSM splits view index, z - camera flag, w - active clip plane count
+          //x - material debug flag, y - reserved, z - camera flag, w - active clip plane count
           vec4<F32> _otherProperties;
           std::array<Plane<F32>, to_base(FrustumPlane::COUNT)> _frustumPlanes;
           std::array<Plane<F32>, Config::MAX_CLIP_DISTANCES> _clipPlanes;

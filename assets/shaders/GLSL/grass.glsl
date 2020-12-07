@@ -2,6 +2,7 @@
 
 #define NEED_SCENE_DATA
 #include "vbInputData.vert"
+#include "lightingDefaults.vert"
 #include "vegetationData.cmn"
 #include "sceneData.cmn"
 
@@ -59,14 +60,15 @@ void main() {
 #endif
 
     if (dvd_Vertex.y > 0.5f && data.data.w < GRASS_DISPLACEMENT_DISTANCE) {
-        const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
-        VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
+        //const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
+        //VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
     }
 
     mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * NormalMatrixW(nodeData);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(normalMatrixWV * rotate_vertex_position(dvd_Normal, data.orientationQuad));
+    computeLightVectors(nodeData);
 
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }

@@ -65,27 +65,29 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
     vec4  dvd_renderProperties;
     //x - cluster size X, y - cluster size Y, z - scale, w - bias
     vec4  dvd_lightingProperties;
-    //x - material debug flag, y - CSM splits view index, z - camera flag, w - clip plane count
+    //x - material debug flag, y - reserved, z - camera flag, w - clip plane count
     vec4  dvd_otherProperties;
     vec4  dvd_frustumPlanes[6];
     vec4  dvd_clipPlanes[MAX_CLIP_PLANES];
 };
 
 #define DEBUG_ALBEDO 0
-#define DEBUG_SPECULAR 1
-#define DEBUG_UV 2
-#define DEBUG_SSAO 3
-#define DEBUG_EMISSIVE 4
-#define DEBUG_ROUGHNESS 5
-#define DEBUG_METALLIC 6
-#define DEBUG_NORMALS 7
-#define DEBUG_TBN_VIEW_DIRECTION 8
-#define DEBUG_SHADOW_MAPS 9
-#define DEBUG_LIGHT_HEATMAP 10
-#define DEBUG_LIGHT_DEPTH_CLUSTERS 11
-#define DEBUG_REFLECTIONS 12
-#define DEBUG_MATERIAL_IDS 13
-#define DEBUG_NONE 14
+#define DEBUG_LIGHTING 1
+#define DEBUG_SPECULAR 2
+#define DEBUG_UV 3
+#define DEBUG_SSAO 4
+#define DEBUG_EMISSIVE 5
+#define DEBUG_ROUGHNESS 6
+#define DEBUG_METALLIC 7
+#define DEBUG_NORMALS 8
+#define DEBUG_TBN_VIEW_DIRECTION 9
+#define DEBUG_SHADOW_MAPS 10
+#define DEBUG_CSM_SPLITS 11
+#define DEBUG_LIGHT_HEATMAP 12
+#define DEBUG_LIGHT_DEPTH_CLUSTERS 13
+#define DEBUG_REFLECTIONS 14
+#define DEBUG_MATERIAL_IDS 15
+#define DEBUG_NONE 16
 
 #define SHADOW_PASS_NORMAL 0
 #define SHADOW_PASS_ORTHO 1
@@ -111,7 +113,6 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 #define dvd_time int(dvd_renderProperties.w)
 
 #define dvd_materialDebugFlag int(dvd_otherProperties.x)
-#define dvd_CSMSplitsViewIndex int(dvd_otherProperties.y)
 #define dvd_ClipPlaneCount int(dvd_otherProperties.w)
 
 #if !defined(COMPUTE_SHADER) && !defined(FRAG_SHADER)

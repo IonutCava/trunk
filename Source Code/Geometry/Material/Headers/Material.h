@@ -66,6 +66,17 @@ constexpr F32 Specular_Water = 0.255f;
 constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
 
+
+constexpr TextureUsage g_materialTextures[] = {
+    TextureUsage::UNIT0,
+    TextureUsage::OPACITY,
+    TextureUsage::UNIT1,
+    TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
+    TextureUsage::HEIGHTMAP,
+    TextureUsage::PROJECTION,
+    TextureUsage::NORMALMAP
+};
+
 constexpr U8 g_TransparentSlots[] = {
    to_base(TextureUsage::UNIT0),
    to_base(TextureUsage::OPACITY)
@@ -183,7 +194,6 @@ class Material final : public CachedResource {
     size_t getSampler(const TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
 
     bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
-    bool uploadTextures();
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
     I64 computeAndGetProgramGUID(const RenderStagePass& renderStagePass);
 
@@ -288,7 +298,6 @@ class Material final : public CachedResource {
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
     std::array<U64, to_base(TextureUsage::COUNT)> _textureAddresses = {};
-    std::atomic_bool _texturesMadeResident{};
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines{};

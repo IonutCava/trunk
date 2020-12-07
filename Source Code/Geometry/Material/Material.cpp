@@ -20,16 +20,6 @@ namespace {
     constexpr size_t g_materialXMLVersion = 1;
 
     constexpr size_t g_invalidStateHash = std::numeric_limits<size_t>::max();
-
-    constexpr TextureUsage g_materialTextures[] = {
-        TextureUsage::UNIT0,
-        TextureUsage::OPACITY,
-        TextureUsage::UNIT1,
-        TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
-        TextureUsage::HEIGHTMAP,
-        TextureUsage::PROJECTION,
-        TextureUsage::NORMALMAP
-    };
 };
 
 
@@ -125,7 +115,6 @@ Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t 
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
     _textureAddresses.fill(0u);
-    std::atomic_init(&_texturesMadeResident, false);
 
     const ShaderProgramInfo defaultShaderInfo = {};
     // Could just direct copy the arrays, but this looks cool
@@ -200,9 +189,6 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
 bool Material::update(const U64 deltaTimeUS) {
     ACKNOWLEDGE_UNUSED(deltaTimeUS);
 
-    _textureAddresses.fill(0u);
-    _texturesMadeResident.store(false);
-
     if (_needsNewShader) {
         recomputeShaders();
         _needsNewShader = false;
@@ -222,7 +208,10 @@ bool Material::setSampler(const TextureUsage textureUsageSlot, const size_t samp
 
     const U32 slot = to_U32(textureUsageSlot);
     _samplers[slot] = samplerHash;
-
+    if (_textureAddresses[slot] != 0u) {
+        assert(_textures[slot] != nullptr);
+        _textureAddresses[slot] = _textures[slot]->getGPUAddress(samplerHash);
+    }
     return true;
 }
 
@@ -260,7 +249,7 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
         }
 
         _textures[slot] = texture;
-
+        _textureAddresses[slot] = texture ? texture->getGPUAddress(samplerHash) : 0u;
 
         if (textureUsageSlot == TextureUsage::NORMALMAP ||
             textureUsageSlot == TextureUsage::HEIGHTMAP)
@@ -273,6 +262,7 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
 
             if (otherTex != nullptr && texture != nullptr && otherTex->data()._textureHandle == texture->data()._textureHandle) {
                 _textures[to_base(TextureUsage::HEIGHTMAP)] = nullptr;
+                _textureAddresses[to_base(TextureUsage::HEIGHTMAP)] = 0u;
             }
         }
 
@@ -291,6 +281,7 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
 
             if (otherTex != nullptr && texture != nullptr && otherTex->data()._textureHandle == texture->data()._textureHandle) {
                 _textures[to_base(TextureUsage::OPACITY)] = nullptr;
+                _textureAddresses[to_base(TextureUsage::OPACITY)] = 0u;
             }
 
             updateTransparency();
@@ -494,6 +485,7 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
 
     if (_textures[slot1] && !_textures[slot0]) {
         std::swap(_textures[slot0], _textures[slot1]);
+        std::swap(_textureAddresses[slot0], _textureAddresses[slot1]);
         updateTransparency();
     }
 
@@ -694,32 +686,6 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     setShaderProgramInternal(shaderResDescriptor, renderStagePass, false);
 
     return false;
-}
-
-bool Material::uploadTextures() {
-    bool expected = false;
-
-    if (_texturesMadeResident.compare_exchange_strong(expected, true)) {
-        bool ret = false;
-
-        SharedLock<SharedMutex> r_lock(_textureLock);
-        
-        for (const TextureUsage textureUsage : g_materialTextures) {
-            const U8 slot = to_base(textureUsage);
-
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                _textureAddresses[slot] = crtTexture->makeResident(_samplers[slot]);
-                ret = true;
-            } else {
-                _textureAddresses[slot] = 0u;
-            }
-        }
-        
-        return ret;
-    }
-
-    return true;
 }
 
 bool Material::getTextureData(const TextureUsage slot, TextureDataContainer<>& container) {
@@ -1162,14 +1128,12 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
 }
 
 void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) {
-    uploadTextures();
-
     constexpr F32 reserved = 1.f;
 
     texturesOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
     texturesOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
     texturesOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
-    texturesOut._texOMR = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
+    texturesOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
     texturesOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
     texturesOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
     texturesOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];

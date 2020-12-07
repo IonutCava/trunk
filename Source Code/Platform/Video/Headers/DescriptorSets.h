@@ -161,6 +161,7 @@ namespace Divide {
         ShaderBufferList _shaderBuffers = {};
         TextureViews _textureViews = {};
         Images _images = {};
+        eastl::set<SamplerAddress> _textureResidencyQueue{};
 
         void addTextureViewEntry(const TextureViewEntry& view) noexcept;
         bool addShaderBuffer(const ShaderBufferBinding& entry);
@@ -174,14 +175,16 @@ namespace Divide {
             return _shaderBuffers == other._shaderBuffers &&
                    _textureViews == other._textureViews &&
                    _images == other._images &&
-                   _textureData == other._textureData;
+                   _textureData == other._textureData &&
+                   _textureResidencyQueue == other._textureResidencyQueue;
         }
 
         bool operator!=(const DescriptorSet &other) const noexcept {
             return _shaderBuffers != other._shaderBuffers ||
                    _textureViews != other._textureViews ||
                    _images != other._images ||
-                   _textureData != other._textureData;
+                   _textureData != other._textureData ||
+                   _textureResidencyQueue != other._textureResidencyQueue;
         }
 
         [[nodiscard]] bool empty() const noexcept {

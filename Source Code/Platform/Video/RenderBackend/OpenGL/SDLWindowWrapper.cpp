@@ -179,7 +179,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // If we got here, let's figure out what capabilities we have available
     // Maximum addressable texture image units in the fragment shader
     s_maxTextureUnits = static_cast<GLuint>(std::max(GLUtil::getGLValue(GL_MAX_TEXTURE_IMAGE_UNITS), 16));
-    s_residentTextures.resize(s_maxTextureUnits * 2);
+    s_residentTextures.resize(s_maxTextureUnits * (1 << 4));
 
 
     GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIB_BINDINGS, s_maxAttribBindings);
@@ -428,18 +428,6 @@ void GL_API::dequeueComputeMipMap(const GLuint textureHandle) {
     const auto it = s_mipmapQueue.find(textureHandle);
     if (it != std::cend(s_mipmapQueue)) {
         s_mipmapQueue.erase(it);
-    }
-}
-
-void GL_API::queueTextureResidency(const U64 textureAddress, const bool makeResident) {
-    UniqueLock<Mutex> w_lock(s_textureResidencyQueueSetLock);
-    auto it = s_textureResidencyQueue.find(textureAddress);
-    if (it == s_textureResidencyQueue.cend()) {
-        emplace(s_textureResidencyQueue, textureAddress, makeResident);
-        s_residentTexturesNeedUpload.store(true);
-    } else if (it->second != makeResident) {
-        it->second = makeResident;
-        s_residentTexturesNeedUpload.store(true);
     }
 }
 

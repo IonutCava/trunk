@@ -458,6 +458,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug albedo", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHTING;
+            if (ImGui::MenuItem("Debug lighting", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHTING : GFXDevice::MaterialDebugFlag::COUNT);
+            } 
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SPECULAR;
             if (ImGui::MenuItem("Debug specular", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SPECULAR : GFXDevice::MaterialDebugFlag::COUNT);
@@ -493,6 +497,10 @@ void MenuBar::drawDebugMenu() {
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS;
             if (ImGui::MenuItem("Debug shadow maps", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS : GFXDevice::MaterialDebugFlag::COUNT);
+            } 
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_CSM_SPLITS;
+            if (ImGui::MenuItem("Debug CSM Splits", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_CSM_SPLITS : GFXDevice::MaterialDebugFlag::COUNT);
             }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS;
             if (ImGui::MenuItem("Debug Reflections", "", &debug)) {
@@ -627,19 +635,6 @@ void MenuBar::drawDebugMenu() {
         if (ImGui::MenuItem("Draw Light Impostors", "", &lightImpostors))
         {
             pool.lightImpostorsEnabled(lightImpostors);
-        }
-        
-        const bool validLight = pool.debugLight() != nullptr && pool.debugLight()->getLightType() == LightType::DIRECTIONAL;
-        if (!validLight) {
-            _context.gfx().csmPreviewIndex(-1);
-        }
-
-        bool showCSMSplits = _context.gfx().csmPreviewIndex() != -1;
-        if (ImGui::MenuItem("Show Main CSM Splits", "", &showCSMSplits))
-        {
-            if (validLight) {
-                _context.gfx().csmPreviewIndex(showCSMSplits ? pool.debugLight()->shadowIndex() : -1);
-            }
         }
 
         if (ImGui::BeginMenu("Debug Gizmos")) {

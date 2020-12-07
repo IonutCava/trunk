@@ -225,7 +225,7 @@ namespace Divide {
             : Texture(context, descriptorHash, name, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor)
         {}
 
-        [[nodiscard]] U64 makeResident(size_t samplerHash) override {
+        [[nodiscard]] U64 getGPUAddress(size_t samplerHash) override {
             ACKNOWLEDGE_UNUSED(samplerHash);
             return 0u;
         }

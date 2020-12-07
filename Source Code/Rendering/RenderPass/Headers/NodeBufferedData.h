@@ -32,9 +32,10 @@
 #pragma once
 #ifndef _RENDER_PASS_NODE_BUFFERED_DATA_H_
 #define _RENDER_PASS_NODE_BUFFERED_DATA_H_
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
-    using SamplerAddress = U64;
+enum class TextureUsage : unsigned char;
 
 #pragma pack(push, 1)
     struct NodeTransformData
@@ -85,7 +86,7 @@ namespace Divide {
 
     [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;
     [[nodiscard]] size_t HashTexturesData(const NodeMaterialTextures& dataIn) noexcept;
-
+    SamplerAddress GetTextureAddress(const NodeMaterialTextures& source, TextureUsage usage) noexcept;
 #pragma pack(pop)
 
 } //namespace Divide

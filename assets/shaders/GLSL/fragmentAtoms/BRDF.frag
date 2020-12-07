@@ -235,13 +235,42 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 }
 #endif
 
+/// returns RGB - pixel lit colour, A - reflectivity (e.g. for SSR)
+#if defined(DISABLE_SHADOW_MAPPING)
+#define CSMSplitColour() vec4(0.0f)
+#else //DISABLE_SHADOW_MAPPING
+vec4 CSMSplitColour() {
+    vec4 colour = vec4(0.0f);
+
+    int shadowIndex = -1;
+    const uint dirLightCount = dvd_LightData.x;
+    for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
+        const Light light = dvd_LightSource[lightIdx];
+        shadowIndex = dvd_LightSource[lightIdx]._options.y;
+    }
+    if (shadowIndex > -1) {
+        switch (getCSMSlice(dvd_CSMShadowTransforms[shadowIndex].dvd_shadowLightPosition)) {
+            case  0: colour.r += 0.15f; break;
+            case  1: colour.g += 0.25f; break;
+            case  2: colour.b += 0.40f; break;
+            case  3: colour.rgb += 1 * vec3(0.15f, 0.25f, 0.40f); break;
+            case  4: colour.rgb += 2 * vec3(0.15f, 0.25f, 0.40f); break;
+            case  5: colour.rgb += 3 * vec3(0.15f, 0.25f, 0.40f); break;
+        };
+    };
+    return colour;
+}
+#endif //DISABLE_SHADOW_MAPPING
+
 /// RGB - lit colour, A - reflectivity
-vec4 getLitColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv) {
+vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
 
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:
             return vec4(albedo.rgb, 0.0f);
+        case DEBUG_LIGHTING:
+            return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
         case DEBUG_SPECULAR:
             return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
         case DEBUG_UV:
@@ -260,6 +289,8 @@ vec4 getLitColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 norm
             return vec4(getTBNViewDir(), 1.0f);
         case DEBUG_SHADOW_MAPS:
             return vec4(vec3(getShadowFactor(normalWV)), 1.0f);
+        case DEBUG_CSM_SPLITS:
+            return albedo + CSMSplitColour();
         case DEBUG_LIGHT_HEATMAP:
             return vec4(lightClusterColours(false), 1.0f);
         case DEBUG_LIGHT_DEPTH_CLUSTERS:
@@ -283,28 +314,5 @@ vec4 getLitColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 norm
     
     return vec4(oColour, reflectivity);
 }
-
-/// returns RGB - pixel lit colour, A - reflectivity (e.g. for SSR)
-#if defined(DISABLE_SHADOW_MAPPING)
-#define getPixelColour(ALBEDO, DATA, NORMAL, UV) getLitColour(ALBEDO, DATA, NORMAL, UV)
-#else //DISABLE_SHADOW_MAPPING
-vec4 getPixelColour(in vec4 albedo, in NodeMaterialData data, in vec3 normalWV, in vec2 uv) {
-    if (dvd_CSMSplitsViewIndex > -1) {
-        vec4 colour = getLitColour(albedo, data, normalWV, uv);
-
-        switch (getCSMSlice(dvd_CSMShadowTransforms[dvd_CSMSplitsViewIndex].dvd_shadowLightPosition)) {
-            case  0: colour.r += 0.15f; break;
-            case  1: colour.g += 0.25f; break;
-            case  2: colour.b += 0.40f; break;
-            case  3: colour.rgb += 1 * vec3(0.15f, 0.25f, 0.40f); break;
-            case  4: colour.rgb += 2 * vec3(0.15f, 0.25f, 0.40f); break;
-            case  5: colour.rgb += 3 * vec3(0.15f, 0.25f, 0.40f); break;
-        };
-        return colour;
-    }
-
-    return getLitColour(albedo, data, normalWV, uv);;
-}
-#endif //DISABLE_SHADOW_MAPPING
 
 #endif

@@ -1336,6 +1336,7 @@ void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
 
 void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
     OPTICK_EVENT();
+    constexpr F32 reserved = 1.0f;
 
     GFXShaderData::GPUData& data = _gpuBlock._data;
 
@@ -1384,7 +1385,7 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
 
     const vec4<F32> otherProperties(
         to_F32(materialDebugFlag()),
-        to_F32(csmPreviewIndex()),
+        reserved,
         to_F32(cameraSnapshot._flag),
         data._otherProperties.w);
 

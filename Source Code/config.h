@@ -133,7 +133,7 @@ constexpr unsigned int MAX_LOCAL_PLAYER_COUNT = 4;
 constexpr bool USE_COLOURED_WOIT = false;
 
 /// Use OGL bindless textures. If false, the old "bind a texture+sampler per slot" system is used
-constexpr bool USE_BINDLESS_TEXTURES = false;
+constexpr bool USE_BINDLESS_TEXTURES = true;
 
 namespace Lighting {
     /// How many lights (in order as passed to the shader for the node) should cast shadows
