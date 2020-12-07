@@ -66,12 +66,14 @@ class RenderPass : NonCopyable {
        struct BufferData {
            ShaderBuffer* _transformBuffer = nullptr;
            ShaderBuffer* _materialBuffer = nullptr;
+           ShaderBuffer* _texturesBuffer = nullptr;
            ShaderBuffer* _commmandBuffer = nullptr;
            ShaderBuffer* _cullCounterBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
            U32* _lastNodeCount = nullptr;
            BufferDataPerType _transformData = {};
            BufferDataPerType _materialData = {};
+           BufferDataPerType _texturesData = {};
            BufferDataPerType _commandData = {};
        };
 
@@ -109,6 +111,7 @@ class RenderPass : NonCopyable {
 
     ShaderBuffer* _transformData = nullptr;
     ShaderBuffer* _materialData = nullptr;
+    ShaderBuffer* _texturesData = nullptr;
     ShaderBuffer* _cullCounter = nullptr;
     ShaderBuffer* _cmdBuffer = nullptr;
 

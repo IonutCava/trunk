@@ -19,6 +19,13 @@ namespace Divide {
         Util::Hash_combine(tempHash, dataIn._data.y);
         Util::Hash_combine(tempHash, dataIn._data.z);
         Util::Hash_combine(tempHash, dataIn._data.w);
+        
+        return tempHash;
+    }
+
+
+    size_t HashTexturesData(const NodeMaterialTextures& dataIn) noexcept {
+        size_t tempHash = 9999991;
         Util::Hash_combine(tempHash, dataIn._texDiffuse0);
         Util::Hash_combine(tempHash, dataIn._texOpacityMap);
         Util::Hash_combine(tempHash, dataIn._texDiffuse1);
@@ -26,7 +33,6 @@ namespace Divide {
         Util::Hash_combine(tempHash, dataIn._texHeight);
         Util::Hash_combine(tempHash, dataIn._texProjected);
         Util::Hash_combine(tempHash, dataIn._texNormalMap);
-        
         return tempHash;
     }
 }; //namespace Divide

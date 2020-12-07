@@ -54,11 +54,23 @@ struct NodeTransformData {
     // [2][3]         = reserved
     // [3][3]         = reserved
     mat4 _prevWorldMatrix;
-
-
 };
 
 #if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)
+#if defined(USE_BINDLESS_TEXTURES)
+struct NodeMaterialTextures
+{
+    samplerUnit0 _texDiffuse0;
+    samplerOpacity _texOpacityMap;
+    samplerUnit1 _texDiffuse1;
+    samplerOMR _texOMR;
+    samplerHeight _texHeight; 
+    samplerProj _texProjected;
+    samplerNormal _texNormalMap;
+    vec2 _padding;
+};
+#endif //USE_BINDLESS_TEXTURES
+
 struct NodeMaterialData
 {
     //base colour
@@ -69,21 +81,8 @@ struct NodeMaterialData
     //x = 4x8U: occlusion, metallic, roughness, reserved
     //y = IBL texture size
     //z = 4x8U: tex op, bump method, reserved, reserved
-    //w = reserved
-    uvec4 _data;  
-
-#if defined(USE_BINDLESS_TEXTURES)
-    samplerUnit0 _texDiffuse0;
-    samplerOpacity _texOpacityMap;
-    samplerUnit1 _texDiffuse1;
-    samplerOMR _texOcclusionMetallicRoughness;
-    samplerHeight _texHeight;
-    samplerProj _texProjected;
-    samplerNormal _texNormalMap;
-    float _padding[2];
-#else
-    vec4 _padding[4];
-#endif //USE_BINDLESS_TEXTURES
+    //w = Textures lookup index
+    uvec4 _data;
 };
 
 #define PACKED_OMR(materialData) unpackUnorm4x8(materialData._data.x)
@@ -103,6 +102,8 @@ struct NodeMaterialData
 #define dvd_texOperation(materialData) uint(unpackUnorm4x8(materialData._data.z).x * 255)
 
 #define dvd_bumpMethod(X)  uint(unpackUnorm4x8(dvd_Materials[X]._data.z).y * 255)
+
+#define dvd_texturesIndex(materialData) materialData._data.w
 
 #define dvd_parallaxFactor(X)  dvd_Materials[X]._emissiveAndParallax.a
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA

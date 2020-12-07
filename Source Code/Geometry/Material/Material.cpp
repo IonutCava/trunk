@@ -1161,18 +1161,18 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
     return roughness();
 }
 
-size_t Material::getData(NodeMaterialData& dataOut, const RenderingComponent& parentComp) {
+void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) {
     uploadTextures();
 
     constexpr F32 reserved = 1.f;
 
-    dataOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
-    dataOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
-    dataOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
-    dataOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-    dataOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
-    dataOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
-    dataOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
+    texturesOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
+    texturesOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
+    texturesOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
+    texturesOut._texOMR = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
+    texturesOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
+    texturesOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
+    texturesOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
 
     const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
     const U32 matTexturingPropertiesPacked = Util::PACK_UNORM4x8(to_U8(textureOperation()), to_U8(bumpMethod()), 1u, 1u);
@@ -1190,8 +1190,6 @@ size_t Material::getData(NodeMaterialData& dataOut, const RenderingComponent& pa
     if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
         dataOut._emissiveAndParallax.b += 1.25f;
     }
-
-    return HashMaterialData(dataOut);
 }
 
 void Material::rebuild() {

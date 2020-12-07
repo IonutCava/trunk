@@ -45,7 +45,7 @@
 namespace Divide {
 struct NodeTransformData;
 struct NodeMaterialData;
-struct NodeTextureData;
+struct NodeMaterialTextures;
 struct PerPassData;
 
 class Camera;

@@ -88,7 +88,7 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv);
 #else //USE_CUSTOM_ROUGHNESS
 vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 #if defined(USE_OCCLUSION_METALLIC_ROUGHNESS_MAP)
-    vec3 omr = saturate(texture(texOcclusionMetallicRoughness, uv).rgb);
+    vec3 omr = saturate(texture(texOMR, uv).rgb);
 #if defined(PBR_SHADING)
     return omr;
 #else

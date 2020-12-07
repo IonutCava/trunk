@@ -48,7 +48,8 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
-class RenderingComponent;
+    struct NodeMaterialTextures;
+    class RenderingComponent;
 struct NodeMaterialData;
 
 class RenderStateBlock;
@@ -175,7 +176,7 @@ class Material final : public CachedResource {
     void getSortKeys(const RenderStagePass& renderStagePass, I64& shaderKey, I32& textureKey) const;
 
     // Returns the material's hash value (just for the uploadable data)
-    size_t getData(NodeMaterialData& dataOut, const RenderingComponent& parentComp);
+    void getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut);
 
     size_t getRenderStateBlock(const RenderStagePass& renderStagePass) const;
     Texture_wptr getTexture(TextureUsage textureUsage) const;

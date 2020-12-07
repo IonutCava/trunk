@@ -407,7 +407,6 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             shaderModule._defines.emplace_back("SAMPLER_UNIT0_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_PROJECTION_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY", true);
-            shaderModule._defines.emplace_back("SAMPLER_NORMALMAP_IS_ARRAY", true);
 
             shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
             shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);

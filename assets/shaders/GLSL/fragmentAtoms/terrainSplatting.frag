@@ -2,7 +2,7 @@
 #define _TERRAIN_SPLATTING_FRAG_
 
 #define texBlendMaps   texOpacityMap
-#define helperTextures texOcclusionMetallicRoughness
+#define helperTextures texOMR
 #define texExtraMaps   texProjected
 
 #if defined(PRE_PASS)

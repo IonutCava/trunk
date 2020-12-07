@@ -57,6 +57,18 @@ namespace Divide {
         mat4<F32> _prevWorldMatrix = MAT4_ZERO;
     };
 
+    struct NodeMaterialTextures
+    {
+        SamplerAddress _texDiffuse0 = 0u;
+        SamplerAddress _texOpacityMap = 0u;
+        SamplerAddress _texDiffuse1 = 0u;
+        SamplerAddress _texOMR = 0u;
+        SamplerAddress _texHeight = 0u;
+        SamplerAddress _texProjected = 0u;
+        SamplerAddress _texNormalMap = 0u;
+        vec2<F32> _padding{};
+    };
+
     struct NodeMaterialData
     {
         //base colour
@@ -67,20 +79,12 @@ namespace Divide {
         //x = 4x8U: occlusion, metallic, roughness, reserved
         //y = IBL texture size
         //z = 4x8U: tex op, bump method, reserved, reserved
-        //w = reserved
+        //w = Textures lookup index
         vec4<U32> _data;
-
-        SamplerAddress _texDiffuse0 = 0u;
-        SamplerAddress _texOpacityMap = 0u;
-        SamplerAddress _texDiffuse1 = 0u;
-        SamplerAddress _texOMR = 0u;
-        SamplerAddress _texHeight = 0u;
-        SamplerAddress _texProjected = 0u;
-        SamplerAddress _texNormalMap = 0u;
-        F32 _padding[2] = { 0u, 0u };
     };
 
     [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;
+    [[nodiscard]] size_t HashTexturesData(const NodeMaterialTextures& dataIn) noexcept;
 
 #pragma pack(pop)
 

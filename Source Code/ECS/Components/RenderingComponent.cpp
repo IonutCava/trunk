@@ -340,7 +340,7 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
 
     if (!renderStagePass.isDepthPass()) {
         if (renderStagePass._stage != RenderStage::REFLECTION) {
-            bool isReflectionValid = false;
+            bool isReflectionValid;
             {
                 SharedLock<SharedMutex> r_lock(_reflectionLock);
                 isReflectionValid = _reflectionTexture.isValid();
@@ -402,18 +402,13 @@ bool RenderingComponent::onRefreshNodeData(const RenderStagePass& stagePass, Cam
     return quick ? true : getDrawPackage(stagePass).hasDrawComands();
 }
 
-size_t RenderingComponent::getMaterialData(NodeMaterialData& dataOut) const {
+void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const {
     if (_materialInstance != nullptr) {
-        size_t matHash = _materialInstance->getData(dataOut, *this);
-        {
-            SharedLock<SharedMutex> r_lock(_reflectionLock);
-            dataOut._data.y = _reflectionTextureWidth;
-        }
-        Util::Hash_combine(matHash, dataOut._data.y);
-        return matHash;
-    }
+        _materialInstance->getData(*this, dataOut, texturesOut);
 
-    return std::numeric_limits<size_t>::max();
+        SharedLock<SharedMutex> r_lock(_reflectionLock);
+        dataOut._data.y = _reflectionTextureWidth;
+    }
 }
 
 void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {

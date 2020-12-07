@@ -329,8 +329,8 @@ bool GL_API::initGLSW(Configuration& config) {
     appendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
     if_constexpr(Config::USE_BINDLESS_TEXTURES) {
         appendToShaderHeader(ShaderType::COUNT, "#extension  GL_ARB_bindless_texture : require", lineOffsets);
-        appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     }
+    appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     if (!getStateTracker()._opengl46Supported) {
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
         appendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
@@ -456,7 +456,7 @@ bool GL_API::initGLSW(Configuration& config) {
         "#define BUFFER_GPU_BLOCK " +
         Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)),
         lineOffsets);
-
+    
     appendToShaderHeader(
         ShaderType::COUNT,
         "#define BUFFER_ATOMIC_COUNTER " +
@@ -515,6 +515,12 @@ bool GL_API::initGLSW(Configuration& config) {
         ShaderType::COUNT,
         "#define BUFFER_NODE_MATERIAL_DATA " +
         Util::to_string(to_base(ShaderBufferLocation::NODE_MATERIAL_DATA)),
+        lineOffsets);
+
+    appendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_NODE_MATERIAL_TEXTURES " +
+        Util::to_string(to_base(ShaderBufferLocation::NODE_MATERIAL_TEXTURES)),
         lineOffsets);
 
     appendToShaderHeader(

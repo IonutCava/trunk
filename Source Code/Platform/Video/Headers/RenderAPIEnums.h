@@ -164,8 +164,8 @@ enum class AttribLocation : U8 {
 };
 
 enum class ShaderBufferLocation : U8 {
-    GPU_BLOCK = 0,
     ATOMIC_COUNTER = 0,
+    GPU_BLOCK,
     GPU_COMMANDS,
     LIGHT_NORMAL,
     LIGHT_SHADOW,
@@ -175,6 +175,7 @@ enum class ShaderBufferLocation : U8 {
     LIGHT_CLUSTER_AABBS,
     NODE_TRANSFORM_DATA,
     NODE_MATERIAL_DATA,
+    NODE_MATERIAL_TEXTURES,
     BONE_TRANSFORMS,
     BONE_TRANSFORMS_PREV,
     SCENE_DATA,
