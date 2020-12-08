@@ -67,7 +67,18 @@ enum class TextureUsage : unsigned char;
         SamplerAddress _texHeight = 0u;
         SamplerAddress _texProjected = 0u;
         SamplerAddress _texNormalMap = 0u;
-        vec2<F32> _padding{};
+        SamplerAddress _padding{};
+    };
+
+    struct TextureBuffer
+    {
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texDiffuse0{};
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texOpacityMap{};
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texDiffuse1{};
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texOMR{};
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texHeight{};
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texProjected{};
+        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texNormalMap{};
     };
 
     struct NodeMaterialData

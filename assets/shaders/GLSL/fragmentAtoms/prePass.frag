@@ -5,7 +5,7 @@
 #define PRE_PASS
 #endif
 
-#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
+#if defined(USE_ALPHA_DISCARD) || defined(USE_OPACITY_MAP)
 #   define HAS_TRANSPARENCY
 #endif
 

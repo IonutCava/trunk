@@ -83,7 +83,7 @@ class ProfileTimer {
      static bool s_enabled;
 };
 
-class ScopedTimer : NonCopyable {
+class ScopedTimer final : NonCopyable {
 public:
     explicit ScopedTimer(ProfileTimer& timer);
     ~ScopedTimer();

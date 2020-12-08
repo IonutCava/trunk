@@ -101,6 +101,7 @@ struct Configuration final : public XML::IXMLSerializable {
         F32  Power = 2.0f;
         U8   KernelSampleCount = 0u;
         bool Blur = true;
+        F32  BlurThreshold = 0.05f;
     };
 
     struct Rendering {
@@ -128,7 +129,6 @@ struct Configuration final : public XML::IXMLSerializable {
             {
                 bool enable = false;
                 bool UseHalfResolution = true;
-                F32 blurThreshold = 0.05f;
                 SSAOSettings FullRes;
                 SSAOSettings HalfRes;
             } ssao;

@@ -8,7 +8,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texExposure;
 
 uniform float manualExposure = 4.975f;
-uniform int mappingFunctions = UNCHARTED_2;
+uniform int mappingFunction = UNCHARTED_2;
 uniform bool useAdaptiveExposure = true;
 
 out vec4 _colourOut;
@@ -134,54 +134,39 @@ vec3 convertYxy2RGB(vec3 _Yxy) {
 }
 
 void main() {
-    vec3 screenColour = texture(texScreen, VAR._texCoord).rgb * manualExposure;
+    const vec3 screenColour = texture(texScreen, VAR._texCoord).rgb * manualExposure;
 
-    vec3 Yxy = convertRGB2Yxy(screenColour);
-    float lp = Yxy.x;
+    if (mappingFunction != NONE) {
+        vec3 Yxy = convertRGB2Yxy(screenColour);
 
-    if (useAdaptiveExposure) {
-        const float avgLuminance = texture(texExposure, VAR._texCoord).r;
-        lp = Yxy.x / (9.6f * avgLuminance + 0.0001f);
-    }
+        if (useAdaptiveExposure) {
+            const float avgLuminance = texture(texExposure, VAR._texCoord).r;
+            Yxy.x = Yxy.x / (9.6f * avgLuminance + 0.0001f);
+        }
 
-    if (mappingFunctions == REINHARD)
-    {
-        Yxy.x = Reinhard(lp);
-    }
-    else if (mappingFunctions == REINHARD_MODIFIED)
-    {
-        Yxy.x = Reinhard2(lp);
-    }
-    else if (mappingFunctions == GT)
-    {
-        Yxy.x = Tonemap_Uchimura(lp);
-    }
-    else if (mappingFunctions == ACES)
-    {
-        Yxy.x = Tonemap_ACES(lp);
-    }
-    else if (mappingFunctions == UNREAL_ACES)
-    {
-        Yxy.x = Tonemap_Unreal(lp);
-    }
-    else if (mappingFunctions == AMD_ACES)
-    {
-        Yxy.x = Tonemap_Lottes(lp);
-    }
-    else if (mappingFunctions == AMD_ACES)
-    {
-        Yxy.x = Tonemap_Uchimura(lp, 1.0f, 1.7f, 0.1f, 0.0f, 1.33f, 0.0f);
-    }
-    else if (mappingFunctions == UNCHARTED_2)
-    {
-        Yxy.x = Uncharted2(lp);
-    }
-    else
-    {
+        if (mappingFunction == REINHARD)     {
+            Yxy.x = Reinhard(Yxy.x);
+        } else if (mappingFunction == REINHARD_MODIFIED)     {
+            Yxy.x = Reinhard2(Yxy.x);
+        } else if (mappingFunction == GT)     {
+            Yxy.x = Tonemap_Uchimura(Yxy.x);
+        } else if (mappingFunction == ACES)     {
+            Yxy.x = Tonemap_ACES(Yxy.x);
+        } else if (mappingFunction == UNREAL_ACES)     {
+            Yxy.x = Tonemap_Unreal(Yxy.x);
+        } else if (mappingFunction == AMD_ACES)     {
+            Yxy.x = Tonemap_Lottes(Yxy.x);
+        } else if (mappingFunction == AMD_ACES)     {
+            Yxy.x = Tonemap_Uchimura(Yxy.x, 1.0f, 1.7f, 0.1f, 0.0f, 1.33f, 0.0f);
+        } else if (mappingFunction == UNCHARTED_2)     {
+            Yxy.x = Uncharted2(Yxy.x);
+        }
+
+        //Apply gamma correction here!
+        _colourOut.rgb = ToSRGBAccurate(convertYxy2RGB(Yxy));
+    } else {
         //Nothing. HDR? Nope. Straight up saturate (i.e. bad)
+        _colourOut.rgb = ToSRGBAccurate(screenColour);
     }
-
-    //Apply gamma correction here!
-    _colourOut.rgb = ToSRGBAccurate(convertYxy2RGB(Yxy));
     _colourOut.a = luminance(_colourOut.rgb);
 }

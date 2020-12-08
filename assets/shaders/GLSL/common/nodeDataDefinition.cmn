@@ -57,19 +57,6 @@ struct NodeTransformData {
 };
 
 #if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)
-#if defined(USE_BINDLESS_TEXTURES)
-struct NodeMaterialTextures
-{
-    samplerUnit0 _texDiffuse0;
-    samplerOpacity _texOpacityMap;
-    samplerUnit1 _texDiffuse1;
-    samplerOMR _texOMR;
-    samplerHeight _texHeight; 
-    samplerProj _texProjected;
-    samplerNormal _texNormalMap;
-    vec2 _padding;
-};
-#endif //USE_BINDLESS_TEXTURES
 
 struct NodeMaterialData
 {

@@ -513,6 +513,11 @@ namespace Attorney {
 void PushReadOnly() noexcept;
 void PopReadOnly() noexcept;
 
+struct ScopedReadOnly final : NonCopyable
+{
+    ScopedReadOnly() { PushReadOnly(); }
+    ~ScopedReadOnly() { PopReadOnly(); }
+};
 } //namespace Divide
 
 #endif //_DIVIDE_EDITOR_H_

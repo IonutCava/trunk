@@ -358,6 +358,8 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
+    shaderDescriptor._modules[0]._defines.emplace_back("PRE_PASS", true);
+    shaderDescriptor._modules[1]._defines.emplace_back("PRE_PASS", true);
 
     ResourceDescriptor grassPrePassLQShader("grassPrePassLQ");
     grassPrePassLQShader.propertyDescriptor(shaderDescriptor);

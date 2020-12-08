@@ -4,9 +4,6 @@
 float ToLinearDepth(in float depthIn);
 float ToLinearDepth(in float depthIn, in vec2 depthRange);
 
-float ToLinearPreviewDepth(in float depthIn);
-float ToLinearPreviewDepth(in float depthIn, in vec2 depthRange);
-
 vec3 ray_dir_from_uv(vec2 uv) {
     const float x = sin(M_PI * uv.y);
     const float f = 2.0f * M_PI * (0.5f - uv.x);
@@ -92,17 +89,6 @@ vec3 bpcem(in vec3 v, vec3 Emax, vec3 Emin, vec3 Epos)
     return posonbox - Epos;
 }
 
-float ToLinearPreviewDepth(in float depthIn, in vec2 depthRange) {
-    float zNear = depthRange.x;
-    float zFar  = depthRange.y;
-    float depthSample = depthIn;
-
-    return (2 * zNear) / (zFar + zNear - depthSample * (zFar - zNear));
-}
-
-float ToLinearPreviewDepth(in float depthIn) {
-    return ToLinearPreviewDepth(depthIn, dvd_zPlanes);
-}
 
 float ToLinearDepth(in float depthIn, in vec2 depthRange) {
     float zNear = depthRange.x;
@@ -120,9 +106,20 @@ float ToLinearDepth(in float depthIn, in mat4 projMatrix) {
     return projMatrix[3][2] / (depthIn - projMatrix[2][2]);
 }
 
-float ViewSpaceZ(in float depthIn, in mat4 projMatrix) {
-    return projMatrix[3][2] / (2.0f * depthIn - 1.0f - projMatrix[2][2]);
+float ViewSpaceZ(in float depth, in mat4 invProjection) {
+    return -1.0f / (invProjection[2][3] * (2.0f * depth - 1.0f) + invProjection[3][3]);
 }
+
+vec3 ViewSpacePos(in vec2 texCoords, in float depth, in mat4 invProjection) {
+    vec3 clipSpacePos = vec3(texCoords, depth) * 2.0f - vec3(1.0f);
+
+    vec4 viewPos = vec4(vec2(invProjection[0][0], invProjection[1][1]) * clipSpacePos.xy,
+                        -1.0f,
+                        invProjection[2][3] * clipSpacePos.z + invProjection[3][3]);
+
+    return(viewPos.xyz / viewPos.w);
+}
+
 
 bool InRangeExclusive(in float value, in float min, in float max) {
     return value > min && value < max;

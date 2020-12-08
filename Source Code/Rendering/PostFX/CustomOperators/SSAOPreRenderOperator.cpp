@@ -17,9 +17,29 @@ namespace Divide {
 
 namespace {
     constexpr U8 SSAO_NOISE_SIZE = 4;
-    constexpr U8 SSAO_BLUR_SIZE = 2;
+    constexpr U8 SSAO_BLUR_SIZE = SSAO_NOISE_SIZE / 2;
     constexpr U8 MAX_KERNEL_SIZE = 64;
-    std::array<vec3<F32>, MAX_KERNEL_SIZE> g_kernel;
+    constexpr U8 MIN_KERNEL_SIZE = 8;
+    vectorEASTL<vec3<F32>> g_kernels;
+
+    [[nodiscard]] const vectorEASTL<vec3<F32>>& ComputeKernel(const U8 sampleCount) {
+        std::uniform_real_distribution<F32> randomFloats(0.0f, 1.0f);
+        std::default_random_engine generator;
+
+        g_kernels.resize(sampleCount);
+        for (U16 i = 0; i < sampleCount; ++i) {
+            vec3<F32>& k = g_kernels[i];
+            k.set(randomFloats(generator) * 2.0f - 1.0f,
+                  randomFloats(generator) * 2.0f - 1.0f,
+                  randomFloats(generator)); // Kernel hemisphere points to positive Z-Axis.
+            k.normalize();             // Normalize, so included in the hemisphere.
+            k *= randomFloats(generator);
+            const F32 scale = FastLerp(0.1f, 1.0f, SQUARED(to_F32(i) / to_F32(sampleCount))); // Create a scale value between [0;1].
+            k *= scale;
+        }
+
+        return g_kernels;
+    }
 }
 
 //ref: http://john-chapman-graphics.blogspot.co.uk/2013/01/ssao-tutorial.html
@@ -27,9 +47,10 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_AMBIENT_OCCLUSION) {
     const auto& config = context.context().config().rendering.postFX.ssao;
     _genHalfRes = config.UseHalfResolution;
-    _blurThreshold = config.blurThreshold;
-    _kernelSampleCount[0] = config.FullRes.KernelSampleCount;
-    _kernelSampleCount[1] = config.HalfRes.KernelSampleCount;
+    _blurThreshold[0] = config.FullRes.BlurThreshold;
+    _blurThreshold[1] = config.HalfRes.BlurThreshold;
+    _kernelSampleCount[0] = CLAMPED(to_U8(nextPOW2(config.FullRes.KernelSampleCount - 1u)), MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
+    _kernelSampleCount[1] = CLAMPED(to_U8(nextPOW2(config.HalfRes.KernelSampleCount - 1u)), MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
     _blur[0] = config.FullRes.Blur;
     _blur[1] = config.HalfRes.Blur;
     _radius[0] = config.FullRes.Radius;
@@ -39,23 +60,13 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _bias[0] = config.FullRes.Bias;
     _bias[1] = config.HalfRes.Bias;
 
-    std::array<FColour3, SSAO_NOISE_SIZE * SSAO_NOISE_SIZE> noiseData;
+    std::array<vec2<F32>, SSAO_NOISE_SIZE * SSAO_NOISE_SIZE> noiseData;
 
-    for (FColour3& noise : noiseData) {
-        noise.set(Random(-1.0f, 1.0f),
-                  Random(-1.0f, 1.0f),
-                  0.0f);
-        noise.normalize();
-    }
-
-    for (U16 i = 0; i < MAX_KERNEL_SIZE; ++i) {
-        vec3<F32>& k = g_kernel[i];
-        k.set(Random(-1.0f, 1.0f),
-              Random(-1.0f, 1.0f),
-              Random(0.0f, 1.0f)); // Kernel hemisphere points to positive Z-Axis.
-        k.normalize();             // Normalize, so included in the hemisphere.
-        const F32 scale = FastLerp(0.1f, 1.0f, SQUARED(to_F32(i) / to_F32(MAX_KERNEL_SIZE))); // Create a scale value between [0;1].
-        k *= scale;
+    std::uniform_real_distribution<F32> randomFloats(0.0f, 1.0f);
+    std::default_random_engine generator;
+    for (vec2<F32>& noise : noiseData) {
+        noise.set(randomFloats(generator) * 2.0f - 1.0f,
+                  randomFloats(generator) * 2.0f - 1.0f);
     }
 
     SamplerDescriptor nearestSampler = {};
@@ -79,14 +90,14 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     Str64 attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
-    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
+    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
     noiseDescriptor.mipCount(1u);
 
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.propertyDescriptor(noiseDescriptor);
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
-    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(FColour3) }, vec2<U16>(SSAO_NOISE_SIZE));
+    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(vec2<F32>) }, vec2<U16>(SSAO_NOISE_SIZE));
 
     {
 
@@ -113,7 +124,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
 
     {
-        TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_32);
+        TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_32);
         outputDescriptor.mipCount(1u);
 
         RTAttachmentDescriptors att = {
@@ -126,7 +137,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
-        //Colour0 holds the AO texture
         _halfDepthAndNormals = _context.renderTargetPool().allocateRT(desc);
     }
 
@@ -142,7 +152,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     { //Calc Full
         fragModule._variant = "SSAOCalc";
         fragModule._defines.resize(0);
-        fragModule._defines.emplace_back(Util::StringFormat("MAX_KERNEL_SIZE %d", MAX_KERNEL_SIZE).c_str(), true);
         fragModule._defines.emplace_back(Util::StringFormat("SSAO_SAMPLE_COUNT %d", _kernelSampleCount[0]).c_str(), true);
 
         ShaderProgramDescriptor ssaoShaderDescriptor = {};
@@ -157,7 +166,6 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     { //Calc Half
         fragModule._variant = "SSAOCalc";
         fragModule._defines.resize(0);
-        fragModule._defines.emplace_back(Util::StringFormat("MAX_KERNEL_SIZE %d", MAX_KERNEL_SIZE).c_str(), true);
         fragModule._defines.emplace_back(Util::StringFormat("SSAO_SAMPLE_COUNT %d", _kernelSampleCount[1]).c_str(), true);
         fragModule._defines.emplace_back("COMPUTE_HALF_RES", true);
 
@@ -228,11 +236,11 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         _ssaoUpSampleShader = CreateResource<ShaderProgram>(cache, ssaoUpSample);
     }
 
-    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, g_kernel);
+    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, ComputeKernel(sampleCount()));
     _ssaoGenerateConstants.set(_ID("SSAO_RADIUS"), GFX::PushConstantType::FLOAT, radius());
     _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
     _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());
-    _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, vec2<U16>(1920,1080) / _noiseTexture->width());
+    _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, vec2<F32>(1920.f,1080.f) / SSAO_NOISE_SIZE);
 
     _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, blurThreshold());
 }
@@ -266,20 +274,24 @@ void SSAOPreRenderOperator::reshape(const U16 width, const U16 height) {
 
     const vec2<F32> targetDim = vec2<F32>(width, height) * (_genHalfRes ? 0.5f : 1.f);
 
-    _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, targetDim  / _noiseTexture->width());
+    _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, targetDim  / SSAO_NOISE_SIZE);
 }
 
 void SSAOPreRenderOperator::genHalfRes(const bool state) {
     if (_genHalfRes != state) {
         _genHalfRes = state;
+        _context.context().config().rendering.postFX.ssao.UseHalfResolution = state;
+        _context.context().config().changed(true);
+
         const U16 width = state ? _halfDepthAndNormals._rt->getWidth() : _ssaoOutput._rt->getWidth();
         const U16 height = state ? _halfDepthAndNormals._rt->getHeight() : _ssaoOutput._rt->getHeight();
 
-        const vec2<F32> targetDim(width, height);
-
-        _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, targetDim / _noiseTexture->width());
-        _context.context().config().rendering.postFX.ssao.UseHalfResolution = state;
-        _context.context().config().changed(true);
+        _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, vec2<F32>(width, height) / SSAO_NOISE_SIZE);
+        _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, ComputeKernel(sampleCount()));
+        _ssaoGenerateConstants.set(_ID("SSAO_RADIUS"), GFX::PushConstantType::FLOAT, radius());
+        _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
+        _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());
+        _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, blurThreshold());
     }
 }
 
@@ -336,11 +348,19 @@ void SSAOPreRenderOperator::blurResults(const bool state) {
 
 void SSAOPreRenderOperator::blurThreshold(const F32 val) {
     if (!COMPARE(blurThreshold(), val)) {
-        _blurThreshold = val;
+        _blurThreshold[_genHalfRes ? 1 : 0] = val;
         _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, val);
-        _context.context().config().rendering.postFX.ssao.blurThreshold = val;
+        if (_genHalfRes) {
+            _context.context().config().rendering.postFX.ssao.HalfRes.BlurThreshold = val;
+        } else {
+            _context.context().config().rendering.postFX.ssao.FullRes.BlurThreshold = val;
+        }
         _context.context().config().changed(true);
     }
+}
+
+U8 SSAOPreRenderOperator::sampleCount() const noexcept {
+    return _kernelSampleCount[_genHalfRes ? 1 : 0];
 }
 
 void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
@@ -351,11 +371,11 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
 
-        mat4<F32> invProjectionMatrix = GetInverse(camera->projectionMatrix());
+        const mat4<F32> projectionMatrix = camera->projectionMatrix();
+        mat4<F32> invProjectionMatrix = GetInverse(projectionMatrix);
 
-        _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera->projectionMatrix());
+        _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, projectionMatrix);
         _ssaoGenerateConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, invProjectionMatrix);
-        _ssaoBlurConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, invProjectionMatrix);
 
         if(genHalfRes()) {
             { // DownSample depth and normals
@@ -461,6 +481,13 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             }
         }
         {
+            const auto& ssaoAtt = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0);
+            const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
+            const vec2<F32> ssaoTexelSize{ 1.f / ssaoAtt.texture()->width(), 1.f / ssaoAtt.texture()->height() };
+
+            _ssaoBlurConstants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
+            _ssaoBlurConstants.set(_ID("texelSize"), GFX::PushConstantType::VEC2, ssaoTexelSize);
+
             // Blur AO
             GFX::BeginRenderPassCommand beginRenderPassCmd = {};
             beginRenderPassCmd._descriptor.drawMask().disableAll();
@@ -474,9 +501,6 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                  
             pipelineDescriptor._stateHash = blueChannelOnly.getHash();
             EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
-
-            const auto& ssaoAtt = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0);
-            const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.setTexture(ssaoAtt.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0);

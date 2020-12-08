@@ -57,9 +57,8 @@ namespace {
     struct TextureCallbackData {
         vec4<I32> _colourData = { 1, 1, 1, 1 };
         vec2<F32> _depthRange = { 0.f, 1.f };
-        GFXDevice* _gfxDevice = nullptr;
         bool _isDepthTexture = false;
-        bool _flip = false;
+        bool _flip = true;
     };
 
     hashMap<I64, TextureCallbackData> g_modalTextureData;
@@ -1305,10 +1304,13 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         return false;
     }
 
+    static std::array<bool, 4> state = { true, true, true, true };
+    static GFXDevice& gfxDevice = _context.gfx();
+
     const ImDrawCallback toggleColours { [](const ImDrawList* parent_list, const ImDrawCmd* cmd) -> void {
         ACKNOWLEDGE_UNUSED(parent_list);
 
-        TextureCallbackData  data = *static_cast<TextureCallbackData*>(cmd->UserCallbackData);
+        TextureCallbackData data = *static_cast<TextureCallbackData*>(cmd->UserCallbackData);
 
         GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
         GFX::CommandBuffer& buffer = sBuffer();
@@ -1322,7 +1324,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
         pushConstantsCommand._constants = pushConstants;
         EnqueueCommand(buffer, pushConstantsCommand);
-        data._gfxDevice->flushCommandBuffer(buffer);
+        gfxDevice.flushCommandBuffer(buffer);
     } };
 
     bool closed = false;
@@ -1339,15 +1341,10 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         assert(modalName != nullptr);
 
         static TextureCallbackData defaultData = {};
-        defaultData._gfxDevice = &_context.gfx();
         defaultData._isDepthTexture = false;
         defaultData._flip = false;
 
-        static std::array<bool, 4> state = { true, true, true, true };
-
         TextureCallbackData& data = g_modalTextureData[tex->getGUID()];
-        data._gfxDevice = &_context.gfx();
-        data._flip = false;
         data._isDepthTexture = tex->descriptor().baseFormat() == GFXImageFormat::DEPTH_COMPONENT;
 
         const U8 numChannels = NumChannels(tex->descriptor().baseFormat());
@@ -1355,7 +1352,6 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         assert(numChannels > 0);
 
         if (data._isDepthTexture) {
-            data._flip = true; //ToDo: Investigate why - Ionut
             ImGui::Text("Depth: ");  ImGui::SameLine(); ImGui::ToggleButton("Depth", &state[0]);
             ImGui::SameLine();
             ImGui::Text("Range: "); ImGui::SameLine();
@@ -1378,8 +1374,9 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
                 }
             }
         }
-
-        const bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3];
+        ImGui::SameLine();
+        ImGui::Text("Flip: ");  ImGui::SameLine(); ImGui::ToggleButton("Flip", &data._flip);
+        const bool nonDefaultColours = data._isDepthTexture || !state[0] || !state[1] || !state[2] || !state[3] || data._flip;
         data._colourData.set(state[0] ? 1 : 0, state[1] ? 1 : 0, state[2] ? 1 : 0, state[3] ? 1 : 0);
 
         if (nonDefaultColours) {
@@ -1398,6 +1395,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
         ImGui::ImageZoomAndPan((ImTextureID)(intptr_t)tex->data()._textureHandle, ImVec2(dimensions.width, dimensions.height / aspect), aspect, zoom, zoomCenter, 2, 3);
 
         if (nonDefaultColours) {
+            // Reset draw data
             ImGui::GetWindowDrawList()->AddCallback(toggleColours, &defaultData);
         }
 

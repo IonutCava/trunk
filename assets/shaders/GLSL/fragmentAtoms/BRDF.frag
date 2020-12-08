@@ -306,7 +306,12 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
 #else //USE_SHADING_FLAT
     vec3 oColour = getLightContribution(albedo.rgb, OMR, normalWV);
 #endif //USE_SHADING_FLAT
+
+#if defined(OIT_PASS)
+    const float reflectivity = albedo.a;
+#else //OIT_PASS
     const float reflectivity = 1.0f - ROUGHNESS(OMR);
+#endif //OIT_PASS
 
     oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData));
     oColour *= SSAOFactor;

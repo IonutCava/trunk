@@ -112,26 +112,30 @@ namespace {
             if (ImGui::Checkbox("Generate Half Resolution", &halfRes)) {
                 ssaoOp.genHalfRes(halfRes);
             }
-            if (ImGui::SliderFloat("Radius", &radius, 0.01f, 10.0f)) {
+            if (ImGui::SliderFloat("Radius", &radius, 0.01f, 50.0f)) {
                 ssaoOp.radius(radius);
             }
-            if (ImGui::SliderFloat("Power", &power, 1.0f, 5.0f)) {
+            if (ImGui::SliderFloat("Power", &power, 1.0f, 10.0f)) {
                 ssaoOp.power(power);
             }
-            if (ImGui::SliderFloat("Bias", &bias, 0.001f, 0.9f)) {
+            if (ImGui::SliderFloat("Bias", &bias, 0.001f, 0.99f)) {
                 ssaoOp.bias(bias);
             }
             bool blur = ssaoOp.blurResults();
             if (ImGui::Checkbox("Blur results", &blur)) {
                 ssaoOp.blurResults(blur);
             }
+            if (!blur) {
+                PushReadOnly();
+            }
             F32 blurThreshold = ssaoOp.blurThreshold();
-            if (ImGui::SliderFloat("Blur threshold", &blurThreshold, 0.001f, 0.9f)) {
+            if (ImGui::SliderFloat("Blur threshold", &blurThreshold, 0.01f, 0.999f)) {
                 ssaoOp.blurThreshold(blurThreshold);
             }
-            ImGui::Text("SSAO Sample Count: %d", 
-                halfRes ? context().config().rendering.postFX.ssao.HalfRes.KernelSampleCount
-                        : context().config().rendering.postFX.ssao.FullRes.KernelSampleCount);
+            if (!blur) {
+                PopReadOnly();
+            }
+            ImGui::Text("SSAO Sample Count: %d", ssaoOp.sampleCount());
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);

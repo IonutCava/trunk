@@ -101,7 +101,6 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 }
 #endif //USE_CUSTOM_ROUGHNESS
 
-
 #endif //PRE_PASS
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
@@ -120,11 +119,11 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
     if (texOperation != TEX_NONE) {
 #if !defined(SKIP_TEX1)
         return texture(texDiffuse1, uv);
-#endif
+#endif //SKIP_TEX1
     }
         
     return albedo;
-#else
+#else //SKIP_TEX0
     vec4 colour = texture(texDiffuse0, uv);
     // Read from the second texture (if any)
     switch (texOperation) {
@@ -164,11 +163,11 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
             vec4 colour2 = texture(texDiffuse1, uv);
             colour = (colour + colour2) - (colour * colour2);
         } break;
-#endif
+#endif //SKIP_TEX1
     }
 
     return saturate(colour);
-#endif
+#endif //SKIP_TEX0
 }
 
 vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {

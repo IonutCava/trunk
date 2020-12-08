@@ -35,6 +35,7 @@ namespace Divide {
         constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
     };
 
+    
     struct PerPassData
     {
         U16 _sortedNodeCount = 0u;
@@ -53,7 +54,7 @@ namespace Divide {
         std::array<NodeMaterialData, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialData{};
         std::array<std::pair<size_t, U16>, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialLookupInfo{};
 
-        std::array<NodeMaterialTextures, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialTextures{};
+        TextureBuffer _nodeMaterialTextures{};
 
         eastl::set<SamplerAddress> _texturesGPUAddressesForPass{};
 
@@ -74,7 +75,38 @@ namespace Divide {
 
         bufferPtr transformData(const U32 offset) const { return (bufferPtr)&_nodeTransformData[offset]; }
         bufferPtr materialData(const U32 offset)  const { return (bufferPtr)&_nodeMaterialData[offset]; }
-        bufferPtr texturesData(const U32 offset)  const { return (bufferPtr)&_nodeMaterialTextures[offset]; }
+        bufferPtr texturesData()  const { return (bufferPtr)&_nodeMaterialTextures._texDiffuse0[0]; }
+
+        void addToTextureBuffer(const U16 idx, const NodeMaterialTextures& matTextures) {
+            if (matTextures._texDiffuse0 > 0u){
+                _nodeMaterialTextures._texDiffuse0[idx] = matTextures._texDiffuse0;
+                _texturesGPUAddressesForPass.insert(matTextures._texDiffuse0);
+            }
+            if (matTextures._texOpacityMap > 0u) {
+                _nodeMaterialTextures._texOpacityMap[idx] = matTextures._texOpacityMap;
+                _texturesGPUAddressesForPass.insert(matTextures._texOpacityMap);
+            }
+            if (matTextures._texDiffuse1 > 0u) {
+                _nodeMaterialTextures._texDiffuse1[idx] = matTextures._texDiffuse1;
+                _texturesGPUAddressesForPass.insert(matTextures._texDiffuse1);
+            }
+            if (matTextures._texOMR > 0u) {
+                _nodeMaterialTextures._texOMR[idx] = matTextures._texOMR;
+                _texturesGPUAddressesForPass.insert(matTextures._texOMR);
+            }
+            if (matTextures._texHeight > 0u) {
+                _nodeMaterialTextures._texHeight[idx] = matTextures._texHeight;
+                _texturesGPUAddressesForPass.insert(matTextures._texHeight);
+            }
+            if (matTextures._texProjected > 0u) {
+                _nodeMaterialTextures._texProjected[idx] = matTextures._texProjected;
+                _texturesGPUAddressesForPass.insert(matTextures._texProjected);
+            }
+            if (matTextures._texNormalMap > 0u) {
+                _nodeMaterialTextures._texNormalMap[idx] = matTextures._texNormalMap;
+                _texturesGPUAddressesForPass.insert(matTextures._texNormalMap);
+            }
+        }
     };
 
     namespace {
@@ -471,18 +503,11 @@ NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rCom
                 range._lastIDX = idx;
             }
             passData._nodeMaterialData[idx] = tempData;
-            passData._nodeMaterialTextures[idx] = tempTextures;
+            passData.addToTextureBuffer(idx, tempTextures);
 
             materialInfo[idx].first = materialHash;
             materialInfo[idx].second = 0u;
             passData._updateCounter = RenderPass::DataBufferRingSize;
-
-            for (const TextureUsage usage : g_materialTextures) {
-                const SamplerAddress textureAddress = GetTextureAddress(tempTextures, usage);
-                if (textureAddress > 0u) {
-                    passData._texturesGPUAddressesForPass.insert(textureAddress);
-                }
-            }
         }
 
         ret._materialIDX = idx;
@@ -623,7 +648,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 crtRange._lastIDX = std::max(crtRange._lastIDX, prevRange._lastIDX);
 
                 bufferData._materialBuffer->writeData(bufferData._materialData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.materialData(crtRange._firstIDX));
-                bufferData._texturesBuffer->writeData(bufferData._texturesData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.texturesData(crtRange._firstIDX));
+                bufferData._texturesBuffer->writeData(bufferData._texturesData._elementOffset, 1, passData.texturesData());
             }
             prevRange.reset();
             if (passData._updateCounter == 0u || --passData._updateCounter == 0u) {
@@ -650,7 +675,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         ShaderBufferBinding texturesBuffer = {};
         texturesBuffer._binding = ShaderBufferLocation::NODE_MATERIAL_TEXTURES;
         texturesBuffer._buffer = bufferData._texturesBuffer;
-        texturesBuffer._elementRange = { bufferData._texturesData._elementOffset, Config::MAX_CONCURRENT_MATERIALS };
+        texturesBuffer._elementRange = { bufferData._texturesData._elementOffset, 1 };
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set.addShaderBuffer(cmdBuffer);

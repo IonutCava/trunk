@@ -170,7 +170,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 
         ShaderModuleDescriptor fragModule = {};
         fragModule._moduleType = ShaderType::FRAGMENT;
-        for (U8 i = 0; i < to_base(ToneMapParams::MapFunctions::COUNT); ++i) {
+        for (U8 i = 0; i < to_base(ToneMapParams::MapFunctions::COUNT) + 1; ++i) {
             fragModule._defines.emplace_back(
                 Util::StringFormat("%s %d",
                                    TypeUtil::ToneMapFunctionsToString(static_cast<ToneMapParams::MapFunctions>(i)),
@@ -439,7 +439,8 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     const Texture_ptr& screenColour = screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture();
     const Texture_ptr& screenDepth = screenDepthAtt.texture();
 
-    if (adaptiveExposureControl()) {
+    // We usually want accurate data when debugging material properties, so tonemapping should probably be disabled
+    if (adaptiveExposureControl() && _context.materialDebugFlag() == GFXDevice::MaterialDebugFlag::COUNT) {
         const F32 logLumRange = _toneMapParams._maxLogLuminance - _toneMapParams._minLogLuminance;
         const F32 histogramParams[4] = {
                 _toneMapParams._minLogLuminance,
@@ -566,12 +567,12 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 
-        if (_toneMapParamsDirty) {
+        if (_toneMapParamsDirty || _context.materialDebugFlag() != GFXDevice::MaterialDebugFlag::COUNT) {
             _toneMapParamsDirty = false;
-
+            const auto mappingFunction = to_base(_context.materialDebugFlag() == GFXDevice::MaterialDebugFlag::COUNT ? _toneMapParams._function : ToneMapParams::MapFunctions::COUNT);
             _toneMapConstants.set(_ID("useAdaptiveExposure"), GFX::PushConstantType::BOOL, adaptiveExposureControl());
             _toneMapConstants.set(_ID("manualExposure"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposure);
-            _toneMapConstants.set(_ID("mappingFunctions"), GFX::PushConstantType::INT, to_base(_toneMapParams._function));
+            _toneMapConstants.set(_ID("mappingFunction"), GFX::PushConstantType::INT, mappingFunction);
             EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
             
         }
