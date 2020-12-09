@@ -212,9 +212,9 @@ static void glfons__renderDraw(void* userPtr, const FONSvert* verts, int nverts)
 static void glfons__renderDelete(void* userPtr) {
     struct GLFONScontext* gl = (struct GLFONScontext*)userPtr;
     if (gl->tex)
-        Divide::GL_API::deleteTextures(1, &gl->tex, Divide::TextureType::TEXTURE_2D);
+        Divide::GL_API::DeleteTextures(1, &gl->tex, Divide::TextureType::TEXTURE_2D);
     if (gl->glfons_vaoID)
-        Divide::GL_API::deleteVAOs(1, &gl->glfons_vaoID);
+        Divide::GL_API::DeleteVAOs(1, &gl->glfons_vaoID);
     gl->tex = 0;
     gl->glfons_vaoID = 0;
     Divide::GLUtil::freeBuffer(gl->glfons_vboID, gl->glfons_vboData);

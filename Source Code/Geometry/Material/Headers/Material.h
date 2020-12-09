@@ -193,7 +193,7 @@ class Material final : public CachedResource {
     Texture_wptr getTexture(TextureUsage textureUsage) const;
     size_t getSampler(const TextureUsage textureUsage) const noexcept { return _samplers[to_base(textureUsage)]; }
 
-    bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
+    bool getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer& textureData);
     I64 getProgramGUID(const RenderStagePass& renderStagePass) const;
     I64 computeAndGetProgramGUID(const RenderStagePass& renderStagePass);
 
@@ -221,9 +221,6 @@ class Material final : public CachedResource {
     void addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix);
 
     void updateTransparency();
-
-    bool getTextureDataFast(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData);
-    bool getTextureData(TextureUsage slot, TextureDataContainer<>& container);
 
     void recomputeShaders();
     void setShaderProgramInternal(const ResourceDescriptor& shaderDescriptor,
@@ -297,7 +294,7 @@ class Material final : public CachedResource {
     std::array<size_t, to_base(TextureUsage::COUNT)> _samplers = {};
     std::array<bool, to_base(TextureUsage::COUNT)> _textureUseForDepth = {};
 
-    std::array<U64, to_base(TextureUsage::COUNT)> _textureAddresses = {};
+    std::array<SamplerAddress, to_base(TextureUsage::COUNT)> _textureAddresses = {};
 
     I32 _textureKeyCache = -1;
     std::array<ModuleDefines, to_base(ShaderType::COUNT)> _extraShaderDefines{};

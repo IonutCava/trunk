@@ -59,7 +59,7 @@ OpenGL3FBOTextureTarget::OpenGL3FBOTextureTarget(OpenGL3Renderer& owner) :
 //----------------------------------------------------------------------------//
 OpenGL3FBOTextureTarget::~OpenGL3FBOTextureTarget()
 {
-    Divide::GL_API::deleteFramebuffers(1, &d_frameBuffer);
+    Divide::GL_API::DeleteFramebuffers(1, &d_frameBuffer);
 }
 
 //----------------------------------------------------------------------------//
@@ -165,7 +165,7 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
 //----------------------------------------------------------------------------//
 void OpenGL3FBOTextureTarget::grabTexture()
 {
-    Divide::GL_API::deleteFramebuffers(1, &d_frameBuffer);
+    Divide::GL_API::DeleteFramebuffers(1, &d_frameBuffer);
     OpenGLTextureTarget::grabTexture();
 }
 

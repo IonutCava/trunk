@@ -366,8 +366,8 @@ void LightPool::uploadLightData(const RenderStage stage, GFX::CommandBuffer& buf
     bufferShadow._elementRange = { 0u, 1u };
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set.addShaderBuffer(bufferLight);
-    descriptorSetCmd._set.addShaderBuffer(bufferShadow);
+    descriptorSetCmd._set._buffers.add(bufferLight);
+    descriptorSetCmd._set._buffers.add(bufferShadow);
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 }
 
@@ -490,7 +490,7 @@ void LightPool::drawLightImpostors(RenderStage stage, GFX::CommandBuffer& buffer
         EnqueueCommand(bufferInOut, bindPipeline);
         
         GFX::BindDescriptorSetsCommand descriptorSetCmd;
-        descriptorSetCmd._set._textureData.setTexture(_lightIconsTexture->data(), s_samplerHash, TextureUsage::UNIT0);
+        descriptorSetCmd._set._textureData.add({ _lightIconsTexture->data(), s_samplerHash, TextureUsage::UNIT0 });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::DrawCommand drawCommand = { pointsCmd };

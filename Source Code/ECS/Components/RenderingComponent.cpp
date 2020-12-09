@@ -243,7 +243,9 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
         pkg.add(GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
-        bindDescriptorSetsCommand._set.addShaderBuffers(getShaderBuffers());
+        for (const ShaderBufferBinding binding : getShaderBuffers()) {
+            bindDescriptorSetsCommand._set._buffers.add(binding);
+        }
         pkg.add(bindDescriptorSetsCommand);
     }
 
@@ -327,14 +329,12 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     DescriptorSet& set = pkg.descriptorSet(0);
-    TextureDataContainer<>& textures = set._textureData;
+    TextureDataContainer& textures = set._textureData;
 
     if (pkg.textureDataDirty()) {
-        if_constexpr(!Config::USE_BINDLESS_TEXTURES) {
             if (_materialInstance != nullptr) {
                 _materialInstance->getTextureData(renderStagePass, textures);
             }
-        }
         pkg.textureDataDirty(false);
     }
 
@@ -345,7 +345,7 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
                 SharedLock<SharedMutex> r_lock(_reflectionLock);
                 isReflectionValid = _reflectionTexture.isValid();
                 if (isReflectionValid) {
-                    set.addTextureViewEntry(_reflectionTexture);
+                    set._textureViews.add(_reflectionTexture);
                 }
             }
 
@@ -354,14 +354,14 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
                 useSkyReflection();
                 SharedLock<SharedMutex> r_lock(_reflectionLock);
                 assert(_reflectionTexture.isValid());
-                set.addTextureViewEntry(_reflectionTexture);
+                set._textureViews.add(_reflectionTexture);
             }
         }
 
         if (renderStagePass._stage != RenderStage::REFRACTION) {
           SharedLock<SharedMutex> r_lock(_refractionLock);
           if (_refractionTexture.isValid()) {
-              set.addTextureViewEntry(_refractionTexture);
+              set._textureViews.add(_refractionTexture);
           }
       }
     }

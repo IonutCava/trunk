@@ -19,11 +19,13 @@ GLuint GL_API::s_maxTextureUnits = 0;
 GLuint GL_API::s_maxAttribBindings = 0u;
 GLuint GL_API::s_maxFBOAttachments = 0u;
 GLuint GL_API::s_anisoLevel = 0u;
-
+bool GL_API::s_UseBindlessTextures = false;
+bool GL_API::s_UseBindelssTexturesInUBOs = false;
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
 vectorEASTL<GL_API::ResidentTexture> GL_API::s_residentTextures;
+eastl::queue<eastl::pair<SamplerAddress, U8>> GL_API::s_residencyQueue;
 
 SharedMutex GL_API::s_samplerMapLock;
 GL_API::SamplerObjectMap GL_API::s_samplerMap;
@@ -62,7 +64,7 @@ void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTrack
     stateTracker.setStateBlock(RenderStateBlock::defaultHash());
 }
 
-bool GL_API::deleteBuffers(const GLuint count, GLuint* buffers) {
+bool GL_API::DeleteBuffers(const GLuint count, GLuint* buffers) {
     if (count > 0 && buffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             const GLuint crtBuffer = buffers[i];
@@ -87,7 +89,7 @@ bool GL_API::deleteBuffers(const GLuint count, GLuint* buffers) {
     return false;
 }
 
-bool GL_API::deleteVAOs(const GLuint count, GLuint* vaos) {
+bool GL_API::DeleteVAOs(const GLuint count, GLuint* vaos) {
     if (count > 0 && vaos != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeVAOID == vaos[i]) {
@@ -102,7 +104,7 @@ bool GL_API::deleteVAOs(const GLuint count, GLuint* vaos) {
     return false;
 }
 
-bool GL_API::deleteFramebuffers(const GLuint count, GLuint* framebuffers) {
+bool GL_API::DeleteFramebuffers(const GLuint count, GLuint* framebuffers) {
     if (count > 0 && framebuffers != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             const GLuint crtFB = framebuffers[i];
@@ -119,7 +121,7 @@ bool GL_API::deleteFramebuffers(const GLuint count, GLuint* framebuffers) {
     return false;
 }
 
-bool GL_API::deleteShaderPrograms(const GLuint count, GLuint* programs) {
+bool GL_API::DeleteShaderPrograms(const GLuint count, GLuint* programs) {
     if (count > 0 && programs != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeShaderProgram == programs[i]) {
@@ -134,7 +136,7 @@ bool GL_API::deleteShaderPrograms(const GLuint count, GLuint* programs) {
     return false;
 }
 
-bool GL_API::deleteShaderPipelines(const GLuint count, GLuint* programPipelines) {
+bool GL_API::DeleteShaderPipelines(const GLuint count, GLuint* programPipelines) {
     if (count > 0 && programPipelines != nullptr) {
         for (GLuint i = 0; i < count; ++i) {
             if (getStateTracker()._activeShaderPipeline == programPipelines[i]) {
@@ -149,7 +151,7 @@ bool GL_API::deleteShaderPipelines(const GLuint count, GLuint* programPipelines)
     return false;
 }
 
-bool GL_API::deleteTextures(const GLuint count, GLuint* textures, const TextureType texType) {
+bool GL_API::DeleteTextures(const GLuint count, GLuint* textures, const TextureType texType) {
     if (count > 0 && textures != nullptr) {
         
         for (GLuint i = 0; i < count; ++i) {
@@ -179,7 +181,7 @@ bool GL_API::deleteTextures(const GLuint count, GLuint* textures, const TextureT
     return false;
 }
 
-bool GL_API::deleteSamplers(const GLuint count, GLuint* samplers) {
+bool GL_API::DeleteSamplers(const GLuint count, GLuint* samplers) {
     if (count > 0 && samplers != nullptr) {
 
         for (GLuint i = 0; i < count; ++i) {

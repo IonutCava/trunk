@@ -1029,6 +1029,9 @@
     <None Include="..\..\assets\shaders\GLSL\common\sceneData.cmn">
       <Filter>Video\ShaderSource\GLSL\common</Filter>
     </None>
+    <None Include="..\..\Source Code\Platform\Video\Headers\DescriptorSets.inl">
+      <Filter>Video\Headers</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="../../assets\shaders\GLSL\toneMap.glsl">

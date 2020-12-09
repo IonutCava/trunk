@@ -17,6 +17,8 @@
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVertexArray.h"
 #include "Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/GL3Renderer.h"
 #include <CEGUI/CEGUI.h>
+#include <glbinding-aux/ContextInfo.h>
+
 
 #include "Platform/Video/GLIM/glim.h"
 
@@ -146,6 +148,9 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     GFXDevice::setGPURenderer(renderer);
     GFXDevice::setGPUVendor(vendor);
+
+    s_UseBindlessTextures = config.rendering.useBindlessTextures && glbinding::aux::ContextInfo::supported({ GLextension::GL_ARB_bindless_texture });
+    s_UseBindelssTexturesInUBOs = s_UseBindlessTextures && config.rendering.useBindlessTextureUBOs;
 
     if (s_hardwareQueryPool == nullptr) {
         s_hardwareQueryPool = MemoryManager_NEW glHardwareQueryPool(_context);
@@ -359,7 +364,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Prepare shader headers and various shader related states
     glShaderProgram::initStaticData();
-    if (initGLSW(config)) {
+    if (InitGLSW(config)) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
         return ErrorCode::NO_ERR;
@@ -373,7 +378,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 void GL_API::closeRenderingAPI() {
     glShaderProgram::onShutdown();
     glShaderProgram::destroyStaticData();
-    deInitGLSW();
+    DeInitGLSW();
 
     if (_GUIGLrenderer) {
         CEGUI::OpenGL3Renderer::destroy(*_GUIGLrenderer);
@@ -392,7 +397,7 @@ void GL_API::closeRenderingAPI() {
 
     _fonts.clear();
     if (s_dummyVAO > 0) {
-        deleteVAOs(1, &s_dummyVAO);
+        DeleteVAOs(1, &s_dummyVAO);
     }
     s_textureViewCache.destroy();
     glVertexArray::cleanup();
@@ -412,18 +417,18 @@ vec2<U16> GL_API::getDrawableSize(const DisplayWindow& window) const {
     return vec2<U16>(w, h);
 }
 
-void GL_API::queueFlush() {
+void GL_API::QueueFlush() {
     s_glFlushQueued.store(true);
 }
 
-void GL_API::queueComputeMipMap(const GLuint textureHandle) {
+void GL_API::QueueComputeMipMap(const GLuint textureHandle) {
     UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
     if (s_mipmapQueue.find(textureHandle) == std::cend(s_mipmapQueue)) {
         s_mipmapQueue.insert(textureHandle);
     }
 }
 
-void GL_API::dequeueComputeMipMap(const GLuint textureHandle) {
+void GL_API::DequeueComputeMipMap(const GLuint textureHandle) {
     UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
     const auto it = s_mipmapQueue.find(textureHandle);
     if (it != std::cend(s_mipmapQueue)) {
@@ -460,6 +465,6 @@ void GL_API::onThreadCreated(const std::thread::id& threadID) {
         glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
     }
 
-    initGLSW(_context.context().config());
+    InitGLSW(_context.context().config());
 }
 };

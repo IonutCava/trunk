@@ -299,6 +299,7 @@
     <None Include="..\..\assets\shaders\GLSL\EdgeDetection.glsl" />
     <None Include="..\..\Source Code\Platform\Threading\Headers\ThreadPool.inl" />
     <None Include="..\..\Source Code\Platform\Video\Buffers\RenderTarget\Headers\RTDrawDescriptor.inl" />
+    <None Include="..\..\Source Code\Platform\Video\Headers\DescriptorSets.inl" />
     <None Include="..\..\Source Code\Platform\Video\Headers\TextureData.inl" />
     <None Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include\RenderTarget.inl" />
   </ItemGroup>

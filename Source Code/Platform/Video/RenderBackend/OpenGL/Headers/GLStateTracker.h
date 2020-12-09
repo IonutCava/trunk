@@ -45,7 +45,6 @@ namespace Divide {
     class glBufferLockManager;
 
     struct GLStateTracker {
-      public:
         GLStateTracker() = default;
         void init() noexcept;
 
@@ -146,6 +145,7 @@ namespace Divide {
 
         GLuint getBoundTextureHandle(U8 slot, TextureType type) const;
         GLuint getBoundSamplerHandle(U8 slot) const;
+        GLuint getBoundProgramHandle() const;
         TextureType getBoundTextureType(U8 slot) const;
 
         void getActiveViewport(GLint* vp) const;

@@ -167,8 +167,8 @@ void OpenGL3GeometryBuffer::initialiseOpenGLBuffers()
 //----------------------------------------------------------------------------//
 void OpenGL3GeometryBuffer::deinitialiseOpenGLBuffers()
 {
-    Divide::GL_API::deleteVAOs(1, &d_verticesVAO);
-    Divide::GL_API::deleteBuffers(1, &d_verticesVBO);
+    Divide::GL_API::DeleteVAOs(1, &d_verticesVAO);
+    Divide::GL_API::DeleteBuffers(1, &d_verticesVBO);
 }
 
 //----------------------------------------------------------------------------//

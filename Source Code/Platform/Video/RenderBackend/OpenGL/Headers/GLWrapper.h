@@ -135,10 +135,10 @@ protected:
     /// Reset as much of the GL default state as possible within the limitations given
     void clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, bool global) const;
 
-    bool makeTexturesResidentInternal(TextureDataContainer<>& textureData, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
-    bool makeTextureViewsResidentInternal(const vectorEASTLFast<TextureViewEntry>& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
-    bool makeTexturesResident(TextureDataContainer<>& textureData, const vectorEASTLFast<TextureViewEntry>& textureViews, const eastl::set<SamplerAddress>& addresses, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
-    bool makeImagesResident(const vectorEASTLFast<Image>& images) const;
+    bool makeTexturesResidentInternal(TextureDataContainer& textureData, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
+    bool makeTextureViewsResidentInternal(const TextureViews& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
+    bool makeTexturesResident(TextureDataContainer& textureData, const TextureViews& textureViews, U8 offset = 0, U8 count = std::numeric_limits<U8>::max()) const;
+    bool makeImagesResident(const Images& images) const;
 
     bool setViewport(const Rect<I32>& viewport) override;
     bool bindPipeline(const Pipeline & pipeline, bool& shaderWasReady) const;
@@ -147,42 +147,47 @@ protected:
 public:
     static GLStateTracker& getStateTracker() noexcept;
 
-    static void queueFlush();
+    static void QueueResidency(SamplerAddress address, U8 binding);
+    static void DequeueResidency(SamplerAddress address);
+    static void DequeueResidency(U8 binding);
+    static void ClearResidencyQueue();
+    static void ProcessResidencyQueue();
+    static bool MakeTexturesResidentInternal(SamplerAddress address);
+
+    static void QueueFlush();
     /// Queue a mipmap recalculation
-    static void queueComputeMipMap(GLuint textureHandle);
-    static void dequeueComputeMipMap(GLuint textureHandle);
+    static void QueueComputeMipMap(GLuint textureHandle);
+    static void DequeueComputeMipMap(GLuint textureHandle);
 
-    static bool MakeTexturesResident();
+    static void PushDebugMessage(const char* message);
+    static void PopDebugMessage();
 
-    static void pushDebugMessage(const char* message);
-    static void popDebugMessage();
+    static bool DeleteShaderPipelines(GLuint count, GLuint* programsPipelines);
+    static bool DeleteShaderPrograms(GLuint count, GLuint * programs);
+    static bool DeleteTextures(GLuint count, GLuint* textures, TextureType texType);
+    static bool DeleteSamplers(GLuint count, GLuint* samplers);
+    static bool DeleteBuffers(GLuint count, GLuint* buffers);
+    static bool DeleteVAOs(GLuint count, GLuint* vaos);
+    static bool DeleteFramebuffers(GLuint count, GLuint* framebuffers);
 
-    static bool deleteShaderPipelines(GLuint count, GLuint* programsPipelines);
-    static bool deleteShaderPrograms(GLuint count, GLuint * programs);
-    static bool deleteTextures(GLuint count, GLuint* textures, TextureType texType);
-    static bool deleteSamplers(GLuint count, GLuint* samplers);
-    static bool deleteBuffers(GLuint count, GLuint* buffers);
-    static bool deleteVAOs(GLuint count, GLuint* vaos);
-    static bool deleteFramebuffers(GLuint count, GLuint* framebuffers);
-
-    static void lockBuffers(U32 frameID);
-    static void registerBufferBind(BufferLockEntry&& data);
+    static void LockBuffers(U32 frameID);
+    static void RegisterBufferBind(BufferLockEntry&& data);
 
     using IMPrimitivePool = MemoryPool<glIMPrimitive, 2048>;
 
-    static IMPrimitive* newIMP(Mutex& lock, GFXDevice& parent);
-    static bool destroyIMP(Mutex& lock, IMPrimitive*& primitive);
+    static IMPrimitive* NewIMP(Mutex& lock, GFXDevice& parent);
+    static bool DestroyIMP(Mutex& lock, IMPrimitive*& primitive);
 
     /// Return the OpenGL sampler object's handle for the given hash value
-    static GLuint getSamplerHandle(size_t samplerHash);
+    static GLuint GetSamplerHandle(size_t samplerHash);
 
 private:
-    static bool initGLSW(Configuration& config);
-    static bool deInitGLSW();
+    static bool InitGLSW(Configuration& config);
+    static bool DeInitGLSW();
 
     /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to all stages
     using ShaderOffsetArray = std::array<GLint, to_base(ShaderType::COUNT) + 1>;
-    static void appendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
+    static void AppendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
 
 protected:
     /// Number of available texture units
@@ -198,6 +203,10 @@ public:
     static GLuint s_UBMaxSize;
     static GLuint s_SSBOffsetAlignment;
     static GLuint s_SSBMaxSize;
+
+    static bool s_UseBindlessTextures;
+    static bool s_UseBindelssTexturesInUBOs;
+
     static glHardwareQueryPool* s_hardwareQueryPool;
 
 private:
@@ -235,6 +244,7 @@ private:
     };
 
     static vectorEASTL<ResidentTexture> s_residentTextures;
+    static eastl::queue<eastl::pair<SamplerAddress, U8>> s_residencyQueue;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;

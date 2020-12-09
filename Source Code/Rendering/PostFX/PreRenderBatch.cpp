@@ -468,8 +468,8 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
             EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "CreateLuminanceHistogram" });
 
             GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-            bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
-            bindDescriptorSetsCmd._set._images.push_back(screenImage);
+            bindDescriptorSetsCmd._set._buffers.add(shaderBuffer);
+            bindDescriptorSetsCmd._set._images.add(screenImage);
             EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
             GFX::BindPipelineCommand pipelineCmd = {};
@@ -512,8 +512,8 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
             EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "AverageLuminanceHistogram" });
 
             GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-            bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
-            bindDescriptorSetsCmd._set._images.push_back(luminanceImage);
+            bindDescriptorSetsCmd._set._buffers.add(shaderBuffer);
+            bindDescriptorSetsCmd._set._images.add(luminanceImage);
             EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
             EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ pipelineLumCalcAverage });
@@ -555,9 +555,9 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         lumanSampler.anisotropyLevel(0);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0);
-        descriptorSetCmd._set._textureData.setTexture(_currentLuminance->data(), lumanSampler.getHash(), TextureUsage::UNIT1);
-        descriptorSetCmd._set._textureData.setTexture(screenDepth->data(), screenDepthAtt.samplerHash(),TextureUsage::DEPTH);
+        descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0 });
+        descriptorSetCmd._set._textureData.add({ _currentLuminance->data(), lumanSampler.getHash(), TextureUsage::UNIT1 });
+        descriptorSetCmd._set._textureData.add({ screenDepth->data(), screenDepthAtt.samplerHash(),TextureUsage::DEPTH });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GFX::BeginRenderPassCommand beginRenderPassCmd = {};
@@ -589,7 +589,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         const TextureData screenTex = screenAtt.texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0);
+        descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0 });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         RTClearDescriptor clearTarget = {};

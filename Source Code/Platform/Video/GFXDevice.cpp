@@ -1074,8 +1074,13 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     const TextureData data = attachment.texture()->data();
     const size_t sampler = attachment.samplerHash();
 
+    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand {
+                       gaussian ? (layerCount > 1 ? _BlurGaussianPipelineLayered : _BlurGaussianPipelineSingle)
+                           : layerCount > 1 ? _BlurBoxPipelineLayered : _BlurBoxPipelineSingle
+                   });
+
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(data, sampler, TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.add({ data, sampler, TextureUsage::UNIT0 });
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::SendPushConstantsCommand pushConstantsCommand;
@@ -1093,12 +1098,6 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
             pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, 0);
         }
     }
-
-    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand {
-                       gaussian ? (layerCount > 1 ? _BlurGaussianPipelineLayered : _BlurGaussianPipelineSingle)
-                           : layerCount > 1 ? _BlurBoxPipelineLayered : _BlurBoxPipelineSingle
-                   });
-
     EnqueueCommand(bufferInOut, pushConstantsCommand);
 
     const U8 loopCount = gaussian ? 1u : layerCount;
@@ -1128,7 +1127,7 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
     const auto& attachment2 = blurSource._rt->getAttachment(att, index);
     const TextureData data2 = attachment2.texture()->data();
     const size_t sampler2 = attachment2.samplerHash();
-    descriptorSetCmd._set._textureData.setTexture(data2, sampler2, TextureUsage::UNIT0);
+    descriptorSetCmd._set._textureData.add({ data2, sampler2, TextureUsage::UNIT0 });
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     EnqueueCommand(bufferInOut, pushConstantsCommand);
@@ -1631,7 +1630,7 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
 
         // for i > 0, use texture views?
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(hizData, att.samplerHash(), TextureUsage::DEPTH);
+        descriptorSetCmd._set._textureData.add({ hizData, att.samplerHash(), TextureUsage::DEPTH });
         EnqueueCommand(cmdBufferInOut, descriptorSetCmd);
 
         // We skip the first level as that's our full resolution image
@@ -1714,17 +1713,17 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
     shaderBuffer._elementRange = { bufferData._commandData._elementOffset, cmdCount };
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set.addShaderBuffer(shaderBuffer);
+    bindDescriptorSetsCmd._set._buffers.add(shaderBuffer);
 
     if (bufferData._cullCounterBuffer != nullptr) {
         ShaderBufferBinding atomicCount = {};
         atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
         atomicCount._buffer = bufferData._cullCounterBuffer;
         atomicCount._elementRange.set(0, 1);
-        bindDescriptorSetsCmd._set.addShaderBuffer(atomicCount); // Atomic counter should be cleared by this point
+        bindDescriptorSetsCmd._set._buffers.add(atomicCount); // Atomic counter should be cleared by this point
     }
 
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthBuffer->data(), samplerHash, TextureUsage::UNIT0);
+    bindDescriptorSetsCmd._set._textureData.add({ depthBuffer->data(), samplerHash, TextureUsage::UNIT0 });
     EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounterBuffer != nullptr ? 1u : 0u);
@@ -1795,7 +1794,7 @@ void GFXDevice::drawTextureInViewport(const TextureData data, const size_t sampl
     EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ (drawToDepthOnly ? _DrawFSDepthPipeline : _DrawFSTexturePipeline) });
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set._textureData.setTexture(data, samplerHash, TextureUsage::UNIT0);
+    bindDescriptorSetsCmd._set._textureData.add({ data, samplerHash, TextureUsage::UNIT0 });
     EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     EnqueueCommand(bufferInOut, GFX::PushViewportCommand{ viewport });
@@ -2079,7 +2078,7 @@ void GFXDevice::renderDebugViews(Rect<I32> targetViewport, const I32 padding, GF
         EnqueueCommand(bufferInOut, setViewport);
 
         GFX::BindDescriptorSetsCommand bindDescriptorSets = {};
-        bindDescriptorSets._set._textureData.setTexture(view._texture->data(), view._samplerHash, view._textureBindSlot);
+        bindDescriptorSets._set._textureData.add({ view._texture->data(), view._samplerHash, view._textureBindSlot });
         EnqueueCommand(bufferInOut, bindDescriptorSets);
 
         EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
@@ -2492,7 +2491,7 @@ IMPrimitive* GFXDevice::newIMP() {
     switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            return GL_API::newIMP(_imprimitiveMutex , *this);
+            return GL_API::NewIMP(_imprimitiveMutex , *this);
         };
         case RenderAPI::Vulkan:
         case RenderAPI::None: {
@@ -2510,7 +2509,7 @@ bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
     switch (renderAPI()) {
         case RenderAPI::OpenGL:
         case RenderAPI::OpenGLES: {
-            return GL_API::destroyIMP(_imprimitiveMutex , primitive);
+            return GL_API::DestroyIMP(_imprimitiveMutex , primitive);
         };
         case RenderAPI::Vulkan:
         case RenderAPI::None: {

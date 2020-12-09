@@ -688,103 +688,46 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     return false;
 }
 
-bool Material::getTextureData(const TextureUsage slot, TextureDataContainer<>& container) {
-    const U8 slotValue = to_U8(slot);
-
-    TextureData data = {};
-    {
-        SharedLock<SharedMutex> r_lock(_textureLock);
-        const Texture_ptr& crtTexture = _textures[slotValue];
-        if (crtTexture != nullptr) {
-            data = crtTexture->data();
-        }
-    }
-
-    if (data._textureType != TextureType::COUNT) {
-        return container.setTexture(data, _samplers[slotValue], slotValue) != TextureUpdateState::NOTHING;
-    }
-
-    return false;
-}
-
-bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData) {
+bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer& textureData) {
     OPTICK_EVENT();
 
-    if (textureData.count() == 0) {
-        return getTextureDataFast(renderStagePass, textureData);
-    }
 
-    const bool isDepthPass = renderStagePass.isDepthPass();
-
-    bool ret = false;
-    if (!isDepthPass || hasTransparency() || _textureUseForDepth[to_base(TextureUsage::UNIT0)]) {
-        ret = getTextureData(TextureUsage::UNIT0, textureData) || ret;
-    }
-
-    if (!isDepthPass || hasTransparency() || _textureUseForDepth[to_base(TextureUsage::OPACITY)]) {
-        ret = getTextureData(TextureUsage::OPACITY, textureData) || ret;
-    }
-
-    if (!isDepthPass || _textureUseForDepth[to_base(TextureUsage::HEIGHTMAP)]) {
-        ret = getTextureData(TextureUsage::HEIGHTMAP, textureData) || ret;
-    }
-    if (!isDepthPass || _textureUseForDepth[to_base(TextureUsage::PROJECTION)]) {
-        ret = getTextureData(TextureUsage::PROJECTION, textureData) || ret;
-    }
-
-    if (!isDepthPass || _textureUseForDepth[to_base(TextureUsage::UNIT1)]) {
-        ret = getTextureData(TextureUsage::UNIT1, textureData) || ret;
-    }
-
-    if (!isDepthPass || _textureUseForDepth[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)]) {
-        ret = getTextureData(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS, textureData) || ret;
-    }
-
-    if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
-       !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //not Display::PrePass
-    {
-        ret = getTextureData(TextureUsage::NORMALMAP, textureData) || ret;
-    }
-
-    return ret;
-}
-
-bool Material::getTextureDataFast(const RenderStagePass& renderStagePass, TextureDataContainer<>& textureData) {
-    OPTICK_EVENT();
-
-    bool ret = false;
-    SharedLock<SharedMutex> r_lock(_textureLock);
-
-    const bool depthStage = renderStagePass.isDepthPass();
-    for (const U8 slot : g_TransparentSlots) {
-        if (!depthStage || hasTransparency() || _textureUseForDepth[slot]) {
+    const auto RegisterTexture = [this](const U8 slot, const bool condition, TextureDataContainer& textureData) {
+        if (condition) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
-                textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
-                ret = true;
+                if (_textureAddresses[slot] == 0u) {
+                    // We only need to actually bind NON-RESIDENT textures. 
+                    textureData.add({ crtTexture->data(), _samplers[slot], slot });
+                } else {
+                    textureData.add({_textureAddresses[slot], slot
+                });
+                }
+                return true;
             }
         }
+
+        return false;
+    };
+
+    bool ret = false;
+    const bool depthStage = renderStagePass.isDepthPass();
+    const bool transparencyState = hasTransparency();
+
+    SharedLock<SharedMutex> r_lock(_textureLock);
+    for (const U8 slot : g_TransparentSlots) {
+        ret = RegisterTexture(slot, (transparencyState || !depthStage || _textureUseForDepth[slot]), textureData) || ret;
     }
 
     for (const U8 slot : g_ExtraSlots) {
-        if (!depthStage || _textureUseForDepth[slot]) {
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
-                ret = true;
-            }
-        }
+        ret = RegisterTexture(slot, (!depthStage || _textureUseForDepth[slot]), textureData) || ret;
     }
 
-    if (renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
-        !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
+    if ( renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
+       !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
     {
         for (const U8 slot : g_AdditionalSlots) {
-            const Texture_ptr& crtTexture = _textures[slot];
-            if (crtTexture != nullptr) {
-                textureData.setTexture(crtTexture->data(), _samplers[slot], slot);
-                ret = true;
-            }
+            ret = RegisterTexture(slot, true, textureData) || ret;
         }
     }
 

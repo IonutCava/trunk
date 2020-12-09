@@ -80,49 +80,46 @@ enum class TextureUpdateState : U8 {
 
 struct TextureEntry
 {
-    TextureData _data;
-    size_t _sampler = 0u;
+    TextureEntry() = default;
+    TextureEntry(const TextureData& data, const size_t samplerHash, const TextureUsage binding) : TextureEntry(data, samplerHash, to_U8(binding)) {}
+    TextureEntry(const SamplerAddress address, const TextureUsage binding) : TextureEntry(address, to_U8(binding)) {}
+
+    TextureEntry(const TextureData& data, const size_t samplerHash, const U8 binding) 
+      : _gpuData{data, samplerHash},
+        _binding(binding)
+    {
+    }
+
+    TextureEntry(const SamplerAddress address, const U8 binding)
+      : _gpuAddress(address),
+        _binding(binding),
+        _hasAddress(true)
+    {
+    }
+
+    struct DataSampler {
+        TextureData _data;
+        size_t _sampler = 0u;
+    };
+
+    union {
+        DataSampler _gpuData = {};
+        SamplerAddress _gpuAddress;
+    };
+    
     U8 _binding = 0u;
+    bool _hasAddress = false;
 };
 
+static constexpr U8 INVALID_TEXTURE_BINDING = std::numeric_limits<U8>::max();
+
+[[nodiscard]] bool IsValid(const TextureEntry& entry) noexcept;
 bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept;
 bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept;
 
-template<size_t Size = to_size(TextureUsage::COUNT)>
-struct TextureDataContainer {
-    static constexpr U8 INVALID_BINDING = std::numeric_limits<U8>::max();
-    static constexpr TextureEntry DefaultEntry = { TextureData{}, 0, INVALID_BINDING };
+bool operator==(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept;
+bool operator!=(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept;
 
-    using DataEntries = eastl::array<TextureEntry, Size>;
-
-    static constexpr size_t ContainerSize() noexcept { return Size; }
-
-    bool set(const TextureDataContainer& other);
-    TextureUpdateState setTextures(const TextureDataContainer& textureEntries);
-    TextureUpdateState setTextures(const DataEntries& textureEntries);
-    TextureUpdateState setTexture(const TextureData& data, size_t samplerHash, U8 binding);
-    TextureUpdateState setTexture(const TextureData& data, size_t samplerHash, TextureUsage binding);
-
-    [[nodiscard]] const TextureEntry* findEntry(U8 binding) const;
-    bool removeTexture(U8 binding);
-    bool removeTexture(const TextureData& data);
-    void clear();
-    void sortByBinding();
-
-    PROPERTY_RW(DataEntries, textures, create_eastl_array<Size>(DefaultEntry));
-    PROPERTY_RW(U8, count, 0u);
-
-protected:
-    TextureUpdateState setTextureInternal(const TextureData& data, size_t samplerHash, U8 binding);
-
-XALLOCATOR
-};
-
-template<size_t Size>
-bool operator==(const TextureDataContainer<Size> & lhs, const TextureDataContainer<Size> & rhs) noexcept;
-
-template<size_t Size>
-bool operator!=(const TextureDataContainer<Size> & lhs, const TextureDataContainer<Size> & rhs) noexcept;
 }; //namespace Divide
 
 #endif //_TEXTURE_DATA_H_

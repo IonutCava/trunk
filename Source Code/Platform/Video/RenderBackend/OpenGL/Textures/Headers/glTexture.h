@@ -51,7 +51,7 @@ class glTexture final : public Texture,
                        const TextureDescriptor& texDescriptor);
     ~glTexture();
 
-    [[nodiscard]] U64 getGPUAddress(size_t samplerHash) override;
+    [[nodiscard]] SamplerAddress getGPUAddress(size_t samplerHash) override;
 
     bool unload() override;
 
@@ -91,7 +91,7 @@ class glTexture final : public Texture,
     glLockManager* _lockManager;
 
 
-    using TextureAddressMap = hashMap<size_t, U64>;
+    using TextureAddressMap = hashMap<size_t, SamplerAddress>;
     // One GPU address per handle + sampler combo
     SharedMutex _gpuAddressesLock;
     static Mutex s_GLgpuAddressesLock;

@@ -78,8 +78,14 @@ void glTexture::validateDescriptor() {
     _loadingData._textureType = _descriptor.texType();
 }
 
-U64 glTexture::getGPUAddress(const size_t samplerHash) {
+SamplerAddress glTexture::getGPUAddress(const size_t samplerHash) {
     assert(_data._textureType != TextureType::COUNT);
+
+    // Poor man's check if we want to and actually can use bindless textures
+    if (!GL_API::s_UseBindlessTextures) {
+        return 0u;
+    }
+
     { //Fast path. We likely have the address already
         SharedLock<SharedMutex> r_lock(_gpuAddressesLock);
         const auto it = _gpuAddresses.find(samplerHash);
@@ -90,7 +96,7 @@ U64 glTexture::getGPUAddress(const size_t samplerHash) {
     { //Slow path. Cache miss
         UniqueLock<SharedMutex> w_lock(_gpuAddressesLock);
         // Check again as we may have updated this while switching locks
-        U64 address;
+        SamplerAddress address;
         const auto it = _gpuAddresses.find(samplerHash);
         if (it != std::cend(_gpuAddresses)) {
             address = it->second;
@@ -99,7 +105,7 @@ U64 glTexture::getGPUAddress(const size_t samplerHash) {
                 UniqueLock<Mutex> w_lock2(s_GLgpuAddressesLock);
                 address = glGetTextureHandleARB(_data._textureHandle);
             } else {
-                const GLuint sampler = GL_API::getSamplerHandle(samplerHash);
+                const GLuint sampler = GL_API::GetSamplerHandle(samplerHash);
                 UniqueLock<Mutex> w_lock2(s_GLgpuAddressesLock);
                 address = glGetTextureSamplerHandleARB(_data._textureHandle, sampler);
             }
@@ -117,7 +123,7 @@ bool glTexture::unload() {
         if (_lockManager) {
             _lockManager->Wait(false);
         }
-        GL_API::dequeueComputeMipMap(_data._textureHandle);
+        GL_API::DequeueComputeMipMap(_data._textureHandle);
         glDeleteTextures(1, &textureID);
         _data._textureHandle = 0u;
     }
@@ -228,7 +234,7 @@ void glTexture::updateMipsInternal() const  {
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_BASE_LEVEL, _descriptor.mipBaseLevel());
     glTextureParameteri(_loadingData._textureHandle, GL_TEXTURE_MAX_LEVEL, _descriptor.mipCount());
     if (_descriptor.autoMipMaps() && _descriptor.mipCount() > 1) {
-        GL_API::queueComputeMipMap(_loadingData._textureHandle);
+        GL_API::QueueComputeMipMap(_loadingData._textureHandle);
     }
 }
 

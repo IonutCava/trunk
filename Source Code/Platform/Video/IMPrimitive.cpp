@@ -10,8 +10,7 @@
 namespace Divide {
 
 IMPrimitive::IMPrimitive(GFXDevice& context)
-    : VertexDataInterface(context),
-      _viewport(-1)
+    : VertexDataInterface(context)
 {
     assert(handle()._id != 0);
     _cmdBuffer = GFX::allocateCommandBuffer();
@@ -24,8 +23,7 @@ IMPrimitive::~IMPrimitive()
 
 void IMPrimitive::reset() {
     _worldMatrix.identity();
-    _texture = nullptr;
-    _descriptorSet._textureData.clear();
+    _textureEntry = {};
     _cmdBufferDirty = true;
     _viewport.set(-1);
     clearBatch();
@@ -199,9 +197,9 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
 }
 
 void IMPrimitive::texture(const Texture& texture, const size_t samplerHash) {
-    _texture = &texture;
-    _descriptorSet._textureData.clear();
-    _descriptorSet._textureData.setTexture(_texture->data(), samplerHash, TextureUsage::UNIT0);
+    _textureEntry._gpuData._data = texture.data();
+    _textureEntry._gpuData._sampler = samplerHash;
+    _textureEntry._binding = to_U8(TextureUsage::UNIT0);
     _cmdBufferDirty = true;
 }
 };

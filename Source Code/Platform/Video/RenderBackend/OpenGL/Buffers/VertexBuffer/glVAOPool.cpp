@@ -36,12 +36,12 @@ void glVAOPool::init(const U32 capacity) {
     }
 
 
-    GL_API::deleteVAOs(g_numWarmupVAOs, warmupVAOs);
+    GL_API::DeleteVAOs(g_numWarmupVAOs, warmupVAOs);
 }
 
 void glVAOPool::destroy() {
     for (auto& [vaoID, isUsed] : _pool) {
-        GL_API::deleteVAOs(1, &vaoID);
+        GL_API::DeleteVAOs(1, &vaoID);
     }
     _pool.clear();
 }
@@ -76,7 +76,7 @@ void glVAOPool::deallocate(GLuint& vao) {
 
     assert(it != eastl::cend(_pool));
     // We don't know what kind of state we may have in the current VAO so delete it and create a new one.
-    GL_API::deleteVAOs(1, &it->first);
+    GL_API::DeleteVAOs(1, &it->first);
     glCreateVertexArrays(1, &it->first);
 
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {

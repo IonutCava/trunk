@@ -385,10 +385,10 @@ void glVertexArray::draw(const GenericDrawCommand& command, const U32 cmdBufferO
     stateTracker.bindActiveBuffer(vao, 0u, _VBHandle._id, 0u, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
-        GLUtil::submitRenderCommand(command, true, true, cmdBufferOffset, _formatInternal);
+        GLUtil::SubmitRenderCommand(command, true, true, cmdBufferOffset, _formatInternal);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex, getIndexCount());
-        GLUtil::submitRenderCommand(command, true, false, cmdBufferOffset, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::SubmitRenderCommand(command, true, false, cmdBufferOffset, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 }
 

@@ -226,7 +226,7 @@ void freeBuffer(GLuint& bufferId, bufferPtr mappedPtr) {
             ACKNOWLEDGE_UNUSED(result);
             mappedPtr = nullptr;
         }
-        GL_API::deleteBuffers(1, &bufferId);
+        GL_API::DeleteBuffers(1, &bufferId);
         bufferId = 0;
     }
 }

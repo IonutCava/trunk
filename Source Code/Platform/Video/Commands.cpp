@@ -130,17 +130,20 @@ stringImpl ToString(const SetCameraCommand& cmd, U16 indent) {
 }
 
 stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
-    stringImpl ret = Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", cmd._set._shaderBuffers.size(), cmd._set._textureData.count());
+    stringImpl ret = Util::StringFormat(" [ Buffers: %d, Textures: %d ]\n", cmd._set._buffers.count(), cmd._set._textureData.count());
 
-    for (const auto& it : cmd._set._shaderBuffers) {
+    for (U8 i = 0; i < cmd._set._buffers.count(); ++i) {
+        const auto& it = cmd._set._buffers._entries[i];
+
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
+        
         ret.append(Util::StringFormat("Buffer [ %d - %d ] Range [%d - %d] ]\n", to_base(it._binding), it._buffer->getGUID(), it._elementRange.x, it._elementRange.y));
     }
-    for (const TextureEntry& entry : cmd._set._textureData.textures()) {
-        if (entry._binding == TextureDataContainer<>::INVALID_BINDING) {
+    for (const TextureEntry& entry : cmd._set._textureData._entries) {
+        if (entry._binding == INVALID_TEXTURE_BINDING) {
             continue;
         }
 
@@ -148,10 +151,14 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", entry._binding, entry._data._textureHandle, entry._sampler));
+        if (entry._hasAddress) {
+            ret.append(Util::StringFormat("Bindless Texture [ %d - %zu]\n", entry._binding, entry._gpuAddress));
+        } else {
+            ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", entry._binding, entry._gpuData._data._textureHandle, entry._gpuData._sampler));
+        }
     }
 
-    for (const auto& it : cmd._set._textureViews) {
+    for (const auto& it : cmd._set._textureViews._entries) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
@@ -159,7 +166,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
         ret.append(Util::StringFormat("Texture layers [ %d - [%d - %d ]]\n", it._binding, it._view._layerRange.min, it._view._layerRange.max));
     }
 
-    for (auto it : cmd._set._images) {
+    for (auto it : cmd._set._images._entries) {
         ret.append("    ");
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");

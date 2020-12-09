@@ -645,6 +645,10 @@ TextureType GLStateTracker::getBoundTextureType(const U8 slot) const {
     return _textureTypeBoundMap[slot];
 }
 
+GLuint GLStateTracker::getBoundProgramHandle() const {
+    return _activeShaderPipeline == 0u ? _activeShaderProgram : _activeShaderPipeline;
+}
+
 void GLStateTracker::getActiveViewport(GLint* const vp) const {
     if (vp != nullptr) {
         *vp = *_activeViewport._v;

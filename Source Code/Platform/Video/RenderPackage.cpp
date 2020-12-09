@@ -203,22 +203,22 @@ void RenderPackage::addCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
 
 const ShaderBufferBinding& RenderPackage::getShaderBuffer(const I32 descriptorSetIndex, const I32 bufferIndex) const {
     const DescriptorSet& set = descriptorSet(descriptorSetIndex);
-    assert(bufferIndex < to_I32(set._shaderBuffers.size()) && "RenderPackage::getShaderBuffer error: Invalid buffer sub-index!");
+    assert(bufferIndex < to_I32(set._buffers.count()) && "RenderPackage::getShaderBuffer error: Invalid buffer sub-index!");
 
-    return set._shaderBuffers[bufferIndex];
+    return set._buffers._entries[bufferIndex];
 }
 
 void RenderPackage::addShaderBuffer(const I32 descriptorSetIndex, const ShaderBufferBinding& buffer) const {
     assert(_commands != nullptr && descriptorSetIndex < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()) && "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     
     GFX::BindDescriptorSetsCommand* cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
-    cmd->_set.addShaderBuffer(buffer);
+    cmd->_set._buffers.add(buffer);
 }
 
 void RenderPackage::setTexture(const I32 descriptorSetIndex, const TextureData& data, const size_t samplerHash, const U8 binding) const {
     assert(_commands != nullptr && descriptorSetIndex < to_I32(_commands->count<GFX::BindDescriptorSetsCommand>()) && "RenderPackage::descriptorSet error: Invalid descriptor set index!");
     GFX::BindDescriptorSetsCommand* cmd = _commands->get<GFX::BindDescriptorSetsCommand>(descriptorSetIndex);
-    cmd->_set._textureData.setTexture(data, samplerHash, binding);
+    cmd->_set._textureData.add({ data, samplerHash, binding });
 }
 
 void RenderPackage::updateDrawCommands(const NodeDataIdx dataIndex, U32 startOffset, U8 lodLevel) {

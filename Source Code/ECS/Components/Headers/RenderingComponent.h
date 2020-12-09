@@ -181,7 +181,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     [[nodiscard]] U8 getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
-    [[nodiscard]] const ShaderBufferList& getShaderBuffers() const noexcept { return _externalBufferBindings; }
+    [[nodiscard]] const auto& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
@@ -251,7 +251,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     U16 _reflectionTextureWidth = 2u;
 
     vectorEASTL<EnvironmentProbeComponent*> _envProbes{};
-    ShaderBufferList _externalBufferBindings{};
+    vectorEASTL<ShaderBufferBinding> _externalBufferBindings{};
 
     Material_ptr _materialInstance = nullptr;
     GFXDevice& _context;

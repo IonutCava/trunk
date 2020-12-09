@@ -428,7 +428,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
         TextureData texData = shadowAtt.texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, shadowAtt.samplerHash(),TextureUsage::UNIT0);
+        descriptorSetCmd._set._textureData.add({ texData, shadowAtt.samplerHash(),TextureUsage::UNIT0 });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         _shaderConstants.set(_ID("verticalBlur"), GFX::PushConstantType::BOOL, false);
@@ -445,7 +445,7 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         // Blur vertically
         const auto& blurAtt = _blurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0);
         texData = blurAtt.texture()->data();
-        descriptorSetCmd._set._textureData.setTexture(texData, blurAtt.samplerHash(),TextureUsage::UNIT0);
+        descriptorSetCmd._set._textureData.add({ texData, blurAtt.samplerHash(),TextureUsage::UNIT0 });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         beginRenderPassCmd._target = g_depthMapID;

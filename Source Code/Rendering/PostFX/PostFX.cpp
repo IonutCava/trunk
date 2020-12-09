@@ -184,12 +184,12 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.setTexture(depthData, depthAtt.samplerHash(),TextureUsage::DEPTH);
-    bindDescriptorSetsCmd._set._textureData.setTexture(output, prbAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN));
-    bindDescriptorSetsCmd._set._textureData.setTexture(gbuffer, gbufferAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data0, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data1, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE));
-    bindDescriptorSetsCmd._set._textureData.setTexture(data2, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER));
+    bindDescriptorSetsCmd._set._textureData.add({ depthData, depthAtt.samplerHash(),TextureUsage::DEPTH });
+    bindDescriptorSetsCmd._set._textureData.add({ output, prbAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN) });
+    bindDescriptorSetsCmd._set._textureData.add({ gbuffer, gbufferAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER) });
+    bindDescriptorSetsCmd._set._textureData.add({ data0, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER) });
+    bindDescriptorSetsCmd._set._textureData.add({ data1, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE) });
+    bindDescriptorSetsCmd._set._textureData.add({ data2, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER) });
     EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GenericDrawCommand drawCommand;

@@ -57,10 +57,6 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
         return _pipeline;
     }
 
-    const Texture* texture() const noexcept {
-        return _texture;
-    }
-
     virtual void pipeline(const Pipeline& pipeline) noexcept;
 
     void texture(const Texture& texture, size_t samplerHash);
@@ -160,10 +156,9 @@ class NOINITVTABLE IMPrimitive : public VertexDataInterface {
    protected:
 
     const Pipeline* _pipeline = nullptr;
-    const Texture* _texture = nullptr;
     // render in wireframe mode
     bool _forceWireframe = false;
-    DescriptorSet _descriptorSet;
+    TextureEntry _textureEntry;
     Rect<I32> _viewport = {-1, -1, -1, -1};
 
    private:

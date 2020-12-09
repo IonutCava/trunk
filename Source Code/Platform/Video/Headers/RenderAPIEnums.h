@@ -177,7 +177,6 @@ enum class ShaderBufferLocation : U8 {
     LIGHT_CLUSTER_AABBS,
     NODE_TRANSFORM_DATA,
     NODE_MATERIAL_DATA,
-    NODE_MATERIAL_TEXTURES,
     BONE_TRANSFORMS,
     BONE_TRANSFORMS_PREV,
     SCENE_DATA,
@@ -185,6 +184,7 @@ enum class ShaderBufferLocation : U8 {
     TREE_DATA,
     CMD_BUFFER,
     LUMINANCE_HISTOGRAM,
+    NODE_MATERIAL_TEXTURES,
     COUNT
 };
 

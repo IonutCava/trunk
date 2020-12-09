@@ -391,8 +391,8 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
 
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-                descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
-                descriptorSetCmd._set._textureData.setTexture(screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS);
+                descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
+                descriptorSetCmd._set._textureData.add({ screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
                 EnqueueCommand(bufferInOut, descriptorSetCmd);
 
                 EnqueueCommand(bufferInOut, _triangleDrawCmd);
@@ -413,8 +413,8 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 const auto& depthAtt = _halfDepthAndNormals._rt->getAttachment(RTAttachmentType::Colour, 0);
 
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-                descriptorSetCmd._set._textureData.setTexture(_noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0);
-                descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
+                descriptorSetCmd._set._textureData.add({ _noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0 });
+                descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
                 EnqueueCommand(bufferInOut, descriptorSetCmd);
 
                 EnqueueCommand(bufferInOut, _triangleDrawCmd);
@@ -437,16 +437,16 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 linearSampler.anisotropyLevel(0);
 
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-                descriptorSetCmd._set._textureData.setTexture(_noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0);
+                descriptorSetCmd._set._textureData.add({ _noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0 });
 
                 const auto& halfResAOAtt = _ssaoHalfResOutput._rt->getAttachment(RTAttachmentType::Colour, 0);
                 const auto& halfDepthAtt = _halfDepthAndNormals._rt->getAttachment(RTAttachmentType::Colour, 0);
                 const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
 
-                descriptorSetCmd._set._textureData.setTexture(halfResAOAtt.texture()->data(), linearSampler.getHash(), TextureUsage::UNIT0);
-                descriptorSetCmd._set._textureData.setTexture(halfResAOAtt.texture()->data(), halfResAOAtt.samplerHash(), TextureUsage::UNIT1);
-                descriptorSetCmd._set._textureData.setTexture(halfDepthAtt.texture()->data(), halfDepthAtt.samplerHash(), TextureUsage::NORMALMAP);
-                descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
+                descriptorSetCmd._set._textureData.add({ halfResAOAtt.texture()->data(), linearSampler.getHash(), TextureUsage::UNIT0 });
+                descriptorSetCmd._set._textureData.add({ halfResAOAtt.texture()->data(), halfResAOAtt.samplerHash(), TextureUsage::UNIT1 });
+                descriptorSetCmd._set._textureData.add({ halfDepthAtt.texture()->data(), halfDepthAtt.samplerHash(), TextureUsage::NORMALMAP });
+                descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
 
                 EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -468,9 +468,9 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
 
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-                descriptorSetCmd._set._textureData.setTexture(_noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0);
-                descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
-                descriptorSetCmd._set._textureData.setTexture(screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS);
+                descriptorSetCmd._set._textureData.add({ _noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0 });
+                descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
+                descriptorSetCmd._set._textureData.add({ screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
                 EnqueueCommand(bufferInOut, descriptorSetCmd);
 
                 EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });
@@ -503,8 +503,8 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.setTexture(ssaoAtt.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0);
-            descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
+            descriptorSetCmd._set._textureData.add({ ssaoAtt.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0 });
+            descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
             EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });

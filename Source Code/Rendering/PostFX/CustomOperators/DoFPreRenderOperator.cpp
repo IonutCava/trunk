@@ -103,8 +103,8 @@ bool DoFPreRenderOperator::execute(const Camera* camera, const RenderTargetHandl
     const TextureData depthTex = depthAtt.texture()->data();
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.setTexture(screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0);
-    descriptorSetCmd._set._textureData.setTexture(depthTex, depthAtt.samplerHash(),TextureUsage::UNIT1);
+    descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0 });
+    descriptorSetCmd._set._textureData.add({ depthTex, depthAtt.samplerHash(),TextureUsage::UNIT1 });
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};

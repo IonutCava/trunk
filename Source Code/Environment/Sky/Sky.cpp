@@ -406,8 +406,8 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0);
-    bindDescriptorSetsCommand._set._textureData.setTexture(_skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1);
+    bindDescriptorSetsCommand._set._textureData.add({ _skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0 });
+    bindDescriptorSetsCommand._set._textureData.add({ _skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1 });
     pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};

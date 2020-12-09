@@ -56,8 +56,6 @@ namespace Divide {
 
         TextureBuffer _nodeMaterialTextures{};
 
-        eastl::set<SamplerAddress> _texturesGPUAddressesForPass{};
-
         struct MaterialUpdateRange 
         {
             U32 _firstIDX = std::numeric_limits<U32>::max();
@@ -80,31 +78,24 @@ namespace Divide {
         void addToTextureBuffer(const U16 idx, const NodeMaterialTextures& matTextures) {
             if (matTextures._texDiffuse0 > 0u){
                 _nodeMaterialTextures._texDiffuse0[idx] = matTextures._texDiffuse0;
-                _texturesGPUAddressesForPass.insert(matTextures._texDiffuse0);
             }
             if (matTextures._texOpacityMap > 0u) {
                 _nodeMaterialTextures._texOpacityMap[idx] = matTextures._texOpacityMap;
-                _texturesGPUAddressesForPass.insert(matTextures._texOpacityMap);
             }
             if (matTextures._texDiffuse1 > 0u) {
                 _nodeMaterialTextures._texDiffuse1[idx] = matTextures._texDiffuse1;
-                _texturesGPUAddressesForPass.insert(matTextures._texDiffuse1);
             }
             if (matTextures._texOMR > 0u) {
                 _nodeMaterialTextures._texOMR[idx] = matTextures._texOMR;
-                _texturesGPUAddressesForPass.insert(matTextures._texOMR);
             }
             if (matTextures._texHeight > 0u) {
                 _nodeMaterialTextures._texHeight[idx] = matTextures._texHeight;
-                _texturesGPUAddressesForPass.insert(matTextures._texHeight);
             }
             if (matTextures._texProjected > 0u) {
                 _nodeMaterialTextures._texProjected[idx] = matTextures._texProjected;
-                _texturesGPUAddressesForPass.insert(matTextures._texProjected);
             }
             if (matTextures._texNormalMap > 0u) {
                 _nodeMaterialTextures._texNormalMap[idx] = matTextures._texNormalMap;
-                _texturesGPUAddressesForPass.insert(matTextures._texNormalMap);
             }
         }
     };
@@ -592,7 +583,6 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         };
 
         passData._drawCommands.clear();
-        passData._texturesGPUAddressesForPass.clear();
 
         const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
         const bool needsInterp = interpFactor < 0.985;
@@ -678,11 +668,10 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         texturesBuffer._elementRange = { bufferData._texturesData._elementOffset, 1 };
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set.addShaderBuffer(cmdBuffer);
-        descriptorSetCmd._set.addShaderBuffer(transformBuffer);
-        descriptorSetCmd._set.addShaderBuffer(materialBuffer);
-        descriptorSetCmd._set.addShaderBuffer(texturesBuffer);
-        descriptorSetCmd._set._textureResidencyQueue = passData._texturesGPUAddressesForPass;
+        descriptorSetCmd._set._buffers.add(cmdBuffer);
+        descriptorSetCmd._set._buffers.add(transformBuffer);
+        descriptorSetCmd._set._buffers.add(materialBuffer);
+        descriptorSetCmd._set._buffers.add(texturesBuffer);
         EnqueueCommand(bufferInOut, descriptorSetCmd);
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
@@ -920,19 +909,19 @@ void RenderPassManager::mainPass(const VisibleNodeList<>& nodes, const RenderPas
 
             const TextureData normals = normAtt->texture()->data();
             const TextureData extra = gbufferAtt->texture()->data();
-            descriptorSetCmd._set._textureData.setTexture(normals, normAtt->samplerHash(), TextureUsage::SCENE_NORMALS);
-            descriptorSetCmd._set._textureData.setTexture(extra, gbufferAtt->samplerHash(), TextureUsage::GBUFFER_EXTRA);
+            descriptorSetCmd._set._textureData.add({ normals, normAtt->samplerHash(), TextureUsage::SCENE_NORMALS });
+            descriptorSetCmd._set._textureData.add({ extra, gbufferAtt->samplerHash(), TextureUsage::GBUFFER_EXTRA });
         }
 
         if (hasHiZ) {
-            descriptorSetCmd._set._textureData.setTexture(hizTex->data(), hizSampler, TextureUsage::DEPTH);
+            descriptorSetCmd._set._textureData.add({ hizTex->data(), hizSampler, TextureUsage::DEPTH });
         } else if (prePassExecuted) {
             if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
                 const auto& depthAtt = nonMSTarget.getAttachment(RTAttachmentType::Depth, 0);
-                descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
+                descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
             } else {
                 const auto& depthAtt = target.getAttachment(RTAttachmentType::Depth, 0);
-                descriptorSetCmd._set._textureData.setTexture(depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH);
+                descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
             }
         }
 
@@ -1090,8 +1079,8 @@ void RenderPassManager::woitPass(const VisibleNodeList<>& nodes, const RenderPas
         const TextureData revealage = revAtt.texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.setTexture(accum, accumAtt.samplerHash(),to_base(TextureUsage::UNIT0));
-        descriptorSetCmd._set._textureData.setTexture(revealage, revAtt.samplerHash(), to_base(TextureUsage::UNIT1));
+        descriptorSetCmd._set._textureData.add({ accum, accumAtt.samplerHash(),to_base(TextureUsage::UNIT0) });
+        descriptorSetCmd._set._textureData.add({ revealage, revAtt.samplerHash(), to_base(TextureUsage::UNIT1) });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         GenericDrawCommand drawCommand = {};

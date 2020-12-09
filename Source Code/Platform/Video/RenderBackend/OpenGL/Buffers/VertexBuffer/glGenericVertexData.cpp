@@ -67,13 +67,13 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, const U32 cmdB
     }    
     // Submit the draw command
     if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
-        GLUtil::submitRenderCommand(command, _indexBuffer > 0, true, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
+        GLUtil::SubmitRenderCommand(command, _indexBuffer > 0, true, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex, indexBuffer().count);
-        GLUtil::submitRenderCommand(command, _indexBuffer > 0, false, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::SubmitRenderCommand(command, _indexBuffer > 0, false, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 
-    GL_API::lockBuffers(_context.getFrameCount());
+    GL_API::LockBuffers(_context.getFrameCount());
 }
 
 void glGenericVertexData::setIndexBuffer(const IndexBuffer& indices, const BufferUpdateFrequency updateFrequency) {
@@ -186,7 +186,7 @@ void glGenericVertexData::setBufferBindings(const GenericDrawCommand& command) {
         entry._offset = buffer->getBindOffset(queueIndex());
 
         GL_API::getStateTracker().bindActiveBuffer(_vertexArray, location, buffer->bufferHandle(), _instanceDivisor[bufferIdx], entry._offset, elementSize);
-        GL_API::registerBufferBind(MOV(entry));
+        GL_API::RegisterBufferBind(MOV(entry));
     };
 
     if (command._bufferIndex == GenericDrawCommand::INVALID_BUFFER_INDEX) {

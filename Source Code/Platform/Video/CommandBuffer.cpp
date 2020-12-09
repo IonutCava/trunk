@@ -109,7 +109,7 @@ void CommandBuffer::batch() {
         OPTICK_EVENT("TRY_MERGE_LOOP");
 
         bool tryMerge = true;
-        // Try and merge ONLY descriptor sets as these don't care about commands between them (they only set global state
+        // Try and merge ONLY descriptor sets as these don't care about commands between them (they only set global state)
         while (tryMerge) {
             OPTICK_EVENT("TRY_MERGE_LOOP_STEP_1");
 
@@ -121,7 +121,11 @@ void CommandBuffer::batch() {
                     if (cmdType == CommandType::BIND_DESCRIPTOR_SETS) {
                         CommandBase* crtCommand = get<CommandBase>(entry);
 
-                        if (prevCommand != nullptr && tryMergeCommands(cmdType, prevCommand, crtCommand)) {
+                        bool skip = false;
+                        if (entry._typeIndex == to_base(CommandType::BIND_PIPELINE)) {
+                            skip = reinterpret_cast<BindDescriptorSetsCommand*>(crtCommand)->_set._textureData.hasBindlessTextures();
+                        }
+                        if (prevCommand != nullptr && !skip && tryMergeCommands(cmdType, prevCommand, crtCommand)) {
                             --_commandCount[entry._typeIndex];
                             entry._data = PolyContainerEntry::INVALID_ENTRY_ID;
                             tryMerge = true;
@@ -288,7 +292,7 @@ void CommandBuffer::clean() {
                 OPTICK_EVENT("Clean Descriptor Sets");
 
                 const DescriptorSet& set = get<BindDescriptorSetsCommand>(cmd)->_set;
-                if (prevDescriptorSet == nullptr || set.empty() || *prevDescriptorSet != set) {
+                if (prevDescriptorSet == nullptr || IsEmpty(set) || *prevDescriptorSet != set) {
                     prevDescriptorSet = &set;
                 } else {
                     erase = true;

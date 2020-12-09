@@ -69,7 +69,7 @@ glFramebuffer::glFramebuffer(GFXDevice& context, const RenderTargetDescriptor& d
 
 glFramebuffer::~glFramebuffer()
 {
-    GL_API::deleteFramebuffers(1, &_framebufferHandle);
+    GL_API::DeleteFramebuffers(1, &_framebufferHandle);
     destroy();
 }
 
@@ -452,7 +452,7 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
     OPTICK_EVENT();
 
     // Push debug state
-    GL_API::pushDebugMessage(_debugMessage.c_str());
+    GL_API::PushDebugMessage(_debugMessage.c_str());
 
     // Activate FBO
     GL_API::getStateTracker().setActiveFB(RenderTargetUsage::RT_WRITE_ONLY, _framebufferHandle);
@@ -483,7 +483,7 @@ void glFramebuffer::end(const bool needsUnbind) const {
 
     queueMipMapRecomputation();
 
-    GL_API::popDebugMessage();
+    GL_API::PopDebugMessage();
 }
 
 void glFramebuffer::queueMipMapRecomputation() const {
@@ -506,7 +506,7 @@ void glFramebuffer::QueueMipMapRecomputation(const RTAttachment& attachment) {
         texture->descriptor().autoMipMaps() &&
         texture->descriptor().mipCount() > 1)
     {
-        GL_API::queueComputeMipMap(texture->data()._textureHandle);
+        GL_API::QueueComputeMipMap(texture->data()._textureHandle);
     }
 }
 

@@ -38,91 +38,52 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Textures/Headers/TextureDescriptor.h"
 
 namespace Divide {
+    // Can be anything really, but we can just have a series of Bind commands in a row as well
+    constexpr U8 MAX_BUFFERS_PER_SET = 4u;
+    constexpr U8 MAX_TEXTURE_VIEWS_PER_SET = 3u;
+    constexpr U8 MAX_IMAGES_PER_SET = 2u;
+    constexpr U8 MAX_TEXTURES_PER_SET = to_base(TextureUsage::COUNT);
+
     class ShaderBuffer;
-    bool BufferCompare(const ShaderBuffer* a, const ShaderBuffer* b) noexcept;
+    struct ShaderBufferBinding
+    {
+        vec2<U32>     _elementRange = { 0u, 0u };
+        ShaderBuffer* _buffer = nullptr;
+        ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
+
+        bool set(const ShaderBufferBinding& other);
+        bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange);
+    };
 
     class Texture;
-    struct TextureView final : Hashable {
+    struct TextureView final : Hashable
+    {
         TextureData _textureData = {};
         TextureType _targetType = TextureType::COUNT;
         size_t _samplerHash = 0u;
         vec2<U16> _mipLevels = {};
         vec2<U16> _layerRange = {};
 
-        bool operator==(const TextureView& other) const noexcept {
-            return _samplerHash == other._samplerHash &&
-                   _targetType == other._targetType &&
-                   _mipLevels == other._mipLevels &&
-                   _layerRange == other._layerRange &&
-                   _textureData == other._textureData;
-        }
-
-        bool operator!=(const TextureView& other) const noexcept {
-            return _samplerHash != other._samplerHash ||
-                   _targetType != other._targetType ||
-                   _mipLevels != other._mipLevels ||
-                   _layerRange != other._layerRange ||
-                   _textureData != other._textureData;
-        }
-
         size_t getHash() const noexcept override;
     };
 
-    struct TextureViewEntry final : Hashable {
+    struct TextureViewEntry final : Hashable
+    {
         TextureView _view = {};
-        U8 _binding = 0;
+        U8 _binding = 0u;
         TextureDescriptor _descriptor;
 
-        bool operator==(const TextureViewEntry& other) const noexcept {
-            return _binding == other._binding &&
-                   _view == other._view &&
-                   _descriptor == other._descriptor;
-        }
+        [[nodiscard]] bool isValid() const noexcept { return IsValid(_view._textureData); }
 
-        bool operator!=(const TextureViewEntry& other) const noexcept {
-            return _binding != other._binding ||
-                   _view != other._view ||
-                   _descriptor != other._descriptor;
-        }
-
-        [[nodiscard]] bool isValid() const noexcept {
-            return IsValid(_view._textureData);
-        }
-
-        void reset() noexcept {
-            _view = {};
-            _binding = 0;
-            _descriptor = {};
-        }
+        void reset() noexcept { _view = {}; _binding = 0u; _descriptor = {}; }
 
         size_t getHash() const noexcept override;
     };
 
-    struct ShaderBufferBinding {
-        vec2<U32>     _elementRange = {0u, 0u};
-        ShaderBuffer* _buffer = nullptr;
-        ShaderBufferLocation _binding = ShaderBufferLocation::COUNT;
-
-        bool set(const ShaderBufferBinding& other);
-        bool set(ShaderBufferLocation binding, ShaderBuffer* buffer, const vec2<U32>& elementRange);
-
-        bool operator==(const ShaderBufferBinding& other) const noexcept {
-            return _binding == other._binding &&
-                   _elementRange == other._elementRange &&
-                   BufferCompare(_buffer, other._buffer);
-        }
-
-        bool operator!=(const ShaderBufferBinding& other) const noexcept {
-            return _binding != other._binding ||
-                   _elementRange != other._elementRange ||
-                   !BufferCompare(_buffer, other._buffer);
-        }
-
-        XALLOCATOR
-    };
-
-    struct Image {
-        enum class Flag : U8 {
+    struct Image
+    {
+        enum class Flag : U8
+        {
             READ = 0,
             WRITE,
             READ_WRITE
@@ -130,76 +91,76 @@ namespace Divide {
 
         Texture* _texture = nullptr;
         Flag _flag = Flag::READ;
-        U8 _layer = 0;
-        U8 _level = 0;
-        U8 _binding = 0;
-
-        bool operator==(const Image& other) const noexcept {
-            return _flag == other._flag &&
-                   _layer == other._layer &&
-                   _level == other._level &&
-                   _binding == other._binding &&
-                   _texture == other._texture;
-        }
-
-        bool operator!=(const Image& other) const noexcept {
-            return _flag != other._flag ||
-                   _layer != other._layer ||
-                   _level != other._level ||
-                   _binding != other._binding ||
-                   _texture != other._texture;
-        }
+        U8 _layer = 0u;
+        U8 _level = 0u;
+        U8 _binding = 0u;
     };
 
-    using ShaderBufferList = eastl::fixed_vector<ShaderBufferBinding, 4, true>;
-    using TextureViews = vectorEASTLFast<TextureViewEntry>;
-    using Images = vectorEASTLFast<Image>;
+    template<typename Item, size_t Count, typename SearchType, bool CanExpand = false>
+    struct SetContainerStorage
+    {
+        eastl::fixed_vector<Item, Count, CanExpand> _entries;
+
+        [[nodiscard]] const Item* find(SearchType search) const;
+        [[nodiscard]] bool empty() const noexcept { return _entries.empty(); }
+        [[nodiscard]] size_t count() const noexcept { return _entries.size(); }
+    };
+
+    template<typename Item, size_t Count, typename SearchType, bool CanExpand = false>
+    struct SetContainer : SetContainerStorage<Item, Count, SearchType, CanExpand>
+    {
+        bool add(const Item& entry);
+        bool remove( SearchType search);
+    };
+
+    using ShaderBuffers = SetContainer<ShaderBufferBinding, MAX_BUFFERS_PER_SET, ShaderBufferLocation>;
+    using TextureViews = SetContainer<TextureViewEntry, MAX_TEXTURE_VIEWS_PER_SET, U8>;
+    using Images = SetContainer<Image, MAX_IMAGES_PER_SET, U8>;
+    struct TextureDataContainer final : SetContainerStorage<TextureEntry, MAX_TEXTURES_PER_SET, U8, true>
+    {
+        TextureUpdateState add(const TextureEntry& entry);
+        bool remove(U8 binding);
+
+        void sortByBinding();
+        PROPERTY_RW(bool, hasBindlessTextures, false);
+    };
 
     struct DescriptorSet {
         //This needs a lot more work!
-        TextureDataContainer<> _textureData = {};
-        ShaderBufferList _shaderBuffers = {};
+        TextureDataContainer _textureData = {};
+        ShaderBuffers _buffers = {};
         TextureViews _textureViews = {};
         Images _images = {};
-        eastl::set<SamplerAddress> _textureResidencyQueue{};
-
-        void addTextureViewEntry(const TextureViewEntry& view) noexcept;
-        bool addShaderBuffer(const ShaderBufferBinding& entry);
-        bool addShaderBuffers(const ShaderBufferList& entries);
-        [[nodiscard]] const ShaderBufferBinding* findBinding(ShaderBufferLocation slot) const noexcept;
-        [[nodiscard]] const TextureEntry* findTexture(U8 binding) const noexcept;
-        [[nodiscard]] const TextureViewEntry* findTextureViewEntry(U8 binding) const noexcept;
-        [[nodiscard]] const Image* findImage(U8 binding) const noexcept;
-
-        bool operator==(const DescriptorSet &other) const noexcept {
-            return _shaderBuffers == other._shaderBuffers &&
-                   _textureViews == other._textureViews &&
-                   _images == other._images &&
-                   _textureData == other._textureData &&
-                   _textureResidencyQueue == other._textureResidencyQueue;
-        }
-
-        bool operator!=(const DescriptorSet &other) const noexcept {
-            return _shaderBuffers != other._shaderBuffers ||
-                   _textureViews != other._textureViews ||
-                   _images != other._images ||
-                   _textureData != other._textureData ||
-                   _textureResidencyQueue != other._textureResidencyQueue;
-        }
-
-        [[nodiscard]] bool empty() const noexcept {
-            return  _textureData.count() == 0 &&
-                    _shaderBuffers.empty() &&
-                    _textureViews.empty() &&
-                    _images.empty();
-        }
-
-        XALLOCATOR
     };
 
-    bool Merge(const DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
+    [[nodiscard]] bool IsEmpty(const DescriptorSet& set) noexcept;
+    [[nodiscard]] bool Merge(const DescriptorSet &lhs, DescriptorSet &rhs, bool& partial);
+    [[nodiscard]] bool BufferCompare(const ShaderBuffer* a, const ShaderBuffer* b) noexcept;
 
+    template<typename Item, size_t Count, typename SearchType>
+    bool operator==(const SetContainer<Item, Count, SearchType> &lhs, const SetContainer<Item, Count, SearchType> &rhs) noexcept;
+    template<typename Item, size_t Count, typename SearchType>
+    bool operator!=(const SetContainer<Item, Count, SearchType> &lhs, const SetContainer<Item, Count, SearchType> &rhs) noexcept;
 
+    bool operator==(const DescriptorSet &lhs, const DescriptorSet &rhs) noexcept;
+    bool operator!=(const DescriptorSet &lhs, const DescriptorSet &rhs) noexcept;
+
+    bool operator==(const TextureView& lhs, const TextureView &rhs) noexcept;
+    bool operator!=(const TextureView& lhs, const TextureView &rhs) noexcept;
+
+    bool operator==(const TextureViewEntry& lhs, const TextureViewEntry &rhs) noexcept;
+    bool operator!=(const TextureViewEntry& lhs, const TextureViewEntry &rhs) noexcept;
+
+    bool operator==(const ShaderBufferBinding& lhs, const ShaderBufferBinding &rhs) noexcept;
+    bool operator!=(const ShaderBufferBinding& lhs, const ShaderBufferBinding &rhs) noexcept;
+
+    bool operator==(const Image& lhs, const Image &rhs) noexcept;
+    bool operator!=(const Image& lhs, const Image &rhs) noexcept;
+
+    bool operator==(const TextureDataContainer & lhs, const TextureDataContainer & rhs) noexcept;
+    bool operator!=(const TextureDataContainer & lhs, const TextureDataContainer & rhs) noexcept;
 }; //namespace Divide
 
 #endif //_DESCRIPTOR_SETS_H_
+
+#include "DescriptorSets.inl"

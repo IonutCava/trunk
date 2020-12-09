@@ -347,7 +347,7 @@ GLenum internalFormat(const GFXImageFormat baseFormat, const GFXDataFormat dataT
 
 namespace {
 
-void submitIndirectCommand(const IndirectDrawCommand& cmd,
+void SubmitIndirectCommand(const IndirectDrawCommand& cmd,
                            const U32 drawCount,
                            const GLenum mode,
                            const GLenum internalFormat,
@@ -373,13 +373,13 @@ void submitIndirectCommand(const IndirectDrawCommand& cmd,
     }
 }
 
-void submitDirectCommand(const IndirectDrawCommand& cmd,
+void SubmitDirectCommand(const IndirectDrawCommand& cmd,
                          const U32 drawCount,
                          const GLenum mode,
                          const GLenum internalFormat,
                          const bool drawIndexed,
                          size_t* countData,
-                         bufferPtr indexData) 
+                         const bufferPtr indexData) 
 {
     if (drawCount > 1 && cmd.primCount == 1) {
         // We could just submit a multi-draw with a draw count of 1, but this might avoid some CPU overhead.
@@ -413,31 +413,31 @@ void submitDirectCommand(const IndirectDrawCommand& cmd,
     }
 }
 
-void submitRenderCommand(const GLenum primitiveType,
+void SubmitRenderCommand(const GLenum primitiveType,
                          const GenericDrawCommand& drawCommand,
                          const bool drawIndexed,
                          const bool useIndirectBuffer,
                          const GLuint cmdBufferOffset,
                          const GLenum internalFormat,
                          size_t* countData,
-                         bufferPtr indexData)
+                         const bufferPtr indexData)
 {
 
     if (useIndirectBuffer) {
-        submitIndirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, cmdBufferOffset + to_U32(drawCommand._commandOffset));
+        SubmitIndirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, cmdBufferOffset + to_U32(drawCommand._commandOffset));
     } else {
-        submitDirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, countData, indexData);
+        SubmitDirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, countData, indexData);
     }
 }
-};
+}
 
-void submitRenderCommand(const GenericDrawCommand& drawCommand,
+void SubmitRenderCommand(const GenericDrawCommand& drawCommand,
                          const bool drawIndexed,
                          const bool useIndirectBuffer,
                          const GLuint cmdBufferOffset,
                          const GLenum internalFormat,
                          size_t* countData,
-                         bufferPtr indexData)
+                         const bufferPtr indexData)
 {
     DIVIDE_ASSERT(drawCommand._primitiveType != PrimitiveType::COUNT,
                   "GLUtil::submitRenderCommand error: Draw command's type is not valid!");
@@ -468,7 +468,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
 
         //----- DRAW ------
         const GLenum primitiveType = glPrimitiveTypeTable[to_base(drawCommand._primitiveType)];
-        submitRenderCommand(primitiveType, drawCommand, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
+        SubmitRenderCommand(primitiveType, drawCommand, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
         //-----------------
 
         if (runQueries) {
@@ -486,7 +486,7 @@ void submitRenderCommand(const GenericDrawCommand& drawCommand,
     }
 
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-        submitRenderCommand(GL_LINE_LOOP, drawCommand, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
+        SubmitRenderCommand(GL_LINE_LOOP, drawCommand, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
     }
 }
 
@@ -519,7 +519,7 @@ void glTextureViewCache::onFrameEnd() {
 
         if (lifeLeft == 0) {
             _tempBuffer[count++] = _handles[i];
-            GL_API::dequeueComputeMipMap(_handles[i]);
+            GL_API::DequeueComputeMipMap(_handles[i]);
         }
     }
 

@@ -27,6 +27,11 @@ layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd
     NodeMaterialData dvd_Materials[];
 };
 
+#if defined(USE_BINDLESS_TEXTURES)
+
+#if !defined(USE_BINDLESS_TEXTURES_IN_UBOS)
+#define SAMPLER_LOCATION(X) layout(location = BUFFER_NODE_MATERIAL_TEXTURES + X, bindless_sampler)
+#else
 layout(binding = BUFFER_NODE_MATERIAL_TEXTURES, std140) uniform dvd_MaterialTextures {
     uvec2 _texDiffuse0[MAX_CONCURRENT_MATERIALS];
     uvec2 _texOpacityMap[MAX_CONCURRENT_MATERIALS];
@@ -37,23 +42,32 @@ layout(binding = BUFFER_NODE_MATERIAL_TEXTURES, std140) uniform dvd_MaterialText
     uvec2 _texNormalMap[MAX_CONCURRENT_MATERIALS];
 };
 
-#if defined(USE_BINDLESS_TEXTURES)
-#define texDiffuse0 samplerUnit0(_texDiffuse0[MATERIAL_IDX])
+
+#define texDiffuse0   samplerUnit0(_texDiffuse0[MATERIAL_IDX])
 #define texOpacityMap samplerOpacity(_texOpacityMap[MATERIAL_IDX])
-#define texDiffuse1 samplerUnit1(_texDiffuse1[MATERIAL_IDX])
-#define texOMR samplerOMR(_texOMR[MATERIAL_IDX])
-#define texHeight samplerHeight(_texHeight[MATERIAL_IDX])
-#define texProjected samplerProj(_texProjected[MATERIAL_IDX])
-#define texNormalMap samplerNormal(_texNormalMap[MATERIAL_IDX])
-#else
-layout(binding = TEXTURE_UNIT0)  uniform samplerUnit0 texDiffuse0;
-layout(binding = TEXTURE_UNIT1)  uniform samplerUnit1 texDiffuse1;
-layout(binding = TEXTURE_HEIGHT) uniform samplerHeight texHeight;
-layout(binding = TEXTURE_OMR) uniform samplerOMR texOMR;
-layout(binding = TEXTURE_OPACITY) uniform samplerOpacity texOpacityMap;
-layout(binding = TEXTURE_NORMALMAP) uniform samplerNormal texNormalMap;
-layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
+#define texDiffuse1   samplerUnit1(_texDiffuse1[MATERIAL_IDX])
+#define texOMR        samplerOMR(_texOMR[MATERIAL_IDX])
+#define texHeight     samplerHeight(_texHeight[MATERIAL_IDX])
+#define texProjected  samplerProj(_texProjected[MATERIAL_IDX])
+#define texNormalMap  samplerNormal(_texNormalMap[MATERIAL_IDX])
+#endif //USE_BINDLESS_TEXTURES_IN_UBOS
+
+#else //USE_BINDLESS_TEXTURES
+
+#define SAMPLER_LOCATION(X) layout(binding = X)
+
 #endif //USE_BINDLESS_TEXTURES
+
+#if !defined(USE_BINDLESS_TEXTURES_IN_UBOS)
+SAMPLER_LOCATION(TEXTURE_UNIT0)      uniform samplerUnit0 texDiffuse0;
+SAMPLER_LOCATION(TEXTURE_UNIT1)      uniform samplerUnit1 texDiffuse1;
+SAMPLER_LOCATION(TEXTURE_HEIGHT)     uniform samplerHeight texHeight;
+SAMPLER_LOCATION(TEXTURE_OMR)        uniform samplerOMR texOMR;
+SAMPLER_LOCATION(TEXTURE_OPACITY)    uniform samplerOpacity texOpacityMap;
+SAMPLER_LOCATION(TEXTURE_NORMALMAP)  uniform samplerNormal texNormalMap;
+SAMPLER_LOCATION(TEXTURE_PROJECTION) uniform samplerProj texProjected;
+#endif //!USE_BINDLESS_TEXTURES_IN_UBOS
+
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA
 
 

@@ -201,7 +201,7 @@ extern thread_local SDL_GLContext s_glSecondaryContext;
 
 extern Mutex s_glSecondaryContextMutex;
 
-void submitRenderCommand(const GenericDrawCommand& drawCommand,
+void SubmitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool drawIndexed,
                          bool useIndirectBuffer,
                          GLuint cmdBufferOffset,

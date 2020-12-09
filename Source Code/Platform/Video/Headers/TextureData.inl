@@ -34,206 +34,35 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _TEXTURE_DATA_INL_
 
 namespace Divide {
+    inline bool IsValid(const TextureEntry& entry) noexcept {
+        return entry._hasAddress ? entry._gpuAddress > 0u
+                                 : entry._gpuData._data._textureType != TextureType::COUNT;
+    }
+
     inline bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
-        return lhs._binding == rhs._binding &&
-               lhs._sampler == rhs._sampler &&
-               lhs._data == rhs._data;
-    }
-
-    inline bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
-        return lhs._binding != rhs._binding ||
-               lhs._sampler != rhs._sampler ||
-               lhs._data != rhs._data;
-    }
-
-    template<size_t Size>
-    bool TextureDataContainer<Size>::set(const TextureDataContainer<Size>& other) {
-        // EASTL should be fast enough to handle this
-        const DataEntries& otherTextures = other.textures();
-        if (_textures != otherTextures) {
-            _textures = otherTextures;
-            _count = other._count;
-            return true;
-        }
-
-        return false;
-    }
-
-    template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, const size_t samplerHash, const U8 binding) {
-        assert(data._textureType != TextureType::COUNT);
-        return setTextureInternal(data, samplerHash, binding);
-    }
-
-    template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTexture(const TextureData& data, const size_t samplerHash, const TextureUsage binding) {
-        return setTexture(data, samplerHash, to_U8(binding));
-    }
-
-    template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTextures(const TextureDataContainer& textureEntries) {
-        return setTextures(textureEntries._textures);
-    }
-
-    template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTextures(const DataEntries& textureEntries) {
-        TextureUpdateState ret = TextureUpdateState::COUNT;
-        for (const TextureEntry& entry : textureEntries) {
-            const TextureUpdateState state = setTextureInternal(entry._data, entry._sampler, entry._binding);
-            if (ret == TextureUpdateState::COUNT || state != TextureUpdateState::NOTHING) {
-                ret = state;
-            }
-        }
-
-        return ret;
-    }
-
-    template<size_t Size>
-    const TextureEntry* TextureDataContainer<Size>::findEntry(const U8 binding) const {
-        for (const TextureEntry& it : _textures) {
-            if (it._binding == binding) {
-                return &it;
-            }
-        }
-
-        return nullptr;
-    }
-
-    template<size_t Size>
-    bool TextureDataContainer<Size>::removeTexture(const U8 binding) {
-        for (TextureEntry& it : _textures) {
-            assert(_count > 0u);
-
-            U8& crtBinding = it._binding;
-            if (crtBinding == binding) {
-                crtBinding = INVALID_BINDING;
-                --_count;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    template<size_t Size>
-    bool TextureDataContainer<Size>::removeTexture(const TextureData& data) {
-        for (TextureEntry& it : _textures) {
-            assert(_count > 0u);
-
-            U8& crtBinding = it._binding;
-            if (it._data == data) {
-                crtBinding = INVALID_BINDING;
-                --_count;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    template<size_t Size>
-    void TextureDataContainer<Size>::clear() {
-        for (const TextureEntry& it : _textures) {
-            removeTexture(it._binding);
-        }
-    }
-
-    template<size_t Size>
-    void TextureDataContainer<Size>::sortByBinding() {
-        eastl::sort(_textures.begin(), _textures.begin() + count(), [](const TextureEntry& lhs, const TextureEntry& rhs) {
-            return lhs._binding < rhs._binding;
-        });
-    }
-
-    template<size_t Size>
-    TextureUpdateState TextureDataContainer<Size>::setTextureInternal(const TextureData& data, const size_t samplerHash, const U8 binding) {
-        OPTICK_EVENT();
-        if (binding != INVALID_BINDING) {
-            for (TextureEntry& it : _textures) {
-                if (it._binding == binding) {
-                    TextureData& crtData = it._data;
-                    size_t& crtSamp = it._sampler;
-                    if (crtData != data || crtSamp != samplerHash) {
-                        crtData = data;
-                        crtSamp = samplerHash;
-                        return TextureUpdateState::REPLACED;
-                    }
-                     
-                    return TextureUpdateState::NOTHING;
-                }
-            }
-            for (TextureEntry& it : _textures) {
-                U8& crtBinding = it._binding;
-                if (crtBinding == INVALID_BINDING) {
-                    crtBinding = binding;
-                    it._data = data;
-                    it._sampler = samplerHash;
-                    ++_count;
-                    return TextureUpdateState::ADDED;
-                }
-            }
-        }
-        
-        return TextureUpdateState::NOTHING;
-    }
-
-    template<size_t Size>
-    bool operator==(const TextureDataContainer<Size> & lhs, const TextureDataContainer<Size> & rhs) noexcept {
-        const size_t lhsCount = lhs.count();
-        const size_t rhsCount = rhs.count();
-    
-        if (lhsCount != rhsCount) {
+        if (lhs._binding != rhs._binding || lhs._hasAddress != rhs._hasAddress) {
             return false;
         }
 
-        const auto & lhsTextures = lhs.textures();
-        const auto & rhsTextures = rhs.textures();
-    
-        bool foundEntry = false;
-        for (size_t i = 0; i < lhsCount; ++i) {
-            const auto & lhsEntry = lhsTextures[i];
-        
-            for (const TextureEntry& rhsEntry : rhsTextures) {
-                if (rhsEntry._binding == lhsEntry._binding) {
-                    if (rhsEntry._sampler != lhsEntry._sampler || rhsEntry._data != lhsEntry._data) {
-                        return false;
-                    }
-                    foundEntry = true;
-                }
-            }
-        }
-
-        return foundEntry;
+        return (lhs._hasAddress ? lhs._gpuAddress == rhs._gpuAddress : lhs._gpuData == rhs._gpuData);
     }
 
-    template<size_t Size>
-    bool operator!=(const TextureDataContainer<Size> & lhs, const TextureDataContainer<Size> & rhs) noexcept {
-        const size_t lhsCount = lhs.count();
-        const size_t rhsCount = rhs.count();
-
-        if (lhsCount != rhsCount) {
+    inline bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
+        if (lhs._binding != rhs._binding || lhs._hasAddress != rhs._hasAddress) {
             return true;
         }
 
-        const auto & lhsTextures = lhs.textures();
-        const auto & rhsTextures = rhs.textures();
-
-        bool foundEntry = false;
-        for (size_t i = 0; i < lhsCount; ++i) {
-            const auto & lhsEntry = lhsTextures[i];
-
-            for (const auto& rhsEntry : rhsTextures) {
-                if (rhsEntry._binding == lhsEntry._binding) {
-                    if (rhsEntry._sampler != lhsEntry._sampler || rhsEntry._data != lhsEntry._data) {
-                        return true;
-                    }
-                    foundEntry = true;
-                }
-            }
-        }
-
-        return !foundEntry;
+        return (lhs._hasAddress ? lhs._gpuAddress != rhs._gpuAddress : lhs._gpuData != rhs._gpuData);
     }
-}; //namespace Divide
+
+    inline bool operator==(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept {
+        return  lhs._sampler == rhs._sampler && lhs._data == rhs._data;
+    }
+
+    inline bool operator!=(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept {
+        return  lhs._sampler != rhs._sampler || lhs._data != rhs._data;
+    }
+
+} //namespace Divide
 
 #endif //_TEXTURE_DATA_INL_

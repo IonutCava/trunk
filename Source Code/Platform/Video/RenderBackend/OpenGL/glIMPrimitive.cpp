@@ -90,7 +90,7 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
 
         PushConstants pushConstants;
         // Inform the shader if we have (or don't have) a texture
-        pushConstants.set(_ID("useTexture"), GFX::PushConstantType::BOOL, _texture != nullptr);
+        pushConstants.set(_ID("useTexture"), GFX::PushConstantType::BOOL, IsValid(_textureEntry));
         // Inform shader to write all of the extra stuff it needs in order for PostFX to skip affected fragments (usually a high alpha value)
         pushConstants.set(_ID("skipPostFX"), GFX::PushConstantType::BOOL, skipPostFX());
         // Upload the primitive's world matrix to the shader
@@ -104,9 +104,9 @@ GFX::CommandBuffer& glIMPrimitive::toCommandBuffer() const {
         pushConstantsCommand._constants = pushConstants;
         EnqueueCommand(*_cmdBuffer, pushConstantsCommand);
 
-        if (_texture) {
+        if (IsValid(_textureEntry)) {
             GFX::BindDescriptorSetsCommand descriptorSetCmd;
-            descriptorSetCmd._set = _descriptorSet;
+            descriptorSetCmd._set._textureData.add(_textureEntry);
             EnqueueCommand(*_cmdBuffer, descriptorSetCmd);
         }
 

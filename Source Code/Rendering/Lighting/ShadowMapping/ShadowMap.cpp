@@ -200,7 +200,7 @@ void ShadowMap::resetShadowMaps() {
 }
 
 void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
-    GFX::BindDescriptorSetsCommand descriptorSetCmd;
+    GFX::BindDescriptorSetsCommand descriptorSetCmd{};
     for (U8 i = 0; i < to_base(ShadowType::COUNT); ++i) {
         RenderTargetHandle& sm = s_shadowMaps[i];
         if (sm._rt == nullptr) {
@@ -222,9 +222,9 @@ void ShadowMap::bindShadowMaps(GFX::CommandBuffer& bufferInOut) {
             entry._view._samplerHash = shadowTexture.samplerHash();
             entry._view._mipLevels.set(0, texDescriptor.mipCount());
             entry._view._layerRange.set(0, useCount);
-            descriptorSetCmd._set._textureViews.push_back(entry);
+            descriptorSetCmd._set._textureViews.add(entry);
         } else {
-            descriptorSetCmd._set._textureData.setTexture(shadowTexture.texture()->data(), shadowTexture.samplerHash(), bindSlot);
+            descriptorSetCmd._set._textureData.add({ shadowTexture.texture()->data(), shadowTexture.samplerHash(), bindSlot });
         }
     }
     EnqueueCommand(bufferInOut, descriptorSetCmd);
