@@ -108,6 +108,7 @@ enum class CommandType : U8 {
     MEMORY_BARRIER,
     READ_BUFFER_DATA,
     CLEAR_BUFFER_DATA,
+    SET_TEXTURE_RESIDENCY,
     BEGIN_DEBUG_SCOPE,
     END_DEBUG_SCOPE,
     SWITCH_WINDOW,
@@ -123,7 +124,7 @@ namespace Names {
         "RESET_RT", "RESET_AND_CLEAR_RT", "BLIT_RT", "COPY_TEXTURE", "CLEAR_TEXTURE", "COMPUTE_MIPMAPS", "SET_CAMERA",
         "PUSH_CAMERA", "POP_CAMERA", "SET_CLIP_PLANES", "BIND_PIPELINE", "BIND_DESCRIPTOR_SETS", "SEND_PUSH_CONSTANTS",
         "DRAW_COMMANDS", "DRAW_TEXT", "DRAW_IMGUI", "DISPATCH_COMPUTE", "MEMORY_BARRIER", "READ_BUFFER_DATA", "CLEAR_BUFFER_DATA",
-        "BEGIN_DEBUG_SCOPE","END_DEBUG_SCOPE", "SWITCH_WINDOW", "SET_CLIPING_STATE", "EXTERNAL", "UNKNOWN"
+        "SET_TEXTURE_RESIDENCY", "BEGIN_DEBUG_SCOPE","END_DEBUG_SCOPE", "SWITCH_WINDOW", "SET_CLIPING_STATE", "EXTERNAL", "UNKNOWN"
     };
 };
 
@@ -335,6 +336,11 @@ END_COMMAND(SetClipPlanesCommand);
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
     DescriptorSet _set;
 END_COMMAND(BindDescriptorSetsCommand);
+
+BEGIN_COMMAND(SetTexturesResidencyCommand, CommandType::SET_TEXTURE_RESIDENCY);
+    eastl::set<SamplerAddress> _addresses;
+    bool _state = true;
+END_COMMAND(SetTexturesResidencyCommand);
 
 BEGIN_COMMAND(BeginDebugScopeCommand, CommandType::BEGIN_DEBUG_SCOPE);
     BeginDebugScopeCommand(const char* scopeName) noexcept : _scopeName(scopeName) {}

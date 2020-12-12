@@ -44,6 +44,7 @@ namespace {
             case CommandType::SET_CLIP_PLANES:
             case CommandType::SEND_PUSH_CONSTANTS:
             case CommandType::SET_CLIPING_STATE:
+            case CommandType::SET_TEXTURE_RESIDENCY:
                 return true;
             default: break;
         }

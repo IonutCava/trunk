@@ -68,6 +68,7 @@ namespace Divide {
             }
         };
 
+        eastl::set<SamplerAddress> _uniqueTextureAddresses{};
         std::array<MaterialUpdateRange, RenderPass::DataBufferRingSize> _matUpdateRange{};
 
         bufferPtr transformData(const U32 offset) const { return (bufferPtr)&_nodeTransformData[offset]; }
@@ -92,7 +93,7 @@ namespace Divide {
             }
             // second loop for cache reasons. 0u is fine as an address since we filter it at graphics API level.
             for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
-            //    _uniqueTextureAddresses.insert(tempTextures[i]);
+                //_uniqueTextureAddresses.insert(tempTextures[i]);
             }
         }
     };
@@ -594,6 +595,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         passData._transformBufferIndex = bufferData._transformData._dataRingIndex;
         passData._commandsBufferIndex  = bufferData._commandData._dataRingIndex;
         passData._matUpdateRange[passData._materialBufferIndex].reset();
+        passData._uniqueTextureAddresses.clear();
 
         U16 nodeCount = 0u;
         bool isOccluder = true;
@@ -673,6 +675,13 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
         descriptorSetCmd._set._buffers.add(materialBuffer);
         descriptorSetCmd._set._buffers.add(texturesBuffer);
         EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        if (passData._uniqueTextureAddresses.size() > 0) {
+            GFX::SetTexturesResidencyCommand residencyCmd = {};
+            residencyCmd._addresses = passData._uniqueTextureAddresses;
+            residencyCmd._state = true;
+            EnqueueCommand(bufferInOut, residencyCmd);
+        }
     } else {
         for (RenderBin::SortedQueue& queue : passData._sortedQueues) {
             for (RenderingComponent* rComp : queue) {

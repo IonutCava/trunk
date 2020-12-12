@@ -1272,8 +1272,20 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             getStateTracker().setScissor(commandBuffer.get<GFX::SetScissorCommand>(entry)->_rect);
         }break;
         case GFX::CommandType::SET_BLEND: {
-            GFX::SetBlendCommand* blendCmd = commandBuffer.get<GFX::SetBlendCommand>(entry);
-            getStateTracker().setBlending(blendCmd->_blendProperties);
+            getStateTracker().setBlending(commandBuffer.get<GFX::SetBlendCommand>(entry)->_blendProperties);
+        }break;
+        case GFX::CommandType::SET_TEXTURE_RESIDENCY:
+        {
+            GFX::SetTexturesResidencyCommand* crtCmd = commandBuffer.get<GFX::SetTexturesResidencyCommand>(entry);
+            if (crtCmd->_state) {
+                for (SamplerAddress address : crtCmd->_addresses) {
+                    MakeTexturesResidentInternal(address);
+                }
+            } else {
+                for (SamplerAddress address : crtCmd->_addresses) {
+                    MakeTexturesNonResidentInternal(address);
+                }
+            }
         }break;
         case GFX::CommandType::BEGIN_DEBUG_SCOPE: {
              GFX::BeginDebugScopeCommand* crtCmd = commandBuffer.get<GFX::BeginDebugScopeCommand>(entry);
@@ -1699,30 +1711,50 @@ bool GL_API::makeTextureViewsResidentInternal(const TextureViews& textureViews, 
 }
 
 bool GL_API::MakeTexturesResidentInternal(const SamplerAddress address) {
-    bool valid = false;
-    // Check for existing resident textures
-    for (ResidentTexture& texture : s_residentTextures) {
-        if (texture._address == address) {
-            texture._frameCount = 0u;
-            valid = true;
-            break;
-        }
-    }
-
-    if (!valid) {
-        // Register a new resident texture
+    if (address > 0u) {
+        bool valid = false;
+        // Check for existing resident textures
         for (ResidentTexture& texture : s_residentTextures) {
-            if (texture._address == 0u) {
-                texture._address = address;
+            if (texture._address == address) {
                 texture._frameCount = 0u;
-                glMakeTextureHandleResidentARB(address);
                 valid = true;
                 break;
             }
         }
+
+        if (!valid) {
+            // Register a new resident texture
+            for (ResidentTexture& texture : s_residentTextures) {
+                if (texture._address == 0u) {
+                    texture._address = address;
+                    texture._frameCount = 0u;
+                    glMakeTextureHandleResidentARB(address);
+                    valid = true;
+                    break;
+                }
+            }
+        }
+
+        return valid;
     }
 
-    return valid;
+    return true;
+}
+
+bool GL_API::MakeTexturesNonResidentInternal(const SamplerAddress address) {
+    if (address > 0u) {
+        for (ResidentTexture& texture : s_residentTextures) {
+            if (texture._address == address) {
+                texture._address = 0u;
+                texture._frameCount = 0u;
+                glMakeTextureHandleNonResidentARB(address);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    return true;
 }
 
 bool GL_API::makeTexturesResident(TextureDataContainer& textureData, const TextureViews& textureViews, const U8 offset, const U8 count) const {
