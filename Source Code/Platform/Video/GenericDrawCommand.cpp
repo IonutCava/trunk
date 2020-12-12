@@ -9,7 +9,7 @@ namespace GenericDrawCommandResults {
     hashMap<I64, QueryResult> g_queryResults;
 };
 
-bool compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) noexcept {
+bool Compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) noexcept {
     return lhs._primitiveType == rhs._primitiveType &&
            lhs._bufferIndex == rhs._bufferIndex &&
            lhs._sourceBuffer == rhs._sourceBuffer;

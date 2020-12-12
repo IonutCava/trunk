@@ -82,33 +82,16 @@ struct TextureEntry
 {
     TextureEntry() = default;
     TextureEntry(const TextureData& data, const size_t samplerHash, const TextureUsage binding) : TextureEntry(data, samplerHash, to_U8(binding)) {}
-    TextureEntry(const SamplerAddress address, const TextureUsage binding) : TextureEntry(address, to_U8(binding)) {}
-
     TextureEntry(const TextureData& data, const size_t samplerHash, const U8 binding) 
-      : _gpuData{data, samplerHash},
+      : _data(data),
+        _sampler(samplerHash),
         _binding(binding)
     {
     }
 
-    TextureEntry(const SamplerAddress address, const U8 binding)
-      : _gpuAddress(address),
-        _binding(binding),
-        _hasAddress(true)
-    {
-    }
-
-    struct DataSampler {
-        TextureData _data;
-        size_t _sampler = 0u;
-    };
-
-    union {
-        DataSampler _gpuData = {};
-        SamplerAddress _gpuAddress;
-    };
-    
+    TextureData _data;
+    size_t _sampler = 0u;
     U8 _binding = 0u;
-    bool _hasAddress = false;
 };
 
 static constexpr U8 INVALID_TEXTURE_BINDING = std::numeric_limits<U8>::max();
@@ -117,8 +100,6 @@ static constexpr U8 INVALID_TEXTURE_BINDING = std::numeric_limits<U8>::max();
 bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept;
 bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept;
 
-bool operator==(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept;
-bool operator!=(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept;
 
 }; //namespace Divide
 

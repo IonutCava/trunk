@@ -37,6 +37,19 @@
 namespace Divide {
 enum class TextureUsage : unsigned char;
 
+constexpr TextureUsage g_materialTextures[] = {
+    TextureUsage::UNIT0,
+    TextureUsage::OPACITY,
+    TextureUsage::UNIT1,
+    TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
+    TextureUsage::HEIGHTMAP,
+    TextureUsage::PROJECTION,
+    TextureUsage::NORMALMAP
+};
+
+constexpr size_t MATERIAL_TEXTURE_COUNT = (sizeof(g_materialTextures) / sizeof(g_materialTextures[0]));
+using NodeMaterialTextures = std::array<SamplerAddress, MATERIAL_TEXTURE_COUNT>;
+
 #pragma pack(push, 1)
     struct NodeTransformData
     {
@@ -58,29 +71,6 @@ enum class TextureUsage : unsigned char;
         mat4<F32> _prevWorldMatrix = MAT4_ZERO;
     };
 
-    struct NodeMaterialTextures
-    {
-        SamplerAddress _texDiffuse0 = 0u;
-        SamplerAddress _texOpacityMap = 0u;
-        SamplerAddress _texDiffuse1 = 0u;
-        SamplerAddress _texOMR = 0u;
-        SamplerAddress _texHeight = 0u;
-        SamplerAddress _texProjected = 0u;
-        SamplerAddress _texNormalMap = 0u;
-        SamplerAddress _padding{};
-    };
-
-    struct TextureBuffer
-    {
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texDiffuse0{};
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texOpacityMap{};
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texDiffuse1{};
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texOMR{};
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texHeight{};
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texProjected{};
-        std::array<SamplerAddress, Config::MAX_CONCURRENT_MATERIALS> _texNormalMap{};
-    };
-
     struct NodeMaterialData
     {
         //base colour
@@ -97,7 +87,6 @@ enum class TextureUsage : unsigned char;
 
     [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;
     [[nodiscard]] size_t HashTexturesData(const NodeMaterialTextures& dataIn) noexcept;
-    SamplerAddress GetTextureAddress(const NodeMaterialTextures& source, TextureUsage usage) noexcept;
 #pragma pack(pop)
 
 } //namespace Divide

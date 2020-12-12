@@ -147,12 +147,8 @@ protected:
 public:
     static GLStateTracker& getStateTracker() noexcept;
 
-    static void QueueResidency(SamplerAddress address, U8 binding);
-    static void DequeueResidency(SamplerAddress address);
-    static void DequeueResidency(U8 binding);
-    static void ClearResidencyQueue();
-    static void ProcessResidencyQueue();
     static bool MakeTexturesResidentInternal(SamplerAddress address);
+    static bool MakeTexturesNonResidentInternal(SamplerAddress address);
 
     static void QueueFlush();
     /// Queue a mipmap recalculation
@@ -205,7 +201,6 @@ public:
     static GLuint s_SSBMaxSize;
 
     static bool s_UseBindlessTextures;
-    static bool s_UseBindelssTexturesInUBOs;
 
     static glHardwareQueryPool* s_hardwareQueryPool;
 
@@ -244,7 +239,6 @@ private:
     };
 
     static vectorEASTL<ResidentTexture> s_residentTextures;
-    static eastl::queue<eastl::pair<SamplerAddress, U8>> s_residencyQueue;
 
     /// The main VAO pool. We use a pool to avoid multithreading issues with VAO states
     static GLUtil::glVAOPool s_vaoPool;

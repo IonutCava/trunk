@@ -46,10 +46,11 @@
 
 #include "Geometry/Material/Headers/ShaderProgramInfo.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Rendering/RenderPass/Headers/NodeBufferedData.h"
 
 namespace Divide {
-    struct NodeMaterialTextures;
-    class RenderingComponent;
+
+class RenderingComponent;
 struct NodeMaterialData;
 
 class RenderStateBlock;
@@ -66,16 +67,6 @@ constexpr F32 Specular_Water = 0.255f;
 constexpr F32 Specular_Milk = 0.277f;
 constexpr F32 Specular_Skin = 0.35f;
 
-
-constexpr TextureUsage g_materialTextures[] = {
-    TextureUsage::UNIT0,
-    TextureUsage::OPACITY,
-    TextureUsage::UNIT1,
-    TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
-    TextureUsage::HEIGHTMAP,
-    TextureUsage::PROJECTION,
-    TextureUsage::NORMALMAP
-};
 
 constexpr U8 g_TransparentSlots[] = {
    to_base(TextureUsage::UNIT0),
@@ -269,6 +260,7 @@ class Material final : public CachedResource {
     PROPERTY_R(bool, hardwareSkinning, false);
     PROPERTY_RW(CustomShaderUpdateCBK, customShaderCBK);
 
+    PROPERTY_R(bool, useBindlessTextures, false);
    private:
     bool _isRefractive = false;
 

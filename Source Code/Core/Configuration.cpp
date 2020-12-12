@@ -46,7 +46,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.MSAASamples);
         GET_PARAM(rendering.anisotropicFilteringLevel);
         GET_PARAM(rendering.useBindlessTextures);
-        GET_PARAM(rendering.useBindlessTextureUBOs);
         GET_PARAM(rendering.reflectionProbeResolution);
         GET_PARAM(rendering.reflectionPlaneResolution);
         GET_PARAM(rendering.numLightsPerCluster);
@@ -164,7 +163,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.MSAASamples);
         PUT_PARAM(rendering.anisotropicFilteringLevel);
         PUT_PARAM(rendering.useBindlessTextures);
-        PUT_PARAM(rendering.useBindlessTextureUBOs);
         PUT_PARAM(rendering.reflectionProbeResolution);
         PUT_PARAM(rendering.reflectionPlaneResolution);
         PUT_PARAM(rendering.numLightsPerCluster);

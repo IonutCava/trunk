@@ -52,9 +52,8 @@ namespace Divide {
         std::array<NodeTransformData, Config::MAX_VISIBLE_NODES> _nodeTransformData{};
 
         std::array<NodeMaterialData, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialData{};
+        std::array<RenderPass::NodeMaterialTexturesInternal, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialTextures{};
         std::array<std::pair<size_t, U16>, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialLookupInfo{};
-
-        TextureBuffer _nodeMaterialTextures{};
 
         struct MaterialUpdateRange 
         {
@@ -73,29 +72,27 @@ namespace Divide {
 
         bufferPtr transformData(const U32 offset) const { return (bufferPtr)&_nodeTransformData[offset]; }
         bufferPtr materialData(const U32 offset)  const { return (bufferPtr)&_nodeMaterialData[offset]; }
-        bufferPtr texturesData()  const { return (bufferPtr)&_nodeMaterialTextures._texDiffuse0[0]; }
+        bufferPtr texturesData(const U32 offset)  const { return (bufferPtr)&_nodeMaterialTextures[offset]._textures[0]; }
 
-        void addToTextureBuffer(const U16 idx, const NodeMaterialTextures& matTextures) {
-            if (matTextures._texDiffuse0 > 0u){
-                _nodeMaterialTextures._texDiffuse0[idx] = matTextures._texDiffuse0;
+        void addTexturesAt(const U16 idx, const NodeMaterialTextures& tempTextures) {
+            // GL_ARB_bindless_texture:
+            // In the following four constructors, the low 32 bits of the sampler
+            // type correspond to the .x component of the uvec2 and the high 32 bits
+            // correspond to the .y component.
+            // uvec2(any sampler type)     // Converts a sampler type to a pair of 32-bit unsigned integers
+            // any sampler type(uvec2)     // Converts a pair of 32-bit unsigned integers to a sampler type
+            // uvec2(any image type)       // Converts an image type to a pair of 32-bit unsigned integers
+            // any image type(uvec2)       // Converts a pair of 32-bit unsigned integers to an image type
+
+            RenderPass::NodeMaterialTexturesInternal& target = _nodeMaterialTextures[idx];
+            for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
+                const SamplerAddress combined = tempTextures[i];
+                target._textures[i / 2][(i % 2) * 2 + 0] = to_U32(combined & 0xFFFFFFFF); //low
+                target._textures[i / 2][(i % 2) * 2 + 1] = to_U32(combined >> 32); //high
             }
-            if (matTextures._texOpacityMap > 0u) {
-                _nodeMaterialTextures._texOpacityMap[idx] = matTextures._texOpacityMap;
-            }
-            if (matTextures._texDiffuse1 > 0u) {
-                _nodeMaterialTextures._texDiffuse1[idx] = matTextures._texDiffuse1;
-            }
-            if (matTextures._texOMR > 0u) {
-                _nodeMaterialTextures._texOMR[idx] = matTextures._texOMR;
-            }
-            if (matTextures._texHeight > 0u) {
-                _nodeMaterialTextures._texHeight[idx] = matTextures._texHeight;
-            }
-            if (matTextures._texProjected > 0u) {
-                _nodeMaterialTextures._texProjected[idx] = matTextures._texProjected;
-            }
-            if (matTextures._texNormalMap > 0u) {
-                _nodeMaterialTextures._texNormalMap[idx] = matTextures._texNormalMap;
+            // second loop for cache reasons. 0u is fine as an address since we filter it at graphics API level.
+            for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
+            //    _uniqueTextureAddresses.insert(tempTextures[i]);
             }
         }
     };
@@ -127,6 +124,7 @@ namespace Divide {
 
         for (auto& it : g_passData) {
             it._nodeMaterialLookupInfo.fill({ Material::INVALID_MAT_HASH, 0u });
+            it._nodeMaterialTextures.fill({ 0u, 0u, 0u, 0u });
         }
     }
 
@@ -494,7 +492,7 @@ NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rCom
                 range._lastIDX = idx;
             }
             passData._nodeMaterialData[idx] = tempData;
-            passData.addToTextureBuffer(idx, tempTextures);
+            passData.addTexturesAt(idx, tempTextures);
 
             materialInfo[idx].first = materialHash;
             materialInfo[idx].second = 0u;
@@ -626,7 +624,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                                                    [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
         {
             OPTICK_EVENT("RenderPassManager::buildBufferData - UpdateBuffers");
-            bufferData._commmandBuffer->writeData(bufferData._commandData._elementOffset, *bufferData._lastCommandCount, passData._drawCommands.data());
+            bufferData._commandBuffer->writeData(bufferData._commandData._elementOffset, *bufferData._lastCommandCount, passData._drawCommands.data());
             bufferData._transformBuffer->writeData(bufferData._transformData._elementOffset, *bufferData._lastNodeCount, passData.transformData(0u));
 
             // Copy the same data to the entire ring buffer
@@ -638,7 +636,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
                 crtRange._lastIDX = std::max(crtRange._lastIDX, prevRange._lastIDX);
 
                 bufferData._materialBuffer->writeData(bufferData._materialData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.materialData(crtRange._firstIDX));
-                bufferData._texturesBuffer->writeData(bufferData._texturesData._elementOffset, 1, passData.texturesData());
+                bufferData._texturesBuffer->writeData(bufferData._texturesData._elementOffset + crtRange._firstIDX, crtRange.range(), passData.texturesData(crtRange._firstIDX));
             }
             prevRange.reset();
             if (passData._updateCounter == 0u || --passData._updateCounter == 0u) {
@@ -649,7 +647,7 @@ U32 RenderPassManager::buildBufferData(const RenderStagePass& stagePass,
 
         ShaderBufferBinding cmdBuffer = {};
         cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
-        cmdBuffer._buffer = bufferData._commmandBuffer;
+        cmdBuffer._buffer = bufferData._commandBuffer;
         cmdBuffer._elementRange = { bufferData._commandData._elementOffset, *bufferData._lastCommandCount };
 
         ShaderBufferBinding transformBuffer = {};

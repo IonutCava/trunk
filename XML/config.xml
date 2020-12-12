@@ -67,7 +67,6 @@
 	<MSAASamples>2</MSAASamples>
 	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
 	<useBindlessTextures>false</useBindlessTextures>
-	<useBindlessTextureUBOs>false</useBindlessTextureUBOs>
 	<!-- Environment probe resolution. Clamped between 16 and 4096 and rounded to a power of 2 -->
 	<reflectionProbeResolution>256</reflectionProbeResolution>
 	<!-- Planar reflector resolution. Clamped between 16 and 4096 and rounded to a power of 2 -->

@@ -149,8 +149,17 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GFXDevice::setGPURenderer(renderer);
     GFXDevice::setGPUVendor(vendor);
 
-    s_UseBindlessTextures = config.rendering.useBindlessTextures && glbinding::aux::ContextInfo::supported({ GLextension::GL_ARB_bindless_texture });
-    s_UseBindelssTexturesInUBOs = s_UseBindlessTextures && config.rendering.useBindlessTextureUBOs;
+    //Extension check disabled for now as it causes conflicts with RenderDoc
+    s_UseBindlessTextures = config.rendering.useBindlessTextures && true;
+                            //glbinding::aux::ContextInfo::supported(
+                            //    {
+                            //        GLextension::GL_ARB_bindless_texture 
+                            //    });
+
+    if (s_UseBindlessTextures != config.rendering.useBindlessTextures) {
+        config.rendering.useBindlessTextures = s_UseBindlessTextures;
+        config.changed(true);
+    }
 
     if (s_hardwareQueryPool == nullptr) {
         s_hardwareQueryPool = MemoryManager_NEW glHardwareQueryPool(_context);

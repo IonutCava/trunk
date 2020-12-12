@@ -147,7 +147,7 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
             _swapBufferTimer.stop();
             s_textureViewCache.onFrameEnd();
             s_glFlushQueued.store(false);
-            if ( s_UseBindlessTextures ) {
+            if (s_UseBindlessTextures) {
                 for (ResidentTexture& texture : s_residentTextures) {
                     if (texture._address == 0u) {
                         // Most common case
@@ -387,9 +387,6 @@ bool GL_API::InitGLSW(Configuration& config) {
 
     if (s_UseBindlessTextures) {
         AppendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES", lineOffsets);
-        if (s_UseBindelssTexturesInUBOs) {
-            AppendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES_IN_UBOS", lineOffsets);
-        }
     }
 
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
@@ -1237,7 +1234,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::BIND_DESCRIPTOR_SETS: {
             GFX::BindDescriptorSetsCommand* crtCmd = commandBuffer.get<GFX::BindDescriptorSetsCommand>(entry);
             DescriptorSet& set = crtCmd->_set;
-            ClearResidencyQueue();
 
             if (!makeTexturesResident(set._textureData, set._textureViews)) {
                 //Error
@@ -1266,8 +1262,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             bool shaderWasReady = false;
             if (!bindPipeline(*pipeline, shaderWasReady) && shaderWasReady) {
                 Console::errorfn(Locale::get(_ID("ERROR_GLSL_INVALID_BIND")), pipeline->shaderProgramHandle());
-            } else if (s_UseBindlessTextures) {
-                ProcessResidencyQueue();
             }
         } break;
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {
@@ -1362,9 +1356,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DRAW_TEXT: {
             if (getStateTracker()._activePipeline != nullptr) {
-                if (s_UseBindlessTextures) {
-                    ProcessResidencyQueue();
-                }
                 GFX::DrawTextCommand* crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
                 drawText(crtCmd->_batch);
                 LockBuffers(_context.getFrameCount());
@@ -1372,19 +1363,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             if (getStateTracker()._activePipeline != nullptr) {
-                if (s_UseBindlessTextures) {
-                    ProcessResidencyQueue();
-                }
                 GFX::DrawIMGUICommand* crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
                 drawIMGUI(crtCmd->_data, crtCmd->_windowGUID);
                 LockBuffers(_context.getFrameCount());
             }
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
-            if (s_UseBindlessTextures) {
-                ProcessResidencyQueue();
-            }
-
             const GLStateTracker& stateTracker = getStateTracker();
             const auto& drawCommands = commandBuffer.get<GFX::DrawCommand>(entry)->_drawCommands;
 
@@ -1405,10 +1389,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
-            if (s_UseBindlessTextures) {
-                ProcessResidencyQueue();
-            }
-
             GFX::DispatchComputeCommand* crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
             if(getStateTracker()._activePipeline != nullptr) {
                 OPTICK_EVENT("GL: Dispatch Compute");
@@ -1517,8 +1497,6 @@ void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
         OPTICK_EVENT("GL_FLUSH");
         glFlush();
     }
-
-    ClearResidencyQueue();
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(const I64 windowGUID) {
@@ -1592,14 +1570,6 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
     assert(offset + count <= totalTextureCount);
     const auto& textures = textureData._entries;
 
-    if (s_UseBindlessTextures) {
-        for (const auto& texture : textures) {
-            if (texture._hasAddress) {
-                QueueResidency(texture._gpuAddress, texture._binding);
-            }
-        }
-    }
-
     bool bound = false;
     if (count > 1) {
         // If we have 3 or more textures, there's a chance we might get a binding gap, so just sort
@@ -1607,15 +1577,8 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
             textureData.sortByBinding();
         }
 
-        U8 prevBinding = 0u;
-        TextureType targetType = TextureType::COUNT;
-        for (const auto& texture : textures) {
-            if (!texture._hasAddress) {
-                prevBinding = texture._binding;
-                targetType = texture._gpuData._data._textureType;
-                break;
-            }
-        }
+        U8 prevBinding = textures.front()._binding;
+        TextureType targetType = textures.front()._data._textureType;
 
         U8 matchingTexCount = 0u;
         U8 startBinding = std::numeric_limits<U8>::max();
@@ -1623,8 +1586,8 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
 
         for (U8 idx = offset; idx < offset + count; ++idx) {
             const TextureEntry& entry = textures[idx];
-            assert(IsValid(entry._gpuData._data));
-            if (entry._hasAddress || entry._binding != INVALID_TEXTURE_BINDING && targetType != entry._gpuData._data._textureType) {
+            assert(IsValid(entry._data));
+            if (entry._binding != INVALID_TEXTURE_BINDING && targetType != entry._data._textureType) {
                 break;
             }
             // Avoid large gaps between bindings. It's faster to just bind them individually.
@@ -1653,8 +1616,8 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
             for (U8 idx = offset; idx < offset + matchingTexCount; ++idx) {
                 const TextureEntry& entry = textures[idx];
                 if (entry._binding != INVALID_TEXTURE_BINDING) {
-                    handles[entry._binding]  = entry._gpuData._data._textureHandle;
-                    samplers[entry._binding] = GetSamplerHandle(entry._gpuData._sampler);
+                    handles[entry._binding]  = entry._data._textureHandle;
+                    samplers[entry._binding] = GetSamplerHandle(entry._sampler);
                 }
             }
 
@@ -1678,11 +1641,11 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
     } else if (count == 1) {
         // Normal usage. Bind a single texture at a time
         const TextureEntry& entry = textures[offset];
-        if (entry._binding != INVALID_TEXTURE_BINDING && !entry._hasAddress) {
-            assert(IsValid(entry._gpuData._data));
-            GLuint handle = entry._gpuData._data._textureHandle;
-            GLuint sampler = GetSamplerHandle(entry._gpuData._sampler);
-            bound = stateTracker.bindTextures(entry._binding, 1, entry._gpuData._data._textureType, &handle, &sampler) || bound;
+        if (entry._binding != INVALID_TEXTURE_BINDING) {
+            assert(IsValid(entry._data));
+            GLuint handle = entry._data._textureHandle;
+            GLuint sampler = GetSamplerHandle(entry._sampler);
+            bound = stateTracker.bindTextures(entry._binding, 1, entry._data._textureType, &handle, &sampler) || bound;
         }
     } else {
         // Used for breaking the debugger if we get missing textures or similar issues
@@ -1733,49 +1696,6 @@ bool GL_API::makeTextureViewsResidentInternal(const TextureViews& textureViews, 
     }
 
     return bound;
-}
-
-void GL_API::QueueResidency(const SamplerAddress address, const U8 binding) {
-    s_residencyQueue.push({ address, binding });
-}
-
-void GL_API::DequeueResidency(const SamplerAddress address) {
-    auto& container = s_residencyQueue.get_container();
-    for (auto& it : container) {
-        if (it.first == address) {
-            it.first = 0u;
-            break;
-        }
-    }
-}
-
-void GL_API::DequeueResidency(const U8 binding) {
-    auto& container = s_residencyQueue.get_container();
-    for (auto& it : container) {
-        if (it.second == binding) {
-            it.first = 0u;
-            break;
-        }
-    }
-}
-
-void GL_API::ClearResidencyQueue() {
-    while (!s_residencyQueue.empty()) {
-        s_residencyQueue.pop();
-    }
-}
-
-void GL_API::ProcessResidencyQueue() {
-    ShaderProgram* program = ShaderProgram::findShaderProgram(getStateTracker()._activePipeline->shaderProgramHandle());
-    if (program != nullptr) {
-        
-        while (!s_residencyQueue.empty()) {
-            const auto [address, binding] = s_residencyQueue.front();
-            MakeTexturesResidentInternal(address);
-            static_cast<glShaderProgram*>(program)->BindSampler(binding, address);
-            s_residencyQueue.pop();
-        }
-    }
 }
 
 bool GL_API::MakeTexturesResidentInternal(const SamplerAddress address) {

@@ -168,16 +168,9 @@ namespace Divide {
         if (entry._binding != INVALID_TEXTURE_BINDING) {
             for (TextureEntry& it : _entries) {
                 if (it._binding == entry._binding) {
-                    if (it._hasAddress && it._gpuAddress != entry._gpuAddress) {
-                        it._gpuAddress = entry._gpuAddress;
-                        it._hasAddress = true;
-                        _hasBindlessTextures = true;
-                        return TextureUpdateState::REPLACED;
-                    }
-
-                    if (it._gpuData != entry._gpuData) {
-                        it._gpuData = entry._gpuData;
-                        it._hasAddress = false;
+                    if (it._data != entry._data || it._sampler != entry._sampler) {
+                        it._data = entry._data;
+                        it._sampler = entry._sampler;
                         return TextureUpdateState::REPLACED;
                     }
 

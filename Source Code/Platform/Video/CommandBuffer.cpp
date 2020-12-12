@@ -551,7 +551,7 @@ bool BatchDrawCommands(GenericDrawCommand& previousIDC, GenericDrawCommand& curr
     }
 
     // Batch-able commands must share the same buffer and other various state
-    if (compatible(previousIDC, currentIDC)) {
+    if (Compatible(previousIDC, currentIDC)) {
         const U32 diff = to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
         if (diff == previousIDC._drawCount) {
             // If the rendering commands are batch-able, increase the draw count for the previous one

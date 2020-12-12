@@ -94,6 +94,7 @@ SamplerAddress glTexture::getGPUAddress(const size_t samplerHash) {
         }
     }
     { //Slow path. Cache miss
+        assert(_allocatedStorage);
         UniqueLock<SharedMutex> w_lock(_gpuAddressesLock);
         // Check again as we may have updated this while switching locks
         SamplerAddress address;

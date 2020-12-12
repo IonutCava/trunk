@@ -151,11 +151,7 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
         for (U16 j = 0; j < indent; ++j) {
             ret.append("    ");
         }
-        if (entry._hasAddress) {
-            ret.append(Util::StringFormat("Bindless Texture [ %d - %zu]\n", entry._binding, entry._gpuAddress));
-        } else {
-            ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", entry._binding, entry._gpuData._data._textureHandle, entry._gpuData._sampler));
-        }
+        ret.append(Util::StringFormat("Texture [ %d - %d - %zu ]\n", entry._binding, entry._data._textureHandle, entry._sampler));
     }
 
     for (const auto& it : cmd._set._textureViews._entries) {

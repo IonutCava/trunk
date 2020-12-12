@@ -35,32 +35,23 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     inline bool IsValid(const TextureEntry& entry) noexcept {
-        return entry._hasAddress ? entry._gpuAddress > 0u
-                                 : entry._gpuData._data._textureType != TextureType::COUNT;
+        return entry._data._textureType != TextureType::COUNT;
     }
 
     inline bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
-        if (lhs._binding != rhs._binding || lhs._hasAddress != rhs._hasAddress) {
+        if (lhs._binding != rhs._binding) {
             return false;
         }
 
-        return (lhs._hasAddress ? lhs._gpuAddress == rhs._gpuAddress : lhs._gpuData == rhs._gpuData);
+        return (lhs._data == rhs._data && lhs._sampler == rhs._sampler);
     }
 
     inline bool operator!=(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {
-        if (lhs._binding != rhs._binding || lhs._hasAddress != rhs._hasAddress) {
+        if (lhs._binding != rhs._binding) {
             return true;
         }
 
-        return (lhs._hasAddress ? lhs._gpuAddress != rhs._gpuAddress : lhs._gpuData != rhs._gpuData);
-    }
-
-    inline bool operator==(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept {
-        return  lhs._sampler == rhs._sampler && lhs._data == rhs._data;
-    }
-
-    inline bool operator!=(const TextureEntry::DataSampler & lhs, const TextureEntry::DataSampler & rhs) noexcept {
-        return  lhs._sampler != rhs._sampler || lhs._data != rhs._data;
+        return (lhs._data != rhs._data || lhs._sampler != rhs._sampler);
     }
 
 } //namespace Divide

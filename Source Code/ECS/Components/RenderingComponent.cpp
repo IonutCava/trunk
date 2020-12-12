@@ -329,11 +329,10 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
 
     RenderPackage& pkg = getDrawPackage(renderStagePass);
     DescriptorSet& set = pkg.descriptorSet(0);
-    TextureDataContainer& textures = set._textureData;
 
     if (pkg.textureDataDirty()) {
             if (_materialInstance != nullptr) {
-                _materialInstance->getTextureData(renderStagePass, textures);
+                _materialInstance->getTextureData(renderStagePass, set._textureData);
             }
         pkg.textureDataDirty(false);
     }

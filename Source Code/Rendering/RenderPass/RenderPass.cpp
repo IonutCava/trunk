@@ -124,8 +124,8 @@ void RenderPass::initBufferData() {
     {// Node Textures buffer
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-        bufferDescriptor._elementCount = getBufferFactor(_stageFlag);
-        bufferDescriptor._elementSize = sizeof(TextureBuffer);
+        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
+        bufferDescriptor._elementSize = sizeof(NodeMaterialTexturesInternal);
         bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = DataBufferRingSize;
@@ -197,11 +197,11 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
     ret._transformBuffer = _transformData;
     ret._materialBuffer = _materialData;
     ret._texturesBuffer = _texturesData;
-    ret._commmandBuffer = _cmdBuffer;
+    ret._commandBuffer = _cmdBuffer;
     ret._lastCommandCount = &_lastCmdCount;
     ret._lastNodeCount = &_lastNodeCount;
     ret._materialData  = { _materialData->queueWriteIndex() , cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS };
-    ret._texturesData  = { _texturesData->queueWriteIndex() , cmdBufferIdx * 1 };
+    ret._texturesData  = { _texturesData->queueWriteIndex() , cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS };
     ret._transformData = { _transformData->queueWriteIndex(), cmdBufferIdx * Config::MAX_VISIBLE_NODES };
     ret._commandData   = { _cmdBuffer->queueWriteIndex()    , cmdBufferIdx * Config::MAX_VISIBLE_NODES };
     return ret;

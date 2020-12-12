@@ -20,12 +20,10 @@ GLuint GL_API::s_maxAttribBindings = 0u;
 GLuint GL_API::s_maxFBOAttachments = 0u;
 GLuint GL_API::s_anisoLevel = 0u;
 bool GL_API::s_UseBindlessTextures = false;
-bool GL_API::s_UseBindelssTexturesInUBOs = false;
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
 
 vectorEASTL<GL_API::ResidentTexture> GL_API::s_residentTextures;
-eastl::queue<eastl::pair<SamplerAddress, U8>> GL_API::s_residencyQueue;
 
 SharedMutex GL_API::s_samplerMapLock;
 GL_API::SamplerObjectMap GL_API::s_samplerMap;

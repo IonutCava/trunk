@@ -72,6 +72,14 @@ struct NodeMaterialData
     uvec4 _data;
 };
 
+struct NodeMaterialTextures
+{
+    uvec4 _texDiffuse0Opacity;
+    uvec4 _texDiffuse1OMR;
+    uvec4 _texHeightProjected;
+    uvec4 _texNormalMapPadding;
+};
+
 #define PACKED_OMR(materialData) unpackUnorm4x8(materialData._data.x)
 
 #define BaseColour(materialData) materialData._albedo

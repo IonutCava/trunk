@@ -33,6 +33,7 @@
 #ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
 #define _RENDERING_RENDER_PASS_RENDERPASS_H_
 
+#include "NodeBufferedData.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
@@ -53,21 +54,29 @@ enum class RenderStage : U8;
 // A RenderPass may contain multiple linked stages.
 // Useful to avoid having multiple RenderQueues per pass if 2 stages depend on one:
 // E.g.: PRE_PASS + MAIN_PASS share the same RenderQueue
-class RenderPass : NonCopyable {
+class RenderPass final : NonCopyable {
    public:
        // Size factor for command and data buffers
-       constexpr static U8 DataBufferRingSize = 3;
+       constexpr static U8 DataBufferRingSize = 1;// 3;
 
        struct BufferDataPerType
        {
            I32 _dataRingIndex = 0u;
            U32 _elementOffset = 0u;
        };
+
+#pragma pack(push, 1)
+       struct NodeMaterialTexturesInternal
+       {
+           vec4<U32> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
+       };
+#pragma pack(pop)
+
        struct BufferData {
            ShaderBuffer* _transformBuffer = nullptr;
            ShaderBuffer* _materialBuffer = nullptr;
            ShaderBuffer* _texturesBuffer = nullptr;
-           ShaderBuffer* _commmandBuffer = nullptr;
+           ShaderBuffer* _commandBuffer = nullptr;
            ShaderBuffer* _cullCounterBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
            U32* _lastNodeCount = nullptr;

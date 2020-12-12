@@ -82,7 +82,6 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
-    void BindSampler(const U8 binding, const SamplerAddress address) const;
 
     static void onAtomChange(std::string_view atomName, FileUpdateEvent evt);
     static const stringImpl& ShaderFileRead(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);

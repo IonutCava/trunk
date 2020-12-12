@@ -110,7 +110,8 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
       _context(context),
-      _parentCache(parentCache)
+      _parentCache(parentCache),
+      _useBindlessTextures(context.context().config().rendering.useBindlessTextures)
 {
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
@@ -690,19 +691,16 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
 
 bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer& textureData) {
     OPTICK_EVENT();
-
+    if (_useBindlessTextures) {
+        return true;
+    }
 
     const auto RegisterTexture = [this](const U8 slot, const bool condition, TextureDataContainer& textureData) {
         if (condition) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
-                if (_textureAddresses[slot] == 0u) {
-                    // We only need to actually bind NON-RESIDENT textures. 
-                    textureData.add({ crtTexture->data(), _samplers[slot], slot });
-                } else {
-                    textureData.add({_textureAddresses[slot], slot
-                });
-                }
+                // We only need to actually bind NON-RESIDENT textures. 
+                textureData.add({ crtTexture->data(), _samplers[slot], slot });
                 return true;
             }
         }
@@ -1073,13 +1071,9 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
 void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) {
     constexpr F32 reserved = 1.f;
 
-    texturesOut._texDiffuse0   = _textureAddresses[to_base(TextureUsage::UNIT0)];
-    texturesOut._texDiffuse1   = _textureAddresses[to_base(TextureUsage::UNIT1)];
-    texturesOut._texOpacityMap = _textureAddresses[to_base(TextureUsage::OPACITY)];
-    texturesOut._texOMR        = _textureAddresses[to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)];
-    texturesOut._texHeight     = _textureAddresses[to_base(TextureUsage::HEIGHTMAP)];
-    texturesOut._texProjected  = _textureAddresses[to_base(TextureUsage::PROJECTION)];
-    texturesOut._texNormalMap  = _textureAddresses[to_base(TextureUsage::NORMALMAP)];
+    for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
+        texturesOut[i] = _textureAddresses[to_base(g_materialTextures[i])];
+    }
 
     const U32 matPropertiesPacked = Util::PACK_UNORM4x8(occlusion(), metallic(), roughness(), reserved);
     const U32 matTexturingPropertiesPacked = Util::PACK_UNORM4x8(to_U8(textureOperation()), to_U8(bumpMethod()), 1u, 1u);

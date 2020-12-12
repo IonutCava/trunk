@@ -234,8 +234,6 @@ bool glShader::load(const ShaderLoadData& data) {
         _sourceCode.fill({});
         _usedAtoms.clear();
         _shaderVarLocation.clear();
-        _activeSamplerSots.clear();
-        _activeSamplerCache.clear();
     }
 
     for (const LoadData& it : data) {
@@ -439,8 +437,6 @@ void glShader::cacheActiveUniforms() {
     // If the shader can't be used for rendering, just return an invalid address
     if (_programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid()) {
         _shaderVarLocation.clear();
-        _activeSamplerSots.clear();
-        _activeSamplerCache.clear();
 
         GLint numActiveUniforms = 0;
         glGetProgramInterfaceiv(_programHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
@@ -500,30 +496,6 @@ bool glShader::isValidUniformLocation(const GLint location) const {
     }
 
     return false;
-}
-
-void glShader::BindSampler(const U8 binding, const SamplerAddress address) {
-    if (_programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid()) {
-        const GLint location = to_I32(ShaderBufferLocation::NODE_MATERIAL_TEXTURES) + binding;
-
-        bool isActiveSlot;
-        // Check the cache for the location
-        const auto& locationIter = _activeSamplerSots.find(binding);
-        if (locationIter != std::cend(_activeSamplerSots)) {
-            isActiveSlot = locationIter->second;
-        } else {
-            isActiveSlot = isValidUniformLocation(location);
-            emplace(_activeSamplerSots, binding, isActiveSlot);
-        }
-
-        if (isActiveSlot) {
-            SamplerAddress& crtAddress = _activeSamplerCache[binding];
-            if (crtAddress != address) {
-                glProgramUniformHandleui64ARB(_programHandle, location, address);
-                crtAddress = address;
-            }
-        }
-    }
 }
 
 void glShader::Uniform(const I32 binding, const GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, const bool flag) const {

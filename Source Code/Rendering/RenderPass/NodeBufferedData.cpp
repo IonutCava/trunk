@@ -29,28 +29,11 @@ namespace Divide {
 
     size_t HashTexturesData(const NodeMaterialTextures& dataIn) noexcept {
         size_t tempHash = 9999991;
-        Util::Hash_combine(tempHash, dataIn._texDiffuse0);
-        Util::Hash_combine(tempHash, dataIn._texOpacityMap);
-        Util::Hash_combine(tempHash, dataIn._texDiffuse1);
-        Util::Hash_combine(tempHash, dataIn._texOMR);
-        Util::Hash_combine(tempHash, dataIn._texHeight);
-        Util::Hash_combine(tempHash, dataIn._texProjected);
-        Util::Hash_combine(tempHash, dataIn._texNormalMap);
+        for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
+            Util::Hash_combine(tempHash, dataIn[i]);
+        }
+
         return tempHash;
     }
 
-    [[nodiscard]] SamplerAddress GetTextureAddress(const NodeMaterialTextures& source, const TextureUsage usage) noexcept {
-        switch (usage) {
-            case TextureUsage::UNIT0: return source._texDiffuse0;
-            case TextureUsage::OPACITY: return source._texOpacityMap;
-            case TextureUsage::UNIT1: return source._texDiffuse1;
-            case TextureUsage::OCCLUSION_METALLIC_ROUGHNESS: return source._texOMR;
-            case TextureUsage::HEIGHTMAP: return source._texHeight;
-            case TextureUsage::PROJECTION: return source._texProjected;
-            case TextureUsage::NORMALMAP: return source._texNormalMap;
-        }
-
-        DIVIDE_UNEXPECTED_CALL();
-        return 0u;
-    }
 }; //namespace Divide

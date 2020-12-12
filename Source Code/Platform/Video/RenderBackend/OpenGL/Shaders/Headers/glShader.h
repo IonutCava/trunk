@@ -102,7 +102,6 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
    private:
     void UploadPushConstant(const GFX::PushConstant& constant, bool force = false);
     void Uniform(I32 binding, GFX::PushConstantType type, const Byte* values, GLsizei byteCount, bool flag) const;
-    void BindSampler(U8 binding, SamplerAddress address);
 
     friend class glShaderProgram;
     void dumpBinary();
@@ -141,9 +140,6 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
 
     ShaderVarMap _shaderVarLocation;
     UniformsByNameHash _uniformsByNameHash;
-
-    hashMap<U8, bool> _activeSamplerSots;
-    hashMap<U8, SamplerAddress> _activeSamplerCache;
 
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
     vectorEASTL<std::pair<stringImpl, bool>> _definesList;

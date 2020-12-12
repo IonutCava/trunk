@@ -1709,7 +1709,7 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
 
     ShaderBufferBinding shaderBuffer = {};
     shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
-    shaderBuffer._buffer = bufferData._commmandBuffer;
+    shaderBuffer._buffer = bufferData._commandBuffer;
     shaderBuffer._elementRange = { bufferData._commandData._elementOffset, cmdCount };
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};

@@ -41,7 +41,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 namespace Divide {
-struct NodeMaterialTextures;
 struct NodeMaterialData;
 
 class Sky;

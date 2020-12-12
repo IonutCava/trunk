@@ -518,18 +518,6 @@ std::pair<bool/*success*/, bool/*was bound*/>  glShaderProgram::bind() {
     return { false, false };
 }
 
-void glShaderProgram::BindSampler(const U8 binding, const SamplerAddress address) const {
-    assert(isValid());
-
-    for (glShader* shader : _shaderStage) {
-        assert(shader != nullptr);
-        if (shader->valid()) {
-            shader->BindSampler(binding, address);
-        }
-    }
-}
-
-
 void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
     assert(isValid());
 

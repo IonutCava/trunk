@@ -197,8 +197,8 @@ void IMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
 }
 
 void IMPrimitive::texture(const Texture& texture, const size_t samplerHash) {
-    _textureEntry._gpuData._data = texture.data();
-    _textureEntry._gpuData._sampler = samplerHash;
+    _textureEntry._data = texture.data();
+    _textureEntry._sampler = samplerHash;
     _textureEntry._binding = to_U8(TextureUsage::UNIT0);
     _cmdBufferDirty = true;
 }
