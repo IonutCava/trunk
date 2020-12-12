@@ -42,26 +42,13 @@ void RenderBin::sort(const RenderStage stage, const RenderingOrder renderOrder) 
                         stack.end(),   
                         [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
                             // Sort by shader in all states The sort key is the shader id (for now)
-                            if (a._sortKeyA != b._sortKeyA) {
-                                return a._sortKeyA < b._sortKeyA;
-                            }
+                            if (a._shaderKey != b._shaderKey) return a._shaderKey < b._shaderKey;
                             // If the shader values are the same, we use the state hash for sorting
                             // The _stateHash is a CRC value created based on the RenderState.
-                            if (a._stateHash != b._stateHash) {
-                                return a._stateHash < b._stateHash;
-                            }
+                            if (a._stateHash != b._stateHash) return a._stateHash < b._stateHash;
                             // If both the shader are the same and the state hashes match,
                             // we sort by the secondary key (usually the texture id)
-                            if (a._sortKeyB != b._sortKeyB) {
-                                return a._sortKeyB < b._sortKeyB;
-                            }
-                            // If the data indices aren't consecutive, handle that first ...
-                            if (a._dataIndex._transformIDX > b._dataIndex._transformIDX) {
-                                return a._dataIndex._transformIDX < b._dataIndex._transformIDX;
-                            }
-                            if (a._dataIndex._materialIDX > b._dataIndex._materialIDX) {
-                                return a._dataIndex._materialIDX < b._dataIndex._materialIDX;
-                            }
+                            if (a._textureKey != b._textureKey) return a._textureKey < b._textureKey;
                             // ... and then finally fallback to front to back
                             return a._distanceToCameraSq < b._distanceToCameraSq;
                         });
@@ -130,10 +117,7 @@ void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderPackage& pkg
 
     const Material_ptr& nodeMaterial = rComp->getMaterialInstance();
     if (nodeMaterial) {
-        nodeMaterial->getSortKeys(renderStagePass, item._sortKeyA, item._sortKeyB);
-    } else {
-        item._sortKeyA = to_I64(_renderBinStack[stageIndex].size() + 1);
-        item._sortKeyB = to_I32(item._sortKeyA);
+        nodeMaterial->getSortKeys(renderStagePass, item._shaderKey, item._textureKey);
     }
 
     item._dataIndex = pkg.lastDataIndex();

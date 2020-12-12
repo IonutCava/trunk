@@ -436,6 +436,8 @@ NodeDataIdx RenderPassManager::processVisibleNode(const RenderingComponent& rCom
     // Rewrite all transforms
     // ToDo: Cache transforms for static nodes -Ionut
     NodeDataIdx ret = {};
+    ret._commandOffset = to_U16(passData._drawCommands.size());
+
     ret._transformIDX = nodeIndex;
     NodeTransformData& transformOut = passData._nodeTransformData[ret._transformIDX];
 

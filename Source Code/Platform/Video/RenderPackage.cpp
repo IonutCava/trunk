@@ -221,33 +221,35 @@ void RenderPackage::setTexture(const I32 descriptorSetIndex, const TextureData& 
     cmd->_set._textureData.add({ data, samplerHash, binding });
 }
 
-void RenderPackage::updateDrawCommands(const NodeDataIdx dataIndex, U32 startOffset, U8 lodLevel) {
+void RenderPackage::updateDrawCommands(const NodeDataIdx dataIndex, U8 lodLevel) {
     OPTICK_EVENT();
-    const U32 DATA_INDICES = ((dataIndex._transformIDX << 16) | dataIndex._materialIDX);
-    {
-        lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
-        const auto& [offset, count] = _lodIndexOffsets[lodLevel];
 
-        const GFX::CommandBuffer::Container::EntryList& cmds = commands()->get<GFX::DrawCommand>();
-        const bool autoIndex = offset != 0u || count != 0u;
+    const U32 dataIndices = ((dataIndex._transformIDX << 16) | dataIndex._materialIDX);
+    lodLevel = std::min(lodLevel, to_U8(_lodIndexOffsets.size() - 1));
+    const auto& [offset, count] = _lodIndexOffsets[lodLevel];
 
-        for (GFX::CommandBase* cmd : cmds) {
-            GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
-            for (GenericDrawCommand& drawCmd : drawCommands) {
-                drawCmd._commandOffset = startOffset++;
+    const GFX::CommandBuffer::Container::EntryList& cmds = commands()->get<GFX::DrawCommand>();
+    const bool autoIndex = offset != 0u || count != 0u;
 
-                drawCmd._cmd.baseInstance = (_isInstanced || drawCmd._cmd.primCount > 1u) ? 0u : DATA_INDICES;
-                if (autoIndex) {
-                    drawCmd._cmd.firstIndex = to_U32(offset);
-                    drawCmd._cmd.indexCount = to_U32(count);
-                }
+    U32 startOffset = dataIndex._commandOffset;
+
+    for (GFX::CommandBase* cmd : cmds) {
+        GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
+        for (GenericDrawCommand& drawCmd : drawCommands) {
+            drawCmd._commandOffset = startOffset++;
+
+            drawCmd._cmd.baseInstance = (_isInstanced || drawCmd._cmd.primCount > 1u) ? 0u : dataIndices;
+            if (autoIndex) {
+                drawCmd._cmd.firstIndex = to_U32(offset);
+                drawCmd._cmd.indexCount = to_U32(count);
             }
         }
     }
+
     if (_isInstanced) {
-        const I32 count = to_I32(_commands->count<GFX::SendPushConstantsCommand>());
-        for (I32 i = 0; i < count; ++i) {
-            pushConstants(i).set(_ID("DATA_INDICES"), GFX::PushConstantType::UINT, DATA_INDICES);
+        const I32 pushConstantsCount = to_I32(_commands->count<GFX::SendPushConstantsCommand>());
+        for (I32 i = 0; i < pushConstantsCount; ++i) {
+            pushConstants(i).set(_ID("DATA_INDICES"), GFX::PushConstantType::UINT, dataIndices);
         }
     }
 

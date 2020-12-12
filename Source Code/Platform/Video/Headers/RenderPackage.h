@@ -128,7 +128,7 @@ public:
     PROPERTY_RW(NodeDataIdx, lastDataIndex, {});
 
 protected:
-    void updateDrawCommands(NodeDataIdx dataIndex, U32 startOffset, U8 lodLevel);
+    void updateDrawCommands(NodeDataIdx dataIndex, U8 lodLevel);
     GFX::CommandBuffer* commands();
     void addDrawCommand(const GFX::DrawCommand& cmd);
 
@@ -155,8 +155,8 @@ namespace Attorney {
     };
 
     class RenderPackageRenderingComponent {
-        static void updateDrawCommands(RenderPackage& pkg, const NodeDataIdx dataIndex, const U32 startOffset, const U8 lodLevel) {
-            pkg.updateDrawCommands(dataIndex, startOffset, lodLevel);
+        static void updateDrawCommands(RenderPackage& pkg, const NodeDataIdx dataIndex, const U8 lodLevel) {
+            pkg.updateDrawCommands(dataIndex, lodLevel);
         }
 
         friend class RenderingComponent;

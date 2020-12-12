@@ -110,6 +110,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     friend class Attorney::RenderingComponentSGN;
 
    public:
+       static constexpr U8 INVALID_LOD_LEVEL = std::numeric_limits<U8>::max();
+
        enum class RenderOptions : U16 {
            RENDER_GEOMETRY = toBit(1),
            RENDER_WIREFRAME = toBit(2),

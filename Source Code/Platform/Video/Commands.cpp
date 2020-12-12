@@ -172,8 +172,13 @@ stringImpl ToString(const BindDescriptorSetsCommand& cmd, const U16 indent) {
     return ret;
 }
 
-stringImpl ToString(const BeginDebugScopeCommand& cmd, U16 indent) {
-    return " [ " + stringImpl(cmd._scopeName.c_str()) + " ]";
+stringImpl ToString(const BeginDebugScopeCommand& cmd, const U16 indent) {
+    stringImpl ret = "\n";
+    for (U16 j = 0; j < indent; ++j) {
+        ret.append("    ");
+}
+    ret.append( " [ " + stringImpl(cmd._scopeName.c_str()) + " ]");
+    return ret;
 }
 
 stringImpl ToString(const DrawTextCommand& cmd, const U16 indent) {

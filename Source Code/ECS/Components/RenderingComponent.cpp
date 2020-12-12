@@ -367,13 +367,11 @@ void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
 }
 
 void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderStagePass& stagePass, DrawCommandContainer& drawCommandsInOut) {
-    const U32 startOffset = to_U32(drawCommandsInOut.size());
-
     const RenderStage stage = stagePass._stage;
 
     const U8 lodLevel = _lodLevels[to_base(stage)];
     RenderPackage& pkg = getDrawPackage(stagePass);
-    Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, startOffset, lodLevel);
+    Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, lodLevel);
     if (stage != RenderStage::SHADOW) {
         const RenderPassType passType = stagePass._passType;
 
@@ -384,13 +382,17 @@ void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderS
             }
 
             tempStagePass._passType = static_cast<RenderPassType>(i);
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(getDrawPackage(tempStagePass), dataIndex, startOffset, lodLevel);
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(getDrawPackage(tempStagePass), dataIndex, lodLevel);
         }
     }
 
     const I32 drawCommandCount = pkg.drawCommandCount();
     for (I32 i = 0; i < drawCommandCount; ++i) {
-        drawCommandsInOut.push_back(pkg.drawCommand(i, 0)._cmd);
+        const GFX::DrawCommand& gfxDrawCommand = pkg.drawCommand(i);
+
+        for (const GenericDrawCommand& cmd : gfxDrawCommand._drawCommands) {
+            drawCommandsInOut.push_back(cmd._cmd);
+        }
     }
 }
 

@@ -211,6 +211,7 @@ bool Material::setSampler(const TextureUsage textureUsageSlot, const size_t samp
     _samplers[slot] = samplerHash;
     if (_textureAddresses[slot] != 0u) {
         assert(_textures[slot] != nullptr);
+        assert(_textures[slot]->getState() == ResourceState::RES_LOADED);
         _textureAddresses[slot] = _textures[slot]->getGPUAddress(samplerHash);
     }
     return true;
@@ -272,7 +273,7 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
         {
             bool isOpacity = true;
             if (textureUsageSlot == TextureUsage::UNIT0) {
-                _textureKeyCache = texture == nullptr ? -1 : texture->data()._textureHandle;
+                _textureKeyCache = texture == nullptr ? -1 : (_useBindlessTextures ? 0u : texture->data()._textureHandle);
                 isOpacity = false;
             }
 

@@ -544,22 +544,24 @@ stringImpl CommandBuffer::toString() const {
 
 
 
-bool BatchDrawCommands(GenericDrawCommand& previousIDC, GenericDrawCommand& currentIDC) noexcept {
+bool BatchDrawCommands(GenericDrawCommand& previousGDC, GenericDrawCommand& currentGDC) noexcept {
     // Instancing is not compatible with MDI. Well, it might be, but I can't be bothered a.t.m. to implement it -Ionut
-    if (previousIDC._cmd.primCount != currentIDC._cmd.primCount && (previousIDC._cmd.primCount > 1 || currentIDC._cmd.primCount > 1)) {
+    if (previousGDC._cmd.primCount != currentGDC._cmd.primCount && (previousGDC._cmd.primCount > 1 || currentGDC._cmd.primCount > 1)) {
         return false;
     }
 
     // Batch-able commands must share the same buffer and other various state
-    if (Compatible(previousIDC, currentIDC)) {
-        const U32 diff = to_U32(currentIDC._commandOffset - previousIDC._commandOffset);
-        if (diff == previousIDC._drawCount) {
-            // If the rendering commands are batch-able, increase the draw count for the previous one
-            previousIDC._drawCount += currentIDC._drawCount;
-            // And set the current command's draw count to zero so it gets removed from the list later on
-            currentIDC._drawCount = 0;
-            return true;
-        }
+    if (!Compatible(previousGDC, currentGDC)) {
+        return false;
+    }
+    const U32 offsetCrt = to_U32(currentGDC._commandOffset);
+    const U32 offsetPrev = to_U32(previousGDC._commandOffset);
+    if (offsetCrt - offsetPrev == previousGDC._drawCount) {
+        // If the rendering commands are batch-able, increase the draw count for the previous one
+        previousGDC._drawCount += currentGDC._drawCount;
+        // And set the current command's draw count to zero so it gets removed from the list later on
+        currentGDC._drawCount = 0;
+        return true;
     }
 
     return false;

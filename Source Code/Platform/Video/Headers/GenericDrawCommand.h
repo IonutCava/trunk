@@ -53,6 +53,7 @@ struct NodeDataIdx
 {
     U16 _transformIDX = 0u;
     U16 _materialIDX = 0u;
+    U16 _commandOffset = 0u;
 };
 
 struct IndirectDrawCommand {
