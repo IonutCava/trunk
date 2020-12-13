@@ -247,7 +247,7 @@ namespace Import {
 
         mesh->renderState().drawState(true);
         mesh->getGeometryVB()->fromBuffer(*dataIn.vertexBuffer());
-        mesh->setGeometryVBDirty();
+        mesh->geometryDirty(true);
 
         std::atomic_uint taskCounter;
         std::atomic_init(&taskCounter, 0u);

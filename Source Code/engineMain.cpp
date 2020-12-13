@@ -11,13 +11,6 @@ namespace Divide {
 
 bool TaskPool::USE_OPTICK_PROFILER = true;
 
-namespace {
-    void out_of_memory()
-    {
-        DIVIDE_ASSERT(false, "Out of memory!");
-    }
-}
-
 class StreamBuffer {
 public:
     explicit StreamBuffer(const char* filename)
@@ -32,10 +25,9 @@ private:
 };
 
 Engine::Engine() 
-    : _app(eastl::make_unique<Application>()),
-      _outputStreams{}
+    : _app(eastl::make_unique<Application>())
 {
-    std::set_new_handler(out_of_memory);
+    std::set_new_handler([]() { DIVIDE_ASSERT(false, "Out of memory!"); });
     _outputStreams[0] = new StreamBuffer((Paths::g_logPath + OUTPUT_LOG_FILE).c_str());
     _outputStreams[1] = new StreamBuffer((Paths::g_logPath + ERROR_LOG_FILE).c_str());
     std::cout.rdbuf(_outputStreams[0]->buffer().rdbuf());
@@ -57,10 +49,8 @@ bool Engine::init(const int argc, char** argv) {
         // If it fails to start, it should automatically clear up all of its data
         err = _app->start("main.xml", argc, argv);
         if (err != ErrorCode::NO_ERR) {
-            // If any error occurred, close the application as details should
-            // already be logged
-            Console::errorfn("System failed to initialize properly. Error [ %s ] ",
-                             getErrorCodeName(err));
+            // If any error occurred, close the application as details should already be logged
+            Console::errorfn("System failed to initialize properly. Error [ %s ] ", getErrorCodeName(err));
         }
 
     }

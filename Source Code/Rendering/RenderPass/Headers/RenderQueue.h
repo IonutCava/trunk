@@ -74,7 +74,7 @@ class RenderQueue final : public KernelComponent {
         return _renderBins;
     }
 
-    [[nodiscard]] U16 getSortedQueues(RenderStage stage, bool isPrePass, RenderBin::SortedQueues& queuesOut) const;
+    U16 getSortedQueues(RenderStage stage, const vectorEASTL<RenderBinType>& binTypes, RenderBin::SortedQueues& queuesOut) const;
 
   private:
 

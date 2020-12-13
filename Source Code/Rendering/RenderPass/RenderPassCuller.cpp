@@ -180,7 +180,7 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const N
         bool isTransformNode = false;
         if (!shouldCullNode(params._stage, child, isTransformNode)) {
             F32 distanceSqToCamera = std::numeric_limits<F32>::max();
-            if (!Attorney::SceneGraphNodeRenderPassCuller::preCullNode(child, *child->get<BoundsComponent>(), params, distanceSqToCamera)) {
+            if (Attorney::SceneGraphNodeRenderPassCuller::postCullCheck(child, params, *child->get<BoundsComponent>(), distanceSqToCamera)) {
                 VisibleNode node = {};
                 node._node = child;
                 node._distanceToCameraSq = distanceSqToCamera;

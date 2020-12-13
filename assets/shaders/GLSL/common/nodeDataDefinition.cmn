@@ -70,10 +70,8 @@ struct NodeMaterialData
     //z = 4x8U: tex op, bump method, reserved, reserved
     //w = Textures lookup index
     uvec4 _data;
-};
 
-struct NodeMaterialTextures
-{
+    //TextureData
     uvec4 _texDiffuse0Opacity;
     uvec4 _texDiffuse1OMR;
     uvec4 _texHeightProjected;

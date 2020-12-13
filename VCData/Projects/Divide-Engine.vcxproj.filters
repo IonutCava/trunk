@@ -185,9 +185,6 @@
     <Filter Include="ECS\Components\Headers">
       <UniqueIdentifier>{0d3b662e-b06a-46b2-85bf-0b02bdfe31a0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ECS\Entities">
-      <UniqueIdentifier>{9f74d21f-9363-42d8-a3fa-3f20906bc5cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="ECS\Systems">
       <UniqueIdentifier>{943385e0-b7b6-4f9b-94cf-74fcc3c8d7ba}</UniqueIdentifier>
     </Filter>
@@ -590,6 +587,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\NodeBufferedData.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassExecutor.cpp">
+      <Filter>Rendering\RenderPass</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -861,12 +861,6 @@
     <ClInclude Include="../../Source Code/Core\Headers\PlatformContextComponent.h">
       <Filter>Core\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSManager.h">
-      <Filter>ECS\ECSLib\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h">
-      <Filter>ECS\ECSLib\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\3rdParty\EntityComponentSystem\include\ECS\API.h">
       <Filter>ECS\ECSLib\Headers</Filter>
     </ClInclude>
@@ -1014,18 +1008,6 @@
     <ClInclude Include="..\..\Source Code\ECS\Components\Headers\SpotLightComponent.h">
       <Filter>ECS\Components\Headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\AnimationSystem.h">
-      <Filter>ECS\Systems\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\BoundsSystem.h">
-      <Filter>ECS\Systems\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RenderingSystem.h">
-      <Filter>ECS\Systems\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h">
-      <Filter>ECS\Systems\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Source Code\Geometry\Material\Headers\MaterialEnums.h">
       <Filter>Geometry\Material\Headers</Filter>
     </ClInclude>
@@ -1040,6 +1022,27 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\NodeBufferedData.h">
       <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\RenderPass\Headers\RenderPassExecutor.h">
+      <Filter>Rendering\RenderPass\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\AnimationSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\BoundsSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSManager.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\ECSSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\RenderingSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h">
+      <Filter>ECS\Systems\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -32,16 +32,13 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _ECS_MANAGER_H_
 #define _ECS_MANAGER_H_
 
+#include "Engine.h"
 #include "Core/Headers/PlatformContextComponent.h"
-
-namespace ECS {
-    class ECSEngine;
-}
 
 namespace Divide {
     class ByteBuffer;
     class SceneGraphNode;
-    class ECSManager : public PlatformContextComponent {
+    class ECSManager final : public PlatformContextComponent {
         public:
             ECSManager(PlatformContext& context, ECS::ECSEngine& engine);
             ~ECSManager() = default;
@@ -49,6 +46,10 @@ namespace Divide {
             bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) const;
             bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) const;
 
+            template<typename T>
+            [[nodiscard]] T* getSystem() const {
+                return _ecsEngine.GetSystemManager()->GetSystem<T>();
+            }
         protected:
             ECS::ECSEngine& _ecsEngine;
     };

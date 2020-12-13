@@ -45,8 +45,8 @@ public:
 
     virtual ~KernelComponent() = default;
 
-    [[nodiscard]] Kernel& parent()  noexcept { return _parent; }
-    [[nodiscard]] const Kernel& parent() const  noexcept { return _parent; }
+    [[nodiscard]] Kernel& parent() noexcept { return _parent; }
+    [[nodiscard]] const Kernel& parent() const noexcept { return _parent; }
 
 protected:
     Kernel& _parent;

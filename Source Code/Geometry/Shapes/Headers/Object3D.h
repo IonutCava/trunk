@@ -66,7 +66,6 @@ class Object3D : public SceneNode {
     virtual ~Object3D() = default;
 
     VertexBuffer* getGeometryVB() const;
-    void setGeometryVBDirty() noexcept { _geometryDirty = true; }
 
     ObjectType getObjectType() const noexcept { return _geometryType; }
 
@@ -88,11 +87,11 @@ class Object3D : public SceneNode {
 
     void postLoad(SceneGraphNode* sgn) override;
 
-    void onRefreshNodeData(const SceneGraphNode* sgn,
-                           const RenderStagePass& renderStagePass,
-                           const Camera& crtCamera,
-                           bool refreshData,
-                           GFX::CommandBuffer& bufferInOut) override;
+    void prepareRender(SceneGraphNode* sgn,
+                       RenderingComponent& rComp,
+                       const RenderStagePass& renderStagePass,
+                       const Camera& camera,
+                       bool refreshData) override;
                         
     virtual void onAnimationChange(SceneGraphNode* sgn, I32 newIndex) {
         ACKNOWLEDGE_UNUSED(sgn);
@@ -146,9 +145,10 @@ class Object3D : public SceneNode {
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
+    PROPERTY_RW(bool, geometryDirty, true);
+
    protected:
-    void rebuild();
-    virtual void rebuildVB();
+    virtual void rebuildInternal();
 
     /// Use a custom vertex buffer for this object (e.g., a SubMesh uses the mesh's vb)
     /// Please manually delete the old VB if available before replacing!
@@ -172,7 +172,6 @@ class Object3D : public SceneNode {
     vectorEASTL<vec3<U32> > _geometryTriangles;
 
   private:
-     bool _geometryDirty = true;;
      /// A custom, override vertex buffer
      VertexBuffer* _buffer = nullptr;
 };

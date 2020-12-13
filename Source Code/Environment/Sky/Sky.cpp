@@ -357,7 +357,7 @@ void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sc
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-bool Sky::prepareRender(SceneGraphNode* sgn,
+void Sky::prepareRender(SceneGraphNode* sgn,
                 RenderingComponent& rComp,
                 const RenderStagePass& renderStagePass,
                 const Camera& camera,
@@ -377,7 +377,7 @@ bool Sky::prepareRender(SceneGraphNode* sgn,
          pkg.pushConstants(0, constants);
     }
 
-    return SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
+    SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
 void Sky::buildDrawCommands(SceneGraphNode* sgn,

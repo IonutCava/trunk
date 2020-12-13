@@ -83,6 +83,9 @@ using NodeMaterialTextures = std::array<SamplerAddress, MATERIAL_TEXTURE_COUNT>;
         //z = 4x8U: tex op, bump method, reserved, reserved
         //w = Textures lookup index
         vec4<U32> _data;
+
+        // Texture Data
+        vec4<U32> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
     };
 
     [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;

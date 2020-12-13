@@ -9,27 +9,24 @@ Sphere3D::Sphere3D(GFXDevice& context, ResourceCache* parentCache, const size_t 
     _radius(radius),
     _resolution(resolution)
 {
-    _vertexCount = resolution * resolution;
-    getGeometryVB()->setVertexCount(_vertexCount);
-    getGeometryVB()->reserveIndexCount(_vertexCount);
-    if (_vertexCount + 1 > std::numeric_limits<U16>::max()) {
-        getGeometryVB()->useLargeIndices(true);
-    }
-    rebuild();
+    const U32 vertexCount = SQUARED(resolution);
+    getGeometryVB()->setVertexCount(vertexCount);
+    getGeometryVB()->reserveIndexCount(vertexCount);
+    getGeometryVB()->useLargeIndices(vertexCount + 1 > std::numeric_limits<U16>::max());
 }
 
 void Sphere3D::setRadius(const F32 radius) {
     _radius = radius;
-    setGeometryVBDirty();
+    geometryDirty(true);
 }
 
 void Sphere3D::setResolution(const U32 resolution) {
     _resolution = resolution;
-    setGeometryVBDirty();
+    geometryDirty(true);
 }
 
 // SuperBible stuff
-void Sphere3D::rebuildVB() {
+void Sphere3D::rebuildInternal() {
     const U32 slices = _resolution;
     const U32 stacks = _resolution;
 
@@ -89,6 +86,8 @@ void Sphere3D::rebuildVB() {
 
     // ToDo: add some depth padding for collision and nav meshes
     setBounds(BoundingBox(vec3<F32>(-_radius), vec3<F32>(_radius)));
+
+    Object3D::rebuildInternal();
 }
 
 void Sphere3D::saveToXML(boost::property_tree::ptree& pt) const {

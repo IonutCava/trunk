@@ -139,12 +139,6 @@ class Terrain final : public Object3D {
 
     void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
 
-    void onRefreshNodeData(const SceneGraphNode* sgn,
-                           const RenderStagePass& renderStagePass,
-                           const Camera& crtCamera,
-                           bool refreshData,
-                           GFX::CommandBuffer& bufferInOut) override;
-
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode* sgn,
@@ -152,7 +146,7 @@ class Terrain final : public Object3D {
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
-     bool prepareRender(SceneGraphNode* sgn,
+     void prepareRender(SceneGraphNode* sgn,
                         RenderingComponent& rComp,
                         const RenderStagePass& renderStagePass,
                         const Camera& camera,

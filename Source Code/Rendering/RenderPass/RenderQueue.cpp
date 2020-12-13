@@ -233,32 +233,22 @@ void RenderQueue::refresh(const RenderStage stage, const RenderBinType targetBin
     }
 }
 
-U16 RenderQueue::getSortedQueues(const RenderStage stage, const bool isPrePass, RenderBin::SortedQueues& queuesOut) const {
+U16 RenderQueue::getSortedQueues(const RenderStage stage, const vectorEASTL<RenderBinType>& binTypes, RenderBin::SortedQueues& queuesOut) const {
     OPTICK_EVENT();
-
     U16 countOut = 0u;
-    if (isPrePass) {
-        constexpr RenderBinType rbTypes[] = {
-            RenderBinType::RBT_OPAQUE,
-            RenderBinType::RBT_IMPOSTOR,
-            RenderBinType::RBT_TERRAIN,
-            RenderBinType::RBT_TERRAIN_AUX,
-            RenderBinType::RBT_SKY,
-            RenderBinType::RBT_TRANSLUCENT
-        };
-         
-        for (const RenderBinType type : rbTypes) {
-            const RenderBin* renderBin = _renderBins[type];
-            RenderBin::SortedQueue& nodes = queuesOut[type];
-            countOut += renderBin->getSortedNodes(stage, nodes);
-        }
-    } else {
+
+    if (binTypes.empty()) {
         for (const RenderBin* renderBin : _renderBins) {
             RenderBin::SortedQueue& nodes = queuesOut[renderBin->getType()];
             countOut += renderBin->getSortedNodes(stage, nodes);
         }
+    } else {
+        for (const RenderBinType type : binTypes) {
+            const RenderBin* renderBin = _renderBins[type];
+            RenderBin::SortedQueue& nodes = queuesOut[type];
+            countOut += renderBin->getSortedNodes(stage, nodes);
+        }
     }
-
     return countOut;
 }
 

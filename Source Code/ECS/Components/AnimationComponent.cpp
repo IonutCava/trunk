@@ -11,6 +11,8 @@
 
 namespace Divide {
 
+bool AnimationComponent::s_globalAnimationState = true;
+
 AnimationComponent::AnimationComponent(SceneGraphNode* parentSGN, PlatformContext& context)
     : BaseComponentType<AnimationComponent, ComponentType::ANIMATION>(parentSGN, context)
 {

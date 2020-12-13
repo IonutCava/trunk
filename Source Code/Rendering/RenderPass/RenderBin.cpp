@@ -23,6 +23,7 @@ RenderBin::RenderBin(const RenderBinType rbType) : _rbType(rbType)
 }
 
 const RenderBinItem& RenderBin::getItem(const RenderStage stage, const U16 index) const {
+    SharedLock<SharedMutex> r_lock(_renderBinStackLocks[to_base(stage)]);
     assert(index < _renderBinStack[to_base(stage)].size());
     return _renderBinStack[to_base(stage)][index];
 }
@@ -30,6 +31,7 @@ const RenderBinItem& RenderBin::getItem(const RenderStage stage, const U16 index
 void RenderBin::sort(const RenderStage stage, const RenderingOrder renderOrder) {
     OPTICK_EVENT();
 
+    UniqueLock<SharedMutex> w_lock(_renderBinStackLocks[to_base(stage)]);
     RenderBinStack& stack = _renderBinStack[to_U8(stage)];
 
     switch (renderOrder) {
@@ -88,7 +90,7 @@ U16 RenderBin::getSortedNodes(const RenderStage stage, SortedQueue& nodes) const
 
     nodes.resize(0);
     nodes.reserve(getBinSize(stage));
-
+    SharedLock<SharedMutex> r_lock(_renderBinStackLocks[to_base(stage)]);
     const RenderBinStack& stack = _renderBinStack[to_base(stage)];
     for (const RenderBinItem& item : stack) {
         nodes.emplace_back(item._renderable);
@@ -98,6 +100,7 @@ U16 RenderBin::getSortedNodes(const RenderStage stage, SortedQueue& nodes) const
 }
 
 void RenderBin::refresh(const RenderStage stage) {
+    UniqueLock<SharedMutex> w_lock(_renderBinStackLocks[to_base(stage)]);
     _renderBinStack[to_base(stage)].clear();
     _renderBinStack[to_base(stage)].reserve(AVERAGE_BIN_SIZE);
 }
@@ -122,24 +125,28 @@ void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderPackage& pkg
 
     item._dataIndex = pkg.lastDataIndex();
 
+    UniqueLock<SharedMutex> w_lock(_renderBinStackLocks[stageIndex]);
     _renderBinStack[stageIndex].push_back(item);
 }
 
 void RenderBin::populateRenderQueue(const RenderStagePass stagePass, RenderQueuePackages& queueInOut) const {
     OPTICK_EVENT();
 
+    SharedLock<SharedMutex> r_lock(_renderBinStackLocks[to_base(stagePass._stage)]);
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
         queueInOut.push_back(&item._renderable->getDrawPackage(stagePass));
     }
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
+    SharedLock<SharedMutex> r_lock(_renderBinStackLocks[to_base(stagePass._stage)]);
     for (const RenderBinItem& item : _renderBinStack[to_base(stagePass._stage)]) {
         Attorney::RenderingCompRenderBin::postRender(item._renderable, renderState, stagePass, bufferInOut);
     }
 }
 
 U16 RenderBin::getBinSize(const RenderStage stage) const {
+    SharedLock<SharedMutex> r_lock(_renderBinStackLocks[to_base(stage)]);
     return to_U16(_renderBinStack[to_base(stage)].size());
 }
 

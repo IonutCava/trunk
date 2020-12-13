@@ -8,8 +8,8 @@
 
 namespace Divide {
 
-bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass, const U8 LoD) const {
-    if (!_drawState || LoD >= minLodLevel()) {
+bool SceneNodeRenderState::drawState(const RenderStagePass& stagePass) const {
+    if (!_drawState) {
         return false;
     }
 

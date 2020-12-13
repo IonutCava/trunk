@@ -93,13 +93,18 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     [[nodiscard]] I32 animationIndex() const noexcept { return _currentAnimIndex; }
 
     PROPERTY_R(bool, showSkeleton, false);
-    PROPERTY_RW(bool, playAnimations, true);
+
+                  void playAnimations(const bool state)       noexcept { _playAnimations = state;}
+    [[nodiscard]] bool playAnimations()                 const noexcept { return _playAnimations && s_globalAnimationState; }
 
    protected:
     friend class AnimationSystem;
     template<typename T, typename U>
     friend class ECSSystem;
     void Update(U64 deltaTimeUS) override;
+
+    static void GlobalAnimationState(const bool state) { s_globalAnimationState = state; }
+    [[nodiscard]] static bool GlobalAnimationState() noexcept { return s_globalAnimationState; }
 
    protected:
     /// Pointer to the mesh's animator. Owned by the mesh!
@@ -115,6 +120,10 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     /// Parent time stamp (e.g. Mesh). 
     /// Should be identical for all nodes of the same level with the same parent
     U64 _parentTimeStamp = 0ul;
+
+    bool _playAnimations = true;
+
+    static bool s_globalAnimationState;
 };
 
 INIT_COMPONENT(AnimationComponent);

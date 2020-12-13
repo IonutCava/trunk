@@ -522,12 +522,6 @@ bool GL_API::InitGLSW(Configuration& config) {
 
     AppendToShaderHeader(
         ShaderType::COUNT,
-        "#define BUFFER_NODE_MATERIAL_TEXTURES " +
-        Util::to_string(to_base(ShaderBufferLocation::NODE_MATERIAL_TEXTURES)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
         "#define BUFFER_SCENE_DATA " +
         Util::to_string(to_base(ShaderBufferLocation::SCENE_DATA)),
         lineOffsets);

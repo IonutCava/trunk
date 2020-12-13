@@ -343,7 +343,7 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     params._sourceNode = light.getSGN();
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;
-    params._minLoD = -1;
+    params._maxLoD = -1;
     params._layerParams._type = RTAttachmentType::Colour;
     params._layerParams._index = 0;
 

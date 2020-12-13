@@ -26,4 +26,12 @@ namespace Divide {
 
         return Super::loadCache(sgn, inputBuffer);
     }
+
+    void AnimationSystem::toggleAnimationState(const bool state) noexcept {
+        AnimationComponent::GlobalAnimationState(state);
+    }
+
+    bool AnimationSystem::getAnimationState() const noexcept {
+        return AnimationComponent::GlobalAnimationState();
+    }
 }//namespace Divide

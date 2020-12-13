@@ -46,6 +46,9 @@ namespace Divide {
 
         bool saveCache(const SceneGraphNode* sgn, ByteBuffer& outputBuffer) override;
         bool loadCache(SceneGraphNode* sgn, ByteBuffer& inputBuffer) override;
+
+        void toggleAnimationState(bool state) noexcept;
+        [[nodiscard]] bool getAnimationState() const noexcept;
     };
 }
 

@@ -313,22 +313,16 @@ void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState
     Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-void Terrain::onRefreshNodeData(const SceneGraphNode* sgn,
-                                const RenderStagePass& renderStagePass,
-                                const Camera& crtCamera,
-                                bool refreshData,
-                                GFX::CommandBuffer& bufferInOut) {
-    if (_drawCommandsDirty) {
-        rebuildDrawCommands(true);
-        _drawCommandsDirty = false;
-    }
-}
-
-bool Terrain::prepareRender(SceneGraphNode* sgn,
+void Terrain::prepareRender(SceneGraphNode* sgn,
                             RenderingComponent& rComp,
                             const RenderStagePass& renderStagePass,
                             const Camera& camera,
                             const bool refreshData) {
+    if (_drawCommandsDirty) {
+        rebuildDrawCommands(true);
+        _drawCommandsDirty = false;
+    }
+
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         rComp.getMaterialInstance()->parallaxFactor(parallaxHeightScale());
@@ -368,7 +362,7 @@ bool Terrain::prepareRender(SceneGraphNode* sgn,
         constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  offset / scale);
     }
 
-    return Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
+    Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
 void Terrain::buildDrawCommands(SceneGraphNode* sgn,

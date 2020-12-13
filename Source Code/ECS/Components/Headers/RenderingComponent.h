@@ -51,6 +51,7 @@ class RenderBin;
 class WaterPlane;
 class SceneGraphNode;
 class ParticleEmitter;
+class RenderPassExecutor;
 class SceneEnvironmentProbePool;
 class EnvironmentProbeComponent;
 
@@ -154,7 +155,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const;
 
-    void getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const;
+    void getRenderingProperties(RenderStage stage, NodeRenderingProperties& propertiesOut) const;
 
     [[nodiscard]] RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass);
     [[nodiscard]] const RenderPackage& getDrawPackage(const RenderStagePass& renderStagePass) const;
@@ -176,21 +177,19 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void drawSelectionGizmo(GFX::CommandBuffer& bufferInOut);
     void drawSkeleton(GFX::CommandBuffer& bufferInOut);
     void drawBounds(bool AABB, bool OBB, bool Sphere, GFX::CommandBuffer& bufferInOut);
-    
-    void prepareRender(const RenderStagePass& renderStagePass);
 
     [[nodiscard]] U8 getLoDLevel(const vec3<F32>& center, const vec3<F32>& cameraEye, RenderStage renderStage, const vec4<U16>& lodThresholds);
 
     void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     [[nodiscard]] const auto& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
+    [[nodiscard]] bool canDraw(const RenderStagePass& renderStagePass) const;
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
-    void setDataIndex(NodeDataIdx dataIndex, const RenderStagePass& stagePass, DrawCommandContainer& drawCommandsInOut);
-    [[nodiscard]] bool onRefreshNodeData(const RenderStagePass& stagePass, Camera* camera, bool quick, GFX::CommandBuffer& bufferInOut);
+    void setDataIndex(NodeDataIdx dataIndex, RenderStage stage);
+    [[nodiscard]] bool hasDrawCommands(const RenderStagePass& stagePass);
                   void onRenderOptionChanged(RenderOptions option, bool state);
-    [[nodiscard]] bool canDraw(const RenderStagePass& renderStagePass, U8 LoD) const;
 
     /// Called after the parent node was rendered
     void postRender(const SceneRenderState& sceneRenderState,
@@ -199,7 +198,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg);
 
-    [[nodiscard]] bool prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
+    void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
 
     // This returns false if the node is not reflective, otherwise it generates a new reflection cube map
     // and saves it in the appropriate material slot
@@ -282,8 +281,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     ReflectorType _reflectorType = ReflectorType::CUBE;
     RefractorType _refractorType = RefractorType::COUNT;
 
-    std::array<std::pair<bool, U8>, to_base(RenderStage::COUNT)> _lodLockLevels
-        {};
+    std::array<std::pair<bool, U8>, to_base(RenderStage::COUNT)> _lodLockLevels{};
 
     static hashMap<U32, DebugView*> s_debugViews[2];
 };
@@ -317,24 +315,24 @@ class RenderingCompRenderPass {
             return renderable.updateRefraction(refractionIndex, inBudget, camera, renderState, bufferInOut);
         }
 
-        [[nodiscard]] static bool prepareDrawPackage(RenderingComponent& renderable,
+        static void prepareDrawPackage(RenderingComponent& renderable,
                                        const Camera& camera,
                                        const SceneRenderState& sceneRenderState,
                                        const RenderStagePass& renderStagePass,
                                        const bool refreshData) {
-            return renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
+            renderable.prepareDrawPackage(camera, sceneRenderState, renderStagePass, refreshData);
         }
 
-        [[nodiscard]] static bool onRefreshNodeData(RenderingComponent& renderable, const RenderStagePass& stagePass, Camera* camera, const bool quick, GFX::CommandBuffer& bufferInOut) {
-            return renderable.onRefreshNodeData(stagePass, camera, quick, bufferInOut);
+        [[nodiscard]] static bool hasDrawCommands(RenderingComponent& renderable, const RenderStagePass& stagePass) {
+            return renderable.hasDrawCommands(stagePass);
         }
 
-        static void setDataIndex(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStagePass& stagePass, DrawCommandContainer& drawCommandsInOut) {
-            renderable.setDataIndex(dataIndex, stagePass, drawCommandsInOut);
+        static void setDataIndex(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStage stage) {
+            renderable.setDataIndex(dataIndex, stage);
         }
 
         friend class Divide::RenderPass;
-        friend class Divide::RenderPassManager;
+        friend class Divide::RenderPassExecutor;
 };
 
 class RenderingCompRenderBin {

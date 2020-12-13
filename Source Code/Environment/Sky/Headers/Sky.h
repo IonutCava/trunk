@@ -102,7 +102,7 @@ class Sky final : public SceneNode {
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
 
-    bool prepareRender(SceneGraphNode* sgn,
+    void prepareRender(SceneGraphNode* sgn,
                         RenderingComponent& rComp,
                         const RenderStagePass& renderStagePass,
                         const Camera& camera,

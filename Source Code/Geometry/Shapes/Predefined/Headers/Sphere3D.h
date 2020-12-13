@@ -41,24 +41,17 @@ class Sphere3D final : public Object3D {
    public:
     /// Change resolution to affect the spacing between vertices
     explicit Sphere3D(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, F32 radius, U32 resolution);
-
-    F32 getRadius() const { return _radius; }
-    U32 getResolution() const { return _resolution; }
+    void saveToXML(boost::property_tree::ptree& pt) const override;
+    void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
     void setRadius(F32 radius);
     void setResolution(U32 resolution);
 
-    void saveToXML(boost::property_tree::ptree& pt) const override;
-    void loadFromXML(const boost::property_tree::ptree& pt)  override;
+    PROPERTY_R(F32, radius, 1.f);
+    PROPERTY_R(U32, resolution, 16u);
 
   private:
-    // SuperBible stuff
-    void rebuildVB() override;
-
-  protected:
-    F32 _radius;
-    U32 _resolution;
-    U32 _vertexCount;
+    void rebuildInternal() override;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(Sphere3D);

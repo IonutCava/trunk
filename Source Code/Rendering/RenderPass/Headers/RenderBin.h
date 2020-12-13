@@ -95,8 +95,7 @@ enum class RenderQueueListType : U8 {
 class RenderBin;
 using RenderQueuePackages = vectorEASTLFast<RenderPackage*>;
 
-/// This class contains a list of "RenderBinItem"'s and stores them sorted
-/// depending on designation
+/// This class contains a list of "RenderBinItem"'s and stores them sorted depending on designation
 class RenderBin {
    public:
     using RenderBinStack = vectorEASTL<RenderBinItem>;
@@ -131,6 +130,7 @@ class RenderBin {
    private:
     const RenderBinType _rbType;
 
+    mutable std::array<SharedMutex, to_base(RenderStage::COUNT)> _renderBinStackLocks{};
     std::array<RenderBinStack, to_base(RenderStage::COUNT)> _renderBinStack{};
 };
 

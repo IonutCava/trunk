@@ -56,13 +56,14 @@ struct NodeCullParams {
     std::pair<I64*, size_t> _ignoredGUIDS;
     const Camera* _currentCamera = nullptr;
     F32 _cullMaxDistanceSq = 0.0f;
-    I32 _minLoD = -1;
+    I32 _maxLoD = -1;
     RenderStage _stage = RenderStage::COUNT;
 };
 
 struct VisibleNode {
     SceneGraphNode* _node = nullptr;
     F32 _distanceToCameraSq = 0.0f;
+    bool _materialReady = true;
 };
 
 struct FeedBackContainer
@@ -94,6 +95,10 @@ struct VisibleNodeList
         return _nodes[idx]; 
     }
 
+    [[nodiscard]] VisibleNode& node(size_t idx) noexcept {
+        assert(idx < _index.load());
+        return _nodes[idx];
+    }
 private:
     Container _nodes;
     std::atomic_size_t _index = 0;

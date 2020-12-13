@@ -1505,6 +1505,11 @@ bool Editor::spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const s
     return false;
 }
 
+ECSManager& Editor::getECSManager() const {
+    Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
+    return activeScene.sceneGraph()->GetECSManager();
+}
+
 LightPool& Editor::getActiveLightPool() const {
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     return activeScene.lightPool();

@@ -531,7 +531,7 @@ void SceneGraphNode::processEvents() {
     }
 }
 
-bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, const bool refreshData) {
+void SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, const bool refreshData) {
     OPTICK_EVENT();
 
     AnimationComponent* aComp = get<AnimationComponent>();
@@ -556,15 +556,7 @@ bool SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStageP
         }
     }
 
-    return _node->prepareRender(this, rComp, renderStagePass, camera, refreshData);
-}
-
-void SceneGraphNode::onRefreshNodeData(const RenderStagePass& renderStagePass, const Camera& camera, const bool refreshData, GFX::CommandBuffer& bufferInOut) const {
-    _node->onRefreshNodeData(this, renderStagePass, camera, refreshData, bufferInOut);
-}
-
-bool SceneGraphNode::getDrawState(const RenderStagePass stagePass, const U8 LoD) const {
-    return _node->renderState().drawState(stagePass, LoD);
+    _node->prepareRender(this, rComp, renderStagePass, camera, refreshData);
 }
 
 void SceneGraphNode::onNetworkSend(U32 frameCount) const {
@@ -579,30 +571,43 @@ void SceneGraphNode::onNetworkSend(U32 frameCount) const {
     }
 }
 
+bool SceneGraphNode::canDraw(const RenderStagePass& stagePass) const {
+    RenderingComponent* rComp = get<RenderingComponent>();
 
-bool SceneGraphNode::preCullNode(const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) const {
+    return rComp != nullptr && rComp->canDraw(stagePass);
+}
+
+bool SceneGraphNode::shouldDraw(const RenderStagePass& stagePass) const {
+    return _node->renderState().drawState(stagePass);
+}
+
+bool SceneGraphNode::postCullCheck(const NodeCullParams& params,
+                                   const BoundsComponent& bounds,
+                                   F32& distanceToClosestPointSQ) const {
     OPTICK_EVENT();
 
-    // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
-    if (!hasFlag(Flags::LOADING)) {
-        // Get camera info
-        const vec3<F32>& eye = params._currentCamera->getEye();
+    if (!_node->renderState().drawState()) {
+        return false;
+    }
 
-        // Check distance to sphere edge (center - radius)
-        distanceToClosestPointSQ = bounds.getBoundingBox().nearestDistanceFromPointSquared(eye);
-        if (distanceToClosestPointSQ < params._cullMaxDistanceSq) {
-            const F32 upperBound = params._minExtents.maxComponent();
-            if (upperBound > 0.0f &&
-                bounds.getBoundingBox().getExtent().maxComponent() < upperBound)
-            {
-                return true;
+    const F32 upperBound = params._minExtents.maxComponent();
+    if (upperBound > 0.0f && bounds.getBoundingBox().getExtent().maxComponent() < upperBound) {
+        // Node is too small for the current render pass
+        return false;
+    }
+
+    RenderingComponent* rComp = get<RenderingComponent>();
+    const U8 LoDLevel = rComp->getLoDLevel(bounds.getBoundingSphere().getCenter(), params._currentCamera->getEye(), params._stage, params._lodThresholds);
+    if (LoDLevel != RenderingComponent::INVALID_LOD_LEVEL) {
+        const vec2<F32>& renderRange = rComp->renderRange();
+        if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
+            if (params._maxLoD > -1 && LoDLevel > params._maxLoD) {
+                // Node has a too high LoD for the current render pass
+                return false;
             }
-
-            RenderingComponent* rComp = get<RenderingComponent>();
-            const vec2<F32>& renderRange = rComp->renderRange();
-            if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
-                return params._minLoD > -1 &&
-                       rComp->getLoDLevel(bounds.getBoundingSphere().getCenter(), eye, params._stage, params._lodThresholds) > params._minLoD;
+            // Draw state has its own lod requirements
+            if (LoDLevel > _node->renderState().maxLodLevel()) {
+                return false;
             }
         }
     }
@@ -619,29 +624,41 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
 
     // Some nodes should always render for different reasons (eg, trees are instanced and bound to the parent chunk)
     if (hasFlag(Flags::VISIBILITY_LOCKED)) {
-        collisionTypeOut = FrustumCollision::FRUSTUM_IN;
-        return false;
-    }
+        if (shouldDraw(RenderStagePass{ params._stage, RenderPassType::COUNT })) {
+            collisionTypeOut = FrustumCollision::FRUSTUM_IN;
+            return false;
+        }
 
-    const BoundsComponent* bComp = get<BoundsComponent>();
-    if (preCullNode(*bComp, params, distanceToClosestPointSQ)) {
+        collisionTypeOut = FrustumCollision::FRUSTUM_OUT;
         return true;
     }
 
+    // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
+    if (hasFlag(Flags::LOADING)) {
+        collisionTypeOut = FrustumCollision::FRUSTUM_OUT;
+        return true;
+    }
+
+    const BoundsComponent* bComp = get<BoundsComponent>();
     STUBBED("ToDo: make this work in a multi-threaded environment -Ionut");
     _frustPlaneCache = -1;
     I8 fakePlaneCache = -1;
 
-    const BoundingSphere& sphere = bComp->getBoundingSphere();
-    const BoundingBox& boundingBox = bComp->getBoundingBox();
-    const F32 radius = sphere.getRadius();
-    const vec3<F32>& center = sphere.getCenter();
-
     // Get camera info
     const vec3<F32>& eye = params._currentCamera->getEye();
+    const BoundingBox& boundingBox = bComp->getBoundingBox();
+    distanceToClosestPointSQ = boundingBox.nearestDistanceFromPointSquared(eye);
+    if (distanceToClosestPointSQ > params._cullMaxDistanceSq) {
+        // Node is too far away
+        return true;
+    }
+
     // Sphere is in range, so check bounds primitives against the frustum
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frustum = params._currentCamera->getFrustum();
+        const BoundingSphere& sphere = bComp->getBoundingSphere();
+        const F32 radius = sphere.getRadius();
+        const vec3<F32>& center = sphere.getCenter();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast
         collisionTypeOut = frustum.ContainsSphere(center, radius, fakePlaneCache);
         if (collisionTypeOut == FrustumCollision::FRUSTUM_INTERSECT) {
@@ -653,7 +670,10 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
         collisionTypeOut = FrustumCollision::FRUSTUM_INTERSECT;
     }
 
-    return collisionTypeOut == FrustumCollision::FRUSTUM_OUT;
+    //If it is in frustum, that doesn't mean that we can render it
+    const bool cull = collisionTypeOut == FrustumCollision::FRUSTUM_OUT ||
+                      !postCullCheck(params, *bComp, distanceToClosestPointSQ);
+    return cull;
 }
 
 void SceneGraphNode::occlusionCull(const RenderStagePass& stagePass,

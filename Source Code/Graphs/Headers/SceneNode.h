@@ -120,7 +120,7 @@ class SceneNode : public CachedResource {
 
     /// Perform any pre-draw operations POST-command build
     /// If the node isn't ready for rendering and should be skipped this frame, the return value is false
-    virtual bool prepareRender(SceneGraphNode* sgn,
+    virtual void prepareRender(SceneGraphNode* sgn,
                                RenderingComponent& rComp,
                                const RenderStagePass& renderStagePass,
                                const Camera& camera,
@@ -130,13 +130,6 @@ class SceneNode : public CachedResource {
                                    const RenderStagePass& renderStagePass,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut);
-
-    virtual void onRefreshNodeData(const SceneGraphNode* sgn,
-                                   const RenderStagePass& renderStagePass,
-                                   const Camera& crtCamera,
-                                   bool refreshData,
-                                   GFX::CommandBuffer& bufferInOut);
-    /*//Rendering/Processing*/
 
     bool unload() override;
     virtual void setMaterialTpl(const Material_ptr& material);

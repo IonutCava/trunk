@@ -89,7 +89,7 @@ Vegetation::Vegetation(GFXDevice& context,
         renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), g_AllIndicesID, i);
     }
 
-    renderState().minLodLevel(2u);
+    renderState().maxLodLevel(2u);
     renderState().drawState(false);
 
     CachedResource::setState(ResourceState::RES_LOADING);
@@ -598,7 +598,7 @@ void Vegetation::occlusionCull(const RenderStagePass& stagePass,
                                const Camera& camera,
                                GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                                GFX::CommandBuffer& bufferInOut) const {
-    if (!s_buffersBound || !renderState().drawState(stagePass, 0u)) {
+    if (!s_buffersBound || !renderState().drawState(stagePass)) {
         return;
     }
     // Culling lags one full frame

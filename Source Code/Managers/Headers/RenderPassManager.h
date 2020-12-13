@@ -37,13 +37,14 @@
 
 #include "Rendering/RenderPass/Headers/RenderPass.h"
 #include "Rendering/RenderPass/Headers/RenderQueue.h"
-#include "Rendering/RenderPass/Headers/RenderPassCuller.h"
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
+#include "Rendering/RenderPass/Headers/RenderPassExecutor.h"
 
 namespace Divide {
-struct NodeTransformData;
+    struct FeedBackContainer;
+    struct NodeTransformData;
 struct NodeMaterialData;
 struct PerPassData;
 
@@ -66,7 +67,7 @@ struct RenderPassParams
     const SceneGraphNode* _sourceNode = nullptr;
     Camera* _camera = nullptr;
     Str64 _passName = "";
-    I32 _minLoD = -1; //-1 = all
+    I32 _maxLoD = -1; //-1 = all
     RenderTargetID _target = {};
 
     RTDrawDescriptor _targetDescriptorPrePass = {};
@@ -97,98 +98,48 @@ public:
 
     /// Call every render queue's render function in order
     void render(const RenderParams& params);
+
     /// Add a new pass that will run once for each of the RenderStages specified
     RenderPass& addRenderPass(const Str64& renderPassName,
                               U8 orderKey,
                               RenderStage renderStage,
                               const vectorEASTL<U8>& dependencies = {},
                               bool usePerformanceCounters = false);
+
     /// Find a render pass by name and remove it from the manager
     void removeRenderPass(const Str64& name);
-    [[nodiscard]] U32  getLastTotalBinSize(RenderStage renderStage) const;
+    [[nodiscard]] U32 getLastTotalBinSize(RenderStage renderStage) const;
     [[nodiscard]] I32 drawCallCount(const RenderStage stage) const noexcept { return _drawCallCount[to_base(stage)]; }
-
-    [[nodiscard]] RenderQueue& getQueue() noexcept { return _renderQueue; }
-
-    [[nodiscard]] RenderPass::BufferData getBufferData(const RenderStagePass& stagePass) const;
 
     void doCustomPass(RenderPassParams params, GFX::CommandBuffer& bufferInOut);
     void postInit();
 
 private:
-    // Returns false if we skipped the pre-pass step
-    bool prePass(const VisibleNodeList<>& nodes,
-                 const RenderPassParams& params,
-                 const RenderTarget& target,
-                 U32& visibleNodeCount,
-                 GFX::CommandBuffer& bufferInOut);
-    bool occlusionPass(const VisibleNodeList<>& nodes,
-                       U32 visibleNodeCount,
-                       const RenderStagePass& stagePass,
-                       const Camera& camera,
-                       const RenderTargetID& sourceDepthBuffer,
-                       const RenderTargetID& targetDepthBuffer,
-                       GFX::CommandBuffer& bufferInOut) const;
-    void mainPass(const VisibleNodeList<>& nodes,
-                  const RenderPassParams& params,
-                  RenderTarget& target,
-                  bool prePassExecuted,
-                  bool hasHiZ,
-                  GFX::CommandBuffer& bufferInOut);
-
-    void transparencyPass(const VisibleNodeList<>& nodes,
-                          const RenderPassParams& params,
-                          GFX::CommandBuffer& bufferInOut);
-
-    
-    void woitPass(const VisibleNodeList<>& nodes,
-                  const RenderPassParams& params,
-                  GFX::CommandBuffer& bufferInOut);
-
-    [[nodiscard]] RenderPass& getPassForStage(RenderStage renderStage);
+    friend class RenderPassExecutor;
     [[nodiscard]] const RenderPass& getPassForStage(RenderStage renderStage) const;
-    void prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList<>& nodes, bool refreshNodeData, bool transparencyPass, RenderingOrder renderOrder = RenderingOrder::COUNT);
-    // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
-    U32 buildDrawCommands(const RenderPassParams& params, bool refreshNodeData, GFX::CommandBuffer& bufferInOut);
-    // Returns the number of processed nodes that will get rendered (the number of draw packages uploaded to the GPU
-    U32  buildBufferData(const RenderStagePass& stagePass, const SceneRenderState& renderState, const RenderPassParams& passParams, bool fullRefresh, GFX::CommandBuffer& bufferInOut);
-    NodeDataIdx processVisibleNode(const RenderingComponent& rComp,
-                                   const RenderStagePass& stagePass,
-                                   bool playAnimations,
-                                   D64 interpolationFactor,
-                                   bool needsInterp,
-                                   U16 nodeIndex,
-                                   PerPassData& passData) const;
-
-private: //TEMP
-    friend class RenderBin;
-    [[nodiscard]] U32  renderQueueSize(RenderStage stage, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
-    void renderQueueToSubPasses(RenderStage stage, GFX::CommandBuffer& commandsInOut, RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
 private:
     GFXDevice& _context;
-    RenderQueue _renderQueue;
+
+    ShaderProgram_ptr _OITCompositionShader = nullptr;
 
     vectorEASTL<Task*> _renderTasks{};
     vectorEASTL<RenderPass*> _renderPasses{};
     vectorEASTL<GFX::CommandBuffer*> _renderPassCommandBuffer{};
+
+    std::array<std::unique_ptr<RenderPassExecutor>, to_base(RenderStage::COUNT)> _executors;
+    std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _processCommandBufferTimer{};
+    std::array<I32, to_base(RenderStage::COUNT)> _drawCallCount{};
+
     GFX::CommandBuffer* _postFXCommandBuffer = nullptr;
     GFX::CommandBuffer* _postRenderBuffer = nullptr;
 
-    Pipeline* _OITCompositionPipeline = nullptr;
-
-    ShaderProgram_ptr _OITCompositionShader = nullptr;
     Time::ProfileTimer* _renderPassTimer = nullptr;
     Time::ProfileTimer* _buildCommandBufferTimer = nullptr;
-    std::array<Time::ProfileTimer*, to_base(RenderStage::COUNT)> _processCommandBufferTimer{};
     Time::ProfileTimer* _processGUITimer = nullptr;
     Time::ProfileTimer* _flushCommandBufferTimer = nullptr;
     Time::ProfileTimer* _postFxRenderTimer = nullptr;
     Time::ProfileTimer* _blitToDisplayTimer = nullptr;
-
-    std::array<RenderQueuePackages, to_base(RenderStage::COUNT)> _renderQueues
-        {};
-    std::array<I32, to_base(RenderStage::COUNT)> _drawCallCount{};
 };
 
 } // namespace Divide

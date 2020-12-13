@@ -41,15 +41,15 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 class RenderingComponent;
-class RenderPassManager;
+class RenderPassExecutor;
 
 namespace Attorney {
-    class RenderPackageRenderPassManager;
+    class RenderPackageRenderPassExecutor;
     class RenderPackageRenderingComponent;
 };
 
 class RenderPackage {
-    friend class Attorney::RenderPackageRenderPassManager;
+    friend class Attorney::RenderPackageRenderPassExecutor;
     friend class Attorney::RenderPackageRenderingComponent;
 public:
     enum class MinQuality : U8 {
@@ -146,12 +146,12 @@ inline void RenderPackage::add<GFX::DrawCommand>(const GFX::DrawCommand& command
 }
 
 namespace Attorney {
-    class RenderPackageRenderPassManager {
+    class RenderPackageRenderPassExecutor {
         static GFX::CommandBuffer* getCommandBuffer(RenderPackage* pkg) {
             return pkg->commands();
         }
 
-        friend class RenderPassManager;
+        friend class RenderPassExecutor;
     };
 
     class RenderPackageRenderingComponent {

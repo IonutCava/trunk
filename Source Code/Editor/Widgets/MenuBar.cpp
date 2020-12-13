@@ -17,9 +17,12 @@
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
+#include "ECS/Systems/Headers/ECSManager.h"
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
+
+#include "ECS/Systems/Headers/AnimationSystem.h"
 
 namespace Divide {
 namespace {
@@ -523,6 +526,8 @@ void MenuBar::drawDebugMenu() {
 
         SceneEnvironmentProbePool* envProbPool = Attorney::EditorGeneralWidget::getActiveEnvProbePool(_context.editor());
         LightPool& pool = Attorney::EditorGeneralWidget::getActiveLightPool(_context.editor());
+        ECSManager& ecsManager = Attorney::EditorGeneralWidget::getECSManager(_context.editor());
+
         if (ImGui::BeginMenu("Toggle Light Types")) {
             for (U8 i = 0; i < to_U8(LightType::COUNT); ++i) {
                 const LightType type = static_cast<LightType>(i);
@@ -636,6 +641,12 @@ void MenuBar::drawDebugMenu() {
         {
             pool.lightImpostorsEnabled(lightImpostors);
         }
+        
+        bool playAnimations = ecsManager.getSystem<AnimationSystem>()->getAnimationState();
+
+        if (ImGui::MenuItem("Play animations", "", &playAnimations)) {
+            ecsManager.getSystem<AnimationSystem>()->toggleAnimationState(playAnimations);
+        }
 
         if (ImGui::BeginMenu("Debug Gizmos")) {
             SceneManager* sceneManager = context().kernel().sceneManager();
@@ -689,10 +700,6 @@ void MenuBar::drawDebugMenu() {
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES);
             if (ImGui::MenuItem("Render custom gismos", "", &temp)) {
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_CUSTOM_PRIMITIVES, temp);
-            }
-            temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS);
-            if (ImGui::MenuItem("Play animations", "", &temp)) {
-                renderState.toggleOption(SceneRenderState::RenderOptions::PLAY_ANIMATIONS, temp);
             }
             ImGui::EndMenu();
         }

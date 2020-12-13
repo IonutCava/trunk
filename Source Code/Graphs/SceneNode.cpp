@@ -46,7 +46,7 @@ void SceneNode::sceneUpdate(const U64 deltaTimeUS,
     ACKNOWLEDGE_UNUSED(sceneState);
 }
 
-bool SceneNode::prepareRender(SceneGraphNode* sgn,
+void SceneNode::prepareRender(SceneGraphNode* sgn,
                               RenderingComponent& rComp,
                               const RenderStagePass& renderStagePass,
                               const Camera& camera,
@@ -57,7 +57,7 @@ bool SceneNode::prepareRender(SceneGraphNode* sgn,
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(refreshData);
 
-    return getState() == ResourceState::RES_LOADED;
+    assert(getState() == ResourceState::RES_LOADED);
 }
 
 
@@ -129,18 +129,6 @@ void SceneNode::buildDrawCommands(SceneGraphNode* sgn,
     ACKNOWLEDGE_UNUSED(renderStagePass);
     ACKNOWLEDGE_UNUSED(crtCamera);
     ACKNOWLEDGE_UNUSED(pkgInOut);
-}
-
-void SceneNode::onRefreshNodeData(const SceneGraphNode* sgn,
-                                  const RenderStagePass& renderStagePass,
-                                  const Camera& crtCamera,
-                                  bool refreshData,
-                                  GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(sgn);
-    ACKNOWLEDGE_UNUSED(renderStagePass);
-    ACKNOWLEDGE_UNUSED(crtCamera);
-    ACKNOWLEDGE_UNUSED(refreshData);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
 }
 
 void SceneNode::onNetworkSend(SceneGraphNode* sgn, WorldPacket& dataOut) const {

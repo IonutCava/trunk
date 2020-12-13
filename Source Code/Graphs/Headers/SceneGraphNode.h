@@ -47,6 +47,7 @@ class PropertyWindow;
 class BoundsComponent;
 class RenderPassCuller;
 class RenderPassManager;
+class RenderPassExecutor;
 class RenderingComponent;
 class TransformComponent;
 
@@ -291,13 +292,9 @@ private:
     /// Returns true if the node should be culled (is not visible for the current stage). Calls "preCullNode" internally.
     bool cullNode(const NodeCullParams& params, FrustumCollision& collisionTypeOut, F32& distanceToClosestPointSQ) const;
     /// Fast distance-to-camera and min-LoD checks. Part of the cullNode call but useful for quick visibility checks elsewhere
-    bool preCullNode(const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) const;
+    bool postCullCheck(const NodeCullParams& params, const BoundsComponent& bounds, F32& distanceToClosestPointSQ) const;
     /// Called after preRender and after we rebuild our command buffers. Useful for modifying the command buffer that's going to be used for this RenderStagePass
-    bool prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData);
-    /// Called before we start preparing draw packages. Perfect for adding non-node specific commands to the command buffer (e.g. culling tasks)
-    void onRefreshNodeData(const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData, GFX::CommandBuffer& bufferInOut) const;
-    /// Returns true if this node should be drawn based on the specified parameters. Does not do any culling. Just a "if it were to be in view, it would draw".
-    bool getDrawState(RenderStagePass stagePass, U8 LoD) const;
+    void prepareRender(RenderingComponent& rComp, const RenderStagePass& renderStagePass, const Camera& camera, bool refreshData);
     /// Called whenever we send a networking packet from our NetworkingComponent (if any). FrameCount is the frame ID sent with the packet.
     void onNetworkSend(U32 frameCount) const;
     /// Returns a bottom-up list(leafs -> root) of all of the nodes parented under the current one.
@@ -327,6 +324,8 @@ private:
                        GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                        GFX::CommandBuffer& bufferInOut) const;
 
+    bool canDraw(const RenderStagePass& stagePass) const;
+    bool shouldDraw(const RenderStagePass& stagePass) const;
 private:
     SGNRelationshipCache _relationshipCache;
     vectorEASTL<SceneGraphNode*> _children;
@@ -418,15 +417,8 @@ namespace Attorney {
             node->setTransformDirty(transformMask);
         }
 
-        static bool prepareRender(SceneGraphNode* node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, const bool refreshData) {
-            return node->prepareRender(rComp, renderStagePass, camera, refreshData);
-        }
-
-        static void onRefreshNodeData(SceneGraphNode* node, const RenderStagePass& renderStagePass, const Camera& camera, const bool refreshData, GFX::CommandBuffer& bufferInOut) {
-            node->onRefreshNodeData(renderStagePass, camera, refreshData, bufferInOut);
-        }
-        static bool getDrawState(const SceneGraphNode* node, const RenderStagePass stagePass, const U8 LoD) {
-            return node->getDrawState(stagePass, LoD);
+        static void prepareRender(SceneGraphNode* node, RenderingComponent& rComp, const Camera& camera, const RenderStagePass& renderStagePass, const bool refreshData) {
+            node->prepareRender(rComp, renderStagePass, camera, refreshData);
         }
 
         friend class Divide::BoundsComponent;
@@ -440,8 +432,9 @@ namespace Attorney {
             return node->cullNode(params, collisionTypeOut, distanceToClosestPointSQ);
         }
 
-        static bool preCullNode(const SceneGraphNode* node, const BoundsComponent& bounds, const NodeCullParams& params, F32& distanceToClosestPointSQ) {
-            return node->preCullNode(bounds, params, distanceToClosestPointSQ);
+        // Returns false if the node should be culled!
+        static bool postCullCheck(const SceneGraphNode* node, const NodeCullParams& params, const BoundsComponent& bounds, F32& distanceToClosestPointSQ) {
+            return node->postCullCheck(params, bounds, distanceToClosestPointSQ);
         }
 
         friend class Divide::RenderPassCuller;
@@ -453,6 +446,15 @@ namespace Attorney {
             node->occlusionCull(stagePass, depthBuffer, camera, HIZPushConstantsCMDInOut, bufferInOut);
         }
 
+        static bool canDraw(const SceneGraphNode* node, const RenderStagePass& stagePass) {
+            return node->canDraw(stagePass);
+        }
+
+        static bool shouldDraw(const SceneGraphNode* node, const RenderStagePass& stagePass) {
+            return node->shouldDraw(stagePass);
+        }
+
+        friend class Divide::RenderPassExecutor;
         friend class Divide::RenderPassManager;
     };
 

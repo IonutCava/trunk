@@ -75,7 +75,7 @@ class WaterPlane : public SceneNode {
 
     void postLoad(SceneGraphNode* sgn) override;
     void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
-    bool prepareRender(SceneGraphNode* sgn,
+    void prepareRender(SceneGraphNode* sgn,
                        RenderingComponent& rComp,
                        const RenderStagePass& renderStagePass,
                        const Camera& camera,

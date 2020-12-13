@@ -57,32 +57,22 @@ enum class RenderStage : U8;
 class RenderPass final : NonCopyable {
    public:
        // Size factor for command and data buffers
-       constexpr static U8 DataBufferRingSize = 1;// 3;
+       constexpr static U8 DataBufferRingSize = 3;
 
        struct BufferDataPerType
        {
            I32 _dataRingIndex = 0u;
            U32 _elementOffset = 0u;
        };
-
-#pragma pack(push, 1)
-       struct NodeMaterialTexturesInternal
-       {
-           vec4<U32> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
-       };
-#pragma pack(pop)
-
        struct BufferData {
            ShaderBuffer* _transformBuffer = nullptr;
            ShaderBuffer* _materialBuffer = nullptr;
-           ShaderBuffer* _texturesBuffer = nullptr;
            ShaderBuffer* _commandBuffer = nullptr;
            ShaderBuffer* _cullCounterBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
            U32* _lastNodeCount = nullptr;
            BufferDataPerType _transformData = {};
            BufferDataPerType _materialData = {};
-           BufferDataPerType _texturesData = {};
            BufferDataPerType _commandData = {};
        };
 
@@ -120,7 +110,6 @@ class RenderPass final : NonCopyable {
 
     ShaderBuffer* _transformData = nullptr;
     ShaderBuffer* _materialData = nullptr;
-    ShaderBuffer* _texturesData = nullptr;
     ShaderBuffer* _cullCounter = nullptr;
     ShaderBuffer* _cmdBuffer = nullptr;
 

@@ -24,7 +24,6 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
       _stateMask(0u)
 {
     enableOption(RenderOptions::RENDER_GEOMETRY);
-    enableOption(RenderOptions::PLAY_ANIMATIONS);
 
     _lodThresholds.set(25, 45, 85, 165);
     _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
@@ -37,11 +36,9 @@ void SceneRenderState::renderMask(U16 mask) {
         auto validateMask = [mask]() -> U16 {
             U16 validMask = 0;
             for (U16 stateIt = 1; stateIt <= to_base(RenderOptions::COUNT); ++stateIt) {
-                U16 bitState = toBit(stateIt);
+              const U16 bitState = toBit(stateIt);
 
                 if (BitCompare(mask, bitState)) {
-                    DIVIDE_ASSERT(static_cast<RenderOptions>(bitState) != RenderOptions::PLAY_ANIMATIONS,
-                                  "SceneRenderState::renderMask error: can't update animation state directly!");
                     SetBit(validMask, bitState);
                 }
             }

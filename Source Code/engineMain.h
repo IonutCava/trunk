@@ -37,7 +37,7 @@ namespace Divide {
 
 class Application;
 class StreamBuffer;
-class Engine : NonCopyable, NonMovable {
+class Engine final : NonCopyable, NonMovable {
 public:
     Engine();
     ~Engine();
@@ -51,8 +51,8 @@ public:
 
 private:
     I32 _errorCode = 0;
-    eastl::unique_ptr<Application> _app;
-    StreamBuffer* _outputStreams[2];
+    eastl::unique_ptr<Application> _app{};
+    StreamBuffer*_outputStreams[2]{};
 };
 
 }

@@ -316,7 +316,7 @@ void WaterPlane::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneSt
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
-bool WaterPlane::prepareRender(SceneGraphNode* sgn,
+void WaterPlane::prepareRender(SceneGraphNode* sgn,
                                RenderingComponent& rComp,
                                const RenderStagePass& renderStagePass,
                                const Camera& camera,
@@ -328,7 +328,8 @@ bool WaterPlane::prepareRender(SceneGraphNode* sgn,
         constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
         constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, _refractionTint);
     }
-    return SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
+
+    SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
 bool WaterPlane::PointUnderwater(const SceneGraphNode* sgn, const vec3<F32>& point) {

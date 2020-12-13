@@ -289,15 +289,13 @@ void RenderingComponent::onMaterialChanged() {
     _parentSGN->getNode().rebuildDrawCommands(true);
 }
 
-bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass, const U8 LoD) const {
+bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) const {
     OPTICK_EVENT();
     OPTICK_TAG("Node", (_parentSGN->name().c_str()));
 
-    if (Attorney::SceneGraphNodeComponent::getDrawState(_parentSGN, renderStagePass, LoD)) {
-        // Can we render without a material? Maybe. IDK.
-        if (_materialInstance == nullptr || _materialInstance->canDraw(renderStagePass)) {
-            return renderOptionEnabled(RenderOptions::IS_VISIBLE);
-        }
+    // Can we render without a material? Maybe. IDK.
+    if (_materialInstance == nullptr || _materialInstance->canDraw(renderStagePass)) {
+        return renderOptionEnabled(RenderOptions::IS_VISIBLE);
     }
 
     return false;
@@ -324,83 +322,18 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::prepareRender(const RenderStagePass& renderStagePass) {
-    OPTICK_EVENT();
-
-    RenderPackage& pkg = getDrawPackage(renderStagePass);
-    DescriptorSet& set = pkg.descriptorSet(0);
-
-    if (pkg.textureDataDirty()) {
-            if (_materialInstance != nullptr) {
-                _materialInstance->getTextureData(renderStagePass, set._textureData);
-            }
-        pkg.textureDataDirty(false);
-    }
-
-    if (!renderStagePass.isDepthPass()) {
-        if (renderStagePass._stage != RenderStage::REFLECTION) {
-            bool isReflectionValid;
-            {
-                SharedLock<SharedMutex> r_lock(_reflectionLock);
-                isReflectionValid = _reflectionTexture.isValid();
-                if (isReflectionValid) {
-                    set._textureViews.add(_reflectionTexture);
-                }
-            }
-
-            if (!isReflectionValid) {
-                // Always have a cubemap, even if it is the sky texture
-                useSkyReflection();
-                SharedLock<SharedMutex> r_lock(_reflectionLock);
-                assert(_reflectionTexture.isValid());
-                set._textureViews.add(_reflectionTexture);
-            }
-        }
-
-        if (renderStagePass._stage != RenderStage::REFRACTION) {
-          SharedLock<SharedMutex> r_lock(_refractionLock);
-          if (_refractionTexture.isValid()) {
-              set._textureViews.add(_refractionTexture);
-          }
-      }
-    }
-}
-
-void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderStagePass& stagePass, DrawCommandContainer& drawCommandsInOut) {
-    const RenderStage stage = stagePass._stage;
-
+void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderStage stage) {
     const U8 lodLevel = _lodLevels[to_base(stage)];
-    RenderPackage& pkg = getDrawPackage(stagePass);
-    Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, lodLevel);
-    if (stage != RenderStage::SHADOW) {
-        const RenderPassType passType = stagePass._passType;
-
-        RenderStagePass tempStagePass = stagePass;
-        for (U8 i = 0; i < to_base(RenderPassType::COUNT); ++i) {
-            if (i == to_U8(passType)) {
-                continue;
-            }
-
-            tempStagePass._passType = static_cast<RenderPassType>(i);
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(getDrawPackage(tempStagePass), dataIndex, lodLevel);
-        }
-    }
-
-    const I32 drawCommandCount = pkg.drawCommandCount();
-    for (I32 i = 0; i < drawCommandCount; ++i) {
-        const GFX::DrawCommand& gfxDrawCommand = pkg.drawCommand(i);
-
-        for (const GenericDrawCommand& cmd : gfxDrawCommand._drawCommands) {
-            drawCommandsInOut.push_back(cmd._cmd);
+    PackagesPerPassType& packagesPerPass = _renderPackages[to_base(stage)];
+    for (PackagesPerIndex& packages : packagesPerPass) {
+        for (RenderPackage& pkg : packages) {
+            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, lodLevel);
         }
     }
 }
 
-bool RenderingComponent::onRefreshNodeData(const RenderStagePass& stagePass, Camera* camera, const bool quick, GFX::CommandBuffer& bufferInOut) {
-    OPTICK_EVENT();
-
-    Attorney::SceneGraphNodeComponent::onRefreshNodeData(_parentSGN, stagePass, *camera, !quick, bufferInOut);
-    return quick ? true : getDrawPackage(stagePass).hasDrawComands();
+bool RenderingComponent::hasDrawCommands(const RenderStagePass& stagePass) {
+    return getDrawPackage(stagePass).hasDrawComands();
 }
 
 void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const {
@@ -412,8 +345,8 @@ void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterial
     }
 }
 
-void RenderingComponent::getRenderingProperties(const RenderStagePass& stagePass, NodeRenderingProperties& propertiesOut) const {
-    propertiesOut._lod = _lodLevels[to_base(stagePass._stage)];
+void RenderingComponent::getRenderingProperties(const RenderStage stage, NodeRenderingProperties& propertiesOut) const {
+    propertiesOut._lod = _lodLevels[to_base(stage)];
     propertiesOut._nodeFlagValue = dataFlag();
     propertiesOut._occlusionCull = occlusionCull();
 }
@@ -477,38 +410,62 @@ U8 RenderingComponent::getLoDLevel(const vec3<F32>& center, const vec3<F32>& cam
     return MAX_LOD_LEVEL;
 }
 
-bool RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, const bool refreshData) {
+void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, const bool refreshData) {
     OPTICK_EVENT();
 
-    U8& lod = _lodLevels[to_base(renderStagePass._stage)];
+    RenderPackage& pkg = getDrawPackage(renderStagePass);
+    if (pkg.empty() || getRebuildFlag(renderStagePass)) {
+        rebuildDrawCommands(renderStagePass, camera, pkg);
+        setRebuildFlag(renderStagePass, false);
+    }
+
+    Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData);
+
     if (refreshData) {
-        lod = getLoDLevel(_boundsCache.getCenter(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
+        _lodLevels[to_base(renderStagePass._stage)] = getLoDLevel(_boundsCache.getCenter(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
     }
 
-    if (canDraw(renderStagePass, lod)) {
-        RenderPackage& pkg = getDrawPackage(renderStagePass);
+    pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
+                                                          sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
 
-        if (pkg.empty() || getRebuildFlag(renderStagePass)) {
-            rebuildDrawCommands(renderStagePass, camera, pkg);
-            setRebuildFlag(renderStagePass, false);
+    pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
+                                                           sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
+
+    DescriptorSet& set = pkg.descriptorSet(0);
+    if (pkg.textureDataDirty()) {
+        if (_materialInstance != nullptr) {
+            _materialInstance->getTextureData(renderStagePass, set._textureData);
         }
-
-        if (Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData)) {
-            prepareRender(renderStagePass);
-
-            pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, 
-                             (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
-                              sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_GEOMETRY)));
-
-            pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME,
-                              (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
-                               sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
-        }
-
-        return true;
+        pkg.textureDataDirty(false);
     }
 
-    return false;
+    if (!renderStagePass.isDepthPass()) {
+        if (renderStagePass._stage != RenderStage::REFLECTION) {
+            bool isReflectionValid;
+            {
+                SharedLock<SharedMutex> r_lock(_reflectionLock);
+                isReflectionValid = _reflectionTexture.isValid();
+                if (isReflectionValid) {
+                    set._textureViews.add(_reflectionTexture);
+                }
+            }
+
+            if (!isReflectionValid) {
+                // Always have a cubemap, even if it is the sky texture
+                useSkyReflection();
+                SharedLock<SharedMutex> r_lock(_reflectionLock);
+                assert(_reflectionTexture.isValid());
+                set._textureViews.add(_reflectionTexture);
+            }
+        }
+
+        if (renderStagePass._stage != RenderStage::REFRACTION) {
+            SharedLock<SharedMutex> r_lock(_refractionLock);
+            if (_refractionTexture.isValid()) {
+                set._textureViews.add(_refractionTexture);
+            }
+        }
+    }
 }
 
 RenderPackage& RenderingComponent::getDrawPackage(const RenderStagePass& renderStagePass) {

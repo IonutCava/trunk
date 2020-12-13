@@ -234,6 +234,18 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode* sgn,
                                         const RenderStagePass& renderStagePass,
                                         const Camera& crtCamera,
                                         RenderPackage& pkgInOut) {
+    if (_particleTexture) {
+        SamplerDescriptor textureSampler = {};
+        pkgInOut.setTexture(0, _particleTexture->data(), textureSampler.getHash(), TextureUsage::UNIT0);
+    }
+
+    const Pipeline* pipeline = pkgInOut.pipeline(0);
+    PipelineDescriptor pipeDesc = pipeline->descriptor();
+
+    pipeDesc._stateHash = renderStagePass.isDepthPass() ? _particleStateBlockHashDepth
+                                                        : _particleStateBlockHash; 
+    pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
+
     U32 indexCount = to_U32(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
         indexCount = to_U32(_particles->particleGeometryVertices().size());
@@ -247,61 +259,14 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode* sgn,
 
     pkgInOut.add(GFX::DrawCommand{ cmd });
 
-    if (_particleTexture) {
-        SamplerDescriptor textureSampler = {};
-        pkgInOut.setTexture(0, _particleTexture->data(), textureSampler.getHash(), TextureUsage::UNIT0);
-    }
-
-    const Pipeline* pipeline = pkgInOut.pipeline(0);
-    PipelineDescriptor pipeDesc = pipeline->descriptor();
-
-    pipeDesc._stateHash = renderStagePass.isDepthPass() ? _particleStateBlockHashDepth
-                                                        : _particleStateBlockHash; 
-    pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
-    
-
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
-void ParticleEmitter::prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera) {
-    if (renderStagePass._passType != RenderPassType::PRE_PASS) {
-        return;
-    }
-
-    const vec3<F32>& eyePos = crtCamera.getEye();
-    const U32 aliveCount = getAliveParticleCount();
-
-    vectorEASTL<vec4<F32>>& misc = _particles->_misc;
-    vectorEASTL<vec4<F32>>& pos = _particles->_position;
-
-
-    ParallelForDescriptor descriptor = {};
-    descriptor._iterCount = aliveCount;
-    descriptor._partitionSize = 1000u;
-    descriptor._cbk = [&eyePos, &misc, &pos](const Task*, const U32 start, const U32 end) {
-        for (U32 i = start; i < end; ++i) {
-            misc[i].w = pos[i].xyz.distanceSquared(eyePos);
-        }
-    };
-
-    parallel_for(_context.context(), descriptor);
-
-    _bufferUpdate = CreateTask(_context.context(),
-        [this, &renderStagePass](const Task&) {
-        // invalidateCache means that the existing particle data is no longer partially sorted
-        _particles->sort();
-        _buffersDirty[to_U32(renderStagePass._stage)] = true;
-    });
-
-    Start(*_bufferUpdate);
-}
-
-/// The onRender call will emit particles
-void ParticleEmitter::onRefreshNodeData(const SceneGraphNode* sgn,
-                                        const RenderStagePass& renderStagePass,
-                                        const Camera& crtCamera,
-                                        const bool refreshData,
-                                        GFX::CommandBuffer& bufferInOut) {
+void ParticleEmitter::prepareRender(SceneGraphNode* sgn,
+                                    RenderingComponent& rComp,
+                                    const RenderStagePass& renderStagePass,
+                                    const Camera& camera,
+                                    const bool refreshData) {
 
     if ( _enabled &&  getAliveParticleCount() > 0) {
         Wait(*_bufferUpdate);
@@ -322,11 +287,37 @@ void ParticleEmitter::onRefreshNodeData(const SceneGraphNode* sgn,
         cmd._bufferIndex = renderStagePass.baseIndex();
         pkg.drawCommand(0, 0, cmd);
 
-        prepareForRender(renderStagePass, crtCamera);
+        if (renderStagePass._passType == RenderPassType::PRE_PASS) {
+            const vec3<F32>& eyePos = camera.getEye();
+            const U32 aliveCount = getAliveParticleCount();
 
+            vectorEASTL<vec4<F32>>& misc = _particles->_misc;
+            vectorEASTL<vec4<F32>>& pos = _particles->_position;
+
+
+            ParallelForDescriptor descriptor = {};
+            descriptor._iterCount = aliveCount;
+            descriptor._partitionSize = 1000u;
+            descriptor._cbk = [&eyePos, &misc, &pos](const Task*, const U32 start, const U32 end) {
+                for (U32 i = start; i < end; ++i) {
+                    misc[i].w = pos[i].xyz.distanceSquared(eyePos);
+                }
+            };
+
+            parallel_for(_context.context(), descriptor);
+
+            _bufferUpdate = CreateTask(_context.context(),
+                [this, &renderStagePass](const Task&) {
+                // invalidateCache means that the existing particle data is no longer partially sorted
+                _particles->sort();
+                _buffersDirty[to_U32(renderStagePass._stage)] = true;
+            });
+
+            Start(*_bufferUpdate);
+        }
     }
 
-    SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
+    SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
 

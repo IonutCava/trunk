@@ -72,21 +72,12 @@ bool Object3D::isPrimitive() const noexcept {
 }
 
 void Object3D::postLoad(SceneGraphNode* sgn) {
-     computeTriangleList();
-     SceneNode::postLoad(sgn);
-}
-
-void Object3D::rebuildVB() {
-}
-
-void Object3D::rebuild() {
-    if (_geometryDirty) {
-        OPTICK_EVENT();
-
-        rebuildVB();
-        computeTriangleList();
-        _geometryDirty = false;
+    if (geometryDirty()) {
+        rebuildInternal();
+        geometryDirty(false);
     }
+
+    SceneNode::postLoad(sgn);
 }
 
 void Object3D::setGeometryVB(VertexBuffer* const vb) {
@@ -100,16 +91,23 @@ VertexBuffer* Object3D::getGeometryVB() const {
     return _buffer;
 }
 
-void Object3D::onRefreshNodeData(const SceneGraphNode* sgn,
-                                 const RenderStagePass& renderStagePass,
-                                 const Camera& crtCamera,
-                                 const bool refreshData,
-                                 GFX::CommandBuffer& bufferInOut) {
-    if (refreshData) {
-        rebuild();
+void Object3D::rebuildInternal() {
+    computeTriangleList();
+}
+
+void Object3D::prepareRender(SceneGraphNode* sgn,
+                             RenderingComponent& rComp,
+                             const RenderStagePass& renderStagePass,
+                             const Camera& camera,
+                             const bool refreshData) {
+    if (refreshData && geometryDirty()) {
+        OPTICK_EVENT();
+
+        rebuildInternal();
+        geometryDirty(false);
     }
 
-    SceneNode::onRefreshNodeData(sgn, renderStagePass, crtCamera, refreshData, bufferInOut);
+    SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
 }
 
 void Object3D::buildDrawCommands(SceneGraphNode* sgn,

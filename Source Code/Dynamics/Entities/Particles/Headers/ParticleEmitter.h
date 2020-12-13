@@ -50,11 +50,12 @@ class ParticleEmitter final : public SceneNode {
     explicit ParticleEmitter(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name);
     ~ParticleEmitter();
 
-    void onRefreshNodeData(const SceneGraphNode* sgn,
-                           const RenderStagePass& renderStagePass,
-                           const Camera& crtCamera,
-                           bool refreshData,
-                           GFX::CommandBuffer& bufferInOut) override;
+    void prepareRender(SceneGraphNode* sgn,
+                       RenderingComponent& rComp,
+                       const RenderStagePass& renderStagePass,
+                       const Camera& camera,
+                       bool refreshData) override;
+
 
     /// toggle the particle emitter on or off
     void enableEmitter(const bool state) noexcept { _enabled = state; }
@@ -88,8 +89,6 @@ class ParticleEmitter final : public SceneNode {
                            const RenderStagePass& renderStagePass,
                            const Camera& crtCamera,
                            RenderPackage& pkgInOut) override;
-
-    void prepareForRender(const RenderStagePass& renderStagePass, const Camera& crtCamera);
 
     [[nodiscard]] GenericVertexData& getDataBuffer(RenderStage stage, PlayerIndex idx);
 

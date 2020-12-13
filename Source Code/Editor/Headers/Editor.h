@@ -69,6 +69,7 @@ class Camera;
 class MenuBar;
 class StatusBar;
 class LightPool;
+class ECSManager;
 class UndoManager;
 class DockedWindow;
 class OutputWindow;
@@ -235,6 +236,7 @@ class Editor final : public PlatformContextComponent,
     // Return true if the model was spawned as a scene node
     [[nodiscard]] bool spawnGeometry(const Mesh_ptr& mesh, const vec3<F32>& scale, const stringImpl& name) const;
 
+    [[nodiscard]] ECSManager& getECSManager() const;
     [[nodiscard]] LightPool& getActiveLightPool() const;
     [[nodiscard]] SceneEnvironmentProbePool* getActiveEnvProbePool() const;
 
@@ -430,6 +432,10 @@ namespace Attorney {
 
         [[nodiscard]] static LightPool& getActiveLightPool(Editor& editor) {
             return editor.getActiveLightPool();
+        }
+
+        [[nodiscard]] static ECSManager& getECSManager(Editor& editor) {
+            return editor.getECSManager();
         }
 
         [[nodiscard]] static SceneEnvironmentProbePool* getActiveEnvProbePool(const Editor& editor) {

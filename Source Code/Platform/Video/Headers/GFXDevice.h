@@ -396,12 +396,13 @@ protected:
     void debugDrawFrustums(GFX::CommandBuffer& bufferInOut);
 
 protected:
+    friend class RenderPassManager;
     void renderDebugUI(const Rect<I32>& targetViewport, GFX::CommandBuffer& bufferInOut);
 
 protected:
     friend class SceneManager;
     friend class RenderPass;
-    friend class RenderPassManager;
+    friend class RenderPassExecutor;
 
     void occlusionCull(const RenderStagePass& stagePass,
                        const RenderPass::BufferData& bufferData,

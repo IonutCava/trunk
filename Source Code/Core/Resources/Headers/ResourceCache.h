@@ -72,9 +72,7 @@ public:
     typename std::enable_if<std::is_base_of<CachedResource, T>::value, std::shared_ptr<T>>::type
     loadResource(const ResourceDescriptor& descriptor, bool& wasInCache, std::atomic_uint& taskCounter)
     {
-        Time::ProfileTimer loadTimer = {};
-        loadTimer.start();
-
+        F32 timeInMS = 0.f;
         std::shared_ptr<T> ptr;
         {
             if_constexpr(UseAtomicCounter) {
@@ -96,10 +94,14 @@ public:
             if (!wasInCache) {
                 Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
+                Time::ProfileTimer loadTimer = {};
+                loadTimer.start();
                 /// ...acquire the resource's loader and get our resource as the loader creates it
                 ptr = std::static_pointer_cast<T>(ImplResourceLoader<T>(this, _context, descriptor, loadingHash)());
                 assert(ptr != nullptr);
                 add(ptr, cacheHit);
+                loadTimer.stop();
+                timeInMS = Time::MicrosecondsToMilliseconds<F32>(loadTimer.get());
             }
 
             if_constexpr(UseAtomicCounter) {
@@ -116,22 +118,11 @@ public:
             }
         }
 
-        loadTimer.stop();
-
         // Print load times
-        const F32 timeInMS = Time::MicrosecondsToMilliseconds<F32>(loadTimer.get());
-        if (timeInMS >= Time::SecondsToMilliseconds(1)) {
-            if (wasInCache) {
-                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_RETRIEVE_TIME_S")), descriptor.resourceName().c_str(), Time::MillisecondsToSeconds(timeInMS));
-            } else {
-                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD_TIME_S")), descriptor.resourceName().c_str(), Time::MillisecondsToSeconds(timeInMS));
-            }
+        if (wasInCache) {
+            Console::printfn(Locale::get(_ID("RESOURCE_CACHE_RETRIEVE")), descriptor.resourceName().c_str());
         } else {
-            if (wasInCache) {
-                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_RETRIEVE_TIME_MS")), descriptor.resourceName().c_str(), timeInMS);
-            } else {
-                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD_TIME_MS")), descriptor.resourceName().c_str(), timeInMS);
-            }
+            Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD")), descriptor.resourceName().c_str(), timeInMS);
         }
 
         return ptr;

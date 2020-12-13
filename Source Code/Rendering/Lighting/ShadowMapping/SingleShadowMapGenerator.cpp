@@ -170,7 +170,7 @@ void SingleShadowMapGenerator::render(const Camera& playerCamera, Light& light, 
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(light.getLightType()), lightIndex);
     params._target = _drawBufferDepth._targetID;
     params._passName = "SingleShadowMap";
-    params._minLoD = -1;
+    params._maxLoD = -1;
 
     RTClearDescriptor clearDescriptor = {};
     clearDescriptor.clearDepth(true);
