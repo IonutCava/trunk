@@ -544,14 +544,14 @@ void SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStageP
                 bufferBinding._binding = ShaderBufferLocation::BONE_TRANSFORMS;
                 bufferBinding._buffer = data._boneBuffer;
                 bufferBinding._elementRange = data._boneBufferRange;
-                pkg.addShaderBuffer(0, bufferBinding);
+                pkg.get<GFX::BindDescriptorSetsCommand>(0)->_set._buffers.add(bufferBinding);
             }
             if (data._prevBoneBuffer != nullptr) {
                 ShaderBufferBinding bufferBinding;
                 bufferBinding._binding = ShaderBufferLocation::BONE_TRANSFORMS_PREV;
                 bufferBinding._buffer = data._prevBoneBuffer;
                 bufferBinding._elementRange = data._prevBoneBufferRange;
-                pkg.addShaderBuffer(0, bufferBinding);
+                pkg.get<GFX::BindDescriptorSetsCommand>(0)->_set._buffers.add(bufferBinding);
             }
         }
     }

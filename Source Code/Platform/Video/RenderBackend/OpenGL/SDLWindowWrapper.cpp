@@ -351,7 +351,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // Initialize shader buffers
     glUniformBuffer::onGLInit();
     // Init static program data
-    glShaderProgram::onStartup(_context, _context.parent().resourceCache());
+    glShaderProgram::OnStartup(_context, _context.parent().resourceCache());
     // We need a dummy VAO object for point rendering
     s_dummyVAO = s_vaoPool.allocate();
 
@@ -372,7 +372,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     _performanceQueries[to_base(QueryType::TESSELLATION_CTRL_INVOCATIONS)] = eastl::make_unique<glHardwareQueryRing>(_context, GL_TESS_EVALUATION_SHADER_INVOCATIONS, 6);
 
     // Prepare shader headers and various shader related states
-    glShaderProgram::initStaticData();
+    glShaderProgram::InitStaticData();
     if (InitGLSW(config)) {
         // That's it. Everything should be ready for draw calls
         Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
@@ -385,8 +385,8 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
 /// Clear everything that was setup in initRenderingAPI()
 void GL_API::closeRenderingAPI() {
-    glShaderProgram::onShutdown();
-    glShaderProgram::destroyStaticData();
+    glShaderProgram::OnShutdown();
+    glShaderProgram::DestroyStaticData();
     DeInitGLSW();
 
     if (_GUIGLrenderer) {

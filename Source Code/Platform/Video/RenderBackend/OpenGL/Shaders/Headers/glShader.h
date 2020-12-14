@@ -36,6 +36,10 @@
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 #include "Platform/Video/Headers/GraphicsResource.h"
 
+
+#include <EASTL/array.h>
+#include <EASTL/array.h>
+
 namespace Divide {
 
 /// glShader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
@@ -95,16 +99,15 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
                                 const Str256& name,
                                 const ShaderLoadData& data);
 
-    static glShader* loadShader(GFXDevice& context,
-                                glShader* shader,
-                                bool isNew,
-                                const ShaderLoadData& data);
+    static glShader* loadShader(
+        glShader* shader,
+        bool isNew,
+        const ShaderLoadData& data);
    private:
     void UploadPushConstant(const GFX::PushConstant& constant, bool force = false);
     void Uniform(I32 binding, GFX::PushConstantType type, const Byte* values, GLsizei byteCount, bool flag) const;
 
     friend class glShaderProgram;
-    void dumpBinary();
     bool loadFromBinary();
     void cacheActiveUniforms();
     void reuploadUniforms();
@@ -120,15 +123,15 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
     const eastl::unordered_set<U64>& usedAtoms() const noexcept { return _usedAtoms; }
 
     PROPERTY_R(bool, valid, false);
+    PROPERTY_R(bool, loadedFromBinary, false);
     PROPERTY_R_IW(bool, shouldRecompile, false);
 
    private:
     using ShaderVarMap = hashMap<U64, I32>;
 
-  private:
-    bool _loadedFromBinary;
+    static bool DumpBinary(GLuint handle, const Str256& name);
 
-    GLenum _binaryFormat;
+  private:
     GLuint _programHandle;
 
     U8 _stageCount;

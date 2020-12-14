@@ -104,34 +104,36 @@ class RenderBin {
 
     friend class RenderQueue;
 
-    explicit RenderBin(RenderBinType rbType);
+    explicit RenderBin(RenderBinType rbType, RenderStage stage);
     ~RenderBin() = default;
 
-    void sort(RenderStage stage, RenderingOrder renderOrder);
+    void sort(RenderingOrder renderOrder);
     void populateRenderQueue(RenderStagePass stagePass, RenderQueuePackages& queueInOut) const;
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
-    void refresh(RenderStage stage);
+    void refresh();
 
     void addNodeToBin(const SceneGraphNode* sgn,
                       const RenderPackage& pkg,
                       const RenderStagePass& renderStagePass,
-                      F32 minDistToCameraSq);
+                      F32 minDistToCameraSq,
+                      bool lock);
 
-    [[nodiscard]] const RenderBinItem& getItem(RenderStage stage, U16 index) const;
+    [[nodiscard]] const RenderBinItem& getItem(U16 index) const;
 
-    [[nodiscard]] U16 getSortedNodes(RenderStage stage, SortedQueue& nodes) const;
+    [[nodiscard]] U16 getSortedNodes(SortedQueue& nodes) const;
 
-    [[nodiscard]] U16 getBinSize(RenderStage stage) const;
+    [[nodiscard]] U16 getBinSize() const;
 
-    [[nodiscard]] bool empty(RenderStage stage) const;
+    [[nodiscard]] bool empty() const { return getBinSize() == 0; }
 
     [[nodiscard]] RenderBinType getType() const noexcept { return _rbType; }
 
    private:
     const RenderBinType _rbType;
+    const RenderStage _stage;
 
-    mutable std::array<SharedMutex, to_base(RenderStage::COUNT)> _renderBinStackLocks{};
-    std::array<RenderBinStack, to_base(RenderStage::COUNT)> _renderBinStack{};
+    mutable SharedMutex _renderBinLock;
+    RenderBinStack _renderBinStack{};
 };
 
 };  // namespace Divide

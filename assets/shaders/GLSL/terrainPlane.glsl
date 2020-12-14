@@ -54,11 +54,5 @@ void main(void) {
 #include "prePass.frag"
 
 void main() {
-#if defined(HAS_PRE_PASS_DATA)
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-
-    writeOutput(data, 
-                VAR._texCoord,
-                getNormalWV(VAR._texCoord));
-#endif //HAS_PRE_PASS_DATA
+    writeOutput(1.0f, VAR._texCoord, getNormalWV(VAR._texCoord));
 }

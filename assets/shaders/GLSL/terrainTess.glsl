@@ -605,13 +605,7 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 void main(void)
 {
 #if defined(PRE_PASS)
-#if defined(HAS_PRE_PASS_DATA)
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-
-    writeOutput(data, 
-                VAR._texCoord,
-                getMixedNormalWV(VAR._texCoord));
-#endif //HAS_PRE_PASS_DATA
+    writeOutput(1.0f, VAR._texCoord, getMixedNormalWV(VAR._texCoord));
 #else //PRE_PASS
 
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];

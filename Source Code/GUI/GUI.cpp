@@ -253,7 +253,7 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
 
     PipelineDescriptor pipelineDesc = {};
     pipelineDesc._stateHash = context.gfx().getDefaultStateBlock(false);
-    pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+    pipelineDesc._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
     _postCEGUIPipeline = context.gfx().newPipeline(pipelineDesc);
 
     _init = true;

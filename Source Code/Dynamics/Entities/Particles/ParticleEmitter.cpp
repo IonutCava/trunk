@@ -131,27 +131,42 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
 
-    ResourceDescriptor particleShader(useTexture ? "particles_WithTexture" : "particles_NoTexture");
-    particleShader.propertyDescriptor(shaderDescriptor);
-    _particleShader = CreateResource<ShaderProgram>(_parentCache, particleShader);
+    ResourceDescriptor particleShaderDescriptor(useTexture ? "particles_WithTexture" : "particles_NoTexture");
+    particleShaderDescriptor.propertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr particleShader = CreateResource<ShaderProgram>(_parentCache, particleShaderDescriptor);
 
-    fragModule._variant = "Shadow.VSM";
+    shaderDescriptor._modules.back()._variant = "PrePass";
+    shaderDescriptor._modules.back()._defines.emplace_back("PRE_PASS", true);
+    ResourceDescriptor particleDepthShaderDescriptor(useTexture ? "particles_WithTexture" : "particles_NoTexture");
+    particleDepthShaderDescriptor.propertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthShaderDescriptor);
+
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
     shaderDescriptor._modules.push_back(fragModule);
-    ResourceDescriptor particleDepthVSMShaderDescriptor("particles_ShadowVSM");
+
+    shaderDescriptor._modules.back()._variant = "Shadow.VSM";
+    ResourceDescriptor particleDepthVSMShaderDescriptor(useTexture ? "particles_ShadowVSM_Texture" : "particles_ShadowVSM");
     particleDepthVSMShaderDescriptor.propertyDescriptor(shaderDescriptor);
-    _particleDepthShader = CreateResource<ShaderProgram>(_parentCache, particleDepthVSMShaderDescriptor);
+    ShaderProgram_ptr particleShadowShader = CreateResource<ShaderProgram>(_parentCache, particleDepthVSMShaderDescriptor);
 
-    if (_particleShader != nullptr) {
-        Material_ptr mat = CreateResource<Material>(_parentCache, ResourceDescriptor("Material_particles"));
+    shaderDescriptor._modules.back()._variant += ".ORTHO";
+    shaderDescriptor._modules.back()._defines.emplace_back("ORTHO_PROJECTION", true);
+    ResourceDescriptor particleDepthVSMShaderDescriptorOrtho(useTexture ? "particles_ShadowVSM_Ortho_Texture" : "particles_ShadowVSM_Ortho");
+    particleDepthVSMShaderDescriptorOrtho.propertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr particleShadowShaderOrtho = CreateResource<ShaderProgram>(_parentCache, particleDepthVSMShaderDescriptorOrtho);
 
-        mat->setShaderProgram(_particleShader,      RenderStage::COUNT,  RenderPassType::COUNT);
-        mat->setShaderProgram(_particleDepthShader, RenderStage::SHADOW, RenderPassType::COUNT);
+    if (particleShader != nullptr) {
+        Material_ptr mat = CreateResource<Material>(_parentCache, ResourceDescriptor(useTexture ? "Material_particles_Texture" : "Material_particles"));
 
         mat->setRenderStateBlock(_particleStateBlockHashDepth, RenderStage::COUNT, RenderPassType::PRE_PASS);
         mat->setRenderStateBlock(_particleStateBlockHash,      RenderStage::COUNT, RenderPassType::MAIN_PASS);
         mat->setRenderStateBlock(_particleStateBlockHash,      RenderStage::COUNT, RenderPassType::OIT_PASS);
+
+        mat->setShaderProgram(particleDepthShader,       RenderStage::COUNT,  RenderPassType::PRE_PASS);
+        mat->setShaderProgram(particleShader,            RenderStage::COUNT,  RenderPassType::MAIN_PASS);
+        mat->setShaderProgram(particleShadowShader,      RenderStage::SHADOW, RenderPassType::COUNT);
+        mat->setShaderProgram(particleShadowShaderOrtho, RenderStage::SHADOW, RenderPassType::COUNT, to_base(LightType::DIRECTIONAL));
 
         setMaterialTpl(mat);
 
@@ -236,15 +251,15 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode* sgn,
                                         RenderPackage& pkgInOut) {
     if (_particleTexture) {
         SamplerDescriptor textureSampler = {};
-        pkgInOut.setTexture(0, _particleTexture->data(), textureSampler.getHash(), TextureUsage::UNIT0);
+        pkgInOut.get<GFX::BindDescriptorSetsCommand>(0)->_set._textureData.add({ _particleTexture->data(), textureSampler.getHash(), TextureUsage::UNIT0 });
     }
 
-    const Pipeline* pipeline = pkgInOut.pipeline(0);
+    const Pipeline* pipeline = pkgInOut.get<GFX::BindPipelineCommand>(0)->_pipeline;
     PipelineDescriptor pipeDesc = pipeline->descriptor();
 
     pipeDesc._stateHash = renderStagePass.isDepthPass() ? _particleStateBlockHashDepth
                                                         : _particleStateBlockHash; 
-    pkgInOut.pipeline(0, *_context.newPipeline(pipeDesc));
+    pkgInOut.get<GFX::BindPipelineCommand>(0)->_pipeline = _context.newPipeline(pipeDesc);
 
     U32 indexCount = to_U32(_particles->particleGeometryIndices().size());
     if (indexCount == 0) {
@@ -281,11 +296,10 @@ void ParticleEmitter::prepareRender(SceneGraphNode* sgn,
 
         RenderPackage& pkg = sgn->get<RenderingComponent>()->getDrawPackage(renderStagePass);
 
-        GenericDrawCommand cmd = pkg.drawCommand(0, 0);
+        GenericDrawCommand& cmd = pkg.get<GFX::DrawCommand>(0)->_drawCommands[0];
         cmd._cmd.primCount = to_U32(_particles->_renderingPositions.size());
         cmd._sourceBuffer = getDataBuffer(renderStagePass._stage, 0).handle();
         cmd._bufferIndex = renderStagePass.baseIndex();
-        pkg.drawCommand(0, 0, cmd);
 
         if (renderStagePass._passType == RenderPassType::PRE_PASS) {
             const vec3<F32>& eyePos = camera.getEye();

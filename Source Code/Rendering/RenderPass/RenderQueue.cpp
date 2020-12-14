@@ -13,8 +13,9 @@
 
 namespace Divide {
 
-RenderQueue::RenderQueue(Kernel& parent)
+RenderQueue::RenderQueue(Kernel& parent, const RenderStage stage)
     : KernelComponent(parent),
+      _stage(stage),
       _renderBins{nullptr}
 {
     for (const RenderBinType rbType : RenderBinType::_values()) {
@@ -22,7 +23,7 @@ RenderQueue::RenderQueue(Kernel& parent)
             continue;
         }
 
-        _renderBins[rbType._value] = MemoryManager_NEW RenderBin(rbType);
+        _renderBins[rbType._value] = MemoryManager_NEW RenderBin(rbType, stage);
     }
 }
 
@@ -33,11 +34,11 @@ RenderQueue::~RenderQueue()
     }
 }
 
-U16 RenderQueue::getRenderQueueStackSize(const RenderStage stage) const {
+U16 RenderQueue::getRenderQueueStackSize() const {
     U16 temp = 0;
     for (RenderBin* bin : _renderBins) {
         if (bin != nullptr) {
-            temp += bin->getBinSize(stage);
+            temp += bin->getBinSize();
         }
     }
     return temp;
@@ -137,6 +138,19 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material
 }
 
 void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
+    addNodeToQueueInternal(sgn, stagePass, minDistToCameraSq, targetBinType, true);
+}
+
+void RenderQueue::addNodeToQueueLocked(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
+    addNodeToQueueInternal(sgn, stagePass, minDistToCameraSq, targetBinType, false);
+}
+
+void RenderQueue::addNodeToQueueInternal(const SceneGraphNode* sgn,
+                                         const RenderStagePass stagePass,
+                                         const F32 minDistToCameraSq,
+                                         const RenderBinType targetBinType,
+                                         const bool lockBins)
+{
     RenderingComponent* const renderingCmp = sgn->get<RenderingComponent>();
     // We need a rendering component to render the node
     assert(renderingCmp != nullptr);
@@ -146,7 +160,7 @@ void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePas
         assert(rb != nullptr);
 
         if (targetBinType._value == RenderBinType::RBT_COUNT || rb->getType() == targetBinType) {
-            rb->addNodeToBin(sgn, pkg, stagePass, minDistToCameraSq);
+            rb->addNodeToBin(sgn, pkg, stagePass, minDistToCameraSq, lockBins);
         }
     }
 }
@@ -167,7 +181,7 @@ void RenderQueue::populateRenderQueues(const RenderStagePass stagePass, const st
     } else {
         // Everything except the specified type or just the specified type
         for (RenderBin* renderBin : _renderBins) {
-            if (renderBin->getType() == binType == includeBin) {
+            if ((renderBin->getType() == binType) == includeBin) {
                 renderBin->populateRenderQueue(stagePass, queueInOut);
             }
         }
@@ -189,19 +203,19 @@ void RenderQueue::sort(RenderStagePass stagePass, const RenderBinType targetBinT
     if (targetBinType._value != RenderBinType::RBT_COUNT)
     {
         const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, targetBinType) : renderOrder;
-        _renderBins[to_base(targetBinType._value)]->sort(stagePass._stage, sortOrder);
+        _renderBins[to_base(targetBinType._value)]->sort(sortOrder);
     }
     else
     {
         TaskPool& pool = parent().platformContext().taskPool(TaskPoolType::HIGH_PRIORITY);
         Task* sortTask = CreateTask(pool, DELEGATE<void, Task&>());
         for (RenderBin* renderBin : _renderBins) {
-            if (renderBin->getBinSize(stagePass._stage) > threadBias) {
+            if (renderBin->getBinSize() > threadBias) {
                 const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
                 Start(*CreateTask(pool,
                                     sortTask,
-                                    [renderBin, sortOrder, stagePass](const Task& /*parentTask*/) {
-                                        renderBin->sort(stagePass._stage, sortOrder);
+                                    [renderBin, sortOrder](const Task& /*parentTask*/) {
+                                        renderBin->sort(sortOrder);
                                     }));
             }
         }
@@ -209,9 +223,9 @@ void RenderQueue::sort(RenderStagePass stagePass, const RenderBinType targetBinT
         Start(*sortTask);
 
         for (RenderBin* renderBin : _renderBins) {
-            if (renderBin->getBinSize(stagePass._stage) <= threadBias) {
+            if (renderBin->getBinSize() <= threadBias) {
                 const RenderingOrder sortOrder = renderOrder == RenderingOrder::COUNT ? getSortOrder(stagePass, renderBin->getType()) : renderOrder;
-                renderBin->sort(stagePass._stage, sortOrder);
+                renderBin->sort(sortOrder);
             }
         }
 
@@ -219,34 +233,34 @@ void RenderQueue::sort(RenderStagePass stagePass, const RenderBinType targetBinT
     }
 }
 
-void RenderQueue::refresh(const RenderStage stage, const RenderBinType targetBinType) {
+void RenderQueue::refresh(const RenderBinType targetBinType) {
     if (targetBinType._value == RenderBinType::RBT_COUNT) {
         for (RenderBin* renderBin : _renderBins) {
-            renderBin->refresh(stage);
+            renderBin->refresh();
         }
     } else {
         for (RenderBin* renderBin : _renderBins) {
             if (renderBin->getType() == targetBinType) {
-                renderBin->refresh(stage);
+                renderBin->refresh();
             }
         }
     }
 }
 
-U16 RenderQueue::getSortedQueues(const RenderStage stage, const vectorEASTL<RenderBinType>& binTypes, RenderBin::SortedQueues& queuesOut) const {
+U16 RenderQueue::getSortedQueues(const vectorEASTL<RenderBinType>& binTypes, RenderBin::SortedQueues& queuesOut) const {
     OPTICK_EVENT();
     U16 countOut = 0u;
 
     if (binTypes.empty()) {
         for (const RenderBin* renderBin : _renderBins) {
             RenderBin::SortedQueue& nodes = queuesOut[renderBin->getType()];
-            countOut += renderBin->getSortedNodes(stage, nodes);
+            countOut += renderBin->getSortedNodes(nodes);
         }
     } else {
         for (const RenderBinType type : binTypes) {
             const RenderBin* renderBin = _renderBins[type];
             RenderBin::SortedQueue& nodes = queuesOut[type];
-            countOut += renderBin->getSortedNodes(stage, nodes);
+            countOut += renderBin->getSortedNodes(nodes);
         }
     }
     return countOut;

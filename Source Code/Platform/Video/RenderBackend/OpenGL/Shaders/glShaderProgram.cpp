@@ -75,11 +75,20 @@ namespace {
     }
     size_t g_validationBufferMaxSize = 4096 * 16;
     UpdateListener s_fileWatcherListener([](const std::string_view atomName, const FileUpdateEvent evt) {
-        glShaderProgram::onAtomChange(atomName, evt);
+        glShaderProgram::OnAtomChange(atomName, evt);
     });
+
+    struct BinaryDumpEntry
+    {
+        Str256 _name;
+        GLuint _handle = 0u;
+    };
+
+    moodycamel::BlockingConcurrentQueue<BinaryDumpEntry> g_ShaderBinaryDumpQueue;
+    std::array<BinaryDumpEntry, 2> g_outputCache;
 };
 
-void glShaderProgram::initStaticData() {
+void glShaderProgram::InitStaticData() {
     const ResourcePath locPrefix = Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc;
 
     shaderAtomLocationPrefix[to_base(ShaderType::FRAGMENT)] = locPrefix + Paths::Shaders::GLSL::g_fragAtomLoc;
@@ -103,17 +112,21 @@ void glShaderProgram::initStaticData() {
     }
 }
 
-void glShaderProgram::destroyStaticData() {
+void glShaderProgram::DestroyStaticData() {
+    static BinaryDumpEntry temp = {};
+    while(g_ShaderBinaryDumpQueue.try_dequeue(temp)) {
+        NOP();
+    }
 }
 
-void glShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) {
+void glShaderProgram::OnStartup(GFXDevice& context, ResourceCache* parentCache) {
     if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
         FileWatcher& watcher = FileWatcherManager::allocateWatcher();
         s_shaderFileWatcherID = watcher.getGUID();
         s_fileWatcherListener.addIgnoredEndCharacter('~');
         s_fileWatcherListener.addIgnoredExtension("tmp");
 
-        const vectorEASTL<ResourcePath> atomLocations = getAllAtomLocations();
+        const vectorEASTL<ResourcePath> atomLocations = GetAllAtomLocations();
         for (const ResourcePath& loc : atomLocations) {
             CreateDirectories(loc);
             watcher().addWatch(loc.c_str(), &s_fileWatcherListener);
@@ -121,9 +134,26 @@ void glShaderProgram::onStartup(GFXDevice& context, ResourceCache* parentCache) 
     }
 }
 
-void glShaderProgram::onShutdown() {
+void glShaderProgram::OnShutdown() {
     FileWatcherManager::deallocateWatcher(s_shaderFileWatcherID);
     s_shaderFileWatcherID = -1;
+}
+
+void glShaderProgram::Idle(PlatformContext& platformContext) {
+    OPTICK_EVENT();
+
+    const size_t count = g_ShaderBinaryDumpQueue.try_dequeue_bulk(begin(g_outputCache), g_outputCache.size());
+    if (count > 0) {
+        Start(*CreateTask(platformContext.taskPool(TaskPoolType::HIGH_PRIORITY),
+            [cache = g_outputCache, count](const Task & /*parent*/) {
+              for (size_t i = 0; i < count; ++i) {
+                  if (!glShader::DumpBinary(cache[i]._handle, cache[i]._name)) {
+                      // Skip to next one?
+                      NOP();
+                  }
+              }
+        }));
+    }
 }
 
 glShaderProgram::glShaderProgram(GFXDevice& context,
@@ -200,6 +230,8 @@ void glShaderProgram::validatePreBind() {
 void glShaderProgram::validatePostBind() {
     // If we haven't validated the program but used it at lease once ...
     if (_validationQueued && isValid()) {
+        OPTICK_EVENT();
+
         // clear validation queue flag
         _validationQueued = false;
 
@@ -248,7 +280,9 @@ void glShaderProgram::validatePostBind() {
 
         for (glShader* shader : _shaderStage) {
             assert(shader != nullptr);
-            shader->dumpBinary();
+            if (shader->valid() && !shader->loadedFromBinary()) {
+                g_ShaderBinaryDumpQueue.enqueue(BinaryDumpEntry{ shader->name(), shader->getProgramHandle() });
+            }
         }
     }
 }
@@ -258,7 +292,7 @@ void glShaderProgram::threadedLoad(const bool reloadExisting) {
     OPTICK_EVENT();
 
     if (!weak_from_this().expired()) {
-        registerShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
+        RegisterShaderProgram(std::dynamic_pointer_cast<ShaderProgram>(shared_from_this()).get());
     }
 
     // NULL shader means use shaderProgram(0), so bypass the normal loading routine
@@ -292,7 +326,7 @@ vectorEASTL<ResourcePath> glShaderProgram::loadSourceCode(const Str128& stageNam
     sourceCodeOut.first = false;
     sourceCodeOut.second.resize(0);
     if (s_useShaderTextCache && !reloadExisting) {
-        shaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+        ShaderFileRead(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
                 ResourcePath(fileName),
                        sourceCodeOut.second);
     }
@@ -309,7 +343,7 @@ vectorEASTL<ResourcePath> glShaderProgram::loadSourceCode(const Str128& stageNam
             Util::ReplaceStringInPlace(sourceCodeOut.second, "//__LINE_OFFSET_", Util::StringFormat("#line %d", lineOffset));
         }
 
-        stringImpl srcTemp = preprocessIncludes(ResourcePath(resourceName()), sourceCodeOut.second, 0, atoms, true);
+        stringImpl srcTemp = PreprocessIncludes(ResourcePath(resourceName()), sourceCodeOut.second, 0, atoms, true);
         if (!srcTemp.empty()) {
             sourceCodeOut.first = true;
             if_constexpr(Config::Build::IS_DEBUG_BUILD) {
@@ -320,7 +354,7 @@ vectorEASTL<ResourcePath> glShaderProgram::loadSourceCode(const Str128& stageNam
 
             Start(*CreateTask(_context.context().taskPool(TaskPoolType::HIGH_PRIORITY),
                 [this, fileName, sourceCodeOut](const Task & /*parent*/) {
-                shaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
+                ShaderFileWrite(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationText,
                                 ResourcePath(fileName),
                                 sourceCodeOut.second.c_str());
             }), _asyncLoad ? TaskPriority::DONT_CARE : TaskPriority::REALTIME);
@@ -371,7 +405,7 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
             const ShaderType type = shaderDescriptor._moduleType;
             assert(type != ShaderType::COUNT);
 
-            const size_t definesHash = ShaderProgram::definesHash(shaderDescriptor._defines);
+            const size_t definesHash = ShaderProgram::DefinesHash(shaderDescriptor._defines);
 
             const U8 shaderIdx = to_U8(type);
             stringImpl header;
@@ -434,7 +468,7 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
             for (glShader* tempShader : _shaderStage) {
                 if (tempShader->nameHash() == targetNameHash) {
                     assert(tempShader != nullptr);
-                    glShader::loadShader(_context, tempShader, false, loadData);
+                    glShader::loadShader(tempShader, false, loadData);
                     break;
                 }
             }
@@ -506,6 +540,8 @@ bool glShaderProgram::isBound() const noexcept {
 
 /// Bind this shader program
 std::pair<bool/*success*/, bool/*was bound*/>  glShaderProgram::bind() {
+    OPTICK_EVENT();
+
     validatePreBind();
     // If the shader isn't ready or failed to link, stop here
     if (_validated || _validationQueued) {
@@ -530,6 +566,8 @@ void glShaderProgram::UploadPushConstant(const GFX::PushConstant& constant) {
 }
 
 void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
+    OPTICK_EVENT();
+
     const vectorEASTL<GFX::PushConstant>& data = constants.data();
 
     for (const GFX::PushConstant& constant : data) {
@@ -537,7 +575,7 @@ void glShaderProgram::UploadPushConstants(const PushConstants& constants) {
     }
 }
 
-stringImpl glShaderProgram::preprocessIncludes(const ResourcePath& name,
+stringImpl glShaderProgram::PreprocessIncludes(const ResourcePath& name,
                                                const stringImpl& source,
                                                GLint level,
                                                vectorEASTL<ResourcePath>& foundAtoms,
@@ -590,7 +628,7 @@ stringImpl glShaderProgram::preprocessIncludes(const ResourcePath& name,
             if (wasParsed) {
                 output.append(include_string);
             } else {
-                output.append(preprocessIncludes(name, include_string, level + 1, foundAtoms, lock));
+                output.append(PreprocessIncludes(name, include_string, level + 1, foundAtoms, lock));
             }
         }
 
@@ -632,7 +670,7 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
 
     vectorEASTL<ResourcePath> atoms = {};
     if (recurse) {
-        output = preprocessIncludes(atomName, output, 0, atoms, false);
+        output = PreprocessIncludes(atomName, output, 0, atoms, false);
     }
 
     foundAtoms.insert(end(foundAtoms), begin(atoms), end(atoms));
@@ -643,20 +681,20 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
     return entry->second;
 }
 
-void glShaderProgram::shaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut) {
+void glShaderProgram::ShaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut) {
     if (!readFile(filePath, ResourcePath(decorateFileName(fileName.str())), sourceCodeOut, FileType::TEXT)) {
         NOP();
     }
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
-void glShaderProgram::shaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode) {
+void glShaderProgram::ShaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode) {
     if (!writeFile(filePath, ResourcePath(decorateFileName(fileName.str())), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT)) {
         NOP();
     }
 }
 
-void glShaderProgram::onAtomChange(const std::string_view atomName, const FileUpdateEvent evt) {
+void glShaderProgram::OnAtomChange(const std::string_view atomName, const FileUpdateEvent evt) {
     // Do nothing if the specified file is "deleted". We do not want to break running programs
     if (evt == FileUpdateEvent::DELETE) {
         return;

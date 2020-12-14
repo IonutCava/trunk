@@ -33,10 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _RENDER_PACKAGE_H_
 #define _RENDER_PACKAGE_H_
 
-#include "ClipPlanes.h"
 #include "CommandBuffer.h"
-#include "DescriptorSets.h"
-#include "PushConstants.h"
 
 namespace Divide {
 
@@ -59,69 +56,31 @@ public:
     };
 
 public:
-    enum class CommandType : U8 {
-        NONE = 0,
-        DRAW = toBit(1),
-        PIPELINE = toBit(2),
-        CLIP_PLANES = toBit(3),
-        PUSH_CONSTANTS = toBit(4),
-        DESCRIPTOR_SETS = toBit(5),
-        ALL = DRAW | PIPELINE | CLIP_PLANES | PUSH_CONSTANTS | DESCRIPTOR_SETS,
-        COUNT = 7
-    };
-
-public:
-    explicit RenderPackage() noexcept;
+    explicit RenderPackage() noexcept = default;
     ~RenderPackage();
-
-    void clear();
-    void set(const RenderPackage& other);
-
-    [[nodiscard]] size_t getSortKeyHash() const;
-
-    [[nodiscard]] I32 drawCommandCount() const noexcept { return _drawCommandCount; }
-
-    [[nodiscard]] const GenericDrawCommand& drawCommand(I32 index, I32 cmdIndex) const;
-    void drawCommand(I32 index, I32 cmdIndex, const GenericDrawCommand& cmd) const;
-
-    [[nodiscard]] const GFX::DrawCommand& drawCommand(I32 index) const;
-
-    [[nodiscard]] const Pipeline* pipeline(I32 index) const;
-    void pipeline(I32 index, const Pipeline& pipeline) const;
-
-    [[nodiscard]] const FrustumClipPlanes& clipPlanes(I32 index) const;
-    void clipPlanes(I32 index, const FrustumClipPlanes& clipPlanes) const;
-
-    PushConstants& pushConstants(I32 index);
-    [[nodiscard]] const PushConstants& pushConstants(I32 index) const;
-    void pushConstants(I32 index, const PushConstants& constants) const;
-
-    DescriptorSet& descriptorSet(I32 index);
-    [[nodiscard]] const DescriptorSet& descriptorSet(I32 index) const;
-    void descriptorSet(I32 index, const DescriptorSet& descriptorSets) const;
-
-    void addCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
     template<typename T>
     typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, void>::type
     add(const T& command) { commands()->add(command); }
 
-    [[nodiscard]] const ShaderBufferBinding& getShaderBuffer(I32 descriptorSetIndex, I32 bufferIndex) const;
+    template<typename T>
+    typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, T*>::type
+    get(const I32 index) const { return _commands->get<T>(index); }
 
-    void addShaderBuffer(I32 descriptorSetIndex, const ShaderBufferBinding& buffer) const;
-    void setTexture(I32 descriptorSetIndex, const TextureData& data, size_t samplerHash, U8 binding) const;
-    void setTexture(const I32 descriptorSetIndex, const TextureData& data, const size_t samplerHash, const TextureUsage binding) const {
-        setTexture(descriptorSetIndex, data, samplerHash, to_U8(binding));
-    }
+    template<typename T>
+    typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, size_t>::type
+    count() const { return _commands->count<T>(); }
+
+    [[nodiscard]] bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
 
     void setDrawOption(CmdRenderOptions option, bool state);
+    void setDrawOptions(U16 optionMask, bool state);
     void enableOptions(U16 optionMask);
     void disableOptions(U16 optionMask);
 
-    [[nodiscard]] bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
-    [[nodiscard]] bool hasDrawComands() const noexcept { return _drawCommandCount > 0u; }
-
+    void clear();
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
+    void appendCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
     PROPERTY_RW(bool, textureDataDirty, true);
     PROPERTY_RW(MinQuality, qualityRequirement, MinQuality::FULL);
@@ -134,8 +93,7 @@ protected:
 
 protected:
     GFX::CommandBuffer* _commands = nullptr;
-    std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets;
-    I32 _drawCommandCount = 0;
+    std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets{};
     U16 _drawCommandOptions = to_U16(CmdRenderOptions::RENDER_GEOMETRY);
     bool _isInstanced = false;
 };

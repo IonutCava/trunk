@@ -197,31 +197,31 @@ namespace Divide {
 
     template<typename Mask, typename Type>
     constexpr typename std::enable_if<std::is_enum<Type>::value, bool>::type
-        BitCompare(const Mask bitMask, const Type bit) noexcept {
+    BitCompare(const Mask bitMask, const Type bit) noexcept {
         return BitCompare(bitMask, static_cast<Mask>(bit));
     }
 
     template<typename Mask, typename Type>
     constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-        SetBit(Mask& bitMask, const Type bit) noexcept {
+    SetBit(Mask& bitMask, const Type bit) noexcept {
         SetBit(bitMask, static_cast<Mask>(bit));
     }
 
     template<typename Mask, typename Type>
     constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-        ClearBit(Mask& bitMask, const Type bit) noexcept {
+    ClearBit(Mask& bitMask, const Type bit) noexcept {
         ClearBit(bitMask, static_cast<Mask>(bit));
     }
 
     template<typename Mask, typename Type>
     constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-        ToggleBit(Mask& bitMask, const Type bit) noexcept {
+    ToggleBit(Mask& bitMask, const Type bit) noexcept {
         ToggleBit(bitMask, static_cast<Mask>(bit));
     }
 
     template<typename Mask, typename Type>
     constexpr typename std::enable_if<std::is_enum<Type>::value, void>::type
-        ToggleBit(Mask& bitMask, const Type bit, bool state) noexcept {
+    ToggleBit(Mask& bitMask, const Type bit, bool state) noexcept {
         ToggleBit(bitMask, static_cast<Mask>(bit), state);
     }
 

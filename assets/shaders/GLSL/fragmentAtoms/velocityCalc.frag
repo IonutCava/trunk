@@ -2,8 +2,8 @@
 #define _VELOCITY_CALC_FRAG_
 
 //ref: https://developer.nvidia.com/gpugems/gpugems3/part-iv-image-effects/chapter-27-motion-blur-post-processing-effect
+#if defined(HAS_VELOCITY)
 vec2 velocityCalc() {
-#   if defined(HAS_VELOCITY)
     const vec4 vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
     const vec4 preVertexWVP = dvd_ProjectionMatrix * VAR._prevVertexWV;
 
@@ -13,10 +13,9 @@ vec2 velocityCalc() {
     vel.x = pow(vel.x, 3.0f);
     vel.y = pow(vel.y, 3.0f);
     return vel;
-
-#else
-    return vec2(0.0f);
-#endif
 }
+#else //HAS_VELOCITY
+#define velocityCalc() vec2(0.0f)
+#endif //HAS_VELOCITY
 
 #endif //_VELOCITY_CALC_FRAG_

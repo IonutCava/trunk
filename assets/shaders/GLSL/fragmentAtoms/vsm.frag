@@ -2,9 +2,11 @@
 #define _VSM_FRAG_
 
 vec2 computeMoments() {
-    const float Depth = (SHADOW_PASS_TYPE == SHADOW_PASS_ORTHO)
-                                           ? gl_FragCoord.z
-                                           : length(VAR._vertexW.xyz - dvd_cameraPosition.xyz) / dvd_zPlanes.y;
+#if defined(ORTHO_PROJECTION)
+#define Depth gl_FragCoord.z
+#else //ORTHO_PROJECTION
+const float Depth = length(VAR._vertexW.xyz - dvd_cameraPosition.xyz) / dvd_zPlanes.y;
+#endif //ORTHO_PROJECTION
 
     // Compute partial derivatives of depth. 
     const float dx = dFdx(Depth);

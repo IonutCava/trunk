@@ -36,7 +36,7 @@ RenderPassExecutor::RenderPassExecutor(RenderPassManager& parent, GFXDevice& con
     : _parent(parent)
     , _context(context)
     , _stage(stage)
-    , _renderQueue(parent.parent())
+    , _renderQueue(parent.parent(), stage)
 {
     _nodeMaterialLookupInfo.fill({ Material::INVALID_MAT_HASH, 0u });
 }
@@ -235,11 +235,11 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
             Attorney::RenderingCompRenderPass::setDataIndex(*rComp, newDataIdx, stagePass._stage);
 
             RenderPackage& uploadPkg = rComp->getDrawPackage(stagePass);
-            const I32 drawCommandCount = uploadPkg.drawCommandCount();
+            const I32 drawCommandCount = to_I32(uploadPkg.count<GFX::DrawCommand>());
             for (I32 cmdIdx = 0; cmdIdx < drawCommandCount; ++cmdIdx) {
-                const GFX::DrawCommand& gfxDrawCommand = uploadPkg.drawCommand(cmdIdx);
+                const GFX::DrawCommand* gfxDrawCommand = uploadPkg.get<GFX::DrawCommand>(cmdIdx);
 
-                for (const GenericDrawCommand& cmd : gfxDrawCommand._drawCommands) {
+                for (const GenericDrawCommand& cmd : gfxDrawCommand->_drawCommands) {
                     _drawCommands.push_back(cmd._cmd);
                 }
             }
@@ -310,7 +310,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
 }
 
 U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, const bool hasInvalidNodes, GFX::CommandBuffer& bufferInOut) {
-    
+
     if (hasInvalidNodes) {
         VisibleNodeList<> tempNodes{};
         for (size_t i = 0; i < nodes.size(); ++i) {
@@ -328,7 +328,7 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
     const Camera& cam = *params._camera;
 
     RenderQueue& queue = getQueue();
-    queue.refresh(_stage);
+    queue.refresh();
 
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(nodes.size());
@@ -341,11 +341,17 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
             assert(node._materialReady);
             RenderingComponent * rComp = node._node->get<RenderingComponent>();
             Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, true);
-            queue.addNodeToQueue(node._node, stagePass, node._distanceToCameraSq);
         }
     };
 
     parallel_for(_parent.parent().platformContext(), descriptor);
+
+    const size_t nodeCount = nodes.size();
+    for (size_t i = 0; i < nodeCount; ++i) {
+        const VisibleNode& node = nodes.node(i);
+        queue.addNodeToQueueLocked(node._node, stagePass, node._distanceToCameraSq);
+    }
+
     // Sort all bins
     queue.sort(stagePass);
 
@@ -360,11 +366,11 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
         sQueue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    const U16 nodeCount = queue.getSortedQueues(stagePass._stage, {}, _sortedQueues);
+    const U16 queueTotalSize = queue.getSortedQueues({}, _sortedQueues);
 
     buildDrawCommands(params, bufferInOut);
 
-    return nodeCount;
+    return queueTotalSize;
 }
 
 void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList<>& nodes, bool transparencyPass, const RenderingOrder renderOrder) {
@@ -376,7 +382,7 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
 
     const Camera& cam = *params._camera;
     RenderQueue& queue = getQueue();
-    queue.refresh(_stage, targetBin);
+    queue.refresh(targetBin);
 
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(nodes.size());
@@ -396,6 +402,7 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
     };
 
     parallel_for(_parent.parent().platformContext(), descriptor);
+
     // Sort all bins
     queue.sort(stagePass, targetBin, renderOrder);
 
@@ -424,9 +431,7 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
          RenderBinType::RBT_TRANSLUCENT
     };
 
-    queue.getSortedQueues(stagePass._stage,
-                          stagePass._passType == RenderPassType::PRE_PASS ? prePassBins : allBins,
-                          _sortedQueues);
+    queue.getSortedQueues(stagePass._passType == RenderPassType::PRE_PASS ? prePassBins : allBins, _sortedQueues);
 }
 
 void RenderPassExecutor::prePass(const VisibleNodeList<>& nodes, const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
@@ -498,7 +503,8 @@ void RenderPassExecutor::occlusionPass(const VisibleNodeList<>& nodes,
     _context.occlusionCull(stagePass, bufferData, hizTexture, hizSampler, HIZPushConstantsCMDInOut, bufferInOut);
 
     EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Per-node HiZ Cull" });
-    for (size_t i = 0; i < nodes.size(); ++i) {
+    const size_t nodeCount = nodes.size();
+    for (size_t i = 0; i < nodeCount; ++i) {
         const VisibleNode& node = nodes.node(i);
         Attorney::SceneGraphNodeRenderPassManager::occlusionCullNode(node._node, stagePass, hizTexture, camera, HIZPushConstantsCMDInOut, bufferInOut);
     }

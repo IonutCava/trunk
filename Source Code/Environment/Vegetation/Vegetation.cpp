@@ -381,10 +381,15 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ResourceDescriptor grassShadowShader("grassShadow");
     grassShadowShader.propertyDescriptor(shaderDescriptor);
     grassShadowShader.waitForReady(false);
-    shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
     ShaderProgram_ptr grassShadowVSM = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShader, loadTasks);
+
+    shaderDescriptor._modules.back()._variant += ".ORTHO";
+    shaderDescriptor._modules.back()._defines.emplace_back("ORTHO_PROJECTION", true);
+
+    ResourceDescriptor grassShadowShaderOrtho("grassShadowOrtho");
+    grassShadowShaderOrtho.propertyDescriptor(shaderDescriptor);
+    grassShadowShaderOrtho.waitForReady(false);
+    ShaderProgram_ptr grassShadowVSMOrtho = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassShadowShaderOrtho, loadTasks);
 
     ShaderModuleDescriptor compModule = {};
     compModule._moduleType = ShaderType::COMPUTE;
@@ -411,12 +416,13 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0u);
 
-    vegMaterial->setShaderProgram(grassColour,      RenderStage::COUNT,   RenderPassType::COUNT);
-    vegMaterial->setShaderProgram(grassPrePassLQ,   RenderStage::COUNT,   RenderPassType::PRE_PASS);
-    vegMaterial->setShaderProgram(grassPrePass,     RenderStage::DISPLAY, RenderPassType::PRE_PASS);
-    vegMaterial->setShaderProgram(grassColourOITLQ, RenderStage::COUNT,   RenderPassType::OIT_PASS);
-    vegMaterial->setShaderProgram(grassColourOIT,   RenderStage::DISPLAY, RenderPassType::OIT_PASS);
-    vegMaterial->setShaderProgram(grassShadowVSM,   RenderStage::SHADOW,  RenderPassType::COUNT);
+    vegMaterial->setShaderProgram(grassColour,           RenderStage::COUNT,   RenderPassType::COUNT);
+    vegMaterial->setShaderProgram(grassPrePassLQ,        RenderStage::COUNT,   RenderPassType::PRE_PASS);
+    vegMaterial->setShaderProgram(grassPrePass,          RenderStage::DISPLAY, RenderPassType::PRE_PASS);
+    vegMaterial->setShaderProgram(grassColourOITLQ,      RenderStage::COUNT,   RenderPassType::OIT_PASS);
+    vegMaterial->setShaderProgram(grassColourOIT,        RenderStage::DISPLAY, RenderPassType::OIT_PASS);
+    vegMaterial->setShaderProgram(grassShadowVSM,        RenderStage::SHADOW,  RenderPassType::COUNT);
+    vegMaterial->setShaderProgram(grassShadowVSMOrtho,   RenderStage::SHADOW,  RenderPassType::COUNT, to_base(LightType::DIRECTIONAL));
 
     vegMaterial->setTexture(TextureUsage::UNIT0, grassBillboardArray, grassSampler.getHash());
     s_vegetationMaterial = vegMaterial;

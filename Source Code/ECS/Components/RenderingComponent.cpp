@@ -106,7 +106,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     RenderStateBlock primitiveStateBlock = {};
     PipelineDescriptor pipelineDescriptor = {};
     pipelineDescriptor._stateHash = primitiveStateBlock.getHash();
-    pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+    pipelineDescriptor._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
 
     const SceneNode& node = _parentSGN->getNode();
     if (node.type() == SceneNodeType::TYPE_OBJECT3D) {
@@ -333,7 +333,7 @@ void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderS
 }
 
 bool RenderingComponent::hasDrawCommands(const RenderStagePass& stagePass) {
-    return getDrawPackage(stagePass).hasDrawComands();
+    return getDrawPackage(stagePass).count<GFX::DrawCommand>() > 0u;
 }
 
 void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const {
@@ -431,7 +431,7 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     pkg.setDrawOption(CmdRenderOptions::RENDER_WIREFRAME, (renderOptionEnabled(RenderOptions::RENDER_WIREFRAME) ||
                                                            sceneRenderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_WIREFRAME)));
 
-    DescriptorSet& set = pkg.descriptorSet(0);
+    DescriptorSet& set = pkg.get<GFX::BindDescriptorSetsCommand>(0)->_set;
     if (pkg.textureDataDirty()) {
         if (_materialInstance != nullptr) {
             _materialInstance->getTextureData(renderStagePass, set._textureData);
@@ -499,11 +499,15 @@ bool RenderingComponent::getRebuildFlag(const RenderStagePass& renderStagePass) 
 
     return _rebuildDrawCommandsFlags[s][p][i];
 }
+
 size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass) const {
     const RenderPackage& pkg = getDrawPackage(renderStagePass);
-    return (pkg.empty() ? 0 : pkg.getSortKeyHash());
-}
+    if (pkg.count<GFX::BindPipelineCommand>() > 0) {
+        return pkg.get<GFX::BindPipelineCommand>(0)->_pipeline->getHash();
+    }
 
+    return 0u;
+}
 
 namespace Hack {
     Sky* g_skyPtr = nullptr;

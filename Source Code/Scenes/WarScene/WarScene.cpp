@@ -134,7 +134,7 @@ void WarScene::debugDraw(const Camera* activeCamera, const RenderStagePass stage
             _targetLines = _context.gfx().newIMP();
 
             PipelineDescriptor pipelineDescriptor = {};
-            pipelineDescriptor._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+            pipelineDescriptor._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
 
             RenderStateBlock primitiveStateBlockNoZRead = {};
             primitiveStateBlockNoZRead.depthTestEnabled(false);

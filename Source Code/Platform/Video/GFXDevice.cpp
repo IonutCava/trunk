@@ -207,7 +207,7 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     constexpr size_t TargetBufferSize = 1024 * 1024 / 4 / sizeof(GFXShaderData::GPUData);
 
     // Initialize the shader manager
-    ShaderProgram::onStartup(cache);
+    ShaderProgram::OnStartup(cache);
     SceneEnvironmentProbePool::OnStartup(*this);
     GFX::initPools();
 
@@ -756,7 +756,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
     {
         PipelineDescriptor pipelineDesc;
         pipelineDesc._stateHash = getDefaultStateBlock(true);
-        pipelineDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+        pipelineDesc._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
         _AxisGizmoPipeline = newPipeline(pipelineDesc);
         pipelineDesc._stateHash = getDefaultStateBlock(false);
         _DebugGizmoPipeline = newPipeline(pipelineDesc);
@@ -825,9 +825,9 @@ void GFXDevice::closeRenderingAPI() {
 
     // Close the shader manager
     MemoryManager::DELETE(_shaderComputeQueue);
-    ShaderProgram::onShutdown();
+    ShaderProgram::OnShutdown();
     _gpuObjectArena.clear();
-    assert(ShaderProgram::shaderProgramCount() == 0);
+    assert(ShaderProgram::ShaderProgramCount() == 0);
     // Close the rendering API
     _api->closeRenderingAPI();
     _api.reset();
@@ -862,7 +862,7 @@ void GFXDevice::idle(const bool fast) const {
     // Pass the idle call to the post processing system
     _renderer->idle();
     // And to the shader manager
-    ShaderProgram::idle();
+    ShaderProgram::Idle();
 }
 
 void GFXDevice::update(const U64 deltaTimeUS) {

@@ -56,7 +56,7 @@ namespace {
         const GLsizei size = byteCount / sizeof(T_in);
         return { size, (const T_out*)values };
     }
-};
+}
 
 SharedMutex glShader::_shaderNameLock;
 glShader::ShaderMap glShader::_shaderNameMap;
@@ -65,8 +65,6 @@ glShader::glShader(GFXDevice& context, const Str256& name)
     : GUIDWrapper(),
       GraphicsResource(context, Type::SHADER, getGUID(), _ID(name.c_str())),
       glObject(glObjectType::TYPE_SHADER, context),
-      _loadedFromBinary(false),
-      _binaryFormat(GL_NONE),
       _programHandle(GLUtil::k_invalidObjectID),
       _stageCount(0),
       _stageMask(UseProgramStageMask::GL_NONE_BIT),
@@ -307,14 +305,13 @@ glShader* glShader::loadShader(GFXDevice& context,
         newShader = true;
     }
 
-    return loadShader(context, shader, newShader, data);
+    return loadShader(shader, newShader, data);
 }
 
 
-glShader* glShader::loadShader(GFXDevice & context,
-                              glShader * shader,
-                              const bool isNew,
-                              const ShaderLoadData & data) {
+glShader* glShader::loadShader(glShader * shader,
+                               const bool isNew,
+                               const ShaderLoadData & data) {
 
     // At this stage, we have a valid Shader object, so load the source code
     if (shader->load(data)) {
@@ -332,7 +329,7 @@ bool glShader::loadFromBinary() {
     _loadedFromBinary = false;
 
     // Load the program from the binary file, if available and allowed, to avoid linking.
-    if (ShaderProgram::useShaderBinaryCache()) {
+    if (ShaderProgram::UseShaderBinaryCache()) {
         // Load the program's binary format from file
         vectorEASTL<Byte> data;
         if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
@@ -341,8 +338,8 @@ bool glShader::loadFromBinary() {
                      FileType::BINARY) && 
             !data.empty())
         {
-            _binaryFormat = *reinterpret_cast<GLenum*>(data.data());
-            if (_binaryFormat != GL_NONE) {
+            const GLenum binaryFormat = *reinterpret_cast<GLenum*>(data.data());
+            if (binaryFormat != GL_NONE) {
                 data.resize(0);
                 if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
                     ResourcePath((glShaderProgram::decorateFileName(_name) + ".bin").c_str()),
@@ -352,7 +349,7 @@ bool glShader::loadFromBinary() {
                 {
                     // Load binary code on the GPU
                     _programHandle = glCreateProgram();
-                    glProgramBinary(_programHandle, _binaryFormat, (bufferPtr)data.data(), static_cast<GLint>(data.size()));
+                    glProgramBinary(_programHandle, binaryFormat, (bufferPtr)data.data(), static_cast<GLint>(data.size()));
                     // Check if the program linked successfully on load
                     GLboolean success = 0;
                     glGetProgramiv(_programHandle, GL_LINK_STATUS, &success);
@@ -369,42 +366,46 @@ bool glShader::loadFromBinary() {
     return _loadedFromBinary;
 }
 
-void glShader::dumpBinary() {
-    if (!valid() || _loadedFromBinary) {
-        return;
+bool glShader::DumpBinary(const GLuint handle, const Str256& name) {
+    static eastl::set<GLuint> s_dumpedBinaries;
+    if (!s_dumpedBinaries.insert(handle).second) {
+        return false;
     }
 
+    bool ret = false;
     // Get the size of the binary code
     GLint binaryLength = 0;
-    glGetProgramiv(_programHandle, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
+    glGetProgramiv(handle, GL_PROGRAM_BINARY_LENGTH, &binaryLength);
     // allocate a big enough buffer to hold it
     char* binary = MemoryManager_NEW char[binaryLength];
     DIVIDE_ASSERT(binary != nullptr, "glShader error: could not allocate memory for the program binary!");
 
     // and fill the buffer with the binary code
-    glGetProgramBinary(_programHandle, binaryLength, nullptr, &_binaryFormat, binary);
-    if (_binaryFormat != GL_NONE) {
+    GLenum binaryFormat = GL_NONE;
+    glGetProgramBinary(handle, binaryLength, nullptr, &binaryFormat, binary);
+    if (binaryFormat != GL_NONE) {
         // dump the buffer to file
         if (writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
-            ResourcePath((glShaderProgram::decorateFileName(_name) + ".bin").c_str()),
+            ResourcePath((glShaderProgram::decorateFileName(name) + ".bin").c_str()),
                       binary,
                       static_cast<size_t>(binaryLength),
                       FileType::BINARY))
         {
             // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
             if (!writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
-                ResourcePath((glShaderProgram::decorateFileName(_name) + ".fmt").c_str()),
-                          &_binaryFormat,
+                ResourcePath((glShaderProgram::decorateFileName(name) + ".fmt").c_str()),
+                          &binaryFormat,
                           sizeof(GLenum),
                           FileType::BINARY)) 
             {
-                NOP();
+                ret = true;
             }
         }
     }
 
     // delete our local code buffer
     MemoryManager::DELETE(binary);
+    return ret;
 }
 
 I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, const bool force) {

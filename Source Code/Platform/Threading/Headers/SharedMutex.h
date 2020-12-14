@@ -66,6 +66,39 @@ using UpgradeReadLock = boost::shared_lock<UpgradeMutex>;
 using UpgradeLock = boost::upgrade_lock<UpgradeMutex>;
 using UpgradeUniqueLock = boost::upgrade_to_unique_lock<UpgradeMutex>;
 
+template<typename T>
+struct ScopedLock final : NonCopyable, NonMovable
+{
+    explicit ScopedLock(T& mutex, const bool lock, const bool shared)
+        : _mutex(mutex),
+          _lock(lock),
+          _shared(shared)
+    {
+        if (_lock) {
+            if (_shared) {
+                _mutex.lock_shared();
+            } else {
+                _mutex.lock();
+            }
+        }
+    }
+
+    ~ScopedLock()
+    {
+        if (_lock) {
+            if (_shared) {
+                _mutex.unlock_shared();
+            } else {
+                _mutex.unlock();
+            }
+        }
+    }
+private:
+    T& _mutex;
+    const bool _lock = true;
+    const bool _shared = true;
+};
+
 };  // namespace Divide
 
 #endif //_SHARED_MUTEX_BOOST_H_

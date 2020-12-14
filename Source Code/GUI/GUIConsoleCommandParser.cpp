@@ -186,7 +186,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& args) {
-    ShaderProgram::recompileShaderProgram(args.c_str());
+    ShaderProgram::RecompileShaderProgram(args.c_str());
 }
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {

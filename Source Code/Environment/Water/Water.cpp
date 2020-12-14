@@ -323,7 +323,7 @@ void WaterPlane::prepareRender(SceneGraphNode* sgn,
                                const bool refreshData) {
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
-        PushConstants& constants = pkg.pushConstants(0);
+        PushConstants& constants = pkg.get<GFX::SendPushConstantsCommand>(0)->_constants;
         constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
         constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
         constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, _refractionTint);

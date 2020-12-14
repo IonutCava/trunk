@@ -106,9 +106,6 @@ void main (void){
 
 // This is needed so that the inner "output" discards don't take place
 // We still manually alpha-discard in main
-#if defined(USE_ALPHA_DISCARD)
-#undef USE_ALPHA_DISCARD
-#endif
 #define SAMPLER_UNIT0_IS_ARRAY
 #include "prePass.frag"
 
@@ -119,18 +116,7 @@ layout(location = 1) in float _alphaFactor;
 
 void main() {
     const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
-    if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
-        discard;
-    }
-
-#if defined(HAS_PRE_PASS_DATA)
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-
-    writeOutput(data,
-                VAR._texCoord,
-                VAR._normalWV,
-                _alphaFactor);
-#endif //HAS_PRE_PASS_DATA
+    writeOutput(albedoAlpha * _alphaFactor, VAR._texCoord, VAR._normalWV);
 }
 
 --Fragment.Shadow.VSM

@@ -66,5 +66,12 @@ namespace Divide {
         ClearBit(cmd._renderOptions, optionsMask);
     }
 
+    inline void setOptions(GenericDrawCommand& cmd, const U16 optionsMask, const bool state) noexcept {
+        if (state) {
+            enableOptions(cmd, optionsMask);
+        } else {
+            disableOptions(cmd, optionsMask);
+        }
+    }
 }; //namespace Divide
 #endif //_GENERIC_DRAW_COMMAND_INL

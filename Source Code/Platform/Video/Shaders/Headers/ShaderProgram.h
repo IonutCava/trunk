@@ -155,36 +155,36 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     /** ------ END EXPERIMENTAL CODE ----- **/
 
     //==================== static methods ===============================//
-    static void idle();
-    static void onStartup(ResourceCache* parentCache);
-    static void onShutdown();
-    static bool updateAll();
+    static void Idle();
+    static void OnStartup(ResourceCache* parentCache);
+    static void OnShutdown();
+    static bool UpdateAll();
     /// Queue a shaderProgram recompile request
-    static bool recompileShaderProgram(const Str256& name);
+    static bool RecompileShaderProgram(const Str256& name);
     /// Remove a shaderProgram from the program cache
-    static bool unregisterShaderProgram(size_t shaderHash);
+    static bool UnregisterShaderProgram(size_t shaderHash);
     /// Add a shaderProgram to the program cache
-    static void registerShaderProgram(ShaderProgram* shaderProgram);
+    static void RegisterShaderProgram(ShaderProgram* shaderProgram);
     /// Find a specific shader program by handle.
-    static ShaderProgram* findShaderProgram(I64 shaderHandle);
+    static ShaderProgram* FindShaderProgram(I64 shaderHandle);
     /// Find a specific shader program by descriptor hash.
-    static ShaderProgram* findShaderProgram(size_t shaderHash);
+    static ShaderProgram* FindShaderProgram(size_t shaderHash);
 
     /// Return a default shader used for general purpose rendering
-    static const ShaderProgram_ptr& defaultShader();
+    static const ShaderProgram_ptr& DefaultShader();
 
-    static const ShaderProgram_ptr& nullShader();
+    static const ShaderProgram_ptr& NullShader();
 
-    static void rebuildAllShaders();
+    static void RebuildAllShaders();
 
-    static vectorEASTL<ResourcePath> getAllAtomLocations();
+    static vectorEASTL<ResourcePath> GetAllAtomLocations();
 
-    static bool useShaderTexCache() noexcept { return s_useShaderTextCache; }
-    static bool useShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }
+    static bool UseShaderTexCache() noexcept { return s_useShaderTextCache; }
+    static bool UseShaderBinaryCache() noexcept { return s_useShaderBinaryCache; }
 
-    static size_t definesHash(const ModuleDefines& defines);
+    static size_t DefinesHash(const ModuleDefines& defines);
 
-    static I32 shaderProgramCount() noexcept { return s_shaderCount.load(std::memory_order_relaxed); }
+    static I32 ShaderProgramCount() noexcept { return s_shaderCount.load(std::memory_order_relaxed); }
 
     const ShaderProgramDescriptor& descriptor() const noexcept { return _descriptor; }
 
@@ -193,8 +193,8 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     PROPERTY_RW(bool, highPriority, true);
 
    protected:
-     static void useShaderTextCache(bool state) noexcept { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
-     static void useShaderBinaryCache(const bool state) noexcept { s_useShaderBinaryCache = state; if (state) { useShaderTextCache(false); } }
+     static void UseShaderTextCache(bool state) noexcept { if (s_useShaderBinaryCache) { state = false; } s_useShaderTextCache = state; }
+     static void UseShaderBinaryCache(const bool state) noexcept { s_useShaderBinaryCache = state; if (state) { UseShaderTextCache(false); } }
 
    protected:
     /// Used to render geometry without valid materials.
@@ -229,12 +229,12 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
 namespace Attorney {
     class ShaderProgramKernel {
       protected:
-        static void useShaderTextCache(const bool state) noexcept {
-            ShaderProgram::useShaderTextCache(state);
+        static void UseShaderTextCache(const bool state) noexcept {
+            ShaderProgram::UseShaderTextCache(state);
         }
 
-        static void useShaderBinaryCache(const bool state) {
-            ShaderProgram::useShaderBinaryCache(state);
+        static void UseShaderBinaryCache(const bool state) {
+            ShaderProgram::UseShaderBinaryCache(state);
         }
 
         friend class Kernel;

@@ -105,26 +105,23 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
-#define TEX_NONE 0
-#define TEX_MODULATE 1
-#define TEX_ADD  2
-#define TEX_SUBTRACT  3
-#define TEX_DIVIDE  4
-#define TEX_SMOOTH_ADD  5
-#define TEX_SIGNED_ADD  6
-#define TEX_DECAL  7
-#define TEX_REPLACE  8
-
 #if defined(SKIP_TEX0)
-    if (texOperation != TEX_NONE) {
-#if !defined(SKIP_TEX1)
-        return texture(texDiffuse1, uv);
-#endif //SKIP_TEX1
-    }
-        
-    return albedo;
+    vec4 colour = albedo;
 #else //SKIP_TEX0
     vec4 colour = texture(texDiffuse0, uv);
+#endif //SKIP_TEX0
+
+#if !defined(SKIP_TEX1)
+#   define TEX_NONE 0
+#   define TEX_MODULATE 1
+#   define TEX_ADD  2
+#   define TEX_SUBTRACT  3
+#   define TEX_DIVIDE  4
+#   define TEX_SMOOTH_ADD  5
+#   define TEX_SIGNED_ADD  6
+#   define TEX_DECAL  7
+#   define TEX_REPLACE  8
+
     // Read from the second texture (if any)
     switch (texOperation) {
         default:
@@ -134,7 +131,6 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
         case TEX_NONE:
             //NOP
             break;
-#if !defined(SKIP_TEX1)
         case TEX_MODULATE:
             colour *= texture(texDiffuse1, uv);
             break;
@@ -163,16 +159,15 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
             vec4 colour2 = texture(texDiffuse1, uv);
             colour = (colour + colour2) - (colour * colour2);
         } break;
-#endif //SKIP_TEX1
     }
+#endif //SKIP_TEX1
 
     return saturate(colour);
-#endif //SKIP_TEX0
 }
 
+#if defined(HAS_TRANSPARENCY)
 vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {
     vec4 albedo = getTextureColour(BaseColour(data), uv, dvd_texOperation(data));
-#if defined(HAS_TRANSPARENCY)
 #   if defined(USE_OPACITY_MAP)
 #       if defined(USE_OPACITY_MAP_RED_CHANNEL)
             albedo.a = texture(texOpacityMap, uv).r;
@@ -180,9 +175,12 @@ vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {
             albedo.a = texture(texOpacityMap, uv).a;
 #       endif
 #   endif
-#endif
     return albedo;
 }
+#else //HAS_TRANSPARENCY
+#define getAlbedo(DATA, UV) getTextureColour(BaseColour(DATA), UV, dvd_texOperation(DATA))
+#endif //HAS_TRANSPARENCY
+
 #endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 
 // Computed normals are NOT normalized. Retrieved normals ARE.
@@ -197,21 +195,20 @@ vec3 getNormalWV(in vec2 uv) {
     return vec3(0.0f);
 #else //PRE_PASS && !HAS_PRE_PASS_DATA
 
-    vec3 normalWV = VAR._normalWV;
+#if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
+    const vec3 normalWV = (dvd_bumpMethod(MATERIAL_IDX) != BUMP_NONE)
+                               ? getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f)
+                               : VAR._normalWV;
+#else //COMPUTE_TBN
+    const vec3 normalWV = VAR._normalWV;
+#endif //COMPUTE_TBN
 
-#   if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
-        if (dvd_bumpMethod(MATERIAL_IDX) != BUMP_NONE) {
-            normalWV = getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f);
-        }
-#   endif //COMPUTE_TBN
-
-#   if defined (USE_DOUBLE_SIDED)
-        if (!gl_FrontFacing) {
-            normalWV = -normalWV;
-        }
-#   endif //USE_DOUBLE_SIDED
-
+#if defined (USE_DOUBLE_SIDED)
+    return gl_FrontFacing ? normalWV : -normalWV;
+#else //USE_DOUBLE_SIDED
     return normalWV;
+#endif //USE_DOUBLE_SIDED
+
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 #else //PRE_PASS
     return normalize(unpackNormal(texture(texSceneNormalMaps, dvd_screenPositionNormalised).rg));

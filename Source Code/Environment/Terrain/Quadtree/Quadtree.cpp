@@ -17,7 +17,7 @@ Quadtree::Quadtree(GFXDevice& context)
     const RenderStateBlock primitiveRenderState;
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveRenderState.getHash();
-    pipeDesc._shaderProgramHandle = ShaderProgram::defaultShader()->getGUID();
+    pipeDesc._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
     _bbPipeline = _context.newPipeline(pipeDesc);
 }
 
@@ -53,7 +53,7 @@ void Quadtree::drawBBox(RenderPackage& packageOut) const {
                           _root->getBoundingBox().getMax(),
                           UColour4(0, 64, 255, 255));
 
-    packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
+    packageOut.appendCommandBuffer(_bbPrimitive->toCommandBuffer());
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) const

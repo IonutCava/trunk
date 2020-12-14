@@ -116,7 +116,7 @@ void QuadtreeNode::drawBBox(RenderPackage& packageOut) {
                           _boundingBox.getMax(),
                           UColour4(0, 128, 255, 255));
 
-    packageOut.addCommandBuffer(_bbPrimitive->toCommandBuffer());
+    packageOut.appendCommandBuffer(_bbPrimitive->toCommandBuffer());
 
     if (!isALeaf()) {
         getChild(ChildPosition::CHILD_NW).drawBBox(packageOut);

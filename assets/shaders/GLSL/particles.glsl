@@ -19,6 +19,7 @@ void main()
     // Even though the variable ends with WV, we'll store WVP to skip adding a new varying variable
 
     VAR._vertexWV = vec4(vertexPositionWV, 1.0f);
+    VAR._normalWV = mat3(dvd_ViewMatrix) * vec3(0.0, 0.0f, 1.0);
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
     
     // UV of the vertex. No special space for this one.
@@ -37,8 +38,8 @@ layout(location = 0) in vec4 particleColour;
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main() {
-    vec4 colour = particleColour * texture(texDiffuse0, VAR._texCoord);
-    if (colour.a < INV_Z_TEST_SIGMA) {
+    const float albedo = (particleColour * texture(texDiffuse0, VAR._texCoord)).a;
+    if (albedo < INV_Z_TEST_SIGMA) {
         discard;
     }
 
@@ -49,8 +50,11 @@ void main() {
 -- Fragment
 
 #include "utility.frag"
+#if defined(PRE_PASS)
+#include "prePass.frag"
+#else
 #include "output.frag"
-
+#endif
 // Interpolated values from the vertex shaders
 layout(location = 0) in vec4 particleColour;
 
@@ -71,6 +75,11 @@ void main(){
     float d = texture(texDepthMap, gl_FragCoord.xy * ivec2(dvd_ViewPort.zw)).r - gl_FragCoord.z;
     float softness = pow(1.0 - min(1.0, 200.0 * d), 2.0);
     colour.a *= max(0.1, 1.0 - pow(softness, 2.0));
+
+#if defined(PRE_PASS)
+    writeOutput(colour.a, VAR._texCoord, VAR._normalWV);
+#else //PRE_PASS
     writeOutput(colour);
+#ensif //PRE_PASS
 
 }

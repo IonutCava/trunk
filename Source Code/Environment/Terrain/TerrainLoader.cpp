@@ -457,6 +457,17 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
         ShaderProgram_ptr terrainShadowShaderVSM = CreateResource<ShaderProgram>(resCache, terrainShaderShadowVSM);
 
+        for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
+            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+                shaderModule._variant += ".ORTHO";
+                shaderModule._defines.emplace_back("ORTHO_PROJECTION", true);
+            }
+        }
+        ResourceDescriptor terrainShaderShadowVSMOrtho("Terrain_ShadowVSM_ORTHO-" + name + propName);
+        terrainShaderShadowVSMOrtho.propertyDescriptor(shadowDescriptorVSM);
+
+        ShaderProgram_ptr terrainShadowShaderVSMOrtho = CreateResource<ShaderProgram>(resCache, terrainShaderShadowVSMOrtho);
+
         // MAIN PASS
         ShaderProgramDescriptor colourDescriptor = shaderDescriptor;
         for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
@@ -517,11 +528,12 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
         ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(resCache, terrainShaderColourLQ);
 
-        matInstance->setShaderProgram(terrainPrePassShaderLQ, RenderStage::COUNT,   RenderPassType::PRE_PASS);
-        matInstance->setShaderProgram(terrainColourShaderLQ,  RenderStage::COUNT,   RenderPassType::MAIN_PASS);
-        matInstance->setShaderProgram(terrainPrePassShader,   RenderStage::DISPLAY, RenderPassType::PRE_PASS);
-        matInstance->setShaderProgram(terrainColourShader,    RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
-        matInstance->setShaderProgram(terrainShadowShaderVSM, RenderStage::SHADOW,  RenderPassType::COUNT);
+        matInstance->setShaderProgram(terrainPrePassShaderLQ,      RenderStage::COUNT,   RenderPassType::PRE_PASS);
+        matInstance->setShaderProgram(terrainColourShaderLQ,       RenderStage::COUNT,   RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainPrePassShader,        RenderStage::DISPLAY, RenderPassType::PRE_PASS);
+        matInstance->setShaderProgram(terrainColourShader,         RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainShadowShaderVSM,      RenderStage::SHADOW,  RenderPassType::COUNT);
+        matInstance->setShaderProgram(terrainShadowShaderVSMOrtho, RenderStage::SHADOW,  RenderPassType::COUNT, to_base(LightType::DIRECTIONAL));
     };
 
     buildShaders(terrainMaterial.get());

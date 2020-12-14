@@ -202,6 +202,8 @@ void GL_API::idle(const bool fast) {
         NOP();
     } else {
         OPTICK_EVENT("GL_API: slow idle");
+        glShaderProgram::Idle(_context.context());
+
         UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
         if (!s_mipmapQueue.empty()) {
             const auto it = s_mipmapQueue.begin();
@@ -223,7 +225,7 @@ void GL_API::AppendToShaderHeader(const ShaderType type,
     } else {
         vectorEASTL<ResourcePath> tempAtoms;
         tempAtoms.reserve(10);
-        inOutOffset[index] += Util::LineCount(glShaderProgram::preprocessIncludes(ResourcePath("header"), entry, 0, tempAtoms, true));
+        inOutOffset[index] += Util::LineCount(glShaderProgram::PreprocessIncludes(ResourcePath("header"), entry, 0, tempAtoms, true));
     }
 }
 
@@ -1075,7 +1077,7 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) const 
         return true;
     }
 
-    ShaderProgram* program = ShaderProgram::findShaderProgram(pipeline.shaderProgramHandle());
+    ShaderProgram* program = ShaderProgram::FindShaderProgram(pipeline.shaderProgramHandle());
     if (program == nullptr) {
         return false;
     }
@@ -1111,10 +1113,10 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
 
     assert(GL_API::getStateTracker()._activePipeline != nullptr);
 
-    ShaderProgram* program = ShaderProgram::findShaderProgram(getStateTracker()._activePipeline->shaderProgramHandle());
+    ShaderProgram* program = ShaderProgram::FindShaderProgram(getStateTracker()._activePipeline->shaderProgramHandle());
     if (program == nullptr) {
         // Should we skip the upload?
-        program = ShaderProgram::defaultShader().get();
+        program = ShaderProgram::DefaultShader().get();
     }
 
     static_cast<glShaderProgram*>(program)->UploadPushConstants(pushConstants);

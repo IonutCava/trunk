@@ -42,7 +42,7 @@ void ProcessShadowMappingDefines(const Configuration& config, ModuleDefines& def
 size_t ShaderProgramDescriptor::getHash() const noexcept {
     _hash = PropertyDescriptor::getHash();
     for (const ShaderModuleDescriptor& desc : _modules) {
-        Util::Hash_combine(_hash, ShaderProgram::definesHash(desc._defines));
+        Util::Hash_combine(_hash, ShaderProgram::DefinesHash(desc._defines));
         Util::Hash_combine(_hash, std::string(desc._variant.c_str()));
         Util::Hash_combine(_hash, desc._sourceFile.data());
         Util::Hash_combine(_hash, desc._moduleType);
@@ -81,7 +81,7 @@ bool ShaderProgram::load() {
 
 bool ShaderProgram::unload() {
     // Unregister the program from the manager
-    return unregisterShaderProgram(descriptorHash());
+    return UnregisterShaderProgram(descriptorHash());
 }
 
 
@@ -91,7 +91,7 @@ bool ShaderProgram::recompile(bool force) {
 }
 
 //================================ static methods ========================================
-void ShaderProgram::idle() {
+void ShaderProgram::Idle() {
     OPTICK_EVENT();
 
     // If we don't have any shaders queued for recompilation, return early
@@ -101,14 +101,14 @@ void ShaderProgram::idle() {
             // error
         }
         //Re-register because the handle is probably different by now
-        registerShaderProgram(s_recompileQueue.top());
+        RegisterShaderProgram(s_recompileQueue.top());
         s_recompileQueue.pop();
     }
 }
 
 /// Calling this will force a recompilation of all shader stages for the program
 /// that matches the name specified
-bool ShaderProgram::recompileShaderProgram(const Str256& name) {
+bool ShaderProgram::RecompileShaderProgram(const Str256& name) {
     bool state = false;
     SharedLock<SharedMutex> r_lock(s_programLock);
 
@@ -133,7 +133,7 @@ bool ShaderProgram::recompileShaderProgram(const Str256& name) {
     return state;
 }
 
-void ShaderProgram::onStartup(ResourceCache* parentCache) {
+void ShaderProgram::OnStartup(ResourceCache* parentCache) {
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -164,7 +164,7 @@ void ShaderProgram::onStartup(ResourceCache* parentCache) {
     assert(s_nullShader != nullptr);  // LoL -Ionut
 }
 
-void ShaderProgram::onShutdown() {
+void ShaderProgram::OnShutdown() {
     // Make sure we unload all shaders
     s_nullShader.reset();
     s_imShader.reset();
@@ -174,7 +174,7 @@ void ShaderProgram::onShutdown() {
     s_shaderPrograms.clear();
 }
 
-bool ShaderProgram::updateAll() {
+bool ShaderProgram::UpdateAll() {
     OPTICK_EVENT();
 
     static bool onOddFrame = false;
@@ -193,16 +193,16 @@ bool ShaderProgram::updateAll() {
 }
 
 /// Whenever a new program is created, it's registered with the manager
-void ShaderProgram::registerShaderProgram(ShaderProgram* shaderProgram) {
+void ShaderProgram::RegisterShaderProgram(ShaderProgram* shaderProgram) {
     size_t shaderHash = shaderProgram->descriptorHash();
-    unregisterShaderProgram(shaderHash);
+    UnregisterShaderProgram(shaderHash);
 
     UniqueLock<SharedMutex> w_lock(s_programLock);
     s_shaderPrograms[shaderProgram->getGUID()] = { shaderProgram, shaderHash };
 }
 
 /// Unloading/Deleting a program will unregister it from the manager
-bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
+bool ShaderProgram::UnregisterShaderProgram(size_t shaderHash) {
 
     UniqueLock<SharedMutex> lock(s_programLock);
     if (s_shaderPrograms.empty()) {
@@ -226,7 +226,7 @@ bool ShaderProgram::unregisterShaderProgram(size_t shaderHash) {
     return false;
 }
 
-ShaderProgram* ShaderProgram::findShaderProgram(const I64 shaderHandle) {
+ShaderProgram* ShaderProgram::FindShaderProgram(const I64 shaderHandle) {
     SharedLock<SharedMutex> r_lock(s_programLock);
     const auto& it = s_shaderPrograms.find(shaderHandle);
     if (it != eastl::cend(s_shaderPrograms)) {
@@ -236,7 +236,7 @@ ShaderProgram* ShaderProgram::findShaderProgram(const I64 shaderHandle) {
     return nullptr;
 }
 
-ShaderProgram* ShaderProgram::findShaderProgram(const size_t shaderHash) {
+ShaderProgram* ShaderProgram::FindShaderProgram(const size_t shaderHash) {
     SharedLock<SharedMutex> r_lock(s_programLock);
     for (const auto& [handle, programEntry] : s_shaderPrograms) {
         if (programEntry.second == shaderHash) {
@@ -247,22 +247,22 @@ ShaderProgram* ShaderProgram::findShaderProgram(const size_t shaderHash) {
     return nullptr;
 }
 
-const ShaderProgram_ptr& ShaderProgram::defaultShader() {
+const ShaderProgram_ptr& ShaderProgram::DefaultShader() {
     return s_imShader;
 }
 
-const ShaderProgram_ptr& ShaderProgram::nullShader() {
+const ShaderProgram_ptr& ShaderProgram::NullShader() {
     return s_nullShader;
 }
 
-void ShaderProgram::rebuildAllShaders() {
+void ShaderProgram::RebuildAllShaders() {
     SharedLock<SharedMutex> r_lock(s_programLock);
     for (const auto& [handle, programEntry] : s_shaderPrograms) {
         s_recompileQueue.push(programEntry.first);
     }
 }
 
-vectorEASTL<ResourcePath> ShaderProgram::getAllAtomLocations() {
+vectorEASTL<ResourcePath> ShaderProgram::GetAllAtomLocations() {
     static vectorEASTL<ResourcePath> atomLocations;
     if (atomLocations.empty()) {
         // General
@@ -317,7 +317,7 @@ vectorEASTL<ResourcePath> ShaderProgram::getAllAtomLocations() {
     return atomLocations;
 }
 
-size_t ShaderProgram::definesHash(const ModuleDefines& defines) {
+size_t ShaderProgram::DefinesHash(const ModuleDefines& defines) {
     if (defines.empty()) {
         return 0;
     }

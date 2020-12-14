@@ -40,7 +40,8 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
-class GL_API;
+    class PlatformContext;
+    class GL_API;
 class glShader;
 class glLockManager;
 namespace Attorney {
@@ -59,10 +60,11 @@ class glShaderProgram final : public ShaderProgram, public glObject {
                              bool asyncLoad);
     ~glShaderProgram();
 
-    static void initStaticData();
-    static void destroyStaticData();
-    static void onStartup(GFXDevice& context, ResourceCache* parentCache);
-    static void onShutdown();
+    static void InitStaticData();
+    static void DestroyStaticData();
+    static void OnStartup(GFXDevice& context, ResourceCache* parentCache);
+    static void OnShutdown();
+    static void Idle(PlatformContext& platformContext);
 
     template<typename StringType> 
     static StringType decorateFileName(const StringType& name) {
@@ -83,13 +85,13 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     void UploadPushConstant(const GFX::PushConstant& constant);
     void UploadPushConstants(const PushConstants& constants);
 
-    static void onAtomChange(std::string_view atomName, FileUpdateEvent evt);
+    static void OnAtomChange(std::string_view atomName, FileUpdateEvent evt);
     static const stringImpl& ShaderFileRead(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);
     static const stringImpl& ShaderFileReadLocked(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);
 
-    static void shaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut);
-    static void shaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode);
-    static stringImpl preprocessIncludes(const ResourcePath& name,
+    static void ShaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut);
+    static void ShaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode);
+    static stringImpl PreprocessIncludes(const ResourcePath& name,
                                          const stringImpl& source,
                                          GLint level,
                                          vectorEASTL<ResourcePath>& foundAtoms,

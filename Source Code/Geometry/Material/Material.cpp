@@ -399,7 +399,7 @@ I64 Material::computeAndGetProgramGUID(const RenderStagePass& renderStagePass) {
         }
     }
 
-    return ShaderProgram::defaultShader()->getGUID();
+    return ShaderProgram::DefaultShader()->getGUID();
 }
 
 I64 Material::getProgramGUID(const RenderStagePass& renderStagePass) const {
@@ -412,7 +412,7 @@ I64 Material::getProgramGUID(const RenderStagePass& renderStagePass) const {
     }
     DIVIDE_UNEXPECTED_CALL();
 
-    return ShaderProgram::defaultShader()->getGUID();
+    return ShaderProgram::DefaultShader()->getGUID();
 }
 
 bool Material::canDraw(const RenderStagePass& renderStagePass) {
@@ -509,6 +509,10 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
             vertVariant += "Shadow";
             fragVariant += "Shadow.VSM";
             globalDefines.emplace_back("SHADOW_PASS", true);
+            if (renderStagePass._variant == to_U8(LightType::DIRECTIONAL)) {
+                fragVariant += ".ORTHO";
+                fragDefines.emplace_back("ORTHO_PROJECTION", true);
+            }
         } else {
             shaderName += ".PP";
             vertVariant += "PrePass";
@@ -655,8 +659,8 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
 
     shaderName.append(
         Util::StringFormat("_%zu_%zu",
-                           ShaderProgram::definesHash(vertDefines),
-                           ShaderProgram::definesHash(fragDefines))
+                           ShaderProgram::DefinesHash(vertDefines),
+                           ShaderProgram::DefinesHash(fragDefines))
     );
 
     ShaderModuleDescriptor vertModule = {};

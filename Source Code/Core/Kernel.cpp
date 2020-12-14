@@ -509,7 +509,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
         }
 
         // perform time-sensitive shader tasks
-        if (!ShaderProgram::updateAll()) {
+        if (!ShaderProgram::UpdateAll()) {
             return false;
         }
 
@@ -710,8 +710,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Script::onStartup();
     SceneManager::onStartup();
-    Attorney::ShaderProgramKernel::useShaderTextCache(config.debug.useShaderTextCache);
-    Attorney::ShaderProgramKernel::useShaderBinaryCache(config.debug.useShaderBinaryCache);
+    Attorney::ShaderProgramKernel::UseShaderTextCache(config.debug.useShaderTextCache);
+    Attorney::ShaderProgramKernel::UseShaderBinaryCache(config.debug.useShaderBinaryCache);
 
     winManager.mainWindow()->addEventListener(WindowEvent::LOST_FOCUS, [this](const DisplayWindow::WindowEventArgs& ) {
         _sceneManager->onLostFocus();

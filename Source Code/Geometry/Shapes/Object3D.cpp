@@ -116,7 +116,7 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
                                  RenderPackage& pkgInOut) {
     VertexBuffer* vb = getGeometryVB();
     if (vb != nullptr) {
-        if (pkgInOut.drawCommandCount() == 0) {
+        if (pkgInOut.count<GFX::DrawCommand>() == 0) {
             const U16 partitionID = _geometryPartitionIDs[0];
             GenericDrawCommand cmd;
             cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;

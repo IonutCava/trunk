@@ -3,13 +3,13 @@
 #include "prePass.frag"
 
 void main() {
-#if defined(HAS_PRE_PASS_DATA)
+#if defined(USE_ALPHA_DISCARD)
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-
-    writeOutput(data,
-                VAR._texCoord,
-                getNormalWV(VAR._texCoord));
-#endif //HAS_PRE_PASS_DATA
+    const float alpha = getAlbedo(data, VAR._texCoord).a;
+    writeOutput(alpha, VAR._texCoord, getNormalWV(VAR._texCoord));
+#else
+    writeOutput(1.0f, VAR._texCoord, getNormalWV(VAR._texCoord));
+#endif
 }
 
 -- Fragment.Shadow
@@ -47,8 +47,7 @@ out vec2 _colourOut;
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    if (getAlbedo(data, VAR._texCoord).a < INV_Z_TEST_SIGMA) {
+    if (getAlbedo(dvd_Materials[MATERIAL_IDX], VAR._texCoord).a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif

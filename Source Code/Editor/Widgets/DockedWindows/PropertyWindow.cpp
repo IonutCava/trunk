@@ -1080,7 +1080,7 @@ namespace Divide {
         ShaderProgram* program = nullptr;
         if (currentStagePass._stage != RenderStage::COUNT && currentStagePass._passType != RenderPassType::COUNT) {
             const I64 shaderGUID = material->computeAndGetProgramGUID(currentStagePass);
-            program = ShaderProgram::findShaderProgram(shaderGUID);
+            program = ShaderProgram::FindShaderProgram(shaderGUID);
             if (program != nullptr) {
                 shaderName = program->resourceName().c_str();
             }

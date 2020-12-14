@@ -81,7 +81,7 @@ void main()
     const vec3 normal = normalize(2.0f * ((normal0 + normal1) * 0.5f) - 1.0f);
     //vec3 normal = normalPartialDerivativesBlend(normal0, normal1);
 
-    writeOutput(data,  VAR._texCoord, getTBNWV() * normal);
+    writeOutput(1.0f,  VAR._texCoord, getTBNWV() * normal);
 #endif //HAS_PRE_PASS_DATA
 #else //PRE_PASS
     const vec3 incident = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);

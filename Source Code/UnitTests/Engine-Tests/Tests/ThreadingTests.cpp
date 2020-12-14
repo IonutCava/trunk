@@ -144,13 +144,18 @@ TEST(TaskClassMemberCallbackTest)
         testObj.threadedFunction(parentTask);
     });
 
+    CHECK_FALSE(testObj.getTestValue());
+
     Start(*job, TaskPriority::DONT_CARE, [&testObj]() {
         std::cout << "TaskClassMemberCallbackTest: Callback called!" << std::endl;
         testObj.setTestValue(false);
     });
 
-    CHECK_FALSE(testObj.getTestValue());
-
+    if (Finished(*job)) {
+        CHECK_TRUE(testObj.getTestValue());
+    } else {
+        CHECK_FALSE(testObj.getTestValue());
+    }
     std::cout << "TaskClassMemberCallbackTest: Waiting for task!" << std::endl;
     Wait(*job);
 

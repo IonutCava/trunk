@@ -82,7 +82,7 @@ void Server::handle_accept(const tcp_session_ptr& session, const boost::system::
         });
     } else {
         std::stringstream ss;
-        ss << "ERROR: " << ec;
+        ss << "Server::handle_accept ERROR: " << ec;
         ASIO::LOG_PRINT(ss.str().c_str());
     }
 }

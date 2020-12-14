@@ -356,7 +356,7 @@ void Terrain::prepareRender(SceneGraphNode* sgn,
 
         snapped = eye - (eye - snapped) * 2;
 
-        PushConstants& constants = pkg.pushConstants(0);
+        PushConstants& constants = pkg.get<GFX::SendPushConstantsCommand>(0)->_constants;
         constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
         constants.set(_ID("dvd_tileWorldPosition"),  GFX::PushConstantType::VEC2,  snapped);
         constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  offset / scale);

@@ -365,7 +365,7 @@ void Sky::prepareRender(SceneGraphNode* sgn,
 
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (!pkg.empty()) {
-        PushConstants constants = pkg.pushConstants(0);
+        PushConstants& constants = pkg.get<GFX::SendPushConstantsCommand>(0)->_constants;
 
         constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
         if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
@@ -374,7 +374,6 @@ void Sky::prepareRender(SceneGraphNode* sgn,
             constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
             _atmosphereChanged = EditorDataState::PROCESSED;
         }
-         pkg.pushConstants(0, constants);
     }
 
     SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);

@@ -26,42 +26,31 @@ layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
 #include "velocityCalc.frag"
 #endif
 
-void writeOutput(in NodeMaterialData nodeData,
-                 vec2 uv,
-                 vec3 normal,
-                 float alphaFactor,
-                 float extraFlag)
+void writeOutput(in float albedoAlpha, in vec2 uv, in vec3 normal)
 {
 #if defined(USE_ALPHA_DISCARD)
-    float alpha = getAlbedo(nodeData, uv).a;
-    if (alpha * alphaFactor < INV_Z_TEST_SIGMA) {
+    if (albedoAlpha < INV_Z_TEST_SIGMA) {
         discard;
     }
-#endif
+#endif //USE_ALPHA_DISCARD
 #if defined(USE_DEFERRED_NORMALS)
     _normalAndVelocityOut.rg = packNormal(normalize(normal));
     _normalAndVelocityOut.ba = velocityCalc();
+#endif //USE_DEFERRED_NORMALS
+}
+
+void writeOutput(in float albedoAlpha, in vec2 uv, in vec3 normal, in float extraFlag) {
+    writeOutput(albedoAlpha, uv, normal);
+
+#if defined(USE_DEFERRED_NORMALS)
     _extraDetailsOut.rg = vec2(1.0f, extraFlag);
-#endif
-}
-void writeOutput(in NodeMaterialData nodeData,
-                vec2 uv,
-                vec3 normal,
-                float alphaFactor)
-{
-#if defined(HAS_PRE_PASS_DATA)
-    writeOutput(nodeData, uv, normal, alphaFactor, 0.0f);
-#endif //HAS_PRE_PASS_DATA
+#endif //USE_DEFERRED_NORMALS
 }
 
-void writeOutput(in NodeMaterialData nodeData,
-                 vec2 uv,
-                 vec3 normal) 
-{
-#if defined(HAS_PRE_PASS_DATA)
-    writeOutput(nodeData, uv, normal, 1.0f, 0.0f);
-#endif //HAS_PRE_PASS_DATA
-}
+#else //HAS_PRE_PASS_DATA
+
+#define writeOutput(albedoAlpha, uv, normal)
 
 #endif //HAS_PRE_PASS_DATA
+
 #endif //_PRE_PASS_FRAG_
