@@ -8,8 +8,7 @@
 namespace Divide {
     TransformComponent::TransformComponent(SceneGraphNode* parentSGN, PlatformContext& context)
       : BaseComponentType<TransformComponent, ComponentType::TRANSFORM>(parentSGN, context),
-        _parentUsageContext(parentSGN->usageContext()),
-        _uniformScaled(false)
+        _parentUsageContext(parentSGN->usageContext())
     {
         _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
 
@@ -72,18 +71,19 @@ namespace Divide {
         _parentUsageContext = context;
     }
 
+    void TransformComponent::resetInterpolation() {
+        SharedLock<SharedMutex> r_lock(_lock);
+        _prevTransformValues = _transformInterface.getValues();
+    }
+
     void TransformComponent::reset() {
         _worldMatrix.identity();
         _prevWorldMatrix.identity();
-        _prevTransformValues._translation.set(0.0f);
-
-        _prevTransformValues._scale.set(1.0f);
-        _prevTransformValues._orientation.identity();
         while (!_transformStack.empty()) {
             _transformStack.pop();
         }
-
         _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
+        resetInterpolation();
     }
 
     void TransformComponent::PreUpdate(const U64 deltaTimeUS) {
@@ -91,11 +91,9 @@ namespace Divide {
 
         // If we have dirty transforms, inform everybody
         const U32 updateMask = _transformUpdatedMask.load();
-        if (updateMask != to_base(TransformType::NONE))
-        {
+        if (updateMask != to_base(TransformType::NONE)) {
             Attorney::SceneGraphNodeComponent::setTransformDirty(_parentSGN, updateMask);
-            SharedLock<SharedMutex> r_lock(_lock);
-            _prevTransformValues = _transformInterface.getValues();
+            resetInterpolation();
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::PreUpdate(deltaTimeUS);

@@ -48,8 +48,7 @@ void Character::update(const U64 deltaTimeUS) {
         _velocityDirty = false;
     }
 
-    TransformComponent* const nodeTransformComponent =
-        getBoundNode()->get<TransformComponent>();
+    TransformComponent* const nodeTransformComponent = getBoundNode()->get<TransformComponent>();
     
     vec3<F32> sourceDirection(getLookingDirection());
     sourceDirection.y = 0.0f;
@@ -57,10 +56,7 @@ void Character::update(const U64 deltaTimeUS) {
     _oldPosition.set(nodeTransformComponent->getPosition());
     _oldPosition.lerp(_curPosition, to_F32(GFXDevice::FrameInterpolationFactor()));
     nodeTransformComponent->setPosition(_oldPosition);
-    nodeTransformComponent->rotateSlerp(
-        nodeTransformComponent->getOrientation() *
-            RotationFromVToU(sourceDirection, _curVelocity),
-        to_F32(GFXDevice::FrameInterpolationFactor()));
+    nodeTransformComponent->rotateSlerp(nodeTransformComponent->getOrientation() * RotationFromVToU(sourceDirection, _curVelocity), to_F32(GFXDevice::FrameInterpolationFactor()));
 }
 
 /// Just before we render the frame

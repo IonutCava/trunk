@@ -250,6 +250,7 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
     }
 
     _parentSGN->getNode().buildDrawCommands(_parentSGN, stagePass, crtCamera, pkg);
+    Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, _lastCmdOffsets[to_base(stagePass._stage)]);
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
@@ -322,12 +323,14 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::setDataIndex(const NodeDataIdx dataIndex, const RenderStage stage) {
+void RenderingComponent::retrieveDrawCommands(const NodeDataIdx dataIndex, const RenderStage stage, DrawCommandContainer& cmdsInOut) {
+    _lastCmdOffsets[to_base(stage)] = to_U32(cmdsInOut.size()) + dataIndex._commandOffset;
+
     const U8 lodLevel = _lodLevels[to_base(stage)];
     PackagesPerPassType& packagesPerPass = _renderPackages[to_base(stage)];
     for (PackagesPerIndex& packages : packagesPerPass) {
         for (RenderPackage& pkg : packages) {
-            Attorney::RenderPackageRenderingComponent::updateDrawCommands(pkg, dataIndex, lodLevel);
+            Attorney::RenderPackageRenderingComponent::updateAndRetrieveDrawCommands(pkg, dataIndex, lodLevel, cmdsInOut);
         }
     }
 }

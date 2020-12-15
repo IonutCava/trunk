@@ -90,7 +90,7 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     
     AttributeDescriptor& attribDescriptor(U32 attribIndex);
 
-     const IndexBuffer& indexBuffer() const noexcept { return _idxBuffer; }
+    const IndexBuffer& indexBuffer() const noexcept { return _idxBuffer; }
 
    protected:
     using AttributeMap = hashMap<U32, AttributeDescriptor>;

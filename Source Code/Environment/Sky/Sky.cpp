@@ -421,7 +421,6 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     cmd._sourceBuffer = _sky->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.baseIndex();
     cmd._cmd.indexCount = to_U32(_sky->getGeometryVB()->getIndexCount());
-    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
     pkgInOut.add(GFX::DrawCommand{ cmd });
 

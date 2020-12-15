@@ -112,7 +112,7 @@ protected:
 
     void drawIMGUI(ImDrawData* data, I64 windowGUID);
 
-    bool draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) const;
+    bool draw(const GenericDrawCommand& cmd) const;
 
     void preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) override;
 

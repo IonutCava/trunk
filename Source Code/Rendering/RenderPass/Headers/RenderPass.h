@@ -33,7 +33,6 @@
 #ifndef _RENDERING_RENDER_PASS_RENDERPASS_H_
 #define _RENDERING_RENDER_PASS_RENDERPASS_H_
 
-#include "NodeBufferedData.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
 
 namespace Divide {
@@ -59,11 +58,6 @@ class RenderPass final : NonCopyable {
        // Size factor for command and data buffers
        constexpr static U8 DataBufferRingSize = 3;
 
-       struct BufferDataPerType
-       {
-           I32 _dataRingIndex = 0u;
-           U32 _elementOffset = 0u;
-       };
        struct BufferData {
            ShaderBuffer* _transformBuffer = nullptr;
            ShaderBuffer* _materialBuffer = nullptr;
@@ -71,9 +65,9 @@ class RenderPass final : NonCopyable {
            ShaderBuffer* _cullCounterBuffer = nullptr;
            U32* _lastCommandCount = nullptr;
            U32* _lastNodeCount = nullptr;
-           BufferDataPerType _transformData = {};
-           BufferDataPerType _materialData = {};
-           BufferDataPerType _commandData = {};
+           U32 _transformElementOffset = 0u;
+           U32 _materialElementOffset = 0u;
+           U32 _commandElementOffset = 0u;
        };
 
   public:

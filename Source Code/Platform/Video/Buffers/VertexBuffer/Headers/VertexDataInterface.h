@@ -47,10 +47,10 @@ class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsReso
     explicit VertexDataInterface(GFXDevice& context);
     virtual ~VertexDataInterface();
 
-    virtual void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) = 0;
+    virtual void draw(const GenericDrawCommand& command) = 0;
 
     PROPERTY_R(PoolHandle, handle);
-
+    PROPERTY_RW(bool, renderIndirect, true);
 protected:
     using VDIPool = ObjectPool<VertexDataInterface, 4096>;
 

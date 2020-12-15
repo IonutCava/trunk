@@ -45,7 +45,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
     _commands->add(newCmd);
 }
 
-void RenderPackage::setDrawOptions(const U16 optionMask, const bool state) {
+void RenderPackage::setDrawOptions(const BaseType<CmdRenderOptions> optionMask, const bool state) {
     if (AllCompare(_drawCommandOptions, optionMask) == state) {
         return;
     }
@@ -62,14 +62,14 @@ void RenderPackage::setDrawOptions(const U16 optionMask, const bool state) {
 }
 
 void RenderPackage::setDrawOption(const CmdRenderOptions option, const bool state) {
-    setDrawOptions(to_U16(option), state);
+    setDrawOptions(to_base(option), state);
 }
 
-void RenderPackage::enableOptions(const U16 optionMask) {
+void RenderPackage::enableOptions(const BaseType<CmdRenderOptions> optionMask) {
     setDrawOptions(optionMask, true);
 }
 
-void RenderPackage::disableOptions(const U16 optionMask) {
+void RenderPackage::disableOptions(const BaseType<CmdRenderOptions> optionMask) {
     setDrawOptions(optionMask, false);
 }
 
@@ -77,7 +77,19 @@ void RenderPackage::appendCommandBuffer(const GFX::CommandBuffer& commandBuffer)
     commands()->add(commandBuffer);
 }
 
-void RenderPackage::updateDrawCommands(const NodeDataIdx dataIndex, const U8 lodLevel) {
+void RenderPackage::updateDrawCommands(U32 cmdOffset) {
+    OPTICK_EVENT();
+
+    const GFX::CommandBuffer::Container::EntryList& drawCommandEntries = commands()->get<GFX::DrawCommand>();
+    for (GFX::CommandBase* cmd : drawCommandEntries) {
+        GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
+        for (GenericDrawCommand& drawCmd : drawCommands) {
+            drawCmd._commandOffset = cmdOffset++;
+        }
+    }
+}
+
+void RenderPackage::updateAndRetrieveDrawCommands(const NodeDataIdx dataIndex, const U8 lodLevel, DrawCommandContainer& cmdsInOut) {
     OPTICK_EVENT();
 
     const U32 dataIndices = ((dataIndex._transformIDX << 16) | dataIndex._materialIDX);
@@ -86,7 +98,7 @@ void RenderPackage::updateDrawCommands(const NodeDataIdx dataIndex, const U8 lod
 
     const GFX::CommandBuffer::Container::EntryList& drawCommandEntries = commands()->get<GFX::DrawCommand>();
 
-    U16 startOffset = to_U16(dataIndex._commandOffset);
+    U32 startOffset = to_U32(cmdsInOut.size()) + dataIndex._commandOffset;
     for (GFX::CommandBase* cmd : drawCommandEntries) {
         GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
@@ -97,6 +109,7 @@ void RenderPackage::updateDrawCommands(const NodeDataIdx dataIndex, const U8 lod
                 drawCmd._cmd.firstIndex = to_U32(offset);
                 drawCmd._cmd.indexCount = to_U32(count);
             }
+            cmdsInOut.push_back(drawCmd._cmd);
         }
     }
 

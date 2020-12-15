@@ -38,7 +38,6 @@ void SubMesh::buildDrawCommands(SceneGraphNode* sgn,
     cmd._cmd.indexCount = to_U32(getGeometryVB()->getPartitionIndexCount(_geometryPartitionIDs[0]));
     cmd._cmd.primCount = sgn->instanceCount();
     cmd._bufferIndex = renderStagePass.baseIndex();
-    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
     pkgInOut.add(GFX::DrawCommand{ cmd });
 

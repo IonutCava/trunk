@@ -142,7 +142,6 @@ void InfinitePlane::buildDrawCommands(SceneGraphNode* sgn,
     planeCmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     planeCmd._sourceBuffer = _plane->getGeometryVB()->handle();
     planeCmd._bufferIndex = renderStagePass.baseIndex();
-    enableOption(planeCmd, CmdRenderOptions::RENDER_INDIRECT);
     {
         pkgInOut.add(GFX::DrawCommand{ planeCmd });
     }

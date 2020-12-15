@@ -50,7 +50,7 @@ void RenderPassExecutor::postInit(const ShaderProgram_ptr& OITCompositionShader)
     }
 }
 
-void RenderPassExecutor::addTexturesAt(U16 idx, const NodeMaterialTextures& tempTextures) {
+void RenderPassExecutor::addTexturesAt(const U16 idx, const NodeMaterialTextures& tempTextures) {
     // GL_ARB_bindless_texture:
     // In the following four constructors, the low 32 bits of the sampler
     // type correspond to the .x component of the uvec2 and the high 32 bits
@@ -76,14 +76,14 @@ void RenderPassExecutor::addTexturesAt(U16 idx, const NodeMaterialTextures& temp
 NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rComp,
                                                    const RenderStage stage,
                                                    const D64 interpolationFactor,
-                                                   U16 nodeIndex) {
+                                                   U16 nodeIndex,
+                                                   U32 cmdOffset) {
     OPTICK_EVENT();
 
     // Rewrite all transforms
     // ToDo: Cache transforms for static nodes -Ionut
     NodeDataIdx ret = {};
-    ret._commandOffset = to_U16(_drawCommands.size());
-
+    ret._commandOffset = cmdOffset;
     ret._transformIDX = nodeIndex;
     NodeTransformData& transformOut = _nodeTransformData[ret._transformIDX];
 
@@ -216,32 +216,22 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
 
     const RenderStagePass& stagePass = params._stagePass;
     RenderPass::BufferData bufferData = _parent.getPassForStage(_stage).getBufferData(stagePass);
+    ShaderBuffer* cmdBuffer = bufferData._commandBuffer;
 
     const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
+    const U32 cmdOffset = (cmdBuffer->queueWriteIndex() * cmdBuffer->getPrimitiveCount()) + bufferData._commandElementOffset;
 
     _drawCommands.clear();
-    _materialBufferIndex = bufferData._materialData._dataRingIndex;
+    _materialBufferIndex = bufferData._materialBuffer->queueWriteIndex();
     _matUpdateRange[_materialBufferIndex].reset();
     _uniqueTextureAddresses.clear();
 
     U16 nodeCount = 0u;
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
         for (RenderingComponent* rComp : queue) {
-            if (!Attorney::RenderingCompRenderPass::hasDrawCommands(*rComp, stagePass)) {
-                continue;
-            }
-
-            const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, nodeCount++);
-            Attorney::RenderingCompRenderPass::setDataIndex(*rComp, newDataIdx, stagePass._stage);
-
-            RenderPackage& uploadPkg = rComp->getDrawPackage(stagePass);
-            const I32 drawCommandCount = to_I32(uploadPkg.count<GFX::DrawCommand>());
-            for (I32 cmdIdx = 0; cmdIdx < drawCommandCount; ++cmdIdx) {
-                const GFX::DrawCommand* gfxDrawCommand = uploadPkg.get<GFX::DrawCommand>(cmdIdx);
-
-                for (const GenericDrawCommand& cmd : gfxDrawCommand->_drawCommands) {
-                    _drawCommands.push_back(cmd._cmd);
-                }
+            if (Attorney::RenderingCompRenderPass::hasDrawCommands(*rComp, stagePass)) {
+                const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, nodeCount++, cmdOffset);
+                Attorney::RenderingCompRenderPass::retrieveDrawCommands(*rComp, newDataIdx, stagePass._stage, _drawCommands);
             }
         }
     }
@@ -252,8 +242,8 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
     size_t materialRange = Config::MAX_CONCURRENT_MATERIALS;
     {
         OPTICK_EVENT("RenderPassExecutor::buildBufferData - UpdateBuffers");
-        bufferData._commandBuffer->writeData(bufferData._commandData._elementOffset, *bufferData._lastCommandCount, _drawCommands.data());
-        bufferData._transformBuffer->writeData(bufferData._transformData._elementOffset, *bufferData._lastNodeCount, _nodeTransformData.data());
+        cmdBuffer->writeData(bufferData._commandElementOffset, *bufferData._lastCommandCount, _drawCommands.data());
+        bufferData._transformBuffer->writeData(bufferData._transformElementOffset, *bufferData._lastNodeCount, _nodeTransformData.data());
 
         if (g_batchMaterials) {
             materialRange = std::count_if(std::begin(_nodeMaterialLookupInfo),
@@ -268,7 +258,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
                 crtRange._firstIDX = std::min(crtRange._firstIDX, prevRange._firstIDX);
                 crtRange._lastIDX = std::max(crtRange._lastIDX, prevRange._lastIDX);
 
-                bufferData._materialBuffer->writeData(bufferData._materialData._elementOffset + crtRange._firstIDX, crtRange.range(), &_nodeMaterialData[crtRange._firstIDX]);
+                bufferData._materialBuffer->writeData(bufferData._materialElementOffset + crtRange._firstIDX, crtRange.range(), &_nodeMaterialData[crtRange._firstIDX]);
             }
             prevRange.reset();
             if (_updateCounter == 0u || --_updateCounter == 0u) {
@@ -276,29 +266,29 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
             }
             _prevMaterialBufferIndex = _materialBufferIndex;
         } else {
-            bufferData._materialBuffer->writeData(bufferData._materialData._elementOffset, *bufferData._lastCommandCount, _nodeMaterialData.data());
+            bufferData._materialBuffer->writeData(bufferData._materialElementOffset, *bufferData._lastCommandCount, _nodeMaterialData.data());
         }
     }
 
-    ShaderBufferBinding cmdBuffer = {};
-    cmdBuffer._binding = ShaderBufferLocation::CMD_BUFFER;
-    cmdBuffer._buffer = bufferData._commandBuffer;
-    cmdBuffer._elementRange = { bufferData._commandData._elementOffset, *bufferData._lastCommandCount };
+    ShaderBufferBinding cmdBufferBinding = {};
+    cmdBufferBinding._binding = ShaderBufferLocation::CMD_BUFFER;
+    cmdBufferBinding._buffer = cmdBuffer;
+    cmdBufferBinding._elementRange = { 0u, cmdBuffer->getPrimitiveCount() };
 
-    ShaderBufferBinding transformBuffer = {};
-    transformBuffer._binding = ShaderBufferLocation::NODE_TRANSFORM_DATA;
-    transformBuffer._buffer = bufferData._transformBuffer;
-    transformBuffer._elementRange = { bufferData._transformData._elementOffset, *bufferData._lastNodeCount };
+    ShaderBufferBinding transformBufferBinding = {};
+    transformBufferBinding._binding = ShaderBufferLocation::NODE_TRANSFORM_DATA;
+    transformBufferBinding._buffer = bufferData._transformBuffer;
+    transformBufferBinding._elementRange = { bufferData._transformElementOffset, *bufferData._lastNodeCount };
 
-    ShaderBufferBinding materialBuffer = {};
-    materialBuffer._binding = ShaderBufferLocation::NODE_MATERIAL_DATA;
-    materialBuffer._buffer = bufferData._materialBuffer;
-    materialBuffer._elementRange = { bufferData._materialData._elementOffset, materialRange };
+    ShaderBufferBinding materialBufferBinding = {};
+    materialBufferBinding._binding = ShaderBufferLocation::NODE_MATERIAL_DATA;
+    materialBufferBinding._buffer = bufferData._materialBuffer;
+    materialBufferBinding._elementRange = { bufferData._materialElementOffset, materialRange };
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._buffers.add(cmdBuffer);
-    descriptorSetCmd._set._buffers.add(transformBuffer);
-    descriptorSetCmd._set._buffers.add(materialBuffer);
+    descriptorSetCmd._set._buffers.add(cmdBufferBinding);
+    descriptorSetCmd._set._buffers.add(transformBufferBinding);
+    descriptorSetCmd._set._buffers.add(materialBufferBinding);
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     if (_uniqueTextureAddresses.size() > 0) {
@@ -327,9 +317,6 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
     const SceneRenderState& sceneRenderState = _parent.parent().sceneManager()->getActiveScene().renderState();
     const Camera& cam = *params._camera;
 
-    RenderQueue& queue = getQueue();
-    queue.refresh();
-
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(nodes.size());
     descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
@@ -346,27 +333,28 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
 
     parallel_for(_parent.parent().platformContext(), descriptor);
 
+    _renderQueue.refresh();
     const size_t nodeCount = nodes.size();
     for (size_t i = 0; i < nodeCount; ++i) {
         const VisibleNode& node = nodes.node(i);
-        queue.addNodeToQueueLocked(node._node, stagePass, node._distanceToCameraSq);
+        _renderQueue.addNodeToQueueLocked(node._node, stagePass, node._distanceToCameraSq);
     }
 
     // Sort all bins
-    queue.sort(stagePass);
+    _renderQueue.sort(stagePass);
 
     _renderQueuePackages.resize(0);
     _renderQueuePackages.reserve(Config::MAX_VISIBLE_NODES);
 
     // Draw everything in the depth pass but only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
-    queue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), _renderQueuePackages);
+    _renderQueue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), _renderQueuePackages);
 
     for (RenderBin::SortedQueue& sQueue : _sortedQueues) {
         sQueue.resize(0);
         sQueue.reserve(Config::MAX_VISIBLE_NODES);
     }
 
-    const U16 queueTotalSize = queue.getSortedQueues({}, _sortedQueues);
+    const U16 queueTotalSize = _renderQueue.getSortedQueues({}, _sortedQueues);
 
     buildDrawCommands(params, bufferInOut);
 
@@ -381,8 +369,7 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
     const SceneRenderState& sceneRenderState = _parent.parent().sceneManager()->getActiveScene().renderState();
 
     const Camera& cam = *params._camera;
-    RenderQueue& queue = getQueue();
-    queue.refresh(targetBin);
+    _renderQueue.refresh(targetBin);
 
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(nodes.size());
@@ -396,7 +383,7 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
             if (Attorney::SceneGraphNodeRenderPassManager::shouldDraw(node._node, stagePass)) {
                 RenderingComponent * rComp = nodes.node(i)._node->get<RenderingComponent>();
                 Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, false);
-                queue.addNodeToQueue(node._node, stagePass, node._distanceToCameraSq, targetBin);
+                _renderQueue.addNodeToQueue(node._node, stagePass, node._distanceToCameraSq, targetBin);
             }
         }
     };
@@ -404,16 +391,16 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
     parallel_for(_parent.parent().platformContext(), descriptor);
 
     // Sort all bins
-    queue.sort(stagePass, targetBin, renderOrder);
+    _renderQueue.sort(stagePass, targetBin, renderOrder);
 
     _renderQueuePackages.resize(0);
     _renderQueuePackages.reserve(Config::MAX_VISIBLE_NODES);
 
     // Draw everything in the depth pass but only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
-    queue.populateRenderQueues(stagePass, stagePass.isDepthPass()
+    _renderQueue.populateRenderQueues(stagePass, stagePass.isDepthPass()
                                                    ? std::make_pair(RenderBinType::RBT_COUNT, true)
                                                    : std::make_pair(RenderBinType::RBT_TRANSLUCENT, transparencyPass),
-                               _renderQueuePackages);
+                                      _renderQueuePackages);
 
     
     for (RenderBin::SortedQueue& sQueue : _sortedQueues) {
@@ -431,7 +418,7 @@ void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, con
          RenderBinType::RBT_TRANSLUCENT
     };
 
-    queue.getSortedQueues(stagePass._passType == RenderPassType::PRE_PASS ? prePassBins : allBins, _sortedQueues);
+    _renderQueue.getSortedQueues(stagePass._passType == RenderPassType::PRE_PASS ? prePassBins : allBins, _sortedQueues);
 }
 
 void RenderPassExecutor::prePass(const VisibleNodeList<>& nodes, const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
@@ -460,7 +447,7 @@ void RenderPassExecutor::prePass(const VisibleNodeList<>& nodes, const RenderPas
 
     renderQueueToSubPasses(bufferInOut);
 
-    getQueue().postRender(activeSceneRenderState, params._stagePass, bufferInOut);
+    _renderQueue.postRender(activeSceneRenderState, params._stagePass, bufferInOut);
 
     if (layeredRendering) {
         EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
@@ -605,7 +592,7 @@ void RenderPassExecutor::mainPass(const VisibleNodeList<>& nodes, const RenderPa
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(bufferInOut);
 
-        getQueue().postRender(activeSceneRenderState, stagePass, bufferInOut);
+        _renderQueue.postRender(activeSceneRenderState, stagePass, bufferInOut);
 
         if (_stage == RenderStage::DISPLAY) {
             /// These should be OIT rendered as well since things like debug nav meshes have translucency

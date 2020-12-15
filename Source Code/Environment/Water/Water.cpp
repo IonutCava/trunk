@@ -352,7 +352,6 @@ void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
     cmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     cmd._sourceBuffer = _plane->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.baseIndex();
-    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
     {
         pkgInOut.add(GFX::DrawCommand{ cmd });
     }

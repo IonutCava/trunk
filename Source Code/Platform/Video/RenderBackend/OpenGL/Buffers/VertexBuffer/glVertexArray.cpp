@@ -355,7 +355,7 @@ bool glVertexArray::createInternal() {
 }
 
 /// Render the current buffer data using the specified command
-void glVertexArray::draw(const GenericDrawCommand& command, const U32 cmdBufferOffset) {
+void glVertexArray::draw(const GenericDrawCommand& command) {
 
     // Make sure the buffer is current
     // Make sure we have valid data (buffer creation is deferred to the first activate call)
@@ -384,11 +384,11 @@ void glVertexArray::draw(const GenericDrawCommand& command, const U32 cmdBufferO
 
     stateTracker.bindActiveBuffer(vao, 0u, _VBHandle._id, 0u, _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES, _effectiveEntrySize);
 
-    if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
-        GLUtil::SubmitRenderCommand(command, true, true, cmdBufferOffset, _formatInternal);
+    if (renderIndirect()) {
+        GLUtil::SubmitRenderCommand(command, true, true, _formatInternal);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex, getIndexCount());
-        GLUtil::SubmitRenderCommand(command, true, false, cmdBufferOffset, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::SubmitRenderCommand(command, true, false, _formatInternal, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 }
 

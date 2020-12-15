@@ -31,6 +31,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, const size_t 
 
     if (!getObjectFlag(ObjectFlag::OBJECT_FLAG_NO_VB)) {
         _buffer = context.newVB();
+        _buffer->renderIndirect(true);
     }
 
     switch (type) {
@@ -125,7 +126,6 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
             cmd._cmd.indexCount = to_U32(vb->getPartitionIndexCount(partitionID));
             cmd._cmd.firstIndex = to_U32(vb->getPartitionOffset(partitionID));
             cmd._cmd.primCount = sgn->instanceCount();
-            enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
             pkgInOut.add(GFX::DrawCommand{ cmd });
         }

@@ -74,9 +74,9 @@ public:
     [[nodiscard]] bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
 
     void setDrawOption(CmdRenderOptions option, bool state);
-    void setDrawOptions(U16 optionMask, bool state);
-    void enableOptions(U16 optionMask);
-    void disableOptions(U16 optionMask);
+    void setDrawOptions(BaseType<CmdRenderOptions> optionMask, bool state);
+    void enableOptions(BaseType<CmdRenderOptions> optionMask);
+    void disableOptions(BaseType<CmdRenderOptions> optionMask);
 
     void clear();
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
@@ -87,14 +87,15 @@ public:
     PROPERTY_RW(NodeDataIdx, lastDataIndex, {});
 
 protected:
-    void updateDrawCommands(NodeDataIdx dataIndex, U8 lodLevel);
+    void updateDrawCommands(U32 cmdOffset);
+    void updateAndRetrieveDrawCommands(NodeDataIdx dataIndex, U8 lodLevel, DrawCommandContainer& cmdsInOut);
     GFX::CommandBuffer* commands();
     void addDrawCommand(const GFX::DrawCommand& cmd);
 
 protected:
     GFX::CommandBuffer* _commands = nullptr;
     std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets{};
-    U16 _drawCommandOptions = to_U16(CmdRenderOptions::RENDER_GEOMETRY);
+    BaseType<CmdRenderOptions> _drawCommandOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY);
     bool _isInstanced = false;
 };
 
@@ -113,8 +114,12 @@ namespace Attorney {
     };
 
     class RenderPackageRenderingComponent {
-        static void updateDrawCommands(RenderPackage& pkg, const NodeDataIdx dataIndex, const U8 lodLevel) {
-            pkg.updateDrawCommands(dataIndex, lodLevel);
+        static void updateDrawCommands(RenderPackage& pkg, const U32 cmdOffset) {
+            pkg.updateDrawCommands(cmdOffset);
+        }
+
+        static void updateAndRetrieveDrawCommands(RenderPackage& pkg, const NodeDataIdx dataIndex, const U8 lodLevel, DrawCommandContainer& cmdsInOut) {
+            pkg.updateAndRetrieveDrawCommands(dataIndex, lodLevel, cmdsInOut);
         }
 
         friend class RenderingComponent;

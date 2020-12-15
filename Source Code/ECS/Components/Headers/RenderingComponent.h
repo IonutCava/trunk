@@ -39,6 +39,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
+#include "Rendering/RenderPass/Headers/NodeBufferedData.h"
 
 namespace Divide {
 struct NodeMaterialData;
@@ -72,8 +73,6 @@ struct RenderParams {
     GenericDrawCommand _cmd;
     Pipeline _pipeline;
 };
-
-using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;
 
 struct RenderCbkParams {
     explicit RenderCbkParams(GFXDevice& context,
@@ -187,7 +186,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
-    void setDataIndex(NodeDataIdx dataIndex, RenderStage stage);
+    void retrieveDrawCommands(NodeDataIdx dataIndex, RenderStage stage, DrawCommandContainer& cmdsInOut);
     [[nodiscard]] bool hasDrawCommands(const RenderStagePass& stagePass);
                   void onRenderOptionChanged(RenderOptions option, bool state);
 
@@ -240,6 +239,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     using FlagsPerPassType = std::array<FlagsPerIndex, to_base(RenderPassType::COUNT)>;
     using FlagsPerStage = std::array<FlagsPerPassType, to_base(RenderStage::COUNT)>;
     FlagsPerStage _rebuildDrawCommandsFlags{};
+
+    std::array<U32, to_base(RenderStage::COUNT)> _lastCmdOffsets{};
 
     RenderCallback _reflectionCallback{};
     RenderCallback _refractionCallback{};
@@ -327,8 +328,8 @@ class RenderingCompRenderPass {
             return renderable.hasDrawCommands(stagePass);
         }
 
-        static void setDataIndex(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStage stage) {
-            renderable.setDataIndex(dataIndex, stage);
+        static void retrieveDrawCommands(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStage stage, DrawCommandContainer & cmdsInOut) {
+            renderable.retrieveDrawCommands(dataIndex, stage, cmdsInOut);
         }
 
         friend class Divide::RenderPass;

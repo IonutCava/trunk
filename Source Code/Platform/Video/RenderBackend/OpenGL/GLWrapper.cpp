@@ -1060,7 +1060,7 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         stateTracker.setScissor(clip_rect);
                         stateTracker.bindTexture(0, TextureType::TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<intptr_t>(pcmd->TextureId)));
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
-                        buffer->draw(cmd, 0);
+                        buffer->draw(cmd);
                     }
                 }
                 cmd._cmd.firstIndex += pcmd->ElemCount;
@@ -1122,7 +1122,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
     static_cast<glShaderProgram*>(program)->UploadPushConstants(pushConstants);
 }
 
-bool GL_API::draw(const GenericDrawCommand& cmd, const U32 cmdBufferOffset) const {
+bool GL_API::draw(const GenericDrawCommand& cmd) const {
     OPTICK_EVENT();
 
     if (cmd._sourceBuffer._id == 0) {
@@ -1147,7 +1147,7 @@ bool GL_API::draw(const GenericDrawCommand& cmd, const U32 cmdBufferOffset) cons
         }
 
         assert(lastBuffer != nullptr);
-        lastBuffer->draw(cmd, cmdBufferOffset);
+        lastBuffer->draw(cmd);
     }
 
     return true;
@@ -1385,7 +1385,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             DIVIDE_ASSERT(drawCount == 0u || stateTracker._activePipeline != nullptr);
 
             for (const GenericDrawCommand& currentDrawCommand : drawCommands) {
-                if (draw(currentDrawCommand, stateTracker._commandBufferOffset)) {
+                if (draw(currentDrawCommand)) {
                     drawCount += isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_WIREFRAME) 
                                        ? 2 
                                        : isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY) ? 1 : 0;
@@ -1522,6 +1522,7 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(const I64 windowGUID) {
     idxBuff.count = (1 << 16) * 3;
 
     ret->create(1);
+    ret->renderIndirect(false);
 
     GenericVertexData::SetBufferParams params = {};
     params._buffer = 0;

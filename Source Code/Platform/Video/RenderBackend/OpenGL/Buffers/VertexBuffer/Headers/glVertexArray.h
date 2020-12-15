@@ -67,7 +67,7 @@ class glVertexArray final : public VertexBuffer,
     }
 
    protected:
-    void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override;
+    void draw(const GenericDrawCommand& command) override;
 
    protected:
     friend class GL_API;

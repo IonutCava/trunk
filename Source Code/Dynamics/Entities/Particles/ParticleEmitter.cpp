@@ -44,6 +44,7 @@ ParticleEmitter::ParticleEmitter(GFXDevice& context, ResourceCache* parentCache,
     for (U8 i = 0; i < s_MaxPlayerBuffers; ++i) {
         for (U8 j = 0; j < to_base(RenderStage::COUNT); ++j) {
             _particleGPUBuffers[i][j] = _context.newGVD(g_particleBufferSizeFactor);
+            _particleGPUBuffers[i][j]->renderIndirect(true);
         }
     }
 
@@ -269,8 +270,6 @@ void ParticleEmitter::buildDrawCommands(SceneGraphNode* sgn,
     GenericDrawCommand cmd = {};
     cmd._primitiveType = _particles->particleGeometryType();
     cmd._cmd.indexCount = indexCount;
-
-    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
 
     pkgInOut.add(GFX::DrawCommand{ cmd });
 

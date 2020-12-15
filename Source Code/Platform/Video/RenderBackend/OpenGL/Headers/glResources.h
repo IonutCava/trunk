@@ -204,7 +204,6 @@ extern Mutex s_glSecondaryContextMutex;
 void SubmitRenderCommand(const GenericDrawCommand& drawCommand,
                          bool drawIndexed,
                          bool useIndirectBuffer,
-                         GLuint cmdBufferOffset,
                          GLenum internalFormat,
                          size_t* countData = nullptr,
                          bufferPtr indexData = nullptr);

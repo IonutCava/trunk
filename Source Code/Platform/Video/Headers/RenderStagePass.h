@@ -73,48 +73,80 @@ struct RenderStagePass {
     }
 
     static RenderStagePass fromBaseIndex(const U8 baseIndex) noexcept {
-        const RenderStage stage = static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT));
-        const RenderPassType pass = static_cast<RenderPassType>(baseIndex / to_base(RenderStage::COUNT));
-        return RenderStagePass(stage, pass);
+        return RenderStagePass
+        {
+            static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT)),
+            static_cast<RenderPassType>(baseIndex / to_base(RenderStage::COUNT))
+        };
     }
 
     static U16 indexForStage(const RenderStagePass& renderStagePass) noexcept {
-        if (renderStagePass._stage == RenderStage::SHADOW) {
-            constexpr U16 offsetDir = 0u;
-            constexpr U16 offsetPoint = offsetDir + Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT;
-            constexpr U16 offsetSpot = offsetPoint + Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS * 6;
-            
-            if (renderStagePass._variant == to_base(LightType::DIRECTIONAL)) {
-                return offsetDir + renderStagePass._index * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT + renderStagePass._pass;
-            } 
-            if (renderStagePass._variant == to_base(LightType::POINT)) {
-                return offsetPoint + renderStagePass._index * 6 + renderStagePass._pass;
-            } 
-            /*if (renderStagePass._variant == to_base(LightType::SPOT)*/{
-                return offsetSpot + renderStagePass._index;
+        switch (renderStagePass._stage) {
+            case RenderStage::DISPLAY:
+            {
+                assert(renderStagePass._variant == renderStagePass._index == renderStagePass._pass == 0u);
+                return 0u;
             }
-        } 
-        if (renderStagePass._stage == RenderStage::REFLECTION) {
-            if (renderStagePass._variant == to_base(ReflectorType::PLANAR)) {
+            case RenderStage::REFLECTION: 
+            {
+                // All reflectors could pe cubemaps.
+                // For a simple planar reflection, pass should be 0
+                assert(renderStagePass._variant != to_base(ReflectorType::PLANAR) || renderStagePass._pass == 0);
+                return (renderStagePass._index * 6) + renderStagePass._pass;
+            }
+            case RenderStage::REFRACTION:
+            {
+                // Refraction targets are only planar for now
+                assert(renderStagePass._variant == to_base(RefractorType::PLANAR));
                 return renderStagePass._index;
-            } 
+            }
+            case RenderStage::SHADOW:
+            {
+                // The really complicated one:
+                // 1) Find the proper offset for the current light type (stored in _variant)
+                constexpr U16 offsetDir = 0u;
+                constexpr U16 offsetPoint = offsetDir + Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT;
+                constexpr U16 offsetSpot = offsetPoint + Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS * 6;
+                const U16 lightIndex = renderStagePass._index; // Just a value that gets increment by one for each light we process
+                const U16 lightPass = renderStagePass._pass;   // Either cube face index or CSM split number
 
-            return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + (renderStagePass._index * 6 + renderStagePass._pass);
-        } 
-        
-        assert(renderStagePass._pass == 0u);
-        return renderStagePass._index;
+                switch(renderStagePass._variant) {
+                    case to_base(LightType::DIRECTIONAL): 
+                        return Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT * lightIndex + offsetDir + lightPass;
+                    case to_base(LightType::POINT): 
+                        return 6 * lightIndex + offsetPoint + lightPass;
+                    case to_base(LightType::SPOT): 
+                        assert(lightPass == 0u);
+                        return lightIndex + offsetSpot;
+                    default: 
+                        DIVIDE_UNEXPECTED_CALL();
+                }
+            }
+            case RenderStage::COUNT:
+            default: DIVIDE_UNEXPECTED_CALL();
+        }
+
+        DIVIDE_UNEXPECTED_CALL();
+        return 0u;
     }
 
     static U8 passCountForStage(const RenderStage renderStage) noexcept {
-        if (renderStage == RenderStage::REFLECTION) {
-            return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
-                   Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;
-        } 
-        if (renderStage == RenderStage::SHADOW) {
-            return Config::Lighting::MAX_SHADOW_PASSES;
+        switch (renderStage) {
+            case RenderStage::DISPLAY:
+                return 1u;
+            case RenderStage::REFLECTION:
+                return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
+                       Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;
+            case RenderStage::REFRACTION:
+                return Config::MAX_REFRACTIVE_NODES_IN_VIEW;
+            case RenderStage::SHADOW:
+                return Config::Lighting::MAX_SHADOW_PASSES;
+            default:
+                DIVIDE_UNEXPECTED_CALL();
+
         }
 
+        DIVIDE_UNEXPECTED_CALL();
         return to_U8(1u);
     }
 

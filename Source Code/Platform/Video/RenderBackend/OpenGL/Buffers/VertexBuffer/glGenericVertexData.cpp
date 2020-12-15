@@ -53,7 +53,7 @@ void glGenericVertexData::create(const U8 numBuffers) {
 }
 
 /// Submit a draw command to the GPU using this object and the specified command
-void glGenericVertexData::draw(const GenericDrawCommand& command, const U32 cmdBufferOffset) {
+void glGenericVertexData::draw(const GenericDrawCommand& command) {
     // Update buffer bindings
     setBufferBindings(command);
     // Update vertex attributes if needed (e.g. if offsets changed)
@@ -66,11 +66,11 @@ void glGenericVertexData::draw(const GenericDrawCommand& command, const U32 cmdB
         _idxBufferDirty = false;
     }    
     // Submit the draw command
-    if (isEnabledOption(command, CmdRenderOptions::RENDER_INDIRECT)) {
-        GLUtil::SubmitRenderCommand(command, _indexBuffer > 0, true, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
+    if (renderIndirect()) {
+        GLUtil::SubmitRenderCommand(command, _indexBuffer > 0, true, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT);
     } else {
         rebuildCountAndIndexData(command._drawCount, command._cmd.indexCount, command._cmd.firstIndex, indexBuffer().count);
-        GLUtil::SubmitRenderCommand(command, _indexBuffer > 0, false, cmdBufferOffset, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
+        GLUtil::SubmitRenderCommand(command, _indexBuffer > 0, false, _smallIndices ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, _countData.data(), (bufferPtr)_indexOffsetData.data());
     }
 
     GL_API::LockBuffers(_context.getFrameCount());

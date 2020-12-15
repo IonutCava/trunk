@@ -253,6 +253,7 @@ void Terrain::postBuild() {
             params._sync = false;
 
             _terrainBuffer = _context.newGVD(1);
+            _terrainBuffer->renderIndirect(true);
             if_constexpr(USE_BASE_VERTEX_OFFSETS) {
                 _terrainBuffer->create(1);
             } else {
@@ -378,8 +379,6 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};
-    enableOption(cmd, CmdRenderOptions::RENDER_INDIRECT);
-
     cmd._primitiveType = PrimitiveType::PATCH;
     cmd._sourceBuffer = _terrainBuffer->handle();
     cmd._cmd.indexCount = to_U32(TessellationParams::QUAD_LIST_INDEX_COUNT);

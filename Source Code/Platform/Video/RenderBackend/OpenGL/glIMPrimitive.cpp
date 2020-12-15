@@ -71,9 +71,7 @@ void glIMPrimitive::pipeline(const Pipeline& pipeline) noexcept {
     _imInterface->SetShaderProgramHandle(pipeline.shaderProgramHandle());
 }
 
-void glIMPrimitive::draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) {
-    ACKNOWLEDGE_UNUSED(cmdBufferOffset);
-
+void glIMPrimitive::draw(const GenericDrawCommand& cmd) {
     _imInterface->RenderBatchInstanced(cmd._cmd.primCount, _forceWireframe || isEnabledOption(cmd, CmdRenderOptions::RENDER_WIREFRAME));
 }
 

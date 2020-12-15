@@ -693,11 +693,13 @@ bool glFramebuffer::checkStatus() {
     _statusCheckQueued = false;
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
         // check FB status
-        switch (glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER))
+        const GLenum status = glCheckNamedFramebufferStatus(_framebufferHandle, GL_FRAMEBUFFER);
+        if (status == GL_FRAMEBUFFER_COMPLETE) {
+            return true;
+        }
+
+        switch (status)
         {
-            case GL_FRAMEBUFFER_COMPLETE: {
-                return true;
-            }
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
                 Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
                 return false;

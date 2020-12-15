@@ -144,6 +144,7 @@ namespace Divide {
          void pushTransforms();
          bool popTransforms();
 
+         void resetInterpolation();
          void setOffset(bool state, const mat4<F32>& offset = mat4<F32>());
 
          [[nodiscard]] bool saveCache(ByteBuffer& outputBuffer) const override;
@@ -188,20 +189,20 @@ namespace Divide {
 
         using TransformStack = std::stack<TransformValues>;
 
-        std::atomic_uint _transformUpdatedMask;
+        std::atomic_uint _transformUpdatedMask{};
         TransformValues  _prevTransformValues;
-        TransformStack   _transformStack;
+        TransformStack   _transformStack{};
         Transform        _transformInterface;
 
         NodeUsageContext _parentUsageContext;
 
-        bool _uniformScaled;
+        bool _uniformScaled{};
         
-        mutable SharedMutex _worldMatrixLock;
+        mutable SharedMutex _worldMatrixLock{};
         mat4<F32> _worldMatrix;
         mat4<F32> _prevWorldMatrix;
 
-        mutable SharedMutex _lock;
+        mutable SharedMutex _lock{};
     };
 
     INIT_COMPONENT(TransformComponent);

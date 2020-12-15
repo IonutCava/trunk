@@ -26,7 +26,7 @@ layout(binding = BUFFER_NODE_TRANSFORM_DATA, std430) coherent COMP_ONLY_R buffer
 
 layout(binding = BUFFER_GPU_COMMANDS, std430) coherent COMP_ONLY_RW buffer dvd_GPUCmds
 {
-    IndirectDrawCommand dvd_drawCommands[MAX_VISIBLE_NODES];
+    IndirectDrawCommand dvd_drawCommands[];
 };
 
 void CullItem(in uint idx) {

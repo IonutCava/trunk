@@ -13,11 +13,11 @@
 namespace NS_GLIM
 {
     //! An Implementation of the GLIM_Interface.
-    class GLIM_BATCH : public GLIM_Interface
+    class GLIM_BATCH final : public GLIM_Interface
     {
     public:
         GLIM_BATCH ();
-        virtual ~GLIM_BATCH ();
+        virtual ~GLIM_BATCH() = default;
 
         // Begins defining one piece of geometry that can later be rendered with one set of states.
         void BeginBatch (bool reserveBuffers = true, unsigned int vertexCount = 64 * 3, unsigned int attributeCount = 1) override;

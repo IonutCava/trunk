@@ -76,9 +76,8 @@ namespace Divide {
             : IMPrimitive(context)
         {}
 
-        void draw(const GenericDrawCommand& cmd, U32 cmdBufferOffset) override {
+        void draw(const GenericDrawCommand& cmd) override {
             ACKNOWLEDGE_UNUSED(cmd);
-            ACKNOWLEDGE_UNUSED(cmdBufferOffset);
         }
 
         void beginBatch(bool reserveBuffers, U32 vertexCount, U32 attributeCount) override {
@@ -137,9 +136,8 @@ namespace Divide {
             : VertexBuffer(context)
         {}
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {
+        void draw(const GenericDrawCommand& command) override {
             ACKNOWLEDGE_UNUSED(command);
-            ACKNOWLEDGE_UNUSED(cmdBufferOffset);
         }
 
         bool queueRefresh() override { return refresh(); }
@@ -186,9 +184,8 @@ namespace Divide {
             ACKNOWLEDGE_UNUSED(numBuffers);
         }
 
-        void draw(const GenericDrawCommand& command, U32 cmdBufferOffset) override {
+        void draw(const GenericDrawCommand& command) override {
             ACKNOWLEDGE_UNUSED(command);
-            ACKNOWLEDGE_UNUSED(cmdBufferOffset);
         }
 
         void setBuffer(const SetBufferParams& params) override {

@@ -169,6 +169,7 @@ namespace Divide {
                         transform->setScale(scale);
                         transform->setRotation(rotation);
                         transform->setPosition(position);
+                        transform->resetInterpolation();
                     }break;
                     case EditorComponentFieldType::MATERIAL: {
                         Material* mat = field.getPtr<Material>();

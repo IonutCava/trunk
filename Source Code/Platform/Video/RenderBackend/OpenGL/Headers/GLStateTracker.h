@@ -173,8 +173,6 @@ namespace Divide {
                                       GLUtil::k_invalidObjectID };
         hashMap<GLuint, GLuint> _activeVAOIB;
 
-        GLuint _commandBufferOffset = 0u;
-
         GLint  _activePackUnpackAlignments[2] = { 1 , 1 };
         GLint  _activePackUnpackRowLength[2] = { 0 , 0 };
         GLint  _activePackUnpackSkipPixels[2] = { 0 , 0 };

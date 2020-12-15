@@ -348,6 +348,9 @@ constexpr U32 operator"" _u32 ( Enum value )
 return static_cast<U32>(value);
 }*/
 
+template<typename Type>
+using BaseType = std::underlying_type_t<Type>;
+
 template <typename Type, typename = typename std::enable_if<std::is_integral<Type>::value>::type>
 constexpr auto to_base(const Type value) -> Type {
     return value;

@@ -33,6 +33,7 @@
 #ifndef _RENDER_PASS_EXECUTOR_H_
 #define _RENDER_PASS_EXECUTOR_H_
 
+#include "NodeBufferedData.h"
 #include "RenderPass.h"
 #include "RenderQueue.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
@@ -75,8 +76,6 @@ public:
     ~RenderPassExecutor() = default;
 
     void doCustomPass(RenderPassParams params, GFX::CommandBuffer& bufferInOut);
-    [[nodiscard]] RenderQueue& getQueue() noexcept { return _renderQueue; }
-
     void postInit(const ShaderProgram_ptr& OITCompositionShader) const;
 
 private:
@@ -117,7 +116,8 @@ private:
     NodeDataIdx processVisibleNode(const RenderingComponent& rComp,
                                    RenderStage stage,
                                    D64 interpolationFactor,
-                                   U16 nodeIndex);
+                                   U16 nodeIndex,
+                                   U32 cmdOffset);
 
     void buildDrawCommands(const RenderPassParams& params, GFX::CommandBuffer& bufferInOut);
     U16 prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, bool hasInvalidNodes, GFX::CommandBuffer& bufferInOut);

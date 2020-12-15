@@ -53,7 +53,7 @@ struct NodeDataIdx
 {
     U16 _transformIDX = 0u;
     U16 _materialIDX = 0u;
-    U16 _commandOffset = 0u;
+    U32 _commandOffset = 0u;
 };
 
 struct IndirectDrawCommand {
@@ -64,15 +64,14 @@ struct IndirectDrawCommand {
     U32 baseInstance = 0;  // 20 bytes
 };
 
-enum class CmdRenderOptions : U16 {
+enum class CmdRenderOptions : U8 {
     RENDER_GEOMETRY = toBit(1),
     RENDER_WIREFRAME = toBit(2),
     RENDER_NO_RASTERIZE = toBit(3),
-    RENDER_INDIRECT = toBit(4),
-    QUERY_PRIMITIVE_COUNT = toBit(5),
-    QUERY_SAMPLE_COUNT = toBit(6),
-    QUERY_ANY_SAMPLE_RENDERED = toBit(7),
-    COUNT = 7
+    QUERY_PRIMITIVE_COUNT = toBit(4),
+    QUERY_SAMPLE_COUNT = toBit(5),
+    QUERY_ANY_SAMPLE_RENDERED = toBit(6),
+    COUNT = 6
 };
 
 #pragma pack(push, 1)
@@ -80,13 +79,15 @@ struct GenericDrawCommand {
     static constexpr U8 INVALID_BUFFER_INDEX = std::numeric_limits<U8>::max();
     IndirectDrawCommand _cmd = {};                                        // 32 bytes
     PoolHandle _sourceBuffer = {};                                        // 12 bytes
-    U24 _commandOffset = 0u;                                              // 9  bytes
-    U16 _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY);      // 6  bytes
-    U16 _drawCount = 1u;                                                  // 4  bytes
+    U32 _commandOffset = 0u;                                              // 9  bytes
+    U16 _drawCount = 1u;                                                  // 5  bytes
+    U8  _renderOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY);      // 3  bytes
     U8  _bufferIndex  = INVALID_BUFFER_INDEX;                             // 2  bytes
     PrimitiveType _primitiveType = PrimitiveType::COUNT;                  // 1  bytes
 };
 #pragma pack(pop)
+
+using DrawCommandContainer = eastl::fixed_vector<IndirectDrawCommand, Config::MAX_VISIBLE_NODES, false>;
 
 bool isEnabledOption(const GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
 void toggleOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
@@ -95,9 +96,9 @@ void enableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
 void disableOption(GenericDrawCommand& cmd, CmdRenderOptions option) noexcept;
 void setOption(GenericDrawCommand& cmd, CmdRenderOptions option, bool state) noexcept;
 
-void enableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept;
-void disableOptions(GenericDrawCommand& cmd, U16 optionsMask) noexcept;
-void setOptions(GenericDrawCommand& cmd, U16 optionsMask, bool state) noexcept;
+void enableOptions(GenericDrawCommand& cmd, BaseType<CmdRenderOptions> optionsMask) noexcept;
+void disableOptions(GenericDrawCommand& cmd, BaseType<CmdRenderOptions> optionsMask) noexcept;
+void setOptions(GenericDrawCommand& cmd, BaseType<CmdRenderOptions> optionsMask, bool state) noexcept;
 
 bool Compatible(const GenericDrawCommand& lhs, const GenericDrawCommand& rhs) noexcept;
 

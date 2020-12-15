@@ -17,17 +17,12 @@ namespace NS_GLIM
     // One global GLIM_BATCH is always defined for immediate use.
     GLIM_BATCH glim;
 
-
     GLIM_BATCH::GLIM_BATCH ()
     {
         Clear (true, 64 * 3, 1);
     }
 
-    GLIM_BATCH::~GLIM_BATCH ()
-    {
-    }
-
-    void GLIM_BATCH::Clear (bool reserveBuffers, unsigned int vertexCount, unsigned int attributeCount)
+    void GLIM_BATCH::Clear (const bool reserveBuffers, const unsigned int vertexCount, const unsigned int attributeCount)
     {
         m_PrimitiveType = GLIM_ENUM::GLIM_NOPRIMITIVE;
         m_Data.Reset (reserveBuffers, vertexCount, attributeCount);
@@ -122,7 +117,7 @@ namespace NS_GLIM
                 cmd._primitiveType = Divide::PrimitiveType::TRIANGLES;
                 cmd._cmd.indexCount = m_Data.m_uiTriangleElements;
                 Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Triangles);
-                Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Triangles > 0, false, 0u, GL_UNSIGNED_INT);
+                Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Triangles > 0, false, GL_UNSIGNED_INT);
             }
         }
         else
@@ -133,7 +128,7 @@ namespace NS_GLIM
                 cmd._primitiveType = Divide::PrimitiveType::LINES;
                 cmd._cmd.indexCount = m_Data.m_uiWireframeElements;
                 Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Wireframe);
-                Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Wireframe > 0, false, 0u, GL_UNSIGNED_INT);
+                Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Wireframe > 0, false, GL_UNSIGNED_INT);
             }
         }
         
@@ -143,7 +138,7 @@ namespace NS_GLIM
             cmd._primitiveType = Divide::PrimitiveType::LINES;
             cmd._cmd.indexCount = m_Data.m_uiLineElements;
             Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Lines);
-            Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Lines > 0, false, 0u, GL_UNSIGNED_INT);
+            Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Lines > 0, false, GL_UNSIGNED_INT);
         }
 
         // render all points
@@ -152,13 +147,13 @@ namespace NS_GLIM
             cmd._primitiveType = Divide::PrimitiveType::API_POINTS;
             cmd._cmd.indexCount = m_Data.m_uiPointElements;
             Divide::GL_API::getStateTracker().setActiveBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Data.m_uiElementBufferID_Points);
-            Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Points > 0, false, 0u, GL_UNSIGNED_INT);
+            Divide::GLUtil::SubmitRenderCommand(cmd, m_Data.m_uiElementBufferID_Points > 0, false, GL_UNSIGNED_INT);
         }
 
         EndRender ();
     }
 
-    void GLIM_BATCH::RenderBatchOGL (bool bWireframe)
+    void GLIM_BATCH::RenderBatchOGL (const bool bWireframe)
     {
         RenderBatchInstancedOGL(1, bWireframe);
     }

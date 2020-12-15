@@ -32,7 +32,7 @@ namespace {
                       void resetBudget() noexcept { g_reflectionBudget = 0; }
                       void updateBudget() noexcept { ++g_reflectionBudget; }
         [[nodiscard]] U16  currentEntry() noexcept { return g_reflectionBudget; }
-    };
+    }
 
     namespace RefractionUtil {
         U16 g_refractionBudget = 0;
@@ -41,25 +41,8 @@ namespace {
                       void resetBudget() noexcept { g_refractionBudget = 0; }
                       void updateBudget() noexcept { ++g_refractionBudget;  }
         [[nodiscard]] U16  currentEntry() noexcept { return g_refractionBudget; }
-    };
-
-    [[nodiscard]] U32 getBufferFactor(const RenderStage stage) noexcept {
-        //We only care about the first parameter as it will determine the properties for the rest of the stages
-        switch (stage) {
-            // PrePass, MainPass and OitPass should share buffers
-            case RenderStage::DISPLAY:    return 1u;
-            case RenderStage::SHADOW:     return Config::Lighting::MAX_SHADOW_PASSES;
-            case RenderStage::REFRACTION: return Config::MAX_REFRACTIVE_NODES_IN_VIEW; // planar
-            case RenderStage::REFLECTION: return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + // could be planar
-                                                 Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6; // environment
-            case RenderStage::COUNT:      break;
-        };
-
-        DIVIDE_UNEXPECTED_CALL();
-        return 0u;
     }
-};
-
+}
 
 RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name, const U8 sortKey, const RenderStage passStageFlag, const vectorEASTL<U8>& dependencies, const bool performanceCounters)
     : _context(context),
@@ -74,7 +57,8 @@ RenderPass::RenderPass(RenderPassManager& parent, GFXDevice& context, Str64 name
 }
 
 void RenderPass::initBufferData() {
-    {// Atomic counter for occlusion culling
+    if (_performanceCounters) {
+        // Atomic counter for occlusion culling
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
         bufferDescriptor._elementCount = 1;
@@ -83,97 +67,43 @@ void RenderPass::initBufferData() {
         bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = 5;
         bufferDescriptor._separateReadWrite = true;
-
-        if (_performanceCounters) {
-            bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag));
-            _cullCounter = _context.newSB(bufferDescriptor);
-        }
+        bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag));
+        _cullCounter = _context.newSB(bufferDescriptor);
     }
+
+    ShaderBufferDescriptor bufferDescriptor = {};
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    bufferDescriptor._ringBufferLength = DataBufferRingSize;
+    bufferDescriptor._separateReadWrite = false;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+
     {// Node Transform buffer
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementCount = RenderStagePass::passCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(NodeTransformData);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = DataBufferRingSize;
-        bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-        { 
-            bufferDescriptor._name = Util::StringFormat("NODE_TRANSFORM_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
-            _transformData = _context.newSB(bufferDescriptor);
-        }
+        bufferDescriptor._name = Util::StringFormat("NODE_TRANSFORM_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
+        _transformData = _context.newSB(bufferDescriptor);
     }
     {// Node Material buffer
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
+        bufferDescriptor._elementCount = RenderStagePass::passCountForStage(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
         bufferDescriptor._elementSize = sizeof(NodeMaterialData);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = DataBufferRingSize;
-        bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-        {
-            bufferDescriptor._name = Util::StringFormat("NODE_MATERIAL_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
-            _materialData = _context.newSB(bufferDescriptor);
-        }
+        bufferDescriptor._name = Util::StringFormat("NODE_MATERIAL_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
+        _materialData = _context.newSB(bufferDescriptor);
     }
 
     {// Indirect draw command buffer
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = getBufferFactor(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementCount = RenderStagePass::passCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._ringBufferLength = DataBufferRingSize;
-        bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-        bufferDescriptor._separateReadWrite = false;
-        {
-            bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
-            _cmdBuffer = _context.newSB(bufferDescriptor);
-        }
+        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
+        _cmdBuffer = _context.newSB(bufferDescriptor);
     }
 }
 
 RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePass) const {
     assert(_stageFlag == stagePass._stage);
 
-    U32 cmdBufferIdx = 0u;
-    switch (_stageFlag) {
-        case RenderStage::DISPLAY:
-        case RenderStage::SHADOW:
-            cmdBufferIdx = RenderStagePass::indexForStage(stagePass);
-            break;
-
-        case RenderStage::REFRACTION: { 
-            switch (static_cast<RefractorType>(stagePass._variant)) {
-                case RefractorType::PLANAR:
-                    cmdBufferIdx = stagePass._index;
-                    break;
-                case RefractorType::COUNT:
-                    DIVIDE_UNEXPECTED_CALL();
-                    break;
-            };
-        } break;
-
-        case RenderStage::REFLECTION: {
-            switch (static_cast<ReflectorType>(stagePass._variant)) {
-                case ReflectorType::PLANAR:  //We buffer for worst case scenario anyway (6 passes)
-                case ReflectorType::CUBE:
-                    cmdBufferIdx = stagePass._index * 6 + stagePass._pass;
-                    break;
-                case ReflectorType::COUNT:
-                    DIVIDE_UNEXPECTED_CALL(); 
-                    break;
-            };
-        } break;
-
-        case RenderStage::COUNT:
-            DIVIDE_UNEXPECTED_CALL();
-            break;
-    }
+    const U32 cmdBufferIdx = RenderStagePass::indexForStage(stagePass);
 
     BufferData ret;
     ret._cullCounterBuffer = _cullCounter;
@@ -182,9 +112,10 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
     ret._commandBuffer = _cmdBuffer;
     ret._lastCommandCount = &_lastCmdCount;
     ret._lastNodeCount = &_lastNodeCount;
-    ret._materialData  = { _materialData->queueWriteIndex() , cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS };
-    ret._transformData = { _transformData->queueWriteIndex(), cmdBufferIdx * Config::MAX_VISIBLE_NODES };
-    ret._commandData   = { _cmdBuffer->queueWriteIndex()    , cmdBufferIdx * Config::MAX_VISIBLE_NODES };
+    ret._materialElementOffset  = cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS;
+    ret._transformElementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
+    ret._commandElementOffset   = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
+
     return ret;
 }
 

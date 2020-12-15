@@ -417,14 +417,13 @@ void SubmitRenderCommand(const GLenum primitiveType,
                          const GenericDrawCommand& drawCommand,
                          const bool drawIndexed,
                          const bool useIndirectBuffer,
-                         const GLuint cmdBufferOffset,
                          const GLenum internalFormat,
                          size_t* countData,
                          const bufferPtr indexData)
 {
-
+    
     if (useIndirectBuffer) {
-        SubmitIndirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, cmdBufferOffset + to_U32(drawCommand._commandOffset));
+        SubmitIndirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, drawCommand._commandOffset);
     } else {
         SubmitDirectCommand(drawCommand._cmd, drawCommand._drawCount, primitiveType, internalFormat, drawIndexed, countData, indexData);
     }
@@ -434,7 +433,6 @@ void SubmitRenderCommand(const GLenum primitiveType,
 void SubmitRenderCommand(const GenericDrawCommand& drawCommand,
                          const bool drawIndexed,
                          const bool useIndirectBuffer,
-                         const GLuint cmdBufferOffset,
                          const GLenum internalFormat,
                          size_t* countData,
                          const bufferPtr indexData)
@@ -468,7 +466,7 @@ void SubmitRenderCommand(const GenericDrawCommand& drawCommand,
 
         //----- DRAW ------
         const GLenum primitiveType = glPrimitiveTypeTable[to_base(drawCommand._primitiveType)];
-        SubmitRenderCommand(primitiveType, drawCommand, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
+        SubmitRenderCommand(primitiveType, drawCommand, drawIndexed, useIndirectBuffer, internalFormat, countData, indexData);
         //-----------------
 
         if (runQueries) {
@@ -486,7 +484,7 @@ void SubmitRenderCommand(const GenericDrawCommand& drawCommand,
     }
 
     if (isEnabledOption(drawCommand, CmdRenderOptions::RENDER_WIREFRAME)) {
-        SubmitRenderCommand(GL_LINE_LOOP, drawCommand, drawIndexed, useIndirectBuffer, cmdBufferOffset, internalFormat, countData, indexData);
+        SubmitRenderCommand(GL_LINE_LOOP, drawCommand, drawIndexed, useIndirectBuffer, internalFormat, countData, indexData);
     }
 }
 

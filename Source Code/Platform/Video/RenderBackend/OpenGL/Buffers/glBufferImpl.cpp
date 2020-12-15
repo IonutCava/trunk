@@ -193,14 +193,8 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
 
     bool bound = false;
     if (bindIndex == to_base(ShaderBufferLocation::CMD_BUFFER)) {
-        GLStateTracker& stateTracker = GL_API::getStateTracker();
-        const GLuint newOffset = static_cast<GLuint>(offsetInBytes / sizeof(IndirectDrawCommand));
-
-        bound = stateTracker.setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, bufferID());
-        if (stateTracker._commandBufferOffset != newOffset) {
-            stateTracker._commandBufferOffset = newOffset;
-            bound = true;
-        }
+        GL_API::getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, bufferID());
+        bound = true;
     } else if (SetIfDifferentBindRange(bufferID(), bindIndex, offsetInBytes, rangeInBytes)) {
         glBindBufferRange(_target, bindIndex, bufferID(), offsetInBytes, rangeInBytes);
         bound = true;
