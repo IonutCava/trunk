@@ -315,6 +315,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
         glEnable(static_cast<GLenum>(static_cast<U32>(GL_CLIP_DISTANCE0) + i));
     }
 
+    s_memoryAllocator.init(512 * 1024/*Mb*/ * 1024/*Kb*/);
     s_textureViewCache.init(256);
 
     // FontStash library initialization
@@ -416,7 +417,7 @@ void GL_API::closeRenderingAPI() {
         s_hardwareQueryPool->destroy();
         MemoryManager::DELETE(s_hardwareQueryPool);
     }
-
+    s_memoryAllocator.deallocate();
     g_ContextPool.destroy();
 }
 

@@ -37,74 +37,153 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 namespace GLUtil {
-    class VBO final {
+namespace GLMemory{
+    struct Block
+    {
+        size_t _offset = 0u;
+        size_t _size = 0u;
+        Byte* _ptr = nullptr;
+        GLuint _bufferHandle = 0u;
+        bool _free = true;
+    };
+
+    inline bool operator==(const Block &lhs, const Block &rhs) noexcept {
+        return lhs._bufferHandle == rhs._bufferHandle &&
+               lhs._offset == rhs._offset &&
+               lhs._size == rhs._size &&
+               lhs._free == rhs._free &&
+               lhs._ptr == rhs._ptr;
+    }
+
+    class Chunk final : NonCopyable, NonMovable
+    {
     public:
-        // Allocate VBOs in 16K chunks. This will HIGHLY depend on actual data usage and requires testing.
-        static constexpr U32 MAX_VBO_CHUNK_SIZE_BYTES = 16 * 1024;
-        // nVidia recommended (years ago) to use up to 4 megs per VBO. Use 64 MEG VBOs :D
-        static constexpr U32  MAX_VBO_SIZE_BYTES = 32 * 1024 * 1024;
-        // The total number of available chunks per VBO is easy to figure out
-        static constexpr U32 MAX_VBO_CHUNK_COUNT = MAX_VBO_SIZE_BYTES / MAX_VBO_CHUNK_SIZE_BYTES;
+        explicit Chunk(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask);
+        ~Chunk();
+                      void deallocate(const Block& block);
+        [[nodiscard]] bool allocate(size_t size, const char* name, Block& blockOut);
+        [[nodiscard]] bool isIn(const Block &block) const;
 
-        //keep track of what chunks we are using
-        //for each chunk, keep track how many next chunks are also part of the same allocation
-        std::array<std::pair<bool, U32>, MAX_VBO_CHUNK_COUNT> _chunkUsageState;
+        PROPERTY_RW(BufferStorageMask, storageMask, BufferStorageMask::GL_NONE_BIT);
+        PROPERTY_RW(MapBufferAccessMask, accessMask, MapBufferAccessMask::GL_NONE_BIT);
 
-        static U32 getChunkCountForSize(size_t sizeInBytes) noexcept;
+    protected:
+        vectorEASTL<Block> _blocks;
+        Byte* _ptr = nullptr;
+        size_t _size = 0u;
+        GLuint _bufferHandle = 0u;
+    };
 
-        VBO() noexcept;
-        ~VBO() = default;
+    class ChunkAllocator final : NonCopyable, NonMovable
+    {
+    public:
+        explicit ChunkAllocator(size_t size);
 
-        void freeAll();
-        [[nodiscard]] U32 handle() const noexcept;
-        bool checkChunksAvailability(size_t offset, U32 count, U32& chunksUsedTotal) noexcept;
-
-        bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);
-
-        bool allocateWhole(U32 count, GLenum usage);
-
-        void releaseChunks(size_t offset);
-
-        size_t getMemUsage() noexcept;
+        // if size > mSize, allocate to the next power of 2
+        [[nodiscard]] std::unique_ptr<Chunk> allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask) const;
 
     private:
-        GLuint _handle;
-        GLenum _usage;
-        bool   _filledManually;
+        size_t _size = 0u;
     };
 
-    struct AllocationHandle {
-        explicit AllocationHandle() noexcept
-            : _id(0),
-              _offset(0)
-        {
-        }
+    /**
+     * @brief The AbstractAllocator Let the user to allocate or deallocate some blocks
+     */
+    class AbstractAllocator : NonCopyable, NonMovable
+    {
+    public:
+        AbstractAllocator() = default;
+        virtual ~AbstractAllocator() = default;
 
-        GLuint _id;
-        size_t _offset;
+        virtual Block allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, const char* blockName) = 0;
+        virtual void deallocate(Block &block) = 0;
     };
 
-    bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut);
-    bool releaseVBO(GLuint& handle, size_t& offset);
-    size_t getVBOMemUsage(GLuint handle);
-    U32 getVBOCount() noexcept;
+    class DeviceAllocator final : public AbstractAllocator
+    {
+    public:
+        DeviceAllocator() = default;
+        ~DeviceAllocator() = default;
 
-    void clearVBOs() noexcept;
+        void init(size_t size);
+        [[nodiscard]] Block allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, const char* blockName);
+        void deallocate(Block &block);
+        void deallocate();
 
-    void createAndAllocBuffer(size_t bufferSize,
-                              GLenum usageMask,
-                              GLuint& bufferIdOut,
-                              bufferPtr data,
-                              const char* name = nullptr);
+    private:
+        std::unique_ptr<ChunkAllocator> _chunkAllocator = nullptr;
+        vectorEASTL<std::shared_ptr<Chunk>> _chunks;
+    };
+} // namespace GLMemory
 
-    bufferPtr createAndAllocPersistentBuffer(size_t bufferSize,
-                                             BufferStorageMask storageMask,
-                                             MapBufferAccessMask accessMask,
-                                             GLuint& bufferIdOut,
-                                             bufferPtr data,
-                                             const char* name = nullptr);
+class VBO final {
+public:
+    // Allocate VBOs in 16K chunks. This will HIGHLY depend on actual data usage and requires testing.
+    static constexpr U32 MAX_VBO_CHUNK_SIZE_BYTES = 16 * 1024;
+    // nVidia recommended (years ago) to use up to 4 megs per VBO. Use 64 MEG VBOs :D
+    static constexpr U32  MAX_VBO_SIZE_BYTES = 32 * 1024 * 1024;
+    // The total number of available chunks per VBO is easy to figure out
+    static constexpr U32 MAX_VBO_CHUNK_COUNT = MAX_VBO_SIZE_BYTES / MAX_VBO_CHUNK_SIZE_BYTES;
 
-    void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);
+    //keep track of what chunks we are using
+    //for each chunk, keep track how many next chunks are also part of the same allocation
+    std::array<std::pair<bool, U32>, MAX_VBO_CHUNK_COUNT> _chunkUsageState;
+
+    static U32 getChunkCountForSize(size_t sizeInBytes) noexcept;
+
+    VBO() noexcept;
+    ~VBO() = default;
+
+    void freeAll();
+    [[nodiscard]] U32 handle() const noexcept;
+    bool checkChunksAvailability(size_t offset, U32 count, U32& chunksUsedTotal) noexcept;
+
+    bool allocateChunks(U32 count, GLenum usage, size_t& offsetOut);
+
+    bool allocateWhole(U32 count, GLenum usage);
+
+    void releaseChunks(size_t offset);
+
+    size_t getMemUsage() noexcept;
+
+private:
+    GLuint _handle;
+    GLenum _usage;
+    bool   _filledManually;
+};
+
+struct AllocationHandle {
+    explicit AllocationHandle() noexcept
+        : _id(0),
+          _offset(0)
+    {
+    }
+
+    GLuint _id;
+    size_t _offset;
+};
+
+bool commitVBO(U32 chunkCount, GLenum usage, GLuint& handleOut, size_t& offsetOut);
+bool releaseVBO(GLuint& handle, size_t& offset);
+size_t getVBOMemUsage(GLuint handle);
+U32 getVBOCount() noexcept;
+
+void clearVBOs() noexcept;
+
+void createAndAllocBuffer(size_t bufferSize,
+                          GLenum usageMask,
+                          GLuint& bufferIdOut,
+                          bufferPtr data,
+                          const char* name = nullptr);
+
+Byte* createAndAllocPersistentBuffer(size_t bufferSize,
+                                     BufferStorageMask storageMask,
+                                     MapBufferAccessMask accessMask,
+                                     GLuint& bufferIdOut,
+                                     bufferPtr data,
+                                     const char* name = nullptr);
+
+void freeBuffer(GLuint &bufferId, bufferPtr mappedPtr = nullptr);
 
 }; //namespace GLUtil
 }; //namespace Divide

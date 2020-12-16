@@ -243,7 +243,10 @@ constexpr U32 powerOfTwo(U32 X) noexcept {
     return r;
 }
 
-constexpr bool isPowerOfTwo(const U32 x) noexcept {
+template<typename T,
+typename = typename std::enable_if<std::is_integral<T>::value>::type,
+typename = typename std::enable_if<std::is_unsigned<T>::value>::type>
+constexpr bool isPowerOfTwo(const T x) noexcept {
     return !(x == 0) && !(x & (x - 1));
 }
 

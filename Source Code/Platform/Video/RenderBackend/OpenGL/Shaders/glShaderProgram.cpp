@@ -21,62 +21,56 @@
 namespace Divide {
 
 namespace {
+    constexpr size_t g_validationBufferMaxSize = 64 * 1024;
+
     //ref: https://stackoverflow.com/questions/14858017/using-boost-wave
-    class custom_directives_hooks : public boost::wave::context_policies::default_preprocessing_hooks
+    class custom_directives_hooks final : public boost::wave::context_policies::default_preprocessing_hooks
     {
     public:
         template <typename ContextT, typename ContainerT>
-        bool found_unknown_directive(ContextT const& ctx, ContainerT const& line, ContainerT& pending)
+        bool found_unknown_directive(ContextT const& /*ctx*/, ContainerT const& line, ContainerT& pending)
         {
-            namespace wave = boost::wave;
+            auto itBegin = cbegin(line);
+            const auto itEnd = cend(line);
 
-            using iterator_type = typename ContainerT::const_iterator;
-            iterator_type it = line.begin();
-            const wave::token_id id = wave::util::impl::skip_whitespace(it, line.end());
-
-            if (id != wave::T_IDENTIFIER) {
-                return false;       // nothing we could do
+            if (boost::wave::util::impl::skip_whitespace(itBegin, itEnd) == boost::wave::T_IDENTIFIER) {
+                const auto& temp = (*itBegin).get_value();
+                if (temp == "version" || temp == "extension") {
+                    // handle #version and #extension directives
+                    copy(cbegin(line), itEnd, stringAlg::back_inserter(pending));
+                    return true;
+                }
             }
 
-            if ((*it).get_value() == "version" || (*it).get_value() == "extension")
-            {
-                // handle #version and #extension directives
-                std::copy(line.begin(), line.end(), std::back_inserter(pending));
-                return true;
-            }
-
-            return false;           // unknown directive
+            return false;  // unknown directive
         }
     };
 
-    stringImpl preProcess(std::string input, const char* name) {
-        using token_type = boost::wave::cpplexer::lex_token<>;
-        using lex_iterator_type = boost::wave::cpplexer::lex_iterator<token_type>;
-        using context_type=  boost::wave::context<std::string::iterator, lex_iterator_type,
-                                                  boost::wave::iteration_context_policies::load_file_to_string,
-                                                  custom_directives_hooks>;
+    stringImpl preProcess(const stringImpl& input, const char* name) {
+        using ContextType = boost::wave::context<stringImpl::const_iterator,
+                                                 boost::wave::cpplexer::lex_iterator<boost::wave::cpplexer::lex_token<>>,
+                                                 boost::wave::iteration_context_policies::load_file_to_string,
+                                                 custom_directives_hooks>;
 
-        context_type ctx(input.begin(), input.end(), name);
+        ContextType ctx(begin(input), end(input), name);
 
         ctx.set_language(enable_long_long(ctx.get_language()));
         ctx.set_language(enable_preserve_comments(ctx.get_language()));
         ctx.set_language(enable_prefer_pp_numbers(ctx.get_language()));
         ctx.set_language(enable_emit_line_directives(ctx.get_language(), false));
 
-        context_type::iterator_type first = ctx.begin();
-        const context_type::iterator_type last = ctx.end();
-
         stringImpl ret;
-        while (first != last) {
-            ret.append((*first).get_value().c_str());
-            ++first;
+        for (const auto& it : ctx) {
+            ret.append(it.get_value().c_str());
         }
         return ret;
     }
-    size_t g_validationBufferMaxSize = 4096 * 16;
-    UpdateListener s_fileWatcherListener([](const std::string_view atomName, const FileUpdateEvent evt) {
-        glShaderProgram::OnAtomChange(atomName, evt);
-    });
+
+    UpdateListener s_fileWatcherListener(
+        [](const std::string_view atomName, const FileUpdateEvent evt) {
+            glShaderProgram::OnAtomChange(atomName, evt);
+        }
+    );
 
     struct BinaryDumpEntry
     {
@@ -84,9 +78,10 @@ namespace {
         GLuint _handle = 0u;
     };
 
+    BinaryDumpEntry g_binaryOutputCache;
+
     moodycamel::BlockingConcurrentQueue<BinaryDumpEntry> g_ShaderBinaryDumpQueue;
-    std::array<BinaryDumpEntry, 2> g_outputCache;
-};
+}
 
 void glShaderProgram::InitStaticData() {
     const ResourcePath locPrefix = Paths::g_assetsLocation + Paths::g_shadersLocation + Paths::Shaders::GLSL::g_parentShaderLoc;
@@ -142,15 +137,12 @@ void glShaderProgram::OnShutdown() {
 void glShaderProgram::Idle(PlatformContext& platformContext) {
     OPTICK_EVENT();
 
-    const size_t count = g_ShaderBinaryDumpQueue.try_dequeue_bulk(begin(g_outputCache), g_outputCache.size());
-    if (count > 0) {
-        Start(*CreateTask(platformContext.taskPool(TaskPoolType::HIGH_PRIORITY),
-            [cache = g_outputCache, count](const Task & /*parent*/) {
-              for (size_t i = 0; i < count; ++i) {
-                  if (!glShader::DumpBinary(cache[i]._handle, cache[i]._name)) {
-                      // Skip to next one?
-                      NOP();
-                  }
+    if (g_ShaderBinaryDumpQueue.try_dequeue(g_binaryOutputCache)) {
+        Start(*CreateTask(platformContext.taskPool(TaskPoolType::LOW_PRIORITY),
+            [cache = g_binaryOutputCache, &platformContext](const Task & /*parent*/) {
+              if (!glShader::DumpBinary(cache._handle, cache._name)) {
+                  // Move on to the next one
+                  Idle(platformContext);
               }
         }));
     }

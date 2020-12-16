@@ -8,6 +8,182 @@
 namespace Divide {
 namespace GLUtil {
 
+namespace GLMemory {
+namespace {
+    constexpr bool g_useBlockAllocator = false;
+}
+
+Chunk::Chunk(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask) 
+    : _storageMask(storageMask),
+      _accessMask(accessMask),
+      _size(size)
+{
+    if_constexpr (g_useBlockAllocator) {
+        static U32 g_bufferIndex = 0u;
+
+        glCreateBuffers(1, &_bufferHandle);
+        if_constexpr(Config::ENABLE_GPU_VALIDATION) {
+            glObjectLabel(GL_BUFFER,
+                _bufferHandle,
+                -1,
+                Util::StringFormat("DVD_BUFFER_CHUNK_%d", g_bufferIndex++).c_str());
+        }
+        assert(_bufferHandle != 0 && "GLMemory chunk allocation error: buffer creation failed");
+        glNamedBufferStorage(_bufferHandle, size, nullptr, storageMask);
+        _ptr = (Byte*)glMapNamedBufferRange(_bufferHandle, 0, _size, accessMask);
+    } else {
+        _ptr = nullptr;
+    }
+
+    Block block;
+    block._free = true;
+    block._offset = 0;
+    block._size = size;
+    block._bufferHandle = _bufferHandle;
+    
+    _blocks.emplace_back(block);
+}
+
+Chunk::~Chunk()
+{
+    if_constexpr(g_useBlockAllocator) {
+        if (_bufferHandle > 0u) {
+            glDeleteBuffers(1, &_bufferHandle);
+        }
+    } else {
+        const size_t count = _blocks.size();
+        for (size_t i = 0; i < count; ++i) {
+            if (_blocks[i]._bufferHandle > 0u) {
+                glDeleteBuffers(1, &_blocks[i]._bufferHandle);
+            }
+        }
+    }
+}
+
+void Chunk::deallocate(const Block &block) {
+    Block* const blockIt = eastl::find(begin(_blocks), end(_blocks), block);
+    assert(blockIt != cend(_blocks));
+    blockIt->_free = true;
+
+    if_constexpr(!g_useBlockAllocator) {
+        if (blockIt->_bufferHandle > 0u) {
+            glDeleteBuffers(1, &blockIt->_bufferHandle);
+            blockIt->_bufferHandle = 0u;
+        }
+    }
+}
+
+bool Chunk::allocate(const size_t size, const char* name, Block &blockOut) {
+    if (size > _size) {
+        return false;
+    }
+
+    const size_t count = _blocks.size();
+    for (size_t i = 0; i < count; ++i) {
+        Block& block = _blocks[i];
+        if (block._free) {
+            const size_t newSize = block._size;
+
+            if (newSize >= size) {
+                block._size = newSize;
+
+                if_constexpr(g_useBlockAllocator) {
+                    block._ptr = _ptr + block._offset;
+                } else {
+                    block._ptr = createAndAllocPersistentBuffer(size, storageMask(), accessMask(), block._bufferHandle, nullptr, name);
+                }
+
+                if (block._size == size) {
+                    block._free = false;
+                    blockOut = block;
+                    return true;
+                }
+
+                Block nextBlock;
+                nextBlock._free = true;
+                nextBlock._offset = g_useBlockAllocator ? block._offset + size : 0u;
+                nextBlock._bufferHandle = _bufferHandle;
+                nextBlock._size = block._size - size;
+
+                _blocks.emplace_back(nextBlock);
+
+                _blocks[i]._size = size;
+                _blocks[i]._free = false;
+                blockOut = _blocks[i];
+
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Chunk::isIn(const Block &block) const {
+    return eastl::find(begin(_blocks), end(_blocks), block) != cend(_blocks);
+}
+
+bool IsPowerOfTwo(const size_t size) {
+    size_t mask = 0u;
+    const size_t power = to_size(std::log2(size));
+
+    for (size_t i = 0; i < power; ++i) {
+        mask += to_size(1 << i);
+    }
+
+    return !(size & mask);
+}
+
+ChunkAllocator::ChunkAllocator(const size_t size)
+    : _size(size) 
+{
+    assert(isPowerOfTwo(size));
+}
+
+std::unique_ptr<Chunk> ChunkAllocator::allocate(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask) const {
+    const size_t power = to_size(std::log2(size) + 1);
+    return std::make_unique<Chunk>((size > _size) ? to_size(1 << power) : _size, storageMask, accessMask);
+}
+
+void DeviceAllocator::init(size_t size) {
+    deallocate();
+
+    assert(size > 0u);
+    _chunkAllocator = std::make_unique<ChunkAllocator>(size);
+}
+
+Block DeviceAllocator::allocate(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask, const char* blockName) {
+    Block block;
+    for (auto &chunk : _chunks) {
+        if (chunk->storageMask() == storageMask && chunk->accessMask() == accessMask) {
+            if (chunk->allocate(size, blockName, block)) {
+                return block;
+            }
+        }
+    }
+
+    _chunks.emplace_back(_chunkAllocator->allocate(size, storageMask, accessMask));
+    if(!_chunks.back()->allocate(size, blockName, block)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
+    return block;
+}
+
+void DeviceAllocator::deallocate(Block &block) {
+    for (auto &chunk : _chunks) {
+        if (chunk->isIn(block)) {
+            chunk->deallocate(block);
+            return;
+        }
+    }
+
+    DIVIDE_UNEXPECTED_CALL_MSG("DeviceAllocator::deallocate error: unable to deallocate the block");
+}
+
+void DeviceAllocator::deallocate() {
+    _chunks.clear();
+}
+} // namespace GLMemory
 
 static vectorEASTL<VBO> g_globalVBOs;
 
@@ -173,12 +349,12 @@ void clearVBOs() noexcept {
     g_globalVBOs.clear();
 }
 
-bufferPtr createAndAllocPersistentBuffer(const size_t bufferSize,
-                                         const BufferStorageMask storageMask,
-                                         const MapBufferAccessMask accessMask,
-                                         GLuint& bufferIdOut,
-                                         bufferPtr const data,
-                                         const char* name)
+Byte* createAndAllocPersistentBuffer(const size_t bufferSize,
+                                     const BufferStorageMask storageMask,
+                                     const MapBufferAccessMask accessMask,
+                                     GLuint& bufferIdOut,
+                                     bufferPtr const data,
+                                     const char* name)
 {
     glCreateBuffers(1, &bufferIdOut);
     if_constexpr(Config::ENABLE_GPU_VALIDATION) {
@@ -192,7 +368,7 @@ bufferPtr createAndAllocPersistentBuffer(const size_t bufferSize,
     assert(bufferIdOut != 0 && "GLUtil::allocPersistentBuffer error: buffer creation failed");
 
     glNamedBufferStorage(bufferIdOut, bufferSize, data, storageMask);
-    const bufferPtr ptr = glMapNamedBufferRange(bufferIdOut, 0, bufferSize, accessMask);
+    Byte* ptr = (Byte*)glMapNamedBufferRange(bufferIdOut, 0, bufferSize, accessMask);
     assert(ptr != nullptr);
     return ptr;
 }

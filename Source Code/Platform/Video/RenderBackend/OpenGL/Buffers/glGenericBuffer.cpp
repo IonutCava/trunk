@@ -37,7 +37,7 @@ glGenericBuffer::~glGenericBuffer()
 }
 
 GLuint glGenericBuffer::bufferHandle() const {
-    return _buffer->bufferID();
+    return _buffer->memoryBlock()._bufferHandle;
 }
 
 void glGenericBuffer::writeData(const GLuint elementCount,

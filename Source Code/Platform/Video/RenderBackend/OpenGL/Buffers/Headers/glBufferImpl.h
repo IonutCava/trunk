@@ -33,6 +33,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GL_BUFFER_IMPL_H_
 #define _GL_BUFFER_IMPL_H_
 
+#include "glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 namespace Divide {
 
@@ -89,15 +90,14 @@ public:
     static void CleanMemory() noexcept;
 
 public:
-    PROPERTY_R(GLuint, bufferID, 0);
     PROPERTY_R(size_t, elementSize, 0);
-    PROPERTY_R(size_t, alignedSize, 0);
     PROPERTY_R(GLenum, target, GL_NONE);
     PROPERTY_R(bool, unsynced, false);
     PROPERTY_R(bool, useExplicitFlush, false);
     PROPERTY_R(BufferUpdateFrequency, updateFrequency, BufferUpdateFrequency::COUNT);
     PROPERTY_R(BufferUpdateUsage, updateUsage, BufferUpdateUsage::COUNT);
     PROPERTY_R(GLenum, usage, GL_NONE);
+    PROPERTY_R(GLUtil::GLMemory::Block, memoryBlock);
 
 protected:
     void writeOrClearData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data, bool zeroMem);
@@ -106,7 +106,6 @@ protected:
     GFXDevice& _context;
 
     std::atomic_int _flushQueueSize;
-    Byte*  _mappedBuffer = nullptr;
     glBufferLockManager* _lockManager = nullptr;
     moodycamel::BlockingConcurrentQueue<BufferMapRange> _flushQueue;
 };

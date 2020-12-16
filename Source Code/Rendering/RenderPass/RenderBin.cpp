@@ -11,22 +11,16 @@
 
 namespace Divide {
 
-namespace {
-    constexpr U32 AVERAGE_BIN_SIZE = 127;
-}
-
 RenderBin::RenderBin(const RenderBinType rbType, const RenderStage stage) 
     : _rbType(rbType),
       _stage(stage)
 
 {
-    _renderBinStack.reserve(AVERAGE_BIN_SIZE);
+    std::atomic_init(&_renderBinIndex, 0u);
 }
 
 const RenderBinItem& RenderBin::getItem(const U16 index) const {
-    SharedLock<SharedMutex> r_lock(_renderBinLock);
-
-    assert(index < _renderBinStack.size());
+    assert(index < _renderBinIndex.load());
     return _renderBinStack[index];
 }
 
@@ -35,13 +29,12 @@ void RenderBin::sort(const RenderingOrder renderOrder) {
 
     switch (renderOrder) {
         case RenderingOrder::BY_STATE: {
-            UniqueLock<SharedMutex> w_lock(_renderBinLock);
             // Sorting opaque items is a 3 step process:
             // 1: sort by shaders
             // 2: if the shader is identical, sort by state hash
             // 3: if shader is identical and state hash is identical, sort by albedo ID
             eastl::sort(begin(_renderBinStack),
-                        end(_renderBinStack),   
+                        begin(_renderBinStack) + getBinSize(),
                         [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
                             // Sort by shader in all states The sort key is the shader id (for now)
                             if (a._shaderKey != b._shaderKey) return a._shaderKey < b._shaderKey;
@@ -56,25 +49,22 @@ void RenderBin::sort(const RenderingOrder renderOrder) {
                         });
         } break;
         case RenderingOrder::BACK_TO_FRONT: {
-            UniqueLock<SharedMutex> w_lock(_renderBinLock);
             eastl::sort(begin(_renderBinStack),
-                        end(_renderBinStack),
+                        begin(_renderBinStack) + getBinSize(),
                         [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
                             return a._distanceToCameraSq > b._distanceToCameraSq;
                         });
         } break;
         case RenderingOrder::FRONT_TO_BACK: {
-            UniqueLock<SharedMutex> w_lock(_renderBinLock);
             eastl::sort(begin(_renderBinStack),
-                        end(_renderBinStack),
+                        begin(_renderBinStack) + getBinSize(),
                         [](const RenderBinItem& a, const RenderBinItem& b) -> bool {
                             return a._distanceToCameraSq < b._distanceToCameraSq;
                         });
         } break;
         case RenderingOrder::WATER_FIRST: {
-            UniqueLock<SharedMutex> w_lock(_renderBinLock);
             eastl::sort(begin(_renderBinStack),
-                        end(_renderBinStack),
+                        begin(_renderBinStack) + getBinSize(),
                         [](const RenderBinItem& a, const RenderBinItem&) -> bool {
                             return a._renderable->getSGN()->getNode().type() == SceneNodeType::TYPE_WATER;
                         });
@@ -91,29 +81,21 @@ void RenderBin::sort(const RenderingOrder renderOrder) {
 U16 RenderBin::getSortedNodes(SortedQueue& nodes) const {
     OPTICK_EVENT();
 
-    nodes.resize(0);
-    nodes.reserve(getBinSize());
-    {
-        SharedLock<SharedMutex> r_lock(_renderBinLock);
-        for (const RenderBinItem& item : _renderBinStack) {
-            nodes.emplace_back(item._renderable);
-        }
+    const U16 binSize = getBinSize();
+
+    nodes.resize(binSize);
+    for (U16 i = 0; i < binSize; ++i) {
+        nodes[i] = _renderBinStack[i]._renderable;
     }
 
-    return to_U16(getBinSize());
+    return to_U16(binSize);
 }
 
 void RenderBin::refresh() {
-    UniqueLock<SharedMutex> w_lock(_renderBinLock);
-    _renderBinStack.resize(0);
-    _renderBinStack.reserve(AVERAGE_BIN_SIZE);
+    _renderBinIndex.store(0u);
 }
 
-void RenderBin::addNodeToBin(const SceneGraphNode* sgn,
-                             const RenderPackage& pkg,
-                             const RenderStagePass& renderStagePass,
-                             const F32 minDistToCameraSq,
-                             const bool lock)
+void RenderBin::addNodeToBin(const SceneGraphNode* sgn, const RenderStagePass& renderStagePass, const F32 minDistToCameraSq)
 {
     RenderingComponent* const rComp = sgn->get<RenderingComponent>();
 
@@ -130,29 +112,27 @@ void RenderBin::addNodeToBin(const SceneGraphNode* sgn,
         nodeMaterial->getSortKeys(renderStagePass, item._shaderKey, item._textureKey);
     }
 
-    item._dataIndex = pkg.lastDataIndex();
-
-    ScopedLock<SharedMutex> w_lock(_renderBinLock, lock, false);
-    _renderBinStack.push_back(item);
+    _renderBinStack[_renderBinIndex.fetch_add(1)] = item;
 }
 
 void RenderBin::populateRenderQueue(const RenderStagePass stagePass, RenderQueuePackages& queueInOut) const {
     OPTICK_EVENT();
 
-    for (const RenderBinItem& item : _renderBinStack) {
-        queueInOut.push_back(&item._renderable->getDrawPackage(stagePass));
+    const U16 binSize = getBinSize();
+    for (U16 i = 0; i < binSize; ++i) {
+        queueInOut.push_back(&_renderBinStack[i]._renderable->getDrawPackage(stagePass));
     }
 }
 
 void RenderBin::postRender(const SceneRenderState& renderState, const RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut) {
-    for (const RenderBinItem& item : _renderBinStack) {
-        Attorney::RenderingCompRenderBin::postRender(item._renderable, renderState, stagePass, bufferInOut);
+    const U16 binSize = getBinSize();
+    for (U16 i = 0; i < binSize; ++i) {
+        Attorney::RenderingCompRenderBin::postRender(_renderBinStack[i]._renderable, renderState, stagePass, bufferInOut);
     }
 }
 
 U16 RenderBin::getBinSize() const {
-    SharedLock<SharedMutex> r_lock(_renderBinLock);
-    return to_U16(_renderBinStack.size());
+    return _renderBinIndex.load();
 }
 
 } // namespace Divide

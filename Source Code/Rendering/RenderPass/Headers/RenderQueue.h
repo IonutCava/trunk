@@ -60,7 +60,6 @@ class RenderQueue final : public KernelComponent {
     void sort(RenderStagePass stagePass, RenderBinType targetBinType = RenderBinType::RBT_COUNT, RenderingOrder renderOrder = RenderingOrder::COUNT);
     void refresh(RenderBinType targetBinType = RenderBinType::RBT_COUNT);
     void addNodeToQueue(const SceneGraphNode* sgn, RenderStagePass stagePass, F32 minDistToCameraSq, RenderBinType targetBinType = RenderBinType::RBT_COUNT);
-    void addNodeToQueueLocked(const SceneGraphNode* sgn, RenderStagePass stagePass, F32 minDistToCameraSq, RenderBinType targetBinType = RenderBinType::RBT_COUNT);
     [[nodiscard]] U16 getRenderQueueStackSize() const;
 
     [[nodiscard]] RenderBin* getBin(const RenderBinType rbType) noexcept {
@@ -78,12 +77,6 @@ class RenderQueue final : public KernelComponent {
     U16 getSortedQueues(const vectorEASTL<RenderBinType>& binTypes, RenderBin::SortedQueues& queuesOut) const;
 
   private:
-
-    void addNodeToQueueInternal(const SceneGraphNode* sgn,
-                                RenderStagePass stagePass,
-                                F32 minDistToCameraSq,
-                                RenderBinType targetBinType,
-                                bool lockBins);
 
     [[nodiscard]] RenderingOrder getSortOrder(RenderStagePass stagePass, RenderBinType rbType) const;
 

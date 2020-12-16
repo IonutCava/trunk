@@ -47,6 +47,9 @@ GLUtil::glTextureViewCache GL_API::s_textureViewCache = {};
 GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool = {};
 eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueue;
 
+//1GB for buffers?
+GLUtil::GLMemory::DeviceAllocator GL_API::s_memoryAllocator;
+
 GL_API::GL_API(GFXDevice& context, const bool glES)
     : RenderAPIWrapper(),
       _context(context),
@@ -902,6 +905,7 @@ bool GL_API::DeInitGLSW() {
     // Shutdown GLSW
     return glswShutdown() == 1;
 }
+
 /// Try to find the requested font in the font cache. Load on cache miss.
 I32 GL_API::getFont(const Str64& fontName) {
     if (_fontCache.first.compare(fontName) != 0) {

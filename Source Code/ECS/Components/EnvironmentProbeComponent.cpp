@@ -123,10 +123,13 @@ void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
         std::array<Camera*, 6> cameras = {};
         std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
 
+        // Probes come after reflective nodes in buffer positions and array layers for management reasons (rate of update and so on)
+        const U16 probeIndex = Config::MAX_REFLECTIVE_NODES_IN_VIEW + rtLayerIndex();
+
         RenderPassParams params = {};
         params._target = SceneEnvironmentProbePool::ReflectionTarget()._targetID;
         params._sourceNode = findNodeToIgnore();
-        params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), rtLayerIndex());
+        params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), probeIndex);
         params._shadowMappingEnabled = false;
 
         _context.gfx().generateCubeMap(params,

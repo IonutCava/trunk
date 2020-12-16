@@ -56,11 +56,10 @@ namespace GFX {
 
 struct RenderBinItem {
     RenderingComponent* _renderable = nullptr;
-    size_t _stateHash = 0;
+    size_t _stateHash = 0u;
     I64 _shaderKey = -1;
     I32 _textureKey = -1;
-    NodeDataIdx _dataIndex = {0u, 0u};///< Node Data entry
-    F32 _distanceToCameraSq = 0.0f;
+    F32 _distanceToCameraSq = 0.f;
 };
 
 enum class RenderingOrder : U8 {
@@ -98,7 +97,7 @@ using RenderQueuePackages = vectorEASTLFast<RenderPackage*>;
 /// This class contains a list of "RenderBinItem"'s and stores them sorted depending on designation
 class RenderBin {
    public:
-    using RenderBinStack = vectorEASTL<RenderBinItem>;
+    using RenderBinStack = eastl::array<RenderBinItem, Config::MAX_VISIBLE_NODES>;
     using SortedQueue = vectorEASTL<RenderingComponent*>;
     using SortedQueues = std::array<SortedQueue, RenderBinType::RBT_COUNT>;
 
@@ -112,11 +111,7 @@ class RenderBin {
     void postRender(const SceneRenderState& renderState, RenderStagePass stagePass, GFX::CommandBuffer& bufferInOut);
     void refresh();
 
-    void addNodeToBin(const SceneGraphNode* sgn,
-                      const RenderPackage& pkg,
-                      const RenderStagePass& renderStagePass,
-                      F32 minDistToCameraSq,
-                      bool lock);
+    void addNodeToBin(const SceneGraphNode* sgn, const RenderStagePass& renderStagePass, F32 minDistToCameraSq);
 
     [[nodiscard]] const RenderBinItem& getItem(U16 index) const;
 
@@ -132,8 +127,8 @@ class RenderBin {
     const RenderBinType _rbType;
     const RenderStage _stage;
 
-    mutable SharedMutex _renderBinLock;
     RenderBinStack _renderBinStack{};
+    std::atomic_ushort _renderBinIndex;
 };
 
 };  // namespace Divide

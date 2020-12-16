@@ -317,6 +317,8 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
     const SceneRenderState& sceneRenderState = _parent.parent().sceneManager()->getActiveScene().renderState();
     const Camera& cam = *params._camera;
 
+    _renderQueue.refresh();
+
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(nodes.size());
     descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
@@ -328,19 +330,12 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
             assert(node._materialReady);
             RenderingComponent * rComp = node._node->get<RenderingComponent>();
             Attorney::RenderingCompRenderPass::prepareDrawPackage(*rComp, cam, sceneRenderState, stagePass, true);
+            _renderQueue.addNodeToQueue(node._node, stagePass, node._distanceToCameraSq);
         }
     };
 
     parallel_for(_parent.parent().platformContext(), descriptor);
 
-    _renderQueue.refresh();
-    const size_t nodeCount = nodes.size();
-    for (size_t i = 0; i < nodeCount; ++i) {
-        const VisibleNode& node = nodes.node(i);
-        _renderQueue.addNodeToQueueLocked(node._node, stagePass, node._distanceToCameraSq);
-    }
-
-    // Sort all bins
     _renderQueue.sort(stagePass);
 
     _renderQueuePackages.resize(0);

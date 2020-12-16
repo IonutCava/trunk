@@ -37,6 +37,7 @@
 #include "glIMPrimitive.h"
 #include "GLStateTracker.h"
 #include "Platform/Video/Headers/IMPrimitive.h"
+#include "Platform/Video/RenderBackend/OpenGL/Buffers/Headers/glMemoryManager.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/PixelBuffer/Headers/glPixelBuffer.h"
 #include "Platform/Video/RenderBackend/OpenGL/Buffers/VertexBuffer/Headers/glVAOPool.h"
 #include "Platform/Video/RenderBackend/OpenGL/Shaders/Headers/glShader.h"
@@ -146,6 +147,7 @@ protected:
 
 public:
     static GLStateTracker& getStateTracker() noexcept;
+    static GLUtil::GLMemory::DeviceAllocator& getMemoryAllocator() noexcept;
 
     static bool MakeTexturesResidentInternal(SamplerAddress address);
     static bool MakeTexturesNonResidentInternal(SamplerAddress address);
@@ -252,6 +254,7 @@ private:
     static SharedMutex s_samplerMapLock;
     static SamplerObjectMap s_samplerMap;
     static GLStateTracker  s_stateTracker;
+    static GLUtil::GLMemory::DeviceAllocator s_memoryAllocator;
 
     static GLUtil::glTextureViewCache s_textureViewCache;
 

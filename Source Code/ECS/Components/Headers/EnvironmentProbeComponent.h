@@ -77,7 +77,7 @@ public:
     //gets rendered that has this probe as the nearest one
     void setDirty() noexcept { _dirty = true; }
 
-PROPERTY_R_IW(U16, rtLayerIndex, 0u);
+    PROPERTY_R_IW(U16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
 
 protected:

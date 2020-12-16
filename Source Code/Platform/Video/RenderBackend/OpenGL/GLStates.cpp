@@ -34,6 +34,10 @@ GLStateTracker& GL_API::getStateTracker() noexcept {
     return s_stateTracker;
 }
 
+GLUtil::GLMemory::DeviceAllocator& GL_API::getMemoryAllocator() noexcept {
+    return s_memoryAllocator;
+}
+
 /// Reset as much of the GL default state as possible within the limitations given
 void GL_API::clearStates(const DisplayWindow& window, GLStateTracker& stateTracker, const bool global) const {
     if (global) {

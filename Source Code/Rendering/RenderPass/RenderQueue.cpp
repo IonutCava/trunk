@@ -137,30 +137,20 @@ RenderBin* RenderQueue::getBinForNode(const SceneGraphNode* node, const Material
     return nullptr;
 }
 
-void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
-    addNodeToQueueInternal(sgn, stagePass, minDistToCameraSq, targetBinType, true);
-}
-
-void RenderQueue::addNodeToQueueLocked(const SceneGraphNode* sgn, const RenderStagePass stagePass, const F32 minDistToCameraSq, const RenderBinType targetBinType) {
-    addNodeToQueueInternal(sgn, stagePass, minDistToCameraSq, targetBinType, false);
-}
-
-void RenderQueue::addNodeToQueueInternal(const SceneGraphNode* sgn,
-                                         const RenderStagePass stagePass,
-                                         const F32 minDistToCameraSq,
-                                         const RenderBinType targetBinType,
-                                         const bool lockBins)
+void RenderQueue::addNodeToQueue(const SceneGraphNode* sgn,
+                                 const RenderStagePass stagePass,
+                                 const F32 minDistToCameraSq,
+                                 const RenderBinType targetBinType)
 {
     RenderingComponent* const renderingCmp = sgn->get<RenderingComponent>();
     // We need a rendering component to render the node
     assert(renderingCmp != nullptr);
-    const RenderPackage& pkg = renderingCmp->getDrawPackage(stagePass);
-    if (!pkg.empty()) {
+    if (!renderingCmp->getDrawPackage(stagePass).empty()) {
         RenderBin* rb = getBinForNode(sgn, renderingCmp->getMaterialInstance());
         assert(rb != nullptr);
 
         if (targetBinType._value == RenderBinType::RBT_COUNT || rb->getType() == targetBinType) {
-            rb->addNodeToBin(sgn, pkg, stagePass, minDistToCameraSq, lockBins);
+            rb->addNodeToBin(sgn, stagePass, minDistToCameraSq);
         }
     }
 }
