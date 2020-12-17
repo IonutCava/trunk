@@ -289,7 +289,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     heightMapTexture.assetName(ResourcePath{ terrainDescriptor->getVariable("heightfieldTex") });
 
     TextureDescriptor heightMapDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_SHORT);
-    heightMapDescriptor.autoMipMaps(false);
+    heightMapDescriptor.autoMipMaps(true);
     heightMapTexture.propertyDescriptor(heightMapDescriptor);
     heightMapTexture.flag(true);
 
