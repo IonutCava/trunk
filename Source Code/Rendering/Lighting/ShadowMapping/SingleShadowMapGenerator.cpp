@@ -263,12 +263,6 @@ void SingleShadowMapGenerator::postRender(const SpotLightComponent& light, GFX::
 
         EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
-
-    GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
-    computeMipMapsCommand._texture = shadowAtt.texture().get();
-    computeMipMapsCommand._layerRange = { layerOffset, layerCount };
-    computeMipMapsCommand._defer = false;
-    EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }
 
 void SingleShadowMapGenerator::updateMSAASampleCount(const U8 sampleCount) {

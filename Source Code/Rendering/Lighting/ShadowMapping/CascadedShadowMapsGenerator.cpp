@@ -422,12 +422,18 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
         beginRenderPassCmd._target = _blurBuffer._targetID;
         beginRenderPassCmd._name = "DO_CSM_BLUR_PASS_HORIZONTAL";
 
+        const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
+        TextureData texData = shadowAtt.texture()->data();
+
+        GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+        computeMipMapsCommand._texture = shadowAtt.texture().get();
+        computeMipMapsCommand._clearOnly = true;
+        EnqueueCommand(bufferInOut, computeMipMapsCommand);
+
         EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
         EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _blurPipeline });
 
-        const auto& shadowAtt = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0);
-        TextureData texData = shadowAtt.texture()->data();
         descriptorSetCmd._set._textureData.add({ texData, shadowAtt.samplerHash(),TextureUsage::UNIT0 });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -463,12 +469,6 @@ void CascadedShadowMapsGenerator::postRender(const DirectionalLightComponent& li
 
         EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
-
-    GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
-    computeMipMapsCommand._texture = shadowMapRT.getAttachment(RTAttachmentType::Colour, 0).texture().get();
-    computeMipMapsCommand._layerRange = { light.getShadowOffset(), to_U16(light.csmSplitCount()) };
-    computeMipMapsCommand._defer = false;
-    EnqueueCommand(bufferInOut, computeMipMapsCommand);
 }
 
 void CascadedShadowMapsGenerator::updateMSAASampleCount(const U8 sampleCount) {

@@ -302,6 +302,7 @@ BEGIN_COMMAND(ComputeMipMapsCommand, CommandType::COMPUTE_MIPMAPS);
     vec2<U16> _layerRange = { 0u, 1u };
     vec2<U16> _mipRange = { 0u, 0u };
     bool _defer = true;
+    bool _clearOnly = false;
 END_COMMAND(ComputeMipMapsCommand);
 
 BEGIN_COMMAND(SetScissorCommand, CommandType::SET_SCISSOR);

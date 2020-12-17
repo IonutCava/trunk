@@ -103,6 +103,7 @@ namespace Divide {
                               GLenum format);
         /// Bind multiple textures specified by an array of handles and an offset unit
         bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType texturesType, GLuint* textureHandles, GLuint* samplerHandles);
+        bool bindTexturesNoMipMap(GLushort unitOffset, GLuint textureCount, TextureType texturesType, GLuint* textureHandles, GLuint* samplerHandles);
 
         void setStateBlock(size_t stateBlockHash);
 
@@ -150,7 +151,9 @@ namespace Divide {
 
         void getActiveViewport(GLint* vp) const;
 
-        static void ProcessMipMapQueue(GLuint textureCount, GLuint* textureHandles);
+        static void ProcessMipMapQueue(GLuint textureCount, const GLuint* textureHandles);
+        static void ValidateBindQueue(GLuint textureCount, const GLuint* textureHandles);
+
       public:
         RenderStateBlock _activeState{};
 

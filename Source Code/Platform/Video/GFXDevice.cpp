@@ -1622,6 +1622,11 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
         EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
 
+        GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+        computeMipMapsCommand._texture = att.texture().get();
+        computeMipMapsCommand._clearOnly = true;
+        EnqueueCommand(cmdBufferInOut, computeMipMapsCommand);
+
         EnqueueCommand(cmdBufferInOut, GFX::BindPipelineCommand{ _HIZPipeline });
 
         GFX::SetViewportCommand viewportCommand = {};

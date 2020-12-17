@@ -13,6 +13,7 @@
 #include "Rendering/Lighting/ShadowMapping/Headers/ShadowMap.h"
 
 #include "ECS/Components/Headers/SpotLightComponent.h"
+#include "ECS/Components/Headers/DirectionalLightComponent.h"
 
 #include <execution>
 
@@ -189,6 +190,8 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
     ShadowMap::clearShadowMapBuffers(bufferInOut);
 
     std::array<I32, to_base(LightType::COUNT)> indexCounter{};
+    std::array<vec2<U16>, to_base(LightType::COUNT)> shadowRanges{};
+    std::array<bool, to_base(LightType::COUNT)> shadowsGenerated{};
 
     for (U16 i = 0; i < _sortedShadowLights._count; ++i) {
         Light* light = _sortedShadowLights._entries[i];
@@ -198,34 +201,54 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
         if (counter == MaxLights(lType)) {
             continue;
         }
-        
 
         ShadowMap::generateShadowMaps(playerCamera, *light, bufferInOut);
         const Light::ShadowProperties& propsSource = light->getShadowProperties();
         const I32 shadowIndex = counter++;
+
+        vec2<U16>& layerRange = shadowRanges[to_base(lType)];
+        layerRange.min = std::min(layerRange.min, light->getShadowOffset());
 
         switch (lType) {
             case LightType::POINT: {
                 PointShadowProperties& propsTarget = _shadowBufferData._pointLights[shadowIndex];
                 propsTarget._details = propsSource._lightDetails;
                 propsTarget._position = propsSource._lightPosition[0];
-
+                layerRange.max = std::max(layerRange.max, to_U16(light->getShadowOffset() + 1u));
             }break;
             case LightType::SPOT: {
                 SpotShadowProperties& propsTarget = _shadowBufferData._spotLights[shadowIndex];
                 propsTarget._details = propsSource._lightDetails;
                 propsTarget._vpMatrix = propsSource._lightVP[0];
                 propsTarget._position = propsSource._lightPosition[0];
+                layerRange.max = std::max(layerRange.max, to_U16(light->getShadowOffset() + 1u));
             }break;
             case LightType::DIRECTIONAL: {
                 CSMShadowProperties& propsTarget = _shadowBufferData._dirLights[shadowIndex];
                 propsTarget._details = propsSource._lightDetails;
                 std::memcpy(propsTarget._position.data(), propsSource._lightPosition.data(), sizeof(vec4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
                 std::memcpy(propsTarget._vpMatrix.data(), propsSource._lightVP.data(), sizeof(mat4<F32>) * Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT);
+                layerRange.max = std::max(layerRange.max, to_U16(light->getShadowOffset() + static_cast<DirectionalLightComponent*>(light)->csmSplitCount()));
             }break;
             case LightType::COUNT: break;
         }
         light->cleanShadowProperties(shadowIndex);
+
+        shadowsGenerated[to_base(lType)] = true;
+        GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+        computeMipMapsCommand._texture = ShadowMap::getDepthMap(lType)._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
+        computeMipMapsCommand._layerRange = layerRange;
+        computeMipMapsCommand._defer = false;
+        EnqueueCommand(bufferInOut, computeMipMapsCommand);
+    }
+
+    for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
+        if (!shadowsGenerated[i]) {
+            GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+            computeMipMapsCommand._texture = ShadowMap::getDepthMap(static_cast<LightType>(i))._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
+            computeMipMapsCommand._clearOnly = true;
+            EnqueueCommand(bufferInOut, computeMipMapsCommand);
+        }
     }
 
     _shadowBuffer->writeData(_shadowBufferData.data());

@@ -446,6 +446,25 @@ void GL_API::DequeueComputeMipMap(const GLuint textureHandle) {
     }
 }
 
+void GL_API::QueueMipMapRequired(const GLuint textureHandle) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
+        UniqueLock<SharedMutex> w_lock(s_mipmapCheckQueueSetLock);
+        if (s_mipmapCheckQueue.find(textureHandle) == std::cend(s_mipmapCheckQueue)) {
+            s_mipmapCheckQueue.insert(textureHandle);
+        }
+    }
+}
+
+void GL_API::DequeueMipMapRequired(const GLuint textureHandle) {
+    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
+        UniqueLock<SharedMutex> w_lock(s_mipmapCheckQueueSetLock);
+        const auto it = s_mipmapCheckQueue.find(textureHandle);
+        if (it != std::cend(s_mipmapCheckQueue)) {
+            s_mipmapCheckQueue.erase(it);
+        }
+    }
+}
+
 void GL_API::onThreadCreated(const std::thread::id& threadID) {
     // Double check so that we don't run into a race condition!
     UniqueLock<Mutex> lock(GLUtil::s_glSecondaryContextMutex);

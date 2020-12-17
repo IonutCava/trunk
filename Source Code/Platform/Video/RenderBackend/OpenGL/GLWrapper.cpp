@@ -211,6 +211,7 @@ void GL_API::idle(const bool fast) {
         if (!s_mipmapQueue.empty()) {
             const auto it = s_mipmapQueue.begin();
             glGenerateTextureMipmap(*it);
+            DequeueMipMapRequired(*it);
             s_mipmapQueue.erase(it);
         }
     }
@@ -394,19 +395,20 @@ bool GL_API::InitGLSW(Configuration& config) {
         AppendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES", lineOffsets);
     }
 
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIR_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_POINT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_SPOT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_DIR_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_POINT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_SPOT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME), lineOffsets);
 
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CONCURRENT_MATERIALS " + Util::to_string(Config::MAX_CONCURRENT_MATERIALS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f", lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_CONCURRENT_MATERIALS " + Util::to_string(Config::MAX_CONCURRENT_MATERIALS), lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT,  "#define SKY_OFFSET 0.0000001f", lineOffsets);
+    AppendToShaderHeader(ShaderType::VERTEX, "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
+
     static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
 
     AppendToShaderHeader(
@@ -1297,73 +1299,82 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             OPTICK_EVENT("GL: Compute MipMaps");
             GFX::ComputeMipMapsCommand* crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
-            if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y == crtCmd->_texture->descriptor().layerCount()) {
-                if (crtCmd->_defer) {
-                    OPTICK_EVENT("GL: Deferred computation");
-                    QueueComputeMipMap(crtCmd->_texture->data()._textureHandle);
-                } else {
-                    OPTICK_EVENT("GL: In-place computation");
-                    glGenerateTextureMipmap(crtCmd->_texture->data()._textureHandle);
-                }
+            if (crtCmd->_clearOnly) {
+                DequeueMipMapRequired(crtCmd->_texture->data()._textureHandle);
             } else {
-                OPTICK_EVENT("GL: View-based computation");
-
-                const TextureDescriptor& descriptor = crtCmd->_texture->descriptor();
-                const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
-
-                TextureView view = {};
-                view._textureData = crtCmd->_texture->data();
-                view._layerRange.set(crtCmd->_layerRange);
-                view._targetType = view._textureData._textureType;
-
-                if (crtCmd->_mipRange.max == 0u) {
-                    view._mipLevels.set(0, descriptor.mipCount());
-                } else {
-                    view._mipLevels.set(crtCmd->_mipRange);
-                }
-                assert(IsValid(view._textureData));
-
-                if (IsArrayTexture(view._targetType) && view._layerRange.max == 1) {
-                    switch (view._targetType) {
-                      case TextureType::TEXTURE_2D_ARRAY:
-                          view._targetType = TextureType::TEXTURE_2D;
-                          break;
-                      case TextureType::TEXTURE_2D_ARRAY_MS:
-                          view._targetType = TextureType::TEXTURE_2D_MS;
-                          break;
-                      case TextureType::TEXTURE_CUBE_ARRAY:
-                          view._targetType = TextureType::TEXTURE_CUBE_MAP;
-                          break;
-                      default: break;
+                if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y == crtCmd->_texture->descriptor().layerCount()) {
+                    if (crtCmd->_defer) {
+                        OPTICK_EVENT("GL: Deferred computation");
+                        QueueComputeMipMap(crtCmd->_texture->data()._textureHandle);
+                    } else {
+                        OPTICK_EVENT("GL: In-place computation");
+                        const GLuint handle = crtCmd->_texture->data()._textureHandle;
+                        glGenerateTextureMipmap(handle);
+                        DequeueMipMapRequired(handle);
                     }
-                }
-
-                if (IsCubeTexture(view._targetType)) {
-                    view._layerRange *= 6; //offset and count
-                }
-
-                auto[handle, cacheHit] = s_textureViewCache.allocate(view.getHash());
-
-                if (!cacheHit)
-                {
-                    OPTICK_EVENT("GL: View cache miss");
-                    glTextureView(handle,
-                                  GLUtil::glTextureTypeTable[to_base(view._targetType)],
-                                  view._textureData._textureHandle,
-                                  glInternalFormat,
-                                  static_cast<GLuint>(view._mipLevels.x),
-                                  static_cast<GLuint>(view._mipLevels.y),
-                                  static_cast<GLuint>(view._layerRange.x),
-                                  static_cast<GLuint>(view._layerRange.y));
-                }
-                if (crtCmd->_defer) {
-                    OPTICK_EVENT("GL: Deferred computation");
-                    QueueComputeMipMap(handle);
                 } else {
-                    OPTICK_EVENT("GL: In-place computation");
-                    glGenerateTextureMipmap(handle);
+                    OPTICK_EVENT("GL: View-based computation");
+
+                    const TextureDescriptor& descriptor = crtCmd->_texture->descriptor();
+                    const GLenum glInternalFormat = GLUtil::internalFormat(descriptor.baseFormat(), descriptor.dataType(), descriptor.srgb(), descriptor.normalized());
+
+                    TextureView view = {};
+                    view._textureData = crtCmd->_texture->data();
+                    view._layerRange.set(crtCmd->_layerRange);
+                    view._targetType = view._textureData._textureType;
+
+                    if (crtCmd->_mipRange.max == 0u) {
+                        view._mipLevels.set(0, descriptor.mipCount());
+                    } else {
+                        view._mipLevels.set(crtCmd->_mipRange);
+                    }
+                    assert(IsValid(view._textureData));
+
+                    if (IsArrayTexture(view._targetType) && view._layerRange.max == 1) {
+                        switch (view._targetType) {
+                          case TextureType::TEXTURE_2D_ARRAY:
+                              view._targetType = TextureType::TEXTURE_2D;
+                              break;
+                          case TextureType::TEXTURE_2D_ARRAY_MS:
+                              view._targetType = TextureType::TEXTURE_2D_MS;
+                              break;
+                          case TextureType::TEXTURE_CUBE_ARRAY:
+                              view._targetType = TextureType::TEXTURE_CUBE_MAP;
+                              break;
+                          default: break;
+                        }
+                    }
+
+                    if (IsCubeTexture(view._targetType)) {
+                        view._layerRange *= 6; //offset and count
+                    }
+
+                    auto[handle, cacheHit] = s_textureViewCache.allocate(view.getHash());
+
+                    if (!cacheHit)
+                    {
+                        OPTICK_EVENT("GL: View cache miss");
+                        glTextureView(handle,
+                                      GLUtil::glTextureTypeTable[to_base(view._targetType)],
+                                      view._textureData._textureHandle,
+                                      glInternalFormat,
+                                      static_cast<GLuint>(view._mipLevels.x),
+                                      static_cast<GLuint>(view._mipLevels.y),
+                                      static_cast<GLuint>(view._layerRange.x),
+                                      static_cast<GLuint>(view._layerRange.y));
+                    }
+                    // Tag the parent texture, not the view
+                    DequeueMipMapRequired(view._textureData._textureHandle);
+
+                    if (crtCmd->_defer) {
+                        OPTICK_EVENT("GL: Deferred computation");
+                        QueueComputeMipMap(handle);
+                    } else {
+                        OPTICK_EVENT("GL: In-place computation");
+                        glGenerateTextureMipmap(handle);
+                    }
+                    s_textureViewCache.deallocate(handle, 3);
                 }
-                s_textureViewCache.deallocate(handle, 3);
             }
         }break;
         case GFX::CommandType::DRAW_TEXT: {
@@ -1620,8 +1631,8 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
             static bool init = false;
             if (!init) {
                 init = true;
-                handles.resize(GL_API::s_maxTextureUnits, GLUtil::k_invalidObjectID);
-                samplers.resize(GL_API::s_maxTextureUnits, GLUtil::k_invalidObjectID);
+                handles.resize(s_maxTextureUnits, GLUtil::k_invalidObjectID);
+                samplers.resize(s_maxTextureUnits, GLUtil::k_invalidObjectID);
             } else {
                 std::memset(&handles[startBinding], GLUtil::k_invalidObjectID, (endBinding - startBinding + 1) * sizeof(GLuint));
             }
@@ -1703,7 +1714,11 @@ bool GL_API::makeTextureViewsResidentInternal(const TextureViews& textureViews, 
                 view._layerRange.max);
         }
 
-        bound = getStateTracker().bindTexture(static_cast<GLushort>(it._binding), view._targetType, textureID, GetSamplerHandle(it._view._samplerHash)) || bound;
+        getStateTracker().ProcessMipMapQueue(1, &data._textureHandle);
+        getStateTracker().ValidateBindQueue(1, &data._textureHandle);
+
+        GLuint samplerHandle = GetSamplerHandle(it._view._samplerHash);
+        bound = getStateTracker().bindTexturesNoMipMap(static_cast<GLushort>(it._binding), 1, view._targetType, &textureID, &samplerHandle) || bound;
         // Self delete after 3 frames unless we use it again
         s_textureViewCache.deallocate(textureID, 3u);
     }

@@ -323,7 +323,6 @@ void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, GFX
     light.setShadowOffset(offset);
     commitDepthMapOffset(sType, offset, layerRequirement);
     s_shadowMapGenerators[to_base(sType)]->render(playerCamera, light, s_shadowPassIndex[to_base(sType)]++, bufferInOut);
-    bindShadowMaps(bufferInOut);
 }
 
 const RenderTargetHandle& ShadowMap::getDepthMap(const LightType type) {

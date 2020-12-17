@@ -174,6 +174,9 @@ void glTexture::reserveStorage() const {
     const GLuint handle = _loadingData._textureHandle;
     const GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
     const GLushort mipMaxLevel = _descriptor.mipCount();
+    if (mipMaxLevel > 1u && !_descriptor.autoMipMaps()) {
+        GL_API::QueueMipMapRequired(handle);
+    }
 
     switch (_loadingData._textureType) {
         case TextureType::TEXTURE_1D: {
