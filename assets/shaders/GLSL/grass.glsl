@@ -89,14 +89,12 @@ layout(early_fragment_tests) in;
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) in float _alphaFactor;
 
-#define texDiffuseGrass texDiffuse0
-
 void main (void){
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
     const vec2 uv = VAR._texCoord;
 
-    vec4 albedo = texture(texDiffuseGrass, vec3(uv, _arrayLayerFrag));
+    vec4 albedo = texture(texDiffuse0, vec3(uv, _arrayLayerFrag));
     albedo.a = min(albedo.a, _alphaFactor);
 
     writeOutput(getPixelColour(albedo, data, getNormalWV(uv), uv));
@@ -107,15 +105,14 @@ void main (void){
 // This is needed so that the inner "output" discards don't take place
 // We still manually alpha-discard in main
 #define SAMPLER_UNIT0_IS_ARRAY
+#define USE_ALPHA_DISCARD
 #include "prePass.frag"
 
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) in float _alphaFactor;
 
-#define texDiffuseGrass texDiffuse0
-
 void main() {
-    const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
+    const float albedoAlpha = texture(texDiffuse0, vec3(VAR._texCoord, _arrayLayerFrag)).a;
     writeOutput(albedoAlpha * _alphaFactor, VAR._texCoord, VAR._normalWV);
 }
 
@@ -124,7 +121,7 @@ void main() {
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) in float _alphaFactor;
 
-layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuseGrass;
+layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 
 #include "vsm.frag"
 out vec2 _colourOut;

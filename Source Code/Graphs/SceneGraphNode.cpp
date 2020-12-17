@@ -600,15 +600,18 @@ bool SceneGraphNode::postCullCheck(const NodeCullParams& params,
     const U8 LoDLevel = rComp->getLoDLevel(bounds.getBoundingSphere().getCenter(), params._currentCamera->getEye(), params._stage, params._lodThresholds);
     if (LoDLevel != RenderingComponent::INVALID_LOD_LEVEL) {
         const vec2<F32>& renderRange = rComp->renderRange();
-        if (IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
-            if (params._maxLoD > -1 && LoDLevel > params._maxLoD) {
-                // Node has a too high LoD for the current render pass
-                return false;
-            }
-            // Draw state has its own lod requirements
-            if (LoDLevel > _node->renderState().maxLodLevel()) {
-                return false;
-            }
+        if (!IS_IN_RANGE_INCLUSIVE(distanceToClosestPointSQ, SIGNED_SQUARED(renderRange.min), SQUARED(renderRange.max))) {
+            return false;
+        }
+
+        if (params._maxLoD > -1 && LoDLevel > params._maxLoD) {
+            // Node has a too high LoD for the current render pass
+            return false;
+        }
+
+        // Draw state has its own lod requirements
+        if (LoDLevel > _node->renderState().maxLodLevel()) {
+            return false;
         }
     }
 

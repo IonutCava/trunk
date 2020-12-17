@@ -141,15 +141,29 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
     if (s_buffer == nullptr) {
         constexpr F32 offsetTop = 0.075f;
         constexpr F32 offsetBottom = 0.30f;
+        constexpr F32 offsetHeight = 0.7525f;
 
         const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
         const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
         const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
 
         const vec3<F32> vertices[] = {
-            vec3<F32>(-pos000.x,                -0.025f, -pos000.y - offsetBottom),  vec3<F32>(-pos000.x,             1.0f, -pos000.y + offsetTop),  vec3<F32>(pos000.x,             1.0f, pos000.y + offsetTop), vec3<F32>(pos000.x,                -0.025f, pos000.y - offsetBottom),
-            vec3<F32>(-pos120.x + offsetBottom, -0.025f, -pos120.y               ),  vec3<F32>(-pos120.x + offsetTop, 1.0f, -pos120.y            ),  vec3<F32>(pos120.x + offsetTop, 1.0f, pos120.y            ), vec3<F32>(pos120.x + offsetBottom, -0.025f, pos120.y               ),
-            vec3<F32>(-pos240.x - offsetBottom, -0.025f, -pos240.y               ),  vec3<F32>(-pos240.x - offsetTop, 1.0f, -pos240.y            ),  vec3<F32>(pos240.x - offsetTop, 1.0f, pos240.y            ), vec3<F32>(pos240.x - offsetBottom, -0.025f, pos240.y               )
+            vec3<F32>(-pos000.x,                -offsetHeight, -pos000.y - offsetBottom),
+            vec3<F32>(-pos000.x,                 1.0f,         -pos000.y + offsetTop),
+            vec3<F32>( pos000.x,                 1.0f,          pos000.y + offsetTop),
+            vec3<F32>( pos000.x,                -offsetHeight,  pos000.y - offsetBottom),
+
+
+            vec3<F32>(-pos120.x + offsetBottom, -offsetHeight, -pos120.y),
+            vec3<F32>(-pos120.x + offsetTop,     1.0f,         -pos120.y), 
+            vec3<F32>( pos120.x + offsetTop,     1.0f,          pos120.y), 
+            vec3<F32>( pos120.x + offsetBottom, -offsetHeight,  pos120.y),
+
+
+            vec3<F32>(-pos240.x - offsetBottom, -offsetHeight, -pos240.y),
+            vec3<F32>(-pos240.x - offsetTop,     1.0f,         -pos240.y), 
+            vec3<F32>( pos240.x - offsetTop,     1.0f,          pos240.y), 
+            vec3<F32>( pos240.x - offsetBottom, -offsetHeight,  pos240.y)
         };
 
         const size_t billboardsPlaneCount = sizeof vertices / (sizeof(vec3<F32>) * 4);
@@ -508,29 +522,27 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
     const U32 meshID = to_U32(ID % _treeMeshNames.size());
 
     if (_instanceCountTrees > 0 && !_treeMeshNames.empty()) {
-        {
-            UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
-            if (s_treeMeshes.empty()) {
-                for (const ResourcePath& meshName : _treeMeshNames) {
-                    if (eastl::find_if(eastl::cbegin(s_treeMeshes), eastl::cend(s_treeMeshes),
-                        [&meshName](const Mesh_ptr& ptr) {
-                        return Util::CompareIgnoreCase(ptr->assetName(), meshName);
-                    }) == eastl::cend(s_treeMeshes))
-                    {
-                        ResourceDescriptor model("Tree");
-                        model.assetLocation(Paths::g_assetsLocation + "models");
-                        model.flag(true);
-                        model.threaded(false); ///< we need the extents asap!
-                        model.assetName(meshName);
-                        Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
-                        meshPtr->setMaterialTpl(s_treeMaterial);
-                        // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
-                        meshPtr->renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL), 2u);
-                        for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
-                            subMesh->renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL), 2u);
-                        }
-                        s_treeMeshes.push_back(meshPtr);
+        UniqueLock<SharedMutex> w_lock(g_treeMeshLock);
+        if (s_treeMeshes.empty()) {
+            for (const ResourcePath& meshName : _treeMeshNames) {
+                if (eastl::find_if(eastl::cbegin(s_treeMeshes), eastl::cend(s_treeMeshes),
+                    [&meshName](const Mesh_ptr& ptr) {
+                    return Util::CompareIgnoreCase(ptr->assetName(), meshName);
+                }) == eastl::cend(s_treeMeshes))
+                {
+                    ResourceDescriptor model("Tree");
+                    model.assetLocation(Paths::g_assetsLocation + "models");
+                    model.flag(true);
+                    model.threaded(false); ///< we need the extents asap!
+                    model.assetName(meshName);
+                    Mesh_ptr meshPtr = CreateResource<Mesh>(_context.parent().resourceCache(), model);
+                    meshPtr->setMaterialTpl(s_treeMaterial);
+                    // CSM last split should probably avoid rendering trees since it would cover most of the scene :/
+                    meshPtr->renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL), 2u);
+                    for (const SubMesh_ptr& subMesh : meshPtr->subMeshList()) {
+                        subMesh->renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(LightType::DIRECTIONAL), 2u);
                     }
+                    s_treeMeshes.push_back(meshPtr);
                 }
             }
         }
@@ -653,7 +665,6 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
 
     if (!renderState().drawState()) {
         uploadVegetationData(sgn);
-        // Keep occlusion culling happening
         sgn->get<RenderingComponent>()->dataFlag(to_F32(_terrainChunk.ID()));
     }
 
@@ -725,7 +736,7 @@ void Vegetation::buildDrawCommands(SceneGraphNode* sgn,
 }
 
 namespace {
-    FORCE_INLINE U8 bestIndex(const UColour4& in) {
+    FORCE_INLINE U8 BestIndex(const UColour4& in) {
         U8 maxValue = 0;
         U8 bestIndex = 0;
         for (U8 i = 0; i < 4; ++i) {
@@ -807,7 +818,7 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
             assert(vert._position != VECTOR3_ZERO);
 
             const UColour4 colour = map->getColour(to_I32(mapCoord.x), to_I32(mapCoord.y));
-            const U8 index = bestIndex(colour);
+            const U8 index = BestIndex(colour);
             const F32 colourVal = colour[index];
             if (colourVal <= std::numeric_limits<F32>::epsilon()) {
                 continue;
