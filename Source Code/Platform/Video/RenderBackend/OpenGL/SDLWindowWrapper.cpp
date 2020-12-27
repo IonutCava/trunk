@@ -224,6 +224,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     if (s_stateTracker._opengl46Supported) {
         glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
+        Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")), GLUtil::getGLValue(GL_MAX_SHADER_COMPILER_THREADS_ARB));
     }
 
     glEnable(GL_MULTISAMPLE);
@@ -249,10 +250,6 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     config.rendering.shadowMapping.spot.MSAASamples = std::min(config.rendering.shadowMapping.spot.MSAASamples, maxGLSamples);
     _context.gpuState().maxMSAASampleCount(maxGLSamples);
 
-    if (s_stateTracker._opengl46Supported) {
-        Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")),
-                         GLUtil::getGLValue(GL_MAX_SHADER_COMPILER_THREADS_ARB));
-    }
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
     Console::printfn(Locale::get(_ID("GL_MAX_UNIFORM")),

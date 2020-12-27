@@ -72,9 +72,7 @@ namespace Divide {
         /// Set the blending properties for the specified draw buffer
         void setBlending(GLuint drawBufferIdx, const BlendingProperties& blendingProperties);
 
-        void resetBlending(const GLuint drawBufferIdx) {
-            setBlending(drawBufferIdx, _blendProperties[drawBufferIdx]);
-        }
+        void resetBlending(const GLuint drawBufferIdx) { setBlending(drawBufferIdx, _blendProperties[drawBufferIdx]); }
 
         void setBlendColour(const UColour4& blendColour);
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
@@ -88,9 +86,7 @@ namespace Divide {
         /// Some may be redundant, so we check each one individually
         void activateStateBlock(const RenderStateBlock& newBlock);
         /// Pixel pack and unpack alignment is usually changed by textures, PBOs, etc
-        bool setPixelPackUnpackAlignment(const GLint packAlignment = 4, const GLint unpackAlignment = 4) {
-            return setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment);
-        }
+        bool setPixelPackUnpackAlignment(const GLint packAlignment = 4, const GLint unpackAlignment = 4) { return setPixelPackAlignment(packAlignment) && setPixelUnpackAlignment(unpackAlignment); }
         /// Pixel pack alignment is usually changed by textures, PBOs, etc
         bool setPixelPackAlignment(GLint packAlignment = 4, GLint rowLength = 0, GLint skipRows = 0, GLint skipPixels = 0);
         /// Pixel unpack alignment is usually changed by textures, PBOs, etc
@@ -98,9 +94,7 @@ namespace Divide {
         /// Bind a texture specified by a GL handle and GL type to the specified unit
         /// using the sampler object defined by handle value
         bool bindTexture(GLushort unit, TextureType type, GLuint handle, GLuint samplerHandle = 0u);
-        bool bindTextureImage(GLushort unit, GLuint handle, GLint level,
-                              bool layered, GLint layer, GLenum access,
-                              GLenum format);
+        bool bindTextureImage(GLushort unit, GLuint handle, GLint level, bool layered, GLint layer, GLenum access, GLenum format);
         /// Bind multiple textures specified by an array of handles and an offset unit
         bool bindTextures(GLushort unitOffset, GLuint textureCount, TextureType texturesType, GLuint* textureHandles, GLuint* samplerHandles);
         bool bindTexturesNoMipMap(GLushort unitOffset, GLuint textureCount, TextureType texturesType, GLuint* textureHandles, GLuint* samplerHandles);
@@ -112,37 +106,17 @@ namespace Divide {
         bool bindSamplers(GLushort unitOffset, GLuint samplerCount, GLuint* samplerHandles);
 
         /// Modify buffer bindings for a specific vao
-        bool bindActiveBuffer(GLuint vaoID,
-                              GLuint location,
-                              GLuint bufferID,
-                              GLuint instanceDivisor,
-                              size_t offset,
-                              size_t stride);
+        bool bindActiveBuffer(GLuint vaoID, GLuint location, GLuint bufferID, GLuint instanceDivisor, size_t offset, size_t stride);
 
         bool setScissor(const Rect<I32>& newScissorRect);
-
-        bool setScissor(const I32 x, const I32 y, const I32 width, const I32 height) {
-            return setScissor({ x, y, width, height });
-        }
-
-        bool setClearColour(const FColour4& colour);
-
-        bool setClearColour(const UColour4& colour) {
-            return setClearColour(Util::ToFloatColour(colour));
-        }
-
-        /// Return the OpenGL framebuffer handle bound and assigned for the specified usage
-        GLuint getActiveFB(const RenderTarget::RenderTargetUsage usage) {
-            return _activeFBID[to_U32(usage)];
-        }
+        bool setScissor(const I32 x, const I32 y, const I32 width, const I32 height) { return setScissor({ x, y, width, height }); }
 
         /// Change the current viewport area. Redundancy check is performed in GFXDevice class
-
         bool setViewport(const Rect<I32>& viewport);
+        bool setViewport(const I32 x, const I32 y, const I32 width, const I32 height) { return setViewport({ x, y, width, height }); }
 
-        bool setViewport(const I32 x, const I32 y, const I32 width, const I32 height) {
-            return setViewport({ x, y, width, height });
-        }
+        bool setClearColour(const FColour4& colour);
+        bool setClearColour(const UColour4& colour) { return setClearColour(Util::ToFloatColour(colour)); }
 
         GLuint getBoundTextureHandle(U8 slot, TextureType type) const;
         GLuint getBoundSamplerHandle(U8 slot) const;

@@ -47,7 +47,9 @@ out vec2 _colourOut;
 
 void main() {
 #if defined(HAS_TRANSPARENCY)
-    if (getAlbedo(dvd_Materials[MATERIAL_IDX], VAR._texCoord).a < INV_Z_TEST_SIGMA) {
+    const NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
+    const vec4 albedo = getAlbedo(data, VAR._texCoord);
+    if (albedo .a < INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif
