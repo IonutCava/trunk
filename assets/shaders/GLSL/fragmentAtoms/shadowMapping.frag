@@ -39,7 +39,7 @@ float detail_ChebyshevUpperBound(vec2 moments, float distance) {
     const float p_max = variance / (variance + mD * mD);
 
     // Reduce light bleed
-    const float p = linstep(dvd_LightBleedBias, 1.0f, p_max);
+    const float p = LinStep(dvd_LightBleedBias, 1.0f, p_max);
 
     // No saturate() yet. We need to adjust using SHADOW_INTENSITY_FACTOR later and then clamp to 01
     return max(p, distance <= moments.x ? 1.0f : 0.0f);

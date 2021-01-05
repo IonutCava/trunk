@@ -9,7 +9,7 @@
 namespace Divide {
     SGNComponent::SGNComponent(Key key, const ComponentType type, SceneGraphNode* parentSGN, PlatformContext& context)
         : PlatformContextComponent(context),
-          _editorComponent(type, type._to_string()),
+          _editorComponent(*this, type, type._to_string()),
           _parentSGN(parentSGN),
           _type(type)
     {
@@ -32,6 +32,14 @@ namespace Divide {
         }
 
         return true;
+    }
+
+    void SGNComponent::saveToXML(boost::property_tree::ptree& pt) const {
+        ACKNOWLEDGE_UNUSED(pt);
+    }
+
+    void SGNComponent::loadFromXML(const boost::property_tree::ptree& pt) {
+        ACKNOWLEDGE_UNUSED(pt);
     }
 
     U64 SGNComponent::uniqueID() const {

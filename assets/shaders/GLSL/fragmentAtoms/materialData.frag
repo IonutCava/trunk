@@ -3,7 +3,7 @@
 
 #if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
 #define PBR_SHADING
-#endif
+#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
 
 #include "nodeBufferedInput.cmn"
 #include "utility.frag"
@@ -11,6 +11,7 @@
 #if !defined(PRE_PASS)
 layout(binding = TEXTURE_GBUFFER_EXTRA) uniform sampler2D texGBufferExtra;
 layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texSceneNormalMaps;
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 #if defined(USE_PLANAR_REFRACTION)
 layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 #endif //USE_PLANAR_REFRACTION
@@ -18,11 +19,11 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 
 #if defined(COMPUTE_TBN)
 #include "bumpMapping.frag"
-#endif
+#endif //COMPUTE_TBN
 
 #ifndef F0
 #define F0 vec3(0.04f)
-#endif
+#endif //F0
 
 #if defined(USE_CUSTOM_POM)
 vec3 getTBNViewDir();
@@ -73,9 +74,9 @@ float specularAntiAliasing(vec3 N, float a) {
 
 #if defined(USE_SSAO)
 #define SSAOFactor texture(texGBufferExtra, dvd_screenPositionNormalised).r
-#else
+#else //USE_SSAO
 #define SSAOFactor 1.0f
-#endif
+#endif //USE_SSAO
 
 #define SpecularColour(diffColour, metallic) mix(F0, diffColour, metallic)
 
@@ -91,17 +92,17 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
     vec3 omr = saturate(texture(texOMR, uv).rgb);
 #if defined(PBR_SHADING)
     return omr;
-#else
+#else //PBR_SHADING
     // Convert specular to roughness ... roughly? really wrong, but should work I guesssssssssss. -Ionut
     return saturate(vec3(PACKED_OMR(data).rg, 1.0f - omr[2]));
-#endif
-#else
+#endif //PBR_SHADING
+#else //USE_OCCLUSION_METALLIC_ROUGHNESS_MAP
     return saturate(PACKED_OMR(data).rgb);
-#endif
+#endif //USE_OCCLUSION_METALLIC_ROUGHNESS_MAP
 }
 #endif //USE_CUSTOM_ROUGHNESS
 
-#endif //PRE_PASS
+#endif //!PRE_PASS
 
 #if !defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
 vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
@@ -160,7 +161,7 @@ vec4 getTextureColour(in vec4 albedo, in vec2 uv, in uint texOperation) {
             colour = (colour + colour2) - (colour * colour2);
         } break;
     }
-#endif //SKIP_TEX1
+#endif //!SKIP_TEX1
 
     return saturate(colour);
 }
@@ -171,24 +172,25 @@ vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {
 #   if defined(USE_OPACITY_MAP)
 #       if defined(USE_OPACITY_MAP_RED_CHANNEL)
             albedo.a = texture(texOpacityMap, uv).r;
-#       else
+#       else //USE_OPACITY_MAP_RED_CHANNEL
             albedo.a = texture(texOpacityMap, uv).a;
-#       endif
-#   endif
+#       endif //USE_OPACITY_MAP_RED_CHANNEL
+#   endif //USE_OPACITY_MAP
     return albedo;
 }
 #else //HAS_TRANSPARENCY
 #define getAlbedo(DATA, UV) getTextureColour(BaseColour(DATA), UV, dvd_texOperation(DATA))
 #endif //HAS_TRANSPARENCY
 
-#endif //!defined(PRE_PASS) || defined(HAS_TRANSPARENCY)
+#endif //!PRE_PASS || HAS_TRANSPARENCY
 
 // Computed normals are NOT normalized. Retrieved normals ARE.
 #if defined(SAMPLER_NORMALMAP_IS_ARRAY) && (defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS))
-vec3 getNormalWV(in vec3 uv) {
-#else
-vec3 getNormalWV(in vec2 uv) {
-#endif
+vec3 getNormalWV(in vec3 uv)
+#else //SAMPLER_NORMALMAP_IS_ARRAY && (PRE_PASS || !USE_DEFERRED_NORMALS)
+vec3 getNormalWV(in vec2 uv)
+#endif //SAMPLER_NORMALMAP_IS_ARRAY && (PRE_PASS || !USE_DEFERRED_NORMALS)
+{
 #if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
 
 #if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
@@ -199,9 +201,9 @@ vec3 getNormalWV(in vec2 uv) {
     const vec3 normalWV = (dvd_bumpMethod(MATERIAL_IDX) != BUMP_NONE)
                                ? getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f)
                                : VAR._normalWV;
-#else //COMPUTE_TBN
+#else //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
     const vec3 normalWV = VAR._normalWV;
-#endif //COMPUTE_TBN
+#endif //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
 
 #if defined (USE_DOUBLE_SIDED)
     return gl_FrontFacing ? normalWV : -normalWV;
@@ -210,9 +212,9 @@ vec3 getNormalWV(in vec2 uv) {
 #endif //USE_DOUBLE_SIDED
 
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
-#else //PRE_PASS
+#else //PRE_PASS || !USE_DEFERRED_NORMALS
     return normalize(unpackNormal(texture(texSceneNormalMaps, dvd_screenPositionNormalised).rg));
-#endif //PRE_PASS
+#endif //PRE_PASS || !USE_DEFERRED_NORMALS
 }
 
 #endif //_MATERIAL_DATA_FRAG_

@@ -34,6 +34,7 @@
 #define _RENDER_PASS_CULLER_H_
 
 #include "Platform/Video/Headers/RenderAPIEnums.h"
+#include "Platform/Video/Headers/ClipPlanes.h"
 
 /// This class performs all the necessary visibility checks on the scene's
 /// SceneGraph to decide what get's rendered and what not
@@ -51,6 +52,7 @@ class PlatformContext;
 enum class RenderStage : U8;
 
 struct NodeCullParams {
+    FrustumClipPlanes _clippingPlanes;
     vec4<U16> _lodThresholds = {1000u};
     vec3<F32> _minExtents = { 0.0f };
     std::pair<I64*, size_t> _ignoredGUIDS;

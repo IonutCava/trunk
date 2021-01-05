@@ -48,6 +48,10 @@ SGNRelationshipCache::RelationshipType SGNRelationshipCache::classifyNode(const 
                                    : RelationshipType::PARENT;
             }
         }
+        SceneGraphNode* parent = _parentNode->parent();
+        if (parent != nullptr && parent->findChild(GUID) != nullptr) {
+            return RelationshipType::SIBLING;
+        }
     }
 
     return RelationshipType::COUNT;

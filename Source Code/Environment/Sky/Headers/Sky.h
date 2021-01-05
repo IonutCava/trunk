@@ -116,7 +116,7 @@ class Sky final : public SceneNode {
 
     [[nodiscard]] const char* getResourceTypeName() const noexcept  override { return "Sky"; }
 
-    [[nodiscard]] std::array<vec4<F32>, 3> atmoToShaderData() const noexcept;
+    [[nodiscard]] std::array<vec4<F32>, 3> atmosphereToShaderData() const noexcept;
 
 protected:
     GFXDevice& _context;

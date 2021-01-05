@@ -5,7 +5,6 @@
 #if defined(HAS_VELOCITY)
 vec2 velocityCalc() {
     const vec4 vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
-    const vec4 preVertexWVP = dvd_ProjectionMatrix * VAR._prevVertexWV;
 
     const vec2 a = homogenize(vertexWVP).xy * 0.5f + 0.5f;
     const vec2 b = VAR._prevVertexWVP_XYW.xy / VAR._prevVertexWVP_XYW.z * 0.5f + 0.5f;

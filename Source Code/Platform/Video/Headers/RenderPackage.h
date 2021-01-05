@@ -79,22 +79,24 @@ public:
     void disableOptions(BaseType<CmdRenderOptions> optionMask);
 
     void clear();
+    void updateDrawCommands();
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
     void appendCommandBuffer(const GFX::CommandBuffer& commandBuffer);
 
+    PROPERTY_R(U32, drawCommandCount, 0u);
+
     PROPERTY_RW(bool, textureDataDirty, true);
     PROPERTY_RW(MinQuality, qualityRequirement, MinQuality::FULL);
-    PROPERTY_RW(NodeDataIdx, lastDataIndex, {});
 
 protected:
-    void updateDrawCommands(U32 cmdOffset);
-    void updateAndRetrieveDrawCommands(NodeDataIdx dataIndex, U8 lodLevel, DrawCommandContainer& cmdsInOut);
+    U32 updateAndRetrieveDrawCommands(NodeDataIdx dataIndex, U32 startOffset, U8 lodLevel, DrawCommandContainer& cmdsInOut);
     GFX::CommandBuffer* commands();
     void addDrawCommand(const GFX::DrawCommand& cmd);
 
 protected:
     GFX::CommandBuffer* _commands = nullptr;
     std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets{};
+    U32 _lastCommandOffset = 0u; //<Do not clear!
     BaseType<CmdRenderOptions> _drawCommandOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY);
     bool _isInstanced = false;
 };
@@ -114,12 +116,8 @@ namespace Attorney {
     };
 
     class RenderPackageRenderingComponent {
-        static void updateDrawCommands(RenderPackage& pkg, const U32 cmdOffset) {
-            pkg.updateDrawCommands(cmdOffset);
-        }
-
-        static void updateAndRetrieveDrawCommands(RenderPackage& pkg, const NodeDataIdx dataIndex, const U8 lodLevel, DrawCommandContainer& cmdsInOut) {
-            pkg.updateAndRetrieveDrawCommands(dataIndex, lodLevel, cmdsInOut);
+        static U32 updateAndRetrieveDrawCommands(RenderPackage& pkg, const NodeDataIdx dataIndex, const U32 startOffset, const U8 lodLevel, DrawCommandContainer& cmdsInOut) {
+            return pkg.updateAndRetrieveDrawCommands(dataIndex, startOffset, lodLevel, cmdsInOut);
         }
 
         friend class RenderingComponent;

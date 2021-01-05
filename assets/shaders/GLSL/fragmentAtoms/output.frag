@@ -12,8 +12,6 @@ layout(location = TARGET_REVEALAGE) out float _revealage;
 layout(location = TARGET_MODULATE) out vec4  _modulate;
 #endif
 
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
-
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
 void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
 #if defined(USE_COLOURED_WOIT)

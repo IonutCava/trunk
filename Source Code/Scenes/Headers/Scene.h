@@ -57,7 +57,8 @@
 #include "Utility/Headers/XMLParser.h"
 
 namespace Divide {
-class Sky;
+    class SceneShaderData;
+    class Sky;
 class Light;
 class Object3D;
 class LoadSave;
@@ -194,6 +195,8 @@ class Scene : public Resource, public PlatformContextComponent {
 
     ResourceCache* resourceCache() noexcept { return _resCache; }
     const ResourceCache* resourceCache() const noexcept { return _resCache; }
+
+    SceneShaderData* shaderData() const noexcept;
 
     Camera* playerCamera() const;
     Camera* playerCamera(U8 index) const;
@@ -493,6 +496,10 @@ class SceneLoadSave {
 class SceneGraph {
     static void onNodeDestroy(Scene& scene, SceneGraphNode* node) {
         scene.onNodeDestroy(node);
+    }
+
+    static SceneEnvironmentProbePool* getEnvProbes(const Scene& scene) noexcept {
+        return scene._envProbePool;
     }
 
     friend class Divide::SceneGraph;

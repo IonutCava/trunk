@@ -37,6 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Headers/PushConstant.h"
 
 namespace Divide {
+    class SGNComponent;
     class ByteBuffer;
     class SceneNode;
     class SceneGraphNode;
@@ -72,7 +73,7 @@ namespace Divide {
         SLIDER_TYPE,
         SEPARATOR,
         BUTTON,
-        DROPDOWN_TYPE,
+        DROPDOWN_TYPE, //<Only U8 types supported!
         BOUNDING_BOX,
         BOUNDING_SPHERE,
         ORIENTED_BOUNDING_BOX,
@@ -85,6 +86,8 @@ namespace Divide {
     {
         std::function<void(void*)> _dataGetter = {};
         std::function<void(const void*)> _dataSetter = {};
+        std::function<const char*(U8)> _displayNameGetter = {};
+
         Str128 _tooltip = "";
         void* _data = nullptr;
         vec2<F32> _range = { 0.0f, 0.0f }; ///< Used by slider_type as a min / max range or dropdown as selected_index / count
@@ -141,6 +144,13 @@ namespace Divide {
             }
         }
 
+        const char* getDisplayName(const U8 index) const {
+            if (_displayNameGetter) {
+                return _displayNameGetter(index);
+            }
+            return "Error: no name getter!";
+        }
+
         [[nodiscard]] bool supportsByteCount() const noexcept {
             return _basicType == GFX::PushConstantType::INT ||
                    _basicType == GFX::PushConstantType::UINT ||
@@ -181,9 +191,9 @@ namespace Divide {
 
       public:
 
-        explicit EditorComponent(ComponentType parentComponentType, const Str128& name);
+        explicit EditorComponent(SGNComponent& parentComp, ComponentType parentComponentType, const Str128& name);
         explicit EditorComponent(const Str128& name);
-
+       
         virtual ~EditorComponent() = default;
 
         void addHeader(const Str32& name) {
@@ -217,6 +227,7 @@ namespace Divide {
         void loadFieldFromXML(EditorComponentField& field, const boost::property_tree::ptree& pt);
 
       protected:
+        SGNComponent* _parentComp = nullptr;
         DELEGATE<void, std::string_view> _onChangedCbk;
         vectorEASTL<EditorComponentField> _fields;
     };

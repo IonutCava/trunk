@@ -40,7 +40,7 @@ void main()
     }
     vec4 texColor = texture( Texture, uv );
     if (depthTexture == 1) {
-        texColor = vec4(ToLinearDepth(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
+        texColor = vec4(ToLinearDepthPreview(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
     } else {
         Out_Color.xyz *= toggleChannel.xyz;
         if (toggleChannel.w == 0) {

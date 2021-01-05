@@ -80,20 +80,20 @@ void RenderPass::initBufferData() {
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
     {// Node Transform buffer
-        bufferDescriptor._elementCount = RenderStagePass::passCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(NodeTransformData);
         bufferDescriptor._name = Util::StringFormat("NODE_TRANSFORM_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _transformData = _context.newSB(bufferDescriptor);
     }
     {// Node Material buffer
-        bufferDescriptor._elementCount = RenderStagePass::passCountForStage(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
+        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
         bufferDescriptor._elementSize = sizeof(NodeMaterialData);
         bufferDescriptor._name = Util::StringFormat("NODE_MATERIAL_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _materialData = _context.newSB(bufferDescriptor);
     }
 
     {// Indirect draw command buffer
-        bufferDescriptor._elementCount = RenderStagePass::passCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
         bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _cmdBuffer = _context.newSB(bufferDescriptor);
@@ -203,30 +203,28 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
         } break;
 
         case RenderStage::REFLECTION: {
-            static VisibleNodeList s_Nodes;
-
-            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Reflection Pass" });
-
             SceneManager* mgr = _parent.parent().sceneManager();
             Camera* camera = Attorney::SceneManagerCameraAccessor::playerCamera(mgr);
-            SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
+
+            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Reflection Pass" });
             {
+                OPTICK_EVENT("RenderPass - Probes");
                 SceneEnvironmentProbePool::Prepare(bufferInOut);
 
-                OPTICK_EVENT("RenderPass - Probes");
+                SceneEnvironmentProbePool* envProbPool = Attorney::SceneRenderPass::getEnvProbes(mgr->getActiveScene());
                 envProbPool->lockProbeList();
                 const EnvironmentProbeList& probes = envProbPool->sortAndGetLocked(camera->getEye());
                 U32 idx = 0u;
                 for (const auto& probe : probes) {
-                    probe->refresh(bufferInOut);
-                    if (++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
+                    if (probe->refresh(bufferInOut) && ++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
                         break;
                     }
                 }
                 envProbPool->unlockProbeList();
             }
-            OPTICK_EVENT("RenderPass - Reflection");
             {
+                OPTICK_EVENT("RenderPass - Reflection");
+                static VisibleNodeList s_Nodes;
                 //Update classic reflectors (e.g. mirrors, water, etc)
                 //Get list of reflective nodes from the scene manager
                 mgr->getSortedReflectiveNodes(camera, RenderStage::REFLECTION, true, s_Nodes);

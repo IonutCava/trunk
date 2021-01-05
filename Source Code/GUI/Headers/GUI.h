@@ -107,7 +107,6 @@ public:
     [[nodiscard]] const GUIConsole& getConsole() const noexcept { return *_console; }
 
     [[nodiscard]] CEGUI::Window* rootSheet() const noexcept { return _rootSheet; }
-    [[nodiscard]] const stringImpl& guiScheme() const noexcept { return _defaultGUIScheme; }
 
     /// Return a pointer to the default, general purpose message box
     [[nodiscard]] GUIMessageBox* getDefaultMessageBox() const noexcept { return _defaultMsgBox; }
@@ -151,6 +150,7 @@ public:
     void setRenderer(CEGUI::Renderer& renderer);
 
     PROPERTY_R(bool, showDebugCursor, false);
+    PROPERTY_R(stringImpl, defaultGUIScheme, "GWEN");
     void showDebugCursor(bool state);
 
 protected:
@@ -161,7 +161,6 @@ protected:
 protected:
     friend class SceneGUIElements;
     CEGUI::Window* _rootSheet = nullptr;  ///< gui root Window
-    stringImpl _defaultGUIScheme{};
     CEGUI::GUIContext* _ceguiContext = nullptr;
     CEGUI::TextureTarget* _ceguiRenderTextureTarget = nullptr;
 

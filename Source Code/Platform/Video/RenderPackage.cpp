@@ -18,6 +18,7 @@ void RenderPackage::clear() {
     }
     textureDataDirty(true);
     _isInstanced = false;
+    _drawCommandCount = 0u;
 }
 
 void RenderPackage::setLoDIndexOffset(const U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept {
@@ -42,6 +43,7 @@ void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
         }
     }
 
+    _drawCommandCount += to_U32(newCmd._drawCommands.size());
     _commands->add(newCmd);
 }
 
@@ -77,19 +79,20 @@ void RenderPackage::appendCommandBuffer(const GFX::CommandBuffer& commandBuffer)
     commands()->add(commandBuffer);
 }
 
-void RenderPackage::updateDrawCommands(U32 cmdOffset) {
+void RenderPackage::updateDrawCommands() {
     OPTICK_EVENT();
 
+    U32 startOffset = _lastCommandOffset;
     const GFX::CommandBuffer::Container::EntryList& drawCommandEntries = commands()->get<GFX::DrawCommand>();
     for (GFX::CommandBase* cmd : drawCommandEntries) {
         GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
-            drawCmd._commandOffset = cmdOffset++;
+            drawCmd._commandOffset = startOffset++;
         }
     }
 }
 
-void RenderPackage::updateAndRetrieveDrawCommands(const NodeDataIdx dataIndex, const U8 lodLevel, DrawCommandContainer& cmdsInOut) {
+U32 RenderPackage::updateAndRetrieveDrawCommands(const NodeDataIdx dataIndex, U32 startOffset, const U8 lodLevel, DrawCommandContainer& cmdsInOut) {
     OPTICK_EVENT();
 
     const U32 dataIndices = ((dataIndex._transformIDX << 16) | dataIndex._materialIDX);
@@ -98,7 +101,8 @@ void RenderPackage::updateAndRetrieveDrawCommands(const NodeDataIdx dataIndex, c
 
     const GFX::CommandBuffer::Container::EntryList& drawCommandEntries = commands()->get<GFX::DrawCommand>();
 
-    U32 startOffset = to_U32(cmdsInOut.size()) + dataIndex._commandOffset;
+    U16 ret = 0u;
+    _lastCommandOffset = startOffset;
     for (GFX::CommandBase* cmd : drawCommandEntries) {
         GFX::DrawCommand::CommandContainer& drawCommands = static_cast<GFX::DrawCommand&>(*cmd)._drawCommands;
         for (GenericDrawCommand& drawCmd : drawCommands) {
@@ -110,17 +114,18 @@ void RenderPackage::updateAndRetrieveDrawCommands(const NodeDataIdx dataIndex, c
                 drawCmd._cmd.indexCount = to_U32(count);
             }
             cmdsInOut.push_back(drawCmd._cmd);
+            ++ret;
         }
     }
 
     if (_isInstanced) {
         const U16 pushCount = to_U16(_commands->count<GFX::SendPushConstantsCommand>());
-        for (I32 i = 0; i < pushCount; ++i) {
+        for (U16 i = 0; i < pushCount; ++i) {
             _commands->get<GFX::SendPushConstantsCommand>(i)->_constants.set(_ID("DATA_INDICES"), GFX::PushConstantType::UINT, dataIndices);
         }
     }
 
-    lastDataIndex(dataIndex);
+    return ret;
 }
 
 GFX::CommandBuffer* RenderPackage::commands() {

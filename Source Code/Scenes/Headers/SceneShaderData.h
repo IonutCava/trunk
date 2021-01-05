@@ -41,7 +41,8 @@ namespace Divide {
 class GFXDevice;
 class ShaderBuffer;
 
-constexpr U8 GLOBAL_WATER_BODIES = 2;
+constexpr U8 GLOBAL_WATER_BODIES_COUNT = 2u;
+constexpr U16 GLOBAL_PROBE_COUNT = 512u;
 
 class SceneShaderData {
     struct SceneShaderBufferData {
@@ -60,7 +61,7 @@ class SceneShaderData {
         //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
         vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1000.0f, 1000.0f};
 
-        WaterBodyData _waterEntities[GLOBAL_WATER_BODIES] = {};
+        WaterBodyData _waterEntities[GLOBAL_WATER_BODIES_COUNT] = {};
 
         //RenderDoc: vec4 fogDetails; vec4 windDetails; vec4 shadowSettings; vec4 otherData;
     };
@@ -69,47 +70,43 @@ class SceneShaderData {
     explicit SceneShaderData(GFXDevice& context);
     ~SceneShaderData() = default;
 
-    [[nodiscard]] ShaderBuffer* buffer() const noexcept {
-        return _sceneShaderData;
-    }
-
     void sunDetails(const vec3<F32>& direction, const FColour3& colour) noexcept {
-        _bufferData._sunDirection.set(direction);
-        _bufferData._sunColour.set(colour);
-        _dirty = true;
+        _sceneBufferData._sunDirection.set(direction);
+        _sceneBufferData._sunColour.set(colour);
+        _sceneDataDirty = true;
     }
 
     void skyColour(const FColour4& horizon, const FColour4& zenith) noexcept {
-        _bufferData._horizonColour = horizon;
-        _bufferData._zenithColour = zenith;
-        _dirty = true;
+        _sceneBufferData._horizonColour = horizon;
+        _sceneBufferData._zenithColour = zenith;
+        _sceneDataDirty = true;
     }
 
     void fogDetails(const F32 colourR, const F32 colourG, const F32 colourB, const F32 density) noexcept {
-        _bufferData._fogDetails.set(colourR, colourG, colourB, density);
-        _dirty = true;
+        _sceneBufferData._fogDetails.set(colourR, colourG, colourB, density);
+        _sceneDataDirty = true;
     }
 
     void fogDensity(F32 density) noexcept {
         CLAMP_01(density);
-        _bufferData._fogDetails.w = density;
-        _dirty = true;
+        _sceneBufferData._fogDetails.w = density;
+        _sceneDataDirty = true;
     }
 
     void shadowingSettings(const F32 lightBleedBias, const F32 minShadowVariance, const F32 shadowFadeDist, const F32 shadowMaxDist) noexcept {
-        _bufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
-        _dirty = true;
+        _sceneBufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
+        _sceneDataDirty = true;
     }
 
     void windDetails(const F32 directionX, const F32 directionY, const F32 directionZ, const F32 speed) noexcept {
-        _bufferData._windDetails.set(directionX, directionY, directionZ, speed);
-        _dirty = true;
+        _sceneBufferData._windDetails.set(directionX, directionY, directionZ, speed);
+        _sceneDataDirty = true;
     }
 
     bool waterDetails(const U8 index, const WaterBodyData& data) {
-        if (index < GLOBAL_WATER_BODIES) {
-            _bufferData._waterEntities[index] = data;
-            _dirty = true;
+        if (index < GLOBAL_WATER_BODIES_COUNT) {
+            _sceneBufferData._waterEntities[index] = data;
+            _sceneDataDirty = true;
 
             return true;
         }
@@ -117,14 +114,30 @@ class SceneShaderData {
         return false;
     }
 
-    ShaderBuffer* uploadToGPU();
+    bool probeData(const U16 index, const vec3<F32>& center, const vec3<F32>& halfExtents) {
+        if (index < GLOBAL_PROBE_COUNT) {
+            _probeData[index]._positionW.xyz = center;
+            _probeData[index]._halfExtents.xyz = halfExtents;
+            _probeDataDirty = true;
+            return true;
+        }
+
+        return false;
+    }
+
+    void uploadToGPU();
 
   private:
+      using ProbeBufferData = std::array<ProbeData, GLOBAL_PROBE_COUNT>;
+
       GFXDevice& _context;
-      bool _dirty;
-      SceneShaderBufferData _bufferData;
+      bool _sceneDataDirty = true;
+      bool _probeDataDirty = true;
+      SceneShaderBufferData _sceneBufferData;
+      ProbeBufferData _probeData = {};
       /// Generic scene data that doesn't change per shader
-      ShaderBuffer* _sceneShaderData;
+      ShaderBuffer* _sceneShaderData = nullptr;
+      ShaderBuffer* _probeShaderData = nullptr;
 };
 } //namespace Divide
 

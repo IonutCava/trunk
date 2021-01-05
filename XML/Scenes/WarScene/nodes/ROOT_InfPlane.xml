@@ -3,7 +3,7 @@
 <INFINITE_PLANE/>
 <TRANSFORM>
     <Transform>
-        <position x="-26.3897972" y="-50" z="-84.2295609"/>
+        <position x="159.765411" y="-50" z="15.848814"/>
         <orientation x="0" y="-0" z="0"/>
         <scale x="1" y="1" z="1"/>
     </Transform>
@@ -40,8 +40,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -60,8 +60,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -80,8 +80,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -256,5 +256,8 @@
     </Material>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
     <Show__Axis>false</Show__Axis>
+    <Receives__Shadows>false</Receives__Shadows>
+    <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>

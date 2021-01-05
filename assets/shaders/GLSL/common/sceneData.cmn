@@ -9,9 +9,7 @@ struct WaterBodyData
     vec4 extents;
 };
 
-#define GLOBAL_WATER_BODIES 2
-
-layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneData {
+layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData {
     // w - reserved
     vec4 dvd_sunDirection;
     // w - reserved
@@ -26,13 +24,24 @@ layout(binding = BUFFER_SCENE_DATA, std430) coherent ACCESS_R buffer dvd_SceneDa
     vec4   dvd_windDetails;
     //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
     vec4   dvd_shadowingSettings;
-    WaterBodyData dvd_waterEntities[GLOBAL_WATER_BODIES];
+    WaterBodyData dvd_waterEntities[GLOBAL_WATER_BODIES_COUNT];
 };
 
 #define dvd_LightBleedBias dvd_shadowingSettings.x
 #define dvd_MinVariance dvd_shadowingSettings.y
 #define dvd_fogColour dvd_fogDetails.rgb
 #define dvd_fogDensity dvd_fogDetails.w
+
+struct ProbeData
+{
+    vec4 _positionW;
+    vec4 _halfExtents;
+};
+
+layout(binding = BUFFER_PROBE_DATA, std140) uniform dvd_ProbeBlock {
+    ProbeData dvd_Probes[GLOBAL_PROBE_COUNT];
+};
+
 #endif //FRAG_SHADER || NEED_SCENE_DATA
 
 #endif //_SCENE_DATA_INPUT_CMN_

@@ -39,6 +39,8 @@ namespace Divide {
 
 class Camera;
 class BoundingBox;
+class BoundingSphere;
+
 class Frustum {
    public:
     Frustum() = default;
@@ -92,13 +94,12 @@ class Frustum {
         return false;
     }
 
-    [[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane, const BoundingBox& bbox) const noexcept;
-    [[nodiscard]] FrustumCollision PlanePointIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& point) const noexcept;
-    [[nodiscard]] FrustumCollision PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, F32 radius) const noexcept;
     [[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(FrustumPlane frustumPlane, const BoundingBox& bbox) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneBoundingSphereIntersect(FrustumPlane frustumPlane, const BoundingSphere& bsphere) const noexcept;
     [[nodiscard]] FrustumCollision PlanePointIntersect(FrustumPlane frustumPlane, const vec3<F32>& point) const noexcept;
     [[nodiscard]] FrustumCollision PlaneSphereIntersect(FrustumPlane frustumPlane, const vec3<F32>& center, F32 radius) const noexcept;
     [[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes, U8 count, const BoundingBox& bbox) const noexcept;
+    [[nodiscard]] FrustumCollision PlaneBoundingSphereIntersect(const FrustumPlane* frustumPlanes, U8 count, const BoundingSphere& bsphere) const noexcept;
     [[nodiscard]] FrustumCollision PlanePointIntersect(const FrustumPlane* frustumPlanes, U8 count, const vec3<F32>& point) const noexcept;
     [[nodiscard]] FrustumCollision PlaneSphereIntersect(const FrustumPlane* frustumPlanes, U8 count, const vec3<F32>& center, F32 radius) const noexcept;
 
@@ -110,6 +111,11 @@ class Frustum {
     std::array<Plane<F32>, to_base(FrustumPlane::COUNT)>  _frustumPlanes = create_array<to_base(FrustumPlane::COUNT)>(DEFAULT_PLANE);
     std::array<vec3<F32>,  to_base(FrustumPoints::COUNT)> _frustumPoints = create_array<to_base(FrustumPoints::COUNT)>(VECTOR3_ZERO);
 };
+
+[[nodiscard]] FrustumCollision PlaneBoundingBoxIntersect(const Plane<F32>& plane, const BoundingBox& bbox) noexcept;
+[[nodiscard]] FrustumCollision PlaneBoundingSphereIntersect(const Plane<F32>& plane, const BoundingSphere& bsphere) noexcept;
+[[nodiscard]] FrustumCollision PlanePointIntersect(const Plane<F32>& plane, const vec3<F32>& point) noexcept;
+[[nodiscard]] FrustumCollision PlaneSphereIntersect(const Plane<F32>& plane, const vec3<F32>& center, F32 radius) noexcept;
 
 };  // namespace Divide
 

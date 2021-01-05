@@ -168,5 +168,5 @@ void main() {
         //Nothing. HDR? Nope. Straight up saturate (i.e. bad)
         _colourOut.rgb = ToSRGBAccurate(screenColour);
     }
-    _colourOut.a = luminance(_colourOut.rgb);
+    _colourOut.a = Luminance(_colourOut.rgb);
 }

@@ -3,39 +3,39 @@
 
 #if defined(SAMPLER_UNIT0_IS_ARRAY)
 #define samplerUnit0 sampler2DArray
-#else
+#else //SAMPLER_UNIT0_IS_ARRAY
 #define samplerUnit0 sampler2D
-#endif
+#endif //SAMPLER_UNIT0_IS_ARRAY
 #if defined(SAMPLER_OPACITY_IS_ARRAY)
 #define samplerOpacity sampler2DArray
-#else
+#else //SAMPLER_OPACITY_IS_ARRAY
 #define samplerOpacity sampler2D
-#endif
+#endif //SAMPLER_OPACITY_IS_ARRAY
 #if defined(SAMPLER_UNIT1_IS_ARRAY)
 #define samplerUnit1 sampler2DArray
-#else
+#else //SAMPLER_UNIT1_IS_ARRAY
 #define samplerUnit1 sampler2D
-#endif
+#endif //SAMPLER_UNIT1_IS_ARRAY
 #if defined(SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY)
 #define samplerOMR sampler2DArray
-#else
+#else //SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY
 #define samplerOMR sampler2D
-#endif
+#endif //SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY
 #if defined(SAMPLER_HEIGHTMAP_IS_ARRAY)
 #define samplerHeight sampler2DArray
-#else
+#else //SAMPLER_HEIGHTMAP_IS_ARRAY
 #define samplerHeight sampler2D
-#endif
+#endif //SAMPLER_HEIGHTMAP_IS_ARRAY
 #if defined(SAMPLER_PROJECTION_IS_ARRAY)
 #define samplerProj sampler2DArray
-#else
+#else //SAMPLER_PROJECTION_IS_ARRAY
 #define samplerProj sampler2D
-#endif
+#endif //SAMPLER_PROJECTION_IS_ARRAY
 #if defined(SAMPLER_NORMALMAP_IS_ARRAY)
 #define samplerNormal sampler2DArray
-#else
+#else //SAMPLER_NORMALMAP_IS_ARRAY
 #define samplerNormal sampler2D
-#endif
+#endif //SAMPLER_NORMALMAP_IS_ARRAY
 
 struct NodeTransformData {
     mat4 _worldMatrix;
@@ -68,7 +68,7 @@ struct NodeMaterialData
     //x = 4x8U: occlusion, metallic, roughness, reserved
     //y = IBL texture size
     //z = 4x8U: tex op, bump method, reserved, reserved
-    //w = Textures lookup index
+    //w = Probe lookup index + 1 (0 = sky cubemap)
     uvec4 _data;
 
     //TextureData
@@ -92,13 +92,14 @@ struct NodeMaterialData
 
 #define IBLSize(materialData) materialData._data.y
 
+#define dvd_probeIndex(materialData) materialData._data.w
+
 #define dvd_texOperation(materialData) uint(unpackUnorm4x8(materialData._data.z).x * 255)
 
 #define dvd_bumpMethod(X)  uint(unpackUnorm4x8(dvd_Materials[X]._data.z).y * 255)
 
-#define dvd_texturesIndex(materialData) materialData._data.w
-
 #define dvd_parallaxFactor(X)  dvd_Materials[X]._emissiveAndParallax.a
+
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA
 
 #define NormalMatrixW(transformData) mat3(transformData._normalMatrixW)

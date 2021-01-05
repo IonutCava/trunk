@@ -31,15 +31,12 @@ uniform vec4 _fadeColour;
 
 uniform vec2 _zPlanes;
 
-vec4 LevelOfGrey(in vec4 colourIn) {
-    return vec4(colourIn.r * 0.299f, colourIn.g * 0.587f, colourIn.b * 0.114f, colourIn.a);
-}
-
 vec4 Vignette(in vec4 colourIn){
     vec4 colourOut = colourIn - (vec4(1,1,1,2) - texture(texVignette, VAR._texCoord));
     return vec4(clamp(colourOut.rgb,0.0,1.0), colourOut.a);
 }
 
+#define LevelOfGrey(C) vec4(C.rgb * _kLum, C.a)
 vec4 Noise(in vec4 colourIn){
     return mix(texture(texNoise, VAR._texCoord + vec2(randomCoeffNoise, randomCoeffNoise)),
                vec4(1.0), randomCoeffFlash) / 3.0f + 2.0f * LevelOfGrey(colourIn) / 3.0f;

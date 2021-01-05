@@ -1,6 +1,10 @@
 #include "stdafx.h"
 
 #include "Headers/SubMesh.h"
+
+
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Headers/Mesh.h"
 
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -11,18 +15,7 @@
 namespace Divide {
 
 SubMesh::SubMesh(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name, const ObjectFlag flag)
-    : Object3D(context,
-               parentCache,
-               descriptorHash,
-               name,
-               {},
-               {},
-               ObjectType::SUBMESH,
-               to_base(flag)),
-      _visibleToNetwork(true),
-      _render(true),
-      _ID(0),
-      _parentMesh(nullptr)
+    : Object3D(context, parentCache, descriptorHash, name, {}, {}, ObjectType::SUBMESH, to_base(flag))
 {
 }
 
@@ -38,8 +31,10 @@ void SubMesh::buildDrawCommands(SceneGraphNode* sgn,
     cmd._cmd.indexCount = to_U32(getGeometryVB()->getPartitionIndexCount(_geometryPartitionIDs[0]));
     cmd._cmd.primCount = sgn->instanceCount();
     cmd._bufferIndex = renderStagePass.baseIndex();
-
-    pkgInOut.add(GFX::DrawCommand{ cmd });
+    
+    if (sgn->context().config().debug.renderFilter.meshes) {
+        pkgInOut.add(GFX::DrawCommand{ cmd });
+    }
 
     Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }

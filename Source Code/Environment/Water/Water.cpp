@@ -279,12 +279,12 @@ void WaterPlane::postLoad(SceneGraphNode* sgn) {
         renderable->lockLoD(0u);
     }
 
-    renderable->setReflectionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
-        updateReflection(params, commandsInOut);
+    renderable->setReflectionCallback([this](RenderPassManager* passManager, RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
+        updateReflection(passManager, params, commandsInOut);
     });
 
-    renderable->setRefractionCallback([this](RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
-        updateRefraction(params, commandsInOut);
+    renderable->setRefractionCallback([this](RenderPassManager* passManager, RenderCbkParams& params, GFX::CommandBuffer& commandsInOut) {
+        updateRefraction(passManager, params, commandsInOut);
     });
 
     renderable->setReflectionAndRefractionType(ReflectorType::PLANAR, RefractorType::PLANAR);
@@ -352,14 +352,20 @@ void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
     cmd._cmd.indexCount = to_U32(_plane->getGeometryVB()->getIndexCount());
     cmd._sourceBuffer = _plane->getGeometryVB()->handle();
     cmd._bufferIndex = renderStagePass.baseIndex();
-    {
+
+    if (sgn->context().config().debug.renderFilter.water) {
         pkgInOut.add(GFX::DrawCommand{ cmd });
     }
+
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
 
 /// update water refraction
-void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
+void WaterPlane::updateRefraction(RenderPassManager* passManager, RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) const {
+    if (!renderParams._sgn->context().config().debug.renderFilter.water) {
+        return;
+    }
+
     static RTClearColourDescriptor clearColourDescriptor;
     clearColourDescriptor._customClearColour[0] = DefaultColours::BLUE;
 
@@ -368,11 +374,10 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     const bool underwater = PointUnderwater(renderParams._sgn, renderParams._camera->getEye());
     Plane<F32> refractionPlane;
     updatePlaneEquation(renderParams._sgn, refractionPlane, underwater, refrPlaneOffset());
+    refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     RTClearDescriptor clearDescriptor = {};
     clearDescriptor.customClearColour(&clearColourDescriptor);
-
-    refractionPlane._distance += g_reflectionPlaneCorrectionHeight;
 
     Configuration& config = renderParams._context.context().config();
 
@@ -381,10 +386,10 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetHIZ = {}; // We don't need to HiZ cull refractions
     params._targetOIT = {}; // We don't need to draw refracted transparents using woit 
     params._camera = renderParams._camera;
-    params._minExtents.set(0.75f);
+    params._minExtents.set(1.0f);
     params._stagePass = RenderStagePass(RenderStage::REFRACTION, RenderPassType::COUNT, to_U8(RefractorType::PLANAR), renderParams._passIndex);
     params._target = renderParams._renderTarget;
-    params._clippingPlanes._planes[0] = refractionPlane;
+    params._clippingPlanes.set(0, refractionPlane);
     params._passName = "Refraction";
     params._shadowMappingEnabled = underwater && config.rendering.shadowMapping.enabled;
 
@@ -393,11 +398,15 @@ void WaterPlane::updateRefraction(RenderCbkParams& renderParams, GFX::CommandBuf
     clearMainTarget._descriptor = clearDescriptor;
     EnqueueCommand(bufferInOut, clearMainTarget);
 
-    renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
+    passManager->doCustomPass(params, bufferInOut);
 }
 
 /// Update water reflections
-void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) {
+void WaterPlane::updateReflection(RenderPassManager* passManager, RenderCbkParams& renderParams, GFX::CommandBuffer& bufferInOut) const {
+    if (!renderParams._sgn->context().config().debug.renderFilter.water) {
+        return;
+    }
+
     static RTClearColourDescriptor clearColourDescriptor;
     clearColourDescriptor._customClearColour[0] = DefaultColours::BLUE;
 
@@ -428,10 +437,10 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z_REFLECT);
     params._targetOIT = RenderTargetID(RenderTargetUsage::OIT_REFLECT);
     params._camera = _reflectionCam;
-    params._minExtents.set(1.25f);
+    params._minExtents.set(1.5f);
     params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::PLANAR), renderParams._passIndex);
     params._target = renderParams._renderTarget;
-    params._clippingPlanes._planes[0] = reflectionPlane;
+    params._clippingPlanes.set(0, reflectionPlane);
     params._passName = "Reflection";
 
     GFX::ClearRenderTargetCommand clearMainTarget = {};
@@ -439,7 +448,7 @@ void WaterPlane::updateReflection(RenderCbkParams& renderParams, GFX::CommandBuf
     clearMainTarget._descriptor = clearDescriptor;
     EnqueueCommand(bufferInOut, clearMainTarget);
 
-    renderParams._context.parent().renderPassManager()->doCustomPass(params, bufferInOut);
+    passManager->doCustomPass(params, bufferInOut);
 
     if (_blurReflections) {
         RenderTarget& reflectTarget = renderParams._context.renderTargetPool().renderTarget(renderParams._renderTarget);
@@ -464,8 +473,7 @@ void WaterPlane::updatePlaneEquation(const SceneGraphNode* sgn, Plane<F32>& plan
     const F32 waterLevel = sgn->get<TransformComponent>()->getPosition().y * (reflection ? -1.f : 1.f);
     const Quaternion<F32>& orientation = sgn->get<TransformComponent>()->getOrientation();
 
-    plane.set(Normalized(vec3<F32>(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS))), 
-              offset + waterLevel);
+    plane.set(Normalized(vec3<F32>(orientation * (reflection ? WORLD_Y_AXIS : WORLD_Y_NEG_AXIS))),  offset + waterLevel);
 }
 
 const vec3<U16>& WaterPlane::getDimensions() const {

@@ -1,31 +1,20 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-#define texBlendMaps   texOpacityMap
-#define helperTextures texOMR
-#define texExtraMaps   texProjected
-
-#if defined(PRE_PASS)
-#define texNormalArray texDiffuse1
-#else
-#define texTileMaps texDiffuse0
-#endif
-
 #define SAMPLE_NO_TILE_ARRAYS
 #include "texturing.frag"
 #include "waterData.cmn"
 
 #if defined(LOW_QUALITY) || !defined(REDUCE_TEXTURE_TILE_ARTIFACT)
-#define sampleTexture texture
+#define SampleTextureNoTile texture
 #else //LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
-
-vec4 sampleTexture(in sampler2DArray tex, in vec3 texUV) {
+vec4 SampleTextureNoTile(in sampler2DArray tex, in vec3 texUV) {
 #if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
 
 #if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
-    return dvd_LoD < 2 ? textureNoTile(tex, helperTextures, 3, texUV, 0.5f) : texture(tex, texUV);
+    return dvd_LoD < 2 ? textureNoTile(tex, texOMR, 3, texUV, 0.5f) : texture(tex, texUV);
 #else 
-    return textureNoTile(tex, helperTextures, 3, texUV, 0.5f);
+    return textureNoTile(tex, texOMR, 3, texUV, 0.5f);
 #endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
 
 #else  //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
@@ -46,7 +35,7 @@ float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
 
     uint offset = 0;
     for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
-        const vec4 blendColour = texture(texBlendMaps, vec3(uv, i));
+        const vec4 blendColour = texture(texOpacityMap, vec3(uv, i));
         for (uint j = 0; j < CURRENT_LAYER_COUNT[i]; ++j) {
             blendAmount[offset + j] = blendColour[j];
         }
@@ -75,7 +64,7 @@ vec3 getTBNViewDir() { return VAR._tbnViewDir; }
 float getDisplacementValueFromCoords(in vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
     float ret = 0.0f;
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        ret = mix(ret, sampleTexture(texExtraMaps, vec3(sampleUV, DISPLACEMENT_IDX[i])).r, amnt[i]);
+        ret = mix(ret, SampleTextureNoTile(texProjected, vec3(sampleUV, DISPLACEMENT_IDX[i])).r, amnt[i]);
     }
 
     return 1.0f - ret;
@@ -139,9 +128,9 @@ vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
 
     return scaledCoords;
 }
-#else
+#else //!LOW_QUALITY && HAS_PARALLAX
 #define getScaledCoords(UV, AMNT) scaledTextureCoords(UV)
-#endif
+#endif //!LOW_QUALITY && HAS_PARALLAX
 
 #if defined(PRE_PASS)
 vec3 getTerrainNormal(in vec2 uv) {
@@ -149,7 +138,7 @@ vec3 getTerrainNormal(in vec2 uv) {
     const vec2 scaledUV = getScaledCoords(uv, blendAmount);
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, sampleTexture(texNormalArray, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
+        normal = mix(normal, SampleTextureNoTile(texDiffuse1, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
     return normal;
@@ -163,7 +152,7 @@ vec3 getTerrainNormal(in vec2 uv) {
 #else //LOW_QUALITY
 vec3 getMixedNormalWV(in vec2 uv) {
     const float waterDist = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET).x;
-    const vec3 normalTBN = mix(texture(helperTextures, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
+    const vec3 normalTBN = mix(texture(texOMR, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
                                getTerrainNormal(uv),
                                saturate(1.0f - waterDist));
 
@@ -185,8 +174,8 @@ vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
     uvNormal1.s -= time2;
     uvNormal1.t += time2;
 
-    return vec4(mix((texture(helperTextures, vec3(uvNormal0, 0)).rgb + texture(helperTextures, vec3(uvNormal1, 0)).rgb) * 0.5f,
-                     texture(helperTextures, vec3(scaledUV, 1)).rgb,
+    return vec4(mix((texture(texOMR, vec3(uvNormal0, 0)).rgb + texture(texOMR, vec3(uvNormal1, 0)).rgb) * 0.5f,
+                     texture(texOMR, vec3(scaledUV,  1)).rgb,
                      waterDepth),
                 0.3f);
 }
@@ -198,7 +187,7 @@ vec4 getTerrainAlbedo(in vec2 uv) {
     vec4 ret = vec4(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         // Albedo & Roughness
-        ret = mix(ret, sampleTexture(texTileMaps, vec3(scaledUV, ALBEDO_IDX[i])), blendAmount[i]);
+        ret = mix(ret, SampleTextureNoTile(texDiffuse0, vec3(scaledUV, ALBEDO_IDX[i])), blendAmount[i]);
         // ToDo: AO
     }
     return ret;

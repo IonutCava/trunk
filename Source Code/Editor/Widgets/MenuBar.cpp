@@ -2,30 +2,39 @@
 
 #include "Headers/MenuBar.h"
 
-#include "Editor/Headers/Editor.h"
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/Application.h"
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Editor/Headers/Editor.h"
 
 #include "Managers/Headers/SceneManager.h"
 
+#include "Geometry/Shapes/Predefined/Headers/Box3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Textures/Headers/Texture.h"
-
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/Headers/PostFX.h"
 #include "Rendering/PostFX/Headers/PreRenderOperator.h"
 
-#include "ECS/Systems/Headers/ECSManager.h"
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
+#include "ECS/Systems/Headers/ECSManager.h"
 
 #include <imgui/addons/imguifilesystem/imguifilesystem.h>
 
+
+#include "Core/Resources/Headers/ResourceCache.h"
 #include "ECS/Systems/Headers/AnimationSystem.h"
+#include "Geometry/Material/Headers/Material.h"
+#include "Geometry/Material/Headers/MaterialEnums.h"
 
 namespace Divide {
 namespace {
+    SceneGraphNodeDescriptor g_nodeDescriptor;
+    SceneNodeType g_currentNodeType = SceneNodeType::TYPE_OBJECT3D;
+
     const stringImpl s_messages[] = {
         "Please wait while saving current scene! App may appear frozen or stuttery for up to 30 seconds ...",
         "Saved scene succesfully",
@@ -178,6 +187,92 @@ void MenuBar::draw() {
                 if (g_saveSceneParams._closePopup) {
                     _savePopup = false;
                     ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+        }
+
+        if (_newPrimitiveType._value != ObjectType::COUNT) {
+            ImGui::OpenPopup("Create Primitive");
+            if (ImGui::BeginPopupModal("Create Primitive", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+                ImGui::Text(Util::StringFormat("Create a new [ %s ]?", _newPrimitiveType._to_string()).c_str());
+                ImGui::Separator();
+
+                static char buf[64];
+                if (ImGui::InputText("Name", &buf[0], 61)) {
+                    g_nodeDescriptor._name = buf;
+                }
+                
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                    ImGui::CloseCurrentPopup();
+                    _newPrimitiveType = ObjectType::COUNT;
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (g_nodeDescriptor._name.empty()) {
+                    PushReadOnly();
+                }
+                if (ImGui::Button("Create", ImVec2(120, 0))) {
+                    g_currentNodeType = SceneNodeType::TYPE_OBJECT3D;
+
+                    g_nodeDescriptor._componentMask = to_U32(ComponentType::TRANSFORM) |
+                        to_U32(ComponentType::BOUNDS) |
+                        to_U32(ComponentType::RIGID_BODY) |
+                        to_U32(ComponentType::RENDERING) |
+                        to_U32(ComponentType::SELECTION) |
+                        to_U32(ComponentType::NAVIGATION);
+                    g_nodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+
+                    ResourceCache* parentCache = _context.kernel().resourceCache();
+                    ResourceDescriptor nodeDescriptor(g_nodeDescriptor._name + "_n");
+                    switch (_newPrimitiveType) {
+                        case ObjectType::SPHERE_3D:
+                        {
+                            auto node = CreateResource<Sphere3D>(parentCache, nodeDescriptor);
+                            node->setResolution(16);
+                            node->setRadius(1.0f);
+                            g_nodeDescriptor._node = node;
+                        } break;
+                        case ObjectType::BOX_3D:
+                        {
+                            auto node = CreateResource<Box3D>(parentCache, nodeDescriptor);
+                            node->setHalfExtent(1.0f);
+                            g_nodeDescriptor._node = node;
+                        } break;
+                        case ObjectType::QUAD_3D:
+                        {
+                            P32 quadMask;
+                            quadMask.i = 0;
+                            quadMask.b[0] = 1;
+                            nodeDescriptor.mask(quadMask);
+
+                            auto node = CreateResource<Quad3D>(parentCache, nodeDescriptor);
+                            node->setCorner(Quad3D::CornerLocation::TOP_LEFT, vec3<F32>(0, 1, 0));
+                            node->setCorner(Quad3D::CornerLocation::TOP_RIGHT, vec3<F32>(1, 1, 0));
+                            node->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT, vec3<F32>(0, 0, 0));
+                            node->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
+
+                            g_nodeDescriptor._node = node;
+                        } break;
+                        default: 
+                            DIVIDE_UNEXPECTED_CALL();
+                            break;
+                    }
+                    if (g_nodeDescriptor._node != nullptr) {
+                        g_nodeDescriptor._node->getMaterialTpl()->shadingMode(ShadingMode::BLINN_PHONG);
+                        g_nodeDescriptor._node->getMaterialTpl()->baseColour(FColour4(0.4f, 0.4f, 0.4f, 1.0f));
+                        g_nodeDescriptor._node->getMaterialTpl()->roughness(0.5f);
+                        g_nodeDescriptor._node->getMaterialTpl()->metallic(0.5f);
+                        const Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
+                        activeScene.sceneGraph()->getRoot()->addChildNode(g_nodeDescriptor);
+                        Attorney::EditorGeneralWidget::registerUnsavedSceneChanges(_context.editor());
+                    }
+
+                    ImGui::CloseCurrentPopup();
+                    _newPrimitiveType = ObjectType::COUNT;
+                }
+                if (g_nodeDescriptor._name.empty()) {
+                    PopReadOnly();
                 }
                 ImGui::EndPopup();
             }
@@ -346,11 +441,24 @@ void MenuBar::drawProjectMenu() const {
         ImGui::EndMenu();
     }
 }
-void MenuBar::drawObjectMenu() const {
+void MenuBar::drawObjectMenu() {
     if (ImGui::BeginMenu("Object"))
     {
-        if(ImGui::MenuItem("New Node", "", false, false))
+        if (ImGui::BeginMenu("New Primitive")) 
         {
+            if (ImGui::MenuItem("Sphere")) {
+                g_nodeDescriptor = {};
+                _newPrimitiveType = ObjectType::SPHERE_3D;
+            }
+            if (ImGui::MenuItem("Box")) {
+                g_nodeDescriptor = {};
+                _newPrimitiveType = ObjectType::BOX_3D;
+            }
+            if (ImGui::MenuItem("Plane")) {
+                g_nodeDescriptor = {};
+                _newPrimitiveType = ObjectType::QUAD_3D;
+            }
+            ImGui::EndMenu();
         }
 
         ImGui::EndMenu();
@@ -461,10 +569,11 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug albedo", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_ALBEDO : GFXDevice::MaterialDebugFlag::COUNT);
             }
-            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHTING;
-            if (ImGui::MenuItem("Debug lighting", "", &debug)) {
-                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHTING : GFXDevice::MaterialDebugFlag::COUNT);
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_DEPTH;
+            if (ImGui::MenuItem("Debug depth", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_DEPTH : GFXDevice::MaterialDebugFlag::COUNT);
             } 
+
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SPECULAR;
             if (ImGui::MenuItem("Debug specular", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_SPECULAR : GFXDevice::MaterialDebugFlag::COUNT);
@@ -493,9 +602,9 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug normals", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_NORMALS : GFXDevice::MaterialDebugFlag::COUNT);
             }
-            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_TBN_VIEW_DIRECTION;
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_TBN_VIEW_DIR;
             if (ImGui::MenuItem("Debug TBN view dir", "", &debug)) {
-                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_TBN_VIEW_DIRECTION : GFXDevice::MaterialDebugFlag::COUNT);
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_TBN_VIEW_DIR : GFXDevice::MaterialDebugFlag::COUNT);
             }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_SHADOW_MAPS;
             if (ImGui::MenuItem("Debug shadow maps", "", &debug)) {
@@ -509,6 +618,10 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug Reflections", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIONS : GFXDevice::MaterialDebugFlag::COUNT);
             }
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIVITY;
+            if (ImGui::MenuItem("Debug Reflectivity", "", &debug)) {
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_REFLECTIVITY : GFXDevice::MaterialDebugFlag::COUNT);
+            }
             debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_MATERIAL_IDS;
             if (ImGui::MenuItem("Debug Material IDs", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_MATERIAL_IDS : GFXDevice::MaterialDebugFlag::COUNT);
@@ -517,9 +630,9 @@ void MenuBar::drawDebugMenu() {
             if (ImGui::MenuItem("Debug Light Heatmap", "", &debug)) {
                 _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_HEATMAP : GFXDevice::MaterialDebugFlag::COUNT);
             }
-            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_DEPTH_CLUSTERS;
+            debug = debugFlag == GFXDevice::MaterialDebugFlag::DEBUG_DEPTH_CLUSTERS;
             if (ImGui::MenuItem("Debug Light Depth Clusters", "", &debug)) {
-                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_LIGHT_DEPTH_CLUSTERS : GFXDevice::MaterialDebugFlag::COUNT);
+                _context.gfx().materialDebugFlag(debug ? GFXDevice::MaterialDebugFlag::DEBUG_DEPTH_CLUSTERS : GFXDevice::MaterialDebugFlag::COUNT);
             }
             ImGui::EndMenu();
         }

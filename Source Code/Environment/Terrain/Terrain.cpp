@@ -1,24 +1,26 @@
 #include "stdafx.h"
 
 #include "Headers/Terrain.h"
-#include "Headers/TileRing.h"
+
+#include "Core/Headers/Configuration.h"
 #include "Headers/TerrainChunk.h"
 #include "Headers/TerrainDescriptor.h"
+#include "Headers/TileRing.h"
 
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 #include "Graphs/Headers/SceneGraphNode.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
-#include "ECS/Components/Headers/RigidBodyComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "ECS/Components/Headers/RigidBodyComponent.h"
 
 #include "Geometry/Material/Headers/Material.h"
+#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Platform/Video/Headers/RenderPackage.h"
-#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
-#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 namespace Divide {
 
@@ -292,7 +294,7 @@ void Terrain::postBuild() {
 
 void Terrain::toggleBoundingBoxes() {
     _terrainQuadtree.toggleBoundingBoxes();
-    _drawCommandsDirty = true;
+    rebuildDrawCommands(true);
 }
 
 void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
@@ -319,11 +321,6 @@ void Terrain::prepareRender(SceneGraphNode* sgn,
                             const RenderStagePass& renderStagePass,
                             const Camera& camera,
                             const bool refreshData) {
-    if (_drawCommandsDirty) {
-        rebuildDrawCommands(true);
-        _drawCommandsDirty = false;
-    }
-
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         rComp.getMaterialInstance()->parallaxFactor(parallaxHeightScale());
@@ -371,30 +368,32 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
                                 const Camera& crtCamera,
                                 RenderPackage& pkgInOut) {
 
-    const F32 triangleWidth = to_F32(tessParams().tessellatedTriangleWidth());
-    GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
-    pushConstantsCommand._constants.set(_ID("dvd_tileWorldPosition"),  GFX::PushConstantType::VEC2,  VECTOR2_ZERO);
-    pushConstantsCommand._constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  VECTOR2_ZERO);
-    pkgInOut.add(pushConstantsCommand);
+    if (sgn->context().config().debug.renderFilter.terrain) {
+        const F32 triangleWidth = to_F32(tessParams().tessellatedTriangleWidth());
+        GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        pushConstantsCommand._constants.set(_ID("dvd_tessTriangleWidth"), GFX::PushConstantType::FLOAT, triangleWidth);
+        pushConstantsCommand._constants.set(_ID("dvd_tileWorldPosition"), GFX::PushConstantType::VEC2, VECTOR2_ZERO);
+        pushConstantsCommand._constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2, VECTOR2_ZERO);
+        pkgInOut.add(pushConstantsCommand);
 
-    GenericDrawCommand cmd = {};
-    cmd._primitiveType = PrimitiveType::PATCH;
-    cmd._sourceBuffer = _terrainBuffer->handle();
-    cmd._cmd.indexCount = to_U32(TessellationParams::QUAD_LIST_INDEX_COUNT);
-    cmd._bufferIndex = 0u;
+        GenericDrawCommand cmd = {};
+        cmd._primitiveType = PrimitiveType::PATCH;
+        cmd._sourceBuffer = _terrainBuffer->handle();
+        cmd._cmd.indexCount = to_U32(TessellationParams::QUAD_LIST_INDEX_COUNT);
+        cmd._bufferIndex = 0u;
 
-    for (const auto& tileRing : _tileRings) {
-        cmd._cmd.primCount = tileRing->tileCount();
-        pkgInOut.add(GFX::DrawCommand{ cmd });
-        if_constexpr(USE_BASE_VERTEX_OFFSETS) {
-            cmd._cmd.baseVertex += cmd._cmd.primCount;
-        } else {
-            ++cmd._bufferIndex;
+        for (const auto& tileRing : _tileRings) {
+            cmd._cmd.primCount = tileRing->tileCount();
+            pkgInOut.add(GFX::DrawCommand{ cmd });
+            if_constexpr(USE_BASE_VERTEX_OFFSETS) {
+                cmd._cmd.baseVertex += cmd._cmd.primCount;
+            } else {
+                ++cmd._bufferIndex;
+            }
         }
-    }
 
-    _terrainQuadtree.drawBBox(pkgInOut);
+        _terrainQuadtree.drawBBox(pkgInOut);
+    }
 
     Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }

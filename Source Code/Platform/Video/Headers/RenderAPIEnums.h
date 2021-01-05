@@ -180,6 +180,7 @@ enum class ShaderBufferLocation : U8 {
     BONE_TRANSFORMS,
     BONE_TRANSFORMS_PREV,
     SCENE_DATA,
+    PROBE_DATA,
     GRASS_DATA,
     TREE_DATA,
     CMD_BUFFER,

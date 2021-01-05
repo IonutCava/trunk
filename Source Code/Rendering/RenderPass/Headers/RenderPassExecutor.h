@@ -60,13 +60,13 @@ class RenderPassExecutor
 public:
     struct MaterialUpdateRange
     {
-        U32 _firstIDX = std::numeric_limits<U32>::max();
-        U32 _lastIDX = 0u;
+        U16 _firstIDX = std::numeric_limits<U16>::max();
+        U16 _lastIDX = 0u;
 
-        [[nodiscard]] U32 range() const noexcept { return _lastIDX >= _firstIDX ? _lastIDX - _firstIDX + 1u : 0u; }
+        [[nodiscard]] U16 range() const noexcept { return _lastIDX >= _firstIDX ? _lastIDX - _firstIDX + 1u : 0u; }
 
         void reset() noexcept {
-            _firstIDX = std::numeric_limits<U32>::max();
+            _firstIDX = std::numeric_limits<U16>::max();
             _lastIDX = 0u;
         }
     };
@@ -116,20 +116,26 @@ private:
     NodeDataIdx processVisibleNode(const RenderingComponent& rComp,
                                    RenderStage stage,
                                    D64 interpolationFactor,
-                                   U16 nodeIndex,
-                                   U32 cmdOffset);
+                                   U32 materialElementOffset,
+                                   U16 nodeIndex);
 
-    void buildDrawCommands(const RenderPassParams& params, GFX::CommandBuffer& bufferInOut);
-    U16 prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, bool hasInvalidNodes, GFX::CommandBuffer& bufferInOut);
+    void buildDrawCommands(const RenderPassParams& params, bool doPrePass, bool doOITPass, GFX::CommandBuffer& bufferInOut);
+    U16 prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, bool hasInvalidNodes, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut);
 
     void renderQueueToSubPasses(GFX::CommandBuffer& commandsInOut,
                                 RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
     [[nodiscard]] U32 renderQueueSize(RenderPackage::MinQuality qualityRequirement = RenderPackage::MinQuality::COUNT) const;
 
-    void addTexturesAt(U16 idx, const NodeMaterialTextures& tempTextures);
+    void addTexturesAt(size_t idx, const NodeMaterialTextures& tempTextures);
 
 private:
+    struct PerRingEntryMaterialData {
+        MaterialUpdateRange _matUpdateRange{};
+        vectorEASTL<NodeMaterialData> _nodeMaterialData{};
+        vectorEASTL<std::pair<size_t, U16>> _nodeMaterialLookupInfo{};
+    };
+
     RenderPassManager& _parent;
     GFXDevice& _context;
     const RenderStage _stage;
@@ -139,16 +145,12 @@ private:
     RenderQueuePackages _renderQueuePackages{};
 
     U32 _materialBufferIndex = 0u;
-    U32 _prevMaterialBufferIndex = RenderPass::DataBufferRingSize - 1u;
-    U32 _updateCounter = RenderPass::DataBufferRingSize;
 
     std::array<NodeTransformData, Config::MAX_VISIBLE_NODES> _nodeTransformData{};
-    std::array<NodeMaterialData, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialData{};
-    std::array<std::pair<size_t, U16>, Config::MAX_CONCURRENT_MATERIALS> _nodeMaterialLookupInfo{};
+
+    std::array<PerRingEntryMaterialData, RenderPass::DataBufferRingSize> _materialData{};
 
     eastl::set<SamplerAddress> _uniqueTextureAddresses{};
-    std::array<MaterialUpdateRange, RenderPass::DataBufferRingSize> _matUpdateRange{};
-
 
     static Pipeline* s_OITCompositionPipeline;
 };

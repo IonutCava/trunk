@@ -37,10 +37,10 @@
 #include "ECS/Components/Headers/SelectionComponent.h"
 #include "ECS/Components/Headers/SpotLightComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
-#include "ECS/Components/Headers/UnitComponent.h"
 
 #include "Dynamics/Entities/Triggers/Headers/Trigger.h"
 #include "Dynamics/Entities/Units/Headers/Player.h"
+#include "ECS/Components/Headers/UnitComponent.h"
 
 #include "Platform/Audio/Headers/SFXDevice.h"
 #include "Platform/File/Headers/FileManagement.h"
@@ -122,8 +122,6 @@ bool Scene::frameEnded() {
 }
 
 bool Scene::idle() {  // Called when application is idle
-    _sceneGraph->idle();
-
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
         if (_context.gfx().getFrameCount() > 1) {
             _sceneGraph->getRoot()->get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
@@ -266,10 +264,6 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
 
         if (copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true)) {
             XML::writeXML((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt);
-        } else {
-            if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
-                DIVIDE_UNEXPECTED_CALL();
-            }
         }
     }
 
@@ -430,6 +424,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
 
         SceneNode_ptr ret = nullptr;
         bool skipAdd = true;
+        bool nodeStatic = true;
 
         if (IsPrimitive(sceneNode.typeHash)) {// Primitive types (only top level)
             normalMask |= to_base(ComponentType::RENDERING);
@@ -503,7 +498,11 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                         model.flag(true);
                         model.threaded(false);
                         model.waitForReady(false);
-                        ret = CreateResource<Mesh>(_resCache, model);
+                        Mesh_ptr meshPtr = CreateResource<Mesh>(_resCache, model);
+                        if (meshPtr->getObjectFlag(Object3D::ObjectFlag::OBJECT_FLAG_SKINNED)) {
+                            nodeStatic = false;
+                        }
+                        ret = meshPtr;
                         ret->addStateCallback(ResourceState::RES_LOADED, loadModelComplete);
                     }
 
@@ -540,6 +539,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
             nodeDescriptor._name = sceneNode.name;
             nodeDescriptor._componentMask = normalMask;
             nodeDescriptor._node = ret;
+            nodeDescriptor._usageContext = nodeStatic ? NodeUsageContext::NODE_STATIC : NodeUsageContext::NODE_DYNAMIC;
 
             for (U8 i = 1; i < to_U8(ComponentType::COUNT); ++i) {
                 const ComponentType type = ComponentType::_from_integral(1u << i);
@@ -694,7 +694,7 @@ SceneGraphNode* Scene::addSky(SceneGraphNode* parentNode, const boost::property_
     SceneGraphNodeDescriptor skyNodeDescriptor;
     skyNodeDescriptor._node = skyItem;
     skyNodeDescriptor._name = nodeName;
-    skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    skyNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                        to_base(ComponentType::BOUNDS) |
                                        to_base(ComponentType::RENDERING) |
@@ -1232,7 +1232,7 @@ void Scene::addPlayerInternal(const bool queue) {
     }
 
     Attorney::SceneManagerScene::addPlayer(_parent, *this, playerSGN, queue);
-    assert(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
+    DIVIDE_ASSERT(playerSGN->get<UnitComponent>()->getUnit() != nullptr);
 }
 
 void Scene::removePlayerInternal(const PlayerIndex idx) {
@@ -1920,6 +1920,10 @@ bool Scene::load(ByteBuffer& inputBuffer) {
     }
 
     return _sceneGraph->loadCache(inputBuffer);
+}
+
+SceneShaderData* Scene::shaderData() const noexcept {
+    return _parent.sceneData();
 }
 
 Camera* Scene::playerCamera() const {

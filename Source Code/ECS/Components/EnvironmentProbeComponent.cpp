@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
 #include "Headers/EnvironmentProbeComponent.h"
+
+#include "Core/Headers/Kernel.h"
 #include "Headers/TransformComponent.h"
 
 #include "Scenes/Headers/Scene.h"
@@ -8,16 +10,31 @@
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Managers/Headers/RenderPassManager.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/RenderStateBlock.h"
+#include "Scenes/Headers/SceneShaderData.h"
 
 namespace Divide {
 
+namespace TypeUtil {
+    const char* EnvProveUpdateTypeToString(const EnvironmentProbeComponent::UpdateType type) noexcept {
+        return EnvironmentProbeComponent::Names::updateType[to_base(type)];
+    }
+
+    EnvironmentProbeComponent::UpdateType StringToEnvProveUpdateType(const char* name) noexcept {
+        for (U8 i = 0; i < to_U8(EnvironmentProbeComponent::UpdateType::COUNT); ++i) {
+            if (strcmp(name, EnvironmentProbeComponent::Names::updateType[i]) == 0) {
+                return static_cast<EnvironmentProbeComponent::UpdateType>(i);
+            }
+        }
+
+        return EnvironmentProbeComponent::UpdateType::COUNT;
+    }
+}
 
 EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context)
     : BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>(sgn, context),
-      GUIDWrapper(),
-      _aabb(vec3<F32>(-1), vec3<F32>(1)),
-      _refaabb(vec3<F32>(-1), vec3<F32>(1))
+      GUIDWrapper()
 {
     Scene& parentScene = sgn->sceneGraph()->parentScene();
 
@@ -27,7 +44,7 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     layerField._type = EditorComponentFieldType::PUSH_TYPE;
     layerField._readOnly = true;
     layerField._serialise = false;
-    layerField._basicType = GFX::PushConstantType::UINT;
+    layerField._basicType = GFX::PushConstantType::INT;
     layerField._basicTypeSize = GFX::PushConstantSize::WORD;
 
     getEditorComponent().registerField(MOV(layerField));
@@ -53,10 +70,27 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     bbField._readOnly = false;
     getEditorComponent().registerField(MOV(bbField));
 
+    EditorComponentField updateTypeField = {};
+    updateTypeField._name = "Update Type";
+    updateTypeField._type = EditorComponentFieldType::DROPDOWN_TYPE;
+    updateTypeField._readOnly = false;
+    updateTypeField._range = { 0u, to_U8(UpdateType::COUNT) };
+    updateTypeField._dataGetter = [this](void* dataOut) {
+        *static_cast<U8*>(dataOut) = to_U8(updateType());
+    };
+    updateTypeField._dataSetter = [this](const void* data) {
+        updateType(*static_cast<const UpdateType*>(data));
+    };
+    updateTypeField._displayNameGetter = [](const U8 index) {
+        return TypeUtil::EnvProveUpdateTypeToString(static_cast<UpdateType>(index));
+    };
+
+    getEditorComponent().registerField(MOV(updateTypeField));
+
     EditorComponentField updateRateField = {};
     updateRateField._name = "Update Rate";
     updateRateField._tooltip = "[0...TARGET_FPS]. Every Nth frame. 0 = disabled;";
-    updateRateField._data = &_updateRate; 
+    updateRateField._data = &_updateRate;
     updateRateField._type = EditorComponentFieldType::PUSH_TYPE;
     updateRateField._readOnly = false;
     updateRateField._range = { 0.f, Config::TARGET_FRAME_RATE };
@@ -75,8 +109,8 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     getEditorComponent().registerField(MOV(showBoxField));
 
     getEditorComponent().onChangedCbk([this](std::string_view) {
-        _aabb.set(_refaabb.getMin(), _refaabb.getMax());
-        _aabb.translate(_parentSGN->get<TransformComponent>()->getPosition());
+        const vec3<F32> pos = _parentSGN->get<TransformComponent>()->getPosition();
+        setBounds(_refaabb.getMin() + pos, _refaabb.getMax() + pos);
     });
 
     Attorney::SceneEnvironmentProbeComponent::registerProbe(parentScene, this);
@@ -106,62 +140,104 @@ SceneGraphNode* EnvironmentProbeComponent::findNodeToIgnore() const noexcept {
     return nullptr;
 }
 
-void EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
-    if (!_dirty) {
-        return;
+bool EnvironmentProbeComponent::checkCollisionAndQueueUpdate(const BoundingSphere& sphere) {
+    if (!dirty() && updateType() == UpdateType::ON_DIRTY && _aabb.collision(sphere)) {
+        dirty(true);
+        return true;
     }
 
-    if (++_currentUpdateCall % _updateRate == 0) {
-        if (_updateRate != 0) {
-            rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(false));
-        }
+    return false;
+}
 
-        EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()));
-
-        vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::probeCameras();
-
-        std::array<Camera*, 6> cameras = {};
-        std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
-
-        // Probes come after reflective nodes in buffer positions and array layers for management reasons (rate of update and so on)
-        const U16 probeIndex = Config::MAX_REFLECTIVE_NODES_IN_VIEW + rtLayerIndex();
-
-        RenderPassParams params = {};
-        params._target = SceneEnvironmentProbePool::ReflectionTarget()._targetID;
-        params._sourceNode = findNodeToIgnore();
-        params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), probeIndex);
-        params._shadowMappingEnabled = false;
-
-        _context.gfx().generateCubeMap(params,
-                                       rtLayerIndex(),
-                                       _aabb.getCenter(),
-                                       vec2<F32>(0.1f, _aabb.getHalfExtent().length()),
-                                       bufferInOut,
-                                       cameras);
-
-        EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
-
-        _currentUpdateCall = 0;
-        _dirty = false;
+bool EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
+    if (!dirty()) {
+        return false;
     }
+    dirty(false);
+    _queueRefresh = false;
+
+    SceneEnvironmentProbePool::ProbesDirty(true);
+
+    if (updateType() != UpdateType::ALWAYS) {
+        rtLayerIndex(SceneEnvironmentProbePool::AllocateSlice(false));
+    }
+
+    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand(Util::StringFormat("EnvironmentProbePass Id: [ %d ]", rtLayerIndex()).c_str()));
+
+    vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::ProbeCameras();
+
+    std::array<Camera*, 6> cameras = {};
+    std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
+
+    // Probes come after reflective nodes in buffer positions and array layers for management reasons (rate of update and so on)
+    const U16 probeIndex = Config::MAX_REFLECTIVE_NODES_IN_VIEW + rtLayerIndex();
+
+    RenderPassParams params = {};
+    params._target = SceneEnvironmentProbePool::ReflectionTarget()._targetID;
+    params._sourceNode = findNodeToIgnore();
+    params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), probeIndex);
+    params._shadowMappingEnabled = false;
+
+    _context.gfx().generateCubeMap(params,
+                                   rtLayerIndex(),
+                                   _aabb.getCenter(),
+                                   vec2<F32>(0.1f, _aabb.getHalfExtent().length()),
+                                   bufferInOut,
+                                   cameras);
+
+    GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+    computeMipMapsCommand._texture = SceneEnvironmentProbePool::ReflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
+    computeMipMapsCommand._layerRange = { rtLayerIndex(), 1 };
+    computeMipMapsCommand._defer = false;
+    EnqueueCommand(bufferInOut, computeMipMapsCommand);
+
+    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+
+    _currentUpdateCall = 0;
+    return true;
+}
+
+void EnvironmentProbeComponent::updateProbeData() const noexcept {
+    _context.kernel().sceneManager()->sceneData()->probeData(poolIndex(), _aabb.getCenter(), _aabb.getHalfExtent());
+}
+
+void EnvironmentProbeComponent::poolIndex(const U16 index) noexcept {
+    _poolIndex = index;
+    updateProbeData();
 }
 
 void EnvironmentProbeComponent::setBounds(const vec3<F32>& min, const vec3<F32>& max) {
     _aabb.set(min, max);
+    updateProbeData();
 }
 
 void EnvironmentProbeComponent::setBounds(const vec3<F32>& center, const F32 radius) {
     _aabb.createFromSphere(center, radius);
+    updateProbeData();
 }
 
-void EnvironmentProbeComponent::setUpdateRate(const U8 rate) {
-    if (_updateRate != rate) {
-        if (_updateRate == 0) {
-            SceneEnvironmentProbePool::unlockSlice(rtLayerIndex());
-        } else if (rate == 0) {
-            rtLayerIndex(SceneEnvironmentProbePool::allocateSlice(true));
+void EnvironmentProbeComponent::updateType(const UpdateType type) noexcept {
+    if (updateType() == type){
+        return;
+    }
+
+    if (updateType() == UpdateType::ALWAYS && rtLayerIndex() >= 0) {
+        // Release slice if we switch to on-demand updates
+        SceneEnvironmentProbePool::UnlockSlice(rtLayerIndex());
+    }
+
+    _updateType = type;
+    if (type == UpdateType::ALWAYS) {
+        const I16 newSlice = SceneEnvironmentProbePool::AllocateSlice(true);
+        if (newSlice >= 0) {
+            rtLayerIndex(newSlice);
+        } else {
+            if_constexpr (Config::Build::IS_DEBUG_BUILD) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
+            // Failed to allocate a slice. Fallback to manual updates
+            updateType(UpdateType::ON_DIRTY);
         }
-        _updateRate = rate;
     }
 }
 
@@ -176,13 +252,30 @@ void EnvironmentProbeComponent::PreUpdate(const U64 deltaTime) {
         context().gfx().debugDrawBox(_aabb.getMin(), _aabb.getMax(), DefaultColours::BLUE);
     }
 
+    switch(_updateType) {
+        case UpdateType::ALWAYS:
+            if (_queueRefresh) {
+                dirty(true);
+            }
+            break;
+        case UpdateType::ON_RATE:
+            if (_queueRefresh) {
+                dirty(++_currentUpdateCall % _updateRate == 0);
+            }
+            break;
+        case UpdateType::ON_DIRTY:
+            break;//Nothing needed
+        case UpdateType::COUNT:
+            DIVIDE_UNEXPECTED_CALL();
+            break;
+    }
     Parent::PreUpdate(deltaTime);
 }
 
 void EnvironmentProbeComponent::OnData(const ECS::CustomEvent& data) {
     if (data._type == ECS::CustomEvent::Type::TransformUpdated) {
-        _aabb.set(_refaabb.getMin(), _refaabb.getMax());
-        _aabb.translate(_parentSGN->get<TransformComponent>()->getPosition());
+        const vec3<F32> pos = _parentSGN->get<TransformComponent>()->getPosition();
+        setBounds(_refaabb.getMin() + pos, _refaabb.getMax() + pos);
     } else if (data._type == ECS::CustomEvent::Type::EntityFlagChanged) {
         const SceneGraphNode::Flags flag = static_cast<SceneGraphNode::Flags>(data._flag);
         if (flag == SceneGraphNode::Flags::SELECTED) {
@@ -215,7 +308,7 @@ std::array<Camera*, 6> EnvironmentProbeComponent::probeCameras() const noexcept 
         vec3<F32>( 0.0f,  0.0f, -1.0f)  //Neg Z
     };
 
-    vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::probeCameras();
+    vectorEASTL<Camera*>& probeCameras = SceneEnvironmentProbePool::ProbeCameras();
 
     std::array<Camera*, 6> cameras = {};
     std::copy_n(std::begin(probeCameras), std::min(cameras.size(), probeCameras.size()), std::begin(cameras));
@@ -231,4 +324,10 @@ std::array<Camera*, 6> EnvironmentProbeComponent::probeCameras() const noexcept 
 
     return cameras;
 }
+
+void EnvironmentProbeComponent::loadFromXML(const boost::property_tree::ptree& pt) {
+    SGNComponent::loadFromXML(pt);
+    updateProbeData();
+}
+
 } //namespace Divide

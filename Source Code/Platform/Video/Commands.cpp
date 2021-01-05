@@ -110,15 +110,20 @@ stringImpl ToString(const SetScissorCommand& cmd, U16 indent) {
 
 stringImpl ToString(const SetClipPlanesCommand& cmd, const U16 indent) {
     stringImpl ret = "\n";
-    for (U8 i = 0; i < cmd._clippingPlanes._planes.size(); ++i) {
-        ret.append("    ");
-        for (U16 j = 0; j < indent; ++j) {
+
+    auto& planes = cmd._clippingPlanes.planes();
+    auto& states = cmd._clippingPlanes.planeState();
+    for (U8 i = 0; i < to_U8(ClipPlaneIndex::COUNT); ++i) {
+        if (states[i]) {
             ret.append("    ");
+            for (U16 j = 0; j < indent; ++j) {
+                ret.append("    ");
+            }
+
+            const vec4<F32>& eq = planes[i]._equation;
+
+            ret.append(Util::StringFormat("Plane [%d] [ %5.2f %5.2f %5.2f - %5.2f ]\n", i, eq.x, eq.y, eq.z, eq.w));
         }
-
-        const vec4<F32>& eq = cmd._clippingPlanes._planes[i]._equation;
-
-        ret.append(Util::StringFormat("Plane [%d] [ %5.2f %5.2f %5.2f - %5.2f ]\n", i, eq.x, eq.y, eq.z, eq.w));
     }
 
     return ret;

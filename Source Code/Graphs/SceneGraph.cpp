@@ -38,12 +38,12 @@ SceneGraph::SceneGraph(Scene& parentScene)
     _root->postLoad();
     onNodeAdd(_root);
 
-    constexpr U16 octreeNodeMask = to_base(SceneNodeType::TYPE_TRANSFORM) |
-                                   to_base(SceneNodeType::TYPE_SKY) |
-                                   to_base(SceneNodeType::TYPE_INFINITEPLANE) |
-                                   to_base(SceneNodeType::TYPE_VEGETATION);
+    constexpr U16 octreeExclusionMask = 1 << to_base(SceneNodeType::TYPE_TRANSFORM) |
+                                        1 << to_base(SceneNodeType::TYPE_SKY) |
+                                        1 << to_base(SceneNodeType::TYPE_INFINITEPLANE) |
+                                        1 << to_base(SceneNodeType::TYPE_VEGETATION);
 
-    _octree.reset(new Octree(octreeNodeMask));
+    _octree.reset(new Octree(octreeExclusionMask));
     _octreeUpdating = false;
 }
 
@@ -57,8 +57,6 @@ SceneGraph::~SceneGraph()
 
 void SceneGraph::unload()
 {
-    idle();
-
     destroySceneGraphNode(_root);
     assert(_root == nullptr);
 }
@@ -69,6 +67,15 @@ void SceneGraph::addToDeleteQueue(SceneGraphNode* node, const size_t childIdx) {
     if (eastl::find(cbegin(list), cend(list), childIdx) == cend(list))
     {
         list.push_back(childIdx);
+    }
+}
+
+void SceneGraph::onNodeMoved(const SceneGraphNode& node) {
+    getOctree().onNodeMoved(node);
+
+    //ToDo: Maybe add particles too? -Ionut
+    if (node.getNode<>().type() == SceneNodeType::TYPE_OBJECT3D) {
+        SceneEnvironmentProbePool::OnNodeMoved(Attorney::SceneGraph::getEnvProbes(parentScene()), node);
     }
 }
 
@@ -97,18 +104,8 @@ void SceneGraph::onNodeAdd(SceneGraphNode* newNode) {
 
     if (_loadComplete) {
         WAIT_FOR_CONDITION(!_octreeUpdating);
-        _octreeChanged = _octree->addNode(newNode);
+        _octreeChanged = _octree->addNode(newNode) || _octreeChanged;
     }
-}
-
-void SceneGraph::onNodeTransform(SceneGraphNode* node) {
-    if (_loadComplete) {
-        node->setFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED);
-    }
-}
-
-void SceneGraph::idle()
-{
 }
 
 bool SceneGraph::removeNodesByType(const SceneNodeType nodeType) {

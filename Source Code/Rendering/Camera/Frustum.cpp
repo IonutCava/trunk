@@ -4,11 +4,12 @@
 
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Math/BoundingVolumes/Headers/BoundingBox.h"
+#include "Core/Math/BoundingVolumes/Headers/BoundingSphere.h"
 
 namespace Divide {
 
-FrustumCollision Frustum::PlanePointIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& point) const noexcept {
-    switch (frustumPlane.classifyPoint(point)) {
+FrustumCollision PlanePointIntersect(const Plane<F32>& plane, const vec3<F32>& point) noexcept {
+    switch (plane.classifyPoint(point)) {
         case Plane<F32>::Side::NO_SIDE: 
             return FrustumCollision::FRUSTUM_INTERSECT;
 
@@ -25,7 +26,7 @@ FrustumCollision Frustum::ContainsPoint(const vec3<F32>& point, I8& lastPlaneCac
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     I8 planeToSkip = -1;
     if (lastPlaneCache != -1) {
-        res = PlanePointIntersect(_frustumPlanes[lastPlaneCache], point);
+        res = Divide::PlanePointIntersect(_frustumPlanes[lastPlaneCache], point);
         if (res == FrustumCollision::FRUSTUM_IN) {
             // reset cache if it's no longer valid
             planeToSkip = lastPlaneCache;
@@ -37,7 +38,7 @@ FrustumCollision Frustum::ContainsPoint(const vec3<F32>& point, I8& lastPlaneCac
     if (lastPlaneCache == -1) {
         for (I8 i = 0; i < to_I8(FrustumPlane::COUNT); ++i) {
             if (i != planeToSkip) {
-                res = PlanePointIntersect(_frustumPlanes[i], point);
+                res = Divide::PlanePointIntersect(_frustumPlanes[i], point);
                 if (res != FrustumCollision::FRUSTUM_IN) {
                     lastPlaneCache = i;
                     break;
@@ -49,8 +50,12 @@ FrustumCollision Frustum::ContainsPoint(const vec3<F32>& point, I8& lastPlaneCac
     return res;
 }
 
-FrustumCollision Frustum::PlaneSphereIntersect(const Plane<F32>& frustumPlane, const vec3<F32>& center, const F32 radius) const noexcept {
-    const F32 distance = frustumPlane.signedDistanceToPoint(center);
+FrustumCollision PlaneBoundingSphereIntersect(const Plane<F32>& plane, const BoundingSphere& bsphere) noexcept {
+    return PlaneSphereIntersect(plane, bsphere.getCenter(), bsphere.getRadius());
+}
+
+FrustumCollision PlaneSphereIntersect(const Plane<F32>& plane, const vec3<F32>& center, const F32 radius) noexcept {
+    const F32 distance = plane.signedDistanceToPoint(center);
     if (distance < -radius) {
         return FrustumCollision::FRUSTUM_OUT;
     }
@@ -68,7 +73,7 @@ FrustumCollision Frustum::ContainsSphere(const vec3<F32>& center, const F32 radi
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     I8 planeToSkip = -1;
     if (lastPlaneCache != -1) {
-        res = PlaneSphereIntersect(_frustumPlanes[lastPlaneCache], center, radius);
+        res = Divide::PlaneSphereIntersect(_frustumPlanes[lastPlaneCache], center, radius);
         if (res == FrustumCollision::FRUSTUM_IN) {
             // reset cache if it's no longer valid
             planeToSkip = lastPlaneCache;
@@ -80,7 +85,7 @@ FrustumCollision Frustum::ContainsSphere(const vec3<F32>& center, const F32 radi
     if (lastPlaneCache == -1) {
         for (I8 i = 0; i < to_I8(FrustumPlane::COUNT); ++i) {
             if (i != planeToSkip) {
-                res = PlaneSphereIntersect(_frustumPlanes[i], center, radius);
+                res = Divide::PlaneSphereIntersect(_frustumPlanes[i], center, radius);
                 if (res != FrustumCollision::FRUSTUM_IN) {
                     lastPlaneCache = i;
                     break;
@@ -92,30 +97,28 @@ FrustumCollision Frustum::ContainsSphere(const vec3<F32>& center, const F32 radi
     return res;
 }
 
-FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane frustumPlane,
-                                                    const BoundingBox& bbox) const noexcept {
-    return PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlane)], bbox);
+FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane frustumPlane, const BoundingBox& bbox) const noexcept {
+    return Divide::PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlane)], bbox);
 }
 
-FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane frustumPlane,
-                                                     const vec3<F32>& point) const noexcept {
-    return PlanePointIntersect(_frustumPlanes[to_base(frustumPlane)], point);
+FrustumCollision Frustum::PlaneBoundingSphereIntersect(FrustumPlane frustumPlane, const BoundingSphere& bsphere) const noexcept {
+    return Divide::PlaneBoundingSphereIntersect(_frustumPlanes[to_base(frustumPlane)], bsphere);
 }
 
-FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane frustumPlane,
-                                               const vec3<F32>& center,
-                                               const F32 radius) const noexcept {
-    return PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlane)], center, radius);
+FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane frustumPlane, const vec3<F32>& point) const noexcept {
+    return Divide::PlanePointIntersect(_frustumPlanes[to_base(frustumPlane)], point);
 }
 
-FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes,
-                                                    const U8 count,
-                                                    const BoundingBox& bbox) const noexcept {
+FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane frustumPlane, const vec3<F32>& center, const F32 radius) const noexcept {
+    return Divide::PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlane)], center, radius);
+}
+
+FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane* frustumPlanes, const U8 count, const BoundingBox& bbox) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     for (U8 i = 0; i < count; ++i) {
-        res = PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlanes[i])], bbox);
+        res = Divide::PlaneBoundingBoxIntersect(_frustumPlanes[to_base(frustumPlanes[i])], bbox);
         if (res != FrustumCollision::FRUSTUM_IN) {
             break;
         }
@@ -124,14 +127,12 @@ FrustumCollision Frustum::PlaneBoundingBoxIntersect(const FrustumPlane* frustumP
     return res;
 }
 
-FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane* frustumPlanes,
-                                              const U8 count,
-                                              const vec3<F32>& point) const noexcept {
+FrustumCollision Frustum::PlaneBoundingSphereIntersect(const FrustumPlane* frustumPlanes, U8 count, const BoundingSphere& bsphere) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     for (U8 i = 0; i < count; ++i) {
-        res = PlanePointIntersect(_frustumPlanes[to_base(frustumPlanes[i])], point);
+        res = Divide::PlaneBoundingSphereIntersect(_frustumPlanes[to_base(frustumPlanes[i])], bsphere);
         if (res != FrustumCollision::FRUSTUM_IN) {
             break;
         }
@@ -140,16 +141,12 @@ FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane* frustumPlanes,
     return res;
 }
 
-FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane* frustumPlanes,
-                                               const U8 count,
-                                               const vec3<F32>& center,
-                                               const F32 radius) const noexcept {
+FrustumCollision Frustum::PlanePointIntersect(const FrustumPlane* frustumPlanes, const U8 count, const vec3<F32>& point) const noexcept {
     OPTICK_EVENT();
 
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
-
     for (U8 i = 0; i < count; ++i) {
-        res = PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlanes[i])], center, radius);
+        res = Divide::PlanePointIntersect(_frustumPlanes[to_base(frustumPlanes[i])], point);
         if (res != FrustumCollision::FRUSTUM_IN) {
             break;
         }
@@ -158,12 +155,27 @@ FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane* frustumPlanes
     return res;
 }
 
-FrustumCollision Frustum::PlaneBoundingBoxIntersect(const Plane<F32>& frustumPlane, const BoundingBox& bbox) const noexcept {
-    const vec3<F32>& normal = frustumPlane._normal;
-    if (frustumPlane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
+FrustumCollision Frustum::PlaneSphereIntersect(const FrustumPlane* frustumPlanes, const U8 count, const vec3<F32>& center, const F32 radius) const noexcept {
+    OPTICK_EVENT();
+
+    FrustumCollision res = FrustumCollision::FRUSTUM_IN;
+
+    for (U8 i = 0; i < count; ++i) {
+        res = Divide::PlaneSphereIntersect(_frustumPlanes[to_base(frustumPlanes[i])], center, radius);
+        if (res != FrustumCollision::FRUSTUM_IN) {
+            break;
+        }
+    }
+
+    return res;
+}
+
+FrustumCollision PlaneBoundingBoxIntersect(const Plane<F32>& plane, const BoundingBox& bbox) noexcept {
+    const vec3<F32>& normal = plane._normal;
+    if (plane.signedDistanceToPoint(bbox.getPVertex(normal)) < 0) {
         return FrustumCollision::FRUSTUM_OUT;
     }
-    if (frustumPlane.signedDistanceToPoint(bbox.getNVertex(normal)) < 0) {
+    if (plane.signedDistanceToPoint(bbox.getNVertex(normal)) < 0) {
         return FrustumCollision::FRUSTUM_INTERSECT;
     }
 
@@ -177,7 +189,7 @@ FrustumCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox, I8& lastP
     FrustumCollision res = FrustumCollision::FRUSTUM_IN;
     I8 planeToSkip = -1;
     if (lastPlaneCache != -1) {
-        res = PlaneBoundingBoxIntersect(_frustumPlanes[lastPlaneCache], bbox);
+        res = Divide::PlaneBoundingBoxIntersect(_frustumPlanes[lastPlaneCache], bbox);
         if (res == FrustumCollision::FRUSTUM_IN) {
             // reset cache if it's no longer valid
             planeToSkip = lastPlaneCache;
@@ -189,7 +201,7 @@ FrustumCollision Frustum::ContainsBoundingBox(const BoundingBox& bbox, I8& lastP
     if (lastPlaneCache == -1) {
         for (I8 i = 0; i < to_I8(FrustumPlane::COUNT); ++i) {
             if (i != planeToSkip) {
-                res = PlaneBoundingBoxIntersect(_frustumPlanes[i], bbox);
+                res = Divide::PlaneBoundingBoxIntersect(_frustumPlanes[i], bbox);
                 if (res != FrustumCollision::FRUSTUM_IN) {
                     lastPlaneCache = i;
                     break;

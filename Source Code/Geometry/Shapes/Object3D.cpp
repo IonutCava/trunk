@@ -2,6 +2,10 @@
 
 #include "Headers/Object3D.h"
 
+
+
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
 #include "Physics/Headers/PXDevice.h"
@@ -26,6 +30,7 @@ Object3D::Object3D(GFXDevice& context, ResourceCache* parentCache, const size_t 
     _geometryType(type),
     _rigidBodyShape(RigidBodyShape::SHAPE_COUNT)
 {
+    _editorComponent.name(getTypeName().c_str());
     _geometryPartitionIDs.fill(std::numeric_limits<U16>::max());
     _geometryPartitionIDs[0] = 0u;
 
@@ -116,7 +121,7 @@ void Object3D::buildDrawCommands(SceneGraphNode* sgn,
                                  const Camera& crtCamera,
                                  RenderPackage& pkgInOut) {
     VertexBuffer* vb = getGeometryVB();
-    if (vb != nullptr) {
+    if (vb != nullptr && sgn->context().config().debug.renderFilter.primitives) {
         if (pkgInOut.count<GFX::DrawCommand>() == 0) {
             const U16 partitionID = _geometryPartitionIDs[0];
             GenericDrawCommand cmd;

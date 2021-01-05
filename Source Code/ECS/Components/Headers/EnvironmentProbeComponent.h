@@ -58,16 +58,37 @@ public:
         TYPE_LOCAL,
         COUNT
     };
+
+    enum class UpdateType {
+        ALWAYS = 0,
+        ON_DIRTY,
+        ON_RATE,
+        COUNT
+    };
+
+    struct Names {
+        inline static const char* updateType[] = {
+            "Always", "On Dirty", "On Rate", "ERROR!"
+        };
+    };
+
 public:
     explicit EnvironmentProbeComponent(SceneGraphNode* sgn, PlatformContext& context);
     ~EnvironmentProbeComponent();
 
     void PreUpdate(U64 deltaTime) override;
 
-    void refresh(GFX::CommandBuffer& bufferInOut);
-    void setUpdateRate(U8 rate);
+    /// Returns true if the probe was updated, false if skipped
+    bool refresh(GFX::CommandBuffer& bufferInOut);
+    /// Checks if the given bounding sphere has collided with the probe's AABB and if so, mark it for update if required
+    bool checkCollisionAndQueueUpdate(const BoundingSphere& sphere);
+
+    void updateType(UpdateType type) noexcept;
+
     void setBounds(const vec3<F32>& min, const vec3<F32>& max);
     void setBounds(const vec3<F32>& center, F32 radius);
+
+    void loadFromXML(const boost::property_tree::ptree& pt) override;
 
     [[nodiscard]] F32 distanceSqTo(const vec3<F32>& pos) const;
     
@@ -75,28 +96,43 @@ public:
 
     //Only "dirty" probes gets refreshed. A probe might get dirty if, for example, a reflective node
     //gets rendered that has this probe as the nearest one
-    void setDirty() noexcept { _dirty = true; }
+    void queueRefresh() noexcept { _queueRefresh = true; }
 
-    PROPERTY_R_IW(U16, rtLayerIndex, 0u);
+    PROPERTY_R_IW(I16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
+    PROPERTY_RW(bool, dirty, true);
+    PROPERTY_RW(U8, updateRate, 1u);
+    PROPERTY_R(UpdateType, updateType, UpdateType::ON_DIRTY);
+
+    PROPERTY_R(U16, poolIndex, 0u);
 
 protected:
+    friend class SceneEnvironmentProbePool; //for poolIndex(U16)
+    void poolIndex(U16 index) noexcept;
+
     void OnData(const ECS::CustomEvent& data) override;
 
     [[nodiscard]] SceneGraphNode* findNodeToIgnore() const noexcept;
 
+    void updateProbeData() const noexcept;
 protected:
-    BoundingBox _aabb, _refaabb;
-    U8 _updateRate = 1u;
+    BoundingBox _aabb{ vec3<F32>(-1), vec3<F32>(1) };
+    BoundingBox _refaabb{ vec3<F32>(-1), vec3<F32>(1) };
+
     U8 _currentUpdateCall = 0u;
     ProbeType _type = ProbeType::TYPE_LOCAL;
 
 private:
-    bool _dirty = false;
+    bool _queueRefresh = true;
     bool _drawImpostor = false;
 };
 
 INIT_COMPONENT(EnvironmentProbeComponent);
+
+namespace TypeUtil {
+    const char* EnvProveUpdateTypeToString(EnvironmentProbeComponent::UpdateType type) noexcept;
+    EnvironmentProbeComponent::UpdateType StringToEnvProveUpdateType(const char* name) noexcept;
+}
 
 } //namespace Divide
 

@@ -191,7 +191,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
     io.ConfigViewportsNoDecoration = true;
     io.ConfigViewportsNoTaskBarIcon = true;
     io.ConfigDockingTransparentPayload = true;
-    io.ConfigViewportsNoAutoMerge = _context.config().gui.imgui.dontMergeFloatingWindows;
+    io.ConfigViewportsNoAutoMerge = true;
 
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
@@ -1526,7 +1526,20 @@ void Editor::teleportToNode(const SceneGraphNode* sgn) const {
 
 void Editor::saveNode(const SceneGraphNode* sgn) const {
     if (Attorney::SceneManagerEditor::saveNode(_context.kernel().sceneManager(), sgn)) {
-        showStatusMessage(Util::StringFormat("Saved node [ %s ] to file!", sgn->name().c_str()), Time::SecondsToMilliseconds<F32>(3));
+        bool savedParent = false, savedScene = false;
+        // Save the parent as well (if it isn't the root node) as this node may be one that's been newly added
+        if (sgn->parent() != nullptr && sgn->parent()->parent() != nullptr) {
+            savedParent = Attorney::SceneManagerEditor::saveNode(_context.kernel().sceneManager(), sgn->parent());
+        }
+        if (unsavedSceneChanges()) {
+            savedScene = saveSceneChanges({},{});
+        }
+
+        showStatusMessage(Util::StringFormat("Saved node [ %s ] to file! (Saved parent: %s) (Saved scene: %s)", 
+                                             sgn->name().c_str(), 
+                                             savedParent ? "Yes" : "No", 
+                                             savedScene ? "Yes" : "No"), 
+                          Time::SecondsToMilliseconds<F32>(3));
     }
 }
 
@@ -1536,9 +1549,10 @@ void Editor::loadNode(SceneGraphNode* sgn) const {
     }
 }
 
-void Editor::queueRemoveNode(const I64 nodeGUID) const {
+void Editor::queueRemoveNode(const I64 nodeGUID) {
     Scene& activeScene = _context.kernel().sceneManager()->getActiveScene();
     activeScene.sceneGraph()->removeNode(nodeGUID);
+    unsavedSceneChanges(true);
 }
 
 bool Editor::addComponent(SceneGraphNode* selection, const ComponentType newComponentType) const {

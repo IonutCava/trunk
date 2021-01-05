@@ -90,8 +90,7 @@ GPURenderer GFXDevice::s_GPURenderer = GPURenderer::COUNT;
 #pragma region Construction, destruction, initialization
 GFXDevice::GFXDevice(Kernel & parent)
     : KernelComponent(parent),
-    PlatformContextComponent(parent.platformContext()),
-    _clippingPlanes(Plane<F32>(0, 0, 0, 0))
+      PlatformContextComponent(parent.platformContext())
 {
     _viewport.set(-1);
 
@@ -912,12 +911,15 @@ void GFXDevice::endFrame(DisplayWindow& window, const bool global) {
 #pragma region Utility functions
 /// Generate a cube texture and store it in the provided RenderTarget
 void GFXDevice::generateCubeMap(RenderPassParams& params,
-                                const U16 arrayOffset,
+                                const I16 arrayOffset,
                                 const vec3<F32>& pos,
                                 const vec2<F32>& zPlanes,
                                 GFX::CommandBuffer& commandsInOut,
                                 std::array<Camera*, 6>& cameras) {
 
+    if (arrayOffset < 0) {
+        return;
+    }
 
     // Only the first colour attachment or the depth attachment is used for now
     // and it must be a cube map texture
@@ -946,24 +948,15 @@ void GFXDevice::generateCubeMap(RenderPassParams& params,
     }
 
     // No dual-paraboloid rendering here. Just draw once for each face.
-    static const std::array<vec3<F32>, 6> TabUp ={
-          WORLD_Y_NEG_AXIS,
-          WORLD_Y_NEG_AXIS,
-          WORLD_Z_AXIS,
-          WORLD_Z_NEG_AXIS,
-          WORLD_Y_NEG_AXIS,
-          WORLD_Y_NEG_AXIS
-    };
-
-    // Get the center and up vectors for each cube face
-    static const std::array<vec3<F32>,6> TabCenter = {
-        vec3<F32>( 1.0f,  0.0f,  0.0f), //Pos X
-        vec3<F32>(-1.0f,  0.0f,  0.0f), //Neg X
-        vec3<F32>( 0.0f,  1.0f,  0.0f), //Pos Y
-        vec3<F32>( 0.0f, -1.0f,  0.0f), //Neg Y
-        vec3<F32>( 0.0f,  0.0f,  1.0f), //Pos Z
-        vec3<F32>( 0.0f,  0.0f, -1.0f)  //Neg Z
-    };
+    static const std::array<std::pair<vec3<F32>, vec3<F32>>, 6> CameraDirections = {{
+          // Target Dir          Up Dir
+          {WORLD_X_AXIS,      WORLD_Y_AXIS    },
+          {WORLD_X_NEG_AXIS,  WORLD_Y_AXIS    },
+          {WORLD_Y_AXIS,      WORLD_Z_NEG_AXIS},
+          {WORLD_Y_NEG_AXIS,  WORLD_Z_AXIS    },
+          {WORLD_Z_AXIS,      WORLD_Y_AXIS    },
+          {WORLD_Z_NEG_AXIS,  WORLD_Y_AXIS    }
+    }};
 
     // For each of the environment's faces (TOP, DOWN, NORTH, SOUTH, EAST, WEST)
     RenderPassManager* passMgr = parent().renderPassManager();
@@ -986,7 +979,7 @@ void GFXDevice::generateCubeMap(RenderPassParams& params,
         // Set a 90 degree horizontal FoV perspective projection
         camera->setProjection(to_F32(aspect), Angle::to_VerticalFoV(Angle::DEGREES<F32>(90.0f), aspect), zPlanes);
         // Point our camera to the correct face
-        camera->lookAt(pos, pos + TabCenter[i] * zPlanes.y, TabUp[i]);
+        camera->lookAt(pos, pos + CameraDirections[i].first * zPlanes.max, -CameraDirections[i].second);
         params._camera = camera;
         params._stagePass._pass = i;
         // Pass our render function to the renderer
@@ -995,12 +988,16 @@ void GFXDevice::generateCubeMap(RenderPassParams& params,
 }
 
 void GFXDevice::generateDualParaboloidMap(RenderPassParams& params,
-                                          const U16 arrayOffset,
+                                          const I16 arrayOffset,
                                           const vec3<F32>& pos,
                                           const vec2<F32>& zPlanes,
                                           GFX::CommandBuffer& bufferInOut,
                                           std::array<Camera*, 2>& cameras)
 {
+    if (arrayOffset < 0) {
+        return;
+    }
+
     RenderTarget& paraboloidTarget = _rtPool->renderTarget(params._target);
     // Colour attachment takes precedent over depth attachment
     const bool hasColour = paraboloidTarget.hasAttachment(RTAttachmentType::Colour, 0);
@@ -1313,22 +1310,24 @@ void GFXDevice::uploadGPUBlock() {
 
 /// set a new list of clipping planes. The old one is discarded
 void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
-    if (clipPlanes._planes != _clippingPlanes._planes)
+    if (clipPlanes != _clippingPlanes)
     {
         _clippingPlanes = clipPlanes;
 
-        // We only copy the max we have configured. The rest are ignored
-        memcpy(&_gpuBlock._data._clipPlanes[0],
-               _clippingPlanes._planes.data(),
-               sizeof(vec4<F32>) * Config::MAX_CLIP_DISTANCES);
+        auto& planes = _clippingPlanes.planes();
+        auto& states = _clippingPlanes.planeState();
 
+        U8 count = 0;
+        for (U8 i = 0; i < to_U8(ClipPlaneIndex::COUNT); ++i) {
+            if (states[i]) {
+                _gpuBlock._data._clipPlanes[count++] = planes[i];
+                if (count == Config::MAX_CLIP_DISTANCES) {
+                    break;
+                }
+            }
+        }
 
-        const auto count = std::count_if(std::cbegin(_gpuBlock._data._clipPlanes),
-                                         std::cend(_gpuBlock._data._clipPlanes),
-                                         [](const Plane<F32>& plane) {return !IS_ZERO(plane._distance); });
-
-        _gpuBlock._data._otherProperties.w = to_F32(std::min(to_U32(count), Config::MAX_CLIP_DISTANCES));
-
+        _gpuBlock._data._otherProperties.w = to_F32(count);
         _gpuBlock._needsUpload = true;
     }
 }
@@ -1707,39 +1706,45 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
     ACKNOWLEDGE_UNUSED(stagePass);
 
     const U32 cmdCount = *bufferData._lastCommandCount;
-
+    const U32 threadCount = (cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB;
     EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "Occlusion Cull" });
 
-    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _HIZCullPipeline });
+    // Not worth the overhead for a handful of items and the Pre-Z pass should handle overdraw just fine
+    if (threadCount < 3u) {
+        EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ Util::StringFormat("Skipped. In-Frustum Nodes: % d", cmdCount).c_str() });
+        EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    } else {
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _HIZCullPipeline });
 
-    ShaderBufferBinding shaderBuffer = {};
-    shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
-    shaderBuffer._buffer = bufferData._commandBuffer;
-    shaderBuffer._elementRange = { bufferData._commandElementOffset, cmdCount };
+        ShaderBufferBinding shaderBuffer = {};
+        shaderBuffer._binding = ShaderBufferLocation::GPU_COMMANDS;
+        shaderBuffer._buffer = bufferData._commandBuffer;
+        shaderBuffer._elementRange = { bufferData._commandElementOffset, cmdCount };
 
-    GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
-    bindDescriptorSetsCmd._set._buffers.add(shaderBuffer);
+        GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
+        bindDescriptorSetsCmd._set._buffers.add(shaderBuffer);
 
-    if (bufferData._cullCounterBuffer != nullptr) {
-        ShaderBufferBinding atomicCount = {};
-        atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
-        atomicCount._buffer = bufferData._cullCounterBuffer;
-        atomicCount._elementRange.set(0, 1);
-        bindDescriptorSetsCmd._set._buffers.add(atomicCount); // Atomic counter should be cleared by this point
+        if (bufferData._cullCounterBuffer != nullptr) {
+            ShaderBufferBinding atomicCount = {};
+            atomicCount._binding = ShaderBufferLocation::ATOMIC_COUNTER;
+            atomicCount._buffer = bufferData._cullCounterBuffer;
+            atomicCount._elementRange.set(0, 1);
+            bindDescriptorSetsCmd._set._buffers.add(atomicCount); // Atomic counter should be cleared by this point
+        }
+
+        bindDescriptorSetsCmd._set._textureData.add({ depthBuffer->data(), samplerHash, TextureUsage::UNIT0 });
+        EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
+
+        HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounterBuffer != nullptr ? 1u : 0u);
+        HIZPushConstantsCMDInOut._constants.set(_ID("dvd_numEntities"), GFX::PushConstantType::UINT, cmdCount);
+        HIZPushConstantsCMDInOut._constants.set(_ID("dvd_viewSize"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
+
+        EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
+
+        GFX::DispatchComputeCommand computeCmd = {};
+        computeCmd._computeGroupSize.set(threadCount, 1, 1);
+        EnqueueCommand(bufferInOut, computeCmd);
     }
-
-    bindDescriptorSetsCmd._set._textureData.add({ depthBuffer->data(), samplerHash, TextureUsage::UNIT0 });
-    EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
-
-    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounterBuffer != nullptr ? 1u : 0u);
-    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_numEntities"), GFX::PushConstantType::UINT, cmdCount);
-    HIZPushConstantsCMDInOut._constants.set(_ID("dvd_viewSize"), GFX::PushConstantType::VEC2, vec2<F32>(depthBuffer->width(), depthBuffer->height()));
-
-    EnqueueCommand(bufferInOut, HIZPushConstantsCMDInOut);
-
-    GFX::DispatchComputeCommand computeCmd = {};
-    computeCmd._computeGroupSize.set((cmdCount + GROUP_SIZE_AABB - 1) / GROUP_SIZE_AABB, 1, 1);
-    EnqueueCommand(bufferInOut, computeCmd);
 
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }

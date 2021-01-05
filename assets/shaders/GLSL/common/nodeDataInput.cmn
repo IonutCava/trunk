@@ -72,22 +72,24 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 };
 
 #define DEBUG_ALBEDO 0
-#define DEBUG_LIGHTING 1
-#define DEBUG_SPECULAR 2
-#define DEBUG_UV 3
-#define DEBUG_SSAO 4
-#define DEBUG_EMISSIVE 5
-#define DEBUG_ROUGHNESS 6
-#define DEBUG_METALLIC 7
-#define DEBUG_NORMALS 8
-#define DEBUG_TBN_VIEW_DIRECTION 9
-#define DEBUG_SHADOW_MAPS 10
-#define DEBUG_CSM_SPLITS 11
-#define DEBUG_LIGHT_HEATMAP 12
-#define DEBUG_LIGHT_DEPTH_CLUSTERS 13
-#define DEBUG_REFLECTIONS 14
-#define DEBUG_MATERIAL_IDS 15
-#define DEBUG_NONE 16
+#define DEBUG_DEPTH 1
+#define DEBUG_LIGHTING 2
+#define DEBUG_SPECULAR 3
+#define DEBUG_UV 4
+#define DEBUG_SSAO 5
+#define DEBUG_EMISSIVE 6
+#define DEBUG_ROUGHNESS 7
+#define DEBUG_METALLIC 8
+#define DEBUG_NORMALS 9
+#define DEBUG_TBN_VIEW_DIR 10
+#define DEBUG_SHADOW_MAPS 11
+#define DEBUG_CSM_SPLITS 12
+#define DEBUG_LIGHT_HEATMAP 13
+#define DEBUG_DEPTH_CLUSTERS 14
+#define DEBUG_REFLECTIONS 15
+#define DEBUG_REFLECTIVITY 16
+#define DEBUG_MATERIAL_IDS 17
+#define DEBUG_NONE 18
 
 #define SHADOW_PASS_NORMAL 0
 #define SHADOW_PASS_ORTHO 1
@@ -108,7 +110,7 @@ layout(binding = BUFFER_GPU_BLOCK, std140) uniform dvd_GPUBlock
 
 #define dvd_invScreenDimensions (1.0f / dvd_ViewPort.zw)
 #define dvd_aspectRatio dvd_cameraPosition.w
-#define dvd_zPlanes vec2(dvd_renderProperties.xy)
+#define dvd_zPlanes dvd_renderProperties.xy
 #define dvd_fieldOfView dvd_renderProperties.z
 #define dvd_time int(dvd_renderProperties.w)
 

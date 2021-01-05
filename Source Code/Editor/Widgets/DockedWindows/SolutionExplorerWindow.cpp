@@ -455,7 +455,10 @@ namespace Divide {
             ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 5.0f);
             ImGui::BeginChild("Node Properties", ImVec2(0, 400), true, 0);
 
-            ImGui::InputText("Name", g_nodeDescriptor._name.data(), g_nodeDescriptor._name.capacity());
+            static char buf[64];
+            if (ImGui::InputText("Name", &buf[0], 61)) {
+                g_nodeDescriptor._name = buf;
+            }
 
             const char* currentType = Names::sceneNodeType[to_base(g_currentNodeType)];
             if (ImGui::BeginCombo("Node Type", currentType, ImGuiComboFlags_PopupAlignLeft)) {
@@ -555,6 +558,7 @@ namespace Divide {
             if (ImGui::Button("Yes", ImVec2(120, 0))) {
                 g_nodeDescriptor._node = createNode();
                 _parentNode->addChildNode(g_nodeDescriptor);
+                Attorney::EditorGeneralWidget::registerUnsavedSceneChanges(_context.editor());
                 g_nodeDescriptor._node.reset();
                 ImGui::CloseCurrentPopup();
               

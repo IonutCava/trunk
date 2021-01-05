@@ -210,7 +210,7 @@ class Editor final : public PlatformContextComponent,
     void teleportToNode(const SceneGraphNode* sgn) const;
     void saveNode(const SceneGraphNode* sgn) const;
     void loadNode(SceneGraphNode* sgn) const;
-    void queueRemoveNode(I64 nodeGUID) const;
+    void queueRemoveNode(I64 nodeGUID);
     void onPreviewFocus(bool state) const;
 
     [[nodiscard]] static ImGuiViewport* FindViewportByPlatformHandle(ImGuiContext* context, DisplayWindow* window);

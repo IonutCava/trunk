@@ -2,18 +2,21 @@
 
 #include "Headers/SceneEnvironmentProbePool.h"
 
-#include "Scenes/Headers/Scene.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "ECS/Components/Headers/BoundsComponent.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
+#include "Scenes/Headers/Scene.h"
 
 #include "ECS/Components/Headers/EnvironmentProbeComponent.h"
+#include "Headers/SceneShaderData.h"
 
 namespace Divide {
 
 vectorEASTL<DebugView_ptr> SceneEnvironmentProbePool::s_debugViews;
 vectorEASTL<Camera*> SceneEnvironmentProbePool::s_probeCameras;
+bool SceneEnvironmentProbePool::s_probesDirty = true;
 
 std::array<std::pair<bool, bool>, Config::MAX_REFLECTIVE_PROBES_PER_PASS> SceneEnvironmentProbePool::s_availableSlices;
 RenderTargetHandle SceneEnvironmentProbePool::s_reflection;
@@ -34,19 +37,24 @@ SceneEnvironmentProbePool::~SceneEnvironmentProbePool()
     s_probeCameras.clear();
 }
 
-U16 SceneEnvironmentProbePool::allocateSlice(bool lock) {
-    for (U16 i = 0; i < Config::MAX_REFLECTIVE_PROBES_PER_PASS; ++i) {
+I16 SceneEnvironmentProbePool::AllocateSlice(bool lock) {
+    static_assert(Config::MAX_REFLECTIVE_PROBES_PER_PASS < std::numeric_limits<I16>::max());
+
+    for (U32 i = 0; i < Config::MAX_REFLECTIVE_PROBES_PER_PASS; ++i) {
         if (s_availableSlices[i].first) {
             s_availableSlices[i] = { false, lock };
-            return i;
+            return to_I16(i);
         }
     }
 
-    DIVIDE_UNEXPECTED_CALL();
-    return 0u;
+    if_constexpr (Config::Build::IS_DEBUG_BUILD) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
+
+    return -1;
 }
 
-void SceneEnvironmentProbePool::unlockSlice(const U16 slice) {
+void SceneEnvironmentProbePool::UnlockSlice(const I16 slice) {
     s_availableSlices[slice] = { true, false };
 }
 
@@ -63,7 +71,7 @@ void SceneEnvironmentProbePool::OnStartup(GFXDevice& context) {
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     environmentDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
-    environmentDescriptor.mipCount(1u);
+    environmentDescriptor.autoMipMaps(false);
 
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
     depthDescriptor.layerCount(Config::MAX_REFLECTIVE_PROBES_PER_PASS);
@@ -113,16 +121,16 @@ void SceneEnvironmentProbePool::Prepare(GFX::CommandBuffer& bufferInOut) {
         }
     }
 
-    RTClearDescriptor clearDescriptor = {};
-    clearDescriptor.clearDepth(true);
-    // Do not reset already rendererd probes
-    clearDescriptor.clearColours(false);
-    clearDescriptor.resetToDefault(true);
+    if (ProbesDirty()) {
+        GFX::ClearRenderTargetCommand clearMainTarget = {};
+        clearMainTarget._target = s_reflection._targetID;
+        clearMainTarget._descriptor.clearDepth(true);
+        clearMainTarget._descriptor.clearColours(false);
+        clearMainTarget._descriptor.resetToDefault(true);
+        EnqueueCommand(bufferInOut, clearMainTarget);
 
-    GFX::ClearRenderTargetCommand clearMainTarget = {};
-    clearMainTarget._target = s_reflection._targetID;
-    clearMainTarget._descriptor = clearDescriptor;
-    EnqueueCommand(bufferInOut, clearMainTarget);
+        ProbesDirty(false);
+    }
 }
 
 void SceneEnvironmentProbePool::lockProbeList() const {
@@ -137,20 +145,25 @@ const EnvironmentProbeList& SceneEnvironmentProbePool::getLocked() const {
     return _envProbes;
 }
 
-EnvironmentProbeComponent* SceneEnvironmentProbePool::registerProbe(EnvironmentProbeComponent* probe) {
+void SceneEnvironmentProbePool::registerProbe(EnvironmentProbeComponent* probe) {
     UniqueLock<SharedMutex> w_lock(_probeLock);
+
+    assert(_envProbes.size() < std::numeric_limits<U16>::max() - 2u);
     _envProbes.emplace_back(probe);
-    return probe;
+    probe->poolIndex(to_U16(_envProbes.size() - 1u));
 }
 
 void SceneEnvironmentProbePool::unregisterProbe(EnvironmentProbeComponent* probe) {
     if (probe != nullptr) {
         UniqueLock<SharedMutex> w_lock(_probeLock);
         I64 probeGUID = probe->getGUID();
-        _envProbes.erase(eastl::remove_if(begin(_envProbes), end(_envProbes),
-                                          [&probeGUID](const auto& p)
-                                      -> bool { return p->getGUID() == probeGUID; }),
-                         end(_envProbes));
+        auto it = _envProbes.erase(eastl::remove_if(begin(_envProbes), end(_envProbes),
+                                                    [&probeGUID](const auto& p) { return p->getGUID() == probeGUID; }),
+                                   end(_envProbes));
+        while (it != cend(_envProbes)) {
+            (*it)->poolIndex((*it)->poolIndex() - 1);
+            it++;
+        }
     }
 
     if (probe == _debugProbe) {
@@ -208,4 +221,15 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
     }
 }
 
+void SceneEnvironmentProbePool::OnNodeMoved(SceneEnvironmentProbePool* probePool, const SceneGraphNode& node) {
+    const BoundingSphere& bsphere = node.get<BoundsComponent>()->getBoundingSphere();
+    probePool->lockProbeList();
+    const EnvironmentProbeList& probes = probePool->getLocked();
+    for (const auto& probe : probes) {
+        if (probe->checkCollisionAndQueueUpdate(bsphere)) {
+            NOP();
+        }
+    }
+    probePool->unlockProbeList();
+}
 } //namespace Divide

@@ -14,8 +14,8 @@ Mutex Octree::s_pendingInsertLock;
 eastl::queue<SceneGraphNode*> Octree::s_pendingInsertion;
 vectorEASTL<SceneGraphNode*> Octree::s_intersectionsObjectCache;
 
-Octree::Octree(const U16 nodeMask)
-    : _nodeMask(nodeMask)
+Octree::Octree(const U16 nodeExclusionMask)
+    : _nodeExclusionMask(nodeExclusionMask)
 {
     _region.set(VECTOR3_ZERO, VECTOR3_ZERO);
 }
@@ -26,10 +26,10 @@ Octree::Octree(const U16 nodeMask, const BoundingBox& rootAABB)
     _region.set(rootAABB);
 }
 
-Octree::Octree(const U16 nodeMask,
+Octree::Octree(const U16 nodeExclusionMask,
                const BoundingBox& rootAABB,
                const vectorEASTL<SceneGraphNode*>& nodes)
-    :  Octree(nodeMask, rootAABB)
+    :  Octree(nodeExclusionMask, rootAABB)
 {
     _objects.reserve(nodes.size());
     _objects.insert(cend(_objects), cbegin(nodes), cend(nodes));
@@ -65,17 +65,6 @@ void Octree::update(const U64 deltaTimeUS) {
                  return !node || !node->hasFlag(SceneGraphNode::Flags::ACTIVE);
              });
 
-    //go through and update every object in the current tree node
-    _movedObjects.resize(0);
-    for (SceneGraphNode* crtNode : _objects) {
-        SceneGraphNode* node = crtNode;
-        //we should figure out if an object actually moved so that we know whether we need to update this node in the tree.
-        if (node->hasFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED)) {
-            _movedObjects.push_back(crtNode);
-            node->clearFlag(SceneGraphNode::Flags::SPATIAL_PARTITION_UPDATE_QUEUED);
-        }
-    }
-
     //recursively update any child nodes.
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
@@ -85,7 +74,8 @@ void Octree::update(const U64 deltaTimeUS) {
 
     //If an object moved, we can insert it into the parent and that will insert it into the correct tree node.
     //note that we have to do this last so that we don't accidentally update the same object more than once per frame.
-    for (SceneGraphNode* movedObjPtr : _movedObjects) {
+    SceneGraphNode* movedObjPtr = nullptr;
+    while(_movedObjects.try_dequeue(movedObjPtr)) {
         Octree*  current = this;
 
         //figure out how far up the tree we need to go to reinsert our moved object
@@ -103,7 +93,7 @@ void Octree::update(const U64 deltaTimeUS) {
         }
 
         //now, remove the object from the current node and insert it into the current containing node.
-        I64 guid = movedObj->getGUID();
+        const I64 guid = movedObj->getGUID();
         erase_if(_objects,
                  [guid](SceneGraphNode* updatedNode) -> bool {
                      SceneGraphNode* node = updatedNode;
@@ -127,7 +117,7 @@ void Octree::update(const U64 deltaTimeUS) {
         s_intersectionsObjectCache.resize(0);
         s_intersectionsObjectCache.reserve(getTotalObjectCount());
 
-        updateIntersectionCache(s_intersectionsObjectCache, _nodeMask);
+        updateIntersectionCache(s_intersectionsObjectCache);
 
         for(const IntersectionRecord& ir : _intersectionsCache) {
             handleIntersection(ir);
@@ -135,11 +125,9 @@ void Octree::update(const U64 deltaTimeUS) {
     }
 }
 
-bool Octree::addNode(SceneGraphNode* node) {
-    if (node && // check for valid node
-        !BitCompare(_nodeMask, to_U16(node->getNode<>().type())) &&  // check for valid type
-        !node->isChildOfType(_nodeMask)) // parent is valid type as well
-    {
+bool Octree::addNode(SceneGraphNode* node) const {
+    const U16 nodeType = 1 << to_U16(node->getNode<>().type());
+    if (node && !BitCompare(_nodeExclusionMask, nodeType)) {
         UniqueLock<Mutex> w_lock(s_pendingInsertLock);
         s_pendingInsertion.push(node);
         s_treeReady = false;
@@ -171,8 +159,7 @@ void Octree::insert(SceneGraphNode* object) {
 
     vec3<F32> dimensions(_region.getExtent());
     //Check to see if the dimensions of the box are greater than the minimum dimensions
-    if (dimensions.x <= MIN_SIZE && dimensions.y <= MIN_SIZE && dimensions.z <= MIN_SIZE)
-    {
+    if (dimensions.x <= MIN_SIZE && dimensions.y <= MIN_SIZE && dimensions.z <= MIN_SIZE) {
         _objects.push_back(object);
         return;
     }
@@ -221,6 +208,23 @@ void Octree::insert(SceneGraphNode* object) {
         //either the item lies outside of the enclosed bounding box or it is intersecting it. Either way, we need to rebuild
         //the entire tree by enlarging the containing bounding box
         buildTree();
+    }
+}
+
+void Octree::onNodeMoved(const SceneGraphNode& node) {
+    //go through and update every object in the current tree node
+    for (SceneGraphNode* crtNode : _objects) {
+        if (crtNode->getGUID() == node.getGUID()) {
+            _movedObjects.enqueue(crtNode);
+            return;
+        }
+    }
+
+    //recursively update any child nodes.
+    for (U8 i = 0; i < 8; ++i) {
+        if (_activeNodes[i]) {
+            _childNodes[i]->onNodeMoved(node);
+        }
     }
 }
 
@@ -308,19 +312,16 @@ void Octree::buildTree() {
     s_treeReady = true;
 }
 
-std::shared_ptr<Octree>
-Octree::createNode(const BoundingBox& region,
-                   const vectorEASTL<SceneGraphNode*>& objects) {
+std::shared_ptr<Octree> Octree::createNode(const BoundingBox& region, const vectorEASTL<SceneGraphNode*>& objects) {
     if (objects.empty()) {
         return nullptr;
     }
-    std::shared_ptr<Octree> ret = std::make_shared<Octree>(_nodeMask, region, objects);
+    std::shared_ptr<Octree> ret = std::make_shared<Octree>(_nodeExclusionMask, region, objects);
     ret->_parent = shared_from_this();
     return ret;
 }
 
-std::shared_ptr<Octree>
-Octree::createNode(const BoundingBox& region, SceneGraphNode* object) {
+std::shared_ptr<Octree> Octree::createNode(const BoundingBox& region, SceneGraphNode* object) {
     vectorEASTL<SceneGraphNode*> objList;
     objList.push_back(object);
     return createNode(region, objList);
@@ -461,7 +462,8 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Frustum& frustum, 
     for(SceneGraphNode* objPtr : _objects) {
         assert(objPtr);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_base(objPtr->getNode<>().type()))) {
+        const U16 nodeType = 1 << to_U16(objPtr->getNode<>().type());
+        if (BitCompare(typeFilterMask, nodeType)) {
             continue;
         }
 
@@ -502,7 +504,8 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay,
     for (SceneGraphNode* objPtr : _objects) {
         assert(objPtr);
         //skip any objects which don't meet our type criteria
-        if (BitCompare(typeFilterMask, to_base(objPtr->getNode<>().type()))) {
+        const U16 nodeType = 1 << to_U16(objPtr->getNode<>().type());
+        if (BitCompare(typeFilterMask, nodeType)) {
             continue;
         }
 
@@ -525,7 +528,7 @@ vectorEASTL<IntersectionRecord> Octree::getIntersection(const Ray& intersectRay,
     return ret;
 }
 
-void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, const U16 typeFilterMask)
+void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects)
 {
     _intersectionsCache.resize(0);
     //assume all parent objects have already been processed for collisions against each other.
@@ -565,9 +568,8 @@ void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects
                 if (lObj1->getGUID() == lObj2Ptr->getGUID() || isStatic(lObj1) && isStatic(lObj2Ptr)) {
                     continue;
                 }
-
                 IntersectionRecord ir;
-                if (getIntersection(lObj1, lObj2Ptr, ir)) {
+                if (!lObj1->isRelated(lObj2Ptr) && getIntersection(lObj1, lObj2Ptr, ir)) {
                     _intersectionsCache.push_back(ir);
                 }
             }
@@ -588,7 +590,7 @@ void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects
     for (U8 i = 0; i < 8; ++i) {
         if (_activeNodes[i]) {
             assert(_childNodes[i]);
-            _childNodes[i]->updateIntersectionCache(parentObjects, typeFilterMask);
+            _childNodes[i]->updateIntersectionCache(parentObjects);
             const vectorEASTL<IntersectionRecord>& hitList = _childNodes[i]->_intersectionsCache;
             _intersectionsCache.insert(cend(_intersectionsCache), cbegin(hitList), cend(hitList));
         }
@@ -598,7 +600,7 @@ void Octree::updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects
 /// This gives you a list of every intersection record created with the intersection ray
 vectorEASTL<IntersectionRecord> Octree::allIntersections(const Ray& intersectionRay, const F32 start, const F32 end)
 {
-    return allIntersections(intersectionRay, start, end, _nodeMask);
+    return allIntersections(intersectionRay, start, end, ~_nodeExclusionMask);
 }
 
 /// This gives you the first object encountered by the intersection ray

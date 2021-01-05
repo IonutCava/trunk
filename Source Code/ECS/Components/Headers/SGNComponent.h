@@ -168,6 +168,9 @@ class SGNComponent : protected PlatformContextComponent,
 
         virtual void OnData(const ECS::CustomEvent& data);
 
+        virtual void saveToXML(boost::property_tree::ptree& pt) const;
+        virtual void loadFromXML(const boost::property_tree::ptree& pt);
+
         SceneGraphNode* getSGN() const noexcept { return _parentSGN; }
         ComponentType type() const noexcept { return _type; }
 

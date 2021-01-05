@@ -96,10 +96,10 @@ class SubMesh : public Object3D {
     // SGN node + parent mesh
     size_t maxReferenceCount() const noexcept override { return 2; }
    protected:
-    bool _visibleToNetwork;
-    bool _render;
-    U32 _ID;
-    Mesh* _parentMesh;
+    bool _visibleToNetwork = true;
+    bool _render = true;
+    U32 _ID = 0;
+    Mesh* _parentMesh = nullptr;
 };
 
 TYPEDEF_SMART_POINTERS_FOR_TYPE(SubMesh);

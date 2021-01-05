@@ -486,6 +486,10 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         // PRE PASS
         ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
         for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
+            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
+                shaderModule._variant = "PrePass";
+            }
+
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
         }
@@ -499,7 +503,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         ShaderProgramDescriptor prePassDescriptorLQ = shaderDescriptor;
         for (ShaderModuleDescriptor& shaderModule : prePassDescriptorLQ._modules) {
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-                shaderModule._variant = "";
+                shaderModule._variant = "PrePass.LQPass";
             }
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("LOW_QUALITY", true);

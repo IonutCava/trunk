@@ -14,7 +14,8 @@
 <NETWORKING/>
 <POINT_LIGHT>
     <Range>10</Range>
-    <Colour r="0.03125" g="0.03125" b="0.99609375"/>
+    <Intensity>1</Intensity>
+    <Colour r="0.03125" g="0.03125" b="1"/>
     <Is__Shadow__Caster>true</Is__Shadow__Caster>
     <Shadow__Bias>0.0250000004</Shadow__Bias>
     <Shadow__Strength>1</Shadow__Strength>

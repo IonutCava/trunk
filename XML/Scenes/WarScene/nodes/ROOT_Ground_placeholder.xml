@@ -5,7 +5,7 @@
 <TRANSFORM>
     <Transform>
         <position x="100" y="14.75" z="-50"/>
-        <orientation x="-89.8056564" y="4.80241592e-15" z="2.16870854e-18"/>
+        <orientation x="-89.8056564" y="4.80007049e-15" z="2.16889817e-18"/>
         <scale x="102.562851" y="102.06208" z="102.613083"/>
     </Transform>
 </TRANSFORM>
@@ -41,8 +41,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -61,8 +61,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -81,8 +81,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -232,6 +232,9 @@
     </Material>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
     <Show__Axis>false</Show__Axis>
+    <Receives__Shadows>false</Receives__Shadows>
+    <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>
 <NETWORKING/>

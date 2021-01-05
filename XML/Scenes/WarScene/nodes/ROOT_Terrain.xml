@@ -8,7 +8,7 @@
 <tileNoiseTexture>bruit_gaussien_2.jpg</tileNoiseTexture>
 <model>Terrain</model>
 <TERRAIN>
-    <Tessellated__Triangle__Width>32</Tessellated__Triangle__Width>
+    <Tessellated__Triangle__Width>24</Tessellated__Triangle__Width>
     <Parallax__Height>0.300000012</Parallax__Height>
 </TERRAIN>
 <TRANSFORM>
@@ -32,7 +32,7 @@
         <metallic>0</metallic>
         <roughness>0.800000012</roughness>
         <doubleSided>false</doubleSided>
-        <receivesShadows>true</receivesShadows>
+        <receivesShadows>false</receivesShadows>
         <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.300000012</parallaxFactor>
         <transparencyEnabled>false</transparencyEnabled>
@@ -51,8 +51,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -71,8 +71,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -91,8 +91,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -111,8 +111,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -131,8 +131,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -151,8 +151,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -308,6 +308,14 @@
                     <id>1</id>
                 </Sampler>
             </UNIT0>
+            <OPACITY>
+                <name>alpha_maps_Alpha1.png,alpha_maps_Alpha2.png</name>
+                <path>assets/terrain/Main,assets/terrain/Main</path>
+                <flipped>false</flipped>
+                <Sampler>
+                    <id>2</id>
+                </Sampler>
+            </OPACITY>
             <UNIT1>
                 <name>std_grass_steep/Normal.jpg,std_grass/Normal.jpg,std_cliffs/Normal.jpg,std_cliffs_steep/Normal.jpg,std_pebbles/Normal.jpg,std_cliffs_grey/Normal.jpg,std_sand_yellow/Normal.jpg,std_grass_lush/Normal.jpg</name>
                 <path>assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/</path>
@@ -317,14 +325,6 @@
                     <id>1</id>
                 </Sampler>
             </UNIT1>
-            <OPACITY>
-                <name>alpha_maps_Alpha1.png,alpha_maps_Alpha2.png</name>
-                <path>assets/terrain/Main,assets/terrain/Main</path>
-                <flipped>false</flipped>
-                <Sampler>
-                    <id>2</id>
-                </Sampler>
-            </OPACITY>
             <OCCLUSION_METALLIC_ROUGHNESS>
                 <name>terrain_water_caustics.jpg,sandfloor009a.jpg,terrain_detail_NM.png,bruit_gaussien_2.jpg</name>
                 <path>assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/,assets/misc_images/</path>
@@ -333,6 +333,22 @@
                     <id>1</id>
                 </Sampler>
             </OCCLUSION_METALLIC_ROUGHNESS>
+            <HEIGHTMAP>
+                <name>heightfield.png</name>
+                <path>assets/terrain/Main</path>
+                <flipped>false</flipped>
+                <Sampler>
+                    <id>3</id>
+                </Sampler>
+            </HEIGHTMAP>
+            <PROJECTION>
+                <name>std_grass_steep/Displacement.jpg,std_grass/Displacement.jpg,std_cliffs/Displacement.jpg,std_cliffs_steep/Displacement.jpg,std_pebbles/Displacement.jpg,std_cliffs_grey/Displacement.jpg,std_sand_yellow/Displacement.jpg,std_grass_lush/Displacement.jpg</name>
+                <path>assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/,assets/terrain/climates_05k/</path>
+                <flipped>false</flipped>
+                <Sampler>
+                    <id>1</id>
+                </Sampler>
+            </PROJECTION>
         </texture>
         <SamplerDescriptors>
             <1>
@@ -361,11 +377,27 @@
                     <borderColour r="0" g="0" b="0" a="1"/>
                 </Sampler>
             </2>
+            <3>
+                <Sampler>
+                    <Filter min="LINEAR" mag="LINEAR"/>
+                    <Map U="CLAMP_TO_BORDER" V="CLAMP_TO_BORDER" W="CLAMP_TO_BORDER"/>
+                    <useRefCompare>false</useRefCompare>
+                    <comparisonFunction>LEQUAL</comparisonFunction>
+                    <anisotropy>0</anisotropy>
+                    <minLOD>-1000</minLOD>
+                    <maxLOD>1000</maxLOD>
+                    <biasLOD>0</biasLOD>
+                    <borderColour r="0" g="0" b="0" a="1"/>
+                </Sampler>
+            </3>
         </SamplerDescriptors>
     </Material>
     <Lock__LoD>true</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
     <Show__Axis>false</Show__Axis>
+    <Receives__Shadows>false</Receives__Shadows>
+    <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>

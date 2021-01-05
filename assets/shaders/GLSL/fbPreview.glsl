@@ -42,7 +42,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    float linearDepth = ToLinearDepth(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r, zPlanes);
+    const float linearDepth = ToLinearDepthPreview(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r, zPlanes);
     _colourOut = vec4(vec3(linearDepth), 1.0);
 }
 

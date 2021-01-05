@@ -693,7 +693,7 @@ void SceneManager::getSortedRefractiveNodes(const Camera* camera, const RenderSt
     }
 }
 
-VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const Camera& camera, const I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount) {
+VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const Camera& camera, const FrustumClipPlanes& clippingPlanes, const I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount) {
     OPTICK_EVENT();
 
     Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
@@ -702,6 +702,7 @@ VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const C
     SceneState* sceneState = activeScene.state();
 
     NodeCullParams cullParams = {};
+    cullParams._clippingPlanes = clippingPlanes;
     cullParams._lodThresholds = sceneState->renderState().lodThresholds(stage);
     cullParams._minExtents = minExtents;
     cullParams._ignoredGUIDS = std::make_pair(ignoredGUIDs, ignoredGUIDsCount);

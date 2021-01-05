@@ -2,6 +2,10 @@
 
 #include "Headers/Sky.h"
 
+
+
+#include "Core/Headers/Configuration.h"
+#include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Headers/Sun.h"
 
@@ -195,7 +199,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     getEditorComponent().registerField(MOV(nightColourField));
 }
 
-std::array<vec4<F32>, 3> Sky::atmoToShaderData() const noexcept {
+std::array<vec4<F32>, 3> Sky::atmosphereToShaderData() const noexcept {
     return {
         vec4<F32>
         {
@@ -268,7 +272,11 @@ bool Sky::load() {
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "sky.glsl";
-    fragModule._variant = "Display";
+    if (_context.context().config().debug.renderFilter.sky) {
+        fragModule._variant = "Display";
+    } else {
+        fragModule._variant = "PassThrough";
+    }
 
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
@@ -305,7 +313,7 @@ void Sky::postLoad(SceneGraphNode* sgn) {
     skyNodeDescriptor._serialize = false;
     skyNodeDescriptor._node = _sky;
     skyNodeDescriptor._name = sgn->name() + "_geometry";
-    skyNodeDescriptor._usageContext = NodeUsageContext::NODE_DYNAMIC;
+    skyNodeDescriptor._usageContext = NodeUsageContext::NODE_STATIC;
     skyNodeDescriptor._componentMask = to_base(ComponentType::TRANSFORM) |
                                        to_base(ComponentType::BOUNDS) |
                                        to_base(ComponentType::RENDERING) |
@@ -352,8 +360,6 @@ void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sc
         _atmosphereChanged = EditorDataState::IDLE;
     }
 
-    sgn->get<TransformComponent>()->rotateY(0.3f * Time::MicrosecondsToSeconds<F32>(deltaTimeUS));
-
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
 }
 
@@ -371,7 +377,7 @@ void Sky::prepareRender(SceneGraphNode* sgn,
         if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
             constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
             constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
-            constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
+            constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmosphereToShaderData());
             _atmosphereChanged = EditorDataState::PROCESSED;
         }
     }
@@ -411,7 +417,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
-    pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmoToShaderData());
+    pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmosphereToShaderData());
     pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
     pushConstantsCommand._constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
     pkgInOut.add(pushConstantsCommand);

@@ -544,15 +544,45 @@ void main(void)
 #endif //TOGGLE_NORMALS
 }
 
+--Fragment.PrePass
+
+#define USE_CUSTOM_NORMAL_MAP
+#define USE_CUSTOM_TBN
+#define USE_CUSTOM_POM
+
+layout(location = 10) in flat int dvd_LoD;
+
+#if defined(TOGGLE_DEBUG)
+layout(location = 11) in vec3 gs_wireColor;
+layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
+#endif //TOGGLE_DEBUG
+
+#if defined(LOW_QUALITY)
+#if defined(MAX_TEXTURE_LAYERS)
+#undef MAX_TEXTURE_LAYERS
+#define MAX_TEXTURE_LAYERS 1
+#endif //MAX_TEXTURE_LAYERS
+#if defined(HAS_PARALLAX)
+#undef HAS_PARALLAX
+#endif //HAS_PARALLAX
+#endif //LOW_QUALITY
+
+#include "prePass.frag"
+#if defined(HAS_PRE_PASS_DATA)
+#include "terrainSplatting.frag"
+#endif  //HAS_PRE_PASS_DATA
+
+void main(void)
+{
+    writeOutput(1.0f, VAR._texCoord, getMixedNormalWV(VAR._texCoord));
+}
+
+
 --Fragment
 
-#if !defined(PRE_PASS)
 layout(early_fragment_tests) in;
 #define USE_CUSTOM_ROUGHNESS
 //#define SHADOW_INTENSITY_FACTOR 0.75f
-#else //PRE_PASS
-#define USE_CUSTOM_NORMAL_MAP
-#endif //PRE_ASS
 
 #define USE_CUSTOM_TBN
 #define USE_CUSTOM_POM
@@ -574,18 +604,10 @@ layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
 #endif //HAS_PARALLAX
 #endif //LOW_QUALITY
 
-#if defined(PRE_PASS)
-#include "prePass.frag"
-#if defined(HAS_PRE_PASS_DATA)
-#include "terrainSplatting.frag"
-#endif  //HAS_PRE_PASS_DATA
-#else //PRE_PASS
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
 #include "output.frag"
-#endif //PRE_PASS
 
-#if !defined(PRE_PASS)
 #if defined(LOW_QUALITY)
 
 vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
@@ -600,14 +622,8 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 }
 
 #endif //LOW_QUALITY
-#endif //PRE_PASS
 
-void main(void)
-{
-#if defined(PRE_PASS)
-    writeOutput(1.0f, VAR._texCoord, getMixedNormalWV(VAR._texCoord));
-#else //PRE_PASS
-
+void main(void) {
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
     vec4 albedo;
@@ -636,6 +652,4 @@ void main(void)
 #endif //TOGGLE_DEBUG
 
     writeOutput(colourOut);
-
-#endif //PRE_PASS
 }

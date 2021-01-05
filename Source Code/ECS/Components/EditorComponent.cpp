@@ -18,17 +18,19 @@ namespace Divide {
         }
     }
 
-    EditorComponent::EditorComponent(const ComponentType parentComponentType, const Str128& name)
+    EditorComponent::EditorComponent(const Str128& name)
         : GUIDWrapper(),
-          _name(name),
-          _parentComponentType(parentComponentType)
+          _name(name)
     {
     }
 
-    EditorComponent::EditorComponent(const Str128& name)
-        : EditorComponent(ComponentType::COUNT, name)
+    EditorComponent::EditorComponent(SGNComponent& parentComp, const ComponentType parentComponentType, const Str128& name)
+        : EditorComponent(name)
     {
+        _parentComponentType = parentComponentType;
+        _parentComp = &parentComp;
     }
+
 
     void EditorComponent::registerField(EditorComponentField&& field) {
         _fields.erase(
@@ -130,6 +132,10 @@ namespace Divide {
                 }break;
             }
         }
+
+        if (_parentComp != nullptr) {
+            _parentComp->saveToXML(pt);
+        }
     }
 
     void EditorComponent::loadFromXML(const boost::property_tree::ptree& pt) {
@@ -212,6 +218,9 @@ namespace Divide {
                         field.set<BoundingSphere>(bs);
                     } break;
                 }
+            }
+            if (_parentComp != nullptr) {
+                _parentComp->loadFromXML(pt);
             }
         }
     }

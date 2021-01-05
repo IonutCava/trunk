@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<static>false</static>
+<radius>1</radius>
+<resolution>16</resolution>
+<model>SPHERE_3D</model>
+<SPHERE_3D/>
+<TRANSFORM>
+    <Transform>
+        <position x="155.196274" y="18.4676495" z="9.35678101"/>
+        <orientation x="0" y="-0" z="0"/>
+        <scale x="1" y="1" z="1"/>
+    </Transform>
+</TRANSFORM>
+<NAVIGATION/>
+<BOUNDS>
+    <Show__AABB>false</Show__AABB>
+    <Show__Bounding__Sphere>false</Show__Bounding__Sphere>
+</BOUNDS>
+<RENDERING>
+    <Material>
+        <version>1</version>
+        <shadingMode>BLINN_PHONG</shadingMode>
+        <colour r="0.400000006" g="0.400000006" b="0.400000006" a="1"/>
+        <emissive r="0" g="0" b="0"/>
+        <metallic>0.5</metallic>
+        <roughness>0.5</roughness>
+        <doubleSided>false</doubleSided>
+        <receivesShadows>false</receivesShadows>
+        <bumpMethod>NONE</bumpMethod>
+        <parallaxFactor>1</parallaxFactor>
+        <transparencyEnabled>true</transparencyEnabled>
+        <isRefractive>false</isRefractive>
+        <RenderStates>
+            <1>
+                <colourWrite r="true" g="true" b="false" a="false"/>
+                <zBias>0</zBias>
+                <zUnits>0</zUnits>
+                <zFunc>LESS</zFunc>
+                <tessControlPoints>3</tessControlPoints>
+                <cullMode>CW/BACK</cullMode>
+                <fillMode>Solid</fillMode>
+                <frontFaceCCW>true</frontFaceCCW>
+                <scissorTestEnabled>false</scissorTestEnabled>
+                <depthTestEnabled>true</depthTestEnabled>
+                <stencilEnable>false</stencilEnable>
+                <stencilFailOp>KEEP</stencilFailOp>
+                <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
+                <stencilFunc>NEVER</stencilFunc>
+                <stencilRef>0</stencilRef>
+                <stencilMask>4294967295</stencilMask>
+                <stencilWriteMask>4294967295</stencilWriteMask>
+            </1>
+            <2>
+                <colourWrite r="true" g="true" b="true" a="true"/>
+                <zBias>0</zBias>
+                <zUnits>0</zUnits>
+                <zFunc>LEQUAL</zFunc>
+                <tessControlPoints>3</tessControlPoints>
+                <cullMode>CW/BACK</cullMode>
+                <fillMode>Solid</fillMode>
+                <frontFaceCCW>true</frontFaceCCW>
+                <scissorTestEnabled>false</scissorTestEnabled>
+                <depthTestEnabled>true</depthTestEnabled>
+                <stencilEnable>false</stencilEnable>
+                <stencilFailOp>KEEP</stencilFailOp>
+                <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
+                <stencilFunc>NEVER</stencilFunc>
+                <stencilRef>0</stencilRef>
+                <stencilMask>4294967295</stencilMask>
+                <stencilWriteMask>4294967295</stencilWriteMask>
+            </2>
+            <3>
+                <colourWrite r="true" g="true" b="true" a="true"/>
+                <zBias>0</zBias>
+                <zUnits>0</zUnits>
+                <zFunc>EQUAL</zFunc>
+                <tessControlPoints>3</tessControlPoints>
+                <cullMode>CW/BACK</cullMode>
+                <fillMode>Solid</fillMode>
+                <frontFaceCCW>true</frontFaceCCW>
+                <scissorTestEnabled>false</scissorTestEnabled>
+                <depthTestEnabled>true</depthTestEnabled>
+                <stencilEnable>false</stencilEnable>
+                <stencilFailOp>KEEP</stencilFailOp>
+                <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
+                <stencilFunc>NEVER</stencilFunc>
+                <stencilRef>0</stencilRef>
+                <stencilMask>4294967295</stencilMask>
+                <stencilWriteMask>4294967295</stencilWriteMask>
+            </3>
+        </RenderStates>
+        <SHADOW>
+            <PRE_PASS>
+                <0>
+                    <id>1</id>
+                </0>
+                <1>
+                    <id>1</id>
+                </1>
+                <2>
+                    <id>1</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>1</id>
+                </0>
+                <1>
+                    <id>1</id>
+                </1>
+                <2>
+                    <id>1</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>1</id>
+                </0>
+                <1>
+                    <id>1</id>
+                </1>
+                <2>
+                    <id>1</id>
+                </2>
+            </OIT_PASS>
+        </SHADOW>
+        <REFLECTION>
+            <PRE_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>3</id>
+                </0>
+                <1>
+                    <id>3</id>
+                </1>
+                <2>
+                    <id>3</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </OIT_PASS>
+        </REFLECTION>
+        <REFRACTION>
+            <PRE_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>3</id>
+                </0>
+                <1>
+                    <id>3</id>
+                </1>
+                <2>
+                    <id>3</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </OIT_PASS>
+        </REFRACTION>
+        <DISPLAY>
+            <PRE_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </PRE_PASS>
+            <MAIN_PASS>
+                <0>
+                    <id>3</id>
+                </0>
+                <1>
+                    <id>3</id>
+                </1>
+                <2>
+                    <id>3</id>
+                </2>
+            </MAIN_PASS>
+            <OIT_PASS>
+                <0>
+                    <id>2</id>
+                </0>
+                <1>
+                    <id>2</id>
+                </1>
+                <2>
+                    <id>2</id>
+                </2>
+            </OIT_PASS>
+        </DISPLAY>
+    </Material>
+    <Lock__LoD>false</Lock__LoD>
+    <Lock__LoD__Level>0</Lock__LoD__Level>
+    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
+    <Show__Axis>false</Show__Axis>
+    <Receives__Shadows>false</Receives__Shadows>
+    <Casts__Shadows>true</Casts__Shadows>
+</RENDERING>
+<RIGID_BODY/>
+<SELECTION/>

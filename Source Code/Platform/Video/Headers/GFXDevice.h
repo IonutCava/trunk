@@ -186,6 +186,7 @@ public:
 
     enum class MaterialDebugFlag : U8 {
         DEBUG_ALBEDO = 0,
+        DEBUG_DEPTH,
         DEBUG_LIGHTING,
         DEBUG_SPECULAR,
         DEBUG_UV,
@@ -194,12 +195,13 @@ public:
         DEBUG_ROUGHNESS,
         DEBUG_METALLIC,
         DEBUG_NORMALS,
-        DEBUG_TBN_VIEW_DIRECTION, //Used for parallax occlusion mapping
+        DEBUG_TBN_VIEW_DIR, //Used for parallax occlusion mapping
         DEBUG_SHADOW_MAPS,
         DEBUG_CSM_SPLITS,
         DEBUG_LIGHT_HEATMAP,
-        DEBUG_LIGHT_DEPTH_CLUSTERS,
+        DEBUG_DEPTH_CLUSTERS,
         DEBUG_REFLECTIONS,
+        DEBUG_REFLECTIVITY,
         DEBUG_MATERIAL_IDS,
         COUNT
     };
@@ -233,14 +235,14 @@ public:  // GPU interface
     /// It renders the entire scene graph (with culling) as default
     /// use the callback param to override the draw function
     void generateCubeMap(RenderPassParams& params,
-                         U16 arrayOffset,
+                         I16 arrayOffset,
                          const vec3<F32>& pos,
                          const vec2<F32>& zPlanes,
                          GFX::CommandBuffer& commandsInOut,
                          std::array<Camera*, 6>& cameras);
 
     void generateDualParaboloidMap(RenderPassParams& params,
-                                   U16 arrayOffset,
+                                   I16 arrayOffset,
                                    const vec3<F32>& pos,
                                    const vec2<F32>& zPlanes,
                                    GFX::CommandBuffer& bufferInOut,
@@ -455,7 +457,7 @@ private:
     size_t _state2DRenderingHash = 0;
     size_t _stateDepthOnlyRenderingHash = 0;
     /// The interpolation factor between the current and the last frame
-    FrustumClipPlanes _clippingPlanes;
+    FrustumClipPlanes _clippingPlanes{};
 
     // number of draw calls (rough estimate)
     I32 FRAME_DRAW_CALLS = 0;

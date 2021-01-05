@@ -78,7 +78,6 @@ class SceneGraph final : NonCopyable,
     /// Update all nodes. Called from "updateSceneState" from class Scene
     void sceneUpdate(U64 deltaTimeUS, SceneState& sceneState);
     void onStartUpdateLoop(U8 loopNumber);
-    void idle();
 
     bool intersect(const SGNIntersectionParams& params, vectorEASTL<SGNRayResult>& intersectionsOut) const;
 
@@ -130,9 +129,9 @@ class SceneGraph final : NonCopyable,
     const ECS::ECSEngine& GetECSEngine() const noexcept { return _ecsEngine; }
 
    protected:
+    void onNodeMoved(const SceneGraphNode& node);
     void onNodeDestroy(SceneGraphNode* oldNode);
     void onNodeAdd(SceneGraphNode* newNode);
-    void onNodeTransform(SceneGraphNode* node);
 
     bool frameStarted(const FrameEvent& evt) override;
 
@@ -169,11 +168,10 @@ class SceneGraphSGN {
         sceneGraph->onNodeDestroy(oldNode);
     }
 
-    static void onNodeTransform(SceneGraph* sceneGraph, SceneGraphNode* node)
-    {
-        sceneGraph->onNodeTransform(node);
+    static void onNodeMoved(SceneGraph* sceneGraph, const SceneGraphNode& node) {
+        sceneGraph->onNodeMoved(node);
     }
-             
+
     friend class Divide::SceneGraphNode;
 };
 

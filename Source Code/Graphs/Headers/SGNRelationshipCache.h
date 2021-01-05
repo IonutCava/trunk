@@ -43,6 +43,7 @@ public:
         PARENT,
         CHILD,
         GRANDCHILD,
+        SIBLING,
         COUNT
     };
 public:

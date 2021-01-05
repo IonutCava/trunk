@@ -103,13 +103,12 @@ class SceneGraphNode final : public ECS::Entity<SceneGraphNode>,
 public:
 
     enum class Flags : U16 {
-        SPATIAL_PARTITION_UPDATE_QUEUED = toBit(1),
-        LOADING = toBit(2),
-        HOVERED = toBit(3),
-        SELECTED = toBit(4),
-        ACTIVE = toBit(5),
-        VISIBILITY_LOCKED = toBit(6),
-        PARENT_POST_RENDERED = toBit(7),
+        LOADING = toBit(1),
+        HOVERED = toBit(2),
+        SELECTED = toBit(3),
+        ACTIVE = toBit(4),
+        VISIBILITY_LOCKED = toBit(5),
+        PARENT_POST_RENDERED = toBit(6),
         COUNT = 7
     };
 

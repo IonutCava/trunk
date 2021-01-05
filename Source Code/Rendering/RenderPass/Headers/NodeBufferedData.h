@@ -81,11 +81,10 @@ using NodeMaterialTextures = std::array<SamplerAddress, MATERIAL_TEXTURE_COUNT>;
         //x = 4x8U: occlusion, metallic, roughness, reserved
         //y = IBL texture size
         //z = 4x8U: tex op, bump method, reserved, reserved
-        //w = Textures lookup index
+        //w = Probe lookup index + 1 (0 = sky cubemap)
         vec4<U32> _data;
 
-        // Texture Data
-        vec4<U32> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
+        vec2<U64> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
     };
 
     [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;

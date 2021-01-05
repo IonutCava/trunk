@@ -124,7 +124,7 @@ GUIButton* GUIInterface::addButton(const char* name,
 
     GUIButton* btn = MemoryManager_NEW GUIButton(name,
                                                  text,
-                                                 _context->guiScheme(),
+                                                 _context->defaultGUIScheme(),
                                                  offset,
                                                  size,
                                                  parent);

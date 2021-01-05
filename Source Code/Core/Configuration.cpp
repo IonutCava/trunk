@@ -14,6 +14,12 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(debug.useVegetationCache);
         GET_PARAM(debug.enableTreeInstances);
         GET_PARAM(debug.enableGrassInstances);
+        GET_PARAM(debug.renderFilter.primitives);
+        GET_PARAM(debug.renderFilter.meshes);
+        GET_PARAM(debug.renderFilter.terrain);
+        GET_PARAM(debug.renderFilter.water);
+        GET_PARAM(debug.renderFilter.sky);
+        GET_PARAM(debug.renderFilter.particles);
         GET_PARAM(debug.useShaderTextCache);
         GET_PARAM(debug.useShaderBinaryCache);
         GET_PARAM(debug.memFile);
@@ -36,8 +42,6 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(runtime.cameraViewDistance);
         GET_PARAM(runtime.verticalFOV);
         GET_PARAM(gui.cegui.enabled);
-        GET_PARAM(gui.cegui.defaultGUIScheme);
-        GET_PARAM(gui.imgui.dontMergeFloatingWindows);
         GET_PARAM(gui.consoleLayoutFile);
         GET_PARAM(terrain.detailLevel);
         GET_PARAM(terrain.textureQuality);
@@ -104,20 +108,14 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(defaultTextureLocation);
         GET_PARAM(defaultShadersLocation);
 
-        if (rendering.shadowMapping.enabled) {
-            if (!rendering.shadowMapping.csm.enabled &&
-                !rendering.shadowMapping.spot.enabled &&
-                !rendering.shadowMapping.point.enabled)
-            {
-                rendering.shadowMapping.enabled = false;
-            }
-        } else {
-            if (rendering.shadowMapping.csm.enabled ||
-                rendering.shadowMapping.spot.enabled ||
-                rendering.shadowMapping.point.enabled) {
-                rendering.shadowMapping.enabled = true;
-            }
+        if ( rendering.shadowMapping.enabled &&
+            !rendering.shadowMapping.csm.enabled &&
+            !rendering.shadowMapping.spot.enabled &&
+            !rendering.shadowMapping.point.enabled)
+        {
+            rendering.shadowMapping.enabled = false;
         }
+
         return true;
     }
 
@@ -131,6 +129,12 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(debug.useVegetationCache);
         PUT_PARAM(debug.enableTreeInstances);
         PUT_PARAM(debug.enableGrassInstances);
+        PUT_PARAM(debug.renderFilter.primitives);
+        PUT_PARAM(debug.renderFilter.meshes);
+        PUT_PARAM(debug.renderFilter.terrain);
+        PUT_PARAM(debug.renderFilter.water);
+        PUT_PARAM(debug.renderFilter.sky);
+        PUT_PARAM(debug.renderFilter.particles);
         PUT_PARAM(debug.useShaderTextCache);
         PUT_PARAM(debug.useShaderBinaryCache);
         PUT_PARAM(debug.memFile);
@@ -153,8 +157,6 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(runtime.cameraViewDistance);
         PUT_PARAM(runtime.verticalFOV);
         PUT_PARAM(gui.cegui.enabled);
-        PUT_PARAM(gui.cegui.defaultGUIScheme);
-        PUT_PARAM(gui.imgui.dontMergeFloatingWindows);
         PUT_PARAM(gui.consoleLayoutFile);
         PUT_PARAM(terrain.detailLevel);
         PUT_PARAM(terrain.textureQuality);

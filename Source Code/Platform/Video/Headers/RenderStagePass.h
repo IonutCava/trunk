@@ -72,7 +72,7 @@ struct RenderStagePass {
         return static_cast<U8>(to_base(stage) + to_base(passType) * to_base(RenderStage::COUNT));
     }
 
-    static RenderStagePass fromBaseIndex(const U8 baseIndex) noexcept {
+    [[nodiscard]] static RenderStagePass fromBaseIndex(const U8 baseIndex) noexcept {
         return RenderStagePass
         {
             static_cast<RenderStage>(baseIndex % to_base(RenderStage::COUNT)),
@@ -80,7 +80,7 @@ struct RenderStagePass {
         };
     }
 
-    static U16 indexForStage(const RenderStagePass& renderStagePass) noexcept {
+    [[nodiscard]] static U16 indexForStage(const RenderStagePass& renderStagePass) noexcept {
         switch (renderStagePass._stage) {
             case RenderStage::DISPLAY:
             {
@@ -89,7 +89,7 @@ struct RenderStagePass {
             }
             case RenderStage::REFLECTION: 
             {
-                // All reflectors could pe cubemaps.
+                // All reflectors could be cubemaps.
                 // For a simple planar reflection, pass should be 0
                 assert(renderStagePass._variant != to_base(ReflectorType::PLANAR) || renderStagePass._pass == 0);
                 return (renderStagePass._index * 6) + renderStagePass._pass;
@@ -130,20 +130,41 @@ struct RenderStagePass {
         return 0u;
     }
 
-    static U8 passCountForStage(const RenderStage renderStage) noexcept {
+    [[nodiscard]] static U8 totalPassCountForStage(const RenderStage renderStage) noexcept {
         switch (renderStage) {
             case RenderStage::DISPLAY:
                 return 1u;
             case RenderStage::REFLECTION:
-                return Config::MAX_REFLECTIVE_NODES_IN_VIEW * 6 + //Worst case, all nodes need cubemaps
-                       Config::MAX_REFLECTIVE_PROBES_PER_PASS * 6;
+                return (Config::MAX_REFLECTIVE_NODES_IN_VIEW + Config::MAX_REFLECTIVE_PROBES_PER_PASS) * 6u;
             case RenderStage::REFRACTION:
                 return Config::MAX_REFRACTIVE_NODES_IN_VIEW;
             case RenderStage::SHADOW:
                 return Config::Lighting::MAX_SHADOW_PASSES;
             default:
                 DIVIDE_UNEXPECTED_CALL();
+        }
 
+        DIVIDE_UNEXPECTED_CALL();
+        return to_U8(1u);
+    }
+
+    [[nodiscard]] static U8 passCountForStagePass(const RenderStagePass& renderStagePass) noexcept {
+        switch (renderStagePass._stage) {
+            case RenderStage::DISPLAY:
+                return 1u;
+            case RenderStage::REFLECTION:
+                return 6u; //Worst case, all nodes need cubemaps
+            case RenderStage::REFRACTION:
+                return 1u;
+            case RenderStage::SHADOW:
+                switch (renderStagePass._variant) {
+                    case to_base(LightType::DIRECTIONAL): return Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT;
+                    case to_base(LightType::POINT): return 6u;
+                    case to_base(LightType::SPOT): return 1u;
+                }
+                
+            default:
+                DIVIDE_UNEXPECTED_CALL();
         }
 
         DIVIDE_UNEXPECTED_CALL();

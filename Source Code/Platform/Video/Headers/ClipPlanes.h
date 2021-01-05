@@ -46,29 +46,47 @@ namespace Divide {
 
     template<size_t N>
     struct ClipPlaneList {
-        ClipPlaneList() : ClipPlaneList(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f))
+        ClipPlaneList() 
         {
+            _planeState.fill(false);
         }
 
-        explicit ClipPlaneList(const Plane<F32>& defaultValue)
-        {
-            _planes.fill(defaultValue);
-        }
 
         void resetAll() {
-            _planes.fill(Plane<F32>(0.0f, 0.0f, 0.0f, 0.0f));
+            _planeState.fill(false);
         }
 
         void set(U32 index, const Plane<F32>& plane) {
             assert(index < N);
 
-            _planes[index].set(plane.getEquation());
+            _planes[index] = plane;
+            _planeState[index] = true;
         }
 
-        PlaneList<N> _planes;
+        void reset(U32 index) {
+            assert(index < N);
+            _planeState[index] = false;
+        }
+
+        bool operator==(const ClipPlaneList& rhs) const noexcept {
+            return _planeState == rhs._planeState &&
+                   _planes == rhs._planes;
+        }
+
+        bool operator!=(const ClipPlaneList& rhs) const noexcept {
+            return _planeState != rhs._planeState ||
+                   _planes != rhs._planes;
+        }
+
+        [[nodiscard]] const PlaneList<N>& planes() const noexcept { return _planes; }
+        [[nodiscard]] const std::array<bool, N>& planeState() const noexcept { return _planeState; }
+
+    private:
+        PlaneList<N> _planes{};
+        std::array<bool, N> _planeState{};
     };
     
-    using FrustumClipPlanes = ClipPlaneList<to_base(ClipPlaneIndex::COUNT)> ;
+    using FrustumClipPlanes = ClipPlaneList<to_base(ClipPlaneIndex::COUNT)>;
 }; //namespace Divide
 
 #endif //_CLIP_PLANES_H_

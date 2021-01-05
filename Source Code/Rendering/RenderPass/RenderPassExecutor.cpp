@@ -26,8 +26,6 @@ namespace {
     constexpr U16 g_maxMaterialFrameLifetime = 6u;
     // Use to partition parallel jobs
     constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
-    // Use to enable/disable reusing matching materials from the existing buffer
-    constexpr bool g_batchMaterials = true;
 }
 
 Pipeline* RenderPassExecutor::s_OITCompositionPipeline = nullptr;
@@ -38,7 +36,10 @@ RenderPassExecutor::RenderPassExecutor(RenderPassManager& parent, GFXDevice& con
     , _stage(stage)
     , _renderQueue(parent.parent(), stage)
 {
-    _nodeMaterialLookupInfo.fill({ Material::INVALID_MAT_HASH, 0u });
+    for (U8 i = 0; i < RenderPass::DataBufferRingSize; ++i) {
+        _materialData[i]._nodeMaterialLookupInfo.resize(RenderStagePass::totalPassCountForStage(stage) * Config::MAX_CONCURRENT_MATERIALS, { Material::INVALID_MAT_HASH, 0u });
+        _materialData[i]._nodeMaterialData.resize(RenderStagePass::totalPassCountForStage(stage) * Config::MAX_CONCURRENT_MATERIALS);
+    }
 }
 
 void RenderPassExecutor::postInit(const ShaderProgram_ptr& OITCompositionShader) const {
@@ -50,7 +51,7 @@ void RenderPassExecutor::postInit(const ShaderProgram_ptr& OITCompositionShader)
     }
 }
 
-void RenderPassExecutor::addTexturesAt(const U16 idx, const NodeMaterialTextures& tempTextures) {
+void RenderPassExecutor::addTexturesAt(const size_t idx, const NodeMaterialTextures& tempTextures) {
     // GL_ARB_bindless_texture:
     // In the following four constructors, the low 32 bits of the sampler
     // type correspond to the .x component of the uvec2 and the high 32 bits
@@ -60,11 +61,10 @@ void RenderPassExecutor::addTexturesAt(const U16 idx, const NodeMaterialTextures
     // uvec2(any image type)       // Converts an image type to a pair of 32-bit unsigned integers
     // any image type(uvec2)       // Converts a pair of 32-bit unsigned integers to an image type
 
-    NodeMaterialData& target = _nodeMaterialData[idx];
+    NodeMaterialData& target = _materialData[_materialBufferIndex]._nodeMaterialData[idx];
     for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
         const SamplerAddress combined = tempTextures[i];
-        target._textures[i / 2][(i % 2) * 2 + 0] = to_U32(combined & 0xFFFFFFFF); //low
-        target._textures[i / 2][(i % 2) * 2 + 1] = to_U32(combined >> 32); //high
+        target._textures[i / 2][(i % 2)] = combined;
     }
     // second loop for cache reasons. 0u is fine as an address since we filter it at graphics API level.
     for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
@@ -76,85 +76,81 @@ void RenderPassExecutor::addTexturesAt(const U16 idx, const NodeMaterialTextures
 NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rComp,
                                                    const RenderStage stage,
                                                    const D64 interpolationFactor,
-                                                   U16 nodeIndex,
-                                                   U32 cmdOffset) {
+                                                   const U32 materialElementOffset,
+                                                   U16 nodeIndex) {
     OPTICK_EVENT();
 
     // Rewrite all transforms
     // ToDo: Cache transforms for static nodes -Ionut
     NodeDataIdx ret = {};
-    ret._commandOffset = cmdOffset;
     ret._transformIDX = nodeIndex;
     NodeTransformData& transformOut = _nodeTransformData[ret._transformIDX];
 
     NodeMaterialData tempData{};
     NodeMaterialTextures tempTextures{};
     // Get the colour matrix (base colour, metallic, etc)
-    rComp.getMaterialData(tempData, tempTextures);
-    if (!g_batchMaterials) {
-        ret._materialIDX = nodeIndex;
+    rComp.getMaterialData(stage, tempData, tempTextures);
+    // Match materials
+    size_t materialHash = HashMaterialData(tempData);
+    Util::Hash_combine(materialHash, HashTexturesData(tempTextures));
 
-        _nodeMaterialData[ret._materialIDX] = tempData;
-        addTexturesAt(ret._materialIDX, tempTextures);
-    } else {// Match materials
-        size_t materialHash = HashMaterialData(tempData);
-        Util::Hash_combine(materialHash, HashTexturesData(tempTextures));
+    PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
+    auto& materialInfo = materialData._nodeMaterialLookupInfo;
+    // Try and match an existing material
+    bool foundMatch = false;
+    U16 idx = 0;
+    for (; idx < Config::MAX_CONCURRENT_MATERIALS; ++idx) {
+        auto& [hash, lifetime] = materialInfo[idx + materialElementOffset];
 
-        auto& materialInfo = _nodeMaterialLookupInfo;
-        // Try and match an existing material
-        bool foundMatch = false;
-        U16 idx = 0;
-        for (; idx < materialInfo.size(); ++idx) {
-            if (materialInfo[idx].first == materialHash) {
-                // Increment lifetime (but clamp it so we don't overflow in time)
-                materialInfo[idx].second = std::min(++materialInfo[idx].second, g_maxMaterialFrameLifetime);
+        if (hash == materialHash) {
+            // Increment lifetime (but clamp it so we don't overflow in time)
+            lifetime = CLAMPED(++lifetime, to_U16(0u), g_maxMaterialFrameLifetime);
+            foundMatch = true;
+            break;
+        }
+    }
+
+    // If we fail, try and find an empty slot
+    if (!foundMatch) {
+        std::pair<U16, U16> bestCandidate = { 0u, 0u };
+
+        idx = 0u;
+        for (; idx < Config::MAX_CONCURRENT_MATERIALS; ++idx) {
+            auto& [hash, lifetime] = materialInfo[idx + materialElementOffset];
+            if (hash == Material::INVALID_MAT_HASH) {
                 foundMatch = true;
                 break;
             }
+            // Find a candidate to replace in case we fail
+            if (lifetime >= g_maxMaterialFrameLifetime && lifetime > bestCandidate.second) {
+                bestCandidate.first = idx;
+                bestCandidate.second = lifetime;
+            }
         }
-
-        // If we fail, try and find an empty slot
         if (!foundMatch) {
-            std::pair<U16, U16> bestCandidate = { 0u, 0u };
-
-            idx = 0;
-            for (; idx < materialInfo.size(); ++idx) {
-                auto& [hash, lifetime] = materialInfo[idx];
-                if (hash == Material::INVALID_MAT_HASH) {
-                    foundMatch = true;
-                    break;
-                }
-                // Find a candidate to replace in case we fail
-                if (lifetime >= g_maxMaterialFrameLifetime && lifetime > bestCandidate.second) {
-                    bestCandidate.first = idx;
-                    bestCandidate.second = lifetime;
-                }
-            }
-            if (!foundMatch) {
-                foundMatch = bestCandidate.second > 0u;
-                idx = bestCandidate.first;
-            }
-
-            DIVIDE_ASSERT(foundMatch, "RenderPassExecutor::processVisibleNode error: too many concurrent materials! Increase Config::MAX_CONCURRENT_MATERIALS");
-
-            auto& range = _matUpdateRange[_materialBufferIndex];
-            if (range._firstIDX > idx) {
-                range._firstIDX = idx;
-            }
-            if (range._lastIDX < idx) {
-                range._lastIDX = idx;
-            }
-            _nodeMaterialData[idx] = tempData;
-            addTexturesAt(idx, tempTextures);
-
-            materialInfo[idx].first = materialHash;
-            materialInfo[idx].second = 0u;
-            _updateCounter = RenderPass::DataBufferRingSize;
+            foundMatch = bestCandidate.second > 0u;
+            idx = bestCandidate.first;
         }
 
-        ret._materialIDX = idx;
+        DIVIDE_ASSERT(foundMatch, "RenderPassExecutor::processVisibleNode error: too many concurrent materials! Increase Config::MAX_CONCURRENT_MATERIALS");
+
+        auto& range = materialData._matUpdateRange;
+        if (range._firstIDX > idx) {
+            range._firstIDX = idx;
+        }
+        if (range._lastIDX < idx) {
+            range._lastIDX = idx;
+        }
+
+        const U32 offsetIdx = idx + materialElementOffset;
+        materialInfo[offsetIdx] = { materialHash, 0u };
+
+        materialData._nodeMaterialData[offsetIdx] = tempData;
+        addTexturesAt(offsetIdx, tempTextures);
     }
 
+    ret._materialIDX = idx;
+ 
     const SceneGraphNode* node = rComp.getSGN();
     const TransformComponent* const transform = node->get<TransformComponent>();
     assert(transform != nullptr);
@@ -211,10 +207,10 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
     return ret;
 }
 
-void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) {
+void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
 
-    const RenderStagePass& stagePass = params._stagePass;
+    RenderStagePass stagePass = params._stagePass;
     RenderPass::BufferData bufferData = _parent.getPassForStage(_stage).getBufferData(stagePass);
     ShaderBuffer* cmdBuffer = bufferData._commandBuffer;
 
@@ -223,17 +219,44 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
 
     _drawCommands.clear();
     _materialBufferIndex = bufferData._materialBuffer->queueWriteIndex();
-    _matUpdateRange[_materialBufferIndex].reset();
+    _materialData[_materialBufferIndex]._matUpdateRange.reset();
     _uniqueTextureAddresses.clear();
 
     U16 nodeCount = 0u;
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
+        erase_if(queue, [&stagePass](RenderingComponent* rComp) {
+            return !Attorney::RenderingCompRenderPass::hasDrawCommands(*rComp, stagePass);
+        });
+
+        nodeCount += to_U16(queue.size());
+    }
+
+    for (RenderBin::SortedQueue& queue : _sortedQueues) {
         for (RenderingComponent* rComp : queue) {
-            if (Attorney::RenderingCompRenderPass::hasDrawCommands(*rComp, stagePass)) {
-                const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, nodeCount++, cmdOffset);
-                Attorney::RenderingCompRenderPass::retrieveDrawCommands(*rComp, newDataIdx, stagePass._stage, _drawCommands);
+            const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, bufferData._materialElementOffset, nodeCount++);
+            Attorney::RenderingCompRenderPass::setCommandDataIndex(*rComp, cmdOffset, newDataIdx, stagePass._stage);
+        }
+    }
+
+    const auto retrieveCommands = [&]() {
+        for (RenderBin::SortedQueue& queue : _sortedQueues) {
+            for (RenderingComponent* rComp : queue) {
+                Attorney::RenderingCompRenderPass::retrieveDrawCommands(*rComp, stagePass, _drawCommands);
             }
         }
+    };
+
+    if (doPrePass) {
+        stagePass._passType = RenderPassType::PRE_PASS;
+        retrieveCommands();
+    }
+    { //doMainPass
+        stagePass._passType = RenderPassType::MAIN_PASS;
+        retrieveCommands();
+    }
+    if (doOITPass) {
+        stagePass._passType = RenderPassType::OIT_PASS;
+        retrieveCommands();
     }
 
     *bufferData._lastCommandCount = to_U32(_drawCommands.size());
@@ -245,29 +268,20 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
         cmdBuffer->writeData(bufferData._commandElementOffset, *bufferData._lastCommandCount, _drawCommands.data());
         bufferData._transformBuffer->writeData(bufferData._transformElementOffset, *bufferData._lastNodeCount, _nodeTransformData.data());
 
-        if (g_batchMaterials) {
-            materialRange = std::count_if(std::begin(_nodeMaterialLookupInfo),
-                                          std::end(_nodeMaterialLookupInfo),
-                                          [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
+        PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
 
-            // Copy the same data to the entire ring buffer
-            MaterialUpdateRange& crtRange = _matUpdateRange[_materialBufferIndex];
-            MaterialUpdateRange& prevRange = _matUpdateRange[_prevMaterialBufferIndex];
+        materialRange = eastl::count_if(eastl::cbegin(materialData._nodeMaterialLookupInfo),
+                                        eastl::cend(materialData._nodeMaterialLookupInfo),
+                                        [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
 
-            if (crtRange.range() > 0u || prevRange.range() > 0u) {
-                crtRange._firstIDX = std::min(crtRange._firstIDX, prevRange._firstIDX);
-                crtRange._lastIDX = std::max(crtRange._lastIDX, prevRange._lastIDX);
+        // Copy the same data to the entire ring buffer
+        MaterialUpdateRange& crtRange = materialData._matUpdateRange;
 
-                bufferData._materialBuffer->writeData(bufferData._materialElementOffset + crtRange._firstIDX, crtRange.range(), &_nodeMaterialData[crtRange._firstIDX]);
-            }
-            prevRange.reset();
-            if (_updateCounter == 0u || --_updateCounter == 0u) {
-                crtRange.reset();
-            }
-            _prevMaterialBufferIndex = _materialBufferIndex;
-        } else {
-            bufferData._materialBuffer->writeData(bufferData._materialElementOffset, *bufferData._lastCommandCount, _nodeMaterialData.data());
+        if (crtRange.range() > 0u) {
+            const U32 offsetIDX = bufferData._materialElementOffset + crtRange._firstIDX;
+            bufferData._materialBuffer->writeData(offsetIDX, crtRange.range(), &materialData._nodeMaterialData[offsetIDX]);
         }
+        crtRange.reset();
     }
 
     ShaderBufferBinding cmdBufferBinding = {};
@@ -299,7 +313,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, GFX::
     }
 }
 
-U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, const bool hasInvalidNodes, GFX::CommandBuffer& bufferInOut) {
+U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, const bool hasInvalidNodes, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut) {
 
     if (hasInvalidNodes) {
         VisibleNodeList<> tempNodes{};
@@ -351,7 +365,7 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
 
     const U16 queueTotalSize = _renderQueue.getSortedQueues({}, _sortedQueues);
 
-    buildDrawCommands(params, bufferInOut);
+    buildDrawCommands(params, doPrePass, doOITPass, bufferInOut);
 
     return queueTotalSize;
 }
@@ -824,7 +838,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
 
     // Cull the scene and grab the visible nodes
     I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
-    VisibleNodeList<>& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(_parent.parent().sceneManager(), _stage, *params._camera, params._maxLoD, params._minExtents, &ignoreGUID, 1);
+    VisibleNodeList<>& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(_parent.parent().sceneManager(), _stage, *params._camera, params._clippingPlanes, params._maxLoD, params._minExtents, &ignoreGUID, 1);
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;
@@ -856,7 +870,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
             tempDrawStage._passType = RenderPassType::PRE_PASS;
             ValidateNodesForStagePass(tempDrawStage);
         }
-        { //mainPass
+        { //doMainPass
             tempDrawStage._passType = RenderPassType::MAIN_PASS;
             ValidateNodesForStagePass(tempDrawStage);
         }
@@ -868,7 +882,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
 
     // We prepare all nodes for the MAIN_PASS rendering. PRE_PASS and OIT_PASS are support passes only. Their order and sorting are less important.
     params._stagePass._passType = RenderPassType::MAIN_PASS;
-    const U32 visibleNodeCount = prepareNodeData(visibleNodes, params, hasInvalidNodes, bufferInOut);
+    const U32 visibleNodeCount = prepareNodeData(visibleNodes, params, hasInvalidNodes, doPrePass, doOITPass, bufferInOut);
 
 #   pragma region PRE_PASS
     if (doPrePass) {

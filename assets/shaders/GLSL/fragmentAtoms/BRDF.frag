@@ -219,21 +219,23 @@ vec3 lightClusterColours(const bool debugDepthClusters) {
     return colour;
 }
 
-#ifdef CUSTOM_IBL
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize);
-#else
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize) {
+#if !defined(CUSTOM_IBL)
+vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize, in uint probeIdx)
+{
 #if defined(USE_PLANAR_REFLECTION) || defined(NO_IBL)
-    return colour; 
-#else
-    const vec3 normal = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
-    const vec3 toCamera = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
-    const vec3 reflection = normalize(reflect(toCamera, normal));
-
-    return mix(colour, ImageBasedLighting(reflection, normal, toCamera, roughness, textureSize), metallic);
-#endif
+    return colour;
+#else //USE_PLANAR_REFLECTION) || NO_IBL
+    return mix(colour,
+               IBL(
+                   normalize(mat3(dvd_InverseViewMatrix) * normalWV),
+                   roughness,
+                   textureSize,
+                   probeIdx
+               ),
+               metallic);
+#endif  //USE_PLANAR_REFLECTION) || NO_IBL
 }
-#endif
+#endif //CUSTOM_IBL
 
 /// returns RGB - pixel lit colour, A - reflectivity (e.g. for SSR)
 #if defined(DISABLE_SHADOW_MAPPING)
@@ -265,40 +267,28 @@ vec4 CSMSplitColour() {
 /// RGB - lit colour, A - reflectivity
 vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
+    const float smoothness = 1.0f - ROUGHNESS(OMR);
+    const float reflectivity = mix(0.0f, smoothness, METALLIC(OMR));
 
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:
-            return vec4(albedo.rgb, 0.0f);
-        case DEBUG_LIGHTING:
-            return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
-        case DEBUG_SPECULAR:
-            return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
-        case DEBUG_UV:
-            return vec4(fract(uv), 0.0f, 0.0f);
-        case DEBUG_SSAO:
-            return vec4(vec3(SSAOFactor), 1.0f);
-        case DEBUG_EMISSIVE:
-            return vec4(EmissiveColour(materialData), 1.0f);
-        case DEBUG_ROUGHNESS:
-            return vec4(vec3(ROUGHNESS(OMR)), 1.0f);
-        case DEBUG_METALLIC:
-            return vec4(vec3(METALLIC(OMR)), 1.0f);
-        case DEBUG_NORMALS:
-            return vec4((dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz, 1.0f);
-        case DEBUG_TBN_VIEW_DIRECTION:
-            return vec4(getTBNViewDir(), 1.0f);
-        case DEBUG_SHADOW_MAPS:
-            return vec4(vec3(getShadowFactor(normalWV)), 1.0f);
-        case DEBUG_CSM_SPLITS:
-            return albedo + CSMSplitColour();
-        case DEBUG_LIGHT_HEATMAP:
-            return vec4(lightClusterColours(false), 1.0f);
-        case DEBUG_LIGHT_DEPTH_CLUSTERS:
-            return vec4(lightClusterColours(true), 1.0f);
-        case DEBUG_REFLECTIONS:
-            return vec4(ImageBasedLighting(vec3(0.f), normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData)), 1.0f);
-        case DEBUG_MATERIAL_IDS:
-            return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.0f);
+        case DEBUG_ALBEDO:         return vec4(albedo.rgb, 0.0f);
+        case DEBUG_DEPTH:          return vec4(vec3(ToLinearDepthPreview(texture(texDepthMap, dvd_screenPositionNormalised).r)), 1.0f);
+        case DEBUG_LIGHTING:       return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
+        case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
+        case DEBUG_UV:             return vec4(fract(uv), 0.0f, 0.0f);
+        case DEBUG_SSAO:           return vec4(vec3(SSAOFactor), 1.0f);
+        case DEBUG_EMISSIVE:       return vec4(EmissiveColour(materialData), 1.0f);
+        case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.0f);
+        case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.0f);
+        case DEBUG_NORMALS:        return vec4((dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz, 1.0f);
+        case DEBUG_TBN_VIEW_DIR:   return vec4(getTBNViewDir(), 1.0f);
+        case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowFactor(normalWV)), 1.0f);
+        case DEBUG_CSM_SPLITS:     return albedo + CSMSplitColour();
+        case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.0f);
+        case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.0f);
+        case DEBUG_REFLECTIONS:    return vec4(ImageBasedLighting(vec3(0.f), normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData)), 1.0f);
+        case DEBUG_REFLECTIVITY:   return vec4(vec3(reflectivity), 1.0f);
+        case DEBUG_MATERIAL_IDS:   return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.0f);
     }
 
 #if defined(USE_SHADING_FLAT)
@@ -307,17 +297,11 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
     vec3 oColour = getLightContribution(albedo.rgb, OMR, normalWV);
 #endif //USE_SHADING_FLAT
 
-#if defined(OIT_PASS)
-    const float reflectivity = albedo.a;
-#else //OIT_PASS
-    const float reflectivity = 1.0f - ROUGHNESS(OMR);
-#endif //OIT_PASS
-
-    oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData));
+    oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData));
     oColour *= SSAOFactor;
     oColour += EmissiveColour(materialData);
-    
+
     return vec4(oColour, reflectivity);
 }
 
-#endif
+#endif //_BRDF_FRAG_

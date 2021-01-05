@@ -46,6 +46,14 @@ struct Configuration final : public XML::IXMLSerializable {
         bool useShaderTextCache = true;
         bool enableTreeInstances = true;
         bool enableGrassInstances = true;
+        struct RenderFilter {
+            bool primitives = true;
+            bool meshes = true;
+            bool terrain = true;
+            bool water = true;
+            bool sky = true;
+            bool particles = true;
+        } renderFilter = {};
         stringImpl memFile = "none";
     } debug = {};
     
@@ -71,11 +79,7 @@ struct Configuration final : public XML::IXMLSerializable {
     struct GUI {
         struct CEGUI {
             bool enabled = true;
-            stringImpl defaultGUIScheme = "GWEN";
         } cegui = {};
-        struct IMGUI {
-            bool dontMergeFloatingWindows = true;
-        } imgui = {};
         stringImpl consoleLayoutFile = "console.layout";
     } gui;
 

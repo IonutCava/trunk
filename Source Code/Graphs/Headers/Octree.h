@@ -51,7 +51,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         ~Octree() = default;
 
         void update(U64 deltaTimeUS);
-        bool addNode(SceneGraphNode* node);
+        bool addNode(SceneGraphNode* node) const;
         bool addNodes(const vectorEASTL<SceneGraphNode*>& nodes);
         void getAllRegions(vectorEASTL<BoundingBox>& regionsOut) const;
 
@@ -63,7 +63,11 @@ class Octree : public std::enable_shared_from_this<Octree> {
         vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end);
         IntersectionRecord nearestIntersection(const Ray& intersectionRay, F32 start, F32 end, U16 typeFilterMask);
         vectorEASTL<IntersectionRecord> allIntersections(const Ray& intersectionRay, F32 start, F32 end, U16 typeFilterMask);
-        
+
+    protected:
+        friend class SceneGraph;
+        void onNodeMoved(const SceneGraphNode& node);
+
     private:
         U8 activeNodes() const;
         void buildTree();
@@ -81,7 +85,7 @@ class Octree : public std::enable_shared_from_this<Octree> {
         vectorEASTL<IntersectionRecord> getIntersection(const Ray& intersectRay, F32 start, F32 end, U16 typeFilterMask) const;
 
         size_t getTotalObjectCount() const;
-        void updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects, U16 typeFilterMask);
+        void updateIntersectionCache(vectorEASTL<SceneGraphNode*>& parentObjects);
         
         void handleIntersection(const IntersectionRecord& intersection) const;
         bool getIntersection(SceneGraphNode* node, const Frustum& frustum, IntersectionRecord& irOut) const;
@@ -92,13 +96,13 @@ class Octree : public std::enable_shared_from_this<Octree> {
     private:
         std::array<std::shared_ptr<Octree>, 8> _childNodes = {};
         vectorEASTL<SceneGraphNode*> _objects;
-        vectorEASTL<SceneGraphNode*> _movedObjects;
+        moodycamel::ConcurrentQueue<SceneGraphNode*> _movedObjects;
         vectorEASTL<IntersectionRecord> _intersectionsCache;
         BoundingBox _region;
         std::shared_ptr<Octree> _parent = nullptr;
         I32 _curLife = -1;
         I32 _maxLifespan = MAX_LIFE_SPAN_LIMIT / 8;
-        U16 _nodeMask = 0u;
+        U16 _nodeExclusionMask = 0u;
         std::array<bool, 8> _activeNodes = {};
         //ToDo: make this work in a multi-threaded environment
         mutable I8 _frustPlaneCache = -1;

@@ -8,6 +8,7 @@
     <Refraction__Plane__Offset>1.75</Refraction__Plane__Offset>
     <Noise__tile__factor x="75" y="75"/>
     <Noise__factor x="0.100000001" y="0.100000001"/>
+    <Refraction__tint r="0" g="0.467000008" b="0.745000005"/>
 </WATER>
 <TRANSFORM>
     <Transform>
@@ -49,8 +50,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -69,8 +70,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -89,8 +90,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -265,7 +266,10 @@
     </Material>
     <Lock__LoD>true</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
     <Show__Axis>false</Show__Axis>
+    <Receives__Shadows>false</Receives__Shadows>
+    <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>
 <NETWORKING/>
 <RIGID_BODY/>

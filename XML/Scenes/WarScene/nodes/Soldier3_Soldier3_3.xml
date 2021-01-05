@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<static>true</static>
+<static>false</static>
 <model>iron_grill.png.msh</model>
 <SUBMESH/>
 <TRANSFORM>
@@ -47,8 +47,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -67,8 +67,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -87,8 +87,8 @@
                 <depthTestEnabled>true</depthTestEnabled>
                 <stencilEnable>false</stencilEnable>
                 <stencilFailOp>KEEP</stencilFailOp>
-                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilPassOp>KEEP</stencilPassOp>
+                <stencilZFailOp>KEEP</stencilZFailOp>
                 <stencilFunc>NEVER</stencilFunc>
                 <stencilRef>0</stencilRef>
                 <stencilMask>4294967295</stencilMask>
@@ -238,7 +238,7 @@
         <texture>
             <UNIT0>
                 <name>iron_grill.png</name>
-                <path>assets/textures/</path>
+                <path>assets/textures</path>
                 <flipped>true</flipped>
                 <Sampler>
                     <id>1</id>
@@ -246,7 +246,7 @@
             </UNIT0>
             <OPACITY>
                 <name>iron_grill.png</name>
-                <path>assets/textures/</path>
+                <path>assets/textures</path>
                 <flipped>true</flipped>
                 <Sampler>
                     <id>1</id>
@@ -271,5 +271,8 @@
     </Material>
     <Lock__LoD>false</Lock__LoD>
     <Lock__LoD__Level>0</Lock__LoD__Level>
+    <HiZ__Occlusion__Cull>true</HiZ__Occlusion__Cull>
     <Show__Axis>false</Show__Axis>
+    <Receives__Shadows>false</Receives__Shadows>
+    <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>

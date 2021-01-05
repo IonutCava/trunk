@@ -113,7 +113,7 @@ public:
     void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& SGNs, bool recursive);
     void onNodeDestroy(SceneGraphNode* node);
     // cull the scenegraph against the current view frustum
-    VisibleNodeList<>& cullSceneGraph(RenderStage stage, const Camera& camera, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount);
+    VisibleNodeList<>& cullSceneGraph(RenderStage stage, const Camera& camera, const FrustumClipPlanes& clippingPlanes, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount);
     // get the full list of reflective nodes
     void getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const;
     // get the full list of refractive nodes
@@ -207,6 +207,7 @@ public:  /// Input
     PROPERTY_RW(bool, wantsMouse, false);
     PROPERTY_RW(bool, wantsKeyboard, false);
 
+    POINTER_R(SceneShaderData, sceneData, nullptr);
 // networking
 protected:
     bool networkUpdate(U32 frameCount);
@@ -261,7 +262,6 @@ private:
     Task* _saveTask = nullptr;
     PlayerIndex _currentPlayerPass = 0u;
     ScenePool* _scenePool = nullptr;
-    SceneShaderData* _sceneData = nullptr;
     U64 _elapsedTime = 0ULL;
     U32 _elapsedTimeMS = 0u;
     U64 _saveTimer = 0ULL;
@@ -379,8 +379,8 @@ class SceneManagerCameraAccessor {
 };
 
 class SceneManagerRenderPass {
-    static VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, const RenderStage stage, const Camera& camera, const I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, const size_t ignoredGUIDSCount) {
-        return mgr->cullSceneGraph(stage, camera, maxLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
+    static VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, const RenderStage stage, const Camera& camera, const FrustumClipPlanes& clippingPlanes, const I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, const size_t ignoredGUIDSCount) {
+        return mgr->cullSceneGraph(stage, camera, clippingPlanes, maxLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
     }
 
     static void prepareLightData(Divide::SceneManager* mgr, const RenderStage stage, const vec3<F32>& camPosition, const mat4<F32>& viewMatrix) {

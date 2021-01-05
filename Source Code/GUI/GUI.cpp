@@ -184,7 +184,6 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
         Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
-    _defaultGUIScheme = context.config().gui.cegui.defaultGUIScheme;
 
     CEGUI::DefaultResourceProvider* rp = static_cast<CEGUI::DefaultResourceProvider*>(CEGUI::System::getSingleton().getResourceProvider());
 
@@ -214,7 +213,7 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-10-NoScale.font");
     CEGUI::FontManager::getSingleton().createFromFile("DejaVuSans-12-NoScale.font");
-    CEGUI::SchemeManager::getSingleton().createFromFile((_defaultGUIScheme + ".scheme").c_str());
+    CEGUI::SchemeManager::getSingleton().createFromFile((defaultGUIScheme() + ".scheme").c_str());
 
     const vec2<U16>& renderSize = context.gfx().renderingResolution();
 
@@ -232,7 +231,7 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
     _rootSheet->setPixelAligned(false);
 
     _ceguiContext->setRootWindow(_rootSheet);
-    _ceguiContext->setDefaultTooltipType((_defaultGUIScheme + "/Tooltip").c_str());
+    _ceguiContext->setDefaultTooltipType((defaultGUIScheme() + "/Tooltip").c_str());
   
 
     _console = MemoryManager_NEW GUIConsole(*this, context, cache);

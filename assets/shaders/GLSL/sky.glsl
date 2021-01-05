@@ -13,6 +13,15 @@ void main(void){
     gl_Position.z = gl_Position.w - SKY_OFFSET;
 }
 
+-- Fragment.PassThrough
+
+layout(early_fragment_tests) in;
+#include "output.frag"
+
+void main() {
+    writeOutput(vec4(0.0f, 0.75f, 0.0f, 1.0f));
+}
+
 -- Fragment.Display
 
 layout(early_fragment_tests) in;
@@ -74,7 +83,7 @@ vec3 dayColour(in vec3 rayDirection) {
 
         atmoColour = mix((atmoColour + sky) - (atmoColour * sky),
                           atmoColour,
-                          luminance(atmoColour.rgb));
+                          Luminance(atmoColour.rgb));
     }
 
     return ACESFilm(atmoColour);
@@ -93,22 +102,24 @@ vec3 albedoOnly(in vec3 rayDirection, in float lerpValue) {
 
 vec3 finalColour(in vec3 rayDirection, in float lerpValue) {
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:               return albedoOnly(rayDirection, lerpValue);
-        case DEBUG_LIGHTING:             return ACESFilm(atmosphereColour(rayDirection));
-        case DEBUG_SPECULAR:             return vec3(0.0f);
-        case DEBUG_UV:                   return vec3(fract(rayDirection));
-        case DEBUG_SSAO:                 return vec3(1.0f);
-        case DEBUG_EMISSIVE:             return ACESFilm(atmosphereColour(rayDirection));
-        case DEBUG_ROUGHNESS:
-        case DEBUG_METALLIC:
-        case DEBUG_NORMALS:              return vec3(0.0f);
-        case DEBUG_TBN_VIEW_DIRECTION:   return rayDirection;
+        case DEBUG_ALBEDO:        return albedoOnly(rayDirection, lerpValue);
+        case DEBUG_DEPTH:         return vec3(1.0f);
+        case DEBUG_LIGHTING:      return ACESFilm(atmosphereColour(rayDirection));
+        case DEBUG_SPECULAR:      return vec3(0.0f);
+        case DEBUG_UV:            return vec3(fract(rayDirection));
+        case DEBUG_SSAO:          return vec3(1.0f);
+        case DEBUG_EMISSIVE:      return ACESFilm(atmosphereColour(rayDirection));
+        case DEBUG_ROUGHNESS:     
+        case DEBUG_METALLIC:      
+        case DEBUG_NORMALS:       return vec3(0.0f);
+        case DEBUG_TBN_VIEW_DIR:  return rayDirection;
         case DEBUG_SHADOW_MAPS:
-        case DEBUG_CSM_SPLITS:           return vec3(1.0f);
+        case DEBUG_CSM_SPLITS:    return vec3(1.0f);
         case DEBUG_LIGHT_HEATMAP:
-        case DEBUG_LIGHT_DEPTH_CLUSTERS:
+        case DEBUG_DEPTH_CLUSTERS:
         case DEBUG_REFLECTIONS:
-        case DEBUG_MATERIAL_IDS:         return vec3(0.0f);
+        case DEBUG_REFLECTIVITY:
+        case DEBUG_MATERIAL_IDS:  return vec3(0.0f);
     }
 
     return mix(dayColour(rayDirection), nightColour(rayDirection), lerpValue);

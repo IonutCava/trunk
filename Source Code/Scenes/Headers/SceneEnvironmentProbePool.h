@@ -37,9 +37,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Platform/Video/Buffers/RenderTarget/Headers/RenderTarget.h"
 
 namespace Divide {
+class SceneGraphNode;
 
 namespace GFX {
-    class CommandBuffer;
+class CommandBuffer;
 }
 
 FWD_DECLARE_MANAGED_STRUCT(DebugView);
@@ -63,7 +64,7 @@ public:
     const EnvironmentProbeList& sortAndGetLocked(const vec3<F32>& position);
     const EnvironmentProbeList& getLocked() const;
 
-    EnvironmentProbeComponent* registerProbe(EnvironmentProbeComponent* probe);
+    void registerProbe(EnvironmentProbeComponent* probe);
     void unregisterProbe(EnvironmentProbeComponent* probe);
 
     void lockProbeList() const;
@@ -72,9 +73,15 @@ public:
     void debugProbe(EnvironmentProbeComponent* probe);
     POINTER_R(EnvironmentProbeComponent, debugProbe, nullptr);
 
-    static vectorEASTL<Camera*>& probeCameras() noexcept { return s_probeCameras; }
-    static U16 allocateSlice(bool lock);
-    static void unlockSlice(U16 slice);
+    static vectorEASTL<Camera*>& ProbeCameras() noexcept { return s_probeCameras; }
+
+    static I16  AllocateSlice(bool lock);
+    static void UnlockSlice(I16 slice);
+
+    static bool ProbesDirty()                 noexcept { return s_probesDirty; }
+    static void ProbesDirty(const bool state) noexcept { s_probesDirty = state; }
+
+    static void OnNodeMoved(SceneEnvironmentProbePool* probePool, const SceneGraphNode& node);
 
 protected:
     mutable SharedMutex _probeLock;
@@ -82,6 +89,7 @@ protected:
 
     static vectorEASTL<DebugView_ptr> s_debugViews;
     static vectorEASTL<Camera*> s_probeCameras;
+    static bool s_probesDirty;
 
 private:
     static std::array<std::pair<bool/*available*/, bool/*locked*/>, Config::MAX_REFLECTIVE_PROBES_PER_PASS> s_availableSlices;

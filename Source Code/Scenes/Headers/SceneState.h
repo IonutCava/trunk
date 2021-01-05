@@ -61,6 +61,12 @@ struct WaterBodyData
     vec4<F32> _extents = { 0.0f };
 };
 
+struct ProbeData
+{
+    vec4<F32> _positionW;
+    vec4<F32> _halfExtents;
+};
+
 struct FogDescriptor {
     FogDescriptor();
 

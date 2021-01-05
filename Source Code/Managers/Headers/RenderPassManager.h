@@ -58,7 +58,7 @@ enum class RenderStage : U8;
 
 struct RenderPassParams
 {
-    FrustumClipPlanes _clippingPlanes = {};
+    FrustumClipPlanes _clippingPlanes{};
     vec3<F32> _minExtents = { 0.0f };
     // source node is used to determine if the current pass is triggered by a specific node:
     // e.g. a light node for shadow mapping, a reflector for reflection (or refraction), etc

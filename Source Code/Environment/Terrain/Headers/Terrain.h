@@ -175,7 +175,6 @@ class Terrain final : public Object3D {
     vectorEASTL<eastl::unique_ptr<TileRing>> _tileRings;
 
     EditorDataState _editorDataDirtyState = EditorDataState::IDLE;
-    bool _drawCommandsDirty = true;
     bool _initialSetupDone = false;
 
     SceneGraphNode* _vegetationGrassNode = nullptr;

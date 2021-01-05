@@ -101,7 +101,7 @@ struct RenderCbkParams {
     U8  _passVariant;
 };
 
-using RenderCallback = DELEGATE<void, RenderCbkParams&, GFX::CommandBuffer&>;
+using RenderCallback = DELEGATE<void, RenderPassManager*, RenderCbkParams&, GFX::CommandBuffer&>;
 
 class RenderingComponent final : public BaseComponentType<RenderingComponent, ComponentType::RENDERING> {
     friend class Attorney::RenderingCompRenderPass;
@@ -152,7 +152,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     [[nodiscard]] bool lodLocked(const RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
 
-    void getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const;
+    void getMaterialData(RenderStage stage, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const;
 
     void getRenderingProperties(RenderStage stage, NodeRenderingProperties& propertiesOut) const;
 
@@ -186,7 +186,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
-    void retrieveDrawCommands(NodeDataIdx dataIndex, RenderStage stage, DrawCommandContainer& cmdsInOut);
+    void retrieveDrawCommands(const RenderStagePass& stagePass, DrawCommandContainer& cmdsInOut);
     [[nodiscard]] bool hasDrawCommands(const RenderStagePass& stagePass);
                   void onRenderOptionChanged(RenderOptions option, bool state);
 
@@ -214,7 +214,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                                         GFX::CommandBuffer& bufferInOut);
 
     void updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position);
-    void useSkyReflection();
+    void useSkyReflection(RenderStage stage);
 
     PROPERTY_R(bool, showAxis, false);
     PROPERTY_R(bool, receiveShadows, false);
@@ -225,7 +225,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
    protected:
 
     void onMaterialChanged();
-    void onParentUsageChanged(NodeUsageContext context);
+    void onParentUsageChanged(NodeUsageContext context) const;
 
     void OnData(const ECS::CustomEvent& data) override;
 
@@ -240,16 +240,25 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     using FlagsPerStage = std::array<FlagsPerPassType, to_base(RenderStage::COUNT)>;
     FlagsPerStage _rebuildDrawCommandsFlags{};
 
-    std::array<U32, to_base(RenderStage::COUNT)> _lastCmdOffsets{};
+    using OffsetsPerPassType = std::array<U32, to_base(RenderPassType::COUNT)>;
+    std::array<OffsetsPerPassType, to_base(RenderStage::COUNT)> _lastCmdOffsets{};
+    std::array<NodeDataIdx, to_base(RenderStage::COUNT)> _lastDataIndex{};
 
     RenderCallback _reflectionCallback{};
     RenderCallback _refractionCallback{};
 
-    mutable SharedMutex _reflectionLock{};
-    mutable SharedMutex _refractionLock{};
-    TextureViewEntry _reflectionTexture;
-    TextureViewEntry _refractionTexture;
-    U16 _reflectionTextureWidth = 2u;
+    struct ReflectRefractData {
+        mutable SharedMutex _reflectionLock{};
+        TextureViewEntry _reflectionTexture;
+        U16 _reflectionTextureWidth = 2u;
+        U16 _probeIndex = 0u; //<Offset by 1 (and dec by 1 in shader) as 0 is the sky cubemap
+
+        mutable SharedMutex _refractionLock{};
+        TextureViewEntry _refractionTexture;
+    };
+
+    // One for the reflection pass (usually just the sky texture) and one for the other passes (usually the result of the reflection pass)
+    std::array<ReflectRefractData, 2> _reflectRefractData{};
 
     vectorEASTL<EnvironmentProbeComponent*> _envProbes{};
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings{};
@@ -328,8 +337,13 @@ class RenderingCompRenderPass {
             return renderable.hasDrawCommands(stagePass);
         }
 
-        static void retrieveDrawCommands(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStage stage, DrawCommandContainer & cmdsInOut) {
-            renderable.retrieveDrawCommands(dataIndex, stage, cmdsInOut);
+        static void retrieveDrawCommands(RenderingComponent& renderable, const RenderStagePass& stagePass, DrawCommandContainer& cmdsInOut) {
+            renderable.retrieveDrawCommands(stagePass, cmdsInOut);
+        }
+
+        static void setCommandDataIndex(RenderingComponent& renderable, const U32 cmdOffset, const NodeDataIdx dataIndex, const RenderStage stage) {
+            renderable._lastCmdOffsets[to_base(stage)].fill(cmdOffset);
+            renderable._lastDataIndex[to_base(stage)] = dataIndex;
         }
 
         friend class Divide::RenderPass;

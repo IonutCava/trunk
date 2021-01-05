@@ -28,6 +28,8 @@
 
 #include <glbinding-aux/Meta.h>
 
+
+#include "Scenes/Headers/SceneShaderData.h"
 #include "Text/Headers/fontstash.h"
 
 namespace Divide {
@@ -329,15 +331,13 @@ bool GL_API::InitGLSW(Configuration& config) {
 
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    GLint minGLVersion = GLUtil::getGLValue(GL_MINOR_VERSION);
-    const GLint maxClipCull = GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES);
-
-    AppendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", minGLVersion), lineOffsets);
-
+    AppendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", GLUtil::getGLValue(GL_MINOR_VERSION)), lineOffsets);
     AppendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
+
     if (s_UseBindlessTextures) {
         AppendToShaderHeader(ShaderType::COUNT, "#extension  GL_ARB_bindless_texture : require", lineOffsets);
     }
+
     AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
     if (!getStateTracker()._opengl46Supported) {
         AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
@@ -423,7 +423,8 @@ bool GL_API::InitGLSW(Configuration& config) {
          Util::to_string(Config::MAX_CULL_DISTANCES),
         lineOffsets);
 
-    DIVIDE_ASSERT(Config::MAX_CULL_DISTANCES <= maxClipCull - Config::MAX_CLIP_DISTANCES, "GLWrapper error: incorrect combination of clip and cull distance counts");
+    DIVIDE_ASSERT(Config::MAX_CULL_DISTANCES <= GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES) - Config::MAX_CLIP_DISTANCES,
+                  "GLWrapper error: incorrect combination of clip and cull distance counts");
 
     AppendToShaderHeader(
         ShaderType::COUNT,
@@ -531,6 +532,12 @@ bool GL_API::InitGLSW(Configuration& config) {
         ShaderType::COUNT,
         "#define BUFFER_SCENE_DATA " +
         Util::to_string(to_base(ShaderBufferLocation::SCENE_DATA)),
+        lineOffsets);
+
+   AppendToShaderHeader(
+        ShaderType::COUNT,
+        "#define BUFFER_PROBE_DATA " +
+        Util::to_string(to_base(ShaderBufferLocation::PROBE_DATA)),
         lineOffsets);
 
     AppendToShaderHeader(
@@ -699,6 +706,18 @@ bool GL_API::InitGLSW(Configuration& config) {
         ShaderType::FRAGMENT,
         "#define TEXTURE_COUNT " +
         Util::to_string(to_U32(TextureUsage::COUNT)),
+        lineOffsets);    
+    
+    AppendToShaderHeader(
+        ShaderType::COUNT,
+        "#define GLOBAL_WATER_BODIES_COUNT " +
+        Util::to_string(GLOBAL_WATER_BODIES_COUNT),
+        lineOffsets);
+    
+    AppendToShaderHeader(
+        ShaderType::COUNT,
+        "#define GLOBAL_PROBE_COUNT " +
+        Util::to_string(GLOBAL_PROBE_COUNT),
         lineOffsets);
 
     AppendToShaderHeader(
@@ -1267,7 +1286,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         } break;
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            assert(getStateTracker()._activePipeline != nullptr);
+            DIVIDE_ASSERT(getStateTracker()._activePipeline != nullptr, "GL_API::flushCommand: trying to send push constants with no active pipeline!");
             sendPushConstants(commandBuffer.get<GFX::SendPushConstantsCommand>(entry)->_constants);
         } break;
         case GFX::CommandType::SET_SCISSOR: {

@@ -134,8 +134,6 @@ void SceneGraphNode::RemoveComponents(const U32 componentMask) {
 }
 
 void SceneGraphNode::setTransformDirty(const U32 transformMask) {
-    Attorney::SceneGraphSGN::onNodeTransform(_sceneGraph, this);
-
     SharedLock<SharedMutex> r_lock(_childLock);
     for (SceneGraphNode* node : _children) {
         TransformComponent* tComp = node->get<TransformComponent>();
@@ -213,7 +211,10 @@ void SceneGraphNode::setParentInternal() {
             }
         }
 
-        changeUsageContext(_parent->usageContext());
+        // Dynamic > Static. Not the other way around (e.g. Root is static. Terrain is static, etc)
+        if (_parent->usageContext() == NodeUsageContext::NODE_DYNAMIC) {
+            changeUsageContext(_parent->usageContext());
+        }
     }
 }
 
@@ -247,6 +248,9 @@ SceneGraphNode* SceneGraphNode::addChildNode(const SceneGraphNodeDescriptor& des
 void SceneGraphNode::PostLoad(SceneNode* sceneNode, SceneGraphNode* sgn) {
     Attorney::SceneNodeSceneGraph::postLoad(sceneNode, sgn);
     sgn->Hacks._editorComponents.emplace_back(&Attorney::SceneNodeSceneGraph::getEditorComponent(sceneNode));
+    if (!sgn->_relationshipCache.isValid()) {
+        sgn->_relationshipCache.rebuild();
+    }
 }
 
 bool SceneGraphNode::removeNodesByType(SceneNodeType nodeType) {
@@ -328,7 +332,11 @@ bool SceneGraphNode::isChildOfType(const U16 typeMask) const {
 bool SceneGraphNode::isRelated(const SceneGraphNode* target) const {
     const I64 targetGUID = target->getGUID();
     // We also ignore grandparents as this will usually be the root;
-    return _relationshipCache.classifyNode(targetGUID) != SGNRelationshipCache::RelationshipType::COUNT;
+    if (_relationshipCache.isValid()) {
+        return _relationshipCache.classifyNode(targetGUID) != SGNRelationshipCache::RelationshipType::COUNT;
+    }
+
+    return false;
 }
 
 bool SceneGraphNode::isChild(const SceneGraphNode* target, const bool recursive) const {
@@ -523,8 +531,11 @@ void SceneGraphNode::processEvents() {
                         }
                     }
                 } break;
+                case ECS::CustomEvent::Type::BoundsUpdated: {
+                    Attorney::SceneGraphSGN::onNodeMoved(_sceneGraph, *this);
+                }break;
                 default: break;
-            };
+            }
 
             _compManager->PassDataToAllComponents(id, evt);
         }
@@ -650,16 +661,29 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     // Get camera info
     const vec3<F32>& eye = params._currentCamera->getEye();
     const BoundingBox& boundingBox = bComp->getBoundingBox();
+
     distanceToClosestPointSQ = boundingBox.nearestDistanceFromPointSquared(eye);
     if (distanceToClosestPointSQ > params._cullMaxDistanceSq) {
         // Node is too far away
         return true;
     }
 
+    const BoundingSphere& sphere = bComp->getBoundingSphere();
+    auto& planes = params._clippingPlanes.planes();
+    auto& states = params._clippingPlanes.planeState();
+    for (U8 i = 0; i < to_U8(ClipPlaneIndex::COUNT); ++i) {
+        if (states[i]) {
+            collisionTypeOut = PlaneBoundingSphereIntersect(planes[i], sphere);
+            if (collisionTypeOut == FrustumCollision::FRUSTUM_OUT) {
+                // Fails the clipping plane test
+                return true;
+            }
+        }
+    }
+
     // Sphere is in range, so check bounds primitives against the frustum
     if (!boundingBox.containsPoint(eye)) {
         const Frustum& frustum = params._currentCamera->getFrustum();
-        const BoundingSphere& sphere = bComp->getBoundingSphere();
         const F32 radius = sphere.getRadius();
         const vec3<F32>& center = sphere.getCenter();
         // Check if the bounding sphere is in the frustum, as Frustum <-> Sphere check is fast
@@ -674,9 +698,11 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
     }
 
     //If it is in frustum, that doesn't mean that we can render it
-    const bool cull = collisionTypeOut == FrustumCollision::FRUSTUM_OUT ||
-                      !postCullCheck(params, *bComp, distanceToClosestPointSQ);
-    return cull;
+    if (collisionTypeOut != FrustumCollision::FRUSTUM_OUT) {
+        return !postCullCheck(params, *bComp, distanceToClosestPointSQ);
+    }
+
+    return true;
 }
 
 void SceneGraphNode::occlusionCull(const RenderStagePass& stagePass,

@@ -143,6 +143,11 @@ void OpenGL3FBOTextureTarget::resizeRenderTexture()
         sz.d_width = 1.0f;
         sz.d_height = 1.0f;
     }
+    else if (sz.d_width > (1 << 13) || sz.d_height > (1 << 13))
+    {
+        sz.d_width = 1 << 13;
+        sz.d_height = 1 << 13;
+    }
 
     // set the texture to the required size (delete and create a new one due to immutable storage use)
     GLuint tempTexture = 0u;

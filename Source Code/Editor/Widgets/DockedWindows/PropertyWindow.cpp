@@ -854,13 +854,32 @@ namespace Divide {
                 ret = processBasicField(field);
             }break;
             case EditorComponentFieldType::DROPDOWN_TYPE: {
-                const U32 entryCount = to_U32(field._range.y);
+                const U8 entryStart = to_U8(field._range.min);
+                const U8 entryCount = to_U8(field._range.max);
+                static UndoEntry<I32> typeUndo = {};
+                if (entryCount > 0 && entryStart <= entryCount) {
 
-                if (field._dataSetter && field._dataGetter && entryCount > 0) {
-                    ret = ImGui::BeginCombo(field._name.c_str(), "");
+                    const U8 crtMode = field.get<U8>();
+                    ret = ImGui::BeginCombo(field._name.c_str(), field.getDisplayName(crtMode));
                     if (ret) {
-                        for (U32 n = 0; n < entryCount; ++n) {
+                        for (U8 n = entryStart; n < entryCount; ++n) {
+                            const bool isSelected = crtMode == n;
+                            if (ImGui::Selectable(field.getDisplayName(n), isSelected)) {
+                                typeUndo._type = GFX::PushConstantType::UINT;
+                                typeUndo._name = "Drop Down Selection";
+                                typeUndo._oldVal = to_U32(crtMode);
+                                typeUndo._newVal = to_U32(n);
+                                typeUndo._dataSetter = [&field](const U32& data) {
+                                    field.set(to_U8(data));
+                                };
 
+                                field.set(n);
+                                _context.editor().registerUndoEntry(typeUndo);
+                                break;
+                            }
+                            if (isSelected) {
+                                ImGui::SetItemDefaultFocus();
+                            }
                         }
                         ImGui::EndCombo();
                     }

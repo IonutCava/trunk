@@ -34,6 +34,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _EDITOR_MENU_BAR_H_
 
 #include "Core/Headers/PlatformContextComponent.h"
+#include "Geometry/Shapes/Headers/Object3D.h"
 #include "Platform/Headers/PlatformDefines.h"
 
 namespace Divide {
@@ -51,7 +52,7 @@ namespace Divide {
           void drawFileMenu();
           void drawEditMenu() const;
           void drawProjectMenu() const;
-          void drawObjectMenu() const;
+          void drawObjectMenu();
           void drawToolsMenu();
           void drawWindowsMenu() const;
           void drawPostFXMenu() const;
@@ -63,6 +64,7 @@ namespace Divide {
         bool _quitPopup = false;
         bool _closePopup = false;
         bool _savePopup = false;
+        ObjectType _newPrimitiveType = ObjectType::COUNT;
 
         stringImpl _errorMsg = "";
         vectorEASTL<Texture_ptr> _previewTextures;
