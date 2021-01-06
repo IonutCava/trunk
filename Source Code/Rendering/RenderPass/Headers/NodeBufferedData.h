@@ -84,7 +84,7 @@ using NodeMaterialTextures = std::array<SamplerAddress, MATERIAL_TEXTURE_COUNT>;
         //w = Probe lookup index + 1 (0 = sky cubemap)
         vec4<U32> _data;
 
-        vec2<U64> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
+        vec4<U32> _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
     };
 
     [[nodiscard]] size_t HashMaterialData(const NodeMaterialData& dataIn) noexcept;

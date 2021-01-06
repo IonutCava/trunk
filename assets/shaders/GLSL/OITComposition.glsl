@@ -9,32 +9,20 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D revealageTexture;
 
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
 
-float maxComponent(in vec4 v) { return max(max(max(v.x, v.y), v.z), v.w); }
-
 void main() {
     ivec2 C = ivec2(gl_FragCoord.xy);
 
     float revealage = texelFetch(revealageTexture, C, 0).r;
-    if (revealage == 1.0f) {
+    if (revealage >= INV_Z_TEST_SIGMA) {
         // Save the blending and color texture fetch cost
         discard;
     }
 
     vec4 accum = texelFetch(accumTexture, C, 0);
-    //vec4 normalData = texelFetch(normalAndVelocity, C, 0);
-    // Suppress overflow
-    if (isinf(maxComponent(abs(accum)))) {
-        accum.rgb = vec3(accum.a);
-    }
-
+    vec3 averageColor  = accum.rgb / clamp(accum.a, 1e-4f, 5e4f);
     // dst' =  (accum.rgb / accum.a) * (1 - revealage) + dst
     // [dst has already been modulated by the transmission colors and coverage and the blend mode inverts revealage for us] 
-    vec3 averageColor = accum.rgb / max(accum.a, 0.00001f);
-
-#if !defined(USE_COLOURED_WOIT)
-    revealage = 1.0f - revealage;
-#endif
-    _colourOut = vec4(averageColor, revealage);
+    _colourOut = vec4(averageColor, 1.0f - revealage);
 }
 
 

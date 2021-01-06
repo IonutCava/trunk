@@ -163,21 +163,16 @@ vec3 getMixedNormalWV(in vec2 uv) {
 
 #else //PRE_PASS
 
-vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
-    const vec2 scaledUV = uv * UNDERWATER_TILE_SCALE;
-
+vec3 getUnderWaterAnimatedAlbedo(in vec2 uv) {
     const float time2 = MSToSeconds(dvd_time) * 0.1f;
-    vec2 uvNormal0 = uv * UNDERWATER_TILE_SCALE;
-    uvNormal0.s += time2;
-    uvNormal0.t += time2;
-    vec2 uvNormal1 = uv * UNDERWATER_TILE_SCALE;
-    uvNormal1.s -= time2;
-    uvNormal1.t += time2;
+    const vec4 uvNormal = vec4(uv + time2.xx, uv + vec2(-time2, time2));
 
-    return vec4(mix((texture(texOMR, vec3(uvNormal0, 0)).rgb + texture(texOMR, vec3(uvNormal1, 0)).rgb) * 0.5f,
-                     texture(texOMR, vec3(scaledUV,  1)).rgb,
-                     waterDepth),
-                0.3f);
+    return (texture(texOMR, vec3(uvNormal.xy, 0)).rgb + texture(texOMR, vec3(uvNormal.zw, 0)).rgb) * 0.5f;
+}
+
+vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
+    const vec3 albedo = mix(getUnderWaterAnimatedAlbedo(uv), texture(texOMR, vec3(uv,  1)).rgb, waterDepth);
+    return vec4(albedo, 0.3f);
 }
 
 vec4 getTerrainAlbedo(in vec2 uv) {
@@ -206,7 +201,7 @@ void BuildTerrainData(in vec2 uv, out vec4 albedo, out vec3 normalWV) {
 
     const vec2 waterData = GetWaterDetails(vertW, TERRAIN_HEIGHT_OFFSET);
     albedo = mix(getTerrainAlbedo(uv),
-                 getUnderwaterAlbedo(uv, waterData.y),
+                 getUnderwaterAlbedo(uv * UNDERWATER_TILE_SCALE, waterData.y),
                  saturate(waterData.x));
     
 }

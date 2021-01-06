@@ -29,13 +29,13 @@ layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd
 };
 
 #if defined(USE_BINDLESS_TEXTURES)
-#define texDiffuse0   samplerUnit0(dvd_Materials[MATERIAL_IDX]._texDiffuse0Opacity.xy)
-#define texOpacityMap samplerOpacity(dvd_Materials[MATERIAL_IDX]._texDiffuse0Opacity.zw)
-#define texDiffuse1   samplerUnit1(dvd_Materials[MATERIAL_IDX]._texDiffuse1OMR.xy)
-#define texOMR        samplerOMR(dvd_Materials[MATERIAL_IDX]._texDiffuse1OMR.zw)
-#define texHeight     samplerHeight(dvd_Materials[MATERIAL_IDX]._texHeightProjected.xy)
-#define texProjected  samplerProj(dvd_Materials[MATERIAL_IDX]._texHeightProjected.zw)
-#define texNormalMap  samplerNormal(dvd_Materials[MATERIAL_IDX]._texNormalMapPadding.xy)
+#define texDiffuse0   samplerUnit0(dvd_Materials[MATERIAL_IDX]._textures[0].xy)
+#define texOpacityMap samplerOpacity(dvd_Materials[MATERIAL_IDX]._textures[0].zw)
+#define texDiffuse1   samplerUnit1(dvd_Materials[MATERIAL_IDX]._textures[1].xy)
+#define texOMR        samplerOMR(dvd_Materials[MATERIAL_IDX]._textures[1].zw)
+#define texHeight     samplerHeight(dvd_Materials[MATERIAL_IDX]._textures[2].xy)
+#define texProjected  samplerProj(dvd_Materials[MATERIAL_IDX]._textures[2].zw)
+#define texNormalMap  samplerNormal(dvd_Materials[MATERIAL_IDX]._textures[3].xy)
 #else //USE_BINDLESS_TEXTURES
 layout(binding = TEXTURE_UNIT0)      uniform samplerUnit0 texDiffuse0;
 layout(binding = TEXTURE_UNIT1)      uniform samplerUnit1 texDiffuse1;

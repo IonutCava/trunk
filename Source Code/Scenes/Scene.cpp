@@ -808,8 +808,8 @@ U16 Scene::registerInputActions() {
     const auto strafeRight         = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::POSITIVE); };
     const auto stopStrafeLeftRight = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).moveLR(MoveDirection::NONE); };
 
-    const auto rollCCW       = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE); };
-    const auto rollCW        = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE); };
+    const auto rollCCW       = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NEGATIVE); };
+    const auto rollCW        = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::POSITIVE); };
     const auto stopRollCCWCW = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).roll(MoveDirection::NONE); };
 
     const auto turnLeft          = [this](const InputParams param) { state()->playerState(getPlayerIndexForDevice(param._deviceIndex)).angleLR(MoveDirection::NEGATIVE); };

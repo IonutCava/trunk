@@ -64,8 +64,10 @@ void RenderPassExecutor::addTexturesAt(const size_t idx, const NodeMaterialTextu
     NodeMaterialData& target = _materialData[_materialBufferIndex]._nodeMaterialData[idx];
     for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
         const SamplerAddress combined = tempTextures[i];
-        target._textures[i / 2][(i % 2)] = combined;
+        target._textures[i / 2][(i % 2) * 2 + 0] = to_U32(combined & 0xFFFFFFFF); //low
+        target._textures[i / 2][(i % 2) * 2 + 1] = to_U32(combined >> 32); //high
     }
+
     // second loop for cache reasons. 0u is fine as an address since we filter it at graphics API level.
     for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
         _uniqueTextureAddresses.insert(tempTextures[i]);

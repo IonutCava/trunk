@@ -721,6 +721,12 @@ bool GL_API::InitGLSW(Configuration& config) {
         lineOffsets);
 
     AppendToShaderHeader(
+        ShaderType::COUNT,
+        "#define MATERIAL_TEXTURE_COUNT " +
+        Util::to_string(MATERIAL_TEXTURE_COUNT),
+        lineOffsets);
+
+    AppendToShaderHeader(
         ShaderType::VERTEX,
         "#define BUFFER_BONE_TRANSFORMS " +
         Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS)),

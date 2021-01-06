@@ -88,6 +88,10 @@ vec3 ViewSpacePos(in vec2 texCoords, in float D, in mat4 invProjection) {
 #define LinStep(LOW, HIGH, V) saturate((V - LOW) / (HIGH - LOW))
 #define Luminance(RGB) max(dot(RGB, _kLum), 0.0001f)
 
+float maxComponent(in vec2 v) { return max(v.x, v.y); }
+float maxComponent(in vec3 v) { return max(max(v.x, v.y), v.z); }
+float maxComponent(in vec4 v) { return max(max(max(v.x, v.y), v.z), v.w); }
+
 // ----------------- LINEAR <-> SRGB -------------------------
 // Accurate variants from Frostbite notes: https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 

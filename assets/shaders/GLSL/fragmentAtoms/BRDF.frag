@@ -267,11 +267,9 @@ vec4 CSMSplitColour() {
 /// RGB - lit colour, A - reflectivity
 vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
-    const float smoothness = 1.0f - ROUGHNESS(OMR);
-    const float reflectivity = mix(0.0f, smoothness, METALLIC(OMR));
 
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:         return vec4(albedo.rgb, 0.0f);
+        case DEBUG_ALBEDO:         return vec4(albedo.rgb, 1.0f);
         case DEBUG_DEPTH:          return vec4(vec3(ToLinearDepthPreview(texture(texDepthMap, dvd_screenPositionNormalised).r)), 1.0f);
         case DEBUG_LIGHTING:       return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
         case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
@@ -287,7 +285,7 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
         case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.0f);
         case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.0f);
         case DEBUG_REFLECTIONS:    return vec4(ImageBasedLighting(vec3(0.f), normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData)), 1.0f);
-        case DEBUG_REFLECTIVITY:   return vec4(vec3(reflectivity), 1.0f);
+        case DEBUG_REFLECTIVITY:   return vec4(vec3(mix(0.0f, 1.0f - ROUGHNESS(OMR), METALLIC(OMR))), 1.0f);
         case DEBUG_MATERIAL_IDS:   return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.0f);
     }
 
@@ -301,7 +299,16 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
     oColour *= SSAOFactor;
     oColour += EmissiveColour(materialData);
 
-    return vec4(oColour, reflectivity);
+#if defined(OIT_PASS)
+    // alpha for WOIT
+    const float extraData = albedo.a;
+#else
+    const float smoothness = 1.0f - ROUGHNESS(OMR);
+    // reflectivity (for SSR)
+    const float extraData = mix(0.0f, smoothness, METALLIC(OMR));
+#endif
+
+    return vec4(oColour, extraData);
 }
 
 #endif //_BRDF_FRAG_

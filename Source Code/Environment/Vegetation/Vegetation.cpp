@@ -350,7 +350,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     shaderOitDescriptor._modules.back()._defines.emplace_back("OIT_PASS", true);
     //shaderOitDescriptor._modules.back()._defines.emplace_back("USE_SSAO", true);
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
-    shaderOitDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
 
     ResourceDescriptor grassColourOITShader("grassColourOIT");
     grassColourOITShader.propertyDescriptor(shaderOitDescriptor);
@@ -379,8 +378,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     grassPrePassLQShader.propertyDescriptor(shaderDescriptor);
     grassPrePassLQShader.waitForReady(false);
     ShaderProgram_ptr grassPrePassLQ = CreateResource<ShaderProgram>(terrain->parentResourceCache(), grassPrePassLQShader, loadTasks);
-
-    shaderDescriptor._modules.back()._defines.emplace_back("USE_DEFERRED_NORMALS", true);
 
     ResourceDescriptor grassPrePassShader("grassPrePass");
     grassPrePassShader.propertyDescriptor(shaderDescriptor);

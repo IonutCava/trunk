@@ -72,10 +72,7 @@ struct NodeMaterialData
     uvec4 _data;
 
     //TextureData
-    uvec4 _texDiffuse0Opacity;
-    uvec4 _texDiffuse1OMR;
-    uvec4 _texHeightProjected;
-    uvec4 _texNormalMapPadding;
+    uvec4 _textures[(MATERIAL_TEXTURE_COUNT + 1) / 2];
 };
 
 #define PACKED_OMR(materialData) unpackUnorm4x8(materialData._data.x)
