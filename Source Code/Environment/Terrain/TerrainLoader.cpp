@@ -12,6 +12,7 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
+#include "Quadtree/Headers/QuadtreeNode.h"
 
 namespace Divide {
 
@@ -721,10 +722,11 @@ bool TerrainLoader::loadThreadedResources(const Terrain_ptr& terrain,
         }
     }
 
-    // Do this first in case we have any threaded loads
-    VegetationDetails& vegDetails = initializeVegetationDetails(terrain, context, terrainDescriptor);
     // Then compute quadtree and all additional terrain-related structures
     Attorney::TerrainLoader::postBuild(*terrain);
+
+    // Do this first in case we have any threaded loads
+    VegetationDetails& vegDetails = initializeVegetationDetails(terrain, context, terrainDescriptor);
     Vegetation::createAndUploadGPUData(context.gfx(), terrain, vegDetails);
 
     Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
@@ -736,9 +738,11 @@ VegetationDetails& TerrainLoader::initializeVegetationDetails(const Terrain_ptr&
                                                               const std::shared_ptr<TerrainDescriptor>& terrainDescriptor) {
     VegetationDetails& vegDetails = Attorney::TerrainLoader::vegetationDetails(*terrain);
 
+    const U32 chunkSize = terrain->getQuadtree().targetChunkDimension();
+    assert(chunkSize > 0u);
+
     const U32 terrainWidth = terrainDescriptor->dimensions().width;
     const U32 terrainHeight = terrainDescriptor->dimensions().height;
-    const U16 chunkSize = terrainDescriptor->chunkSize();
     const U32 maxChunkCount = to_U32(std::ceil(terrainWidth * terrainHeight / (chunkSize * chunkSize * 1.0f)));
 
     Vegetation::precomputeStaticData(context.gfx(), chunkSize, maxChunkCount);

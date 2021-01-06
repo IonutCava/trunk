@@ -55,7 +55,6 @@ class Quadtree {
 
     void build(BoundingBox& terrainBBox,
                const vec2<U16>& HMSize,
-               U32 targetChunkDimension,
                Terrain* terrain);
 
     [[nodiscard]] const BoundingBox& computeBoundingBox() const;
@@ -67,7 +66,10 @@ class Quadtree {
 
     [[nodiscard]] QuadtreeNode* findLeaf(const vec2<F32>& pos) const;
 
+    const eastl::unique_ptr<QuadtreeNode>& getRoot() const noexcept { return _root; }
+
     POINTER_R(Pipeline, bbPipeline, nullptr);
+    PROPERTY_R_IW(U32, targetChunkDimension, 0u);
 
    private:
     eastl::unique_ptr<QuadtreeNode> _root = nullptr;

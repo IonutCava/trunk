@@ -87,6 +87,8 @@ class QuadtreeNode {
     [[nodiscard]] QuadtreeNode& getChild(const ChildPosition pos) const noexcept { return *_children[to_base(pos)]; }
     [[nodiscard]] QuadtreeNode& getChild(const U32 index) const noexcept { return *_children[index]; }
 
+    PROPERTY_R_IW(U32, targetChunkDimension, 0u);
+
    private:
     BoundingBox _boundingBox;                    ///< Node BoundingBox
     BoundingSphere _boundingSphere;              ///< Node BoundingSphere
@@ -95,7 +97,6 @@ class QuadtreeNode {
     eastl::unique_ptr<TerrainChunk> _terrainChunk = nullptr; ///< Terrain Chunk contained in node
     GFXDevice&    _context;
     IMPrimitive*  _bbPrimitive = nullptr;
-    U32 _targetChunkDimension = 0u;
     U8 _LoD = 0u;
     bool _drawBBoxes = false;
 };

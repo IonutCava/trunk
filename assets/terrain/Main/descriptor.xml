@@ -1,9 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <heightfield>heightfield.raw</heightfield>
 <heightfieldTex>heightfield.png</heightfieldTex>
+<!--
+Min size of 8x8. Terrain will fail to load with smaller samples 
+Why would we ever use a smaller terrain? We can define negative height on the edge of larger terrains if needed)
+-->
 <heightfieldResolution x="2048" y="2048"/>
+<!--
+startWidth = the size in world units of a path's side. Each ring doubles this initial value
+ringCount = how many tessellated rings we want the terrain to use. We can define as many or as few as we like
+			If ringCount == 0, ringCount is set to 1
+            If ringCount > #rings, the undefined rings will use the last defined ring's value. Default ring value is "8" (if missing)
+			If ringCount < #rings, the extra rings are ignored
+ring# = number of tiles per side of the "ring". See nVidia's DX11 Tessellated Terrain demo (i.e. the TileRing class)
+-->
+<tileSettings startWidth="0.25" ringCount="4" ring1="8" ring2="16" ring3="16" ring4 ="32" ring5="32" ring6="64"/>
+<!--
+min and max basically remap what 0 and 1 respectively mean in the heightmap
+-->
 <altitudeRange min="-39.02" max="75.13"/>
-<chunkSize>256</chunkSize>
 <alphaMaps>alpha_maps.xml</alphaMaps>
 
 <vegetation>

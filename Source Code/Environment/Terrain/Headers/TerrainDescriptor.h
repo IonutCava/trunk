@@ -69,6 +69,12 @@ class TerrainDescriptor final : public PropertyDescriptor {
         return dimensions().maxComponent() / 4;
     }
 
+    [[nodiscard]] U8 tileRingCount(const U8 index) const noexcept {
+        assert(index < ringCount());
+
+        return _ringTileCount[index];
+    }
+
     [[nodiscard]] size_t getHash() const noexcept override
     {
         _hash = PropertyDescriptor::getHash();
@@ -84,10 +90,12 @@ class TerrainDescriptor final : public PropertyDescriptor {
         Util::Hash_combine(_hash, _textureLayers);
         Util::Hash_combine(_hash, _altitudeRange.x);
         Util::Hash_combine(_hash, _altitudeRange.y);
-        Util::Hash_combine(_hash, _chunkSize);
         Util::Hash_combine(_hash, _dimensions.x);
         Util::Hash_combine(_hash, _dimensions.y);
-
+        Util::Hash_combine(_hash, _startWidth);
+        for(U8 i = 0; i < ringCount(); ++i) {
+            Util::Hash_combine(_hash, _ringTileCount[i]);
+        }
         return _hash;
     }
 
@@ -102,9 +110,12 @@ protected:
     //x - chunk size, y - patch size in meters
     PROPERTY_RW(vec2<F32>, altitudeRange);
     PROPERTY_RW(vec2<U16>, dimensions, { 1 });
-    PROPERTY_RW(U16, chunkSize);
+    PROPERTY_RW(F32, startWidth, 0.25f);
+    PROPERTY_RW(U8, ringCount, 4);
     PROPERTY_RW(U8, textureLayers, 1u);
     PROPERTY_RW(bool, active, false);
+    std::array<U8, 16> _ringTileCount = {};
+
 
 };
 

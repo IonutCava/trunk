@@ -6,11 +6,14 @@
 #include "Platform/File/Headers/FileManagement.h"
 
 namespace Divide {
+    namespace {
+        constexpr U8 g_minTerrainSideLength = 8u;
+    }
+
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TERRAIN_INFO)
         , _name(name)
         , _altitudeRange(0.f, 1.f)
-        , _chunkSize(256)
     {
     }
 
@@ -40,8 +43,20 @@ namespace Divide {
             addVariable("heightfield", descTree.get<stringImpl>("heightfield", ""));
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
             dimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
+
+            ringCount(std::max(descTree.get<U8>("tileSettings.<xmlattr>.ringCount", 4u) + 1u, 2u));
+            startWidth(descTree.get<F32>("tileSettings.<xmlattr>.startWidth", 0.25f));
+            _ringTileCount[0] = 0u;
+
+            U8 prevSize = 8u;
+            for (U8 i = 1; i < ringCount(); ++i) {
+                _ringTileCount[i] = (descTree.get<U8>(Util::StringFormat("tileSettings.<xmlattr>.ring%d", i).c_str(), prevSize));
+                prevSize = _ringTileCount[i];
+            }
+            if (dimensions().minComponent() < g_minTerrainSideLength) {
+                return false;
+            }
             altitudeRange(vec2<F32>(descTree.get<F32>("altitudeRange.<xmlattr>.min", 0.0f), descTree.get<F32>("altitudeRange.<xmlattr>.max", 255.0f)));
-            chunkSize(descTree.get<U16>("chunkSize", 256));
             addVariable("vegetationTextureLocation", descTree.get<stringImpl>("vegetation.vegetationTextureLocation", Paths::g_imagesLocation.c_str()));
             addVariable("grassMap", descTree.get<stringImpl>("vegetation.grassMap"));
             addVariable("treeMap", descTree.get<stringImpl>("vegetation.treeMap"));

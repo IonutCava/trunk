@@ -29,11 +29,6 @@ namespace {
     // more important things to pull my hair over :/
     constexpr bool USE_BASE_VERTEX_OFFSETS = false;
 
-    // This array defines the outer width of each successive terrain ring.
-    constexpr I32 g_RingWidths[] = { 0, 8, 16, 16, 16 };
-
-    constexpr F32 g_StartTileSize = 0.35f;
-
     vectorEASTLFast<U16> CreateTileQuadListIB()
     {
         vectorEASTLFast<U16> indices(TessellationParams::QUAD_LIST_INDEX_COUNT, 0u);
@@ -212,20 +207,20 @@ void Terrain::postBuild() {
     _boundingBox.setMin(-halfWidth, _descriptor->altitudeRange().min, -halfWidth);
     _boundingBox.setMax(halfWidth, _descriptor->altitudeRange().max, halfWidth);
 
-    const U16 chunkSize = _descriptor->chunkSize();
-
-    _terrainQuadtree.build(_boundingBox, _descriptor->dimensions(), chunkSize, this);
+    _terrainQuadtree.build(_boundingBox, _descriptor->dimensions(), this);
 
     // The terrain's final bounding box is the QuadTree's root bounding box
     _boundingBox.set(_terrainQuadtree.computeBoundingBox());
 
     {
         // widths[0] doesn't define a ring hence -1
-        const size_t ringCount = sizeof g_RingWidths / sizeof g_RingWidths[0] - 1;
+        const U8 ringCount = _descriptor->ringCount() - 1;
         _tileRings.reserve(ringCount);
-        F32 tileWidth = g_StartTileSize;
-        for (size_t i = 0; i < ringCount ; ++i) {
-            _tileRings.emplace_back(eastl::make_unique<TileRing>(g_RingWidths[i] / 2, g_RingWidths[i + 1], tileWidth));
+        F32 tileWidth = _descriptor->startWidth();
+        for (U8 i = 0; i < ringCount ; ++i) {
+            const U8 count0 = _descriptor->tileRingCount(i + 0);
+            const U8 count1 = _descriptor->tileRingCount(i + 1);
+            _tileRings.emplace_back(eastl::make_unique<TileRing>(count0 / 2, count1, tileWidth));
             tileWidth *= 2.0f;
         }
 

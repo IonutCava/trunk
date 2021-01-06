@@ -82,11 +82,12 @@ QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) const
 
 void Quadtree::build(BoundingBox& terrainBBox,
                      const vec2<U16>& HMSize,
-                     const U32 targetChunkDimension,
                      Terrain* const terrain) {
 
+    _targetChunkDimension = std::max(HMSize.maxComponent() / 8u, 8u);
+
     _root->setBoundingBox(terrainBBox);
-    _root->build(0, vec2<U16>(0u), HMSize, targetChunkDimension, terrain, _chunkCount);
+    _root->build(0, vec2<U16>(0u), HMSize, _targetChunkDimension, terrain, _chunkCount);
 }
 
 const BoundingBox& Quadtree::computeBoundingBox() const {
