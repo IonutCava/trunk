@@ -55,6 +55,7 @@ namespace ECS {
             DrawBoundsChanged,
             EntityPostLoad,
             EntityFlagChanged,
+            NewShaderReady,
             COUNT
         };
 

@@ -211,13 +211,13 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
 
 void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
+    constexpr bool doMainPass = true;
 
     RenderStagePass stagePass = params._stagePass;
     RenderPass::BufferData bufferData = _parent.getPassForStage(_stage).getBufferData(stagePass);
     ShaderBuffer* cmdBuffer = bufferData._commandBuffer;
 
     const D64 interpFactor = GFXDevice::FrameInterpolationFactor();
-    const U32 cmdOffset = (cmdBuffer->queueWriteIndex() * cmdBuffer->getPrimitiveCount()) + bufferData._commandElementOffset;
 
     _drawCommands.clear();
     _materialBufferIndex = bufferData._materialBuffer->queueWriteIndex();
@@ -233,26 +233,29 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
         nodeCount += to_U16(queue.size());
     }
 
+    const U32 cmdOffset = (cmdBuffer->queueWriteIndex() * cmdBuffer->getPrimitiveCount()) + bufferData._commandElementOffset;
+
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
         for (RenderingComponent* rComp : queue) {
             const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, bufferData._materialElementOffset, nodeCount++);
-            Attorney::RenderingCompRenderPass::setCommandDataIndex(*rComp, cmdOffset, newDataIdx, stagePass._stage);
+            Attorney::RenderingCompRenderPass::setCommandDataIndex(*rComp, newDataIdx, stagePass._stage);
         }
     }
 
     const auto retrieveCommands = [&]() {
         for (RenderBin::SortedQueue& queue : _sortedQueues) {
             for (RenderingComponent* rComp : queue) {
-                Attorney::RenderingCompRenderPass::retrieveDrawCommands(*rComp, stagePass, _drawCommands);
+                Attorney::RenderingCompRenderPass::retrieveDrawCommands(*rComp, stagePass, cmdOffset, _drawCommands);
             }
         }
     };
 
+    const RenderPassType prevType = stagePass._passType;
     if (doPrePass) {
         stagePass._passType = RenderPassType::PRE_PASS;
         retrieveCommands();
     }
-    { //doMainPass
+    if (doMainPass) {
         stagePass._passType = RenderPassType::MAIN_PASS;
         retrieveCommands();
     }
@@ -260,21 +263,18 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
         stagePass._passType = RenderPassType::OIT_PASS;
         retrieveCommands();
     }
+    stagePass._passType = prevType;
 
     *bufferData._lastCommandCount = to_U32(_drawCommands.size());
     *bufferData._lastNodeCount = nodeCount;
 
-    size_t materialRange = Config::MAX_CONCURRENT_MATERIALS;
+    PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
     {
         OPTICK_EVENT("RenderPassExecutor::buildBufferData - UpdateBuffers");
+
         cmdBuffer->writeData(bufferData._commandElementOffset, *bufferData._lastCommandCount, _drawCommands.data());
+
         bufferData._transformBuffer->writeData(bufferData._transformElementOffset, *bufferData._lastNodeCount, _nodeTransformData.data());
-
-        PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
-
-        materialRange = eastl::count_if(eastl::cbegin(materialData._nodeMaterialLookupInfo),
-                                        eastl::cend(materialData._nodeMaterialLookupInfo),
-                                        [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
 
         // Copy the same data to the entire ring buffer
         MaterialUpdateRange& crtRange = materialData._matUpdateRange;
@@ -285,6 +285,10 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
         }
         crtRange.reset();
     }
+
+    size_t materialRange = eastl::count_if(eastl::cbegin(materialData._nodeMaterialLookupInfo),
+                                           eastl::cend(materialData._nodeMaterialLookupInfo),
+                                           [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
 
     ShaderBufferBinding cmdBufferBinding = {};
     cmdBufferBinding._binding = ShaderBufferLocation::CMD_BUFFER;
@@ -840,7 +844,21 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
 
     // Cull the scene and grab the visible nodes
     I64 ignoreGUID = params._sourceNode == nullptr ? -1 : params._sourceNode->getGUID();
-    VisibleNodeList<>& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(_parent.parent().sceneManager(), _stage, *params._camera, params._clippingPlanes, params._maxLoD, params._minExtents, &ignoreGUID, 1);
+
+    NodeCullParams cullParams = {};
+    Attorney::SceneManagerRenderPass::initDefaultCullValues(_parent.parent().sceneManager(), _stage, cullParams);
+
+    cullParams._clippingPlanes = params._clippingPlanes;
+    cullParams._stage = _stage;
+    cullParams._minExtents = params._minExtents;
+    cullParams._ignoredGUIDS = { &ignoreGUID, 1 };
+    cullParams._currentCamera = params._camera;
+    cullParams._cullMaxDistanceSq = std::min(cullParams._cullMaxDistanceSq, SQUARED(params._camera->getZPlanes().y));
+    cullParams._maxLoD = params._maxLoD;
+    cullParams._cullAllDynamicNodes = !BitCompare(params._drawMask, to_U8(1 << to_base(RenderPassParams::Flags::DRAW_DYNAMIC_NODES)));
+    cullParams._cullAllStaticNodes = !BitCompare(params._drawMask, to_U8(1 << to_base(RenderPassParams::Flags::DRAW_STATIC_NODES)));
+
+    VisibleNodeList<>& visibleNodes = Attorney::SceneManagerRenderPass::cullScene(_parent.parent().sceneManager(), cullParams);
 
     if (params._feedBackContainer != nullptr) {
         auto& container = params._feedBackContainer->_visibleNodes;
@@ -848,6 +866,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
         std::memcpy(container.data(), visibleNodes.data(), visibleNodes.size() * sizeof(VisibleNode));
     }
 
+    constexpr bool doMainPass = true;
     // PrePass requires a depth buffer
     const bool doPrePass = _stage != RenderStage::SHADOW &&
                            params._target._usage != RenderTargetUsage::COUNT &&
@@ -867,18 +886,17 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
             }
         };
 
-        RenderStagePass tempDrawStage = params._stagePass;
         if (doPrePass) {
-            tempDrawStage._passType = RenderPassType::PRE_PASS;
-            ValidateNodesForStagePass(tempDrawStage);
+            params._stagePass._passType = RenderPassType::PRE_PASS;
+            ValidateNodesForStagePass(params._stagePass);
         }
-        { //doMainPass
-            tempDrawStage._passType = RenderPassType::MAIN_PASS;
-            ValidateNodesForStagePass(tempDrawStage);
+        if (doMainPass) {
+            params._stagePass._passType = RenderPassType::MAIN_PASS;
+            ValidateNodesForStagePass(params._stagePass);
         }
         if (doOITPass) {
-            tempDrawStage._passType = RenderPassType::OIT_PASS;
-            ValidateNodesForStagePass(tempDrawStage);
+            params._stagePass._passType = RenderPassType::OIT_PASS;
+            ValidateNodesForStagePass(params._stagePass);
         }
     }
 
@@ -887,8 +905,9 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
     const U32 visibleNodeCount = prepareNodeData(visibleNodes, params, hasInvalidNodes, doPrePass, doOITPass, bufferInOut);
 
 #   pragma region PRE_PASS
+    // We need the pass to be PRE_PASS even if we skip the prePass draw stage as it is the default state subsequent operations expect
+    params._stagePass._passType = RenderPassType::PRE_PASS;
     if (doPrePass) {
-        params._stagePass._passType = RenderPassType::PRE_PASS;
         prePass(visibleNodes, params, bufferInOut);
     }
 #   pragma endregion
@@ -926,16 +945,19 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
     }
 
 #   pragma region MAIN_PASS
+    // Same as for PRE_PASS. Subsequent operations expect a certain state
     params._stagePass._passType = RenderPassType::MAIN_PASS;
-    mainPass(visibleNodes, params, target, doPrePass, doOcclusionPass, bufferInOut);
+    if (doMainPass) {
+        mainPass(visibleNodes, params, target, doPrePass, doOcclusionPass, bufferInOut);
+    } else {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 #   pragma endregion
 
 #   pragma region TRANSPARENCY_PASS
+    // If doIOTPass is false, use forward pass shaders (i.e. MAIN_PASS again for transparents)
     if (doOITPass) {
         params._stagePass._passType = RenderPassType::OIT_PASS;
-    } else {
-        // Use forward pass shaders
-        params._stagePass._passType = RenderPassType::MAIN_PASS;
     }
     transparencyPass(visibleNodes, params, bufferInOut);
 #   pragma endregion

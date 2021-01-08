@@ -132,6 +132,7 @@ class SceneGraph final : NonCopyable,
     void onNodeMoved(const SceneGraphNode& node);
     void onNodeDestroy(SceneGraphNode* oldNode);
     void onNodeAdd(SceneGraphNode* newNode);
+    void onNodeUpdated(const SceneGraphNode& node);
 
     bool frameStarted(const FrameEvent& evt) override;
 
@@ -170,6 +171,10 @@ class SceneGraphSGN {
 
     static void onNodeMoved(SceneGraph* sceneGraph, const SceneGraphNode& node) {
         sceneGraph->onNodeMoved(node);
+    }
+
+    static void onNodeShaderReady(SceneGraph* sceneGraph, const SceneGraphNode& node) {
+        sceneGraph->onNodeUpdated(node);
     }
 
     friend class Divide::SceneGraphNode;

@@ -688,37 +688,6 @@ namespace Divide {
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
-                                    constexpr U16 min = 1u, max = 1000u;
-                                    {
-                                        U16 shadowFadeDistance = activeSceneState->shadowFadeDistance();
-                                        EditorComponentField tempField = {};
-                                        tempField._name = "Shadow fade distance";
-                                        tempField._basicType = GFX::PushConstantType::UINT;
-                                        tempField._basicTypeSize = GFX::PushConstantSize::WORD;
-                                        tempField._type = EditorComponentFieldType::PUSH_TYPE;
-                                        tempField._readOnly = false;
-                                        tempField._data = &shadowFadeDistance;
-                                        tempField._range = { min, max };
-                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
-                                            activeSceneState->shadowFadeDistance(*static_cast<const U16*>(bias));
-                                        };
-                                        sceneChanged = processField(tempField) || sceneChanged;
-                                    }
-                                    {
-                                        U16 shadowMaxDistance = activeSceneState->shadowDistance();
-                                        EditorComponentField tempField = {};
-                                        tempField._name = "Shadow max distance";
-                                        tempField._basicType = GFX::PushConstantType::UINT;
-                                        tempField._basicTypeSize = GFX::PushConstantSize::WORD;
-                                        tempField._type = EditorComponentFieldType::PUSH_TYPE;
-                                        tempField._readOnly = false;
-                                        tempField._data = &shadowMaxDistance;
-                                        tempField._range = { min, max };
-                                        tempField._dataSetter = [&activeSceneState](const void* bias) {
-                                            activeSceneState->shadowDistance(*static_cast<const U16*>(bias));
-                                        };
-                                        sceneChanged = processField(tempField) || sceneChanged;
-                                    }
                                 }
                             }
                         }

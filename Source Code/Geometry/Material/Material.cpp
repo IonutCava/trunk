@@ -348,6 +348,7 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
     if (computeOnAdd) {
         _context.shaderComputeQueue().process(shaderElement);
         info._shaderCompStage = ShaderBuildStage::COMPUTED;
+        assert(info._shaderRef != nullptr);
     } else {
         _context.shaderComputeQueue().addToQueueBack(shaderElement);
         info._shaderCompStage = ShaderBuildStage::QUEUED;
@@ -387,12 +388,9 @@ void Material::recomputeShaders() {
 I64 Material::computeAndGetProgramGUID(const RenderStagePass& renderStagePass) {
     constexpr U8 maxRetries = 250;
 
-    if (!canDraw(renderStagePass)) {
-        computeShader(renderStagePass);
-    }
-
+    bool justFinishedLoading = false;
     for (U8 i = 0; i < maxRetries; ++i) {
-        if (!canDraw(renderStagePass)) {
+        if (!canDraw(renderStagePass, justFinishedLoading)) {
             _context.shaderComputeQueue().stepQueue();
         } else {
             return getProgramGUID(renderStagePass);
@@ -415,47 +413,66 @@ I64 Material::getProgramGUID(const RenderStagePass& renderStagePass) const {
     return ShaderProgram::DefaultShader()->getGUID();
 }
 
-bool Material::canDraw(const RenderStagePass& renderStagePass) {
+bool Material::canDraw(const RenderStagePass& renderStagePass, bool& shaderJustFinishedLoading) {
     OPTICK_EVENT();
 
+    shaderJustFinishedLoading = false;
     ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    if (info._shaderCompStage == ShaderBuildStage::QUEUED && info._shaderRef != nullptr) {
-        info._shaderCompStage = ShaderBuildStage::COMPUTED;
+    // If we have a shader queued (with a valid ref) ...
+    if (info._shaderCompStage == ShaderBuildStage::QUEUED) {
+        // ... we are now passed the "compute" stage. We just need to wait for it to load
+        if (info._shaderRef != nullptr) {
+            info._shaderCompStage = ShaderBuildStage::COMPUTED;
+        } else {
+            // Shader is still in the queue
+            return false;
+        }
     }
 
+    // If the shader is computed ...
     if (info._shaderCompStage == ShaderBuildStage::COMPUTED) {
         assert(info._shaderRef != nullptr);
+
+        // ... wait for the shader to finish loading
         if (info._shaderRef->getState() != ResourceState::RES_LOADED) {
             return false;
         }
-
+        // Once it has finished loading, it is ready for drawing
+        shaderJustFinishedLoading = true;
         info._shaderCompStage = ShaderBuildStage::READY;
     }
 
+    // If the shader isn't ready it may have not passed through the computational stage yet (e.g. the first time this method is called)
     if (info._shaderCompStage != ShaderBuildStage::READY) {
-        return info._customShader ? false : computeShader(renderStagePass);
+        // If it's a custom shader, not much we can do as custom shaders are either already computed or ready
+        if (info._customShader) {
+            // Just wait for it to load
+            DIVIDE_ASSERT(info._shaderCompStage == ShaderBuildStage::COMPUTED);
+            return false;
+        }
+
+        // This is usually the first step in generating a shader: No shader available but we need to render in this stagePass
+        if (info._shaderCompStage == ShaderBuildStage::COUNT) {
+            // So request a new shader
+            info._shaderCompStage = ShaderBuildStage::REQUESTED;
+            computeShader(renderStagePass);
+        }
+
+        return false;
     }
 
+    // Shader should be in the ready state
     return true;
 }
 
 /// If the current material doesn't have a shader associated with it, then add the default ones.
-bool Material::computeShader(const RenderStagePass& renderStagePass) {
+void Material::computeShader(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
     bool hasPrePassData = false;
 
     const bool isDepthPass = renderStagePass.isDepthPass();
     const bool isShadowPass = renderStagePass._stage == RenderStage::SHADOW;
-
-    ShaderProgramInfo& info = shaderInfo(renderStagePass);
-    // If shader's invalid, try to request a recompute as it might fix it
-    if (info._shaderCompStage == ShaderBuildStage::COUNT) {
-        info._shaderCompStage = ShaderBuildStage::REQUESTED;
-    } else if (info._shaderCompStage != ShaderBuildStage::REQUESTED) {
-        // If the shader is valid and a recompute wasn't requested, just return true
-        return info._shaderCompStage == ShaderBuildStage::READY;
-    }
 
     // At this point, only computation requests are processed
     constexpr U32 slot0 = to_base(TextureUsage::UNIT0);
@@ -690,8 +707,6 @@ bool Material::computeShader(const RenderStagePass& renderStagePass) {
     shaderResDescriptor.flag(true);
 
     setShaderProgramInternal(shaderResDescriptor, renderStagePass, false);
-
-    return false;
 }
 
 bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDataContainer& textureData) {

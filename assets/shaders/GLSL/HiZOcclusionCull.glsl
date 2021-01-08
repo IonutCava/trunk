@@ -54,8 +54,8 @@ void main()
         return;
     }
 
-    // Skip occlusion cull if the flag is negative
-    if (dvd_cullNode(dvd_Transforms[transformIndex])) {
+    // Skip occlusion cull if the flag is set
+    if (!dvd_cullNode(dvd_Transforms[transformIndex])) {
         return;
     }
 

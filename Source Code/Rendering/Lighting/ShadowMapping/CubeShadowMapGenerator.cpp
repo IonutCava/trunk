@@ -42,7 +42,6 @@ void CubeShadowMapGenerator::render(const Camera& playerCamera, Light& light, U1
     params._target = RenderTargetID(RenderTargetUsage::SHADOW, to_base(ShadowType::CUBEMAP));
     params._sourceNode = light.getSGN();
     params._stagePass = RenderStagePass(RenderStage::SHADOW, RenderPassType::MAIN_PASS, to_U8(light.getLightType()), lightIndex);
-    params._shadowMappingEnabled = false;
 
     _context.generateCubeMap(params,
                              light.getShadowOffset(),

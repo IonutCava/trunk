@@ -79,6 +79,13 @@ void RenderPass::initBufferData() {
     bufferDescriptor._separateReadWrite = false;
     bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
 
+    {// Indirect draw command buffer
+        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
+        bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
+        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
+        _cmdBuffer = _context.newSB(bufferDescriptor);
+    }
+
     {// Node Transform buffer
         bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
         bufferDescriptor._elementSize = sizeof(NodeTransformData);
@@ -90,13 +97,6 @@ void RenderPass::initBufferData() {
         bufferDescriptor._elementSize = sizeof(NodeMaterialData);
         bufferDescriptor._name = Util::StringFormat("NODE_MATERIAL_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _materialData = _context.newSB(bufferDescriptor);
-    }
-
-    {// Indirect draw command buffer
-        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
-        bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
-        bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
-        _cmdBuffer = _context.newSB(bufferDescriptor);
     }
 }
 
@@ -112,10 +112,9 @@ RenderPass::BufferData RenderPass::getBufferData(const RenderStagePass& stagePas
     ret._commandBuffer = _cmdBuffer;
     ret._lastCommandCount = &_lastCmdCount;
     ret._lastNodeCount = &_lastNodeCount;
-    ret._materialElementOffset  = cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS;
-    ret._transformElementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
     ret._commandElementOffset   = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
-
+    ret._transformElementOffset = cmdBufferIdx * Config::MAX_VISIBLE_NODES;
+    ret._materialElementOffset  = cmdBufferIdx * Config::MAX_CONCURRENT_MATERIALS;
     return ret;
 }
 

@@ -60,6 +60,8 @@ struct NodeCullParams {
     F32 _cullMaxDistanceSq = 0.0f;
     I32 _maxLoD = -1;
     RenderStage _stage = RenderStage::COUNT;
+    bool _cullAllDynamicNodes = false;
+    bool _cullAllStaticNodes = false;
 };
 
 struct VisibleNode {

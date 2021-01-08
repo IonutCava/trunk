@@ -112,8 +112,10 @@ public:
     void resetSelection(PlayerIndex idx);
     void setSelected(PlayerIndex idx, const vectorEASTL<SceneGraphNode*>& SGNs, bool recursive);
     void onNodeDestroy(SceneGraphNode* node);
-    // cull the scenegraph against the current view frustum
-    VisibleNodeList<>& cullSceneGraph(RenderStage stage, const Camera& camera, const FrustumClipPlanes& clippingPlanes, I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount);
+    // cull the SceneGraph against the current view frustum. 
+    VisibleNodeList<>& cullSceneGraph(const NodeCullParams& cullParams);
+    // init default culling values like max cull distance and other scene related states
+    void initDefaultCullValues(RenderStage stage, NodeCullParams& cullParamsInOut);
     // get the full list of reflective nodes
     void getSortedReflectiveNodes(const Camera* camera, RenderStage stage, bool inView, VisibleNodeList<>& nodesOut) const;
     // get the full list of refractive nodes
@@ -379,8 +381,12 @@ class SceneManagerCameraAccessor {
 };
 
 class SceneManagerRenderPass {
-    static VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, const RenderStage stage, const Camera& camera, const FrustumClipPlanes& clippingPlanes, const I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDS, const size_t ignoredGUIDSCount) {
-        return mgr->cullSceneGraph(stage, camera, clippingPlanes, maxLoD, minExtents, ignoredGUIDS, ignoredGUIDSCount);
+    static VisibleNodeList<>& cullScene(Divide::SceneManager* mgr, const NodeCullParams& cullParams) {
+        return mgr->cullSceneGraph(cullParams);
+    }
+
+    static void initDefaultCullValues(Divide::SceneManager* mgr, const RenderStage stage, NodeCullParams& cullParamsInOut) {
+        mgr->initDefaultCullValues(stage, cullParamsInOut);
     }
 
     static void prepareLightData(Divide::SceneManager* mgr, const RenderStage stage, const vec3<F32>& camPosition, const mat4<F32>& viewMatrix) {

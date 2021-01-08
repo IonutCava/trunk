@@ -22,13 +22,14 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData {
     vec4   dvd_fogDetails;
     // x,y,z - direction, w - speed
     vec4   dvd_windDetails;
-    //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
+    //x - light bleed bias, y - min shadow variance, z - reserved, w - reserved
     vec4   dvd_shadowingSettings;
     WaterBodyData dvd_waterEntities[GLOBAL_WATER_BODIES_COUNT];
 };
 
 #define dvd_LightBleedBias dvd_shadowingSettings.x
 #define dvd_MinVariance dvd_shadowingSettings.y
+
 #define dvd_fogColour dvd_fogDetails.rgb
 #define dvd_fogDensity dvd_fogDetails.w
 

@@ -534,6 +534,9 @@ void SceneGraphNode::processEvents() {
                 case ECS::CustomEvent::Type::BoundsUpdated: {
                     Attorney::SceneGraphSGN::onNodeMoved(_sceneGraph, *this);
                 }break;
+                case ECS::CustomEvent::Type::NewShaderReady: {
+                    Attorney::SceneGraphSGN::onNodeShaderReady(_sceneGraph, *this);
+                } break;
                 default: break;
             }
 
@@ -649,6 +652,14 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
 
     // If the node is still loading, DO NOT RENDER IT. Bad things happen :D
     if (hasFlag(Flags::LOADING)) {
+        collisionTypeOut = FrustumCollision::FRUSTUM_OUT;
+        return true;
+    }
+    
+    const bool isStaticNode = usageContext() == NodeUsageContext::NODE_STATIC;
+    if (( isStaticNode && params._cullAllStaticNodes)  ||
+        (!isStaticNode && params._cullAllDynamicNodes))
+    {
         collisionTypeOut = FrustumCollision::FRUSTUM_OUT;
         return true;
     }

@@ -230,8 +230,6 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
 
         pt.put("shadowing.<xmlattr>.lightBleedBias", state()->lightBleedBias());
         pt.put("shadowing.<xmlattr>.minShadowVariance", state()->minShadowVariance());
-        pt.put("shadowing.<xmlattr>.shadowFadeDistance", state()->shadowFadeDistance());
-        pt.put("shadowing.<xmlattr>.shadowDistance", state()->shadowDistance());
 
         pt.put("dayNight.<xmlattr>.enabled", dayNightCycleEnabled());
         pt.put("dayNight.timeOfDay.<xmlattr>.hour", _dayNightData._time._hour);
@@ -307,8 +305,6 @@ bool Scene::loadXML(const Str256& name) {
 
     state()->lightBleedBias(pt.get("shadowing.<xmlattr>.lightBleedBias", 0.2f));
     state()->minShadowVariance(pt.get("shadowing.<xmlattr>.minShadowVariance", 0.001f));
-    state()->shadowFadeDistance(pt.get("shadowing.<xmlattr>.shadowFadeDistance", to_U16(900u)));
-    state()->shadowDistance(pt.get("shadowing.<xmlattr>.shadowDistance", to_U16(1000u)));
 
     dayNightCycleEnabled(pt.get("dayNight.<xmlattr>.enabled", false));
     _dayNightData._time._hour = pt.get<U8>("dayNight.timeOfDay.<xmlattr>.hour", 14u);

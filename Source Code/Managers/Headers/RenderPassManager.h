@@ -43,8 +43,8 @@
 #include "Rendering/RenderPass/Headers/RenderPassExecutor.h"
 
 namespace Divide {
-    struct FeedBackContainer;
-    struct NodeTransformData;
+struct FeedBackContainer;
+struct NodeTransformData;
 struct NodeMaterialData;
 struct PerPassData;
 
@@ -58,6 +58,12 @@ enum class RenderStage : U8;
 
 struct RenderPassParams
 {
+    enum class Flags : U8 {
+        DRAW_STATIC_NODES = 0,
+        DRAW_DYNAMIC_NODES,
+        COUNT
+    };
+
     FrustumClipPlanes _clippingPlanes{};
     vec3<F32> _minExtents = { 0.0f };
     // source node is used to determine if the current pass is triggered by a specific node:
@@ -79,8 +85,8 @@ struct RenderPassParams
 
     RenderTarget::DrawLayerParams _layerParams = {};
 
-    //Ughhhh
-    bool _shadowMappingEnabled = true;
+    U8 _drawMask = 1 << to_base(Flags::DRAW_DYNAMIC_NODES) |
+                   1 << to_base(Flags::DRAW_STATIC_NODES);
 };
 
 class RenderPassManager final : public KernelComponent {

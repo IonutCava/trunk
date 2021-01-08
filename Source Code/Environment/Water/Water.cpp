@@ -379,8 +379,6 @@ void WaterPlane::updateRefraction(RenderPassManager* passManager, RenderCbkParam
     RTClearDescriptor clearDescriptor = {};
     clearDescriptor.customClearColour(&clearColourDescriptor);
 
-    Configuration& config = renderParams._context.context().config();
-
     RenderPassParams params = {};
     params._sourceNode = renderParams._sgn;
     params._targetHIZ = {}; // We don't need to HiZ cull refractions
@@ -391,7 +389,9 @@ void WaterPlane::updateRefraction(RenderPassManager* passManager, RenderCbkParam
     params._target = renderParams._renderTarget;
     params._clippingPlanes.set(0, refractionPlane);
     params._passName = "Refraction";
-    params._shadowMappingEnabled = underwater && config.rendering.shadowMapping.enabled;
+    if (!underwater) {
+        ClearBit(params._drawMask, to_U8(1u << to_base(RenderPassParams::Flags::DRAW_DYNAMIC_NODES)));
+    }
 
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;
@@ -442,6 +442,7 @@ void WaterPlane::updateReflection(RenderPassManager* passManager, RenderCbkParam
     params._target = renderParams._renderTarget;
     params._clippingPlanes.set(0, reflectionPlane);
     params._passName = "Reflection";
+    ClearBit(params._drawMask, to_U8(1u << to_base(RenderPassParams::Flags::DRAW_DYNAMIC_NODES)));
 
     GFX::ClearRenderTargetCommand clearMainTarget = {};
     clearMainTarget._target = params._target;

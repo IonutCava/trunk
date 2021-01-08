@@ -182,11 +182,11 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     void addShaderBuffer(const ShaderBufferBinding& binding) { _externalBufferBindings.push_back(binding); }
     [[nodiscard]] const auto& getShaderBuffers() const noexcept { return _externalBufferBindings; }
 
-    [[nodiscard]] bool canDraw(const RenderStagePass& renderStagePass) const;
+    [[nodiscard]] bool canDraw(const RenderStagePass& renderStagePass);
   protected:
     void toggleBoundsDraw(bool showAABB, bool showBS, bool recursive);
 
-    void retrieveDrawCommands(const RenderStagePass& stagePass, DrawCommandContainer& cmdsInOut);
+    void retrieveDrawCommands(const RenderStagePass& stagePass, U32 cmdOffset, DrawCommandContainer& cmdsInOut);
     [[nodiscard]] bool hasDrawCommands(const RenderStagePass& stagePass);
                   void onRenderOptionChanged(RenderOptions option, bool state);
 
@@ -241,7 +241,6 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     FlagsPerStage _rebuildDrawCommandsFlags{};
 
     using OffsetsPerPassType = std::array<U32, to_base(RenderPassType::COUNT)>;
-    std::array<OffsetsPerPassType, to_base(RenderStage::COUNT)> _lastCmdOffsets{};
     std::array<NodeDataIdx, to_base(RenderStage::COUNT)> _lastDataIndex{};
 
     RenderCallback _reflectionCallback{};
@@ -337,12 +336,11 @@ class RenderingCompRenderPass {
             return renderable.hasDrawCommands(stagePass);
         }
 
-        static void retrieveDrawCommands(RenderingComponent& renderable, const RenderStagePass& stagePass, DrawCommandContainer& cmdsInOut) {
-            renderable.retrieveDrawCommands(stagePass, cmdsInOut);
+        static void retrieveDrawCommands(RenderingComponent& renderable, const RenderStagePass& stagePass, const U32 cmdOffset, DrawCommandContainer& cmdsInOut) {
+            renderable.retrieveDrawCommands(stagePass, cmdOffset, cmdsInOut);
         }
 
-        static void setCommandDataIndex(RenderingComponent& renderable, const U32 cmdOffset, const NodeDataIdx dataIndex, const RenderStage stage) {
-            renderable._lastCmdOffsets[to_base(stage)].fill(cmdOffset);
+        static void setCommandDataIndex(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStage stage) {
             renderable._lastDataIndex[to_base(stage)] = dataIndex;
         }
 

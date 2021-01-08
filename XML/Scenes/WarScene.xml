@@ -22,7 +22,7 @@
 <lod>
     <lodThresholds x="15" y="45" z="85" w="165"/>
 </lod>
-<shadowing lightBleedBias="0.0199999996" minShadowVariance="9.99999975e-06" shadowFadeDistance="900" shadowDistance="1000"/>
+<shadowing lightBleedBias="0.0199999996" minShadowVariance="9.99999975e-06"/>
 <dayNight enabled="false">
     <timeOfDay hour="14" minute="31" timeFactor="24"/>
 </dayNight>

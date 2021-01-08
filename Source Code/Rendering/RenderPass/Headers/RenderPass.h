@@ -56,7 +56,7 @@ enum class RenderStage : U8;
 class RenderPass final : NonCopyable {
    public:
        // Size factor for command and data buffers
-       constexpr static U8 DataBufferRingSize = 3;
+       constexpr static U8 DataBufferRingSize = 3u;
 
        struct BufferData {
            ShaderBuffer* _transformBuffer = nullptr;

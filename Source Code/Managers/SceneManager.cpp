@@ -550,10 +550,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
                             activeSceneState->windDirZ(),
                             activeSceneState->windSpeed());
 
-    _sceneData->shadowingSettings(activeSceneState->lightBleedBias(),
-                                  activeSceneState->minShadowVariance(),
-                                  to_F32(activeSceneState->shadowFadeDistance()),
-                                  to_F32(activeSceneState->shadowDistance()));
+    _sceneData->shadowingSettings(activeSceneState->lightBleedBias(), activeSceneState->minShadowVariance());
     activeScene.updateSceneState(deltaTimeUS);
 
     U8 index = 0;
@@ -693,30 +690,28 @@ void SceneManager::getSortedRefractiveNodes(const Camera* camera, const RenderSt
     }
 }
 
-VisibleNodeList<>& SceneManager::cullSceneGraph(const RenderStage stage, const Camera& camera, const FrustumClipPlanes& clippingPlanes, const I32 maxLoD, const vec3<F32>& minExtents, I64* ignoredGUIDs, size_t ignoredGUIDsCount) {
+void SceneManager::initDefaultCullValues(const RenderStage stage, NodeCullParams& cullParamsInOut) {
+    Scene& activeScene = getActiveScene();
+    SceneState* sceneState = activeScene.state();
+
+    cullParamsInOut._stage = stage;
+    cullParamsInOut._lodThresholds = sceneState->renderState().lodThresholds(stage);
+    if (stage != RenderStage::SHADOW) {
+        cullParamsInOut._cullMaxDistanceSq = SQUARED(sceneState->renderState().generalVisibility());
+    } else {
+        cullParamsInOut._cullMaxDistanceSq = std::numeric_limits<F32>::max();
+    }
+}
+
+VisibleNodeList<>& SceneManager::cullSceneGraph(const NodeCullParams& params) {
     OPTICK_EVENT();
 
-    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(stage)]);
+    Time::ScopedTimer timer(*_sceneGraphCullTimers[to_U32(params._stage)]);
 
     Scene& activeScene = getActiveScene();
     SceneState* sceneState = activeScene.state();
 
-    NodeCullParams cullParams = {};
-    cullParams._clippingPlanes = clippingPlanes;
-    cullParams._lodThresholds = sceneState->renderState().lodThresholds(stage);
-    cullParams._minExtents = minExtents;
-    cullParams._ignoredGUIDS = std::make_pair(ignoredGUIDs, ignoredGUIDsCount);
-    cullParams._currentCamera = &camera;
-    cullParams._cullMaxDistanceSq = std::numeric_limits<F32>::max();
-    cullParams._maxLoD = maxLoD;
-    cullParams._stage = stage;
-    if (stage != RenderStage::SHADOW) {
-        cullParams._cullMaxDistanceSq = SQUARED(sceneState->renderState().generalVisibility());
-    } else {
-        cullParams._cullMaxDistanceSq = std::min(cullParams._cullMaxDistanceSq, SQUARED(camera.getZPlanes().y));
-    }
-
-    return _renderPassCuller->frustumCull(cullParams, activeScene.sceneGraph(), sceneState, _parent.platformContext());
+     return _renderPassCuller->frustumCull(params, activeScene.sceneGraph(), sceneState, _parent.platformContext());
 }
 
 void SceneManager::prepareLightData(const RenderStage stage, const vec3<F32>& cameraPos, const mat4<F32>& viewMatrix) {

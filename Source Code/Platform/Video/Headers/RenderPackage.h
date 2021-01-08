@@ -48,6 +48,15 @@ namespace Attorney {
 class RenderPackage {
     friend class Attorney::RenderPackageRenderPassExecutor;
     friend class Attorney::RenderPackageRenderingComponent;
+
+    struct CommandData
+    {
+        static constexpr U32 INVALID_VALUE = std::numeric_limits<U32>::max();
+        size_t _lodOffset = INVALID_VALUE;
+        size_t _lodIdxCount = INVALID_VALUE;
+        U32 _commandOffset = INVALID_VALUE;
+        U32 _dataIdx = INVALID_VALUE;
+    };
 public:
     enum class MinQuality : U8 {
         FULL = 0,
@@ -64,11 +73,11 @@ public:
     add(const T& command) { commands()->add(command); }
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, T*>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, T*>::type
     get(const I32 index) const { return _commands->get<T>(index); }
 
     template<typename T>
-    typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, size_t>::type
+    [[nodiscard]] typename std::enable_if<std::is_base_of<GFX::CommandBase, T>::value, size_t>::type
     count() const { return _commands->count<T>(); }
 
     [[nodiscard]] bool empty() const noexcept { return _commands == nullptr || _commands->empty(); }
@@ -79,24 +88,25 @@ public:
     void disableOptions(BaseType<CmdRenderOptions> optionMask);
 
     void clear();
-    void updateDrawCommands();
     void setLoDIndexOffset(U8 lodIndex, size_t indexOffset, size_t indexCount) noexcept;
     void appendCommandBuffer(const GFX::CommandBuffer& commandBuffer);
-
-    PROPERTY_R(U32, drawCommandCount, 0u);
 
     PROPERTY_RW(bool, textureDataDirty, true);
     PROPERTY_RW(MinQuality, qualityRequirement, MinQuality::FULL);
 
 protected:
-    U32 updateAndRetrieveDrawCommands(NodeDataIdx dataIndex, U32 startOffset, U8 lodLevel, DrawCommandContainer& cmdsInOut);
-    GFX::CommandBuffer* commands();
+    [[nodiscard]] U32 updateAndRetrieveDrawCommands(NodeDataIdx dataIndex, U32 startOffset, U8 lodLevel, DrawCommandContainer& cmdsInOut);
+    [[nodiscard]] GFX::CommandBuffer* commands();
     void addDrawCommand(const GFX::DrawCommand& cmd);
+    void addPushConstantsCommand(const GFX::SendPushConstantsCommand& cmd);
+
+    [[nodiscard]] bool setCommandDataIfDifferent(U32 startOffset, U32 dataIdx, size_t lodOffset, size_t lodCount) noexcept;
 
 protected:
+    CommandData _prevCommandData{};
+
     GFX::CommandBuffer* _commands = nullptr;
     std::array<std::pair<size_t, size_t>, 4> _lodIndexOffsets{};
-    U32 _lastCommandOffset = 0u; //<Do not clear!
     BaseType<CmdRenderOptions> _drawCommandOptions = to_base(CmdRenderOptions::RENDER_GEOMETRY);
     bool _isInstanced = false;
 };
@@ -105,6 +115,12 @@ template <>
 inline void RenderPackage::add<GFX::DrawCommand>(const GFX::DrawCommand& command) {
     addDrawCommand(command);
 }
+
+template <>
+inline void RenderPackage::add<GFX::SendPushConstantsCommand>(const GFX::SendPushConstantsCommand& command) {
+    addPushConstantsCommand(command);
+}
+
 
 namespace Attorney {
     class RenderPackageRenderPassExecutor {

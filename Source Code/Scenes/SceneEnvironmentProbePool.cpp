@@ -221,12 +221,12 @@ void SceneEnvironmentProbePool::debugProbe(EnvironmentProbeComponent* probe) {
     }
 }
 
-void SceneEnvironmentProbePool::OnNodeMoved(SceneEnvironmentProbePool* probePool, const SceneGraphNode& node) {
-    const BoundingSphere& bsphere = node.get<BoundsComponent>()->getBoundingSphere();
+void SceneEnvironmentProbePool::OnNodeUpdated(SceneEnvironmentProbePool* probePool, const SceneGraphNode& node) {
+    const BoundingSphere& bSphere = node.get<BoundsComponent>()->getBoundingSphere();
     probePool->lockProbeList();
     const EnvironmentProbeList& probes = probePool->getLocked();
     for (const auto& probe : probes) {
-        if (probe->checkCollisionAndQueueUpdate(bsphere)) {
+        if (probe->checkCollisionAndQueueUpdate(bSphere)) {
             NOP();
         }
     }

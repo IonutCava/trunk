@@ -70,13 +70,17 @@ void SceneGraph::addToDeleteQueue(SceneGraphNode* node, const size_t childIdx) {
     }
 }
 
-void SceneGraph::onNodeMoved(const SceneGraphNode& node) {
-    getOctree().onNodeMoved(node);
+void SceneGraph::onNodeUpdated(const SceneGraphNode& node) {
 
     //ToDo: Maybe add particles too? -Ionut
     if (node.getNode<>().type() == SceneNodeType::TYPE_OBJECT3D) {
-        SceneEnvironmentProbePool::OnNodeMoved(Attorney::SceneGraph::getEnvProbes(parentScene()), node);
+        SceneEnvironmentProbePool::OnNodeUpdated(Attorney::SceneGraph::getEnvProbes(parentScene()), node);
     }
+}
+
+void SceneGraph::onNodeMoved(const SceneGraphNode& node) {
+    getOctree().onNodeMoved(node);
+    onNodeUpdated(node);
 }
 
 void SceneGraph::onNodeDestroy(SceneGraphNode* oldNode) {

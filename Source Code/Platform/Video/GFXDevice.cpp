@@ -1722,6 +1722,7 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
         shaderBuffer._elementRange = { bufferData._commandElementOffset, cmdCount };
 
         GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd = {};
+        bindDescriptorSetsCmd._set._textureData.add({ depthBuffer->data(), samplerHash, TextureUsage::UNIT0 });
         bindDescriptorSetsCmd._set._buffers.add(shaderBuffer);
 
         if (bufferData._cullCounterBuffer != nullptr) {
@@ -1731,8 +1732,6 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
             atomicCount._elementRange.set(0, 1);
             bindDescriptorSetsCmd._set._buffers.add(atomicCount); // Atomic counter should be cleared by this point
         }
-
-        bindDescriptorSetsCmd._set._textureData.add({ depthBuffer->data(), samplerHash, TextureUsage::UNIT0 });
         EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
         HIZPushConstantsCMDInOut._constants.set(_ID("dvd_countCulledItems"), GFX::PushConstantType::UINT, bufferData._cullCounterBuffer != nullptr ? 1u : 0u);

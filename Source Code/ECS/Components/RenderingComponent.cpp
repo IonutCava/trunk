@@ -253,7 +253,6 @@ void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, c
     }
 
     _parentSGN->getNode().buildDrawCommands(_parentSGN, stagePass, crtCamera, pkg);
-    pkg.updateDrawCommands();
 }
 
 void RenderingComponent::Update(const U64 deltaTimeUS) {
@@ -293,12 +292,20 @@ void RenderingComponent::onMaterialChanged() {
     _parentSGN->getNode().rebuildDrawCommands(true);
 }
 
-bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) const {
+bool RenderingComponent::canDraw(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
     OPTICK_TAG("Node", (_parentSGN->name().c_str()));
 
     // Can we render without a material? Maybe. IDK.
-    if (_materialInstance == nullptr || _materialInstance->canDraw(renderStagePass)) {
+    bool shaderJustFinishedLoading = false;
+    if (_materialInstance == nullptr || _materialInstance->canDraw(renderStagePass, shaderJustFinishedLoading)) {
+        if (shaderJustFinishedLoading) {
+            _parentSGN->SendEvent({
+                ECS::CustomEvent::Type::NewShaderReady,
+                this
+            });
+        }
+
         return renderOptionEnabled(RenderOptions::IS_VISIBLE);
     }
 
@@ -326,19 +333,15 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
-void RenderingComponent::retrieveDrawCommands(const RenderStagePass& stagePass, DrawCommandContainer& cmdsInOut) {
+void RenderingComponent::retrieveDrawCommands(const RenderStagePass& stagePass, const U32 cmdOffset, DrawCommandContainer& cmdsInOut) {
     const U8 stageIdx = to_U8(stagePass._stage);
-    const U8 passTypeIdx = to_U8(stagePass._passType);
+    const U8 lodLevel = _lodLevels[stageIdx];
     const U16 pkgIndex = RenderStagePass::indexForStage(stagePass);
     const U16 pkgCount = RenderStagePass::passCountForStagePass(stagePass);
+    const NodeDataIdx dataIdx = _lastDataIndex[stageIdx];
 
-    _lastCmdOffsets[stageIdx][passTypeIdx] += to_U32(cmdsInOut.size());
-    U32 startCmdOffset = _lastCmdOffsets[stageIdx][passTypeIdx];
-
-    const U8 lodLevel = _lodLevels[stageIdx];
-    const NodeDataIdx& dataIdx = _lastDataIndex[stageIdx];
-    PackagesPerIndex& packages = _renderPackages[stageIdx][passTypeIdx];
-
+    PackagesPerIndex& packages = _renderPackages[stageIdx][to_U8(stagePass._passType)];
+    U32 startCmdOffset = cmdOffset + to_U32(cmdsInOut.size());
     for (U16 i = 0; i < pkgCount; ++i) {
         RenderPackage& pkg = packages[i + pkgIndex];
         startCmdOffset += Attorney::RenderPackageRenderingComponent::updateAndRetrieveDrawCommands(pkg, dataIdx, startCmdOffset, lodLevel, cmdsInOut);

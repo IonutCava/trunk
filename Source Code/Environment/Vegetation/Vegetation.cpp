@@ -505,6 +505,8 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
     if (hasVegetation) {
         sgn->get<RenderingComponent>()->instantiateMaterial(s_vegetationMaterial);
         sgn->get<RenderingComponent>()->lockLoD(0u);
+        sgn->get<RenderingComponent>()->occlusionCull(false); //< We handle our own culling
+
         WAIT_FOR_CONDITION(s_cullShaderGrass->getState() == ResourceState::RES_LOADED &&
                            s_cullShaderTrees->getState() == ResourceState::RES_LOADED);
 
@@ -579,7 +581,6 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
 
         _treeParentNode->forEachChild([ID](SceneGraphNode* child, I32 /*childIdx*/) {
             RenderingComponent* rComp = child->get<RenderingComponent>();
-            // negative value to disable occlusion culling
             rComp->dataFlag(to_F32(ID));
             rComp->occlusionCull(false);
             return true;

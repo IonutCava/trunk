@@ -58,8 +58,8 @@ class SceneShaderData {
         vec4<F32> _fogDetails = { 0.0f};
         // x,y,z - direction, w - speed
         vec4<F32> _windDetails = {0.0f};
-        //x - light bleed bias, y - min shadow variance, z - fade distance, w - max distance
-        vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1000.0f, 1000.0f};
+        //x - light bleed bias, y - min shadow variance, z - reserved, w - reserved
+        vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1.0f, 1.0f};
 
         WaterBodyData _waterEntities[GLOBAL_WATER_BODIES_COUNT] = {};
 
@@ -93,8 +93,8 @@ class SceneShaderData {
         _sceneDataDirty = true;
     }
 
-    void shadowingSettings(const F32 lightBleedBias, const F32 minShadowVariance, const F32 shadowFadeDist, const F32 shadowMaxDist) noexcept {
-        _sceneBufferData._shadowingSettings.set(lightBleedBias, minShadowVariance, shadowFadeDist, shadowMaxDist);
+    void shadowingSettings(const F32 lightBleedBias, const F32 minShadowVariance) noexcept {
+        _sceneBufferData._shadowingSettings.xy = { lightBleedBias, minShadowVariance };
         _sceneDataDirty = true;
     }
 

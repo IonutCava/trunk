@@ -195,7 +195,7 @@ class Material final : public CachedResource {
     bool reflective() const;
     bool refractive() const;
 
-    bool canDraw(const RenderStagePass& renderStagePass);
+    bool canDraw(const RenderStagePass& renderStagePass, bool& shaderJustFinishedLoading);
 
     void saveToXML(const stringImpl& entryName, boost::property_tree::ptree& pt) const;
     void loadFromXML(const stringImpl& entryName, const boost::property_tree::ptree& pt);
@@ -205,9 +205,8 @@ class Material final : public CachedResource {
     const ModuleDefines& shaderDefines(ShaderType type) const;
 
    private:
-    /// Checks if the shader needed for the current stage is already constructed.
-    /// Returns false if the shader was already ready.
-    bool computeShader(const RenderStagePass& renderStagePass);
+    /// Constructs a shader for the specified renderStatePass
+    void computeShader(const RenderStagePass& renderStagePass);
 
     void addShaderDefineInternal(ShaderType type, const Str128& define, bool addPrefix);
 

@@ -143,10 +143,9 @@ SceneGraphNode* EnvironmentProbeComponent::findNodeToIgnore() const noexcept {
 bool EnvironmentProbeComponent::checkCollisionAndQueueUpdate(const BoundingSphere& sphere) {
     if (!dirty() && updateType() == UpdateType::ON_DIRTY && _aabb.collision(sphere)) {
         dirty(true);
-        return true;
     }
 
-    return false;
+    return dirty();
 }
 
 bool EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
@@ -176,7 +175,8 @@ bool EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
     params._target = SceneEnvironmentProbePool::ReflectionTarget()._targetID;
     params._sourceNode = findNodeToIgnore();
     params._stagePass = RenderStagePass(RenderStage::REFLECTION, RenderPassType::COUNT, to_U8(ReflectorType::CUBE), probeIndex);
-    params._shadowMappingEnabled = false;
+
+    ClearBit(params._drawMask, to_U8(1u << to_base(RenderPassParams::Flags::DRAW_DYNAMIC_NODES)));
 
     _context.gfx().generateCubeMap(params,
                                    rtLayerIndex(),
