@@ -72,6 +72,8 @@ namespace ImGui {
 
 namespace Divide {
     namespace {
+        std::array<U64, 1024> s_openProperties = {};
+
         // Separate activate is used for stuff that do continuous value changes, e.g. colour selectors, but you only want to register the old val once
         template<typename T, bool SeparateActivate, typename Pred>
         void RegisterUndo(Editor& editor, GFX::PushConstantType Type, const T& oldVal, const T& newVal, const char* name, Pred&& dataSetter) {
@@ -552,14 +554,34 @@ namespace Divide {
                     }
                     vectorEASTLFast<EditorComponent*>& editorComp = Attorney::SceneGraphNodeEditor::editorComponents(sgnNode);
                     for (EditorComponent* comp : editorComp) {
+                        const char* fieldName = comp->name().c_str();
+                        const U64 fieldHash = _ID(fieldName);
+
+                        bool fieldWasOpen = false;
+                        for (U64 p : s_openProperties) {
+                            if (p == fieldHash) {
+                                fieldWasOpen = true;
+                                break;
+                            }
+                        }
+
                         if (comp->fields().empty()) {
                             PushReadOnly();
-                            ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
+                            ImGui::CollapsingHeader(fieldName, ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet);
                             PopReadOnly();
                             continue;
                         }
 
-                        if (ImGui::CollapsingHeader(comp->name().c_str(), ImGuiTreeNodeFlags_OpenOnArrow)) {
+                        if (ImGui::CollapsingHeader(fieldName, ImGuiTreeNodeFlags_OpenOnArrow | (fieldWasOpen ? ImGuiTreeNodeFlags_DefaultOpen : 0u))) {
+                            if (!fieldWasOpen) {
+                                for (U64& p : s_openProperties) {
+                                    if (p == 0u) {
+                                        p = fieldHash;
+                                        break;
+                                    }
+                                }
+                            }
+
                             ImGui::NewLine();
                             ImGui::SameLine(xOffset);
                             if (ImGui::Button("INSPECT", ImVec2(smallButtonWidth, 20))) {
@@ -688,6 +710,13 @@ namespace Divide {
                                         };
                                         sceneChanged = processField(tempField) || sceneChanged;
                                     }
+                                }
+                            }
+                        } else {
+                            for (U64& p : s_openProperties) {
+                                if (p == fieldHash) {
+                                    p = 0u;
+                                    break;
                                 }
                             }
                         }

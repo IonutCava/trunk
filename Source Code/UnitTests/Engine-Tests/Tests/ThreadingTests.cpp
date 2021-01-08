@@ -82,7 +82,7 @@ TEST(TaskCallbackTest)
 
     Start(*job, TaskPriority::DONT_CARE, [&testValue]() {
         std::cout << "TaskCallbackTest: Callback called!" << std::endl;
-        testValue = true;
+        testValue.store(true, std::memory_order_release);
     });
 
     CHECK_FALSE(testValue);
@@ -94,7 +94,7 @@ TEST(TaskCallbackTest)
     std::cout << "TaskCallbackTest: flushing queue!" << std::endl;
     test.flushCallbackQueue();
 
-    CHECK_TRUE(testValue);
+    CHECK_TRUE(testValue.load(std::memory_order_acquire));
 }
 
 namespace {

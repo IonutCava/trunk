@@ -111,6 +111,10 @@ VisibleNodeList<>& RenderPassCuller::frustumCull(const NodeCullParams& params, c
 void RenderPassCuller::frustumCullNode(SceneGraphNode* currentNode, const NodeCullParams& params, U8 recursionLevel, VisibleNodeList<>& nodes) const {
     OPTICK_EVENT();
 
+    if (params._stage == RenderStage::DISPLAY) {
+        Attorney::SceneGraphNodeRenderPassCuller::visiblePostCulling(currentNode, false);
+    }
+
     // Early out for inactive nodes
     if (currentNode->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
 
@@ -140,6 +144,9 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode* currentNode, const NodeCu
                 node._node = currentNode;
                 node._distanceToCameraSq = distanceSqToCamera;
                 nodes.append(node);
+            }
+            if (params._stage == RenderStage::DISPLAY) {
+                Attorney::SceneGraphNodeRenderPassCuller::visiblePostCulling(currentNode, true);
             }
             // Parent node intersects the view, so check children
             if (collisionResult == FrustumCollision::FRUSTUM_INTERSECT) {
@@ -173,6 +180,9 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const N
     currentNode->lockChildrenForRead();
     const vectorEASTL<SceneGraphNode*>& children = currentNode->getChildrenLocked();
     for (SceneGraphNode* child : children) {
+        if (params._stage == RenderStage::DISPLAY) {
+            Attorney::SceneGraphNodeRenderPassCuller::visiblePostCulling(child, false);
+        }
         if (!child->hasFlag(SceneGraphNode::Flags::ACTIVE)) {
             continue;
         }
@@ -185,6 +195,9 @@ void RenderPassCuller::addAllChildren(const SceneGraphNode* currentNode, const N
                 node._node = child;
                 node._distanceToCameraSq = distanceSqToCamera;
                 nodes.append(node);
+                if (params._stage == RenderStage::DISPLAY) {
+                    Attorney::SceneGraphNodeRenderPassCuller::visiblePostCulling(child, true);
+                }
 
                 addAllChildren(child, params, nodes);
             }
@@ -203,9 +216,15 @@ void RenderPassCuller::frustumCull(const NodeCullParams& params, const vectorEAS
     F32 distanceSqToCamera = std::numeric_limits<F32>::max();
     FrustumCollision collisionResult = FrustumCollision::FRUSTUM_OUT;
     for (SceneGraphNode* node : nodes) {
+        if (params._stage == RenderStage::DISPLAY) {
+            Attorney::SceneGraphNodeRenderPassCuller::visiblePostCulling(node, false);
+        }
         // Internal node cull (check against camera frustum and all that ...)
         if (!Attorney::SceneGraphNodeRenderPassCuller::cullNode(node, params, collisionResult, distanceSqToCamera)) {
             nodesOut.append({ node, distanceSqToCamera });
+            if (params._stage == RenderStage::DISPLAY) {
+                Attorney::SceneGraphNodeRenderPassCuller::visiblePostCulling(node, false);
+            }
         }
     }
 }

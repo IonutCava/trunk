@@ -103,6 +103,47 @@ Vegetation::Vegetation(GFXDevice& context,
         });
 
     Start(*_buildTask, TaskPriority::DONT_CARE);
+
+    EditorComponentField instanceCountGrassField = {};
+    instanceCountGrassField._name = "Num Grass Instances";
+    instanceCountGrassField._data = &_instanceCountGrass;
+    instanceCountGrassField._type = EditorComponentFieldType::PUSH_TYPE;
+    instanceCountGrassField._readOnly = true;
+    instanceCountGrassField._basicType = GFX::PushConstantType::UINT;
+    _editorComponent.registerField(MOV(instanceCountGrassField));
+
+    EditorComponentField visDistanceGrassField = {};
+    visDistanceGrassField._name = "Grass Draw distance";
+    visDistanceGrassField._data = &_grassDistance;
+    visDistanceGrassField._type = EditorComponentFieldType::PUSH_TYPE;
+    visDistanceGrassField._readOnly = true;
+    visDistanceGrassField._basicType = GFX::PushConstantType::FLOAT;
+    _editorComponent.registerField(MOV(visDistanceGrassField));
+
+    EditorComponentField instanceCountTreesField = {};
+    instanceCountTreesField._name = "Num Tree Instances";
+    instanceCountTreesField._data = &_instanceCountTrees;
+    instanceCountTreesField._type = EditorComponentFieldType::PUSH_TYPE;
+    instanceCountTreesField._readOnly = true;
+    instanceCountTreesField._basicType = GFX::PushConstantType::UINT;
+    _editorComponent.registerField(MOV(instanceCountTreesField));
+
+    EditorComponentField visDistanceTreesField = {};
+    visDistanceTreesField._name = "Tree Draw Instance";
+    visDistanceTreesField._data = &_treeDistance;
+    visDistanceTreesField._type = EditorComponentFieldType::PUSH_TYPE;
+    visDistanceTreesField._readOnly = true;
+    visDistanceTreesField._basicType = GFX::PushConstantType::FLOAT;
+    _editorComponent.registerField(MOV(visDistanceTreesField));
+
+    EditorComponentField terrainIDField = {};
+    terrainIDField._name = "Terrain Chunk ID";
+    terrainIDField._dataGetter = [this](void *dataOut) {*static_cast<U32*>(dataOut) = _terrainChunk.ID(); };
+    terrainIDField._type = EditorComponentFieldType::PUSH_TYPE;
+    terrainIDField._readOnly = true;
+    terrainIDField._basicType = GFX::PushConstantType::UINT;
+    _editorComponent.registerField(MOV(terrainIDField));
+
 }
 
 Vegetation::~Vegetation()
@@ -587,7 +628,8 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
         });
 
         BoundingBox aabb = _treeParentNode->get<BoundsComponent>()->updateAndGetBoundingBox();
-        BoundingSphere bs; bs.fromBoundingBox(aabb);
+        BoundingSphere bs;
+        bs.fromBoundingBox(aabb);
 
         const vec3<F32>& extents = aabb.getExtent();
         _treeExtents.set(extents, bs.getRadius());

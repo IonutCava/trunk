@@ -24,6 +24,7 @@
 
 namespace Divide {
     namespace {
+        bool s_onlyVisibleNodes = false;
         constexpr U8 g_maxEntryCount = 32;
         eastl::deque<F32> g_framerateBuffer;
         vectorEASTL<F32> g_framerateBufferCont;
@@ -143,8 +144,13 @@ namespace Divide {
         }
 
         const auto printNode = [&]() {
+            if (s_onlyVisibleNodes && sgn->parent() != nullptr && !sgn->visiblePostCulling()) {
+                return false;
+            }
+
             const bool nodeOpen = ImGui::TreeNodeEx((void*)(intptr_t)sgn->getGUID(), node_flags, Util::StringFormat("[%d] %s", nodeIDX, sgn->name().c_str()).c_str());
             const bool isRoot = sgn->parent() == nullptr;
+
             if (!secondaryView && wasSelected) {
                 drawContextMenu(sgn);
             }
@@ -204,7 +210,7 @@ namespace Divide {
         ImGui::PushID("GraphSearchFilter");
         _filter.Draw("", 200);
         ImGui::PopID();
-
+        ImGui::Checkbox("Only visible", &s_onlyVisibleNodes);
         ImGui::BeginChild("SceneGraph", ImVec2(ImGui::GetWindowContentRegionWidth(), ImGui::GetWindowHeight() * .5f), true, 0);
         if (ImGui::TreeNodeEx(activeScene.resourceName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
