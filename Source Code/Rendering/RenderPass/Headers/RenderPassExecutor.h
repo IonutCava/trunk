@@ -107,6 +107,11 @@ private:
                   GFX::CommandBuffer& bufferInOut);
 
 
+    void postRender(const RenderStagePass& stagePass,
+                    const Camera& camera,
+                    RenderQueue& renderQueue,
+                    GFX::CommandBuffer& bufferInOut) const;
+
     void prepareRenderQueues(const RenderPassParams& params,
                              const VisibleNodeList<>& nodes,
                              bool transparencyPass,
@@ -117,7 +122,7 @@ private:
                                    RenderStage stage,
                                    D64 interpolationFactor,
                                    U32 materialElementOffset,
-                                   U16 nodeIndex);
+                                   U32 nodeIndex);
 
     void buildDrawCommands(const RenderPassParams& params, bool doPrePass, bool doOITPass, GFX::CommandBuffer& bufferInOut);
     U16 prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, bool hasInvalidNodes, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut);

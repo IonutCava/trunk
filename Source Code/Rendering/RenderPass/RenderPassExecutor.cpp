@@ -79,13 +79,13 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
                                                    const RenderStage stage,
                                                    const D64 interpolationFactor,
                                                    const U32 materialElementOffset,
-                                                   U16 nodeIndex) {
+                                                   U32 nodeIndex) {
     OPTICK_EVENT();
 
     // Rewrite all transforms
     // ToDo: Cache transforms for static nodes -Ionut
     NodeDataIdx ret = {};
-    ret._transformIDX = nodeIndex;
+    ret._transformIDX = to_U16(nodeIndex);
     NodeTransformData& transformOut = _nodeTransformData[ret._transformIDX];
 
     NodeMaterialData tempData{};
@@ -196,7 +196,7 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
     transformOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, 1u, 1u));
     transformOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
     transformOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
-    transformOut._normalMatrixW.element(3, 3) = to_F32(Util::PACK_HALF2x16(properties._nodeFlagValue, reserved));
+    transformOut._normalMatrixW.element(3, 3) = properties._nodeFlagValue;
 
     transformOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1.0f : 0.0f,
                                                   properties._occlusionCull ? 1.0f : 0.0f,
@@ -224,17 +224,14 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
     _materialData[_materialBufferIndex]._matUpdateRange.reset();
     _uniqueTextureAddresses.clear();
 
-    U16 nodeCount = 0u;
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
         erase_if(queue, [&stagePass](RenderingComponent* rComp) {
             return !Attorney::RenderingCompRenderPass::hasDrawCommands(*rComp, stagePass);
         });
-
-        nodeCount += to_U16(queue.size());
     }
 
-    const U32 cmdOffset = (cmdBuffer->queueWriteIndex() * cmdBuffer->getPrimitiveCount()) + bufferData._commandElementOffset;
-
+    U32& nodeCount = *bufferData._lastNodeCount;
+    nodeCount = 0u;
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
         for (RenderingComponent* rComp : queue) {
             const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, bufferData._materialElementOffset, nodeCount++);
@@ -242,6 +239,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
         }
     }
 
+    const U32 cmdOffset = (cmdBuffer->queueWriteIndex() * cmdBuffer->getPrimitiveCount()) + bufferData._commandElementOffset;
     const auto retrieveCommands = [&]() {
         for (RenderBin::SortedQueue& queue : _sortedQueues) {
             for (RenderingComponent* rComp : queue) {
@@ -266,7 +264,6 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
     stagePass._passType = prevType;
 
     *bufferData._lastCommandCount = to_U32(_drawCommands.size());
-    *bufferData._lastNodeCount = nodeCount;
 
     PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
     {
@@ -274,7 +271,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
 
         cmdBuffer->writeData(bufferData._commandElementOffset, *bufferData._lastCommandCount, _drawCommands.data());
 
-        bufferData._transformBuffer->writeData(bufferData._transformElementOffset, *bufferData._lastNodeCount, _nodeTransformData.data());
+        bufferData._transformBuffer->writeData(bufferData._transformElementOffset, nodeCount, _nodeTransformData.data());
 
         // Copy the same data to the entire ring buffer
         MaterialUpdateRange& crtRange = materialData._matUpdateRange;
@@ -440,7 +437,6 @@ void RenderPassExecutor::prePass(const VisibleNodeList<>& nodes, const RenderPas
     OPTICK_EVENT();
 
     assert(params._stagePass._passType == RenderPassType::PRE_PASS);
-    const SceneRenderState& activeSceneRenderState = Attorney::SceneManagerRenderPass::renderState(_parent.parent().sceneManager());
 
     EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ " - PrePass" });
 
@@ -462,7 +458,7 @@ void RenderPassExecutor::prePass(const VisibleNodeList<>& nodes, const RenderPas
 
     renderQueueToSubPasses(bufferInOut);
 
-    _renderQueue.postRender(activeSceneRenderState, params._stagePass, bufferInOut);
+    postRender(params._stagePass, *params._camera, _renderQueue, bufferInOut);
 
     if (layeredRendering) {
         EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
@@ -547,9 +543,7 @@ void RenderPassExecutor::mainPass(const VisibleNodeList<>& nodes, const RenderPa
     prepareRenderQueues(params, nodes, false);
 
     if (params._target._usage != RenderTargetUsage::COUNT) {
-        SceneManager* sceneManager = _parent.parent().sceneManager();
-        const SceneRenderState& activeSceneRenderState = Attorney::SceneManagerRenderPass::renderState(sceneManager);
-        LightPool& activeLightPool = Attorney::SceneManagerRenderPass::lightPool(sceneManager);
+        LightPool& activeLightPool = Attorney::SceneManagerRenderPass::lightPool(_parent.parent().sceneManager());
 
         Texture_ptr hizTex = nullptr;
         size_t hizSampler = 0;
@@ -607,12 +601,7 @@ void RenderPassExecutor::mainPass(const VisibleNodeList<>& nodes, const RenderPa
         // We try and render translucent items in the shadow pass and due some alpha-discard tricks
         renderQueueToSubPasses(bufferInOut);
 
-        _renderQueue.postRender(activeSceneRenderState, stagePass, bufferInOut);
-
-        if (_stage == RenderStage::DISPLAY) {
-            /// These should be OIT rendered as well since things like debug nav meshes have translucency
-            Attorney::SceneManagerRenderPass::debugDraw(sceneManager, stagePass, params._camera, bufferInOut);
-        }
+        postRender(params._stagePass, *params._camera, _renderQueue, bufferInOut);
 
         if (layeredRendering) {
             EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
@@ -676,6 +665,8 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
         EnqueueCommand(bufferInOut, setBlendStateCmd);
 
         renderQueueToSubPasses(bufferInOut/*, quality*/);
+
+        postRender(params._stagePass, *params._camera, _renderQueue, bufferInOut);
 
         // Reset blend states
         setBlendStateCmd._blendStates = {};
@@ -749,13 +740,13 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
 
         EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCommand });
 
-        if (layeredRendering) {
-            EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
-        }
-
         // Reset blend states
         setBlendStateCmd._blendStates = {};
         EnqueueCommand(bufferInOut, setBlendStateCmd);
+
+        if (layeredRendering) {
+            EnqueueCommand(bufferInOut, GFX::EndRenderSubPassCommand{});
+        }
 
         EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
     }
@@ -803,6 +794,8 @@ void RenderPassExecutor::transparencyPass(const VisibleNodeList<>& nodes, const 
 
             renderQueueToSubPasses(bufferInOut/*, quality*/);
 
+            postRender(params._stagePass, *params._camera, _renderQueue, bufferInOut);
+
             // Reset blend states
             setBlendStateCmd._blendStates = {};
             EnqueueCommand(bufferInOut, setBlendStateCmd);
@@ -815,6 +808,20 @@ void RenderPassExecutor::transparencyPass(const VisibleNodeList<>& nodes, const 
         }
 
         EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    }
+}
+
+void RenderPassExecutor::postRender(const RenderStagePass& stagePass,
+                                    const Camera& camera,
+                                    RenderQueue& renderQueue,
+                                    GFX::CommandBuffer& bufferInOut) const {
+    SceneManager* sceneManager = _parent.parent().sceneManager();
+    const SceneRenderState& activeSceneRenderState = Attorney::SceneManagerRenderPass::renderState(sceneManager);
+    renderQueue.postRender(activeSceneRenderState, stagePass, bufferInOut);
+
+    if (stagePass._stage == RenderStage::DISPLAY && stagePass._passType == RenderPassType::MAIN_PASS) {
+        /// These should be OIT rendered as well since things like debug nav meshes have translucency
+        Attorney::SceneManagerRenderPass::debugDraw(sceneManager, stagePass, &camera, bufferInOut);
     }
 }
 

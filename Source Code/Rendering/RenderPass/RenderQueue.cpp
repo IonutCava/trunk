@@ -184,7 +184,7 @@ void RenderQueue::postRender(const SceneRenderState& renderState, const RenderSt
     }
 }
 
-void RenderQueue::sort(RenderStagePass stagePass, const RenderBinType targetBinType, const RenderingOrder renderOrder) {
+void RenderQueue::sort(const RenderStagePass& stagePass, const RenderBinType targetBinType, const RenderingOrder renderOrder) {
 
     OPTICK_EVENT();
     // How many elements should a render bin contain before we decide that sorting should happen on a separate thread

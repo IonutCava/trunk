@@ -147,11 +147,11 @@ struct Paths {
 [[nodiscard]] bool deleteAllFiles(const ResourcePath& filePath, const char* extension = nullptr);
 
 template<typename T,
-         typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
+typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
 [[nodiscard]] bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
 template<typename T,
-    typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
-    [[nodiscard]] bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType);
+typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
+[[nodiscard]] bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType);
 
 [[nodiscard]] bool openFile(const char* filePath, const char* fileName);
 [[nodiscard]] bool openFile(const ResourcePath& filePath, const ResourcePath& fileName);

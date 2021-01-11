@@ -33,7 +33,6 @@
 #ifndef _WATER_PLANE_H_
 #define _WATER_PLANE_H_
 
-#include "Geometry/Shapes/Headers/Object3D.h"
 #include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"

@@ -44,7 +44,7 @@ namespace Divide {
             addVariable("heightfieldTex", descTree.get<stringImpl>("heightfieldTex", ""));
             dimensions(vec2<U16>(descTree.get<U16>("heightfieldResolution.<xmlattr>.x", 0), descTree.get<U16>("heightfieldResolution.<xmlattr>.y", 0)));
 
-            ringCount(std::max(descTree.get<U8>("tileSettings.<xmlattr>.ringCount", 4u) + 1u, 2u));
+            ringCount(to_U8(std::max(descTree.get<U8>("tileSettings.<xmlattr>.ringCount", 4u) + 1u, 2u)));
             startWidth(descTree.get<F32>("tileSettings.<xmlattr>.startWidth", 0.25f));
             _ringTileCount[0] = 0u;
 

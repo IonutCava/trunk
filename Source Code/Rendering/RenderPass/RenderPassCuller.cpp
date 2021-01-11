@@ -151,21 +151,31 @@ void RenderPassCuller::frustumCullNode(SceneGraphNode* currentNode, const NodeCu
             // Parent node intersects the view, so check children
             if (collisionResult == FrustumCollision::FRUSTUM_INTERSECT) {
 
-                currentNode->lockChildrenForRead();
-                const vectorEASTL<SceneGraphNode*>& children = currentNode->getChildrenLocked();
+                const U32 childCount = currentNode->getChildCount();
+                if (childCount > 0u) {
+                    if (childCount > g_nodesPerCullingPartition) {
+                        currentNode->lockChildrenForRead();
+                        const vectorEASTL<SceneGraphNode*>& children = currentNode->getChildrenLocked();
 
-                ParallelForDescriptor descriptor = {};
-                descriptor._iterCount = currentNode->getChildCount();
-                descriptor._partitionSize = g_nodesPerCullingPartition;
-                descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
-                descriptor._useCurrentThread = true;
-                descriptor._cbk = [&](const Task* /*parentTask*/, const U32 start, const U32 end) {
-                                        for (U32 i = start; i < end; ++i) {
-                                            frustumCullNode(children[i], params, recursionLevel + 1, nodes);
-                                        }
-                                    };
-                parallel_for(currentNode->context(), descriptor);
-                currentNode->unlockChildrenForRead();
+                        ParallelForDescriptor descriptor = {};
+                        descriptor._iterCount = childCount;
+                        descriptor._partitionSize = g_nodesPerCullingPartition;
+                        descriptor._priority = recursionLevel < 2 ? TaskPriority::DONT_CARE : TaskPriority::REALTIME;
+                        descriptor._useCurrentThread = true;
+                        descriptor._cbk = [&](const Task* /*parentTask*/, const U32 start, const U32 end) {
+                            for (U32 i = start; i < end; ++i) {
+                                frustumCullNode(children[i], params, recursionLevel + 1, nodes);
+                            }
+                        };
+                        parallel_for(currentNode->context(), descriptor);
+                        currentNode->unlockChildrenForRead();
+                    } else {
+                        currentNode->forEachChild([&](SceneGraphNode* child, I32 /*childIdx*/) {
+                            frustumCullNode(child, params, recursionLevel + 1, nodes);
+                            return true;
+                        });
+                    }
+                }
             } else {
                 // All nodes are in view entirely
                 addAllChildren(currentNode, params, nodes);

@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 template<typename T,
-         typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
+typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
 bool readFile(const char* filePath, const char* fileName, T& contentOut, const FileType fileType) {
     bool ret = false;
     if (!Util::IsEmptyOrNull(filePath) && !Util::IsEmptyOrNull(fileName) && pathExists(filePath)) {
@@ -56,7 +56,7 @@ bool readFile(const char* filePath, const char* fileName, T& contentOut, const F
 
                 static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
                 contentOut.assign(std::istreambuf_iterator<char>(streamIn),
-                                   std::istreambuf_iterator<char>());
+                                  std::istreambuf_iterator<char>());
                 ret = true;
             }
         }
@@ -68,7 +68,7 @@ bool readFile(const char* filePath, const char* fileName, T& contentOut, const F
 }
 
 template<typename T,
-    typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
+typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
 bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType) {
     return readFile(filePath.c_str(), fileName.c_str(), contentOut, fileType);
 }

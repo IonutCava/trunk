@@ -105,7 +105,7 @@ struct NodeMaterialData
 
 #define dvd_lodLevel(transformData)  uint(unpackUnorm4x8(uint(transformData._normalMatrixW[0][3])).y * 255)
 
-#define dvd_dataFlag(X) unpackHalf2x16(uint(dvd_Transforms[X]._normalMatrixW[3][3])).x
+#define dvd_dataFlag(X) dvd_Transforms[X]._normalMatrixW[3][3]
 
 #define dvd_frameTicked(transformData) (uint(unpackUnorm4x8(uint(transformData._prevWorldMatrix[0][3])).x  * 255) == 1)
 

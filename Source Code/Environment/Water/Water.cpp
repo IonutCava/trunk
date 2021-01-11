@@ -2,7 +2,6 @@
 
 #include "Headers/Water.h"
 
-#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Headers/Configuration.h"
 #include "Core/Resources/Headers/ResourceCache.h"
@@ -11,7 +10,6 @@
 #include "Managers/Headers/RenderPassManager.h"
 
 #include "Geometry/Material/Headers/Material.h"
-#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "ECS/Components/Headers/RigidBodyComponent.h"
