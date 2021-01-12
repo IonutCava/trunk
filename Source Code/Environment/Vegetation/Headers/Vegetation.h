@@ -86,7 +86,7 @@ struct VegetationDetails {
 struct VegetationData {
     vec4<F32> _positionAndScale;
     vec4<F32> _orientationQuat;
-    //x - width extent, y = height extent, z = array index, w - lod
+    //x - array index, y - chunk ID, z - render flag, w - height scale
     vec4<F32> _data = { 1.0f, 1.0f, 1.0f, 0.0f };
 };
 //RenderDoc: mat4 transform; vec4 posAndIndex; vec4 extentAndRender;

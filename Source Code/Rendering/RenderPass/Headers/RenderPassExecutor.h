@@ -124,7 +124,7 @@ private:
                                    U32 materialElementOffset,
                                    U32 nodeIndex);
 
-    void buildDrawCommands(const RenderPassParams& params, bool doPrePass, bool doOITPass, GFX::CommandBuffer& bufferInOut);
+    U16 buildDrawCommands(const RenderPassParams& params, bool doPrePass, bool doOITPass, GFX::CommandBuffer& bufferInOut);
     U16 prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, bool hasInvalidNodes, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut);
 
     void renderQueueToSubPasses(GFX::CommandBuffer& commandsInOut,

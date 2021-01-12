@@ -30,14 +30,16 @@ Quadtree::~Quadtree()
 
 void Quadtree::toggleBoundingBoxes() {
     _drawBBoxes = !_drawBBoxes;
-    if (_drawBBoxes) {
-        _bbPrimitive = _context.newIMP();
-        _bbPrimitive->name("QuadtreeBoundingBox");
-        _bbPrimitive->pipeline(*_bbPipeline);
-    } else {
-        _context.destroyIMP(_bbPrimitive);
+    {
+        UniqueLock<Mutex> w_lock(_bbPrimitiveLock);
+        if (_drawBBoxes) {
+            _bbPrimitive = _context.newIMP();
+            _bbPrimitive->name("QuadtreeBoundingBox");
+            _bbPrimitive->pipeline(*_bbPipeline);
+        } else {
+            _context.destroyIMP(_bbPrimitive);
+        }
     }
-
     _root->toggleBoundingBoxes();
 }
 
@@ -49,11 +51,14 @@ void Quadtree::drawBBox(RenderPackage& packageOut) const {
     assert(_root && _bbPrimitive);
     _root->drawBBox(packageOut);
  
-    _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),
-                          _root->getBoundingBox().getMax(),
-                          UColour4(0, 64, 255, 255));
+    {
+        UniqueLock<Mutex> w_lock(_bbPrimitiveLock);
+        _bbPrimitive->fromBox(_root->getBoundingBox().getMin(),
+                              _root->getBoundingBox().getMax(),
+                              UColour4(0, 64, 255, 255));
 
-    packageOut.appendCommandBuffer(_bbPrimitive->toCommandBuffer());
+        packageOut.appendCommandBuffer(_bbPrimitive->toCommandBuffer());
+    }
 }
 
 QuadtreeNode* Quadtree::findLeaf(const vec2<F32>& pos) const

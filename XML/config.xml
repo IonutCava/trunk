@@ -66,6 +66,7 @@
 	<!-- higher => better. 0,1 or 2 -->
 	<parallaxMode>0</parallaxMode>
 	<wireframe>false</wireframe>
+    <showNormals>false</showNormals>
 </terrain>
 <rendering>
 	<MSAASamples>2</MSAASamples>

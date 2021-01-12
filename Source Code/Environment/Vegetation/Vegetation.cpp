@@ -29,8 +29,19 @@
 namespace Divide {
 
 namespace {
+    constexpr bool g_useDoubleSidedMaterial = false;
+
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr I16 g_maxRadiusSteps = 512;
+    constexpr F32 g_ArBase = 1.0f; // Starting radius of circle A
+    constexpr F32 g_BrBase = 1.0f; // Starting radius of circle B
+    constexpr F32 g_PointRadiusBaseGrass = 0.935f;
+    constexpr F32 g_PointRadiusBaseTrees = 5.f;
+    // Distance between concentric rings
+    constexpr F32 g_distanceRingsBaseGrass = 2.35f;
+    constexpr F32 g_distanceRingsBaseTrees = 2.5f;
+    constexpr F32 g_slopeLimitGrass = 30.0f;
+    constexpr F32 g_slopeLimitTrees = 10.0f;
 
     SharedMutex g_treeMeshLock;
 }
@@ -212,7 +223,9 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
         const U16 indices[] = { 0, 1, 2, 
                                 0, 2, 3 };
 
-        const vec2<F32> texcoords[] = {
+        const U16 indicesBack[] = { 0, 2, 1,
+                                    0, 3, 2 };
+        const vec2<F32> texCoords[] = {
             vec2<F32>(0.0f, 0.0f),
             vec2<F32>(0.0f, 1.0f),
             vec2<F32>(1.0f, 1.0f),
@@ -224,8 +237,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
         s_buffer->setVertexCount(billboardsPlaneCount * 4);
         for (U8 i = 0; i < billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
-            s_buffer->modifyNormalValue(i, WORLD_Y_AXIS);
-            s_buffer->modifyTexCoordValue(i, texcoords[i % 4].s, texcoords[i % 4].t);
+            s_buffer->modifyTexCoordValue(i, texCoords[i % 4].s, texCoords[i % 4].t);
         }
 
         for (U8 i = 0; i < billboardsPlaneCount; ++i) {
@@ -235,69 +247,54 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
             for (U16 idx : indices) {
                 s_buffer->addIndex(idx + i * 4);
             }
-
+            if_constexpr(!g_useDoubleSidedMaterial) {
+                s_buffer->addRestartIndex();
+                for (U16 idx : indicesBack) {
+                    s_buffer->addIndex(idx + i * 4);
+                }
+            }
         }
-
+        
+        s_buffer->computeNormals();
         s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
     }
 
     //ref: http://mollyrocket.com/casey/stream_0016.html
-    constexpr F32 ArBase = 1.0f; // Starting radius of circle A
-    constexpr F32 BrBase = 1.0f; // Starting radius of circle B
-
-    F32 PointRadius = 0.935f;
-    F32 dR = 2.35f * PointRadius; // Distance between concentric rings
-
     s_grassPositions.reserve(to_size(chunkSize) * chunkSize);
     s_treePositions.reserve(to_size(chunkSize) * chunkSize);
 
     const F32 posOffset = to_F32(chunkSize * 2);
 
-    vec2<F32> intersections[2];
-    Util::Circle circleA, circleB;
+    vec2<F32> intersections[2]{};
+    Util::Circle circleA{}, circleB{};
     circleA.center[0] = circleB.center[0] = -posOffset;
     circleA.center[1] = -posOffset;
     circleB.center[1] = posOffset;
 
-    for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
-        const F32 Ar = ArBase + dR * to_F32(RadiusStepA);
-        for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
-            const F32 Br = BrBase + dR * to_F32(RadiusStepB);
-            circleA.radius = Ar + (RadiusStepB % 3 ? 0.0f : 0.3f * dR);
-            circleB.radius = Br + (RadiusStepA % 3 ? 0.0f : 0.3f * dR);
-            // Intersect circle Ac,UseAr and Bc,UseBr
-            if (IntersectCircles(circleA, circleB, intersections)) {
-                // Add the resulting points if they are within the pattern bounds
-                for (const vec2<F32>& record : intersections) {
-                    if (IS_IN_RANGE_EXCLUSIVE(record.x, -to_F32(chunkSize), to_F32(chunkSize)) &&
-                        IS_IN_RANGE_EXCLUSIVE(record.y, -to_F32(chunkSize), to_F32(chunkSize)))
-                    {
-                        s_grassPositions.insert(record);
-                    }
-                }
-            }
-        }
-    }
+    F32 dR[2] = { g_distanceRingsBaseGrass * g_PointRadiusBaseGrass,
+                  g_distanceRingsBaseTrees * g_PointRadiusBaseTrees };
 
-    PointRadius = 5.0f;
-    dR = 2.5f * PointRadius; // Distance between concentric rings
-
-    for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
-        const F32 Ar = ArBase + dR * to_F32(RadiusStepA);
-        for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
-            const F32 Br = BrBase + dR * to_F32(RadiusStepB);
-            circleA.radius = Ar + (RadiusStepB % 3 ? 0.0f : 0.3f * dR);
-            circleB.radius = Br + (RadiusStepA % 3 ? 0.0f : 0.3f * dR);
-            // Intersect circle Ac,UseAr and Bc,UseBr
-            if (IntersectCircles(circleA, circleB, intersections)) {
-                // Add the resulting points if they are within the pattern bounds
-                for (const vec2<F32>& record : intersections) {
-                    if (IS_IN_RANGE_EXCLUSIVE(record.x, -to_F32(chunkSize), to_F32(chunkSize)) &&
-                        IS_IN_RANGE_EXCLUSIVE(record.y, -to_F32(chunkSize), to_F32(chunkSize)))
-                    {
-                        s_treePositions.insert(record);
+    for (U8 i = 0; i < 2; ++i) {
+        for (I16 RadiusStepA = 0; RadiusStepA < g_maxRadiusSteps; ++RadiusStepA) {
+            const F32 Ar = g_ArBase + dR[i] * to_F32(RadiusStepA);
+            for (I16 RadiusStepB = 0; RadiusStepB < g_maxRadiusSteps; ++RadiusStepB) {
+                const F32 Br = g_BrBase + dR[i] * to_F32(RadiusStepB);
+                circleA.radius = Ar + (RadiusStepB % 3 ? 0.0f : 0.3f * dR[i]);
+                circleB.radius = Br + (RadiusStepA % 3 ? 0.0f : 0.3f * dR[i]);
+                // Intersect circle Ac,UseAr and Bc,UseBr
+                if (IntersectCircles(circleA, circleB, intersections)) {
+                    // Add the resulting points if they are within the pattern bounds
+                    for (const vec2<F32>& record : intersections) {
+                        if (IS_IN_RANGE_EXCLUSIVE(record.x, -to_F32(chunkSize), to_F32(chunkSize)) &&
+                            IS_IN_RANGE_EXCLUSIVE(record.y, -to_F32(chunkSize), to_F32(chunkSize)))                     {
+                            if (i == 0) {
+                                s_grassPositions.insert(record);
+                            } else {
+                                s_treePositions.insert(record);
+                            }
+                        }
                     }
                 }
             }
@@ -349,9 +346,9 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     Material_ptr vegMaterial = CreateResource<Material>(terrain->parentResourceCache(), vegetationMaterial);
     vegMaterial->shadingMode(ShadingMode::COOK_TORRANCE);
     vegMaterial->baseColour(DefaultColours::WHITE);
-    vegMaterial->roughness(0.7f);
+    vegMaterial->roughness(0.9f);
     vegMaterial->metallic(0.02f);
-    vegMaterial->doubleSided(true);
+    vegMaterial->doubleSided(g_useDoubleSidedMaterial);
     vegMaterial->isStatic(false);
 
     Material::ApplyDefaultStateBlocks(*vegMaterial);
@@ -372,7 +369,9 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     fragModule._sourceFile = "grass.glsl";
     fragModule._defines.emplace_back("SKIP_TEX0", true);
     fragModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
-    fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
+    if (g_useDoubleSidedMaterial) {
+        fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
+    }
     fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
     fragModule._defines.emplace_back("NODE_DYNAMIC", true);
     ProcessShadowMappingDefines(gfxDevice.context().config(), fragModule._defines);
@@ -739,7 +738,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
         if (!COMPARE(sceneGrassDistance, _grassDistance)) {
             _grassDistance = sceneGrassDistance;
             _cullPushConstants.set(_ID("dvd_grassVisibilityDistance"), GFX::PushConstantType::FLOAT, _grassDistance);
-            sgn->get<RenderingComponent>()->setRenderRange(-_grassDistance, _grassDistance);
+            sgn->get<RenderingComponent>()->setMaxRenderRange(_grassDistance);
         }
         if (!COMPARE(sceneTreeDistance, _treeDistance)) {
             _treeDistance = sceneTreeDistance;
@@ -747,8 +746,7 @@ void Vegetation::sceneUpdate(const U64 deltaTimeUS,
             if (_treeParentNode != nullptr) {
                 _treeParentNode->forEachChild([sceneTreeDistance](SceneGraphNode* child, I32 /*childIdx*/) {
                     RenderingComponent* rComp = child->get<RenderingComponent>();
-                    // negative value to disable occlusion culling
-                    rComp->setRenderRange(-sceneTreeDistance, sceneTreeDistance);
+                    rComp->setMaxRenderRange(sceneTreeDistance);
                     return true;
                 });
             }
@@ -836,7 +834,7 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
         const U16 mapHeight = map->dimensions(0u, 0u).height;
         const auto& positions = treeData ? s_treePositions : s_grassPositions;
         const auto& scales = treeData ? _treeScales : _grassScales;
-        const F32 slopeLimit = treeData ? 10.0f : 30.0f;
+        const F32 slopeLimit = treeData ? g_slopeLimitTrees : g_slopeLimitGrass;
 
         for (vec2<F32> pos : positions) {
             if (!ScaleAndCheckBounds(chunkPos, chunkSize, pos)) {
@@ -851,7 +849,13 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
             const Terrain::Vert vert = terrain.getVert(x_fac, y_fac, true);
 
             // terrain slope should be taken into account
-            if (Angle::to_DEGREES(std::acos(Dot(vert._normal, WORLD_Y_AXIS))) > slopeLimit) {
+            const F32 dot = Dot(vert._normal, WORLD_Y_AXIS);
+            //const F32 lengthSq1 = vert._normal.lengthSquared(); = 1.0f (normalised)
+            //const F32 lengthSq2 = WORLD_Y_AXIS.lengthSquared(); = 1.0f (normalised)
+            //const F32 length = Divide::Sqrt(lengthSq1 * lengthSq2); = 1.0f
+            constexpr F32 length = 1.0f;
+            const Angle::DEGREES<F32> angle = Angle::to_DEGREES(std::acos(dot / length));
+            if (angle > slopeLimit) {
                 continue;
             }
 

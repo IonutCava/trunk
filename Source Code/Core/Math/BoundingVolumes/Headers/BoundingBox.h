@@ -123,8 +123,8 @@ class BoundingBox {
     [[nodiscard]] vec3<F32> cornerPoint(U8 cornerIndex) const noexcept;
     [[nodiscard]] std::array<vec3<F32>, 8> getPoints() const noexcept;
 
-    [[nodiscard]] F32 nearestDistanceFromPointSquared(const vec3<F32>& pos) const noexcept;
-    [[nodiscard]] F32 nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept;
+    // Returns the closest point inside this AABB to the given point
+    [[nodiscard]] vec3<F32> nearestPoint(const vec3<F32>& pos) const noexcept;
 
     [[nodiscard]] inline vec3<F32> getPVertex(const vec3<F32>& normal) const noexcept;
     [[nodiscard]] inline vec3<F32> getNVertex(const vec3<F32>& normal) const noexcept;

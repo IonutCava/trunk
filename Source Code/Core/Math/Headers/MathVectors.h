@@ -326,7 +326,8 @@ template <typename T>
 /// multiply a vector by a value
 template <typename T>
 [[nodiscard]] vec2<T> operator*(T fl, const vec2<T> &v) noexcept;
-
+template <typename T>
+[[nodiscard]] vec2<T> Clamped(const vec2<T>& v, const vec2<T> &min, const vec2<T> &max) noexcept;
 
 /***********************************************************************
  * vec3 -  A 3-tuple used to represent things like a vector in 3D space,
@@ -580,6 +581,8 @@ template <typename T>
 void OrthoNormalize(vec3<T> &v1, vec3<T> &v2, vec3<T> &v3);
 template<typename T>
 [[nodiscard]] vec3<T> Perpendicular(const vec3<T> &v) noexcept;
+template <typename T>
+[[nodiscard]] vec3<T> Clamped(const vec3<T>& v, const vec3<T> &min, const vec3<T> &max) noexcept;
 
 /*************************************************************************************
  * vec4 -  A 4-tuple used to represent things like a vector in 4D space
@@ -839,6 +842,8 @@ template <typename T>
 void OrthoNormalize(vec4<T> &v1, vec4<T> &v2, vec4<T> &v3);
 template<typename T>
 [[nodiscard]] vec4<T> Perpendicular(const vec4<T>& vec, const vec4<T>& hint1, const vec4<T>& hint2) noexcept;
+template <typename T>
+[[nodiscard]] vec4<T> Clamped(const vec4<T>& v, const vec4<T> &min, const vec4<T> &max) noexcept;
 
 /// Quaternion multiplications require these to be floats
 extern vec2<F32> VECTOR2_ZERO;

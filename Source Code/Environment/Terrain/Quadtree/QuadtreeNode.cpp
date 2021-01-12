@@ -101,23 +101,27 @@ bool QuadtreeNode::computeBoundingBox(BoundingBox& parentBB) {
 void QuadtreeNode::toggleBoundingBoxes() {
     _drawBBoxes = !_drawBBoxes;
     if (!_drawBBoxes) {
+        UniqueLock<Mutex> w_lock(_bbPrimitiveLock);
         _context.destroyIMP(_bbPrimitive);
         _bbPrimitive = nullptr;
     }
 }
 
 void QuadtreeNode::drawBBox(RenderPackage& packageOut) {
-    if (_bbPrimitive == nullptr) {
-        _bbPrimitive = _context.newIMP();
-        _bbPrimitive->name("QuadtreeBoundingBox");
-        _bbPrimitive->pipeline(*_parent->bbPipeline());
+    {
+        UniqueLock<Mutex> w_lock(_bbPrimitiveLock);
+        if (_bbPrimitive == nullptr) {
+            _bbPrimitive = _context.newIMP();
+            _bbPrimitive->name("QuadtreeBoundingBox");
+            _bbPrimitive->pipeline(*_parent->bbPipeline());
+        }
+
+        _bbPrimitive->fromBox(_boundingBox.getMin(),
+                              _boundingBox.getMax(),
+                              UColour4(0, 128, 255, 255));
+
+        packageOut.appendCommandBuffer(_bbPrimitive->toCommandBuffer());
     }
-
-    _bbPrimitive->fromBox(_boundingBox.getMin(),
-                          _boundingBox.getMax(),
-                          UColour4(0, 128, 255, 255));
-
-    packageOut.appendCommandBuffer(_bbPrimitive->toCommandBuffer());
 
     if (!isALeaf()) {
         getChild(ChildPosition::CHILD_NW).drawBBox(packageOut);

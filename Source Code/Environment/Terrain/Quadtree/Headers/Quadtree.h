@@ -75,6 +75,7 @@ class Quadtree {
     eastl::unique_ptr<QuadtreeNode> _root = nullptr;
     GFXDevice&    _context;
     VertexBuffer* _parentVB = nullptr;
+    mutable Mutex _bbPrimitiveLock;
     IMPrimitive*  _bbPrimitive = nullptr;
     U32 _chunkCount = 0u;
     bool _drawBBoxes = false;

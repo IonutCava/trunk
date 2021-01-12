@@ -96,6 +96,7 @@ class QuadtreeNode {
     std::array<QuadtreeNode*, 4> _children = {}; ///< Node children
     eastl::unique_ptr<TerrainChunk> _terrainChunk = nullptr; ///< Terrain Chunk contained in node
     GFXDevice&    _context;
+    mutable Mutex _bbPrimitiveLock;
     IMPrimitive*  _bbPrimitive = nullptr;
     U8 _LoD = 0u;
     bool _drawBBoxes = false;

@@ -87,6 +87,7 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
     NodeDataIdx ret = {};
     ret._transformIDX = to_U16(nodeIndex);
     NodeTransformData& transformOut = _nodeTransformData[ret._transformIDX];
+    transformOut = {};
 
     NodeMaterialData tempData{};
     NodeMaterialTextures tempTextures{};
@@ -209,7 +210,7 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
     return ret;
 }
 
-void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut) {
+U16 RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut) {
     OPTICK_EVENT();
     constexpr bool doMainPass = true;
 
@@ -224,6 +225,13 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
     _materialData[_materialBufferIndex]._matUpdateRange.reset();
     _uniqueTextureAddresses.clear();
 
+    for (RenderBin::SortedQueue& sQueue : _sortedQueues) {
+        sQueue.resize(0);
+        sQueue.reserve(Config::MAX_VISIBLE_NODES);
+    }
+
+    const U16 queueTotalSize = _renderQueue.getSortedQueues({}, _sortedQueues);
+
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
         erase_if(queue, [&stagePass](RenderingComponent* rComp) {
             return !Attorney::RenderingCompRenderPass::hasDrawCommands(*rComp, stagePass);
@@ -235,7 +243,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
     for (RenderBin::SortedQueue& queue : _sortedQueues) {
         for (RenderingComponent* rComp : queue) {
             const NodeDataIdx newDataIdx = processVisibleNode(*rComp, stagePass._stage, interpFactor, bufferData._materialElementOffset, nodeCount++);
-            Attorney::RenderingCompRenderPass::setCommandDataIndex(*rComp, newDataIdx, stagePass._stage);
+            Attorney::RenderingCompRenderPass::setCommandDataIndex(*rComp, stagePass._stage, newDataIdx);
         }
     }
 
@@ -283,10 +291,6 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
         crtRange.reset();
     }
 
-    size_t materialRange = eastl::count_if(eastl::cbegin(materialData._nodeMaterialLookupInfo),
-                                           eastl::cend(materialData._nodeMaterialLookupInfo),
-                                           [](const auto& it) { return it.first != Material::INVALID_MAT_HASH; });
-
     ShaderBufferBinding cmdBufferBinding = {};
     cmdBufferBinding._binding = ShaderBufferLocation::CMD_BUFFER;
     cmdBufferBinding._buffer = cmdBuffer;
@@ -300,7 +304,7 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
     ShaderBufferBinding materialBufferBinding = {};
     materialBufferBinding._binding = ShaderBufferLocation::NODE_MATERIAL_DATA;
     materialBufferBinding._buffer = bufferData._materialBuffer;
-    materialBufferBinding._elementRange = { bufferData._materialElementOffset, materialRange };
+    materialBufferBinding._elementRange = { bufferData._materialElementOffset, Config::MAX_CONCURRENT_MATERIALS };
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._buffers.add(cmdBufferBinding);
@@ -314,6 +318,8 @@ void RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const
         residencyCmd._state = true;
         EnqueueCommand(bufferInOut, residencyCmd);
     }
+
+    return queueTotalSize;
 }
 
 U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPassParams& params, const bool hasInvalidNodes, const bool doPrePass, const bool doOITPass, GFX::CommandBuffer& bufferInOut) {
@@ -361,16 +367,7 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
     // Draw everything in the depth pass but only draw stuff from the translucent bin in the OIT Pass and everything else in the colour pass
     _renderQueue.populateRenderQueues(stagePass, std::make_pair(RenderBinType::RBT_COUNT, true), _renderQueuePackages);
 
-    for (RenderBin::SortedQueue& sQueue : _sortedQueues) {
-        sQueue.resize(0);
-        sQueue.reserve(Config::MAX_VISIBLE_NODES);
-    }
-
-    const U16 queueTotalSize = _renderQueue.getSortedQueues({}, _sortedQueues);
-
-    buildDrawCommands(params, doPrePass, doOITPass, bufferInOut);
-
-    return queueTotalSize;
+    return buildDrawCommands(params, doPrePass, doOITPass, bufferInOut);
 }
 
 void RenderPassExecutor::prepareRenderQueues(const RenderPassParams& params, const VisibleNodeList<>& nodes, bool transparencyPass, const RenderingOrder renderOrder) {

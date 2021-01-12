@@ -386,8 +386,9 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
                 ++cmd._bufferIndex;
             }
         }
-
-        _terrainQuadtree.drawBBox(pkgInOut);
+        if (renderStagePass._stage == RenderStage::DISPLAY) {
+            _terrainQuadtree.drawBBox(pkgInOut);
+        }
     }
 
     Object3D::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
@@ -472,7 +473,9 @@ Terrain::Vert Terrain::getSmoothVert(const F32 x_clampf, const F32 z_clampf) con
                      tangents[1] *         posD.width  * (1.0f - posD.height) +
                      tangents[2] * (1.0f - posD.width) *         posD.height +
                      tangents[3] *         posD.width  *         posD.height);
-    
+
+    ret._normal.normalize();
+    ret._tangent.normalize();
     return ret;
 
 }

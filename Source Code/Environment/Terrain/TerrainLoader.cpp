@@ -12,7 +12,6 @@
 
 #include "Geometry/Material/Headers/Material.h"
 #include "Managers/Headers/SceneManager.h"
-#include "Quadtree/Headers/QuadtreeNode.h"
 
 namespace Divide {
 
@@ -344,7 +343,11 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         shaderDescriptor._modules.push_back(tescModule);
         shaderDescriptor._modules.push_back(teseModule);
 
-        const Terrain::WireframeMode wMode = static_cast<Terrain::WireframeMode>(CLAMPED(to_I32(to_U8(terrainConfig.wireframe)), 0, 2));
+        const Terrain::WireframeMode wMode = terrainConfig.wireframe 
+                                                        ? Terrain::WireframeMode::EDGES 
+                                                        : terrainConfig.showNormals
+                                                                ? Terrain::WireframeMode::NORMALS
+                                                                : Terrain::WireframeMode::NONE;
         if (wMode != Terrain::WireframeMode::NONE) {
             shaderDescriptor._modules.push_back(geomModule);
         }
@@ -450,7 +453,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 tempModule._variant = "Shadow.VSM";
             }
             tempModule._defines.emplace_back("SHADOW_PASS", true);
-            tempModule._defines.emplace_back("MAX_TESS_LEVEL 32.f", true);
+            tempModule._defines.emplace_back("MAX_TESS_LEVEL 32", true);
         }
 
         ResourceDescriptor terrainShaderShadowVSM("Terrain_ShadowVSM-" + name + propName);
@@ -508,7 +511,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             }
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("LOW_QUALITY", true);
-            shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
+            shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16", true);
             shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
         }
 
@@ -525,7 +528,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             }
 
             shaderModule._defines.emplace_back("LOW_QUALITY", true);
-            shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16.f", true);
+            shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16", true);
         }
 
         ResourceDescriptor terrainShaderColourLQ("Terrain_Colour_LowQuality-" + name + propName);

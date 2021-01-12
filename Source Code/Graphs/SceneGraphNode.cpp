@@ -671,15 +671,20 @@ bool SceneGraphNode::cullNode(const NodeCullParams& params,
 
     // Get camera info
     const vec3<F32>& eye = params._currentCamera->getEye();
-    const BoundingBox& boundingBox = bComp->getBoundingBox();
-
-    distanceToClosestPointSQ = boundingBox.nearestDistanceFromPointSquared(eye);
+    const BoundingSphere& sphere = bComp->getBoundingSphere();
+    distanceToClosestPointSQ = sphere.getCenter().distanceSquared(eye) - SQUARED(sphere.getRadius());
     if (distanceToClosestPointSQ > params._cullMaxDistanceSq) {
         // Node is too far away
         return true;
     }
 
-    const BoundingSphere& sphere = bComp->getBoundingSphere();
+    const BoundingBox& boundingBox = bComp->getBoundingBox();
+    distanceToClosestPointSQ = boundingBox.nearestPoint(eye).distanceSquared(eye);
+    if (distanceToClosestPointSQ > params._cullMaxDistanceSq) {
+        // Check again using the AABB
+        return true;
+    }
+
     auto& planes = params._clippingPlanes.planes();
     auto& states = params._clippingPlanes.planeState();
     for (U8 i = 0; i < to_U8(ClipPlaneIndex::COUNT); ++i) {

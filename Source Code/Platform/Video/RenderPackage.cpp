@@ -30,17 +30,23 @@ void RenderPackage::setLoDIndexOffset(const U8 lodIndex, size_t indexOffset, siz
 void RenderPackage::addDrawCommand(const GFX::DrawCommand& cmd) {
     const bool wasInstanced = _isInstanced;
 
-    GFX::DrawCommand* newCmd = _commands->add(cmd);;
-    for (GenericDrawCommand& drawCmd : newCmd->_drawCommands) {
-        Divide::enableOptions(drawCmd, _drawCommandOptions);
-        _isInstanced = drawCmd._cmd.primCount > 1 || _isInstanced;
+    if (!wasInstanced) {
+        for (const GenericDrawCommand& drawCmd : cmd._drawCommands) {
+            _isInstanced = drawCmd._cmd.primCount > 1;
+            if (_isInstanced) {
+                if (!_commands->exists<GFX::SendPushConstantsCommand>(0)) {
+                    GFX::SendPushConstantsCommand constantsCmd = {};
+                    constantsCmd._constants.set(_ID("DATA_INDICES"), GFX::PushConstantType::UINT, 0u);
+                    add(constantsCmd);
+                }
+                break;
+            }
+        }
     }
 
-
-    if (!wasInstanced && _isInstanced && !_commands->exists<GFX::SendPushConstantsCommand>(0)) {
-        GFX::SendPushConstantsCommand constantsCmd = {};
-        constantsCmd._constants.set(_ID("DATA_INDICES"), GFX::PushConstantType::UINT, 0u);
-        add(constantsCmd);
+    GFX::DrawCommand* newCmd = _commands->add(cmd);
+    for (GenericDrawCommand& drawCmd : newCmd->_drawCommands) {
+        Divide::enableOptions(drawCmd, _drawCommandOptions);
     }
 
     _prevCommandData = {};

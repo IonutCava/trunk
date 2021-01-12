@@ -195,7 +195,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                     const RenderStagePass& renderStagePass,
                     GFX::CommandBuffer& bufferInOut);
 
-    void rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg);
+    void rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg) const;
 
     void prepareDrawPackage(const Camera& camera, const SceneRenderState& sceneRenderState, const RenderStagePass& renderStagePass, bool refreshData);
 
@@ -340,7 +340,7 @@ class RenderingCompRenderPass {
             renderable.retrieveDrawCommands(stagePass, cmdOffset, cmdsInOut);
         }
 
-        static void setCommandDataIndex(RenderingComponent& renderable, const NodeDataIdx dataIndex, const RenderStage stage) {
+        static void setCommandDataIndex(RenderingComponent& renderable, const RenderStage stage, const NodeDataIdx dataIndex) {
             renderable._lastDataIndex[to_base(stage)] = dataIndex;
         }
 

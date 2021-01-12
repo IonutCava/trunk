@@ -252,8 +252,8 @@ inline std::array<vec3<F32>, 8> BoundingBox::getPoints() const noexcept {
     };
 }
 
-inline F32 BoundingBox::nearestDistanceFromPoint(const vec3<F32>& pos) const noexcept {
-    return Sqrt(nearestDistanceFromPointSquared(pos));
+inline vec3<F32> BoundingBox::nearestPoint(const vec3<F32>& pos) const noexcept {
+    return Clamped(pos, getMin(), getMax());
 }
 
 inline vec3<F32> BoundingBox::getPVertex(const vec3<F32>& normal) const noexcept {

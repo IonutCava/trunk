@@ -469,6 +469,7 @@ vectorEASTL<SceneGraphNode*> SceneManager::getNodesInScreenRect(const Rect<I32>&
             for (U8 p = 0; p < 8; ++p) {
                 if (HasLoSToCamera(node._node, obb.cornerPoint(p))) {
                     LoSList.append(node);
+                    break;
                 }
             }
         }

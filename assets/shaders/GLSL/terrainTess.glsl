@@ -70,7 +70,7 @@ layout(location = 12) out vec3[5] tcs_debugColour[];
 #endif //TOGGLE_DEBUG
 
 #if !defined(MAX_TESS_LEVEL)
-#define MAX_TESS_LEVEL 64.0f
+#define MAX_TESS_LEVEL 64
 #endif //MAX_TESS_LEVEL
 
 #define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
@@ -94,7 +94,7 @@ float SphereToScreenSpaceTessellation(in vec3 w0, in vec3 w1, in float diameter)
     clip1.xy *= dvd_ViewPort.zw;               // to pixels
 
     const float d = distance(clip0, clip1);
-    return clamp(d / dvd_tessTriangleWidth, 1, MAX_TESS_LEVEL);
+    return clamp(d / dvd_tessTriangleWidth, 1.f, MAX_TESS_LEVEL * 1.f);
 }
 
 
@@ -112,7 +112,7 @@ float LargerNeighbourAdjacencyClamp(in float tess) {
     // Our larger neighbour's max tessellation is MAX_TESS_LEVEL; as we are half its size, our tessellation must max out
     // at MAX_TESS_LEVEL / 2, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,MAX_TESS_LEVEL].
     const float t = pow(2, ceil(log2(tess)));
-    return clamp(t, 2, MAX_TESS_LEVEL * 0.5f);
+    return clamp(t, 2.f, MAX_TESS_LEVEL * 0.5f);
 }
 
 void MakeVertexHeightsAgree(in vec2 uv, inout vec3 p0, inout vec3 p1)
@@ -187,6 +187,7 @@ void main(void)
 
         const float sideLen = max(abs(_in[1]._vertexW.x - _in[0]._vertexW.x), abs(_in[1]._vertexW.x - _in[2]._vertexW.x));     // assume square & uniform
 
+#if MAX_TESS_LEVEL > 1
         // Outer tessellation level
         gl_TessLevelOuter[0] = SphereToScreenSpaceTessellation(_in[0]._vertexW.xyz, _in[1]._vertexW.xyz, sideLen);
         gl_TessLevelOuter[1] = SphereToScreenSpaceTessellation(_in[3]._vertexW.xyz, _in[0]._vertexW.xyz, sideLen);
@@ -236,6 +237,11 @@ void main(void)
             }
         }
 #endif //LOW_QUALITY
+
+#else //MAX_TESS_LEVEL > 1
+        // Outer tessellation level
+        gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = gl_TessLevelOuter[2] = gl_TessLevelOuter[3] = 1.0f;
+#endif //MAX_TESS_LEVEL > 1
 
         // Inner tessellation level
         gl_TessLevelInner[0] = 0.5f * (gl_TessLevelOuter[0] + gl_TessLevelOuter[3]);
@@ -485,8 +491,9 @@ void main(void)
         const vec3 T = cross(N, B);
 
         vec3 P = gl_in[i].gl_Position.xyz;
+        PerVertex(i, edge_dist);
+
         { // normals
-            PerVertex(0, edge_dist);
             gs_wireColor = vec3(0.0f, 0.0f, 1.0f);
             gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
             EmitVertex();
@@ -499,12 +506,10 @@ void main(void)
             EndPrimitive();
         }
         { // binormals
-            PerVertex(2, edge_dist);
             gs_wireColor = vec3(0.0f, 1.0f, 0.0f);
             gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
             EmitVertex();
 
-            PerVertex(3, edge_dist);
             gs_wireColor = vec3(0.0f, 1.0f, 0.0f);
             gl_Position = dvd_ViewProjectionMatrix * vec4(P + B * sizeFactor, 1.0);
             EmitVertex();
@@ -512,12 +517,10 @@ void main(void)
             EndPrimitive();
         }
         { // tangents
-            PerVertex(4, edge_dist);
             gs_wireColor = vec3(1.0f, 0.0f, 0.0f);
             gl_Position = dvd_ViewProjectionMatrix * vec4(P, 1.0);
             EmitVertex();
 
-            PerVertex(5, edge_dist);
             gs_wireColor = vec3(1.0f, 0.0f, 0.0f);
             gl_Position = dvd_ViewProjectionMatrix * vec4(P + T * sizeFactor, 1.0);
             EmitVertex();

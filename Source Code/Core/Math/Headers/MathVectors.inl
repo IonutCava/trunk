@@ -114,6 +114,14 @@ void OrthoNormalize(vec2<T> &n, vec2<T> &u) {
 }
 
 template <typename T>
+[[nodiscard]] vec2<T> Clamped(const vec2<T>& v, const vec2<T> &min, const vec2<T> &max) noexcept {
+    return vec2<T>{
+        CLAMPED(v.x, min.x, max.x),
+        CLAMPED(v.y, min.y, max.y)
+    };
+}
+
+template <typename T>
 vec3<T> Normalize(vec3<T> &vector) {
     return vector.normalize();
 }
@@ -187,6 +195,15 @@ void OrthoNormalize(vec3<T> &v1, vec3<T> &v2, vec3<T> &v3) {
 }
 
 template <typename T>
+[[nodiscard]] vec3<T> Clamped(const vec3<T>& v, const vec3<T> &min, const vec3<T> &max) noexcept {
+    return vec3<T>{
+        CLAMPED(v.x, min.x, max.x),
+        CLAMPED(v.y, min.y, max.y),
+        CLAMPED(v.z, min.z, max.z)
+    };
+}
+
+template <typename T>
 vec4<T> Abs(const vec4<T> &vector) noexcept {
     return { std::abs(vector.x), std::abs(vector.y), std::abs(vector.z), std::abs(vector.z) };
 }
@@ -239,6 +256,16 @@ vec4<T> Perpendicular(const vec4<T>& vec, const vec4<T>& hint1, const vec4<T>& h
     }
 
     return perp;
+}
+
+template <typename T>
+[[nodiscard]] vec4<T> Clamped(const vec4<T>& v, const vec4<T> &min, const vec4<T> &max) noexcept {
+    return vec4<T>{
+        CLAMPED(v.x, min.x, max.x),
+        CLAMPED(v.y, min.y, max.y),
+        CLAMPED(v.z, min.z, max.z),
+        CLAMPED(v.w, min.w, max.w)
+    };
 }
 
 /// multiply a vector by a value

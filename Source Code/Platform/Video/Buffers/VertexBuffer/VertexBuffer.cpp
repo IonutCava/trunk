@@ -41,9 +41,7 @@ void VertexBuffer::computeNormals() {
     const size_t vertCount = getVertexCount();
     const size_t indexCount = getIndexCount();
 
-    using normalVector = vectorEASTL<vec3<F32>>;
-
-    normalVector normalBuffer(vertCount, 0.0f);
+    vectorEASTL<vec3<F32>> normalBuffer(vertCount, 0.0f);
     for (U32 i = 0; i < indexCount; i += 3) {
 
         const U32 idx0 = getIndex(i + 0);
@@ -55,12 +53,13 @@ void VertexBuffer::computeNormals() {
 
         const U32 idx1 = getIndex(i + 1);
         const U32 idx2 = getIndex(i + 2);
+
         // get the three vertices that make the faces
         const vec3<F32>& ia = getPosition(idx0);
         const vec3<F32>& ib = getPosition(idx1);
         const vec3<F32>& ic = getPosition(idx2);
 
-        const vec3<F32> no = Cross(ia - ib, ic - ib);
+        const vec3<F32> no = Cross(ib - ia, ic - ia);
 
         // Store the face's normal for each of the vertices that make up the face.
         normalBuffer[idx0] += no;

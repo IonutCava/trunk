@@ -54,20 +54,48 @@ WarScene::~WarScene()
 
 void WarScene::processGUI(const U64 deltaTimeUS) {
     constexpr D64 FpsDisplay = Time::SecondsToMilliseconds(0.3);
+    static SceneGraphNode* terrain = nullptr;
+    if (terrain == nullptr) {
+        vectorEASTL<SceneGraphNode*> terrains = Object3D::filterByType(_sceneGraph->getNodesByType(SceneNodeType::TYPE_OBJECT3D), ObjectType::TERRAIN);
+        if (!terrains.empty()) {
+            terrain = terrains.front();
+        }
+    }
 
     if (_guiTimersMS[0] >= FpsDisplay) {
         const Camera& cam = *_scenePlayers.front()->camera();
-        const vec3<F32>& eyePos = cam.getEye();
+        vec3<F32> eyePos = cam.getEye();
         const vec3<F32>& euler = cam.getEuler();
 
         _GUI->modifyText("RenderBinCount",
-            Util::StringFormat("Number of items in Render Bin: %d.",
-                               _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
+                         Util::StringFormat("Number of items in Render Bin: %d.",
+                         _context.kernel().renderPassManager()->getLastTotalBinSize(RenderStage::DISPLAY)), false);
 
         _GUI->modifyText("camPosition",
                          Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ] [Pitch: %5.2f | Yaw: %5.2f]",
-                                            eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw), false);
-
+                                            eyePos.x, eyePos.y, eyePos.z, euler.pitch, euler.yaw), false); 
+        
+        if (terrain != nullptr) {
+            const Terrain& ter = terrain->getNode<Terrain>();
+            CLAMP<F32>(eyePos.x,
+                       ter.getDimensions().width * 0.5f * -1.0f,
+                       ter.getDimensions().width * 0.5f);
+            CLAMP<F32>(eyePos.z,
+                       ter.getDimensions().height * 0.5f * -1.0f,
+                       ter.getDimensions().height * 0.5f);
+            mat4<F32> mat = MAT4_IDENTITY;
+            terrain->get<TransformComponent>()->getWorldMatrix(mat);
+            Terrain::Vert terVert = ter.getVertFromGlobal(eyePos.x, eyePos.z, true);
+            const vec3<F32> terPos = mat * terVert._position;
+            const vec3<F32>& terNorm = terVert._normal;
+            const vec3<F32>& terTan = terVert._tangent;
+            _GUI->modifyText("terrainInfoDisplay",
+                             Util::StringFormat("Position [ X: %5.2f | Y: %5.2f | Z: %5.2f ]\nNormal [ X: %5.2f | Y: %5.2f | Z: %5.2f ]\nTangent [ X: %5.2f | Y: %5.2f | Z: %5.2f ]",
+                                 terPos.x, terPos.y, terPos.z, 
+                                 terNorm.x, terNorm.y, terNorm.z,
+                                 terTan.x, terTan.y, terTan.z),
+                            true);
+        }
         _guiTimersMS[0] = 0.0;
     }
 
@@ -706,26 +734,33 @@ void WarScene::postLoadMainThread(const Rect<U16>& targetRenderViewport) {
     btn->setEventCallback(GUIButton::Event::MouseClick,
         [this](I64 /*btnID*/) { toggleTerrainMode(); });
 
-    _GUI->addText("RenderBinCount",
+    _GUI->addText("RenderBinCount", 
                   pixelPosition(60, 83),
-        Font::DIVIDE_DEFAULT,
+                  Font::DIVIDE_DEFAULT,
                   UColour4(164, 50, 50, 255),
-        Util::StringFormat("Number of items in Render Bin: %d", 0));
+                  Util::StringFormat("Number of items in Render Bin: %d", 0));
+
     _GUI->addText("camPosition", pixelPosition(60, 103),
-        Font::DIVIDE_DEFAULT,
+                  Font::DIVIDE_DEFAULT,
                   UColour4(50, 192, 50, 255),
-        Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
-            0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
+                  Util::StringFormat("Position [ X: %5.0f | Y: %5.0f | Z: %5.0f ] [Pitch: %5.2f | Yaw: %5.2f]",
+                  0.0f, 0.0f, 0.0f, 0.0f, 0.0f));
 
 
     _GUI->addText("scoreDisplay",
                   pixelPosition(60, 123),  // Position
-        Font::DIVIDE_DEFAULT,  // Font
+                  Font::DIVIDE_DEFAULT,  // Font
                   UColour4(50, 192, 50, 255),// Colour
-        Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
+                  Util::StringFormat("Score: A -  %d B - %d", 0, 0));  // Text and arguments
+
+    _GUI->addText("terrainInfoDisplay",
+                  pixelPosition(60, 163),  // Position
+                  Font::DIVIDE_DEFAULT,  // Font
+                  UColour4(128, 0, 0, 255),// Colour
+                  "Terrain Data");  // Text and arguments
 
     _GUI->addText("entityState",
-                  pixelPosition(60, 163),
+                  pixelPosition(60, 223),
                   Font::DIVIDE_DEFAULT,
                   UColour4(0, 0, 0, 255),
                   "",

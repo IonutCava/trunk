@@ -1,6 +1,6 @@
 -- Compute
 
-#define dvd_dataFlag(X) 0
+#define dvd_dataFlag 0
 #define INVS_SQRT_3 0.57735026919f
 #if defined(CULL_TREES)
 uniform float dvd_treeVisibilityDistance;

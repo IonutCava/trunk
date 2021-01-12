@@ -43,7 +43,7 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     _lodLevels.fill(0u);
     _lodLockLevels.fill({ false, to_U8(0u) });
 
-    _renderRange.min = -g_renderRangeLimit;
+    _renderRange.min =  0.f;
     _renderRange.max =  g_renderRangeLimit;
 
     for (ReflectRefractData& data : _reflectRefractData) {
@@ -225,14 +225,14 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
 }
 
 void RenderingComponent::setMinRenderRange(const F32 minRange) noexcept {
-    _renderRange.min = std::max(minRange, -1.0f * g_renderRangeLimit);
+    _renderRange.min = std::max(minRange, 0.f);
 }
 
 void RenderingComponent::setMaxRenderRange(const F32 maxRange) noexcept {
     _renderRange.max = std::min(maxRange,  1.0f * g_renderRangeLimit);
 }
 
-void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg) {
+void RenderingComponent::rebuildDrawCommands(const RenderStagePass& stagePass, const Camera& crtCamera, RenderPackage& pkg) const {
     OPTICK_EVENT();
     pkg.clear();
 
