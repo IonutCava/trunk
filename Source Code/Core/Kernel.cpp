@@ -308,7 +308,6 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
 
     {
         Time::ScopedTimer timer2(_physicsProcessTimer);
-        // Process physics
         _platformContext.pfx().process(realDeltaTimeUS);
     }
     {
@@ -348,7 +347,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
 
             _timingData.endUpdateLoop(deltaTimeUS, true);
             ++loopCount;
-        }  // while
+        }
     }
 
     const U32 frameCount = _platformContext.gfx().frameCount();
@@ -391,7 +390,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
     return presentToScreen(evt);
 }
 
-void computeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& targetViewports, const U8 count) {
+void ComputeViewports(const Rect<I32>& mainViewport, vectorEASTL<Rect<I32>>& targetViewports, const U8 count) {
     
     assert(count > 0);
     const I32 xOffset = mainViewport.x;
@@ -524,13 +523,13 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
     const Rect<I32> mainViewport = _platformContext.mainWindow().renderingViewport();
     
     if (_prevViewport != mainViewport || _prevPlayerCount != playerCount) {
-        computeViewports(mainViewport, _targetViewports, playerCount);
+        ComputeViewports(mainViewport, _targetViewports, playerCount);
         _prevViewport.set(mainViewport);
         _prevPlayerCount = playerCount;
     }
 
     if (editorRunning) {
-        computeViewports(_platformContext.editor().targetViewport(), _editorViewports, playerCount);
+        ComputeViewports(_platformContext.editor().targetViewport(), _editorViewports, playerCount);
     }
 
     RenderPassManager::RenderParams renderParams = {};
@@ -570,7 +569,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 
     for (U32 i = playerCount; i < to_U32(_renderTimer.size()); ++i) {
         Time::ProfileTimer::removeTimer(*_renderTimer[i]);
-        _renderTimer.erase(std::begin(_renderTimer) + i);
+        _renderTimer.erase(begin(_renderTimer) + i);
     }
 
     return true;
@@ -627,8 +626,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext.pfx().setAPI(PXDevice::PhysicsAPI::PhysX);
     _platformContext.sfx().setAPI(SFXDevice::AudioAPI::SDL);
 
-    ASIO::SET_LOG_FUNCTION([](const std::string_view msg, const bool is_error) {
-        is_error ? Console::errorfn(stringImpl(msg).c_str()) : Console::printfn(stringImpl(msg).c_str());
+    ASIO::SET_LOG_FUNCTION([](const std::string_view msg, const bool isError) {
+        if (isError) {
+            Console::errorfn(stringImpl(msg).c_str());
+        } else {
+            Console::printfn(stringImpl(msg).c_str());
+        }
     });
 
     _platformContext.server().init(static_cast<U16>(443), "127.0.0.1", true);
@@ -699,6 +702,15 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return initError;
     }
     winManager.postInit();
+
+    _inputConsumers.fill(nullptr);
+
+    if_constexpr(Config::Build::ENABLE_EDITOR) {
+        _inputConsumers[to_base(InputConsumerType::Editor)] = &_platformContext.editor();
+    }
+
+    _inputConsumers[to_base(InputConsumerType::GUI)] = &_platformContext.gui();
+    _inputConsumers[to_base(InputConsumerType::Scene)] = _sceneManager;
 
     // Add our needed app-wide render passes. RenderPassManager is responsible for deleting these!
     _renderPassManager->addRenderPass("shadowPass",     0, RenderStage::SHADOW);
@@ -827,37 +839,7 @@ bool Kernel::onSizeChange(const SizeChangeParams& params) {
     return ret;
 }
 
-///--------------------------Input Management-------------------------------------///
-bool Kernel::onKeyDown(const Input::KeyEvent& key) {
-    if_constexpr (Config::Build::ENABLE_EDITOR) {
-
-        Editor& editor = _platformContext.editor();
-        if (!_sceneManager->wantsKeyboard() && editor.onKeyDown(key)) {
-            return true;
-        }
-    }
-
-    if (!_platformContext.gui().onKeyDown(key)) {
-        return _sceneManager->onKeyDown(key);
-    }
-    return true;  ////< InputInterface needs to know when this is completed
-}
-
-bool Kernel::onKeyUp(const Input::KeyEvent& key) {
-    if_constexpr (Config::Build::ENABLE_EDITOR) {
-        Editor& editor = _platformContext.editor();
-        if (!_sceneManager->wantsKeyboard() && editor.onKeyUp(key)) {
-            return true;
-        }
-    }
-
-    if (!_platformContext.gui().onKeyUp(key)) {
-        return _sceneManager->onKeyUp(key);
-    }
-    // InputInterface needs to know when this is completed
-    return false;
-}
-
+#pragma region Input Management
 vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept {
     remappedOut = false;
     if_constexpr(Config::Build::ENABLE_EDITOR) {
@@ -876,40 +858,36 @@ vec2<I32> Kernel::remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappe
 }
 
 bool Kernel::mouseMoved(const Input::MouseMoveEvent& arg) {
-    if_constexpr(Config::Build::ENABLE_EDITOR) {
-        Editor& editor = _platformContext.editor();
-        if (!_sceneManager->wantsMouse() && editor.mouseMoved(arg)) {
-            _sceneManager->mouseMovedExternally(arg);
-            return true;
-        }
+    if (_inputConsumers[to_base(InputConsumerType::Editor)] &&
+        !_sceneManager->wantsMouse() &&
+        _inputConsumers[to_base(InputConsumerType::Editor)]->mouseMoved(arg)) {
+        return true;
     }
 
-    Input::MouseMoveEvent remapArg = arg;
     //Remap coords in case we are using the Editor's scene view
+    Input::MouseMoveEvent remapArg = arg;
     if_constexpr(Config::Build::ENABLE_EDITOR) {
         bool remapped = false;
         const vec2<I32> newPos = remapMouseCoords(arg.absolutePos(), remapped);
         if (remapped) {
             Input::Attorney::MouseEventKernel::absolutePos(remapArg, newPos);
         }
+    } 
+
+    for (U8 i = 1; i < to_base(InputConsumerType::COUNT); ++i) {
+        if (_inputConsumers[i] && _inputConsumers[i]->mouseMoved(remapArg)) {
+            return true;
+        }
     }
 
-    if (!_platformContext.gui().mouseMoved(remapArg)) {
-        return _sceneManager->mouseMoved(remapArg);
-    }
-
-    _sceneManager->mouseMovedExternally(arg);
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
-    
-    if_constexpr (Config::Build::ENABLE_EDITOR) {
-        Editor& editor = _platformContext.editor();
-        if (!_sceneManager->wantsMouse() && editor.mouseButtonPressed(arg)) {
-            return true;
-        }
+    if (_inputConsumers[to_base(InputConsumerType::Editor)] &&
+        !_sceneManager->wantsMouse() &&
+        _inputConsumers[to_base(InputConsumerType::Editor)]->mouseButtonPressed(arg))     {
+        return true;
     }
 
     Input::MouseButtonEvent remapArg = arg;
@@ -921,21 +899,21 @@ bool Kernel::mouseButtonPressed(const Input::MouseButtonEvent& arg) {
         }
     }
 
-    if (!_platformContext.gui().mouseButtonPressed(remapArg)) {
-        return _sceneManager->mouseButtonPressed(remapArg);
+    for (U8 i = 1; i < to_base(InputConsumerType::COUNT); ++i) {
+        if (_inputConsumers[i] && _inputConsumers[i]->mouseButtonPressed(remapArg)) {
+            return true;
+        }
     }
-    
-    // InputInterface needs to know when this is completed
+
     return false;
 }
 
 bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
-    
-    if_constexpr (Config::Build::ENABLE_EDITOR) {
-        Editor& editor = _platformContext.editor();
-        if (!_sceneManager->wantsMouse() && editor.mouseButtonReleased(arg)) {
-            return true;
-        }
+    if (_inputConsumers[to_base(InputConsumerType::Editor)] &&
+        !_sceneManager->wantsMouse() &&
+        _inputConsumers[to_base(InputConsumerType::Editor)]->mouseButtonReleased(arg))
+    {
+        return true;
     }
 
     Input::MouseButtonEvent remapArg = arg;
@@ -947,90 +925,114 @@ bool Kernel::mouseButtonReleased(const Input::MouseButtonEvent& arg) {
         }
     }
 
-    if (!_platformContext.gui().mouseButtonReleased(remapArg)) {
-        return _sceneManager->mouseButtonReleased(remapArg);
+    for (U8 i = 1; i < to_base(InputConsumerType::COUNT); ++i) {
+        if (_inputConsumers[i] && _inputConsumers[i]->mouseButtonReleased(remapArg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
+    return false;
+}
+
+bool Kernel::onKeyDown(const Input::KeyEvent& key) {
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->onKeyDown(key)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool Kernel::onKeyUp(const Input::KeyEvent& key) {
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->onKeyUp(key)) {
+            return true;
+        }
+    }
+
     return false;
 }
 
 bool Kernel::joystickAxisMoved(const Input::JoystickEvent& arg) {
-    if (!_platformContext.gui().joystickAxisMoved(arg)) {
-        return _sceneManager->joystickAxisMoved(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickAxisMoved(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickPovMoved(const Input::JoystickEvent& arg) {
-    if (!_platformContext.gui().joystickPovMoved(arg)) {
-        return _sceneManager->joystickPovMoved(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickPovMoved(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickButtonPressed(const Input::JoystickEvent& arg) {
-    if (!_platformContext.gui().joystickButtonPressed(arg)) {
-        return _sceneManager->joystickButtonPressed(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickButtonPressed(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickButtonReleased(const Input::JoystickEvent& arg) {
-    if (!_platformContext.gui().joystickButtonReleased(arg)) {
-        return _sceneManager->joystickButtonReleased(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickButtonReleased(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickBallMoved(const Input::JoystickEvent& arg) {
-    if (!_platformContext.gui().joystickBallMoved(arg)) {
-        return _sceneManager->joystickBallMoved(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickBallMoved(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickAddRemove(const Input::JoystickEvent& arg) {
-    if (!_platformContext.gui().joystickAddRemove(arg)) {
-        return _sceneManager->joystickAddRemove(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickAddRemove(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::joystickRemap(const Input::JoystickEvent &arg) {
-    if (!_platformContext.gui().joystickRemap(arg)) {
-        return _sceneManager->joystickRemap(arg);
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->joystickRemap(arg)) {
+            return true;
+        }
     }
 
-    // InputInterface needs to know when this is completed
     return false;
 }
 
 bool Kernel::onUTF8(const Input::UTF8Event& arg) {
-    if_constexpr(Config::Build::ENABLE_EDITOR) {
-        Editor& editor = _platformContext.editor();
-        if (!_sceneManager->wantsKeyboard() && editor.onUTF8(arg)) {
+    for (auto inputConsumer : _inputConsumers) {
+        if (inputConsumer && inputConsumer->onUTF8(arg)) {
             return true;
         }
-    }
-    
-    if (!_platformContext.gui().onUTF8(arg)) {
-        return _sceneManager->onUTF8(arg);
     }
 
     return false;
 }
+#pragma endregion
 };
 

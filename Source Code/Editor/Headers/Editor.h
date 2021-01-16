@@ -156,7 +156,7 @@ class Editor final : public PlatformContextComponent,
     [[nodiscard]] Rect<I32> scenePreviewRect(bool globalCoords) const;
     [[nodiscard]] bool wantsMouse() const;
     [[nodiscard]] bool wantsKeyboard() const;
-    [[nodiscard]] bool wantsGamepad() const;
+    [[nodiscard]] bool wantsJoystick() const;
     [[nodiscard]] bool usingGizmo() const;
 
     template<typename T>

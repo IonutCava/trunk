@@ -207,8 +207,6 @@ public:  /// Input
     void mouseMovedExternally(const Input::MouseMoveEvent& arg);
 
     PROPERTY_RW(bool, wantsMouse, false);
-    PROPERTY_RW(bool, wantsKeyboard, false);
-
     POINTER_R(SceneShaderData, sceneData, nullptr);
 // networking
 protected:

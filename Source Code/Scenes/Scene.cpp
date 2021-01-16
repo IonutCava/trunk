@@ -78,7 +78,10 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
     _linesPrimitive = _context.gfx().newIMP();
     _linesPrimitive->name("GenericLinePrimitive");
 
-    const RenderStateBlock primitiveDescriptor;
+    RenderStateBlock primitiveDescriptor;
+    primitiveDescriptor.depthTestEnabled(false);
+    primitiveDescriptor.cullMode(CullMode::NONE);
+
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveDescriptor.getHash();
     pipeDesc._shaderProgramHandle = ShaderProgram::DefaultShader()->getGUID();
@@ -1618,7 +1621,7 @@ void Scene::findHoverTarget(PlayerIndex idx, const vec2<I32>& aimPos) {
             }
 
             SceneGraphNode* crtNode = _sceneGraph->findNode(result.sgnGUID);
-            if (IsValidTarget(crtNode, (Config::Build::ENABLE_EDITOR && _context.editor().inEditMode()))) {
+            if (IsValidTarget(crtNode, (Config::Build::ENABLE_EDITOR ? _context.editor().inEditMode() : false))) {
                 target = crtNode;
                 break;
             }

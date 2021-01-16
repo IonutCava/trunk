@@ -209,6 +209,15 @@ class Kernel final : public Input::InputAggregatorInterface,
     vec2<I32> remapMouseCoords(const vec2<I32>& absPositionIn, bool& remappedOut) const noexcept;
 
    private:
+    enum class InputConsumerType : U8 {
+        Editor,
+        GUI,
+        Scene,
+        COUNT
+    };
+
+    std::array<InputAggregatorInterface*, to_base(InputConsumerType::COUNT)> _inputConsumers{};
+
     vectorEASTL<Rect<I32>> _editorViewports{};
     vectorEASTL<Rect<I32>> _targetViewports{};
 

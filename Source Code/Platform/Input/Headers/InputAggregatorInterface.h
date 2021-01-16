@@ -51,7 +51,7 @@ struct InputEvent {
     DisplayWindow* _sourceWindow = nullptr;
 };
 
-struct MouseButtonEvent : InputEvent {
+struct MouseButtonEvent final : InputEvent {
     friend class Attorney::MouseEventKernel;
 
     explicit MouseButtonEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
@@ -65,7 +65,7 @@ protected:
     bool _remapped = false;
 };
 
-struct MouseMoveEvent : InputEvent {
+struct MouseMoveEvent final : InputEvent {
     friend class Attorney::MouseEventKernel;
 
     explicit MouseMoveEvent(DisplayWindow* sourceWindow, U8 deviceIndex, MouseState stateIn, bool wheelEvent);
@@ -106,20 +106,21 @@ namespace Attorney {
             }
         friend class Kernel;
     };
-};
-struct JoystickEvent : public InputEvent {
+} //Attorney
+
+struct JoystickEvent final : InputEvent {
     explicit JoystickEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 
     JoystickElement _element;
 };
 
-struct UTF8Event : public InputEvent {
+struct UTF8Event final : InputEvent {
     explicit UTF8Event(DisplayWindow* sourceWindow, U8 deviceIndex, const char* text);
 
     const char* _text = nullptr;
 };
 
-struct KeyEvent : public InputEvent {
+struct KeyEvent final : InputEvent {
 
     explicit KeyEvent(DisplayWindow* sourceWindow, U8 deviceIndex);
 

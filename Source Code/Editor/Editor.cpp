@@ -1126,7 +1126,7 @@ bool Editor::joystickButtonPressed(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
@@ -1136,7 +1136,7 @@ bool Editor::joystickButtonReleased(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
@@ -1146,7 +1146,7 @@ bool Editor::joystickAxisMoved(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
@@ -1156,7 +1156,7 @@ bool Editor::joystickPovMoved(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
@@ -1166,7 +1166,7 @@ bool Editor::joystickBallMoved(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
@@ -1176,7 +1176,7 @@ bool Editor::joystickAddRemove(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
@@ -1186,7 +1186,7 @@ bool Editor::joystickRemap(const Input::JoystickEvent &arg) {
         return false;
     }
 
-    return wantsGamepad();
+    return wantsJoystick();
 }
 
 bool Editor::wantsMouse() const {
@@ -1227,7 +1227,7 @@ bool Editor::wantsKeyboard() const {
     return false;
 }
 
-bool Editor::wantsGamepad() const {
+bool Editor::wantsJoystick() const {
     if (!isInit() || !running()) {
         return false;
     }
