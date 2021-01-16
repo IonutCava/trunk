@@ -77,13 +77,13 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
             GenericVertexData::SetBufferParams params = {};
             params._buffer = g_particleGeometryBuffer;
-            params._elementCount = to_U32(geometry.size());
-            params._elementSize = sizeof(vec3<F32>);
+            params._bufferParams._elementCount = to_U32(geometry.size());
+            params._bufferParams._elementSize = sizeof(vec3<F32>);
+            params._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+            params._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+            params._bufferParams._sync = false;
+            params._bufferParams._initialData = { (Byte*)geometry.data(), geometry.size() * params._bufferParams._elementSize};
             params._useRingBuffer = false;
-            params._updateFrequency = BufferUpdateFrequency::ONCE;
-            params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-            params._sync = false;
-            params._initialData = { (Byte*)geometry.data(), geometry.size() * params._elementSize};
 
             buffer.setBuffer(params);
 
@@ -195,20 +195,21 @@ bool ParticleEmitter::updateData() {
 
             GenericVertexData::SetBufferParams params = {};
             params._buffer = g_particlePositionBuffer;
-            params._elementCount = particleCount;
-            params._elementSize = sizeof(vec4<F32>);
             params._useRingBuffer = true;
-            params._updateFrequency = BufferUpdateFrequency::OFTEN;
-            params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-            params._sync = true;
-            params._initialData = { nullptr, 0 };
             params._instanceDivisor = 1;
+
+            params._bufferParams._elementCount = particleCount;
+            params._bufferParams._elementSize = sizeof(vec4<F32>);
+            params._bufferParams._updateFrequency = BufferUpdateFrequency::OFTEN;
+            params._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+            params._bufferParams._sync = true;
+            params._bufferParams._initialData = { nullptr, 0 };
 
             buffer.setBuffer(params);
 
             params._buffer = g_particleColourBuffer;
-            params._elementCount = particleCount;
-            params._elementSize = sizeof(UColour4);
+            params._bufferParams._elementCount = particleCount;
+            params._bufferParams._elementSize = sizeof(UColour4);
 
             buffer.setBuffer(params);
 
@@ -296,8 +297,8 @@ void ParticleEmitter::prepareRender(SceneGraphNode* sgn,
 
             if (refreshData && _buffersDirty[to_U32(renderStagePass._stage)]) {
                 GenericVertexData& buffer = getDataBuffer(renderStagePass._stage, 0);
-                buffer.updateBuffer(g_particlePositionBuffer, to_U32(_particles->_renderingPositions.size()), 0, _particles->_renderingPositions.data());
-                buffer.updateBuffer(g_particleColourBuffer, to_U32(_particles->_renderingColours.size()), 0, _particles->_renderingColours.data());
+                buffer.updateBuffer(g_particlePositionBuffer, 0u, to_U32(_particles->_renderingPositions.size()), _particles->_renderingPositions.data());
+                buffer.updateBuffer(g_particleColourBuffer, 0u, to_U32(_particles->_renderingColours.size()), _particles->_renderingColours.data());
                 buffer.incQueue();
                 _buffersDirty[to_U32(renderStagePass._stage)] = false;
             }

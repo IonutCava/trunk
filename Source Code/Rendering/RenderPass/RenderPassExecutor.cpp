@@ -26,6 +26,11 @@ namespace {
     constexpr U16 g_maxMaterialFrameLifetime = 6u;
     // Use to partition parallel jobs
     constexpr U32 g_nodesPerPrepareDrawPartition = 16u;
+
+    void InitMaterialData(const RenderStage stage, RenderPassExecutor::PerRingEntryMaterialData& data) {
+        data._nodeMaterialLookupInfo.resize(RenderStagePass::totalPassCountForStage(stage) * Config::MAX_CONCURRENT_MATERIALS, { Material::INVALID_MAT_HASH, 0u });
+        data._nodeMaterialData.resize(RenderStagePass::totalPassCountForStage(stage) * Config::MAX_CONCURRENT_MATERIALS);
+    }
 }
 
 Pipeline* RenderPassExecutor::s_OITCompositionPipeline = nullptr;
@@ -36,9 +41,9 @@ RenderPassExecutor::RenderPassExecutor(RenderPassManager& parent, GFXDevice& con
     , _stage(stage)
     , _renderQueue(parent.parent(), stage)
 {
-    for (U8 i = 0; i < RenderPass::DataBufferRingSize; ++i) {
-        _materialData[i]._nodeMaterialLookupInfo.resize(RenderStagePass::totalPassCountForStage(stage) * Config::MAX_CONCURRENT_MATERIALS, { Material::INVALID_MAT_HASH, 0u });
-        _materialData[i]._nodeMaterialData.resize(RenderStagePass::totalPassCountForStage(stage) * Config::MAX_CONCURRENT_MATERIALS);
+    _materialData.resize(_materialData.max_size());
+    for (PerRingEntryMaterialData& data : _materialData) {
+        InitMaterialData(stage, data);
     }
 }
 
@@ -222,6 +227,10 @@ U16 RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const 
 
     _drawCommands.clear();
     _materialBufferIndex = bufferData._materialBuffer->queueWriteIndex();
+    while (_materialBufferIndex >= _materialData.size()) {
+        InitMaterialData(_stage, _materialData.emplace_back());
+    }
+
     _materialData[_materialBufferIndex]._matUpdateRange.reset();
     _uniqueTextureAddresses.clear();
 
@@ -273,7 +282,6 @@ U16 RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const 
 
     *bufferData._lastCommandCount = to_U32(_drawCommands.size());
 
-    PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
     {
         OPTICK_EVENT("RenderPassExecutor::buildBufferData - UpdateBuffers");
 
@@ -282,6 +290,7 @@ U16 RenderPassExecutor::buildDrawCommands(const RenderPassParams& params, const 
         bufferData._transformBuffer->writeData(bufferData._transformElementOffset, nodeCount, _nodeTransformData.data());
 
         // Copy the same data to the entire ring buffer
+        PerRingEntryMaterialData& materialData = _materialData[_materialBufferIndex];
         MaterialUpdateRange& crtRange = materialData._matUpdateRange;
 
         if (crtRange.range() > 0u) {
@@ -344,9 +353,6 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
 
     ParallelForDescriptor descriptor = {};
     descriptor._iterCount = to_U32(nodes.size());
-    descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
-    descriptor._priority = TaskPriority::DONT_CARE;
-    descriptor._useCurrentThread = true;
     descriptor._cbk = [&](const Task* /*parentTask*/, const U32 start, const U32 end) {
         for (U32 i = start; i < end; ++i) {
             VisibleNode& node = nodes.node(i);
@@ -357,7 +363,14 @@ U16 RenderPassExecutor::prepareNodeData(VisibleNodeList<>& nodes, const RenderPa
         }
     };
 
-    parallel_for(_parent.parent().platformContext(), descriptor);
+    if (descriptor._iterCount < g_nodesPerPrepareDrawPartition) {
+        descriptor._cbk(nullptr, 0, descriptor._iterCount);
+    } else {
+        descriptor._partitionSize = g_nodesPerPrepareDrawPartition;
+        descriptor._priority = TaskPriority::DONT_CARE;
+        descriptor._useCurrentThread = true;
+        parallel_for(_parent.parent().platformContext(), descriptor);
+    }
 
     _renderQueue.sort(stagePass);
 
@@ -507,12 +520,11 @@ void RenderPassExecutor::occlusionPass(const VisibleNodeList<>& nodes,
 
     // Occlusion culling barrier
     memCmd._barrierMask = to_base(MemoryBarrierType::COMMAND_BUFFER) | //For rendering
-                          to_base(MemoryBarrierType::SHADER_STORAGE);  //For updating later on
+                          to_base(MemoryBarrierType::SHADER_STORAGE) | //For updating later on
+                          (bufferData._cullCounterBuffer != nullptr ? to_base(MemoryBarrierType::ATOMIC_COUNTER) : 0u);
+    EnqueueCommand(bufferInOut, memCmd);
 
     if (bufferData._cullCounterBuffer != nullptr) {
-        memCmd._barrierMask |= to_base(MemoryBarrierType::ATOMIC_COUNTER);
-        EnqueueCommand(bufferInOut, memCmd);
-
         _context.updateCullCount(bufferData, bufferInOut);
 
         bufferData._cullCounterBuffer->incQueue();
@@ -522,8 +534,6 @@ void RenderPassExecutor::occlusionPass(const VisibleNodeList<>& nodes,
         clearAtomicCounter._offsetElementCount = 0;
         clearAtomicCounter._elementCount = 1;
         EnqueueCommand(bufferInOut, clearAtomicCounter);
-    } else {
-        EnqueueCommand(bufferInOut, memCmd);
     }
 
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -694,7 +704,7 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
         GFX::BeginRenderPassCommand beginRenderPassCompCmd = {};
         beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
         beginRenderPassCompCmd._target = params._target;
-        beginRenderPassCompCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+        beginRenderPassCompCmd._descriptor = params._targetDescriptorMainPass;
         EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
 
         if (layeredRendering) {

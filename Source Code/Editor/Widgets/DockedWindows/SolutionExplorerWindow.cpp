@@ -324,7 +324,7 @@ namespace Divide {
             const PerformanceMetrics perfMetrics = context().gfx().getPerformanceMetrics();
 
             ImGui::NewLine();
-            ImGui::Text("HiZ Cull Count: %d", context().gfx().getLastCullCount());
+            ImGui::Text("HiZ Cull Count: %d", context().gfx().lastCullCount());
             ImGui::NewLine();
             ImGui::Text("GPU Frame Time: %5.2f ms", perfMetrics._gpuTimeInMS);
             ImGui::NewLine();

@@ -511,12 +511,6 @@ enum class GPURenderer : U8 {
     COUNT
 };
 
-enum class BufferStorageType : U8 {
-    AUTO = 0,
-    IMMUTABLE,
-    NORMAL
-};
-
 enum class BufferUpdateUsage : U8 {
     CPU_W_GPU_R = 0, //DRAW
     CPU_R_GPU_W = 1, //READ

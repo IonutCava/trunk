@@ -85,9 +85,10 @@ class glGenericVertexData final : public GenericVertexData,
 
     void setBuffer(const SetBufferParams& params) override;
 
-    void updateBuffer(U32 buffer, U32 elementCount, U32 elementCountOffset, bufferPtr data) override;
+    void updateBuffer(U32 buffer, U32 elementCountOffset, U32 elementCountRange, bufferPtr data) override;
 
-    void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override;
+    void lockBuffers() override;
+    bool waitBufferRange(U32 buffer, U32 elementCountOffset, U32 elementCountRange, bool blockClient) override;
 
    protected:
     friend class GFXDevice;
@@ -108,6 +109,7 @@ class glGenericVertexData final : public GenericVertexData,
     GLuint _vertexArray;
     vectorEASTL<glGenericBuffer*> _bufferObjects;
     vectorEASTL<U32> _instanceDivisor;
+    eastl::fixed_vector<BufferLockEntry, 64, true> _bufferLockQueue;
 };
 
 };  // namespace Divide

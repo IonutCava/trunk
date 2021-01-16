@@ -46,13 +46,19 @@ float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
 }
 
 const float tiling[] = {
-        1.5f, //LoD 0
-        1.0f, //LoD 1
-        0.75f,
-        0.5f,
-        0.25f,
-        0.1625f,
-        0.083125f,
+#if defined(REDUCE_TEXTURE_TILE_ARTIFACT)
+    1.5f, //LoD 0
+    1.5f, //LoD 1
+    1.0f,
+#else //REDUCE_TEXTURE_TILE_ARTIFACT
+    1.5f, //LoD 0
+    1.0f, //LoD 1
+    0.75f,
+#endif //REDUCE_TEXTURE_TILE_ARTIFACT
+    0.5f,
+    0.25f,
+    0.1625f,
+    0.083125f,
 };
 
 #define scaledTextureCoords(UV) scaledTextureCoords(UV, TEXTURE_TILE_SIZE * tiling[dvd_LoD])

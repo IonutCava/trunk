@@ -61,13 +61,15 @@ layout(vertices = 4) out;
 layout(location = 10) out float tcs_tileSize[];
 layout(location = 11) out flat int tcs_ringID[];
 
-#if defined(TOGGLE_DEBUG)
+#if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
 layout(location = 12) out vec3[5] tcs_debugColour[];
+#if defined(TOGGLE_DEBUG)
 #if defined(TOGGLE_NORMALS)
 #undef MAX_TESS_LEVEL
 #define MAX_TESS_LEVEL 1
 #endif //TOGGLE_NORMALS
 #endif //TOGGLE_DEBUG
+#endif //TOGGLE_DEBUG || TOGGLE_TESS_LEVEL
 
 #if !defined(MAX_TESS_LEVEL)
 #define MAX_TESS_LEVEL 64
@@ -254,7 +256,7 @@ void main(void)
         tcs_tileSize[gl_InvocationID] = vtx_tileSize[gl_InvocationID];
         tcs_ringID[gl_InvocationID] = vtx_ringID[gl_InvocationID];
 
-#if defined(TOGGLE_DEBUG)
+#if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
         // Output tessellation level (used for wireframe coloring)
         // These are one colour for each tessellation level and linear graduations between.
         const vec3 DEBUG_COLOURS[6] =
@@ -296,19 +298,22 @@ uniform vec2 dvd_textureWorldOffset;
 layout(location = 10) in float tcs_tileSize[];
 layout(location = 11) in flat int tcs_ringID[];
 
-#if defined(TOGGLE_DEBUG)
+#if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
 layout(location = 12) in vec3[5] tcs_debugColour[];
+layout(location = 12) out vec3  tes_debugColour;
 
+#if defined(TOGGLE_DEBUG)
 layout(location = 10) out float tes_tileSize;
 layout(location = 11) out flat int tes_ringID;
-layout(location = 12) out vec3  tes_debugColour;
 layout(location = 13) out float tes_PatternValue;
-
-#else //TOGGLE_DEBUG
-
-layout(location = 10) out flat int dvd_LoD;
-
 #endif //TOGGLE_DEBUG
+
+#endif //TOGGLE_DEBUG || TOGGLE_TESS_LEVEL
+
+#if !defined(TOGGLE_DEBUG)
+layout(location = 10) out flat int dvd_LoD;
+#endif //!TOGGLE_DEBUG
+
 
 vec3 Bilerp(vec3 v0, vec3 v1, vec3 v2, vec3 v3, vec2 i)
 {
@@ -317,7 +322,7 @@ vec3 Bilerp(vec3 v0, vec3 v1, vec3 v2, vec3 v3, vec2 i)
     return lerp(bottom, top, i.y);
 }
 
-#if defined(TOGGLE_DEBUG)
+#if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
 vec3 BilerpColour(vec3 c0, vec3 c1, vec3 c2, vec3 c3, vec2 UV) {
     const vec3 left = lerp(c0, c1, UV.y);
     const vec3 right = lerp(c2, c3, UV.y);
@@ -335,7 +340,7 @@ vec3 LerpDebugColours(in vec3 cIn[5], vec2 uv) {
         return BilerpColour(cIn[4], cIn[3], cIn[2], 0.5f * (cIn[2] + cIn[3]), 2 * (uv - vec2(0.5f, 0.5f)));
     }
 }
-#endif
+#endif //TOGGLE_DEBUG || TOGGLE_TESS_LEVEL
 
 #define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
 // Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
@@ -388,6 +393,10 @@ void main()
     _out._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - _out._vertexW.xyz);
 #endif //PRE_PASS && SHADOW_PASS
 
+#if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
+    tes_debugColour = LerpDebugColours(tcs_debugColour[0], gl_TessCoord.xy);
+#endif //TOGGLE_DEBUG || TOGGLE_TESS_LEVEL
+
 #if defined(TOGGLE_DEBUG)
     const int PatchID = gl_PrimitiveID;
     ivec2 patchXY;
@@ -396,7 +405,6 @@ void main()
 
     tes_tileSize = tcs_tileSize[0];
     tes_ringID = tcs_ringID[0];
-    tes_debugColour = LerpDebugColours(tcs_debugColour[0], gl_TessCoord.xy);
     tes_PatternValue = 0.5f * ((patchXY.x + patchXY.y) % 2);
 
     gl_Position = _out._vertexW;
@@ -595,6 +603,10 @@ layout(location = 10) in flat int dvd_LoD;
 #if defined(TOGGLE_DEBUG)
 layout(location = 11) in vec3 gs_wireColor;
 layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
+#else
+#if defined(TOGGLE_TESS_LEVEL)
+layout(location = 12) in vec3 tes_debugColour;
+#endif //TOGGLE_TESS_LEVEL
 #endif //TOGGLE_DEBUG
 
 #if defined(LOW_QUALITY)
@@ -637,7 +649,22 @@ void main(void) {
     _private_roughness = albedo.a;
 #endif //LOW_QUALITY
 
+#if defined (TOGGLE_LODS)
+    vec4 colourOut = vec4(0.0f);
+    switch (dvd_LoD) {
+        case 0  : colourOut = vec4(1.0f, 0.0f, 0.0f, 1.0f); break;
+        case 1  : colourOut = vec4(0.0f, 1.0f, 0.0f, 1.0f); break;
+        case 2  : colourOut = vec4(0.0f, 0.0f, 1.0f, 1.0f); break;
+        case 3  : colourOut = vec4(0.0f, 1.0f, 1.0f, 1.0f); break;
+        case 4  : colourOut = vec4(1.0f, 0.0f, 1.0f, 1.0f); break;
+        default : colourOut = vec4(turboColormap(float(dvd_LoD)), 1.0f); break;
+    }
+#else  //TOGGLE_LODS
+#if defined(TOGGLE_TESS_LEVEL)
+    vec4 colourOut = vec4(tes_debugColour, 1.0f);
+#else //TOGGLE_TESS_LEVEL
     vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord);
+#endif //TOGGLE_TESS_LEVEL
 
 #if defined (TOGGLE_DEBUG)
 
@@ -654,5 +681,6 @@ void main(void) {
 
 #endif //TOGGLE_DEBUG
 
+#endif //TOGGLE_LODS
     writeOutput(colourOut);
 }

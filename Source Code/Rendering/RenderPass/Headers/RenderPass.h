@@ -55,9 +55,6 @@ enum class RenderStage : U8;
 // E.g.: PRE_PASS + MAIN_PASS share the same RenderQueue
 class RenderPass final : NonCopyable {
    public:
-       // Size factor for command and data buffers
-       constexpr static U8 DataBufferRingSize = 3u;
-
        struct BufferData {
            ShaderBuffer* _transformBuffer = nullptr;
            ShaderBuffer* _materialBuffer = nullptr;

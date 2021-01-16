@@ -11,17 +11,6 @@ namespace {
     constexpr U32 g_LockFrameLifetime = 6u; //(APP->Driver->GPU x2)
 };
 
-// --------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------
-// --------------------------------------------------------------------------------------------------------------------
-glBufferLockManager::glBufferLockManager()
-    : glLockManager()
-{
-    _swapLocks.reserve(32);
-    _bufferLocks.reserve(32);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 glBufferLockManager::~glBufferLockManager()
 {
     const UniqueLock<Mutex> w_lock(_lock);
@@ -30,8 +19,7 @@ glBufferLockManager::~glBufferLockManager()
     }
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
+bool glBufferLockManager::waitForLockedRange(size_t lockBeginBytes,
                                              size_t lockLength,
                                              const bool blockClient,
                                              const bool quickCheck) {
@@ -44,12 +32,12 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
     bool error = false;
     UniqueLock<Mutex> w_lock(_lock);
     _swapLocks.resize(0);
-    for (BufferLock& lock : _bufferLocks) {
-        if (lock._valid && !testRange.Overlaps(lock._range)) {
+    for (const BufferLock& lock : _bufferLocks) {
+        if (lock._valid && !Overlaps(testRange, lock._range)) {
             _swapLocks.push_back(lock);
         } else {
-            U8 retryCount = 0;
-            if (!lock._valid || wait(lock._syncObj, blockClient, quickCheck, retryCount)) {
+            U8 retryCount = 0u;
+            if (!lock._valid || Wait(lock._syncObj, blockClient, quickCheck, retryCount)) {
                 glDeleteSync(lock._syncObj);
 
                 if (retryCount > 4) {
@@ -66,35 +54,40 @@ bool glBufferLockManager::WaitForLockedRange(size_t lockBeginBytes,
     return !error;
 }
 
-// --------------------------------------------------------------------------------------------------------------------
-bool glBufferLockManager::LockRange(const size_t lockBeginBytes, const size_t lockLength, const U32 frameID) {
+bool glBufferLockManager::lockRange(const size_t lockBeginBytes, const size_t lockLength, const U32 frameID) {
     OPTICK_EVENT();
+
+    DIVIDE_ASSERT(lockLength > 0u, "glBufferLockManager::lockRange error: Invalid lock range!");
 
     const BufferRange testRange{ lockBeginBytes, lockLength };
 
-    {//Delete old lock entries
-        UniqueLock<Mutex> w_lock(_lock);
-        for (BufferLock& lock : _bufferLocks) {
-            if (frameID - lock._frameID >= g_LockFrameLifetime || testRange.Overlaps(lock._range)) {
-                lock._valid = false;
-            }
+    // Verify old lock entries and merge if needed
+    UniqueLock<Mutex> w_lock(_lock);
+    for (BufferLock& lock : _bufferLocks) {
+        // This should avoid any lock leaks, since any fences we haven't waited on will be considered "signaled" eventually
+        if (lock._frameID < frameID && frameID - lock._frameID >= g_LockFrameLifetime) {
+            lock._valid = false;
+        }
+
+        // See if we can reuse the old lock. Ignore the old fence since the new one will guard the same mem region. Right?
+        if (Overlaps(testRange, lock._range) && lock._valid) {
+            glDeleteSync(lock._syncObj);
+
+            lock._range._startOffset = std::min(testRange._startOffset, lock._range._startOffset);
+            lock._range._length = std::max(testRange._length, lock._range._length);
+            lock._frameID = frameID;
+            lock._syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+            return true;
         }
     }
 
-    const bool error = !WaitForLockedRange(lockBeginBytes, lockLength, true, true);
-    
-    BufferLock newLock;
-    newLock._range = { lockBeginBytes, lockLength };
-    newLock._frameID = frameID;
-    newLock._valid = true;
-    newLock._syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    _bufferLocks.emplace_back(
+        testRange,
+        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0),
+        frameID
+    );
 
-    {
-        UniqueLock<Mutex> w_lock(_lock);
-        _bufferLocks.push_back(newLock);
-    }
-
-    return !error;
+    return true;
 }
 
 };

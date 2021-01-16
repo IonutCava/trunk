@@ -47,7 +47,8 @@ GLStateTracker GL_API::s_stateTracker;
 std::atomic_bool GL_API::s_glFlushQueued;
 GLUtil::glTextureViewCache GL_API::s_textureViewCache = {};
 GL_API::IMPrimitivePool GL_API::s_IMPrimitivePool = {};
-eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueue;
+eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueueMidFlush;
+eastl::fixed_vector<BufferLockEntry, 64, true> GL_API::s_bufferLockQueueEndOfBuffer;
 
 //1GB for buffers?
 GLUtil::GLMemory::DeviceAllocator GL_API::s_memoryAllocator;
@@ -165,7 +166,7 @@ void GL_API::endFrame(DisplayWindow& window, const bool global) {
                     }
                 }
             }
-            if (_context.getFrameCount() % g_clearMemoryFrameInterval == 0) {
+            if (_context.frameCount() % g_clearMemoryFrameInterval == 0) {
                 glBufferImpl::CleanMemory();
                 glTexture::CleanMemory();
             }
@@ -1045,6 +1046,9 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
         GenericDrawCommand cmd = {};
         cmd._primitiveType = PrimitiveType::TRIANGLES;
 
+        GenericVertexData* buffer = getOrCreateIMGUIBuffer(windowGUID);
+        assert(buffer != nullptr);
+
         const ImVec2 pos = data->DisplayPos;
         for (I32 n = 0; n < data->CmdListsCount; n++)
         {
@@ -1056,10 +1060,8 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
             idxBuffer.count = to_U32(cmd_list->IdxBuffer.Size);
             idxBuffer.data = reinterpret_cast<Byte*>(cmd_list->IdxBuffer.Data);
 
-            GenericVertexData* buffer = getOrCreateIMGUIBuffer(windowGUID);
-            assert(buffer != nullptr);
-
-            buffer->updateBuffer(0u, to_U32(cmd_list->VtxBuffer.size()), 0u, cmd_list->VtxBuffer.Data);
+            buffer->waitBufferRange(0u, 0u, to_U32(cmd_list->VtxBuffer.size()), true);
+            buffer->updateBuffer(0u, 0u, to_U32(cmd_list->VtxBuffer.size()), cmd_list->VtxBuffer.Data);
             buffer->updateIndexBuffer(idxBuffer);
 
             for (I32 cmd_i = 0; cmd_i < cmd_list->CmdBuffer.size(); ++cmd_i)
@@ -1092,10 +1094,12 @@ void GL_API::drawIMGUI(ImDrawData* data, I64 windowGUID) {
                         stateTracker.bindTexture(0, TextureType::TEXTURE_2D, static_cast<GLuint>(reinterpret_cast<intptr_t>(pcmd->TextureId)));
                         cmd._cmd.indexCount = to_U32(pcmd->ElemCount);
                         buffer->draw(cmd);
-                    }
+                     }
                 }
                 cmd._cmd.firstIndex += pcmd->ElemCount;
             }
+            buffer->lockBuffers();
+            buffer->incQueue();
         }
     }
 }
@@ -1200,6 +1204,7 @@ void GL_API::PopDebugMessage() {
 
 void GL_API::preFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
+    getStateTracker()._flushingCommandBuffer = true;
 }
 
 void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const GFX::CommandBuffer& commandBuffer) {
@@ -1406,14 +1411,12 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             if (getStateTracker()._activePipeline != nullptr) {
                 GFX::DrawTextCommand* crtCmd = commandBuffer.get<GFX::DrawTextCommand>(entry);
                 drawText(crtCmd->_batch);
-                LockBuffers(_context.getFrameCount());
             }
         }break;
         case GFX::CommandType::DRAW_IMGUI: {
             if (getStateTracker()._activePipeline != nullptr) {
                 GFX::DrawIMGUICommand* crtCmd = commandBuffer.get<GFX::DrawIMGUICommand>(entry);
                 drawIMGUI(crtCmd->_data, crtCmd->_windowGUID);
-                LockBuffers(_context.getFrameCount());
             }
         }break;
         case GFX::CommandType::DRAW_COMMANDS : {
@@ -1431,17 +1434,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                                        : isEnabledOption(currentDrawCommand, CmdRenderOptions::RENDER_GEOMETRY) ? 1 : 0;
                 }
             }
-            if (drawCount > 0u) {
-                LockBuffers(_context.getFrameCount());
-                _context.registerDrawCalls(drawCount);
-            }
+            _context.registerDrawCalls(drawCount);
         }break;
         case GFX::CommandType::DISPATCH_COMPUTE: {
             GFX::DispatchComputeCommand* crtCmd = commandBuffer.get<GFX::DispatchComputeCommand>(entry);
             if(getStateTracker()._activePipeline != nullptr) {
                 OPTICK_EVENT("GL: Dispatch Compute");
                 glDispatchCompute(crtCmd->_computeGroupSize.x, crtCmd->_computeGroupSize.y, crtCmd->_computeGroupSize.z);
-                LockBuffers(_context.getFrameCount());
             }
         }break;
         case GFX::CommandType::SET_CLIPING_STATE: {
@@ -1518,33 +1517,56 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         } break;
         default: break;
-    };
-}
-
-void GL_API::LockBuffers(const U32 frameID) {
-    OPTICK_EVENT();
-    for (const BufferLockEntry& entry : s_bufferLockQueue) {
-        if (!entry._buffer->lockRange(entry._offset, entry._length, frameID)) {
-            DIVIDE_UNEXPECTED_CALL();
-        }
     }
-    s_bufferLockQueue.resize(0);
+
+    switch (cmdType) {
+        case GFX::CommandType::EXTERNAL:
+        case GFX::CommandType::DRAW_TEXT:
+        case GFX::CommandType::DRAW_IMGUI:
+        case GFX::CommandType::DRAW_COMMANDS:
+        case GFX::CommandType::DISPATCH_COMPUTE:
+        {
+            OPTICK_EVENT();
+            const U32 frameIndex = _context.frameCount();
+            for (BufferLockEntry& lockEntry : s_bufferLockQueueMidFlush) {
+                if (!lockEntry._buffer->lockByteRange(lockEntry._offset, lockEntry._length, frameIndex)) {
+                    DIVIDE_UNEXPECTED_CALL();
+                }
+            }
+            s_bufferLockQueueMidFlush.resize(0);
+        } break;
+    }
 }
 
-void GL_API::RegisterBufferBind(BufferLockEntry&& data) {
+void GL_API::RegisterBufferBind(BufferLockEntry&& data, const bool fenceAfterFirstDraw) {
     assert(Runtime::isMainThread());
-    s_bufferLockQueue.push_back(data);
+    if (fenceAfterFirstDraw) {
+        s_bufferLockQueueMidFlush.push_back(data);
+    } else {
+        s_bufferLockQueueEndOfBuffer.push_back(data);
+    }
 }
 
 
 void GL_API::postFlushCommandBuffer(const GFX::CommandBuffer& commandBuffer) {
     ACKNOWLEDGE_UNUSED(commandBuffer);
 
+    OPTICK_EVENT();
+    const U32 frameIndex = _context.frameCount();
+    for (BufferLockEntry& lockEntry : s_bufferLockQueueEndOfBuffer) {
+        if (!lockEntry._buffer->lockByteRange(lockEntry._offset, lockEntry._length, frameIndex)) {
+            DIVIDE_UNEXPECTED_CALL();
+        }
+    }
+    s_bufferLockQueueEndOfBuffer.resize(0);
+
     bool expected = true;
     if (s_glFlushQueued.compare_exchange_strong(expected, false)) {
         OPTICK_EVENT("GL_FLUSH");
         glFlush();
     }
+
+    getStateTracker()._flushingCommandBuffer = false;
 }
 
 GenericVertexData* GL_API::getOrCreateIMGUIBuffer(const I64 windowGUID) {
@@ -1566,14 +1588,15 @@ GenericVertexData* GL_API::getOrCreateIMGUIBuffer(const I64 windowGUID) {
 
     GenericVertexData::SetBufferParams params = {};
     params._buffer = 0;
-    params._elementCount = 1 << 16;
-    params._elementSize = sizeof(ImDrawVert);
-    params._useRingBuffer = true;
-    params._updateFrequency = BufferUpdateFrequency::OFTEN;
-    params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    params._storageType = BufferStorageType::NORMAL;
-    params._sync = true;
-    params._initialData = { nullptr, 0 };
+    params._useRingBuffer = false;
+
+    params._bufferParams._elementCount = 1 << 16;
+    params._bufferParams._elementSize = sizeof(ImDrawVert);
+    params._bufferParams._usePersistentMapping = false;
+    params._bufferParams._updateFrequency = BufferUpdateFrequency::OFTEN;
+    params._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    params._bufferParams._sync = false; // We use manual waiting and locking
+    params._bufferParams._initialData = { nullptr, 0 };
 
     ret->setBuffer(params); //Pos, UV and Colour
     ret->setIndexBuffer(idxBuff, BufferUpdateFrequency::OFTEN);
@@ -1627,7 +1650,7 @@ bool GL_API::makeTexturesResidentInternal(TextureDataContainer& textureData, con
         }
 
         U8 prevBinding = textures.front()._binding;
-        TextureType targetType = textures.front()._data._textureType;
+        const TextureType targetType = textures.front()._data._textureType;
 
         U8 matchingTexCount = 0u;
         U8 startBinding = std::numeric_limits<U8>::max();

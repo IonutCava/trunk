@@ -48,6 +48,13 @@ namespace NS_GLIM {
 
 namespace Divide {
 
+class glBufferImpl;
+struct BufferLockEntry
+{
+    glBufferImpl* _buffer = nullptr;
+    size_t _offset = 0;
+    size_t _length = 0;
+};
 
 struct ImageBindSettings {
     GLuint _texture = 0;

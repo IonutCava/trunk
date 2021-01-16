@@ -13,7 +13,7 @@ namespace {
     constexpr bool g_useBlockAllocator = false;
 }
 
-Chunk::Chunk(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask) 
+Chunk::Chunk(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask, Byte* initialData) 
     : _storageMask(storageMask),
       _accessMask(accessMask),
       _size(size)
@@ -29,7 +29,7 @@ Chunk::Chunk(const size_t size, const BufferStorageMask storageMask, const MapBu
                 Util::StringFormat("DVD_BUFFER_CHUNK_%d", g_bufferIndex++).c_str());
         }
         assert(_bufferHandle != 0 && "GLMemory chunk allocation error: buffer creation failed");
-        glNamedBufferStorage(_bufferHandle, size, nullptr, storageMask);
+        glNamedBufferStorage(_bufferHandle, size, initialData, storageMask);
         _ptr = (Byte*)glMapNamedBufferRange(_bufferHandle, 0, _size, accessMask);
     } else {
         _ptr = nullptr;
@@ -73,7 +73,7 @@ void Chunk::deallocate(const Block &block) {
     }
 }
 
-bool Chunk::allocate(const size_t size, const char* name, Block &blockOut) {
+bool Chunk::allocate(const size_t size, const char* name, Byte* initialData, Block &blockOut) {
     if (size > _size) {
         return false;
     }
@@ -89,8 +89,9 @@ bool Chunk::allocate(const size_t size, const char* name, Block &blockOut) {
 
                 if_constexpr(g_useBlockAllocator) {
                     block._ptr = _ptr + block._offset;
+                    std::memcpy(block._ptr, initialData, size);
                 } else {
-                    block._ptr = createAndAllocPersistentBuffer(size, storageMask(), accessMask(), block._bufferHandle, nullptr, name);
+                    block._ptr = createAndAllocPersistentBuffer(size, storageMask(), accessMask(), block._bufferHandle, initialData, name);
                 }
 
                 if (block._size == size) {
@@ -140,9 +141,9 @@ ChunkAllocator::ChunkAllocator(const size_t size)
     assert(isPowerOfTwo(size));
 }
 
-std::unique_ptr<Chunk> ChunkAllocator::allocate(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask) const {
+std::unique_ptr<Chunk> ChunkAllocator::allocate(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask, Byte* initialData) const {
     const size_t power = to_size(std::log2(size) + 1);
-    return std::make_unique<Chunk>((size > _size) ? to_size(1 << power) : _size, storageMask, accessMask);
+    return std::make_unique<Chunk>((size > _size) ? to_size(1 << power) : _size, storageMask, accessMask, initialData);
 }
 
 void DeviceAllocator::init(size_t size) {
@@ -152,18 +153,18 @@ void DeviceAllocator::init(size_t size) {
     _chunkAllocator = std::make_unique<ChunkAllocator>(size);
 }
 
-Block DeviceAllocator::allocate(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask, const char* blockName) {
+Block DeviceAllocator::allocate(const size_t size, const BufferStorageMask storageMask, const MapBufferAccessMask accessMask, const char* blockName, Byte* initialData) {
     Block block;
     for (auto &chunk : _chunks) {
         if (chunk->storageMask() == storageMask && chunk->accessMask() == accessMask) {
-            if (chunk->allocate(size, blockName, block)) {
+            if (chunk->allocate(size, blockName, initialData, block)) {
                 return block;
             }
         }
     }
 
-    _chunks.emplace_back(_chunkAllocator->allocate(size, storageMask, accessMask));
-    if(!_chunks.back()->allocate(size, blockName, block)) {
+    _chunks.emplace_back(_chunkAllocator->allocate(size, storageMask, accessMask, initialData));
+    if(!_chunks.back()->allocate(size, blockName, initialData, block)) {
         DIVIDE_UNEXPECTED_CALL();
     }
     return block;

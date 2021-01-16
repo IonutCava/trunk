@@ -46,24 +46,24 @@ struct BufferLockEntry;
 /// Base class for shader uniform blocks
 class glUniformBuffer final : public ShaderBuffer {
     public:
-        static void onGLInit();
+        static void OnGLInit();
 
     public:
         glUniformBuffer(GFXDevice& context, const ShaderBufferDescriptor& descriptor);
         ~glUniformBuffer();
 
-        void clearData(U32 offsetElementCount, U32 rangeElementCount) override;
-        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override;
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) override;
+        void clearBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes) override;
+        void readBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr result) const override;
         void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) override;
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override;
-        bool bind(U8 bindIndex) override;
 
-        glBufferImpl* bufferImpl() const;
+        bool bindByteRange(U8 bindIndex, ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes) override;
+
+        POINTER_R_IW(glBufferImpl, bufferImpl, nullptr);
+        PROPERTY_R(ptrdiff_t, alignedBufferSize, 0);
 
     protected:
-        glBufferImpl* _buffer;
-        size_t _alignedBufferSize;
+        ptrdiff_t getCorrectedOffset(ptrdiff_t offsetInBytes) const noexcept;
+        ptrdiff_t getCorrectedRange(ptrdiff_t rangeInBytes) const noexcept;
 };
 
 };  // namespace Divide

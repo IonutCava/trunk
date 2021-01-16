@@ -34,31 +34,17 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _GL_BUFFER_IMPL_H_
 
 #include "glMemoryManager.h"
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
+
 namespace Divide {
 
 struct BufferImplParams {
+    BufferParams _bufferParams;
     GLenum _target = GL_NONE;
-
-    /// Desired buffer size in bytes
     size_t _dataSize = 0;
-
-    /// Buffer primitive size in bytes
-    size_t _elementSize = 0;
     bool _explicitFlush = true;
-    bool _unsynced = true;
     const char* _name = nullptr;
-    std::pair<Byte*, size_t> _initialData = { nullptr, 0 };
-    BufferStorageType _storageType = BufferStorageType::AUTO;
-    BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
-    BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-};
-
-class glBufferImpl;
-struct BufferLockEntry {
-    glBufferImpl* _buffer = nullptr;
-    size_t _offset = 0;
-    size_t _length = 0;
 };
 
 struct BufferMapRange
@@ -73,40 +59,29 @@ public:
     explicit glBufferImpl(GFXDevice& context, const BufferImplParams& params);
     virtual ~glBufferImpl();
 
-    [[nodiscard]] bool bindRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
+    [[nodiscard]] bool bindByteRange(GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
 
     // Returns false if we encounter an error
-    [[nodiscard]] bool lockRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
+    [[nodiscard]] bool lockByteRange(size_t offsetInBytes, size_t rangeInBytes, U32 frameID) const;
+    [[nodiscard]] bool waitByteRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
 
-    // Returns false if we encounter an error
-    [[nodiscard]] bool waitRange(size_t offsetInBytes, size_t rangeInBytes, bool blockClient) const;
-
-    void writeData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data);
-    void readData(size_t offsetInBytes, size_t rangeInBytes, Byte* data) const;
-    void zeroMem(size_t offsetInBytes, size_t rangeInBytes);
+    void writeOrClearBytes(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data, bool zeroMem);
+    void readBytes(size_t offsetInBytes, size_t rangeInBytes, bufferPtr data) const;
 
 public:
     static GLenum GetBufferUsage(BufferUpdateFrequency frequency, BufferUpdateUsage usage) noexcept;
     static void CleanMemory() noexcept;
 
 public:
-    PROPERTY_R(size_t, elementSize, 0);
-    PROPERTY_R(GLenum, target, GL_NONE);
-    PROPERTY_R(bool, unsynced, false);
-    PROPERTY_R(bool, useExplicitFlush, false);
-    PROPERTY_R(BufferUpdateFrequency, updateFrequency, BufferUpdateFrequency::COUNT);
-    PROPERTY_R(BufferUpdateUsage, updateUsage, BufferUpdateUsage::COUNT);
-    PROPERTY_R(GLenum, usage, GL_NONE);
+    PROPERTY_R(BufferImplParams, params);
+    
     PROPERTY_R(GLUtil::GLMemory::Block, memoryBlock);
-
-protected:
-    void writeOrClearData(size_t offsetInBytes, size_t rangeInBytes, const Byte* data, bool zeroMem);
 
 protected:
     GFXDevice& _context;
 
     std::atomic_int _flushQueueSize;
-    glBufferLockManager* _lockManager = nullptr;
+    eastl::unique_ptr<glBufferLockManager> _lockManager = nullptr;
     moodycamel::BlockingConcurrentQueue<BufferMapRange> _flushQueue;
 };
 }; //namespace Divide

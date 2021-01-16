@@ -123,7 +123,7 @@ bool Scene::frameEnded() {
 
 bool Scene::idle() {  // Called when application is idle
     if (_cookCollisionMeshesScheduled && checkLoadFlag()) {
-        if (_context.gfx().getFrameCount() > 1) {
+        if (_context.gfx().frameCount() > 1) {
             _sceneGraph->getRoot()->get<RigidBodyComponent>()->cookCollisionMesh(resourceName().c_str());
             _cookCollisionMeshesScheduled = false;
         }
@@ -1811,7 +1811,7 @@ void Scene::updateSelectionData(PlayerIndex idx, DragSelectData& data, bool rema
 
     _linesPrimitive->fromLines(s_lines.data(), s_lines.size());
 
-    if (_context.gfx().getFrameCount() % 2 == 0) {
+    if (_context.gfx().frameCount() % 2 == 0) {
         clearHoverTarget(idx);
         _parent.resetSelection(idx);
         Camera* crtCamera = getPlayerForIndex(idx)->camera();

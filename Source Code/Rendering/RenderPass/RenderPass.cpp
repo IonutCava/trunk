@@ -24,6 +24,9 @@
 namespace Divide {
 
 namespace {
+    // Size factor for command and data buffers
+    constexpr U8 DataBufferRingSize = 3u;
+
     // We need a proper, time-based system, to check reflection budget
     namespace ReflectionUtil {
         U16 g_reflectionBudget = 0;
@@ -61,10 +64,10 @@ void RenderPass::initBufferData() {
         // Atomic counter for occlusion culling
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::ATOMIC_COUNTER;
-        bufferDescriptor._elementCount = 1;
-        bufferDescriptor._elementSize = sizeof(U32);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._bufferParams._elementCount = 1;
+        bufferDescriptor._bufferParams._elementSize = sizeof(U32);
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._ringBufferLength = 5;
         bufferDescriptor._separateReadWrite = true;
         bufferDescriptor._name = Util::StringFormat("CULL_COUNTER_%s", TypeUtil::RenderStageToString(_stageFlag));
@@ -72,29 +75,32 @@ void RenderPass::initBufferData() {
     }
 
     ShaderBufferDescriptor bufferDescriptor = {};
-    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::OFTEN;
+    bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    bufferDescriptor._bufferParams._syncEndOfCmdBuffer = true;
+
     bufferDescriptor._ringBufferLength = DataBufferRingSize;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
+    bufferDescriptor._bufferParams._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
 
+    bufferDescriptor._usage = ShaderBuffer::Usage::COMMAND_BUFFER;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::EXPLICIT_RANGE_FLUSH);
     {// Indirect draw command buffer
-        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
-        bufferDescriptor._elementSize = sizeof(IndirectDrawCommand);
+        bufferDescriptor._bufferParams._elementSize = sizeof(IndirectDrawCommand);
         bufferDescriptor._name = Util::StringFormat("CMD_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _cmdBuffer = _context.newSB(bufferDescriptor);
     }
 
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::NONE);
     {// Node Transform buffer
-        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_VISIBLE_NODES;
-        bufferDescriptor._elementSize = sizeof(NodeTransformData);
+        bufferDescriptor._bufferParams._elementSize = sizeof(NodeTransformData);
         bufferDescriptor._name = Util::StringFormat("NODE_TRANSFORM_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _transformData = _context.newSB(bufferDescriptor);
     }
     {// Node Material buffer
-        bufferDescriptor._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
-        bufferDescriptor._elementSize = sizeof(NodeMaterialData);
+        bufferDescriptor._bufferParams._elementCount = RenderStagePass::totalPassCountForStage(_stageFlag) * Config::MAX_CONCURRENT_MATERIALS;
+        bufferDescriptor._bufferParams._elementSize = sizeof(NodeMaterialData);
         bufferDescriptor._name = Util::StringFormat("NODE_MATERIAL_DATA_%s", TypeUtil::RenderStageToString(_stageFlag));
         _materialData = _context.newSB(bufferDescriptor);
     }

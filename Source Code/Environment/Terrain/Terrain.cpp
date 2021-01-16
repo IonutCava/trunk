@@ -242,12 +242,12 @@ void Terrain::postBuild() {
             idxBuff.data = indices.data();
 
             GenericVertexData::SetBufferParams params = {};
-            params._elementSize = sizeof(TileRing::InstanceData);
-            params._updateFrequency = BufferUpdateFrequency::ONCE;
-            params._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-            params._storageType = BufferStorageType::NORMAL;
+            params._bufferParams._elementSize = sizeof(TileRing::InstanceData);
+            params._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+            params._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+            params._bufferParams._sync = false;
             params._instanceDivisor = 1u;
-            params._sync = false;
+            
 
             _terrainBuffer = _context.newGVD(1);
             _terrainBuffer->renderIndirect(true);
@@ -264,18 +264,18 @@ void Terrain::postBuild() {
                 for (size_t i = 0; i < ringCount; ++i) {
                     vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
                     vbData.insert(cend(vbData), cbegin(ringData), cend(ringData));
-                    params._elementCount += to_U32(ringData.size());
+                    params._bufferParams._elementCount += to_U32(ringData.size());
                 }
                 params._buffer = 0;
-                params._initialData = { (Byte*)vbData.data(), vbData.size() * sizeof(TileRing::InstanceData) };
+                params._bufferParams._initialData = { (Byte*)vbData.data(), vbData.size() * sizeof(TileRing::InstanceData) };
                 _terrainBuffer->setBuffer(params);
             } else {
 
                 for (size_t i = 0; i < ringCount; ++i) {
                     vectorEASTL<TileRing::InstanceData> ringData = _tileRings[i]->createInstanceDataVB(to_I32(i));
                     params._buffer = to_U32(i);
-                    params._initialData = { (Byte*)ringData.data(), ringData.size() * sizeof(TileRing::InstanceData) };
-                    params._elementCount = to_U32(ringData.size());
+                    params._bufferParams._initialData = { (Byte*)ringData.data(), ringData.size() * sizeof(TileRing::InstanceData) };
+                    params._bufferParams._elementCount = to_U32(ringData.size());
                     _terrainBuffer->setBuffer(params);
                 }
             }

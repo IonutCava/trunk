@@ -285,11 +285,6 @@ public:  // Accessors and Mutators
     inline GFXRTPool& renderTargetPool() noexcept;
     inline const GFXRTPool& renderTargetPool() const noexcept;
     inline const ShaderProgram_ptr& getRTPreviewShader(bool depthOnly) const noexcept;
-    inline U32 getFrameCount() const noexcept;
-    inline I32 getDrawCallCount() const noexcept;
-    inline I32 getDrawCallCountLastFrame() const noexcept;
-    /// Return the last number of HIZ culled items
-    inline U32 getLastCullCount() const noexcept;
     inline Arena::Statistics getObjectAllocStats() const noexcept;
     inline void registerDrawCall() noexcept;
     inline void registerDrawCalls(U32 count) noexcept;
@@ -373,6 +368,10 @@ public:
     PROPERTY_RW(MaterialDebugFlag, materialDebugFlag, MaterialDebugFlag::COUNT);
     PROPERTY_RW(RenderAPI, renderAPI, RenderAPI::COUNT);
     PROPERTY_RW(bool, queryPerformanceStats, false);
+    PROPERTY_R_IW(U32, frameDrawCalls, 0u);
+    PROPERTY_R_IW(U32, frameDrawCallsPrev, 0u);
+    PROPERTY_R_IW(U32, frameCount, 0u);
+    PROPERTY_R_IW(U32, lastCullCount, 0u);
 
 protected:
     void update(U64 deltaTimeUS);
@@ -458,12 +457,6 @@ private:
     size_t _stateDepthOnlyRenderingHash = 0;
     /// The interpolation factor between the current and the last frame
     FrustumClipPlanes _clippingPlanes{};
-
-    // number of draw calls (rough estimate)
-    I32 FRAME_DRAW_CALLS = 0;
-    U32 FRAME_DRAW_CALLS_PREV = 0u;
-    U32 FRAME_COUNT = 0u;
-    U32 LAST_CULL_COUNT = 0;
 
     /// shader used to preview the depth buffer
     ShaderProgram_ptr _previewDepthMapShader = nullptr;

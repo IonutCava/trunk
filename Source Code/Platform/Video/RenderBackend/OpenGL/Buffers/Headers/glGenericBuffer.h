@@ -33,27 +33,22 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef _GL_GENERIC_BUFFER_H_
 #define _GL_GENERIC_BUFFER_H_
 
+#include "Platform/Video/Buffers/VertexBuffer/Headers/VertexDataInterface.h"
 #include "Platform/Video/RenderBackend/OpenGL/Headers/glResources.h"
 
 namespace Divide {
 
-struct BufferParams {
+struct GenericBufferParams {
+    BufferParams _bufferParams;
     GLenum _usage = GL_NONE;
-    bool   _unsynced = true;
     GLuint _ringSizeFactor = 1;
-    GLuint _elementCount = 0;
-    size_t _elementSizeInBytes = 0;
-    BufferUpdateFrequency _frequency = BufferUpdateFrequency::ONCE;
-    BufferUpdateUsage _updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-    BufferStorageType _storageType = BufferStorageType::AUTO;
     const char* _name = "";
-    std::pair<Byte*, size_t> _initialData = { nullptr, 0 };
 };
 
 class glBufferImpl;
 class glGenericBuffer {
   public:
-      glGenericBuffer(GFXDevice& context, const BufferParams& params);
+      glGenericBuffer(GFXDevice& context, const GenericBufferParams& params);
       ~glGenericBuffer();
 
       [[nodiscard]] GLuint elementCount() const noexcept { return _elementCount; }
@@ -73,18 +68,10 @@ class glGenericBuffer {
                     GLuint ringReadOffset,
                     bufferPtr dataOut) const;
 
-      [[nodiscard]] size_t getBindOffset(GLuint ringReadOffset) const;
-
-      void setBindOffset(GLuint elementCountOffset) noexcept;
-
-      [[nodiscard]] glBufferImpl* bufferImpl() const noexcept;
+      POINTER_R(glBufferImpl, bufferImpl, nullptr);
 
   protected:
       GLuint _elementCount;
-      GLuint _elementCountBindOffset;
-      // A flag to check if the buffer uses the RingBuffer system
-      glBufferImpl* _buffer;
-
       GLuint _ringSizeFactor;
 };
 

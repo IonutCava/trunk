@@ -38,23 +38,20 @@ namespace Divide {
 
 class glLockManager : public GUIDWrapper {
    public:
-    glLockManager() noexcept;
+    glLockManager() = default;
     virtual ~glLockManager();
 
-    void Wait(bool blockClient);
-    void Lock(bool flush);
+    void wait(bool blockClient);
+    void lock();
 
-    // returns true if the sync object was signaled. retryCount is the number of retries it took to wait for the object
-    // if quickCheck is true, we don't retry if the initial check fails 
-    static bool wait(GLsync syncObj, bool blockClient, bool quickCheck, U8& retryCount);
+  protected:
+    /// Returns true if the sync object was signaled. retryCount is the number of retries it took to wait for the object
+    /// if quickCheck is true, we don't retry if the initial check fails 
+    static bool Wait(GLsync syncObj, bool blockClient, bool quickCheck, U8& retryCount);
 
-    static bool wait(const GLsync syncObj, const bool blockClient, const bool quickCheck = false) {
-        U8 retryCount = 0;
-        return wait(syncObj, blockClient, quickCheck, retryCount);
-    }
    protected:
     SharedMutex _syncMutex;
-    GLsync _defaultSync;
+    GLsync _defaultSync = nullptr;
 };
 
 };  // namespace Divide

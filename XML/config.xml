@@ -63,10 +63,13 @@
 	<textureQuality>1</textureQuality>
 	<!-- higher => better (less tilling, more parallax effects, etc) -->
 	<detailLevel>2</detailLevel>
-	<!-- higher => better. 0,1 or 2 -->
+	<!-- higher => better -->
 	<parallaxMode>0</parallaxMode>
+	<!-- The following debug settings work in cascade mode. The topmost enabled option is the only one considered-->
 	<wireframe>false</wireframe>
-    <showNormals>false</showNormals>
+	<showNormals>false</showNormals>
+	<showLoDs>false</showLoDs>
+	<showTessLevels>false</showTessLevels>
 </terrain>
 <rendering>
 	<MSAASamples>2</MSAASamples>

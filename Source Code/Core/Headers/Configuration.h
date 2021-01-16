@@ -98,6 +98,8 @@ struct Configuration final : public XML::IXMLSerializable {
         U8 parallaxMode = 0;
         bool wireframe = false;
         bool showNormals = false;
+        bool showLoDs = false;
+        bool showTessLevels = false;
     } terrain;
 
     struct SSAOSettings{

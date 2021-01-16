@@ -81,14 +81,14 @@ void LightPool::init() {
     bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
     bufferDescriptor._ringBufferLength = 3;
     bufferDescriptor._separateReadWrite = false;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES) | to_U32(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::EXPLICIT_RANGE_FLUSH);
+    bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+    bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     
     {
         bufferDescriptor._name = "LIGHT_BUFFER";
-        bufferDescriptor._elementCount = to_base(RenderStage::COUNT) - 1; ///< no shadows
-        bufferDescriptor._elementSize = sizeof(BufferData);
+        bufferDescriptor._bufferParams._elementCount = to_base(RenderStage::COUNT) - 1; ///< no shadows
+        bufferDescriptor._bufferParams._elementSize = sizeof(BufferData);
         // Holds general info about the currently active lights: position, colour, etc.
         _lightShaderBuffer = _context.gfx().newSB(bufferDescriptor);
     }
@@ -96,8 +96,8 @@ void LightPool::init() {
         // Holds info about the currently active shadow casting lights:
         // ViewProjection Matrices, View Space Position, etc
         bufferDescriptor._name = "LIGHT_SHADOW_BUFFER"; 
-        bufferDescriptor._elementCount = 1;
-        bufferDescriptor._elementSize = sizeof(ShadowProperties);
+        bufferDescriptor._bufferParams._elementCount = 1;
+        bufferDescriptor._bufferParams._elementSize = sizeof(ShadowProperties);
         _shadowBuffer = _context.gfx().newSB(bufferDescriptor);
     }
 

@@ -84,14 +84,13 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
 
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-    bufferDescriptor._elementCount = frameCount();
-    bufferDescriptor._elementSize = sizeof(mat4<F32>) * Config::MAX_BONE_COUNT_PER_NODE;
     bufferDescriptor._ringBufferLength = 1;
-    bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::ALLOW_THREADED_WRITES);
-    bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-    bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
     bufferDescriptor._name = Util::StringFormat("BONE_%d_BONES", boneCount);
-    bufferDescriptor._initialData = { (Byte*)animationData.data(), animationData.size()* bufferDescriptor._elementSize };
+    bufferDescriptor._bufferParams._elementCount = frameCount();
+    bufferDescriptor._bufferParams._elementSize = sizeof(mat4<F32>) * Config::MAX_BONE_COUNT_PER_NODE;
+    bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+    bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+    bufferDescriptor._bufferParams._initialData = { (Byte*)animationData.data(), animationData.size()* bufferDescriptor._bufferParams._elementSize };
 
     boneBuffer(context.newSB(bufferDescriptor));
 

@@ -50,56 +50,47 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
         pipelineDescriptor._shaderProgramHandle = _lightBuildClusteredAABBsComputeShader->getGUID();
         _lightBuildClusteredAABBsPipeline = _context.gfx().newPipeline(pipelineDescriptor);
     }
+
+
+    ShaderBufferDescriptor bufferDescriptor = {};
+    bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
+    bufferDescriptor._ringBufferLength = 1;
     { //Light Index Buffer
         const U32 totalLights = numClusters * to_U32(config.rendering.numLightsPerCluster);
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = totalLights;
-        bufferDescriptor._elementSize = sizeof(U32);
-        bufferDescriptor._ringBufferLength = 1;
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "LIGHT_INDEX_SSBO";
-        bufferDescriptor._initialData = { nullptr, 0 };
+        bufferDescriptor._bufferParams._elementCount = totalLights;
+        bufferDescriptor._bufferParams._elementSize = sizeof(U32);
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._bufferParams._initialData = { nullptr, 0 };
         _lightIndexBuffer = _context.gfx().newSB(bufferDescriptor);
         _lightIndexBuffer->bind(ShaderBufferLocation::LIGHT_INDICES);
     }
     { // Light Grid Buffer
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = numClusters;
-        bufferDescriptor._ringBufferLength = 1;
-        bufferDescriptor._elementSize = 3 * sizeof(U32);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "LIGHT_GRID_SSBO";
-        bufferDescriptor._initialData = { nullptr, 0 };
+        bufferDescriptor._bufferParams._elementCount = numClusters;
+        bufferDescriptor._bufferParams._elementSize = 3 * sizeof(U32);
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._bufferParams._initialData = { nullptr, 0 };
         _lightGridBuffer = _context.gfx().newSB(bufferDescriptor);
         _lightGridBuffer->bind(ShaderBufferLocation::LIGHT_GRID);
     }
     { // Global Index Count
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = 1;
-        bufferDescriptor._ringBufferLength = 1;
-        bufferDescriptor._elementSize = sizeof(U32);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
         bufferDescriptor._name = "GLOBAL_INDEX_COUNT_SSBO";
-        bufferDescriptor._initialData = { nullptr, 0 };
+        bufferDescriptor._bufferParams._elementSize = sizeof(U32);
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._bufferParams._initialData = { nullptr, 0 };
         _globalIndexCountBuffer = _context.gfx().newSB(bufferDescriptor);
         _globalIndexCountBuffer->bind(ShaderBufferLocation::LIGHT_INDEX_COUNT);
     }
     { // Cluster AABBs
-        ShaderBufferDescriptor bufferDescriptor = {};
-        bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementCount = numClusters;
-        bufferDescriptor._ringBufferLength = 1;
-        bufferDescriptor._elementSize = 2 * (4 * sizeof(F32));
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::ONCE;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
-        bufferDescriptor._name = "LIGHT_CLUSTER_AABBs_SSBO";
-        bufferDescriptor._initialData = { nullptr, 0 };
+        bufferDescriptor._bufferParams._elementCount = numClusters;
+        bufferDescriptor._bufferParams._elementSize = 2 * (4 * sizeof(F32));
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::ONCE;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::GPU_R_GPU_W;
+        bufferDescriptor._bufferParams._initialData = { nullptr, 0 };
         _lightClusterAABBsBuffer = _context.gfx().newSB(bufferDescriptor);
         _lightClusterAABBsBuffer->bind(ShaderBufferLocation::LIGHT_CLUSTER_AABBS);
     }

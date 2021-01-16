@@ -237,9 +237,9 @@ void RenderPassManager::render(const RenderParams& params) {
 
                         //Start(*whileRendering);
                         // No running dependency so we can flush the command buffer and add the pass to the skip list
-                        _drawCallCount[i] = _context.getDrawCallCount();
+                        _drawCallCount[i] = _context.frameDrawCalls();
                         _context.flushCommandBuffer(*_renderPassCommandBuffer[i], false);
-                        _drawCallCount[i] = _context.getDrawCallCount() - _drawCallCount[i];
+                        _drawCallCount[i] = _context.frameDrawCalls() - _drawCallCount[i];
 
                         completedPasses[i] = true;
                         //Wait(*whileRendering);

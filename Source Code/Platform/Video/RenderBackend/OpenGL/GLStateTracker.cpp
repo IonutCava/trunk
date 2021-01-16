@@ -330,7 +330,7 @@ bool GLStateTracker::bindActiveBuffer(const GLuint vaoID, const GLuint location,
 
     if (bindings != currentParams) {
         // Bind the specified buffer handle to the desired buffer target
-        glVertexArrayVertexBuffer(vaoID, location, bufferID, (GLintptr)offset, (GLsizei)stride);
+        glVertexArrayVertexBuffer(vaoID, location, bufferID, static_cast<GLintptr>(offset), static_cast<GLsizei>(stride));
         // Remember the new binding for future reference
         _vaoBufferData.bindingParams(vaoID, location, currentParams);
         return true;

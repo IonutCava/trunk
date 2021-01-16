@@ -122,7 +122,7 @@ bool glTexture::unload() {
     U32 textureID = _data._textureHandle;
     if (textureID > 0) {
         if (_lockManager) {
-            _lockManager->Wait(false);
+            _lockManager->wait(false);
         }
         GL_API::DequeueComputeMipMap(_data._textureHandle);
         glDeleteTextures(1, &textureID);
@@ -135,7 +135,7 @@ bool glTexture::unload() {
 void glTexture::threadedLoad() {
 
     Texture::threadedLoad();
-    _lockManager->Lock(!Runtime::isMainThread());
+    _lockManager->lock();
     CachedResource::load();
 }
 

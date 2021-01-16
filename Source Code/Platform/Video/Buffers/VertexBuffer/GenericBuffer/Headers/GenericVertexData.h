@@ -56,16 +56,10 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
      };
 
      struct SetBufferParams {
+         BufferParams _bufferParams;
          U32 _buffer = 0;
-         U32 _elementCount = 0;
          U32 _instanceDivisor = 0;
-         size_t _elementSize = 0;
-         bool _sync = false;
          bool _useRingBuffer = false;
-         std::pair<Byte*, size_t> _initialData = { nullptr, 0 };
-         BufferStorageType _storageType = BufferStorageType::AUTO;
-         BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
-         BufferUpdateUsage _updateUsage = BufferUpdateUsage::COUNT;
      };
 
    public:
@@ -82,15 +76,17 @@ class NOINITVTABLE GenericVertexData : public VertexDataInterface,
     virtual void setBuffer(const SetBufferParams& params) = 0;
 
     virtual void updateBuffer(U32 buffer,
-                              U32 elementCount,
                               U32 elementCountOffset,
+                              U32 elementCountRange,
                               bufferPtr data) = 0;
-
-    virtual void setBufferBindOffset(U32 buffer, U32 elementCountOffset) = 0;
     
     AttributeDescriptor& attribDescriptor(U32 attribIndex);
 
     const IndexBuffer& indexBuffer() const noexcept { return _idxBuffer; }
+
+    /// Only used on buffers created with sync = false; 
+    virtual void lockBuffers() = 0;
+    virtual bool waitBufferRange(U32 buffer, U32 elementCountOffset, U32 elementCountRange, bool blockClient) = 0;
 
    protected:
     using AttributeMap = hashMap<U32, AttributeDescriptor>;

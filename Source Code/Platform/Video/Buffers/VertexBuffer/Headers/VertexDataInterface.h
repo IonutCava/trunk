@@ -36,11 +36,25 @@
 #include "Core/Headers/ObjectPool.h"
 
 #include "Platform/Video/Headers/GraphicsResource.h"
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
 
 struct RenderStagePass;
 struct GenericDrawCommand;
+
+struct BufferParams
+{
+    std::pair<Byte*, size_t> _initialData = { nullptr, 0 };
+    U32 _elementCount = 0;
+    size_t _elementSize = 0;     ///< Buffer primitive size in bytes
+    bool _sync = true;
+    bool _syncEndOfCmdBuffer = true; ///< If true, a fence will be issued after the current command buffer finished flushing, otherwise it will be issued after the first draw/dispatch command
+    bool _usePersistentMapping = true;
+
+    BufferUpdateFrequency _updateFrequency = BufferUpdateFrequency::COUNT;
+    BufferUpdateUsage _updateUsage = BufferUpdateUsage::COUNT;
+};
 
 class NOINITVTABLE VertexDataInterface : public GUIDWrapper, public GraphicsResource {
    public:

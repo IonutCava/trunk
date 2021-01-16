@@ -45,11 +45,6 @@ void DebugPrimitiveHandler<Data, N>::reset() {
     _debugPrimitives.fill(nullptr);
 }
 
-inline const GFXShaderData::GPUData&
-GFXDevice::renderingData() const noexcept {
-    return _gpuBlock._data;
-}
-
 inline Renderer& 
 GFXDevice::getRenderer() const {
     assert(_renderer != nullptr);
@@ -86,27 +81,6 @@ GFXDevice::getRTPreviewShader(const bool depthOnly) const noexcept {
     return depthOnly ? _previewRenderTargetDepth : _previewRenderTargetColour;
 }
 
-inline U32
-GFXDevice::getFrameCount() const noexcept {
-    return FRAME_COUNT;
-}
-
-inline I32
-GFXDevice::getDrawCallCountLastFrame() const noexcept {
-    return FRAME_DRAW_CALLS_PREV;
-}
-
-inline I32
-GFXDevice::getDrawCallCount() const noexcept {
-    return FRAME_DRAW_CALLS;
-}
-
-/// Return the last number of HIZ culled items
-inline U32
-GFXDevice::getLastCullCount() const noexcept {
-    return LAST_CULL_COUNT;
-}
-
 inline Arena::Statistics
 GFXDevice::getObjectAllocStats() const noexcept {
     return _gpuObjectArena.statistics_;
@@ -119,7 +93,7 @@ GFXDevice::registerDrawCall() noexcept {
 
 inline void
 GFXDevice::registerDrawCalls(const U32 count) noexcept {
-    FRAME_DRAW_CALLS += count;
+    frameDrawCalls(frameDrawCalls() + count);
 }
 
 inline const Rect<I32>&

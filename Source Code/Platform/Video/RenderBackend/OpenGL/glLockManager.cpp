@@ -9,18 +9,12 @@ namespace Divide {
 constexpr GLuint64 kOneSecondInNanoSeconds = 1000000000;
 constexpr U8 kMaxWaitRetry = 5;
 
-glLockManager::glLockManager() noexcept
-    : GUIDWrapper(),
-     _defaultSync(nullptr)
-{
-}
-
 glLockManager::~glLockManager()
 {
-    Wait(false);
+    wait(true);
 }
 
-void glLockManager::Wait(const bool blockClient) {
+void glLockManager::wait(const bool blockClient) {
     OPTICK_EVENT();
 
     {
@@ -32,25 +26,23 @@ void glLockManager::Wait(const bool blockClient) {
 
     UniqueLock<SharedMutex> w_lock(_syncMutex);
     if (_defaultSync != nullptr) {
-        wait(_defaultSync, blockClient);
+        U8 retryCount = 0u;
+        Wait(_defaultSync, blockClient, false, retryCount);
         glDeleteSync(_defaultSync);
         _defaultSync = nullptr;
     }
 }
  
-void glLockManager::Lock(const bool flush) {
+void glLockManager::lock() {
     OPTICK_EVENT();
 
     UniqueLock<SharedMutex> lock(_syncMutex);
     assert(_defaultSync == nullptr);
+
     _defaultSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    // A glFlush call is needed after creating a new fence to make sure we don't end up with an infinite wait issue
-    if (flush) {
-        glFlush();
-    }
 }
 
-bool glLockManager::wait(const GLsync syncObj, const bool blockClient, const bool quickCheck, U8& retryCount) {
+bool glLockManager::Wait(const GLsync syncObj, const bool blockClient, const bool quickCheck, U8& retryCount) {
     OPTICK_EVENT();
     OPTICK_TAG("Blocking", blockClient);
     OPTICK_TAG("QuickCheck", quickCheck);

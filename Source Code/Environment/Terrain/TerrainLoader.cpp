@@ -347,29 +347,41 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                                                         ? Terrain::WireframeMode::EDGES 
                                                         : terrainConfig.showNormals
                                                                 ? Terrain::WireframeMode::NORMALS
-                                                                : Terrain::WireframeMode::NONE;
-        if (wMode != Terrain::WireframeMode::NONE) {
+                                                                : terrainConfig.showLoDs 
+                                                                    ? Terrain::WireframeMode::LODS
+                                                                    : terrainConfig.showTessLevels 
+                                                                        ? Terrain::WireframeMode::TESS_LEVELS
+                                                                        : Terrain::WireframeMode::NONE;
+
+        const bool hasGeometryPass = wMode == Terrain::WireframeMode::EDGES || wMode == Terrain::WireframeMode::NORMALS;
+        if (hasGeometryPass) {
             shaderDescriptor._modules.push_back(geomModule);
         }
-        shaderDescriptor._modules.push_back(fragModule);
 
-        bool hasGeometryPass = false;
+        shaderDescriptor._modules.push_back(fragModule);
 
         stringImpl propName;
         for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
             stringImpl shaderPropName;
 
             if (wMode != Terrain::WireframeMode::NONE) {
-                hasGeometryPass = true;
-                shaderPropName += ".DebugView";
-                shaderModule._defines.emplace_back("TOGGLE_DEBUG", true);
+                if (hasGeometryPass) {
+                    shaderPropName += ".DebugView";
+                    shaderModule._defines.emplace_back("TOGGLE_DEBUG", true);
+                }
+
                 if (wMode == Terrain::WireframeMode::EDGES) {
                     shaderPropName += ".WireframeView";
                     shaderModule._defines.emplace_back("TOGGLE_WIREFRAME", true);
                 } else if (wMode == Terrain::WireframeMode::NORMALS) {
                     shaderPropName += ".PreviewNormals";
                     shaderModule._defines.emplace_back("TOGGLE_NORMALS", true);
-                    hasGeometryPass = true;
+                } else if (wMode == Terrain::WireframeMode::LODS) {
+                    shaderPropName += ".PreviewLoDs";
+                    shaderModule._defines.emplace_back("TOGGLE_LODS", true);
+                } else if (wMode == Terrain::WireframeMode::TESS_LEVELS) {
+                    shaderPropName += ".PreviewTessLevels";
+                    shaderModule._defines.emplace_back("TOGGLE_TESS_LEVEL", true);
                 }
             }
 

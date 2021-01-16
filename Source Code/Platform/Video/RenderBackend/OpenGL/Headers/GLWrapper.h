@@ -170,8 +170,7 @@ public:
     static bool DeleteVAOs(GLuint count, GLuint* vaos);
     static bool DeleteFramebuffers(GLuint count, GLuint* framebuffers);
 
-    static void LockBuffers(U32 frameID);
-    static void RegisterBufferBind(BufferLockEntry&& data);
+    static void RegisterBufferBind(BufferLockEntry&& data, bool fenceAfterFirstDraw);
 
     using IMPrimitivePool = MemoryPool<glIMPrimitive, 2048>;
 
@@ -264,7 +263,8 @@ private:
     static GLUtil::glTextureViewCache s_textureViewCache;
 
     static IMPrimitivePool s_IMPrimitivePool;
-    static eastl::fixed_vector<BufferLockEntry, 64, true> s_bufferLockQueue;
+    static eastl::fixed_vector<BufferLockEntry, 64, true> s_bufferLockQueueMidFlush;
+    static eastl::fixed_vector<BufferLockEntry, 64, true> s_bufferLockQueueEndOfBuffer;
 };
 
 };  // namespace Divide

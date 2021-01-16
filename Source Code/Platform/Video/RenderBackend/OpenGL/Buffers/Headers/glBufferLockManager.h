@@ -43,17 +43,28 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 namespace Divide {
 
 struct BufferRange {
-    size_t _startOffset = 0;
-    size_t _length = 0;
-
-    [[nodiscard]] bool Overlaps(const BufferRange& _rhs) const noexcept {
-        return _startOffset < _rhs._startOffset + _rhs._length && _rhs._startOffset < _startOffset + _length;
-    }
+    size_t _startOffset = 0u;
+    size_t _length = 0u;
 };
+
+inline bool operator==(const BufferRange& lhs, const BufferRange& rhs) noexcept {
+    return lhs._startOffset == rhs._startOffset &&
+           lhs._length == rhs._length;
+}
+
+[[nodiscard]] inline bool Overlaps(const BufferRange& lhs, const BufferRange& rhs) noexcept {
+    return lhs._startOffset < (rhs._startOffset + rhs._length) && rhs._startOffset < (lhs._startOffset + lhs._length);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 struct BufferLock {
-    BufferRange _range = {};
+    BufferLock() = default;
+    BufferLock(const BufferRange range, const GLsync syncObj, const U32 frameID) noexcept
+        : _range(range), _syncObj(syncObj), _frameID(frameID)
+    {
+    }
+
+    BufferRange _range{};
     GLsync _syncObj = nullptr;
     U32 _frameID = 0;
     bool _valid = true;
@@ -62,14 +73,14 @@ struct BufferLock {
 // --------------------------------------------------------------------------------------------------------------------
 class glBufferLockManager final : public glLockManager {
    public:
-    glBufferLockManager();
+    glBufferLockManager() = default;
     ~glBufferLockManager();
 
     /// Returns false if we encountered an error
-    bool WaitForLockedRange(size_t lockBeginBytes, size_t lockLength, bool blockClient, bool quickCheck = false);
+    bool waitForLockedRange(size_t lockBeginBytes, size_t lockLength, bool blockClient, bool quickCheck = false);
 
     /// Returns false if we encountered an error
-    bool LockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID);
+    bool lockRange(size_t lockBeginBytes, size_t lockLength, U32 frameID);
 
    private:
     mutable Mutex _lock;

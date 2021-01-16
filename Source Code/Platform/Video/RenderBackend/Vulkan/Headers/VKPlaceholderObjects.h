@@ -193,22 +193,25 @@ namespace Divide {
         }
 
         void updateBuffer(U32 buffer,
-                          U32 elementCount,
                           U32 elementCountOffset,
+                          U32 elementCountRange,
                           bufferPtr data) override {
             ACKNOWLEDGE_UNUSED(buffer);
-            ACKNOWLEDGE_UNUSED(elementCount);
             ACKNOWLEDGE_UNUSED(elementCountOffset);
+            ACKNOWLEDGE_UNUSED(elementCountRange);
             ACKNOWLEDGE_UNUSED(data);
         }
 
-        void setBufferBindOffset(U32 buffer, U32 elementCountOffset) override {
+        void lockBuffers() override {}
+
+        bool waitBufferRange(U32 buffer, U32 elementCountOffset, U32 elementCountRange, bool blockClient) override {
             ACKNOWLEDGE_UNUSED(buffer);
             ACKNOWLEDGE_UNUSED(elementCountOffset);
+            ACKNOWLEDGE_UNUSED(elementCountRange);
+            ACKNOWLEDGE_UNUSED(blockClient);
+
+            return false;
         }
-
-
-        void incQueryQueue() {}
     };
 
     class vkTexture final : public Texture {
@@ -292,41 +295,28 @@ namespace Divide {
             : ShaderBuffer(context, descriptor)
         {}
 
-        void writeData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr data) override {
-            ACKNOWLEDGE_UNUSED(offsetElementCount);
-            ACKNOWLEDGE_UNUSED(rangeElementCount);
-            ACKNOWLEDGE_UNUSED(data);
+        void clearBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes) override {
+            ACKNOWLEDGE_UNUSED(offsetInBytes);
+            ACKNOWLEDGE_UNUSED(rangeInBytes);
         }
+
         void writeBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr data) override {
             ACKNOWLEDGE_UNUSED(offsetInBytes);
             ACKNOWLEDGE_UNUSED(rangeInBytes);
             ACKNOWLEDGE_UNUSED(data);
         }
-        void writeData(bufferPtr data) override {
-            ACKNOWLEDGE_UNUSED(data);
-        }
 
-        void clearData(U32 offsetElementCount, U32 rangeElementCount) override {
-            ACKNOWLEDGE_UNUSED(offsetElementCount);
-            ACKNOWLEDGE_UNUSED(rangeElementCount);
-        }
-
-        void readData(U32 offsetElementCount, U32 rangeElementCount, bufferPtr result) const override {
-            ACKNOWLEDGE_UNUSED(offsetElementCount);
-            ACKNOWLEDGE_UNUSED(rangeElementCount);
+        void readBytes(ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes, bufferPtr result) const override {
+            ACKNOWLEDGE_UNUSED(offsetInBytes);
+            ACKNOWLEDGE_UNUSED(rangeInBytes);
             ACKNOWLEDGE_UNUSED(result);
         }
 
-        bool bindRange(U8 bindIndex, U32 offsetElementCount, U32 rangeElementCount) override { 
+        bool bindByteRange(U8 bindIndex, ptrdiff_t offsetInBytes, ptrdiff_t rangeInBytes) override { 
             ACKNOWLEDGE_UNUSED(bindIndex);
-            ACKNOWLEDGE_UNUSED(offsetElementCount);
-            ACKNOWLEDGE_UNUSED(rangeElementCount);
+            ACKNOWLEDGE_UNUSED(offsetInBytes);
+            ACKNOWLEDGE_UNUSED(rangeInBytes);
             return true; 
-        }
-
-        bool bind(U8 bindIndex) override { 
-            ACKNOWLEDGE_UNUSED(bindIndex);
-            return true;
         }
     };
 };  // namespace Divide

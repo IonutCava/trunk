@@ -58,10 +58,10 @@ namespace GLMemory{
     class Chunk final : NonCopyable, NonMovable
     {
     public:
-        explicit Chunk(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask);
+        explicit Chunk(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, Byte* initialData);
         ~Chunk();
                       void deallocate(const Block& block);
-        [[nodiscard]] bool allocate(size_t size, const char* name, Block& blockOut);
+        [[nodiscard]] bool allocate(size_t size, const char* name, Byte* initialData, Block& blockOut);
         [[nodiscard]] bool isIn(const Block &block) const;
 
         PROPERTY_RW(BufferStorageMask, storageMask, BufferStorageMask::GL_NONE_BIT);
@@ -80,7 +80,7 @@ namespace GLMemory{
         explicit ChunkAllocator(size_t size);
 
         // if size > mSize, allocate to the next power of 2
-        [[nodiscard]] std::unique_ptr<Chunk> allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask) const;
+        [[nodiscard]] std::unique_ptr<Chunk> allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, Byte* initialData) const;
 
     private:
         size_t _size = 0u;
@@ -95,7 +95,7 @@ namespace GLMemory{
         AbstractAllocator() = default;
         virtual ~AbstractAllocator() = default;
 
-        virtual Block allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, const char* blockName) = 0;
+        virtual Block allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, const char* blockName, Byte* initialData) = 0;
         virtual void deallocate(Block &block) = 0;
     };
 
@@ -106,7 +106,7 @@ namespace GLMemory{
         ~DeviceAllocator() = default;
 
         void init(size_t size);
-        [[nodiscard]] Block allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, const char* blockName);
+        [[nodiscard]] Block allocate(size_t size, BufferStorageMask storageMask, MapBufferAccessMask accessMask, const char* blockName, Byte* initialData);
         void deallocate(Block &block);
         void deallocate();
 

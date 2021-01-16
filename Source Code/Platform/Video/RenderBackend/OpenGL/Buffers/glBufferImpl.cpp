@@ -8,10 +8,9 @@
 
 namespace Divide {
 namespace {
-    SharedMutex g_createBufferLock;
+    Mutex g_createBufferLock;
 
     constexpr size_t g_MinZeroDataSize = 1 * 1024; //1Kb
-    constexpr size_t g_persistentMapSizeThreshold = 512 * 1024; //512Kb
     constexpr I32 g_maxFlushQueueLength = 16;
 
     vectorEASTL<Byte> g_zeroMemData(g_MinZeroDataSize, Byte{ 0 });
@@ -47,118 +46,77 @@ namespace {
 glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
     : glObject(glObjectType::TYPE_BUFFER, context),
       GUIDWrapper(),
-      _elementSize(params._elementSize),
-      _target(params._target),
-      _unsynced(params._unsynced),
-      _useExplicitFlush(_target == GL_ATOMIC_COUNTER_BUFFER ? false : params._explicitFlush),
-      _updateFrequency(params._frequency),
-      _updateUsage(params._updateUsage),
-      _context(context)
+      _params(params),
+      _context(context),
+      _lockManager(eastl::make_unique<glBufferLockManager>())
 {
+    if (_params._target == GL_ATOMIC_COUNTER_BUFFER) {
+        _params._explicitFlush = false;
+    }
+
+    assert(_params._bufferParams._updateFrequency != BufferUpdateFrequency::ONCE ||
+           (_params._bufferParams._initialData.second > 0 && _params._bufferParams._initialData.first != nullptr) ||
+            _params._bufferParams._updateUsage == BufferUpdateUsage::GPU_R_GPU_W);
 
     std::atomic_init(&_flushQueueSize, 0);
 
-    if (_target == GL_ATOMIC_COUNTER_BUFFER) {
-        _usage = GL_STREAM_READ;
-    } else {
-        _usage = GetBufferUsage(_updateFrequency, _updateUsage);
-    }
-
-    bool usePersistentMapping = false;
-
-    if (params._storageType == BufferStorageType::IMMUTABLE) {
-        usePersistentMapping = true;
-    } else if (params._storageType == BufferStorageType::AUTO) {
-        usePersistentMapping = params._dataSize > g_persistentMapSizeThreshold;    // Driver might be faster?
-    }
-
-    // Why do we need to map it?
-    if (_updateFrequency == BufferUpdateFrequency::ONCE || _updateUsage == BufferUpdateUsage::GPU_R_GPU_W) {
-        usePersistentMapping = false;
-    }
+    // We can't use persistent mapping with ONCE usage because we use block allocator for memory and it may have been mapped using write bits and we wouldn't know.
+    // Since we don't need to keep writing to the buffer, we can just use a regular glBufferData call once and be done with it.
+    const bool usePersistentMapping = _params._bufferParams._usePersistentMapping &&
+                                      _params._bufferParams._updateUsage != BufferUpdateUsage::GPU_R_GPU_W &&
+                                      _params._bufferParams._updateFrequency != BufferUpdateFrequency::ONCE;
 
     // Initial data may not fill the entire buffer
-     const bool needsAdditionalData = params._initialData.second < params._dataSize;
+    const bool needsAdditionalData = _params._bufferParams._initialData.second < _params._dataSize;
+    UniqueLock<Mutex> w_lock(g_createBufferLock);
+    if (needsAdditionalData) {
+        if (_params._dataSize > g_zeroMemData.size()) {
+            g_zeroMemData.resize(_params._dataSize, Byte{ 0 });
+        }
+        std::memset(&g_zeroMemData[_params._bufferParams._initialData.second], 0, _params._dataSize - _params._bufferParams._initialData.second);
+        if (_params._bufferParams._initialData.second > 0) {
+            std::memcpy(g_zeroMemData.data(), _params._bufferParams._initialData.first, _params._bufferParams._initialData.second);
+        }
+    }
 
-     if (needsAdditionalData) {
-         bool resizeVec;
-         // If the buffer is larger than our initial data, we need to create a zero filled container large enough for proper initialization
-         {
-            SharedLock<SharedMutex> r_lock(g_createBufferLock);
-            resizeVec = params._dataSize > g_zeroMemData.size();
-         }
-
-         if (resizeVec) {
-             UniqueLock<SharedMutex> w_lock(g_createBufferLock);
-             if (params._dataSize > g_zeroMemData.size()) {
-                 g_zeroMemData.resize(params._dataSize, Byte{ 0 });
-             }
-         }
-     }
     // Create all buffers with zero mem and then write the actual data that we have (If we want to initialise all memory)
     if (!usePersistentMapping) {
-        if (needsAdditionalData) {
-            // This should be safe as we are only INCREASING the zeroMemData container size if needed so the range we need should be fine
-            SharedLock<SharedMutex> r_lock(g_createBufferLock);
-             GLUtil::createAndAllocBuffer(params._dataSize, _usage, _memoryBlock._bufferHandle, g_zeroMemData.data(), params._name);
-        } else {
-             GLUtil::createAndAllocBuffer(params._dataSize, _usage, _memoryBlock._bufferHandle, params._initialData.first, params._name);
-        }
+        _params._bufferParams._sync = false;
+        _params._explicitFlush = false;
+        const GLenum usage = _params._target == GL_ATOMIC_COUNTER_BUFFER ? GL_STREAM_READ : GetBufferUsage(_params._bufferParams._updateFrequency, _params._bufferParams._updateUsage);
+        GLUtil::createAndAllocBuffer(_params._dataSize, 
+                                     usage,
+                                     _memoryBlock._bufferHandle,
+                                     needsAdditionalData ? g_zeroMemData.data() : _params._bufferParams._initialData.first,
+                                     _params._name);
+
         _memoryBlock._offset = 0;
-        _memoryBlock._size = params._dataSize;
+        _memoryBlock._size = _params._dataSize;
         _memoryBlock._free = false;
     } else {
         BufferStorageMask storageMask = GL_MAP_PERSISTENT_BIT;
         MapBufferAccessMask accessMask = GL_MAP_PERSISTENT_BIT;
 
-        switch (_updateFrequency) {
-            case BufferUpdateFrequency::ONCE:{
-                storageMask |= GL_MAP_READ_BIT;
-                accessMask |= GL_MAP_READ_BIT;
-            } break;
-            case BufferUpdateFrequency::OCASSIONAL:
-            case BufferUpdateFrequency::OFTEN: {
-                storageMask |= GL_MAP_WRITE_BIT;
-                accessMask |= GL_MAP_WRITE_BIT;
-                
-                if (_useExplicitFlush) {
-                    accessMask |= GL_MAP_FLUSH_EXPLICIT_BIT;
-                } else {
-                    storageMask |= GL_MAP_COHERENT_BIT;
-                    accessMask |= GL_MAP_COHERENT_BIT;
-                }
-          
-            } break;
-            case BufferUpdateFrequency::COUNT: {
-                DIVIDE_UNEXPECTED_CALL();
-            } break;
-        }
+        assert(_params._bufferParams._updateFrequency != BufferUpdateFrequency::COUNT && _params._bufferParams._updateFrequency != BufferUpdateFrequency::ONCE);
 
-        _memoryBlock = GL_API::getMemoryAllocator().allocate(params._dataSize, storageMask, accessMask, params._name);
-        assert(_memoryBlock._ptr != nullptr && _memoryBlock._size == params._dataSize);
-        if (needsAdditionalData) {
-            SharedLock<SharedMutex> r_lock(g_createBufferLock);
-            std::memcpy(_memoryBlock._ptr, g_zeroMemData.data(), _memoryBlock._size);
+        storageMask |= GL_MAP_WRITE_BIT;
+        accessMask |= GL_MAP_WRITE_BIT;
+        if (_params._explicitFlush) {
+            accessMask |= GL_MAP_FLUSH_EXPLICIT_BIT;
         } else {
-            std::memcpy(_memoryBlock._ptr, params._initialData.first, _memoryBlock._size);
+            storageMask |= GL_MAP_COHERENT_BIT;
+            accessMask |= GL_MAP_COHERENT_BIT;
         }
-        
-        assert(_memoryBlock._ptr != nullptr && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
-        if (!_unsynced) {
-            _lockManager = MemoryManager_NEW glBufferLockManager();
-        }
-    }
-
-    // Write our initial data now
-    if (needsAdditionalData && params._initialData.second > 0) {
-        writeData(0, params._initialData.second, params._initialData.first);
+  
+        _memoryBlock = GL_API::getMemoryAllocator().allocate(_params._dataSize, storageMask, accessMask, _params._name, needsAdditionalData ? g_zeroMemData.data() : _params._bufferParams._initialData.first);
+        assert(_memoryBlock._ptr != nullptr && _memoryBlock._size == _params._dataSize && "PersistentBuffer::Create error: Can't mapped persistent buffer!");
     }
 }
 
 glBufferImpl::~glBufferImpl()
 {
     if (_memoryBlock._bufferHandle > 0) {
-        if (!waitRange(0, _memoryBlock._size, false)) {
+        if (!waitByteRange(0, _memoryBlock._size, true)) {
             DIVIDE_UNEXPECTED_CALL();
         }
 
@@ -169,45 +127,35 @@ glBufferImpl::~glBufferImpl()
             GLUtil::freeBuffer(_memoryBlock._bufferHandle, nullptr);
         }
     }
-
-    MemoryManager::SAFE_DELETE(_lockManager);
 }
 
-bool glBufferImpl::waitRange(const size_t offsetInBytes, const size_t rangeInBytes, const bool blockClient) const {
+
+bool glBufferImpl::lockByteRange(const size_t offsetInBytes, const size_t rangeInBytes, const U32 frameID) const {
     OPTICK_EVENT();
 
-    if (_lockManager) {
-        return _lockManager->WaitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
+    if (_params._bufferParams._sync) {
+        return _lockManager->lockRange(offsetInBytes, rangeInBytes, frameID);
     }
 
     return true;
 }
 
-bool glBufferImpl::lockRange(const size_t offsetInBytes, const size_t rangeInBytes, const U32 frameID) const {
+bool glBufferImpl::waitByteRange(const size_t offsetInBytes, const size_t rangeInBytes, const bool blockClient) const {
     OPTICK_EVENT();
 
-    if (_lockManager) {
-        return _lockManager->LockRange(offsetInBytes, rangeInBytes, frameID);
+    if (_params._bufferParams._sync) {
+        return _lockManager->waitForLockedRange(offsetInBytes, rangeInBytes, blockClient);
     }
 
     return true;
 }
 
-bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) {
+bool glBufferImpl::bindByteRange(const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) {
     assert(_memoryBlock._bufferHandle != 0 && "BufferImpl error: Tried to bind an uninitialized UBO");
 
-    bool bound = false;
-    if (bindIndex == to_base(ShaderBufferLocation::CMD_BUFFER)) {
-        GL_API::getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _memoryBlock._bufferHandle);
-        bound = true;
-    } else if (SetIfDifferentBindRange(_memoryBlock._bufferHandle, bindIndex, offsetInBytes, rangeInBytes)) {
-        glBindBufferRange(_target, bindIndex, _memoryBlock._bufferHandle, offsetInBytes, rangeInBytes);
-        bound = true;
-    }
-
-    if (_useExplicitFlush) {
+    if (_params._explicitFlush) {
         size_t minOffset = std::numeric_limits<size_t>::max();
-        size_t maxRange = 0;
+        size_t maxRange = 0u;
 
         BufferMapRange range;
         while (_flushQueue.try_dequeue(range)) {
@@ -215,106 +163,101 @@ bool glBufferImpl::bindRange(const GLuint bindIndex, const size_t offsetInBytes,
             maxRange = std::max(maxRange, range._range);
             _flushQueueSize.fetch_sub(1);
         }
-        if (minOffset < maxRange) {
+        if (maxRange > 0u) {
             glFlushMappedNamedBufferRange(_memoryBlock._bufferHandle, minOffset, maxRange);
         }
+    }
+
+    bool bound = false;
+    if (bindIndex == to_base(ShaderBufferLocation::CMD_BUFFER)) {
+        GL_API::getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _memoryBlock._bufferHandle);
+        bound = true;
+    } else if (SetIfDifferentBindRange(_memoryBlock._bufferHandle, bindIndex, offsetInBytes, rangeInBytes)) {
+        glBindBufferRange(_params._target, bindIndex, _memoryBlock._bufferHandle, offsetInBytes, rangeInBytes);
+        bound = true;
+    }
+
+    if (_params._bufferParams._sync) {
+        GL_API::RegisterBufferBind({this, offsetInBytes, rangeInBytes}, !_params._bufferParams._syncEndOfCmdBuffer);
     }
 
     return bound;
 }
 
-void glBufferImpl::zeroMem(const size_t offsetInBytes, const size_t rangeInBytes) {
-    if ( _memoryBlock._ptr != nullptr ) {
-        writeOrClearData(offsetInBytes, rangeInBytes, nullptr, true);
-        return;
-    }
+void glBufferImpl::writeOrClearBytes(const size_t offsetInBytes, const size_t rangeInBytes, const bufferPtr data, const bool zeroMem) {
 
-    const size_t targetSize = rangeInBytes - offsetInBytes;
-
-    {
-        SharedLock<SharedMutex> r_lock(g_createBufferLock);
-        if (targetSize <= g_zeroMemData.size()) {
-            writeOrClearData(offsetInBytes, rangeInBytes, g_zeroMemData.data(), true);
-            return;
-        }
-    }
-
-    UniqueLock<SharedMutex> w_lock(g_createBufferLock);
-    // Check again to prevent race conditions from screwing this up
-    if (targetSize > g_zeroMemData.size()) {
-        g_zeroMemData.resize(targetSize, Byte{ 0 });
-    }
-
-    writeOrClearData(offsetInBytes, rangeInBytes, g_zeroMemData.data(), true);
-}
-
-void glBufferImpl::writeData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte* data) {
-    writeOrClearData(offsetInBytes, rangeInBytes, data, false);
-}
-
-void glBufferImpl::writeOrClearData(const size_t offsetInBytes, const size_t rangeInBytes, const Byte * data, const bool zeroMem) {
     OPTICK_EVENT();
     OPTICK_TAG("Mapped", static_cast<bool>(_memoryBlock._ptr != nullptr));
     OPTICK_TAG("Offset", to_U32(offsetInBytes));
     OPTICK_TAG("Range", to_U32(rangeInBytes));
     assert(rangeInBytes > 0);
-
     assert(offsetInBytes + rangeInBytes <= _memoryBlock._size);
+    assert(_params._bufferParams._updateFrequency != BufferUpdateFrequency::ONCE);
 
-    const bool waitOK = waitRange(offsetInBytes, rangeInBytes, true);
+    if (!waitByteRange(offsetInBytes, rangeInBytes, true)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 
     if (_memoryBlock._ptr != nullptr) {
-        if (waitOK) {
-            if (zeroMem) {
-                std::memset(_memoryBlock._ptr + offsetInBytes, 0, rangeInBytes);
-            } else {
-                std::memcpy(_memoryBlock._ptr + offsetInBytes, data, rangeInBytes);
-            }
+        void* dst = _memoryBlock._ptr + offsetInBytes;
+        if (zeroMem) {
+            memset(dst, 0, rangeInBytes);
+        } else {
+            memcpy(dst, data, rangeInBytes);
+        }
 
-            if (_useExplicitFlush) {
-                if (_flushQueue.enqueue(BufferMapRange{offsetInBytes, rangeInBytes})) {
-                    const I32 size = _flushQueueSize.fetch_add(1);
-                    if (size >= g_maxFlushQueueLength) {
-                        BufferMapRange temp;
-                        _flushQueue.try_dequeue(temp);
-                    }
+        if (_params._explicitFlush) {
+            if (_flushQueue.enqueue(BufferMapRange{offsetInBytes, rangeInBytes})) {
+                const I32 size = _flushQueueSize.fetch_add(1);
+                if (size >= g_maxFlushQueueLength) {
+                    BufferMapRange temp;
+                    _flushQueue.try_dequeue(temp);
                 }
             }
-        } else {
-            DIVIDE_UNEXPECTED_CALL();
         }
     } else {
-        if (offsetInBytes == 0 && rangeInBytes == _memoryBlock._size) {
-            glInvalidateBufferData(_memoryBlock._bufferHandle);
-            glNamedBufferData(_memoryBlock._bufferHandle, _memoryBlock._size, data, _usage);
+        const auto writeBuffer = [&](bufferPtr localData) {
+            if (offsetInBytes == 0 && rangeInBytes == _memoryBlock._size) {
+                const GLenum usage = _params._target == GL_ATOMIC_COUNTER_BUFFER ? GL_STREAM_READ : GetBufferUsage(_params._bufferParams._updateFrequency, _params._bufferParams._updateUsage);
+                glInvalidateBufferData(_memoryBlock._bufferHandle);
+                glNamedBufferData(_memoryBlock._bufferHandle, _memoryBlock._size, localData, usage);
+            } else {
+                glInvalidateBufferSubData(_memoryBlock._bufferHandle, offsetInBytes, rangeInBytes);
+                glNamedBufferSubData(_memoryBlock._bufferHandle, offsetInBytes, rangeInBytes, localData);
+            }
+        };
+
+        if (zeroMem) {
+            UniqueLock<Mutex> w_lock(g_createBufferLock);
+            if (rangeInBytes - offsetInBytes > g_zeroMemData.size()) {
+                g_zeroMemData.resize(rangeInBytes - offsetInBytes, Byte{ 0 });
+            }
+            writeBuffer(g_zeroMemData.data());
         } else {
-            glInvalidateBufferSubData(_memoryBlock._bufferHandle, offsetInBytes, rangeInBytes);
-            glNamedBufferSubData(_memoryBlock._bufferHandle, offsetInBytes, rangeInBytes, data);
+            writeBuffer(data);
         }
     }
 }
 
-void glBufferImpl::readData(const size_t offsetInBytes, const size_t rangeInBytes, Byte* data) const {
+void glBufferImpl::readBytes(const size_t offsetInBytes, const size_t rangeInBytes, bufferPtr data) const {
 
-    if (_target == GL_ATOMIC_COUNTER_BUFFER) {
+    if (_params._target == GL_ATOMIC_COUNTER_BUFFER) {
         glMemoryBarrier(MemoryBarrierMask::GL_ATOMIC_COUNTER_BARRIER_BIT);
     }
 
-    const bool waitOK = waitRange(offsetInBytes, rangeInBytes, true);
-    if (_memoryBlock._ptr != nullptr) {
-        if (waitOK) {
-            if (_target != GL_ATOMIC_COUNTER_BUFFER) {
-                glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
-            }
-            std::memcpy(data, _memoryBlock._ptr + offsetInBytes, rangeInBytes);
-        } else { 
-            DIVIDE_UNEXPECTED_CALL();
-        }
+    if (!waitByteRange(offsetInBytes, rangeInBytes, true)) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
 
+    if (_memoryBlock._ptr != nullptr) {
+        if (_params._target != GL_ATOMIC_COUNTER_BUFFER) {
+            glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT);
+        }
+        std::memcpy(data, _memoryBlock._ptr + offsetInBytes, rangeInBytes);
     } else {
         Byte* bufferData = (Byte*)glMapNamedBufferRange(_memoryBlock._bufferHandle, offsetInBytes, rangeInBytes, MapBufferAccessMask::GL_MAP_READ_BIT);
         if (bufferData != nullptr) {
-            std::memcpy(data, bufferData + offsetInBytes, rangeInBytes);
+            std::memcpy(data, &bufferData[offsetInBytes], rangeInBytes);
         }
         glUnmapNamedBuffer(_memoryBlock._bufferHandle);
     }
@@ -328,7 +271,7 @@ GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const
                 case BufferUpdateUsage::CPU_R_GPU_W: return GL_STATIC_READ;
                 case BufferUpdateUsage::GPU_R_GPU_W: return GL_STATIC_COPY;
                 default: break;
-            };
+            }
             break;
         case BufferUpdateFrequency::OCASSIONAL:
             switch (usage) {
@@ -336,7 +279,7 @@ GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const
                 case BufferUpdateUsage::CPU_R_GPU_W: return GL_DYNAMIC_READ;
                 case BufferUpdateUsage::GPU_R_GPU_W: return GL_DYNAMIC_COPY;
                 default: break;
-            };
+            }
             break;
         case BufferUpdateFrequency::OFTEN:
             switch (usage) {
@@ -344,30 +287,23 @@ GLenum glBufferImpl::GetBufferUsage(const BufferUpdateFrequency frequency, const
                 case BufferUpdateUsage::CPU_R_GPU_W: return GL_STREAM_READ;
                 case BufferUpdateUsage::GPU_R_GPU_W: return GL_STREAM_COPY;
                 default: break;
-            };
+            }
             break;
         default: break;
-    };
+    }
 
     DIVIDE_UNEXPECTED_CALL();
     return GL_NONE;
 }
 
 void glBufferImpl::CleanMemory() noexcept {
-    {
-        SharedLock<SharedMutex> r_lock(g_createBufferLock);
-        const size_t crtSize = g_zeroMemData.size();
-        if (crtSize <= g_MinZeroDataSize) {
-            return;
-        }
-    }
-
-    UniqueLock<SharedMutex> w_lock(g_createBufferLock);
+    UniqueLock<Mutex> w_lock(g_createBufferLock);
     const size_t crtSize = g_zeroMemData.size();
-    // Speed things along if we are in the megabyte range. Not really needed, but still helps.
-    const U8 reduceFactor = crtSize > g_MinZeroDataSize * 100 ? 4 : 2;
-    
-    g_zeroMemData.resize(std::max(g_zeroMemData.size() / reduceFactor, g_MinZeroDataSize));
+    if (crtSize > g_MinZeroDataSize) {
+        // Speed things along if we are in the megabyte range. Not really needed, but still helps.
+        const U8 reduceFactor = crtSize > g_MinZeroDataSize * 100 ? 4 : 2;
+        g_zeroMemData.resize(std::max(g_zeroMemData.size() / reduceFactor, g_MinZeroDataSize));
+    }
 }
 
 }; //namespace Divide

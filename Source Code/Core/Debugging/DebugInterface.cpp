@@ -31,7 +31,7 @@ void DebugInterface::idle() {
     const GFXDevice& gfx = _parent.platformContext().gfx();
     const Application& app = _parent.platformContext().app();
 
-    if (gfx.getFrameCount() % (Config::TARGET_FRAME_RATE / (Config::Build::IS_DEBUG_BUILD ? 4 : 2)) == 0)
+    if (gfx.frameCount() % (Config::TARGET_FRAME_RATE / (Config::Build::IS_DEBUG_BUILD ? 4 : 2)) == 0)
     {
         _output = Util::StringFormat("Scene Update Loops: %d", timingData.updateLoops());
 
@@ -43,7 +43,7 @@ void DebugInterface::idle() {
             _output.append("\n");
             _output.append(Util::StringFormat("GPU: [ %5.5f ms] [DrawCalls: %d] [Vertices: %zu] [Primitives: %zu]", 
                 perfMetrics._gpuTimeInMS,
-                gfx.getDrawCallCountLastFrame(),
+                gfx.frameDrawCallsPrev(),
                 perfMetrics._verticesSubmitted,
                 perfMetrics._primitivesGenerated));
 

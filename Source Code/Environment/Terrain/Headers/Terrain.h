@@ -96,6 +96,8 @@ class Terrain final : public Object3D {
            NONE = 0,
            EDGES,
            NORMALS,
+           LODS,
+           TESS_LEVELS,
            COUNT
        };
 

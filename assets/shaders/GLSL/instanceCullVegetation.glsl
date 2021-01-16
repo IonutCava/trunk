@@ -58,12 +58,12 @@ void main(void) {
     const vec3 positionW = vert + instance.positionAndScale.xyz;
 
     const float dist = distance(positionW.xz, dvd_cameraPosition.xz);
-    Data[nodeIndex].data.z = 1.0f;
     // Too far away
     if (dist > dvd_visibilityDistance) {
         CullItem(nodeIndex);
         return;
     }
+    Data[nodeIndex].data.z = 1.0f;
 
     if (HiZCull(positionW, extents.xyz, extents.w) || IsUnderWater(positionW.xyz)) {
         CullItem(nodeIndex);

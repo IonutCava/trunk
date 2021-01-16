@@ -71,6 +71,13 @@ public:
         }
     };
 
+    struct PerRingEntryMaterialData
+    {
+        MaterialUpdateRange _matUpdateRange{};
+        vectorEASTL<NodeMaterialData> _nodeMaterialData{};
+        vectorEASTL<std::pair<size_t, U16>> _nodeMaterialLookupInfo{};
+    };
+
 public:
     explicit RenderPassExecutor(RenderPassManager& parent, GFXDevice& context, RenderStage stage);
     ~RenderPassExecutor() = default;
@@ -135,12 +142,6 @@ private:
     void addTexturesAt(size_t idx, const NodeMaterialTextures& tempTextures);
 
 private:
-    struct PerRingEntryMaterialData {
-        MaterialUpdateRange _matUpdateRange{};
-        vectorEASTL<NodeMaterialData> _nodeMaterialData{};
-        vectorEASTL<std::pair<size_t, U16>> _nodeMaterialLookupInfo{};
-    };
-
     RenderPassManager& _parent;
     GFXDevice& _context;
     const RenderStage _stage;
@@ -153,7 +154,7 @@ private:
 
     std::array<NodeTransformData, Config::MAX_VISIBLE_NODES> _nodeTransformData{};
 
-    std::array<PerRingEntryMaterialData, RenderPass::DataBufferRingSize> _materialData{};
+    eastl::fixed_vector<PerRingEntryMaterialData, 3, true> _materialData{};
 
     eastl::set<SamplerAddress> _uniqueTextureAddresses{};
 

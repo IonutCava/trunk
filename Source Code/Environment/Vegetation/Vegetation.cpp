@@ -20,7 +20,6 @@
 #include "Environment/Terrain/Headers/TerrainChunk.h"
 #include "Platform/Video/Buffers/ShaderBuffer/Headers/ShaderBuffer.h"
 #include "Platform/Video/Buffers/VertexBuffer/Headers/VertexBuffer.h"
-#include "Platform/Video/Buffers/VertexBuffer/GenericBuffer/Headers/GenericVertexData.h"
 
 #include "ECS/Components/Headers/BoundsComponent.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
@@ -492,18 +491,18 @@ void Vegetation::createAndUploadGPUData(GFXDevice& gfxDevice, const Terrain_ptr&
     if (s_maxTreeInstances > 0 || s_maxGrassInstances > 0) {
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::UNBOUND_BUFFER;
-        bufferDescriptor._elementSize = sizeof(VegetationData);
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._bufferParams._elementSize = sizeof(VegetationData);
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::OCASSIONAL;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
         bufferDescriptor._flags = to_U32(ShaderBuffer::Flags::NO_SYNC);
 
         if (s_maxTreeInstances > 0) {
-            bufferDescriptor._elementCount = to_U32(s_maxTreeInstances * s_maxChunks);
+            bufferDescriptor._bufferParams._elementCount = to_U32(s_maxTreeInstances * s_maxChunks);
             bufferDescriptor._name = "Tree_data";
             s_treeData = gfxDevice.newSB(bufferDescriptor);
         }
         if (s_maxGrassInstances > 0) {
-            bufferDescriptor._elementCount = to_U32(s_maxGrassInstances * s_maxChunks);
+            bufferDescriptor._bufferParams._elementCount = to_U32(s_maxGrassInstances * s_maxChunks);
             bufferDescriptor._name = "Grass_data";
             s_grassData = gfxDevice.newSB(bufferDescriptor);
         }

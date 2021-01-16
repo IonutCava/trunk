@@ -229,7 +229,7 @@ void Kernel::onLoop() {
         }
     }
 
-    const U32 frameCount = _platformContext.gfx().getFrameCount();
+    const U32 frameCount = _platformContext.gfx().frameCount();
     if (platformContext().debug().enabled()) {
         static bool statsEnabled = false;
         // Turn on perf metric measuring 2 seconds before perf dump
@@ -263,7 +263,7 @@ void Kernel::onLoop() {
             _platformContext.app().timer().getFrameRateAndTime(fps, frameTime);
             constexpr const char* buildType = Config::Build::IS_DEBUG_BUILD ? "DEBUG" : Config::Build::IS_PROFILE_BUILD ? "PROFILE" : "RELEASE";
             constexpr const char* titleString = "[%s] %s - %5.2f FPS - %3.2f ms - FrameIndex: %d";
-            window.title(titleString, buildType, originalTitle.c_str(), fps, frameTime, platformContext().gfx().getFrameCount());
+            window.title(titleString, buildType, originalTitle.c_str(), fps, frameTime, platformContext().gfx().frameCount());
         }
     }
 
@@ -351,7 +351,7 @@ bool Kernel::mainLoopScene(FrameEvent& evt,
         }  // while
     }
 
-    const U32 frameCount = _platformContext.gfx().getFrameCount();
+    const U32 frameCount = _platformContext.gfx().frameCount();
 
     if (frameCount % (Config::TARGET_FRAME_RATE / Config::Networking::NETWORK_SEND_FREQUENCY_HZ) == 0) {
         U32 retryCount = 0;

@@ -79,6 +79,8 @@ namespace TypeUtil {
 };
 
 namespace {
+    constexpr size_t TargetBufferSize = (128 * 1024) / sizeof(GFXShaderData::GPUData);
+
     constexpr U32 GROUP_SIZE_AABB = 64;
     constexpr U32 MAX_INVOCATIONS_BLUR_SHADER_LAYERED = 4;
 };
@@ -202,9 +204,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     ResourceCache* cache = parent().resourceCache();
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
 
-    // Quarter of a megabyte in size should work. I think.
-    constexpr size_t TargetBufferSize = 1024 * 1024 / 4 / sizeof(GFXShaderData::GPUData);
-
     // Initialize the shader manager
     ShaderProgram::OnStartup(cache);
     SceneEnvironmentProbePool::OnStartup(*this);
@@ -214,17 +213,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
     {
         ShaderBufferDescriptor bufferDescriptor = {};
         bufferDescriptor._usage = ShaderBuffer::Usage::CONSTANT_BUFFER;
-        bufferDescriptor._elementCount = 1;
-        bufferDescriptor._elementSize = sizeof(GFXShaderData::GPUData);
         bufferDescriptor._ringBufferLength = TargetBufferSize;
         bufferDescriptor._separateReadWrite = false;
-        bufferDescriptor._updateFrequency = BufferUpdateFrequency::OFTEN;
-        bufferDescriptor._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
-        bufferDescriptor._initialData = { (Byte*)&_gpuBlock._data, bufferDescriptor._elementSize };
         bufferDescriptor._name = "DVD_GPU_DATA";
-        bufferDescriptor._flags = to_base(ShaderBuffer::Flags::AUTO_RANGE_FLUSH);
-        bufferDescriptor._flags |= to_base(ShaderBuffer::Flags::AUTO_STORAGE);
+        bufferDescriptor._flags = to_base(ShaderBuffer::Flags::EXPLICIT_RANGE_FLUSH);
+        bufferDescriptor._bufferParams._elementCount = 1;
+        bufferDescriptor._bufferParams._syncEndOfCmdBuffer = false;
+        bufferDescriptor._bufferParams._usePersistentMapping = false;
+        bufferDescriptor._bufferParams._elementSize = sizeof(GFXShaderData::GPUData);
+        bufferDescriptor._bufferParams._updateFrequency = BufferUpdateFrequency::OFTEN;
+        bufferDescriptor._bufferParams._updateUsage = BufferUpdateUsage::CPU_W_GPU_R;
+        bufferDescriptor._bufferParams._initialData = { (Byte*)&_gpuBlock._data, bufferDescriptor._bufferParams._elementSize };
+
         _gfxDataBuffer = newSB(bufferDescriptor);
+        _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
     }
 
     _shaderComputeQueue = MemoryManager_NEW ShaderComputeQueue(cache);
@@ -897,10 +899,11 @@ void GFXDevice::endFrame(DisplayWindow& window, const bool global) {
     OPTICK_EVENT();
 
     if (global) {
-        FRAME_COUNT++;
-        FRAME_DRAW_CALLS_PREV = FRAME_DRAW_CALLS;
-        FRAME_DRAW_CALLS = 0;
+        frameCount(frameCount() + 1);
+        frameDrawCallsPrev(frameDrawCalls());
+        frameDrawCalls(0u);
     }
+
     DIVIDE_ASSERT(_cameraSnapshots.empty(), "Not all camera snapshots have been cleared properly! Check command buffers for missmatched push/pop!");
     DIVIDE_ASSERT(_viewportStack.empty(), "Not all viewports have been cleared properly! Check command buffers for missmatched push/pop!");
     // Activate the default render states
@@ -1301,17 +1304,16 @@ void GFXDevice::uploadGPUBlock() {
     OPTICK_EVENT();
 
     if (_gpuBlock._needsUpload) {
+        _gpuBlock._needsUpload = false;
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         _gfxDataBuffer->incQueue();
-        _gpuBlock._needsUpload = false;
     }
 }
 
 /// set a new list of clipping planes. The old one is discarded
 void GFXDevice::setClipPlanes(const FrustumClipPlanes& clipPlanes) {
-    if (clipPlanes != _clippingPlanes)
-    {
+    if (clipPlanes != _clippingPlanes){
         _clippingPlanes = clipPlanes;
 
         auto& planes = _clippingPlanes.planes();
@@ -1404,7 +1406,7 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 
     // Change the viewport on the Rendering API level
     if (_api->setViewport(viewport)) {
-    // Update the buffer with the new value
+        // Update the buffer with the new value
         _gpuBlock._data._ViewPort.set(viewport.x, viewport.y, viewport.z, viewport.w);
         const F32 viewportWidth = to_F32(viewport.z);
         const F32 viewportHeight= to_F32(viewport.w);
@@ -1426,6 +1428,10 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 void GFXDevice::setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>& projection) noexcept {
     mat4<F32>::Multiply(view, projection, _gpuBlock._data._PreviousViewProjectionMatrix);
     _gpuBlock._needsUpload = true;
+}
+
+const GFXShaderData::GPUData& GFXDevice::renderingData() const noexcept {
+    return _gpuBlock._data;
 }
 
 #pragma endregion
@@ -1535,6 +1541,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool
                 setClipPlanes(commandBuffer.get<GFX::SetClipPlanesCommand>(cmd)->_clippingPlanes);
                 break;
             case GFX::CommandType::EXTERNAL:
+                uploadGPUBlock();
                 commandBuffer.get<GFX::ExternalCommand>(cmd)->_cbk();
                 break;
 
@@ -1557,6 +1564,8 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool
 /// Based on RasterGrid implementation: http://rastergrid.com/blog/2010/10/hierarchical-z-map-based-occlusion-culling/
 /// Modified with nVidia sample code: https://github.com/nvpro-samples/gl_occlusion_culling
 std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID depthBuffer, RenderTargetID HiZTarget, GFX::CommandBuffer& cmdBufferInOut) {
+    static GFX::PushCameraCommand push2DCameraCmd = { Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
+
     assert(depthBuffer != HiZTarget);
 
     GenericDrawCommand drawCmd = {};
@@ -1620,6 +1629,7 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
         beginRenderPassCmd._descriptor = colourOnlyTarget;
         beginRenderPassCmd._name = "CONSTRUCT_HI_Z";
         EnqueueCommand(cmdBufferInOut, beginRenderPassCmd);
+        EnqueueCommand(cmdBufferInOut, push2DCameraCmd);
 
         GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
         computeMipMapsCommand._texture = att.texture().get();
@@ -1684,10 +1694,10 @@ std::pair<const Texture_ptr&, size_t> GFXDevice::constructHIZ(RenderTargetID dep
 
         viewportCommand._viewport.set(previousViewport);
         EnqueueCommand(cmdBufferInOut, viewportCommand);
-    }
-    // Unbind the render target
-    EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
 
+        EnqueueCommand(cmdBufferInOut, GFX::PopCameraCommand{});
+        EnqueueCommand(cmdBufferInOut, GFX::EndRenderPassCommand{});
+    }
     EnqueueCommand(cmdBufferInOut, GFX::EndDebugScopeCommand{});
 
     return { hizDepthTex, hiZSampler };
@@ -1700,7 +1710,6 @@ void GFXDevice::occlusionCull(const RenderStagePass& stagePass,
                               GFX::SendPushConstantsCommand& HIZPushConstantsCMDInOut,
                               GFX::CommandBuffer& bufferInOut) const
 {
-
     OPTICK_EVENT();
 
     ACKNOWLEDGE_UNUSED(stagePass);
@@ -1752,7 +1761,7 @@ void GFXDevice::updateCullCount(const RenderPass::BufferData& bufferData, GFX::C
     if (queryPerformanceStats() && bufferData._cullCounterBuffer != nullptr) {
           GFX::ReadBufferDataCommand readAtomicCounter;
           readAtomicCounter._buffer = bufferData._cullCounterBuffer;
-          readAtomicCounter._target = &LAST_CULL_COUNT;
+          readAtomicCounter._target = &_lastCullCount;
           readAtomicCounter._offsetElementCount = 0;
           readAtomicCounter._elementCount = 1;
           EnqueueCommand(cmdBufferInOut, readAtomicCounter);
