@@ -134,7 +134,8 @@ vec3 convertYxy2RGB(vec3 _Yxy) {
 }
 
 void main() {
-    const vec3 screenColour = texture(texScreen, VAR._texCoord).rgb * manualExposure;
+    const vec4 inputColour = texture(texScreen, VAR._texCoord);
+    const vec3 screenColour = inputColour.rgb * manualExposure;
 
     if (mappingFunction != NONE) {
         vec3 Yxy = convertRGB2Yxy(screenColour);

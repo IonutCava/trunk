@@ -98,8 +98,8 @@ uniform vec2 texelSize;
 uniform float depthThreshold;
 
 //r - ssao
-layout(location = TARGET_EXTRA) out vec4 _output;
-#define _colourOut (_output.r)
+layout(location = TARGET_EXTRA) out vec2 _output;
+#define _colourOut _output.r
 
 /**
  * Does a simple blur pass over the input SSAO texture. To prevent the "halo"

@@ -73,9 +73,9 @@ public:
     [[nodiscard]] const PhysicsAPIWrapper& getImpl() const noexcept { assert(_api != nullptr); return *_api; }
 
 private:
-    F32 _simulationSpeed;
-    PhysicsAPI _API_ID;
-    eastl::unique_ptr<PhysicsAPIWrapper> _api;
+    F32 _simulationSpeed = 1.0f;
+    PhysicsAPI _API_ID = PhysicsAPI::COUNT;
+    eastl::unique_ptr<PhysicsAPIWrapper> _api = nullptr;
 
 };
 

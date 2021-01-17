@@ -39,7 +39,7 @@ GLuint glSamplerObject::construct(const SamplerDescriptor& descriptor) {
                             GL_API::getStateTracker()._opengl46Supported ? GL_TEXTURE_MAX_ANISOTROPY
                                                                          : GL_TEXTURE_MAX_ANISOTROPY_EXT,
                             std::min<GLfloat>(to_F32(descriptor.anisotropyLevel()),
-                                              to_F32(GL_API::s_anisoLevel)));
+                                              to_F32(GL_API::s_maxAnisotropicFilteringLevel)));
     }
 
     return samplerID;

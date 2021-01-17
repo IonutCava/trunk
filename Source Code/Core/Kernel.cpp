@@ -28,8 +28,6 @@
 #include "Platform/Headers/SDLEventManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Rendering/Camera/Headers/FreeFlyCamera.h"
-#include "Rendering/Headers/Renderer.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
 #include "Resources/Headers/ResourceCache.h"
 #include "Scripting/Headers/Script.h"
 #include "Utility/Headers/XMLParser.h"
@@ -37,7 +35,6 @@
 namespace Divide {
 
 namespace {
-    constexpr F32 g_PhysicsSimSpeedFactor = 1.0f;
     constexpr U32 g_backupThreadPoolSize = 2u;
     constexpr U32 g_printTimerBase = 15u;
 
@@ -748,7 +745,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     }
 
     Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
-    initError = _platformContext.pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, g_PhysicsSimSpeedFactor);
+    initError = _platformContext.pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, config.runtime.simSpeed);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }

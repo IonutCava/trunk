@@ -54,13 +54,11 @@ class SceneShaderData {
         FColour4 _zenithColour = { 0.025f, 0.1f, 0.5f, 1.0f};
         // w - reserved
         FColour4 _horizonColour = { 0.6f, 0.7f, 1.0f, 0.0f};
-        // x,y,z - colour, w - density
-        vec4<F32> _fogDetails = { 0.0f};
         // x,y,z - direction, w - speed
         vec4<F32> _windDetails = {0.0f};
         //x - light bleed bias, y - min shadow variance, z - reserved, w - reserved
         vec4<F32> _shadowingSettings = {0.2f, 0.001f, 1.0f, 1.0f};
-
+        FogDetails _fogDetails{};
         WaterBodyData _waterEntities[GLOBAL_WATER_BODIES_COUNT] = {};
 
         //RenderDoc: vec4 fogDetails; vec4 windDetails; vec4 shadowSettings; vec4 otherData;
@@ -82,14 +80,16 @@ class SceneShaderData {
         _sceneDataDirty = true;
     }
 
-    void fogDetails(const F32 colourR, const F32 colourG, const F32 colourB, const F32 density) noexcept {
-        _sceneBufferData._fogDetails.set(colourR, colourG, colourB, density);
+    void fogDetails(const FogDetails& details) noexcept {
+        _sceneBufferData._fogDetails = details;
         _sceneDataDirty = true;
     }
 
-    void fogDensity(F32 density) noexcept {
-        CLAMP_01(density);
-        _sceneBufferData._fogDetails.w = density;
+    void fogDensity(F32 densityB, F32 densityC) noexcept {
+        CLAMP_01(densityB);
+        CLAMP_01(densityC);
+        _sceneBufferData._fogDetails._colourAndDensity.a = densityB;
+        _sceneBufferData._fogDetails._colourSunScatter.a = densityC;
         _sceneDataDirty = true;
     }
 

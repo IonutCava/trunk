@@ -365,8 +365,8 @@ U8 SSAOPreRenderOperator::sampleCount() const noexcept {
 
 void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     if (_enabled) {
-        RenderStateBlock blueChannelOnly = RenderStateBlock::get(_context.get2DStateBlock());
-        blueChannelOnly.setColourWrites(true, false, false, false);
+        RenderStateBlock redChannelOnly = RenderStateBlock::get(_context.get2DStateBlock());
+        redChannelOnly.setColourWrites(true, false, false, false);
 
         PipelineDescriptor pipelineDescriptor = {};
         pipelineDescriptor._stateHash = _context.get2DStateBlock();
@@ -499,7 +499,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             pipelineDescriptor._shaderProgramHandle = blurResults() ? _ssaoBlurShader->getGUID()
                                                                     : _ssaoPassThroughShader->getGUID();
                  
-            pipelineDescriptor._stateHash = blueChannelOnly.getHash();
+            pipelineDescriptor._stateHash = redChannelOnly.getHash();
             EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};

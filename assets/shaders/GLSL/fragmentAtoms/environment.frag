@@ -125,19 +125,16 @@ vec3 atmosphereColor(vec3 rayDirection) {
     return skyColor + dvd_sunColour.rgb * pow(sunTheta, 256.0) * 0.5;
 }
 
-vec3 applyFog(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection) {
-    float fogDensity = 0.00006;
-    float vFalloff = 20.0;
-    vec3 fogColor = vec3(0.88, 0.92, 0.999);
-    float fog = exp((-rayOrigin.y * vFalloff) * fogDensity) * (1.0 - exp(-dist * rayDirection.y * vFalloff * fogDensity)) / (rayDirection.y * vFalloff);
-    return mix(albedo, fogColor, clamp(fog, 0.0, 1.0));
-}
-
 vec3 aerialPerspective(vec3 albedo, float dist, vec3 rayOrigin, vec3 rayDirection) {
     float atmosphereDensity = 0.000025;
     vec3 atmosphere = atmosphereColor(rayDirection) + vec3(0.0, 0.02, 0.04);
     vec3 color = mix(albedo, atmosphere, clamp(1.0 - exp(-dist * atmosphereDensity), 0.0, 1.0));
-    return applyFog(color, dist, rayOrigin, rayDirection);
+    
+    float fogDensity = dvd_fogDetails._colourAndDensity.a;
+    float vFalloff = 20.0;
+    vec3 fogColor = dvd_fogDetails._colourAndDensity.rgb;
+    float fog = exp((-rayOrigin.y * vFalloff) * fogDensity) * (1.0 - exp(-dist * rayDirection.y * vFalloff * fogDensity)) / (rayDirection.y * vFalloff);
+    return mix(color, fogColor, saturate(fog));
 }
 
 #endif //_ENVIRONMENT_FRAG_

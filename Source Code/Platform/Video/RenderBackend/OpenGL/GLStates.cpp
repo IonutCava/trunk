@@ -18,7 +18,7 @@ GLuint GL_API::s_dummyVAO = 0u;
 GLuint GL_API::s_maxTextureUnits = 0;
 GLuint GL_API::s_maxAttribBindings = 0u;
 GLuint GL_API::s_maxFBOAttachments = 0u;
-GLuint GL_API::s_anisoLevel = 0u;
+GLuint GL_API::s_maxAnisotropicFilteringLevel = 0u;
 bool GL_API::s_UseBindlessTextures = false;
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;

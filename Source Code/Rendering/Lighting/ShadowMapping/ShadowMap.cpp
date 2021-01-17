@@ -106,7 +106,7 @@ void ShadowMap::initShadowMaps(GFXDevice& context) {
                     continue;
                 }
 
-                depthMapSampler.anisotropyLevel(isCSM ? settings.csm.anisotropicFilteringLevel : settings.spot.anisotropicFilteringLevel);
+                depthMapSampler.anisotropyLevel(isCSM ? settings.csm.maxAnisotropicFilteringLevel : settings.spot.maxAnisotropicFilteringLevel);
 
                 // Default filters, LINEAR is OK for this
                 TextureDescriptor depthMapDescriptor(TextureType::TEXTURE_2D_ARRAY, GFXImageFormat::RG, isCSM ? GFXDataFormat::FLOAT_32 : GFXDataFormat::FLOAT_16);

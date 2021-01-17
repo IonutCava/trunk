@@ -69,6 +69,9 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _drawConstants.set(_ID("_noiseFactor"), GFX::PushConstantType::FLOAT, 0.02f);
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
+    _drawConstants.set(_ID("camPosition"), GFX::PushConstantType::VEC3, VECTOR3_ZERO);
+    _drawConstants.set(_ID("invViewMatrix"), GFX::PushConstantType::MAT4, MAT4_IDENTITY);
+    _drawConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, MAT4_IDENTITY);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
 
@@ -181,6 +184,9 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     EnqueueCommand(bufferInOut, bindPipelineCmd);
 
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
+    _drawConstants.set(_ID("camPosition"), GFX::PushConstantType::VEC3, camera->getEye());
+    _drawConstants.set(_ID("invViewMatrix"), GFX::PushConstantType::MAT4, camera->worldMatrix());
+    _drawConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera->projectionMatrix()));
     EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;

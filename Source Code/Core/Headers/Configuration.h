@@ -72,8 +72,9 @@ struct Configuration final : public XML::IXMLSerializable {
         vec2<U16> splashScreenSize = { 400, 300 };
         vec2<U16> windowSize = { 1280, 720 };
         vec2<U16> resolution = { 1024, 768 };
+        F32 simSpeed = 1.f;
         F32 cameraViewDistance = 1000.0f;
-        U8  verticalFOV = 60u;
+        U8  horizontalFOV = 90u;
     } runtime = {};
 
     struct GUI {
@@ -86,7 +87,7 @@ struct Configuration final : public XML::IXMLSerializable {
     struct ShadowSettings {
         U32 shadowMapResolution = 512u;
         U8 MSAASamples = 0u;
-        U8 anisotropicFilteringLevel = 0u;
+        U8 maxAnisotropicFilteringLevel = 0u;
         bool enableBlurring = false;
         bool enabled = true;
     };
@@ -113,14 +114,14 @@ struct Configuration final : public XML::IXMLSerializable {
 
     struct Rendering {
         U8 MSAASamples = 0u;
-        U8 anisotropicFilteringLevel = 16;
+        U8 maxAnisotropicFilteringLevel = 16;
         bool useBindlessTextures = false;
         U16 reflectionProbeResolution = 256;
         U16 reflectionPlaneResolution = 512;
         I32 numLightsPerCluster = -1;
         vec3<U8> lightClusteredSizes = { 16, 9, 24 };
         bool enableFog = true;
-        F32 fogDensity = 1.0f;
+        vec2<F32> fogDensity = { 0.01f, 0.01f };
         vec3<F32> fogColour = { 0.2f, 0.2f, 0.2f };
         vec4<U16> lodThresholds = { 25u, 45u, 85u, 165u };
         struct PostFX {

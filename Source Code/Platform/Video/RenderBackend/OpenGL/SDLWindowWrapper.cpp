@@ -235,11 +235,11 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     glClampColor(GL_CLAMP_READ_COLOR, GL_NONE);
 
     // Cap max anisotropic level to what the hardware supports
-    CLAMP(config.rendering.anisotropicFilteringLevel,
+    CLAMP(config.rendering.maxAnisotropicFilteringLevel,
           to_U8(0),
           to_U8(s_stateTracker._opengl46Supported ? GLUtil::getGLValue(GL_MAX_TEXTURE_MAX_ANISOTROPY)
                                                   : GLUtil::getGLValue(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT)));
-    s_anisoLevel = config.rendering.anisotropicFilteringLevel;
+    s_maxAnisotropicFilteringLevel = config.rendering.maxAnisotropicFilteringLevel;
 
     // Number of sample buffers associated with the framebuffer & MSAA sample count
     const U8 maxGLSamples = to_U8(std::min(254, GLUtil::getGLValue(GL_MAX_SAMPLES)));

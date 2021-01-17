@@ -67,40 +67,10 @@ struct ProbeData
     vec4<F32> _halfExtents;
 };
 
-struct FogDescriptor {
-    FogDescriptor();
-
-    [[nodiscard]] bool dirty() const noexcept { return _dirty; }
-    [[nodiscard]] F32 density() const noexcept { return _density; }
-    [[nodiscard]] const vec3<F32>& colour() const noexcept { return _colour; }
-
-    void set(const vec3<F32>& colour, F32 density) {
-        CLAMP_01(density);
-        _colour.set(colour);
-        _density = density;
-        _dirty = true;
-    }
-
-
-  protected:
-    friend class SceneManager;
-
-    void clean() noexcept {
-        _dirty = false;
-    }
-
-    void active(const bool state) noexcept {
-        _active = state;
-    }
-
-    [[nodiscard]] bool active() const noexcept {
-        return _active;
-    }
-  private:
-    bool _dirty;
-    bool _active;
-    F32 _density;
-    vec3<F32> _colour;
+struct FogDetails
+{
+    vec4<F32> _colourAndDensity = VECTOR4_ZERO;
+    vec4<F32> _colourSunScatter = VECTOR4_ZERO;
 };
 
 class Scene;
@@ -146,15 +116,12 @@ class SceneRenderState : public SceneComponent {
     PROPERTY_RW(F32, grassVisibility, 1000.0f);
     PROPERTY_RW(F32, treeVisibility, 1000.0f);
     PROPERTY_RW(U8, renderPass, 0u);
+    PROPERTY_RW(FogDetails, fogDetails);
 
     [[nodiscard]] vec4<U16>& lodThresholds() noexcept { return _lodThresholds; }
-    [[nodiscard]] FogDescriptor& fogDescriptor() noexcept { return _fog; }
-    [[nodiscard]] const FogDescriptor& fogDescriptor() const noexcept { return _fog; }
-
     [[nodiscard]] vec4<U16> lodThresholds(RenderStage stage = RenderStage::DISPLAY) const noexcept;
 
   protected:
-    FogDescriptor _fog;
     vec4<U16> _lodThresholds;
     U16 _stateMask;
 };

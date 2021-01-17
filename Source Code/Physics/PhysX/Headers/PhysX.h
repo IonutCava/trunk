@@ -63,7 +63,7 @@ class SceneGraphNode;
 class PhysX final : public PhysicsAPIWrapper {
 
 public:
-    PhysX();
+    PhysX() = default;
     ~PhysX();
 
 public:
@@ -87,19 +87,19 @@ public:
     void createPvdConnection(const char* ip, physx::PxU32 port, physx::PxU32 timeout, bool useFullConnection);
 
 protected:
-    PhysicsSceneInterface* _targetScene;
+    PhysicsSceneInterface* _targetScene = nullptr;
 
 private:
-    F32 _simulationSpeed;
-    physx::PxPhysics* _gPhysicsSDK;
-    physx::PxCooking* _cooking;
-    physx::PxFoundation* _foundation;
-    physx::PxReal _timeStep;
-    physx::PxU8   _timeStepFactor;
-    physx::PxReal _accumulator;
-    physx::PxPvd*                     _pvd;
-    physx::PxPvdTransport*            _transport;
-    physx::PxPvdInstrumentationFlags  _pvdFlags;
+    F32 _simulationSpeed = 1.0f;
+    physx::PxPhysics* _gPhysicsSDK = nullptr;
+    physx::PxCooking* _cooking = nullptr;
+    physx::PxFoundation* _foundation = nullptr;
+    physx::PxReal _timeStep = 0.0f;
+    physx::PxU8   _timeStepFactor = 0;
+    physx::PxReal _accumulator = 0.0f;
+    physx::PxPvd* _pvd = nullptr;
+    physx::PxPvdTransport* _transport = nullptr;
+    physx::PxPvdInstrumentationFlags  _pvdFlags{};
 
     static physx::PxDefaultAllocator _gDefaultAllocatorCallback;
     static physx::PxDefaultErrorCallback _gDefaultErrorCallback;

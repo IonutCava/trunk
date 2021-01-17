@@ -80,7 +80,6 @@ Scene::Scene(PlatformContext& context, ResourceCache* cache, SceneManager& paren
 
     RenderStateBlock primitiveDescriptor;
     primitiveDescriptor.depthTestEnabled(false);
-    primitiveDescriptor.cullMode(CullMode::NONE);
 
     PipelineDescriptor pipeDesc;
     pipeDesc._stateHash = primitiveDescriptor.getHash();
@@ -221,10 +220,11 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
         pt.put("options.cameraSpeed.<xmlattr>.turn", par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str())));
         pt.put("options.autoCookPhysicsAssets", true);
 
-        pt.put("fog.fogDensity", state()->renderState().fogDescriptor().density());
-        pt.put("fog.fogColour.<xmlattr>.r", state()->renderState().fogDescriptor().colour().r);
-        pt.put("fog.fogColour.<xmlattr>.g", state()->renderState().fogDescriptor().colour().g);
-        pt.put("fog.fogColour.<xmlattr>.b", state()->renderState().fogDescriptor().colour().b);
+        pt.put("fog.fogDensityB", state()->renderState().fogDetails()._colourAndDensity.a);
+        pt.put("fog.fogDensityC", state()->renderState().fogDetails()._colourSunScatter.a);
+        pt.put("fog.fogColour.<xmlattr>.r", state()->renderState().fogDetails()._colourAndDensity.r);
+        pt.put("fog.fogColour.<xmlattr>.g", state()->renderState().fogDetails()._colourAndDensity.g);
+        pt.put("fog.fogColour.<xmlattr>.b", state()->renderState().fogDetails()._colourAndDensity.b);
 
         pt.put("lod.lodThresholds.<xmlattr>.x", state()->renderState().lodThresholds().x);
         pt.put("lod.lodThresholds.<xmlattr>.y", state()->renderState().lodThresholds().y);
@@ -340,16 +340,22 @@ bool Scene::loadXML(const Str256& name) {
         par.setParam(_ID((name + ".options.cameraSpeed.turn").c_str()), 35.0f);
     }
 
-    vec3<F32> fogColour(config.rendering.fogColour);
-    F32 fogDensity = config.rendering.fogDensity;
+    FogDetails details = {};
+    details._colourAndDensity.set(config.rendering.fogColour, config.rendering.fogDensity.x);
+    details._colourSunScatter.a = config.rendering.fogDensity.y;
 
     if (pt.get_child_optional("fog")) {
-        fogDensity = pt.get("fog.fogDensity", fogDensity);
-        fogColour.set(pt.get<F32>("fog.fogColour.<xmlattr>.r", fogColour.r),
-                      pt.get<F32>("fog.fogColour.<xmlattr>.g", fogColour.g),
-                      pt.get<F32>("fog.fogColour.<xmlattr>.b", fogColour.b));
+        details._colourAndDensity = { 
+            pt.get<F32>("fog.fogColour.<xmlattr>.r", details._colourAndDensity.r),
+            pt.get<F32>("fog.fogColour.<xmlattr>.g", details._colourAndDensity.g),
+            pt.get<F32>("fog.fogColour.<xmlattr>.b", details._colourAndDensity.b),
+            pt.get("fog.fogDensityB", details._colourAndDensity.a)
+        };
+        details._colourSunScatter.a = pt.get("fog.fogDensityC", details._colourSunScatter.a);
     }
-    state()->renderState().fogDescriptor().set(fogColour, fogDensity);
+    
+
+    state()->renderState().fogDetails(details);
 
     vec4<U16> lodThresholds(config.rendering.lodThresholds);
 
@@ -1036,7 +1042,10 @@ void Scene::loadDefaultCamera() {
 
     baseCamera->setMoveSpeedFactor(par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.move").c_str()), 1.0f));
     baseCamera->setTurnSpeedFactor(par.getParam<F32>(_ID((resourceName() + ".options.cameraSpeed.turn").c_str()), 1.0f));
-    baseCamera->setProjection(_context.config().runtime.verticalFOV, { Camera::s_minNearZ, _context.config().runtime.cameraViewDistance });
+
+    const F32 hFoV = _context.config().runtime.horizontalFOV;
+    const F32 vFoV = Angle::to_VerticalFoV(hFoV, to_D64(baseCamera->getAspectRatio()));
+    baseCamera->setProjection(vFoV, { Camera::s_minNearZ, _context.config().runtime.cameraViewDistance });
 }
 
 bool Scene::load(const Str256& name) {

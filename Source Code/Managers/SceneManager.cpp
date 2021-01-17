@@ -290,16 +290,17 @@ void SceneManager::onSizeChange(const SizeChangeParams& params) {
 
     if (_init) {
         
-        const F32 fov = _platformContext->config().runtime.verticalFOV;
+        const F32 hFoV = _platformContext->config().runtime.horizontalFOV;
+        const F32 vFoV = Angle::to_VerticalFoV(hFoV, to_D64(aspectRatio));
         const vec2<F32> zPlanes(Camera::s_minNearZ, _platformContext->config().runtime.cameraViewDistance);
 
         for (const UnitComponent* player : _players) {
             if (player != nullptr) {
-                player->getUnit<Player>()->camera()->setProjection(aspectRatio, fov, zPlanes);
+                player->getUnit<Player>()->camera()->setProjection(aspectRatio, vFoV, zPlanes);
             }
         }
 
-        Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setProjection(aspectRatio, fov, zPlanes);
+        Camera::utilityCamera(Camera::UtilityCamera::DEFAULT)->setProjection(aspectRatio, vFoV, zPlanes);
     }
 }
 
@@ -520,16 +521,6 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _elapsedTime += deltaTimeUS;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
-    FogDescriptor& fog = activeScene.state()->renderState().fogDescriptor();
-    const bool fogEnabled = _platformContext->config().rendering.enableFog;
-    if (fog.dirty() || fogEnabled != fog.active()) {
-        const vec3<F32>& colour = fog.colour();
-        const F32 density = fogEnabled ? fog.density() : 0.0f;
-        _sceneData->fogDetails(colour.r, colour.g, colour.b, density);
-        fog.clean();
-        fog.active(fogEnabled);
-    }
-
     vec3<F32> sunDirection = {0.0f, -0.75f, -0.75f};
     FColour3 sunColour = DefaultColours::WHITE;
 
@@ -544,6 +535,12 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _sceneData->sunDetails(sunDirection, sunColour);
 
     //_sceneData->skyColour(horizonColour, zenithColour);
+
+    FogDetails fog = activeScene.state()->renderState().fogDetails();
+    const bool fogEnabled = _platformContext->config().rendering.enableFog;
+    fog._colourAndDensity.a = fogEnabled ? fog._colourAndDensity.a : 0.0f;
+    fog._colourSunScatter.rgb = sunColour;
+    _sceneData->fogDetails(fog);
 
     const SceneState* activeSceneState = activeScene.state();
     _sceneData->windDetails(activeSceneState->windDirX(),

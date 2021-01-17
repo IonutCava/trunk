@@ -1,20 +1,9 @@
 #include "stdafx.h"
 
 #include "Headers/SceneState.h"
-
-#include "Utility/Headers/Colours.h"
-
 #include "Platform/Video/Headers/RenderStagePass.h"
 
 namespace Divide {
-
-FogDescriptor::FogDescriptor()
-   : _dirty(true),
-     _active(true),
-     _density(0.0f),
-     _colour(DefaultColours::WHITE.rgb)
-{
-}
 
 SceneRenderState::SceneRenderState(Scene& parentScene)
     : SceneComponent(parentScene),
@@ -24,9 +13,7 @@ SceneRenderState::SceneRenderState(Scene& parentScene)
       _stateMask(0u)
 {
     enableOption(RenderOptions::RENDER_GEOMETRY);
-
     _lodThresholds.set(25, 45, 85, 165);
-    _fog.set(vec3<F32>(0.2f, 0.2f, 0.2f), 0.01f);
 }
 
 void SceneRenderState::renderMask(U16 mask) {

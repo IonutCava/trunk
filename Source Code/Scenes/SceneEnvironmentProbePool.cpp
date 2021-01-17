@@ -66,7 +66,7 @@ void SceneEnvironmentProbePool::OnStartup(GFXDevice& context) {
     reflectionSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     reflectionSampler.magFilter(TextureFilter::LINEAR);
     reflectionSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-    reflectionSampler.anisotropyLevel(context.context().config().rendering.anisotropicFilteringLevel);
+    reflectionSampler.anisotropyLevel(context.context().config().rendering.maxAnisotropicFilteringLevel);
     const size_t samplerHash = reflectionSampler.getHash();
 
     TextureDescriptor environmentDescriptor(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);

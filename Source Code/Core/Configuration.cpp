@@ -39,8 +39,9 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM_ATTRIB(runtime.windowSize, height);
         GET_PARAM_ATTRIB(runtime.resolution, width);
         GET_PARAM_ATTRIB(runtime.resolution, height);
+        GET_PARAM(runtime.simSpeed);
         GET_PARAM(runtime.cameraViewDistance);
-        GET_PARAM(runtime.verticalFOV);
+        GET_PARAM(runtime.horizontalFOV);
         GET_PARAM(gui.cegui.enabled);
         GET_PARAM(gui.consoleLayoutFile);
         GET_PARAM(terrain.detailLevel);
@@ -51,7 +52,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(terrain.showLoDs);
         GET_PARAM(terrain.showTessLevels);
         GET_PARAM(rendering.MSAASamples);
-        GET_PARAM(rendering.anisotropicFilteringLevel);
+        GET_PARAM(rendering.maxAnisotropicFilteringLevel);
         GET_PARAM(rendering.useBindlessTextures);
         GET_PARAM(rendering.reflectionProbeResolution);
         GET_PARAM(rendering.reflectionPlaneResolution);
@@ -60,7 +61,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM_ATTRIB(rendering.lightClusteredSizes, height);
         GET_PARAM_ATTRIB(rendering.lightClusteredSizes, depth);
         GET_PARAM(rendering.enableFog);
-        GET_PARAM(rendering.fogDensity);
+        GET_PARAM_ATTRIB(rendering.fogDensity, x);
+        GET_PARAM_ATTRIB(rendering.fogDensity, y);
         GET_PARAM_ATTRIB(rendering.fogColour, r);
         GET_PARAM_ATTRIB(rendering.fogColour, g);
         GET_PARAM_ATTRIB(rendering.fogColour, b);
@@ -98,12 +100,12 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.shadowMapping.csm.enableBlurring);
         GET_PARAM(rendering.shadowMapping.csm.splitLambda);
         GET_PARAM(rendering.shadowMapping.csm.splitCount);
-        GET_PARAM(rendering.shadowMapping.csm.anisotropicFilteringLevel);
+        GET_PARAM(rendering.shadowMapping.csm.maxAnisotropicFilteringLevel);
         GET_PARAM(rendering.shadowMapping.spot.enabled);
         GET_PARAM(rendering.shadowMapping.spot.shadowMapResolution);
         GET_PARAM(rendering.shadowMapping.spot.MSAASamples);
         GET_PARAM(rendering.shadowMapping.spot.enableBlurring);
-        GET_PARAM(rendering.shadowMapping.spot.anisotropicFilteringLevel);
+        GET_PARAM(rendering.shadowMapping.spot.maxAnisotropicFilteringLevel);
         GET_PARAM(rendering.shadowMapping.point.enabled);
         GET_PARAM(rendering.shadowMapping.point.shadowMapResolution);
 
@@ -157,8 +159,9 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM_ATTRIB(runtime.windowSize, height);
         PUT_PARAM_ATTRIB(runtime.resolution, width);
         PUT_PARAM_ATTRIB(runtime.resolution, height);
+        PUT_PARAM(runtime.simSpeed);
         PUT_PARAM(runtime.cameraViewDistance);
-        PUT_PARAM(runtime.verticalFOV);
+        PUT_PARAM(runtime.horizontalFOV);
         PUT_PARAM(gui.cegui.enabled);
         PUT_PARAM(gui.consoleLayoutFile);
         PUT_PARAM(terrain.detailLevel);
@@ -169,7 +172,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(terrain.showLoDs);
         PUT_PARAM(terrain.showTessLevels);
         PUT_PARAM(rendering.MSAASamples);
-        PUT_PARAM(rendering.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.maxAnisotropicFilteringLevel);
         PUT_PARAM(rendering.useBindlessTextures);
         PUT_PARAM(rendering.reflectionProbeResolution);
         PUT_PARAM(rendering.reflectionPlaneResolution);
@@ -178,7 +181,8 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, height);
         PUT_PARAM_ATTRIB(rendering.lightClusteredSizes, depth);
         PUT_PARAM(rendering.enableFog);
-        PUT_PARAM(rendering.fogDensity);
+        PUT_PARAM_ATTRIB(rendering.fogDensity, x);
+        PUT_PARAM_ATTRIB(rendering.fogDensity, y);
         PUT_PARAM_ATTRIB(rendering.fogColour, r);
         PUT_PARAM_ATTRIB(rendering.fogColour, g);
         PUT_PARAM_ATTRIB(rendering.fogColour, b);
@@ -216,12 +220,12 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.shadowMapping.csm.enableBlurring);
         PUT_PARAM(rendering.shadowMapping.csm.splitLambda);
         PUT_PARAM(rendering.shadowMapping.csm.splitCount);
-        PUT_PARAM(rendering.shadowMapping.csm.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.shadowMapping.csm.maxAnisotropicFilteringLevel);
         PUT_PARAM(rendering.shadowMapping.spot.enabled);
         PUT_PARAM(rendering.shadowMapping.spot.shadowMapResolution);
         PUT_PARAM(rendering.shadowMapping.spot.MSAASamples);
         PUT_PARAM(rendering.shadowMapping.spot.enableBlurring);
-        PUT_PARAM(rendering.shadowMapping.spot.anisotropicFilteringLevel);
+        PUT_PARAM(rendering.shadowMapping.spot.maxAnisotropicFilteringLevel);
         PUT_PARAM(rendering.shadowMapping.point.enabled);
         PUT_PARAM(rendering.shadowMapping.point.shadowMapResolution);
 

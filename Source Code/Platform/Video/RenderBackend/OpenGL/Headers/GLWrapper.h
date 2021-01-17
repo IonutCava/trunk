@@ -250,8 +250,8 @@ private:
     static GLUtil::glVAOPool s_vaoPool;
     /// Used to render points (e.g. to render full screen quads with geometry shaders)
     static GLuint s_dummyVAO;
-    /// Preferred anisotropic filtering level
-    static GLuint s_anisoLevel;
+    /// Maximum anisotropic filtering level
+    static GLuint s_maxAnisotropicFilteringLevel;
     /// /*sampler hash value*/ /*sampler object*/
     using SamplerObjectMap = hashMap<size_t, GLuint, NoHash<size_t>>;
 

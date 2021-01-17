@@ -264,6 +264,20 @@ vec4 CSMSplitColour() {
 }
 #endif //DISABLE_SHADOW_MAPPING
 
+#if !defined(NO_FOG)
+//https://iquilezles.org/www/articles/fog/fog.htm
+vec3 applyFog(in vec3  rgb,      // original color of the pixel
+              in float distance, // camera to point distance
+              in vec3  rayOri,   // camera position
+              in vec3  rayDir)   // camera to point vector
+{
+    const float c = dvd_fogDetails._colourSunScatter.a;
+    const float b = dvd_fogDetails._colourAndDensity.a;
+    const float fogAmount = c * exp(-rayOri.y * b) * (1.f - exp(-distance * rayDir.y * b)) / rayDir.y;
+    return mix(rgb, dvd_fogDetails._colourAndDensity.rgb, fogAmount);
+}
+#endif //!NO_FOG
+
 /// RGB - lit colour, A - reflectivity
 vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
@@ -298,6 +312,9 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
     oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData));
     oColour *= SSAOFactor;
     oColour += EmissiveColour(materialData);
+#if !defined(NO_FOG)
+    oColour = applyFog(oColour, distance(VAR._vertexW.xyz, dvd_cameraPosition.xyz), dvd_cameraPosition.xyz, normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz));
+#endif //!NO_FOG
 
 #if defined(OIT_PASS)
     // alpha for WOIT

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "Headers/PXDevice.h"
-#include "Headers/PhysicsAsset.h"
 
 #include "Utility/Headers/Localization.h"
 
@@ -13,12 +12,13 @@
 
 namespace Divide {
     
+namespace {
+    constexpr F32 g_maxSimSpeed = 1000.f;
+};
+
 PXDevice::PXDevice(Kernel& parent)
     : KernelComponent(parent), 
-      PhysicsAPIWrapper(),
-      _simulationSpeed(1.0f),
-      _API_ID(PhysicsAPI::COUNT),
-      _api(nullptr)
+      PhysicsAPIWrapper()
 {
 }
 
@@ -41,7 +41,7 @@ ErrorCode PXDevice::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed)
             return ErrorCode::PFX_NON_SPECIFIED;
         };
     };
-    _simulationSpeed = simSpeed;
+    _simulationSpeed = CLAMPED(simSpeed, 0.f, g_maxSimSpeed);
     return _api->initPhysicsAPI(targetFrameRate, _simulationSpeed);
 }
 

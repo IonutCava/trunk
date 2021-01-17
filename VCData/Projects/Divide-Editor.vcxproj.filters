@@ -57,6 +57,7 @@
     <ClCompile Include="..\..\Source Code\Editor\Widgets\EditorOptionsWindow.cpp">
       <Filter>Widgets</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Editor\Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code\Editor\Widgets\DockedWindows\Headers\SceneViewWindow.h">
@@ -103,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\Editor\Widgets\Headers\EditorOptionsWindow.h">
       <Filter>Widgets\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Editor\Headers\Utils.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

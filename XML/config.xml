@@ -48,9 +48,9 @@
 	<!-- rendering resolution -->
 	<resolution width="1920" height="1080"/>
 	<!-- Physics simulation speed multiplier. Tweak this for faster or slower simulations (ex: slow motion explosions)-->
-	<simSpeed>0</simSpeed>
+	<simSpeed>1</simSpeed>
 	<cameraViewDistance>1000</cameraViewDistance>
-	<verticalFOV>60</verticalFOV>
+	<horizontalFOV>90</horizontalFOV>
 </runtime>
 <GUI>
 	<CEGUI>
@@ -72,8 +72,8 @@
 	<showTessLevels>false</showTessLevels>
 </terrain>
 <rendering>
-	<MSAASamples>2</MSAASamples>
-	<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
+	<MSAASamples>4</MSAASamples>
+	<maxAnisotropicFilteringLevel>16</maxAnisotropicFilteringLevel>
 	<useBindlessTextures>false</useBindlessTextures>
 	<!-- Environment probe resolution. Clamped between 16 and 4096 and rounded to a power of 2 -->
 	<reflectionProbeResolution>256</reflectionProbeResolution>
@@ -82,7 +82,7 @@
 	<numLightsPerCluster>100</numLightsPerCluster>
 	<lightClusteredSizes width="16" height="9" depth="24"/>
 	<enableFog>true</enableFog>
-	<fogDensity>0.00100000005</fogDensity>
+    <fogDensity x="0.07" y ="0.007"/>
 	<fogColour r="0.5" g="0.5" b="0.550000012"/>
 	<lodThresholds x="25" y="45" z="85" w="165"/>
 	<postFX>
@@ -128,7 +128,7 @@
 			<shadowMapResolution>512</shadowMapResolution>
 			<MSAASamples>2</MSAASamples>
 			<enableBlurring>true</enableBlurring>
-			<anisotropicFilteringLevel>2</anisotropicFilteringLevel>
+            <maxAnisotropicFilteringLevel>2</maxAnisotropicFilteringLevel>
 			<splitLambda>0.899999976</splitLambda>
 			<splitCount>3</splitCount>
 		</csm>
@@ -137,13 +137,13 @@
 			<shadowMapResolution>512</shadowMapResolution>
 			<MSAASamples>0</MSAASamples>
 			<enableBlurring>false</enableBlurring>
-			<anisotropicFilteringLevel>8</anisotropicFilteringLevel>
+            <maxAnisotropicFilteringLevel>8</maxAnisotropicFilteringLevel>
 		</spot>
 		<point>
 			<enabled>true</enabled>
 			<shadowMapResolution>512</shadowMapResolution>
 			<enableBlurring>false</enableBlurring>
-			<anisotropicFilteringLevel>4</anisotropicFilteringLevel>
+            <maxAnisotropicFilteringLevel>4</maxAnisotropicFilteringLevel>
 		</point>
 	</shadowMapping>
 </rendering>

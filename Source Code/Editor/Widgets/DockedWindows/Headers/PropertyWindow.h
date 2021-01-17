@@ -35,6 +35,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "Editor/Widgets/Headers/DockedWindow.h"
 #include "Core/Headers/PlatformContextComponent.h"
+#include "Headers/Editor.h"
 
 namespace Divide {
 
@@ -45,7 +46,6 @@ class SceneGraphNode;
 class TransformComponent;
 
 struct Selections;
-
 struct EditorComponentField;
 class PropertyWindow final : public DockedWindow, public PlatformContextComponent {
     public:
@@ -73,7 +73,6 @@ class PropertyWindow final : public DockedWindow, public PlatformContextComponen
         Texture* _previewTexture = nullptr;
 };
 
-void NewFunction(I32&id, Material* material, bool fromTexture, bool readOnly);
 } //namespace Divide
 
 #endif //_EDITOR_PROPERTY_WINDOW_H_

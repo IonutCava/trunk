@@ -25,20 +25,6 @@ physx::PxDefaultErrorCallback PhysX::_gDefaultErrorCallback;
 hashMap<stringImpl, physx::PxTriangleMesh*> PhysX::_gMeshCache;
 
 
-PhysX::PhysX()
-    : _targetScene(nullptr),
-      _simulationSpeed(1.0f),
-      _gPhysicsSDK(nullptr),
-      _cooking(nullptr),
-      _foundation(nullptr),
-      _timeStep(0.0f),
-      _timeStepFactor(0),
-      _accumulator(0.0f),
-      _pvd(nullptr),
-      _transport(nullptr)
-{
-}
-
 PhysX::~PhysX()
 {
     assert(_gPhysicsSDK == nullptr);

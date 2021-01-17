@@ -3,8 +3,11 @@
 #include "Headers/PostFXWindow.h"
 
 #include "Core/Headers/Configuration.h"
+#include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Editor/Headers/Editor.h"
+#include "Headers/Utils.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
@@ -71,6 +74,51 @@ namespace {
             batch.edgeDetectionThreshold(edgeThreshold);
         }
         ImGui::PopItemWidth();
+        if (ImGui::CollapsingHeader("Fog Settings")) {
+            bool sceneChanged = false;
+            SceneManager* sceneManager = context().kernel().sceneManager();
+            SceneState* activeSceneState = sceneManager->getActiveScene().state();
+            {
+                F32 fogDensityB = activeSceneState->renderState().fogDetails()._colourAndDensity.a;
+                if (ImGui::SliderFloat("Fog Density B", &fogDensityB, 0.0001f, 0.25f, "%.6f")) {
+                    FogDetails details = activeSceneState->renderState().fogDetails();
+                    details._colourAndDensity.a = fogDensityB;
+                    activeSceneState->renderState().fogDetails(details);
+                    sceneChanged = true;
+                }
+            }
+            {
+                F32 fogDensityC = activeSceneState->renderState().fogDetails()._colourSunScatter.a;
+                if (ImGui::SliderFloat("Fog Density C", &fogDensityC, 0.0001f, 0.25f, "%.6f")) {
+                    FogDetails details = activeSceneState->renderState().fogDetails();
+                    details._colourSunScatter.a = fogDensityC;
+                    activeSceneState->renderState().fogDetails(details);
+                    sceneChanged = true;
+                }
+            }
+            {
+                FColour3 fogColour = activeSceneState->renderState().fogDetails()._colourAndDensity.rgb;
+                EditorComponentField tempField = {};
+                tempField._name = "Fog Colour";
+                tempField._basicType = GFX::PushConstantType::FCOLOUR3;
+                tempField._type = EditorComponentFieldType::PUSH_TYPE;
+                tempField._readOnly = false;
+                tempField._data = &fogColour;
+                tempField._format = "%.6f";
+                tempField._range = { 0.0f, 1.0f };
+                tempField._dataSetter = [&](const void* colour) {
+                    FogDetails details = activeSceneState->renderState().fogDetails();
+                    details._colourAndDensity.rgb = *static_cast<const FColour3*>(colour);
+                    activeSceneState->renderState().fogDetails(details);
+                };
+                sceneChanged = Util::colourInput3(_parent, tempField) || sceneChanged;
+            }
+
+            if (sceneChanged) {
+                Attorney::EditorGeneralWidget::registerUnsavedSceneChanges(_context.editor());
+            }
+        }
+
         if (ImGui::CollapsingHeader("SS Antialiasing")) {
             PreRenderOperator* op = batch.getOperator(FilterType::FILTER_SS_ANTIALIASING);
             PostAAPreRenderOperator& aaOp = static_cast<PostAAPreRenderOperator&>(*op);
