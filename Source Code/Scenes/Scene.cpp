@@ -239,7 +239,7 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
         pt.put("dayNight.timeOfDay.<xmlattr>.minute", _dayNightData._time._minutes);
         pt.put("dayNight.timeOfDay.<xmlattr>.timeFactor", _dayNightData._speedFactor);
 
-        if (copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true)) {
+        if (copyFile(scenePath.c_str(), (resourceName() + ".xml").c_str(), scenePath.c_str(), (resourceName() + ".xml.bak").c_str(), true) == FileError::NONE) {
             XML::writeXML(sceneDataFile.c_str(), pt);
         } else {
             if_constexpr (!Config::Build::IS_SHIPPING_BUILD) {
@@ -263,7 +263,7 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
         ACKNOWLEDGE_UNUSED(pt); //ToDo: Save music data :)
 
 
-        if (copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true)) {
+        if (copyFile((sceneLocation + "/").c_str(), "musicPlaylist.xml", (sceneLocation + "/").c_str(), "musicPlaylist.xml.bak", true) == FileError::NONE) {
             XML::writeXML((sceneLocation + "/" + "musicPlaylist.xml.dev").c_str(), pt);
         }
     }

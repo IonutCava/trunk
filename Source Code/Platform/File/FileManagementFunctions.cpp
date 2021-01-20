@@ -13,15 +13,15 @@ std::string getWorkingDirectory() {
 }
 
 
-bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, const bufferPtr content, const size_t length, const FileType fileType) {
+FileError writeFile(const ResourcePath& filePath, const ResourcePath& fileName, const bufferPtr content, const size_t length, const FileType fileType) {
     return writeFile(filePath.c_str(), fileName.c_str(), content, length, fileType);
 }
 
-bool writeFile(const char* filePath, const char* fileName, const bufferPtr content, const size_t length, const FileType fileType) {
+FileError writeFile(const char* filePath, const char* fileName, const bufferPtr content, const size_t length, const FileType fileType) {
 
     if (!Util::IsEmptyOrNull(filePath) && content != nullptr && length > 0) {
         if (!pathExists(filePath) && !CreateDirectories(filePath)) {
-            return false;
+            return FileError::FILE_NOT_FOUND;
         }
 
         std::ofstream outputFile(stringImpl{ filePath } +fileName,
@@ -31,10 +31,14 @@ bool writeFile(const char* filePath, const char* fileName, const bufferPtr conte
 
         outputFile.write(static_cast<char*>(content), length);
         outputFile.close();
-        return outputFile.good();
+        if (outputFile.good()) {
+            return FileError::NONE;
+        }
+
+        return FileError::FILE_WRITE_ERROR;
     }
 
-    return false;
+    return FileError::FILE_NOT_FOUND;
 }
 
 stringImpl stripQuotes(const char* input) {
@@ -48,8 +52,7 @@ stringImpl stripQuotes(const char* input) {
 }
 
 FileAndPath splitPathToNameAndLocation(const ResourcePath& input) {
-    FileAndPath ret = splitPathToNameAndLocation(input.c_str());
-    return ret;
+    return splitPathToNameAndLocation(input.c_str());
 }
 
 FileAndPath splitPathToNameAndLocation(const char* input) {
@@ -61,16 +64,6 @@ FileAndPath splitPathToNameAndLocation(const char* input) {
     };
 
     return ret;
-}
-
-std::filesystem::path asPath(const char* filePath) {
-    auto path = std::filesystem::path(filePath);
-    return path;
-}
-
-std::filesystem::path asPath(const std::string_view& filePath) {
-    auto path = std::filesystem::path(filePath);
-    return path;
 }
 
 bool pathCompare(const char* filePathA, const char* filePathB) {
@@ -102,18 +95,15 @@ bool pathCompare(const char* filePathA, const char* filePathB) {
 }
 
 bool pathExists(const ResourcePath& filePath) {
-    const bool ret = pathExists(filePath.c_str());
-    return ret;
+    return pathExists(filePath.c_str());
 }
 
 bool pathExists(const char* filePath) {
-    const bool ret = is_directory(std::filesystem::path(filePath));
-    return ret;
+    return is_directory(std::filesystem::path(filePath));
 }
 
 bool createDirectory(const ResourcePath& path) {
-    const bool ret = createDirectory(path.c_str());
-    return ret;
+    return createDirectory(path.c_str());
 }
 
 bool createDirectory(const char* path) {
@@ -128,18 +118,15 @@ bool createDirectory(const char* path) {
 }
 
 bool fileExists(const ResourcePath& filePathAndName) {
-    const bool ret = fileExists(filePathAndName.c_str());
-    return ret;
+    return fileExists(filePathAndName.c_str());
 }
 
 bool fileExists(const char* filePathAndName) {
-    const bool ret = is_regular_file(std::filesystem::path(filePathAndName));
-    return ret;
+    return is_regular_file(std::filesystem::path(filePathAndName));
 }
 
 bool fileExists(const char* filePath, const char* fileName) {
-    const bool ret = is_regular_file(std::filesystem::path(stringImpl{ filePath } + fileName));
-    return ret;
+    return is_regular_file(std::filesystem::path(stringImpl{ filePath } + fileName));
 }
 
 bool createFile(const char* filePathAndName, const bool overwriteExisting) {
@@ -150,28 +137,24 @@ bool createFile(const char* filePathAndName, const bool overwriteExisting) {
 
     CreateDirectories((const_sysInfo()._workingDirectory + splitPathToNameAndLocation(filePathAndName).second.str()).c_str());
 
-    const bool ret = std::ifstream(filePathAndName, std::fstream::in).good();
-    return ret;
+    return std::ifstream(filePathAndName, std::fstream::in).good();
 }
 
-bool openFile(const ResourcePath& filePath, const ResourcePath& fileName) {
-    const bool ret = openFile(filePath.c_str(), fileName.c_str());
-    return ret;
+FileError openFile(const ResourcePath& filePath, const ResourcePath& fileName) {
+    return openFile(filePath.c_str(), fileName.c_str());
 }
 
-bool openFile(const char* filePath, const char* fileName) {
-    const bool ret = openFile("", filePath, fileName);
-    return ret;
+FileError openFile(const char* filePath, const char* fileName) {
+    return openFile("", filePath, fileName);
 }
 
-bool openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName) {
-    const bool ret = openFile(cmd, filePath.c_str(), fileName.c_str());
-    return ret;
+FileError openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName) {
+    return openFile(cmd, filePath.c_str(), fileName.c_str());
 }
 
-bool openFile(const char* cmd, const char* filePath, const char* fileName) {
+FileError openFile(const char* cmd, const char* filePath, const char* fileName) {
     if (Util::IsEmptyOrNull(fileName) || !fileExists(filePath, fileName)) {
-        return false;
+        return FileError::FILE_NOT_FOUND;
     }
 
     constexpr std::array<std::string_view, 2> searchPattern = {
@@ -186,63 +169,65 @@ bool openFile(const char* cmd, const char* filePath, const char* fileName) {
 
     if (strlen(cmd) == 0) {
         const bool ret = CallSystemCmd(file.c_str(), "");
-        return ret;
+        return ret ? FileError::NONE : FileError::FILE_OPEN_ERROR;
     }
 
     const bool ret = CallSystemCmd(cmd, file.c_str());
-    return ret;
+    return ret ? FileError::NONE : FileError::FILE_OPEN_ERROR;
 }
 
-bool deleteFile(const ResourcePath& filePath, const ResourcePath& fileName) {
-    const bool ret = deleteFile(filePath.c_str(), fileName.c_str());
-    return ret;
+FileError deleteFile(const ResourcePath& filePath, const ResourcePath& fileName) {
+    return deleteFile(filePath.c_str(), fileName.c_str());
 }
 
-bool deleteFile(const char* filePath, const char* fileName) {
+FileError deleteFile(const char* filePath, const char* fileName) {
     if (Util::IsEmptyOrNull(fileName)) {
-        return false;
+        return FileError::FILE_NOT_FOUND;
     }
     const std::filesystem::path file(stringImpl{ filePath } +fileName);
-    std::filesystem::remove(file);
-    return true;
+    if (std::filesystem::remove(file)) {
+        return FileError::NONE;
+    }
+
+    return FileError::FILE_DELETE_ERROR;
 }
 
-bool copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, const bool overwrite) {
-    const bool ret = copyFile(sourcePath.c_str(), sourceName.c_str(), targetPath.c_str(), targetName.c_str(), overwrite);
-    return ret;
+FileError copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, const bool overwrite) {
+    return copyFile(sourcePath.c_str(), sourceName.c_str(), targetPath.c_str(), targetName.c_str(), overwrite);
 }
 
-bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, const bool overwrite) {
+FileError copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, const bool overwrite) {
     if (Util::IsEmptyOrNull(sourceName) || Util::IsEmptyOrNull(targetName)) {
-        return false;
+        return FileError::FILE_NOT_FOUND;
     }
     stringImpl source{ sourcePath };
     source.append(sourceName);
 
     if (!fileExists(source.c_str())) {
-        return false;
+        return FileError::FILE_NOT_FOUND;
     }
 
     stringImpl target{ targetPath };
     target.append(targetName);
 
     if (!overwrite && fileExists(target.c_str())) {
-        return false;
+        return FileError::FILE_OVERWRITE_ERROR;
     }
 
-    copy_file(std::filesystem::path(source),
-              std::filesystem::path(target),
-              std::filesystem::copy_options::overwrite_existing);
+    if (copy_file(std::filesystem::path(source),
+                  std::filesystem::path(target),
+                  std::filesystem::copy_options::overwrite_existing)) {
+        return FileError::NONE;
+    }
 
-    return true;
+    return FileError::FILE_COPY_ERROR;
 }
 
-bool findFile(const ResourcePath& filePath, const char* fileName, stringImpl& foundPath) {
-    const bool ret = findFile(filePath.c_str(), fileName, foundPath);
-    return ret;
+FileError findFile(const ResourcePath& filePath, const char* fileName, stringImpl& foundPath) {
+    return findFile(filePath.c_str(), fileName, foundPath);
 }
 
-bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath) {
+FileError findFile(const char* filePath, const char* fileName, stringImpl& foundPath) {
     const std::filesystem::path dir_path(filePath);
     std::filesystem::path file_name(fileName);
 
@@ -253,27 +238,24 @@ bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath)
         return ret;
     });
     if (it == end) {
-        return false;
-    } else {
-        foundPath = it->path().string();
-        return true;
+        return FileError::FILE_NOT_FOUND;
     }
+
+    foundPath = it->path().string();
+    return FileError::NONE;
 }
 
 bool hasExtension(const ResourcePath& filePath, const Str16& extension) {
-    const bool ret = hasExtension(filePath.c_str(), extension);
-    return ret;
+    return hasExtension(filePath.c_str(), extension);
 }
 
 bool hasExtension(const char* filePath, const Str16& extension) {
     const Str16 ext("." + extension);
-    const bool ret = Util::CompareIgnoreCase(Util::GetTrailingCharacters(stringImplFast{ filePath }, ext.length()), ext);
-    return ret;
+    return Util::CompareIgnoreCase(Util::GetTrailingCharacters(stringImplFast{ filePath }, ext.length()), ext);
 }
 
 bool deleteAllFiles(const ResourcePath& filePath, const char* extension) {
-    const bool ret = deleteAllFiles(filePath.c_str(), extension);
-    return ret;
+    return deleteAllFiles(filePath.c_str(), extension);
 }
 
 bool deleteAllFiles(const char* filePath, const char* extension) {
@@ -326,18 +308,17 @@ bool clearCache(const CacheType type) {
         default: return false;
     }
 
-    const bool ret = deleteAllFiles(Paths::g_cacheLocation + cache);
-    return ret;
+    return deleteAllFiles(Paths::g_cacheLocation + cache);
 }
 
 std::string extractFilePathAndName(char* argv0) {
-    std::error_code ec;
     auto currentPath = std::filesystem::current_path();
     currentPath.append(argv0);
+
+    std::error_code ec;
     std::filesystem::path p(canonical(currentPath, ec));
 
-    std::string ret = p.make_preferred().string();
-    return ret;
+    return p.make_preferred().string();
 }
 
 }; //namespace Divide

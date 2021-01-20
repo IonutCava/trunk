@@ -36,6 +36,29 @@
 #include "Platform/Headers/PlatformDataTypes.h"
 
 namespace Divide {
+    BETTER_ENUM(MaterialDebugFlag, U8,
+        ALBEDO = 0,
+        DEPTH,
+        LIGHTING,
+        SPECULAR,
+        UV,
+        SSAO,
+        EMISSIVE,
+        ROUGHNESS,
+        METALLIC,
+        NORMALS,
+        TANGENTS,
+        BITANGENTS,
+        SHADOW_MAPS,
+        CSM_SPLITS,
+        LIGHT_HEATMAP,
+        DEPTH_CLUSTERS,
+        REFLECTIONS,
+        REFLECTIVITY,
+        MATERIAL_IDS,
+        COUNT
+    );
+
     enum class BumpMethod : U8 {
         NONE = 0,
         NORMAL = 1,

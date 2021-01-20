@@ -64,12 +64,13 @@
 	<!-- higher => better (less tilling, more parallax effects, etc) -->
 	<detailLevel>2</detailLevel>
 	<!-- higher => better -->
-	<parallaxMode>0</parallaxMode>
+	<parallaxMode>1</parallaxMode>
 	<!-- The following debug settings work in cascade mode. The topmost enabled option is the only one considered-->
 	<wireframe>false</wireframe>
 	<showNormals>false</showNormals>
 	<showLoDs>false</showLoDs>
 	<showTessLevels>false</showTessLevels>
+	<showBlendMap>false</showBlendMap>
 </terrain>
 <rendering>
 	<MSAASamples>4</MSAASamples>
@@ -82,7 +83,7 @@
 	<numLightsPerCluster>100</numLightsPerCluster>
 	<lightClusteredSizes width="16" height="9" depth="24"/>
 	<enableFog>true</enableFog>
-    <fogDensity x="0.07" y ="0.007"/>
+	<fogDensity x="0.0700000003" y="0.00700000022"/>
 	<fogColour r="0.5" g="0.5" b="0.550000012"/>
 	<lodThresholds x="25" y="45" z="85" w="165"/>
 	<postFX>
@@ -125,10 +126,10 @@
 		<!-- Resolution will be rounded up to the next POW_2. -->
 		<csm>
 			<enabled>true</enabled>
-			<shadowMapResolution>512</shadowMapResolution>
+			<shadowMapResolution>1024</shadowMapResolution>
 			<MSAASamples>2</MSAASamples>
 			<enableBlurring>true</enableBlurring>
-            <maxAnisotropicFilteringLevel>2</maxAnisotropicFilteringLevel>
+			<maxAnisotropicFilteringLevel>2</maxAnisotropicFilteringLevel>
 			<splitLambda>0.899999976</splitLambda>
 			<splitCount>3</splitCount>
 		</csm>
@@ -137,13 +138,13 @@
 			<shadowMapResolution>512</shadowMapResolution>
 			<MSAASamples>0</MSAASamples>
 			<enableBlurring>false</enableBlurring>
-            <maxAnisotropicFilteringLevel>8</maxAnisotropicFilteringLevel>
+			<maxAnisotropicFilteringLevel>8</maxAnisotropicFilteringLevel>
 		</spot>
 		<point>
 			<enabled>true</enabled>
 			<shadowMapResolution>512</shadowMapResolution>
 			<enableBlurring>false</enableBlurring>
-            <maxAnisotropicFilteringLevel>4</maxAnisotropicFilteringLevel>
+			<maxAnisotropicFilteringLevel>4</maxAnisotropicFilteringLevel>
 		</point>
 	</shadowMapping>
 </rendering>

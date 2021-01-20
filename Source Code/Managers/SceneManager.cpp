@@ -892,7 +892,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
 
         // Save file might be deleted if it was corrupted
         if (fileExists(path + bakSaveFile)) {
-            if (!copyFile(path, bakSaveFile, path, saveFile, false)) {
+            if (copyFile(path, bakSaveFile, path, saveFile, false) != FileError::NONE) {
                 NOP();
             }
         }
@@ -902,7 +902,7 @@ bool LoadSave::loadScene(Scene& activeScene) {
     if (save.loadFromFile(path.c_str(), saveFile.c_str())) {
         if (!Attorney::SceneLoadSave::load(activeScene, save)) {
             //Remove the save and try the backup
-            if (!deleteFile(path, saveFile)) {
+            if (deleteFile(path, saveFile) != FileError::NONE) {
                 NOP();
             }
             if (!isLoadFromBackup) {
@@ -937,7 +937,7 @@ bool LoadSave::saveScene(const Scene& activeScene, const bool toCache, const DEL
         const ResourcePath bakSaveFile = ResourcePath("save.bak");
 
         if (fileExists(path + saveFile)) {
-            if (!copyFile(path, saveFile, path, bakSaveFile, true)) {
+            if (copyFile(path, saveFile, path, bakSaveFile, true) != FileError::NONE) {
                 return false;
             }
         }

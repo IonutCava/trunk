@@ -6,37 +6,6 @@
 #define BUMP_PARALLAX 2
 #define BUMP_PARALLAX_OCCLUSION 3
 
-
-// http://www.thetenthplanet.de/archives/1180
-mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
-{
-    // get edge vectors of the pixel triangle
-    vec3 dp1 = dFdx(p);
-    vec3 dp2 = dFdy(p);
-    vec2 duv1 = dFdx(uv);
-    vec2 duv2 = dFdy(uv);
-
-    // solve the linear system
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
-    vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
-
-    // construct a scale-invariant frame 
-    float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
-    return mat3(T * invmax, B * invmax, N);
-}
-
-vec3 perturb_normal(vec3 texNorm, vec3 N, vec3 V, vec2 texcoord)
-{
-    // assume N, the interpolated vertex normal and 
-    // V, the view vector (vertex to eye)
-    //texNorm = texNorm * 255. / 127. - 128. / 127.;
-    mat3 TBN = cotangent_frame(N, -V, texcoord);
-    return normalize(TBN * texNorm);
-}
-
-
 void aproximateTBN(in vec3 normalWV, out vec3 tangent, out vec3 bitangent) {
     vec3 c1 = cross(normalWV, vec3(0.0, 0.0, 1.0));
     vec3 c2 = cross(normalWV, vec3(0.0, 1.0, 0.0));
@@ -99,10 +68,4 @@ vec3 normalUnityBlend(in vec3 n1, in vec3 n2) {
     return normalize(n2.x * nBasis[0] + n2.y * nBasis[1] + n2.z * nBasis[2]);
 }
 
-//ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
-// Returned parallaxed texCoords
-vec2 ParallaxOffset(vec2 uv, vec3 viewDirTBN, float height) {
-    const vec2 p = viewDirTBN.xy / viewDirTBN.z * (height * dvd_parallaxFactor(MATERIAL_IDX));
-    return uv - p;
-}
 #endif //_BUMP_MAPPING_FRAG_

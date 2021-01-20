@@ -99,7 +99,7 @@ class NOINITVTABLE ShadowMap {
     static void commitDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static bool freeDepthMapOffset(ShadowType shadowType, U32 layerOffest, U32 layerCount);
     static void clearShadowMapBuffers(GFX::CommandBuffer& bufferInOut);
-    static void generateShadowMaps(const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut);
+    static bool generateShadowMaps(const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut);
 
     static ShadowType getShadowTypeForLightType(LightType type) noexcept;
     static LightType getLightTypeForShadowType(ShadowType type) noexcept;

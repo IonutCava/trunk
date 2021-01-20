@@ -282,6 +282,7 @@
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\output.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\pbr.frag" />
     <None Include="..\..\assets\shaders\GLSL\common\sceneData.cmn" />
+    <None Include="..\..\assets\shaders\GLSL\common\terrainUtils.cmn" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\environment.frag" />
     <None Include="..\..\assets\shaders\GLSL\fragmentAtoms\IBL.frag" />
     <None Include="../../assets/shaders\GLSL\fragmentAtoms\prePass.frag" />

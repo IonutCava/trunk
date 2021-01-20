@@ -99,7 +99,9 @@ struct NodeMaterialData
 
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA
 
-#define NormalMatrixW(transformData) mat3(transformData._normalMatrixW)
+#define dvd_WorldMatrix dvd_Transforms[TRANSFORM_IDX]._worldMatrix
+
+#define dvd_NormalMatrixW(transformData) mat3(transformData._normalMatrixW)
 
 #define dvd_boneCount(transformData) uint(unpackUnorm4x8(uint(transformData._normalMatrixW[0][3])).x * 255)
 

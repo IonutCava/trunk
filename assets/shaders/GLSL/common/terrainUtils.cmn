@@ -1,0 +1,23 @@
+#ifndef _TERRAIN_UTILS_CMN_
+#define _TERRAIN_UTILS_CMN_
+
+uniform vec2 dvd_uvEyeOffset;
+uniform mat4 dvd_terrainWorld;
+
+#define AdjustHeight(H) WORLD_SCALE_Y * H + TERRAIN_HEIGHT_OFFSET
+#define GetHeight(UV) AdjustHeight(texture(texHeight, UV).r)
+#define WorldXZtoHeightUV(WorldXZ) ((WorldXZ / UV_DIV) + 0.5f) - dvd_uvEyeOffset
+#define UV_DIV (PATCHES_PER_TILE_EDGE * 2)
+#define WORLD_SCALE vec3(WORLD_SCALE_X, WORLD_SCALE_Y, WORLD_SCALE_Z)
+
+vec3 getNormal(in vec2 tex_coord) {
+    const float hL = textureOffset(texHeight, tex_coord, ivec2(-1,  0)).r * WORLD_SCALE_Y;
+    const float hR = textureOffset(texHeight, tex_coord, ivec2( 1,  0)).r * WORLD_SCALE_Y;
+    const float hD = textureOffset(texHeight, tex_coord, ivec2( 0, -1)).r * WORLD_SCALE_Y;
+    const float hU = textureOffset(texHeight, tex_coord, ivec2( 0,  1)).r * WORLD_SCALE_Y;
+
+    // deduce terrain normal
+    return normalize(vec3(hL - hR, 2.f, hD - hU));
+}
+
+#endif //_TERRAIN_UTILS_CMN_

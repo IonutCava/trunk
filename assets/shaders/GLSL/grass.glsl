@@ -64,7 +64,7 @@ void main() {
         VAR._vertexW.xyz += vec3(GRASS_DISPLACEMENT_MAGNITUDE, 0.0f, GRASS_DISPLACEMENT_MAGNITUDE) * toCamera * ((GRASS_DISPLACEMENT_DISTANCE - data.data.w) / GRASS_DISPLACEMENT_DISTANCE);
     }*/
 
-    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * NormalMatrixW(nodeData);
+    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * dvd_NormalMatrixW(nodeData);
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     VAR._normalWV = normalize(normalMatrixWV * rotate_vertex_position(dvd_Normal, data.orientationQuad));
@@ -97,7 +97,8 @@ void main (void){
     vec4 albedo = texture(texDiffuse0, vec3(uv, _arrayLayerFrag));
     albedo.a = min(albedo.a, _alphaFactor);
 
-    writeOutput(getPixelColour(albedo, data, getNormalWV(uv), uv));
+    const uint LoD = 0u;
+    writeOutput(getPixelColour(albedo, data, getNormalWV(uv), uv, LoD));
 }
 
 --Fragment.PrePass

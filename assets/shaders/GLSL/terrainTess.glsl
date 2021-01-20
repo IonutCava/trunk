@@ -3,63 +3,49 @@
 #define NEED_MATERIAL_DATA
 
 #include "nodeBufferedInput.cmn"
+#include "terrainUtils.cmn"
 
 layout(location = ATTRIB_POSITION) in vec4 inVertexData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
-uniform vec2 dvd_textureWorldOffset;
-uniform vec2 dvd_tileWorldPosition;
-
 layout(location = 10) out vec4 vtx_adjancency;
 layout(location = 11) out float vtx_tileSize;
-layout(location = 12) out flat int vtx_ringID;
+layout(location = 12) out flat uint vtx_ringID;
 
-#define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
-// Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
-#define WorldXZtoHeightUV(WorldXZ) saturate(0.5f * ((WorldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z)) + 0.5f)
-
-vec4 ReconstructPosition() {
+void main(void)
+{
     // Calculate texture coordinates (u,v) relative to entire terrain
-    const float iv = floor(gl_VertexID * (1.0f / CONTROL_VTX_PER_TILE_EDGE));
+    const float iv = floor(gl_VertexID * INV_CONTROL_VTX_PER_TILE_EDGE);
     const float iu = gl_VertexID - iv * CONTROL_VTX_PER_TILE_EDGE;
     const float u = iu / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
     const float v = iv / (CONTROL_VTX_PER_TILE_EDGE - 1.0f);
 
     vtx_tileSize = inVertexData.z;
     vtx_adjancency = inColourData;
-    vtx_ringID = int(inVertexData.w);
+    vtx_ringID = uint(inVertexData.w);
 
-    VAR._texCoord = vec2((u * vtx_tileSize + inVertexData.x) * WORLD_SCALE_X,
-                         (v * vtx_tileSize + inVertexData.y) * WORLD_SCALE_Z) +
-                    dvd_tileWorldPosition;
+    const vec2 posXZ = vec2(u, v) * vtx_tileSize + inVertexData.xy;
 
-    return vec4(VAR._texCoord.x, GetHeight(WorldXZtoHeightUV(VAR._texCoord)), VAR._texCoord.y, 1.0f);
-}
-
-void main(void)
-{
-    const vec4 displacedPos = ReconstructPosition();
-    _out._vertexW = dvd_Transforms[TRANSFORM_IDX]._worldMatrix * displacedPos;
-    gl_Position = displacedPos;
+    gl_Position = vec4(posXZ.x, GetHeight(WorldXZtoHeightUV(posXZ)), posXZ.y, 1.f);
 }
 
 --TessellationC
 
 #define NEED_MATERIAL_DATA
 #include "nodeBufferedInput.cmn"
+#include "terrainUtils.cmn"
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
 uniform float dvd_tessTriangleWidth;
-uniform vec2 dvd_textureWorldOffset;
 
 layout(location = 10) in vec4 vtx_adjancency[];
 layout(location = 11) in float vtx_tileSize[];
-layout(location = 12) in flat int vtx_ringID[];
+layout(location = 12) in flat uint vtx_ringID[];
 
 // Outputs
 layout(vertices = 4) out;
 layout(location = 10) out float tcs_tileSize[];
-layout(location = 11) out flat int tcs_ringID[];
+layout(location = 11) out flat uint tcs_ringID[];
 
 #if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
 layout(location = 12) out vec3[5] tcs_debugColour[];
@@ -75,16 +61,11 @@ layout(location = 12) out vec3[5] tcs_debugColour[];
 #define MAX_TESS_LEVEL 64
 #endif //MAX_TESS_LEVEL
 
-#define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
-// Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
-#define WorldXZtoHeightUV(WorldXZ) saturate(0.5f * ((WorldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z)) + 0.5f)
-
-float SphereToScreenSpaceTessellation(in vec3 w0, in vec3 w1, in float diameter)
+float SphereToScreenSpaceTessellation(in vec3 w0, in vec3 w1, in float diameter, in mat4 worldViewMat)
 {
-    const vec3 centre = (w0 + w1) * 0.5f;
-
-    const vec4 view0 = dvd_ViewMatrix * vec4(centre, 1.f);
-    const vec4 view1 = view0 + vec4(diameter, 0.f, 0.f, 0.f);
+    const vec3 centre = 0.5f * (w0 + w1);
+    const vec4 view0 = worldViewMat * vec4(centre, 1.f);
+    const vec4 view1 = view0 + vec4(WORLD_SCALE_X * diameter, 0.f, 0.f, 0.f);
 
     vec4 clip0 = dvd_ProjectionMatrix * view0; // to clip space
     vec4 clip1 = dvd_ProjectionMatrix * view1; // to clip space
@@ -92,11 +73,10 @@ float SphereToScreenSpaceTessellation(in vec3 w0, in vec3 w1, in float diameter)
     clip1 /= clip1.w;                          // project
     //clip0.xy = clip0.xy * 0.5f + 0.5f;       // to NDC (DX11 sample skipped this)
     //clip1.xy = clip1.xy * 0.5f + 0.5f;       // to NDC (DX11 sample skipped this)
-    clip0.xy *= dvd_ViewPort.zw;               // to pixels
-    clip1.xy *= dvd_ViewPort.zw;               // to pixels
+    clip0.xy *= dvd_screenDimensions;          // to pixels
+    clip1.xy *= dvd_screenDimensions;          // to pixels
 
-    const float d = distance(clip0, clip1);
-    return clamp(d / dvd_tessTriangleWidth, 1.f, MAX_TESS_LEVEL * 1.f);
+    return clamp(distance(clip0, clip1) / dvd_tessTriangleWidth, 1.f, float(MAX_TESS_LEVEL));
 }
 
 
@@ -105,37 +85,27 @@ float SphereToScreenSpaceTessellation(in vec3 w0, in vec3 w1, in float diameter)
 float SmallerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
     // Output is [4, MAX_TESS_LEVEL]. Our smaller neighbour's min tessellation is pow(2,1) = 2.  As we are twice its size, we can't go below 4.
-    const float t = pow(2, ceil(log2(tess)));
-    return max(4, t);
+    return max(4, pow(2, ceil(log2(tess))));
 }
 
 float LargerNeighbourAdjacencyClamp(in float tess) {
     // Clamp to the nearest larger power of two.  Any power of two works; larger means that we don't lose detail.
     // Our larger neighbour's max tessellation is MAX_TESS_LEVEL; as we are half its size, our tessellation must max out
     // at MAX_TESS_LEVEL / 2, otherwise we could be over-tessellated relative to the neighbour.  Output is [2,MAX_TESS_LEVEL].
-    const float t = pow(2, ceil(log2(tess)));
-    return clamp(t, 2.f, MAX_TESS_LEVEL * 0.5f);
+    return clamp(pow(2, ceil(log2(tess))), 2.f, MAX_TESS_LEVEL * 0.5f);
 }
 
-void MakeVertexHeightsAgree(in vec2 uv, inout vec3 p0, inout vec3 p1)
-{
-    p0.y = p1.y = GetHeight(uv);
+float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter, in mat4 worldViewMat) {
+    vec3 p0 = gl_in[idx0].gl_Position.xyz;
+    vec3 p1 = gl_in[idx1].gl_Position.xyz;
+    p0.y = p1.y = GetHeight(WorldXZtoHeightUV(p0.xz));
+
+    return SmallerNeighbourAdjacencyClamp(SphereToScreenSpaceTessellation(p0, p1, diameter, worldViewMat));
 }
 
-float SmallerNeighbourAdjacencyFix(in int idx0, in int idx1, in float diameter) {
-    vec3 p0 = _in[idx0]._vertexW.xyz;
-    vec3 p1 = _in[idx1]._vertexW.xyz;
-    const vec2 uv = WorldXZtoHeightUV(gl_in[idx0].gl_Position.xz);
-
-    MakeVertexHeightsAgree(uv, p0, p1);
-    const float t = SphereToScreenSpaceTessellation(p0, p1, diameter);
-    return SmallerNeighbourAdjacencyClamp(t);
-}
-
-float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in float diameter) {
-    vec3 p0 = _in[idx0]._vertexW.xyz;
-    vec3 p1 = _in[idx1]._vertexW.xyz;
-    const vec2 uv = WorldXZtoHeightUV(gl_in[idx0].gl_Position.xz);
+float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in float diameter, in mat4 worldViewMat) {
+    vec3 p0 = gl_in[idx0].gl_Position.xyz;
+    vec3 p1 = gl_in[idx1].gl_Position.xyz;
 
     // We move one of the corner vertices in 2D (x,z) to match where the corner vertex is 
     // on our larger neighbour.  We move p0 or p1 depending on the even/odd patch index.
@@ -157,27 +127,38 @@ float LargerNeighbourAdjacencyFix(in int idx0, in int idx1, in int patchIdx, in 
     }
 
     // Having moved the vertex in (x,z), its height is no longer correct.
-    MakeVertexHeightsAgree(uv, p0, p1);
+    p0.y = p1.y = GetHeight(WorldXZtoHeightUV(p0.xz));
     // Half the tessellation because the edge is twice as long.
-    const float t = 0.5f * SphereToScreenSpaceTessellation(p0, p1, 2 * diameter);
-    return LargerNeighbourAdjacencyClamp(t);
+    return LargerNeighbourAdjacencyClamp(0.5f * SphereToScreenSpaceTessellation(p0, p1, 2 * diameter, worldViewMat));
 }
 
-bool SphereInFrustum(vec3 pos, float r) {
+bool SphereInFrustum(in vec3 pos, in float r, in mat4 worldMat) {
+    const float minCmp = -0.15f;
+
+    const vec4 posW = worldMat * vec4(pos, 1.f);
     for (int i = 0; i < 6; i++) {
-        if (dot(vec4(pos, 1.f), dvd_frustumPlanes[i]) + r < -0.25f) {
-            // sphere outside plane
+        if (dot(posW, dvd_frustumPlanes[i]) + r < minCmp) {
             return false;
         }
     }
     return true;
 }
 
+
 void main(void)
 {
-    const vec3   centre = 0.25f * (_in[0]._vertexW.xyz + _in[1]._vertexW.xyz + _in[2]._vertexW.xyz + _in[3]._vertexW.xyz);
-    const float  radius = length(_in[0]._vertexW.xyz - _in[2]._vertexW.xyz) * 0.5f;
-    if (!SphereInFrustum(centre, radius))
+    const vec3 centre = 0.25f * (gl_in[0].gl_Position.xyz +
+                                 gl_in[1].gl_Position.xyz +
+                                 gl_in[2].gl_Position.xyz +
+                                 gl_in[3].gl_Position.xyz);
+
+    const mat4 worldMat = dvd_WorldMatrix * dvd_terrainWorld;
+
+    const vec4 pos0 = worldMat * gl_in[0].gl_Position;
+    const vec4 pos1 = worldMat * gl_in[2].gl_Position;
+    const float radius = length(pos0.xyz - pos1.xyz) * 0.5f;
+
+    if (!SphereInFrustum(centre, radius, worldMat))
     {
           gl_TessLevelInner[0] = gl_TessLevelInner[1] = -1;
           gl_TessLevelOuter[0] = gl_TessLevelOuter[1] = -1;
@@ -185,16 +166,14 @@ void main(void)
     }
     else
     {
-        PassData(gl_InvocationID);
-
-        const float sideLen = max(abs(_in[1]._vertexW.x - _in[0]._vertexW.x), abs(_in[1]._vertexW.x - _in[2]._vertexW.x));     // assume square & uniform
-
 #if MAX_TESS_LEVEL > 1
+        const mat4 worldViewMat = dvd_ViewMatrix * worldMat;
+        const float sideLen = max(abs(gl_in[1].gl_Position.x - gl_in[0].gl_Position.x), abs(gl_in[1].gl_Position.x - gl_in[2].gl_Position.x));
         // Outer tessellation level
-        gl_TessLevelOuter[0] = SphereToScreenSpaceTessellation(_in[0]._vertexW.xyz, _in[1]._vertexW.xyz, sideLen);
-        gl_TessLevelOuter[1] = SphereToScreenSpaceTessellation(_in[3]._vertexW.xyz, _in[0]._vertexW.xyz, sideLen);
-        gl_TessLevelOuter[2] = SphereToScreenSpaceTessellation(_in[2]._vertexW.xyz, _in[3]._vertexW.xyz, sideLen);
-        gl_TessLevelOuter[3] = SphereToScreenSpaceTessellation(_in[1]._vertexW.xyz, _in[2]._vertexW.xyz, sideLen);
+        gl_TessLevelOuter[0] = SphereToScreenSpaceTessellation(gl_in[0].gl_Position.xyz, gl_in[1].gl_Position.xyz, sideLen, worldViewMat);
+        gl_TessLevelOuter[1] = SphereToScreenSpaceTessellation(gl_in[3].gl_Position.xyz, gl_in[0].gl_Position.xyz, sideLen, worldViewMat);
+        gl_TessLevelOuter[2] = SphereToScreenSpaceTessellation(gl_in[2].gl_Position.xyz, gl_in[3].gl_Position.xyz, sideLen, worldViewMat);
+        gl_TessLevelOuter[3] = SphereToScreenSpaceTessellation(gl_in[1].gl_Position.xyz, gl_in[2].gl_Position.xyz, sideLen, worldViewMat);
 
 #if !defined(LOW_QUALITY)
         // Edges that need adjacency adjustment are identified by the per-instance ip[0].adjacency 
@@ -212,30 +191,30 @@ void main(void)
         if (patchXY.x == 0) {
             if (vtx_adjancency[0].x < 0.55f) {
                 // Deal with neighbours that are smaller.
-                gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen);
+                gl_TessLevelOuter[0] = SmallerNeighbourAdjacencyFix(0, 1, sideLen, worldViewMat);
             } else if (vtx_adjancency[0].x > 1.1f) {
                 // Deal with neighbours that are larger than us.
-                gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen);
+                gl_TessLevelOuter[0] = LargerNeighbourAdjacencyFix(0, 1, patchXY.y, sideLen, worldViewMat);
             }
         } else if (patchXY.x == PATCHES_PER_TILE_EDGE - 1) {
             if (vtx_adjancency[0].z < 0.55f) {
-                gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen);
+                gl_TessLevelOuter[2] = SmallerNeighbourAdjacencyFix(2, 3, sideLen, worldViewMat);
             } else if (vtx_adjancency[0].z > 1.1f) {
-                gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen);
+                gl_TessLevelOuter[2] = LargerNeighbourAdjacencyFix(3, 2, patchXY.y, sideLen, worldViewMat);
             }
         }
 
         if (patchXY.y == 0) {
             if (vtx_adjancency[0].y < 0.55f) {
-                gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen);
+                gl_TessLevelOuter[1] = SmallerNeighbourAdjacencyFix(3, 0, sideLen, worldViewMat);
             } else if (vtx_adjancency[0].y > 1.1f) {
-                gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+                gl_TessLevelOuter[1] = LargerNeighbourAdjacencyFix(0, 3, patchXY.x, sideLen, worldViewMat);	// NB: irregular index pattern - it's correct.
             }
         } else if (patchXY.y == PATCHES_PER_TILE_EDGE - 1) {
             if (vtx_adjancency[0].w < 0.55f) {
-                gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen);
+                gl_TessLevelOuter[3] = SmallerNeighbourAdjacencyFix(1, 2, sideLen, worldViewMat);
             } else if (vtx_adjancency[0].w > 1.1f) {
-                gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen);	// NB: irregular index pattern - it's correct.
+                gl_TessLevelOuter[3] = LargerNeighbourAdjacencyFix(1, 2, patchXY.x, sideLen, worldViewMat);	// NB: irregular index pattern - it's correct.
             }
         }
 #endif //LOW_QUALITY
@@ -251,11 +230,11 @@ void main(void)
 
         // Pass the patch verts along
         gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+        // The VS displaces y for LOD calculations.  We drop it here so as not to displace twice in the DS.
         gl_out[gl_InvocationID].gl_Position.y = 0.0f;
-        
+
         tcs_tileSize[gl_InvocationID] = vtx_tileSize[gl_InvocationID];
         tcs_ringID[gl_InvocationID] = vtx_ringID[gl_InvocationID];
-
 #if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
         // Output tessellation level (used for wireframe coloring)
         // These are one colour for each tessellation level and linear graduations between.
@@ -280,23 +259,14 @@ void main(void)
 
 --TessellationE
 
-#if 0
-#if defined(SHADOW_PASS)
-layout(quads, fractional_even_spacing, ccw) in;
-#else //SHADOW_PASS
 layout(quads, fractional_even_spacing, cw) in;
-#endif//SHADOW_PASS
-#else
-layout(quads, fractional_even_spacing, cw) in;
-#endif
 
 #define NEED_MATERIAL_DATA
 #include "nodeBufferedInput.cmn"
-
-uniform vec2 dvd_textureWorldOffset;
+#include "terrainUtils.cmn"
 
 layout(location = 10) in float tcs_tileSize[];
-layout(location = 11) in flat int tcs_ringID[];
+layout(location = 11) in flat uint tcs_ringID[];
 
 #if defined(TOGGLE_DEBUG) || defined(TOGGLE_TESS_LEVEL)
 layout(location = 12) in vec3[5] tcs_debugColour[];
@@ -304,16 +274,15 @@ layout(location = 12) out vec3  tes_debugColour;
 
 #if defined(TOGGLE_DEBUG)
 layout(location = 10) out float tes_tileSize;
-layout(location = 11) out flat int tes_ringID;
+layout(location = 11) out flat uint tes_ringID;
 layout(location = 13) out float tes_PatternValue;
 #endif //TOGGLE_DEBUG
 
 #endif //TOGGLE_DEBUG || TOGGLE_TESS_LEVEL
 
 #if !defined(TOGGLE_DEBUG)
-layout(location = 10) out flat int dvd_LoD;
+layout(location = 10) out flat uint dvd_LoD;
 #endif //!TOGGLE_DEBUG
-
 
 vec3 Bilerp(vec3 v0, vec3 v1, vec3 v2, vec3 v3, vec2 i)
 {
@@ -342,52 +311,19 @@ vec3 LerpDebugColours(in vec3 cIn[5], vec2 uv) {
 }
 #endif //TOGGLE_DEBUG || TOGGLE_TESS_LEVEL
 
-#define GetHeight(UV) ((TERRAIN_HEIGHT * texture(texHeight, UV).r) + TERRAIN_HEIGHT_OFFSET)
-// Texture coords have to be offset by the eye's 2D world position.  Why the 2x???
-#define WorldXZtoHeightUV(WorldXZ) saturate(0.5f * ((WorldXZ - dvd_textureWorldOffset) / vec2(UV_DIV_X, UV_DIV_Z)) + 0.5f)
-
-vec3 getVertNormal(in vec2 tex_coord) {
-    const float hL = textureOffset(texHeight, tex_coord, ivec2(-1,  0)).r;
-    const float hR = textureOffset(texHeight, tex_coord, ivec2( 1,  0)).r;
-    const float hD = textureOffset(texHeight, tex_coord, ivec2( 0, -1)).r;
-    const float hU = textureOffset(texHeight, tex_coord, ivec2( 0,  1)).r;
-
-    // deduce terrain normal
-    return normalize(vec3(hL - hR, 2.0f, hD - hU));
-}
-
-void computeNormalData(in vec2 uv) {
-    const vec3 N = getVertNormal(uv);
-    _out._normalWV = mat3(dvd_ViewMatrix) * N;
-
-#if !defined(USE_DEFERRED_NORMALS)
-    _out._tbnViewDir = vec3(0.0f);
-#else //!USE_DEFERRED_NORMALS
-    const vec3 B = cross(vec3(0.0f, 0.0f, 1.0f), N);
-
-    const mat3 TBN = NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]) * mat3(cross(N, B), B, N);
-    _out._tbnWV = mat3(dvd_ViewMatrix) * TBN;
-    _out._tbnViewDir = normalize(transpose(TBN) * (dvd_cameraPosition.xyz - _out._vertexW.xyz));
-#endif//!USE_DEFERRED_NORMALS
-}
-
 void main()
 {
-    PassData(0);
-    // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.	
+    // Calculate the vertex position using the four original points and interpolate depending on the tessellation coordinates.
     const vec3 pos = Bilerp(gl_in[0].gl_Position.xyz,
                             gl_in[1].gl_Position.xyz,
                             gl_in[2].gl_Position.xyz,
                             gl_in[3].gl_Position.xyz,
                             gl_TessCoord.xy);
-
     _out._texCoord = WorldXZtoHeightUV(pos.xz);
-    _out._vertexW = dvd_Transforms[TRANSFORM_IDX]._worldMatrix * vec4(pos.x, GetHeight(_out._texCoord), pos.z, 1.0f);
-    setClipPlanes();
-    
+    _out._vertexW = dvd_WorldMatrix * dvd_terrainWorld * vec4(pos.x, GetHeight(_out._texCoord), pos.z, 1.0f);
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
-
-    computeNormalData(_out._texCoord);
+    setClipPlanes(); //Only need world vertex position for clipping
+    _out._normalWV = dvd_NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]) * getNormal(_out._texCoord);
 
 #if !defined(PRE_PASS) && !defined(SHADOW_PASS)
     _out._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - _out._vertexW.xyz);
@@ -422,11 +358,11 @@ void main()
 layout(triangles) in;
 
 layout(location = 10) in float tes_tileSize[];
-layout(location = 11) in flat int tes_ringID[];
+layout(location = 11) in flat uint tes_ringID[];
 layout(location = 12) in vec3 tes_debugColour[];
 layout(location = 13) in float tes_PatternValue[];
 
-layout(location = 10) out flat int dvd_LoD;
+layout(location = 10) out flat uint dvd_LoD;
 layout(location = 11) out vec3 gs_wireColor;
 layout(location = 12) noperspective out vec4 gs_edgeDist;  //w - patternValue
 
@@ -452,18 +388,6 @@ void PerVertex(in int i, in vec3 edge_dist) {
                        tes_PatternValue[i]);
     setClipPlanes();
 }
-
-#if defined(TOGGLE_NORMALS)
-vec3 getNormal(in vec2 tex_coord) {
-    const float hL = textureOffset(texHeight, tex_coord, ivec2(-1,  0)).r;
-    const float hR = textureOffset(texHeight, tex_coord, ivec2( 1,  0)).r;
-    const float hD = textureOffset(texHeight, tex_coord, ivec2( 0, -1)).r;
-    const float hU = textureOffset(texHeight, tex_coord, ivec2( 0,  1)).r;
-
-    // deduce terrain normal
-    return normalize(vec3(hL - hR, 2.0f, hD - hU));
-}
-#endif
 
 void main(void)
 {
@@ -559,10 +483,8 @@ void main(void)
 
 #define USE_CUSTOM_NORMAL_MAP
 #define USE_CUSTOM_TBN
-#define USE_CUSTOM_POM
 
-layout(location = 10) in flat int dvd_LoD;
-
+layout(location = 10) in flat uint dvd_LoD;
 #if defined(TOGGLE_DEBUG)
 layout(location = 11) in vec3 gs_wireColor;
 layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
@@ -579,26 +501,26 @@ layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
 #endif //LOW_QUALITY
 
 #include "prePass.frag"
-#if defined(HAS_PRE_PASS_DATA)
 #include "terrainSplatting.frag"
-#endif  //HAS_PRE_PASS_DATA
 
 void main(void)
 {
-    writeOutput(1.0f, VAR._texCoord, getMixedNormalWV(VAR._texCoord));
-}
+    vec3 normalWV;
+    vec4 albedo = BuildTerrainData(normalWV);
 
+    writeOutput(1.0f, VAR._texCoord, normalWV);
+}
 
 --Fragment
 
 layout(early_fragment_tests) in;
 #define USE_CUSTOM_ROUGHNESS
-//#define SHADOW_INTENSITY_FACTOR 0.75f
+#define SHADOW_INTENSITY_FACTOR 0.5f
 
+#define SSAO_LOD_0
 #define USE_CUSTOM_TBN
-#define USE_CUSTOM_POM
 
-layout(location = 10) in flat int dvd_LoD;
+layout(location = 10) in flat uint dvd_LoD;
 
 #if defined(TOGGLE_DEBUG)
 layout(location = 11) in vec3 gs_wireColor;
@@ -622,6 +544,7 @@ layout(location = 12) in vec3 tes_debugColour;
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
 #include "output.frag"
+#include "terrainUtils.cmn"
 
 #if defined(LOW_QUALITY)
 
@@ -639,12 +562,10 @@ vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
 #endif //LOW_QUALITY
 
 void main(void) {
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
-    vec4 albedo;
     vec3 normalWV;
+    const vec4 albedo = BuildTerrainData(normalWV);
 
-    BuildTerrainData(VAR._texCoord, albedo, normalWV);
 #if !defined(LOW_QUALITY)
     _private_roughness = albedo.a;
 #endif //LOW_QUALITY
@@ -663,7 +584,16 @@ void main(void) {
 #if defined(TOGGLE_TESS_LEVEL)
     vec4 colourOut = vec4(tes_debugColour, 1.0f);
 #else //TOGGLE_TESS_LEVEL
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord);
+#if defined(TOGGLE_BLEND_MAP)
+    vec4 colourOut = vec4(vec3(0.f), 1.0f);
+    uint offset = 0;
+    for (uint i = 0; i < MAX_TEXTURE_LAYERS; ++i) {
+        colourOut.rgb += texture(texOpacityMap, vec3(VAR._texCoord, i)).rgb;
+    }
+#else //TOGGLE_BLEND_MAP
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, dvd_LoD);
+#endif //TOGGLE_BLEND_MAP
 #endif //TOGGLE_TESS_LEVEL
 
 #if defined (TOGGLE_DEBUG)

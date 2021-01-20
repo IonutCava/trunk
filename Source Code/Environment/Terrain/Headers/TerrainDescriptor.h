@@ -100,14 +100,18 @@ class TerrainDescriptor final : public PropertyDescriptor {
     }
 
 private:
-    hashMap<U64, stringImpl> _variables;
-    hashMap<U64, F32> _variablesf;
+    hashMap<U64, stringImpl> _variables{};
+    hashMap<U64, F32> _variablesf{};
     const stringImpl& _name;
 
 protected:
     friend class Terrain;
+    friend class TerrainLoader;
+    using LayerDataEntry = std::array<vec2<F32>, 4>;
+    using LayerData = std::array<LayerDataEntry, 8>;
 
     //x - chunk size, y - patch size in meters
+    PROPERTY_RW(LayerData, layerDataEntries, {});
     PROPERTY_RW(vec2<F32>, altitudeRange);
     PROPERTY_RW(vec2<U16>, dimensions, { 1 });
     PROPERTY_RW(F32, startWidth, 0.25f);

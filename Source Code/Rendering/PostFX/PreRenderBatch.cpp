@@ -440,7 +440,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     const Texture_ptr& screenDepth = screenDepthAtt.texture();
 
     // We usually want accurate data when debugging material properties, so tonemapping should probably be disabled
-    if (adaptiveExposureControl() && _context.materialDebugFlag() == GFXDevice::MaterialDebugFlag::COUNT) {
+    if (adaptiveExposureControl() && _context.materialDebugFlag()._value == MaterialDebugFlag::COUNT) {
         const F32 logLumRange = _toneMapParams._maxLogLuminance - _toneMapParams._minLogLuminance;
         const F32 histogramParams[4] = {
                 _toneMapParams._minLogLuminance,
@@ -548,15 +548,15 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         const TextureData screenTex = screenAtt.texture()->data();
 
-        SamplerDescriptor lumanSampler = {};
-        lumanSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
-        lumanSampler.minFilter(TextureFilter::NEAREST);
-        lumanSampler.magFilter(TextureFilter::NEAREST);
-        lumanSampler.anisotropyLevel(0);
+        SamplerDescriptor lumaSampler = {};
+        lumaSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
+        lumaSampler.minFilter(TextureFilter::NEAREST);
+        lumaSampler.magFilter(TextureFilter::NEAREST);
+        lumaSampler.anisotropyLevel(0);
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
         descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0 });
-        descriptorSetCmd._set._textureData.add({ _currentLuminance->data(), lumanSampler.getHash(), TextureUsage::UNIT1 });
+        descriptorSetCmd._set._textureData.add({ _currentLuminance->data(), lumaSampler.getHash(), TextureUsage::UNIT1 });
         descriptorSetCmd._set._textureData.add({ screenDepth->data(), screenDepthAtt.samplerHash(),TextureUsage::DEPTH });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
 
@@ -567,9 +567,9 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 
-        if (_toneMapParamsDirty || _context.materialDebugFlag() != GFXDevice::MaterialDebugFlag::COUNT) {
+        if (_toneMapParamsDirty || _context.materialDebugFlag()._value != MaterialDebugFlag::COUNT) {
             _toneMapParamsDirty = false;
-            const auto mappingFunction = to_base(_context.materialDebugFlag() == GFXDevice::MaterialDebugFlag::COUNT ? _toneMapParams._function : ToneMapParams::MapFunctions::COUNT);
+            const auto mappingFunction = to_base(_context.materialDebugFlag()._value == MaterialDebugFlag::COUNT ? _toneMapParams._function : ToneMapParams::MapFunctions::COUNT);
             _toneMapConstants.set(_ID("useAdaptiveExposure"), GFX::PushConstantType::BOOL, adaptiveExposureControl());
             _toneMapConstants.set(_ID("manualExposure"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposure);
             _toneMapConstants.set(_ID("mappingFunction"), GFX::PushConstantType::INT, mappingFunction);

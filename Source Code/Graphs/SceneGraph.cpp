@@ -405,7 +405,7 @@ void SceneGraph::saveToXML(const char* assetsFile, DELEGATE<void, std::string_vi
         pt.put("version", g_sceneGraphVersion);
         pt.add_child("entities.node", dumpSGNtoAssets(getRoot()));
 
-        if (copyFile(sceneLocation + "/", ResourcePath(assetsFile), sceneLocation + "/", ResourcePath("assets.xml.bak"), true)) {
+        if (copyFile(sceneLocation + "/", ResourcePath(assetsFile), sceneLocation + "/", ResourcePath("assets.xml.bak"), true) == FileError::NONE) {
             XML::writeXML((sceneLocation + "/" + assetsFile).str(), pt);
         } else {
             DIVIDE_UNEXPECTED_CALL();

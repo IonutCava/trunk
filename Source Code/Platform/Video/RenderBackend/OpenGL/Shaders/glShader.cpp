@@ -335,7 +335,7 @@ bool glShader::loadFromBinary() {
         if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
                      ResourcePath((glShaderProgram::decorateFileName(_name) + ".fmt").c_str()),
                      data,
-                     FileType::BINARY) && 
+                     FileType::BINARY) == FileError::NONE &&
             !data.empty())
         {
             const GLenum binaryFormat = *reinterpret_cast<GLenum*>(data.data());
@@ -344,7 +344,7 @@ bool glShader::loadFromBinary() {
                 if (readFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
                     ResourcePath((glShaderProgram::decorateFileName(_name) + ".bin").c_str()),
                              data,
-                             FileType::BINARY) &&
+                             FileType::BINARY) == FileError::NONE &&
                     !data.empty())
                 {
                     // Load binary code on the GPU
@@ -389,14 +389,14 @@ bool glShader::DumpBinary(const GLuint handle, const Str256& name) {
             ResourcePath((glShaderProgram::decorateFileName(name) + ".bin").c_str()),
                       binary,
                       static_cast<size_t>(binaryLength),
-                      FileType::BINARY))
+                      FileType::BINARY) == FileError::NONE)
         {
             // dump the format to a separate file (highly non-optimised. Should dump formats to a database instead)
-            if (!writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
+            if (writeFile(Paths::g_cacheLocation + Paths::Shaders::g_cacheLocationBin,
                 ResourcePath((glShaderProgram::decorateFileName(name) + ".fmt").c_str()),
                           &binaryFormat,
                           sizeof(GLenum),
-                          FileType::BINARY)) 
+                          FileType::BINARY) == FileError::NONE)
             {
                 ret = true;
             }

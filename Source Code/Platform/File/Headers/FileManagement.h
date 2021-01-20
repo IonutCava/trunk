@@ -44,6 +44,18 @@ enum class CacheType : U8 {
     COUNT
 };
 
+enum class FileError : U8 {
+    NONE = 0,
+    FILE_NOT_FOUND,
+    FILE_EMPTY,
+    FILE_READ_ERROR,
+    FILE_OPEN_ERROR,
+    FILE_WRITE_ERROR,
+    FILE_DELETE_ERROR,
+    FILE_OVERWRITE_ERROR,
+    FILE_COPY_ERROR,
+    COUNT
+};
 struct SysInfo;
 class PlatformContext;
 struct Paths {
@@ -132,8 +144,9 @@ struct Paths {
 [[nodiscard]] std::string getWorkingDirectory();
 
 //returns true if both paths are identical regardless of number of slashes and capitalization
-[[nodiscard]] std::filesystem::path asPath(const char* filePath);
-[[nodiscard]] std::filesystem::path asPath(const std::string_view& filePath);
+
+using asPath = std::filesystem::path;
+
 [[nodiscard]] bool pathCompare(const char* filePathA, const char* filePathB);
 [[nodiscard]] bool pathExists(const char* filePath);
 [[nodiscard]] bool pathExists(const ResourcePath& filePath);
@@ -148,28 +161,28 @@ struct Paths {
 
 template<typename T,
 typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
-[[nodiscard]] bool readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
+[[nodiscard]] FileError readFile(const char* filePath, const char* fileName, T& contentOut, FileType fileType);
 template<typename T,
 typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type* = nullptr>
-[[nodiscard]] bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType);
+[[nodiscard]] FileError readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType);
 
-[[nodiscard]] bool openFile(const char* filePath, const char* fileName);
-[[nodiscard]] bool openFile(const ResourcePath& filePath, const ResourcePath& fileName);
+[[nodiscard]] FileError openFile(const char* filePath, const char* fileName);
+[[nodiscard]] FileError openFile(const ResourcePath& filePath, const ResourcePath& fileName);
 
-[[nodiscard]] bool openFile(const char* cmd, const char* filePath, const char* fileName);
-[[nodiscard]] bool openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName);
+[[nodiscard]] FileError openFile(const char* cmd, const char* filePath, const char* fileName);
+[[nodiscard]] FileError openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName);
 
-[[nodiscard]] bool writeFile(const ResourcePath& filePath, const ResourcePath& fileName, bufferPtr content, size_t length, FileType fileType);
-[[nodiscard]] bool writeFile(const char* filePath, const char* fileName, bufferPtr content, size_t length, FileType fileType);
+[[nodiscard]] FileError writeFile(const ResourcePath& filePath, const ResourcePath& fileName, bufferPtr content, size_t length, FileType fileType);
+[[nodiscard]] FileError writeFile(const char* filePath, const char* fileName, bufferPtr content, size_t length, FileType fileType);
 
-[[nodiscard]] bool deleteFile(const char* filePath, const char* fileName);
-[[nodiscard]] bool deleteFile(const ResourcePath& filePath, const ResourcePath& fileName);
+[[nodiscard]] FileError deleteFile(const char* filePath, const char* fileName);
+[[nodiscard]] FileError deleteFile(const ResourcePath& filePath, const ResourcePath& fileName);
 
-[[nodiscard]] bool copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite);
-[[nodiscard]] bool copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, bool overwrite);
+[[nodiscard]] FileError copyFile(const char* sourcePath, const char* sourceName, const char* targetPath, const char* targetName, bool overwrite);
+[[nodiscard]] FileError copyFile(const ResourcePath& sourcePath, const ResourcePath&  sourceName, const ResourcePath&  targetPath, const ResourcePath& targetName, bool overwrite);
 
-[[nodiscard]] bool findFile(const char* filePath, const char* fileName, stringImpl& foundPath);
-[[nodiscard]] bool findFile(const ResourcePath& filePath, const char* fileName, stringImpl& foundPath);
+[[nodiscard]] FileError findFile(const char* filePath, const char* fileName, stringImpl& foundPath);
+[[nodiscard]] FileError findFile(const ResourcePath& filePath, const char* fileName, stringImpl& foundPath);
 
 /// will add '.' automatically at the start of 'extension'
 [[nodiscard]] bool hasExtension(const char* filePath, const Str16& extension);

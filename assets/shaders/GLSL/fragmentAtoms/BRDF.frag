@@ -279,7 +279,7 @@ vec3 applyFog(in vec3  rgb,      // original color of the pixel
 #endif //!NO_FOG
 
 /// RGB - lit colour, A - reflectivity
-vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv) {
+vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, in uint LoD) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
 
     switch (dvd_materialDebugFlag) {
@@ -292,8 +292,9 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
         case DEBUG_EMISSIVE:       return vec4(EmissiveColour(materialData), 1.0f);
         case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.0f);
         case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.0f);
-        case DEBUG_NORMALS:        return vec4((dvd_InverseViewMatrix * vec4(normalWV, 0)).xyz, 1.0f);
-        case DEBUG_TBN_VIEW_DIR:   return vec4(getTBNViewDir(), 1.0f);
+        case DEBUG_NORMALS:        return vec4(normalize(mat3(dvd_InverseViewMatrix) * normalWV), 1.0f);
+        case DEBUG_TANGENTS:       return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTangentWV()), 1.f);
+        case DEBUG_BITANGENTS:     return vec4(normalize(mat3(dvd_InverseViewMatrix) * getBiTangentWV()), 1.f);
         case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowFactor(normalWV)), 1.0f);
         case DEBUG_CSM_SPLITS:     return albedo + CSMSplitColour();
         case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.0f);
@@ -310,7 +311,13 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
 #endif //USE_SHADING_FLAT
 
     oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData));
-    oColour *= SSAOFactor;
+#if defined(SSAO_LOD_0)
+    if (LoD < 2) {
+#endif //SSAO_LOD_0
+        oColour *= SSAOFactor;
+#if defined(SSAO_LOD_0)
+    }
+#endif//SSAO_LOD_0
     oColour += EmissiveColour(materialData);
 #if !defined(NO_FOG)
     oColour = applyFog(oColour, distance(VAR._vertexW.xyz, dvd_cameraPosition.xyz), dvd_cameraPosition.xyz, normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz));

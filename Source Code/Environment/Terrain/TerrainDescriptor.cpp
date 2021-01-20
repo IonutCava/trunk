@@ -13,8 +13,11 @@ namespace Divide {
     TerrainDescriptor::TerrainDescriptor(const stringImpl& name) noexcept
         : PropertyDescriptor(DescriptorType::DESCRIPTOR_TERRAIN_INFO)
         , _name(name)
-        , _altitudeRange(0.f, 1.f)
+        , _altitudeRange{ 0.f, 1.f }
     {
+        for (LayerDataEntry& entry : _layerDataEntries) {
+            entry.fill(VECTOR2_UNIT);
+        }
     }
 
     TerrainDescriptor::~TerrainDescriptor()
@@ -27,7 +30,7 @@ namespace Divide {
         if (terrainDescriptor.empty()) {
             return false;
         }
-        
+
         addVariable("terrainName", name);
         addVariable("descriptor", terrainDescriptor);
         addVariable("waterCaustics", pt.get<stringImpl>("waterCaustics"));
@@ -71,12 +74,33 @@ namespace Divide {
                 addVariable(Util::StringFormat("treeRotationY%d", j), descTree.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_y", j), 0.0f));
                 addVariable(Util::StringFormat("treeRotationZ%d", j), descTree.get<F32>(Util::StringFormat("vegetation.treeMesh%d.<xmlattr>.rotate_z", j), 0.0f));
             }
-            alphaMapDescriptor = descTree.get<stringImpl>("alphaMaps", "");
+            alphaMapDescriptor = descTree.get<stringImpl>("alphaMaps.<xmlattr>.file", "");
+            for (boost::property_tree::ptree::iterator itLayerData= std::begin(descTree.get_child("alphaMaps"));
+                itLayerData != std::end(descTree.get_child("alphaMaps"));
+                ++itLayerData)
+            {
+                const stringImpl format(itLayerData->first);
+                if (format.find("<xmlcomment>") != stringImpl::npos || format.find("<xmlattr>") != stringImpl::npos) {
+                    continue;
+                }
+                
+                const U8 matIndex = itLayerData->second.get<U8>("<xmlattr>.material", 0u);
+                if (matIndex < layerDataEntries().size()) {
+                    LayerDataEntry& entry = _layerDataEntries[matIndex];
+                    const U8 layerIndex = itLayerData->second.get<U8>("<xmlattr>.channel", 0u);
+                    if (layerIndex < 4) {
+                        vec2<F32>& tileFactors = entry[layerIndex];
+                        tileFactors.s = CLAMPED(itLayerData->second.get("<xmlattr>.s", 1.f), 1.f, 255.f);
+                        tileFactors.t = CLAMPED(itLayerData->second.get("<xmlattr>.t", 1.f), 1.f, 255.f);
+                    }
+                }
+            }
         }
 
         if (alphaMapDescriptor.empty()) {
             return false;
         }
+
         {
             boost::property_tree::ptree alphaTree = {};
             XML::readXML((Paths::g_assetsLocation + Paths::g_heightmapLocation + terrainDescriptor + "/" + alphaMapDescriptor).str(), alphaTree);
@@ -100,7 +124,7 @@ namespace Divide {
                 stringImpl layerName(itImage->second.data());
                 stringImpl format(itImage->first);
 
-                if (format.find("<xmlcomment>") != stringImpl::npos) {
+                if (format.find("<xmlcomment>") != stringImpl::npos || format.find("<xmlattr>") != stringImpl::npos) {
                     i--;
                     continue;
                 }

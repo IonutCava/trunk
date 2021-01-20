@@ -51,6 +51,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(terrain.showNormals);
         GET_PARAM(terrain.showLoDs);
         GET_PARAM(terrain.showTessLevels);
+        GET_PARAM(terrain.showBlendMap);
         GET_PARAM(rendering.MSAASamples);
         GET_PARAM(rendering.maxAnisotropicFilteringLevel);
         GET_PARAM(rendering.useBindlessTextures);
@@ -171,6 +172,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(terrain.showNormals);
         PUT_PARAM(terrain.showLoDs);
         PUT_PARAM(terrain.showTessLevels);
+        PUT_PARAM(terrain.showBlendMap);
         PUT_PARAM(rendering.MSAASamples);
         PUT_PARAM(rendering.maxAnisotropicFilteringLevel);
         PUT_PARAM(rendering.useBindlessTextures);

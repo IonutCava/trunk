@@ -25,21 +25,7 @@ layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
 #define F0 vec3(0.04f)
 #endif //F0
 
-#if defined(USE_CUSTOM_POM)
-vec3 getTBNViewDir();
-#else //USE_CUSTOM_POM
-vec3 getTBNViewDir() {
-#   if defined(COMPUTE_POM)
-    return VAR._tbnViewDir;
-#   else //COMPUTE_POM
-    return vec3(0.0f);
-#   endif//COMPUTE_POM
-}
-#endif //USE_CUSTOM_POM
-
 #if defined(USE_CUSTOM_TBN)
-// Should cause compile errors if we try to use these without defining them
-// so it should be fine. Look at terrainTess.glsl for an example on how to avoid these
 mat3 getTBNWV();
 #else //USE_CUSTOM_TBN
 mat3 getTBNWV() {
@@ -53,7 +39,10 @@ mat3 getTBNWV() {
 #   endif//COMPUTE_TBN
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 }
-#endif//USE_CUSTOM_TBN
+#endif//!USE_CUSTOM_TBN
+
+#define getTangentWV() (getTBNWV()[0])
+#define getBiTangentWV() (getTBNWV()[1])
 
 #if !defined(PRE_PASS)
 // Reduce specular aliasing by producing a modified roughness value
@@ -184,37 +173,56 @@ vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {
 
 #endif //!PRE_PASS || HAS_TRANSPARENCY
 
-// Computed normals are NOT normalized. Retrieved normals ARE.
-#if defined(SAMPLER_NORMALMAP_IS_ARRAY) && (defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS))
-vec3 getNormalWV(in vec3 uv)
-#else //SAMPLER_NORMALMAP_IS_ARRAY && (PRE_PASS || !USE_DEFERRED_NORMALS)
-vec3 getNormalWV(in vec2 uv)
-#endif //SAMPLER_NORMALMAP_IS_ARRAY && (PRE_PASS || !USE_DEFERRED_NORMALS)
-{
-#if defined(PRE_PASS) || !defined(USE_DEFERRED_NORMALS)
+#if defined(SAMPLER_NORMALMAP_IS_ARRAY)
+#define UV_TYPE vec3
+#else //SAMPLER_NORMALMAP_IS_ARRAY
+#define UV_TYPE vec2
+#endif //SAMPLER_NORMALMAP_IS_ARRAYHAS_PRE_PASS_DATA
 
-#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
-    return vec3(0.0f);
-#else //PRE_PASS && !HAS_PRE_PASS_DATA
+#if defined(PRE_PASS)
 
+#if defined(HAS_PRE_PASS_DATA) 
+#if defined(USE_DEFERRED_NORMALS)
+#define NEEDS_NORMAL_COMPUTATION
+#else //USE_DEFERRED_NORMALS
+#define getNormalWV(UV) vec3(0.f)
+#endif //USE_DEFERRED_NORMALS
+#endif //HAS_PRE_PASS_DATA
+
+#else //PRE_PASS
+
+#define getScreenNormal(UV) normalize(unpackNormal(texture(texSceneNormalMaps, dvd_screenPositionNormalised).rg))
+
+#if !defined(USE_DEFERRED_NORMALS) || defined(RECOMPUTE_NORMALS_IN_COLOUR_PASS)
+#define NEEDS_NORMAL_COMPUTATION
+#else //!USE_DEFERRED_NORMALS || RECOMPUTE_NORMALS_IN_COLOUR_PASS
+#define getNormalWV(UV) getScreenNormal(UV)
+#endif //!USE_DEFERRED_NORMALS || RECOMPUTE_NORMALS_IN_COLOUR_PASS
+
+#endif //PRE_PASS
+
+#if defined(NEEDS_NORMAL_COMPUTATION)
+vec3 getNormalWV(in UV_TYPE uv) {
 #if defined(COMPUTE_TBN) && !defined(USE_CUSTOM_NORMAL_MAP)
     const vec3 normalWV = (dvd_bumpMethod(MATERIAL_IDX) != BUMP_NONE)
-                               ? getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f)
-                               : VAR._normalWV;
-#else //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
-    const vec3 normalWV = VAR._normalWV;
-#endif //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
-
+                              ? getTBNWV() * normalize(2.0f * texture(texNormalMap, uv).rgb - 1.0f)
+                              : VAR._normalWV;
 #if defined (USE_DOUBLE_SIDED)
     return gl_FrontFacing ? normalWV : -normalWV;
 #else //USE_DOUBLE_SIDED
     return normalWV;
 #endif //USE_DOUBLE_SIDED
 
-#endif //PRE_PASS && !HAS_PRE_PASS_DATA
-#else //PRE_PASS || !USE_DEFERRED_NORMALS
-    return normalize(unpackNormal(texture(texSceneNormalMaps, dvd_screenPositionNormalised).rg));
-#endif //PRE_PASS || !USE_DEFERRED_NORMALS
+#else //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
+
+#if defined (USE_DOUBLE_SIDED)
+    return gl_FrontFacing ? VAR._normalWV : -VAR._normalWV;
+#else //USE_DOUBLE_SIDED
+    return VAR._normalWV;
+#endif //USE_DOUBLE_SIDED
+
+#endif //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
 }
+#endif //NEEDS_NORMAL_COMPUTATION
 
 #endif //_MATERIAL_DATA_FRAG_

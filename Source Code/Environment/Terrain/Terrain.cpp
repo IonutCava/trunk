@@ -83,21 +83,10 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
         tessTriangleWidthField._readOnly = false;
         tessTriangleWidthField._serialise = true;
         tessTriangleWidthField._basicType = GFX::PushConstantType::UINT;
-        tessTriangleWidthField._range = { 1.0f, 150.0f };
+        tessTriangleWidthField._range = { 1.0f, 50.0f };
         tessTriangleWidthField._step = 1.0f;
 
         _editorComponent.registerField(MOV(tessTriangleWidthField));
-
-        EditorComponentField parallaxHeightField = {};
-        parallaxHeightField._name = "Parallax Height";
-        parallaxHeightField._data = &_parallaxHeightScale;
-        parallaxHeightField._type = EditorComponentFieldType::SLIDER_TYPE;
-        parallaxHeightField._readOnly = false;
-        parallaxHeightField._serialise = true;
-        parallaxHeightField._basicType = GFX::PushConstantType::FLOAT;
-        parallaxHeightField._range = { 0.01f, 10.0f };
-
-        _editorComponent.registerField(MOV(parallaxHeightField));
 
         EditorComponentField toggleBoundsField = {};
         toggleBoundsField._name = "Toggle Quadtree Bounds";
@@ -175,8 +164,6 @@ void Terrain::postLoad(SceneGraphNode* sgn) {
 void Terrain::onEditorChange(const std::string_view field) {
     if (field == "Toggle Quadtree Bounds") {
         toggleBoundingBoxes();
-    } else {
-        _editorDataDirtyState = EditorDataState::QUEUED;
     }
 }
 
@@ -232,7 +219,6 @@ void Terrain::postBuild() {
         // The non-debug rendering works fine either way, but crazy flickering of the debug patches 
         // makes understanding much harder.
         _tessParams.SnapGridSize(tessParams().WorldScale() * _tileRings[ringCount - 1]->tileSize() / TessellationParams::PATCHES_PER_TILE_EDGE);
-
         vectorEASTLFast<U16> indices = CreateTileQuadListIB();
 
         { // Create a single buffer to hold the data for all of our tile rings
@@ -292,67 +278,52 @@ void Terrain::toggleBoundingBoxes() {
     rebuildDrawCommands(true);
 }
 
-void Terrain::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
-    OPTICK_EVENT();
-
-    _drawDistance = sceneState.renderState().generalVisibility();
-
-    switch (_editorDataDirtyState) {
-        case EditorDataState::QUEUED:
-            _editorDataDirtyState = EditorDataState::CHANGED;
-            break;
-        case EditorDataState::PROCESSED:
-            _editorDataDirtyState = EditorDataState::IDLE;
-            break;
-        case EditorDataState::CHANGED:
-        case EditorDataState::IDLE:
-            break;
-    };
-    Object3D::sceneUpdate(deltaTimeUS, sgn, sceneState);
-}
-
 void Terrain::prepareRender(SceneGraphNode* sgn,
                             RenderingComponent& rComp,
                             const RenderStagePass& renderStagePass,
                             const Camera& camera,
                             const bool refreshData) {
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
-    if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
-        rComp.getMaterialInstance()->parallaxFactor(parallaxHeightScale());
-        _editorDataDirtyState = EditorDataState::PROCESSED;
-    }
-
     if (!pkg.empty()) {
         F32 triangleWidth = to_F32(tessParams().tessellatedTriangleWidth());
         if (renderStagePass._stage == RenderStage::REFLECTION ||
             renderStagePass._stage == RenderStage::REFRACTION)                 
         {
             // Lower the level of detail in reflections and refractions
-            triangleWidth *= 1.5f;
+            //triangleWidth *= 1.5f;
         } else if (renderStagePass._stage == RenderStage::SHADOW) {
-            triangleWidth *= 2.0f;
+            //triangleWidth *= 2.0f;
         }
 
         const vec2<F32>& SNAP_GRID_SIZE = tessParams().SnapGridSize();
-        const vec2<F32>& scale = tessParams().WorldScale();
+        vec3<F32> cullingEye = camera.getEye();
+        const vec2<F32> eyeXZ = cullingEye.xz();
 
-        const vec2<F32> eye = camera.getEye().xz();
-
-        vec2<F32> snapped = eye;
-        vec2<F32> offset  = eye;
+        vec2<F32> snappedXZ = eyeXZ;
         for (U8 i = 0; i < 2; ++i) {
             if (SNAP_GRID_SIZE[i] > 0.f) {
-                snapped[i] = std::floorf(snapped[i] / SNAP_GRID_SIZE[i]) * SNAP_GRID_SIZE[i];
-                offset[i]  = std::floorf(offset[i]  / SNAP_GRID_SIZE[i]) * SNAP_GRID_SIZE[i];
+                snappedXZ[i] = std::floorf(snappedXZ[i] / SNAP_GRID_SIZE[i]) * SNAP_GRID_SIZE[i];
             }
         }
 
-        snapped = eye - (eye - snapped) * 2;
+        vec2<F32> uvEye = snappedXZ;
+        uvEye /= tessParams().WorldScale();
+        uvEye *= -1;
+        uvEye /= (TessellationParams::PATCHES_PER_TILE_EDGE * 2);
 
+        const vec2<F32> dXZ = eyeXZ - snappedXZ;
+        snappedXZ = eyeXZ - dXZ; // Why the 2x?  I'm confused.  But it works.
+        
+        cullingEye.x += snappedXZ[0];
+        cullingEye.z += snappedXZ[1];
+
+        mat4<F32> terrainWorldMat(vec3<F32>(snappedXZ[0], 0.f, snappedXZ[1]),
+                                  vec3<F32>(tessParams().WorldScale()[0], 1.f, tessParams().WorldScale()[1]),
+                                  mat3<F32>());
         PushConstants& constants = pkg.get<GFX::SendPushConstantsCommand>(0)->_constants;
+        constants.set(_ID("dvd_terrainWorld"), GFX::PushConstantType::MAT4, terrainWorldMat);
+        constants.set(_ID("dvd_uvEyeOffset"), GFX::PushConstantType::VEC2, uvEye);
         constants.set(_ID("dvd_tessTriangleWidth"),  GFX::PushConstantType::FLOAT, triangleWidth);
-        constants.set(_ID("dvd_tileWorldPosition"),  GFX::PushConstantType::VEC2,  snapped);
-        constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2,  offset / scale);
     }
 
     Object3D::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
@@ -366,9 +337,10 @@ void Terrain::buildDrawCommands(SceneGraphNode* sgn,
     if (sgn->context().config().debug.renderFilter.terrain) {
         const F32 triangleWidth = to_F32(tessParams().tessellatedTriangleWidth());
         GFX::SendPushConstantsCommand pushConstantsCommand = {};
+        pushConstantsCommand._constants.set(_ID("dvd_terrainWorld"), GFX::PushConstantType::MAT4, MAT4_IDENTITY);
+        pushConstantsCommand._constants.set(_ID("dvd_uvEyeOffset"), GFX::PushConstantType::VEC2, VECTOR2_ZERO);
         pushConstantsCommand._constants.set(_ID("dvd_tessTriangleWidth"), GFX::PushConstantType::FLOAT, triangleWidth);
-        pushConstantsCommand._constants.set(_ID("dvd_tileWorldPosition"), GFX::PushConstantType::VEC2, VECTOR2_ZERO);
-        pushConstantsCommand._constants.set(_ID("dvd_textureWorldOffset"), GFX::PushConstantType::VEC2, VECTOR2_ZERO);
+        
         pkgInOut.add(pushConstantsCommand);
 
         GenericDrawCommand cmd = {};

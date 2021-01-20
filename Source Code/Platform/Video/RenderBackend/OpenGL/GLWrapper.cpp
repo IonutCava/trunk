@@ -250,7 +250,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     constexpr std::pair<const char*, const char*> shaderVaryingsBump[] =
     {
         { "mat3" , "_tbnWV"},
-        { "vec3" , "_tbnViewDir"}
     };
 
     constexpr std::pair<const char*, const char*> shaderVaryingsVelocity[] =
@@ -793,6 +792,13 @@ bool GL_API::InitGLSW(Configuration& config) {
         "#define ATTRIB_GENERIC " +
         Util::to_string(to_base(AttribLocation::GENERIC)),
         lineOffsets);
+
+    for (MaterialDebugFlag flag : MaterialDebugFlag::_values()) {
+        AppendToShaderHeader(
+            ShaderType::FRAGMENT,
+            Util::StringFormat("#define DEBUG_%s %d", flag._to_string(), flag._to_integral()),
+            lineOffsets);
+    }
 
     const auto addVaryings = [&](const ShaderType type, ShaderOffsetArray& offsets) {
         for (const auto& [varType, name] : shaderVaryings) {

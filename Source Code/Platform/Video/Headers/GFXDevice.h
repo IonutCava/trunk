@@ -44,6 +44,7 @@
 #include "Core/Math/Headers/Line.h"
 #include "Core/Headers/KernelComponent.h"
 #include "Core/Headers/PlatformContextComponent.h"
+#include "Geometry/Material/Headers/MaterialEnums.h"
 
 #include "Platform/Video/Headers/PushConstants.h"
 #include "Platform/Video/Headers/RenderAPIWrapper.h"
@@ -182,28 +183,6 @@ public:
         MODULATE = EXTRA,
         ACCUMULATION = ALBEDO,
         REVEALAGE = NORMALS_AND_VELOCITY,
-    };
-
-    enum class MaterialDebugFlag : U8 {
-        DEBUG_ALBEDO = 0,
-        DEBUG_DEPTH,
-        DEBUG_LIGHTING,
-        DEBUG_SPECULAR,
-        DEBUG_UV,
-        DEBUG_SSAO,
-        DEBUG_EMISSIVE,
-        DEBUG_ROUGHNESS,
-        DEBUG_METALLIC,
-        DEBUG_NORMALS,
-        DEBUG_TBN_VIEW_DIR, //Used for parallax occlusion mapping
-        DEBUG_SHADOW_MAPS,
-        DEBUG_CSM_SPLITS,
-        DEBUG_LIGHT_HEATMAP,
-        DEBUG_DEPTH_CLUSTERS,
-        DEBUG_REFLECTIONS,
-        DEBUG_REFLECTIVITY,
-        DEBUG_MATERIAL_IDS,
-        COUNT
     };
 
     using ObjectArena = MyArena<Config::REQUIRED_RAM_SIZE / 4>;

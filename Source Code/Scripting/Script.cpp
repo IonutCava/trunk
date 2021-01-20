@@ -88,7 +88,7 @@ bool Script::onShutdown() {
 
 void Script::compile() {
     if (!_scriptFile.first.empty()) {
-        if (!readFile(_scriptFile.second.c_str(), _scriptFile.first.c_str(), _scriptSource, _scriptFileType)) {
+        if (readFile(_scriptFile.second.c_str(), _scriptFile.first.c_str(), _scriptSource, _scriptFileType) != FileError::NONE) {
             NOP();
         }
     }
@@ -130,11 +130,11 @@ void Script::preprocessIncludes(const stringImpl& source, const I32 level /*= 0 
             _usedAtoms.push_back(include_file);
 
             // Open the atom file and add the code to the atom cache for future reference
-            if (!readFile(Paths::Scripts::g_scriptsLocation, include_file, include_string, FileType::TEXT)) {
+            if (readFile(Paths::Scripts::g_scriptsLocation, include_file, include_string, FileType::TEXT) != FileError::NONE) {
                 NOP();
             }
             if (include_string.empty()) {
-                if (!readFile(Paths::Scripts::g_scriptsAtomsLocation, include_file, include_string, FileType::TEXT)) {
+                if (readFile(Paths::Scripts::g_scriptsAtomsLocation, include_file, include_string, FileType::TEXT) != FileError::NONE) {
                     NOP();
                 }
             }

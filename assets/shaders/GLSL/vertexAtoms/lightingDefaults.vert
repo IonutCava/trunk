@@ -19,7 +19,7 @@ void computeLightVectors(in NodeTransformData data) {
 #endif //!PRE_PASS && !SHADOW_PASS
 #endif
 
-const mat3 normalMatrixW = NormalMatrixW(data);
+const mat3 normalMatrixW = dvd_NormalMatrixW(data);
 const vec3 N = normalize(normalMatrixW * dvd_Normal);
 VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
 
@@ -32,17 +32,10 @@ VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
     const mat3 TBN = mat3(T, B, N);
     VAR._tbnWV = mat3(dvd_ViewMatrix) * TBN;
 #endif //COMPUTE_TBN
-#if defined(COMPUTE_POM) 
-    // compute POM assumes compute TBN
-    VAR._tbnViewDir = normalize(transpose(TBN) * toCamera);
-#endif //COMPUTE_POM
 #else //COMPUTE_NORMALS
 #if defined(COMPUTE_TBN)
     VAR._tbnWV = mat3(1.0f);
 #endif //COMPUTE_TBN
-#if defined(COMPUTE_POM) 
-    VAR._tbnViewDir = vec3(0.0f);
-#endif //COMPUTE_POM
 
 #endif //COMPUTE_NORMALS
 #endif //USE_MIN_SHADING

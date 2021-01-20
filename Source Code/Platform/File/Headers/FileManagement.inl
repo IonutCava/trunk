@@ -38,8 +38,7 @@ namespace Divide {
 
 template<typename T,
 typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
-bool readFile(const char* filePath, const char* fileName, T& contentOut, const FileType fileType) {
-    bool ret = false;
+FileError readFile(const char* filePath, const char* fileName, T& contentOut, const FileType fileType) {
     if (!Util::IsEmptyOrNull(filePath) && !Util::IsEmptyOrNull(fileName) && pathExists(filePath)) {
         std::ifstream streamIn(stringImpl{ filePath } +fileName,
                                fileType == FileType::BINARY
@@ -57,26 +56,29 @@ bool readFile(const char* filePath, const char* fileName, T& contentOut, const F
                 static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
                 contentOut.assign(std::istreambuf_iterator<char>(streamIn),
                                   std::istreambuf_iterator<char>());
-                ret = true;
+                return FileError::NONE;
             }
+
+            streamIn.close();
+            return FileError::FILE_EMPTY;
         }
 
         streamIn.close();
-    };
+        return FileError::FILE_READ_ERROR;
+    }
 
-    return ret;
+    return FileError::FILE_NOT_FOUND;
 }
 
 template<typename T,
 typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true_type>::value, bool>::type*>
-bool readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType) {
+FileError readFile(const ResourcePath& filePath, const ResourcePath& fileName, T& contentOut, FileType fileType) {
     return readFile(filePath.c_str(), fileName.c_str(), contentOut, fileType);
 }
 
 //Optimized variant for vectors
 template<>
-inline bool readFile(const char* filePath, const char* fileName, vectorEASTL<Byte>& contentOut, const FileType fileType) {
-    bool ret = false;
+inline FileError readFile(const char* filePath, const char* fileName, vectorEASTL<Byte>& contentOut, const FileType fileType) {
     if (!Util::IsEmptyOrNull(filePath) && !Util::IsEmptyOrNull(fileName) && pathExists(filePath)) {
         std::ifstream streamIn(stringImpl{ filePath } +fileName,
                                fileType == FileType::BINARY
@@ -94,14 +96,18 @@ inline bool readFile(const char* filePath, const char* fileName, vectorEASTL<Byt
                 static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
                 Byte* outBuffer = contentOut.data();
                 streamIn.read(reinterpret_cast<char*>(outBuffer), fileSize);
-                ret = true;
+                return FileError::NONE;
             }
+
+            streamIn.close();
+            return FileError::FILE_EMPTY;
         }
 
         streamIn.close();
-    };
+        return FileError::FILE_READ_ERROR;
+    }
 
-    return ret;
+    return FileError::FILE_NOT_FOUND;
 }
 
 }; //namespace Divide

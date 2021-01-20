@@ -109,10 +109,11 @@ vec3 finalColour(in vec3 rayDirection, in float lerpValue) {
         case DEBUG_UV:            return vec3(fract(rayDirection));
         case DEBUG_SSAO:          return vec3(1.0f);
         case DEBUG_EMISSIVE:      return ACESFilm(atmosphereColour(rayDirection));
-        case DEBUG_ROUGHNESS:     
-        case DEBUG_METALLIC:      
-        case DEBUG_NORMALS:       return vec3(0.0f);
-        case DEBUG_TBN_VIEW_DIR:  return rayDirection;
+        case DEBUG_ROUGHNESS:
+        case DEBUG_METALLIC:
+        case DEBUG_NORMALS:
+        case DEBUG_TANGENTS:
+        case DEBUG_BITANGENTS:    return vec3(0.0f);
         case DEBUG_SHADOW_MAPS:
         case DEBUG_CSM_SPLITS:    return vec3(1.0f);
         case DEBUG_LIGHT_HEATMAP:

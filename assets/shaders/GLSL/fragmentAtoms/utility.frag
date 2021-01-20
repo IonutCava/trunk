@@ -46,7 +46,8 @@ void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
 #endif
 
 vec2 scaledTextureCoords(in vec2 texCoord, in vec2 scaleFactor) {
-    return vec2(texCoord.s * scaleFactor.s, texCoord.t * scaleFactor.t);
+    return vec2(texCoord.s * scaleFactor.s,
+                texCoord.t * scaleFactor.t);
 }
 
 vec2 scaledTextureCoords(in vec2 texCoord, in float scaleFactor) {
@@ -59,6 +60,30 @@ vec2 unscaledTextureCoords(in vec2 texCoord, in vec2 scaleFactor) {
 
 vec2 unscaledTextureCoords(in vec2 texCoord, in float scaleFactor) {
     return scaledTextureCoords(texCoord, 1.0f / scaleFactor);
+}
+
+vec3 scaledTextureCoords(in vec3 texCoord, in vec3 scaleFactor) {
+    return vec3(texCoord.x * scaleFactor.x,
+                texCoord.y * scaleFactor.y,
+                texCoord.z * scaleFactor.z);
+}
+
+vec3 scaledTextureCoords(in vec3 texCoord, in float scaleFactor) {
+    return texCoord * scaleFactor;
+}
+
+vec3 unscaledTextureCoords(in vec3 texCoord, in vec3 scaleFactor) {
+    return scaledTextureCoords(texCoord, 1.0f / scaleFactor);
+}
+
+vec3 unscaledTextureCoords(in vec3 texCoord, in float scaleFactor) {
+    return scaledTextureCoords(texCoord, 1.0f / scaleFactor);
+}
+
+vec3 getTriPlanarBlend(in vec3 normalW) {
+    // in normalW is the world-space normal of the fragment
+    const vec3 blending = normalize(max(abs(normalW), 0.00001f)); // Force weights to sum to 1.0
+    return blending / (blending.x + blending.y + blending.z);
 }
 
 float ToLinearDepth(in float D, in vec2 Z) { return (2 * Z.x * Z.y) / (Z.y + Z.x - (2.f * D - 1.f) * (Z.y - Z.x)); }

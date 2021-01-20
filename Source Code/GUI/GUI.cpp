@@ -40,6 +40,8 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept {
             g_assertMsgBox->show();
         }
     }
+
+    Console::printAll();
 }
 
 GUI::GUI(Kernel& parent)

@@ -18,6 +18,18 @@
 #include "Core/Headers/StringHelper.h"
 #include "Utility/Headers/Localization.h"
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable:4458)
+#pragma warning(disable:4706)
+#endif
+#include <boost/wave.hpp>
+#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
+#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
 namespace Divide {
 
 namespace {
@@ -645,7 +657,7 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
     // If that's the case, return the code from cache
     if (it != std::cend(s_atoms)) {
         const auto& atoms = s_atomIncludes[atomNameHash];
-        foundAtoms.insert(eastl::end(foundAtoms), eastl::begin(atoms), eastl::end(atoms));
+        foundAtoms.insert(end(foundAtoms), begin(atoms), end(atoms));
         wasParsed = true;
         return it->second;
     }
@@ -656,7 +668,7 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
 
     // Open the atom file and add the code to the atom cache for future reference
     stringImpl output;
-    if (!readFile(filePath, atomName, output, FileType::TEXT)) {
+    if (readFile(filePath, atomName, output, FileType::TEXT) != FileError::NONE) {
         DIVIDE_UNEXPECTED_CALL();
     }
 
@@ -674,14 +686,14 @@ const stringImpl& glShaderProgram::ShaderFileReadLocked(const ResourcePath& file
 }
 
 void glShaderProgram::ShaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut) {
-    if (!readFile(filePath, ResourcePath(decorateFileName(fileName.str())), sourceCodeOut, FileType::TEXT)) {
+    if (readFile(filePath, ResourcePath(decorateFileName(fileName.str())), sourceCodeOut, FileType::TEXT) != FileError::NONE) {
         NOP();
     }
 }
 
 /// Dump the source code 's' of atom file 'atomName' to file
 void glShaderProgram::ShaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode) {
-    if (!writeFile(filePath, ResourcePath(decorateFileName(fileName.str())), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT)) {
+    if (writeFile(filePath, ResourcePath(decorateFileName(fileName.str())), (bufferPtr)sourceCode, strlen(sourceCode), FileType::TEXT) != FileError::NONE) {
         NOP();
     }
 }

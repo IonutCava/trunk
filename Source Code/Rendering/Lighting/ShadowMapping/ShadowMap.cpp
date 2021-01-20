@@ -312,17 +312,19 @@ U32 ShadowMap::getLightLayerRequirements(const Light& light) {
     return 0u;
 }
 
-void ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut) {
+bool ShadowMap::generateShadowMaps(const Camera& playerCamera, Light& light, GFX::CommandBuffer& bufferInOut) {
     const U32 layerRequirement = getLightLayerRequirements(light);
     const ShadowType sType = getShadowTypeForLightType(light.getLightType());
     if (layerRequirement == 0u || s_shadowMapGenerators[to_base(sType)] == nullptr) {
-        return;
+        return false;
     }
 
     const U16 offset = findFreeDepthMapOffset(sType, layerRequirement);
     light.setShadowOffset(offset);
     commitDepthMapOffset(sType, offset, layerRequirement);
     s_shadowMapGenerators[to_base(sType)]->render(playerCamera, light, s_shadowPassIndex[to_base(sType)]++, bufferInOut);
+
+    return true;
 }
 
 const RenderTargetHandle& ShadowMap::getDepthMap(const LightType type) {

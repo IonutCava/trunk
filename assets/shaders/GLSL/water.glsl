@@ -98,7 +98,8 @@ void main()
         texColour = mix(refractionColour, _private_reflect, Fresnel(incident, mat3(dvd_InverseViewMatrix) * normalWV));
     }
 
-    vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord);
+    const uint LoD = 0u;
+    vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord, LoD);
 
     // Calculate the reflection vector using the normal and the direction of the light.
     vec3 reflection = -reflect(-dvd_sunDirection.xyz, mat3(dvd_InverseViewMatrix) * normalWV);

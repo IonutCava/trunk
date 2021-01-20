@@ -20,6 +20,6 @@ void main (void) {
         discard;
     }
 #endif
-
-    writeOutput(getPixelColour(albedo, data, getNormalWV(VAR._texCoord), VAR._texCoord));
+    const uint LoD = 0u;
+    writeOutput(getPixelColour(albedo, data, getNormalWV(VAR._texCoord), VAR._texCoord, LoD));
 }

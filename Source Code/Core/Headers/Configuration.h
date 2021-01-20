@@ -101,6 +101,7 @@ struct Configuration final : public XML::IXMLSerializable {
         bool showNormals = false;
         bool showLoDs = false;
         bool showTessLevels = false;
+        bool showBlendMap = false;
     } terrain;
 
     struct SSAOSettings{

@@ -1617,7 +1617,7 @@ bool Editor::saveToXML() const {
     pt.put("textEditor", _externalTextEditorPath);
 
     if (createDirectory(editorPath.c_str())) {
-        if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true)) {
+        if (copyFile(editorPath.c_str(), g_editorSaveFile, editorPath.c_str(), g_editorSaveFileBak, true) == FileError::NONE) {
             XML::writeXML((editorPath + g_editorSaveFile).str(), pt);
             return true;
         }
@@ -1631,7 +1631,7 @@ bool Editor::loadFromXML() {
     const ResourcePath editorPath = Paths::g_xmlDataLocation + Paths::Editor::g_saveLocation;
     if (!fileExists((editorPath + g_editorSaveFile).c_str())) {
         if (fileExists((editorPath + g_editorSaveFileBak).c_str())) {
-            if (!copyFile(editorPath.c_str(), g_editorSaveFileBak, editorPath.c_str(), g_editorSaveFile, true)) {
+            if (copyFile(editorPath.c_str(), g_editorSaveFileBak, editorPath.c_str(), g_editorSaveFile, true) != FileError::NONE) {
                 return false;
             }
         }

@@ -1,6 +1,7 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
+#if !defined(PRE_PASS) || defined(HAS_PRE_PASS_DATA)
 #define SAMPLE_NO_TILE_ARRAYS
 #include "texturing.frag"
 #include "waterData.cmn"
@@ -10,7 +11,6 @@
 #else //LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
 vec4 SampleTextureNoTile(in sampler2DArray tex, in vec3 texUV) {
 #if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
-
 #if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
     return dvd_LoD < 2 ? textureNoTile(tex, texOMR, 3, texUV, 0.5f) : texture(tex, texUV);
 #else 
@@ -28,7 +28,7 @@ vec4 SampleTextureNoTile(in sampler2DArray tex, in vec3 texUV) {
 #endif //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
 }
 
-#endif ///LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
+#endif //LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
 
 float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
     INSERT_BLEND_AMNT_ARRAY
@@ -45,57 +45,80 @@ float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
     return blendAmount;
 }
 
-const float tiling[] = {
-#if defined(REDUCE_TEXTURE_TILE_ARTIFACT)
-    1.5f, //LoD 0
-    1.5f, //LoD 1
-    1.0f,
-#else //REDUCE_TEXTURE_TILE_ARTIFACT
-    1.5f, //LoD 0
-    1.0f, //LoD 1
-    0.75f,
-#endif //REDUCE_TEXTURE_TILE_ARTIFACT
-    0.5f,
-    0.25f,
-    0.1625f,
-    0.083125f,
-};
+#define scaledTextureCoords(UV) scaledTextureCoords(UV, TEXTURE_TILE_SIZE)
 
-#define scaledTextureCoords(UV) scaledTextureCoords(UV, TEXTURE_TILE_SIZE * tiling[dvd_LoD])
+mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv) {
+    // get edge vectors of the pixel triangle
+    const vec3 dp1 = dFdx(p);
+    const vec3 dp2 = dFdy(p);
+    const vec2 duv1 = dFdx(uv);
+    const vec2 duv2 = dFdy(uv);
 
-mat3 getTBNWV() { return VAR._tbnWV; }
-vec3 getTBNViewDir() { return VAR._tbnViewDir; }
+    // solve the linear system
+    const vec3 dp2perp = cross(dp2, N);
+    const vec3 dp1perp = cross(N, dp1);
+    const vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+    const vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+
+    // construct a scale-invariant frame 
+    const float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
+    return mat3(T * invmax,
+                B * invmax,
+                N);
+}
+
+mat3 computeTBN() {
+    const vec3 V = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+    return cotangentFrame(VAR._normalWV, -V, VAR._texCoord);
+}
+
+mat3 getTBNWV() {
+#if 0
+    return mat3(dvd_ViewMatrix) * computeTBN();
+#else
+    // We need to compute tangent and bitengent vectors with 
+    // as cotangent_frame's results do not apply for what we need them to do
+    const vec3 N = normalize(VAR._normalWV);
+    const vec3 T1 = cross(N, vec3(0.f, 0.f, 1.f));
+    const vec3 T2 = cross(N, vec3(0.f, 1.f, 0.f));
+    const vec3 T = normalize(length(T1) > length(T2) ? T1 : T2);
+    const vec3 B = normalize(-cross(N, T));
+    // Orthogonal matrix(each axis is a perpendicular unit vector)
+    // The transpose of an orthogonal matrix equals its inverse
+    return mat3(dvd_ViewMatrix) * mat3(T, B, N);
+#endif
+}
 
 #if defined(HAS_PARALLAX)
 float getDisplacementValueFromCoords(in vec2 sampleUV, in float[TOTAL_LAYER_COUNT] amnt) {
     float ret = 0.0f;
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        ret = mix(ret, SampleTextureNoTile(texProjected, vec3(sampleUV, DISPLACEMENT_IDX[i])).r, amnt[i]);
+        ret = max(ret, SampleTextureNoTile(texProjected, vec3(sampleUV * CURRENT_TILE_FACTORS[i], DISPLACEMENT_IDX[i])).r * amnt[i]);
     }
-
-    return 1.0f - ret;
+    // Transform the height to displacement (easier to fake depth than height on flat surfaces)
+    return 1.f - ret;
 }
 
-vec2 ParallaxOcclusionMapping(vec2 sampleUV, float currentDepthMapValue, in float[TOTAL_LAYER_COUNT] amnt) {
+vec2 ParallaxOcclusionMapping(in vec2 scaledCoords, in vec3 viewDirT, float currentDepthMapValue, float heightFactor, in float[TOTAL_LAYER_COUNT] amnt) {
     // number of depth layers
-    const float minLayers = 8.0;
-    const float maxLayers = 32.0;
-    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.0, 0.0, 1.0), dvd_TBNViewDir)));
+    const float minLayers = 8.f;
+    const float maxLayers = 32.f;
+    float numLayers = mix(maxLayers, minLayers, abs(dot(vec3(0.f, 0.f, 1.f), viewDirT)));
     // calculate the size of each layer
-    float layerDepth = 1.0 / numLayers;
+    float layerDepth = 1.f / numLayers;
     // depth of current layer
-    float currentLayerDepth = 0.0;
+    float currentLayerDepth = 0.f;
     // the amount to shift the texture coordinates per layer (from vector P)
-    vec2 P = dvd_TBNViewDir.xy * dvd_parallaxFactor(MATERIAL_IDX);
+    vec2 P = viewDirT.xy * heightFactor;
     vec2 deltaTexCoords = P / numLayers;
 
     // get initial values
-    vec2  currentTexCoords = sampleUV;
+    vec2 currentTexCoords = scaledCoords;
     while (currentLayerDepth < currentDepthMapValue) {
         // shift texture coordinates along direction of P
         currentTexCoords -= deltaTexCoords;
         // get depthmap value at current texture coordinates
-        currentDepthMapValue = getDisplacementValueFromCoords(scaledTextureCoords(currentTexCoords), amnt);
+        currentDepthMapValue = getDisplacementValueFromCoords(currentTexCoords, amnt);
         // get depth of next layer
         currentLayerDepth += layerDepth;
     }
@@ -104,31 +127,52 @@ vec2 ParallaxOcclusionMapping(vec2 sampleUV, float currentDepthMapValue, in floa
 
     // get depth after and before collision for linear interpolation
     const float afterDepth = currentDepthMapValue - currentLayerDepth;
-    const float beforeDepth = getDisplacementValueFromCoords(scaledTextureCoords(prevTexCoords), amnt) - currentLayerDepth + layerDepth;
+    const float beforeDepth = getDisplacementValueFromCoords(prevTexCoords, amnt) - currentLayerDepth + layerDepth;
 
     // interpolation of texture coordinates
     const float weight = afterDepth / (afterDepth - beforeDepth);
-    return prevTexCoords * weight + currentTexCoords * (1.0f - weight);
+    return prevTexCoords * weight + currentTexCoords * (1.f - weight);
 }
 
 #endif //HAS_PARALLAX
 #if !defined(LOW_QUALITY) && defined(HAS_PARALLAX)
-vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
+vec2 getScaledCoords(vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
     const vec2 scaledCoords = scaledTextureCoords(uv);
 
-    const uint bumpMethod = dvd_LoD < 2 ? BUMP_NONE : dvd_bumpMethod(MATERIAL_IDX);
+    const uint bumpMethod = dvd_LoD >= 2 ? BUMP_NONE : dvd_bumpMethod(MATERIAL_IDX);
+    if (bumpMethod != BUMP_NONE) {
+        const float heightFactor = dvd_parallaxFactor(MATERIAL_IDX);
+#if 1
+        // We need to compute tangent and bitengent vectors with 
+        // as cotangent_frame's results do not apply for what we need them to do
+        const vec3 N = normalize(VAR._normalWV);
+        const vec3 T1 = cross(N, vec3(0.f, 0.f, 1.f));
+        const vec3 T2 = cross(N, vec3(0.f, 1.f, 0.f));
+        const vec3 T = normalize(length(T1) > length(T2) ? T1 : T2);
+        const vec3 B = normalize(-cross(N, T));
+        // Orthogonal matrix(each axis is a perpendicular unit vector)
+        // The transpose of an orthogonal matrix equals its inverse
+        const mat3 invTBN = transpose(mat3(T, B, N));
+#else
+        const mat3 invTBN = transpose(computeTBN());
+#endif
+        const vec3 viewDirT = invTBN * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
 
-    switch(bumpMethod) {
-        case BUMP_NONE: break;
-        case BUMP_PARALLAX:
-        {
-            const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-            return ParallaxOffset(scaledCoords, currentHeight);
-        }
-        case BUMP_PARALLAX_OCCLUSION:
-        {
-            const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-            return ParallaxOcclusionMapping(uv, currentHeight, amnt);
+        const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
+        switch (bumpMethod) {
+            case BUMP_PARALLAX: {
+                //ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
+                const vec2 p = viewDirT.xy / viewDirT.z * currentHeight * heightFactor;
+                const vec2 texCoords = uv - p;
+                const vec2 clippedTexCoord = vec2(texCoords.x - floor(texCoords.x),
+                                                  texCoords.y - floor(texCoords.y));
+                //return scaledTextureCoords(clippedTexCoord);
+                    
+            } break;
+            case BUMP_PARALLAX_OCCLUSION:
+            {
+                //return  ParallaxOcclusionMapping(correctedUV, viewDirT, currentHeight, heightFactor, amnt);
+            } break;
         }
     }
 
@@ -139,78 +183,75 @@ vec2 getScaledCoords(in vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
 #endif //!LOW_QUALITY && HAS_PARALLAX
 
 #if defined(PRE_PASS)
-vec3 getTerrainNormal(in vec2 uv) {
-    float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(uv);
-    const vec2 scaledUV = getScaledCoords(uv, blendAmount);
+vec3 getTerrainNormal() {
+    float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(VAR._texCoord);
+    const vec2 uv = getScaledCoords(VAR._texCoord, blendAmount);
+
     vec3 normal = vec3(0.0f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        normal = mix(normal, SampleTextureNoTile(texDiffuse1, vec3(scaledUV, NORMAL_IDX[i])).rgb, blendAmount[i]);
+        normal = mix(normal, SampleTextureNoTile(texDiffuse1, vec3(uv * CURRENT_TILE_FACTORS[i], NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
     return normal;
 }
 
-#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
-#define getMixedNormalWV(UV) vec3(0.0f)
-#else//PRE_PASS && !HAS_PRE_PASS_DATA
-#if defined(LOW_QUALITY)
-#define getMixedNormalWV(UV) VAR._normalWV
-#else //LOW_QUALITY
-vec3 getMixedNormalWV(in vec2 uv) {
-    const float waterDist = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET).x;
-    const vec3 normalTBN = mix(texture(texOMR, vec3(uv * UNDERWATER_TILE_SCALE, 2)).rgb,
-                               getTerrainNormal(uv),
-                               saturate(1.0f - waterDist));
-
-    return VAR._tbnWV * (2.0f * normalTBN - 1.0f);
-}
-#endif //LOW_QUALITY
-#endif //PRE_PASS && !HAS_PRE_PASS_DATA
-
 #else //PRE_PASS
 
-vec3 getUnderWaterAnimatedAlbedo(in vec2 uv) {
-    const float time2 = MSToSeconds(dvd_time) * 0.1f;
-    const vec4 uvNormal = vec4(uv + time2.xx, uv + vec2(-time2, time2));
+vec4 getTerrainAlbedo() {
+    const float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(VAR._texCoord);
+    const vec2 uv = getScaledCoords(VAR._texCoord, blendAmount);
 
-    return (texture(texOMR, vec3(uvNormal.xy, 0)).rgb + texture(texOMR, vec3(uvNormal.zw, 0)).rgb) * 0.5f;
+    vec4 albedo = vec4(0.0f);
+    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
+        // Albedo & Roughness
+        albedo = mix(albedo, SampleTextureNoTile(texDiffuse0, vec3(uv * CURRENT_TILE_FACTORS[i], ALBEDO_IDX[i])), blendAmount[i]);
+    }
+
+    return albedo;
 }
 
 vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
-    const vec3 albedo = mix(getUnderWaterAnimatedAlbedo(uv), texture(texOMR, vec3(uv,  1)).rgb, waterDepth);
-    return vec4(albedo, 0.3f);
+    const float time2 = MSToSeconds(dvd_time) * 0.1f;
+    const vec4 uvNormal = vec4(uv + time2.xx, uv + vec2(-time2, time2));
+
+    return vec4(mix(0.5f * (texture(texOMR, vec3(uvNormal.xy, 0)).rgb + texture(texOMR, vec3(uvNormal.zw, 0)).rgb),
+                    texture(texOMR, vec3(uv, 1)).rgb,
+                    waterDepth),
+                0.3f);
 }
 
-vec4 getTerrainAlbedo(in vec2 uv) {
-    const float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(uv);
-    const vec2 scaledUV = getScaledCoords(uv, blendAmount);
+#endif // PRE_PASS
+#endif //!PRE_PASS || HAS_PRE_PASS_DATA
 
-    vec4 ret = vec4(0.0f);
-    for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
-        // Albedo & Roughness
-        ret = mix(ret, SampleTextureNoTile(texDiffuse0, vec3(scaledUV, ALBEDO_IDX[i])), blendAmount[i]);
-        // ToDo: AO
-    }
-    return ret;
-}
 
-void BuildTerrainData(in vec2 uv, out vec4 albedo, out vec3 normalWV) {
+vec4 BuildTerrainData(out vec3 normalWV) {
 #if defined(LOW_QUALITY)
-    normalWV = VAR._normalWV;
-#else //LOW_QUALITY
-    normalWV = getNormalWV(uv);
+    // VAR._normalWV is in world-space
+    normalWV = mat3(dvd_ViewMatrix) * VAR._normalWV;
 #endif //LOW_QUALITY
 
-    const vec3 vertW = vec3(uv.x * TERRAIN_WIDTH - (TERRAIN_WIDTH * 0.5f),
-                            VAR._vertexW.y,
-                            uv.y * TERRAIN_LENGTH - (TERRAIN_LENGTH * 0.5f));
+#if defined(PRE_PASS)
 
-    const vec2 waterData = GetWaterDetails(vertW, TERRAIN_HEIGHT_OFFSET);
-    albedo = mix(getTerrainAlbedo(uv),
-                 getUnderwaterAlbedo(uv * UNDERWATER_TILE_SCALE, waterData.y),
-                 saturate(waterData.x));
-    
+#if defined(HAS_PRE_PASS_DATA) && !defined(LOW_QUALITY)
+    const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
+    const vec3 normalMap = mix(getTerrainNormal(),
+                               texture(texOMR, vec3(VAR._texCoord * UNDERWATER_TILE_SCALE, 2)).rgb,
+                               saturate(waterData.x));
+    // VAR._normalWV is in world-space
+    const vec3 perturbedNormal = computeTBN() * (normalMap * 255.f / 127.f - 128.f / 127.f);
+    normalWV = normalize(mat3(dvd_ViewMatrix) * perturbedNormal);
+#endif //HAS_PRE_PASS_DATA && !LOW_QUALITY
+
+    return vec4(1.f);
+#else //PRE_PASS
+
+#if !defined(LOW_QUALITY)
+    normalWV = getScreenNormal(VAR._texCoord);
+#endif //!LOW_QUALITY
+    const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
+    return mix(getTerrainAlbedo(),
+               getUnderwaterAlbedo(VAR._texCoord * UNDERWATER_TILE_SCALE, waterData.y),
+               saturate(waterData.x));
+#endif //PRE_PASS
 }
-#endif // PRE_PASS
-
 #endif //_TERRAIN_SPLATTING_FRAG_

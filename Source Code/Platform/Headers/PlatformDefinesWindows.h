@@ -99,7 +99,7 @@
 #elif _MSC_VER == 1900
 #   define CPP_VERSION 201402L
 #elif _MSC_VER > 1900
-#   define CPP_VERSION 201500L //This may change for C++17
+#   define CPP_VERSION 201500L
 #else
 #   define CPP_VERSION 0
 #endif

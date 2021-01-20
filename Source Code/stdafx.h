@@ -118,7 +118,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <stack>
 #include <any>
 
-#include <boost/intrusive/slist.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/asio/streambuf.hpp>
 #include <boost/asio/deadline_timer.hpp>
@@ -157,19 +156,6 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <fmt/include/fmt/format.h>
 #include <fmt/include/fmt/printf.h>
-
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4458)
-#pragma warning(disable:4706)
-#endif
-#include <boost/wave.hpp>
-#include <boost/wave/cpplexer/cpp_lex_iterator.hpp> // lexer class
-#include <boost/wave/cpplexer/cpp_lex_token.hpp>    // token class
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 #include "Platform/Headers/PlatformDataTypes.h"
 #include "Platform/Threading/Headers/SharedMutex.h"

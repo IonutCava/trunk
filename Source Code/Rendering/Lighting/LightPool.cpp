@@ -202,7 +202,10 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
             continue;
         }
 
-        ShadowMap::generateShadowMaps(playerCamera, *light, bufferInOut);
+        if (!ShadowMap::generateShadowMaps(playerCamera, *light, bufferInOut)) {
+            continue;
+        }
+
         const Light::ShadowProperties& propsSource = light->getShadowProperties();
         const I32 shadowIndex = counter++;
 
@@ -244,10 +247,13 @@ void LightPool::generateShadowMaps(const Camera& playerCamera, GFX::CommandBuffe
 
     for (U8 i = 0; i < to_base(LightType::COUNT); ++i) {
         if (!shadowsGenerated[i]) {
-            GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
-            computeMipMapsCommand._texture = ShadowMap::getDepthMap(static_cast<LightType>(i))._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
-            computeMipMapsCommand._clearOnly = true;
-            EnqueueCommand(bufferInOut, computeMipMapsCommand);
+            RenderTarget* rt = ShadowMap::getDepthMap(static_cast<LightType>(i))._rt;
+            if (rt != nullptr) {
+                GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
+                computeMipMapsCommand._texture = rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
+                computeMipMapsCommand._clearOnly = true;
+                EnqueueCommand(bufferInOut, computeMipMapsCommand);
+            }
         }
     }
 

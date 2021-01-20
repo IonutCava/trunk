@@ -43,12 +43,12 @@ namespace {
 }
 
 bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
-                                const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
-                                PlatformContext& context,
-                                bool threadedLoading) {
+    const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
+    PlatformContext& context,
+    bool threadedLoading) {
 
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
-    
+
     ResourcePath terrainLocation = Paths::g_assetsLocation + Paths::g_heightmapLocation;
     terrainLocation += terrainDescriptor->getVariable("descriptor");
 
@@ -86,8 +86,6 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         {"blue", TerrainTextureChannel::TEXTURE_BLUE_CHANNEL},
         {"alpha", TerrainTextureChannel::TEXTURE_ALPHA_CHANNEL}
     };
-
-    
 
     vectorEASTL<stringImpl> textures[to_base(TerrainTextureType::COUNT)] = {};
     vectorEASTL<stringImpl> splatTextures = {};
@@ -128,9 +126,9 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             ++j;
             ++idx;
         }
-         channelCountPerLayer[i] = j;
+        channelCountPerLayer[i] = j;
     }
-    
+
     for (U8 k = 0; k < to_base(TerrainTextureType::COUNT); ++k) {
         indices[k].resize(idx);
     }
@@ -158,7 +156,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     for (const stringImpl& tex : splatTextures) {
         blendMapArray.append(tex + ",");
     }
-    
+
     blendMapArray.pop_back();
     albedoMapArray.pop_back();
     normalMapArray.pop_back();
@@ -169,21 +167,21 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     heightMapSampler.minFilter(TextureFilter::LINEAR);
     heightMapSampler.magFilter(TextureFilter::LINEAR);
     heightMapSampler.borderColour(DefaultColours::BLACK);
-    heightMapSampler.anisotropyLevel(0);
+    heightMapSampler.anisotropyLevel(16);
     const size_t heightSamplerHash = heightMapSampler.getHash();
 
     SamplerDescriptor blendMapSampler = {};
     blendMapSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     blendMapSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     blendMapSampler.magFilter(TextureFilter::LINEAR);
-    blendMapSampler.anisotropyLevel(0);
+    blendMapSampler.anisotropyLevel(16);
     const size_t blendMapHash = blendMapSampler.getHash();
 
     SamplerDescriptor albedoSampler = {};
     albedoSampler.wrapUVW(TextureWrap::REPEAT);
     albedoSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
     albedoSampler.magFilter(TextureFilter::LINEAR);
-    albedoSampler.anisotropyLevel(4);
+    albedoSampler.anisotropyLevel(16);
     const size_t albedoHash = albedoSampler.getHash();
 
     TextureDescriptor blendMapDescriptor(TextureType::TEXTURE_2D_ARRAY);
@@ -238,24 +236,38 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     terrainMaterial->baseColour(FColour4(DefaultColours::WHITE.rgb * 0.5f, 1.0f));
     terrainMaterial->metallic(0.0f);
     terrainMaterial->roughness(0.8f);
-    terrainMaterial->parallaxFactor(terrain->parallaxHeightScale());
+    terrainMaterial->parallaxFactor(0.3f);
     terrainMaterial->toggleTransparency(false);
 
     U8 totalLayerCount = 0;
-    stringImpl layerCountData = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
+    stringImpl layerCountDataStr = Util::StringFormat("const uint CURRENT_LAYER_COUNT[ %d ] = {", layerCount);
     stringImpl blendAmntStr = "INSERT_BLEND_AMNT_ARRAY float blendAmount[TOTAL_LAYER_COUNT] = {";
     for (U8 i = 0; i < layerCount; ++i) {
-        layerCountData.append(Util::StringFormat("%d,", channelCountPerLayer[i]));
+        layerCountDataStr.append(Util::StringFormat("%d,", channelCountPerLayer[i]));
         for (U8 j = 0; j < channelCountPerLayer[i]; ++j) {
             blendAmntStr.append("0.0f,");
         }
         totalLayerCount += channelCountPerLayer[i];
     }
-    layerCountData.pop_back();
-    layerCountData.append("};");
+    layerCountDataStr.pop_back();
+    layerCountDataStr.append("};");
 
     blendAmntStr.pop_back();
     blendAmntStr.append("};");
+
+    const TerrainDescriptor::LayerData& layerTileData = terrainDescriptor->layerDataEntries();
+    stringImpl tileFactorStr = "const vec2 CURRENT_TILE_FACTORS[TOTAL_LAYER_COUNT] = {\n";
+    for (U8 i = 0; i < layerCount; ++i) {
+        const TerrainDescriptor::LayerDataEntry& entry = layerTileData[i];
+        for (U8 j = 0; j < channelCountPerLayer[i]; ++j) {
+            const vec2<F32>& factors = entry[j];
+            tileFactorStr.append(fmt::sprintf("%*c", 8, ' '));
+            tileFactorStr.append(Util::StringFormat("vec2(%3.2f, %3.2f),\n", factors.s, factors.t));
+        }
+    }
+    tileFactorStr.pop_back();
+    tileFactorStr.pop_back();
+    tileFactorStr.append("\n};");
 
     const char* idxNames[to_base(TerrainTextureType::COUNT)] = {
         "ALBEDO_IDX", "NORMAL_IDX", "DISPLACEMENT_IDX"
@@ -308,7 +320,6 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     const Configuration::Terrain terrainConfig = context.config().terrain;
     ResourceCache* resCache = terrain->parentResourceCache();
     const vec2<F32> WorldScale = terrain->tessParams().WorldScale();
-    const vec2<F32> TerDim = terrainDescriptor->dimensions().width;
     Texture_ptr albedoTile = terrainMaterial->getTexture(TextureUsage::UNIT0).lock();
     WAIT_FOR_CONDITION(albedoTile->getState() == ResourceState::RES_LOADED);
 
@@ -351,7 +362,9 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                                                                     ? Terrain::WireframeMode::LODS
                                                                     : terrainConfig.showTessLevels 
                                                                         ? Terrain::WireframeMode::TESS_LEVELS
-                                                                        : Terrain::WireframeMode::NONE;
+                                                                        : terrainConfig.showBlendMap 
+                                                                            ? Terrain::WireframeMode::BLEND_MAP
+                                                                            : Terrain::WireframeMode::NONE;
 
         const bool hasGeometryPass = wMode == Terrain::WireframeMode::EDGES || wMode == Terrain::WireframeMode::NORMALS;
         if (hasGeometryPass) {
@@ -382,6 +395,9 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 } else if (wMode == Terrain::WireframeMode::TESS_LEVELS) {
                     shaderPropName += ".PreviewTessLevels";
                     shaderModule._defines.emplace_back("TOGGLE_TESS_LEVEL", true);
+                } else if (wMode == Terrain::WireframeMode::BLEND_MAP) {
+                    shaderPropName += ".PreviewBlendMap";
+                    shaderModule._defines.emplace_back("TOGGLE_BLEND_MAP", true);
                 }
             }
 
@@ -404,29 +420,24 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 }
             }
 
-            const vec2<F32> uvDivisor = WorldScale * TessellationParams::PATCHES_PER_TILE_EDGE - TessellationParams::PATCHES_PER_TILE_EDGE;
-
             shaderModule._defines.emplace_back("COMPUTE_TBN", true);
-
             shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
-            shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
-            shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x), true);
-            shaderModule._defines.emplace_back("TERRAIN_HEIGHT " + Util::to_string(altitudeRange.y - altitudeRange.x), true);
-            shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(WorldScale.width), true);
-            shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(WorldScale.height), true);
-            shaderModule._defines.emplace_back("TERRAIN_WIDTH " + Util::to_string(TerDim.width), true);
-            shaderModule._defines.emplace_back("TERRAIN_LENGTH " + Util::to_string(TerDim.height), true);
-            shaderModule._defines.emplace_back("UV_DIV_X " + Util::to_string(uvDivisor.width), true);
-            shaderModule._defines.emplace_back("UV_DIV_Z " + Util::to_string(uvDivisor.height), true);
             shaderModule._defines.emplace_back("NODE_STATIC", true);
             shaderModule._defines.emplace_back("SAMPLER_OPACITY_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_UNIT0_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_PROJECTION_IS_ARRAY", true);
             shaderModule._defines.emplace_back("SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY", true);
 
-            shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
-            shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
+            shaderModule._defines.emplace_back("TEXTURE_TILE_SIZE " + Util::to_string(tileMapSize), true);
+            shaderModule._defines.emplace_back("TERRAIN_HEIGHT_OFFSET " + Util::to_string(altitudeRange.x), true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_X " + Util::to_string(WorldScale.width), true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_Y " + Util::to_string(altitudeRange.y - altitudeRange.x), true);
+            shaderModule._defines.emplace_back("WORLD_SCALE_Z " + Util::to_string(WorldScale.height), true);
+            shaderModule._defines.emplace_back("INV_CONTROL_VTX_PER_TILE_EDGE " + Util::to_string(1.f / TessellationParams::VTX_PER_TILE_EDGE), true);
             shaderModule._defines.emplace_back(Util::StringFormat("CONTROL_VTX_PER_TILE_EDGE %d", TessellationParams::VTX_PER_TILE_EDGE), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("PATCHES_PER_TILE_EDGE %d", TessellationParams::PATCHES_PER_TILE_EDGE), true);
+            shaderModule._defines.emplace_back(Util::StringFormat("MAX_TEXTURE_LAYERS %d", layerCount), true);
+
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
                 shaderModule._defines.emplace_back(blendAmntStr, true);
 
@@ -439,7 +450,8 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 shaderModule._defines.emplace_back("USE_SHADING_COOK_TORRANCE", true);
                 shaderModule._defines.emplace_back(Util::StringFormat("UNDERWATER_TILE_SCALE %d", to_I32(underwaterTileScale)), true);
                 shaderModule._defines.emplace_back(Util::StringFormat("TOTAL_LAYER_COUNT %d", totalLayerCount), true);
-                shaderModule._defines.emplace_back(layerCountData, false);
+                shaderModule._defines.emplace_back(layerCountDataStr, false);
+                shaderModule._defines.emplace_back(tileFactorStr, false);
                 for (const stringImpl& str : indexData) {
                     shaderModule._defines.emplace_back(str, false);
                 }
@@ -455,7 +467,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         }
 
         // SHADOW
-        ShaderProgramDescriptor shadowDescriptorVSM = {}; ;
+        ShaderProgramDescriptor shadowDescriptorVSM = {};
         for (const ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
             shadowDescriptorVSM._modules.push_back(shaderModule);
             ShaderModuleDescriptor& tempModule = shadowDescriptorVSM._modules.back();
@@ -633,7 +645,7 @@ bool TerrainLoader::loadThreadedResources(const Terrain_ptr& terrain,
     if (terrain->_physicsVerts.empty()) {
 
         vectorEASTL<Byte> data(to_size(terrainDimensions.width) * terrainDimensions.height * (sizeof(U16) / sizeof(char)), Byte{0});
-        if (!readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY)) {
+        if (readFile((terrainMapLocation + "/").c_str(), terrainRawFile.c_str(), data, FileType::BINARY) != FileError::NONE) {
             NOP();
         }
 

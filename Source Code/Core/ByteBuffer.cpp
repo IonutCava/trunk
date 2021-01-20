@@ -57,12 +57,12 @@ bool ByteBuffer::dumpToFile(const char* path, const char* fileName) {
         append(BUFFER_FORMAT_VERSION);
     }
 
-    return writeFile(path, fileName, _storage.data(), _storage.size(), FileType::BINARY);
+    return writeFile(path, fileName, _storage.data(), _storage.size(), FileType::BINARY) == FileError::NONE;
 }
 
 bool ByteBuffer::loadFromFile(const char* path, const char* fileName) {
     clear();
-    if (readFile(path, fileName, _storage, FileType::BINARY)) {
+    if (readFile(path, fileName, _storage, FileType::BINARY) == FileError::NONE) {
         return _storage.back() == BUFFER_FORMAT_VERSION;
     }
 

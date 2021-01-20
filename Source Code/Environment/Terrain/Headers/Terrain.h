@@ -98,6 +98,7 @@ class Terrain final : public Object3D {
            NORMALS,
            LODS,
            TESS_LEVELS,
+           BLEND_MAP,
            COUNT
        };
 
@@ -139,8 +140,6 @@ class Terrain final : public Object3D {
     [[nodiscard]] Vert getVert(F32 x_clampf, F32 z_clampf) const;
     [[nodiscard]] Vert getSmoothVert(F32 x_clampf, F32 z_clampf) const;
 
-    void sceneUpdate(U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) override;
-
     void postBuild();
 
     void buildDrawCommands(SceneGraphNode* sgn,
@@ -161,14 +160,11 @@ class Terrain final : public Object3D {
     [[nodiscard]] const char* getResourceTypeName() const noexcept override { return "Terrain"; }
 
     PROPERTY_R(TessellationParams, tessParams);
-    PROPERTY_RW(F32, parallaxHeightScale, 0.3f);
-
    public:
      vectorEASTL<VertexBuffer::Vertex> _physicsVerts;
 
    protected:
 
-    F32 _drawDistance = 0.0f;
     VegetationDetails _vegDetails;
 
     Quadtree _terrainQuadtree;
@@ -176,12 +172,10 @@ class Terrain final : public Object3D {
     GenericVertexData* _terrainBuffer = nullptr;
     vectorEASTL<eastl::unique_ptr<TileRing>> _tileRings;
 
-    EditorDataState _editorDataDirtyState = EditorDataState::IDLE;
     bool _initialSetupDone = false;
 
     SceneGraphNode* _vegetationGrassNode = nullptr;
     std::shared_ptr<TerrainDescriptor> _descriptor;
-
     //0 - normal, 1 - wireframe, 2 - normals
     std::array<ShaderProgram_ptr, to_base(WireframeMode::COUNT)> _terrainColourShader;
     std::array<ShaderProgram_ptr, to_base(WireframeMode::COUNT)> _terrainPrePassShader;
