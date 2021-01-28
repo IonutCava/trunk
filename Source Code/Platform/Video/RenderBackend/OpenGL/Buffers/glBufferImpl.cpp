@@ -14,33 +14,6 @@ namespace {
     constexpr I32 g_maxFlushQueueLength = 16;
 
     vectorEASTL<Byte> g_zeroMemData(g_MinZeroDataSize, Byte{ 0 });
-
-    struct BindConfigEntry {
-        U32 _handle = 0;
-        size_t _offset = 0;
-        size_t _range = 0;
-    };
-
-    using BindConfig = std::array<BindConfigEntry, to_base(ShaderBufferLocation::COUNT)>;
-    BindConfig g_currentBindConfig;
-
-    bool SetIfDifferentBindRange(const U32 UBOid,
-                                 const U32 bindIndex,
-                                 const size_t offsetInBytes,
-                                 const size_t rangeInBytes) noexcept {
-
-        BindConfigEntry& crtConfig = g_currentBindConfig[bindIndex];
-
-        if (crtConfig._handle != UBOid ||
-            crtConfig._offset != offsetInBytes ||
-            crtConfig._range != rangeInBytes)
-        {
-            crtConfig = { UBOid, offsetInBytes, rangeInBytes };
-            return true;
-        }
-
-        return false;
-    }
 };
 
 glBufferImpl::glBufferImpl(GFXDevice& context, const BufferImplParams& params)
@@ -168,13 +141,12 @@ bool glBufferImpl::bindByteRange(const GLuint bindIndex, const size_t offsetInBy
         }
     }
 
-    bool bound = false;
+    bool bound;
     if (bindIndex == to_base(ShaderBufferLocation::CMD_BUFFER)) {
         GL_API::getStateTracker().setActiveBuffer(GL_DRAW_INDIRECT_BUFFER, _memoryBlock._bufferHandle);
         bound = true;
-    } else if (SetIfDifferentBindRange(_memoryBlock._bufferHandle, bindIndex, offsetInBytes, rangeInBytes)) {
-        glBindBufferRange(_params._target, bindIndex, _memoryBlock._bufferHandle, offsetInBytes, rangeInBytes);
-        bound = true;
+    } else {
+        bound = GL_API::getStateTracker().setActiveBufferIndexRange(_params._target, _memoryBlock._bufferHandle, bindIndex, offsetInBytes, rangeInBytes);
     }
 
     if (_params._bufferParams._sync) {

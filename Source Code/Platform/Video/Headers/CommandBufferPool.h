@@ -59,18 +59,18 @@ class ScopedCommandBuffer : NonCopyable, NonMovable {
     const CommandBuffer& operator()() const noexcept { return *_buffer; }
 
   protected:
-    friend ScopedCommandBuffer allocateScopedCommandBuffer();
+    friend ScopedCommandBuffer AllocateScopedCommandBuffer();
     ScopedCommandBuffer();
 
   private:
     CommandBuffer* _buffer;
 };
 
-void initPools();
-void destroyPools();
-ScopedCommandBuffer allocateScopedCommandBuffer();
-CommandBuffer* allocateCommandBuffer();
-void deallocateCommandBuffer(CommandBuffer*& buffer);
+void InitPools();
+void DestroyPools();
+ScopedCommandBuffer AllocateScopedCommandBuffer();
+CommandBuffer* AllocateCommandBuffer();
+void DeallocateCommandBuffer(CommandBuffer*& buffer);
 
 }; //namespace GFX
 }; //namespace Divide

@@ -28,7 +28,7 @@ void main(void)
 
 --Fragment.Depth
 
-uniform float dvd_edgeThreshold = 0.1f;
+ADD_UNIFORM(float, dvd_edgeThreshold)
 
 #ifndef DEPTH_THRESHOLD
 #define DEPTH_THRESHOLD (0.1 * dvd_edgeThreshold)
@@ -71,7 +71,7 @@ void main(){
 #endif
 
 layout(location = 0) in vec4 vOffset[3];
-uniform float dvd_edgeThreshold = 0.1f;
+ADD_UNIFORM(float, dvd_edgeThreshold)
 
 out vec2 _colourOut;
 
@@ -122,7 +122,7 @@ void main() {
 
 -- Fragment.Colour
 
-uniform float dvd_edgeThreshold = 0.1f;
+ADD_UNIFORM(float, dvd_edgeThreshold)
 
 #ifndef _LOCAL_CONTRAST_ADAPTATION_FACTOR
 #define _LOCAL_CONTRAST_ADAPTATION_FACTOR 2.0

@@ -10,15 +10,16 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 
 #include "utility.frag"
 
-uniform vec3 sampleKernel[SSAO_SAMPLE_COUNT];
-
-uniform vec2 SSAO_NOISE_SCALE;
-uniform float SSAO_RADIUS = 1.5f;
-uniform float SSAO_BIAS = 0.05f;
-uniform float SSAO_INTENSITY = 2.0f;
-
-uniform mat4 projectionMatrix;
-uniform mat4 invProjectionMatrix;
+ADD_UNIFORM(mat4, projectionMatrix);
+ADD_UNIFORM(mat4, invProjectionMatrix);
+ADD_UNIFORM(vec2, SSAO_NOISE_SCALE);
+ADD_UNIFORM(vec2, zPlanes);
+ADD_UNIFORM(float, SSAO_RADIUS);
+ADD_UNIFORM(float, SSAO_BIAS);
+ADD_UNIFORM(float, SSAO_INTENSITY);
+ADD_UNIFORM(float, maxRange);
+ADD_UNIFORM(float, fadeStart);
+ADD_UNIFORM(vec3, sampleKernel[SSAO_SAMPLE_COUNT]);
 
 // Input screen texture
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
@@ -43,46 +44,53 @@ out float _ssaoOut;
 //ref2: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao.deferred.frag.input
 void main(void) {
     // Calculate out of the current fragment in screen space the view space position.
-    vec3 posView = ViewSpacePos(VAR._texCoord, GetDepth(VAR._texCoord), invProjectionMatrix);
+    const float sceneDepth = GetDepth(VAR._texCoord);
+    const float linDepth = ToLinearDepthPreview(sceneDepth, zPlanes);
+    if (linDepth <= maxRange) {
+        const vec3 posView = ViewSpacePos(VAR._texCoord, sceneDepth, invProjectionMatrix);
 
-    // Normal gathering.
-    const vec3 normalView = normalize(unpackNormal(GetNormal(VAR._texCoord)));
+        // Normal gathering.
+        const vec3 normalView = normalize(unpackNormal(GetNormal(VAR._texCoord)));
 
-    // Calculate the rotation matrix for the kernel.
-    const vec3 randomVector = vec3(texture(texNoise, VAR._texCoord * SSAO_NOISE_SCALE).xy, 0.0f);
+        // Calculate the rotation matrix for the kernel.
+        const vec3 randomVector = vec3(texture(texNoise, VAR._texCoord * SSAO_NOISE_SCALE).xy, 0.0f);
 
-    // Using Gram-Schmidt process to get an orthogonal vector to the normal vector.
-    // The resulting tangent is on the same plane as the random and normal vector. 
-    // see http://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
-    // Note: No division by <u,u> needed, as this is for normal vectors 1. 
-    const vec3 tangentView = normalize(randomVector - dot(randomVector, normalView) * normalView);
-    const vec3 bitangentView = cross(normalView, tangentView);
+        // Using Gram-Schmidt process to get an orthogonal vector to the normal vector.
+        // The resulting tangent is on the same plane as the random and normal vector. 
+        // see http://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
+        // Note: No division by <u,u> needed, as this is for normal vectors 1. 
+        const vec3 tangentView = normalize(randomVector - dot(randomVector, normalView) * normalView);
+        const vec3 bitangentView = cross(normalView, tangentView);
 
-    // Final matrix to reorient the kernel depending on the normal and the random vector.
-    const mat3 kernelMatrix = mat3(tangentView, bitangentView, normalView);
+        // Final matrix to reorient the kernel depending on the normal and the random vector.
+        const mat3 kernelMatrix = mat3(tangentView, bitangentView, normalView);
 
-    // Go through the kernel samples and create occlusion factor.
-    float occlusion = 0.0;
-    for (int i = 0; i < SSAO_SAMPLE_COUNT; ++i) {
-        // Reorient sample vector in view space and calculate sample point.
-        const vec3 sampleVectorView = posView + (kernelMatrix * sampleKernel[i]) * SSAO_RADIUS;
+        // Go through the kernel samples and create occlusion factor.
+        float occlusion = 0.0;
+        for (int i = 0; i < SSAO_SAMPLE_COUNT; ++i) {
+            // Reorient sample vector in view space and calculate sample point.
+            const vec3 sampleVectorView = posView + (kernelMatrix * sampleKernel[i]) * SSAO_RADIUS;
 
-        // Project point and calculate NDC.
-        // Convert sample XY to texture coordinate space and sample from the
-        // Position texture to obtain the scene depth at that XY coordinate
-        const vec2 samplePointTexCoord = 0.5f * homogenize(projectionMatrix * vec4(sampleVectorView, 1.0f)).xy + 0.5f;
+            // Project point and calculate NDC.
+            // Convert sample XY to texture coordinate space and sample from the
+            // Position texture to obtain the scene depth at that XY coordinate
+            const vec2 samplePointTexCoord = 0.5f * homogenize(projectionMatrix * vec4(sampleVectorView, 1.0f)).xy + 0.5f;
 
-        const float zSceneNDC = ViewSpaceZ(GetDepth(samplePointTexCoord), invProjectionMatrix);
+            const float zSceneNDC = ViewSpaceZ(GetDepth(samplePointTexCoord), invProjectionMatrix);
 
-        // If the depth for that XY position in the scene is larger than
-        // the sample's, then the sample is occluded by scene's geometry and
-        // contributes to the occlussion factor.
-        const float rangeCheck = smoothstep(0.0f, 1.0f, SSAO_RADIUS / abs(posView.z - zSceneNDC));
-        occlusion += (zSceneNDC >= sampleVectorView.z + SSAO_BIAS ? 1.0f : 0.0f) * rangeCheck;
+            // If the depth for that XY position in the scene is larger than
+            // the sample's, then the sample is occluded by scene's geometry and
+            // contributes to the occlussion factor.
+            const float rangeCheck = smoothstep(0.f, 1.f, SSAO_RADIUS / abs(posView.z - zSceneNDC));
+            occlusion += (zSceneNDC >= sampleVectorView.z + SSAO_BIAS ? 1.f : 0.f) * rangeCheck;
+        }
+        // We output ambient intensity in the range [0,1]
+        _ssaoOut = pow(1.f - (saturate(occlusion) / SSAO_SAMPLE_COUNT), SSAO_INTENSITY);
+        //_ssaoOut *= (1.f - smoothstep(fadeStart, maxRange, 1.f - linDepth));
+    } else {
+        _ssaoOut = 1.f;
     }
-
-    // We output ambient intensity in the range [0,1]
-    _ssaoOut = pow(1.0f - (occlusion / SSAO_SAMPLE_COUNT), SSAO_INTENSITY);
+    
 }
 
 --Fragment.SSAOBlur
@@ -93,9 +101,9 @@ void main(void) {
 layout(binding = TEXTURE_UNIT0)      uniform sampler2D texSSAO;
 layout(binding = TEXTURE_DEPTH_MAP)  uniform sampler2D texDepthMap;
 
-uniform vec2 zPlanes;
-uniform vec2 texelSize;
-uniform float depthThreshold;
+ADD_UNIFORM(vec2, zPlanes);
+ADD_UNIFORM(vec2, texelSize);
+ADD_UNIFORM(float, depthThreshold);
 
 //r - ssao
 layout(location = TARGET_EXTRA) out vec2 _output;
@@ -113,6 +121,7 @@ void main() {
 
     int sample_count = 1;
     float result = texture(texSSAO, VAR._texCoord).r;
+#if 1
     for (int x = -BLUR_SIZE; x < BLUR_SIZE; ++x) {
         for (int y = -BLUR_SIZE; y < BLUR_SIZE; ++y) {
             if (x != 0 || y != 0) {
@@ -129,6 +138,9 @@ void main() {
     }
 
     _colourOut = result / float(sample_count);
+#else
+    _colourOut = result;
+#endif
 }
 
 --Fragment.SSAOPassThrough

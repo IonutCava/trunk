@@ -3,6 +3,7 @@
 #include "Platform/Threading/Headers/Task.h"
 #include "Headers/TaskPool.h"
 #include "Core/Headers/StringHelper.h"
+#include "Platform/Headers/PlatformRuntime.h"
 
 namespace Divide {
 
@@ -181,8 +182,12 @@ Task* TaskPool::allocateTask(Task* parentTask, const bool allowedInIdle) {
     return task;
 }
 
-void TaskPool::threadWaiting() const {
-    _poolImpl.threadWaiting();
+void TaskPool::threadWaiting() {
+    if (Runtime::isMainThread()) {
+        flushCallbackQueue();
+    } else {
+        _poolImpl.threadWaiting();
+    }
 }
 
 void WaitForAllTasks(TaskPool& pool, const bool yield, const bool flushCallbacks) {

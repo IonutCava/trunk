@@ -40,16 +40,20 @@
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 namespace Divide {
-    class PlatformContext;
-    class GL_API;
+class PlatformContext;
+class GL_API;
 class glShader;
 class glLockManager;
+
 namespace Attorney {
     class GLAPIShaderProgram;
 };
 /// OpenGL implementation of the ShaderProgram entity
 class glShaderProgram final : public ShaderProgram, public glObject {
     friend class Attorney::GLAPIShaderProgram;
+   public:
+    static constexpr bool g_useUniformConstantBuffer = true;
+
    public:
     explicit glShaderProgram(GFXDevice& context,
                              size_t descriptorHash,
@@ -82,35 +86,42 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Check every possible combination of flags to make sure this program can be used for rendering
     bool isValid() const override;
 
-    void UploadPushConstant(const GFX::PushConstant& constant);
-    void UploadPushConstants(const PushConstants& constants);
+    void uploadPushConstants(const PushConstants& constants);
 
     static void OnAtomChange(std::string_view atomName, FileUpdateEvent evt);
     static const stringImpl& ShaderFileRead(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);
     static const stringImpl& ShaderFileReadLocked(const ResourcePath& filePath, const ResourcePath& atomName, bool recurse, vectorEASTL<ResourcePath>& foundAtoms, bool& wasParsed);
 
-    static void ShaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, stringImpl& sourceCodeOut);
-    static void ShaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode);
-    static stringImpl PreprocessIncludes(const ResourcePath& name,
-                                         const stringImpl& source,
-                                         GLint level,
-                                         vectorEASTL<ResourcePath>& foundAtoms,
-                                         bool lock);
-   protected:
+    static bool ShaderFileRead(const ResourcePath& filePath, const ResourcePath& fileName, eastl::string& sourceCodeOut);
+    static bool ShaderFileWrite(const ResourcePath& filePath, const ResourcePath& fileName, const char* sourceCode);
+    static eastl::string PreprocessIncludes(const ResourcePath& name,
+                                            const eastl::string& source,
+                                            GLint level,
+                                            vectorEASTL<ResourcePath>& foundAtoms,
+                                            bool lock);
+
+    static eastl::string GatherUniformDeclarations(const eastl::string& source, vectorEASTL<UniformDeclaration>& foundUniforms);
+
+    static void QueueShaderWriteToFile(const stringImpl& sourceCode, const Str256& fileName);
+  protected:
+   struct AtomUniformPair {
+       vectorEASTL<ResourcePath> _atoms;
+       vectorEASTL<UniformDeclaration> _uniforms;
+   };
+
     /// return a list of atom names
-    vectorEASTL<ResourcePath> loadSourceCode(
-        const Str128& stageName,
-        const Str8& extension,
-        const stringImpl& header,
-        size_t definesHash,
-        U32 lineOffset,
-        bool reloadExisting,
-        std::pair<bool, stringImpl>& sourceCodeOut) const;
+   AtomUniformPair loadSourceCode(const Str128& stageName,
+                                  const Str8& extension,
+                                  const stringImpl& header,
+                                  size_t definesHash,
+                                  bool reloadExisting,
+                                  Str256& fileNameOut,
+                                  eastl::string& sourceCodeOut) const;
 
     bool rebindStages();
-    void validatePreBind();
-    void validatePostBind();
-
+    bool validatePreBind();
+    void queueValidation();
+    
     bool shouldRecompile() const;
     bool recompile(bool force) override;
     /// Creation of a new shader program. Pass in a shader token and use glsw to
@@ -128,14 +139,14 @@ class glShaderProgram final : public ShaderProgram, public glObject {
     /// Returns true if the shader is currently active
     bool isBound() const noexcept;
 
-   private:
-    GLuint _handle;
-    bool _validationQueued;
-    bool _validated;
+    void initialiseUniformBuffer();
 
-    UseProgramStageMask _stageMask = UseProgramStageMask::GL_NONE_BIT;
+   private:
+    GLuint _handle = GLUtil::k_invalidObjectID;
+
+    bool _validationQueued = false;
+    bool _hasUniformBlockBuffer = false;
     vectorEASTL<glShader*> _shaderStage;
-    static std::array<U32, to_base(ShaderType::COUNT)> _lineOffset;
 
     static I64 s_shaderFileWatcherID;
 
@@ -152,20 +163,8 @@ class glShaderProgram final : public ShaderProgram, public glObject {
 
 namespace Attorney {
     class GLAPIShaderProgram {
-        static void setGlobalLineOffset(const U32 offset) {
-            glShaderProgram::_lineOffset.fill(offset);
-        }
-        static void addLineOffset(const ShaderType stage, const U32 offset) noexcept {
-            glShaderProgram::_lineOffset[to_U32(stage)] += offset;
-        }
         static std::pair<bool, bool> bind(glShaderProgram& program) {
             return program.bind();
-        }
-        static void queueValidation(glShaderProgram& program) noexcept {
-            // After using the shader at least once, validate the shader if needed
-            if (!program._validated) {
-                program._validationQueued = true;
-            }
         }
 
         friend class GL_API;

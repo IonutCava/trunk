@@ -111,11 +111,7 @@ public:
             }
         }
         if (descriptor.waitForReady()) {
-            if (Runtime::isMainThread()) {
-                WAIT_FOR_CONDITION(ptr->getState() == ResourceState::RES_LOADED);
-            } else {
-                WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, ResourceLoadLock::notifyTaskPool, _context);
-            }
+            WAIT_FOR_CONDITION_CALLBACK(ptr->getState() == ResourceState::RES_LOADED, ResourceLoadLock::notifyTaskPool, _context);
         }
 
         // Print load times

@@ -48,14 +48,14 @@ RenderPassManager::RenderPassManager(Kernel& parent, GFXDevice& context)
 RenderPassManager::~RenderPassManager()
 {
     for (GFX::CommandBuffer*& buf : _renderPassCommandBuffer) {
-        deallocateCommandBuffer(buf);
+        DeallocateCommandBuffer(buf);
     }
 
     if (_postFXCommandBuffer != nullptr) {
-        deallocateCommandBuffer(_postFXCommandBuffer);
+        DeallocateCommandBuffer(_postFXCommandBuffer);
     }  
     if (_postRenderBuffer != nullptr) {
-        deallocateCommandBuffer(_postRenderBuffer);
+        DeallocateCommandBuffer(_postRenderBuffer);
     }
     MemoryManager::DELETE_CONTAINER(_renderPasses);
 }
@@ -84,9 +84,9 @@ void RenderPassManager::postInit() {
         }
     }
 
-    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
-    _postFXCommandBuffer = GFX::allocateCommandBuffer();
-    _postRenderBuffer = GFX::allocateCommandBuffer();
+    _renderPassCommandBuffer.push_back(GFX::AllocateCommandBuffer());
+    _postFXCommandBuffer = GFX::AllocateCommandBuffer();
+    _postRenderBuffer = GFX::AllocateCommandBuffer();
 }
 
 void RenderPassManager::render(const RenderParams& params) {
@@ -290,7 +290,7 @@ RenderPass& RenderPassManager::addRenderPass(const Str64& renderPassName,
     item->initBufferData();
 
     //Secondary command buffers. Used in a threaded fashion
-    _renderPassCommandBuffer.push_back(GFX::allocateCommandBuffer());
+    _renderPassCommandBuffer.push_back(GFX::AllocateCommandBuffer());
 
     eastl::sort(begin(_renderPasses), end(_renderPasses), [](RenderPass* a, RenderPass* b) -> bool { return a->sortKey() < b->sortKey(); });
 
@@ -306,7 +306,7 @@ void RenderPassManager::removeRenderPass(const Str64& name) {
             _renderPasses.erase(it);
             // Remove one command buffer
             GFX::CommandBuffer* buf = _renderPassCommandBuffer.back();
-            deallocateCommandBuffer(buf);
+            DeallocateCommandBuffer(buf);
             _renderPassCommandBuffer.pop_back();
             break;
         }

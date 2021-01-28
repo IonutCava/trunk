@@ -43,9 +43,9 @@ namespace {
 }
 
 bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
-    const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
-    PlatformContext& context,
-    bool threadedLoading) {
+                                const std::shared_ptr<TerrainDescriptor>& terrainDescriptor,
+                                PlatformContext& context,
+                                bool threadedLoading) {
 
     const stringImpl& name = terrainDescriptor->getVariable("terrainName");
 
@@ -374,6 +374,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         shaderDescriptor._modules.push_back(fragModule);
 
         stringImpl propName;
+        bool hasParallax = false;
         for (ShaderModuleDescriptor& shaderModule : shaderDescriptor._modules) {
             stringImpl shaderPropName;
 
@@ -402,10 +403,8 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             }
 
             if (terrainConfig.detailLevel > 0) {
-                if (pMode != Terrain::ParallaxMode::NONE) {
-                    shaderPropName += ".Parallax";
-                    shaderModule._defines.emplace_back("HAS_PARALLAX", true);
-                }
+                hasParallax = pMode != Terrain::ParallaxMode::NONE;
+
                 if (terrainConfig.detailLevel > 1) {
                     shaderPropName += ".NoTile";
                     shaderModule._defines.emplace_back("REDUCE_TEXTURE_TILE_ARTIFACT", true);
@@ -501,12 +500,16 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
                 shaderModule._variant = "MainPass";
+
+                if (hasParallax) {
+                    shaderModule._defines.emplace_back("HAS_PARALLAX", true);
+                }
             }
             shaderModule._defines.emplace_back("USE_SSAO", true);
             shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
         }
 
-        ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name + propName);
+        ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name + propName + (hasParallax ? ".Parallax" : ""));
         terrainShaderColour.propertyDescriptor(colourDescriptor);
 
         ShaderProgram_ptr terrainColourShader = CreateResource<ShaderProgram>(resCache, terrainShaderColour);
@@ -516,13 +519,16 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
                 shaderModule._variant = "PrePass";
+                if (hasParallax) {
+                    shaderModule._defines.emplace_back("HAS_PARALLAX", true);
+                }
             }
 
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
         }
 
-        ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name + propName);
+        ResourceDescriptor terrainShaderPrePass("Terrain_PrePass-" + name + propName + (hasParallax ? ".Parallax" : ""));
         terrainShaderPrePass.propertyDescriptor(prePassDescriptor);
 
         ShaderProgram_ptr terrainPrePassShader = CreateResource<ShaderProgram>(resCache, terrainShaderPrePass);

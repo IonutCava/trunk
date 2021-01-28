@@ -111,7 +111,7 @@ PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBa
     { //SMAA Textures
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_2D);
         textureDescriptor.srgb(false);
-
+        
         ResourceDescriptor searchDescriptor("SMAA_Search");
         searchDescriptor.assetName(ResourcePath("smaa_search.png"));
         searchDescriptor.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation);
@@ -192,10 +192,16 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
             const TextureData areaTex = _areaTexture->data();
             const TextureData searchTex = _searchTexture->data();
 
+            SamplerDescriptor samplerDescriptor = {};
+
             GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.add({ edgesTex, att.samplerHash(),TextureUsage::UNIT0 });
-            descriptorSetCmd._set._textureData.add({ areaTex, SamplerDescriptor::s_defaultHashValue, TextureUsage::UNIT1 });
-            descriptorSetCmd._set._textureData.add({ searchTex, SamplerDescriptor::s_defaultHashValue, to_U8(TextureUsage::UNIT1) + 1 });
+            samplerDescriptor.minFilter(TextureFilter::LINEAR);
+            samplerDescriptor.magFilter(TextureFilter::LINEAR);
+            descriptorSetCmd._set._textureData.add({ areaTex, samplerDescriptor.getHash(), TextureUsage::UNIT1 });
+            samplerDescriptor.minFilter(TextureFilter::NEAREST);
+            samplerDescriptor.magFilter(TextureFilter::NEAREST);
+            descriptorSetCmd._set._textureData.add({ searchTex, samplerDescriptor.getHash(), to_U8(TextureUsage::UNIT1) + 1 });
             EnqueueCommand(bufferInOut, descriptorSetCmd);
 
             EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _smaaWeightPipeline });

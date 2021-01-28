@@ -29,10 +29,9 @@ layout(early_fragment_tests) in;
 layout(binding = TEXTURE_UNIT0) uniform samplerCube texSkyDay;
 layout(binding = TEXTURE_UNIT1) uniform samplerCube texSkyNight;
 
-uniform vec3 dvd_nightSkyColour;
-uniform ivec2 dvd_useSkyboxes;
-
-uniform vec4 dvd_atmosphereData[3];
+ADD_UNIFORM(vec4, dvd_atmosphereData[3]);
+ADD_UNIFORM(vec3, dvd_nightSkyColour);
+ADD_UNIFORM(ivec2, dvd_useSkyboxes);
 
 #define dvd_sunIntensity  dvd_atmosphereData[0].x
 #define dvd_planetRadius  dvd_atmosphereData[0].y
@@ -59,6 +58,29 @@ vec3 ACESFilm(vec3 x) {
     const float tD = 0.59f;
     const float tE = 0.14f;
     return saturate((x * (tA * x + tB)) / (x * (tC * x + tD) + tE));
+}
+
+//ToDo: https://github.com/clayjohn/realtime_clouds/blob/master/assets/shaders/sky.frag
+//I like the look of the small sky, but could be tweaked however
+const float g_radius = 200000.0; //ground radius
+const float sky_b_radius = 201000.0;//bottom of cloud layer
+const float sky_t_radius = 202300.0;//top of cloud layer
+const float c_radius = 6008400.0; //2d noise layer
+const float cwhiteScale = 1.1575370919881305;//precomputed 1/U2Tone(40)
+
+const vec3 RANDOM_VECTORS[6] = vec3[6]
+(
+    vec3(0.38051305f, 0.92453449f, -0.02111345f),
+    vec3(-0.50625799f, -0.03590792f, -0.86163418f),
+    vec3(-0.32509218f, -0.94557439f, 0.01428793f),
+    vec3(0.09026238f, -0.27376545f, 0.95755165f),
+    vec3(0.28128598f, 0.42443639f, -0.86065785f),
+    vec3(-0.16852403f, 0.14748697f, 0.97460106f)
+);
+// fractional value for sample position in the cloud layer
+float GetHeightFractionForPoint(float inPosition) { // get global fractional position in cloud zone
+    float height_fraction = (inPosition - sky_b_radius) / (sky_t_radius - sky_b_radius);
+    return clamp(height_fraction, 0.0, 1.0);
 }
 
 vec3 atmosphereColour(in vec3 rayDirection) {

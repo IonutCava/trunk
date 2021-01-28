@@ -36,7 +36,8 @@ void main() {
 
 out vec4 _colourOut;
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-uniform int dvd_qualityMultiplier;
+
+ADD_UNIFORM(int, dvd_qualityMultiplier)
 
 void main(void)
 {

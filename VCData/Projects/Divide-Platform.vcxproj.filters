@@ -334,6 +334,15 @@
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include\ViewportTarget.h">
       <Filter>Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glBufferedPushConstantUploader.h">
+      <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glPushConstantUploader.h">
+      <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Shaders\Headers\glUniformPushConstantUploader.h">
+      <Filter>Video\RenderBackend\OpenGL\Shaders\Headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="../../Source Code/Platform\Input\AutoKeyRepeat.cpp">
@@ -603,6 +612,13 @@
       <Filter>Video\RenderBackend\OpenGL\CEGUIOpenGLRenderer\src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Shaders\glShaderProgramInit.cpp">
+      <Filter>Video\RenderBackend\OpenGL\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\ConditionalWait.cpp" />
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Shaders\glBufferedPushConstantUploader.cpp">
+      <Filter>Video\RenderBackend\OpenGL\Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Shaders\glUniformPushConstantUploader.cpp">
       <Filter>Video\RenderBackend\OpenGL\Shaders</Filter>
     </ClCompile>
   </ItemGroup>

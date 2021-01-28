@@ -47,14 +47,7 @@ class PlatformContext;
 
 class ShaderComputeQueue {
 public:
-    class ShaderQueueElement {
-      public:
-          explicit ShaderQueueElement(ShaderProgram_ptr& targetShader, const ResourceDescriptor& descriptor)
-              : _shaderRef(targetShader),
-                _shaderDescriptor(descriptor)
-        {
-        }
-
+    struct ShaderQueueElement {
         ShaderProgram_ptr& _shaderRef;
         ResourceDescriptor _shaderDescriptor;
     };
@@ -63,8 +56,7 @@ public:
     explicit ShaderComputeQueue(ResourceCache* cache);
     ~ShaderComputeQueue() = default;
 
-    // This is the main loop that steps through the queue and 
-    // processes each entry
+    // This is the main loop that steps through the queue and processes each entry
     void idle();
     // Processes a queue element on the spot
     void process(ShaderQueueElement& element) const;
@@ -72,9 +64,8 @@ public:
     void addToQueueFront(const ShaderQueueElement& element);
     // Push a process request at the end of the queue
     void addToQueueBack(const ShaderQueueElement& element);
-    // Process the first entry in the queue immediatelly
-    // This is called in a loop in the 'update' call, but can be user 
-    // called as well if the shader is needed immediatelly
+    // Process the first entry in the queue immediately.
+    // This is called in a loop in the 'update' call, but can be user called as well if the shader is needed immediately
     // Return true if the queue wasn't empty
     bool stepQueue();
 
@@ -88,7 +79,6 @@ private:
 
     SharedMutex _queueLock;
     std::deque<ShaderQueueElement> _shaderComputeQueue;
-    U32  _totalShaderComputeCount = 0;
 };
 
 }; //namespace Divide

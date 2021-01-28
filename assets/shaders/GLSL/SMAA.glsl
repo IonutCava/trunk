@@ -4,7 +4,7 @@
 
 #define mad(a, b, c) (a * b + c)
 
-uniform int dvd_qualityMultiplier = 0;
+ADD_UNIFORM(int, dvd_qualityMultiplier);
 
 layout(location = 0) out vec2 vPixCoord;
 layout(location = 1) out vec4 vOffset[3];
@@ -65,7 +65,7 @@ void main(void)
 
 -- Fragment.Weight
 
-uniform int dvd_qualityMultiplier = 0;
+ADD_UNIFORM(int, dvd_qualityMultiplier);
 
 const int SMAA_MAX_SEARCH_STEPS_VALUES[] = { 4, 8, 16, 32 };
 const int SMAA_MAX_SEARCH_STEPS_DIAG_VALUES[] = { 8, 8, 16, 16 };

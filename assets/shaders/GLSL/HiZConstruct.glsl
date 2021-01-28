@@ -3,7 +3,7 @@
 
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D depthTex;
 
-uniform ivec2 depthInfo;
+ADD_UNIFORM(ivec2, depthInfo)
 
 void main() {
     

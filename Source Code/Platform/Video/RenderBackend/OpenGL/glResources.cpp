@@ -103,6 +103,7 @@ std::array<GLenum, to_base(TextureFilter::COUNT)> glTextureFilterTable;
 std::array<NS_GLIM::GLIM_ENUM, to_base(PrimitiveType::COUNT)> glimPrimitiveType;
 std::array<GLenum, to_base(ShaderType::COUNT)> glShaderStageTable;
 std::array<UseProgramStageMask, to_base(ShaderType::COUNT) + 1> glProgramStageMask;
+std::map<GLenum, size_t> glTypeSizeInBytes;
 
 void fillEnumTables() {
     glBlendTable[to_base(BlendProperty::ZERO)] = GL_ZERO;
@@ -229,6 +230,85 @@ void fillEnumTables() {
     glProgramStageMask[to_base(ShaderType::TESSELLATION_EVAL)] = GL_TESS_EVALUATION_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COMPUTE)] = GL_COMPUTE_SHADER_BIT;
     glProgramStageMask[to_base(ShaderType::COUNT)] = GL_NONE_BIT;
+
+    glTypeSizeInBytes[GL_FLOAT] = sizeof(float);
+    glTypeSizeInBytes[GL_FLOAT_VEC2] = sizeof(float) * 2;
+    glTypeSizeInBytes[GL_FLOAT_VEC3] = sizeof(float) * 3;
+    glTypeSizeInBytes[GL_FLOAT_VEC4] = sizeof(float) * 4;
+
+    glTypeSizeInBytes[GL_DOUBLE] = sizeof(double);
+    glTypeSizeInBytes[GL_DOUBLE_VEC2] = sizeof(double) * 2;
+    glTypeSizeInBytes[GL_DOUBLE_VEC3] = sizeof(double) * 3;
+    glTypeSizeInBytes[GL_DOUBLE_VEC4] = sizeof(double) * 4;
+
+    glTypeSizeInBytes[GL_SAMPLER_1D] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_3D] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_CUBE] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_1D_SHADOW] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_SHADOW] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_1D_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_1D_ARRAY_SHADOW] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_ARRAY_SHADOW] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_MULTISAMPLE] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_MULTISAMPLE_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_CUBE_SHADOW] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_BUFFER] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_RECT] = sizeof(int);
+    glTypeSizeInBytes[GL_SAMPLER_2D_RECT_SHADOW] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_1D] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_2D] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_3D] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_CUBE] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_1D_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_2D_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_2D_MULTISAMPLE] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_BUFFER] = sizeof(int);
+    glTypeSizeInBytes[GL_INT_SAMPLER_2D_RECT] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_1D] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_2D] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_3D] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_CUBE] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_1D_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_2D_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_BUFFER] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_SAMPLER_2D_RECT] = sizeof(int);
+    glTypeSizeInBytes[GL_BOOL] = sizeof(int);
+    glTypeSizeInBytes[GL_INT] = sizeof(int);
+    glTypeSizeInBytes[GL_BOOL_VEC2] = sizeof(int) * 2;
+    glTypeSizeInBytes[GL_INT_VEC2] = sizeof(int) * 2;
+    glTypeSizeInBytes[GL_BOOL_VEC3] = sizeof(int) * 3;
+    glTypeSizeInBytes[GL_INT_VEC3] = sizeof(int) * 3;
+    glTypeSizeInBytes[GL_BOOL_VEC4] = sizeof(int) * 4;
+    glTypeSizeInBytes[GL_INT_VEC4] = sizeof(int) * 4;
+
+    glTypeSizeInBytes[GL_UNSIGNED_INT] = sizeof(int);
+    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC2] = sizeof(int) * 2;
+    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC3] = sizeof(int) * 2;
+    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC4] = sizeof(int) * 2;
+
+    glTypeSizeInBytes[GL_FLOAT_MAT2] = sizeof(float) * 4;
+    glTypeSizeInBytes[GL_FLOAT_MAT3] = sizeof(float) * 9;
+    glTypeSizeInBytes[GL_FLOAT_MAT4] = sizeof(float) * 16;
+    glTypeSizeInBytes[GL_FLOAT_MAT2x3] = sizeof(float) * 6;
+    glTypeSizeInBytes[GL_FLOAT_MAT2x4] = sizeof(float) * 8;
+    glTypeSizeInBytes[GL_FLOAT_MAT3x2] = sizeof(float) * 6;
+    glTypeSizeInBytes[GL_FLOAT_MAT3x4] = sizeof(float) * 12;
+    glTypeSizeInBytes[GL_FLOAT_MAT4x2] = sizeof(float) * 8;
+    glTypeSizeInBytes[GL_FLOAT_MAT4x3] = sizeof(float) * 12;
+    glTypeSizeInBytes[GL_DOUBLE_MAT2] = sizeof(double) * 4;
+    glTypeSizeInBytes[GL_DOUBLE_MAT3] = sizeof(double) * 9;
+    glTypeSizeInBytes[GL_DOUBLE_MAT4] = sizeof(double) * 16;
+    glTypeSizeInBytes[GL_DOUBLE_MAT2x3] = sizeof(double) * 6;
+    glTypeSizeInBytes[GL_DOUBLE_MAT2x4] = sizeof(double) * 8;
+    glTypeSizeInBytes[GL_DOUBLE_MAT3x2] = sizeof(double) * 6;
+    glTypeSizeInBytes[GL_DOUBLE_MAT3x4] = sizeof(double) * 12;
+    glTypeSizeInBytes[GL_DOUBLE_MAT4x2] = sizeof(double) * 8;
+    glTypeSizeInBytes[GL_DOUBLE_MAT4x3] = sizeof(double) * 12;
 }
 
 GLenum internalFormat(const GFXImageFormat baseFormat, const GFXDataFormat dataType, const bool srgb, const bool normalized) {

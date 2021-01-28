@@ -296,7 +296,7 @@ const char* glswGetShader(const char* pEffectKey)
                         gc->ShaderMap = (glswList*) calloc(sizeof(glswList), 1);
                         gc->ShaderMap->Key = bstrcpy(shaderKey);
                         gc->ShaderMap->Next = temp;
-                        gc->ShaderMap->Value = bformat("//__LINE_OFFSET_\n");
+                        gc->ShaderMap->Value = bformat("#pragma glsw_entry_break\n");
 
                         binsertch(gc->ShaderMap->Key, 0, 1, '.');
                         binsert(gc->ShaderMap->Key, 0, effectName, '?');

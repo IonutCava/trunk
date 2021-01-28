@@ -36,8 +36,6 @@ vec2 UVDromRayDir(in vec3 dir) {
 
 #if defined(PROJECTED_TEXTURE)
 
-uniform float projectedTextureMixWeight = 0.f;
-
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     targetTexture.xyz = mix(targetTexture.rgb, 
                             texture(texProjected, vec2(PoxPosInMap.s, 1.0 - PoxPosInMap.t)).rgb,

@@ -38,33 +38,31 @@
 
 
 #include <EASTL/array.h>
-#include <EASTL/array.h>
 
 namespace Divide {
+
+struct glPushConstantUploader;
 
 /// glShader represents one of a program's rendering stages (vertex, geometry, fragment, etc)
 /// It can be used simultaneously in multiple programs/pipelines
 class glShader final : public GUIDWrapper, public GraphicsResource, public glObject {
    public:
     using ShaderMap = ska::bytell_hash_map<U64, glShader*>;
-
     // one per shader type!
     struct LoadData {
         ShaderType _type = ShaderType::COUNT;
         Str128 _name = "";
+        Str256 _fileName = "";
+        bool _hasUniforms = false;
         eastl::unordered_set<U64> atoms;
-        vectorEASTL<stringImpl> sourceCode;
+        vectorEASTL<eastl::string> sourceCode;
     };
 
-    using ShaderLoadData = eastl::array<LoadData, to_base(ShaderType::COUNT)>;
-
-    template<typename T>
-    struct UniformCache {
-        using ShaderVarMap = hashMap<T, GFX::PushConstant>;
-        void clear() { _shaderVars.clear(); }
-        ShaderVarMap _shaderVars;
+    struct ShaderLoadData {
+        eastl::array<LoadData, to_base(ShaderType::COUNT)> _data;
+        stringImpl _uniformBlock = {};
+        U8 _uniformIndex = 0u;
     };
-    using UniformsByNameHash = UniformCache<U64>;
 
    public:
     /// The shader's name is the period-separated list of properties, type is
@@ -72,20 +70,20 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
     explicit glShader(GFXDevice& context, const Str256& name);
     ~glShader();
 
-    bool load(const ShaderLoadData& data);
+    [[nodiscard]] bool load(const ShaderLoadData& data);
 
-    U32 getProgramHandle() const noexcept { return _programHandle; }
+    [[nodiscard]] U32 getProgramHandle() const noexcept { return _programHandle; }
 
     /// The shader's name is a period-separated list of strings used to define
     /// the main shader file and the properties to load
-    const Str256& name() const noexcept { return _name; }
-
-    bool embedsType(ShaderType type) const;
+    [[nodiscard]] const Str256& name() const noexcept { return _name; }
 
     void AddRef() noexcept { _refCount.fetch_add(1); }
     /// Returns true if ref count reached 0
     bool SubRef() noexcept { return _refCount.fetch_sub(1) == 1; }
-    size_t GetRef() const { return _refCount.load(); }
+    [[nodiscard]] size_t GetRef() const { return _refCount.load(); }
+
+    [[nodiscard]] stringImpl getUniformBufferName() const noexcept;
 
    public:
     // ======================= static data ========================= //
@@ -99,55 +97,43 @@ class glShader final : public GUIDWrapper, public GraphicsResource, public glObj
                                 const Str256& name,
                                 const ShaderLoadData& data);
 
-    static glShader* loadShader(
-        glShader* shader,
-        bool isNew,
-        const ShaderLoadData& data);
+    static glShader* loadShader(glShader* shader,
+                                bool isNew,
+                                const ShaderLoadData& data);
+
+
    private:
-    void UploadPushConstant(const GFX::PushConstant& constant, bool force = false);
-    void Uniform(I32 binding, GFX::PushConstantType type, const Byte* values, GLsizei byteCount, bool flag) const;
+    void uploadPushConstants(const PushConstants& constants) const;
 
     friend class glShaderProgram;
-    bool loadFromBinary();
-    void cacheActiveUniforms();
-    void reuploadUniforms();
-    I32  cachedValueUpdate(const GFX::PushConstant& constant, bool force = false);
-    bool uploadToGPU(bool& previouslyUploaded);
-    bool isValidUniformLocation(GLint location) const;
+    [[nodiscard]] bool loadFromBinary();
+    [[nodiscard]] bool uploadToGPU();
+
+    void prepare() const;
     /// Add a define to the shader. The defined must not have been added previously
     void addShaderDefine(const stringImpl& define, bool appendPrefix);
     /// Remove a define from the shader. The defined must have been added previously
     void removeShaderDefine(const stringImpl& define);
-
-    UseProgramStageMask stageMask() const noexcept { return _stageMask;  }
-    const eastl::unordered_set<U64>& usedAtoms() const noexcept { return _usedAtoms; }
+    void initialiseUniformBuffer();
+    [[nodiscard]] UseProgramStageMask stageMask() const noexcept { return _stageMask;  }
 
     PROPERTY_R(bool, valid, false);
     PROPERTY_R(bool, loadedFromBinary, false);
     PROPERTY_R_IW(bool, shouldRecompile, false);
 
    private:
-    using ShaderVarMap = hashMap<U64, I32>;
 
     static bool DumpBinary(GLuint handle, const Str256& name);
 
   private:
-    GLuint _programHandle;
-
-    U8 _stageCount;
-    UseProgramStageMask _stageMask;
-
-    Str256 _name;
-    eastl::unordered_set<U64> _usedAtoms;
-    std::array<vectorEASTL<stringImpl>, to_base(ShaderType::COUNT)> _sourceCode;
-
-    ShaderVarMap _shaderVarLocation;
-    UniformsByNameHash _uniformsByNameHash;
-
+    ShaderLoadData _loadData;
     /// A list of preprocessor defines (if the bool in the pair is true, #define is automatically added
     vectorEASTL<std::pair<stringImpl, bool>> _definesList;
-
+    eastl::unique_ptr<glPushConstantUploader> _constantUploader = nullptr;
+    Str256 _name;
     std::atomic_size_t _refCount;
+    UseProgramStageMask _stageMask;
+    GLuint _programHandle = GLUtil::k_invalidObjectID;
 
    private:
     /// Shader cache

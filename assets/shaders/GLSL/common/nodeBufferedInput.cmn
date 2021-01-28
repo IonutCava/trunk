@@ -2,7 +2,7 @@
 #define _NODE_BUFFERED_INPUT_CMN_
 
 #if defined(OVERRIDE_DATA_IDX)
-uniform uint DATA_INDICES = 0u;
+ADD_UNIFORM(uint, DATA_INDICES)
 #else //OVERRIDE_DATA_IDX
 #define DATA_INDICES VAR._baseInstance
 #endif //OVERRIDE_DATA_IDX

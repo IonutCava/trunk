@@ -6,7 +6,7 @@
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D tex;
 #if !defined(DEPTH_ONLY)
-uniform uint convertToSRGB = 1u;
+ADD_UNIFORM(uint, convertToSRGB)
 out vec4 _colourOut;
 #endif
 

@@ -92,11 +92,17 @@ class NOINITVTABLE ShaderProgram : public CachedResource,
     friend class Attorney::ShaderProgramKernel;
 
    public:
+    struct UniformDeclaration
+    {
+        Str64 _type;
+        Str256 _name;
+    };
     using ShaderProgramMapEntry = std::pair<ShaderProgram*, size_t>;
     using ShaderProgramMap = ska::bytell_hash_map<I64 /*handle*/, ShaderProgramMapEntry>;
     using AtomMap = ska::bytell_hash_map<U64 /*name hash*/, stringImpl>;
     //using AtomInclusionMap = ska::bytell_hash_map<U64 /*name hash*/, vectorEASTL<ResourcePath>>;
     using AtomInclusionMap = hashMap<U64 /*name hash*/, vectorEASTL<ResourcePath>>;
+    using UniformsInclusionMap = hashMap<U64 /*name hash*/, vectorEASTL<UniformDeclaration>>;
     using ShaderQueue = eastl::stack<ShaderProgram*, vectorEASTLFast<ShaderProgram*> >;
 
 

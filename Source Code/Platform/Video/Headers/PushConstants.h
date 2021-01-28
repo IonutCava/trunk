@@ -47,31 +47,31 @@ struct PushConstants {
     void set(const GFX::PushConstant& constant);
 
     template<typename T>
-    void set(U64 bindingHash, GFX::PushConstantType type, const T* values, size_t count, bool flag = false) {
+    void set(U64 bindingHash, GFX::PushConstantType type, const T* values, size_t count) {
         for (GFX::PushConstant& constant : _data) {
             if (constant._bindingHash == bindingHash) {
                 assert(constant._type == type);
-                constant.set(values, count, flag);
+                constant.set(values, count);
                 return;
             }
         }
 
-        _data.emplace_back(bindingHash, type, values, count, flag);
+        _data.emplace_back(bindingHash, type, values, count);
     }
 
     template<typename T>
-    void set(U64 bindingHash, GFX::PushConstantType type, const T& value, bool flag = false) {
-        set(bindingHash, type, &value, 1, flag);
+    void set(U64 bindingHash, GFX::PushConstantType type, const T& value) {
+        set(bindingHash, type, &value, 1);
     }
 
     template<typename T>
-    void set(U64 bindingHash, GFX::PushConstantType type, const vectorEASTL<T>& values, bool flag = false) {
-        set(bindingHash, type, values.data(), values.size(), flag);
+    void set(U64 bindingHash, GFX::PushConstantType type, const vectorEASTL<T>& values) {
+        set(bindingHash, type, values.data(), values.size());
     }
 
     template<typename T, size_t N>
-    void set(U64 bindingHash, GFX::PushConstantType type, const std::array<T, N>& values, bool flag = false) {
-        set(bindingHash, type, values.data(), N, flag);
+    void set(U64 bindingHash, GFX::PushConstantType type, const std::array<T, N>& values) {
+        set(bindingHash, type, values.data(), N);
     }
 
     void clear() noexcept { _data.clear(); }

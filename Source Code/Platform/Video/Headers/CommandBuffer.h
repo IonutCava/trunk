@@ -42,7 +42,7 @@ namespace Divide {
     namespace GFX {
 
 void DELETE_CMD(CommandBase*& cmd) noexcept;
-size_t RESERVE_CMD(U8 typeIndex) noexcept;
+[[nodiscard]] size_t RESERVE_CMD(U8 typeIndex) noexcept;
 
 enum class ErrorType : U8
 {

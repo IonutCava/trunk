@@ -9,7 +9,7 @@ namespace Divide {
 
 RenderPackage::~RenderPackage()
 {
-    deallocateCommandBuffer(_commands);
+    DeallocateCommandBuffer(_commands);
 }
 
 void RenderPackage::clear() {
@@ -141,7 +141,7 @@ U32 RenderPackage::updateAndRetrieveDrawCommands(const NodeDataIdx dataIndex, U3
 
 GFX::CommandBuffer* RenderPackage::commands() {
     if (_commands == nullptr) {
-        _commands = GFX::allocateCommandBuffer();
+        _commands = GFX::AllocateCommandBuffer();
     }
 
     return _commands;

@@ -185,8 +185,7 @@ private:
     static bool DeInitGLSW();
 
     /// Use GLSW to append tokens to shaders. Use ShaderType::COUNT to append to all stages
-    using ShaderOffsetArray = std::array<GLint, to_base(ShaderType::COUNT) + 1>;
-    static void AppendToShaderHeader(ShaderType type, const stringImpl& entry, ShaderOffsetArray& inOutOffset);
+    static void AppendToShaderHeader(ShaderType type, const stringImpl& entry);
 
 protected:
     /// Number of available texture units

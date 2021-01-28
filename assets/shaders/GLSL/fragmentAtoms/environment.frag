@@ -4,7 +4,7 @@
 #include "sceneData.cmn"
 #include "utility.frag"
 
-uniform uint dvd_raySteps = 16;
+ADD_UNIFORM(uint, dvd_raySteps)
 
 #define iSteps dvd_raySteps
 #define jSteps int(dvd_raySteps * 0.5f)

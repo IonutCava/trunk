@@ -415,27 +415,60 @@ bool GLStateTracker::setActiveVAO(const GLuint ID, GLuint& previousID) noexcept 
 
 
 /// Single place to change buffer objects for every target available
-bool GLStateTracker::setActiveBuffer(const GLenum target, const GLuint ID, GLuint& previousID) {
+bool GLStateTracker::setActiveBuffer(const GLenum target, const GLuint bufferHandle, GLuint& previousID) {
     GLuint& crtBinding = target != GL_ELEMENT_ARRAY_BUFFER 
                                  ? _activeBufferID[GetBufferTargetIndex(target)]
                                  : _activeVAOIB[_activeVAOID];
     previousID = crtBinding;
 
     // Prevent double bind (hope that this is the most common case. Should be.)
-    if (previousID == ID) {
+    if (previousID == bufferHandle) {
         return false;
     }
 
     // Remember the new binding for future reference
-    crtBinding = ID;
+    crtBinding = bufferHandle;
     // Bind the specified buffer handle to the desired buffer target
-    glBindBuffer(target, ID);
+    glBindBuffer(target, bufferHandle);
     return true;
 }
 
-bool GLStateTracker::setActiveBuffer(const GLenum target, const GLuint ID) {
+bool GLStateTracker::setActiveBuffer(const GLenum target, const GLuint bufferHandle) {
     GLuint temp = 0u;
-    return setActiveBuffer(target, ID, temp);
+    return setActiveBuffer(target, bufferHandle, temp);
+}
+
+bool GLStateTracker::setActiveBufferIndexRange(const GLenum target, const GLuint bufferHandle, const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes, GLuint& previousID) {
+    BindConfigEntry& crtConfig = g_currentBindConfig[target][bindIndex];
+
+    if (crtConfig._handle != bufferHandle ||
+        crtConfig._offset != offsetInBytes ||
+        crtConfig._range != rangeInBytes)         {
+        previousID = crtConfig._handle;
+        crtConfig = { bufferHandle, offsetInBytes, rangeInBytes };
+        if (offsetInBytes == 0u && rangeInBytes == 0u) {
+            glBindBufferBase(target, bindIndex, bufferHandle);
+        } else {
+            glBindBufferRange(target, bindIndex, bufferHandle, offsetInBytes, rangeInBytes);
+        }
+        return true;
+    }
+
+    return false;
+}
+
+bool GLStateTracker::setActiveBufferIndex(const GLenum target, const GLuint bufferHandle, const GLuint bindIndex) {
+    GLuint temp = 0u;
+    return setActiveBufferIndex(target, bufferHandle, bindIndex, temp);
+}
+
+bool GLStateTracker::setActiveBufferIndex(const GLenum target, const GLuint bufferHandle, const GLuint bindIndex, GLuint& previousID) {
+    return setActiveBufferIndexRange(target, bufferHandle, bindIndex, 0u, 0u, previousID);
+}
+
+bool GLStateTracker::setActiveBufferIndexRange(const GLenum target, const GLuint bufferHandle, const GLuint bindIndex, const size_t offsetInBytes, const size_t rangeInBytes) {
+    GLuint temp = 0u;
+    return setActiveBufferIndexRange(target, bufferHandle, bindIndex, offsetInBytes, rangeInBytes, temp);
 }
 
 /// Change the currently active shader program. Passing null will unbind shaders (will use program 0)
@@ -675,6 +708,26 @@ TextureType GLStateTracker::getBoundTextureType(const U8 slot) const {
 
 GLuint GLStateTracker::getBoundProgramHandle() const {
     return _activeShaderPipeline == 0u ? _activeShaderProgram : _activeShaderPipeline;
+}
+
+GLuint GLStateTracker::getBoundBuffer(const GLenum target, const GLuint bindIndex) const {
+    size_t offset, range;
+    return getBoundBuffer(target, bindIndex, offset, range);
+}
+
+GLuint GLStateTracker::getBoundBuffer(const GLenum target, const GLuint bindIndex, size_t& offsetOut, size_t& rangeOut) const {
+    const auto& it = g_currentBindConfig.find(target);
+    if (it != end(g_currentBindConfig)) {
+        const auto& it2 = it->second.find(bindIndex);
+        if (it2 != end(it->second)) {
+            const BindConfigEntry& crtConfig = it2->second;
+            offsetOut = crtConfig._offset;
+            rangeOut = crtConfig._range;
+            return crtConfig._handle;
+        }
+    }
+
+    return 0u;
 }
 
 void GLStateTracker::getActiveViewport(GLint* const vp) const {

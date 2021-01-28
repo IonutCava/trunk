@@ -167,7 +167,7 @@ ErrorCode GFXDevice::createAPIInstance(const RenderAPI API) {
 
 /// Create a display context using the selected API and create all of the needed
 /// primitives needed for frame rendering
-ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, const vec2<U16> & renderResolution) {
+ErrorCode GFXDevice::initRenderingAPI(const I32 argc, char** argv, const RenderAPI API) {
     ErrorCode hardwareState = createAPIInstance(API);
     Configuration& config = _parent.platformContext().config();
 
@@ -201,13 +201,20 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         }
     }
 
-    ResourceCache* cache = parent().resourceCache();
     _rtPool = MemoryManager_NEW GFXRTPool(*this);
+
+    return ErrorCode::NO_ERR;
+}
+
+ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
+    std::atomic_uint loadTasks = 0;
+    ResourceCache* cache = parent().resourceCache();
+    Configuration& config = _parent.platformContext().config();
 
     // Initialize the shader manager
     ShaderProgram::OnStartup(cache);
     SceneEnvironmentProbePool::OnStartup(*this);
-    GFX::initPools();
+    GFX::InitPools();
 
     // Create a shader buffer to store the GFX rendering info (matrices, options, etc)
     {
@@ -499,14 +506,6 @@ ErrorCode GFXDevice::initRenderingAPI(I32 argc, char** argv, RenderAPI API, cons
         refDesc._name = "Reflection_Cube_Array";
         _rtPool->allocateRT(RenderTargetUsage::REFLECTION_CUBE, refDesc);
     }
-
-    return ErrorCode::NO_ERR;
-}
-
-ErrorCode GFXDevice::postInitRenderingAPI() {
-    std::atomic_uint loadTasks = 0;
-
-    ResourceCache* cache = parent().resourceCache();
     {
         ShaderModuleDescriptor vertModule = {};
         vertModule._moduleType = ShaderType::VERTEX;
@@ -682,7 +681,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
             shaderDescriptorSingle._modules.push_back(geomModule);
             shaderDescriptorSingle._modules.back()._defines.emplace_back("GS_MAX_INVOCATIONS 1", true);
             shaderDescriptorSingle._modules.push_back(fragModule);
-
+            shaderDescriptorSingle._modules.back()._defines.emplace_back("GS_MAX_INVOCATIONS 1", true);
 
             ResourceDescriptor blur("GaussBlur_Single");
             blur.propertyDescriptor(shaderDescriptorSingle);
@@ -701,6 +700,7 @@ ErrorCode GFXDevice::postInitRenderingAPI() {
             shaderDescriptorLayered._modules.push_back(geomModule);
             shaderDescriptorLayered._modules.back()._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", MAX_INVOCATIONS_BLUR_SHADER_LAYERED), true);
             shaderDescriptorLayered._modules.push_back(fragModule);
+            shaderDescriptorLayered._modules.back()._defines.emplace_back(Util::StringFormat("GS_MAX_INVOCATIONS %d", MAX_INVOCATIONS_BLUR_SHADER_LAYERED), true);
             shaderDescriptorLayered._modules.back()._variant += ".Layered";
             shaderDescriptorLayered._modules.back()._defines.emplace_back("LAYERED", true);
 
@@ -807,7 +807,7 @@ void GFXDevice::closeRenderingAPI() {
     RenderStateBlock::clear();
 
     SceneEnvironmentProbePool::OnShutdown(*this);
-    GFX::destroyPools();
+    GFX::DestroyPools();
     MemoryManager::SAFE_DELETE(_rtPool);
 
     _previewDepthMapShader = nullptr;
@@ -1783,7 +1783,7 @@ void GFXDevice::drawText(const GFX::DrawTextCommand& cmd, GFX::CommandBuffer& bu
 }
 
 void GFXDevice::drawText(const TextElementBatch& batch) {
-    GFX::ScopedCommandBuffer sBuffer(GFX::allocateScopedCommandBuffer());
+    GFX::ScopedCommandBuffer sBuffer(GFX::AllocateScopedCommandBuffer());
     GFX::CommandBuffer& buffer = sBuffer();
 
     // Assume full game window viewport for text

@@ -128,7 +128,7 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 out vec2 _colourOut;
 
 void main(void) {
-    const float albedoAlpha = texture(texDiffuseGrass, vec3(VAR._texCoord, _arrayLayerFrag)).a;
+    const float albedoAlpha = texture(texDiffuse0, vec3(VAR._texCoord, _arrayLayerFrag)).a;
     if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
         discard;
     }

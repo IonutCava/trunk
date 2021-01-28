@@ -51,11 +51,13 @@ inline void DELETE_CMD(CommandBase*& cmd) noexcept {
 inline size_t RESERVE_CMD(U8 typeIndex) noexcept {
     const CommandType cmdType = static_cast<CommandType>(typeIndex);
     switch (cmdType) {
-        case CommandType::DRAW_COMMANDS: return 10;
+        case CommandType::BIND_DESCRIPTOR_SETS: return 2;
+        case CommandType::SEND_PUSH_CONSTANTS : return 3;
+        case CommandType::DRAW_COMMANDS       : return 4;
         default: break;
     }
 
-    return 5;
+    return 1;
 }
 
 template<typename T>

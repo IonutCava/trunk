@@ -57,9 +57,15 @@ namespace Divide {
         /// Switch the currently active vertex array object
         bool setActiveVAO(GLuint ID, GLuint& previousID) noexcept;
         /// Single place to change buffer objects for every target available
-        bool setActiveBuffer(GLenum target, GLuint ID);
+        bool setActiveBuffer(GLenum target, GLuint bufferHandle);
         /// Single place to change buffer objects for every target available
-        bool setActiveBuffer(GLenum target, GLuint ID, GLuint& previousID);
+        bool setActiveBuffer(GLenum target, GLuint bufferHandle, GLuint& previousID);
+
+        bool setActiveBufferIndex(GLenum target, GLuint bufferHandle, GLuint bindIndex);
+        bool setActiveBufferIndex(GLenum target, GLuint bufferHandle, GLuint bindIndex, GLuint& previousID);
+        /// Same as normal setActiveBuffer but handles proper binding of different ranges
+        bool setActiveBufferIndexRange(GLenum target, GLuint bufferHandle, GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes);
+        bool setActiveBufferIndexRange(GLenum target, GLuint bufferHandle, GLuint bindIndex, size_t offsetInBytes, size_t rangeInBytes, GLuint& previousID);
         /// Switch the current framebuffer by binding it as either a R/W buffer, read
         /// buffer or write buffer
         bool setActiveFB(RenderTarget::RenderTargetUsage usage, GLuint ID);
@@ -118,10 +124,12 @@ namespace Divide {
         bool setClearColour(const FColour4& colour);
         bool setClearColour(const UColour4& colour) { return setClearColour(Util::ToFloatColour(colour)); }
 
-        GLuint getBoundTextureHandle(U8 slot, TextureType type) const;
-        GLuint getBoundSamplerHandle(U8 slot) const;
-        GLuint getBoundProgramHandle() const;
-        TextureType getBoundTextureType(U8 slot) const;
+        [[nodiscard]] GLuint getBoundTextureHandle(U8 slot, TextureType type) const;
+        [[nodiscard]] GLuint getBoundSamplerHandle(U8 slot) const;
+        [[nodiscard]] GLuint getBoundProgramHandle() const;
+        [[nodiscard]] GLuint getBoundBuffer(GLenum target, GLuint bindIndex) const;
+        [[nodiscard]] GLuint getBoundBuffer(GLenum target, GLuint bindIndex, size_t& offsetOut, size_t& rangeOut) const;
+        [[nodiscard]] TextureType getBoundTextureType(U8 slot) const;
 
         void getActiveViewport(GLint* vp) const;
 
@@ -129,6 +137,13 @@ namespace Divide {
         static void ValidateBindQueue(GLuint textureCount, const GLuint* textureHandles);
 
       public:
+          struct BindConfigEntry
+          {
+              U32 _handle = 0;
+              size_t _offset = 0;
+              size_t _range = 0;
+          };
+
         RenderStateBlock _activeState{};
 
         Str64 _debugScope;
@@ -165,6 +180,10 @@ namespace Divide {
                                                       BlendProperty::ONE,
                                                       BlendOperation::ADD };
         GLboolean _blendEnabledGlobal = GL_FALSE;
+
+        using BindConfig = hashMap<U32 /*bindIndex*/, BindConfigEntry>;
+        using PerBufferConfig = hashMap<GLenum /*target*/, BindConfig>;
+        PerBufferConfig g_currentBindConfig;
 
         vectorEASTL<BlendingProperties> _blendProperties;
         vectorEASTL<GLboolean> _blendEnabled;

@@ -84,22 +84,21 @@ namespace GFX {
 
     struct PushConstant {
         template<typename T>
-        PushConstant(U64 bindingHash, PushConstantType type, const T& data, bool flag = false)
-            : PushConstant(bindingHash, type, &data, 1, flag)
+        PushConstant(U64 bindingHash, PushConstantType type, const T& data)
+            : PushConstant(bindingHash, type, &data, 1)
         {
         }
 
         template<typename T>
-        PushConstant(const U64 bindingHash, const PushConstantType type, const T* data, const size_t count, bool flag = false)
+        PushConstant(const U64 bindingHash, const PushConstantType type, const T* data, const size_t count)
             : _bindingHash(bindingHash),
               _type(type)
         {
-            set(data, count, flag);
+            set(data, count);
         }
 
         template<typename T>
-        void set(const T* data, const size_t count, const bool flag = false) {
-            _flag = flag;
+        void set(const T* data, const size_t count) {
             if (count > 0) {
                 _buffer.resize(count * sizeof(T));
                 std::memcpy(_buffer.data(), data, count * sizeof(T));
@@ -114,36 +113,33 @@ namespace GFX {
         eastl::fixed_vector<Byte, sizeof(F32) * 16, true> _buffer;
         U64               _bindingHash;
         PushConstantType  _type = PushConstantType::COUNT;
-        bool _flag = false;
     };
 
     template <>
-    inline void PushConstant::set<bool>(const bool* data, const size_t count, const bool flag) {
+    inline void PushConstant::set<bool>(const bool* data, const size_t count) {
         assert(data != nullptr);
 
         if (count == 1) {
             //fast path
             const I32 value = *data ? 1 : 0;
-            set(&value, 1, flag);
+            set(&value, 1);
         } else {
             //Slooow. Avoid using in the rendering loop. Try caching
             vectorEASTL<I32> temp(count);
             std::transform(data, data + count, std::back_inserter(temp),
                 [](const bool e) noexcept { return e ? 1 : 0; });
-            set(temp.data(), count, flag);
+            set(temp.data(), count);
         }
     }
 
     inline bool operator==(const PushConstant& lhs, const PushConstant& rhs) {
         return lhs._type == rhs._type &&
-               lhs._flag == rhs._flag &&
                lhs._bindingHash == rhs._bindingHash &&
                lhs._buffer == rhs._buffer;
     }
 
     inline bool operator!=(const PushConstant& lhs, const PushConstant& rhs) {
         return lhs._type != rhs._type ||
-               lhs._flag != rhs._flag ||
                lhs._bindingHash != rhs._bindingHash ||
                lhs._buffer != rhs._buffer;
     }

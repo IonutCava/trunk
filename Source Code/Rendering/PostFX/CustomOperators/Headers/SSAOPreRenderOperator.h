@@ -65,6 +65,12 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     [[nodiscard]] F32 blurThreshold() const noexcept { return _blurThreshold[_genHalfRes ? 1 : 0]; }
     void blurThreshold(F32 val);
 
+    [[nodiscard]] F32 maxRange() const noexcept { return _maxRange[_genHalfRes ? 1 : 0]; }
+    void maxRange(F32 val);
+
+    [[nodiscard]] F32 fadeStart() const noexcept { return _fadeStart[_genHalfRes ? 1 : 0]; }
+    void fadeStart(F32 val);
+
     [[nodiscard]] U8 sampleCount() const noexcept;
 
     [[nodiscard]] bool ready() const override;
@@ -89,6 +95,8 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     F32 _radius[2] = { 0.0f, 0.0f };
     F32 _bias[2] = { 0.0f, 0.0f };
     F32 _power[2] = { 0.0f, 0.0f };
+    F32 _maxRange[2] = { 1.f, 1.f };
+    F32 _fadeStart[2] = { 1.f, 1.f };
     F32 _blurThreshold[2] = { 0.05f, 0.05f };
     U8 _kernelSampleCount[2] = { 0u, 0u };
     bool _blur[2] = { false, false };

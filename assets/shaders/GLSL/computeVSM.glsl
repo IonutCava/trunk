@@ -3,8 +3,8 @@
 layout(points, invocations = MAX_CSM_SPLITS_PER_LIGHT) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-uniform int layerCount;
-uniform int layerOffsetWrite;
+ADD_UNIFORM(int, layerCount)
+ADD_UNIFORM(int, layerOffsetWrite)
 
 layout(location = 0) out flat int layerIndex;
 
@@ -38,7 +38,7 @@ void main() {
 
 --Fragment
 
-uniform int layerOffsetRead;
+ADD_UNIFORM(int, layerOffsetRead)
 
 layout(location = 0) in flat int layerIndex;
 
@@ -57,9 +57,9 @@ void main(void)
 
 --Fragment.MSAA
 
-uniform int layerOffsetRead;
-uniform int NumSamples;
-uniform vec2 TextureSize;
+ADD_UNIFORM(vec2, TextureSize)
+ADD_UNIFORM(int, layerOffsetRead)
+ADD_UNIFORM(int, NumSamples)
 
 layout(location = 0) in flat int layerIndex;
 

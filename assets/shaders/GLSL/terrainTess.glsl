@@ -36,8 +36,6 @@ void main(void)
 #include "terrainUtils.cmn"
 
 // Most of the stuff here is from nVidia's DX11 terrain tessellation sample
-uniform float dvd_tessTriangleWidth;
-
 layout(location = 10) in vec4 vtx_adjancency[];
 layout(location = 11) in float vtx_tileSize[];
 layout(location = 12) in flat uint vtx_ringID[];
@@ -481,24 +479,15 @@ void main(void)
 
 --Fragment.PrePass
 
-#define USE_CUSTOM_NORMAL_MAP
-#define USE_CUSTOM_TBN
-
 layout(location = 10) in flat uint dvd_LoD;
+
 #if defined(TOGGLE_DEBUG)
 layout(location = 11) in vec3 gs_wireColor;
 layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
 #endif //TOGGLE_DEBUG
 
-#if defined(LOW_QUALITY)
-#if defined(MAX_TEXTURE_LAYERS)
-#undef MAX_TEXTURE_LAYERS
-#define MAX_TEXTURE_LAYERS 1
-#endif //MAX_TEXTURE_LAYERS
-#if defined(HAS_PARALLAX)
-#undef HAS_PARALLAX
-#endif //HAS_PARALLAX
-#endif //LOW_QUALITY
+#define USE_CUSTOM_NORMAL_MAP
+#define USE_CUSTOM_TBN
 
 #include "prePass.frag"
 #include "terrainSplatting.frag"
@@ -514,61 +503,42 @@ void main(void)
 --Fragment
 
 layout(early_fragment_tests) in;
+
 #define USE_CUSTOM_ROUGHNESS
 #define SHADOW_INTENSITY_FACTOR 0.5f
-
 #define SSAO_LOD_0
 #define USE_CUSTOM_TBN
 
 layout(location = 10) in flat uint dvd_LoD;
 
 #if defined(TOGGLE_DEBUG)
+
 layout(location = 11) in vec3 gs_wireColor;
 layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
-#else
+
+#else //TOGGLE_DEBUG
+
 #if defined(TOGGLE_TESS_LEVEL)
 layout(location = 12) in vec3 tes_debugColour;
 #endif //TOGGLE_TESS_LEVEL
-#endif //TOGGLE_DEBUG
 
-#if defined(LOW_QUALITY)
-#if defined(MAX_TEXTURE_LAYERS)
-#undef MAX_TEXTURE_LAYERS
-#define MAX_TEXTURE_LAYERS 1
-#endif //MAX_TEXTURE_LAYERS
-#if defined(HAS_PARALLAX)
-#undef HAS_PARALLAX
-#endif //HAS_PARALLAX
-#endif //LOW_QUALITY
+#endif //TOGGLE_DEBUG
 
 #include "BRDF.frag"
 #include "terrainSplatting.frag"
 #include "output.frag"
 #include "terrainUtils.cmn"
 
-#if defined(LOW_QUALITY)
-
-vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
-    return vec3(0.0f, 0.0f, 0.8f);
-}
-
-#else //LOW_QUALITY
-
 float _private_roughness = 0.0f;
 vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
     return vec3(0.0f, 0.0f, _private_roughness);
 }
 
-#endif //LOW_QUALITY
-
 void main(void) {
 
     vec3 normalWV;
     const vec4 albedo = BuildTerrainData(normalWV);
-
-#if !defined(LOW_QUALITY)
     _private_roughness = albedo.a;
-#endif //LOW_QUALITY
 
 #if defined (TOGGLE_LODS)
     vec4 colourOut = vec4(0.0f);

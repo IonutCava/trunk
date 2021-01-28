@@ -23,10 +23,10 @@ void main(void)
 layout(location = 0) in flat int _underwater;
 layout(location = 1) in vec4 _vertexWVP;
 
-uniform vec2 _noiseTile;
-uniform vec2 _noiseFactor;
-uniform vec3 _refractionTint;
-uniform float _specularShininess = 200.0f;
+ADD_UNIFORM(vec3, _refractionTint);
+ADD_UNIFORM(float, _specularShininess);
+ADD_UNIFORM(vec2, _noiseTile);
+ADD_UNIFORM(vec2, _noiseFactor);
 
 #define CUSTOM_IBL
 #define USE_SHADING_BLINN_PHONG
@@ -64,8 +64,6 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 
 void main()
 {
-    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-
 #if defined(PRE_PASS)
 #if defined(HAS_PRE_PASS_DATA)
     const float time2 = MSToSeconds(dvd_time) * 0.05f;
@@ -99,6 +97,7 @@ void main()
     }
 
     const uint LoD = 0u;
+    NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
     vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord, LoD);
 
     // Calculate the reflection vector using the normal and the direction of the light.

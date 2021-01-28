@@ -185,7 +185,8 @@ enum class ShaderBufferLocation : U8 {
     TREE_DATA,
     CMD_BUFFER,
     LUMINANCE_HISTOGRAM,
-    COUNT
+    COUNT,
+    UNIFORM_BLOCK = COUNT
 };
 
 enum class RenderStage : U8 {

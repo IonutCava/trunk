@@ -3,38 +3,52 @@
 
 #if defined(SAMPLER_UNIT0_IS_ARRAY)
 #define samplerUnit0 sampler2DArray
+#define samplerUnit0UVType vec3
 #else //SAMPLER_UNIT0_IS_ARRAY
 #define samplerUnit0 sampler2D
+#define samplerUnit0UVType vec2
 #endif //SAMPLER_UNIT0_IS_ARRAY
 #if defined(SAMPLER_OPACITY_IS_ARRAY)
 #define samplerOpacity sampler2DArray
+#define samplerOpacityUVType vec3
 #else //SAMPLER_OPACITY_IS_ARRAY
 #define samplerOpacity sampler2D
+#define samplerOpacityUVType vec2
 #endif //SAMPLER_OPACITY_IS_ARRAY
 #if defined(SAMPLER_UNIT1_IS_ARRAY)
 #define samplerUnit1 sampler2DArray
+#define samplerUnit1UVType vec3
 #else //SAMPLER_UNIT1_IS_ARRAY
 #define samplerUnit1 sampler2D
+#define samplerUnit1UVType vec2
 #endif //SAMPLER_UNIT1_IS_ARRAY
 #if defined(SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY)
 #define samplerOMR sampler2DArray
+#define samplerOMRUVType vec3
 #else //SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY
 #define samplerOMR sampler2D
+#define sampleOMRUVType vec3
 #endif //SAMPLER_OCCLUSION_METALLIC_ROUGHNESS_IS_ARRAY
 #if defined(SAMPLER_HEIGHTMAP_IS_ARRAY)
 #define samplerHeight sampler2DArray
+#define samplerHeightUVType vec3
 #else //SAMPLER_HEIGHTMAP_IS_ARRAY
 #define samplerHeight sampler2D
+#define samplerHeightUVType vec3
 #endif //SAMPLER_HEIGHTMAP_IS_ARRAY
 #if defined(SAMPLER_PROJECTION_IS_ARRAY)
 #define samplerProj sampler2DArray
+#define samplerrProjUVType vec3
 #else //SAMPLER_PROJECTION_IS_ARRAY
 #define samplerProj sampler2D
+#define samplerrProjUVType vec3
 #endif //SAMPLER_PROJECTION_IS_ARRAY
 #if defined(SAMPLER_NORMALMAP_IS_ARRAY)
 #define samplerNormal sampler2DArray
+#define samplerNormalUVType vec3
 #else //SAMPLER_NORMALMAP_IS_ARRAY
 #define samplerNormal sampler2D
+#define samplerNormalUVType vec3
 #endif //SAMPLER_NORMALMAP_IS_ARRAY
 
 struct NodeTransformData {
@@ -55,6 +69,10 @@ struct NodeTransformData {
     // [3][3]         = reserved
     mat4 _prevWorldMatrix;
 };
+
+#if defined(PROJECTED_TEXTURE)
+ADD_UNIFORM(float, projectedTextureMixWeight)
+#endif //PROJECTED_TEXTURE
 
 #if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)
 

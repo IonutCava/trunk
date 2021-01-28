@@ -155,6 +155,8 @@ namespace {
             F32 radius = ssaoOp.radius();
             F32 power = ssaoOp.power();
             F32 bias = ssaoOp.bias();
+            F32 range = ssaoOp.maxRange();
+            F32 fade = ssaoOp.fadeStart();
             bool halfRes = ssaoOp.genHalfRes();
 
             if (ImGui::Checkbox("Generate Half Resolution", &halfRes)) {
@@ -168,6 +170,12 @@ namespace {
             }
             if (ImGui::SliderFloat("Bias", &bias, 0.001f, 0.99f)) {
                 ssaoOp.bias(bias);
+            }
+            if (ImGui::SliderFloat("Max Range", &range, 0.01f, 1.f)) {
+                ssaoOp.maxRange(range);
+            }
+            if (ImGui::SliderFloat("Fade Start", &fade, 0.001f, 0.99f)) {
+                ssaoOp.fadeStart(fade);
             }
             bool blur = ssaoOp.blurResults();
             if (ImGui::Checkbox("Blur results", &blur)) {

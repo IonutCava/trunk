@@ -34,6 +34,10 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _CONDITIONAL_WAIT_H_
 
 namespace Divide {
+class PlatformContext;
+
+void InitConditionalWait(PlatformContext&);
+void PlatformContextIdleCall();
 
 #define WAIT_FOR_CONDITION_2_ARGS(condition, yld)  \
 {                                                  \
@@ -41,6 +45,7 @@ namespace Divide {
                                                    \
     if (yld) {                                     \
         while (!(condition)) {                     \
+            PlatformContextIdleCall();             \
             std::this_thread::yield();             \
         }                                          \
     } else {                                       \
@@ -62,6 +67,7 @@ namespace Divide {
         const D64 start = Time::ElapsedMilliseconds(true);             \
                                                                        \
         while (!(condition)) {                                         \
+            PlatformContextIdleCall();                                 \
             if (Time::ElapsedMilliseconds(true) - start >= timeoutMS)  \
             {                                                          \
                 break;                                                 \
@@ -88,7 +94,7 @@ namespace Divide {
                                                                          \
     while (!(condition)) {                                               \
         cbk(param);                                                      \
-                                                                         \
+        PlatformContextIdleCall();                                       \
         if (yld) {                                                       \
             std::this_thread::yield();                                   \
         }                                                                \
@@ -112,6 +118,7 @@ namespace Divide {
                                                                                             \
         while (!(condition)) {                                                              \
             cbk(param);                                                                     \
+            PlatformContextIdleCall();                                                      \
                                                                                             \
             if (Time::ElapsedMilliseconds(true) - start >= (timeoutMS)) {                   \
                 break;                                                                      \

@@ -10,14 +10,14 @@ layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCube texEnvironmentCube
 vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize, in uint probeIdx);
 
 //ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/IBL.glsl
-vec3 EnvBRDFApprox(in vec3 SpecularColor, in float Roughness, in float NoV) {
+vec3 EnvBRDFApprox(in vec3 specularColor, in float roughness, in float NoV) {
     const vec4 c0 = vec4(-1.f, -0.0275f, -0.572f, 0.022f);
     const vec4 c1 = vec4(1.f, 0.0425f, 1.0f, -0.04f);
-    const vec4 r = Roughness * c0 + c1;
+    const vec4 r = roughness * c0 + c1;
     const float a004 = min(r.x * r.x, exp2(-9.28f * NoV)) * r.x + r.y;
     const vec2 AB = vec2(-1.04f, 1.04f) * a004 + r.zw;
 
-    return SpecularColor * AB.x + AB.y;
+    return specularColor * AB.x + AB.y;
 }
 
 #if !defined(USE_PLANAR_REFLECTION)

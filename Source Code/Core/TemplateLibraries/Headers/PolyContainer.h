@@ -85,7 +85,10 @@ struct PolyContainer {
     PolyContainer()
     {
         for (U8 i = 0; i < N; ++i) {
-            _collection[i].reserve(RES(i));
+            const auto reserveSize = RES(i);
+            if (reserveSize > 2) {
+                _collection[i].reserve(reserveSize);
+            }
         }
     }
 

@@ -38,6 +38,7 @@
 #pragma warning(disable : 4522)  ///< multiple assignment operators specified (MSVC 14)
 #pragma warning(disable : 4324)  ///< structure was padded due to alignment specifier
 
+#define NOGDI
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS

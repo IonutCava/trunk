@@ -26,10 +26,10 @@ layout(location = 1) in vec4 Frag_Color;
 
 out vec4 Out_Color;
 
-uniform int depthTexture;
-uniform int flip;
-uniform vec2 depthRange;
-uniform ivec4 toggleChannel;
+ADD_UNIFORM(ivec4, toggleChannel)
+ADD_UNIFORM(vec2, depthRange)
+ADD_UNIFORM(int, depthTexture)
+ADD_UNIFORM(int, flip)
 
 void main()
 {
@@ -38,7 +38,30 @@ void main()
     if (flip == 1) {
         uv.t = 1.0f - uv.t;
     }
+#if 0
     vec4 texColor = texture( Texture, uv );
+    if (depthTexture == 1) {
+        texColor = vec4(ToLinearDepthPreview(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
+        Out_Color *= texColor;
+    } else {
+        if (toggleChannel.r == 1 && toggleChannel.gba == ivec3(0)) {
+            Out_Color.rgb *= vec3(texColor.r);
+        } else if (toggleChannel.g == 1 && toggleChannel.rba == ivec3(0)) {
+            Out_Color.rgb *= vec3(texColor.g);
+        } else if (toggleChannel.b == 1 && toggleChannel.rga == ivec3(0)) {
+            Out_Color.rgb *= vec3(texColor.b);
+        } else if (toggleChannel.rgb == ivec3(0)) {
+            Out_Color.rgb *= vec3(texColor.a);
+        } else {
+            Out_Color.rgb *= toggleChannel.xyz;
+            if (toggleChannel.w == 0) {
+                Out_Color.w = 1.0f;
+            }
+            Out_Color *= texColor;
+        }
+    }
+#else 
+    vec4 texColor = texture(Texture, uv);
     if (depthTexture == 1) {
         texColor = vec4(ToLinearDepthPreview(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
     } else {
@@ -47,6 +70,7 @@ void main()
             Out_Color.w = 1.0f;
         }
     }
-    
+
     Out_Color *= texColor;
+#endif
 };

@@ -3,11 +3,12 @@
 #include "utility.frag"
 
 out vec4 _colourOut;
-uniform float lodLevel = 0;
-uniform bool unpack2Channel = false;
-uniform bool unpack1Channel = false;
-uniform uint startChannel = 0;
-uniform float multiplier = 1.0f;
+
+ADD_UNIFORM(float, lodLevel)
+ADD_UNIFORM(bool, unpack2Channel)
+ADD_UNIFORM(bool, unpack1Channel)
+ADD_UNIFORM(uint, startChannel)
+ADD_UNIFORM(float, multiplier)
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -35,8 +36,9 @@ void main()
 #include "utility.frag"
 
 out vec4 _colourOut;
-uniform float lodLevel = 0;
-uniform vec2 zPlanes;
+
+ADD_UNIFORM(vec2, zPlanes)
+ADD_UNIFORM(float, lodLevel)
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -49,10 +51,11 @@ void main()
 -- Fragment.Layered
 
 out vec4 _colourOut;
-uniform float lodLevel = 0;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform int layer;
+
+ADD_UNIFORM(float, lodLevel)
+ADD_UNIFORM(int, layer)
 
 void main()
 {
@@ -67,8 +70,9 @@ void main()
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
-uniform int layer;
-uniform float lodLevel = 0.0;
+
+ADD_UNIFORM(int, layer)
+ADD_UNIFORM(float, lodLevel)
 
 void main()
 {
@@ -83,8 +87,9 @@ void main()
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texDiffuse0;
-uniform int layer;
-uniform int face;
+
+ADD_UNIFORM(int, layer)
+ADD_UNIFORM(int, face)
 
 void main() {
     vec2 uv_cube = 2.0f * VAR._texCoord - 1.0f;
@@ -120,9 +125,10 @@ void main() {
 out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texDiffuse0;
-uniform int layer;
-uniform int face;
-uniform vec2 zPlanes;
+
+ADD_UNIFORM(vec2, zPlanes)
+ADD_UNIFORM(int, layer)
+ADD_UNIFORM(int, face)
 
 void main()
 {

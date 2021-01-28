@@ -24,8 +24,7 @@ bool Merge(PushConstants& lhs, const PushConstants& rhs, bool& partial) {
         for (const GFX::PushConstant& otherConstant : otherConstants) {
             // If we have the same binding, but different data, merging isn't possible
             if (ourConstant._bindingHash == otherConstant._bindingHash &&
-                 (ourConstant._flag != otherConstant._flag ||
-                  ourConstant._buffer != otherConstant._buffer))
+                ourConstant._buffer != otherConstant._buffer)
             {
                 return false;
             }

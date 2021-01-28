@@ -172,8 +172,10 @@ typename std::enable_if<std::is_same<decltype(has_assign<T>(nullptr)), std::true
 [[nodiscard]] FileError openFile(const char* cmd, const char* filePath, const char* fileName);
 [[nodiscard]] FileError openFile(const char* cmd, const ResourcePath& filePath, const ResourcePath& fileName);
 
+[[nodiscard]] FileError writeFile(const ResourcePath& filePath, const ResourcePath& fileName, const char* content, size_t length, FileType fileType);
 [[nodiscard]] FileError writeFile(const ResourcePath& filePath, const ResourcePath& fileName, bufferPtr content, size_t length, FileType fileType);
 [[nodiscard]] FileError writeFile(const char* filePath, const char* fileName, bufferPtr content, size_t length, FileType fileType);
+[[nodiscard]] FileError writeFile(const char* filePath, const char* fileName, const char* content, size_t length, FileType fileType);
 
 [[nodiscard]] FileError deleteFile(const char* filePath, const char* fileName);
 [[nodiscard]] FileError deleteFile(const ResourcePath& filePath, const ResourcePath& fileName);

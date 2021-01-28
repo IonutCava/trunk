@@ -7,9 +7,9 @@
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texExposure;
 
-uniform float manualExposure = 4.975f;
-uniform int mappingFunction = UNCHARTED_2;
-uniform bool useAdaptiveExposure = true;
+ADD_UNIFORM(float, manualExposure);
+ADD_UNIFORM(int, mappingFunction);
+ADD_UNIFORM(bool, useAdaptiveExposure);
 
 out vec4 _colourOut;
 

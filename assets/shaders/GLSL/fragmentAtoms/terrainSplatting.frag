@@ -1,8 +1,10 @@
 #ifndef _TERRAIN_SPLATTING_FRAG_
 #define _TERRAIN_SPLATTING_FRAG_
 
-#if !defined(PRE_PASS) || defined(HAS_PRE_PASS_DATA)
 #define SAMPLE_NO_TILE_ARRAYS
+
+#if !defined(PRE_PASS) || defined(HAS_PRE_PASS_DATA)
+
 #include "texturing.frag"
 #include "waterData.cmn"
 
@@ -135,14 +137,18 @@ vec2 ParallaxOcclusionMapping(in vec2 scaledCoords, in vec3 viewDirT, float curr
 }
 
 #endif //HAS_PARALLAX
-#if !defined(LOW_QUALITY) && defined(HAS_PARALLAX)
+
+#if defined(LOW_QUALITY) || !defined(HAS_PARALLAX)
+#define getScaledCoords(UV, AMNT) scaledTextureCoords(UV)
+#else //LOW_QUALITY || !HAS_PARALLAX
 vec2 getScaledCoords(vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
     const vec2 scaledCoords = scaledTextureCoords(uv);
 
     const uint bumpMethod = dvd_LoD >= 2 ? BUMP_NONE : dvd_bumpMethod(MATERIAL_IDX);
     if (bumpMethod != BUMP_NONE) {
-        const float heightFactor = dvd_parallaxFactor(MATERIAL_IDX);
-#if 1
+#if 0
+        const mat3 TBN = computeTBN());
+#else
         // We need to compute tangent and bitengent vectors with 
         // as cotangent_frame's results do not apply for what we need them to do
         const vec3 N = normalize(VAR._normalWV);
@@ -152,35 +158,33 @@ vec2 getScaledCoords(vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
         const vec3 B = normalize(-cross(N, T));
         // Orthogonal matrix(each axis is a perpendicular unit vector)
         // The transpose of an orthogonal matrix equals its inverse
-        const mat3 invTBN = transpose(mat3(T, B, N));
-#else
-        const mat3 invTBN = transpose(computeTBN());
+        const mat3 TBN = mat3(T, B, N);
 #endif
-        const vec3 viewDirT = invTBN * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+        const vec3 viewDirT = transpose(TBN) * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
 
+#if 0
         const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
         switch (bumpMethod) {
             case BUMP_PARALLAX: {
                 //ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
-                const vec2 p = viewDirT.xy / viewDirT.z * currentHeight * heightFactor;
+                const vec2 p = viewDirT.xy / viewDirT.z * currentHeight * dvd_parallaxFactor(MATERIAL_IDX);
                 const vec2 texCoords = uv - p;
                 const vec2 clippedTexCoord = vec2(texCoords.x - floor(texCoords.x),
                                                   texCoords.y - floor(texCoords.y));
-                //return scaledTextureCoords(clippedTexCoord);
+                return scaledTextureCoords(clippedTexCoord);
                     
             } break;
             case BUMP_PARALLAX_OCCLUSION:
             {
-                //return  ParallaxOcclusionMapping(correctedUV, viewDirT, currentHeight, heightFactor, amnt);
+                return  ParallaxOcclusionMapping(correctedUV, viewDirT, currentHeight, dvd_parallaxFactor(MATERIAL_IDX), amnt);
             } break;
         }
+#endif
     }
 
     return scaledCoords;
 }
-#else //!LOW_QUALITY && HAS_PARALLAX
-#define getScaledCoords(UV, AMNT) scaledTextureCoords(UV)
-#endif //!LOW_QUALITY && HAS_PARALLAX
+#endif //LOW_QUALITY || !HAS_PARALLAX
 
 #if defined(PRE_PASS)
 vec3 getTerrainNormal() {
@@ -254,4 +258,5 @@ vec4 BuildTerrainData(out vec3 normalWV) {
                saturate(waterData.x));
 #endif //PRE_PASS
 }
+
 #endif //_TERRAIN_SPLATTING_FRAG_

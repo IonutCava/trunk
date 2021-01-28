@@ -59,6 +59,8 @@ Kernel::Kernel(const I32 argc, char** argv, Application& parentApp)
       _argc(argc),
       _argv(argv)
 {
+    InitConditionalWait(_platformContext);
+
     std::atomic_init(&_splashScreenUpdating, false);
     _appLoopTimer.addChildTimer(_appIdleTimer);
     _appLoopTimer.addChildTimer(_frameTimer);
@@ -604,7 +606,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     if (Util::FindCommandLineArgument(_argc, _argv, "disableRenderAPIDebugging")) {
         config.debug.enableRenderAPIDebugging = false;
     }
-
     if (config.runtime.targetRenderingAPI >= to_U8(RenderAPI::COUNT)) {
         config.runtime.targetRenderingAPI = to_U8(RenderAPI::OpenGL);
     }
@@ -660,7 +661,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Camera::initPool();
 
-    initError = _platformContext.gfx().initRenderingAPI(_argc, _argv, renderingAPI, config.runtime.resolution);
+    initError = _platformContext.gfx().initRenderingAPI(_argc, _argv, renderingAPI);
 
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
@@ -693,7 +694,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     WAIT_FOR_CONDITION(threadCounter.load() == 0);
 
-    initError = _platformContext.gfx().postInitRenderingAPI();
+    initError = _platformContext.gfx().postInitRenderingAPI(config.runtime.resolution);
     // If we could not initialize the graphics device, exit
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -761,6 +762,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     ShadowMap::initShadowMaps(_platformContext.gfx());
     _sceneManager->init(_platformContext, resourceCache());
+    _platformContext.gfx().idle(true);
 
     if (!_sceneManager->switchScene(entryData.startupScene.c_str(), true, {0, 0, config.runtime.resolution.width, config.runtime.resolution.height}, false)) {
         Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
@@ -783,7 +785,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
             _platformContext.editor().selectionChangeCallback(idx, nodes);
         });
     }
-
     Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));
 
     return initError;

@@ -54,8 +54,12 @@ FileError readFile(const char* filePath, const char* fileName, T& contentOut, co
                 optional_reserve(contentOut, fileSize);
 
                 static_assert(sizeof(char) == sizeof(Byte), "readFile: Platform error!");
-                contentOut.assign(std::istreambuf_iterator<char>(streamIn),
-                                  std::istreambuf_iterator<char>());
+                contentOut.assign(stringImpl
+                    {
+                        std::istreambuf_iterator<char>(streamIn),
+                        std::istreambuf_iterator<char>()
+                    }.c_str());
+
                 return FileError::NONE;
             }
 

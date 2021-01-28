@@ -13,12 +13,12 @@ IMPrimitive::IMPrimitive(GFXDevice& context)
     : VertexDataInterface(context)
 {
     assert(handle()._id != 0);
-    _cmdBuffer = GFX::allocateCommandBuffer();
+    _cmdBuffer = GFX::AllocateCommandBuffer();
 }
 
 IMPrimitive::~IMPrimitive() 
 {
-    deallocateCommandBuffer(_cmdBuffer);
+    DeallocateCommandBuffer(_cmdBuffer);
 }
 
 void IMPrimitive::reset() {

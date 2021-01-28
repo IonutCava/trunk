@@ -4,8 +4,9 @@
 
 #define INVS_SQRT_3 0.57735026919f
 
-uniform uint dvd_numEntities;
-uniform uint dvd_countCulledItems = 0u;
+ADD_UNIFORM(uint, dvd_numEntities)
+ADD_UNIFORM(uint, dvd_countCulledItems)
+
 layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
 
 //ref: http://malideveloper.arm.com/resources/sample-code/occlusion-culling-hierarchical-z/

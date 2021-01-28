@@ -49,4 +49,5 @@ vec4 applyBoneTransforms(in vec4 vertex) {
 
     return ret;
 }
+
 #endif //_BONE_TRANSFORM_VERT_

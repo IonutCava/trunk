@@ -95,7 +95,7 @@ public:
 
     // Called by a task that isn't doing anything (e.g. waiting on child tasks).
     // Use this to run another task (if any) and return to the previous execution point
-    void threadWaiting() const;
+    void threadWaiting();
 
   private:
     //ToDo: replace all friend class declarations with attorneys -Ionut;

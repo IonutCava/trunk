@@ -241,6 +241,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
     _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());
     _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, vec2<F32>(1920.f,1080.f) / SSAO_NOISE_SIZE);
+    _ssaoGenerateConstants.set(_ID("maxRange"), GFX::PushConstantType::FLOAT, maxRange());
+    _ssaoGenerateConstants.set(_ID("fadeStart"), GFX::PushConstantType::FLOAT, fadeStart());
 
     _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, blurThreshold());
 }
@@ -291,6 +293,8 @@ void SSAOPreRenderOperator::genHalfRes(const bool state) {
         _ssaoGenerateConstants.set(_ID("SSAO_RADIUS"), GFX::PushConstantType::FLOAT, radius());
         _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
         _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());
+        _ssaoGenerateConstants.set(_ID("maxRange"), GFX::PushConstantType::FLOAT, maxRange());
+        _ssaoGenerateConstants.set(_ID("fadeStart"), GFX::PushConstantType::FLOAT, fadeStart());
         _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, blurThreshold());
     }
 }
@@ -359,6 +363,39 @@ void SSAOPreRenderOperator::blurThreshold(const F32 val) {
     }
 }
 
+void SSAOPreRenderOperator::maxRange(F32 val) {
+    val = std::max(0.01f, val);
+
+    if (!COMPARE(maxRange(), val)) {
+        _maxRange[_genHalfRes ? 1 : 0] = val;
+        _ssaoGenerateConstants.set(_ID("maxRange"), GFX::PushConstantType::FLOAT, val);
+        if (_genHalfRes) {
+            _context.context().config().rendering.postFX.ssao.HalfRes.MaxRange = val;
+        } else {
+            _context.context().config().rendering.postFX.ssao.FullRes.MaxRange = val;
+        }
+        _context.context().config().changed(true);
+
+        // Make sure we clamp fade properly
+        fadeStart(fadeStart());
+    }
+}
+
+void SSAOPreRenderOperator::fadeStart(F32 val) {
+    val = std::min(val, maxRange()- 0.01f);
+
+    if (!COMPARE(fadeStart(), val)) {
+        _fadeStart[_genHalfRes ? 1 : 0] = val;
+        _ssaoGenerateConstants.set(_ID("fadeStart"), GFX::PushConstantType::FLOAT, val);
+        if (_genHalfRes) {
+            _context.context().config().rendering.postFX.ssao.HalfRes.FadeDistance = val;
+        } else {
+            _context.context().config().rendering.postFX.ssao.FullRes.FadeDistance = val;
+        }
+        _context.context().config().changed(true);
+    }
+}
+
 U8 SSAOPreRenderOperator::sampleCount() const noexcept {
     return _kernelSampleCount[_genHalfRes ? 1 : 0];
 }
@@ -374,6 +411,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
         const mat4<F32> projectionMatrix = camera->projectionMatrix();
         mat4<F32> invProjectionMatrix = GetInverse(projectionMatrix);
 
+        _ssaoGenerateConstants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
         _ssaoGenerateConstants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, projectionMatrix);
         _ssaoGenerateConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, invProjectionMatrix);
 

@@ -88,7 +88,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/glm/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/glm/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ShaderPreprocessor/3rdparty/fcpp;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -144,7 +144,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/glm/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/glm/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ShaderPreprocessor/3rdparty/fcpp;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -196,7 +196,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/glm/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)/../Source Code/;$(SolutionDir)/../3rdParty/;$(SolutionDir)/../3rdParty/glm/;$(SolutionDir)/../3rdParty/STB/;$(SolutionDir)/../3rdParty/imgui/;$(SolutionDir)/../3rdParty/fmt/include/;$(SolutionDir)/../3rdParty/imgui/addons/;$(SolutionDir)/../3rdParty/imgui/addons/log/;$(SolutionDir)/../3rdParty/EABase/include/Common/;$(SolutionDir)/../3rdParty/EASTL/include/;$(SolutionDir)/../3rdParty/simplefilewatcher/;$(SolutionDir)/../3rdParty/ChaiScript/include/;$(SolutionDir)/../3rdParty\EntityComponentSystem/include/;$(SolutionDir)/../3rdParty/imgui/addons/Node-editor/NodeEditor/Include/;$(SolutionDir)/../3rdParty/boost\;$(SolutionDir)/../3rdParty/sdl\include/;$(SolutionDir)/../3rdParty/cegui\include/;$(SolutionDir)/../3rdParty/assimp/include/;$(SolutionDir)/../3rdParty/freetype\include/;$(SolutionDir)/../3rdParty/glbinding\include/;$(SolutionDir)/../3rdParty/ReCast/Recast/Include/;$(SolutionDir)/../3rdParty/ReCast/Detour/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourCrowd/Include/;$(SolutionDir)/../3rdParty/ReCast/DetourTileCache/Include/;$(SolutionDir)/../3rdParty/ReCast/RecastDemo/Include/;$(SolutionDir)/../3rdParty/ReCast/DebugUtils/Include/;$(SolutionDir)/../3rdParty/simplefilewatcher/include/;$(SolutionDir)/../3rdParty/ReCast/;$(SolutionDir)/../3rdParty\ShaderPreprocessor/3rdparty/fcpp;$(SolutionDir)/../3rdParty\ZLib\include/;$(SolutionDir)/..Source Code/Platform/Video/RenderBackend/OpenGL/CEGUIOpenGLRenderer/include/</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Profile/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
@@ -260,6 +260,13 @@
     <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Node.h" />
     <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Planner.h" />
     <ClInclude Include="..\..\3rdParty\CPPGoap\goap\WorldState.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\cpp.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\cppadd.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\cppdef.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\fpp.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\FPPBase.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\fpp_pragmas.h" />
+    <ClInclude Include="..\..\3rdParty\fcpp\FPP_protos.h" />
     <ClInclude Include="..\..\3rdParty\fmt\include\fmt\args.h" />
     <ClInclude Include="..\..\3rdParty\fmt\include\fmt\chrono.h" />
     <ClInclude Include="..\..\3rdParty\fmt\include\fmt\color.h" />
@@ -418,6 +425,36 @@
     <ClCompile Include="..\..\3rdParty\EASTL\source\red_black_tree.cpp" />
     <ClCompile Include="..\..\3rdParty\EASTL\source\string.cpp" />
     <ClCompile Include="..\..\3rdParty\EASTL\source\thread_support.cpp" />
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp1.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp2.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp3.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp4.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp5.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp6.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="..\..\3rdParty\fmt\src\format.cc" />
     <ClCompile Include="..\..\3rdParty\fmt\src\os.cc" />
     <ClCompile Include="..\..\3rdParty\meshoptimizer\src\allocator.cpp" />

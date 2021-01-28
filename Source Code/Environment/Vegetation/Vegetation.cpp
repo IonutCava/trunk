@@ -360,7 +360,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vertModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
     vertModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
     vertModule._defines.emplace_back("NODE_DYNAMIC", true);
-    vertModule._defines.emplace_back("NODE_DYNAMIC", true);
     vertModule._defines.emplace_back("HAS_CLIPPING_OUT", true);
     vertModule._defines.emplace_back("HAS_CULLING_OUT", true);
 

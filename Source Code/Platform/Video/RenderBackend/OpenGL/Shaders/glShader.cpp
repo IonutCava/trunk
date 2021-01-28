@@ -8,6 +8,8 @@
 #include "Platform/Video/RenderBackend/OpenGL/Headers/GLWrapper.h"
 
 #include "Core/Headers/StringHelper.h"
+#include "Headers/glBufferedPushConstantUploader.h"
+#include "Headers/glUniformPushConstantUploader.h"
 #include "Utility/Headers/Localization.h"
 
 namespace Divide {
@@ -16,18 +18,23 @@ namespace {
 
     size_t g_validationBufferMaxSize = 4096 * 16;
 
-    ShaderType getShaderType(const UseProgramStageMask mask) noexcept {
+    ShaderType GetShaderType(const UseProgramStageMask mask) noexcept {
         if (BitCompare(to_U32(mask), UseProgramStageMask::GL_VERTEX_SHADER_BIT)) {
             return ShaderType::VERTEX;
-        } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT)) {
+        }
+        if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT)) {
             return ShaderType::TESSELLATION_CTRL;
-        } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_EVALUATION_SHADER_BIT)) {
+        }
+        if (BitCompare(to_U32(mask), UseProgramStageMask::GL_TESS_EVALUATION_SHADER_BIT)) {
             return ShaderType::TESSELLATION_EVAL;
-        } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_GEOMETRY_SHADER_BIT)) {
+        }
+        if (BitCompare(to_U32(mask), UseProgramStageMask::GL_GEOMETRY_SHADER_BIT)) {
             return ShaderType::GEOMETRY;
-        } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_FRAGMENT_SHADER_BIT)) {
+        }
+        if (BitCompare(to_U32(mask), UseProgramStageMask::GL_FRAGMENT_SHADER_BIT)) {
             return ShaderType::FRAGMENT;
-        } else if (BitCompare(to_U32(mask), UseProgramStageMask::GL_COMPUTE_SHADER_BIT)) {
+        }
+        if (BitCompare(to_U32(mask), UseProgramStageMask::GL_COMPUTE_SHADER_BIT)) {
             return ShaderType::COMPUTE;
         }
         
@@ -35,7 +42,7 @@ namespace {
         return ShaderType::COUNT;
     }
 
-    UseProgramStageMask getStageMask(const ShaderType type) noexcept {
+    UseProgramStageMask GetStageMask(const ShaderType type) noexcept {
         switch (type) {
             case ShaderType::VERTEX: return UseProgramStageMask::GL_VERTEX_SHADER_BIT;
             case ShaderType::TESSELLATION_CTRL: return UseProgramStageMask::GL_TESS_CONTROL_SHADER_BIT;
@@ -48,14 +55,6 @@ namespace {
 
         return UseProgramStageMask::GL_NONE_BIT;
     }
-
-    template<typename T_out, size_t T_out_count, typename T_in>
-    std::pair<GLsizei, const T_out*> convertData(const GLsizei byteCount, const Byte* const values) noexcept {
-        static_assert(sizeof(T_out) * T_out_count == sizeof(T_in), "Invalid cast data");
-
-        const GLsizei size = byteCount / sizeof(T_in);
-        return { size, (const T_out*)values };
-    }
 }
 
 SharedMutex glShader::_shaderNameLock;
@@ -65,10 +64,8 @@ glShader::glShader(GFXDevice& context, const Str256& name)
     : GUIDWrapper(),
       GraphicsResource(context, Type::SHADER, getGUID(), _ID(name.c_str())),
       glObject(glObjectType::TYPE_SHADER, context),
-      _programHandle(GLUtil::k_invalidObjectID),
-      _stageCount(0),
-      _stageMask(UseProgramStageMask::GL_NONE_BIT),
-      _name(name)
+      _name(name),
+      _stageMask(UseProgramStageMask::GL_NONE_BIT)
 {
     std::atomic_init(&_refCount, 0);
 }
@@ -80,142 +77,156 @@ glShader::~glShader() {
     }
 }
 
-bool glShader::embedsType(const ShaderType type) const {
-    return BitCompare(to_U32(stageMask()), getStageMask(type));
-}
+bool glShader::uploadToGPU() {
+    if (!_valid) {
+        Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
 
-bool glShader::uploadToGPU(bool& previouslyUploaded) {
-    // prevent double load
-    if (_valid) {
-        previouslyUploaded = true;
-        return true;
-    }
+        const GLuint blockIndex = to_U32(ShaderBufferLocation::UNIFORM_BLOCK) + _loadData._uniformIndex;
+        if (!loadFromBinary()) {
 
-    previouslyUploaded = false;
-
-    Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
-    if (!loadFromBinary()) {
-        vectorEASTL<const char*> cstrings;
-        if (_stageCount == 1) {
-            const U8 shaderIdx = to_base(getShaderType(_stageMask));
-            const vectorEASTL<stringImpl>& src = _sourceCode[shaderIdx];
-            cstrings.reserve(src.size());
-            eastl::transform(eastl::cbegin(src), eastl::cend(src),
-                             back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
-
-            if (_programHandle != GLUtil::k_invalidObjectID) {
-                GL_API::DeleteShaderPrograms(1, &_programHandle);
+            U8 stageCount = 0u;
+            for (const LoadData& it : _loadData._data) {
+                if (it._type != ShaderType::COUNT) {
+                    ++stageCount;
+                }
             }
 
-            _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], static_cast<GLsizei>(cstrings.size()), cstrings.data());
-            if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
-                Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
-                _valid = false;
-                return false;
-            }
-        } else {
-            if (_programHandle == GLUtil::k_invalidObjectID) {
-                _programHandle = glCreateProgram();
-            }
-            if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
-                Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
-                _valid = false;
-                return false;
-            }
+            if (stageCount == 1) {
+                U8 index = 0u;
+                for (const LoadData& it : _loadData._data) {
+                    if (it._type != ShaderType::COUNT) {
+                        break;
+                    }
+                    ++index;
+                }
 
-            vectorEASTL<GLuint> shaders;
-            shaders.reserve(to_base(ShaderType::COUNT));
+                const U8 shaderIdx = to_base(GetShaderType(_stageMask));
+                const LoadData& data = _loadData._data[index];
 
-            for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
-                const vectorEASTL<stringImpl>& src = _sourceCode[i];
-                if (!src.empty()) {
-                    cstrings.resize(0);
-                    cstrings.reserve(src.size());
-                    eastl::transform(eastl::cbegin(src), eastl::cend(src),
-                                     back_inserter(cstrings), std::mem_fn(&stringImpl::c_str));
+                if (_programHandle != GLUtil::k_invalidObjectID) {
+                    GL_API::DeleteShaderPrograms(1, &_programHandle);
+                }
 
-                    const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[i]);
-                    if (shader != 0u) {
-                        glShaderSource(shader, static_cast<GLsizei>(cstrings.size()), cstrings.data(), nullptr);
-                        glCompileShader(shader);
+                vectorEASTL<const char*> sourceCodeCstr;
+                eastl::transform(cbegin(data.sourceCode), cend(data.sourceCode), back_inserter(sourceCodeCstr), std::mem_fn(&eastl::string::c_str));
+                _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], static_cast<GLsizei>(sourceCodeCstr.size()), sourceCodeCstr.data());
+                if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
+                    _valid = false;
+                    return false;
+                }
 
-                        GLboolean compiled = 0;
-                        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
-                        if (compiled == GL_FALSE) {
-                            // error
-                            GLint logSize = 0;
-                            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-                            stringImpl validationBuffer;
-                            validationBuffer.resize(logSize);
+            } else {
+                if (_programHandle == GLUtil::k_invalidObjectID) {
+                    _programHandle = glCreateProgram();
+                }
+                if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
+                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
+                    _valid = false;
+                    return false;
+                }
+                glProgramParameteri(_programHandle, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
+                glProgramParameteri(_programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
 
-                            glGetShaderInfoLog(shader, logSize, &logSize, &validationBuffer[0]);
-                            if (validationBuffer.size() > g_validationBufferMaxSize) {
-                                // On some systems, the program's disassembly is printed, and that can get quite large
-                                validationBuffer.resize(std::strlen(Locale::get(_ID("ERROR_GLSL_COMPILE"))) * 2 + g_validationBufferMaxSize);
-                                // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
-                                validationBuffer.append(" ... ");
+                bool shouldLink = false;
+                std::array<GLuint, to_base(ShaderType::COUNT)> shaders = {};
+
+                for (U8 i = 0; i < to_base(ShaderType::COUNT); ++i) {
+                    const LoadData& data = _loadData._data[i];
+
+                    vectorEASTL<const char*> sourceCodeCstr;
+                    eastl::transform(cbegin(data.sourceCode), cend(data.sourceCode), back_inserter(sourceCodeCstr), std::mem_fn(&eastl::string::c_str));
+                    if (!data.sourceCode.empty()) {
+                        const GLuint shader = glCreateShader(GLUtil::glShaderStageTable[i]);
+                        if (shader != 0u) {
+                            glShaderSource(shader, static_cast<GLsizei>(sourceCodeCstr.size()), sourceCodeCstr.data(), nullptr);
+                            glCompileShader(shader);
+
+                            GLboolean compiled = 0;
+                            glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+                            if (compiled == GL_FALSE) {
+                                // error
+                                GLint logSize = 0;
+                                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
+                                stringImpl validationBuffer;
+                                validationBuffer.resize(logSize);
+
+                                glGetShaderInfoLog(shader, logSize, &logSize, &validationBuffer[0]);
+                                if (validationBuffer.size() > g_validationBufferMaxSize) {
+                                    // On some systems, the program's disassembly is printed, and that can get quite large
+                                    validationBuffer.resize(std::strlen(Locale::get(_ID("ERROR_GLSL_COMPILE"))) * 2 + g_validationBufferMaxSize);
+                                    // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
+                                    validationBuffer.append(" ... ");
+                                }
+
+                                Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _name.c_str(), shader, Names::shaderTypes[i], validationBuffer.c_str());
+
+                                glDeleteShader(shader);
+                            } else {
+                                shaders[i] = shader;
+                                glAttachShader(_programHandle, shader);
+                                shouldLink = true;
                             }
+                        }
+                    }
+                }
 
-                            Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _name.c_str(), shader, Names::shaderTypes[i], validationBuffer.c_str());
+                if (shouldLink) {
+                    glLinkProgram(_programHandle);
 
+                    for (const GLuint shader : shaders) {
+                        if (shader != 0u) {
+                            glDetachShader(_programHandle, shader);
                             glDeleteShader(shader);
-                        } else {
-                            shaders.push_back(shader);
                         }
                     }
                 }
             }
 
-            if (!shaders.empty()) {
-                for (const GLuint shader : shaders) {
-                    glAttachShader(_programHandle, shader);
+            // And check the result
+            GLboolean linkStatus = GL_FALSE;
+            glGetProgramiv(_programHandle, GL_LINK_STATUS, &linkStatus);
+
+            // If linking failed, show an error, else print the result in debug builds.
+            if (linkStatus == GL_FALSE) {
+                GLint logSize = 0;
+                glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logSize);
+                stringImpl validationBuffer;
+                validationBuffer.resize(logSize);
+
+                glGetProgramInfoLog(_programHandle, logSize, nullptr, &validationBuffer[0]);
+                if (validationBuffer.size() > g_validationBufferMaxSize) {
+                    // On some systems, the program's disassembly is printed, and that can get quite large
+                    validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
+                    // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
+                    validationBuffer.append(" ... ");
                 }
 
-                glProgramParameteri(_programHandle, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE);
-                glProgramParameteri(_programHandle, GL_PROGRAM_SEPARABLE, GL_TRUE);
-                glLinkProgram(_programHandle);
-
-                for (const GLuint shader : shaders) {
-                    glDetachShader(_programHandle, shader);
-                    glDeleteShader(shader);
+                Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
+                glShaderProgram::Idle(_context.context());
+            } else {
+                if_constexpr(Config::ENABLE_GPU_VALIDATION) {
+                    Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), "[OK]", getGUID(), _programHandle);
+                    glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
                 }
-                shaders.clear();
+                _valid = true;
             }
         }
 
-        // And check the result
-        GLboolean linkStatus = GL_FALSE;
-        glGetProgramiv(_programHandle, GL_LINK_STATUS, &linkStatus);
-
-        // If linking failed, show an error, else print the result in debug builds.
-        if (linkStatus == GL_FALSE) {
-            GLint logSize = 0;
-            glGetProgramiv(_programHandle, GL_INFO_LOG_LENGTH, &logSize);
-            stringImpl validationBuffer;
-            validationBuffer.resize(logSize);
-
-            glGetProgramInfoLog(_programHandle, logSize, nullptr, &validationBuffer[0]);
-            if (validationBuffer.size() > g_validationBufferMaxSize) {
-                // On some systems, the program's disassembly is printed, and that can get quite large
-                validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
-                // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
-                validationBuffer.append(" ... ");
+        if (_valid) {
+            if_constexpr(glShaderProgram::g_useUniformConstantBuffer) {
+                glBufferedPushConstantUploaderDescriptor bufferDescriptor = {};
+                bufferDescriptor._programHandle = _programHandle;
+                bufferDescriptor._uniformBufferName = getUniformBufferName().c_str();
+                bufferDescriptor._parentShaderName = _name.c_str();
+                bufferDescriptor._blockIndex = blockIndex;
+                _constantUploader = eastl::make_unique<glBufferedPushConstantUploader>(bufferDescriptor);
+            } else {
+                _constantUploader = eastl::make_unique<glUniformPushConstantUploader>(_programHandle);
             }
 
-            Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
-        } else {
-            if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-                Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), "[OK]", getGUID(), _programHandle);
-                glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
-            }
-
-            _valid = true;
+            _constantUploader->cacheUniforms();
         }
-    }
-    _sourceCode.fill({});
-
-    if (_valid) {
-        cacheActiveUniforms();
     }
 
     return _valid;
@@ -224,28 +235,21 @@ bool glShader::uploadToGPU(bool& previouslyUploaded) {
 bool glShader::load(const ShaderLoadData& data) {
     bool hasSourceCode = false;
 
-    // Reset all state first
-    {
-        _valid = false;
-        _stageCount = 0;
-        _stageMask = UseProgramStageMask::GL_NONE_BIT;
-        _sourceCode.fill({});
-        _usedAtoms.clear();
-        _shaderVarLocation.clear();
-    }
+    _valid = false;
+    _stageMask = UseProgramStageMask::GL_NONE_BIT;
+    _loadData = data;
 
-    for (const LoadData& it : data) {
+    const GLuint blockIndex = to_U32(ShaderBufferLocation::UNIFORM_BLOCK) + _loadData._uniformIndex;
+    const stringImpl uniformBlock = Util::StringFormat(_loadData._uniformBlock, blockIndex, getUniformBufferName());
+
+    for (LoadData& it : _loadData._data) {
         if (it._type != ShaderType::COUNT) {
-            _stageMask |= getStageMask(it._type);
-            _stageCount++;
-            for (const stringImpl& source : it.sourceCode) {
-                _sourceCode[to_base(it._type)].push_back(source);
+            _stageMask |= GetStageMask(it._type);
+            for (auto& source : it.sourceCode) {
                 if (!source.empty()) {
+                    Util::ReplaceStringInPlace(source, "_CUSTOM_UNIFORMS__", it._hasUniforms ? uniformBlock : "");
                     hasSourceCode = true;
                 }
-            }
-            for (auto atomIt : it.atoms) {
-                _usedAtoms.insert(atomIt);
             }
         }
     }
@@ -253,6 +257,15 @@ bool glShader::load(const ShaderLoadData& data) {
     if (!hasSourceCode) {
         Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
         return false;
+    }
+
+    stringImpl concatSource;
+    for (const LoadData& it : _loadData._data) {
+        concatSource.resize(0);
+        for (const auto& src : it.sourceCode) {
+            concatSource.append(src.c_str());
+        }
+        glShaderProgram::QueueShaderWriteToFile(concatSource, it._fileName);
     }
 
     return true;
@@ -408,230 +421,24 @@ bool glShader::DumpBinary(const GLuint handle, const Str256& name) {
     return ret;
 }
 
-I32 glShader::cachedValueUpdate(const GFX::PushConstant& constant, const bool force) {
-    if (constant._type != GFX::PushConstantType::COUNT && constant._bindingHash > 0u &&
-        _programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid())
-    {
-        // Check the cache for the location
-        const auto& locationIter = _shaderVarLocation.find(constant._bindingHash);
-        if (locationIter != std::cend(_shaderVarLocation)) {
-            UniformsByNameHash::ShaderVarMap& map = _uniformsByNameHash._shaderVars;
-            const auto& constantIter = map.find(constant._bindingHash);
-            if (constantIter != std::cend(map)) {
-                if (force || constantIter->second != constant) {
-                    constantIter->second = constant;
-                } else {
-                    return -1;
-                }
-            } else {
-                emplace(map, constant._bindingHash, constant);
-            }
 
-            return locationIter->second;
+stringImpl glShader::getUniformBufferName() const noexcept {
+    return "dvd_UniformBlock_" + Util::to_string(getGUID());
+}
+
+
+void glShader::uploadPushConstants(const PushConstants& constants) const {
+    if (valid()) {
+        for (const auto& constant : constants._data) {
+            _constantUploader->uploadPushConstant(constant);
         }
-    }
-
-    return -1;
-}
-
-void glShader::cacheActiveUniforms() {
-    // If the shader can't be used for rendering, just return an invalid address
-    if (_programHandle != 0 && _programHandle != GLUtil::k_invalidObjectID && valid()) {
-        _shaderVarLocation.clear();
-
-        GLint numActiveUniforms = 0;
-        glGetProgramInterfaceiv(_programHandle, GL_UNIFORM, GL_ACTIVE_RESOURCES, &numActiveUniforms);
-
-        vectorEASTL<GLchar> nameData(256);
-        vectorEASTL<GLenum> properties;
-        properties.push_back(GL_NAME_LENGTH);
-        properties.push_back(GL_TYPE);
-        properties.push_back(GL_ARRAY_SIZE);
-        properties.push_back(GL_BLOCK_INDEX);
-        properties.push_back(GL_LOCATION);
-
-        vectorEASTL<GLint> values(properties.size());
-
-        for (GLint attrib = 0; attrib < numActiveUniforms; ++attrib) {
-            glGetProgramResourceiv(_programHandle, GL_UNIFORM, attrib, static_cast<GLsizei>(properties.size()), properties.data(), static_cast<GLsizei>(values.size()), nullptr, &values[0]);
-            if (values[3] != -1 || values[4] == -1) {
-                continue;
-            }
-            nameData.resize(values[0]); //The length of the name.
-            glGetProgramResourceName(_programHandle, GL_UNIFORM, attrib, static_cast<GLsizei>(nameData.size()), nullptr, &nameData[0]);
-            std::string name((char*)&nameData[0], nameData.size() - 1);
-
-            if (name.length() > 3 && Util::GetTrailingCharacters(name, 3) == "[0]") {
-                const GLint arraySize = values[2];
-                // Array uniform. Use non-indexed version as an equally-valid alias
-                name = name.substr(0, name.length() - 3);
-                const GLint startLocation = values.back();
-                for (GLint i = 0; i < arraySize; ++i) {
-                    //Arrays and structs will be assigned sequentially increasing locations, starting with the given location
-                    insert(_shaderVarLocation, _ID(Util::StringFormat("%s[%d]", name.c_str(), i).c_str()), startLocation + i);
-                }
-            }
-
-            insert(_shaderVarLocation, _ID(name.c_str()), values.back());
-        }
+        _constantUploader->commit();
     }
 }
 
-void glShader::UploadPushConstant(const GFX::PushConstant& constant, const bool force) {
-    const I32 binding = cachedValueUpdate(constant, force);
-    Uniform(binding, constant._type, constant._buffer.data(), static_cast<GLsizei>(constant._buffer.size()), constant._flag);
-}
-
-void glShader::reuploadUniforms() {
-    cacheActiveUniforms();
-    for (const UniformsByNameHash::ShaderVarMap::value_type& it : _uniformsByNameHash._shaderVars) {
-        UploadPushConstant(it.second, true);
-    }
-}
-
-bool glShader::isValidUniformLocation(const GLint location) const {
-    for (const auto& var : _shaderVarLocation) {
-        if (var.second == location) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void glShader::Uniform(const I32 binding, const GFX::PushConstantType type, const Byte* const values, const GLsizei byteCount, const bool flag) const {
-    if (binding == -1) {
-        return;
-    }
-
-    const GLboolean transpose = flag ? GL_TRUE : GL_FALSE;
-    switch (type) {
-        case GFX::PushConstantType::BOOL: {
-            const auto&[size, data] = convertData<GLint, 1, I32>(byteCount, values);
-            glProgramUniform1iv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::INT: {
-            const auto&[size, data] = convertData<GLint, 1, I32>(byteCount, values);
-            glProgramUniform1iv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::UINT: {
-            const auto&[size, data] = convertData<GLuint, 1, U32>(byteCount, values);
-            glProgramUniform1uiv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::DOUBLE: {
-            const auto&[size, data] = convertData<GLdouble, 1, D64>(byteCount, values);
-            glProgramUniform1dv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::FLOAT: {
-            const auto&[size, data] = convertData<GLfloat, 1, F32>(byteCount, values);
-            glProgramUniform1fv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::IVEC2: {
-            const auto&[size, data] = convertData<GLint, 2, vec2<I32>>(byteCount, values);
-            glProgramUniform2iv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::IVEC3: {
-            const auto&[size, data] = convertData<GLint, 3, vec3<I32>>(byteCount, values);
-            glProgramUniform3iv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::IVEC4: {
-            const auto&[size, data] = convertData<GLint, 4, vec4<I32>>(byteCount, values);
-            glProgramUniform4iv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::UVEC2: {
-            const auto&[size, data] = convertData<GLuint, 2, vec2<U32>>(byteCount, values);
-            glProgramUniform2uiv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::UVEC3: {
-            const auto&[size, data] = convertData<GLuint, 3, vec3<U32>>(byteCount, values);
-            glProgramUniform3uiv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::UVEC4: {
-            const auto&[size, data] = convertData<GLuint, 4, vec4<U32>>(byteCount, values);
-            glProgramUniform4uiv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::DVEC2: {
-            const auto&[size, data] = convertData<GLdouble, 2, vec2<D64>>(byteCount, values);
-            glProgramUniform2dv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::DVEC3: {
-            const auto&[size, data] = convertData<GLdouble, 3, vec3<D64>>(byteCount, values);
-            glProgramUniform3dv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::DVEC4: {
-            const auto&[size, data] = convertData<GLdouble, 4, vec4<D64>>(byteCount, values);
-            glProgramUniform4dv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::VEC2: {
-            const auto&[size, data] = convertData<GLfloat, 2, vec2<F32>>(byteCount, values);
-            glProgramUniform2fv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::VEC3: {
-            const auto&[size, data] = convertData<GLfloat, 3, vec3<F32>>(byteCount, values);
-            glProgramUniform3fv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::FCOLOUR3: {
-            const auto&[size, data] = convertData<GLfloat, 3, FColour3>(byteCount, values);
-            glProgramUniform3fv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::VEC4: {
-            const auto&[size, data] = convertData<GLfloat, 4, vec4<F32>>(byteCount, values);
-            glProgramUniform4fv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::FCOLOUR4: {
-            const auto&[size, data] = convertData<GLfloat, 4, FColour4>(byteCount, values);
-            glProgramUniform3fv(_programHandle, binding, size, data);
-        } break;
-        case GFX::PushConstantType::IMAT2: {
-            const auto&[size, data] = convertData<GLfloat, 4, mat2<I32>>(byteCount, values);
-            glProgramUniformMatrix2fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::IMAT3: {
-            const auto&[size, data] = convertData<GLfloat, 9, mat3<I32>>(byteCount, values);
-            glProgramUniformMatrix3fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::IMAT4: {
-            const auto&[size, data] = convertData<GLfloat, 16, mat4<I32>>(byteCount, values);
-            glProgramUniformMatrix4fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::UMAT2: {
-            const auto&[size, data] = convertData<GLfloat, 4, mat2<U32>>(byteCount, values);
-            glProgramUniformMatrix2fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::UMAT3: {
-            const auto&[size, data] = convertData<GLfloat, 9, mat3<U32>>(byteCount, values);
-            glProgramUniformMatrix3fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::UMAT4: {
-            const auto&[size, data] = convertData<GLfloat, 16, mat4<U32>>(byteCount, values);
-            glProgramUniformMatrix4fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::MAT2: {
-            const auto&[size, data] = convertData<GLfloat, 4, mat2<F32>>(byteCount, values);
-            glProgramUniformMatrix2fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::MAT3: {
-            const auto&[size, data] = convertData<GLfloat, 9, mat3<F32>>(byteCount, values);
-            glProgramUniformMatrix3fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::MAT4: {
-            const auto&[size, data] = convertData<GLfloat, 16, mat4<F32>>(byteCount, values);
-            glProgramUniformMatrix4fv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::DMAT2: {
-            const auto&[size, data] = convertData<GLdouble, 4, mat2<D64>>(byteCount, values);
-            glProgramUniformMatrix2dv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::DMAT3: {
-            const auto&[size, data] = convertData<GLdouble, 9, mat3<D64>>(byteCount, values);
-            glProgramUniformMatrix3dv(_programHandle, binding, size, transpose, data);
-        } break;
-        case GFX::PushConstantType::DMAT4: {
-            const auto&[size, data] = convertData<GLdouble, 16, mat4<D64>>(byteCount, values);
-            glProgramUniformMatrix4dv(_programHandle, binding, size, transpose, data);
-        } break;
-        default:
-            DIVIDE_ASSERT(false, "glShaderProgram::Uniform error: Unhandled data type!");
+void glShader::prepare() const {
+    if (valid()) {
+        _constantUploader->prepare();
     }
 }
 
@@ -666,4 +473,4 @@ void glShader::removeShaderDefine(const stringImpl& define) {
     }
 }
 
-};
+} // namespace Divide

@@ -31,8 +31,8 @@
         <metallic>0</metallic>
         <roughness>0.800000012</roughness>
         <doubleSided>false</doubleSided>
-        <receivesShadows>false</receivesShadows>
-        <bumpMethod>NONE</bumpMethod>
+        <receivesShadows>true</receivesShadows>
+        <bumpMethod>PARALLAX</bumpMethod>
         <parallaxFactor>0.300000012</parallaxFactor>
         <transparencyEnabled>false</transparencyEnabled>
         <isRefractive>false</isRefractive>
@@ -356,7 +356,7 @@
                     <Map U="REPEAT" V="REPEAT" W="REPEAT"/>
                     <useRefCompare>false</useRefCompare>
                     <comparisonFunction>LEQUAL</comparisonFunction>
-                    <anisotropy>4</anisotropy>
+                    <anisotropy>16</anisotropy>
                     <minLOD>-1000</minLOD>
                     <maxLOD>1000</maxLOD>
                     <biasLOD>0</biasLOD>
@@ -369,7 +369,7 @@
                     <Map U="CLAMP_TO_EDGE" V="CLAMP_TO_EDGE" W="CLAMP_TO_EDGE"/>
                     <useRefCompare>false</useRefCompare>
                     <comparisonFunction>LEQUAL</comparisonFunction>
-                    <anisotropy>0</anisotropy>
+                    <anisotropy>16</anisotropy>
                     <minLOD>-1000</minLOD>
                     <maxLOD>1000</maxLOD>
                     <biasLOD>0</biasLOD>
@@ -382,7 +382,7 @@
                     <Map U="CLAMP_TO_BORDER" V="CLAMP_TO_BORDER" W="CLAMP_TO_BORDER"/>
                     <useRefCompare>false</useRefCompare>
                     <comparisonFunction>LEQUAL</comparisonFunction>
-                    <anisotropy>0</anisotropy>
+                    <anisotropy>16</anisotropy>
                     <minLOD>-1000</minLOD>
                     <maxLOD>1000</maxLOD>
                     <biasLOD>0</biasLOD>

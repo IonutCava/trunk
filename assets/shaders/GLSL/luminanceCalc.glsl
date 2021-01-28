@@ -5,7 +5,7 @@
 #define RGB_TO_LUM vec3(0.2125f, 0.7154f, 0.0721f)
 
 // Uniforms:
-uniform vec4 u_params;
+ADD_UNIFORM(vec4, u_params)
 // u_params.x = minimum log_2 luminance
 // u_params.y = inverse of the log_2 luminance range
 
@@ -67,7 +67,8 @@ void main() {
 -- Compute.Average
 
 // Uniforms:
-uniform vec4 u_params;
+ADD_UNIFORM(vec4, u_params)
+
 #define minLogLum u_params.x
 #define logLumRange u_params.y
 #define timeCoeff u_params.z

@@ -37,7 +37,7 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
 
-struct Configuration final : public XML::IXMLSerializable {
+struct Configuration final : XML::IXMLSerializable {
     struct Debug {
         bool enableRenderAPIDebugging = false;
         bool useGeometryCache = true;
@@ -111,6 +111,8 @@ struct Configuration final : public XML::IXMLSerializable {
         U8   KernelSampleCount = 0u;
         bool Blur = true;
         F32  BlurThreshold = 0.05f;
+        F32  MaxRange = 1.f;
+        F32  FadeDistance = 0.99f;
     };
 
     struct Rendering {

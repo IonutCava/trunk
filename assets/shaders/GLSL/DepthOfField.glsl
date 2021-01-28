@@ -47,22 +47,35 @@ changelog:
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 
-uniform vec2 size;
-uniform float focalDepth;  //focal distance value in meters, but you may use autofocus option below
-uniform float focalLength; //focal length in mm
-uniform float fstop; //f-stop value
-uniform float ndofstart = 1.0; //near dof blur start
-uniform float ndofdist = 2.0; //near dof blur falloff distance
-uniform float fdofstart = 1.0; //far dof blur start
-uniform float fdofdist = 3.0; //far dof blur falloff distance
-uniform float vignout = 1.3; //vignetting outer border
-uniform float vignin = 0.0; //vignetting inner border
-uniform bool showFocus = false; //show debug focus point and focal range (red = focal point, green = focal range)
-uniform bool manualdof = false; //manual dof calculation
-uniform bool vignetting = true; //use optical lens vignetting?
-uniform bool autofocus = false; //use autofocus in shader? disable if you use external focalDepth value
-uniform vec2 focus = vec2(0.5f, 0.5f); // autofocus point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)
-uniform vec2 zPlanes;
+ADD_UNIFORM(vec2, size)
+// autofocus point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)
+ADD_UNIFORM(vec2, focus)
+ADD_UNIFORM(vec2, zPlanes)
+//focal distance value in meters, but you may use autofocus option below
+ADD_UNIFORM(float, focalDepth)
+//focal length in mm
+ADD_UNIFORM(float, focalLength)
+ADD_UNIFORM(float, fstop)
+//near dof blur start
+ADD_UNIFORM(float, ndofstart)
+//near dof blur falloff distance
+ADD_UNIFORM(float, ndofdist)
+//far dof blur start
+ADD_UNIFORM(float, fdofstart)
+//far dof blur falloff distance
+ADD_UNIFORM(float, fdofdist)
+//vignetting outer border
+ADD_UNIFORM(float, vignout)
+//vignetting inner border
+ADD_UNIFORM(float, vignin)
+//show debug focus point and focal range (red = focal point, green = focal range)
+ADD_UNIFORM(bool, showFocus)
+//manual dof calculation
+ADD_UNIFORM(bool, manualdof)
+//use optical lens vignetting?
+ADD_UNIFORM(bool, vignetting)
+//use autofocus in shader? disable if you use external focalDepth value
+ADD_UNIFORM(bool, autofocus)
 
 out vec4 _colourOut;
 

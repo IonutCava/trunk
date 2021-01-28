@@ -16,7 +16,6 @@ ShaderComputeQueue::ShaderComputeQueue(ResourceCache* cache)
 void ShaderComputeQueue::idle() {
     OPTICK_EVENT();
 
-    constexpr U32 maxShadersPerCall = 32;
     {
         SharedLock<SharedMutex> r_lock(_queueLock);
         if (_shaderComputeQueue.empty()) {
@@ -25,15 +24,7 @@ void ShaderComputeQueue::idle() {
     }
 
     Time::ScopedTimer timer(_queueComputeTimer);
-
-    U32 crtShaderCount = 0;
-    UniqueLock<SharedMutex> lock(_queueLock);
-    while (stepQueueLocked()) {
-        ++_totalShaderComputeCount;
-        if (++crtShaderCount == maxShadersPerCall) {
-            break;
-        }
-    }
+    stepQueue();
 }
 
 // Processes a queue element on the spot

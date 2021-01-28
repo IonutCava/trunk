@@ -240,5 +240,6 @@
     <Receives__Shadows>false</Receives__Shadows>
     <Casts__Shadows>true</Casts__Shadows>
 </RENDERING>
+<NETWORKING/>
 <RIGID_BODY/>
 <SELECTION/>

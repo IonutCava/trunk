@@ -366,7 +366,7 @@ bool Editor::init(const vec2<U16>& renderResolution) {
             Editor* editor = &context->editor();
 
             ImGui::SetCurrentContext(editor->_imguiContexts[to_base(ImGuiContextType::Editor)]);
-            GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+            GFX::ScopedCommandBuffer sBuffer = GFX::AllocateScopedCommandBuffer();
             GFX::CommandBuffer& buffer = sBuffer();
             ImDrawData* pDrawData = viewport->DrawData;
             const I32 fb_width = to_I32(pDrawData->DisplaySize.x * ImGui::GetIO().DisplayFramebufferScale.x);
@@ -740,7 +740,7 @@ bool Editor::framePostRenderStarted(const FrameEvent& evt) {
     if (render(evt._timeSinceLastFrameUS)) {
         ImGui::Render();
 
-        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+        GFX::ScopedCommandBuffer sBuffer = GFX::AllocateScopedCommandBuffer();
         GFX::CommandBuffer& buffer = sBuffer();
         ImDrawData* pDrawData = ImGui::GetDrawData();
         const I32 fb_width = to_I32(pDrawData->DisplaySize.x * ImGui::GetIO().DisplayFramebufferScale.x);
@@ -1312,7 +1312,7 @@ bool Editor::modalTextureView(const char* modalName, const Texture* tex, const v
 
         TextureCallbackData data = *static_cast<TextureCallbackData*>(cmd->UserCallbackData);
 
-        GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+        GFX::ScopedCommandBuffer sBuffer = GFX::AllocateScopedCommandBuffer();
         GFX::CommandBuffer& buffer = sBuffer();
 
         PushConstants pushConstants = {};

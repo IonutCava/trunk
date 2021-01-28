@@ -5,14 +5,14 @@
 namespace Divide {
 namespace GFX {
 
-static CommandBufferPool s_commandBufferPool;
+static CommandBufferPool g_sCommandBufferPool;
 
-void initPools() {
-    s_commandBufferPool.reset();
+void InitPools() {
+    g_sCommandBufferPool.reset();
 }
 
-void destroyPools() {
-    s_commandBufferPool.reset();
+void DestroyPools() {
+    g_sCommandBufferPool.reset();
 }
 
 void CommandBufferPool::reset() {
@@ -33,28 +33,28 @@ void CommandBufferPool::deallocateBuffer(CommandBuffer*& buffer) {
 }
 
 ScopedCommandBuffer::ScopedCommandBuffer()
-    : _buffer(allocateCommandBuffer())
+    : _buffer(AllocateCommandBuffer())
 {
 }
 
 ScopedCommandBuffer::~ScopedCommandBuffer()
 {
-    deallocateCommandBuffer(_buffer);
+    DeallocateCommandBuffer(_buffer);
 }
 
 
-ScopedCommandBuffer allocateScopedCommandBuffer() {
+ScopedCommandBuffer AllocateScopedCommandBuffer() {
     OPTICK_EVENT();
 
     return ScopedCommandBuffer();
 }
 
-CommandBuffer* allocateCommandBuffer() {
-    return s_commandBufferPool.allocateBuffer();
+CommandBuffer* AllocateCommandBuffer() {
+    return g_sCommandBufferPool.allocateBuffer();
 }
 
-void deallocateCommandBuffer(CommandBuffer*& buffer) {
-    s_commandBufferPool.deallocateBuffer(buffer);
+void DeallocateCommandBuffer(CommandBuffer*& buffer) {
+    g_sCommandBufferPool.deallocateBuffer(buffer);
 }
 
 }; //namespace GFX

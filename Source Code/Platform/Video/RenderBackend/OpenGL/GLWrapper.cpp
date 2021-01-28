@@ -203,13 +203,11 @@ PerformanceMetrics GL_API::getPerformanceMetrics() const noexcept {
 }
 
 void GL_API::idle(const bool fast) {
-    if (fast) {
-        OPTICK_EVENT("GL_API: fast idle");
-        NOP();
-    } else {
-        OPTICK_EVENT("GL_API: slow idle");
-        glShaderProgram::Idle(_context.context());
+    OPTICK_EVENT("GL_API: fast idle");
+    glShaderProgram::Idle(_context.context());
 
+    if (!fast) {
+        OPTICK_EVENT("GL_API: slow idle");
         UniqueLock<SharedMutex> w_lock(s_mipmapQueueSetLock);
         if (!s_mipmapQueue.empty()) {
             const auto it = s_mipmapQueue.begin();
@@ -220,20 +218,8 @@ void GL_API::idle(const bool fast) {
     }
 }
 
-void GL_API::AppendToShaderHeader(const ShaderType type,
-                                  const stringImpl& entry,
-                                  ShaderOffsetArray& inOutOffset) {
-    const U8 index = to_U8(type);
-    glswAddDirectiveToken(type != ShaderType::COUNT ? Names::shaderTypes[index] : "", entry.c_str());
-
-    // include directives are handles differently
-    if (entry.find("#include") == stringImpl::npos) {
-        inOutOffset[index] += Util::LineCount(entry);
-    } else {
-        vectorEASTL<ResourcePath> tempAtoms;
-        tempAtoms.reserve(10);
-        inOutOffset[index] += Util::LineCount(glShaderProgram::PreprocessIncludes(ResourcePath("header"), entry, 0, tempAtoms, true));
-    }
+void GL_API::AppendToShaderHeader(const ShaderType type, const stringImpl& entry) {
+    glswAddDirectiveToken(type != ShaderType::COUNT ? Names::shaderTypes[to_U8(type)] : "", entry.c_str());
 }
 
 bool GL_API::InitGLSW(Configuration& config) {
@@ -327,609 +313,276 @@ bool GL_API::InitGLSW(Configuration& config) {
         config.changed(true);
     }  
 
-    ShaderOffsetArray lineOffsets = { 0 };
-
+    DIVIDE_ASSERT(Config::MAX_CULL_DISTANCES <= GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES) - Config::MAX_CLIP_DISTANCES,
+                  "GLWrapper error: incorrect combination of clip and cull distance counts");
+    static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
     // Add our engine specific defines and various code pieces to every GLSL shader
     // Add version as the first shader statement, followed by copyright notice
-    AppendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", GLUtil::getGLValue(GL_MINOR_VERSION)), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/", lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT, Util::StringFormat("#version 4%d0 core", GLUtil::getGLValue(GL_MINOR_VERSION)));
+    AppendToShaderHeader(ShaderType::COUNT, "/*Copyright 2009-2020 DIVIDE-Studio*/");
 
     if (s_UseBindlessTextures) {
-        AppendToShaderHeader(ShaderType::COUNT, "#extension  GL_ARB_bindless_texture : require", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#extension  GL_ARB_bindless_texture : require");
     }
 
-    AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require", lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_gpu_shader5 : require");
     if (!getStateTracker()._opengl46Supported) {
-        AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_shader_draw_parameters : require");
+        AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_cull_distance : require");
+        AppendToShaderHeader(ShaderType::COUNT, "#extension GL_ARB_enhanced_layouts : require");
 
-        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawIDARB", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_VERTEX gl_BaseVertexARB", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstanceARB", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawIDARB");
+        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_VERTEX gl_BaseVertexARB");
+        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstanceARB");
     } else {
-        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawID", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_VERTEX gl_BaseVertex", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstance", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_DRAW_ID gl_DrawID");
+        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_VERTEX gl_BaseVertex");
+        AppendToShaderHeader(ShaderType::COUNT, "#define DVD_GL_BASE_INSTANCE gl_BaseInstance");
     }
 
-    AppendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL, lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT, crossTypeGLSLHLSL);
 
     // Add current build environment information to the shaders
     if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-        AppendToShaderHeader(ShaderType::COUNT, "#define _DEBUG", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define _DEBUG");
     } else if_constexpr(Config::Build::IS_PROFILE_BUILD) {
-        AppendToShaderHeader(ShaderType::COUNT, "#define _PROFILE", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define _PROFILE");
     } else {
-        AppendToShaderHeader(ShaderType::COUNT, "#define _RELEASE", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define _RELEASE");
     }
 
     // Shader stage level reflection system. A shader stage must know what stage it's used for
-    AppendToShaderHeader(ShaderType::VERTEX,   "#define VERT_SHADER", lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define FRAG_SHADER", lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#define GEOM_SHADER", lineOffsets);
-    AppendToShaderHeader(ShaderType::COMPUTE,  "#define COMPUTE_SHADER", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define TESS_EVAL_SHADER", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#define TESS_CTRL_SHADER", lineOffsets);
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define VERT_SHADER");
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define FRAG_SHADER");
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#define GEOM_SHADER");
+    AppendToShaderHeader(ShaderType::COMPUTE,  "#define COMPUTE_SHADER");
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define TESS_EVAL_SHADER");
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#define TESS_CTRL_SHADER");
 
     // This line gets replaced in every shader at load with the custom list of defines specified by the material
-    AppendToShaderHeader(ShaderType::COUNT, "//__CUSTOM_DEFINES__", lineOffsets);
+    AppendToShaderHeader(ShaderType::COUNT, "_CUSTOM_DEFINES__");
 
     // Add some nVidia specific pragma directives
     if (GFXDevice::getGPUVendor() == GPUVendor::NVIDIA) {
-        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option fastmath on", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option fastprecision on",lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option inline all", lineOffsets);
-        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option fastmath on");
+        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option fastprecision on");
+        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option inline all");
+        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option ifcvt none");
         if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-            AppendToShaderHeader(ShaderType::COUNT, "#pragma option strict on", lineOffsets);
+            AppendToShaderHeader(ShaderType::COUNT, "#pragma option strict on");
         }
-        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "//#pragma option unroll all");
     }
 
     if_constexpr(Config::USE_COLOURED_WOIT) {
-        AppendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define USE_COLOURED_WOIT");
     }
 
     if (s_UseBindlessTextures) {
-        AppendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES", lineOffsets);
+        AppendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES");
     }
-
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_CSM_SPLITS_PER_LIGHT " + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_DIR_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_POINT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_SHADOW_CASTING_SPOT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_LIGHTS " + Util::to_string(Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME), lineOffsets);
-
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_VISIBLE_NODES " + Util::to_string(Config::MAX_VISIBLE_NODES), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define MAX_CONCURRENT_MATERIALS " + Util::to_string(Config::MAX_CONCURRENT_MATERIALS), lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define Z_TEST_SIGMA 0.00001f", lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define INV_Z_TEST_SIGMA 0.99999f", lineOffsets);
-    AppendToShaderHeader(ShaderType::COUNT,  "#define SKY_OFFSET 0.0000001f", lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX, "#define MAX_BONE_COUNT_PER_NODE " + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE), lineOffsets);
-
-    static_assert(Config::MAX_BONE_COUNT_PER_NODE <= 1024, "GLWrapper error: too many bones per vert. Can't fit inside UBO");
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define MAX_CLIP_PLANES " + 
-        Util::to_string(Config::MAX_CLIP_DISTANCES),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define MAX_CULL_DISTANCES " + 
-         Util::to_string(Config::MAX_CULL_DISTANCES),
-        lineOffsets);
-
-    DIVIDE_ASSERT(Config::MAX_CULL_DISTANCES <= GLUtil::getGLValue(GL_MAX_COMBINED_CLIP_AND_CULL_DISTANCES) - Config::MAX_CLIP_DISTANCES,
-                  "GLWrapper error: incorrect combination of clip and cull distance counts");
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TARGET_ACCUMULATION " +
-        Util::to_string(to_base(GFXDevice::ScreenTargets::ACCUMULATION)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TARGET_ALBEDO " +
-        Util::to_string(to_base(GFXDevice::ScreenTargets::ALBEDO)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TARGET_EXTRA " +
-        Util::to_string(to_base(GFXDevice::ScreenTargets::EXTRA)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TARGET_NORMALS_AND_VELOCITY " +
-        Util::to_string(to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TARGET_REVEALAGE " +
-        Util::to_string(to_base(GFXDevice::ScreenTargets::REVEALAGE)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TARGET_MODULATE " +
-        Util::to_string(to_base(GFXDevice::ScreenTargets::MODULATE)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_GPU_BLOCK " +
-        Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_ATOMIC_COUNTER " +
-        Util::to_string(to_base(ShaderBufferLocation::ATOMIC_COUNTER)),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_GPU_COMMANDS " +
-        Util::to_string(to_base(ShaderBufferLocation::GPU_COMMANDS)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_NORMAL " +
-        Util::to_string(to_base(ShaderBufferLocation::LIGHT_NORMAL)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_SHADOW " +
-        Util::to_string(to_base(ShaderBufferLocation::LIGHT_SHADOW)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_INDICES " +
-        Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDICES)),
-        lineOffsets);
-
-  AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_GRID " +
-        Util::to_string(to_base(ShaderBufferLocation::LIGHT_GRID)),
-        lineOffsets);
-
-  AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_INDEX_COUNT " +
-        Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDEX_COUNT)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_LIGHT_CLUSTER_AABBS " +
-        Util::to_string(to_base(ShaderBufferLocation::LIGHT_CLUSTER_AABBS)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_NODE_TRANSFORM_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::NODE_TRANSFORM_DATA)),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_NODE_MATERIAL_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::NODE_MATERIAL_DATA)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_SCENE_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::SCENE_DATA)),
-        lineOffsets);
-
-   AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_PROBE_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::PROBE_DATA)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_COMMANDS " +
-        Util::to_string(to_base(ShaderBufferLocation::CMD_BUFFER)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_GRASS_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::GRASS_DATA)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define BUFFER_TREE_DATA " +
-        Util::to_string(to_base(ShaderBufferLocation::TREE_DATA)),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::COMPUTE,
-        "#define BUFFER_LUMINANCE_HISTOGRAM " +
-        Util::to_string(to_base(ShaderBufferLocation::LUMINANCE_HISTOGRAM)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define GRID_SIZE_X " + 
-        Util::to_string(gridSize.x),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define GRID_SIZE_Y " +
-        Util::to_string(gridSize.y),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COMPUTE,
-        "#define GRID_SIZE_Z " +
-        Util::to_string(gridSize.z),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COMPUTE,
-        "#define GRID_SIZE_X_THREADS " +
-        Util::to_string(gridSize.x),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COMPUTE,
-        "#define GRID_SIZE_Y_THREADS " +
-        Util::to_string(gridSize.y),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define GRID_SIZE_Z_THREADS " +
-        Util::to_string(Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define MAX_LIGHTS_PER_CLUSTER " + 
-        Util::to_string(numLightsPerCluster),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_UNIT0 " +
-        Util::to_string(to_base(TextureUsage::UNIT0)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_HEIGHT " +
-        Util::to_string(to_base(TextureUsage::HEIGHTMAP)),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_UNIT1 " +
-        Util::to_string(to_base(TextureUsage::UNIT1)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_NORMALMAP " +
-        Util::to_string(to_base(TextureUsage::NORMALMAP)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_OPACITY " +
-        Util::to_string(to_base(TextureUsage::OPACITY)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_OMR " +
-        Util::to_string(to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_PROJECTION " +
-        Util::to_string(to_base(TextureUsage::PROJECTION)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define TEXTURE_DEPTH_MAP " +
-        Util::to_string(to_base(TextureUsage::DEPTH)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_REFLECTION_PLANAR " +
-        Util::to_string(to_base(TextureUsage::REFLECTION_PLANAR)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_REFRACTION_PLANAR " +
-        Util::to_string(to_base(TextureUsage::REFRACTION_PLANAR)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_REFLECTION_CUBE " +
-        Util::to_string(to_base(TextureUsage::REFLECTION_CUBE)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_GBUFFER_EXTRA " +
-        Util::to_string(to_base(TextureUsage::GBUFFER_EXTRA)),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_SCENE_NORMALS " +
-        Util::to_string(to_base(TextureUsage::SCENE_NORMALS)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define SHADOW_CUBE_MAP_ARRAY " +
-        Util::to_string(to_base(TextureUsage::SHADOW_CUBE)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define SHADOW_LAYERED_MAP_ARRAY " +
-        Util::to_string(to_U32(TextureUsage::SHADOW_LAYERED)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define SHADOW_SINGLE_MAP_ARRAY " +
-        Util::to_string(to_U32(TextureUsage::SHADOW_SINGLE)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::FRAGMENT,
-        "#define TEXTURE_COUNT " +
-        Util::to_string(to_U32(TextureUsage::COUNT)),
-        lineOffsets);    
-    
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define GLOBAL_WATER_BODIES_COUNT " +
-        Util::to_string(GLOBAL_WATER_BODIES_COUNT),
-        lineOffsets);
-    
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define GLOBAL_PROBE_COUNT " +
-        Util::to_string(GLOBAL_PROBE_COUNT),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::COUNT,
-        "#define MATERIAL_TEXTURE_COUNT " +
-        Util::to_string(MATERIAL_TEXTURE_COUNT),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define BUFFER_BONE_TRANSFORMS " +
-        Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define BUFFER_BONE_TRANSFORMS_PREV " +
-        Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS_PREV)),
-        lineOffsets);
-
-    // Vertex data has a fixed format
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_POSITION " +
-        Util::to_string(to_base(AttribLocation::POSITION)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_TEXCOORD " +
-        Util::to_string(to_base(AttribLocation::TEXCOORD)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_NORMAL " +
-        Util::to_string(to_base(AttribLocation::NORMAL)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_TANGENT " +
-        Util::to_string(to_base(AttribLocation::TANGENT)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_COLOR " +
-        Util::to_string(to_base(AttribLocation::COLOR)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_BONE_WEIGHT " +
-        Util::to_string(to_base(AttribLocation::BONE_WEIGHT)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_BONE_INDICE " +
-        Util::to_string(to_base(AttribLocation::BONE_INDICE)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_WIDTH " +
-        Util::to_string(to_base(AttribLocation::WIDTH)),
-        lineOffsets);
-
-    AppendToShaderHeader(
-        ShaderType::VERTEX,
-        "#define ATTRIB_GENERIC " +
-        Util::to_string(to_base(AttribLocation::GENERIC)),
-        lineOffsets);
-
+    AppendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f");
+    AppendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f");
+    AppendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f");
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT "        + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS "       + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIR_LIGHTS "   + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_POINT_LIGHTS " + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_POINT_LIGHTS));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_SPOT_LIGHTS "  + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_SPOT_LIGHTS));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS "                      + Util::to_string(Config::Lighting::MAX_ACTIVE_LIGHTS_PER_FRAME));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_VISIBLE_NODES "               + Util::to_string(Config::MAX_VISIBLE_NODES));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CONCURRENT_MATERIALS "        + Util::to_string(Config::MAX_CONCURRENT_MATERIALS));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CLIP_PLANES "                 + Util::to_string(Config::MAX_CLIP_DISTANCES));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CULL_DISTANCES "              + Util::to_string(Config::MAX_CULL_DISTANCES));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_ACCUMULATION "             + Util::to_string(to_base(GFXDevice::ScreenTargets::ACCUMULATION)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_ALBEDO "                   + Util::to_string(to_base(GFXDevice::ScreenTargets::ALBEDO)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_EXTRA "                    + Util::to_string(to_base(GFXDevice::ScreenTargets::EXTRA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_NORMALS_AND_VELOCITY "     + Util::to_string(to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_REVEALAGE "                + Util::to_string(to_base(GFXDevice::ScreenTargets::REVEALAGE)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_MODULATE "                 + Util::to_string(to_base(GFXDevice::ScreenTargets::MODULATE)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_GPU_BLOCK "                + Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_ATOMIC_COUNTER "           + Util::to_string(to_base(ShaderBufferLocation::ATOMIC_COUNTER)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_GPU_COMMANDS "             + Util::to_string(to_base(ShaderBufferLocation::GPU_COMMANDS)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_LIGHT_NORMAL "             + Util::to_string(to_base(ShaderBufferLocation::LIGHT_NORMAL)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_LIGHT_SHADOW "             + Util::to_string(to_base(ShaderBufferLocation::LIGHT_SHADOW)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_LIGHT_INDICES "            + Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDICES)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_LIGHT_GRID "               + Util::to_string(to_base(ShaderBufferLocation::LIGHT_GRID)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_LIGHT_INDEX_COUNT "        + Util::to_string(to_base(ShaderBufferLocation::LIGHT_INDEX_COUNT)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_LIGHT_CLUSTER_AABBS "      + Util::to_string(to_base(ShaderBufferLocation::LIGHT_CLUSTER_AABBS)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_NODE_TRANSFORM_DATA "      + Util::to_string(to_base(ShaderBufferLocation::NODE_TRANSFORM_DATA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_NODE_MATERIAL_DATA "       + Util::to_string(to_base(ShaderBufferLocation::NODE_MATERIAL_DATA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_SCENE_DATA "               + Util::to_string(to_base(ShaderBufferLocation::SCENE_DATA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_PROBE_DATA "               + Util::to_string(to_base(ShaderBufferLocation::PROBE_DATA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_COMMANDS "                 + Util::to_string(to_base(ShaderBufferLocation::CMD_BUFFER)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_GRASS_DATA "               + Util::to_string(to_base(ShaderBufferLocation::GRASS_DATA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_TREE_DATA "                + Util::to_string(to_base(ShaderBufferLocation::TREE_DATA)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_UNIFORM_BLOCK "            + Util::to_string(to_base(ShaderBufferLocation::UNIFORM_BLOCK)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_X "                     + Util::to_string(gridSize.x));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Y "                     + Util::to_string(gridSize.y));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Z_THREADS "             + Util::to_string(Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS_PER_CLUSTER "          + Util::to_string(numLightsPerCluster));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_UNIT0 "                   + Util::to_string(to_base(TextureUsage::UNIT0)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_HEIGHT "                  + Util::to_string(to_base(TextureUsage::HEIGHTMAP)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_UNIT1 "                   + Util::to_string(to_base(TextureUsage::UNIT1)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_NORMALMAP "               + Util::to_string(to_base(TextureUsage::NORMALMAP)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_OPACITY "                 + Util::to_string(to_base(TextureUsage::OPACITY)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_OMR "                     + Util::to_string(to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_PROJECTION "              + Util::to_string(to_base(TextureUsage::PROJECTION)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_DEPTH_MAP "               + Util::to_string(to_base(TextureUsage::DEPTH)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_WATER_BODIES_COUNT "       + Util::to_string(GLOBAL_WATER_BODIES_COUNT));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_PROBE_COUNT "              + Util::to_string(GLOBAL_PROBE_COUNT));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define MATERIAL_TEXTURE_COUNT "          + Util::to_string(MATERIAL_TEXTURE_COUNT));
+    AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_Z "                     + Util::to_string(gridSize.z));
+    AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_X_THREADS "             + Util::to_string(gridSize.x));
+    AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_Y_THREADS "             + Util::to_string(gridSize.y));
+    AppendToShaderHeader(ShaderType::COMPUTE,  "#define BUFFER_LUMINANCE_HISTOGRAM "      + Util::to_string(to_base(ShaderBufferLocation::LUMINANCE_HISTOGRAM)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define MAX_BONE_COUNT_PER_NODE "         + Util::to_string(Config::MAX_BONE_COUNT_PER_NODE));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define BUFFER_BONE_TRANSFORMS "          + Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define BUFFER_BONE_TRANSFORMS_PREV "     + Util::to_string(to_base(ShaderBufferLocation::BONE_TRANSFORMS_PREV)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_POSITION "                 + Util::to_string(to_base(AttribLocation::POSITION)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_TEXCOORD "                 + Util::to_string(to_base(AttribLocation::TEXCOORD)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_NORMAL "                   + Util::to_string(to_base(AttribLocation::NORMAL)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_TANGENT "                  + Util::to_string(to_base(AttribLocation::TANGENT)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_COLOR "                    + Util::to_string(to_base(AttribLocation::COLOR)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_BONE_WEIGHT "              + Util::to_string(to_base(AttribLocation::BONE_WEIGHT)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_BONE_INDICE "              + Util::to_string(to_base(AttribLocation::BONE_INDICE)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_WIDTH "                    + Util::to_string(to_base(AttribLocation::WIDTH)));
+    AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_GENERIC "                  + Util::to_string(to_base(AttribLocation::GENERIC)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_PLANAR "       + Util::to_string(to_base(TextureUsage::REFLECTION_PLANAR)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFRACTION_PLANAR "       + Util::to_string(to_base(TextureUsage::REFRACTION_PLANAR)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_CUBE "         + Util::to_string(to_base(TextureUsage::REFLECTION_CUBE)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_GBUFFER_EXTRA "           + Util::to_string(to_base(TextureUsage::GBUFFER_EXTRA)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_SCENE_NORMALS "           + Util::to_string(to_base(TextureUsage::SCENE_NORMALS)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_CUBE_MAP_ARRAY "           + Util::to_string(to_base(TextureUsage::SHADOW_CUBE)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_LAYERED_MAP_ARRAY "        + Util::to_string(to_U32(TextureUsage::SHADOW_LAYERED)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_SINGLE_MAP_ARRAY "         + Util::to_string(to_U32(TextureUsage::SHADOW_SINGLE)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_COUNT "                   + Util::to_string(to_U32(TextureUsage::COUNT)));
     for (MaterialDebugFlag flag : MaterialDebugFlag::_values()) {
-        AppendToShaderHeader(
-            ShaderType::FRAGMENT,
-            Util::StringFormat("#define DEBUG_%s %d", flag._to_string(), flag._to_integral()),
-            lineOffsets);
+        AppendToShaderHeader(ShaderType::FRAGMENT, Util::StringFormat("#define DEBUG_%s %d", flag._to_string(), flag._to_integral()));
     }
 
-    const auto addVaryings = [&](const ShaderType type, ShaderOffsetArray& offsets) {
+    const auto addVaryings = [&](const ShaderType type) {
         for (const auto& [varType, name] : shaderVaryings) {
-            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name), offsets);
+            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name));
         }
     };
 
-    const auto addVaryingsBump = [&](const ShaderType type, ShaderOffsetArray& offsets) {
+    const auto addVaryingsBump = [&](const ShaderType type) {
         for (const auto& [varType, name] : shaderVaryingsBump) {
-            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name), offsets);
+            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name));
         }
     };
 
-    const auto addVaryingsVelocity = [&](const ShaderType type, ShaderOffsetArray& offsets) {
+    const auto addVaryingsVelocity = [&](const ShaderType type) {
         for (const auto& [varType, name] : shaderVaryingsVelocity) {
-            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name), offsets);
+            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name));
         }
     };
 
     // Vertex shader output
-    AppendToShaderHeader(ShaderType::VERTEX, "out Data {", lineOffsets);
-    addVaryings(ShaderType::VERTEX, lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::VERTEX, lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::VERTEX, lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::VERTEX, "} _out;\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::VERTEX, "out Data {");
+    addVaryings(ShaderType::VERTEX);
+    AppendToShaderHeader(ShaderType::VERTEX, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::VERTEX);
+    AppendToShaderHeader(ShaderType::VERTEX, "#endif");
+    AppendToShaderHeader(ShaderType::VERTEX, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::VERTEX);
+    AppendToShaderHeader(ShaderType::VERTEX, "#endif");
+    AppendToShaderHeader(ShaderType::VERTEX, "} _out;\n");
 
     // Tessellation Control shader input
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::TESSELLATION_CTRL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _in[];\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "in Data {");
+    addVaryings(ShaderType::TESSELLATION_CTRL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::TESSELLATION_CTRL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _in[];\n");
 
     // Tessellation Control shader output
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_CTRL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::TESSELLATION_CTRL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _out[];\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "out Data {");
+    addVaryings(ShaderType::TESSELLATION_CTRL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::TESSELLATION_CTRL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _out[];\n");
 
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, getPassData(ShaderType::TESSELLATION_CTRL), lineOffsets);
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, getPassData(ShaderType::TESSELLATION_CTRL));
 
     // Tessellation Eval shader input
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "in Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::TESSELLATION_EVAL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _in[];\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "in Data {");
+    addVaryings(ShaderType::TESSELLATION_EVAL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::TESSELLATION_EVAL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _in[];\n");
 
     // Tessellation Eval shader output
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "out Data {", lineOffsets);
-    addVaryings(ShaderType::TESSELLATION_EVAL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::TESSELLATION_EVAL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL, lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _out;\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "out Data {");
+    addVaryings(ShaderType::TESSELLATION_EVAL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::TESSELLATION_EVAL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _out;\n");
 
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, getPassData(ShaderType::TESSELLATION_EVAL), lineOffsets);
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, getPassData(ShaderType::TESSELLATION_EVAL));
 
     // Geometry shader input
-    AppendToShaderHeader(ShaderType::GEOMETRY, "in Data {", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::GEOMETRY, lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::GEOMETRY, lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "} _in[];\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "in Data {");
+    addVaryings(ShaderType::GEOMETRY);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::GEOMETRY);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::GEOMETRY);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
+    AppendToShaderHeader(ShaderType::GEOMETRY, "} _in[];\n");
 
     // Geometry shader output
-    AppendToShaderHeader(ShaderType::GEOMETRY, "out Data {", lineOffsets);
-    addVaryings(ShaderType::GEOMETRY, lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::GEOMETRY, lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::GEOMETRY, lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "} _out;\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "out Data {");
+    addVaryings(ShaderType::GEOMETRY);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::GEOMETRY);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::GEOMETRY);
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
+    AppendToShaderHeader(ShaderType::GEOMETRY, "} _out;\n");
 
-    AppendToShaderHeader(ShaderType::GEOMETRY, getPassData(ShaderType::GEOMETRY), lineOffsets);
+    AppendToShaderHeader(ShaderType::GEOMETRY, getPassData(ShaderType::GEOMETRY));
 
     // Fragment shader input
-    AppendToShaderHeader(ShaderType::FRAGMENT, "in Data {", lineOffsets);
-    addVaryings(ShaderType::FRAGMENT, lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#if defined(COMPUTE_TBN)", lineOffsets);
-    addVaryingsBump(ShaderType::FRAGMENT, lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#if defined(HAS_VELOCITY)", lineOffsets);
-    addVaryingsVelocity(ShaderType::FRAGMENT, lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#endif", lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n", lineOffsets);
+    AppendToShaderHeader(ShaderType::FRAGMENT, "in Data {");
+    addVaryings(ShaderType::FRAGMENT);
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#if defined(COMPUTE_TBN)");
+    addVaryingsBump(ShaderType::FRAGMENT);
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#endif");
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#if defined(HAS_VELOCITY)");
+    addVaryingsVelocity(ShaderType::FRAGMENT);
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#endif");
+    AppendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n");
 
-    AppendToShaderHeader(ShaderType::VERTEX, "#define VAR _out", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#define VAR _in[gl_InvocationID]", lineOffsets);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define VAR _in", lineOffsets);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#define VAR _in", lineOffsets);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define VAR _in", lineOffsets);
+    AppendToShaderHeader(ShaderType::VERTEX, "#define VAR _out");
+    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#define VAR _in[gl_InvocationID]");
+    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#define VAR _in");
+    AppendToShaderHeader(ShaderType::GEOMETRY, "#define VAR _in");
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define VAR _in");
 
     // GPU specific data, such as GFXDevice's main uniform block and clipping
     // planes are defined in an external file included in every shader
-    AppendToShaderHeader(ShaderType::COUNT, "#include \"nodeDataInput.cmn\"", lineOffsets);
-
-    Attorney::GLAPIShaderProgram::setGlobalLineOffset(lineOffsets[to_base(ShaderType::COUNT)]);
-
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::VERTEX,   lineOffsets[to_base(ShaderType::VERTEX)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELLATION_CTRL, lineOffsets[to_base(ShaderType::TESSELLATION_CTRL)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::TESSELLATION_EVAL, lineOffsets[to_base(ShaderType::TESSELLATION_EVAL)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::GEOMETRY, lineOffsets[to_base(ShaderType::GEOMETRY)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::FRAGMENT, lineOffsets[to_base(ShaderType::FRAGMENT)]);
-    Attorney::GLAPIShaderProgram::addLineOffset(ShaderType::COMPUTE,  lineOffsets[to_base(ShaderType::COMPUTE)]);
+    AppendToShaderHeader(ShaderType::COUNT, "#include \"nodeDataInput.cmn\"");
+    AppendToShaderHeader(ShaderType::COUNT, "_CUSTOM_UNIFORMS__");
 
     // Check initialization status for GLSL and glsl-optimizer
     return glswState == 1;
@@ -1135,18 +788,15 @@ bool GL_API::bindPipeline(const Pipeline& pipeline, bool& shaderWasReady) const 
     // Try to bind the shader program. If it failed to load, or isn't loaded yet, cancel the draw request for this frame
     const auto[state, wasBound] = Attorney::GLAPIShaderProgram::bind(glProgram);
     shaderWasReady = state;
-    if (state) {
-        if (!wasBound) {
-            Attorney::GLAPIShaderProgram::queueValidation(glProgram);
-        }
-        return true;
+
+    if (!shaderWasReady) {
+        stateTracker.setActiveProgram(0u);
+        stateTracker.setActiveShaderPipeline(0u);
+        stateTracker._activePipeline = nullptr;
+        return false;
     }
 
-    stateTracker.setActiveProgram(0u);
-    stateTracker.setActiveShaderPipeline(0u);
-    stateTracker._activePipeline = nullptr;
-
-    return false;
+    return true;
 }
 
 void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
@@ -1160,7 +810,7 @@ void GL_API::sendPushConstants(const PushConstants& pushConstants) const {
         program = ShaderProgram::DefaultShader().get();
     }
 
-    static_cast<glShaderProgram*>(program)->UploadPushConstants(pushConstants);
+    static_cast<glShaderProgram*>(program)->uploadPushConstants(pushConstants);
 }
 
 bool GL_API::draw(const GenericDrawCommand& cmd) const {

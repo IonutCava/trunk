@@ -59,12 +59,20 @@ void GUISplash::render(GFXDevice& context) const {
     pipelineDescriptor._stateHash = context.get2DStateBlock();
     pipelineDescriptor._shaderProgramHandle = _splashShader->getGUID();
 
-    GFX::ScopedCommandBuffer sBuffer = GFX::allocateScopedCommandBuffer();
+    GFX::ScopedCommandBuffer sBuffer = GFX::AllocateScopedCommandBuffer();
     GFX::CommandBuffer& buffer = sBuffer();
 
     GFX::BindPipelineCommand pipelineCmd;
     pipelineCmd._pipeline = context.newPipeline(pipelineDescriptor);
     EnqueueCommand(buffer, pipelineCmd);
+
+    GFX::SendPushConstantsCommand pushConstantsCommand = {};
+    pushConstantsCommand._constants.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 1.f);
+    pushConstantsCommand._constants.set(_ID("unpack2Channel"), GFX::PushConstantType::BOOL, false);
+    pushConstantsCommand._constants.set(_ID("unpack1Channel"), GFX::PushConstantType::BOOL, false);
+    pushConstantsCommand._constants.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+    pushConstantsCommand._constants.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.f);
+    EnqueueCommand(buffer, pushConstantsCommand);
 
     GFX::SetViewportCommand viewportCommand;
     viewportCommand._viewport.set(0, 0, _dimensions.width, _dimensions.height);

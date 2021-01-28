@@ -14,11 +14,18 @@ std::string getWorkingDirectory() {
 
 
 FileError writeFile(const ResourcePath& filePath, const ResourcePath& fileName, const bufferPtr content, const size_t length, const FileType fileType) {
-    return writeFile(filePath.c_str(), fileName.c_str(), content, length, fileType);
+    return writeFile(filePath.c_str(), fileName.c_str(), static_cast<const char*>(content), length, fileType);
 }
 
 FileError writeFile(const char* filePath, const char* fileName, const bufferPtr content, const size_t length, const FileType fileType) {
+    return writeFile(filePath, fileName, static_cast<const char*>(content), length, fileType);
+}
 
+FileError writeFile(const ResourcePath & filePath, const ResourcePath & fileName, const char* content, const size_t length, const FileType fileType) {
+    return writeFile(filePath.c_str(), fileName.c_str(), content, length, fileType);
+}
+
+FileError writeFile(const char* filePath, const char* fileName, const char* content, const size_t length, const FileType fileType) {
     if (!Util::IsEmptyOrNull(filePath) && content != nullptr && length > 0) {
         if (!pathExists(filePath) && !CreateDirectories(filePath)) {
             return FileError::FILE_NOT_FOUND;
@@ -29,7 +36,7 @@ FileError writeFile(const char* filePath, const char* fileName, const bufferPtr 
                                            ? std::ios::out | std::ios::binary
                                            : std::ios::out);
 
-        outputFile.write(static_cast<char*>(content), length);
+        outputFile.write(content, length);
         outputFile.close();
         if (outputFile.good()) {
             return FileError::NONE;

@@ -184,6 +184,9 @@
     <Filter Include="ReCast\ReCastContrib\Headers">
       <UniqueIdentifier>{267e98ff-d71e-4998-a089-602ea65f432d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="fcpp">
+      <UniqueIdentifier>{409eaca7-a02b-4c57-9a9b-b4cc5ccd0b28}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\3rdParty\imgui\imconfig.h">
@@ -585,6 +588,27 @@
     <ClInclude Include="..\..\3rdParty\ReCast\Recast\Include\RecastAssert.h">
       <Filter>ReCast\ReCast\Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\cpp.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\cppadd.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\cppdef.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\fpp.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\fpp_pragmas.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\FPP_protos.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\fcpp\FPPBase.h">
+      <Filter>fcpp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3rdParty\imgui\imgui.cpp">
@@ -979,6 +1003,24 @@
     </ClCompile>
     <ClCompile Include="..\..\3rdParty\ReCast\Recast\Source\RecastRegion.cpp">
       <Filter>ReCast\ReCast</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp1.c">
+      <Filter>fcpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp2.c">
+      <Filter>fcpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp3.c">
+      <Filter>fcpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp4.c">
+      <Filter>fcpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp5.c">
+      <Filter>fcpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\fcpp\cpp6.c">
+      <Filter>fcpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

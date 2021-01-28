@@ -564,7 +564,6 @@ void MenuBar::drawDebugMenu() {
     if (ImGui::BeginMenu("Debug"))
     {
         if (ImGui::BeginMenu("BRDF Settings")) {
-            //ToDo: Use a toString method and just loop over all of these. Also, automatically add them to shaders - Ionut
             const MaterialDebugFlag debugFlag = _context.gfx().materialDebugFlag();
             bool debug = false;
             for (MaterialDebugFlag flag : MaterialDebugFlag::_values()) {
