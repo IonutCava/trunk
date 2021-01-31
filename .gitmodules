@@ -74,3 +74,6 @@
 	path = 3rdParty/glm
 	url = https://github.com/g-truc/glm
 	ignore = dirty
+[submodule "3rdParty/TileableVolumeNoise"]
+	path = 3rdParty/TileableVolumeNoise
+	url = https://github.com/sebh/TileableVolumeNoise

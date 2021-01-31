@@ -104,11 +104,13 @@ Scene::~Scene()
     }
 }
 
-bool Scene::onStartup() {
+bool Scene::OnStartup(PlatformContext& context) {
+    Sky::OnStartup(context);
     return true;
 }
 
-bool Scene::onShutdown() {
+bool Scene::OnShutdown(PlatformContext& context) {
+    ACKNOWLEDGE_UNUSED(context);
     return true;
 }
 

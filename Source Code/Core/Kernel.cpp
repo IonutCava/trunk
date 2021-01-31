@@ -718,8 +718,6 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
-    Script::onStartup();
-    SceneManager::onStartup();
     Attorney::ShaderProgramKernel::UseShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::UseShaderBinaryCache(config.debug.useShaderBinaryCache);
 
@@ -732,6 +730,8 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
         return true;
     });
 
+    Script::OnStartup(_platformContext);
+    SceneManager::OnStartup(_platformContext);
     // Initialize GUI with our current resolution
     if (!_platformContext.gui().init(_platformContext, resourceCache())) {
         return ErrorCode::GUI_INIT_ERROR;
@@ -802,8 +802,8 @@ void Kernel::shutdown() {
     if_constexpr (Config::Build::ENABLE_EDITOR) {
         _platformContext.editor().toggle(false);
     }
-    SceneManager::onShutdown();
-    Script::onShutdown();
+    SceneManager::OnShutdown(_platformContext);
+    Script::OnShutdown(_platformContext);
     MemoryManager::SAFE_DELETE(_sceneManager);
     ECS::Terminate();
 

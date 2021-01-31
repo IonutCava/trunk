@@ -386,6 +386,8 @@
     <ClInclude Include="..\..\3rdParty\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\..\3rdParty\imgui\imstb_textedit.h" />
     <ClInclude Include="..\..\3rdParty\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\..\3rdParty\TileableVolumeNoise\libtarga.h" />
+    <ClInclude Include="..\..\3rdParty\TileableVolumeNoise\TileableVolumeNoise.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\bstrlib.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\Headers\glsw.h" />
     <ClInclude Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\Text\Headers\fontstash.h" />
@@ -727,6 +729,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\3rdParty\TileableVolumeNoise\libtarga.c" />
+    <ClCompile Include="..\..\3rdParty\TileableVolumeNoise\TileableVolumeNoise.cpp" />
     <ClCompile Include="..\..\Source Code\Platform\Video\RenderBackend\OpenGL\glsw\bstrlib.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>

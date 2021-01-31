@@ -187,6 +187,9 @@
     <Filter Include="fcpp">
       <UniqueIdentifier>{409eaca7-a02b-4c57-9a9b-b4cc5ccd0b28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TileableVolumeNoise">
+      <UniqueIdentifier>{c98b0d8c-d79c-4078-b8cf-5d1915607a3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\3rdParty\imgui\imconfig.h">
@@ -609,6 +612,12 @@
     <ClInclude Include="..\..\3rdParty\fcpp\FPPBase.h">
       <Filter>fcpp</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\3rdParty\TileableVolumeNoise\TileableVolumeNoise.h">
+      <Filter>TileableVolumeNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\TileableVolumeNoise\libtarga.h">
+      <Filter>TileableVolumeNoise</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3rdParty\imgui\imgui.cpp">
@@ -1021,6 +1030,12 @@
     </ClCompile>
     <ClCompile Include="..\..\3rdParty\fcpp\cpp6.c">
       <Filter>fcpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\TileableVolumeNoise\TileableVolumeNoise.cpp">
+      <Filter>TileableVolumeNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\TileableVolumeNoise\libtarga.c">
+      <Filter>TileableVolumeNoise</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -114,8 +114,8 @@ class Scene : public Resource, public PlatformContextComponent {
     friend class Attorney::SceneEnvironmentProbeComponent;
 
    protected:
-    static bool onStartup();
-    static bool onShutdown();
+    static bool OnStartup(PlatformContext& context);
+    static bool OnShutdown(PlatformContext& context);
     static stringImpl GetPlayerSGNName(PlayerIndex idx);
 
    public:
@@ -425,12 +425,12 @@ class SceneManager {
         scene.onRemoveActive();
     }
 
-    static bool onStartup() {
-        return Scene::onStartup();
+    static bool onStartup(PlatformContext& context) {
+        return Scene::OnStartup(context);
     }
 
-    static bool onShutdown() {
-        return Scene::onShutdown();
+    static bool onShutdown(PlatformContext& context) {
+        return Scene::OnShutdown(context);
     }
 
     static SceneGUIElements* gui(Scene& scene) noexcept {

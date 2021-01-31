@@ -64,6 +64,7 @@ struct Paths {
     static ResourcePath g_assetsLocation;
     static ResourcePath g_shadersLocation;
     static ResourcePath g_texturesLocation;
+    static ResourcePath g_proceduralTxturesLocation;
     static ResourcePath g_heightmapLocation;
     static ResourcePath g_climatesLowResLocation;
     static ResourcePath g_climatesMedResLocation;

@@ -13,6 +13,7 @@ ResourcePath Paths::g_exePath;
 ResourcePath Paths::g_assetsLocation;
 ResourcePath Paths::g_shadersLocation;
 ResourcePath Paths::g_texturesLocation;
+ResourcePath Paths::g_proceduralTxturesLocation;
 ResourcePath Paths::g_heightmapLocation;
 ResourcePath Paths::g_climatesLowResLocation;
 ResourcePath Paths::g_climatesMedResLocation;
@@ -78,6 +79,7 @@ void Paths::initPaths(const SysInfo& info) {
     g_assetsLocation = ResourcePath("assets/");
     g_shadersLocation = ResourcePath("shaders/");
     g_texturesLocation = ResourcePath("textures/");
+    g_proceduralTxturesLocation = ResourcePath("procTextures/");
     g_heightmapLocation = ResourcePath("terrain/");
     g_climatesLowResLocation = ResourcePath("climates_05k/");
     g_climatesMedResLocation = ResourcePath("climates_1k/");

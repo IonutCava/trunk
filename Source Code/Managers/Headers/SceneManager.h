@@ -86,8 +86,8 @@ public:
     using PlayerList = std::array<UnitComponent*, Config::MAX_LOCAL_PLAYER_COUNT>;
 
 public:
-    static bool onStartup();
-    static bool onShutdown();
+    static bool OnStartup(PlatformContext& context);
+    static bool OnShutdown(PlatformContext& context);
 
     explicit SceneManager(Kernel& parentKernel);
     ~SceneManager();

@@ -73,6 +73,7 @@ class Sky final : public SceneNode {
     explicit Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, U32 diameter);
     ~Sky() = default;
 
+    static void OnStartup(PlatformContext& context);
     // Returns the sun position and intensity details for the specified date-time
     SunDetails setDateTime(struct tm *dateTime);
     SimpleTime GetTimeOfDay() const noexcept;
@@ -85,7 +86,9 @@ class Sky final : public SceneNode {
     PROPERTY_R(Atmosphere, defaultAtmosphere);
 
     PROPERTY_R(size_t, skyboxSampler, 0);
+    PROPERTY_R(size_t, noiseSampler, 0);
 
+    PROPERTY_RW(bool, enableProceduralClouds, false);
     PROPERTY_RW(bool, useDaySkybox, true);
     PROPERTY_RW(bool, useNightSkybox, true);
     PROPERTY_RW(FColour4, nightSkyColour, DefaultColours::BLACK);
@@ -122,8 +125,13 @@ protected:
     GFXDevice& _context;
     Sun _sun;
     Texture_ptr  _skybox[2] = { nullptr, nullptr };
+    Texture_ptr _weatherTex = nullptr;
+    Texture_ptr _curlNoiseTex = nullptr;
+    Texture_ptr _worlNoiseTex = nullptr;
+    Texture_ptr _perWorlNoiseTex = nullptr;
     Sphere3D_ptr _sky = nullptr;
     ShaderProgram_ptr _skyShader = nullptr;
+    ShaderProgram_ptr _skyShaderClouds = nullptr;
     ShaderProgram_ptr _skyShaderPrePass = nullptr;
     size_t _skyboxRenderStateHash = 0;
     size_t _skyboxRenderStateHashPrePass = 0;

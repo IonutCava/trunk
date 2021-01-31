@@ -47,8 +47,8 @@ public:
     virtual ~Script();
 
     static void idle();
-    static bool onStartup();
-    static bool onShutdown();
+    static bool OnStartup(PlatformContext& context);
+    static bool OnShutdown(PlatformContext& context);
 
     template<typename T>
     void addGlobal(const T& var, const char* name, bool asConst, bool overwrite);

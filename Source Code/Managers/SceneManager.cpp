@@ -35,17 +35,17 @@
 
 namespace Divide {
 
-bool SceneManager::onStartup() {
-    if (RenderPassCuller::onStartup()) {
-        return Attorney::SceneManager::onStartup();
+bool SceneManager::OnStartup(PlatformContext& context) {
+    if (RenderPassCuller::OnStartup(context)) {
+        return Attorney::SceneManager::onStartup(context);
     }
     
     return false;
 }
 
-bool SceneManager::onShutdown() {
-    if (RenderPassCuller::onShutdown()) {
-        return Attorney::SceneManager::onShutdown();
+bool SceneManager::OnShutdown(PlatformContext& context) {
+    if (RenderPassCuller::OnShutdown(context)) {
+        return Attorney::SceneManager::onShutdown(context);
     }
 
     return false;

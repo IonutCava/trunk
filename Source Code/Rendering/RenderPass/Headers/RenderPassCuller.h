@@ -113,8 +113,8 @@ class RenderPassCuller {
         RenderPassCuller() = default;
         ~RenderPassCuller() = default;
 
-        static bool onStartup();
-        static bool onShutdown();
+        static bool OnStartup(PlatformContext& context);
+        static bool OnShutdown(PlatformContext& context);
 
         void clear() noexcept;
 

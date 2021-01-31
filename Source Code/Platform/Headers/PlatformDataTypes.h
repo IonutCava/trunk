@@ -421,8 +421,8 @@ constexpr D128 to_D128(const T value) {
 }
 
 template<typename T>
-constexpr char to_byte(const T value) {
-    return static_cast<char>(value);
+constexpr Byte to_byte(const T value) {
+    return static_cast<Byte>(value);
 }
 
 //ref: http://codereview.stackexchange.com/questions/51235/udp-network-server-client-for-gaming-using-boost-asio

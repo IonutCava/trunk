@@ -2,10 +2,9 @@
 
 #include "Headers/Sky.h"
 
-
-
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
+#include "Core/Headers/EngineTaskPool.h"
 #include "Core/Resources/Headers/ResourceCache.h"
 #include "Headers/Sun.h"
 
@@ -17,9 +16,197 @@
 #include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Geometry/Shapes/Predefined/Headers/Sphere3D.h"
 #include "ECS/Components/Headers/RenderingComponent.h"
-#include "ECS/Components/Headers/TransformComponent.h"
+
+#ifdef _MSC_VER
+# pragma warning (push)
+# pragma warning (disable: 4505)
+#endif
+
+#include <TileableVolumeNoise/TileableVolumeNoise.h>
+
+#ifndef STBI_INCLUDE_STB_IMAGE_WRITE_H
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_STATIC
+#include <STB/stb_image_write.h>
+#endif //STBI_INCLUDE_STB_IMAGE_WRITE_H
+#ifdef _MSC_VER
+# pragma warning (pop)
+#endif
 
 namespace Divide {
+
+namespace {
+    const auto procLocation = []() {
+        return Paths::g_assetsLocation + Paths::g_texturesLocation + Paths::g_proceduralTxturesLocation;
+    };
+
+    const char* curlTexName = "curlnoise.bmp";
+    const char* weatherTexName = "weather.bmp";
+    const char* worlTexName = "worlnoise.bmp";
+    const char* perlWorlTexName = "perlworlnoise.tga";
+
+    void GenerateCurlNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
+        Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
+        for (I32 i = 0; i < width * height * channelCount; i += 3) {
+            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % width) / to_F32(width), to_F32((i / channelCount) / height) / to_F32(height), 0.012f);
+            const glm::vec3 offset1 = glm::vec3(31.341f, -43.23f, 12.34f); //random offset
+            const glm::vec3 offset2 = glm::vec3(-231.341f, 124.23f, -54.34f); //random offset
+
+            const F32 s0 = Tileable3dNoise::PerlinNoise(pos, 0.08f, 3);
+            const F32 s1 = Tileable3dNoise::PerlinNoise(pos + offset1, 0.08f, 3);
+            const F32 s2 = Tileable3dNoise::PerlinNoise(pos + offset2, 0.08f, 3);
+
+            data[i + 0] = to_byte(s0 * 128.f + 127.f);
+            data[i + 1] = to_byte(s1 * 128.f + 127.f);
+            data[i + 2] = to_byte(s2 * 128.f + 127.f);
+        }
+
+        stbi_write_bmp(fileName, width, height, channelCount, data);
+        MemoryManager::SAFE_DELETE(data);
+    }
+
+    void GeneratePerlinNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
+        Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
+        for (I32 i = 0; i < width * height * channelCount; i += 3) {
+            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % width) / to_F32(width), to_F32((i / channelCount) / height) / to_F32(height), 0.051f);
+            const glm::vec3 offset1 = glm::vec3(0.f, 0.f, 581.163f);
+            const glm::vec3 offset2 = glm::vec3(0.f, 0.f, 1245.463f);
+            //const glm::vec3 offset3 = glm::vec3(0.f, 0.f, 2245.863f);
+
+            const F32 perlinNoise  = Tileable3dNoise::PerlinNoise(pos, 8, 3);
+            const F32 perlinNoise2 = Tileable3dNoise::PerlinNoise(pos + offset1, 8, 3);
+                  F32 perlinNoise3 = Tileable3dNoise::PerlinNoise(pos + offset2, 2, 3);
+                  //F32 perlinNoise4 = Tileable3dNoise::PerlinNoise(pos + offset3, 4, 3);
+            perlinNoise3 = std::min(1.f, (glm::smoothstep(0.45f, 0.8f, perlinNoise3) + glm::smoothstep(0.25f, 0.45f, perlinNoise3) * 0.5f));
+            data[i + 0] = to_byte(perlinNoise * 128.f + 127.f);
+            data[i + 1] = to_byte(glm::smoothstep(0.5f, 0.7f, perlinNoise2) * 255.f);
+            data[i + 2] = to_byte(perlinNoise3 * 255.f);
+        }
+        stbi_write_bmp(fileName, width, height, channelCount, data);
+        MemoryManager::SAFE_DELETE(data);
+    }
+
+    void GenerateWorleyNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
+        Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
+        for (I32 i = 0; i < width * height * channelCount; i += 3) {
+            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height), to_F32(((i / channelCount) / height) % height) / to_F32(height), to_F32((i / channelCount) / width) / to_F32(height));
+            const F32 cell0 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 2);
+            const F32 cell1 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 4);
+            const F32 cell2 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 8);
+            const F32 cell3 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 16);
+
+            const F32 cellFBM0 = cell0 * 0.5f + cell1 * 0.35f + cell2 * 0.15f;
+            const F32 cellFBM1 = cell1 * 0.5f + cell2 * 0.35f + cell3 * 0.15f;
+            const F32 cellFBM2 = cell2 * 0.75f + cell3 * 0.25f; // cellCount=4 -> worleyNoise4 is just noise due to sampling frequency=texel freque. So only take into account 2 frequenciM
+            data[i + 0] = to_byte(cellFBM0 * 255);
+            data[i + 1] = to_byte(cellFBM1 * 255);
+            data[i + 2] = to_byte(cellFBM2 * 255);
+        }
+        stbi_write_bmp(fileName, width, height, channelCount, data);
+        MemoryManager::SAFE_DELETE(data);
+    }
+
+    void GeneratePerlinWorleyNoise(const Task& parentTask, const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
+        Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
+
+        ParallelForDescriptor descriptor = {};
+        descriptor._iterCount = width * height * channelCount;
+        descriptor._partitionSize = height;
+        descriptor._cbk = [&](const Task*, const U32 start, const U32 end) -> void {
+            for (U32 i = start; i < end; i += 4) {
+                const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height), to_F32(((i / channelCount) / height) % height) / to_F32(height), to_F32((i / channelCount) / width) / to_F32(height));
+                // Perlin FBM noise
+                const F32 perlinNoise = Tileable3dNoise::PerlinNoise(pos, 8, 3);
+
+                const F32 worleyNoise00 = (1.0f - Tileable3dNoise::WorleyNoise(pos, 8));
+                const F32 worleyNoise01 = (1.0f - Tileable3dNoise::WorleyNoise(pos, 32));
+                const F32 worleyNoise02 = (1.0f - Tileable3dNoise::WorleyNoise(pos, 56));
+                //const F32 worleyNoise3 = (1.0f - Tileable3dNoise::WorleyNoise(coord, 80));
+                //const F32 worleyNoise4 = (1.0f - Tileable3dNoise::WorleyNoise(coord, 104));
+                //const F32 worleyNoise5 = (1.0f - Tileable3dNoise::WorleyNoise(coord, 128)); // half the frequency of texel, we should not go further (with cellCount = 32 and texture size = 64)
+                                                                                              // PerlinWorley noise as described p.101 of GPU Pro 7
+                const F32 worleyFBM = worleyNoise00 * 0.625f + worleyNoise01 * 0.25f + worleyNoise02 * 0.125f;
+                const F32 PerlWorlNoise = MAP(perlinNoise, 0.f, 1.f, worleyFBM, 1.f);
+
+                //F32 worleyNoise0 = (1.0f - Tileable3dNoise::WorleyNoise(coord, 4));
+                //F32 worleyNoise1 = (1.0f - Tileable3dNoise::WorleyNoise(coord, 8));
+                const F32 worleyNoise12 = (1.0f - Tileable3dNoise::WorleyNoise(pos, 16));
+                //F32 worleyNoise3 = (1.0f - Tileable3dNoise::WorleyNoise(coord, 32));
+                const F32 worleyNoise14 = (1.0f - Tileable3dNoise::WorleyNoise(pos, 64));
+                // Three frequency of Worley FBM noise
+                const F32 worleyFBM0 = worleyNoise00 * 0.625f + worleyNoise12 * 0.25f + worleyNoise01 * 0.125f;
+                const F32 worleyFBM1 = worleyNoise12 * 0.625f + worleyNoise01 * 0.25f + worleyNoise14 * 0.125f;
+                const F32 worleyFBM2 = worleyNoise01 * 0.75f + worleyNoise14 * 0.25f; // cellCount=4 -> worleyNoise5 is just noise due to sampling frequency=texel frequency. So only take into account 2 frequencies for FBM
+                data[i + 0] = to_byte(PerlWorlNoise * 255);
+                data[i + 1] = to_byte(worleyFBM0 * 255);
+                data[i + 2] = to_byte(worleyFBM1 * 255);
+                data[i + 3] = to_byte(worleyFBM2 * 255);
+            }
+        };
+        parallel_for(*parentTask._parentPool, descriptor);
+        stbi_write_tga(fileName, width, height, channelCount, data);
+        MemoryManager::DELETE_ARRAY(data);
+    }
+}
+
+
+void Sky::OnStartup(PlatformContext& context) {
+    static bool init = false;
+    if (init) {
+        return;
+    }
+
+    init = true;
+    //ref: https://github.com/clayjohn/realtime_clouds/blob/master/gen_noise.cpp
+    std::array<Task*, 4> tasks{ nullptr };
+
+    const ResourcePath curlNoise = procLocation() + curlTexName;
+    const ResourcePath weather = procLocation() + weatherTexName;
+    const ResourcePath worlNoise = procLocation() + worlTexName;
+    const ResourcePath perWordNoise = procLocation() + perlWorlTexName;
+
+    if (!fileExists(curlNoise)) {
+        Console::printfn("Generating Curl Noise 128x128 RGB");
+        tasks[0] = CreateTask(context, [&curlNoise](const Task&) { GenerateCurlNoise(curlNoise.c_str(), 128, 128, 3); });
+        Start(*tasks[0]);
+        Console::printfn("Done!");
+    }
+
+    if (!fileExists(weather)) {
+        Console::printfn("Generating Perlin Noise for LUT's");
+        Console::printfn("Generating weather Noise 512x512 RGB");
+        tasks[1] = CreateTask(context, [&weather](const Task&) { GeneratePerlinNoise(weather.c_str(), 512, 512, 3); });
+        Start(*tasks[1]);
+        Console::printfn("Done!");
+    }
+
+    if (!fileExists(worlNoise)) {
+        //worley and perlin-worley are from github/sebh/TileableVolumeNoise
+        //which is in turn based on noise described in 'real time rendering of volumetric cloudscapes for horizon zero dawn'
+        Console::printfn("Generating Worley Noise 32x32x32 RGB");
+        tasks[2] = CreateTask(context, [&worlNoise](const Task&) { GenerateWorleyNoise(worlNoise.c_str(), 32 * 32, 32, 3); });
+        Start(*tasks[2]);
+        Console::printfn("Done!");
+    }
+
+    if (!fileExists(perWordNoise)) {
+        Console::printfn("Generating Perlin-Worley Noise 128x128x128 RGBA");
+        tasks[3] = CreateTask(context, [&perWordNoise](const Task& parentTask) { GeneratePerlinWorleyNoise(parentTask, perWordNoise.c_str(), 128 * 128, 128, 4); });
+        Start(*tasks[3]);
+        Console::printfn("Done!");
+    }
+
+    bool keepWaiting = true;
+    while(keepWaiting) {
+        keepWaiting = false;
+        for (Task* task : tasks) {
+            if (task != nullptr && !Finished(*task)) {
+                keepWaiting = true;
+                break;
+            }
+        }
+    }
+}
 
 Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, const Str256& name, U32 diameter)
     : SceneNode(parentCache, descriptorHash, name, ResourcePath{ name }, {}, SceneNodeType::TYPE_SKY, to_base(ComponentType::TRANSFORM) | to_base(ComponentType::BOUNDS) | to_base(ComponentType::SCRIPT)),
@@ -54,6 +241,8 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     getEditorComponent().onChangedCbk([this](const std::string_view field) {
         if (field == "Reset To Default") {
             _atmosphere = defaultAtmosphere();
+        } else if (field == "Enable Procedural Clouds") {
+            rebuildDrawCommands(true);
         }
 
         _atmosphereChanged = EditorDataState::QUEUED; 
@@ -190,6 +379,14 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     useNightSkyboxField._basicType = GFX::PushConstantType::BOOL;
     getEditorComponent().registerField(MOV(useNightSkyboxField));
 
+    EditorComponentField useProceduralCloudsField = {};
+    useProceduralCloudsField._name = "Enable Procedural Clouds";
+    useProceduralCloudsField._data = &_enableProceduralClouds;
+    useProceduralCloudsField._type = EditorComponentFieldType::PUSH_TYPE;
+    useProceduralCloudsField._readOnly = false;
+    useProceduralCloudsField._basicType = GFX::PushConstantType::BOOL;
+    getEditorComponent().registerField(MOV(useProceduralCloudsField));
+
     EditorComponentField nightColourField = {};
     nightColourField._name = "Night Colour";
     nightColourField._data = &_nightSkyColour;
@@ -236,9 +433,13 @@ bool Sky::load() {
     skyboxSampler.anisotropyLevel(0);
     _skyboxSampler = skyboxSampler.getHash();
 
-    TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
-    skyboxTexture.srgb(true);
+    skyboxSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    _noiseSampler = skyboxSampler.getHash();
+
     {
+        TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
+        skyboxTexture.srgb(true);
+    
         ResourceDescriptor skyboxTextures("DayTextures");
         skyboxTextures.assetName(ResourcePath{ "skyboxDay_FRONT.jpg, skyboxDay_BACK.jpg, skyboxDay_UP.jpg, skyboxDay_DOWN.jpg, skyboxDay_LEFT.jpg, skyboxDay_RIGHT.jpg" });
         skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation + "/SkyBoxes/");
@@ -254,6 +455,43 @@ bool Sky::load() {
         _skybox[1] = CreateResource<Texture>(_parentCache, nightTextures, loadTasks);
     }
 
+    {
+        TextureDescriptor textureDescriptor(TextureType::TEXTURE_3D);
+        textureDescriptor.srgb(false);
+
+        ResourceDescriptor worlDescriptor("worlNoise");
+        worlDescriptor.assetName(ResourcePath(worlTexName));
+        worlDescriptor.assetLocation(procLocation());
+        worlDescriptor.propertyDescriptor(textureDescriptor);
+        worlDescriptor.waitForReady(false);
+        _worlNoiseTex = CreateResource<Texture>(_parentCache, worlDescriptor);
+
+        ResourceDescriptor perlWorlDescriptor("perlWorl");
+        perlWorlDescriptor.assetName(ResourcePath(perlWorlTexName));
+        perlWorlDescriptor.assetLocation(procLocation());
+        perlWorlDescriptor.propertyDescriptor(textureDescriptor);
+        perlWorlDescriptor.waitForReady(false);
+        _perWorlNoiseTex = CreateResource<Texture>(_parentCache, perlWorlDescriptor);
+
+        textureDescriptor.texType(TextureType::TEXTURE_2D);
+        textureDescriptor.mipCount(1u);
+
+        ResourceDescriptor weatherDescriptor("Weather");
+        weatherDescriptor.assetName(ResourcePath(weatherTexName));
+        weatherDescriptor.assetLocation(procLocation());
+        weatherDescriptor.propertyDescriptor(textureDescriptor);
+        weatherDescriptor.waitForReady(false);
+        _weatherTex = CreateResource<Texture>(_parentCache, weatherDescriptor);
+
+
+        ResourceDescriptor curlDescriptor("CurlNoise");
+        curlDescriptor.assetName(ResourcePath(curlTexName));
+        curlDescriptor.assetLocation(procLocation());
+        curlDescriptor.propertyDescriptor(textureDescriptor);
+        curlDescriptor.waitForReady(false);
+        _curlNoiseTex = CreateResource<Texture>(_parentCache, curlDescriptor);
+    }
+
     const F32 radius = _diameter * 0.5f;
 
     ResourceDescriptor skybox("SkyBox");
@@ -264,6 +502,8 @@ bool Sky::load() {
     _sky->renderState().drawState(false);
 
 
+    const bool isEnabledSky = _context.context().config().debug.renderFilter.sky;
+
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "sky.glsl";
@@ -272,24 +512,34 @@ bool Sky::load() {
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "sky.glsl";
-    if (_context.context().config().debug.renderFilter.sky) {
-        fragModule._variant = "Display";
-    } else {
-        fragModule._variant = "PassThrough";
-    }
 
     ShaderProgramDescriptor shaderDescriptor = {};
-    shaderDescriptor._modules.push_back(vertModule);
-    shaderDescriptor._modules.push_back(fragModule);
+    {
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.back()._variant = "NoClouds";
+        shaderDescriptor._modules.push_back(fragModule);
+        shaderDescriptor._modules.back()._variant = isEnabledSky ? "NoClouds" : "PassThrough";
 
-    ResourceDescriptor skyShaderDescriptor("sky_Display");
-    skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
-    skyShaderDescriptor.waitForReady(false);
-    _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
+        ResourceDescriptor skyShaderDescriptor("sky_Display_NoClouds");
+        skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
+        skyShaderDescriptor.waitForReady(false);
+        _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
+    }
+    {
+        shaderDescriptor = {};
+        shaderDescriptor._modules.push_back(vertModule);
+        shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "NoClouds";
+        shaderDescriptor._modules.push_back(fragModule);
+        shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "PassThrough";
 
-    fragModule._variant = "PrePass";
+        ResourceDescriptor skyShaderDescriptor("sky_Display_Clouds");
+        skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
+        skyShaderDescriptor.waitForReady(false);
+        _skyShaderClouds = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
+    }
 
     shaderDescriptor = {};
+    vertModule._variant = "NoClouds";
     shaderDescriptor._modules.push_back(vertModule);
 
     ResourceDescriptor skyShaderPrePassDescriptor("sky_PrePass");
@@ -403,7 +653,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
         pipelineDescriptor._stateHash = renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHash
                                             : _skyboxRenderStateHash;
-        pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();
+        pipelineDescriptor._shaderProgramHandle = enableProceduralClouds() ? _skyShaderClouds->getGUID() :  _skyShader->getGUID();
     }
 
     GFX::BindPipelineCommand pipelineCommand = {};
@@ -413,6 +663,12 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
     bindDescriptorSetsCommand._set._textureData.add({ _skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0 });
     bindDescriptorSetsCommand._set._textureData.add({ _skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1 });
+
+    bindDescriptorSetsCommand._set._textureData.add({ _weatherTex->data(), _skyboxSampler, TextureUsage::HEIGHTMAP });
+    bindDescriptorSetsCommand._set._textureData.add({ _curlNoiseTex->data(), _skyboxSampler, TextureUsage::OPACITY });
+    bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSampler, TextureUsage::OCCLUSION_METALLIC_ROUGHNESS });
+    bindDescriptorSetsCommand._set._textureData.add({ _perWorlNoiseTex->data(), _noiseSampler, TextureUsage::NORMALMAP });
+
     pkgInOut.add(bindDescriptorSetsCommand);
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
