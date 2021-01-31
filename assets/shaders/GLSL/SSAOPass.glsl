@@ -10,16 +10,16 @@ See "license.txt" or "http://copyfree.org/licenses/mit/license.txt".
 
 #include "utility.frag"
 
-ADD_UNIFORM(mat4, projectionMatrix);
-ADD_UNIFORM(mat4, invProjectionMatrix);
-ADD_UNIFORM(vec2, SSAO_NOISE_SCALE);
-ADD_UNIFORM(vec2, zPlanes);
-ADD_UNIFORM(float, SSAO_RADIUS);
-ADD_UNIFORM(float, SSAO_BIAS);
-ADD_UNIFORM(float, SSAO_INTENSITY);
-ADD_UNIFORM(float, maxRange);
-ADD_UNIFORM(float, fadeStart);
-ADD_UNIFORM(vec3, sampleKernel[SSAO_SAMPLE_COUNT]);
+uniform mat4 projectionMatrix;
+uniform mat4 invProjectionMatrix;
+uniform vec2 SSAO_NOISE_SCALE;
+uniform vec2 zPlanes;
+uniform float SSAO_RADIUS;
+uniform float SSAO_BIAS;
+uniform float SSAO_INTENSITY;
+uniform float maxRange;
+uniform float fadeStart;
+uniform vec3 sampleKernel[SSAO_SAMPLE_COUNT];
 
 // Input screen texture
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
@@ -101,9 +101,9 @@ void main(void) {
 layout(binding = TEXTURE_UNIT0)      uniform sampler2D texSSAO;
 layout(binding = TEXTURE_DEPTH_MAP)  uniform sampler2D texDepthMap;
 
-ADD_UNIFORM(vec2, zPlanes);
-ADD_UNIFORM(vec2, texelSize);
-ADD_UNIFORM(float, depthThreshold);
+uniform vec2 zPlanes;
+uniform vec2 texelSize;
+uniform float depthThreshold;
 
 //r - ssao
 layout(location = TARGET_EXTRA) out vec2 _output;

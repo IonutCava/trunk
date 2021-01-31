@@ -71,7 +71,7 @@ struct NodeTransformData {
 };
 
 #if defined(PROJECTED_TEXTURE)
-ADD_UNIFORM(float, projectedTextureMixWeight)
+uniform float projectedTextureMixWeight;
 #endif //PROJECTED_TEXTURE
 
 #if defined(FRAG_SHADER) || defined(NEED_MATERIAL_DATA)

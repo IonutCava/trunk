@@ -783,7 +783,8 @@ void glShaderProgram::uploadPushConstants(const PushConstants& constants) {
 }
 
 eastl::string  glShaderProgram::GatherUniformDeclarations(const eastl::string & source, vectorEASTL<UniformDeclaration>& foundUniforms) {
-    static const boost::regex uniformPattern = boost::regex(R"(^\s*ADD_UNIFORM(?:\s+\w+)*\s*\(([^),]*)\s*,\s*([^),]*)\))");
+    static const boost::regex uniformPattern = boost::regex(R"(^\s*uniform\s+\s*([^),^;^\s]*)\s+([^),^;^\s]*\[*\s*\]*)\s*(?:=*)\s*(?:\d*.*)\s*(?:;+))");
+
     eastl::string ret;
     ret.reserve(source.size());
 

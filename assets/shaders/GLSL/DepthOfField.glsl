@@ -47,35 +47,35 @@ changelog:
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
 
-ADD_UNIFORM(vec2, size)
+uniform vec2 size;
 // autofocus point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)
-ADD_UNIFORM(vec2, focus)
-ADD_UNIFORM(vec2, zPlanes)
+uniform vec2 focus;
+uniform vec2 zPlanes;
 //focal distance value in meters, but you may use autofocus option below
-ADD_UNIFORM(float, focalDepth)
+uniform float focalDepth;
 //focal length in mm
-ADD_UNIFORM(float, focalLength)
-ADD_UNIFORM(float, fstop)
+uniform float focalLength;
+uniform float fstop;
 //near dof blur start
-ADD_UNIFORM(float, ndofstart)
+uniform float ndofstart;
 //near dof blur falloff distance
-ADD_UNIFORM(float, ndofdist)
+uniform float ndofdist;
 //far dof blur start
-ADD_UNIFORM(float, fdofstart)
+uniform float fdofstart;
 //far dof blur falloff distance
-ADD_UNIFORM(float, fdofdist)
+uniform float fdofdist;
 //vignetting outer border
-ADD_UNIFORM(float, vignout)
+uniform float vignout;
 //vignetting inner border
-ADD_UNIFORM(float, vignin)
+uniform float vignin;
 //show debug focus point and focal range (red = focal point, green = focal range)
-ADD_UNIFORM(bool, showFocus)
+uniform bool showFocus;
 //manual dof calculation
-ADD_UNIFORM(bool, manualdof)
+uniform bool manualdof;
 //use optical lens vignetting?
-ADD_UNIFORM(bool, vignetting)
+uniform bool vignetting;
 //use autofocus in shader? disable if you use external focalDepth value
-ADD_UNIFORM(bool, autofocus)
+uniform bool autofocus;
 
 out vec4 _colourOut;
 

@@ -3,7 +3,7 @@
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texBloom;
 
-ADD_UNIFORM(float, bloomFactor)
+uniform float bloomFactor;
 
 
 out vec4 _colourOut;
@@ -19,7 +19,7 @@ void main() {
 #include "utility.frag"
 out vec4 _bloomOut;
 
-ADD_UNIFORM(float, luminanceThreshold)
+uniform float luminanceThreshold;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 

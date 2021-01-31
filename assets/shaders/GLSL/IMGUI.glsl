@@ -26,10 +26,10 @@ layout(location = 1) in vec4 Frag_Color;
 
 out vec4 Out_Color;
 
-ADD_UNIFORM(ivec4, toggleChannel)
-ADD_UNIFORM(vec2, depthRange)
-ADD_UNIFORM(int, depthTexture)
-ADD_UNIFORM(int, flip)
+uniform ivec4 toggleChannel;
+uniform vec2 depthRange;
+uniform int depthTexture;
+uniform int flip;
 
 void main()
 {

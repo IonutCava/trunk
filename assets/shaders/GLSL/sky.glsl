@@ -29,9 +29,9 @@ layout(early_fragment_tests) in;
 layout(binding = TEXTURE_UNIT0) uniform samplerCube texSkyDay;
 layout(binding = TEXTURE_UNIT1) uniform samplerCube texSkyNight;
 
-ADD_UNIFORM(vec4, dvd_atmosphereData[3]);
-ADD_UNIFORM(vec3, dvd_nightSkyColour);
-ADD_UNIFORM(ivec2, dvd_useSkyboxes);
+uniform vec4 dvd_atmosphereData[3];
+uniform vec3 dvd_nightSkyColour;
+uniform ivec2 dvd_useSkyboxes;
 
 #define dvd_sunIntensity  dvd_atmosphereData[0].x
 #define dvd_planetRadius  dvd_atmosphereData[0].y

@@ -1,16 +1,16 @@
--- Compute
+--Compute
 
 #define dvd_dataFlag 0
 #define INVS_SQRT_3 0.57735026919f
 #if defined(CULL_TREES)
-ADD_UNIFORM(vec4, treeExtents)
-ADD_UNIFORM(float, dvd_treeVisibilityDistance)
+uniform vec4 treeExtents;
+uniform float dvd_treeVisibilityDistance;
 #else
-ADD_UNIFORM(vec4, grassExtents)
-ADD_UNIFORM(float, dvd_grassVisibilityDistance)
+uniform vec4 grassExtents;
+uniform float dvd_grassVisibilityDistance;
 #endif
 
-ADD_UNIFORM(uint, dvd_terrainChunkOffset)
+uniform uint dvd_terrainChunkOffset;
 
 #define NEED_SCENE_DATA
 #include "HiZCullingAlgorithm.cmn";

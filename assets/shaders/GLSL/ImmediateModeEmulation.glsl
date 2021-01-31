@@ -4,9 +4,9 @@ layout(location = ATTRIB_POSITION) in vec3 inVertexData;
 layout(location = ATTRIB_TEXCOORD) in vec2 inTexCoordData;
 layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
-ADD_UNIFORM(mat4, dvd_WorldMatrix)
-ADD_UNIFORM(bool, useTexture)
-ADD_UNIFORM(bool, skipPostFX)
+uniform mat4 dvd_WorldMatrix;
+uniform bool useTexture;
+uniform bool skipPostFX;
 
 layout(location = 0) out vec4 _colour;
 
@@ -23,9 +23,9 @@ void main(){
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
-ADD_UNIFORM(mat4, dvd_WorldMatrix)
-ADD_UNIFORM(bool, useTexture)
-ADD_UNIFORM(bool, skipPostFX)
+uniform mat4 dvd_WorldMatrix;
+uniform bool useTexture;
+uniform bool skipPostFX;
 
 layout(location = 0) in  vec4 _colour;
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
@@ -72,8 +72,8 @@ void main(){
 
 #include "nodeBufferedInput.cmn"
 
-ADD_UNIFORM(mat4, dvd_WorldMatrixOverride)
-ADD_UNIFORM(uint, dvd_LayerIndex)
+uniform mat4 dvd_WorldMatrixOverride;
+uniform uint dvd_LayerIndex;
 
 void main(void) {
     vec3 dvd_Normal = UNPACK_VEC3(inNormalData);
@@ -92,8 +92,8 @@ void main(void) {
 #include "utility.frag"
 #include "output.frag"
 
-ADD_UNIFORM(mat4, dvd_WorldMatrixOverride)
-ADD_UNIFORM(uint, dvd_LayerIndex)
+uniform mat4 dvd_WorldMatrixOverride;
+uniform uint dvd_LayerIndex;
 
 layout(binding = TEXTURE_REFLECTION_CUBE) uniform samplerCube texEnvironmentCube;
 

@@ -1,9 +1,9 @@
 #ifndef _TERRAIN_UTILS_CMN_
 #define _TERRAIN_UTILS_CMN_
 
-ADD_UNIFORM(mat4, dvd_terrainWorld)
-ADD_UNIFORM(vec2, dvd_uvEyeOffset)
-ADD_UNIFORM(float, dvd_tessTriangleWidth)
+uniform mat4 dvd_terrainWorld;
+uniform vec2 dvd_uvEyeOffset;
+uniform float dvd_tessTriangleWidth;
 
 #define AdjustHeight(H) WORLD_SCALE_Y * H + TERRAIN_HEIGHT_OFFSET
 #define GetHeight(UV) AdjustHeight(texture(texHeight, UV).r)

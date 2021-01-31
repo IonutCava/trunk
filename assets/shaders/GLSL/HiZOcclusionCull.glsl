@@ -4,8 +4,8 @@
 
 #define INVS_SQRT_3 0.57735026919f
 
-ADD_UNIFORM(uint, dvd_numEntities)
-ADD_UNIFORM(uint, dvd_countCulledItems)
+uniform uint dvd_numEntities;
+uniform uint dvd_countCulledItems;
 
 layout(binding = BUFFER_ATOMIC_COUNTER, offset = 0) uniform atomic_uint culledCount;
 

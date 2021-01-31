@@ -13,20 +13,20 @@ layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
 layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
 layout(binding = TEXTURE_DEPTH_MAP)         uniform sampler2D texDepthMap;
 
-ADD_UNIFORM(mat4, invViewMatrix);
-ADD_UNIFORM(mat4, invProjectionMatrix);
-ADD_UNIFORM(vec4, _fadeColour);
-ADD_UNIFORM(vec3, camPosition);
-ADD_UNIFORM(vec2, _zPlanes);
-ADD_UNIFORM(float, _noiseTile);
-ADD_UNIFORM(float, _noiseFactor);
-ADD_UNIFORM(float, randomCoeffNoise);
-ADD_UNIFORM(float, randomCoeffFlash);
-ADD_UNIFORM(float, _fadeStrength);
-ADD_UNIFORM(bool, vignetteEnabled);
-ADD_UNIFORM(bool, noiseEnabled);
-ADD_UNIFORM(bool, underwaterEnabled);
-ADD_UNIFORM(bool, _fadeActive);
+uniform mat4 invViewMatrix;
+uniform mat4 invProjectionMatrix;
+uniform vec4 _fadeColour;
+uniform vec3 camPosition;
+uniform vec2 _zPlanes;
+uniform float _noiseTile;
+uniform float _noiseFactor;
+uniform float randomCoeffNoise;
+uniform float randomCoeffFlash;
+uniform float _fadeStrength;
+uniform bool vignetteEnabled;
+uniform bool noiseEnabled;
+uniform bool underwaterEnabled;
+uniform bool _fadeActive;
 
 vec4 Vignette(in vec4 colourIn){
     vec4 colourOut = colourIn - (vec4(1,1,1,2) - texture(texVignette, VAR._texCoord));

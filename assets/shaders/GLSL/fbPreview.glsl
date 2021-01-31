@@ -4,11 +4,11 @@
 
 out vec4 _colourOut;
 
-ADD_UNIFORM(float, lodLevel)
-ADD_UNIFORM(bool, unpack2Channel)
-ADD_UNIFORM(bool, unpack1Channel)
-ADD_UNIFORM(uint, startChannel)
-ADD_UNIFORM(float, multiplier)
+uniform float lodLevel;
+uniform bool unpack2Channel;
+uniform bool unpack1Channel;
+uniform uint startChannel;
+uniform float multiplier;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -37,8 +37,8 @@ void main()
 
 out vec4 _colourOut;
 
-ADD_UNIFORM(vec2, zPlanes)
-ADD_UNIFORM(float, lodLevel)
+uniform vec2 zPlanes;
+uniform float lodLevel;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -54,8 +54,8 @@ out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 
-ADD_UNIFORM(float, lodLevel)
-ADD_UNIFORM(int, layer)
+uniform float lodLevel;
+uniform int layer;
 
 void main()
 {
@@ -71,8 +71,8 @@ out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 
-ADD_UNIFORM(int, layer)
-ADD_UNIFORM(float, lodLevel)
+uniform int layer;
+uniform float lodLevel;
 
 void main()
 {
@@ -88,8 +88,8 @@ out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texDiffuse0;
 
-ADD_UNIFORM(int, layer)
-ADD_UNIFORM(int, face)
+uniform int layer;
+uniform int face;
 
 void main() {
     vec2 uv_cube = 2.0f * VAR._texCoord - 1.0f;
@@ -126,9 +126,9 @@ out vec4 _colourOut;
 
 layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texDiffuse0;
 
-ADD_UNIFORM(vec2, zPlanes)
-ADD_UNIFORM(int, layer)
-ADD_UNIFORM(int, face)
+uniform vec2 zPlanes;
+uniform int layer;
+uniform int face;
 
 void main()
 {

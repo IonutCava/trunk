@@ -3,7 +3,7 @@
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D HiZBuffer;
 
-ADD_UNIFORM(vec2, dvd_viewSize)
+uniform vec2 dvd_viewSize;
 
 bool SphereInFrustum(vec3 pos, float r) {
     for (int i = 0; i < 6; i++) {

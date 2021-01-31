@@ -7,12 +7,12 @@
 layout(points, invocations = GS_MAX_INVOCATIONS) in;
 layout(triangle_strip, max_vertices = 4) out;
 
-ADD_UNIFORM(vec2, blurSizes[GS_MAX_INVOCATIONS])
+uniform vec2 blurSizes[GS_MAX_INVOCATIONS];
 
-ADD_UNIFORM(int, layerCount)
-ADD_UNIFORM(int, layerOffsetRead)
-ADD_UNIFORM(int, layerOffsetWrite)
-ADD_UNIFORM(bool, verticalBlur)
+uniform int layerCount;
+uniform int layerOffsetRead;
+uniform int layerOffsetWrite;
+uniform bool verticalBlur;
 
 layout(location = 0) out flat int _blurred;
 #if GS_MAX_INVOCATIONS > 1
@@ -177,15 +177,15 @@ void main(void)
 out vec4 _colourOut;
 
 #if defined(LAYERED)
-ADD_UNIFORM(int, layer)
+uniform int layer;
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texScreen;
 #else
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 #endif
 
-ADD_UNIFORM(vec2, size)
-ADD_UNIFORM(int, kernelSize)
-ADD_UNIFORM(bool, verticalBlur)
+uniform vec2 size;
+uniform int kernelSize;
+uniform bool verticalBlur;
 
 #if defined(LAYERED)
 vec3 blurHorizontal() {
@@ -264,8 +264,8 @@ void main() {
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texVelocity;
 
-ADD_UNIFORM(float, dvd_velocityScale)
-ADD_UNIFORM(int, dvd_maxSamples)
+uniform float dvd_velocityScale;
+uniform int dvd_maxSamples;
 
 out vec4 _outColour;
 

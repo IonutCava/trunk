@@ -23,10 +23,10 @@ void main(void)
 layout(location = 0) in flat int _underwater;
 layout(location = 1) in vec4 _vertexWVP;
 
-ADD_UNIFORM(vec3, _refractionTint);
-ADD_UNIFORM(float, _specularShininess);
-ADD_UNIFORM(vec2, _noiseTile);
-ADD_UNIFORM(vec2, _noiseFactor);
+uniform vec3 _refractionTint;
+uniform float _specularShininess;
+uniform vec2 _noiseTile;
+uniform vec2 _noiseFactor;
 
 #define CUSTOM_IBL
 #define USE_SHADING_BLINN_PHONG
