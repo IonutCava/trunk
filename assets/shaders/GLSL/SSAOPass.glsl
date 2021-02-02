@@ -19,7 +19,7 @@ uniform float SSAO_BIAS;
 uniform float SSAO_INTENSITY;
 uniform float maxRange;
 uniform float fadeStart;
-uniform vec3 sampleKernel[SSAO_SAMPLE_COUNT];
+uniform vec4 sampleKernel[SSAO_SAMPLE_COUNT];
 
 // Input screen texture
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
@@ -52,8 +52,8 @@ void main(void) {
         // Normal gathering.
         const vec3 normalView = normalize(unpackNormal(GetNormal(VAR._texCoord)));
 
-        // Calculate the rotation matrix for the kernel.
-        const vec3 randomVector = vec3(texture(texNoise, VAR._texCoord * SSAO_NOISE_SCALE).xy, 0.0f);
+        // Calculate the rotation  for the kernel.
+        const vec3 randomVector = texture(texNoise, VAR._texCoord * SSAO_NOISE_SCALE).xyz * 2.f - 1.f;
 
         // Using Gram-Schmidt process to get an orthogonal vector to the normal vector.
         // The resulting tangent is on the same plane as the random and normal vector. 
@@ -69,7 +69,7 @@ void main(void) {
         float occlusion = 0.0;
         for (int i = 0; i < SSAO_SAMPLE_COUNT; ++i) {
             // Reorient sample vector in view space and calculate sample point.
-            const vec3 sampleVectorView = posView + (kernelMatrix * sampleKernel[i]) * SSAO_RADIUS;
+            const vec3 sampleVectorView = posView + (kernelMatrix * sampleKernel[i].xyz) * SSAO_RADIUS;
 
             // Project point and calculate NDC.
             // Convert sample XY to texture coordinate space and sample from the
@@ -85,8 +85,7 @@ void main(void) {
             occlusion += (zSceneNDC >= sampleVectorView.z + SSAO_BIAS ? 1.f : 0.f) * rangeCheck;
         }
         // We output ambient intensity in the range [0,1]
-        _ssaoOut = pow(1.f - (saturate(occlusion) / SSAO_SAMPLE_COUNT), SSAO_INTENSITY);
-        //_ssaoOut *= (1.f - smoothstep(fadeStart, maxRange, 1.f - linDepth));
+        _ssaoOut = saturate(pow(1.f - (occlusion / SSAO_SAMPLE_COUNT), SSAO_INTENSITY) + smoothstep(fadeStart, maxRange, linDepth));
     } else {
         _ssaoOut = 1.f;
     }

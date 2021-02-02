@@ -86,9 +86,10 @@ class Sky final : public SceneNode {
     PROPERTY_R(Atmosphere, defaultAtmosphere);
 
     PROPERTY_R(size_t, skyboxSampler, 0);
-    PROPERTY_R(size_t, noiseSampler, 0);
+    PROPERTY_R(size_t, noiseSamplerLinear, 0);
+    PROPERTY_R(size_t, noiseSamplerMipMap, 0);
 
-    PROPERTY_RW(bool, enableProceduralClouds, false);
+    PROPERTY_RW(bool, enableProceduralClouds, true);
     PROPERTY_RW(bool, useDaySkybox, true);
     PROPERTY_RW(bool, useNightSkybox, true);
     PROPERTY_RW(FColour4, nightSkyColour, DefaultColours::BLACK);

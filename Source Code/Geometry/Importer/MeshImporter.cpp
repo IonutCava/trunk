@@ -339,7 +339,7 @@ namespace Import {
                 texture.threaded(Runtime::isMainThread());
                 texture.waitForReady(false);
                 Texture_ptr texPtr = CreateResource<Texture>(cache, texture, taskCounter);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [tempMaterial, i, texPtr, tex, textureSampler](CachedResource*) {
                     tempMaterial->setTexture(static_cast<TextureUsage>(i), texPtr, textureSampler.getHash(),tex.operation());
                 });
             }
@@ -358,7 +358,7 @@ namespace Import {
                 opacityDesc.threaded(Runtime::isMainThread());
                 opacityDesc.waitForReady(false);
                 Texture_ptr texPtr = CreateResource<Texture>(cache, opacityDesc, taskCounter);
-                texPtr->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
+                texPtr->addStateCallback(ResourceState::RES_LOADED, [tempMaterial, texPtr](CachedResource*) {
                     tempMaterial->setTexture(TextureUsage::OPACITY, texPtr, tempMaterial->getSampler(TextureUsage::UNIT0),TextureOperation::REPLACE);
                 });
                 

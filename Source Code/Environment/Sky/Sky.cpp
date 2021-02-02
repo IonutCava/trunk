@@ -23,11 +23,13 @@
 #endif
 
 #include <TileableVolumeNoise/TileableVolumeNoise.h>
+#include <CurlNoise/CurlNoise/Curl.h>
 
 #ifndef STBI_INCLUDE_STB_IMAGE_WRITE_H
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_STATIC
 #include <STB/stb_image_write.h>
+#include <STB/stb_image.h>
 #endif //STBI_INCLUDE_STB_IMAGE_WRITE_H
 #ifdef _MSC_VER
 # pragma warning (pop)
@@ -47,20 +49,20 @@ namespace {
 
     void GenerateCurlNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
         Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
-        for (I32 i = 0; i < width * height * channelCount; i += 3) {
-            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % width) / to_F32(width), to_F32((i / channelCount) / height) / to_F32(height), 0.012f);
-            const glm::vec3 offset1 = glm::vec3(31.341f, -43.23f, 12.34f); //random offset
-            const glm::vec3 offset2 = glm::vec3(-231.341f, 124.23f, -54.34f); //random offset
+        constexpr F32 frequency[] = { 8.0f, 6.0f, 4.0f };
 
-            const F32 s0 = Tileable3dNoise::PerlinNoise(pos, 0.08f, 3);
-            const F32 s1 = Tileable3dNoise::PerlinNoise(pos + offset1, 0.08f, 3);
-            const F32 s2 = Tileable3dNoise::PerlinNoise(pos + offset2, 0.08f, 3);
+        for (U8 pass = 0u; pass < 3; ++pass) {
+            CurlNoise::SetCurlSettings(false, frequency[pass], 3, 2.f, 0.5f);
+            for (I32 i = 0; i < width * height * channelCount; i += 3) {
+                const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height),
+                    to_F32(((i / channelCount) / height) % height) / to_F32(height),
+                    to_F32((i / channelCount) / width) / to_F32(height));
 
-            data[i + 0] = to_byte(s0 * 128.f + 127.f);
-            data[i + 1] = to_byte(s1 * 128.f + 127.f);
-            data[i + 2] = to_byte(s2 * 128.f + 127.f);
+                CurlNoise::float3 res = CurlNoise::ComputeCurlNoBoundaries({ pos.x, pos.y, pos.z });
+                const F32 cellFBM0 = res.val[0] * 0.5f + res.val[1] * 0.35f + res.val[2] * 0.15f;
+                data[i + pass] = to_byte(cellFBM0 * 128.f + 127.f);
+            }
         }
-
         stbi_write_bmp(fileName, width, height, channelCount, data);
         MemoryManager::SAFE_DELETE(data);
     }
@@ -68,7 +70,9 @@ namespace {
     void GeneratePerlinNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
         Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
         for (I32 i = 0; i < width * height * channelCount; i += 3) {
-            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % width) / to_F32(width), to_F32((i / channelCount) / height) / to_F32(height), 0.051f);
+            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % width) / to_F32(width),
+                                            to_F32((i / channelCount) / height) / to_F32(height),
+                                            0.051f);
             const glm::vec3 offset1 = glm::vec3(0.f, 0.f, 581.163f);
             const glm::vec3 offset2 = glm::vec3(0.f, 0.f, 1245.463f);
             //const glm::vec3 offset3 = glm::vec3(0.f, 0.f, 2245.863f);
@@ -89,7 +93,9 @@ namespace {
     void GenerateWorleyNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
         Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
         for (I32 i = 0; i < width * height * channelCount; i += 3) {
-            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height), to_F32(((i / channelCount) / height) % height) / to_F32(height), to_F32((i / channelCount) / width) / to_F32(height));
+            const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height), 
+                                            to_F32(((i / channelCount) / height) % height) / to_F32(height), 
+                                            to_F32((i / channelCount) / width) / to_F32(height));
             const F32 cell0 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 2);
             const F32 cell1 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 4);
             const F32 cell2 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 8);
@@ -114,7 +120,9 @@ namespace {
         descriptor._partitionSize = height;
         descriptor._cbk = [&](const Task*, const U32 start, const U32 end) -> void {
             for (U32 i = start; i < end; i += 4) {
-                const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height), to_F32(((i / channelCount) / height) % height) / to_F32(height), to_F32((i / channelCount) / width) / to_F32(height));
+                const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height),
+                                                to_F32(((i / channelCount) / height) % height) / to_F32(height),
+                                                to_F32((i / channelCount) / width) / to_F32(height));
                 // Perlin FBM noise
                 const F32 perlinNoise = Tileable3dNoise::PerlinNoise(pos, 8, 3);
 
@@ -331,7 +339,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     mieCoeffField._readOnly = true;
     mieCoeffField._range = { 0.01f, 100.0f };
     mieCoeffField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(MOV(rayleighCoeffField));
+    getEditorComponent().registerField(MOV(mieCoeffField));
 
     EditorComponentField mieScaleField = {};
     mieScaleField._name = "Mie Scale Height";
@@ -425,17 +433,20 @@ bool Sky::load() {
     }
 
     std::atomic_uint loadTasks = 0u;
+    {
+        SamplerDescriptor skyboxSampler = {};
+        skyboxSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
+        skyboxSampler.minFilter(TextureFilter::LINEAR);
+        skyboxSampler.magFilter(TextureFilter::LINEAR);
+        skyboxSampler.anisotropyLevel(0);
+        _skyboxSampler = skyboxSampler.getHash();
 
-    SamplerDescriptor skyboxSampler = {};
-    skyboxSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
-    skyboxSampler.minFilter(TextureFilter::LINEAR);
-    skyboxSampler.magFilter(TextureFilter::LINEAR);
-    skyboxSampler.anisotropyLevel(0);
-    _skyboxSampler = skyboxSampler.getHash();
+        skyboxSampler.wrapUVW(TextureWrap::REPEAT);
+        _noiseSamplerLinear = skyboxSampler.getHash();
 
-    skyboxSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-    _noiseSampler = skyboxSampler.getHash();
-
+        skyboxSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+        _noiseSamplerMipMap = skyboxSampler.getHash();
+    }
     {
         TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
         skyboxTexture.srgb(true);
@@ -456,40 +467,62 @@ bool Sky::load() {
     }
 
     {
+        I32 x, y, n;
         TextureDescriptor textureDescriptor(TextureType::TEXTURE_3D);
         textureDescriptor.srgb(false);
+        {
+            textureDescriptor.layerCount(32);
 
-        ResourceDescriptor worlDescriptor("worlNoise");
-        worlDescriptor.assetName(ResourcePath(worlTexName));
-        worlDescriptor.assetLocation(procLocation());
-        worlDescriptor.propertyDescriptor(textureDescriptor);
-        worlDescriptor.waitForReady(false);
-        _worlNoiseTex = CreateResource<Texture>(_parentCache, worlDescriptor);
+            Byte* worlNoise = (Byte*)stbi_load((procLocation() + worlTexName).c_str(), &x, &y, &n, 0);
+            ImageTools::ImageData imgData = {};
+            if (!imgData.addLayer(worlNoise, to_size(x * y * n), to_U16(y), to_U16(y), to_U16(x / y))) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
 
-        ResourceDescriptor perlWorlDescriptor("perlWorl");
-        perlWorlDescriptor.assetName(ResourcePath(perlWorlTexName));
-        perlWorlDescriptor.assetLocation(procLocation());
-        perlWorlDescriptor.propertyDescriptor(textureDescriptor);
-        perlWorlDescriptor.waitForReady(false);
-        _perWorlNoiseTex = CreateResource<Texture>(_parentCache, perlWorlDescriptor);
+            ResourceDescriptor worlDescriptor("worlNoise");
+            worlDescriptor.propertyDescriptor(textureDescriptor);
+            worlDescriptor.waitForReady(true);
+            _worlNoiseTex = CreateResource<Texture>(_parentCache, worlDescriptor);
+            _worlNoiseTex->loadData(imgData);
+            stbi_image_free(worlNoise);
+        }
+        {
+            textureDescriptor.layerCount(128);
+
+            Byte* perlWorlData = (Byte*)stbi_load((procLocation() + perlWorlTexName).c_str(), &x, &y, &n, 0);
+            ImageTools::ImageData imgData = {};
+            if (!imgData.addLayer(perlWorlData, to_size(x * y * n), to_U16(y), to_U16(y), to_U16(x / y))) {
+                DIVIDE_UNEXPECTED_CALL();
+            }
+
+            ResourceDescriptor perlWorlDescriptor("perlWorl");
+            perlWorlDescriptor.propertyDescriptor(textureDescriptor);
+            perlWorlDescriptor.waitForReady(true);
+            _perWorlNoiseTex = CreateResource<Texture>(_parentCache, perlWorlDescriptor);
+            _perWorlNoiseTex->loadData(imgData);
+            stbi_image_free(perlWorlData);
+        }
 
         textureDescriptor.texType(TextureType::TEXTURE_2D);
+        textureDescriptor.layerCount(1u);
         textureDescriptor.mipCount(1u);
 
-        ResourceDescriptor weatherDescriptor("Weather");
-        weatherDescriptor.assetName(ResourcePath(weatherTexName));
-        weatherDescriptor.assetLocation(procLocation());
-        weatherDescriptor.propertyDescriptor(textureDescriptor);
-        weatherDescriptor.waitForReady(false);
-        _weatherTex = CreateResource<Texture>(_parentCache, weatherDescriptor);
-
-
-        ResourceDescriptor curlDescriptor("CurlNoise");
-        curlDescriptor.assetName(ResourcePath(curlTexName));
-        curlDescriptor.assetLocation(procLocation());
-        curlDescriptor.propertyDescriptor(textureDescriptor);
-        curlDescriptor.waitForReady(false);
-        _curlNoiseTex = CreateResource<Texture>(_parentCache, curlDescriptor);
+        {
+            ResourceDescriptor weatherDescriptor("Weather");
+            weatherDescriptor.assetName(ResourcePath(weatherTexName));
+            weatherDescriptor.assetLocation(procLocation());
+            weatherDescriptor.propertyDescriptor(textureDescriptor);
+            weatherDescriptor.waitForReady(false);
+            _weatherTex = CreateResource<Texture>(_parentCache, weatherDescriptor);
+        }
+        {
+            ResourceDescriptor curlDescriptor("CurlNoise");
+            curlDescriptor.assetName(ResourcePath(curlTexName));
+            curlDescriptor.assetLocation(procLocation());
+            curlDescriptor.propertyDescriptor(textureDescriptor);
+            curlDescriptor.waitForReady(false);
+            _curlNoiseTex = CreateResource<Texture>(_parentCache, curlDescriptor);
+        }
     }
 
     const F32 radius = _diameter * 0.5f;
@@ -551,6 +584,7 @@ bool Sky::load() {
 
     assert(_skyShader && _skyShaderPrePass);
     setBounds(BoundingBox(vec3<F32>(-radius), vec3<F32>(radius)));
+
     Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
 
     return SceneNode::load();
@@ -664,10 +698,10 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     bindDescriptorSetsCommand._set._textureData.add({ _skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0 });
     bindDescriptorSetsCommand._set._textureData.add({ _skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1 });
 
-    bindDescriptorSetsCommand._set._textureData.add({ _weatherTex->data(), _skyboxSampler, TextureUsage::HEIGHTMAP });
-    bindDescriptorSetsCommand._set._textureData.add({ _curlNoiseTex->data(), _skyboxSampler, TextureUsage::OPACITY });
-    bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSampler, TextureUsage::OCCLUSION_METALLIC_ROUGHNESS });
-    bindDescriptorSetsCommand._set._textureData.add({ _perWorlNoiseTex->data(), _noiseSampler, TextureUsage::NORMALMAP });
+    bindDescriptorSetsCommand._set._textureData.add({ _weatherTex->data(), _noiseSamplerLinear, TextureUsage::HEIGHTMAP });
+    bindDescriptorSetsCommand._set._textureData.add({ _curlNoiseTex->data(), _noiseSamplerLinear, TextureUsage::OPACITY });
+    bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::OCCLUSION_METALLIC_ROUGHNESS });
+    bindDescriptorSetsCommand._set._textureData.add({ _perWorlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::NORMALMAP });
 
     pkgInOut.add(bindDescriptorSetsCommand);
 

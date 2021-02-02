@@ -15,7 +15,7 @@
 <SPOT_LIGHT>
     <Cutoff__Angle>25</Cutoff__Angle>
     <Outer__Cutoff__Angle>35</Outer__Cutoff__Angle>
-    <Direction x="-1" y="0"/>
+    <Direction x="0" y="0" z="-1"/>
     <Show__direction__cone>false</Show__direction__cone>
     <Range>10</Range>
     <Intensity>1</Intensity>

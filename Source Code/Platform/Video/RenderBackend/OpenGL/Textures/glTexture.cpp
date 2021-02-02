@@ -382,6 +382,7 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
     const U8 numMips = imageData.mipCount();
 
     GL_API::getStateTracker().setPixelPackUnpackAlignment();
+
     for (U32 l = 0; l < numLayers; ++l) {
         const ImageTools::ImageLayer& layer = imageData.imageLayers()[l];
 
@@ -429,7 +430,8 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
                         mip->_dimensions.depth,
                         glFormat,
                         glType,
-                        mip->_size == 0 ? nullptr : mip->data());
+                        mip->_size == 0 ? nullptr : mip->data()
+                       );
                 } break;
                 default: break;
             }

@@ -260,6 +260,9 @@
     <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Node.h" />
     <ClInclude Include="..\..\3rdParty\CPPGoap\goap\Planner.h" />
     <ClInclude Include="..\..\3rdParty\CPPGoap\goap\WorldState.h" />
+    <ClInclude Include="..\..\3rdParty\CurlNoise\CurlNoise\Curl.h" />
+    <ClInclude Include="..\..\3rdParty\CurlNoise\CurlNoise\Noise.h" />
+    <ClInclude Include="..\..\3rdParty\CurlNoise\CurlNoise\vmath.hpp" />
     <ClInclude Include="..\..\3rdParty\fcpp\cpp.h" />
     <ClInclude Include="..\..\3rdParty\fcpp\cppadd.h" />
     <ClInclude Include="..\..\3rdParty\fcpp\cppdef.h" />
@@ -417,6 +420,8 @@
     <ClCompile Include="..\..\3rdParty\CPPGoap\goap\Node.cpp" />
     <ClCompile Include="..\..\3rdParty\CPPGoap\goap\Planner.cpp" />
     <ClCompile Include="..\..\3rdParty\CPPGoap\goap\WorldState.cpp" />
+    <ClCompile Include="..\..\3rdParty\CurlNoise\CurlNoise\Curl.cpp" />
+    <ClCompile Include="..\..\3rdParty\CurlNoise\CurlNoise\Noise.cpp" />
     <ClCompile Include="..\..\3rdParty\EASTL\source\allocator_eastl.cpp" />
     <ClCompile Include="..\..\3rdParty\EASTL\source\assert.cpp" />
     <ClCompile Include="..\..\3rdParty\EASTL\source\atomic.cpp" />

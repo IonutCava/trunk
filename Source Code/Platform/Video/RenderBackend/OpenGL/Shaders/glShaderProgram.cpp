@@ -181,6 +181,7 @@ namespace Preprocessor{
         setTag(FPPTAG_IGNOREVERSION, (void*)FALSE);
         setTag(FPPTAG_LINE, (void*)FALSE);
         setTag(FPPTAG_OUTPUTBALANCE, (void*)TRUE);
+        setTag(FPPTAG_OUTPUTSPACE, (void*)TRUE);
         setTag(FPPTAG_NESTED_COMMENTS, (void*)TRUE);
         //setTag(FPPTAG_IGNORE_CPLUSPLUS, (void*)TRUE);
         setTag(FPPTAG_RIGHTCONCAT, (void*)TRUE);

@@ -135,10 +135,10 @@ vec3 convertYxy2RGB(vec3 _Yxy) {
 
 void main() {
     const vec4 inputColour = texture(texScreen, VAR._texCoord);
-    const vec3 screenColour = inputColour.rgb * manualExposure;
-
-    if (mappingFunction != NONE) {
-        vec3 Yxy = convertRGB2Yxy(screenColour);
+    
+    vec3 screenColour = inputColour.rgb;
+    if (mappingFunction != NONE && dvd_materialDebugFlag == DEBUG_COUNT) {
+        vec3 Yxy = convertRGB2Yxy(screenColour * manualExposure);
 
         if (useAdaptiveExposure) {
             const float avgLuminance = texture(texExposure, VAR._texCoord).r;
@@ -163,11 +163,10 @@ void main() {
             Yxy.x = Uncharted2(Yxy.x);
         }
 
-        //Apply gamma correction here!
-        _colourOut.rgb = ToSRGBAccurate(convertYxy2RGB(Yxy));
-    } else {
-        //Nothing. HDR? Nope. Straight up saturate (i.e. bad)
-        _colourOut.rgb = ToSRGBAccurate(screenColour);
+        screenColour = convertYxy2RGB(Yxy);
     }
+
+    //Apply gamma correction here!
+    _colourOut.rgb = screenColour;// ToSRGBAccurate(screenColour);
     _colourOut.a = Luminance(_colourOut.rgb);
 }

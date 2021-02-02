@@ -94,12 +94,13 @@ float ToLinearDepth(in float D, in mat4 projMatrix) { return projMatrix[3][2] / 
 
 float ViewSpaceZ(in float D, in mat4 invProjection) { return -1.0f / (invProjection[2][3] * (2.0f * D - 1.0f) + invProjection[3][3]); }
 
-vec3 ViewSpacePos(in vec2 texCoords, in float D, in mat4 invProjection) {
-    const vec3 clipSpacePos = 2.f * vec3(texCoords, D) - vec3(1.0f);
+vec3 ViewSpacePos(in vec2 texCoords, in float depthIn, in mat4 invProjection) {
+    const vec4 clipSpacePos = vec4(texCoords.s * 2.f - 1.f,
+                                   texCoords.t * 2.f - 1.f,
+                                   depthIn     * 2.f - 1.f,
+                                   1.f);
 
-    vec4 viewPos = vec4(vec2(invProjection[0][0], invProjection[1][1]) * clipSpacePos.xy,
-                        -1.0f,
-                        invProjection[2][3] * clipSpacePos.z + invProjection[3][3]);
+    const vec4 viewPos = invProjection * clipSpacePos;
 
     return(viewPos.xyz / viewPos.w);
 }

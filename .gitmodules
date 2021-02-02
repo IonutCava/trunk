@@ -77,3 +77,6 @@
 [submodule "3rdParty/TileableVolumeNoise"]
 	path = 3rdParty/TileableVolumeNoise
 	url = https://github.com/sebh/TileableVolumeNoise
+[submodule "3rdParty/CurlNoise"]
+	path = 3rdParty/CurlNoise
+	url = https://github.com/rajabala/CurlNoise

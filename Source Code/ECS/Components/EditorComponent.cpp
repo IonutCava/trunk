@@ -234,9 +234,9 @@ namespace Divide {
             pt.put((entryName + ".<xmlattr>.x").c_str(), data.x);
             pt.put((entryName + ".<xmlattr>.y").c_str(), data.y);
             if_constexpr (num_comp > 2) {
-                pt.put((entryName + ".<xmlattr>.x").c_str(), data.z);
+                pt.put((entryName + ".<xmlattr>.z").c_str(), data.z);
                 if_constexpr(num_comp > 3) {
-                    pt.put((entryName + ".<xmlattr>.x").c_str(), data.w);
+                    pt.put((entryName + ".<xmlattr>.w").c_str(), data.w);
                 }
             }
         }

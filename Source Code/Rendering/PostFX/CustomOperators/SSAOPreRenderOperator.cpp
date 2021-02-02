@@ -20,15 +20,15 @@ namespace {
     constexpr U8 SSAO_BLUR_SIZE = SSAO_NOISE_SIZE / 2;
     constexpr U8 MAX_KERNEL_SIZE = 64;
     constexpr U8 MIN_KERNEL_SIZE = 8;
-    vectorEASTL<vec3<F32>> g_kernels;
+    vectorEASTL<vec4<F32>> g_kernels;
 
-    [[nodiscard]] const vectorEASTL<vec3<F32>>& ComputeKernel(const U8 sampleCount) {
+    [[nodiscard]] const vectorEASTL<vec4<F32>>& ComputeKernel(const U8 sampleCount) {
         std::uniform_real_distribution<F32> randomFloats(0.0f, 1.0f);
         std::default_random_engine generator;
 
         g_kernels.resize(sampleCount);
         for (U16 i = 0; i < sampleCount; ++i) {
-            vec3<F32>& k = g_kernels[i];
+            vec3<F32>& k = g_kernels[i].xyz;
             k.set(randomFloats(generator) * 2.0f - 1.0f,
                   randomFloats(generator) * 2.0f - 1.0f,
                   randomFloats(generator)); // Kernel hemisphere points to positive Z-Axis.
@@ -49,8 +49,8 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _genHalfRes = config.UseHalfResolution;
     _blurThreshold[0] = config.FullRes.BlurThreshold;
     _blurThreshold[1] = config.HalfRes.BlurThreshold;
-    _kernelSampleCount[0] = CLAMPED(to_U8(nextPOW2(config.FullRes.KernelSampleCount - 1u)), MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
-    _kernelSampleCount[1] = CLAMPED(to_U8(nextPOW2(config.HalfRes.KernelSampleCount - 1u)), MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
+    _kernelSampleCount[0] = CLAMPED(config.FullRes.KernelSampleCount, MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
+    _kernelSampleCount[1] = CLAMPED(config.HalfRes.KernelSampleCount, MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
     _blur[0] = config.FullRes.Blur;
     _blur[1] = config.HalfRes.Blur;
     _radius[0] = config.FullRes.Radius;
@@ -60,13 +60,13 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _bias[0] = config.FullRes.Bias;
     _bias[1] = config.HalfRes.Bias;
 
-    std::array<vec2<F32>, SSAO_NOISE_SIZE * SSAO_NOISE_SIZE> noiseData;
+    std::array<vec3<F32>, SSAO_NOISE_SIZE * SSAO_NOISE_SIZE> noiseData;
 
-    std::uniform_real_distribution<F32> randomFloats(0.0f, 1.0f);
+    std::uniform_real_distribution<F32> randomFloats(-1.f, 1.f);
     std::default_random_engine generator;
-    for (vec2<F32>& noise : noiseData) {
-        noise.set(randomFloats(generator) * 2.0f - 1.0f,
-                  randomFloats(generator) * 2.0f - 1.0f);
+    for (vec3<F32>& noise : noiseData) {
+        noise.set(randomFloats(generator), randomFloats(generator), 0.f);
+        noise.normalize();
     }
 
     SamplerDescriptor nearestSampler = {};
@@ -90,14 +90,14 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
 
     Str64 attachmentName("SSAOPreRenderOperator_NoiseTexture");
 
-    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
+    TextureDescriptor noiseDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_32);
     noiseDescriptor.mipCount(1u);
 
     ResourceDescriptor textureAttachment(attachmentName);
     textureAttachment.propertyDescriptor(noiseDescriptor);
     _noiseTexture = CreateResource<Texture>(cache, textureAttachment);
 
-    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(vec2<F32>) }, vec2<U16>(SSAO_NOISE_SIZE));
+    _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(vec3<F32>) }, vec2<U16>(SSAO_NOISE_SIZE));
 
     {
 
@@ -236,7 +236,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         _ssaoUpSampleShader = CreateResource<ShaderProgram>(cache, ssaoUpSample);
     }
 
-    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, ComputeKernel(sampleCount()));
+    _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC4, ComputeKernel(sampleCount()));
     _ssaoGenerateConstants.set(_ID("SSAO_RADIUS"), GFX::PushConstantType::FLOAT, radius());
     _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
     _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());
@@ -289,7 +289,7 @@ void SSAOPreRenderOperator::genHalfRes(const bool state) {
         const U16 height = state ? _halfDepthAndNormals._rt->getHeight() : _ssaoOutput._rt->getHeight();
 
         _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, vec2<F32>(width, height) / SSAO_NOISE_SIZE);
-        _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC3, ComputeKernel(sampleCount()));
+        _ssaoGenerateConstants.set(_ID("sampleKernel"), GFX::PushConstantType::VEC4, ComputeKernel(sampleCount()));
         _ssaoGenerateConstants.set(_ID("SSAO_RADIUS"), GFX::PushConstantType::FLOAT, radius());
         _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
         _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());

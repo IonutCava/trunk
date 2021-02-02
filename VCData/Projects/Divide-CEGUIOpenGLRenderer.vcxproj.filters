@@ -190,6 +190,9 @@
     <Filter Include="TileableVolumeNoise">
       <UniqueIdentifier>{c98b0d8c-d79c-4078-b8cf-5d1915607a3b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="CurlNoise">
+      <UniqueIdentifier>{95d9fa5b-dd6f-4e08-a86f-240bd9c0d466}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\3rdParty\imgui\imconfig.h">
@@ -618,6 +621,15 @@
     <ClInclude Include="..\..\3rdParty\TileableVolumeNoise\libtarga.h">
       <Filter>TileableVolumeNoise</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\3rdParty\CurlNoise\CurlNoise\Curl.h">
+      <Filter>CurlNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\CurlNoise\CurlNoise\Noise.h">
+      <Filter>CurlNoise</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\3rdParty\CurlNoise\CurlNoise\vmath.hpp">
+      <Filter>CurlNoise</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\3rdParty\imgui\imgui.cpp">
@@ -1036,6 +1048,12 @@
     </ClCompile>
     <ClCompile Include="..\..\3rdParty\TileableVolumeNoise\libtarga.c">
       <Filter>TileableVolumeNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\CurlNoise\CurlNoise\Curl.cpp">
+      <Filter>CurlNoise</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\3rdParty\CurlNoise\CurlNoise\Noise.cpp">
+      <Filter>CurlNoise</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
