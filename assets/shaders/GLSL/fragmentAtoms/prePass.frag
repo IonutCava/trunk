@@ -25,7 +25,7 @@ layout(location = TARGET_EXTRA) out vec2 _extraDetailsOut;
 
 #include "velocityCalc.frag"
 
-void writeOutput(in float albedoAlpha, in vec2 uv, in vec3 normal)
+void writeGBuffer(in float albedoAlpha, in vec2 uv, in vec3 normal)
 {
 #if defined(USE_ALPHA_DISCARD)
     if (albedoAlpha < INV_Z_TEST_SIGMA) {
@@ -38,17 +38,17 @@ void writeOutput(in float albedoAlpha, in vec2 uv, in vec3 normal)
 #endif //USE_DEFERRED_NORMALS
 }
 
-void writeOutput(in float albedoAlpha, in vec2 uv, in vec3 normal, in float extraFlag) {
+void writeGBuffer(in float albedoAlpha, in vec2 uv, in vec3 normal, in float extraFlag) {
 #if defined(USE_DEFERRED_NORMALS)
     _extraDetailsOut.rg = vec2(1.0f, extraFlag);
 #endif //USE_DEFERRED_NORMALS
 
-    writeOutput(albedoAlpha, uv, normal);
+    writeGBuffer(albedoAlpha, uv, normal);
 }
 
 #else //HAS_PRE_PASS_DATA
 
-#define writeOutput(albedoAlpha, uv, normal)
+#define writeGBuffer(albedoAlpha, uv, normal)
 
 #endif //HAS_PRE_PASS_DATA
 

@@ -497,7 +497,7 @@ void main(void)
     vec3 normalWV;
     vec4 albedo = BuildTerrainData(normalWV);
 
-    writeOutput(1.0f, VAR._texCoord, normalWV);
+    writeGBuffer(1.0f, VAR._texCoord, normalWV);
 }
 
 --Fragment
@@ -582,5 +582,5 @@ void main(void) {
 #endif //TOGGLE_DEBUG
 
 #endif //TOGGLE_LODS
-    writeOutput(colourOut);
+    writeScreenColour(colourOut);
 }

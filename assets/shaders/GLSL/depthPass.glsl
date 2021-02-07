@@ -6,9 +6,9 @@ void main() {
 #if defined(USE_ALPHA_DISCARD)
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
     const float alpha = getAlbedo(data, VAR._texCoord).a;
-    writeOutput(alpha, VAR._texCoord, getNormalWV(VAR._texCoord));
+    writeGBuffer(alpha, VAR._texCoord, getNormalWV(VAR._texCoord));
 #else
-    writeOutput(1.0f, VAR._texCoord, getNormalWV(VAR._texCoord));
+    writeGBuffer(1.0f, VAR._texCoord, getNormalWV(VAR._texCoord));
 #endif
 }
 

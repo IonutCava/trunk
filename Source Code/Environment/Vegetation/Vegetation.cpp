@@ -28,7 +28,7 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_useDoubleSidedMaterial = false;
+    constexpr bool g_useDoubleSidedMaterial = true;
 
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr I16 g_maxRadiusSteps = 512;
@@ -246,16 +246,19 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
             for (U16 idx : indices) {
                 s_buffer->addIndex(idx + i * 4);
             }
-            if_constexpr(!g_useDoubleSidedMaterial) {
+        }
+        
+        s_buffer->computeNormals();
+        s_buffer->computeTangents();
+
+        if_constexpr(!g_useDoubleSidedMaterial) {
+            for (U8 i = 0; i < billboardsPlaneCount; ++i) {
                 s_buffer->addRestartIndex();
                 for (U16 idx : indicesBack) {
                     s_buffer->addIndex(idx + i * 4);
                 }
             }
         }
-        
-        s_buffer->computeNormals();
-        s_buffer->computeTangents();
         s_buffer->create(true);
         s_buffer->keepData(false);
     }

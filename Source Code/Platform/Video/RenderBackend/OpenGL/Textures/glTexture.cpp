@@ -437,6 +437,9 @@ void glTexture::loadDataUncompressed(const ImageTools::ImageData& imageData) con
             }
         }
     }
+    if (!Runtime::isMainThread()) {
+        glFlush();
+    }
 }
 
 void glTexture::clearData(const UColour4& clearColour, const U8 level) const {

@@ -88,6 +88,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.ssao.FullRes.KernelSampleCount);
         GET_PARAM(rendering.postFX.ssao.FullRes.Blur);
         GET_PARAM(rendering.postFX.ssao.FullRes.BlurThreshold);
+        GET_PARAM(rendering.postFX.ssao.FullRes.BlurSharpness);
+        GET_PARAM(rendering.postFX.ssao.FullRes.BlurKernelSize);
         GET_PARAM(rendering.postFX.ssao.FullRes.MaxRange);
         GET_PARAM(rendering.postFX.ssao.FullRes.FadeDistance);
         GET_PARAM(rendering.postFX.ssao.HalfRes.Radius);
@@ -96,6 +98,8 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.ssao.HalfRes.KernelSampleCount);
         GET_PARAM(rendering.postFX.ssao.HalfRes.Blur);
         GET_PARAM(rendering.postFX.ssao.HalfRes.BlurThreshold);
+        GET_PARAM(rendering.postFX.ssao.HalfRes.BlurSharpness);
+        GET_PARAM(rendering.postFX.ssao.HalfRes.BlurKernelSize);
         GET_PARAM(rendering.postFX.ssao.HalfRes.MaxRange);
         GET_PARAM(rendering.postFX.ssao.HalfRes.FadeDistance);
         GET_PARAM(rendering.shadowMapping.enabled);
@@ -213,6 +217,8 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.ssao.FullRes.KernelSampleCount);
         PUT_PARAM(rendering.postFX.ssao.FullRes.Blur);
         PUT_PARAM(rendering.postFX.ssao.FullRes.BlurThreshold);
+        PUT_PARAM(rendering.postFX.ssao.FullRes.BlurSharpness);
+        PUT_PARAM(rendering.postFX.ssao.FullRes.BlurKernelSize);
         PUT_PARAM(rendering.postFX.ssao.FullRes.MaxRange);
         PUT_PARAM(rendering.postFX.ssao.FullRes.FadeDistance);
         PUT_PARAM(rendering.postFX.ssao.HalfRes.Radius);
@@ -221,6 +227,8 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.ssao.HalfRes.KernelSampleCount);
         PUT_PARAM(rendering.postFX.ssao.HalfRes.Blur);
         PUT_PARAM(rendering.postFX.ssao.HalfRes.BlurThreshold);
+        PUT_PARAM(rendering.postFX.ssao.HalfRes.BlurSharpness);
+        PUT_PARAM(rendering.postFX.ssao.HalfRes.BlurKernelSize);
         PUT_PARAM(rendering.postFX.ssao.HalfRes.MaxRange);
         PUT_PARAM(rendering.postFX.ssao.HalfRes.FadeDistance);
         PUT_PARAM(rendering.shadowMapping.enabled);

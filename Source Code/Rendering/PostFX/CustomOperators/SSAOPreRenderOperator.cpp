@@ -23,19 +23,14 @@ namespace {
     vectorEASTL<vec4<F32>> g_kernels;
 
     [[nodiscard]] const vectorEASTL<vec4<F32>>& ComputeKernel(const U8 sampleCount) {
-        std::uniform_real_distribution<F32> randomFloats(0.0f, 1.0f);
-        std::default_random_engine generator;
-
         g_kernels.resize(sampleCount);
         for (U16 i = 0; i < sampleCount; ++i) {
             vec3<F32>& k = g_kernels[i].xyz;
-            k.set(randomFloats(generator) * 2.0f - 1.0f,
-                  randomFloats(generator) * 2.0f - 1.0f,
-                  randomFloats(generator)); // Kernel hemisphere points to positive Z-Axis.
+            k.set(Random(-1.f, 1.f),
+                  Random(-1.f, 1.f),
+                  Random( 0.f, 1.f)); // Kernel hemisphere points to positive Z-Axis.
             k.normalize();             // Normalize, so included in the hemisphere.
-            k *= randomFloats(generator);
-            const F32 scale = FastLerp(0.1f, 1.0f, SQUARED(to_F32(i) / to_F32(sampleCount))); // Create a scale value between [0;1].
-            k *= scale;
+            k *= FastLerp(0.1f, 1.0f, SQUARED(to_F32(i) / to_F32(sampleCount))); // Create a scale value between [0;1].
         }
 
         return g_kernels;
@@ -48,7 +43,9 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     const auto& config = context.context().config().rendering.postFX.ssao;
     _genHalfRes = config.UseHalfResolution;
     _blurThreshold[0] = config.FullRes.BlurThreshold;
-    _blurThreshold[1] = config.HalfRes.BlurThreshold;
+    _blurThreshold[1] = config.HalfRes.BlurThreshold; 
+    _blurSharpness[0] = config.FullRes.BlurSharpness;
+    _blurSharpness[1] = config.HalfRes.BlurSharpness;
     _kernelSampleCount[0] = CLAMPED(config.FullRes.KernelSampleCount, MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
     _kernelSampleCount[1] = CLAMPED(config.HalfRes.KernelSampleCount, MIN_KERNEL_SIZE, MAX_KERNEL_SIZE);
     _blur[0] = config.FullRes.Blur;
@@ -60,12 +57,10 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _bias[0] = config.FullRes.Bias;
     _bias[1] = config.HalfRes.Bias;
 
-    std::array<vec3<F32>, SSAO_NOISE_SIZE * SSAO_NOISE_SIZE> noiseData;
+    std::array<vec3<F32>, SQUARED(SSAO_NOISE_SIZE)> noiseData;
 
-    std::uniform_real_distribution<F32> randomFloats(-1.f, 1.f);
-    std::default_random_engine generator;
     for (vec3<F32>& noise : noiseData) {
-        noise.set(randomFloats(generator), randomFloats(generator), 0.f);
+        noise.set(Random(-1.f, 1.f), Random(-1.f, 1.f), 0.f);
         noise.normalize();
     }
 
@@ -100,29 +95,31 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _noiseTexture->loadData({ (Byte*)noiseData.data(), noiseData.size() * sizeof(vec3<F32>) }, vec2<U16>(SSAO_NOISE_SIZE));
 
     {
-
         TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
         outputDescriptor.mipCount(1u);
-
+        const vec2<U16> res = parent.screenRT()._rt->getResolution();
         RTAttachmentDescriptors att = {
-            { outputDescriptor, nearestSampler.getHash(), RTAttachmentType::Colour },
+        {
+            outputDescriptor, nearestSampler.getHash(), RTAttachmentType::Colour },
         };
 
         RenderTargetDescriptor desc = {};
         desc._name = "SSAO_Out";
-        desc._resolution = parent.screenRT()._rt->getResolution();
+        desc._resolution = res;
         desc._attachmentCount = to_U8(att.size());
         desc._attachments = att.data();
 
         //Colour0 holds the AO texture
         _ssaoOutput = _context.renderTargetPool().allocateRT(desc);
 
+        desc._name = "SSAO_Blur_Buffer";
+        _ssaoBlurBuffer = _context.renderTargetPool().allocateRT(desc);
+
         desc._name = "SSAO_Out_HalfRes";
         desc._resolution /= 2;
 
         _ssaoHalfResOutput = _context.renderTargetPool().allocateRT(desc);
     }
-
     {
         TextureDescriptor outputDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_32);
         outputDescriptor.mipCount(1u);
@@ -180,7 +177,7 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     }
 
     { //Blur
-        fragModule._variant = "SSAOBlur";
+        fragModule._variant = "SSAOBlur.Nvidia";
         fragModule._defines.resize(0);
         fragModule._defines.emplace_back(Util::StringFormat("BLUR_SIZE %d", SSAO_BLUR_SIZE).c_str(), true);
 
@@ -188,10 +185,17 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
         ssaoShaderDescriptor._modules.push_back(vertModule);
         ssaoShaderDescriptor._modules.push_back(fragModule);
 
-        ResourceDescriptor ssaoBlur("SSAOBlur");
-        ssaoBlur.propertyDescriptor(ssaoShaderDescriptor);
-        ssaoBlur.waitForReady(false);
-        _ssaoBlurShader = CreateResource<ShaderProgram>(cache, ssaoBlur);
+        ssaoShaderDescriptor._modules.back()._defines.emplace_back("HORIZONTAL", true);
+        ResourceDescriptor ssaoBlurH("SSAOBlur.Horizontal");
+        ssaoBlurH.propertyDescriptor(ssaoShaderDescriptor);
+        ssaoBlurH.waitForReady(false);
+        _ssaoBlurShaderHorizontal = CreateResource<ShaderProgram>(cache, ssaoBlurH);
+
+        ssaoShaderDescriptor._modules.back()._defines.back() = { "VERTICAL", true };
+        ResourceDescriptor ssaoBlurV("SSAOBlur.Vertical");
+        ssaoBlurV.propertyDescriptor(ssaoShaderDescriptor);
+        ssaoBlurV.waitForReady(false);
+        _ssaoBlurShaderVertical = CreateResource<ShaderProgram>(cache, ssaoBlurV);
     }
     { //Pass-through
         fragModule._variant = "SSAOPassThrough";
@@ -240,11 +244,13 @@ SSAOPreRenderOperator::SSAOPreRenderOperator(GFXDevice& context, PreRenderBatch&
     _ssaoGenerateConstants.set(_ID("SSAO_RADIUS"), GFX::PushConstantType::FLOAT, radius());
     _ssaoGenerateConstants.set(_ID("SSAO_INTENSITY"), GFX::PushConstantType::FLOAT, power());
     _ssaoGenerateConstants.set(_ID("SSAO_BIAS"), GFX::PushConstantType::FLOAT, bias());
-    _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, vec2<F32>(1920.f,1080.f) / SSAO_NOISE_SIZE);
+    _ssaoGenerateConstants.set(_ID("SSAO_NOISE_SCALE"), GFX::PushConstantType::VEC2, (parent.screenRT()._rt->getResolution() * (_genHalfRes ? 0.5f : 1.f)) / SSAO_NOISE_SIZE);
     _ssaoGenerateConstants.set(_ID("maxRange"), GFX::PushConstantType::FLOAT, maxRange());
     _ssaoGenerateConstants.set(_ID("fadeStart"), GFX::PushConstantType::FLOAT, fadeStart());
 
     _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, blurThreshold());
+    _ssaoBlurConstants.set(_ID("blurSharpness"), GFX::PushConstantType::FLOAT, blurSharpness());
+    _ssaoBlurConstants.set(_ID("blurKernelSize"), GFX::PushConstantType::INT, blurKernelSize());
 }
 
 SSAOPreRenderOperator::~SSAOPreRenderOperator() 
@@ -252,10 +258,12 @@ SSAOPreRenderOperator::~SSAOPreRenderOperator()
     _context.renderTargetPool().deallocateRT(_ssaoOutput);
     _context.renderTargetPool().deallocateRT(_halfDepthAndNormals);
     _context.renderTargetPool().deallocateRT(_ssaoHalfResOutput);
+    _context.renderTargetPool().deallocateRT(_ssaoBlurBuffer);
 }
 
 bool SSAOPreRenderOperator::ready() const {
-    if (_ssaoBlurShader->getState() == ResourceState::RES_LOADED && 
+    if (_ssaoBlurShaderHorizontal->getState() == ResourceState::RES_LOADED && 
+        _ssaoBlurShaderVertical->getState() == ResourceState::RES_LOADED && 
         _ssaoGenerateShader->getState() == ResourceState::RES_LOADED && 
         _ssaoGenerateHalfResShader->getState() == ResourceState::RES_LOADED &&
         _ssaoDownSampleShader->getState() == ResourceState::RES_LOADED &&
@@ -296,6 +304,8 @@ void SSAOPreRenderOperator::genHalfRes(const bool state) {
         _ssaoGenerateConstants.set(_ID("maxRange"), GFX::PushConstantType::FLOAT, maxRange());
         _ssaoGenerateConstants.set(_ID("fadeStart"), GFX::PushConstantType::FLOAT, fadeStart());
         _ssaoBlurConstants.set(_ID("depthThreshold"), GFX::PushConstantType::FLOAT, blurThreshold());
+        _ssaoBlurConstants.set(_ID("blurSharpness"), GFX::PushConstantType::FLOAT, blurSharpness());
+        _ssaoBlurConstants.set(_ID("blurKernelSize"), GFX::PushConstantType::INT, blurKernelSize());
     }
 }
 
@@ -363,6 +373,32 @@ void SSAOPreRenderOperator::blurThreshold(const F32 val) {
     }
 }
 
+void SSAOPreRenderOperator::blurSharpness(const F32 val) {
+    if (!COMPARE(blurSharpness(), val)) {
+        _blurSharpness[_genHalfRes ? 1 : 0] = val;
+        _ssaoBlurConstants.set(_ID("blurSharpness"), GFX::PushConstantType::FLOAT, val);
+        if (_genHalfRes) {
+            _context.context().config().rendering.postFX.ssao.HalfRes.BlurSharpness = val;
+        } else {
+            _context.context().config().rendering.postFX.ssao.FullRes.BlurSharpness = val;
+        }
+        _context.context().config().changed(true);
+    }
+}
+
+void SSAOPreRenderOperator::blurKernelSize(const I32 val) {
+    if (blurKernelSize() != val) {
+        _kernelSize[_genHalfRes ? 1 : 0] = val;
+        _ssaoBlurConstants.set(_ID("blurKernelSize"), GFX::PushConstantType::INT, val);
+        if (_genHalfRes) {
+            _context.context().config().rendering.postFX.ssao.HalfRes.BlurKernelSize = val;
+        } else {
+            _context.context().config().rendering.postFX.ssao.FullRes.BlurKernelSize = val;
+        }
+        _context.context().config().changed(true);
+    }
+}
+
 void SSAOPreRenderOperator::maxRange(F32 val) {
     val = std::max(0.01f, val);
 
@@ -375,14 +411,11 @@ void SSAOPreRenderOperator::maxRange(F32 val) {
             _context.context().config().rendering.postFX.ssao.FullRes.MaxRange = val;
         }
         _context.context().config().changed(true);
-
-        // Make sure we clamp fade properly
-        fadeStart(fadeStart());
     }
 }
 
 void SSAOPreRenderOperator::fadeStart(F32 val) {
-    val = std::min(val, maxRange()- 0.01f);
+    val = std::max(0.01f, val);
 
     if (!COMPARE(fadeStart(), val)) {
         _fadeStart[_genHalfRes ? 1 : 0] = val;
@@ -521,35 +554,82 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
         {
             const auto& ssaoAtt = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0);
             const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
-            const vec2<F32> ssaoTexelSize{ 1.f / ssaoAtt.texture()->width(), 1.f / ssaoAtt.texture()->height() };
+            const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
 
-            _ssaoBlurConstants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
-            _ssaoBlurConstants.set(_ID("texelSize"), GFX::PushConstantType::VEC2, ssaoTexelSize);
+            const vec2<F32> ssaoTexelSize{ 1.f / ssaoAtt.texture()->width(), 
+                                           1.f / ssaoAtt.texture()->height() };
 
-            // Blur AO
-            GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-            beginRenderPassCmd._descriptor.drawMask().disableAll();
-            beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
-            beginRenderPassCmd._target = _parent.screenRT()._targetID;
-            beginRenderPassCmd._name = "DO_SSAO_BLUR";
-            EnqueueCommand(bufferInOut, beginRenderPassCmd);
+            if (blurResults() && blurKernelSize() > 0) {
+                pipelineDescriptor._stateHash = redChannelOnly.getHash();
 
-            pipelineDescriptor._shaderProgramHandle = blurResults() ? _ssaoBlurShader->getGUID()
-                                                                    : _ssaoPassThroughShader->getGUID();
-                 
-            pipelineDescriptor._stateHash = redChannelOnly.getHash();
-            EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+                DescriptorSet blurSet = {};
+                blurSet._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
+                blurSet._textureData.add({ screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
 
-            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-            descriptorSetCmd._set._textureData.add({ ssaoAtt.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0 });
-            descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
-            EnqueueCommand(bufferInOut, descriptorSetCmd);
+                _ssaoBlurConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, invProjectionMatrix);
+                _ssaoBlurConstants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
+                _ssaoBlurConstants.set(_ID("texelSize"), GFX::PushConstantType::VEC2, ssaoTexelSize);
 
-            EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
+                GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+                // Blur AO
+                { //Horizontal
+                    beginRenderPassCmd._name = "DO_SSAO_BLUR_HORIZONTAL";
+                    beginRenderPassCmd._target = _ssaoBlurBuffer._targetID;
+                    EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
-            EnqueueCommand(bufferInOut, _triangleDrawCmd);
+                    pipelineDescriptor._shaderProgramHandle = _ssaoBlurShaderHorizontal->getGUID();
+                    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
-            EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+                    EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
+
+                    blurSet._textureData.add({ ssaoAtt.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0 });
+                    EnqueueCommand(bufferInOut, GFX::BindDescriptorSetsCommand{ blurSet });
+
+                    EnqueueCommand(bufferInOut, _triangleDrawCmd);
+
+                    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+                }
+                { //Vertical
+                    beginRenderPassCmd._name = "DO_SSAO_BLUR_VERTICAL";
+                    beginRenderPassCmd._target = _parent.screenRT()._targetID;
+                    beginRenderPassCmd._descriptor.drawMask().disableAll();
+                    beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+                    EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+                    pipelineDescriptor._shaderProgramHandle = _ssaoBlurShaderVertical->getGUID();
+                    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+
+                    EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoBlurConstants });
+
+                    const auto& horizBlur = _ssaoBlurBuffer._rt->getAttachment(RTAttachmentType::Colour, 0);
+                    blurSet._textureData.add({ horizBlur.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0 });
+                    EnqueueCommand(bufferInOut, GFX::BindDescriptorSetsCommand{ blurSet });
+
+                    EnqueueCommand(bufferInOut, _triangleDrawCmd);
+
+                    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+                }
+            } else {
+                GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+                beginRenderPassCmd._descriptor.drawMask().disableAll();
+                beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+                beginRenderPassCmd._target = _parent.screenRT()._targetID;
+                beginRenderPassCmd._name = "DO_SSAO_PASS_THROUGH";
+                EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+                pipelineDescriptor._shaderProgramHandle = _ssaoPassThroughShader->getGUID();
+
+                pipelineDescriptor._stateHash = redChannelOnly.getHash();
+                EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+
+                GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+                descriptorSetCmd._set._textureData.add({ ssaoAtt.texture()->data(), ssaoAtt.samplerHash(), TextureUsage::UNIT0 });
+                EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+                EnqueueCommand(bufferInOut, _triangleDrawCmd);
+
+                EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+            }
         }
     }
 }

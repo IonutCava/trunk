@@ -348,7 +348,7 @@ namespace Divide {
             }
         }
 
-        if (ImGui::CollapsingHeader("Day/Night Settings")) {
+        if (ImGui::CollapsingHeader("Day/Night Settings", ImGuiTreeNodeFlags_DefaultOpen)) {
             bool dayNightEnabled = activeScene.dayNightCycleEnabled();
             if (ImGui::Checkbox("Enable day/night cycle", &dayNightEnabled)) {
                 activeScene.dayNightCycleEnabled(dayNightEnabled);

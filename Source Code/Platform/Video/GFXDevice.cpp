@@ -274,12 +274,12 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     depthSampler.anisotropyLevel(0);
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normAndVelDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor gbufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
+    TextureDescriptor gBufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
     screenDescriptor.mipCount(1u);
     normAndVelDescriptor.mipCount(1u);
-    gbufferDescriptor.mipCount(1u);
+    gBufferDescriptor.mipCount(1u);
     depthDescriptor.mipCount(1u);
 
     // Normal and MSAA
@@ -289,13 +289,13 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         screenDescriptor.msaaSamples(sampleCount);
         depthDescriptor.msaaSamples(sampleCount);
         normAndVelDescriptor.msaaSamples(sampleCount);
-        gbufferDescriptor.msaaSamples(sampleCount);
+        gBufferDescriptor.msaaSamples(sampleCount);
 
         {
             RTAttachmentDescriptors attachments = {
                 { screenDescriptor,     samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
                 { normAndVelDescriptor, samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-                { gbufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 0.0f, 0.0f, 0.0f) },
+                { gBufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 0.0f, 0.0f, 0.0f) },
                 { depthDescriptor,      samplerHash, RTAttachmentType::Depth }
             };
 
@@ -368,8 +368,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     const size_t reflectionSamplerHash = reflectionSampler.getHash();
 
     {
-        // "A" could be used for anything (e.g. depth)
-        TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
+        TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
         environmentDescriptorPlanar.mipCount(1u);
@@ -487,7 +486,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         }
     }
     {
-        TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE);
+        TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
         TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
 
         environmentDescriptorCube.mipCount(1u);
@@ -2757,7 +2756,7 @@ void GFXDevice::screenshot(const stringImpl& filename) const {
     const U32 bufferSize = width * height * 4;
     vectorEASTL<U8> imageData(bufferSize, 0u);
     // Read the pixels from the main render target (RGBA16F)
-    screenRT.readData(GFXImageFormat::RGBA, GFXDataFormat::UNSIGNED_BYTE, (bufferPtr)imageData.data());
+    screenRT.readData(GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE, (bufferPtr)imageData.data());
     // Save to file
     ImageTools::SaveSeries(filename,
                            vec2<U16>(width, height),

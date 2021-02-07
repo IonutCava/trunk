@@ -139,12 +139,12 @@ namespace Divide {
     }
 
     template <typename T>
-    T CLAMPED_01(const T& n) noexcept {
+    constexpr T CLAMPED_01(const T& n) noexcept {
         return CLAMPED(n, T(0), T(1));
     }
 
     template <typename T>
-    T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) noexcept {
+    constexpr T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max, D64& slopeOut) noexcept {
         static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be mapped!");
         const D64 diff = in_max > in_min ? to_D64(in_max - in_min) : std::numeric_limits<D64>::epsilon();
         slopeOut = 1.0 * (out_max - out_min) / diff;
@@ -152,13 +152,13 @@ namespace Divide {
     }
 
     template <typename T>
-    T SQUARED(T input) noexcept {
+    constexpr T SQUARED(T input) noexcept {
         static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
         return input * input;
     }
 
     template<typename T>
-    T SIGNED_SQUARED(T input) noexcept {
+    constexpr T SIGNED_SQUARED(T input) noexcept {
         static_assert(std::is_arithmetic<T>::value, "Only arithmetic values can be squared!");
         return std::copysign(SQUARED(input), input);
     }

@@ -63,8 +63,14 @@ class WaterPlane : public SceneNode {
     void saveToXML(boost::property_tree::ptree& pt) const override;
     void loadFromXML(const boost::property_tree::ptree& pt)  override;
 
+    PROPERTY_RW(FColour3, refractionTint);
     PROPERTY_R(F32, reflPlaneOffset, 0.0f);
     PROPERTY_R(F32, refrPlaneOffset, 0.0f);
+    PROPERTY_RW(F32, specularShininess, 200.f);
+    PROPERTY_RW(vec2<F32>, noiseTile);
+    PROPERTY_RW(vec2<F32>, noiseFactor);
+    PROPERTY_RW(U16, blurKernelSize, 9u);
+    PROPERTY_RW(bool, blurReflections, true);
 
    protected:
     void buildDrawCommands(SceneGraphNode* sgn,
@@ -98,11 +104,6 @@ class WaterPlane : public SceneNode {
     std::shared_ptr<Quad3D> _plane = nullptr;
 
     StaticCamera* _reflectionCam = nullptr;
-    FColour3 _refractionTint;
-    vec2<F32> _noiseTile;
-    vec2<F32> _noiseFactor;
-    U16     _blurKernelSize = 9u;
-    bool    _blurReflections = true;
     EditorDataState _editorDataDirtyState = EditorDataState::IDLE;
 };
 

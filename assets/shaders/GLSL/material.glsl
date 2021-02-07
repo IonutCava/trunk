@@ -21,5 +21,5 @@ void main (void) {
     }
 #endif
     const uint LoD = 0u;
-    writeOutput(getPixelColour(albedo, data, getNormalWV(VAR._texCoord), VAR._texCoord, LoD));
+    writeScreenColour(getPixelColour(albedo, data, getNormalWV(VAR._texCoord), VAR._texCoord, LoD));
 }

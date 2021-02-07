@@ -59,7 +59,7 @@ void VertexBuffer::computeNormals() {
         const vec3<F32>& ib = getPosition(idx1);
         const vec3<F32>& ic = getPosition(idx2);
 
-        const vec3<F32> no = Cross(ib - ia, ic - ia);
+        const vec3<F32> no = Cross(ia - ib, ic - ib);
 
         // Store the face's normal for each of the vertices that make up the face.
         normalBuffer[idx0] += no;

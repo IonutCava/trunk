@@ -92,7 +92,9 @@ float ToLinearDepthPreview(in float D)            { return ToLinearDepthPreview(
 
 float ToLinearDepth(in float D, in mat4 projMatrix) { return projMatrix[3][2] / (D - projMatrix[2][2]); }
 
-float ViewSpaceZ(in float D, in mat4 invProjection) { return -1.0f / (invProjection[2][3] * (2.0f * D - 1.0f) + invProjection[3][3]); }
+float ViewSpaceZ(in float depthIn, in mat4 invProjectionMatrix) {
+    return -1.0f / (invProjectionMatrix[2][3] * (depthIn * 2.f - 1.f) + invProjectionMatrix[3][3]);
+}
 
 vec3 ViewSpacePos(in vec2 texCoords, in float depthIn, in mat4 invProjection) {
     const vec4 clipSpacePos = vec4(texCoords.s * 2.f - 1.f,
@@ -107,6 +109,11 @@ vec3 ViewSpacePos(in vec2 texCoords, in float depthIn, in mat4 invProjection) {
 
 
 #define _kLum vec3(0.299f, 0.587f, 0.114f)
+
+// Utility function that maps a value from one range to another. 
+float ReMap(const float V, const float Min0, const float Max0, const float Min1, const float Max1) {
+    return (Min1 + (((V - Min0) / (Max0 - Min0)) * (Max1 - Min1)));
+}
 
 #define InRangeExclusive(V, MIN, MAX) (VS > MIN && V < MAX)
 #define LinStep(LOW, HIGH, V) saturate((V - LOW) / (HIGH - LOW))
@@ -168,7 +175,7 @@ float computeDepth(in vec4 posWV) {
     return (((far - near) * ndc_depth) + near + far) * 0.5f;
 }
 
-vec3 homogenize(in vec4 v) { return vec3((1.0f / v.w) * v); }
+vec3 homogenize(in vec4 v) { return (v / v.w).xyz; }
 
 vec3 viewPositionFromDepth(in float depth,
                            in mat4 invProjectionMatrix,

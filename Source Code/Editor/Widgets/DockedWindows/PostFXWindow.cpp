@@ -155,8 +155,8 @@ namespace {
             F32 radius = ssaoOp.radius();
             F32 power = ssaoOp.power();
             F32 bias = ssaoOp.bias();
-            F32 range = ssaoOp.maxRange();
-            F32 fade = ssaoOp.fadeStart();
+            F32 range = ssaoOp.maxRange() * 100.f;
+            F32 fade = ssaoOp.fadeStart() * 100.f;
             bool halfRes = ssaoOp.genHalfRes();
 
             if (ImGui::Checkbox("Generate Half Resolution", &halfRes)) {
@@ -171,11 +171,17 @@ namespace {
             if (ImGui::SliderFloat("Bias", &bias, 0.001f, 0.99f)) {
                 ssaoOp.bias(bias);
             }
-            if (ImGui::SliderFloat("Max Range", &range, 0.01f, 1.f)) {
-                ssaoOp.maxRange(range);
+            if (ImGui::SliderFloat("Max Range (%)", &range, 0.001f, 100.f)) {
+                ssaoOp.maxRange(range * 0.01f);
             }
-            if (ImGui::SliderFloat("Fade Start", &fade, 0.001f, 0.99f)) {
-                ssaoOp.fadeStart(fade);
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("100% - Far plane");
+            }
+            if (ImGui::SliderFloat("Fade Start (%)", &fade, 0.001f, 100.f)) {
+                ssaoOp.fadeStart(fade * 0.01f);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Applies to the range [0 - Max Range], not to the far plane!");
             }
             bool blur = ssaoOp.blurResults();
             if (ImGui::Checkbox("Blur results", &blur)) {
@@ -185,8 +191,19 @@ namespace {
                 PushReadOnly();
             }
             F32 blurThreshold = ssaoOp.blurThreshold();
-            if (ImGui::SliderFloat("Blur threshold", &blurThreshold, 0.01f, 0.999f)) {
+            if (ImGui::SliderFloat("Blur threshold", &blurThreshold, 0.001f, 0.999f)) {
                 ssaoOp.blurThreshold(blurThreshold);
+            }
+            F32 blurSharpness = ssaoOp.blurSharpness();
+            if (ImGui::SliderFloat("Blur sharpness", &blurSharpness, 0.001f, 128.0f)) {
+                ssaoOp.blurSharpness(blurSharpness);
+            }
+            I32 kernelSize = ssaoOp.blurKernelSize();
+            if (ImGui::SliderInt("Blur kernel size", &kernelSize, 0, 16)) {
+                ssaoOp.blurKernelSize(kernelSize);
+            }
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("0 = no blur");
             }
             if (!blur) {
                 PopReadOnly();

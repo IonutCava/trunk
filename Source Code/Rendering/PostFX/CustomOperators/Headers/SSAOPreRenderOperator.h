@@ -63,7 +63,13 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     void blurResults(bool state);
 
     [[nodiscard]] F32 blurThreshold() const noexcept { return _blurThreshold[_genHalfRes ? 1 : 0]; }
-    void blurThreshold(F32 val);
+    void blurThreshold(F32 val); 
+    
+    [[nodiscard]] F32 blurSharpness() const noexcept { return _blurSharpness[_genHalfRes ? 1 : 0]; }
+    void blurSharpness(F32 val);
+    
+    [[nodiscard]] I32 blurKernelSize() const noexcept { return _kernelSize[_genHalfRes ? 1 : 0]; }
+    void blurKernelSize(I32 val);
 
     [[nodiscard]] F32 maxRange() const noexcept { return _maxRange[_genHalfRes ? 1 : 0]; }
     void maxRange(F32 val);
@@ -83,7 +89,8 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     PushConstants _ssaoBlurConstants;
     ShaderProgram_ptr _ssaoGenerateShader = nullptr;
     ShaderProgram_ptr _ssaoGenerateHalfResShader = nullptr;
-    ShaderProgram_ptr _ssaoBlurShader = nullptr;
+    ShaderProgram_ptr _ssaoBlurShaderHorizontal = nullptr;
+    ShaderProgram_ptr _ssaoBlurShaderVertical = nullptr;
     ShaderProgram_ptr _ssaoPassThroughShader = nullptr;
     ShaderProgram_ptr _ssaoDownSampleShader = nullptr;
     ShaderProgram_ptr _ssaoUpSampleShader = nullptr;
@@ -92,13 +99,16 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     RenderTargetHandle _ssaoOutput;
     RenderTargetHandle _ssaoHalfResOutput;
     RenderTargetHandle _halfDepthAndNormals;
+    RenderTargetHandle _ssaoBlurBuffer;
     F32 _radius[2] = { 0.0f, 0.0f };
     F32 _bias[2] = { 0.0f, 0.0f };
     F32 _power[2] = { 0.0f, 0.0f };
     F32 _maxRange[2] = { 1.f, 1.f };
     F32 _fadeStart[2] = { 1.f, 1.f };
     F32 _blurThreshold[2] = { 0.05f, 0.05f };
-    U8 _kernelSampleCount[2] = { 0u, 0u };
+    F32 _blurSharpness[2] = { 40.f, 40.f };
+    I32 _kernelSize[2] = { 3, 3 };
+    U8  _kernelSampleCount[2] = { 0u, 0u };
     bool _blur[2] = { false, false };
 
     bool _genHalfRes = false;

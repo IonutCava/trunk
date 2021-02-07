@@ -54,12 +54,17 @@ namespace {
         for (U8 pass = 0u; pass < 3; ++pass) {
             CurlNoise::SetCurlSettings(false, frequency[pass], 3, 2.f, 0.5f);
             for (I32 i = 0; i < width * height * channelCount; i += 3) {
-                const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height),
-                    to_F32(((i / channelCount) / height) % height) / to_F32(height),
-                    to_F32((i / channelCount) / width) / to_F32(height));
+                const Vectormath::Aos::Vector3 pos
+                {
+                    to_F32( (i / channelCount) % height)  / height,
+                    to_F32(((i / channelCount) / height)) / height,
+                    height / 10000.f 
+                };
 
-                CurlNoise::float3 res = CurlNoise::ComputeCurlNoBoundaries({ pos.x, pos.y, pos.z });
-                const F32 cellFBM0 = res.val[0] * 0.5f + res.val[1] * 0.35f + res.val[2] * 0.15f;
+                const auto res = CurlNoise::ComputeCurlNoBoundaries(pos);
+                const vec3<F32> curl = Normalized(vec3<F32>{res.val[0], res.val[1], res.val[2]});
+                const F32 cellFBM0 = curl.r * 0.5f + curl.g * 0.35f + curl.b * 0.15f;
+
                 data[i + pass] = to_byte(cellFBM0 * 128.f + 127.f);
             }
         }
@@ -68,6 +73,12 @@ namespace {
     }
 
     void GeneratePerlinNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
+        const auto smoothstep = [](const F32 edge0, const F32 edge1, const F32 x) {
+            const F32 t = std::min(std::max((x - edge0) / (edge1 - edge0), 0.0f), 1.0f);
+            return t * t * (3.f - 2.f * t);
+        };
+
+
         Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
         for (I32 i = 0; i < width * height * channelCount; i += 3) {
             const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % width) / to_F32(width),
@@ -81,21 +92,21 @@ namespace {
             const F32 perlinNoise2 = Tileable3dNoise::PerlinNoise(pos + offset1, 8, 3);
                   F32 perlinNoise3 = Tileable3dNoise::PerlinNoise(pos + offset2, 2, 3);
                   //F32 perlinNoise4 = Tileable3dNoise::PerlinNoise(pos + offset3, 4, 3);
-            perlinNoise3 = std::min(1.f, (glm::smoothstep(0.45f, 0.8f, perlinNoise3) + glm::smoothstep(0.25f, 0.45f, perlinNoise3) * 0.5f));
+            perlinNoise3 = std::min(1.f, (smoothstep(0.45f, 0.8f, perlinNoise3) + smoothstep(0.25f, 0.45f, perlinNoise3) * 0.5f));
             data[i + 0] = to_byte(perlinNoise * 128.f + 127.f);
-            data[i + 1] = to_byte(glm::smoothstep(0.5f, 0.7f, perlinNoise2) * 255.f);
+            data[i + 1] = to_byte(smoothstep(0.5f, 0.7f, perlinNoise2) * 255.f);
             data[i + 2] = to_byte(perlinNoise3 * 255.f);
         }
         stbi_write_bmp(fileName, width, height, channelCount, data);
         MemoryManager::SAFE_DELETE(data);
     }
 
-    void GenerateWorleyNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
-        Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
-        for (I32 i = 0; i < width * height * channelCount; i += 3) {
+    void GenerateWorleyNoise(const char* fileName, const I32 width, const I32 height, const U8 channelCount, const I32 slices) {
+        Byte* data = MemoryManager_NEW Byte[slices * width * height * channelCount];
+        for (I32 i = 0; i < slices * width * height * channelCount; i += 3) {
             const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height), 
                                             to_F32(((i / channelCount) / height) % height) / to_F32(height), 
-                                            to_F32((i / channelCount) / width) / to_F32(height));
+                                            to_F32((i / channelCount) / (width * slices)) / to_F32(height));
             const F32 cell0 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 2);
             const F32 cell1 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 4);
             const F32 cell2 = 1.0f - Tileable3dNoise::WorleyNoise(pos, 8);
@@ -108,21 +119,24 @@ namespace {
             data[i + 1] = to_byte(cellFBM1 * 255);
             data[i + 2] = to_byte(cellFBM2 * 255);
         }
-        stbi_write_bmp(fileName, width, height, channelCount, data);
+        stbi_write_bmp(fileName, width * slices, height, channelCount, data);
         MemoryManager::SAFE_DELETE(data);
     }
 
-    void GeneratePerlinWorleyNoise(const Task& parentTask, const char* fileName, const I32 width, const I32 height, const U8 channelCount) {
-        Byte* data = MemoryManager_NEW Byte[width * height * channelCount];
-
+    void GeneratePerlinWorleyNoise(PlatformContext& context, const char* fileName, const I32 width, const I32 height, const U8 channelCount, const I32 slices) {
+        Byte* data = MemoryManager_NEW Byte[slices * width * height * channelCount];
+#if 0
         ParallelForDescriptor descriptor = {};
-        descriptor._iterCount = width * height * channelCount;
-        descriptor._partitionSize = height;
+        descriptor._iterCount = slices * width * height * channelCount;
+        descriptor._partitionSize = slices * 4;
         descriptor._cbk = [&](const Task*, const U32 start, const U32 end) -> void {
-            for (U32 i = start; i < end; i += 4) {
+           for (U32 i = start; i < end; i += 4) {
+#else
+            for (U32 i = 0; i < to_U32(slices * width * height * channelCount); i += 4) {
+#endif
                 const glm::vec3 pos = glm::vec3(to_F32((i / channelCount) % height) / to_F32(height),
                                                 to_F32(((i / channelCount) / height) % height) / to_F32(height),
-                                                to_F32((i / channelCount) / width) / to_F32(height));
+                                                to_F32((i / channelCount) / (slices * width)) / to_F32(height));
                 // Perlin FBM noise
                 const F32 perlinNoise = Tileable3dNoise::PerlinNoise(pos, 8, 3);
 
@@ -150,9 +164,11 @@ namespace {
                 data[i + 2] = to_byte(worleyFBM1 * 255);
                 data[i + 3] = to_byte(worleyFBM2 * 255);
             }
+#if 0
         };
-        parallel_for(*parentTask._parentPool, descriptor);
-        stbi_write_tga(fileName, width, height, channelCount, data);
+        parallel_for(context, descriptor);
+#endif
+        stbi_write_tga(fileName, slices * width, height, channelCount, data);
         MemoryManager::DELETE_ARRAY(data);
     }
 }
@@ -166,14 +182,15 @@ void Sky::OnStartup(PlatformContext& context) {
 
     init = true;
     //ref: https://github.com/clayjohn/realtime_clouds/blob/master/gen_noise.cpp
-    std::array<Task*, 4> tasks{ nullptr };
+    std::array<Task*, 3> tasks{ nullptr };
 
     const ResourcePath curlNoise = procLocation() + curlTexName;
     const ResourcePath weather = procLocation() + weatherTexName;
     const ResourcePath worlNoise = procLocation() + worlTexName;
     const ResourcePath perWordNoise = procLocation() + perlWorlTexName;
 
-    if (!fileExists(curlNoise)) {
+    if (!fileExists(curlNoise)) 
+    {
         Console::printfn("Generating Curl Noise 128x128 RGB");
         tasks[0] = CreateTask(context, [&curlNoise](const Task&) { GenerateCurlNoise(curlNoise.c_str(), 128, 128, 3); });
         Start(*tasks[0]);
@@ -192,15 +209,14 @@ void Sky::OnStartup(PlatformContext& context) {
         //worley and perlin-worley are from github/sebh/TileableVolumeNoise
         //which is in turn based on noise described in 'real time rendering of volumetric cloudscapes for horizon zero dawn'
         Console::printfn("Generating Worley Noise 32x32x32 RGB");
-        tasks[2] = CreateTask(context, [&worlNoise](const Task&) { GenerateWorleyNoise(worlNoise.c_str(), 32 * 32, 32, 3); });
+        tasks[2] = CreateTask(context, [&worlNoise](const Task&) { GenerateWorleyNoise(worlNoise.c_str(), 32, 32, 3, 32); });
         Start(*tasks[2]);
         Console::printfn("Done!");
     }
 
     if (!fileExists(perWordNoise)) {
         Console::printfn("Generating Perlin-Worley Noise 128x128x128 RGBA");
-        tasks[3] = CreateTask(context, [&perWordNoise](const Task& parentTask) { GeneratePerlinWorleyNoise(parentTask, perWordNoise.c_str(), 128 * 128, 128, 4); });
-        Start(*tasks[3]);
+        GeneratePerlinWorleyNoise(context, perWordNoise.c_str(), 128, 128, 4, 128);
         Console::printfn("Done!");
     }
 
@@ -221,6 +237,9 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
       _context(context),
       _diameter(diameter)
 {
+    nightSkyColour({ 0.05f, 0.06f, 0.1f, 1.f });
+    moonColour({1.1f, 1.f, 0.8f});
+
     time_t t = time(nullptr);
     _sun.SetLocation(-2.589910f, 51.45414f); // Bristol :D
     _sun.SetDate(localtime(&t));
@@ -271,6 +290,16 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     sunIntensityField._basicType = GFX::PushConstantType::FLOAT;
     getEditorComponent().registerField(MOV(sunIntensityField));
 
+    EditorComponentField sunScaleField = {};
+    sunScaleField._name = "Sun Scale";
+    sunScaleField._tooltip = "(0.01x - 100.0x)";
+    sunScaleField._data = &_atmosphere._sunScale;
+    sunScaleField._type = EditorComponentFieldType::PUSH_TYPE;
+    sunScaleField._readOnly = false;
+    sunScaleField._range = { 0.01f, 100.0f };
+    sunScaleField._basicType = GFX::PushConstantType::FLOAT;
+    getEditorComponent().registerField(MOV(sunScaleField));
+
     EditorComponentField distanceMultiplierField = {};
     distanceMultiplierField._name = "Distance Multplier x10";
     distanceMultiplierField._tooltip = "Affects atmosphere and ray offsets";
@@ -297,7 +326,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     planetRadiusField._data = &_atmosphere._planetRadius;
     planetRadiusField._type = EditorComponentFieldType::PUSH_TYPE;
     planetRadiusField._readOnly = false;
-    planetRadiusField._range = { 0.1f, 10.f };
+    planetRadiusField._range = { 0.1f, 100.f };
     planetRadiusField._basicType = GFX::PushConstantType::FLOAT;
     getEditorComponent().registerField(MOV(planetRadiusField));
 
@@ -309,7 +338,18 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     atmosphereOffsetField._readOnly = false;
     atmosphereOffsetField._range = { 1.f, 1000.f };
     atmosphereOffsetField._basicType = GFX::PushConstantType::FLOAT;
-    getEditorComponent().registerField(MOV(atmosphereOffsetField));
+    getEditorComponent().registerField(MOV(atmosphereOffsetField));   
+
+
+    EditorComponentField cloudHeightOffsetField = {};
+    cloudHeightOffsetField._name = "Cloud layer height range (m)";
+    cloudHeightOffsetField._tooltip = "Cloud layer will be limited to the range [planetRadius + x, planetRadius + y]";
+    cloudHeightOffsetField._data = &_atmosphere._cloudLayerMinMaxHeight;
+    cloudHeightOffsetField._type = EditorComponentFieldType::PUSH_TYPE;
+    cloudHeightOffsetField._readOnly = false;
+    cloudHeightOffsetField._range = { 10.f, 5000.f };
+    cloudHeightOffsetField._basicType = GFX::PushConstantType::VEC2;
+    getEditorComponent().registerField(MOV(cloudHeightOffsetField));
 
     EditorComponentField rayleighCoeffField = {};
     rayleighCoeffField._name = "Rayleigh Coefficients";
@@ -351,14 +391,6 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     mieScaleField._basicType = GFX::PushConstantType::FLOAT;
     getEditorComponent().registerField(MOV(mieScaleField));
 
-    EditorComponentField mieScatterDir = {};
-    mieScatterDir._name = "Mie Scater Direction";
-    mieScatterDir._data = &_atmosphere._MieScatterDir;
-    mieScatterDir._type = EditorComponentFieldType::PUSH_TYPE;
-    mieScatterDir._readOnly = true;
-    mieScatterDir._format = "%e";
-    mieScatterDir._basicType = GFX::PushConstantType::FLOAT;
-
     getEditorComponent().registerField(MOV(mieScaleField));
     EditorComponentField resetField = {};
     resetField._name = "Reset To Default";
@@ -366,10 +398,24 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     resetField._type = EditorComponentFieldType::BUTTON;
     getEditorComponent().registerField(MOV(resetField));
 
-    EditorComponentField separatorField2 = {};
-    separatorField2._name = "Skybox";
-    separatorField2._type = EditorComponentFieldType::SEPARATOR;
-    getEditorComponent().registerField(MOV(separatorField2));
+    EditorComponentField separator2Field = {};
+    separator2Field._name = "Weather";
+    separator2Field._type = EditorComponentFieldType::SEPARATOR;
+    getEditorComponent().registerField(MOV(separator2Field));
+
+    EditorComponentField weatherScaleField = {};
+    weatherScaleField._name = "Weather Scale ( x 1e-5)";
+    weatherScaleField._data = &_weatherScale;
+    weatherScaleField._type = EditorComponentFieldType::PUSH_TYPE;
+    weatherScaleField._readOnly = false;
+    weatherScaleField._range = { 1.f, 100.f };
+    weatherScaleField._basicType = GFX::PushConstantType::FLOAT;
+    getEditorComponent().registerField(MOV(weatherScaleField));
+
+    EditorComponentField separator3Field = {};
+    separator3Field._name = "Skybox";
+    separator3Field._type = EditorComponentFieldType::SEPARATOR;
+    getEditorComponent().registerField(MOV(separator3Field));
 
     EditorComponentField useDaySkyboxField = {};
     useDaySkyboxField._name = "Use Day Skybox";
@@ -402,29 +448,23 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
     nightColourField._readOnly = false;
     nightColourField._basicType = GFX::PushConstantType::FCOLOUR4;
     getEditorComponent().registerField(MOV(nightColourField));
-}
 
-std::array<vec4<F32>, 3> Sky::atmosphereToShaderData() const noexcept {
-    return {
-        vec4<F32>
-        {
-            _atmosphere._sunIntensity,
-            _atmosphere._planetRadius * 6371e3f,
-            _atmosphere._atmosphereOffset * _atmosphere._distanceMultiplier,
-            _atmosphere._MieCoeff * 1e-6f,
-        },
-        vec4<F32>
-        {
-            _atmosphere._RayleighCoeff * 1e-6f,
-            _atmosphere._RayleighScale * 1e3f
-        },
-        vec4<F32>
-        {
-            _atmosphere._MieScaleHeight * 1e3f,
-            _atmosphere._MieScatterDir,
-            _atmosphere._rayOriginDistance * _atmosphere._distanceMultiplier
-        }
-    };
+    EditorComponentField moonColourField = {};
+    moonColourField._name = "Moon Colour";
+    moonColourField._data = &_moonColour;
+    moonColourField._type = EditorComponentFieldType::PUSH_TYPE;
+    moonColourField._readOnly = false;
+    moonColourField._basicType = GFX::PushConstantType::FCOLOUR4;
+    getEditorComponent().registerField(MOV(moonColourField));
+
+    EditorComponentField moonScaleField = {};
+    moonScaleField._name = "Moon Scale";
+    moonScaleField._data = &_moonScale;
+    moonScaleField._type = EditorComponentFieldType::PUSH_TYPE;
+    moonScaleField._readOnly = false;
+    moonScaleField._range = { 0.001f, 0.99f };
+    moonScaleField._basicType = GFX::PushConstantType::FLOAT;
+    getEditorComponent().registerField(MOV(moonScaleField));
 }
 
 bool Sky::load() {
@@ -433,6 +473,20 @@ bool Sky::load() {
     }
 
     std::atomic_uint loadTasks = 0u;
+    I32 x, y, n;
+    Byte* perlWorlData = (Byte*)stbi_load((procLocation() + perlWorlTexName).c_str(), &x, &y, &n, 0);
+    ImageTools::ImageData imgDataPerl = {};
+    if (!imgDataPerl.addLayer(perlWorlData, to_size(x * y * n), to_U16(y), to_U16(y), to_U16(x / y))) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
+    stbi_image_free(perlWorlData);
+
+    Byte* worlNoise = (Byte*)stbi_load((procLocation() + worlTexName).c_str(), &x, &y, &n, 0);
+    ImageTools::ImageData imgDataWorl = {};
+    if (!imgDataWorl.addLayer(worlNoise, to_size(x * y * n), to_U16(y), to_U16(y), to_U16(x / y))) {
+        DIVIDE_UNEXPECTED_CALL();
+    }
+    stbi_image_free(worlNoise);
     {
         SamplerDescriptor skyboxSampler = {};
         skyboxSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
@@ -445,7 +499,49 @@ bool Sky::load() {
         _noiseSamplerLinear = skyboxSampler.getHash();
 
         skyboxSampler.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+        skyboxSampler.anisotropyLevel(8);
         _noiseSamplerMipMap = skyboxSampler.getHash();
+    }
+    {
+        TextureDescriptor textureDescriptor(TextureType::TEXTURE_3D);
+        textureDescriptor.srgb(false);
+        textureDescriptor.layerCount(128);
+        textureDescriptor.baseFormat(GFXImageFormat::RGBA);
+
+        ResourceDescriptor perlWorlDescriptor("perlWorl");
+        perlWorlDescriptor.propertyDescriptor(textureDescriptor);
+        perlWorlDescriptor.waitForReady(true);
+        perlWorlDescriptor.threaded(false);
+        _perWorlNoiseTex = CreateResource<Texture>(_parentCache, perlWorlDescriptor);
+        _perWorlNoiseTex->loadData(imgDataPerl);
+ 
+        textureDescriptor.baseFormat(GFXImageFormat::RGB);
+        textureDescriptor.layerCount(32);
+
+        ResourceDescriptor worlDescriptor("worlNoise");
+        worlDescriptor.propertyDescriptor(textureDescriptor);
+        worlDescriptor.waitForReady(true);
+        worlDescriptor.threaded(false);
+        _worlNoiseTex = CreateResource<Texture>(_parentCache, worlDescriptor);
+        _worlNoiseTex->loadData(imgDataWorl);
+
+        textureDescriptor.texType(TextureType::TEXTURE_2D);
+        textureDescriptor.layerCount(1u);
+        textureDescriptor.mipCount(1u);
+        
+        ResourceDescriptor weatherDescriptor("Weather");
+        weatherDescriptor.assetName(ResourcePath(weatherTexName));
+        weatherDescriptor.assetLocation(procLocation());
+        weatherDescriptor.propertyDescriptor(textureDescriptor);
+        weatherDescriptor.waitForReady(false);
+        _weatherTex = CreateResource<Texture>(_parentCache, weatherDescriptor);
+
+        ResourceDescriptor curlDescriptor("CurlNoise");
+        curlDescriptor.assetName(ResourcePath(curlTexName));
+        curlDescriptor.assetLocation(procLocation());
+        curlDescriptor.propertyDescriptor(textureDescriptor);
+        curlDescriptor.waitForReady(false);
+        _curlNoiseTex = CreateResource<Texture>(_parentCache, curlDescriptor);
     }
     {
         TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
@@ -466,65 +562,6 @@ bool Sky::load() {
         _skybox[1] = CreateResource<Texture>(_parentCache, nightTextures, loadTasks);
     }
 
-    {
-        I32 x, y, n;
-        TextureDescriptor textureDescriptor(TextureType::TEXTURE_3D);
-        textureDescriptor.srgb(false);
-        {
-            textureDescriptor.layerCount(32);
-
-            Byte* worlNoise = (Byte*)stbi_load((procLocation() + worlTexName).c_str(), &x, &y, &n, 0);
-            ImageTools::ImageData imgData = {};
-            if (!imgData.addLayer(worlNoise, to_size(x * y * n), to_U16(y), to_U16(y), to_U16(x / y))) {
-                DIVIDE_UNEXPECTED_CALL();
-            }
-
-            ResourceDescriptor worlDescriptor("worlNoise");
-            worlDescriptor.propertyDescriptor(textureDescriptor);
-            worlDescriptor.waitForReady(true);
-            _worlNoiseTex = CreateResource<Texture>(_parentCache, worlDescriptor);
-            _worlNoiseTex->loadData(imgData);
-            stbi_image_free(worlNoise);
-        }
-        {
-            textureDescriptor.layerCount(128);
-
-            Byte* perlWorlData = (Byte*)stbi_load((procLocation() + perlWorlTexName).c_str(), &x, &y, &n, 0);
-            ImageTools::ImageData imgData = {};
-            if (!imgData.addLayer(perlWorlData, to_size(x * y * n), to_U16(y), to_U16(y), to_U16(x / y))) {
-                DIVIDE_UNEXPECTED_CALL();
-            }
-
-            ResourceDescriptor perlWorlDescriptor("perlWorl");
-            perlWorlDescriptor.propertyDescriptor(textureDescriptor);
-            perlWorlDescriptor.waitForReady(true);
-            _perWorlNoiseTex = CreateResource<Texture>(_parentCache, perlWorlDescriptor);
-            _perWorlNoiseTex->loadData(imgData);
-            stbi_image_free(perlWorlData);
-        }
-
-        textureDescriptor.texType(TextureType::TEXTURE_2D);
-        textureDescriptor.layerCount(1u);
-        textureDescriptor.mipCount(1u);
-
-        {
-            ResourceDescriptor weatherDescriptor("Weather");
-            weatherDescriptor.assetName(ResourcePath(weatherTexName));
-            weatherDescriptor.assetLocation(procLocation());
-            weatherDescriptor.propertyDescriptor(textureDescriptor);
-            weatherDescriptor.waitForReady(false);
-            _weatherTex = CreateResource<Texture>(_parentCache, weatherDescriptor);
-        }
-        {
-            ResourceDescriptor curlDescriptor("CurlNoise");
-            curlDescriptor.assetName(ResourcePath(curlTexName));
-            curlDescriptor.assetLocation(procLocation());
-            curlDescriptor.propertyDescriptor(textureDescriptor);
-            curlDescriptor.waitForReady(false);
-            _curlNoiseTex = CreateResource<Texture>(_parentCache, curlDescriptor);
-        }
-    }
-
     const F32 radius = _diameter * 0.5f;
 
     ResourceDescriptor skybox("SkyBox");
@@ -533,7 +570,6 @@ bool Sky::load() {
     skybox.enumValue(to_U32(radius)); // radius
     _sky = CreateResource<Sphere3D>(_parentCache, skybox);
     _sky->renderState().drawState(false);
-
 
     const bool isEnabledSky = _context.context().config().debug.renderFilter.sky;
 
@@ -547,29 +583,16 @@ bool Sky::load() {
     fragModule._sourceFile = "sky.glsl";
 
     ShaderProgramDescriptor shaderDescriptor = {};
-    {
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.back()._variant = "NoClouds";
-        shaderDescriptor._modules.push_back(fragModule);
-        shaderDescriptor._modules.back()._variant = isEnabledSky ? "NoClouds" : "PassThrough";
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "NoClouds";
+    shaderDescriptor._modules.push_back(fragModule);
+    shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "PassThrough";
 
-        ResourceDescriptor skyShaderDescriptor("sky_Display_NoClouds");
-        skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
-        skyShaderDescriptor.waitForReady(false);
-        _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
-    }
-    {
-        shaderDescriptor = {};
-        shaderDescriptor._modules.push_back(vertModule);
-        shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "NoClouds";
-        shaderDescriptor._modules.push_back(fragModule);
-        shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "PassThrough";
-
-        ResourceDescriptor skyShaderDescriptor("sky_Display_Clouds");
-        skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
-        skyShaderDescriptor.waitForReady(false);
-        _skyShaderClouds = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
-    }
+    ResourceDescriptor skyShaderDescriptor("sky_Display_Clouds");
+    skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
+    skyShaderDescriptor.waitForReady(false);
+    _skyShader = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptor, loadTasks);
 
     shaderDescriptor = {};
     vertModule._variant = "NoClouds";
@@ -581,7 +604,7 @@ bool Sky::load() {
     _skyShaderPrePass = CreateResource<ShaderProgram>(_parentCache, skyShaderPrePassDescriptor, loadTasks);
 
     WAIT_FOR_CONDITION(loadTasks.load() == 0u);
-
+    
     assert(_skyShader && _skyShaderPrePass);
     setBounds(BoundingBox(vec3<F32>(-radius), vec3<F32>(radius)));
 
@@ -640,11 +663,40 @@ const Texture_ptr& Sky::activeSkyBox() const noexcept {
 void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
     if (_atmosphereChanged == EditorDataState::QUEUED) {
         _atmosphereChanged = EditorDataState::CHANGED;
+        if (_atmosphere._cloudLayerMinMaxHeight < 1.f) {
+            _atmosphere._cloudLayerMinMaxHeight = 1.f;
+        }
+        if (_atmosphere._cloudLayerMinMaxHeight.min > _atmosphere._cloudLayerMinMaxHeight.max) {
+            std::swap(_atmosphere._cloudLayerMinMaxHeight.min, _atmosphere._cloudLayerMinMaxHeight.max);
+        }
     } else if (_atmosphereChanged == EditorDataState::PROCESSED) {
         _atmosphereChanged = EditorDataState::IDLE;
     }
 
     SceneNode::sceneUpdate(deltaTimeUS, sgn, sceneState);
+}
+
+void Sky::setSkyShaderData(const U32 rayCount, PushConstants& constantsInOut) {
+    constantsInOut.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
+    constantsInOut.set(_ID("dvd_moonColour"), GFX::PushConstantType::FCOLOUR3, moonColour().rgb);
+    if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
+        constantsInOut.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
+        constantsInOut.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, rayCount);
+        constantsInOut.set(_ID("dvd_RayleighCoeff"), GFX::PushConstantType::VEC3, _atmosphere._RayleighCoeff * 1e-6f);
+        constantsInOut.set(_ID("dvd_moonScale"), GFX::PushConstantType::FLOAT, moonScale());
+        constantsInOut.set(_ID("dvd_weatherScale"), GFX::PushConstantType::FLOAT, weatherScale() * 1e-5f);
+        constantsInOut.set(_ID("dvd_sunIntensity"), GFX::PushConstantType::FLOAT, _atmosphere._sunIntensity);
+        constantsInOut.set(_ID("dvd_sunScale"), GFX::PushConstantType::FLOAT, _atmosphere._sunScale);
+        constantsInOut.set(_ID("dvd_planetRadius"), GFX::PushConstantType::FLOAT, _atmosphere._planetRadius * 6371e3f);
+        constantsInOut.set(_ID("dvd_atmosphereOffset"), GFX::PushConstantType::FLOAT, _atmosphere._atmosphereOffset * _atmosphere._distanceMultiplier);
+        constantsInOut.set(_ID("dvd_cloudLayerMinMaxHeight"), GFX::PushConstantType::VEC2, _atmosphere._cloudLayerMinMaxHeight);
+        constantsInOut.set(_ID("dvd_MieCoeff"), GFX::PushConstantType::FLOAT, _atmosphere._MieCoeff * 1e-6f);
+        constantsInOut.set(_ID("dvd_RayleighScale"), GFX::PushConstantType::FLOAT, _atmosphere._RayleighScale * 1e3f);
+        constantsInOut.set(_ID("dvd_MieScaleHeight"), GFX::PushConstantType::FLOAT, _atmosphere._MieScaleHeight * 1e3f);
+        constantsInOut.set(_ID("dvd_rayOriginOffset"), GFX::PushConstantType::FLOAT, _atmosphere._rayOriginDistance * _atmosphere._distanceMultiplier);
+        constantsInOut.set(_ID("dvd_enableClouds"), GFX::PushConstantType::BOOL, enableProceduralClouds());
+        _atmosphereChanged = EditorDataState::PROCESSED;
+    }
 }
 
 void Sky::prepareRender(SceneGraphNode* sgn,
@@ -655,15 +707,8 @@ void Sky::prepareRender(SceneGraphNode* sgn,
 
     RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
     if (!pkg.empty()) {
-        PushConstants& constants = pkg.get<GFX::SendPushConstantsCommand>(0)->_constants;
-
-        constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
-        if (_atmosphereChanged == EditorDataState::CHANGED || _atmosphereChanged == EditorDataState::PROCESSED) {
-            constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
-            constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
-            constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmosphereToShaderData());
-            _atmosphereChanged = EditorDataState::PROCESSED;
-        }
+        setSkyShaderData(renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8,
+                         pkg.get<GFX::SendPushConstantsCommand>(0)->_constants);
     }
 
     SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
@@ -687,7 +732,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
         pipelineDescriptor._stateHash = renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHash
                                             : _skyboxRenderStateHash;
-        pipelineDescriptor._shaderProgramHandle = enableProceduralClouds() ? _skyShaderClouds->getGUID() :  _skyShader->getGUID();
+        pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();
     }
 
     GFX::BindPipelineCommand pipelineCommand = {};
@@ -697,7 +742,6 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
     bindDescriptorSetsCommand._set._textureData.add({ _skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0 });
     bindDescriptorSetsCommand._set._textureData.add({ _skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1 });
-
     bindDescriptorSetsCommand._set._textureData.add({ _weatherTex->data(), _noiseSamplerLinear, TextureUsage::HEIGHTMAP });
     bindDescriptorSetsCommand._set._textureData.add({ _curlNoiseTex->data(), _noiseSamplerLinear, TextureUsage::OPACITY });
     bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::OCCLUSION_METALLIC_ROUGHNESS });
@@ -705,11 +749,9 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
 
     pkgInOut.add(bindDescriptorSetsCommand);
 
+    _atmosphereChanged = EditorDataState::CHANGED;
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set(_ID("dvd_raySteps"), GFX::PushConstantType::UINT, renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8);
-    pushConstantsCommand._constants.set(_ID("dvd_atmosphereData"), GFX::PushConstantType::VEC4, atmosphereToShaderData());
-    pushConstantsCommand._constants.set(_ID("dvd_nightSkyColour"), GFX::PushConstantType::FCOLOUR3, nightSkyColour().rgb);
-    pushConstantsCommand._constants.set(_ID("dvd_useSkyboxes"), GFX::PushConstantType::IVEC2, vec2<I32>(useDaySkybox() ? 1 : 0, useNightSkybox() ? 1 : 0));
+    setSkyShaderData(renderStagePass._stage == RenderStage::DISPLAY ? 16 : 8, pushConstantsCommand._constants);
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};

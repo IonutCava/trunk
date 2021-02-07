@@ -109,21 +109,25 @@
 				<!-- between 8 and 64 -->
 				<KernelSampleCount>32</KernelSampleCount>
 				<Blur>true</Blur>
-				<BlurThreshold>0.00499999989</BlurThreshold>
+				<BlurThreshold>0.00100000005</BlurThreshold>
+				<BlurSharpness>1</BlurSharpness>
+				<BlurKernelSize>3</BlurKernelSize>
 				<!-- percentage of camera range. 1.0 = to camera far plane -->
 				<MaxRange>1</MaxRange>
 				<!-- when to start dimming the SSAO effect as a percentage. Always clamped to [0,MaxRange]-->
 				<FadeDistance>0.99000001</FadeDistance>
 			</FullRes>
 			<HalfRes>
-				<Radius>0.75</Radius>
+				<Radius>0.5</Radius>
 				<Bias>0.0500000007</Bias>
 				<Power>3</Power>
 				<KernelSampleCount>24</KernelSampleCount>
 				<Blur>true</Blur>
-				<BlurThreshold>0.075000003</BlurThreshold>
-				<MaxRange>1</MaxRange>
-				<FadeDistance>0.99000001</FadeDistance>
+				<BlurThreshold>0.00100000005</BlurThreshold>
+				<BlurSharpness>0.00100000005</BlurSharpness>
+				<BlurKernelSize>4</BlurKernelSize>
+				<MaxRange>0.224999994</MaxRange>
+				<FadeDistance>0.649999976</FadeDistance>
 			</HalfRes>
 		</ssao>
 	</postFX>

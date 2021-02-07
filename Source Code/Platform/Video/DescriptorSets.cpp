@@ -166,6 +166,8 @@ namespace Divide {
     TextureUpdateState TextureDataContainer::add(const TextureEntry& entry) {
         OPTICK_EVENT();
         if (entry._binding != INVALID_TEXTURE_BINDING) {
+            assert(IsValid(entry));
+
             for (TextureEntry& it : _entries) {
                 if (it._binding == entry._binding) {
                     if (it._data != entry._data || it._sampler != entry._sampler) {

@@ -335,6 +335,7 @@ BEGIN_COMMAND(SetClipPlanesCommand, CommandType::SET_CLIP_PLANES);
 END_COMMAND(SetClipPlanesCommand);
 
 BEGIN_COMMAND(BindDescriptorSetsCommand, CommandType::BIND_DESCRIPTOR_SETS);
+    BindDescriptorSetsCommand(const DescriptorSet& set) noexcept : _set(set) {}
     DescriptorSet _set;
 END_COMMAND(BindDescriptorSetsCommand);
 

@@ -101,5 +101,5 @@ void main() {
     vec3 reflectDirection = reflect(-VAR._viewDirectionWV, VAR._normalWV);
     vec4 colour = vec4(texture(texEnvironmentCube, vec3(reflectDirection).rgb, 1.0);
 
-    writeOutput(colour);
+    writeScreenColour(colour);
 }

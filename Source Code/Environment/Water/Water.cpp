@@ -27,7 +27,7 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
 {
     _noiseTile = { 15.0f, 15.0f };
     _noiseFactor = { 0.1f, 0.1f };
-    _refractionTint = {0.f, 0.467f, 0.745f};
+    _refractionTint = {0.f, 0.567f, 0.845f};
 
     // The water doesn't cast shadows, doesn't need ambient occlusion and doesn't have real "depth"
     renderState().addToDrawExclusionMask(RenderStage::SHADOW);
@@ -102,7 +102,17 @@ WaterPlane::WaterPlane(ResourceCache* parentCache, size_t descriptorHash, const 
     refractionTintField._readOnly = false;
     refractionTintField._basicType = GFX::PushConstantType::FCOLOUR3;
 
-    getEditorComponent().registerField(MOV(refractionTintField));
+    getEditorComponent().registerField(MOV(refractionTintField));   
+    
+    EditorComponentField specularShininessField = {};
+    specularShininessField._name = "Specular Shininess";
+    specularShininessField._data = &_specularShininess;
+    specularShininessField._type = EditorComponentFieldType::PUSH_TYPE;
+    specularShininessField._readOnly = false;
+    specularShininessField._range = { 0.01f, 1000.0f };
+    specularShininessField._basicType = GFX::PushConstantType::FLOAT;
+
+    getEditorComponent().registerField(MOV(specularShininessField));
 
     
     getEditorComponent().onChangedCbk([this](const std::string_view field) {onEditorChange(field); });
@@ -322,9 +332,10 @@ void WaterPlane::prepareRender(SceneGraphNode* sgn,
     if (_editorDataDirtyState == EditorDataState::CHANGED || _editorDataDirtyState == EditorDataState::PROCESSED) {
         RenderPackage& pkg = rComp.getDrawPackage(renderStagePass);
         PushConstants& constants = pkg.get<GFX::SendPushConstantsCommand>(0)->_constants;
-        constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
-        constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
-        constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, _refractionTint);
+        constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, noiseFactor());
+        constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, noiseTile());
+        constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, refractionTint());
+        constants.set(_ID("_specularShininess"), GFX::PushConstantType::FLOAT, specularShininess());
     }
 
     SceneNode::prepareRender(sgn, rComp, renderStagePass, camera, refreshData);
@@ -340,9 +351,10 @@ void WaterPlane::buildDrawCommands(SceneGraphNode* sgn,
                                    RenderPackage& pkgInOut) {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
-    pushConstantsCommand._constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, _noiseFactor);
-    pushConstantsCommand._constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, _noiseTile);
-    pushConstantsCommand._constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, _refractionTint);
+    pushConstantsCommand._constants.set(_ID("_noiseFactor"), GFX::PushConstantType::VEC2, noiseFactor());
+    pushConstantsCommand._constants.set(_ID("_noiseTile"), GFX::PushConstantType::VEC2, noiseTile());
+    pushConstantsCommand._constants.set(_ID("_refractionTint"), GFX::PushConstantType::FCOLOUR3, refractionTint());
+    pushConstantsCommand._constants.set(_ID("_specularShininess"), GFX::PushConstantType::FLOAT, specularShininess());
     pkgInOut.add(pushConstantsCommand);
 
     GenericDrawCommand cmd = {};

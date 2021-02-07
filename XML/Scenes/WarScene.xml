@@ -25,5 +25,5 @@
 </lod>
 <shadowing lightBleedBias="0.0199999996" minShadowVariance="9.99999975e-06"/>
 <dayNight enabled="false">
-    <timeOfDay hour="13" minute="31" timeFactor="24"/>
+    <timeOfDay hour="12" minute="33" timeFactor="24"/>
 </dayNight>

@@ -195,19 +195,19 @@ template <typename T, typename U>
 [[nodiscard]] constexpr T CLAMPED(const T& n, U min, U max) noexcept;
 
 template <typename T>
-[[nodiscard]] T CLAMPED_01(const T& n) noexcept;
+[[nodiscard]] constexpr T CLAMPED_01(const T& n) noexcept;
 
 template <typename T>
-[[nodiscard]] T MAP(T input, T in_min, T in_max, T out_min, T out_max, D64& slopeOut) noexcept;
+[[nodiscard]] constexpr T MAP(T input, T in_min, T in_max, T out_min, T out_max, D64& slopeOut) noexcept;
 
 template <typename T>
-[[nodiscard]] T SQUARED(T input) noexcept;
+[[nodiscard]] constexpr T SQUARED(T input) noexcept;
 
 template <typename T>
-[[nodiscard]] T SIGNED_SQUARED(T input) noexcept;
+[[nodiscard]] constexpr T SIGNED_SQUARED(T input) noexcept;
 
 template <typename T>
-[[nodiscard]] T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) noexcept {
+[[nodiscard]] constexpr T MAP(T input, const T in_min, const T in_max, const T out_min, const T out_max) noexcept {
     D64 slope = 0.0;
     return MAP(input, in_min, in_max, out_min, out_max, slope);
 }

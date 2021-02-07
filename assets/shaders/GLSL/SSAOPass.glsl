@@ -46,6 +46,7 @@ void main(void) {
     // Calculate out of the current fragment in screen space the view space position.
     const float sceneDepth = GetDepth(VAR._texCoord);
     const float linDepth = ToLinearDepthPreview(sceneDepth, zPlanes);
+
     if (linDepth <= maxRange) {
         const vec3 posView = ViewSpacePos(VAR._texCoord, sceneDepth, invProjectionMatrix);
 
@@ -53,13 +54,13 @@ void main(void) {
         const vec3 normalView = normalize(unpackNormal(GetNormal(VAR._texCoord)));
 
         // Calculate the rotation  for the kernel.
-        const vec3 randomVector = texture(texNoise, VAR._texCoord * SSAO_NOISE_SCALE).xyz * 2.f - 1.f;
+        const vec3 randomVector = texture(texNoise, VAR._texCoord * SSAO_NOISE_SCALE).xyz;
 
         // Using Gram-Schmidt process to get an orthogonal vector to the normal vector.
         // The resulting tangent is on the same plane as the random and normal vector. 
         // see http://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
         // Note: No division by <u,u> needed, as this is for normal vectors 1. 
-        const vec3 tangentView = normalize(randomVector - dot(randomVector, normalView) * normalView);
+        const vec3 tangentView = normalize(randomVector - normalView * dot(randomVector, normalView));
         const vec3 bitangentView = cross(normalView, tangentView);
 
         // Final matrix to reorient the kernel depending on the normal and the random vector.
@@ -74,7 +75,8 @@ void main(void) {
             // Project point and calculate NDC.
             // Convert sample XY to texture coordinate space and sample from the
             // Position texture to obtain the scene depth at that XY coordinate
-            const vec2 samplePointTexCoord = 0.5f * homogenize(projectionMatrix * vec4(sampleVectorView, 1.0f)).xy + 0.5f;
+            const vec3 samplePointNDC = homogenize(projectionMatrix * vec4(sampleVectorView, 1.0f));
+            const vec2 samplePointTexCoord = samplePointNDC.xy * 0.5f + 0.5f;
 
             const float zSceneNDC = ViewSpaceZ(GetDepth(samplePointTexCoord), invProjectionMatrix);
 
@@ -82,10 +84,10 @@ void main(void) {
             // the sample's, then the sample is occluded by scene's geometry and
             // contributes to the occlussion factor.
             const float rangeCheck = smoothstep(0.f, 1.f, SSAO_RADIUS / abs(posView.z - zSceneNDC));
-            occlusion += (zSceneNDC >= sampleVectorView.z + SSAO_BIAS ? 1.f : 0.f) * rangeCheck;
+            occlusion += (zSceneNDC >= sampleVectorView.z + SSAO_BIAS ? rangeCheck : 0.f);
         }
         // We output ambient intensity in the range [0,1]
-        _ssaoOut = saturate(pow(1.f - (occlusion / SSAO_SAMPLE_COUNT), SSAO_INTENSITY) + smoothstep(fadeStart, maxRange, linDepth));
+        _ssaoOut = saturate(pow(1.f - (occlusion / SSAO_SAMPLE_COUNT), SSAO_INTENSITY) + smoothstep(fadeStart * maxRange, maxRange, linDepth));
     } else {
         _ssaoOut = 1.f;
     }
@@ -97,12 +99,16 @@ void main(void) {
 #include "utility.frag"
 
 //ref: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao-blur.deferred.frag.input
-layout(binding = TEXTURE_UNIT0)      uniform sampler2D texSSAO;
-layout(binding = TEXTURE_DEPTH_MAP)  uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_UNIT0)         uniform sampler2D texSSAO;
+layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
 
+uniform mat4 invProjectionMatrix;
 uniform vec2 zPlanes;
 uniform vec2 texelSize;
 uniform float depthThreshold;
+uniform float blurSharpness;
+uniform int blurKernelSize;
 
 //r - ssao
 layout(location = TARGET_EXTRA) out vec2 _output;
@@ -115,19 +121,22 @@ layout(location = TARGET_EXTRA) out vec2 _output;
  * depth values.
  */
 void main() {
-    const float linear_depth_ref = ToLinearDepth(texture(texDepthMap, VAR._texCoord).r, zPlanes);
-
+    const float linear_depth_ref = ViewSpaceZ(texture(texDepthMap, VAR._texCoord).r, invProjectionMatrix);
+    const vec3 normal_ref = normalize(unpackNormal(texture(texNormal, VAR._texCoord).rg));
 
     int sample_count = 1;
     float result = texture(texSSAO, VAR._texCoord).r;
-#if 1
-    for (int x = -BLUR_SIZE; x < BLUR_SIZE; ++x) {
-        for (int y = -BLUR_SIZE; y < BLUR_SIZE; ++y) {
-            if (x != 0 || y != 0) {
+    const float depthDelta = depthThreshold * zPlanes.y;
+
+    for (int x = -blurKernelSize; x < blurKernelSize; ++x) {
+        for (int y = -blurKernelSize; y < blurKernelSize; ++y) {
+            if (x != 0 || y != 0) 
+            {
                 const vec2 tex_offset = min(vec2(1.0), max(vec2(0.0), VAR._texCoord + vec2(x, y) * texelSize));
 
-                const float linear_depth = ToLinearDepth(texture(texDepthMap, tex_offset).r, zPlanes);
-                if (abs(linear_depth - linear_depth_ref) < depthThreshold)
+                const float linear_depth = ViewSpaceZ(texture(texDepthMap, tex_offset).r, invProjectionMatrix);
+                const vec3 normal = normalize(unpackNormal(texture(texNormal, tex_offset).rg));
+                if (abs(linear_depth - linear_depth_ref) < depthDelta && dot(normal_ref, normal) > 0.75f)
                 {
                     result += texture(texSSAO, tex_offset).r;
                     ++sample_count;
@@ -136,11 +145,118 @@ void main() {
         }
     }
 
-    _colourOut = result / float(sample_count);
-#else
-    _colourOut = result;
-#endif
+    _colourOut = saturate(result / float(sample_count));
 }
+
+
+--Fragment.SSAOBlur.Nvidia
+
+/* Copyright (c) 2014-2018, NVIDIA CORPORATION. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  * Neither the name of NVIDIA CORPORATION nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include "utility.frag"
+
+//ref: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao-blur.deferred.frag.input
+layout(binding = TEXTURE_UNIT0)         uniform sampler2D texSSAO;
+layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
+layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
+
+uniform mat4 invProjectionMatrix;
+uniform vec2 zPlanes;
+uniform vec2 texelSize;
+uniform float depthThreshold;
+uniform float blurSharpness;
+uniform int blurKernelSize;
+
+//r - ssao
+#if defined(VERTICAL)
+layout(location = TARGET_EXTRA) out vec2 _output;
+#else
+out vec4 _output;
+#endif
+#define _colourOut _output.r
+
+//-------------------------------------------------------------------------
+
+float TestZ(in float depth) {
+    const float zNear = zPlanes.x;
+    const float zFar = zPlanes.y;
+    return (zNear * zFar) / (zFar - depth * (zFar - zNear));
+}
+
+float BlurFunction(in vec2 uv, in int r, in float center_c, in float center_d, in vec3 center_n, inout float w_total) {
+    //const float d = ViewSpaceZ(texture(texDepthMap, uv).r, invProjectionMatrix);
+    const float d = TestZ(texture(texDepthMap, uv).r);
+    const float c = texture(texSSAO, uv).r;
+    const vec3  n = normalize(unpackNormal(texture(texNormal, uv).rg));
+
+    const float depthDelta = depthThreshold * zPlanes.y;
+    if (abs(center_d - d) < depthDelta && dot(center_n, n) > 0.75f) {
+        const float BlurSigma = blurKernelSize * 0.5f;
+        const float BlurFalloff = 1.f / (2.f * BlurSigma * BlurSigma);
+
+        float ddiff = (d - center_d) * blurSharpness;
+        float w = exp2(-r * r * BlurFalloff - ddiff * ddiff);
+        w_total += w;
+
+        return c * w;
+    }
+
+    return 0.f;
+}
+
+void main() {
+    const float center_c = texture(texSSAO, VAR._texCoord).r;
+    //const float center_d = ViewSpaceZ(texture(texDepthMap, VAR._texCoord).r, invProjectionMatrix);
+    const float center_d = TestZ(texture(texDepthMap, VAR._texCoord).r);
+    const vec3  center_n = normalize(unpackNormal(texture(texNormal, VAR._texCoord).rg));
+
+    float c_total = center_c;
+    float w_total = 1.f;
+
+#if defined(VERTICAL)
+    const vec2 uvOffset = vec2(0.f, texelSize.y);
+#else
+    const vec2 uvOffset = vec2(texelSize.x, 0.f);
+#endif
+    
+    for (int r = 1; r <= blurKernelSize; ++r)   {
+        const vec2 uv = VAR._texCoord + uvOffset * r;
+        c_total += BlurFunction(uv, r, center_c, center_d, center_n, w_total);
+    }
+
+    for (int r = 1; r <= blurKernelSize; ++r)   {
+        const vec2 uv = VAR._texCoord - uvOffset * r;
+        c_total += BlurFunction(uv, r, center_c, center_d, center_n, w_total);
+    }
+
+    _colourOut = c_total / w_total;
+}
+
 
 --Fragment.SSAOPassThrough
 

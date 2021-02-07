@@ -98,7 +98,7 @@ void main (void){
     albedo.a = min(albedo.a, _alphaFactor);
 
     const uint LoD = 0u;
-    writeOutput(getPixelColour(albedo, data, getNormalWV(uv), uv, LoD));
+    writeScreenColour(getPixelColour(albedo, data, getNormalWV(uv), uv, LoD));
 }
 
 --Fragment.PrePass
@@ -114,7 +114,7 @@ layout(location = 1) in float _alphaFactor;
 
 void main() {
     const float albedoAlpha = texture(texDiffuse0, vec3(VAR._texCoord, _arrayLayerFrag)).a;
-    writeOutput(albedoAlpha * _alphaFactor, VAR._texCoord, VAR._normalWV);
+    writeGBuffer(albedoAlpha * _alphaFactor, VAR._texCoord, VAR._normalWV);
 }
 
 --Fragment.Shadow.VSM

@@ -58,13 +58,15 @@ class Sky final : public SceneNode {
        struct Atmosphere {
            vec3<F32> _RayleighCoeff =
            { 5.5f, 13.0f, 22.4f };         // Rayleigh scattering coefficient
+           vec2<F32> _cloudLayerMinMaxHeight =
+           { 1000.f, 2300.f}; // Clouds will be limited between [planerRadius + min - planetRadius + height]
            F32 _sunIntensity = 11.2f;      // intensity of the sun
+           F32 _sunScale = 0.4f;           // x 1000. visual size of the sun disc
            F32 _planetRadius = 0.5f;       // x 6371e3m (radius of the planet in meters)
            F32 _atmosphereOffset = 100.f;  // planetRadius + (atmoOffset * distanceMult) = radius of the atmosphere in meters
            F32 _MieCoeff = 21.f;           // Mie scattering coefficient
            F32 _RayleighScale = 8.f;       // Rayleigh scale height
            F32 _MieScaleHeight = 1.2f;     // Mie scale height
-           F32 _MieScatterDir = 0.758f;    // Mie preferred scattering direction
            F32 _rayOriginDistance = 1.25f; // Offset from planetRadius for the ray origin
            I32 _distanceMultiplier = 1000; // Factor to multiply all distances by
        };
@@ -92,6 +94,9 @@ class Sky final : public SceneNode {
     PROPERTY_RW(bool, enableProceduralClouds, true);
     PROPERTY_RW(bool, useDaySkybox, true);
     PROPERTY_RW(bool, useNightSkybox, true);
+    PROPERTY_RW(F32,  moonScale, 0.5f);
+    PROPERTY_RW(F32,  weatherScale, 8.f);
+    PROPERTY_RW(FColour4, moonColour, DefaultColours::WHITE);
     PROPERTY_RW(FColour4, nightSkyColour, DefaultColours::BLACK);
 
     [[nodiscard]] const Texture_ptr& activeSkyBox() const noexcept;
@@ -119,8 +124,7 @@ class Sky final : public SceneNode {
     bool load() override;
 
     [[nodiscard]] const char* getResourceTypeName() const noexcept  override { return "Sky"; }
-
-    [[nodiscard]] std::array<vec4<F32>, 3> atmosphereToShaderData() const noexcept;
+    void setSkyShaderData(U32 rayCount, PushConstants& constantsInOut);
 
 protected:
     GFXDevice& _context;
@@ -132,7 +136,6 @@ protected:
     Texture_ptr _perWorlNoiseTex = nullptr;
     Sphere3D_ptr _sky = nullptr;
     ShaderProgram_ptr _skyShader = nullptr;
-    ShaderProgram_ptr _skyShaderClouds = nullptr;
     ShaderProgram_ptr _skyShaderPrePass = nullptr;
     size_t _skyboxRenderStateHash = 0;
     size_t _skyboxRenderStateHashPrePass = 0;
