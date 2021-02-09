@@ -56,3 +56,20 @@ void main() {
 
     _colourOut = computeMoments();
 }
+
+--Fragment.LineariseDepthBuffer
+
+
+#include "utility.frag"
+
+layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepth;
+
+//r - ssao, g - linear depth
+layout(location = TARGET_EXTRA) out vec2 _output;
+#define _colourOut _output.g
+
+uniform vec2 zPlanes;
+
+void main() {
+    _colourOut = ToLinearDepth(texture(texDepth, VAR._texCoord).r, zPlanes);
+}

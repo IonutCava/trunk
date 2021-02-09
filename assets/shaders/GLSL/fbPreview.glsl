@@ -44,8 +44,9 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 void main()
 {
-    const float linearDepth = ToLinearDepthPreview(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r, zPlanes);
-    _colourOut = vec4(vec3(linearDepth), 1.0);
+    const float linearDepth = ToLinearDepth(textureLod(texDiffuse0, VAR._texCoord, lodLevel).r, zPlanes);
+    /// Map back to [0 ... 1] range
+    _colourOut = vec4(vec3(linearDepth / zPlanes.y), 1.0);
 }
 
 -- Fragment.Layered

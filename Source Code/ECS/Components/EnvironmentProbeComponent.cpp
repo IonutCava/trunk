@@ -263,6 +263,7 @@ void EnvironmentProbeComponent::PreUpdate(const U64 deltaTime) {
                 dirty(++_currentUpdateCall % _updateRate == 0);
             }
             break;
+        case UpdateType::ONCE:
         case UpdateType::ON_DIRTY:
             break;//Nothing needed
         case UpdateType::COUNT:

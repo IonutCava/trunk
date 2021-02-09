@@ -521,19 +521,17 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     _elapsedTime += deltaTimeUS;
     _elapsedTimeMS = Time::MicrosecondsToMilliseconds<U32>(_elapsedTime);
 
-    vec3<F32> sunDirection = {0.0f, -0.75f, -0.75f};
-    FColour3 sunColour = DefaultColours::WHITE;
-
     const Scene::DayNightData& dayNightData = activeScene.dayNightData();
+
+    const FColour3 sunColour = dayNightData._sunLight != nullptr ? dayNightData._sunLight->getDiffuseColour() : DefaultColours::WHITE;
+
+    vec3<F32> sunDirection = { 0.0f, -0.75f, -0.75f };
     if (dayNightData._skyInstance != nullptr) {
         sunDirection = dayNightData._skyInstance->getCurrentDetails()._eulerDirection;
         sunDirection = DirectionFromEuler(sunDirection, WORLD_Z_NEG_AXIS);
     }
-    if (dayNightData._dirLight != nullptr) {
-        sunColour = dayNightData._dirLight->getDiffuseColour();
-    }
-    _sceneData->sunDetails(sunDirection, sunColour);
 
+    _sceneData->sunDetails(sunDirection, sunColour);
     //_sceneData->skyColour(horizonColour, zenithColour);
 
     FogDetails fog = activeScene.state()->renderState().fogDetails();
@@ -964,9 +962,7 @@ bool SceneManager::saveActiveScene(bool toCache, const bool deferred, const DELE
             if (toCache) {
                 return false;
             }
-            if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-                DebugBreak();
-            }
+            DebugBreak();
         }
         Wait(*_saveTask);
     }

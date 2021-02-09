@@ -38,10 +38,12 @@ void main()
     if (flip == 1) {
         uv.t = 1.0f - uv.t;
     }
+
+    const vec2 zPlanes = dvd_zPlanes * depthRange;
 #if 0
     vec4 texColor = texture( Texture, uv );
     if (depthTexture == 1) {
-        texColor = vec4(ToLinearDepthPreview(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
+        texColor = vec4((ToLinearDepth(texColor.r, zPlanes) / zPlanes.y) * toggleChannel[0]);
         Out_Color *= texColor;
     } else {
         if (toggleChannel.r == 1 && toggleChannel.gba == ivec3(0)) {
@@ -63,7 +65,7 @@ void main()
 #else 
     vec4 texColor = texture(Texture, uv);
     if (depthTexture == 1) {
-        texColor = vec4(ToLinearDepthPreview(texColor.r, dvd_zPlanes * depthRange) * toggleChannel[0]);
+        texColor = vec4((ToLinearDepth(texColor.r, zPlanes) / zPlanes.y) * toggleChannel[0]);
     } else {
         Out_Color.xyz *= toggleChannel.xyz;
         if (toggleChannel.w == 0) {

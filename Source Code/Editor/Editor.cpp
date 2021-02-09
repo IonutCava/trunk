@@ -56,7 +56,7 @@ namespace {
 
     struct TextureCallbackData {
         vec4<I32> _colourData = { 1, 1, 1, 1 };
-        vec2<F32> _depthRange = { 0.f, 1.f };
+        vec2<F32> _depthRange = { 0.002f, 1.f };
         bool _isDepthTexture = false;
         bool _flip = true;
     };

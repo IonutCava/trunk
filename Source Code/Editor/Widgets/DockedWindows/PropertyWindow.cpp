@@ -651,6 +651,7 @@ namespace Divide {
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = bbMin;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._dataSetter = [&field](const void* val) {
                         BoundingBox aabb = {};
                         field.get<BoundingBox>(aabb);
@@ -666,6 +667,7 @@ namespace Divide {
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
                     bbField._data = bbMax;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._dataSetter = [&field](const void* val) {
                         BoundingBox aabb = {};
                         field.get<BoundingBox>(aabb);
@@ -688,6 +690,7 @@ namespace Divide {
                     bbField._basicType = GFX::PushConstantType::VEC3;
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = true;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._data = position._v;
                     ret = processField(bbField) || ret;
                 }
@@ -697,6 +700,7 @@ namespace Divide {
                     bbField._basicType = GFX::PushConstantType::VEC3;
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = true;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._data = hExtents._v;
                     ret = processField(bbField) || ret;
                 }
@@ -706,6 +710,7 @@ namespace Divide {
                     bbField._basicType = GFX::PushConstantType::VEC3;
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = true;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._data = axis[i]._v;
                     ret = processField(bbField) || ret;
                 }
@@ -721,6 +726,7 @@ namespace Divide {
                     bbField._basicType = GFX::PushConstantType::VEC3;
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._data = center;
                     bbField._dataSetter = [&field](const void* c) {
                         BoundingSphere bSphere = {};
@@ -736,6 +742,7 @@ namespace Divide {
                     bbField._basicType = GFX::PushConstantType::FLOAT;
                     bbField._type = EditorComponentFieldType::PUSH_TYPE;
                     bbField._readOnly = field._readOnly;
+                    bbField._hexadecimal = field._hexadecimal;
                     bbField._data = &radius;
                     bbField._dataSetter = [&field](const void* r) {
                         BoundingSphere bSphere = {};
@@ -748,12 +755,12 @@ namespace Divide {
             }break;
             case EditorComponentFieldType::TRANSFORM: {
                 assert(!field._dataSetter && "Need direct access to memory");
-                ret = processTransform(field.getPtr<TransformComponent>(), field._readOnly);
+                ret = processTransform(field.getPtr<TransformComponent>(), field._readOnly, field._hexadecimal);
             }break;
 
             case EditorComponentFieldType::MATERIAL: {
                 assert(!field._dataSetter && "Need direct access to memory");
-                ret = processMaterial(field.getPtr<Material>(), field._readOnly);
+                ret = processMaterial(field.getPtr<Material>(), field._readOnly, field._hexadecimal);
             }break;
             case EditorComponentFieldType::COUNT: break;
         }
@@ -766,13 +773,13 @@ namespace Divide {
         return ret;
     }
 
-    bool PropertyWindow::processTransform(TransformComponent* transform, bool readOnly) const {
+    bool PropertyWindow::processTransform(TransformComponent* transform, bool readOnly, bool hex) const {
         if (transform == nullptr) {
             return false;
         }
 
         bool ret = false;
-        const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | (readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+        const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank | (readOnly ? ImGuiInputTextFlags_ReadOnly : 0u) | (hex ? ImGuiInputTextFlags_CharsHexadecimal : 0u);
 
         const TransformValues transformValues = transform->getValues();
 
@@ -817,7 +824,7 @@ namespace Divide {
         return ret;
     }
 
-    bool PropertyWindow::processMaterial(Material* material, bool readOnly) {
+    bool PropertyWindow::processMaterial(Material* material, bool readOnly, bool hex) {
         if (material == nullptr) {
             return false;
         }
@@ -843,8 +850,8 @@ namespace Divide {
 
             constexpr U8 min = 0u, max = Material::g_maxVariantsPerPass;
             ImGui::SliderScalar("Variant", ImGuiDataType_U8, &currentStagePass._variant, &min, &max);
-            ImGui::InputScalar("Index", ImGuiDataType_U16, &currentStagePass._index);
-            ImGui::InputScalar("Pass", ImGuiDataType_U16, &currentStagePass._pass);
+            ImGui::InputScalar("Index", ImGuiDataType_U16, &currentStagePass._index, nullptr, nullptr, (hex ? "%08X" : nullptr), (hex ? ImGuiInputTextFlags_CharsHexadecimal : 0u));
+            ImGui::InputScalar("Pass", ImGuiDataType_U16, &currentStagePass._pass, nullptr, nullptr, (hex ? "%08X" : nullptr), (hex ? ImGuiInputTextFlags_CharsHexadecimal : 0u));
         }
 
         size_t stateHash = 0;
@@ -1527,9 +1534,9 @@ namespace Divide {
                               !field.isMatrix();
 
           const ImGuiInputTextFlags flags = ImGuiInputTextFlags_EnterReturnsTrue |
-                                          ImGuiInputTextFlags_CharsNoBlank |
-                                          ImGuiInputTextFlags_CharsDecimal |
-                                          (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0);
+                                            ImGuiInputTextFlags_CharsNoBlank |
+                                            (field._hexadecimal ? ImGuiInputTextFlags_CharsHexadecimal : ImGuiInputTextFlags_CharsDecimal) |
+                                            (field._readOnly ? ImGuiInputTextFlags_ReadOnly : 0u);
 
           const char* name = field._name.c_str();
           ImGui::PushID(name);

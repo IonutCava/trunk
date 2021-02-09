@@ -105,6 +105,7 @@ namespace Divide {
 
         bool _readOnly = false;
         bool _serialise = true;
+        bool _hexadecimal = false;
 
         template<typename T>
         T* getPtr() const {

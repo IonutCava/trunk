@@ -47,15 +47,15 @@ namespace ImGui {
 
 namespace Divide {
     namespace Util {
-        const char* GetFormat(ImGuiDataType dataType, const char* input) {
+        const char* GetFormat(ImGuiDataType dataType, const char* input, const bool hex) {
             if (input == nullptr || strlen(input) == 0) {
                 const auto unsignedType = [dataType]() {
                     return dataType == ImGuiDataType_U8 || dataType == ImGuiDataType_U16 || dataType == ImGuiDataType_U32 || dataType == ImGuiDataType_U64;
                 };
 
                 return dataType == ImGuiDataType_Float ? "%.3f"
-                    : dataType == ImGuiDataType_Double ? "%.6f"
-                    : unsignedType() ? "%u" : "%d";
+                                : dataType == ImGuiDataType_Double ? "%.6f"
+                                           : hex ? "%08X" : (unsignedType() ? "%u" : "%d");
             }
 
             return input;

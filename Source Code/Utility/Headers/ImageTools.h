@@ -32,12 +32,9 @@
 #pragma once
 #ifndef _UTILITY_IMAGETOOLS_H
 #define _UTILITY_IMAGETOOLS_H
+#include "Platform/Video/Headers/RenderAPIEnums.h"
 
 namespace Divide {
-enum class GFXImageFormat : U8;
-enum class GFXDataFormat : U8;
-enum class TextureType : U8;
-
 namespace ImageTools {
 
 struct LayerData {
@@ -110,10 +107,9 @@ private:
     vectorEASTL<eastl::unique_ptr<LayerData>> _mips;
 };
 
-class ImageData : NonCopyable {
-   public:
-     ImageData() noexcept;
-     ~ImageData() = default;
+struct ImageData final : NonCopyable {
+    ImageData() = default;
+    ~ImageData() = default;
 
     /// image origin information
     void flip(const bool state) noexcept { _flip = state; }
@@ -183,28 +179,28 @@ class ImageData : NonCopyable {
 
    private:
     //Each entry is a separate mip map.
-    vectorEASTL<ImageLayer> _layers;
-    vectorEASTL<U8> _decompressedData;
+    vectorEASTL<ImageLayer> _layers{};
+    vectorEASTL<U8> _decompressedData{};
     /// is the image stored as a regular image or in a compressed format? (eg. DXT1 / DXT3 / DXT5)
-    bool _compressed;
+    bool _compressed = false;
     /// should we flip the image's origin on load?
-    bool _flip;
+    bool _flip = false;
     /// 16bit data
-    bool _16Bit;
+    bool _16Bit = false;
     /// HDR data
-    bool _isHDR;
+    bool _isHDR = false;
     /// does the image have transparency?
-    bool _alpha;
+    bool _alpha = false;
     /// the image format
-    GFXImageFormat _format;
+    GFXImageFormat _format = GFXImageFormat::COUNT;
     /// the image date type
-    GFXDataFormat _dataType;
+    GFXDataFormat _dataType = GFXDataFormat::COUNT;
     /// used by compressed images to load 2D/3D/cubemap textures etc
-    TextureType _compressedTextureType;
+    TextureType _compressedTextureType = TextureType::COUNT;
     /// the actual image filename
-    stringImpl _name;
+    stringImpl _name{};
     /// image's bits per pixel
-    U8 _bpp;
+    U8 _bpp = 0;
 };
 
 class ImageDataInterface {
@@ -212,7 +208,7 @@ public:
     //refWidth/Height = if not 0, we will attempt to resize the texture to the specified dimensions
     static bool CreateImageData(const ResourcePath& filename, U16 refWidth, U16 refHeight, bool srgb, ImageData& imgOut);
 protected:
-    friend class ImageData;
+    friend struct ImageData;
     /// used to lock image loader in a sequential operating mode in a multithreaded environment
     static Mutex _loadingMutex;
 };

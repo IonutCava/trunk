@@ -175,6 +175,9 @@ class Light : public GUIDWrapper, public ECS::Event::IEventListener
     /// Index used to look up shadow properties in shaders
     PROPERTY_R_IW(I32, shadowIndex, -1);
 
+    /// A generic ID used to identify the light more easily
+    PROPERTY_RW(U32, tag, 0u);
+
    protected:
      friend class LightPool;
      void updateCache(const ECS::CustomEvent& event);

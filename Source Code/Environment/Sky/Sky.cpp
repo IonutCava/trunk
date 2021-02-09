@@ -189,8 +189,7 @@ void Sky::OnStartup(PlatformContext& context) {
     const ResourcePath worlNoise = procLocation() + worlTexName;
     const ResourcePath perWordNoise = procLocation() + perlWorlTexName;
 
-    if (!fileExists(curlNoise)) 
-    {
+    if (!fileExists(curlNoise)) {
         Console::printfn("Generating Curl Noise 128x128 RGB");
         tasks[0] = CreateTask(context, [&curlNoise](const Task&) { GenerateCurlNoise(curlNoise.c_str(), 128, 128, 3); });
         Start(*tasks[0]);
@@ -238,7 +237,7 @@ Sky::Sky(GFXDevice& context, ResourceCache* parentCache, size_t descriptorHash, 
       _diameter(diameter)
 {
     nightSkyColour({ 0.05f, 0.06f, 0.1f, 1.f });
-    moonColour({1.1f, 1.f, 0.8f});
+    moonColour({1.0f, 1.f, 0.8f});
 
     time_t t = time(nullptr);
     _sun.SetLocation(-2.589910f, 51.45414f); // Bristol :D

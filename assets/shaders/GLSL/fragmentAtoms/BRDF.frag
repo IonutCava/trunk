@@ -284,7 +284,7 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
 
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:         return vec4(albedo.rgb, 1.0f);
-        case DEBUG_DEPTH:          return vec4(vec3(ToLinearDepthPreview(texture(texDepthMap, dvd_screenPositionNormalised).r)), 1.0f);
+        case DEBUG_DEPTH:          return vec4(vec3(LinearDepth / dvd_zPlanes.y), 1.0f);
         case DEBUG_LIGHTING:       return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
         case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
         case DEBUG_UV:             return vec4(fract(uv), 0.0f, 0.0f);

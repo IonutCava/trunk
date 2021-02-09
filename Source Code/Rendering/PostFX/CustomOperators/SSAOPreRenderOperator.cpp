@@ -556,9 +556,6 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
             const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
 
-            const vec2<F32> ssaoTexelSize{ 1.f / ssaoAtt.texture()->width(), 
-                                           1.f / ssaoAtt.texture()->height() };
-
             if (blurResults() && blurKernelSize() > 0) {
                 pipelineDescriptor._stateHash = redChannelOnly.getHash();
 
@@ -568,7 +565,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
 
                 _ssaoBlurConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, invProjectionMatrix);
                 _ssaoBlurConstants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
-                _ssaoBlurConstants.set(_ID("texelSize"), GFX::PushConstantType::VEC2, ssaoTexelSize);
+                _ssaoBlurConstants.set(_ID("texelSize"), GFX::PushConstantType::VEC2, vec2<F32>{ 1.f / ssaoAtt.texture()->width(), 1.f / ssaoAtt.texture()->height() });
 
                 GFX::BeginRenderPassCommand beginRenderPassCmd = {};
                 // Blur AO

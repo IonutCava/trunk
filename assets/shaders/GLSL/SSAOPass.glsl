@@ -45,7 +45,7 @@ out float _ssaoOut;
 void main(void) {
     // Calculate out of the current fragment in screen space the view space position.
     const float sceneDepth = GetDepth(VAR._texCoord);
-    const float linDepth = ToLinearDepthPreview(sceneDepth, zPlanes);
+    const float linDepth = ToLinearDepth(sceneDepth, zPlanes) / zPlanes.y;
 
     if (linDepth <= maxRange) {
         const vec3 posView = ViewSpacePos(VAR._texCoord, sceneDepth, invProjectionMatrix);

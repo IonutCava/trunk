@@ -64,7 +64,7 @@ namespace Util {
         }
     }
 
-    const char* GetFormat(ImGuiDataType dataType, const char* input);
+    const char* GetFormat(ImGuiDataType dataType, const char* input, bool hex);
     bool colourInput4(Editor& parent, EditorComponentField& field);
     bool colourInput3(Editor& parent, EditorComponentField& field);
 
@@ -120,9 +120,9 @@ namespace Util {
             if_constexpr(IsSlider) {
                 ACKNOWLEDGE_UNUSED(step_fast);
                 assert(min <= max);
-                ret = ImGui::SliderScalar(label, data_type, (void*)&val, (void*)&min, (void*)&max, GetFormat(data_type, format), power);
+                ret = ImGui::SliderScalar(label, data_type, (void*)&val, (void*)&min, (void*)&max, GetFormat(data_type, format, field._hexadecimal), power);
             } else {
-                ret = ImGui::InputScalar(label, data_type, (void*)&val, step, step_fast, GetFormat(data_type, format), flags);
+                ret = ImGui::InputScalar(label, data_type, (void*)&val, step, step_fast, GetFormat(data_type, format, field._hexadecimal), flags);
                 if (max > min) {
                     CLAMP(val, min, max);
                 }
@@ -134,9 +134,9 @@ namespace Util {
             if_constexpr(IsSlider) {
                 ACKNOWLEDGE_UNUSED(step_fast);
                 assert(min <= max);
-                ret = ImGui::SliderScalarN(label, data_type, (void*)&val, num_comp, (void*)&min, (void*)&max, GetFormat(data_type, format), power);
+                ret = ImGui::SliderScalarN(label, data_type, (void*)&val, num_comp, (void*)&min, (void*)&max, GetFormat(data_type, format, field._hexadecimal), power);
             } else {
-                ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, step, step_fast, GetFormat(data_type, format), flags);
+                ret = ImGui::InputScalarN(label, data_type, (void*)&val, num_comp, step, step_fast, GetFormat(data_type, format, field._hexadecimal), flags);
                 if (max > min) {
                     for (I32 i = 0; i < to_I32(num_comp); ++i) {
                         val[i] = CLAMPED(val[i], min[i], max[i]);
@@ -174,12 +174,12 @@ namespace Util {
         const void* step_fast = step == nullptr ? nullptr : (void*)&cStep;
 
         T mat = field.get<T>();
-        bool ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[0]._v, num_rows, step, step_fast, GetFormat(data_type, format), flags) ||
-                   ImGui::InputScalarN(label, data_type, (void*)mat._vec[1]._v, num_rows, step, step_fast, GetFormat(data_type, format), flags);
+        bool ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[0]._v, num_rows, step, step_fast, GetFormat(data_type, format, field._hexadecimal), flags) ||
+                   ImGui::InputScalarN(label, data_type, (void*)mat._vec[1]._v, num_rows, step, step_fast, GetFormat(data_type, format, field._hexadecimal), flags);
         if_constexpr(num_rows > 2) {
-            ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[2]._v, num_rows, step, step_fast, GetFormat(data_type, format), flags) || ret;
+            ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[2]._v, num_rows, step, step_fast, GetFormat(data_type, format, field._hexadecimal), flags) || ret;
             if_constexpr(num_rows > 3) {
-                ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[3]._v, num_rows, step, step_fast, GetFormat(data_type, format), flags) || ret;
+                ret = ImGui::InputScalarN(label, data_type, (void*)mat._vec[3]._v, num_rows, step, step_fast, GetFormat(data_type, format, field._hexadecimal), flags) || ret;
             }
         }
 

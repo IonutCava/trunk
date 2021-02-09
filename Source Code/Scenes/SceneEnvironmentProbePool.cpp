@@ -232,4 +232,16 @@ void SceneEnvironmentProbePool::OnNodeUpdated(SceneEnvironmentProbePool* probePo
     }
     probePool->unlockProbeList();
 }
+
+void SceneEnvironmentProbePool::OnTimeOfDayChange(SceneEnvironmentProbePool* probePool) {
+    probePool->lockProbeList();
+    const EnvironmentProbeList& probes = probePool->getLocked();
+    for (const auto& probe : probes) {
+        if (probe->updateType() != EnvironmentProbeComponent::UpdateType::ONCE) {
+            probe->dirty(true);
+        }
+    }
+    probePool->unlockProbeList();
+}
+
 } //namespace Divide

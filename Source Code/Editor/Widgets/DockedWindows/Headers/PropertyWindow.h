@@ -66,8 +66,8 @@ class PropertyWindow final : public DockedWindow, public PlatformContextComponen
         //return true if the field has been modified
         [[nodiscard]] bool processField(EditorComponentField& field);
         [[nodiscard]] bool processBasicField(EditorComponentField& field) const;
-        [[nodiscard]] bool processTransform(TransformComponent* transform, bool readOnly) const;
-        [[nodiscard]] bool processMaterial(Material* material, bool readOnly);
+        [[nodiscard]] bool processTransform(TransformComponent* transform, bool readOnly, bool hex) const;
+        [[nodiscard]] bool processMaterial(Material* material, bool readOnly, bool hex);
 
     private:
         Texture* _previewTexture = nullptr;

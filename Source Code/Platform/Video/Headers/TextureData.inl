@@ -35,7 +35,8 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 namespace Divide {
     inline bool IsValid(const TextureEntry& entry) noexcept {
-        return entry._data._textureType != TextureType::COUNT;
+        return entry._data._textureType != TextureType::COUNT &&
+               entry._data._textureHandle > 0u;
     }
 
     inline bool operator==(const TextureEntry & lhs, const TextureEntry & rhs) noexcept {

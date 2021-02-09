@@ -13,7 +13,7 @@ layout(location = TARGET_MODULATE) out vec4  _modulate;
 #endif
 
 // Shameless copy-paste from http://casual-effects.blogspot.co.uk/2015/03/colored-blended-order-independent.html
-void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
+void writePixel(vec4 premultipliedReflect, vec3 transmit, float cameraSpaceZ) {
     float alpha = premultipliedReflect.a;
 #if defined(USE_COLOURED_WOIT)
     // NEW: Perform this operation before modifying the coverage to account for transmission.
@@ -37,7 +37,7 @@ void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
     float b = -gl_FragCoord.z * 0.95f + 1.0f;
 
     // If your scene has a lot of content very close to the far plane, then include this line (one rsqrt instruction):
-    //b /= sqrt(1e4 * abs(csZ));
+    //b /= sqrt(1e4 * abs(cameraSpaceZ));
 
     float w = clamp(a * a * a * 1e3 * b * b * b, 1e-2, 3e2);
 
@@ -49,9 +49,7 @@ void writePixel(vec4 premultipliedReflect, vec3 transmit, float csZ) {
 #if defined(OIT_PASS)
 void writeScreenColour(in vec4 colour) {
     const vec3 transmit = vec3(0.0f);// texture(texTransmitance, dvd_screenPositionNormalised).rgb;
-    const float linearDepth = ToLinearDepth(textureLod(texDepthMap, dvd_screenPositionNormalised, 0).r);
-
-    writePixel(vec4(colour.rgb * colour.a, colour.a), transmit, linearDepth);
+    writePixel(vec4(colour.rgb * colour.a, colour.a), transmit, LinearDepth);
 }
 #else //OIT_PASS
 // write depth value to alpha for refraction?

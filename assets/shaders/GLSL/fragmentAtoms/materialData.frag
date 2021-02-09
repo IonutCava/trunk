@@ -67,6 +67,7 @@ float specularAntiAliasing(vec3 N, float a) {
 #define SSAOFactor 1.0f
 #endif //USE_SSAO
 
+#define LinearDepth texture(texGBufferExtra, dvd_screenPositionNormalised).g
 #define SpecularColour(diffColour, metallic) mix(F0, diffColour, metallic)
 
 #define OCCLUSSION(OMR_IN) OMR_IN.r

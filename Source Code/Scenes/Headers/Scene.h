@@ -119,12 +119,15 @@ class Scene : public Resource, public PlatformContextComponent {
     static stringImpl GetPlayerSGNName(PlayerIndex idx);
 
    public:
+       static constexpr U32 SUN_LIGHT_TAG  = 0xFFF0F0;
+
        struct DayNightData
        {
            Sky* _skyInstance = nullptr;
-           DirectionalLightComponent* _dirLight = nullptr;
+           DirectionalLightComponent* _sunLight = nullptr;
            F32 _speedFactor = 1.0f;
-           F32 _timeAccumulator = 0.0f;
+           F32 _timeAccumulatorSec = 0.0f;
+           F32 _timeAccumulatorHour = 0.0f;
            SimpleTime _time = { 14u, 30u };
            bool _resetTime = true;
        };

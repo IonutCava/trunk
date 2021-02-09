@@ -41,7 +41,7 @@ void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept {
         }
     }
 
-    Console::printAll();
+    Console::flush();
 }
 
 GUI::GUI(Kernel& parent)

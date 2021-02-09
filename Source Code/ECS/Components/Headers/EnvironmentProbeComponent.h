@@ -63,12 +63,13 @@ public:
         ALWAYS = 0,
         ON_DIRTY,
         ON_RATE,
+        ONCE,
         COUNT
     };
 
     struct Names {
         inline static const char* updateType[] = {
-            "Always", "On Dirty", "On Rate", "ERROR!"
+            "Always", "On Dirty", "On Rate", "Once", "ERROR!"
         };
     };
 

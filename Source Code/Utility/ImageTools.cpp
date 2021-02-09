@@ -28,20 +28,6 @@ namespace Divide::ImageTools {
 
 Mutex ImageDataInterface::_loadingMutex;
 
-ImageData::ImageData() noexcept 
-    : _compressed(false),
-      _flip(false),
-      _16Bit(false),
-      _isHDR(false),
-      _alpha(false),
-      _bpp(0)
-
-{
-    _format = GFXImageFormat::COUNT;
-    _dataType = GFXDataFormat::COUNT;
-    _compressedTextureType = TextureType::COUNT;
-}
-
 bool ImageData::addLayer(Byte* data, const size_t size, const U16 width, const U16 height, const U16 depth) {
     ImageLayer& layer = _layers.emplace_back();
     return layer.allocateMip(data, size, width, height, depth);
@@ -64,11 +50,8 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
         set16Bit(false);
         data = stbi_loadf(_name.c_str(), &width, &height, &comp, 0);
     } else {
-        if (is16Bit()) {
-            data = stbi_load_16(_name.c_str(), &width, &height, &comp, 0);
-        } else {
-            data = stbi_load(_name.c_str(), &width, &height, &comp, 0);
-        }
+        data = is16Bit() ? static_cast<bufferPtr>(stbi_load_16(_name.c_str(), &width, &height, &comp, 0))
+                         : static_cast<bufferPtr>(stbi_load(_name.c_str(), &width, &height, &comp, 0));
     }
 
     if (data == nullptr) {
@@ -106,9 +89,8 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
         _bpp *= 2;
     }
 
-    vectorEASTL<U32> resizedData = {};
+    vectorEASTL<U32> resizedData(refWidth * refHeight, 0u);
     if (refWidth != 0 && refHeight != 0 && (refWidth != width || refHeight != height)) {
-        resizedData.resize(refWidth * refHeight, 0u);
         I32 ret;
         if (is16Bit()) {
             ret = stbir_resize_uint16_generic(static_cast<U16*>(data), width, height, 0,
@@ -119,11 +101,8 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
         } else if (isHDR()) {
             ret = stbir_resize_float(static_cast<F32*>(data), width, height, 0, reinterpret_cast<F32*>(resizedData.data()), refWidth, refHeight, 0, comp);
         } else {
-            if (srgb) {
-                ret = stbir_resize_uint8_srgb(static_cast<U8*>(data), width, height, 0, reinterpret_cast<U8*>(resizedData.data()), refWidth, refHeight, 0, comp, -1, 0);
-            } else {
-                ret = stbir_resize_uint8(static_cast<U8*>(data), width, height, 0, reinterpret_cast<U8*>(resizedData.data()), refWidth, refHeight, 0, comp);
-            }
+            ret = srgb ? stbir_resize_uint8_srgb(static_cast<U8*>(data), width, height, 0, reinterpret_cast<U8*>(resizedData.data()), refWidth, refHeight, 0, comp, -1, 0) 
+                       : stbir_resize_uint8(static_cast<U8*>(data), width, height, 0, reinterpret_cast<U8*>(resizedData.data()), refWidth, refHeight, 0, comp);
         }
 
         if (ret == 1) {
@@ -134,7 +113,7 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
         }
     }
 
-    const size_t baseSize = width * height * _bpp / 8;
+    const size_t baseSize = to_size(width) * height * (_bpp / 8);
 
     // most formats do not have an alpha channel
     _alpha = comp % 2 == 0;
@@ -158,7 +137,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
     ACKNOWLEDGE_UNUSED(refWidth);
     ACKNOWLEDGE_UNUSED(refHeight);
 
-    const auto CheckError = []() {
+    const auto checkError = []() {
         ILenum error = ilGetError();
         while (error != IL_NO_ERROR) {
             DebugBreak();
@@ -171,10 +150,10 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
 
     U32 ilTexture = 0;
     ilInit(); 
-    CheckError();
+    checkError();
 
     ilGenImages(1, &ilTexture);
-    CheckError();
+    checkError();
 
     ilBindImage(ilTexture);
     ilEnable(IL_TYPE_SET);
@@ -183,7 +162,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
     ilSetInteger(IL_KEEP_DXTC_DATA, IL_TRUE);
     ilTypeFunc(IL_UNSIGNED_BYTE);
     if (ilLoadImage(filename.c_str()) == IL_FALSE) {
-        CheckError();
+        checkError();
         Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         ilDeleteImage(ilTexture);
         return false;
@@ -191,7 +170,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
 
     ILinfo imageInfo;
     iluGetImageInfo(&imageInfo);
-    CheckError();
+    checkError();
 
     if (imageInfo.Origin == IL_ORIGIN_UPPER_LEFT) {
         iluFlipImage();
@@ -215,7 +194,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
         dxtc == IL_DXT5;
 
     const I32 channelCount = ilGetInteger(IL_IMAGE_CHANNELS);
-    CheckError();
+    checkError();
 
     _alpha = false;
     if (_compressed) {
@@ -235,7 +214,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
             default: {
                 DIVIDE_UNEXPECTED_CALL();
                 ilDeleteImage(ilTexture);
-                CheckError();
+                checkError();
                 return false;
             }
         }
@@ -262,7 +241,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
             default: {
                 DIVIDE_UNEXPECTED_CALL();
                 ilDeleteImage(ilTexture);
-                CheckError();
+                checkError();
                 return false;
             }
         }
@@ -281,7 +260,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
         _decompressedData.resize(to_size(width) * height * depth * 4);
 
         ilCopyPixels(0, 0, 0, width, height, depth, IL_RGBA, IL_UNSIGNED_BYTE, _decompressedData.data());
-        CheckError();
+        checkError();
     }
 
     const I32 numImagePasses = _compressedTextureType == TextureType::TEXTURE_CUBE_MAP ? 6 : 1;
@@ -300,15 +279,15 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
                 const ILint width = ilGetInteger(IL_IMAGE_WIDTH);
                 const ILint height = ilGetInteger(IL_IMAGE_HEIGHT);
                 const ILint depth = ilGetInteger(IL_IMAGE_DEPTH);
-                CheckError();
+                checkError();
 
                 const I32 size = _compressed ? ilGetDXTCData(nullptr, 0, dxtc) : width * height * depth * _bpp;
-                CheckError();
+                checkError();
 
                 U8* data = layer.allocateMip<U8>(to_size(size), to_U16(width), to_U16(height), to_U16(depth));
                 if (_compressed) {
                     ilGetDXTCData(data, size, dxtc);
-                    CheckError();
+                    checkError();
                 } else {
                     memcpy(data, ilGetData(), size);
                 }
@@ -317,7 +296,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
     }
 
     ilDeleteImage(ilTexture);
-    CheckError();
+    checkError();
     return true;
 }
 

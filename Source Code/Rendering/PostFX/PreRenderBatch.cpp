@@ -9,6 +9,7 @@
 #include "Core/Headers/Configuration.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Core/Resources/Headers/ResourceCache.h"
+#include "Platform/Video/Headers/RenderStateBlock.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
 
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
@@ -273,6 +274,24 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
             _edgeDetection[to_base(EdgeDetectionMethod::Colour)] = CreateResource<ShaderProgram>(_resCache, edgeDetectionColour, loadTasks);
         }
     }
+    {
+        ShaderProgramDescriptor lineariseDepthBufferDescriptor = {};
+        ShaderModuleDescriptor vertModule = {};
+        vertModule._moduleType = ShaderType::VERTEX;
+        vertModule._sourceFile = "baseVertexShaders.glsl";
+        vertModule._variant = "FullScreenQuad";
+
+        ShaderModuleDescriptor fragModule = {};
+        fragModule._moduleType = ShaderType::FRAGMENT;
+        fragModule._sourceFile = "depthPass.glsl";
+        fragModule._variant = "LineariseDepthBuffer";
+
+        lineariseDepthBufferDescriptor._modules = { vertModule, fragModule };
+        ResourceDescriptor lineariseDepthBuffer("lineariseDepthBuffer");
+        lineariseDepthBuffer.waitForReady(false);
+        lineariseDepthBuffer.propertyDescriptor(lineariseDepthBufferDescriptor);
+        _lineariseDepthBuffer = CreateResource<ShaderProgram>(_resCache, lineariseDepthBuffer, loadTasks);
+    }
 
     ShaderBufferDescriptor bufferDescriptor = {};
     bufferDescriptor._name = "LUMINANCE_HISTOGRAM_BUFFER";
@@ -390,6 +409,37 @@ void PreRenderBatch::onFilterToggle(const FilterType filter, const bool state) {
 }
 
 void PreRenderBatch::prepare(const Camera* camera, const U32 filterStack, GFX::CommandBuffer& bufferInOut) {
+    const auto& depthAtt = screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
+
+    GFX::BeginRenderPassCommand beginRenderPassCmd = {};
+    beginRenderPassCmd._name = "LINEARISE_DEPTH_BUFFER";
+    beginRenderPassCmd._target = screenRT()._targetID;
+    beginRenderPassCmd._descriptor.drawMask().disableAll();
+    beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+    EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+    RenderStateBlock blueChannelOnly = RenderStateBlock::get(_context.get2DStateBlock());
+    blueChannelOnly.setColourWrites(false, true, false, false);
+    PipelineDescriptor pipelineDescriptor = {};
+    pipelineDescriptor._stateHash = blueChannelOnly.getHash();
+    pipelineDescriptor._shaderProgramHandle = _lineariseDepthBuffer->getGUID();
+    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
+
+    DescriptorSet depthSet = {};
+    depthSet._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
+    EnqueueCommand(bufferInOut, GFX::BindDescriptorSetsCommand{ depthSet });
+
+    GFX::SendPushConstantsCommand pushConstants = {};
+    pushConstants._constants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
+    EnqueueCommand(bufferInOut, pushConstants);
+
+    GenericDrawCommand triangleCmd = {};
+    triangleCmd._primitiveType = PrimitiveType::TRIANGLES;
+    triangleCmd._drawCount = 1;
+    EnqueueCommand(bufferInOut, GFX::DrawCommand{ triangleCmd });
+
+    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+
     for (OperatorBatch& batch : _operators) {
         for (auto& op : batch) {
             if (BitCompare(filterStack, to_U32(op->operatorType()))) {

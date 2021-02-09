@@ -639,31 +639,38 @@ vec3 computeClouds(in vec3 rayDirection, in vec3 skyColour, in float lerpValue) 
     return skyColour;
 }
 
-vec3 atmosphereColour(in vec3 rayDirection) {
-    // Guess work based on what "look right"
-    const float lerpValue = saturate(2.95f * (dvd_sunDirection.y + 0.15f));
+vec3 getSkyColour(in vec3 rayDirection, in float lerpValue) {
+    return mix(dayColour(rayDirection, lerpValue), nightColour(rayDirection, lerpValue), lerpValue);
+}
 
-    if (rayDirection.y > -0.2f) {
-        const vec3 skyColour = mix(dayColour(rayDirection, lerpValue), nightColour(rayDirection, lerpValue), lerpValue);
-        return dvd_enableClouds ? computeClouds(rayDirection, skyColour, lerpValue) : skyColour;
-    }
-
+vec3 getRawAlbedo(in vec3 rayDirection, in float lerpValue) {
     return lerpValue <= 0.5f ? (dvd_useDaySkybox ? texture(texSkyDay, rayDirection).rgb : vec3(0.4f))
                              : (dvd_useNightSkybox ? texture(texSkyNight, rayDirection).rgb : vec3(0.2f));
 }
 
+vec3 atmosphereColour(in vec3 rayDirection, in float lerpValue) {
+    if (rayDirection.y > -0.2f) {
+        const vec3 skyColour = getSkyColour(rayDirection, lerpValue);
+        return dvd_enableClouds ? computeClouds(rayDirection, skyColour, lerpValue) : skyColour;
+    }
+
+    return getRawAlbedo(rayDirection, lerpValue);
+}
+
 void main() {
+    // Guess work based on what "look right"
+    const float lerpValue = saturate(2.95f * (dvd_sunDirection.y + 0.15f));
     const vec3 rayDirection = normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz);
 
     vec3 ret = vec3(0.f);
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:        ret = dvd_useDaySkybox ? texture(texSkyDay, rayDirection).rgb : vec3(1.0f); break;
+        case DEBUG_ALBEDO:        ret = getRawAlbedo(rayDirection, lerpValue); break;
         case DEBUG_DEPTH:         ret = vec3(1.0f); break;
-        case DEBUG_LIGHTING:      ret = atmosphereColour(rayDirection); break;
+        case DEBUG_LIGHTING:      ret = getSkyColour(rayDirection, lerpValue); break;
         case DEBUG_SPECULAR:      ret = vec3(0.0f); break;
         case DEBUG_UV:            ret = vec3(fract(rayDirection)); break;
         case DEBUG_SSAO:          ret = vec3(1.0f); break;
-        case DEBUG_EMISSIVE:      ret = atmosphereColour(rayDirection); break;
+        case DEBUG_EMISSIVE:      ret = getSkyColour(rayDirection, lerpValue); break;
         case DEBUG_ROUGHNESS:
         case DEBUG_METALLIC:
         case DEBUG_NORMALS:
@@ -676,8 +683,8 @@ void main() {
         case DEBUG_REFLECTIONS:
         case DEBUG_REFLECTIVITY:
         case DEBUG_MATERIAL_IDS:  ret = vec3(0.0f); break;
+        default:                  ret = atmosphereColour(rayDirection, lerpValue); break;
     }
 
-    ret = atmosphereColour(rayDirection);
     writeScreenColour(vec4(ret, 1.f));
 }

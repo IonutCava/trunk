@@ -153,8 +153,8 @@ void Kernel::idle(const bool fast) {
 
     frameListenerMgr().idle();
 
-    if (--g_printTimer == 0) {
-        Console::printAll();
+    if (!fast && --g_printTimer == 0) {
+        Console::flush();
         g_printTimer = g_printTimerBase;
     }
 

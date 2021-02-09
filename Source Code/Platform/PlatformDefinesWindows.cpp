@@ -134,8 +134,10 @@ namespace Divide {
         handleOut._handle = wmInfo.info.win.window;
     }
 
-    void DebugBreak() noexcept {
-        __debugbreak();
+    void DebugBreak(const bool condition) noexcept {
+        if (condition && IsDebuggerPresent()) {
+            __debugbreak();
+        }
     }
 
     ErrorCode PlatformInitImpl(int argc, char** argv) noexcept {

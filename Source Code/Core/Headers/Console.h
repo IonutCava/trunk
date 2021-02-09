@@ -55,7 +55,7 @@ class Console : NonCopyable {
     using ConsolePrintCallback = std::function<void(const OutputEntry&)>;
 
    public:
-    static void printAll();
+    static void flush();
     static void start() noexcept;
     static void stop();
 

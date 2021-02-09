@@ -19,4 +19,5 @@
     <Is__Shadow__Caster>true</Is__Shadow__Caster>
     <Shadow__Bias>0.0250000004</Shadow__Bias>
     <Shadow__Strength>1</Shadow__Strength>
+    <Light__Tag__Value>0</Light__Tag__Value>
 </POINT_LIGHT>

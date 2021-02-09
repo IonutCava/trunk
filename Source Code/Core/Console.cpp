@@ -114,7 +114,7 @@ void Console::printToFile(const OutputEntry& entry) {
     }
 }
 
-void Console::printAll() {
+void Console::flush() {
     if (!_enabled) {
         return;
     }
@@ -137,8 +137,8 @@ void Console::start() noexcept {
 
 void Console::stop() {
     if (_running) {
+        flush();
         _immediateMode = true;
-        printAll();
         _enabled = false;
         _running = false;
         std::cout << "------------------------------------------" << std::endl

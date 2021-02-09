@@ -6,11 +6,6 @@ float ToLinearDepth(in float depthIn);
 // Maps the depth buffer value "depthIn" to a linear [0, 1] range using depthRange
 float ToLinearDepth(in float depthIn, in vec2 depthRange);
 
-// Maps the depth buffer value "depthIn" to a linear [0, 1] range using dvd_zPlanes and adjusts the result to make it more visible for debug purposes
-float ToLinearDepthPreview(in float depthIn);
-// Maps the depth buffer value "depthIn" to a linear [0, 1] range using depthRange and adjusts the result to make it more visible for debug purposes
-float ToLinearDepthPreview(in float depthIn, in vec2 depthRange);
-
 vec3 rayDirFromUV(in vec2 uv) {
     const float x = sin(M_PI * uv.y);
     const float f = 2.f * M_PI * (0.5f - uv.x);
@@ -84,12 +79,15 @@ vec3 getTriPlanarBlend(in vec3 normalW) {
     return blending / (blending.x + blending.y + blending.z);
 }
 
-float ToLinearDepth(in float D, in vec2 Z) { return (2 * Z.x * Z.y) / (Z.y + Z.x - (2.f * D - 1.f) * (Z.y - Z.x)); }
-float ToLinearDepth(in float D)            { return ToLinearDepth(D, dvd_zPlanes); }
+float ToLinearDepth(in float z_b, in vec2 Z) {
+    const float zNear = Z.x;
+    const float zFar = Z.y;
+    const float z_n = 2.f * z_b - 1.f;
+    const float z_e = 2.f * zNear * zFar / (zFar + zNear - z_n * (zFar - zNear));
+    return z_e;
+}
 
-float ToLinearDepthPreview(in float D, in vec2 Z) { return (2 * Z.x) / (Z.y + Z.x - D * (Z.y - Z.x)); }
-float ToLinearDepthPreview(in float D)            { return ToLinearDepthPreview(D, dvd_zPlanes); }
-
+float ToLinearDepth(in float D)                     { return ToLinearDepth(D, dvd_zPlanes); }
 float ToLinearDepth(in float D, in mat4 projMatrix) { return projMatrix[3][2] / (D - projMatrix[2][2]); }
 
 float ViewSpaceZ(in float depthIn, in mat4 invProjectionMatrix) {

@@ -277,7 +277,7 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
                 isOpacity = false;
             }
 
-            // If we have the opacity texture is the albedo map, we don't need it. We can just use albedo alpha
+            // If the opacity texture is the same as the albedo map, we don't need it. We can just use albedo alpha
             const Texture_ptr& otherTex = _textures[isOpacity ? to_base(TextureUsage::UNIT0)
                                                               : to_base(TextureUsage::OPACITY)];
 
@@ -1355,7 +1355,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 texture.flag(!flipped);
 
                 Texture_ptr tex =  CreateResource<Texture>(_context.parent().resourceCache(), texture);
-                tex->addStateCallback(ResourceState::RES_LOADED, [&](CachedResource*) {
+                tex->addStateCallback(ResourceState::RES_LOADED, [&, tex](CachedResource*) {
                     setTexture(usage, tex, hash, op);
                     loadTasks.fetch_sub(1u);
                 });

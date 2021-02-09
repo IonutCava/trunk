@@ -60,6 +60,7 @@ Light::Light(SceneGraphNode* sgn, const F32 range, const LightType type, LightPo
 
     updateCache(evt);
 
+
     _enabled = true;
 }
 
@@ -124,6 +125,16 @@ void Light::registerFields(EditorComponent& comp) {
     shadowStrengthField._range = { std::numeric_limits<F32>::epsilon(), 10.0f };
     shadowStrengthField._basicType = GFX::PushConstantType::FLOAT;
     comp.registerField(MOV(shadowStrengthField));
+
+    EditorComponentField lightTagField = {};
+    lightTagField._name = "Light Tag Value";
+    lightTagField._data = &_tag;
+    lightTagField._type = EditorComponentFieldType::PUSH_TYPE;
+    lightTagField._readOnly = false;
+    lightTagField._hexadecimal = true;
+    lightTagField._basicType = GFX::PushConstantType::UINT;
+
+    comp.registerField(MOV(lightTagField));
 }
 
 void Light::updateCache(const ECS::CustomEvent& event) {

@@ -1084,9 +1084,14 @@ bool Scene::load(const Str256& name) {
     assert(!skies.empty());
     Sky& currentSky = skies[0]->getNode<Sky>();
     const auto& dirLights = _lightPool->getLights(LightType::DIRECTIONAL);
-    DirectionalLightComponent* sun = nullptr;
-    if (!dirLights.empty()) {
-        sun = dirLights.front()->getSGN()->get<DirectionalLightComponent>();
+
+    DirectionalLightComponent *sun = nullptr;
+    for (auto light : dirLights) {
+        const auto dirLight = light->getSGN()->get<DirectionalLightComponent>();
+        if (dirLight->tag() == SUN_LIGHT_TAG) {
+            sun = dirLight;
+            break;
+        }
     }
     if (sun != nullptr) {
         sun->castsShadows(true);
@@ -1440,41 +1445,49 @@ void Scene::processTasks(const U64 deltaTimeUS) {
             timeOfDay.tm_hour = _dayNightData._time._hour;
             timeOfDay.tm_min = _dayNightData._time._minutes;
             _dayNightData._resetTime = false;
-            _dayNightData._timeAccumulator = Time::Seconds(1.1f);
+            _dayNightData._timeAccumulatorSec = Time::Seconds(1.1f);
+            _dayNightData._timeAccumulatorHour = 0.f;
+            SceneEnvironmentProbePool::OnTimeOfDayChange(_envProbePool);
         }
 
         const F32 speedFactor = dayNightCycleEnabled() ? _dayNightData._speedFactor : 0.f;
+        const F32 addTime = speedFactor * Time::MillisecondsToSeconds<F32>(delta);
 
-        _dayNightData._timeAccumulator += speedFactor * Time::MillisecondsToSeconds<F32>(delta);
+        _dayNightData._timeAccumulatorSec += addTime;
+        _dayNightData._timeAccumulatorHour += addTime;
 
-        if (std::abs(_dayNightData._timeAccumulator) > Time::Seconds(1.f)) {
-            timeOfDay.tm_sec += to_I32(_dayNightData._timeAccumulator);
+        if (std::abs(_dayNightData._timeAccumulatorSec) > Time::Seconds(1.f)) {
+            timeOfDay.tm_sec += to_I32(_dayNightData._timeAccumulatorSec);
             const time_t now = mktime(&timeOfDay); // normalize it
-            _dayNightData._timeAccumulator = 0.f;
+            _dayNightData._timeAccumulatorSec = 0.f;
+
+            if (_dayNightData._timeAccumulatorHour > 1.f) {
+                SceneEnvironmentProbePool::OnTimeOfDayChange(_envProbePool);
+                _dayNightData._timeAccumulatorHour = 0.f;
+            }
+            FColour3 moonColour = Normalized(_dayNightData._skyInstance->moonColour().rgb);
 
             const SunDetails details = _dayNightData._skyInstance->setDateTime(localtime(&now));
-            _dayNightData._dirLight->getSGN()->get<TransformComponent>()->setRotationEuler(details._eulerDirection);
+            Light* light = _dayNightData._sunLight;
 
             const FColour3 sunsetOrange = FColour3(99.2f, 36.9f, 32.5f) / 100.f;
-            Light* light = _dayNightData._dirLight;
-            static bool shadowCaster = light->castsShadows();
-            // Sunset / sunrise
-            light->enabled(true);
-            light->castsShadows(shadowCaster);
 
+            // Sunset / sunrise
+            vec3<Angle::DEGREES<F32>> eulerDirection = details._eulerDirection;
+            light->getSGN()->get<TransformComponent>()->setRotationEuler(eulerDirection);
             // Morning
             if (IS_IN_RANGE_INCLUSIVE(details._intensity, 0.0f, 25.0f)) {
                 light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::WHITE.rgb, details._intensity / 25.f));
             }
             // Early night time
             else if (IS_IN_RANGE_INCLUSIVE(details._intensity, -25.0f, 0.0f)) {
-                light->setDiffuseColour(Lerp(sunsetOrange, DefaultColours::BLACK.rgb, -details._intensity / 25.f));
-                light->castsShadows(false);
+                light->setDiffuseColour(Lerp(sunsetOrange, moonColour, -details._intensity / 25.f));
             }
             // Night
             else if (details._intensity < -25.f) {
-                light->setDiffuseColour(DefaultColours::BLACK.rgb);
-                light->enabled(false);
+                light->setDiffuseColour(moonColour);
+                light->getSGN()->get<TransformComponent>()->rotateZ(-180.f);
+                light->getSGN()->get<TransformComponent>()->rotateX(-90.f);
             }
             // Day
             else {
@@ -1849,13 +1862,14 @@ void Scene::endDragSelection(const PlayerIndex idx, const bool clearSelection) {
 
 void Scene::initDayNightCycle(Sky& skyInstance, DirectionalLightComponent& sunLight) noexcept {
     _dayNightData._skyInstance = &skyInstance;
-    _dayNightData._dirLight = &sunLight;
+    _dayNightData._sunLight = &sunLight;
     if (!_dayNightData._resetTime) {
         // Usually loaded from XML/save data
         _dayNightData._time = skyInstance.GetTimeOfDay();
         _dayNightData._resetTime = true;
     }
-    _dayNightData._timeAccumulator = Time::Seconds(1.1f);
+    _dayNightData._timeAccumulatorSec = Time::Seconds(1.1f);
+    _dayNightData._timeAccumulatorHour = 0.f;
 }
 
 void Scene::setDayNightCycleTimeFactor(const F32 factor) noexcept {

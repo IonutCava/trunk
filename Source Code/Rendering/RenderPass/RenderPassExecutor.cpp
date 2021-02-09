@@ -500,8 +500,8 @@ void RenderPassExecutor::occlusionPass(const VisibleNodeList<>& nodes,
     // ToDo: This should not be needed as we unbind the render target before we dispatch the compute task anyway. See if we can remove this -Ionut
     GFX::MemoryBarrierCommand memCmd = {};
     memCmd._barrierMask = to_base(MemoryBarrierType::RENDER_TARGET) |
-        to_base(MemoryBarrierType::TEXTURE_FETCH) |
-        to_base(MemoryBarrierType::TEXTURE_BARRIER);
+                          to_base(MemoryBarrierType::TEXTURE_FETCH) |
+                          to_base(MemoryBarrierType::TEXTURE_BARRIER);
     EnqueueCommand(bufferInOut, memCmd);
 
     // Run occlusion culling CS
@@ -926,8 +926,8 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
     }
 #   pragma endregion
 
-    // If we rendered to the multisampled screen target, we can now copy the g-buffer data to our regular buffer as we are done with it at this point
     RenderTargetID sourceID = params._target;
+    // If we rendered to the multisampled screen target, we can now copy the g-buffer data to our regular buffer as we are done with it at this point
     if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
         const RenderTargetID targetID = { RenderTargetUsage::SCREEN, params._target._index };
 
@@ -949,6 +949,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
 
 #   pragma region HI_Z
     if (doOcclusionPass) {
+        // This also renders into our HiZ texture that we may want to use later in PostFX
         occlusionPass(visibleNodes, visibleNodeCount, params._stagePass, *params._camera, sourceID, params._targetHIZ, bufferInOut);
     }
 #   pragma endregion
