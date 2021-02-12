@@ -1,5 +1,7 @@
 -- Vertex
 
+#define HAS_TRANSPARENCY
+#define NO_VELOCITY
 #define NEED_SCENE_DATA
 #include "vbInputData.vert"
 #include "lightingDefaults.vert"
@@ -77,8 +79,10 @@ void main() {
 
 layout(early_fragment_tests) in;
 
+#define NO_VELOCITY
 #define SAMPLER_UNIT0_IS_ARRAY
 #define USE_SHADING_BLINN_PHONG
+#define HAS_TRANSPARENCY
 #define NO_IBL
 
 #include "BRDF.frag"
@@ -92,13 +96,13 @@ layout(location = 1) in float _alphaFactor;
 void main (void){
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
-    const vec2 uv = VAR._texCoord;
-
-    vec4 albedo = texture(texDiffuse0, vec3(uv, _arrayLayerFrag));
+    vec4 albedo = texture(texDiffuse0, vec3(VAR._texCoord, _arrayLayerFrag));
     albedo.a = min(albedo.a, _alphaFactor);
 
-    const uint LoD = 0u;
-    writeScreenColour(getPixelColour(albedo, data, getNormalWV(uv), uv, LoD));
+    const vec3 normalWV = getNormalWV(VAR._texCoord);
+    vec2 MetalnessRoughness = vec2(0.f, 1.f);
+    const vec4 colour = getPixelColour(albedo, data, normalWV, VAR._texCoord, 0u, MetalnessRoughness);
+    writeScreenColour(colour, normalWV, MetalnessRoughness);
 }
 
 --Fragment.PrePass
@@ -107,14 +111,14 @@ void main (void){
 // We still manually alpha-discard in main
 #define SAMPLER_UNIT0_IS_ARRAY
 #define USE_ALPHA_DISCARD
+#define NO_VELOCITY
 #include "prePass.frag"
 
 layout(location = 0) flat in int _arrayLayerFrag;
 layout(location = 1) in float _alphaFactor;
 
 void main() {
-    const float albedoAlpha = texture(texDiffuse0, vec3(VAR._texCoord, _arrayLayerFrag)).a;
-    writeGBuffer(albedoAlpha * _alphaFactor, VAR._texCoord, VAR._normalWV);
+    writeGBuffer(texture(texDiffuse0, vec3(VAR._texCoord, _arrayLayerFrag)).a * _alphaFactor);
 }
 
 --Fragment.Shadow.VSM

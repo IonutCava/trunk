@@ -6,9 +6,9 @@ void main() {
 #if defined(USE_ALPHA_DISCARD)
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
     const float alpha = getAlbedo(data, VAR._texCoord).a;
-    writeGBuffer(alpha, VAR._texCoord, getNormalWV(VAR._texCoord));
+    writeGBuffer(alpha);
 #else
-    writeGBuffer(1.0f, VAR._texCoord, getNormalWV(VAR._texCoord));
+    writeGBuffer();
 #endif
 }
 
@@ -65,7 +65,7 @@ void main() {
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepth;
 
 //r - ssao, g - linear depth
-layout(location = TARGET_EXTRA) out vec2 _output;
+out vec2 _output;
 #define _colourOut _output.g
 
 uniform vec2 zPlanes;

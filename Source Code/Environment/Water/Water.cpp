@@ -199,8 +199,7 @@ bool WaterPlane::load() {
 
         // PRE_PASS
         shaderDescriptor._modules[0]._defines.emplace_back("PRE_PASS", true);
-        shaderDescriptor._modules[1]._defines.emplace_back("PRE_PASS", true);
-        shaderDescriptor._modules[1]._variant = "PrePass";
+        shaderDescriptor._modules.pop_back();
 
         ResourceDescriptor waterPrePassShaderLQ("waterPrePassLQ");
         waterPrePassShaderLQ.propertyDescriptor(shaderDescriptor);
@@ -214,9 +213,6 @@ bool WaterPlane::load() {
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
 
-        shaderDescriptor._modules[0]._defines.emplace_back("USE_DEFERRED_NORMALS", true);
-        shaderDescriptor._modules[1]._defines.emplace_back("USE_DEFERRED_NORMALS", true);
-
         ResourceDescriptor waterColourShader("waterColourHQ");
         waterColourShader.propertyDescriptor(shaderDescriptor);
         waterColourShader.waitForReady(false);
@@ -224,8 +220,7 @@ bool WaterPlane::load() {
 
         // PRE_PASS
         shaderDescriptor._modules[0]._defines.emplace_back("PRE_PASS", true);
-        shaderDescriptor._modules[1]._defines.emplace_back("PRE_PASS", true);
-        shaderDescriptor._modules[1]._variant = "PrePass";
+        shaderDescriptor._modules.pop_back();
 
         ResourceDescriptor waterPrePassShader("waterPrePassHQ");
         waterPrePassShader.propertyDescriptor(shaderDescriptor);

@@ -121,6 +121,9 @@ float maxComponent(in vec2 v) { return max(v.x, v.y); }
 float maxComponent(in vec3 v) { return max(max(v.x, v.y), v.z); }
 float maxComponent(in vec4 v) { return max(max(max(v.x, v.y), v.z), v.w); }
 
+vec2 Pow(in vec2 v, in float exp) { return vec2(pow(v.x, exp), pow(v.y, exp)); }
+vec3 Pow(in vec3 v, in float exp) { return vec3(pow(v.x, exp), pow(v.y, exp), pow(v.z, exp)); }
+
 // ----------------- LINEAR <-> SRGB -------------------------
 // Accurate variants from Frostbite notes: https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 
@@ -230,29 +233,39 @@ vec3 turboColormap(in float x) {
 
 #endif // COLORMAP_SH_HEADER_GUARD
 
+float packVec2(in vec2 vec) {
+    return uintBitsToFloat(packHalf2x16(vec));
+}
+
+float packVec2(in float x, in float y) {
+    return packVec2(vec2(x, y));
+}
+
+vec2 unpackVec2(in uint pckd) {
+    return unpackHalf2x16(pckd);
+}
+
+vec2 unpackVec2(in float pckd) {
+    return unpackHalf2x16(floatBitsToUint(pckd));
+}
+
+void unpackVec2(in uint pckd, out float X, out float Y) {
+    const vec2 ret = unpackVec2(pckd);
+    X = ret.x;
+    Y = ret.y;
+}
 
 //ref: https://aras-p.info/texts/CompactNormalStorage.html#method08ppview
 vec3 unpackNormal(in vec2 enc) {
-#if 1
-    const vec2 fenc = enc * 4 - 2;
+    const vec2 fenc = 4 * enc - 2;
     const float f = dot(fenc, fenc);
-    const float g = sqrt(1 - f * 0.25f);
-    return vec3(fenc * g, 1 - f * 0.5f);
-#else
-    vec3 ret;
-    ret.xy = enc * 2 - 1;
-    ret.z = sqrt(1 - dot(ret.xy, ret.xy));
-    return ret;
-#endif
+    const float g = sqrt(1.f - f * 0.25f);
+    return vec3(fenc * g, 1.f - f * 0.5f);
 }
 
 vec2 packNormal(in vec3 n) {
-#if 1
     const float f = sqrt(8 * n.z + 8);
     return n.xy / f + 0.5f;
-#else
-    return n.xy * 0.5f + 0.5f;
-#endif
 }
 
 #endif //_UTILITY_FRAG_

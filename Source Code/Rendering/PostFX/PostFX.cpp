@@ -43,7 +43,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     context.paramHandler().setParam<bool>(_ID("postProcessing.enableVignette"), false);
 
     _postFXTarget.drawMask().disableAll();
-    _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, 0, true);
+    _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO), true);
 
     Console::printfn(Locale::get(_ID("START_POST_FX")));
 
@@ -56,10 +56,11 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "postProcessing.glsl";
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_SCREEN %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN)).c_str(), true);
-    fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_GBUFFER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER)).c_str(), true);
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_NOISE %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_NOISE)).c_str(), true);
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_BORDER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_BORDER)).c_str(), true);
     fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_UNDERWATER %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER)).c_str(), true);
+    fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_SSR %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_SSR)).c_str(), true);
+    fragModule._defines.emplace_back(Util::StringFormat("TEX_BIND_POINT_POSTFXDATA %d", to_base(TexOperatorBindPoint::TEX_BIND_POINT_POSTFXDATA)).c_str(), true);
 
     ShaderProgramDescriptor postFXShaderDescriptor = {};
     postFXShaderDescriptor._modules.push_back(vertModule);
@@ -69,9 +70,6 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _drawConstants.set(_ID("_noiseFactor"), GFX::PushConstantType::FLOAT, 0.02f);
     _drawConstants.set(_ID("_fadeActive"), GFX::PushConstantType::BOOL, false);
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, vec2<F32>(0.01f, 500.0f));
-    _drawConstants.set(_ID("camPosition"), GFX::PushConstantType::VEC3, VECTOR3_ZERO);
-    _drawConstants.set(_ID("invViewMatrix"), GFX::PushConstantType::MAT4, MAT4_IDENTITY);
-    _drawConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, MAT4_IDENTITY);
 
     TextureDescriptor texDescriptor(TextureType::TEXTURE_2D);
 
@@ -127,25 +125,6 @@ void PostFX::updateResolution(const U16 newWidth, const U16 newHeight) {
     _preRenderBatch.reshape(newWidth, newHeight);
 }
 
-void PostFX::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
-    OPTICK_EVENT();
-
-    if (_filtersDirty) {
-        _drawConstants.set(_ID("vignetteEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_VIGNETTE));
-        _drawConstants.set(_ID("noiseEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_NOISE));
-        _drawConstants.set(_ID("underwaterEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_UNDERWATER));
-        _filtersDirty = false;
-    };
-
-    EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: Prepare" });
-
-    EnqueueCommand(bufferInOut, GFX::PushCameraCommand{ Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() });
-    _preRenderBatch.prepare(camera, _filterStack | _overrideFilterStack, bufferInOut);
-    EnqueueCommand(bufferInOut, GFX::PopCameraCommand{});
-
-    EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
-}
-
 void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     static size_t s_samplerHash = 0u;
     if (s_samplerHash == 0u) {
@@ -159,21 +138,22 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     EnqueueCommand(bufferInOut, GFX::SetCameraCommand{Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot()});
 
     _preRenderBatch.execute(camera, _filterStack | _overrideFilterStack, bufferInOut);
-
+    
     const auto& prbAtt = _preRenderBatch.getOutput(false)._rt->getAttachment(RTAttachmentType::Colour, 0);
     const TextureData output = prbAtt.texture()->data();
     const TextureData data0 = _underwaterTexture->data();
     const TextureData data1 = _noise->data();
     const TextureData data2 = _screenBorder->data();
 
-    RenderTarget& screenRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN));
+    RenderTarget& fxDataRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::POSTFX_DATA));
+    const auto& fxDataAtt = fxDataRT.getAttachment(RTAttachmentType::Colour, 0);
+    const TextureData fxData = fxDataAtt.texture()->data();
 
-    const auto& gbufferAtt = screenRT.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA));
-    const TextureData gbuffer = gbufferAtt.texture()->data();
-    const auto& depthAtt = screenRT.getAttachment(RTAttachmentType::Depth, 0);
-    const TextureData depthData = depthAtt.texture()->data();
+    RenderTarget& ssrDataRT = context().gfx().renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SSR_RESULT));
+    const auto& ssrDataAtt = ssrDataRT.getAttachment(RTAttachmentType::Colour, 0);
+    const TextureData ssrData = ssrDataAtt.texture()->data();
 
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
+    GFX::BeginRenderPassCommand beginRenderPassCmd{};
     beginRenderPassCmd._target = RenderTargetID(RenderTargetUsage::SCREEN);
     beginRenderPassCmd._descriptor = _postFXTarget;
     beginRenderPassCmd._name = "DO_POSTFX_PASS";
@@ -183,19 +163,24 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     bindPipelineCmd._pipeline = _drawPipeline;
     EnqueueCommand(bufferInOut, bindPipelineCmd);
 
+
+    if (_filtersDirty) {
+        _drawConstants.set(_ID("vignetteEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_VIGNETTE));
+        _drawConstants.set(_ID("noiseEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_NOISE));
+        _drawConstants.set(_ID("underwaterEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_UNDERWATER));
+        _filtersDirty = false;
+    };
+
     _drawConstants.set(_ID("_zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
-    _drawConstants.set(_ID("camPosition"), GFX::PushConstantType::VEC3, camera->getEye());
-    _drawConstants.set(_ID("invViewMatrix"), GFX::PushConstantType::MAT4, camera->worldMatrix());
-    _drawConstants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera->projectionMatrix()));
     EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand(_drawConstants));
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCmd;
-    bindDescriptorSetsCmd._set._textureData.add({ depthData, depthAtt.samplerHash(),TextureUsage::DEPTH });
     bindDescriptorSetsCmd._set._textureData.add({ output, prbAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SCREEN) });
-    bindDescriptorSetsCmd._set._textureData.add({ gbuffer, gbufferAtt.samplerHash(),to_U8(TexOperatorBindPoint::TEX_BIND_POINT_GBUFFER) });
     bindDescriptorSetsCmd._set._textureData.add({ data0, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_UNDERWATER) });
     bindDescriptorSetsCmd._set._textureData.add({ data1, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_NOISE) });
     bindDescriptorSetsCmd._set._textureData.add({ data2, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_BORDER) });
+    bindDescriptorSetsCmd._set._textureData.add({ fxData, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_POSTFXDATA) });
+    bindDescriptorSetsCmd._set._textureData.add({ ssrData, s_samplerHash, to_U8(TexOperatorBindPoint::TEX_BIND_POINT_SSR) });
     EnqueueCommand(bufferInOut, bindDescriptorSetsCmd);
 
     GenericDrawCommand drawCommand;

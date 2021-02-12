@@ -111,7 +111,7 @@ uniform float blurSharpness;
 uniform int blurKernelSize;
 
 //r - ssao
-layout(location = TARGET_EXTRA) out vec2 _output;
+out vec2 _output;
 #define _colourOut _output.r
 
 /**
@@ -194,7 +194,7 @@ uniform int blurKernelSize;
 
 //r - ssao
 #if defined(VERTICAL)
-layout(location = TARGET_EXTRA) out vec2 _output;
+out vec2 _output;
 #else
 out vec4 _output;
 #endif
@@ -263,7 +263,7 @@ void main() {
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texSSAO;
 
 //r - ssao
-layout(location = TARGET_EXTRA) out vec4 _output;
+out vec2 _output;
 
 void main() {
 #   define _colourOut (_output.r)

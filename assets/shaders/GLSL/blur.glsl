@@ -260,6 +260,8 @@ void main() {
 
 --Fragment.ObjectMotionBlur
 
+#include "utility.frag"
+
 //ref: http://john-chapman-graphics.blogspot.com/2013/01/per-object-motion-blur.html
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texVelocity;
@@ -272,10 +274,7 @@ out vec4 _outColour;
 void main(void) {
     const vec2 texelSize = 1.0f / vec2(textureSize(texScreen, 0));
     const vec2 screenTexCoords = gl_FragCoord.xy * texelSize;
-    vec2 velocity = texture(texVelocity, screenTexCoords).ba * dvd_velocityScale;
-    velocity.x = pow(velocity.x, 1.0f / 3.0f);
-    velocity.y = pow(velocity.y, 1.0f / 3.0f);
-    velocity * 2.0f - 1.0f;
+    const vec2 velocity = texture(texVelocity, screenTexCoords).rg * dvd_velocityScale;
 
     const int speed = int(length(velocity / texelSize));
     const int nSamples = clamp(speed, 1, dvd_maxSamples);

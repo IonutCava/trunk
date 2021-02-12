@@ -97,14 +97,17 @@ bool DoFPreRenderOperator::execute(const Camera* camera, const RenderTargetHandl
         _cachedZPlanes = zPlanes;
         _constantsDirty = true;
     }
+
+    const RenderTarget& postFXTarget = _context.renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::POSTFX_DATA));
+
     const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
-    const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
+    const auto& extraAtt = postFXTarget.getAttachment(RTAttachmentType::Colour, 0u);
     const TextureData screenTex = screenAtt.texture()->data();
-    const TextureData depthTex = depthAtt.texture()->data();
+    const TextureData extraTex = extraAtt.texture()->data();
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0 });
-    descriptorSetCmd._set._textureData.add({ depthTex, depthAtt.samplerHash(),TextureUsage::UNIT1 });
+    descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(), TextureUsage::UNIT0 });
+    descriptorSetCmd._set._textureData.add({ extraTex, extraAtt.samplerHash(), TextureUsage::POST_FX_DATA });
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};

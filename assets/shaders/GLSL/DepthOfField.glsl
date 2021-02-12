@@ -45,7 +45,8 @@ changelog:
 -- Fragment
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
-layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
+// texGBufferExtra.g = linear depth
+layout(binding = TEXTURE_POST_FX_DATA) uniform sampler2D texGBufferExtra;
 
 uniform vec2 size;
 // autofocus point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)
@@ -164,7 +165,7 @@ float bdepth(in vec2 coords) //blurring depth
     float kernel[9];
     vec2 offset[9];
     
-    vec2 wh = texel * dbsize;
+    const vec2 wh = texel * dbsize;
     
     offset[0] = vec2(-wh.x,-wh.y);
     offset[1] = vec2( 0.0, -wh.y);
@@ -185,7 +186,7 @@ float bdepth(in vec2 coords) //blurring depth
     
     for( int i=0; i<9; i++ )
     {
-        float tmp = texture(texDepth, coords + offset[i]).r;
+        const float tmp = texture(texGBufferExtra, coords + offset[i]).g;
         d += tmp * kernel[i];
     }
     
@@ -232,10 +233,6 @@ vec3 debugFocus(in vec3 col, in float blur, in float depth) {
     return col;
 }
 
-float linearize(in float depth) {
-    return -zfar * znear / (depth * (zfar - znear) - zfar);
-}
-
 float vignette(in vec2 coord) {
     float dist = distance(coord, vec2(0.5f, 0.5f));
 
@@ -248,13 +245,13 @@ void main()
 {
     //scene depth calculation
 #if defined(USE_DEPTH_BLUR)
-    const float depth = linearize(bdepth(VAR._texCoord));
+    const float depth = bdepth(VAR._texCoord);
 #else
-    const float depth = linearize(texture(texDepth, VAR._texCoord).x);
+    const float depth = texture(texGBufferExtra, VAR._texCoord).g;
 #endif
 
     //focal plane calculation
-    const float fDepth = autofocus ? linearize(texture(texDepth, focus).x) : focalDepth;
+    const float fDepth = autofocus ? texture(texGBufferExtra, focus).g : focalDepth;
 
     //dof blur factor calculation
     float blur = 0.0;

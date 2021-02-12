@@ -4,31 +4,55 @@
 
 out vec4 _colourOut;
 
-uniform float lodLevel;
-uniform bool unpack2Channel;
-uniform bool unpack1Channel;
+uniform uint channelCount;
 uniform uint startChannel;
+uniform float lodLevel;
 uniform float multiplier;
+uniform bool channelsArePacked;
+uniform bool scaleAndBias;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
+vec3 error() {
+    const float total = floor(VAR._texCoord.x * float(dvd_screenDimensions.x)) +
+                        floor(VAR._texCoord.y * float(dvd_screenDimensions.y));
+    return mix(vec3(0.f, 1.f, 0.f), vec3(1.f, 0.f, 0.f), mod(total, 2.f) == 0.f);
+}
+
 void main()
 {
-    _colourOut = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
-
-    if (unpack2Channel) {
-        const vec2 val = (startChannel == 2 ? _colourOut.ba : _colourOut.rg);
-        _colourOut.rgb = unpackNormal(val);
-    } else if (unpack1Channel) {
-        _colourOut.rgb = vec3(_colourOut[startChannel]);
+    const vec4 colourIn = textureLod(texDiffuse0, VAR._texCoord, lodLevel);
+    
+    if (channelsArePacked) {
+        if (channelCount == 1) {
+            _colourOut.rgb = vec3(unpackVec2(colourIn[startChannel]), 0.f);
+        } else if (channelCount == 2) {
+            _colourOut.rgb = unpackNormal(vec2(colourIn[startChannel + 0],
+                                               colourIn[startChannel + 1]));
+        } else {
+            _colourOut.rgb = error();
+        }
     } else {
-        if (startChannel == 2) {
-            _colourOut.rg = _colourOut.ba;
-            _colourOut.b = 0.0;
+        if (channelCount == 1) {
+            _colourOut.rgb = vec3(colourIn[startChannel]);
+        } else if (channelCount == 2) {
+            _colourOut.rgb = vec3(colourIn[startChannel + 0],
+                                  colourIn[startChannel + 1],
+                                  0.f);
+        } else if (channelCount == 3) {
+            _colourOut.rgb = vec3(colourIn[startChannel + 0],
+                                  colourIn[startChannel + 1],
+                                  colourIn[startChannel + 2]);
+        } else if (channelCount == 4) {
+            _colourOut = colourIn;
+        } else {
+            _colourOut.rgb = error();
         }
     }
+    if (scaleAndBias) {
+        _colourOut.rgb = 0.5f * _colourOut.rgb + 0.5f;
+    }
     _colourOut.rgb *= multiplier;
-    _colourOut.a = 1.0;
 }
 
 -- Fragment.LinearDepth

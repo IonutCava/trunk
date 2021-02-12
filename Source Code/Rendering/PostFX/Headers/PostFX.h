@@ -67,7 +67,8 @@ private:
         TEX_BIND_POINT_BORDER = to_base(TextureUsage::UNIT1),
         TEX_BIND_POINT_NOISE = to_base(TextureUsage::SCENE_NORMALS),
         TEX_BIND_POINT_UNDERWATER = to_base(TextureUsage::OPACITY),
-        TEX_BIND_POINT_GBUFFER = to_base(TextureUsage::GBUFFER_EXTRA),
+        TEX_BIND_POINT_POSTFXDATA = to_base(TextureUsage::HEIGHTMAP),
+        TEX_BIND_POINT_SSR = to_base(TextureUsage::NORMALMAP),
         COUNT
     };
 
@@ -75,7 +76,6 @@ public:
     explicit PostFX(PlatformContext& context, ResourceCache* cache);
     ~PostFX() = default;
 
-    void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut);
     void apply(const Camera* camera, GFX::CommandBuffer& bufferInOut);
 
     void idle(const Configuration& config);
@@ -86,9 +86,9 @@ public:
     void pushFilter(const FilterType filter, const bool overrideScene = false) {
         if (!getFilterState(filter)) {
             if (overrideScene) {
-                SetBit(_overrideFilterStack, to_U32(filter));
+                SetBit(_overrideFilterStack, 1u << to_U32(filter));
             } else {
-                SetBit(_filterStack, to_U32(filter));
+                SetBit(_filterStack, 1u << to_U32(filter));
             }
             _filtersDirty = true;
             getFilterBatch().onFilterEnabled(filter);
@@ -98,9 +98,9 @@ public:
     void popFilter(const FilterType filter, const bool overrideScene = false) {
         if (getFilterState(filter)) {
             if (overrideScene) {
-                ClearBit(_overrideFilterStack, to_U32(filter));
+                ClearBit(_overrideFilterStack, 1u << to_U32(filter));
             } else {
-                ClearBit(_filterStack, to_U32(filter));
+                ClearBit(_filterStack, 1u << to_U32(filter));
             }
             _filtersDirty = true;
             getFilterBatch().onFilterDisabled(filter);
@@ -108,8 +108,8 @@ public:
     }
 
     [[nodiscard]] bool getFilterState(const FilterType filter) const noexcept {
-        return BitCompare(_filterStack, to_U32(filter)) ||
-               BitCompare(_overrideFilterStack, to_U32(filter));
+        return BitCompare(_filterStack, 1u << to_U32(filter)) ||
+               BitCompare(_overrideFilterStack, 1u << to_U32(filter));
     }
 
     [[nodiscard]] PreRenderBatch& getFilterBatch() noexcept {

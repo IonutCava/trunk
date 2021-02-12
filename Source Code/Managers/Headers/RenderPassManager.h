@@ -78,6 +78,7 @@ struct RenderPassParams
 
     RTDrawDescriptor _targetDescriptorPrePass = {};
     RTDrawDescriptor _targetDescriptorMainPass = {};
+    RTDrawDescriptor _targetDescriptorComposition= {};
 
     RenderTargetID _targetHIZ = {};
     RenderTargetID _targetOIT = {};

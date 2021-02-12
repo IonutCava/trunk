@@ -369,15 +369,14 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     ShaderModuleDescriptor fragModule = {};
     fragModule._moduleType = ShaderType::FRAGMENT;
     fragModule._sourceFile = "grass.glsl";
+    fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
+    fragModule._defines.emplace_back("NODE_DYNAMIC", true);
     fragModule._defines.emplace_back("SKIP_TEX0", true);
-    fragModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
     fragModule._defines.emplace_back("RECOMPUTE_NORMALS_IN_COLOUR_PASS", true);
     fragModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
     if (g_useDoubleSidedMaterial) {
         fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
     }
-    fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
-    fragModule._defines.emplace_back("NODE_DYNAMIC", true);
     ProcessShadowMappingDefines(gfxDevice.context().config(), fragModule._defines);
     fragModule._variant = "Colour";
 
@@ -392,7 +391,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
     shaderOitDescriptor._modules.back()._defines.emplace_back("OIT_PASS", true);
-    //shaderOitDescriptor._modules.back()._defines.emplace_back("USE_SSAO", true);
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
 
     ResourceDescriptor grassColourOITShader("grassColourOIT");
@@ -402,7 +400,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ShaderProgramDescriptor shaderOitDescriptorLQ = shaderDescriptor;
     shaderOitDescriptorLQ._modules.back()._defines.emplace_back("OIT_PASS", true);
-    //shaderOitDescriptor._modules.back()._defines.emplace_back("USE_SSAO", true);
     shaderOitDescriptorLQ._modules.back()._variant = "Colour.OIT";
 
     ResourceDescriptor grassColourOITLQShader("grassColourOITLQ");

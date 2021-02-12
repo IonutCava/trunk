@@ -3,8 +3,6 @@
 
 #define SAMPLE_NO_TILE_ARRAYS
 
-#if !defined(PRE_PASS) || defined(HAS_PRE_PASS_DATA)
-
 #include "texturing.frag"
 #include "waterData.cmn"
 
@@ -186,20 +184,17 @@ vec2 getScaledCoords(vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
 }
 #endif //LOW_QUALITY || !HAS_PARALLAX
 
-#if defined(PRE_PASS)
 vec3 getTerrainNormal() {
     float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(VAR._texCoord);
     const vec2 uv = getScaledCoords(VAR._texCoord, blendAmount);
 
-    vec3 normal = vec3(0.0f);
+    vec3 normal = vec3(0.f);
     for (uint i = 0; i < TOTAL_LAYER_COUNT; ++i) {
         normal = mix(normal, SampleTextureNoTile(texDiffuse1, vec3(uv * CURRENT_TILE_FACTORS[i], NORMAL_IDX[i])).rgb, blendAmount[i]);
     }
 
     return normal;
 }
-
-#else //PRE_PASS
 
 vec4 getTerrainAlbedo() {
     const float blendAmount[TOTAL_LAYER_COUNT] = getBlendFactor(VAR._texCoord);
@@ -224,39 +219,25 @@ vec4 getUnderwaterAlbedo(in vec2 uv, in float waterDepth) {
                 0.3f);
 }
 
-#endif // PRE_PASS
-#endif //!PRE_PASS || HAS_PRE_PASS_DATA
-
-
 vec4 BuildTerrainData(out vec3 normalWV) {
+    const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
+
 #if defined(LOW_QUALITY)
     // VAR._normalWV is in world-space
-    normalWV = mat3(dvd_ViewMatrix) * VAR._normalWV;
-#endif //LOW_QUALITY
-
-#if defined(PRE_PASS)
-
-#if defined(HAS_PRE_PASS_DATA) && !defined(LOW_QUALITY)
-    const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
+    normalWV = VAR._normalWV;
+#else //LOW_QUALITY
     const vec3 normalMap = mix(getTerrainNormal(),
                                texture(texOMR, vec3(VAR._texCoord * UNDERWATER_TILE_SCALE, 2)).rgb,
                                saturate(waterData.x));
-    // VAR._normalWV is in world-space
-    const vec3 perturbedNormal = computeTBN() * (normalMap * 255.f / 127.f - 128.f / 127.f);
-    normalWV = normalize(mat3(dvd_ViewMatrix) * perturbedNormal);
-#endif //HAS_PRE_PASS_DATA && !LOW_QUALITY
 
-    return vec4(1.f);
-#else //PRE_PASS
+    normalWV = computeTBN() * (normalMap * 255.f / 127.f - 128.f / 127.f);
+#endif //LOW_QUALITY
 
-#if !defined(LOW_QUALITY)
-    normalWV = getScreenNormal(VAR._texCoord);
-#endif //!LOW_QUALITY
-    const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
+    normalWV = normalize(mat3(dvd_ViewMatrix) * normalWV);
+
     return mix(getTerrainAlbedo(),
-               getUnderwaterAlbedo(VAR._texCoord * UNDERWATER_TILE_SCALE, waterData.y),
-               saturate(waterData.x));
-#endif //PRE_PASS
+                getUnderwaterAlbedo(VAR._texCoord * UNDERWATER_TILE_SCALE, waterData.y),
+                saturate(waterData.x));
 }
 
 #endif //_TERRAIN_SPLATTING_FRAG_

@@ -311,10 +311,6 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     terrainMaterial->setTexture(TextureUsage::PROJECTION, CreateResource<Texture>(terrain->parentResourceCache(), textureExtraMaps), albedoHash);
     terrainMaterial->setTexture(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS, CreateResource<Texture>(terrain->parentResourceCache(), textureWaterCaustics), albedoHash);
     terrainMaterial->setTexture(TextureUsage::HEIGHTMAP, CreateResource<Texture>(terrain->parentResourceCache(), heightMapTexture), heightSamplerHash);
-    
-    terrainMaterial->textureUseForDepth(TextureUsage::OPACITY, true);
-    terrainMaterial->textureUseForDepth(TextureUsage::UNIT1, true);
-    terrainMaterial->textureUseForDepth(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS, true);
     terrainMaterial->textureUseForDepth(TextureUsage::HEIGHTMAP, true);
 
     const Configuration::Terrain terrainConfig = context.config().terrain;
@@ -500,13 +496,11 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
         for (ShaderModuleDescriptor& shaderModule : colourDescriptor._modules) {
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
                 shaderModule._variant = "MainPass";
-
+                shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
                 if (hasParallax) {
                     shaderModule._defines.emplace_back("HAS_PARALLAX", true);
                 }
             }
-            shaderModule._defines.emplace_back("USE_SSAO", true);
-            shaderModule._defines.emplace_back("USE_DEFERRED_NORMALS", true);
         }
 
         ResourceDescriptor terrainShaderColour("Terrain_Colour-" + name + propName + (hasParallax ? ".Parallax" : ""));
@@ -516,14 +510,10 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
         // PRE PASS
         ShaderProgramDescriptor prePassDescriptor = colourDescriptor;
-        for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
-            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-                shaderModule._variant = "PrePass";
-                if (hasParallax) {
-                    shaderModule._defines.emplace_back("HAS_PARALLAX", true);
-                }
-            }
+        prePassDescriptor._modules.pop_back();
 
+        for (ShaderModuleDescriptor& shaderModule : prePassDescriptor._modules) {
+            assert(shaderModule._moduleType != ShaderType::FRAGMENT);
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
         }
@@ -535,10 +525,10 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
         // PRE PASS LQ
         ShaderProgramDescriptor prePassDescriptorLQ = shaderDescriptor;
+        prePassDescriptorLQ._modules.pop_back();
         for (ShaderModuleDescriptor& shaderModule : prePassDescriptorLQ._modules) {
-            if (shaderModule._moduleType == ShaderType::FRAGMENT) {
-                shaderModule._variant = "PrePass.LQPass";
-            }
+            assert(shaderModule._moduleType != ShaderType::FRAGMENT);
+
             shaderModule._defines.emplace_back("PRE_PASS", true);
             shaderModule._defines.emplace_back("LOW_QUALITY", true);
             shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16", true);
@@ -557,6 +547,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 shaderModule._variant = "LQPass";
             }
 
+            shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
             shaderModule._defines.emplace_back("LOW_QUALITY", true);
             shaderModule._defines.emplace_back("MAX_TESS_LEVEL 16", true);
         }

@@ -99,7 +99,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     if (config.rendering.postFX.PostAAQualityLevel > 0) {
         _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
-    if_constexpr (false) {
+    if (config.rendering.postFX.enableScreenSpaceReflections) {
         _postFX->pushFilter(FilterType::FILTER_SS_REFLECTIONS);
     }
     if (config.rendering.postFX.ssao.enable) {

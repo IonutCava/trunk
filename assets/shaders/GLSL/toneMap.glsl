@@ -1,3 +1,22 @@
+-- Fragment.Apply.SSAO.SSR
+
+#include "utility.frag"
+layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
+layout(binding = TEXTURE_OPACITY) uniform sampler2D texSSAO;
+layout(binding = TEXTURE_PROJECTION) uniform sampler2D texSSR;
+layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormalsAndMatData;
+
+out vec4 _colourOut;
+
+void main() {
+    const vec4 inputColour = texture(texScreen, VAR._texCoord);
+    const vec3 reflection = texture(texSSR, VAR._texCoord).rgb;
+    const float ssao = texture(texSSAO, VAR._texCoord).r;
+
+    _colourOut = (inputColour * ssao) + vec4(reflection, 0.f);
+}
+
+
 -- Fragment
 
 #include "utility.frag"

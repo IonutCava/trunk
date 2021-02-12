@@ -46,13 +46,5 @@ void main(void) {
     vec4 colourOut = (texture(texWaterCaustics, _scrollingUV.st) +
                       texture(texWaterCaustics, _scrollingUV.pq)) * 0.5;
 
-    writeScreenColour(colourOut);
-}
-
---Fragment.PrePass
-
-#include "prePass.frag"
-
-void main() {
-    writeGBuffer(1.0f, VAR._texCoord, getNormalWV(VAR._texCoord));
+    writeScreenColour(colourOut, VAR._normalWV);
 }

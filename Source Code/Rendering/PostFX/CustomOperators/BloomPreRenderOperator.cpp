@@ -144,7 +144,6 @@ bool BloomPreRenderOperator::execute(const Camera* camera, const RenderTargetHan
 
     const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
     const TextureData screenTex = screenAtt.texture()->data();
-
     
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0 });

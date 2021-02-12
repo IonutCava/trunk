@@ -433,7 +433,7 @@ U8 SSAOPreRenderOperator::sampleCount() const noexcept {
     return _kernelSampleCount[_genHalfRes ? 1 : 0];
 }
 
-void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
+bool SSAOPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     if (_enabled) {
         RenderStateBlock redChannelOnly = RenderStateBlock::get(_context.get2DStateBlock());
         redChannelOnly.setColourWrites(true, false, false, false);
@@ -459,7 +459,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
                 const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
-                const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+                const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
 
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
                 descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
@@ -536,7 +536,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
                 const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
-                const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+                const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
 
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
                 descriptorSetCmd._set._textureData.add({ _noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0 });
@@ -554,7 +554,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
         {
             const auto& ssaoAtt = _ssaoOutput._rt->getAttachment(RTAttachmentType::Colour, 0);
             const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
-            const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+            const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
 
             if (blurResults() && blurKernelSize() > 0) {
                 pipelineDescriptor._stateHash = redChannelOnly.getHash();
@@ -588,9 +588,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 }
                 { //Vertical
                     beginRenderPassCmd._name = "DO_SSAO_BLUR_VERTICAL";
-                    beginRenderPassCmd._target = _parent.screenRT()._targetID;
-                    beginRenderPassCmd._descriptor.drawMask().disableAll();
-                    beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+                    beginRenderPassCmd._target = { RenderTargetUsage::POSTFX_DATA };
                     EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
                     pipelineDescriptor._shaderProgramHandle = _ssaoBlurShaderVertical->getGUID();
@@ -608,9 +606,7 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
                 }
             } else {
                 GFX::BeginRenderPassCommand beginRenderPassCmd = {};
-                beginRenderPassCmd._descriptor.drawMask().disableAll();
-                beginRenderPassCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), true);
-                beginRenderPassCmd._target = _parent.screenRT()._targetID;
+                beginRenderPassCmd._target = { RenderTargetUsage::POSTFX_DATA };
                 beginRenderPassCmd._name = "DO_SSAO_PASS_THROUGH";
                 EnqueueCommand(bufferInOut, beginRenderPassCmd);
 
@@ -629,14 +625,8 @@ void SSAOPreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bu
             }
         }
     }
-}
 
-bool SSAOPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(input);
-    ACKNOWLEDGE_UNUSED(output);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-
+    // No need to swap targets
     return false;
 }
 

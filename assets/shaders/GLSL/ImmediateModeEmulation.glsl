@@ -6,7 +6,6 @@ layout(location = ATTRIB_COLOR)    in vec4 inColourData;
 
 uniform mat4 dvd_WorldMatrix;
 uniform bool useTexture;
-uniform bool skipPostFX;
 
 layout(location = 0) out vec4 _colour;
 
@@ -25,7 +24,6 @@ layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
 uniform mat4 dvd_WorldMatrix;
 uniform bool useTexture;
-uniform bool skipPostFX;
 
 layout(location = 0) in  vec4 _colour;
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
@@ -36,9 +34,6 @@ void main(){
     }else{
         _colourOut = texture(texDiffuse0, VAR._texCoord);
         _colourOut.rgb += _colour.rgb;
-    }
-    if (skipPostFX) {
-        _colourOut.a = 10.0f;
     }
 }
 
@@ -101,5 +96,5 @@ void main() {
     vec3 reflectDirection = reflect(-VAR._viewDirectionWV, VAR._normalWV);
     vec4 colour = vec4(texture(texEnvironmentCube, vec3(reflectDirection).rgb, 1.0);
 
-    writeScreenColour(colour);
+    writeScreenColour(colour, VAR._normalWV);
 }

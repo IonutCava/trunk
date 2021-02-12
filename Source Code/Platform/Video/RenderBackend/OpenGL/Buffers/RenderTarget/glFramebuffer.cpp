@@ -244,6 +244,7 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
         GLuint prevReadAtt = 0;
         GLuint prevWriteAtt = 0;
 
+        std::array<GLenum, MAX_RT_COLOUR_ATTACHMENTS> currentOutputBuffers = output->_activeColourBuffers;
         for (const ColourBlitEntry& entry : params._blitColours) {
             if (entry.input()._layer == INVALID_COLOUR_LAYER && entry.input()._index == INVALID_COLOUR_LAYER) {
                 continue;
@@ -285,7 +286,6 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
                     glNamedFramebufferDrawBuffer(output->_framebufferHandle, colourAttOut);
                 }
 
-                
                 prevWriteAtt = crtWriteAtt;
             }
 
@@ -320,6 +320,13 @@ void glFramebuffer::blitFrom(const RTBlitParams& params) {
                                    GL_NEAREST);
             _context.registerDrawCall();
             QueueMipMapRecomputation(*outAtt);
+        }
+
+        if (currentOutputBuffers != output->_activeColourBuffers) {
+            output->_activeColourBuffers = currentOutputBuffers;
+            glNamedFramebufferDrawBuffers(_framebufferHandle,
+                                          MAX_RT_COLOUR_ATTACHMENTS,
+                                          _activeColourBuffers.data());
         }
     }
 

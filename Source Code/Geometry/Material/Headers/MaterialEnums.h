@@ -56,6 +56,7 @@ namespace Divide {
         REFLECTIONS,
         REFLECTIVITY,
         MATERIAL_IDS,
+        SSR,
         COUNT
     );
 

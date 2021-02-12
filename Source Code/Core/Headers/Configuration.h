@@ -134,6 +134,7 @@ struct Configuration final : XML::IXMLSerializable {
             U8 PostAAQualityLevel = 2;
             bool enableAdaptiveToneMapping = true;
             bool enableDepthOfField = false;
+            bool enableScreenSpaceReflections = false;
             bool enablePerObjectMotionBlur = true;
             bool enableBloom = false;
             F32 bloomFactor = 0.8f;

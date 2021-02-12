@@ -64,7 +64,6 @@ class PreRenderBatch {
     void idle(const Configuration& config);
     void update(U64 deltaTimeUS) noexcept;
 
-    void prepare(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
     void execute(const Camera* camera, U32 filterStack, GFX::CommandBuffer& bufferInOut);
     void reshape(U16 width, U16 height);
 
@@ -75,6 +74,7 @@ class PreRenderBatch {
     [[nodiscard]] RenderTargetHandle getOutput(bool hdr) const;
 
     [[nodiscard]] RenderTargetHandle screenRT() const noexcept;
+    [[nodiscard]] RenderTargetHandle prevScreenRT() const noexcept;
     [[nodiscard]] RenderTargetHandle edgesRT() const noexcept;
     [[nodiscard]] Texture_ptr luminanceTex() const noexcept;
 
@@ -126,12 +126,14 @@ class PreRenderBatch {
                 return FilterSpace::FILTER_SPACE_LDR;
 
             case FilterType::FILTER_SS_AMBIENT_OCCLUSION:
+            case FilterType::FILTER_SS_REFLECTIONS:
+                return FilterSpace::FILTER_SPACE_HDR;
+
             case FilterType::FILTER_DEPTH_OF_FIELD:
             case FilterType::FILTER_BLOOM:
             case FilterType::FILTER_MOTION_BLUR:
-                return FilterSpace::FILTER_SPACE_HDR;
+                return FilterSpace::FILTER_SPACE_HDR_POST_SS;
 
-            case FilterType::FILTER_SS_REFLECTIONS:
             case FilterType::FILTER_LUT_CORECTION:
             case FilterType::FILTER_COUNT:
             case FilterType::FILTER_UNDERWATER: 
@@ -147,6 +149,7 @@ class PreRenderBatch {
     [[nodiscard]] bool operatorsReady() const;
 
     [[nodiscard]] RenderTargetHandle getTarget(bool hdr, bool swapped) const;
+
   private:
     using OperatorBatch = vectorEASTL<eastl::unique_ptr<PreRenderOperator>>;
     std::array<OperatorBatch, to_base(FilterSpace::COUNT)> _operators;
@@ -156,6 +159,11 @@ class PreRenderBatch {
     ResourceCache* _resCache = nullptr;
 
     ShaderBuffer*      _histogramBuffer = nullptr;
+
+    RenderTargetHandle _sceneEdges;
+
+    bool _needScreenCopy = false;
+    RenderTargetHandle _screenCopyPreToneMap;
 
     struct HDRTargets {
         RenderTargetHandle _screenRef;
@@ -174,16 +182,16 @@ class PreRenderBatch {
 
     ScreenTargets _screenRTs;
 
-    RenderTargetHandle _sceneEdges;
+
     Texture_ptr _currentLuminance;
     ShaderProgram_ptr _toneMap = nullptr;
+    ShaderProgram_ptr _applySSAOSSR = nullptr;
     ShaderProgram_ptr _toneMapAdaptive = nullptr;
     ShaderProgram_ptr _createHistogram = nullptr;
     ShaderProgram_ptr _averageHistogram = nullptr;
     ShaderProgram_ptr _lineariseDepthBuffer = nullptr;
     std::array<ShaderProgram_ptr, to_base(EdgeDetectionMethod::COUNT)> _edgeDetection = {};
     std::array<Pipeline*, to_base(EdgeDetectionMethod::COUNT)> _edgeDetectionPipelines = {};
-
     PushConstants     _toneMapConstants;
 
     U64 _lastDeltaTimeUS = 0u;

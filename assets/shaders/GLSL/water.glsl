@@ -18,6 +18,7 @@ void main(void)
     gl_Position = _vertexWVP;
 }
 
+
 -- Fragment
 
 layout(location = 0) in flat int _underwater;
@@ -64,23 +65,17 @@ vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in 
 
 void main()
 {
-#if defined(PRE_PASS)
-#if defined(HAS_PRE_PASS_DATA)
+#if !defined(PRE_PASS)
     const float time2 = MSToSeconds(dvd_time) * 0.05f;
-    const vec2 uvNormal0 = (VAR._texCoord * _noiseTile) + vec2( time2, time2);
+    const vec2 uvNormal0 = (VAR._texCoord * _noiseTile) + vec2(time2, time2);
     const vec2 uvNormal1 = (VAR._texCoord * _noiseTile) + vec2(-time2, time2);
 
     const vec3 normal0 = texture(texNormalMap, uvNormal0).rgb;
     const vec3 normal1 = texture(texNormalMap, uvNormal1).rgb;
-    const vec3 normal = normalize(2.0f * ((normal0 + normal1) * 0.5f) - 1.0f);
+    const vec3 normalW = normalize(2.0f * ((normal0 + normal1) * 0.5f) - 1.0f);
     //vec3 normal = normalPartialDerivativesBlend(normal0, normal1);
-
-    writeGBuffer(1.0f,  VAR._texCoord, getTBNWV() * normal);
-#endif //HAS_PRE_PASS_DATA
-#else //PRE_PASS
+    const vec3 normalWV = normalize(mat3(dvd_ViewMatrix) * normalW);
     const vec3 incident = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
-    const vec3 normalWV = getNormalWV(VAR._texCoord);
-    const vec3 normaW = normalize(mat3(dvd_InverseViewMatrix) * normalWV);
 
     const vec2 waterUV = clamp(0.5f * homogenize(_vertexWVP).xy + 0.5f, vec2(0.001f), vec2(0.999f));
     const vec3 refractionColour = texture(texRefractPlanar, waterUV).rgb + _refractionTint;
@@ -90,23 +85,24 @@ void main()
         _private_reflect = texture(texReflectPlanar, waterUV).rgb;
         // Get a modified viewing direction of the camera that only takes into account height.
         // ref: https://www.rastertek.com/terdx10tut16.html
-        texColour = mix(refractionColour, _private_reflect, Fresnel(incident.yyy, normaW));
+        texColour = mix(refractionColour, _private_reflect, Fresnel(incident.yyy, normalW));
     }
 
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
 
-    const vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord, 0u);
+    vec2 MetalnessRoughness = vec2(0.f, 1.f);
+    const vec4 outColour = getPixelColour(vec4(texColour, 1.0f), data, normalWV, VAR._texCoord, 0u, MetalnessRoughness);
 
     // Guess work based on what "look right"
     const float lerpValue = saturate(2.95f * (dvd_sunDirection.y + 0.15f));
     const vec3 lightDirection = mix(-dvd_sunDirection.xyz, dvd_sunDirection.xyz, lerpValue);
 
     // Calculate the reflection vector using the normal and the direction of the light.
-    const vec3 reflection = -reflect(lightDirection, normaW);
+    const vec3 reflection = -reflect(lightDirection, normalW);
     // Calculate the specular light based on the reflection and the camera position.
     const float specular = dot(normalize(reflection), incident);
     // Increase the specular light by the shininess value and add the specular to the final color.
     // Check to make sure the specular was positive so we aren't adding black spots to the water.
-    writeScreenColour(outColour + (specular > 0.f ? pow(specular, _specularShininess) : 0.f));
+    writeScreenColour(outColour + (specular > 0.f ? pow(specular, _specularShininess) : 0.f), normalWV, MetalnessRoughness);
 #endif
 }

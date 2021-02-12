@@ -75,6 +75,7 @@ bool Configuration::fromXML(const char* xmlFile) {
         GET_PARAM(rendering.postFX.PostAAQualityLevel);
         GET_PARAM(rendering.postFX.enableAdaptiveToneMapping);
         GET_PARAM(rendering.postFX.enableDepthOfField);
+        GET_PARAM(rendering.postFX.enableScreenSpaceReflections);
         GET_PARAM(rendering.postFX.enablePerObjectMotionBlur);
         GET_PARAM(rendering.postFX.enableBloom);
         GET_PARAM(rendering.postFX.bloomFactor);
@@ -204,6 +205,7 @@ bool Configuration::toXML(const char* xmlFile) const {
         PUT_PARAM(rendering.postFX.PostAAQualityLevel);
         PUT_PARAM(rendering.postFX.enableAdaptiveToneMapping);
         PUT_PARAM(rendering.postFX.enableDepthOfField);
+        PUT_PARAM(rendering.postFX.enableScreenSpaceReflections);
         PUT_PARAM(rendering.postFX.enablePerObjectMotionBlur);
         PUT_PARAM(rendering.postFX.enableBloom);
         PUT_PARAM(rendering.postFX.bloomThreshold);

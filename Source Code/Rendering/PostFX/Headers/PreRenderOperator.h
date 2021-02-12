@@ -15,22 +15,26 @@ class ShaderProgram;
 enum class RenderStage : U8;
 
 enum class FilterType : U16 {
-    FILTER_SS_ANTIALIASING = toBit(1),
-    FILTER_SS_AMBIENT_OCCLUSION = toBit(2),
-    FILTER_SS_REFLECTIONS = toBit(3),
-    FILTER_DEPTH_OF_FIELD = toBit(4),
-    FILTER_MOTION_BLUR = toBit(5),
-    FILTER_BLOOM = toBit(6),
-    FILTER_LUT_CORECTION = toBit(7),
-    FILTER_UNDERWATER = toBit(8),
-    FILTER_NOISE = toBit(9),
-    FILTER_VIGNETTE = toBit(10),
-    FILTER_COUNT = 11
+    FILTER_SS_ANTIALIASING,
+    FILTER_SS_AMBIENT_OCCLUSION,
+    FILTER_SS_REFLECTIONS,
+    FILTER_DEPTH_OF_FIELD,
+    FILTER_MOTION_BLUR,
+    FILTER_BLOOM,
+    FILTER_LUT_CORECTION,
+    FILTER_UNDERWATER,
+    FILTER_NOISE,
+    FILTER_VIGNETTE,
+    FILTER_COUNT
 };
 
 enum class FilterSpace : U8 {
+    // HDR Space: operators that work AND MODIFY the HDR screen target (e.g. SSAO, SSR)
     FILTER_SPACE_HDR = 0,
-    FILTER_SPACE_LDR = 1,
+    // HDR Space: operators that work on the HDR target (e.g. Bloom, DoF)
+    FILTER_SPACE_HDR_POST_SS,
+    // LDR Space: operators that work on the post-tonemap target (e.g. Post-AA)
+    FILTER_SPACE_LDR,
     COUNT
 };
 
@@ -46,7 +50,6 @@ class NOINITVTABLE PreRenderOperator {
     PreRenderOperator(GFXDevice& context, PreRenderBatch& parent, FilterType operatorType);
     virtual ~PreRenderOperator() = default;
 
-    virtual void prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut);
     /// Return true if we rendered into "output"
     virtual bool execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut);
 

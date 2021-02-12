@@ -27,11 +27,6 @@ PreRenderOperator::PreRenderOperator(GFXDevice& context, PreRenderBatch& parent,
     _triangleDrawCmd = { triangleCmd };
 }
 
-void PreRenderOperator::prepare(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
-    ACKNOWLEDGE_UNUSED(camera);
-    ACKNOWLEDGE_UNUSED(bufferInOut);
-}
-
 bool PreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
     ACKNOWLEDGE_UNUSED(camera);
     ACKNOWLEDGE_UNUSED(input);

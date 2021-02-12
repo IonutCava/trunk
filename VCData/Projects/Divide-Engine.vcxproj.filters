@@ -590,6 +590,9 @@
     <ClCompile Include="..\..\Source Code\Rendering\RenderPass\RenderPassExecutor.cpp">
       <Filter>Rendering\RenderPass</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Source Code\Rendering\PostFX\CustomOperators\SSRPreRenderOperator.cpp">
+      <Filter>Rendering\PostFX\CustomOperators</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../Source Code/Rendering\Camera\Headers\Camera.h">
@@ -1043,6 +1046,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Source Code\ECS\Systems\Headers\TransformSystem.h">
       <Filter>ECS\Systems\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source Code\Rendering\PostFX\CustomOperators\Headers\SSRPreRenderOperator.h">
+      <Filter>Rendering\PostFX\CustomOperators\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2,7 +2,6 @@
 
 #include "Headers/PostFXWindow.h"
 
-#include "Core/Headers/Configuration.h"
 #include "Core/Headers/Kernel.h"
 #include "Core/Headers/PlatformContext.h"
 #include "Editor/Headers/Editor.h"
@@ -12,6 +11,7 @@
 #include "Rendering/Headers/Renderer.h"
 #include "Rendering/PostFX/CustomOperators/Headers/BloomPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/DoFPreRenderOperator.h"
+#include "Rendering/PostFX/CustomOperators/Headers/SSRPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/MotionBlurPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/PostAAPreRenderOperator.h"
 #include "Rendering/PostFX/CustomOperators/Headers/SSAOPreRenderOperator.h"
@@ -209,6 +209,20 @@ namespace {
                 PopReadOnly();
             }
             ImGui::Text("SSAO Sample Count: %d", ssaoOp.sampleCount());
+        }
+        if (ImGui::CollapsingHeader("SS Reflections")) {
+            checkBox(FilterType::FILTER_SS_REFLECTIONS);
+
+            PreRenderOperator* op = batch.getOperator(FilterType::FILTER_SS_REFLECTIONS);
+            SSRPreRenderOperator& ssrOp = static_cast<SSRPreRenderOperator&>(*op);
+            SSRPreRenderOperator::Parameters params = ssrOp.parameters();
+            bool dirty = false;
+
+            NOP();
+
+            if (dirty) {
+                ssrOp.parameters(params);
+            }
         }
         if (ImGui::CollapsingHeader("Depth of Field")) {
             checkBox(FilterType::FILTER_DEPTH_OF_FIELD);

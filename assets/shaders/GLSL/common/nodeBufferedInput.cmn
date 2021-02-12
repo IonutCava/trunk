@@ -11,10 +11,6 @@ uniform uint DATA_INDICES;
 #define MATERIAL_IDX (DATA_INDICES & 0xFFFF)
 
 //Ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBRLitSolid.glsl
-#if defined(USE_ALBEDO_ALPHA) || defined(USE_OPACITY_MAP)
-#   define HAS_TRANSPARENCY
-#endif //USE_ALBEDO_ALPHA || USE_OPACITY_MAP
-
 #include "nodeDataDefinition.cmn"
 
 layout(binding = BUFFER_NODE_TRANSFORM_DATA, std430) coherent ACCESS_R buffer dvd_TransformBlock

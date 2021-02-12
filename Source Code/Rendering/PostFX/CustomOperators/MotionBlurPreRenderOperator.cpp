@@ -72,7 +72,7 @@ bool MotionBlurPreRenderOperator::execute(const Camera* camera, const RenderTarg
     _blurApplyConstants.set(_ID("dvd_maxSamples"), GFX::PushConstantType::INT, to_I32(maxSamples()));
 
     const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
-    const auto& velocityAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
+    const auto& velocityAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
 
     const TextureData screenTex = screenAtt.texture()->data();
     const TextureData velocityTex = velocityAtt.texture()->data();

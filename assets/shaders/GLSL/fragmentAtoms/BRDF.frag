@@ -278,17 +278,15 @@ vec3 applyFog(in vec3  rgb,      // original color of the pixel
 }
 #endif //!NO_FOG
 
-/// RGB - lit colour, A - reflectivity
-vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, in uint LoD) {
+vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, in uint LoD, inout vec2 MetalnessRoughness) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
+    MetalnessRoughness = vec2(METALLIC(OMR), ROUGHNESS(OMR));
 
     switch (dvd_materialDebugFlag) {
         case DEBUG_ALBEDO:         return vec4(albedo.rgb, 1.0f);
-        case DEBUG_DEPTH:          return vec4(vec3(LinearDepth / dvd_zPlanes.y), 1.0f);
         case DEBUG_LIGHTING:       return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
         case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
         case DEBUG_UV:             return vec4(fract(uv), 0.0f, 0.0f);
-        case DEBUG_SSAO:           return vec4(vec3(SSAOFactor), 1.0f);
         case DEBUG_EMISSIVE:       return vec4(EmissiveColour(materialData), 1.0f);
         case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.0f);
         case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.0f);
@@ -311,28 +309,12 @@ vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 no
 #endif //USE_SHADING_FLAT
 
     oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData));
-#if defined(SSAO_LOD_0)
-    if (LoD < 2) {
-#endif //SSAO_LOD_0
-        oColour *= SSAOFactor;
-#if defined(SSAO_LOD_0)
-    }
-#endif//SSAO_LOD_0
     oColour += EmissiveColour(materialData);
 #if !defined(NO_FOG)
     oColour = applyFog(oColour, distance(VAR._vertexW.xyz, dvd_cameraPosition.xyz), dvd_cameraPosition.xyz, normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz));
 #endif //!NO_FOG
 
-#if defined(OIT_PASS)
-    // alpha for WOIT
-    const float extraData = albedo.a;
-#else
-    const float smoothness = 1.0f - ROUGHNESS(OMR);
-    // reflectivity (for SSR)
-    const float extraData = mix(0.0f, smoothness, METALLIC(OMR));
-#endif
-
-    return vec4(oColour, extraData);
+    return vec4(oColour, albedo.a);
 }
 
 #endif //_BRDF_FRAG_

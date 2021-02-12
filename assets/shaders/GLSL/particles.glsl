@@ -77,9 +77,9 @@ void main(){
     colour.a *= max(0.1, 1.0 - pow(softness, 2.0));
 
 #if defined(PRE_PASS)
-    writeGBuffer(colour.a, VAR._texCoord, VAR._normalWV);
+    writeGBuffer(colour.a);
 #else //PRE_PASS
-    writeScreenColour(colour);
+    writeScreenColour(colour, VAR._normalWV);
 #ensif //PRE_PASS
 
 }

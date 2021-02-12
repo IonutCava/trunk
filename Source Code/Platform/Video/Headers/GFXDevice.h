@@ -177,12 +177,12 @@ class GFXDevice final : public KernelComponent, public PlatformContextComponent 
 public:
     enum class ScreenTargets : U8 {
         ALBEDO = 0,
-        NORMALS_AND_VELOCITY = 1,
-        EXTRA = 2,
+        VELOCITY,
+        NORMALS_AND_MATERIAL_PROPERTIES,
+        MODULATE,
         COUNT,
-        MODULATE = EXTRA,
         ACCUMULATION = ALBEDO,
-        REVEALAGE = NORMALS_AND_VELOCITY,
+        REVEALAGE = VELOCITY,
     };
 
     using ObjectArena = MyArena<Config::REQUIRED_RAM_SIZE / 4>;
@@ -236,6 +236,7 @@ public:  // GPU interface
     inline const Rect<I32>& getViewport() const noexcept;
 
     void setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>& projection) noexcept;
+    mat4<F32> getPreviousViewProjection() const;
 
     inline F32 renderingAspectRatio() const noexcept;
     inline const vec2<U16>& renderingResolution() const noexcept;

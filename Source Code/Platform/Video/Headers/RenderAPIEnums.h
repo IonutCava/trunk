@@ -49,20 +49,22 @@ enum class RenderAPI : U8 {
 
 enum class RenderTargetUsage : U8 {
     SCREEN = 0,
-    SCREEN_MS = 1,
-    OIT = 2,
-    OIT_MS = 3,
-    OIT_REFLECT = 4,
-    HI_Z = 5,
-    HI_Z_REFLECT = 6,
-    REFLECTION_PLANAR = 7,
-    REFLECTION_PLANAR_BLUR = 8,
-    REFRACTION_PLANAR = 9,
-    REFLECTION_CUBE = 10,
-    ENVIRONMENT = 11,
-    SHADOW = 12,
-    EDITOR = 13,
-    OTHER = 14,
+    SCREEN_MS,
+    OIT,
+    OIT_MS,
+    OIT_REFLECT,
+    POSTFX_DATA,
+    SSR_RESULT,
+    HI_Z,
+    HI_Z_REFLECT,
+    REFLECTION_PLANAR,
+    REFLECTION_PLANAR_BLUR,
+    REFRACTION_PLANAR,
+    REFLECTION_CUBE,
+    ENVIRONMENT,
+    SHADOW,
+    EDITOR,
+    OTHER,
     COUNT
 };
 /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
@@ -81,7 +83,7 @@ enum class TextureUsage : U8 {
     PROJECTION = 11,
     REFLECTION_PLANAR = 12,
     REFRACTION_PLANAR = 13,
-    GBUFFER_EXTRA = 14,
+    POST_FX_DATA = 14,
     SCENE_NORMALS = 15,
     COUNT,
 };
@@ -89,7 +91,7 @@ enum class TextureUsage : U8 {
 namespace Names {
     static const char* textureUsage[] = {
         "UNIT0", "NORMALMAP", "HEIGHTMAP", "SHADOW_LAYERED", "DEPTH", "SHADOW_SINGLE", "REFLECTION_CUBE", "SHADOW_CUBE", "OPACITY",
-        "OCCLUSION_METALLIC_ROUGHNESS", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "GBUFFER_EXTRA", "SCENE_NORMALS", "NONE"
+        "OCCLUSION_METALLIC_ROUGHNESS", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "POST_FX_DATA", "SCENE_NORMALS", "NONE"
     };
 };
 

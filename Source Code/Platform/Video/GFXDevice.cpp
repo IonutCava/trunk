@@ -270,33 +270,43 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     defaultSampler.anisotropyLevel(0);
     const size_t samplerHash = defaultSampler.getHash();
 
-    SamplerDescriptor depthSampler = defaultSampler;
-    depthSampler.anisotropyLevel(0);
-    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor normAndVelDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
-    TextureDescriptor gBufferDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
-    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+    SamplerDescriptor defaultSamplerMis = {};
+    defaultSamplerMis.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
+    defaultSamplerMis.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    defaultSamplerMis.magFilter(TextureFilter::LINEAR);
+    defaultSamplerMis.anisotropyLevel(0);
+    const size_t samplerHashMips = defaultSamplerMis.getHash();
 
-    screenDescriptor.mipCount(1u);
-    normAndVelDescriptor.mipCount(1u);
-    gBufferDescriptor.mipCount(1u);
+    //PrePass
+    TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
+    TextureDescriptor velocityDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
     depthDescriptor.mipCount(1u);
+    velocityDescriptor.mipCount(1u);
+
+    //MainPass
+    TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    TextureDescriptor normalsAndMaterialDataDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    screenDescriptor.autoMipMaps(false);
+    normalsAndMaterialDataDescriptor.mipCount(1u);
 
     // Normal and MSAA
     for (U8 i = 0; i < 2; ++i) {
         const U8 sampleCount = i == 0 ? 0 : config.rendering.MSAASamples;
+        const size_t screenSampler = i == 0 ? samplerHashMips : samplerHash;
+        screenDescriptor.mipCount(i == 0 ? std::numeric_limits<U16>::max() : 1u);
 
         screenDescriptor.msaaSamples(sampleCount);
         depthDescriptor.msaaSamples(sampleCount);
-        normAndVelDescriptor.msaaSamples(sampleCount);
-        gBufferDescriptor.msaaSamples(sampleCount);
+        normalsAndMaterialDataDescriptor.msaaSamples(sampleCount);
+        velocityDescriptor.msaaSamples(sampleCount);
 
         {
+
             RTAttachmentDescriptors attachments = {
-                { screenDescriptor,     samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO), DefaultColours::DIVIDE_BLUE },
-                { normAndVelDescriptor, samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY), VECTOR4_ZERO },
-                { gBufferDescriptor,    samplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA), vec4<F32>(1.0f, 0.0f, 0.0f, 0.0f) },
-                { depthDescriptor,      samplerHash, RTAttachmentType::Depth }
+                { screenDescriptor,                 screenSampler, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO),   DefaultColours::DIVIDE_BLUE },
+                { velocityDescriptor,               samplerHash,   RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY), VECTOR4_ZERO },
+                { normalsAndMaterialDataDescriptor, samplerHash,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), VECTOR4_ZERO },
+                { depthDescriptor,                  samplerHash,   RTAttachmentType::Depth }
             };
 
             RenderTargetDescriptor screenDesc = {};
@@ -311,6 +321,41 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         }
     }
 
+    {
+        //R = SSAO, G = Linear depth
+        TextureDescriptor postFXDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::FLOAT_16);
+        postFXDescriptor.mipCount(1u);
+
+        RTAttachmentDescriptors attachments = {
+            { postFXDescriptor, samplerHash, RTAttachmentType::Colour, 0u, vec4<F32>{1.f, 0.f, 0.f, 0.f} }
+        };
+
+        RenderTargetDescriptor postFXDesc = {};
+        postFXDesc._name = "PostFXData";
+        postFXDesc._resolution = renderResolution;
+        postFXDesc._attachmentCount = to_U8(attachments.size());
+        postFXDesc._attachments = attachments.data();
+        postFXDesc._msaaSamples = 0u;
+        _rtPool->allocateRT(RenderTargetUsage::POSTFX_DATA, postFXDesc);
+    }
+
+    {
+        TextureDescriptor ssrDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
+        ssrDescriptor.mipCount(1u);
+
+        RTAttachmentDescriptors attachments = {
+            { ssrDescriptor, samplerHash, RTAttachmentType::Colour, 0u, VECTOR4_ZERO }
+        };
+
+        RenderTargetDescriptor ssrResultDesc = {};
+        ssrResultDesc._name = "SSR Result";
+        ssrResultDesc._resolution = renderResolution;
+        ssrResultDesc._attachmentCount = to_U8(attachments.size());
+        ssrResultDesc._attachments = attachments.data();
+        ssrResultDesc._msaaSamples = 0u;
+        _rtPool->allocateRT(RenderTargetUsage::SSR_RESULT, ssrResultDesc);
+        
+    }
     const U32 reflectRes = nextPOW2(CLAMPED(to_U32(config.rendering.reflectionPlaneResolution), 16u, 4096u) - 1u);
 
     TextureDescriptor hiZDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
@@ -416,12 +461,13 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     TextureDescriptor accumulationDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     accumulationDescriptor.mipCount(1u);
 
+    //R = revealage
     TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
     revealageDescriptor.mipCount(1u);
 
     RTAttachmentDescriptors oitAttachments = {
         { accumulationDescriptor, accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::ACCUMULATION), VECTOR4_ZERO },
-        { revealageDescriptor,    accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), VECTOR4_UNIT }
+        { revealageDescriptor,    accumulationSamplerHash, RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE), vec4<F32>{1.f, 0.f, 0.f, 0.f} },
     };
 
     for (U8 i = 0; i < 2; ++i) 
@@ -432,9 +478,11 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         oitAttachments[1]._texDescriptor.msaaSamples(sampleCount);
 
         const RenderTarget& screenTarget = _rtPool->renderTarget(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS);
+        const RTAttachment_ptr& screenNormalsAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
         
         vectorEASTL<ExternalRTAttachmentDescriptor> externalAttachments = {
+            { screenNormalsAttachment, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES) },
             { screenDepthAttachment,  RTAttachmentType::Depth }
         };
 
@@ -1060,85 +1108,83 @@ void GFXDevice::blurTarget(RenderTargetHandle& blurSource,
                            const U8 layerCount,
                            GFX::CommandBuffer& bufferInOut)
 {
+    const auto& inputAttachment = blurSource._rt->getAttachment(att, index);
+    const auto& bufferAttachment = blurBuffer._rt->getAttachment(att, index);
+
+    GFX::BeginRenderPassCommand beginRenderPassCmd{};
+    GFX::SendPushConstantsCommand pushConstantsCommand{};
+    GFX::BindDescriptorSetsCommand descriptorSetCmd{};
     GenericDrawCommand drawCmd = {};
     drawCmd._primitiveType = gaussian ? PrimitiveType::API_POINTS : PrimitiveType::TRIANGLES;
-
-    // Blur horizontally
-    GFX::BeginRenderPassCommand beginRenderPassCmd;
-    beginRenderPassCmd._target = blurBuffer._targetID;
-    beginRenderPassCmd._name = "BLUR_RENDER_TARGET_HORIZONTAL";
-    EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    const auto& attachment = blurSource._rt->getAttachment(att, index);
-    const TextureData data = attachment.texture()->data();
-    const size_t sampler = attachment.samplerHash();
-
-    EnqueueCommand(bufferInOut, GFX::BindPipelineCommand {
-                       gaussian ? (layerCount > 1 ? _BlurGaussianPipelineLayered : _BlurGaussianPipelineSingle)
-                           : layerCount > 1 ? _BlurBoxPipelineLayered : _BlurBoxPipelineSingle
-                   });
-
-    GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-    descriptorSetCmd._set._textureData.add({ data, sampler, TextureUsage::UNIT0 });
-    EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-    GFX::SendPushConstantsCommand pushConstantsCommand;
-    pushConstantsCommand._constants.countHint(4);
-    pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, false);
-    if (gaussian) {
-        pushConstantsCommand._constants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, vec2<F32>(1.0f / blurBuffer._rt->getResolution().width, 1.0f / blurBuffer._rt->getResolution().height));
-        pushConstantsCommand._constants.set(_ID("layerCount"), GFX::PushConstantType::INT, to_I32(layerCount));
-        pushConstantsCommand._constants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
-        pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);
-    } else {
-        pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
-        pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
-        if (layerCount > 1) {
-            pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, 0);
-        }
-    }
-    EnqueueCommand(bufferInOut, pushConstantsCommand);
-
     const U8 loopCount = gaussian ? 1u : layerCount;
 
-    for (U8 loop = 0u; loop < loopCount; ++loop) {
-        if (!gaussian && loop > 0u) {
-            pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, to_I32(loop));
-            EnqueueCommand(bufferInOut, pushConstantsCommand);
+    {// Blur horizontally
+        beginRenderPassCmd._target = blurBuffer._targetID;
+        beginRenderPassCmd._name = "BLUR_RENDER_TARGET_HORIZONTAL";
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{
+                           gaussian ? (layerCount > 1 ? _BlurGaussianPipelineLayered : _BlurGaussianPipelineSingle)
+                               : layerCount > 1 ? _BlurBoxPipelineLayered : _BlurBoxPipelineSingle
+            });
+
+        descriptorSetCmd._set._textureData.add({ inputAttachment.texture()->data(), inputAttachment.samplerHash(), TextureUsage::UNIT0 });
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        pushConstantsCommand._constants.countHint(4);
+        pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, false);
+        if (gaussian) {
+            vec2<F32> blurSize(1.0f / blurBuffer._rt->getResolution().width, 1.0f / blurBuffer._rt->getResolution().height);
+            pushConstantsCommand._constants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, blurSize);
+            pushConstantsCommand._constants.set(_ID("layerCount"), GFX::PushConstantType::INT, to_I32(layerCount));
+            pushConstantsCommand._constants.set(_ID("layerOffsetRead"), GFX::PushConstantType::INT, 0);
+            pushConstantsCommand._constants.set(_ID("layerOffsetWrite"), GFX::PushConstantType::INT, 0);
+        } else {
+            pushConstantsCommand._constants.set(_ID("kernelSize"), GFX::PushConstantType::INT, kernelSize);
+            pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurBuffer._rt->getResolution()));
+            if (layerCount > 1) {
+                pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, 0);
+            }
         }
-        EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
-    }
+        EnqueueCommand(bufferInOut, pushConstantsCommand);
 
-    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
-
-    // Blur vertically
-    beginRenderPassCmd._target = blurTarget._targetID;
-    beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
-    EnqueueCommand(bufferInOut, beginRenderPassCmd);
-
-    pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, true);
-    if (gaussian) {
-        pushConstantsCommand._constants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, vec2<F32>(1.0f / blurTarget._rt->getResolution().width, 1.0f / blurTarget._rt->getResolution().height));
-    } else {
-        pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
-    }
-
-    const auto& attachment2 = blurSource._rt->getAttachment(att, index);
-    const TextureData data2 = attachment2.texture()->data();
-    const size_t sampler2 = attachment2.samplerHash();
-    descriptorSetCmd._set._textureData.add({ data2, sampler2, TextureUsage::UNIT0 });
-    EnqueueCommand(bufferInOut, descriptorSetCmd);
-
-    EnqueueCommand(bufferInOut, pushConstantsCommand);
-    for (U8 loop = 0u; loop < loopCount; ++loop) {
-        if (!gaussian && loop > 0u) {
-            pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, to_I32(loop));
-            EnqueueCommand(bufferInOut, pushConstantsCommand);
+        for (U8 loop = 0u; loop < loopCount; ++loop) {
+            if (!gaussian && loop > 0u) {
+                pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, to_I32(loop));
+                EnqueueCommand(bufferInOut, pushConstantsCommand);
+            }
+            EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
         }
-        EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
-    }
 
-    EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    }
+    {// Blur vertically
+        beginRenderPassCmd._target = blurTarget._targetID;
+        beginRenderPassCmd._name = "BLUR_RENDER_TARGET_VERTICAL";
+        EnqueueCommand(bufferInOut, beginRenderPassCmd);
+
+        pushConstantsCommand._constants.set(_ID("verticalBlur"), GFX::PushConstantType::INT, true);
+        if (gaussian) {
+            vec2<F32> blurSize(1.0f / blurTarget._rt->getResolution().width, 1.0f / blurTarget._rt->getResolution().height);
+            pushConstantsCommand._constants.set(_ID("blurSizes"), GFX::PushConstantType::VEC2, blurSize);
+        } else {
+            pushConstantsCommand._constants.set(_ID("size"), GFX::PushConstantType::VEC2, vec2<F32>(blurTarget._rt->getResolution()));
+        }
+
+        descriptorSetCmd._set._textureData.add({ bufferAttachment.texture()->data(), bufferAttachment.samplerHash(), TextureUsage::UNIT0 });
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        EnqueueCommand(bufferInOut, pushConstantsCommand);
+        for (U8 loop = 0u; loop < loopCount; ++loop) {
+            if (!gaussian && loop > 0u) {
+                pushConstantsCommand._constants.set(_ID("layer"), GFX::PushConstantType::INT, to_I32(loop));
+                EnqueueCommand(bufferInOut, pushConstantsCommand);
+            }
+            EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
+        }
+
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+    }
 }
 #pragma endregion
 
@@ -1241,6 +1287,8 @@ bool GFXDevice::onSizeChange(const SizeChangeParams& params) {
         // Update render targets with the new resolution
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::SCREEN_MS, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::POSTFX_DATA, w, h);
+        _rtPool->resizeTargets(RenderTargetUsage::SSR_RESULT, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::HI_Z, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT, w, h);
         _rtPool->resizeTargets(RenderTargetUsage::OIT_MS, w, h);
@@ -1304,6 +1352,7 @@ void GFXDevice::uploadGPUBlock() {
 
     if (_gpuBlock._needsUpload) {
         _gpuBlock._needsUpload = false;
+        _gpuBlock._data._otherProperties.x = materialDebugFlag();
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         _gfxDataBuffer->incQueue();
@@ -1382,14 +1431,8 @@ void GFXDevice::renderFromCamera(const CameraSnapshot& cameraSnapshot) {
         needsUpdate = true;
     }
 
-    const vec4<F32> otherProperties(
-        to_F32(materialDebugFlag()),
-        reserved,
-        to_F32(cameraSnapshot._flag),
-        data._otherProperties.w);
-
-    if (data._otherProperties != otherProperties) {
-        data._otherProperties.set(otherProperties);
+    if (to_U8(data._otherProperties.z) != cameraSnapshot._flag) {
+        data._otherProperties.z = to_F32(cameraSnapshot._flag);
         needsUpdate = true;
     }
 
@@ -1427,6 +1470,10 @@ bool GFXDevice::setViewport(const Rect<I32>& viewport) {
 void GFXDevice::setPreviousViewProjection(const mat4<F32>& view, const mat4<F32>& projection) noexcept {
     mat4<F32>::Multiply(view, projection, _gpuBlock._data._PreviousViewProjectionMatrix);
     _gpuBlock._needsUpload = true;
+}
+
+mat4<F32> GFXDevice::getPreviousViewProjection() const {
+    return _gpuBlock._data._PreviousViewProjectionMatrix;
 }
 
 const GFXShaderData::GPUData& GFXDevice::renderingData() const noexcept {
@@ -1892,47 +1939,38 @@ void GFXDevice::initDebugViews() {
 
         DebugView_ptr NormalPreview = std::make_shared<DebugView>();
         NormalPreview->_shader = _renderTargetDraw;
-        NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
-        NormalPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).samplerHash();
+        NormalPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)).texture();
+        NormalPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)).samplerHash();
         NormalPreview->_name = "Normals";
         NormalPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        NormalPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        NormalPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
+        NormalPreview->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, true);
         NormalPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        NormalPreview->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 2u);
         NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
         VelocityPreview->_shader = _renderTargetDraw;
-        VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).texture();
-        VelocityPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_VELOCITY)).samplerHash();
+        VelocityPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).texture();
+        VelocityPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY)).samplerHash();
         VelocityPreview->_name = "Velocity Map";
         VelocityPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        VelocityPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        VelocityPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        VelocityPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 2u);
+        VelocityPreview->_shaderData.set(_ID("scaleAndBias"), GFX::PushConstantType::BOOL, true);
+        VelocityPreview->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
+        VelocityPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        VelocityPreview->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 2u);
         VelocityPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 5.0f);
 
+        NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
-        SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
-        SSAOPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).samplerHash();
+        SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::POSTFX_DATA)).getAttachment(RTAttachmentType::Colour, 0u).texture();
+        SSAOPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::POSTFX_DATA)).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
         SSAOPreview->_name = "SSAO Map";
         SSAOPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        SSAOPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
-        SSAOPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        SSAOPreview->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
         SSAOPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        SSAOPreview->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 1u);
         SSAOPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
-
-        DebugView_ptr FlagPreview = std::make_shared<DebugView>();
-        FlagPreview->_shader = _renderTargetDraw;
-        FlagPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).texture();
-        FlagPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::EXTRA)).samplerHash();
-        FlagPreview->_name = "Flag Map";
-        FlagPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        FlagPreview->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
-        FlagPreview->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        FlagPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 3u);
-        FlagPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr AlphaAccumulationHigh = std::make_shared<DebugView>();
         AlphaAccumulationHigh->_shader = _renderTargetDraw;
@@ -1940,9 +1978,9 @@ void GFXDevice::initDebugViews() {
         AlphaAccumulationHigh->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).samplerHash();
         AlphaAccumulationHigh->_name = "Alpha Accumulation High";
         AlphaAccumulationHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        AlphaAccumulationHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        AlphaAccumulationHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
         AlphaAccumulationHigh->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        AlphaAccumulationHigh->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 4u);
         AlphaAccumulationHigh->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr AlphaRevealageHigh = std::make_shared<DebugView>();
@@ -1951,32 +1989,10 @@ void GFXDevice::initDebugViews() {
         AlphaRevealageHigh->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).samplerHash();
         AlphaRevealageHigh->_name = "Alpha Revealage High";
         AlphaRevealageHigh->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        AlphaRevealageHigh->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
-        AlphaRevealageHigh->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
         AlphaRevealageHigh->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        AlphaRevealageHigh->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 1u);
         AlphaRevealageHigh->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
-
-        //DebugView_ptr AlphaAccumulationLow = std::make_shared<DebugView>();
-        //AlphaAccumulationLow->_shader = _renderTargetDraw;
-        //AlphaAccumulationLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).texture();
-        //AlphaAccumulationLow->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO)).samplerHash();
-        //AlphaAccumulationLow->_name = "Alpha Accumulation Low";
-        //AlphaAccumulationLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        //AlphaAccumulationLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaAccumulationLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaAccumulationLow->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaAccumulationLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
-
-        //DebugView_ptr AlphaRevealageLow = std::make_shared<DebugView>();
-        //AlphaRevealageLow->_shader = _renderTargetDraw;
-        //AlphaRevealageLow->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).texture();
-        //AlphaRevealageLow->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::OIT_QUARTER_RES)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::REVEALAGE)).samplerHash();
-        //AlphaRevealageLow->_name = "Alpha Revealage Low";
-        //AlphaRevealageLow->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        //AlphaRevealageLow->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
-        //AlphaRevealageLow->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaRevealageLow->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
-        //AlphaRevealageLow->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         SamplerDescriptor lumanSampler = {};
         lumanSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
@@ -1990,9 +2006,9 @@ void GFXDevice::initDebugViews() {
         Luminance->_samplerHash = lumanSampler.getHash();
         Luminance->_name = "Luminance";
         Luminance->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        Luminance->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 1u);
-        Luminance->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 0u);
+        Luminance->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
         Luminance->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        Luminance->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 1u);
         Luminance->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr Edges = std::make_shared<DebugView>();
@@ -2001,9 +2017,9 @@ void GFXDevice::initDebugViews() {
         Edges->_samplerHash = renderTargetPool().renderTarget(getRenderer().postFX().getFilterBatch().edgesRT()).getAttachment(RTAttachmentType::Colour, 0u).samplerHash();
         Edges->_name = "Edges";
         Edges->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
-        Edges->_shaderData.set(_ID("unpack1Channel"), GFX::PushConstantType::UINT, 0u);
-        Edges->_shaderData.set(_ID("unpack2Channel"), GFX::PushConstantType::UINT, 1u);
+        Edges->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
         Edges->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        Edges->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 4u);
         Edges->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         HiZView = addDebugView(HiZ);
@@ -2011,11 +2027,8 @@ void GFXDevice::initDebugViews() {
         addDebugView(NormalPreview);
         addDebugView(VelocityPreview);
         addDebugView(SSAOPreview);
-        addDebugView(FlagPreview);
         addDebugView(AlphaAccumulationHigh);
         addDebugView(AlphaRevealageHigh);
-        //addDebugView(AlphaAccumulationLow);
-        //addDebugView(AlphaRevealageLow);
         addDebugView(Luminance);
         addDebugView(Edges);
         WAIT_FOR_CONDITION(_previewDepthMapShader->getState() == ResourceState::RES_LOADED);

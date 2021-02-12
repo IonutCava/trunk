@@ -12,7 +12,9 @@ layout(location = TARGET_ALBEDO) out vec4 _colourOut;
 void main() {
     ivec2 C = ivec2(gl_FragCoord.xy);
 
-    float revealage = texelFetch(revealageTexture, C, 0).r;
+    const vec2 revIn = texelFetch(revealageTexture, C, 0).rg;
+    const float revealage = revIn.r;
+
     if (revealage >= INV_Z_TEST_SIGMA) {
         // Save the blending and color texture fetch cost
         discard;

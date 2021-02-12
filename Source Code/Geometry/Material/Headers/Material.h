@@ -75,17 +75,14 @@ constexpr U8 g_TransparentSlots[] = {
 
 constexpr U8 g_ExtraSlots[] = {
     to_base(TextureUsage::UNIT1),
+    to_base(TextureUsage::NORMALMAP),
     to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS),
     to_base(TextureUsage::HEIGHTMAP),
     to_base(TextureUsage::PROJECTION)
 };
 
-constexpr U8 g_AdditionalSlots[] = {
-    to_base(TextureUsage::NORMALMAP)
-};
-
 static constexpr [[nodiscard]] size_t GetMaterialTextureCount() noexcept {
-    return (sizeof(g_TransparentSlots) + sizeof(g_ExtraSlots) + sizeof(g_AdditionalSlots)) / sizeof(TextureUsage);
+    return (sizeof(g_TransparentSlots) + sizeof(g_ExtraSlots)) / sizeof(TextureUsage);
 }
 
 namespace TypeUtil {

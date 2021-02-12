@@ -140,7 +140,7 @@ namespace Divide {
                     member._name = newName.substr(3, newName.length() - 3);
                     member._nameHash = _ID(member._name.c_str());
                 }
-                if (member._arraySize > 1 && Util::GetTrailingCharacters(member._name, 3) == "[0]") {
+                if (member._arraySize >= 1 && Util::GetTrailingCharacters(member._name, 3) == "[0]") {
                     // Array uniform. Use non-indexed version as an equally-valid alias
                     const stringImpl newName = member._name.c_str();
                     member._name = newName.substr(0, newName.length() - 3);

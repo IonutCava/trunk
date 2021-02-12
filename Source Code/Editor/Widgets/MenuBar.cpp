@@ -52,6 +52,8 @@ namespace {
         switch (usage) {
             case RenderTargetUsage::EDITOR: return "Editor";
             case RenderTargetUsage::ENVIRONMENT: return "Environment";
+            case RenderTargetUsage::POSTFX_DATA: return "PostFX Data";
+            case RenderTargetUsage::SSR_RESULT: return "SSR Result";
             case RenderTargetUsage::HI_Z: return "HI-Z";
             case RenderTargetUsage::HI_Z_REFLECT: return "HI-Z Reflect";
             case RenderTargetUsage::OIT: return "OIT";
@@ -544,8 +546,8 @@ void MenuBar::drawPostFXMenu() const {
     if (ImGui::BeginMenu("PostFX"))
     {
         PostFX& postFX = _context.gfx().getRenderer().postFX();
-        for (U16 i = 1; i < to_base(FilterType::FILTER_COUNT); ++i) {
-            const FilterType f = static_cast<FilterType>(toBit(i));
+        for (U16 i = 0u; i < to_base(FilterType::FILTER_COUNT); ++i) {
+            const FilterType f = static_cast<FilterType>(i);
 
             bool filterEnabled = postFX.getFilterState(f);
             if (ImGui::MenuItem(PostFX::FilterName(f), nullptr, &filterEnabled)) {

@@ -68,8 +68,8 @@ void GUISplash::render(GFXDevice& context) const {
 
     GFX::SendPushConstantsCommand pushConstantsCommand = {};
     pushConstantsCommand._constants.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 1.f);
-    pushConstantsCommand._constants.set(_ID("unpack2Channel"), GFX::PushConstantType::BOOL, false);
-    pushConstantsCommand._constants.set(_ID("unpack1Channel"), GFX::PushConstantType::BOOL, false);
+    pushConstantsCommand._constants.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
+    pushConstantsCommand._constants.set(_ID("channelCount"), GFX::PushConstantType::UINT, 4u);
     pushConstantsCommand._constants.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
     pushConstantsCommand._constants.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.f);
     EnqueueCommand(buffer, pushConstantsCommand);

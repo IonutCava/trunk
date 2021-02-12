@@ -477,37 +477,14 @@ void main(void)
 #endif //TOGGLE_NORMALS
 }
 
---Fragment.PrePass
-
-layout(location = 10) in flat uint dvd_LoD;
-
-#if defined(TOGGLE_DEBUG)
-layout(location = 11) in vec3 gs_wireColor;
-layout(location = 12) noperspective in vec4 gs_edgeDist;  //w - patternValue
-#endif //TOGGLE_DEBUG
-
-#define USE_CUSTOM_NORMAL_MAP
-#define USE_CUSTOM_TBN
-
-#include "prePass.frag"
-#include "terrainSplatting.frag"
-
-void main(void)
-{
-    vec3 normalWV;
-    vec4 albedo = BuildTerrainData(normalWV);
-
-    writeGBuffer(1.0f, VAR._texCoord, normalWV);
-}
-
 --Fragment
 
 layout(early_fragment_tests) in;
 
 #define USE_CUSTOM_ROUGHNESS
 #define SHADOW_INTENSITY_FACTOR 0.5f
-#define SSAO_LOD_0
 #define USE_CUSTOM_TBN
+#define SKIP_TEX1
 
 layout(location = 10) in flat uint dvd_LoD;
 
@@ -540,6 +517,7 @@ void main(void) {
     const vec4 albedo = BuildTerrainData(normalWV);
     _private_roughness = albedo.a;
 
+    vec2 MetalnessRoughness = vec2(0.f, 1.f);
 #if defined (TOGGLE_LODS)
     vec4 colourOut = vec4(0.0f);
     switch (dvd_LoD) {
@@ -562,7 +540,7 @@ void main(void) {
     }
 #else //TOGGLE_BLEND_MAP
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, dvd_LoD);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, dvd_LoD, MetalnessRoughness);
 #endif //TOGGLE_BLEND_MAP
 #endif //TOGGLE_TESS_LEVEL
 
@@ -582,5 +560,5 @@ void main(void) {
 #endif //TOGGLE_DEBUG
 
 #endif //TOGGLE_LODS
-    writeScreenColour(colourOut);
+    writeScreenColour(colourOut, normalWV, MetalnessRoughness);
 }

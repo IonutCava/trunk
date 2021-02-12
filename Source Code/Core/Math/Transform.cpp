@@ -4,11 +4,6 @@
 
 namespace Divide {
 
-Transform::Transform() noexcept
-    : Transform(Quaternion<F32>(), vec3<F32>(0.0f), vec3<F32>(1.0f))
-{
-}
-
 Transform::Transform(const Quaternion<F32>& orientation, const vec3<F32>& translation, const vec3<F32>& scale)
 {
     _transformValues._scale.set(scale);
@@ -74,9 +69,9 @@ void Transform::setTransforms(const mat4<F32>& transform) {
     // build a 3x3 rotation matrix and generate the rotation quaternion from it
     _transformValues._orientation = Quaternion<F32>
     {
-mat3<F32>(vRows[0].x, vRows[1].x, vRows[2].x,
-                     vRows[0].y, vRows[1].y, vRows[2].y,
-                     vRows[0].z, vRows[1].z, vRows[2].z)
+        mat3<F32>(vRows[0].x, vRows[1].x, vRows[2].x,
+                  vRows[0].y, vRows[1].y, vRows[2].y,
+                  vRows[0].z, vRows[1].z, vRows[2].z)
     };
 }
 

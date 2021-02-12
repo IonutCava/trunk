@@ -565,21 +565,12 @@ void RenderPassExecutor::mainPass(const VisibleNodeList<>& nodes, const RenderPa
 
         _context.getRenderer().preRender(stagePass, hizTex, hizSampler, activeLightPool, params._camera, bufferInOut);
 
-        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        if (_stage == RenderStage::DISPLAY) {
-            assert(prePassExecuted);
-            const auto& normAtt = nonMSTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY));
-            const auto& gbufferAtt = nonMSTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA));
-
-            const TextureData normals = normAtt->texture()->data();
-            const TextureData extra = gbufferAtt->texture()->data();
-            descriptorSetCmd._set._textureData.add({ normals, normAtt->samplerHash(), TextureUsage::SCENE_NORMALS });
-            descriptorSetCmd._set._textureData.add({ extra, gbufferAtt->samplerHash(), TextureUsage::GBUFFER_EXTRA });
-        }
-
         if (hasHiZ) {
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             descriptorSetCmd._set._textureData.add({ hizTex->data(), hizSampler, TextureUsage::DEPTH });
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
         } else if (prePassExecuted) {
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
             if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
                 const auto& depthAtt = nonMSTarget.getAttachment(RTAttachmentType::Depth, 0);
                 descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
@@ -587,9 +578,8 @@ void RenderPassExecutor::mainPass(const VisibleNodeList<>& nodes, const RenderPa
                 const auto& depthAtt = target.getAttachment(RTAttachmentType::Depth, 0);
                 descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
             }
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
         }
-
-        EnqueueCommand(bufferInOut, descriptorSetCmd);
 
         const bool layeredRendering = params._layerParams._layer > 0;
 
@@ -661,12 +651,18 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
             state1._blendProperties._blendDest = BlendProperty::INV_SRC_COLOR;
             state1._blendProperties._blendOp = BlendOperation::ADD;
 
+            RTBlendState& state2 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)];
+            state2._blendProperties._enabled = true;
+            state2._blendProperties._blendSrc = BlendProperty::ONE;
+            state2._blendProperties._blendDest = BlendProperty::ONE;
+            state2._blendProperties._blendOp = BlendOperation::ADD;
+
             if_constexpr(Config::USE_COLOURED_WOIT) {
-                RTBlendState& state2 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::EXTRA)];
-                state2._blendProperties._enabled = true;
-                state2._blendProperties._blendSrc = BlendProperty::ONE;
-                state2._blendProperties._blendDest = BlendProperty::ONE;
-                state2._blendProperties._blendOp = BlendOperation::ADD;
+                RTBlendState& state3 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::MODULATE)];
+                state3._blendProperties._enabled = true;
+                state3._blendProperties._blendSrc = BlendProperty::ONE;
+                state3._blendProperties._blendDest = BlendProperty::ONE;
+                state3._blendProperties._blendOp = BlendOperation::ADD;
             }
         }
         EnqueueCommand(bufferInOut, setBlendStateCmd);
@@ -704,7 +700,7 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
         GFX::BeginRenderPassCommand beginRenderPassCompCmd = {};
         beginRenderPassCompCmd._name = "DO_OIT_PASS_2";
         beginRenderPassCompCmd._target = params._target;
-        beginRenderPassCompCmd._descriptor = params._targetDescriptorMainPass;
+        beginRenderPassCompCmd._descriptor = params._targetDescriptorComposition;
         EnqueueCommand(bufferInOut, beginRenderPassCompCmd);
 
         if (layeredRendering) {
@@ -934,14 +930,8 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
         GFX::BlitRenderTargetCommand blitScreenDepthCmd = {};
         blitScreenDepthCmd._source = sourceID;
         blitScreenDepthCmd._destination = targetID;
-
-        for (U8 i = 1; i < to_base(GFXDevice::ScreenTargets::COUNT); ++i) {
-            blitScreenDepthCmd._blitColours[i - 1].set(i, i, 0u, 0u);
-        }
-
-        DepthBlitEntry entry;
-        entry._inputLayer = entry._outputLayer = 0u;
-        blitScreenDepthCmd._blitDepth = entry;
+        blitScreenDepthCmd._blitDepth._inputLayer = 0u;
+        blitScreenDepthCmd._blitDepth._outputLayer = 0u;
         EnqueueCommand(bufferInOut, blitScreenDepthCmd);
 
         sourceID = targetID;
@@ -953,11 +943,6 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
         occlusionPass(visibleNodes, visibleNodeCount, params._stagePass, *params._camera, sourceID, params._targetHIZ, bufferInOut);
     }
 #   pragma endregion
-
-    if (_stage == RenderStage::DISPLAY) {
-        //ToDo: Might be worth having pre-pass operations per render stage, but currently, only the main pass needs SSAO, bloom and so forth
-        _context.getRenderer().postFX().prepare(params._camera, bufferInOut);
-    }
 
 #   pragma region MAIN_PASS
     // Same as for PRE_PASS. Subsequent operations expect a certain state
@@ -979,16 +964,13 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
 
     // If we rendered to the multisampled screen target, we can now copy the colour to our regular buffer as we are done with it at this point
     if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
-        sourceID = params._target;
-        const RenderTargetID targetID = { RenderTargetUsage::SCREEN, params._target._index };
-
-        GFX::BlitRenderTargetCommand blitScreenDepthCmd = {};
-        blitScreenDepthCmd._source = sourceID;
-        blitScreenDepthCmd._destination = targetID;
-
-        blitScreenDepthCmd._blitColours[0].set(to_U16(GFXDevice::ScreenTargets::ALBEDO), to_U16(GFXDevice::ScreenTargets::ALBEDO), 0u, 0u);
-
-        EnqueueCommand(bufferInOut, blitScreenDepthCmd);
+        GFX::BlitRenderTargetCommand blitScreenColourCmd = {};
+        blitScreenColourCmd._source = params._target;
+        blitScreenColourCmd._destination = { RenderTargetUsage::SCREEN, 0u };
+        blitScreenColourCmd._blitColours[0].set(to_U16(GFXDevice::ScreenTargets::ALBEDO), to_U16(GFXDevice::ScreenTargets::ALBEDO), 0u, 0u);
+        blitScreenColourCmd._blitColours[1].set(to_U16(GFXDevice::ScreenTargets::VELOCITY), to_U16(GFXDevice::ScreenTargets::VELOCITY), 0u, 0u);
+        blitScreenColourCmd._blitColours[2].set(to_U16(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), to_U16(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), 0u, 0u);
+        EnqueueCommand(bufferInOut, blitScreenColourCmd);
     }
 
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});

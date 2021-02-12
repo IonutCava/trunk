@@ -4,19 +4,16 @@
 
 #define NEED_SCENE_DATA
 #include "sceneData.cmn"
-out vec4 _colourOut;
+layout(location = TARGET_ALBEDO) out vec4 _colourOut;
 
 layout(binding = TEX_BIND_POINT_SCREEN)     uniform sampler2D texScreen;
-layout(binding = TEX_BIND_POINT_GBUFFER)    uniform sampler2D texGBuffer;
 layout(binding = TEX_BIND_POINT_NOISE)      uniform sampler2D texNoise;
 layout(binding = TEX_BIND_POINT_BORDER)     uniform sampler2D texVignette;
 layout(binding = TEX_BIND_POINT_UNDERWATER) uniform sampler2D texWaterNoiseNM;
-layout(binding = TEXTURE_DEPTH_MAP)         uniform sampler2D texDepthMap;
+layout(binding = TEX_BIND_POINT_POSTFXDATA) uniform sampler2D texPostFXData;
+layout(binding = TEX_BIND_POINT_SSR)        uniform sampler2D texSSR;
 
-uniform mat4 invViewMatrix;
-uniform mat4 invProjectionMatrix;
 uniform vec4 _fadeColour;
-uniform vec3 camPosition;
 uniform vec2 _zPlanes;
 uniform float _noiseTile;
 uniform float _noiseFactor;
@@ -57,6 +54,12 @@ vec4 Underwater() {
 }
 
 void main(void){
+    switch (dvd_materialDebugFlag) {
+        case DEBUG_DEPTH:          _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y), 1.0f); return;
+        case DEBUG_SSAO:           _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).r), 1.0f); return;
+        case DEBUG_SSR:            _colourOut = vec4(texture(texSSR, VAR._texCoord).rgb, 1.0f); return;
+    }
+
     vec4 colour = underwaterEnabled ? Underwater() : texture(texScreen, VAR._texCoord);
     if (noiseEnabled) {
         colour = Noise(colour);

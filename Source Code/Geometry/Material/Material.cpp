@@ -613,6 +613,7 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         shaderName += ".D";
         vertDefines.emplace_back("NODE_DYNAMIC", true);
         fragDefines.emplace_back("NODE_DYNAMIC", true);
+        hasPrePassData = true;
     } else {
         shaderName += ".S";
         vertDefines.emplace_back("NODE_STATIC", true);
@@ -650,21 +651,6 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
     if (_hardwareSkinning) {
         vertDefines.emplace_back("USE_GPU_SKINNING", true);
         shaderName += ".Sknd";
-    }
-
-    if (renderStagePass._stage == RenderStage::DISPLAY) {
-        if (!isDepthPass) {
-            fragDefines.emplace_back("USE_SSAO", true);
-            shaderName += ".SSAO";
-        }
-        fragDefines.emplace_back("USE_DEFERRED_NORMALS", true);
-        shaderName += ".DNrmls";
-        hasPrePassData = true;
-        if (!hasTransparency() && !isStatic()) {
-            fragDefines.emplace_back("HAS_VELOCITY", true);
-            vertDefines.emplace_back("HAS_VELOCITY", true);
-            shaderName += ".Vel";
-        }
     }
 
     vertDefines.emplace_back("HAS_CLIPPING_OUT", true);
@@ -739,14 +725,6 @@ bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDat
 
     for (const U8 slot : g_ExtraSlots) {
         ret = RegisterTexture(slot, (!depthStage || _textureUseForDepth[slot]), textureData) || ret;
-    }
-
-    if ( renderStagePass._stage != RenderStage::SHADOW && // not shadow pass
-       !(renderStagePass._stage == RenderStage::DISPLAY && renderStagePass._passType != RenderPassType::PRE_PASS)) //everything apart from Display::PrePass
-    {
-        for (const U8 slot : g_AdditionalSlots) {
-            ret = RegisterTexture(slot, true, textureData) || ret;
-        }
     }
 
     return ret;

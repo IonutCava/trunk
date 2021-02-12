@@ -20,6 +20,8 @@ void main (void) {
         discard;
     }
 #endif
-    const uint LoD = 0u;
-    writeScreenColour(getPixelColour(albedo, data, getNormalWV(VAR._texCoord), VAR._texCoord, LoD));
+    const vec3 normalWV = getNormalWV(VAR._texCoord);
+    vec2 MetalnessRoughness = vec2(0.f, 1.f);
+    const vec4 rgba = getPixelColour(albedo, data, normalWV, VAR._texCoord, 0u, MetalnessRoughness);
+    writeScreenColour(rgba, normalWV, MetalnessRoughness);
 }

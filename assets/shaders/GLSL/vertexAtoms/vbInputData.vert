@@ -1,6 +1,8 @@
 #ifndef _VB_INPUT_DATA_VERT_
 #define _VB_INPUT_DATA_VERT_
 
+#include "velocityCheck.cmn"
+
 #include "vertexDefault.vert"
 #include "nodeBufferedInput.cmn"
 

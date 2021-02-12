@@ -603,6 +603,12 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
                     // We manually add define dressing if needed
                     header.append(appendPrefix ? "#define " : "");
                     header.append(defineString + "\n");
+
+                    if (appendPrefix) {
+                        // We also add a comment so that we can check what defines we have set because
+                        // the shader preprocessor strips defines before sending the code to the GPU
+                        header.append("/*Engine define: [ " + defineString + " ]*/\n");
+                    }
                 }
             }
 

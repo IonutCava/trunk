@@ -94,4 +94,4 @@ class DoFPreRenderOperator final : public PreRenderOperator {
 
 }  // namespace Divide
 
-#endif
+#endif //_DOF_PRE_RENDER_OPERATOR_H_

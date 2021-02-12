@@ -94,6 +94,7 @@
 		<PostAAQualityLevel>2</PostAAQualityLevel>
 		<enableAdaptiveToneMapping>true</enableAdaptiveToneMapping>
 		<enableDepthOfField>false</enableDepthOfField>
+		<enableScreenSpaceReflections>true</enableScreenSpaceReflections>
 		<enablePerObjectMotionBlur>true</enablePerObjectMotionBlur>
 		<enableBloom>true</enableBloom>
 		<bloomFactor>0.800000012</bloomFactor>

@@ -142,25 +142,27 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 clearDescriptor.clearColours(true);
                 clearDescriptor.clearDepth(true);
                 clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
-                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::EXTRA), true);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::VELOCITY), true);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), true);
                 clearMainTarget._descriptor = clearDescriptor;
 
-                RTDrawDescriptor normalsAndDepthPolicy = {};
-                normalsAndDepthPolicy.drawMask().disableAll();
-                normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
-                normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::EXTRA), true);
-                normalsAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), true);
+                RTDrawDescriptor velocityAndDepthPolicy = {};
+                velocityAndDepthPolicy.drawMask().disableAll();
+                velocityAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
+                velocityAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::VELOCITY), true);
 
                 RTDrawDescriptor mainPassPolicy = {};
                 mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
-                mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY), false);
-                mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::EXTRA), false);
+                mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY), false);
+
+                RTDrawDescriptor oitCompositionPassPolicy = mainPassPolicy;
+                oitCompositionPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), false);
 
                 params._passName = "MainRenderPass";
                 params._stagePass = RenderStagePass{ _stageFlag, RenderPassType::COUNT };
-                params._targetDescriptorPrePass = normalsAndDepthPolicy;
+                params._targetDescriptorPrePass = velocityAndDepthPolicy;
                 params._targetDescriptorMainPass = mainPassPolicy;
+                params._targetDescriptorComposition = oitCompositionPassPolicy;
                 params._targetHIZ = RenderTargetID(RenderTargetUsage::HI_Z);
 
                 initDrawCommands = true;

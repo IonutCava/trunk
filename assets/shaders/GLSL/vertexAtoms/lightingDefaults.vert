@@ -1,13 +1,9 @@
 #ifndef _LIGHTING_DEFAULTS_VERT_
 #define _LIGHTING_DEFAULTS_VERT_
 
-#if (defined(COMPUTE_POM) || defined(COMPUTE_TBN)) && !defined(SHADOW_PASS)
-#define NEED_NORMALS
-#endif //(COMPUTE_POM || COMPUTE_TBN) && !SHADOW_PASS
-
-#if (!defined(PRE_PASS) || !defined(USE_DEFFERED_NORMALS) && defined(NEED_NORMALS))
+#if !defined(PRE_PASS)
 #define COMPUTE_NORMALS
-#endif //!PRE_PASS || !USE_DEFFERED_NORMALS
+#endif //!PRE_PASS
 
 void computeLightVectors(in NodeTransformData data) {
 #if !defined(USE_MIN_SHADING)
@@ -23,7 +19,8 @@ const mat3 normalMatrixW = dvd_NormalMatrixW(data);
 const vec3 N = normalize(normalMatrixW * dvd_Normal);
 VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
 
-#if defined(COMPUTE_NORMALS)
+#if !defined(PRE_PASS)
+
 #if defined(COMPUTE_TBN)
     vec3 T = normalize(normalMatrixW * dvd_Tangent);
     // re-orthogonalize T with respect to N (Gram-Schmidt)
@@ -31,14 +28,16 @@ VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
     const vec3 B = cross(N, T);
     const mat3 TBN = mat3(T, B, N);
     VAR._tbnWV = mat3(dvd_ViewMatrix) * TBN;
-#endif //COMPUTE_TBN
-#else //COMPUTE_NORMALS
+#endif // COMPUTE_TBN
+
+#else  // !PRE_PASS
+
 #if defined(COMPUTE_TBN)
     VAR._tbnWV = mat3(1.0f);
-#endif //COMPUTE_TBN
+#endif // COMPUTE_TBN
 
-#endif //COMPUTE_NORMALS
-#endif //USE_MIN_SHADING
+#endif // !PRE_PASS
+#endif // USE_MIN_SHADING
 }
 
 #endif //_LIGHTING_DEFAULTS_VERT_

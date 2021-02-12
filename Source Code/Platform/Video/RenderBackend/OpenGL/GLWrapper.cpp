@@ -229,6 +229,7 @@ bool GL_API::InitGLSW(Configuration& config) {
         { "vec4"       , "_vertexWV"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
+        { "vec3"       , "_prevVertexWVP_XYW"},
         { "vec2"       , "_texCoord"},
         { "flat uint"  , "_baseInstance" }
     };
@@ -236,11 +237,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     constexpr std::pair<const char*, const char*> shaderVaryingsBump[] =
     {
         { "mat3" , "_tbnWV"},
-    };
-
-    constexpr std::pair<const char*, const char*> shaderVaryingsVelocity[] =
-    {
-        { "vec3" , "_prevVertexWVP_XYW"},
     };
 
     constexpr const char* crossTypeGLSLHLSL = "#define float2 vec2\n"
@@ -268,13 +264,6 @@ bool GL_API::InitGLSW(Configuration& config) {
         }
         passData.append("#if defined(COMPUTE_TBN)\n");
         for (const auto& [varType, name] : shaderVaryingsBump) {
-            passData.append(Util::StringFormat(baseString.c_str(), name, name));
-            passData.append("\n");
-        }
-        passData.append("#endif\n");
-
-        passData.append("#if defined(HAS_VELOCITY)\n");
-        for (const auto& [varType, name] : shaderVaryingsVelocity) {
             passData.append(Util::StringFormat(baseString.c_str(), name, name));
             passData.append("\n");
         }
@@ -396,8 +385,8 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CULL_DISTANCES "              + Util::to_string(Config::MAX_CULL_DISTANCES));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_ACCUMULATION "             + Util::to_string(to_base(GFXDevice::ScreenTargets::ACCUMULATION)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_ALBEDO "                   + Util::to_string(to_base(GFXDevice::ScreenTargets::ALBEDO)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_EXTRA "                    + Util::to_string(to_base(GFXDevice::ScreenTargets::EXTRA)));
-    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_NORMALS_AND_VELOCITY "     + Util::to_string(to_base(GFXDevice::ScreenTargets::NORMALS_AND_VELOCITY)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_VELOCITY "                 + Util::to_string(to_base(GFXDevice::ScreenTargets::VELOCITY)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_NORMALS_AND_MATERIAL_DATA "+ Util::to_string(to_base(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_REVEALAGE "                + Util::to_string(to_base(GFXDevice::ScreenTargets::REVEALAGE)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_MODULATE "                 + Util::to_string(to_base(GFXDevice::ScreenTargets::MODULATE)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_GPU_BLOCK "                + Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)));
@@ -451,7 +440,7 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_PLANAR "       + Util::to_string(to_base(TextureUsage::REFLECTION_PLANAR)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFRACTION_PLANAR "       + Util::to_string(to_base(TextureUsage::REFRACTION_PLANAR)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_CUBE "         + Util::to_string(to_base(TextureUsage::REFLECTION_CUBE)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_GBUFFER_EXTRA "           + Util::to_string(to_base(TextureUsage::GBUFFER_EXTRA)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_POST_FX_DATA "            + Util::to_string(to_base(TextureUsage::POST_FX_DATA)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_SCENE_NORMALS "           + Util::to_string(to_base(TextureUsage::SCENE_NORMALS)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_CUBE_MAP_ARRAY "           + Util::to_string(to_base(TextureUsage::SHADOW_CUBE)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_LAYERED_MAP_ARRAY "        + Util::to_string(to_U32(TextureUsage::SHADOW_LAYERED)));
@@ -473,20 +462,11 @@ bool GL_API::InitGLSW(Configuration& config) {
         }
     };
 
-    const auto addVaryingsVelocity = [&](const ShaderType type) {
-        for (const auto& [varType, name] : shaderVaryingsVelocity) {
-            AppendToShaderHeader(type, Util::StringFormat("    %s %s;", varType, name));
-        }
-    };
-
     // Vertex shader output
     AppendToShaderHeader(ShaderType::VERTEX, "out Data {");
     addVaryings(ShaderType::VERTEX);
     AppendToShaderHeader(ShaderType::VERTEX, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::VERTEX);
-    AppendToShaderHeader(ShaderType::VERTEX, "#endif");
-    AppendToShaderHeader(ShaderType::VERTEX, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::VERTEX);
     AppendToShaderHeader(ShaderType::VERTEX, "#endif");
     AppendToShaderHeader(ShaderType::VERTEX, "} _out;\n");
 
@@ -496,9 +476,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::TESSELLATION_CTRL);
     AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
     AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _in[];\n");
 
     // Tessellation Control shader output
@@ -506,9 +483,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     addVaryings(ShaderType::TESSELLATION_CTRL);
     AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::TESSELLATION_CTRL);
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
-    AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::TESSELLATION_CTRL);
     AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "#endif");
     AppendToShaderHeader(ShaderType::TESSELLATION_CTRL, "} _out[];\n");
 
@@ -520,9 +494,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::TESSELLATION_EVAL);
     AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
     AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _in[];\n");
 
     // Tessellation Eval shader output
@@ -530,9 +501,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     addVaryings(ShaderType::TESSELLATION_EVAL);
     AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::TESSELLATION_EVAL);
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
-    AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::TESSELLATION_EVAL);
     AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "#endif");
     AppendToShaderHeader(ShaderType::TESSELLATION_EVAL, "} _out;\n");
 
@@ -544,9 +512,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::GEOMETRY);
     AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::GEOMETRY);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
     AppendToShaderHeader(ShaderType::GEOMETRY, "} _in[];\n");
 
     // Geometry shader output
@@ -554,9 +519,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     addVaryings(ShaderType::GEOMETRY);
     AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::GEOMETRY);
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
-    AppendToShaderHeader(ShaderType::GEOMETRY, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::GEOMETRY);
     AppendToShaderHeader(ShaderType::GEOMETRY, "#endif");
     AppendToShaderHeader(ShaderType::GEOMETRY, "} _out;\n");
 
@@ -567,9 +529,6 @@ bool GL_API::InitGLSW(Configuration& config) {
     addVaryings(ShaderType::FRAGMENT);
     AppendToShaderHeader(ShaderType::FRAGMENT, "#if defined(COMPUTE_TBN)");
     addVaryingsBump(ShaderType::FRAGMENT);
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#endif");
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#if defined(HAS_VELOCITY)");
-    addVaryingsVelocity(ShaderType::FRAGMENT);
     AppendToShaderHeader(ShaderType::FRAGMENT, "#endif");
     AppendToShaderHeader(ShaderType::FRAGMENT, "} _in;\n");
 
@@ -997,6 +956,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                         const GLuint handle = crtCmd->_texture->data()._textureHandle;
                         glGenerateTextureMipmap(handle);
                         DequeueMipMapRequired(handle);
+                        DequeueComputeMipMap(handle);
                     }
                 } else {
                     OPTICK_EVENT("GL: View-based computation");
@@ -1058,6 +1018,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                     } else {
                         OPTICK_EVENT("GL: In-place computation");
                         glGenerateTextureMipmap(handle);
+                        DequeueComputeMipMap(handle);
                     }
                     s_textureViewCache.deallocate(handle, 3);
                 }
