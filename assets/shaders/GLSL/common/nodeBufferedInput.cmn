@@ -32,6 +32,8 @@ layout(binding = BUFFER_NODE_MATERIAL_DATA, std430) coherent ACCESS_R buffer dvd
 #define texHeight     samplerHeight(dvd_Materials[MATERIAL_IDX]._textures[2].xy)
 #define texProjected  samplerProj(dvd_Materials[MATERIAL_IDX]._textures[2].zw)
 #define texNormalMap  samplerNormal(dvd_Materials[MATERIAL_IDX]._textures[3].xy)
+#define texReflect    samplerReflect(dvd_Materials[MATERIAL_IDX]._textures[3].zw)
+#define texReract     samplerRefract(dvd_Materials[MATERIAL_IDX]._textures[4].xy)
 #else //USE_BINDLESS_TEXTURES
 layout(binding = TEXTURE_UNIT0)      uniform samplerUnit0 texDiffuse0;
 layout(binding = TEXTURE_UNIT1)      uniform samplerUnit1 texDiffuse1;
@@ -40,7 +42,10 @@ layout(binding = TEXTURE_OMR)        uniform samplerOMR texOMR;
 layout(binding = TEXTURE_OPACITY)    uniform samplerOpacity texOpacityMap;
 layout(binding = TEXTURE_NORMALMAP)  uniform samplerNormal texNormalMap;
 layout(binding = TEXTURE_PROJECTION) uniform samplerProj texProjected;
+layout(binding = TEXTURE_REFLECTION) uniform samplerReflect texReflect;
+layout(binding = TEXTURE_REFRACTION) uniform samplerRefract texRefract;
 #endif //USE_BINDLESS_TEXTURES
+
 
 #endif //FRAG_SHADER || NEED_MATERIAL_DATA
 

@@ -630,8 +630,4 @@ bool SSAOPreRenderOperator::execute(const Camera* camera, const RenderTargetHand
     return false;
 }
 
-void SSAOPreRenderOperator::onToggle(const bool state) {
-    PreRenderOperator::onToggle(state);
-    _enabled = state;
-}
 }

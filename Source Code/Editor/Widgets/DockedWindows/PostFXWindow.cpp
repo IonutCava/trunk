@@ -135,7 +135,7 @@ namespace {
             ImGui::PopItemWidth();
             ImGui::AlignTextToFramePadding();
             ImGui::Text("Method: "); ImGui::SameLine();
-            static I32 selection = 0;
+            static I32 selection = _postFX.getFilterState(FilterType::FILTER_SS_ANTIALIASING) ? (aaOp.useSMAA() ? 0 : 1) : 2;
             const bool a = ImGui::RadioButton("SMAA", &selection, 0); ImGui::SameLine();
             const bool b = ImGui::RadioButton("FXAA", &selection, 1); ImGui::SameLine();
             const bool c = ImGui::RadioButton("NONE", &selection, 2);
@@ -218,7 +218,53 @@ namespace {
             SSRPreRenderOperator::Parameters params = ssrOp.parameters();
             bool dirty = false;
 
-            NOP();
+            F32& maxDistance = params._maxDistance;
+            F32& jitterAmount = params._jitterAmount;
+            F32& stride = params._stride;
+            F32& zThickness = params._zThickness;
+            F32& strideZCutoff = params._strideZCutoff;
+            F32& screenEdgeFadeStart = params._screenEdgeFadeStart;
+            F32& eyeFadeStart = params._eyeFadeStart;
+            F32& eyeFadeEnd = params._eyeFadeEnd;
+            U16& maxSteps = params._maxSteps;
+            U8&  binarySearchIterations = params._binarySearchIterations;
+
+            if (ImGui::SliderFloat("Max Distance", &maxDistance, 0.01f, 5000.0f)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Jitter Ammount", &jitterAmount, 0.01f, 10.0f)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Stride", &stride, 1.0f, maxSteps)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Z Thickness", &zThickness, 0.01f, 10.0f)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Strode Z Cutoff", &strideZCutoff, 0.01f, 1000.0f)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Screen Edge Fade Start", &screenEdgeFadeStart, 0.01f, 1.0f)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Eye fade start", &eyeFadeStart, 0.01f, 1.0f)) {
+                dirty = true;
+            }
+            if (ImGui::SliderFloat("Eye fade end", &eyeFadeEnd, eyeFadeStart, 1.0f)) {
+                dirty = true;
+            }
+
+            constexpr U16 stepsMin = 1u; 
+            constexpr U16 stepsMax = 1 << 15;
+
+            if (ImGui::SliderScalar("Max Steps", ImGuiDataType_U16, &maxSteps, &stepsMin, &stepsMax)) {
+                dirty = true;
+            } 
+            constexpr U8 iterMin = 1u;
+            constexpr U8 iterMax = 1 << 7;
+            if (ImGui::SliderScalar("Binary Search Iterations", ImGuiDataType_U8, &binarySearchIterations, &iterMin, &iterMax)) {
+                dirty = true;
+            }
 
             if (dirty) {
                 ssrOp.parameters(params);

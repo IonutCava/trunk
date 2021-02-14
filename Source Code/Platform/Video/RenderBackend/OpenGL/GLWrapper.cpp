@@ -212,7 +212,6 @@ void GL_API::idle(const bool fast) {
         if (!s_mipmapQueue.empty()) {
             const auto it = s_mipmapQueue.begin();
             glGenerateTextureMipmap(*it);
-            DequeueMipMapRequired(*it);
             s_mipmapQueue.erase(it);
         }
     }
@@ -289,6 +288,11 @@ bool GL_API::InitGLSW(Configuration& config) {
     }
     if (numLightsPerCluster != config.rendering.numLightsPerCluster) {
         config.rendering.numLightsPerCluster = numLightsPerCluster;
+        config.changed(true);
+    }
+    const U16 reflectionProbeRes = to_U16(nextPOW2(CLAMPED(to_U32(config.rendering.reflectionProbeResolution), 16u, 4096u) - 1u));
+    if (reflectionProbeRes != config.rendering.reflectionProbeResolution) {
+        config.rendering.reflectionProbeResolution = reflectionProbeRes;
         config.changed(true);
     }
 
@@ -387,6 +391,7 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_ALBEDO "                   + Util::to_string(to_base(GFXDevice::ScreenTargets::ALBEDO)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_VELOCITY "                 + Util::to_string(to_base(GFXDevice::ScreenTargets::VELOCITY)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_NORMALS_AND_MATERIAL_DATA "+ Util::to_string(to_base(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_SPECULAR "                 + Util::to_string(to_base(GFXDevice::ScreenTargets::SPECULAR)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_REVEALAGE "                + Util::to_string(to_base(GFXDevice::ScreenTargets::REVEALAGE)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TARGET_MODULATE "                 + Util::to_string(to_base(GFXDevice::ScreenTargets::MODULATE)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define BUFFER_GPU_BLOCK "                + Util::to_string(to_base(ShaderBufferLocation::GPU_BLOCK)));
@@ -410,6 +415,7 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Y "                     + Util::to_string(gridSize.y));
     AppendToShaderHeader(ShaderType::COUNT,    "#define GRID_SIZE_Z_THREADS "             + Util::to_string(Config::Lighting::ClusteredForward::CLUSTER_Z_THREADS));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_LIGHTS_PER_CLUSTER "          + Util::to_string(numLightsPerCluster));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define REFLECTION_PROBE_RESOLUTION "     + Util::to_string(reflectionProbeRes));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_UNIT0 "                   + Util::to_string(to_base(TextureUsage::UNIT0)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_HEIGHT "                  + Util::to_string(to_base(TextureUsage::HEIGHTMAP)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_UNIT1 "                   + Util::to_string(to_base(TextureUsage::UNIT1)));
@@ -418,8 +424,13 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_OMR "                     + Util::to_string(to_base(TextureUsage::OCCLUSION_METALLIC_ROUGHNESS)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_PROJECTION "              + Util::to_string(to_base(TextureUsage::PROJECTION)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_DEPTH_MAP "               + Util::to_string(to_base(TextureUsage::DEPTH)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_REFRACTION "              + Util::to_string(to_base(TextureUsage::REFRACTION)));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define TEXTURE_REFLECTION "              + Util::to_string(to_base(TextureUsage::REFLECTION)));
     AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_WATER_BODIES_COUNT "       + Util::to_string(GLOBAL_WATER_BODIES_COUNT));
     AppendToShaderHeader(ShaderType::COUNT,    "#define GLOBAL_PROBE_COUNT "              + Util::to_string(GLOBAL_PROBE_COUNT));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define PROBE_ID_NO_REFLECTIONS "         + Util::to_string(GLOBAL_PROBE_COUNT + 1));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define PROBE_ID_NO_SSR "                 + Util::to_string(GLOBAL_PROBE_COUNT + 2));
+    AppendToShaderHeader(ShaderType::COUNT,    "#define PROBE_ID_NO_ENV_REFLECTIONS "     + Util::to_string(GLOBAL_PROBE_COUNT + 3));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MATERIAL_TEXTURE_COUNT "          + Util::to_string(MATERIAL_TEXTURE_COUNT));
     AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_Z "                     + Util::to_string(gridSize.z));
     AppendToShaderHeader(ShaderType::COMPUTE,  "#define GRID_SIZE_X_THREADS "             + Util::to_string(gridSize.x));
@@ -437,9 +448,8 @@ bool GL_API::InitGLSW(Configuration& config) {
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_BONE_INDICE "              + Util::to_string(to_base(AttribLocation::BONE_INDICE)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_WIDTH "                    + Util::to_string(to_base(AttribLocation::WIDTH)));
     AppendToShaderHeader(ShaderType::VERTEX,   "#define ATTRIB_GENERIC "                  + Util::to_string(to_base(AttribLocation::GENERIC)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_PLANAR "       + Util::to_string(to_base(TextureUsage::REFLECTION_PLANAR)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFRACTION_PLANAR "       + Util::to_string(to_base(TextureUsage::REFRACTION_PLANAR)));
-    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_CUBE "         + Util::to_string(to_base(TextureUsage::REFLECTION_CUBE)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_ENV "          + Util::to_string(to_base(TextureUsage::REFLECTION_ENV)));
+    AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_REFLECTION_SKY "          + Util::to_string(to_base(TextureUsage::REFLECTION_SKY)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_POST_FX_DATA "            + Util::to_string(to_base(TextureUsage::POST_FX_DATA)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define TEXTURE_SCENE_NORMALS "           + Util::to_string(to_base(TextureUsage::SCENE_NORMALS)));
     AppendToShaderHeader(ShaderType::FRAGMENT, "#define SHADOW_CUBE_MAP_ARRAY "           + Util::to_string(to_base(TextureUsage::SHADOW_CUBE)));
@@ -944,9 +954,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
         case GFX::CommandType::COMPUTE_MIPMAPS: {
             OPTICK_EVENT("GL: Compute MipMaps");
             GFX::ComputeMipMapsCommand* crtCmd = commandBuffer.get<GFX::ComputeMipMapsCommand>(entry);
-            if (crtCmd->_clearOnly) {
-                DequeueMipMapRequired(crtCmd->_texture->data()._textureHandle);
-            } else {
+            if (!crtCmd->_clearOnly) {
                 if (crtCmd->_layerRange.x == 0 && crtCmd->_layerRange.y == crtCmd->_texture->descriptor().layerCount()) {
                     if (crtCmd->_defer) {
                         OPTICK_EVENT("GL: Deferred computation");
@@ -955,7 +963,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                         OPTICK_EVENT("GL: In-place computation");
                         const GLuint handle = crtCmd->_texture->data()._textureHandle;
                         glGenerateTextureMipmap(handle);
-                        DequeueMipMapRequired(handle);
                         DequeueComputeMipMap(handle);
                     }
                 } else {
@@ -1009,8 +1016,6 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
                                       static_cast<GLuint>(view._layerRange.x),
                                       static_cast<GLuint>(view._layerRange.y));
                     }
-                    // Tag the parent texture, not the view
-                    DequeueMipMapRequired(view._textureData._textureHandle);
 
                     if (crtCmd->_defer) {
                         OPTICK_EVENT("GL: Deferred computation");
@@ -1380,7 +1385,6 @@ bool GL_API::makeTextureViewsResidentInternal(const TextureViews& textureViews, 
         }
 
         getStateTracker().ProcessMipMapQueue(1, &data._textureHandle);
-        getStateTracker().ValidateBindQueue(1, &data._textureHandle);
 
         GLuint samplerHandle = GetSamplerHandle(it._view._samplerHash);
         bound = getStateTracker().bindTexturesNoMipMap(static_cast<GLushort>(it._binding), 1, view._targetType, &textureID, &samplerHandle) || bound;

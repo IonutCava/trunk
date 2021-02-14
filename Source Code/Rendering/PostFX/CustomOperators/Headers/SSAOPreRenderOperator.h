@@ -80,9 +80,6 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     [[nodiscard]] bool ready() const override;
 
    private:
-     void onToggle(bool state) override;
-
-   private:
     PushConstants _ssaoGenerateConstants;
     PushConstants _ssaoBlurConstants;
     ShaderProgram_ptr _ssaoGenerateShader = nullptr;
@@ -110,7 +107,6 @@ class SSAOPreRenderOperator final : public PreRenderOperator {
     bool _blur[2] = { false, false };
 
     bool _genHalfRes = false;
-    bool _enabled = true;
 };
 
 }  // namespace Divide

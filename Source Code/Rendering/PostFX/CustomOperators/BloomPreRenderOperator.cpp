@@ -69,14 +69,17 @@ BloomPreRenderOperator::BloomPreRenderOperator(GFXDevice& context, PreRenderBatc
     });
 
     vec2<U16> res = parent.screenRT()._rt->getResolution();
-    if (res.width > 2500) { //over 1440p
+    if (res.height > 1440) {
         resolutionDownscaleFactor = 4.0f;
     }
 
     const auto& screenAtt = parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::ALBEDO));
+    TextureDescriptor screenDescriptor = screenAtt.texture()->descriptor();
+    screenDescriptor.mipCount(1u);
+
     RTAttachmentDescriptors att = {
         {
-            screenAtt.texture()->descriptor(),
+            screenDescriptor,
             screenAtt.samplerHash(),
             RTAttachmentType::Colour,
             0,

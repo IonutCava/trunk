@@ -70,6 +70,7 @@ class NOINITVTABLE PreRenderOperator {
     GFX::DrawCommand _triangleDrawCmd = {};
     RTDrawDescriptor _screenOnlyDraw;
     FilterType  _operatorType = FilterType::FILTER_COUNT;
+    bool _enabled = true;
 };
 
 };  // namespace Divide

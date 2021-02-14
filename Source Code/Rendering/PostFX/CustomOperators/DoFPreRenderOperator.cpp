@@ -19,6 +19,8 @@ namespace {
 DoFPreRenderOperator::DoFPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_DEPTH_OF_FIELD)
 {
+    STUBBED("ToDo: Save DOF Parameters to disk!");
+
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
     vertModule._sourceFile = "baseVertexShaders.glsl";

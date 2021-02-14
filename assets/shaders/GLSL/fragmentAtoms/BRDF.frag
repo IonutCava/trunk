@@ -7,8 +7,6 @@
 #include "shadowMapping.frag"
 #include "pbr.frag"
 
-#define DISABLE_SSR
-
 
 float TanAcosNdL(in float ndl) {
 #if 0
@@ -20,47 +18,41 @@ float TanAcosNdL(in float ndl) {
 }
 
 float GetNdotL(in vec3 N, in vec3 L) {
-    const float ndl = clamp(dot(N, L), M_EPSILON, 1.0f);
-    return ndl;
+    return clamp(dot(N, L), M_EPSILON, 1.0);
 }
 
-vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV)
+vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV, out vec3 specularResult)
 {
+#if defined(USE_SHADING_FLAT)
+    return albedo.rgb;
+#else //USE_SHADING_FLAT
     vec3 ret = vec3(0.0);
-    float specularFactor = 0.0f;
 
     const vec3 specColour = SpecularColour(albedo, METALLIC(OMR));
+    specularResult = specColour;
+
     const vec3 toCamera = normalize(VAR._viewDirectionWV);
     const float roughness = ROUGHNESS(OMR);
 
     const uint dirLightCount = dvd_LightData.x;
     for (uint lightIdx = 0; lightIdx < dirLightCount; ++lightIdx) {
         const Light light = dvd_LightSource[lightIdx];
-
-        const vec3 lightDir = -light._directionWV.xyz;
-        const vec3 lightVec = lightDir;
-
+        const vec3 lightVec = normalize(-light._directionWV.xyz);
         const float ndl = GetNdotL(normalWV, lightVec);
-
         const float shadowFactor = getShadowFactorDirectional(light._options.y, TanAcosNdL(ndl));
         if (shadowFactor > M_EPSILON) {
-            float tempSpecularFactor = 0.0f;
-            vec3 BRDF = GetBRDF(lightDir,
-                                lightVec,
+            vec3 BRDF = GetBRDF(lightVec,
                                 toCamera,
                                 normalWV,
                                 albedo, 
                                 specColour,
                                 ndl,
-                                roughness,
-                                tempSpecularFactor);
+                                roughness);
 
             ret += BRDF * light._colour.rgb * shadowFactor;
-
-            specularFactor = max(specularFactor, tempSpecularFactor);
         }
     }
-
+    
     LightGrid grid = lightGrid[GetClusterIndex(gl_FragCoord)];
 
     uint lightIndexOffset = grid.offset;
@@ -80,20 +72,15 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV)
             const float dist = length(lightDir);
             const float att = saturate(1.0f - (SQUARED(dist) / radiusSQ));
 
-            float tempSpecularFactor = 0.0f;
-            vec3 BRDF = GetBRDF(lightDir,
-                                lightVec,
+            vec3 BRDF = GetBRDF(lightVec,
                                 toCamera,
                                 normalWV,
                                 albedo,
                                 specColour,
                                 ndl,
-                                roughness,
-                                tempSpecularFactor);
+                                roughness);
 
             ret += BRDF * light._colour.rgb * SQUARED(att) * shadowFactor;
-
-            specularFactor = max(specularFactor, tempSpecularFactor);
         }
     }
 
@@ -122,24 +109,20 @@ vec3 getLightContribution(in vec3 albedo, in vec3 OMR, in vec3 normalWV)
             float att = saturate(1.0f - (SQUARED(dist) / SQUARED(radius)));
             att = att * intensity;
 
-            float tempSpecularFactor = 0.0f;
-            vec3 BRDF = GetBRDF(lightDir,
-                                lightVec,
+            vec3 BRDF = GetBRDF(lightVec,
                                 toCamera,
                                 normalWV,
                                 albedo,
                                 specColour,
                                 ndl,
-                                roughness,
-                                tempSpecularFactor);
+                                roughness);
 
             ret += BRDF * light._colour.rgb * att * shadowFactor;
-
-            specularFactor = max(specularFactor, tempSpecularFactor);
         }
     }
 
     return ret;
+#endif //USE_SHADING_FLAT
 }
 
 float getShadowFactor(in vec3 normalWV) {
@@ -219,25 +202,6 @@ vec3 lightClusterColours(const bool debugDepthClusters) {
     return colour;
 }
 
-#if !defined(CUSTOM_IBL)
-vec3 ImageBasedLighting(in vec3 colour, in vec3 normalWV, in float metallic, in float roughness, in uint textureSize, in uint probeIdx)
-{
-#if defined(USE_PLANAR_REFLECTION) || defined(NO_IBL)
-    return colour;
-#else //USE_PLANAR_REFLECTION) || NO_IBL
-    return mix(colour,
-               IBL(
-                   normalize(mat3(dvd_InverseViewMatrix) * normalWV),
-                   roughness,
-                   textureSize,
-                   probeIdx
-               ),
-               metallic);
-#endif  //USE_PLANAR_REFLECTION) || NO_IBL
-}
-#endif //CUSTOM_IBL
-
-/// returns RGB - pixel lit colour, A - reflectivity (e.g. for SSR)
 #if defined(DISABLE_SHADOW_MAPPING)
 #define CSMSplitColour() vec4(0.0f)
 #else //DISABLE_SHADOW_MAPPING
@@ -264,55 +228,33 @@ vec4 CSMSplitColour() {
 }
 #endif //DISABLE_SHADOW_MAPPING
 
-#if !defined(NO_FOG)
-//https://iquilezles.org/www/articles/fog/fog.htm
-vec3 applyFog(in vec3  rgb,      // original color of the pixel
-              in float distance, // camera to point distance
-              in vec3  rayOri,   // camera position
-              in vec3  rayDir)   // camera to point vector
-{
-    const float c = dvd_fogDetails._colourSunScatter.a;
-    const float b = dvd_fogDetails._colourAndDensity.a;
-    const float fogAmount = c * exp(-rayOri.y * b) * (1.f - exp(-distance * rayDir.y * b)) / rayDir.y;
-    return mix(rgb, dvd_fogDetails._colourAndDensity.rgb, fogAmount);
-}
-#endif //!NO_FOG
-
-vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, in uint LoD, inout vec2 MetalnessRoughness) {
+/// returns RGB - pixel lit colour, A - reserved
+vec4 getPixelColour(in vec4 albedo, in NodeMaterialData materialData, in vec3 normalWV, in vec2 uv, out vec3 SpecularColourOut, out vec3 MetalnessRoughnessProbeID) {
     const vec3 OMR = getOcclusionMetallicRoughness(materialData, uv);
-    MetalnessRoughness = vec2(METALLIC(OMR), ROUGHNESS(OMR));
+    MetalnessRoughnessProbeID = vec3(METALLIC(OMR), ROUGHNESS(OMR), float(dvd_probeIndex(materialData)));
 
     switch (dvd_materialDebugFlag) {
-        case DEBUG_ALBEDO:         return vec4(albedo.rgb, 1.0f);
-        case DEBUG_LIGHTING:       return vec4(getLightContribution(vec3(0.0f), OMR, normalWV), 1.0f);
-        case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 0.0f);
-        case DEBUG_UV:             return vec4(fract(uv), 0.0f, 0.0f);
-        case DEBUG_EMISSIVE:       return vec4(EmissiveColour(materialData), 1.0f);
-        case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.0f);
-        case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.0f);
-        case DEBUG_NORMALS:        return vec4(normalize(mat3(dvd_InverseViewMatrix) * normalWV), 1.0f);
+        case DEBUG_ALBEDO:         return vec4(albedo.rgb, 1.f);
+        case DEBUG_LIGHTING:       return vec4(getLightContribution(vec3(1.f), OMR, normalWV, SpecularColourOut), 1.f);
+        case DEBUG_SPECULAR:       return vec4(SpecularColour(albedo.rgb, METALLIC(OMR)), 1.f);
+        case DEBUG_UV:             return vec4(fract(uv), 0.f, 1.f);
+        case DEBUG_EMISSIVE:       return vec4(EmissiveColour(materialData), 1.f);
+        case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.f);
+        case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.f);
+        case DEBUG_NORMALS:        return vec4(normalize(mat3(dvd_InverseViewMatrix) * normalWV), 1.f);
         case DEBUG_TANGENTS:       return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTangentWV()), 1.f);
         case DEBUG_BITANGENTS:     return vec4(normalize(mat3(dvd_InverseViewMatrix) * getBiTangentWV()), 1.f);
-        case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowFactor(normalWV)), 1.0f);
+        case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowFactor(normalWV)), 1.f);
         case DEBUG_CSM_SPLITS:     return albedo + CSMSplitColour();
-        case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.0f);
-        case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.0f);
-        case DEBUG_REFLECTIONS:    return vec4(ImageBasedLighting(vec3(0.f), normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData)), 1.0f);
-        case DEBUG_REFLECTIVITY:   return vec4(vec3(mix(0.0f, 1.0f - ROUGHNESS(OMR), METALLIC(OMR))), 1.0f);
-        case DEBUG_MATERIAL_IDS:   return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.0f);
+        case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.f);
+        case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.f);
+        case DEBUG_REFRACTIONS:
+        case DEBUG_REFLECTIONS:    return vec4(vec3(0.f), 1.f);
+        case DEBUG_MATERIAL_IDS:   return vec4(turboColormap(float(MATERIAL_IDX + 1) / MAX_CONCURRENT_MATERIALS), 1.f);
     }
 
-#if defined(USE_SHADING_FLAT)
-    vec3 oColour = albedo.rgb;
-#else //USE_SHADING_FLAT
-    vec3 oColour = getLightContribution(albedo.rgb, OMR, normalWV);
-#endif //USE_SHADING_FLAT
-
-    oColour = ImageBasedLighting(oColour, normalWV, METALLIC(OMR), ROUGHNESS(OMR), IBLSize(materialData), dvd_probeIndex(materialData));
-    oColour += EmissiveColour(materialData);
-#if !defined(NO_FOG)
-    oColour = applyFog(oColour, distance(VAR._vertexW.xyz, dvd_cameraPosition.xyz), dvd_cameraPosition.xyz, normalize(VAR._vertexW.xyz - dvd_cameraPosition.xyz));
-#endif //!NO_FOG
+    const vec3 oColour = getLightContribution(albedo.rgb, OMR, normalWV, SpecularColourOut) +
+                         EmissiveColour(materialData);
 
     return vec4(oColour, albedo.a);
 }

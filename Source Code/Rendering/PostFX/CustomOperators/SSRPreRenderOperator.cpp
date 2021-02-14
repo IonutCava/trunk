@@ -2,10 +2,14 @@
 
 #include "Headers/SSRPreRenderOperator.h"
 
+
+#include "Core/Headers/Kernel.h"
 #include "Platform/Video/Headers/GFXDevice.h"
 #include "Core/Resources/Headers/ResourceCache.h"
-#include "Geometry/Shapes/Predefined/Headers/Quad3D.h"
+#include "Managers/Headers/SceneManager.h"
 #include "Platform/Video/Shaders/Headers/ShaderProgram.h"
+#include "Rendering/Headers/Renderer.h"
+#include "Rendering/PostFX/Headers/PostFX.h"
 
 #include "Rendering/PostFX/Headers/PreRenderBatch.h"
 
@@ -14,6 +18,8 @@ namespace Divide {
 SSRPreRenderOperator::SSRPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_REFLECTIONS)
 {
+    STUBBED("ToDo: Save SSR Parameters to disk!");
+
     SamplerDescriptor screenSampler = {};
     screenSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
     screenSampler.minFilter(TextureFilter::LINEAR);
@@ -44,8 +50,18 @@ SSRPreRenderOperator::SSRPreRenderOperator(GFXDevice& context, PreRenderBatch& p
         _pipeline = _context.newPipeline(pipelineDescriptor);
     });
 
-    _constants.set(_ID("size"), GFX::PushConstantType::VEC2, _parent.screenRT()._rt->getResolution());
+    const vec2<U16>& res = _parent.screenRT()._rt->getResolution();
 
+    _constants.set(_ID("size"), GFX::PushConstantType::VEC2, res);
+
+    const vec2<F32> s = res * 0.5f;
+    _projToPixelBasis = mat4<F32>
+    {
+       s.x, 0.f, 0.f, 0.f,
+       0.f, s.y, 0.f, 0.f,
+       0.f, 0.f, 1.f, 0.f,
+       s.x, s.y, 0.f, 1.f
+    };
     parameters(_parameters);
 }
 
@@ -59,7 +75,17 @@ bool SSRPreRenderOperator::ready() const {
 
 void SSRPreRenderOperator::parameters(const Parameters& params) noexcept {
     _parameters = params;
-
+    _constants.set(_ID("maxSteps"), GFX::PushConstantType::FLOAT, to_F32(_parameters._maxSteps));
+    _constants.set(_ID("binarySearchIterations"), GFX::PushConstantType::FLOAT, to_F32(_parameters._binarySearchIterations));
+    _constants.set(_ID("jitterAmount"), GFX::PushConstantType::FLOAT, _parameters._jitterAmount);
+    _constants.set(_ID("maxDistance"), GFX::PushConstantType::FLOAT, _parameters._maxDistance);
+    _constants.set(_ID("stride"), GFX::PushConstantType::FLOAT, _parameters._stride);
+    _constants.set(_ID("zThickness"), GFX::PushConstantType::FLOAT, _parameters._zThickness);
+    _constants.set(_ID("strideZCutoff"), GFX::PushConstantType::FLOAT, _parameters._strideZCutoff);
+    _constants.set(_ID("screenEdgeFadeStart"), GFX::PushConstantType::FLOAT, _parameters._screenEdgeFadeStart);
+    _constants.set(_ID("eyeFadeStart"), GFX::PushConstantType::FLOAT, _parameters._eyeFadeStart);
+    _constants.set(_ID("eyeFadeEnd"), GFX::PushConstantType::FLOAT, _parameters._eyeFadeEnd);
+    _constants.set(_ID("ssrEnabled"), GFX::PushConstantType::BOOL, _enabled);
     _constantsDirty = true;
 }
 
@@ -76,14 +102,33 @@ void SSRPreRenderOperator::reshape(const U16 width, const U16 height) {
 }
 
 bool SSRPreRenderOperator::execute(const Camera* camera, const RenderTargetHandle& input, const RenderTargetHandle& output, GFX::CommandBuffer& bufferInOut) {
+    const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
+
+    // ToDo: Cache these textures and their mipcount somehow -Ionut
+    const auto[skyTexture, skySampler] = Attorney::SceneManagerSSRAccessor::getSkyTexture(_context.parent().sceneManager());
+    const auto& environmentProbeAtt = SceneEnvironmentProbePool::ReflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
+    const Texture_ptr& reflectionTexture = environmentProbeAtt.texture();
+    if (!skyTexture && !reflectionTexture) {
+        // We need some sort of environment mapping here (at least for now)
+        return false;
+    }
+
+    const vec3<U32> mipCounts {
+        screenAtt.texture()->descriptor().mipCount(),
+        reflectionTexture->descriptor().mipCount(),
+        skyTexture == nullptr
+                    ? reflectionTexture->descriptor().mipCount()
+                    : skyTexture->descriptor().mipCount()
+    };
 
     _constants.set(_ID("projToPixel"), GFX::PushConstantType::MAT4, camera->projectionMatrix() * _projToPixelBasis);
     _constants.set(_ID("projectionMatrix"), GFX::PushConstantType::MAT4, camera->projectionMatrix());
     _constants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera->projectionMatrix()));
     _constants.set(_ID("invViewMatrix"), GFX::PushConstantType::MAT4, camera->worldMatrix());
+    _constants.set(_ID("mipCounts"), GFX::PushConstantType::UVEC3, mipCounts);
     _constants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
+    _constants.set(_ID("skyLayer"), GFX::PushConstantType::UINT, _context.getRenderer().postFX().isDayTime() ?  0u : 1u);
 
-    const auto& screenAtt = input._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
     const auto& normalsAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
     const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
 
@@ -97,10 +142,18 @@ bool SSRPreRenderOperator::execute(const Camera* camera, const RenderTargetHandl
     computeMipMapsCommand._defer = false;
     EnqueueCommand(bufferInOut, computeMipMapsCommand);
 
+
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0 });
     descriptorSetCmd._set._textureData.add({ depthTex, depthAtt.samplerHash(),TextureUsage::UNIT1 });
     descriptorSetCmd._set._textureData.add({ normalsTex, normalsAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
+    if (skyTexture == nullptr) {
+        descriptorSetCmd._set._textureData.add({ reflectionTexture->data(), environmentProbeAtt.samplerHash(), TextureUsage::REFLECTION_SKY });
+    } else {
+        descriptorSetCmd._set._textureData.add({ skyTexture->data(), skySampler, TextureUsage::REFLECTION_SKY });
+    }
+    descriptorSetCmd._set._textureData.add({ reflectionTexture->data(), environmentProbeAtt.samplerHash(), TextureUsage::REFLECTION_ENV });
+
     EnqueueCommand(bufferInOut, descriptorSetCmd);
 
     GFX::BeginRenderPassCommand beginRenderPassCmd = {};

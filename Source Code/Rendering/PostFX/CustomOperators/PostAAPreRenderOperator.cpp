@@ -17,7 +17,7 @@ namespace Divide {
 PostAAPreRenderOperator::PostAAPreRenderOperator(GFXDevice& context, PreRenderBatch& parent, ResourceCache* cache)
     : PreRenderOperator(context, parent, FilterType::FILTER_SS_ANTIALIASING)
 {
-    useSMAA(_ID(cache->context().config().rendering.postFX.postAAType.c_str()) == _ID("SMAA"));
+    useSMAA(cache->context().config().rendering.postFX.postAAType == "SMAA");
     postAAQualityLevel(cache->context().config().rendering.postFX.PostAAQualityLevel);
 
     RenderTargetDescriptor desc = {};
@@ -149,7 +149,7 @@ bool PostAAPreRenderOperator::execute(const Camera* camera, const RenderTargetHa
     if (useSMAA() != currentUseSMAA()) {
         currentUseSMAA(useSMAA());
 
-        _context.context().config().rendering.postFX.postAAType = useSMAA() ? "SMAA" : "FXAA";
+        _context.context().config().rendering.postFX.postAAType = (useSMAA() ? "SMAA" : "FXAA");
         _context.context().config().changed(true);
     }
 

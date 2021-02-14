@@ -44,7 +44,9 @@ constexpr TextureUsage g_materialTextures[] = {
     TextureUsage::OCCLUSION_METALLIC_ROUGHNESS,
     TextureUsage::HEIGHTMAP,
     TextureUsage::PROJECTION,
-    TextureUsage::NORMALMAP
+    TextureUsage::NORMALMAP,
+    TextureUsage::REFLECTION,
+    TextureUsage::REFRACTION
 };
 
 constexpr size_t MATERIAL_TEXTURE_COUNT = (sizeof(g_materialTextures) / sizeof(g_materialTextures[0]));

@@ -18,7 +18,6 @@
 #include "ECS/Components/Headers/RenderingComponent.h"
 #include "ECS/Components/Headers/TransformComponent.h"
 #include "Rendering/Headers/Renderer.h"
-#include "Rendering/PostFX/Headers/PostFX.h"
 
 namespace Divide {
 namespace {
@@ -97,7 +96,8 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
     NodeMaterialData tempData{};
     NodeMaterialTextures tempTextures{};
     // Get the colour matrix (base colour, metallic, etc)
-    rComp.getMaterialData(stage, tempData, tempTextures);
+    rComp.getMaterialData(tempData, tempTextures);
+
     // Match materials
     size_t materialHash = HashMaterialData(tempData);
     Util::Hash_combine(materialHash, HashTexturesData(tempTextures));
@@ -652,17 +652,17 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
             state1._blendProperties._blendOp = BlendOperation::ADD;
 
             RTBlendState& state2 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)];
-            state2._blendProperties._enabled = true;
-            state2._blendProperties._blendSrc = BlendProperty::ONE;
-            state2._blendProperties._blendDest = BlendProperty::ONE;
-            state2._blendProperties._blendOp = BlendOperation::ADD;
+            state2._blendProperties._enabled = false; 
+            
+            RTBlendState& state3 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::SPECULAR)];
+            state3._blendProperties._enabled = false;
 
             if_constexpr(Config::USE_COLOURED_WOIT) {
-                RTBlendState& state3 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::MODULATE)];
-                state3._blendProperties._enabled = true;
-                state3._blendProperties._blendSrc = BlendProperty::ONE;
-                state3._blendProperties._blendDest = BlendProperty::ONE;
-                state3._blendProperties._blendOp = BlendOperation::ADD;
+                RTBlendState& state4 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::MODULATE)];
+                state4._blendProperties._enabled = true;
+                state4._blendProperties._blendSrc = BlendProperty::ONE;
+                state4._blendProperties._blendDest = BlendProperty::ONE;
+                state4._blendProperties._blendOp = BlendOperation::ADD;
             }
         }
         EnqueueCommand(bufferInOut, setBlendStateCmd);
@@ -970,6 +970,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
         blitScreenColourCmd._blitColours[0].set(to_U16(GFXDevice::ScreenTargets::ALBEDO), to_U16(GFXDevice::ScreenTargets::ALBEDO), 0u, 0u);
         blitScreenColourCmd._blitColours[1].set(to_U16(GFXDevice::ScreenTargets::VELOCITY), to_U16(GFXDevice::ScreenTargets::VELOCITY), 0u, 0u);
         blitScreenColourCmd._blitColours[2].set(to_U16(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), to_U16(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), 0u, 0u);
+        blitScreenColourCmd._blitColours[3].set(to_U16(GFXDevice::ScreenTargets::SPECULAR), to_U16(GFXDevice::ScreenTargets::SPECULAR), 0u, 0u);
         EnqueueCommand(bufferInOut, blitScreenColourCmd);
     }
 

@@ -156,8 +156,6 @@ public:
     /// Queue a mipmap recalculation
     static void QueueComputeMipMap(GLuint textureHandle);
     static void DequeueComputeMipMap(GLuint textureHandle);
-    static void QueueMipMapRequired(GLuint textureHandle);
-    static void DequeueMipMapRequired(GLuint textureHandle);
 
     static void PushDebugMessage(const char* message);
     static void PopDebugMessage();
@@ -234,9 +232,6 @@ private:
 
     static SharedMutex s_mipmapQueueSetLock;
     static eastl::unordered_set<GLuint> s_mipmapQueue;
-
-    static SharedMutex s_mipmapCheckQueueSetLock;
-    static eastl::unordered_set<GLuint> s_mipmapCheckQueue;
 
     struct ResidentTexture {
         SamplerAddress _address = 0u;

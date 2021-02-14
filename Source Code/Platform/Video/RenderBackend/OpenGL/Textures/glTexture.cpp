@@ -140,7 +140,7 @@ void glTexture::threadedLoad() {
 }
 
 void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dimensions) {
-    const TextureType oldTexTypeDescriptor = _descriptor.texType();
+
     _loadingData = _data;
     _data = {};
 
@@ -165,7 +165,7 @@ void glTexture::resize(const std::pair<Byte*, size_t>& ptr, const vec2<U16>& dim
     _data = _loadingData;
 }
 
-void glTexture::reserveStorage() const {
+void glTexture::reserveStorage(const bool fromFile) const {
     assert(
         !(_loadingData._textureType == TextureType::TEXTURE_CUBE_MAP && _width != _height) &&
         "glTexture::reserverStorage error: width and height for cube map texture do not match!");
@@ -174,9 +174,6 @@ void glTexture::reserveStorage() const {
     const GLuint handle = _loadingData._textureHandle;
     const GLuint msaaSamples = static_cast<GLuint>(_descriptor.msaaSamples());
     const GLushort mipMaxLevel = _descriptor.mipCount();
-    if (mipMaxLevel > 1u && !_descriptor.autoMipMaps()) {
-        GL_API::QueueMipMapRequired(handle);
-    }
 
     switch (_loadingData._textureType) {
         case TextureType::TEXTURE_1D: {
@@ -219,7 +216,7 @@ void glTexture::reserveStorage() const {
         case TextureType::TEXTURE_2D_ARRAY:
         case TextureType::TEXTURE_CUBE_ARRAY: {
             U32 numFaces = 1;
-            if (_loadingData._textureType == TextureType::TEXTURE_CUBE_ARRAY) {
+            if (_loadingData._textureType == TextureType::TEXTURE_CUBE_ARRAY && !fromFile) {
                 numFaces = 6;
             }
             glTextureStorage3D(
@@ -256,7 +253,7 @@ void glTexture::loadData(const std::pair<Byte*, size_t>& data, const vec2<U16>& 
 
     bool expected = false;
     if (_allocatedStorage.compare_exchange_strong(expected, true)) {
-        reserveStorage();
+        reserveStorage(false);
     }
 
     assert(_allocatedStorage);
@@ -286,7 +283,7 @@ void glTexture::loadData(const ImageTools::ImageData& imageData) {
 
     bool expected = false;
     if (_allocatedStorage.compare_exchange_strong(expected, true)) {
-        reserveStorage();
+        reserveStorage(true);
     }
     assert(_allocatedStorage);
 

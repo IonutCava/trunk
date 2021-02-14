@@ -247,8 +247,7 @@ layout(location = 12) in vec3 vAmbient;
 layout(location = 13) in vec3 vBetaR;
 layout(location = 14) in vec3 vBetaM;
 
-layout(binding = TEXTURE_UNIT0) uniform samplerCube texSkyDay;
-layout(binding = TEXTURE_UNIT1) uniform samplerCube texSkyNight;
+layout(binding = TEXTURE_UNIT0) uniform samplerCubeArray texSky;
 layout(binding = TEXTURE_HEIGHT) uniform sampler2D weather;
 layout(binding = TEXTURE_OPACITY) uniform sampler2D curl;
 layout(binding = TEXTURE_OMR) uniform sampler3D worl;
@@ -573,7 +572,7 @@ vec3 nightColour(in vec3 rayDirection, in float lerpValue) {
 
     vec3 skyColour = dvd_nightSkyColour;
     if (dvd_useNightSkybox && lerpValue > 0.25f) {
-        const vec3 sky = texture(texSkyNight, rayDirection).rgb;
+        const vec3 sky = texture(texSky, vec4(rayDirection, 1.f)).rgb;
         skyColour = (skyColour + sky) - (skyColour * sky);
     }
 
@@ -601,7 +600,7 @@ vec3 dayColour(in vec3 rayDirection, in float lerpValue) {
     const vec3 dayColour = preetham(rayDirection);
 
     if (dvd_useDaySkybox && lerpValue < 0.2f) {
-        const vec3 sky = texture(texSkyDay, rayDirection).rgb;
+        const vec3 sky = texture(texSky, vec4(rayDirection, 0.f)).rgb;
 
         return mix((dayColour + sky) - (dayColour * sky),
                    dayColour,
@@ -644,8 +643,8 @@ vec3 getSkyColour(in vec3 rayDirection, in float lerpValue) {
 }
 
 vec3 getRawAlbedo(in vec3 rayDirection, in float lerpValue) {
-    return lerpValue <= 0.5f ? (dvd_useDaySkybox ? texture(texSkyDay, rayDirection).rgb : vec3(0.4f))
-                             : (dvd_useNightSkybox ? texture(texSkyNight, rayDirection).rgb : vec3(0.2f));
+    return lerpValue <= 0.5f ? (dvd_useDaySkybox ? texture(texSky, vec4(rayDirection, 0.f)).rgb : vec3(0.4f))
+                             : (dvd_useNightSkybox ? texture(texSky, vec4(rayDirection, 1.f)).rgb : vec3(0.2f));
 }
 
 vec3 atmosphereColour(in vec3 rayDirection, in float lerpValue) {
@@ -679,7 +678,6 @@ void main() {
         case DEBUG_LIGHT_HEATMAP:
         case DEBUG_DEPTH_CLUSTERS:
         case DEBUG_REFLECTIONS:
-        case DEBUG_REFLECTIVITY:
         case DEBUG_MATERIAL_IDS:  ret = vec3(0.0f); break;
         default:                  ret = atmosphereColour(rayDirection, lerpValue); break;
     }

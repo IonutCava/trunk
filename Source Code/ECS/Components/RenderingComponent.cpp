@@ -46,10 +46,6 @@ RenderingComponent::RenderingComponent(SceneGraphNode* parentSGN, PlatformContex
     _renderRange.min =  0.f;
     _renderRange.max =  g_renderRangeLimit;
 
-    for (ReflectRefractData& data : _reflectRefractData) {
-        data._refractionTexture._binding = to_U8(TextureUsage::REFRACTION_PLANAR);
-    }
-
     instantiateMaterial(parentSGN->getNode().getMaterialTpl());
 
     toggleRenderOption(RenderOptions::RENDER_GEOMETRY, true);
@@ -181,6 +177,9 @@ void RenderingComponent::instantiateMaterial(const Material_ptr& material) {
     }
 
     _materialInstance = material->clone(_parentSGN->name() + "_i");
+    _materialInstance->usePlanarReflections(_reflectorType == ReflectorType::PLANAR);
+    _materialInstance->usePlanarRefractions(_refractorType == RefractorType::PLANAR);
+
     if (_materialInstance != nullptr) {
         assert(!_materialInstance->resourceName().empty());
 
@@ -333,6 +332,22 @@ void RenderingComponent::rebuildMaterial() {
     });
 }
 
+void RenderingComponent::setReflectionAndRefractionType(const ReflectorType reflectType, const RefractorType refractType) noexcept { 
+    if (_reflectorType != reflectType) {
+        _reflectorType = reflectType;
+        if (_materialInstance != nullptr) {
+            _materialInstance->usePlanarReflections(_reflectorType == ReflectorType::PLANAR);
+        }
+    }
+
+    if (_refractorType != refractType) {
+        _refractorType = refractType;
+        if (_materialInstance != nullptr) {
+            _materialInstance->usePlanarRefractions(_refractorType == RefractorType::PLANAR);
+        }
+    }
+}
+
 void RenderingComponent::retrieveDrawCommands(const RenderStagePass& stagePass, const U32 cmdOffset, DrawCommandContainer& cmdsInOut) {
     const U8 stageIdx = to_U8(stagePass._stage);
     const U8 lodLevel = _lodLevels[stageIdx];
@@ -352,13 +367,25 @@ bool RenderingComponent::hasDrawCommands(const RenderStagePass& stagePass) {
     return getDrawPackage(stagePass).count<GFX::DrawCommand>() > 0u;
 }
 
-void RenderingComponent::getMaterialData(const RenderStage stage, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const {
+void RenderingComponent::getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const {
     if (_materialInstance != nullptr) {
         _materialInstance->getData(*this, dataOut, texturesOut);
-        
-        SharedLock<SharedMutex> r_lock(_reflectRefractData[stage == RenderStage::REFLECTION ? 0 : 1]._reflectionLock);
-        dataOut._data.y = _reflectRefractData[stage == RenderStage::REFLECTION ? 0 : 1]._reflectionTextureWidth;
-        dataOut._data.w = _reflectRefractData[stage == RenderStage::REFLECTION ? 0 : 1]._probeIndex;
+        for (U8 i = 0u; i < MATERIAL_TEXTURE_COUNT; ++i) {
+            // We don't overwrite custom reflection/refraction textures!
+            if (texturesOut[i] == 0u) {
+                if (g_materialTextures[i] == TextureUsage::REFLECTION) {
+                    const ReflectRefractData& refData = _reflectRefractData[to_base(DataType::REFLECT)];
+                    SharedLock<SharedMutex> r_lock(refData._lock);
+                    texturesOut[i] = refData._gpuAddress;
+                } else if (g_materialTextures[i] == TextureUsage::REFRACTION) {
+                    const ReflectRefractData& refData = _reflectRefractData[to_base(DataType::REFRACT)];
+                    SharedLock<SharedMutex> r_lock(refData._lock);
+                    texturesOut[i] = refData._gpuAddress;
+                }
+            }
+        }
+        //0u = sky cubemap. Shader: (Probe - 1u) = environment cube array index and probe data lookup index
+        dataOut._data.w = _reflectionProbeIndex + 1u;
     }
 }
 
@@ -457,33 +484,25 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     }
 
     if (!renderStagePass.isDepthPass()) {
-        bool isReflectionValid = false;
         if (renderStagePass._stage != RenderStage::REFLECTION) {
-            ReflectRefractData& refData = _reflectRefractData[renderStagePass._stage == RenderStage::REFLECTION ? 0 : 1];
-            SharedLock<SharedMutex> r_lock(refData._reflectionLock);
-            if (refData._reflectionTexture.isValid()) {
-                set._textureViews.add(refData._reflectionTexture);
-                isReflectionValid = true;
+            ReflectRefractData& refData = _reflectRefractData[to_base(DataType::REFLECT)];
+            SharedLock<SharedMutex> r_lock(refData._lock);
+            if (refData._texture._textureType != TextureType::COUNT) {
+                const TextureEntry* existingEntry = set._textureData.find(to_U8(TextureUsage::REFLECTION));
+                if (existingEntry == nullptr || !IsValid(*existingEntry)) {
+                    set._textureData.add({ refData._texture, refData._samplerHash, TextureUsage::REFLECTION });
+                }
             }
         }
 
-        // Always have a cubemap, even if it is the sky texture.
-        // Also, we can't use a cubemap if we are rendering one and I'm not sure it is worth the time investment to 
-        // implement recursive probe reflections just yet :/
-        if (!isReflectionValid) {
-            useSkyReflection(renderStagePass._stage);
-
-            ReflectRefractData& refData = _reflectRefractData[renderStagePass._stage == RenderStage::REFLECTION ? 0 : 1];
-            SharedLock<SharedMutex> r_lock(refData._reflectionLock);
-            assert(refData._reflectionTexture.isValid());
-            set._textureViews.add(refData._reflectionTexture);
-        }
-
         if (renderStagePass._stage != RenderStage::REFRACTION) {
-            ReflectRefractData& refData = _reflectRefractData[renderStagePass._stage == RenderStage::REFRACTION ? 0 : 1];
-            SharedLock<SharedMutex> r_lock(refData._refractionLock);
-            if (refData._refractionTexture.isValid()) {
-                set._textureViews.add(refData._refractionTexture);
+            ReflectRefractData& refData = _reflectRefractData[to_base(DataType::REFRACT)];
+            SharedLock<SharedMutex> r_lock(refData._lock);
+            if (refData._texture._textureType != TextureType::COUNT) {
+                const TextureEntry* existingEntry = set._textureData.find(to_U8(TextureUsage::REFRACTION));
+                if (existingEntry == nullptr || !IsValid(*existingEntry)) {
+                    set._textureData.add({ refData._texture, refData._samplerHash, TextureUsage::REFRACTION });
+                }
             }
         }
     }
@@ -530,10 +549,6 @@ size_t RenderingComponent::getSortKeyHash(const RenderStagePass& renderStagePass
     return 0u;
 }
 
-namespace Hack {
-    Sky* g_skyPtr = nullptr;
-}
-
 bool RenderingComponent::updateReflection(const U16 reflectionIndex,
                                           const bool inBudget,
                                           Camera* camera,
@@ -541,95 +556,27 @@ bool RenderingComponent::updateReflection(const U16 reflectionIndex,
                                           GFX::CommandBuffer& bufferInOut)
 {
     //Target texture: the opposite of what we bind during the regular passes
-    ReflectRefractData& refData = _reflectRefractData[1];
+    ReflectRefractData& refData = _reflectRefractData[to_base(DataType::REFLECT)];
+    if (_reflectorType != ReflectorType::COUNT && _reflectionCallback && inBudget) {
+        const RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR 
+                                                         ? RenderTargetUsage::REFLECTION_PLANAR
+                                                         : RenderTargetUsage::REFLECTION_CUBE,
+                                         reflectionIndex);
+        RenderPassManager* passManager = _context.parent().renderPassManager();
+        RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
+        _reflectionCallback(passManager, params, bufferInOut);
 
-    if (_reflectorType != ReflectorType::COUNT) {
-        if (_reflectionCallback && inBudget) {
-            const RenderTargetID reflectRTID(_reflectorType == ReflectorType::PLANAR 
-                                                             ? RenderTargetUsage::REFLECTION_PLANAR
-                                                             : RenderTargetUsage::REFLECTION_CUBE,
-                                             reflectionIndex);
-            RenderPassManager* passManager = _context.parent().renderPassManager();
-            RenderCbkParams params(_context, _parentSGN, renderState, reflectRTID, reflectionIndex, to_U8(_reflectorType), camera);
-            _reflectionCallback(passManager, params, bufferInOut);
-
-            const auto& targetAtt = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u);
-            const Texture_ptr& reflectionTexture = targetAtt.texture();
-            const TextureDescriptor& texDescriptor = reflectionTexture->descriptor();
-            refData._reflectionTextureWidth = reflectionTexture->width();
-
-            UniqueLock<SharedMutex> w_lock(refData._reflectionLock);
-            refData._reflectionTexture._descriptor = texDescriptor;
-            refData._reflectionTexture._view._textureData = reflectionTexture->data();
-            refData._reflectionTexture._view._samplerHash = targetAtt.samplerHash();
-            refData._reflectionTexture._view._mipLevels.set(0u, texDescriptor.mipCount());
-            refData._reflectionTexture._view._layerRange.set(reflectionIndex, 1u);
-            refData._reflectionTexture._view._targetType = _reflectorType == ReflectorType::PLANAR ? TextureType::TEXTURE_2D : TextureType::TEXTURE_CUBE_MAP;
-            refData._reflectionTexture._binding = to_U8(_reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
-            refData._probeIndex = 0u;
-            return true;
-
-        }
-
-        if (_reflectorType == ReflectorType::CUBE && !_envProbes.empty()) {
-            // We need to update this probe because we are going to use it. This will always lag one frame, but at least we keep updates separate from renders.
-            _envProbes.front()->queueRefresh();
-
-            const auto& targetAtt = SceneEnvironmentProbePool::ReflectionTarget()._rt->getAttachment(RTAttachmentType::Colour, 0);
-            const Texture_ptr& reflectionTexture = targetAtt.texture();
-            const TextureDescriptor& texDescriptor = reflectionTexture->descriptor();
-            refData._reflectionTextureWidth = reflectionTexture->width();
-
-            UniqueLock<SharedMutex> w_lock(refData._reflectionLock);
-            refData._reflectionTexture._descriptor = texDescriptor;
-            refData._reflectionTexture._view._textureData = reflectionTexture->data();
-            refData._reflectionTexture._view._samplerHash = targetAtt.samplerHash();
-            refData._reflectionTexture._view._mipLevels.set(0u, texDescriptor.mipCount());
-            refData._reflectionTexture._view._layerRange.set(_envProbes.front()->rtLayerIndex(), 1u);
-            refData._reflectionTexture._view._targetType = _reflectorType == ReflectorType::PLANAR ? TextureType::TEXTURE_2D : TextureType::TEXTURE_CUBE_MAP;
-            refData._reflectionTexture._binding = to_U8(_reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
-            refData._probeIndex = _envProbes.front()->poolIndex() + 1u;
-            return false;
-        }
-        if (!refData._reflectionTexture.isValid()) {
-            useSkyReflection(RenderStage::COUNT);
-            return false;
-        }
+        const auto& targetAtt = _context.renderTargetPool().renderTarget(reflectRTID).getAttachment(RTAttachmentType::Colour, 0u);
+        UniqueLock<SharedMutex> w_lock(refData._lock);
+        refData._texture = targetAtt.texture()->data();
+        refData._samplerHash = targetAtt.samplerHash();
+        refData._gpuAddress = targetAtt.texture()->getGPUAddress(refData._samplerHash);
+        return true;
     }
 
-    UniqueLock<SharedMutex> w_lock(refData._reflectionLock);
-    refData._reflectionTexture.reset();
-    refData._reflectionTextureWidth = 2u;
-    refData._probeIndex = 0u;
+    UniqueLock<SharedMutex> w_lock(refData._lock);
+    refData._texture = {};
     return false;
-}
-
-void RenderingComponent::useSkyReflection(const RenderStage stage) {
-    ReflectRefractData& refData = _reflectRefractData[stage == RenderStage::REFLECTION ? 0 : 1];
-
-    // Need a way better way of handling this ...
-    if (Hack::g_skyPtr == nullptr) {
-        const auto& skies = _context.parent().sceneManager()->getActiveScene().sceneGraph()->getNodesByType(SceneNodeType::TYPE_SKY);
-        if (!skies.empty()) {
-            Hack::g_skyPtr = &skies.front()->getNode<Sky>();
-        }
-    }
-
-    if (Hack::g_skyPtr != nullptr) {
-        UniqueLock<SharedMutex> w_lock(refData._reflectionLock);
-        Texture* reflectionTexture = Hack::g_skyPtr->activeSkyBox().get();
-        assert(reflectionTexture != nullptr);
-
-        refData._reflectionTexture._view._textureData = reflectionTexture->data();
-        refData._reflectionTexture._descriptor = reflectionTexture->descriptor();
-        refData._reflectionTexture._view._samplerHash = Hack::g_skyPtr->skyboxSampler();
-        refData._reflectionTexture._view._mipLevels.set(0u, refData._reflectionTexture._descriptor.mipCount());
-        refData._reflectionTexture._view._layerRange.set(0u, 1u);
-        refData._reflectionTexture._view._targetType = TextureType::TEXTURE_CUBE_MAP;
-        refData._reflectionTexture._binding = to_U8(_reflectorType == ReflectorType::PLANAR ? TextureUsage::REFLECTION_PLANAR : TextureUsage::REFLECTION_CUBE);
-        refData._reflectionTextureWidth = reflectionTexture->width();
-        refData._probeIndex = 0u;
-    }
 }
 
 bool RenderingComponent::updateRefraction(const U16 refractionIndex,
@@ -638,7 +585,7 @@ bool RenderingComponent::updateRefraction(const U16 refractionIndex,
                                           const SceneRenderState& renderState,
                                           GFX::CommandBuffer& bufferInOut) {
     //Target texture: the opposite of what we bind during the regular passes
-    ReflectRefractData& refData = _reflectRefractData[1];
+    ReflectRefractData& refData = _reflectRefractData[to_base(DataType::REFRACT)];
 
     // no default refraction system!
     if (_refractorType != RefractorType::COUNT && _refractionCallback && inBudget) {
@@ -650,45 +597,50 @@ bool RenderingComponent::updateRefraction(const U16 refractionIndex,
 
         const auto& targetAtt = _context.renderTargetPool().renderTarget(refractRTID).getAttachment(RTAttachmentType::Colour, 0u);
         const Texture_ptr& refractionTexture = targetAtt.texture();
-        const TextureDescriptor& texDescriptor = refractionTexture->descriptor();
 
-        UniqueLock<SharedMutex> w_lock(refData._refractionLock);
-        refData._refractionTexture._descriptor = texDescriptor;
-        refData._refractionTexture._view._textureData = refractionTexture->data();
-        refData._refractionTexture._view._samplerHash = targetAtt.samplerHash();
-        refData._refractionTexture._view._mipLevels.set(0u, texDescriptor.mipCount());
-        refData._refractionTexture._view._layerRange.set(refractionIndex, 1u);
-        refData._refractionTexture._view._targetType = TextureType::TEXTURE_2D;
+        UniqueLock<SharedMutex> w_lock(refData._lock);
+        refData._texture = refractionTexture->data();
+        refData._samplerHash = targetAtt.samplerHash();
+        refData._gpuAddress = targetAtt.texture()->getGPUAddress(refData._samplerHash);
         return true;
     }
 
-    UniqueLock<SharedMutex> w_lock(refData._refractionLock);
-    refData._refractionTexture.reset();
+    UniqueLock<SharedMutex> w_lock(refData._lock);
+    refData._texture = {};
     return false;
 }
 
-void RenderingComponent::updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position) {
-
+void RenderingComponent::updateNearestProbes(const vec3<F32>& position) {
     _envProbes.resize(0);
+    _reflectionProbeIndex = 0u;
 
-    probePool.lockProbeList();
-    const auto& probes = probePool.getLocked();
-    _envProbes.reserve(probes.size());
+    SceneEnvironmentProbePool* probePool = _context.context().kernel().sceneManager()->getEnvProbes();
+    if (probePool != nullptr) {
+        probePool->lockProbeList();
+        const auto& probes = probePool->getLocked();
+        _envProbes.reserve(probes.size());
 
-    U8 idx = 0u;
-    for (const auto& probe : probes) {
-        if (++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
-            break;
+        U8 idx = 0u;
+        for (const auto& probe : probes) {
+            if (++idx == Config::MAX_REFLECTIVE_PROBES_PER_PASS) {
+                break;
+            }
+            _envProbes.push_back(probe);
         }
-        _envProbes.push_back(probe);
-    }
-    probePool.unlockProbeList();
+        probePool->unlockProbeList();
 
-    eastl::sort(begin(_envProbes),
-                end(_envProbes),
-                [&position](const auto& a, const auto& b) -> bool {
-                    return a->distanceSqTo(position) < b->distanceSqTo(position);
-                });
+        if (idx > 0u) {
+            eastl::sort(begin(_envProbes),
+                        end(_envProbes),
+                        [&position](const auto& a, const auto& b) -> bool {
+                            return a->distanceSqTo(position) < b->distanceSqTo(position);
+                        });
+
+            // We need to update this probe because we are going to use it. This will always lag one frame, but at least we keep updates separate from renders.
+            _envProbes.front()->queueRefresh();
+            _reflectionProbeIndex = _envProbes.front()->poolIndex();
+        }
+    }
 }
 
 /// Draw some kind of selection doodad. May differ if editor is running or not
@@ -867,8 +819,7 @@ void RenderingComponent::OnData(const ECS::CustomEvent& data) {
         {
             TransformComponent* tComp = static_cast<TransformComponent*>(data._sourceCmp);
             assert(tComp != nullptr);
-            SceneEnvironmentProbePool* probes = _context.context().kernel().sceneManager()->getEnvProbes();
-            updateNearestProbes(*probes, tComp->getPosition());
+            updateNearestProbes(tComp->getPosition());
 
             tComp->getWorldMatrix(_worldMatrixCache);
 

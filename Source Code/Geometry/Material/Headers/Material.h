@@ -81,10 +81,6 @@ constexpr U8 g_ExtraSlots[] = {
     to_base(TextureUsage::PROJECTION)
 };
 
-static constexpr [[nodiscard]] size_t GetMaterialTextureCount() noexcept {
-    return (sizeof(g_TransparentSlots) + sizeof(g_ExtraSlots)) / sizeof(TextureUsage);
-}
-
 namespace TypeUtil {
     const char* ShadingModeToString(ShadingMode shadingMode) noexcept;
     ShadingMode StringToShadingMode(const stringImpl& name);
@@ -152,6 +148,8 @@ class Material final : public CachedResource {
     void receivesShadows(bool state, bool applyToInstances = false);
     void refractive(bool state, bool applyToInstances = false);
     void isStatic(bool state, bool applyToInstances = false);
+    void usePlanarReflections(bool state, bool applyToInstances = false);
+    void usePlanarRefractions(bool state, bool applyToInstances = false);
     void parallaxFactor(F32 factor, bool applyToInstances = false);
     void bumpMethod(BumpMethod newBumpMethod, bool applyToInstances = false);
     void toggleTransparency(bool state, bool applyToInstances = false);
@@ -254,7 +252,14 @@ class Material final : public CachedResource {
     PROPERTY_R(bool, isStatic, false);
     /// Use shaders that have bone transforms implemented
     PROPERTY_R(bool, hardwareSkinning, false);
+
     PROPERTY_RW(CustomShaderUpdateCBK, customShaderCBK);
+    /// These settings don't affect Environment and SSR reflections! Just custom reflection/refraction textures 
+    /// E.g. water and it's custom reflection and refraction render-to-texture passes
+    
+    /// Mirrors might use planar reflections, but complex objects might need cube maps
+    PROPERTY_R(bool, usePlanarReflections, true);
+    PROPERTY_R(bool, usePlanarRefractions, true);
 
     PROPERTY_R(bool, useBindlessTextures, false);
    private:

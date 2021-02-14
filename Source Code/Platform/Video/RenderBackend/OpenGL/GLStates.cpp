@@ -22,8 +22,6 @@ GLuint GL_API::s_maxAnisotropicFilteringLevel = 0u;
 bool GL_API::s_UseBindlessTextures = false;
 SharedMutex GL_API::s_mipmapQueueSetLock;
 eastl::unordered_set<GLuint> GL_API::s_mipmapQueue;
-SharedMutex GL_API::s_mipmapCheckQueueSetLock;
-eastl::unordered_set<GLuint> GL_API::s_mipmapCheckQueue;
 
 vectorEASTL<GL_API::ResidentTexture> GL_API::s_residentTextures;
 

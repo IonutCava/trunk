@@ -54,7 +54,7 @@ namespace Divide {
         LIGHT_HEATMAP,
         DEPTH_CLUSTERS,
         REFLECTIONS,
-        REFLECTIVITY,
+        REFRACTIONS,
         MATERIAL_IDS,
         SSR,
         COUNT

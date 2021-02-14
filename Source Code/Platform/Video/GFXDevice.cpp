@@ -270,12 +270,12 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     defaultSampler.anisotropyLevel(0);
     const size_t samplerHash = defaultSampler.getHash();
 
-    SamplerDescriptor defaultSamplerMis = {};
-    defaultSamplerMis.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
-    defaultSamplerMis.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
-    defaultSamplerMis.magFilter(TextureFilter::LINEAR);
-    defaultSamplerMis.anisotropyLevel(0);
-    const size_t samplerHashMips = defaultSamplerMis.getHash();
+    SamplerDescriptor defaultSamplerMips = {};
+    defaultSamplerMips.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
+    defaultSamplerMips.minFilter(TextureFilter::LINEAR_MIPMAP_LINEAR);
+    defaultSamplerMips.magFilter(TextureFilter::LINEAR);
+    defaultSamplerMips.anisotropyLevel(0);
+    const size_t samplerHashMips = defaultSamplerMips.getHash();
 
     //PrePass
     TextureDescriptor depthDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
@@ -286,8 +286,10 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     //MainPass
     TextureDescriptor screenDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
     TextureDescriptor normalsAndMaterialDataDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGBA, GFXDataFormat::FLOAT_16);
+    TextureDescriptor specularDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
     screenDescriptor.autoMipMaps(false);
     normalsAndMaterialDataDescriptor.mipCount(1u);
+    specularDescriptor.mipCount(1u);
 
     // Normal and MSAA
     for (U8 i = 0; i < 2; ++i) {
@@ -299,6 +301,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         depthDescriptor.msaaSamples(sampleCount);
         normalsAndMaterialDataDescriptor.msaaSamples(sampleCount);
         velocityDescriptor.msaaSamples(sampleCount);
+        specularDescriptor.msaaSamples(sampleCount);
 
         {
 
@@ -306,6 +309,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
                 { screenDescriptor,                 screenSampler, RTAttachmentType::Colour, to_U8(ScreenTargets::ALBEDO),   DefaultColours::DIVIDE_BLUE },
                 { velocityDescriptor,               samplerHash,   RTAttachmentType::Colour, to_U8(ScreenTargets::VELOCITY), VECTOR4_ZERO },
                 { normalsAndMaterialDataDescriptor, samplerHash,   RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), VECTOR4_ZERO },
+                { specularDescriptor,               samplerHash,   RTAttachmentType::Colour, to_U8(ScreenTargets::SPECULAR), VECTOR4_ZERO },
                 { depthDescriptor,                  samplerHash,   RTAttachmentType::Depth }
             };
 
@@ -343,6 +347,9 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         TextureDescriptor ssrDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::FLOAT_16);
         ssrDescriptor.mipCount(1u);
 
+        TextureDescriptor kDkSDescriptor(TextureType::TEXTURE_2D, GFXImageFormat::RG, GFXDataFormat::UNSIGNED_BYTE);
+        ssrDescriptor.mipCount(1u);
+        
         RTAttachmentDescriptors attachments = {
             { ssrDescriptor, samplerHash, RTAttachmentType::Colour, 0u, VECTOR4_ZERO }
         };
@@ -479,11 +486,13 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
 
         const RenderTarget& screenTarget = _rtPool->renderTarget(i == 0 ? RenderTargetUsage::SCREEN : RenderTargetUsage::SCREEN_MS);
         const RTAttachment_ptr& screenNormalsAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
+        const RTAttachment_ptr& specularAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Colour, to_U8(ScreenTargets::SPECULAR));
         const RTAttachment_ptr& screenDepthAttachment = screenTarget.getAttachmentPtr(RTAttachmentType::Depth, 0);
         
         vectorEASTL<ExternalRTAttachmentDescriptor> externalAttachments = {
             { screenNormalsAttachment, RTAttachmentType::Colour, to_U8(ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES) },
-            { screenDepthAttachment,  RTAttachmentType::Depth }
+            { specularAttachment,      RTAttachmentType::Colour, to_U8(ScreenTargets::SPECULAR) },
+            { screenDepthAttachment,   RTAttachmentType::Depth }
         };
 
         if_constexpr(Config::USE_COLOURED_WOIT) {
@@ -1352,7 +1361,7 @@ void GFXDevice::uploadGPUBlock() {
 
     if (_gpuBlock._needsUpload) {
         _gpuBlock._needsUpload = false;
-        _gpuBlock._data._otherProperties.x = materialDebugFlag();
+        _gpuBlock._data._otherProperties.x = to_F32(materialDebugFlag()._to_integral());
         _gfxDataBuffer->writeData(&_gpuBlock._data);
         _gfxDataBuffer->bind(ShaderBufferLocation::GPU_BLOCK);
         _gfxDataBuffer->incQueue();
@@ -1946,7 +1955,18 @@ void GFXDevice::initDebugViews() {
         NormalPreview->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, true);
         NormalPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         NormalPreview->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 2u);
-        NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
+        NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);  
+        
+        DebugView_ptr SpecularPreview = std::make_shared<DebugView>();
+        SpecularPreview->_shader = _renderTargetDraw;
+        SpecularPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::SPECULAR)).texture();
+        SpecularPreview->_samplerHash = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::SCREEN)).getAttachment(RTAttachmentType::Colour, to_U8(ScreenTargets::SPECULAR)).samplerHash();
+        SpecularPreview->_name = "Specular";
+        SpecularPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
+        SpecularPreview->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
+        SpecularPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
+        SpecularPreview->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 3u);
+        SpecularPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
 
         DebugView_ptr VelocityPreview = std::make_shared<DebugView>();
         VelocityPreview->_shader = _renderTargetDraw;
@@ -2025,6 +2045,7 @@ void GFXDevice::initDebugViews() {
         HiZView = addDebugView(HiZ);
         addDebugView(DepthPreview);
         addDebugView(NormalPreview);
+        addDebugView(SpecularPreview);
         addDebugView(VelocityPreview);
         addDebugView(SSAOPreview);
         addDebugView(AlphaAccumulationHigh);

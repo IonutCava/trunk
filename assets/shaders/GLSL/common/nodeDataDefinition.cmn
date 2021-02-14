@@ -50,6 +50,20 @@
 #define samplerNormal sampler2D
 #define samplerNormalUVType vec3
 #endif //SAMPLER_NORMALMAP_IS_ARRAY
+#if defined(USE_PLANAR_REFLECTION)
+#define samplerReflect sampler2D
+#define samplerReflectUVType vec2
+#else //USE_PLANAR_REFLECTION
+#define samplerReflect samplerCube
+#define samplerReflectUVType vec3
+#endif //USE_PLANAR_REFLECTION
+#if defined(USE_PLANAR_REFRACTION)
+#define samplerRefract sampler2D
+#define samplerRefractUVType vec2
+#else //USE_PLANAR_REFRACTION
+#define samplerRefract samplerCube
+#define samplerRefractUVType vec3
+#endif //USE_PLANAR_REFRACTION
 
 struct NodeTransformData {
     mat4 _worldMatrix;
@@ -84,7 +98,7 @@ struct NodeMaterialData
     //a   - parallax factor
     vec4 _emissiveAndParallax;
     //x = 4x8U: occlusion, metallic, roughness, reserved
-    //y = IBL texture size
+    //y = reserved
     //z = 4x8U: tex op, bump method, reserved, reserved
     //w = Probe lookup index + 1 (0 = sky cubemap)
     uvec4 _data;
@@ -104,8 +118,6 @@ struct NodeMaterialData
 #define Metallic(materialData) PACKED_OMR(materialData).g
 
 #define Roughness(materialData) PACKED_OMR(materialData).b
-
-#define IBLSize(materialData) materialData._data.y
 
 #define dvd_probeIndex(materialData) materialData._data.w
 

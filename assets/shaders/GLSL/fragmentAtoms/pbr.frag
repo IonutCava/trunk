@@ -6,15 +6,21 @@
 // Following BRDF methods are based upon research Frostbite EA
 //[Lagrade et al. 2014, "Moving Frostbite to Physically Based Rendering"]
 
-#include "IBL.frag"
 
+vec3 SchlickFresnel(in vec3 specular, in float VdotH);
+
+float SchlickFresnel(in float u) {
+    const float m = 1.f - u;
+    const float m2 = m * m;
+    return m2 * m2 * m; // pow(m,5)
+}
 
 //-------------------- VISIBILITY ---------------------------------------------------
 // Smith GGX corrected Visibility
 //   NdotL        = the dot product of the normal and direction to the light
 //   NdotV        = the dot product of the normal and the camera view direction
 //   roughness    = the roughness of the pixel
-float SmithGGXSchlickVisibility(float NdotL, float NdotV, float roughness)
+float SmithGGXSchlickVisibility(in float NdotL, in float NdotV, in float roughness)
 {
     const float rough2 = roughness * roughness;
     const float lambdaV = NdotL  * sqrt((-NdotV * rough2 + NdotV) * NdotV + rough2);
@@ -26,7 +32,7 @@ float SmithGGXSchlickVisibility(float NdotL, float NdotV, float roughness)
 // Neumann Visibility
 //   NdotV        = the dot product of the normal and the camera view direction
 //   NdotL        = the dot product of the normal and direction to the light
-float NeumannVisibility(float NdotV, float NdotL)
+float NeumannVisibility(in float NdotV, in float NdotL)
 {
     return NdotL * NdotV / max(1e-7, max(NdotL, NdotV));
 }
@@ -59,7 +65,7 @@ float BeckmannDistribution(in float NdotH, in float roughness)
 // GGX Distribution
 //   NdotH        = the dot product of the normal and the half vector
 //   roughness    = the roughness of the pixel
-float GGXDistribution(float NdotH, float roughness)
+float GGXDistribution(in float NdotH, in float roughness)
 {
     const float rough2 = SQUARED(roughness);
     const float tmp = (NdotH * rough2 - NdotH) * NdotH + 1.0f;
@@ -73,7 +79,7 @@ float GGXDistribution(float NdotH, float roughness)
 //   diffuseColor = the rgb color value of the pixel
 //   NdotV        = the normal dot with the camera view direction
 //   roughness    = the roughness of the pixel
-vec3 LambertianDiffuse(vec3 diffuseColor, float NdotV, float roughness)
+vec3 LambertianDiffuse(in vec3 diffuseColor, in float NdotV, in float roughness)
 {
     return diffuseColor * INV_M_PI;
 }
@@ -84,7 +90,7 @@ vec3 LambertianDiffuse(vec3 diffuseColor, float NdotV, float roughness)
 //   NdotV        = the normal dot with the camera view direction
 //   NdotL        = the normal dot with the light direction
 //   VdotH        = the camera view direction dot with the half vector
-vec3 CustomLambertianDiffuse(vec3 diffuseColor, float NdotV, float roughness)
+vec3 CustomLambertianDiffuse(in vec3 diffuseColor, in float NdotV, in float roughness)
 {
     return diffuseColor * INV_M_PI * pow(NdotV, 0.5f + 0.3f * roughness);
 }
@@ -95,16 +101,22 @@ vec3 CustomLambertianDiffuse(vec3 diffuseColor, float NdotV, float roughness)
 //   NdotV        = the normal dot with the camera view direction
 //   NdotL        = the normal dot with the light direction
 //   VdotH        = the camera view direction dot with the half vector
-vec3 BurleyDiffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float VdotH)
+vec3 BurleyDiffuse(in vec3 diffuseColor, in float roughness, in float NdotV, in float NdotL, in float VdotH, in float LdotH)
 {
+#if 0
     const float energyBias = mix(roughness, 0.0f, 0.5f);
-    const float energyFactor = mix(roughness, 1.0f, 1.0f / 1.51f);
-    const float fd90 = energyBias + 2.0f * VdotH * VdotH * roughness;
-    const float f0 = 1.0f;
-    const float lightScatter = f0 + (fd90 - f0) * pow(1.0f - NdotL, 5.0f);
-    const float viewScatter = f0 + (fd90 - f0) * pow(1.0f - NdotV, 5.0f);
-
+    const float energyFactor = mix(roughness, 1.f, 1.f / 1.51f);
+    const float fd90 = energyBias + 2.f * VdotH * VdotH * roughness;
+    const float f0 = 1.f;
+    const float lightScatter = f0 + (fd90 - f0) * pow(1.f - NdotL, 5.f);
+    const float viewScatter = f0 + (fd90 - f0) * pow(1.f - NdotV, 5.f);
     return diffuseColor * lightScatter * viewScatter * energyFactor;
+#else
+    const float INV_FD90 = 2.f * LdotH * LdotH * roughness - 0.5f;
+    const float FdV = 1.f + INV_FD90 * SchlickFresnel(NdotV);
+    const float FdL = 1.f + INV_FD90 * SchlickFresnel(NdotL);
+    return diffuseColor * INV_M_PI * FdV * FdL * NdotL;
+#endif
 }
 //----------------------------------------------------------------------------------
 
@@ -127,7 +139,7 @@ vec3 SchlickGaussianFresnel(in vec3 specular, in float VdotH) {
 
 // Schlick Gaussian Fresnel
 //   specular  = the rgb specular color value of the pixel
-//   VdotH     = the dot product of the camera view direction and the half vector 
+//   LdotH     = the dot product of the light direction and the half vector 
 vec3 SchlickFresnelCustom(in vec3 specular, in float LdotH) {
     const float ior = 0.25f;
     const float airIor = 1.000277f;
@@ -155,7 +167,7 @@ vec3 Fresnel(in vec3 specular, in float VdotH, in float LdotH) {
 // Get Distribution
     // NdotH        = the dot product of the normal and the half vector
     // roughness    = the roughness of the pixel
-float Distribution(float NdotH, float roughness) {
+float Distribution(in float NdotH, in float roughness) {
 #if defined(PBR_SHADING)
     return GGXDistribution(NdotH, roughness);
 #else
@@ -169,12 +181,13 @@ float Distribution(float NdotH, float roughness) {
     // NdotV        = the normal dot with the camera view direction
     // NdotL        = the normal dot with the light direction
     // VdotH        = the camera view direction dot with the half vector
-vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float VdotH) {
+vec3 Diffuse(in vec3 diffuseColor, in float roughness, in float NdotV, in float NdotL, in float VdotH, in float LdotH) {
+
 #if defined(PBR_SHADING)
-    return BurleyDiffuse(diffuseColor, roughness, NdotV, NdotL, VdotH);
+    return BurleyDiffuse(diffuseColor, roughness, NdotV, NdotL, VdotH, LdotH);
 #else
-    return LambertianDiffuse(diffuseColor, NdotV, roughness);
-    //return CustomLambertianDiffuse(diffuseColor, NdotV, roughness);
+    return LambertianDiffuse(diffuseColor, NdotV, roughness) * NdotL;
+    //return CustomLambertianDiffuse(diffuseColor, NdotV, roughness) * NdotL;
 #endif
 }
 
@@ -182,7 +195,7 @@ vec3 Diffuse(vec3 diffuseColor, float roughness, float NdotV, float NdotL, float
     // NdotL        = the dot product of the normal and direction to the light
     // NdotV        = the dot product of the normal and the camera view direction
     // roughness    = the roughness of the pixel
-float Visibility(float NdotL, float NdotV, float roughness) {
+float Visibility(in float NdotL, in float NdotV, in float roughness) {
 #if defined(PBR_SHADING)
     return NeumannVisibility(NdotV, NdotL);
 #else
@@ -191,42 +204,39 @@ float Visibility(float NdotL, float NdotV, float roughness) {
 }
 
 //Return the PBR BRDF value
-    // lightDir  = the vector to the light
     // lightVec  = normalised lightDir
     // toCamera  = view direction
     // normal    = surface normal of the pixel
     // ndl       = dot(normal,lightVec) [M_EPSILON,1.0f]
-vec3 GetBRDF(in vec3 lightDir,
-             in vec3 lightVec,
-             in vec3 toCamera,
-             in vec3 normal,
+vec3 GetBRDF(in vec3 L,
+             in vec3 V,
+             in vec3 N,
              in vec3 diffColour,
              in vec3 specColour,
              in float ndl,
-             in float roughness,
-             out float specularFactorOut)
+             in float roughness)
 {
 #if defined(PBR_SHADING) || defined(USE_SHADING_PHONG) || defined (USE_SHADING_BLINN_PHONG)
-    // Vector data
-    const vec3  Hn  = normalize(toCamera + lightDir);
-    const float vdh = clamp((dot(toCamera, Hn)), M_EPSILON, 1.0f);
-    const float ndh = clamp((dot(normal, Hn)), M_EPSILON, 1.0f);
-    const float ndv = abs(dot(normal, toCamera)) + M_EPSILON;
-    const float ldh = clamp((dot(lightVec, Hn)), M_EPSILON, 1.0);
+    const vec3 H = normalize(V + L);
+
+    const float vdh = clamp((dot(V, H)), M_EPSILON, 1.f);
+    const float ldh = clamp((dot(L, H)), M_EPSILON, 1.f);
+    const float ndh = clamp((dot(N, H)), M_EPSILON, 1.f);
+    const float ndv = abs(dot(N, V)) + M_EPSILON;
+
 
     // Material data
-    const vec3 diffuseFactor = Diffuse(diffColour, roughness, ndv, ndl, vdh) * ndl;
+    const vec3 diffuseFactor = Diffuse(diffColour, roughness, ndv, ndl, vdh, ldh);
+
     const vec3 fresnelTerm   = Fresnel(specColour, vdh, ldh);
     const float distTerm     = Distribution(ndh, roughness);
     const float visTerm      = Visibility(ndl, ndv, roughness);
 
     const vec3 specularFactor = distTerm * visTerm * fresnelTerm * ndl * INV_M_PI;
-    specularFactorOut = length(specularFactor);
 
     return diffuseFactor + specularFactor;
 #elif defined(USE_SHADING_TOON)
     const float intensity = dot(lightVec, normal);
-    specularFactorOut = intensity;
     vec3 color2 = vec3(1.0f);
     if (intensity > 0.95f)      color2 = vec3(1.0f);
     else if (intensity > 0.75f) color2 = vec3(0.8f);
@@ -235,7 +245,6 @@ vec3 GetBRDF(in vec3 lightDir,
     else                        color2 = vec3(0.2f);
     return color2 * diffColour;
 #else
-    specularFactorOut = 0.0f;
     return vec3(0.6f, 1.0f, 0.7f); //obvious lime-green
 #endif //USE_SHADING_TOON
 }

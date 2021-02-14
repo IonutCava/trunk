@@ -54,6 +54,7 @@ namespace Attorney {
     class SceneManagerKernel;
     class SceneManagerScenePool;
     class SceneManagerRenderPass;
+    class SceneManagerSSRAccessor;
     class SceneManagerCameraAccessor;
 };
 namespace AI {
@@ -67,6 +68,7 @@ class ScenePool;
 class UnitComponent;
 class SceneShaderData;
 class ShaderComputeQueue;
+class SSRPreRenderOperator;
 class SolutionExplorerWindow;
 class GUIConsoleCommandParser;
 FWD_DECLARE_MANAGED_CLASS(Player);
@@ -80,6 +82,7 @@ class SceneManager final : public FrameListener,
     friend class Attorney::SceneManagerKernel;
     friend class Attorney::SceneManagerScenePool;
     friend class Attorney::SceneManagerRenderPass;
+    friend class Attorney::SceneManagerSSRAccessor;
     friend class Attorney::SceneManagerCameraAccessor;
 
 public:
@@ -247,6 +250,7 @@ protected:
     bool saveNode(const SceneGraphNode* targetNode) const;
     bool loadNode(SceneGraphNode* targetNode) const;
     SceneNode_ptr createNode(SceneNodeType type, const ResourceDescriptor& descriptor);
+    std::pair<Texture_ptr, size_t/*sampler*/> getSkyTexture() const;
 
 private:
     bool _init = false;
@@ -348,6 +352,15 @@ class SceneManagerScenePool {
    friend class Divide::ScenePool;
 };
 
+class SceneManagerSSRAccessor {
+
+    static std::pair<Texture_ptr, size_t> getSkyTexture(const Divide::SceneManager* mgr) {
+        return mgr->getSkyTexture();
+    }
+
+    friend class Divide::SSRPreRenderOperator;
+};
+
 class SceneManagerCameraAccessor {
     static Camera* playerCamera(const Divide::SceneManager* mgr) {
         return mgr->playerCamera();
@@ -368,7 +381,6 @@ class SceneManagerCameraAccessor {
     static void moveCameraToNode(Divide::SceneManager* mgr, const SceneGraphNode* targetNode) {
         mgr->moveCameraToNode(targetNode);
     }
-
 
     friend class Divide::Scene;
     friend class Divide::Editor;

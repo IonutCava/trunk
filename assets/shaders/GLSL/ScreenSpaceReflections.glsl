@@ -1,6 +1,7 @@
 --Fragment
 
 #include "utility.frag"
+#include "IBL.frag"
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texScreen;
 layout(binding = TEXTURE_UNIT1) uniform sampler2D texDepth;
@@ -11,21 +12,22 @@ uniform mat4 projectionMatrix;
 uniform mat4 invProjectionMatrix;
 uniform mat4 invViewMatrix;
 uniform vec2 zPlanes;
+uniform float maxSteps;
+uniform float binarySearchIterations;
+uniform float jitterAmount;
+uniform float maxDistance;
+uniform float stride;
+uniform float zThickness;
+uniform float strideZCutoff;
+uniform float screenEdgeFadeStart;
+uniform float eyeFadeStart;
+uniform float eyeFadeEnd;
+uniform bool ssrEnabled;
 
 out vec4 _colourOut;
 
 // SSR parameters
-const float maxSteps = 256;                 // Maximum number of iterations. Higher gives better images but may be slow
-const float binarySearchIterations = 4;
-const float jitterAmount = 1.f;
-const float maxDistance = 100.f; // Maximum camera-space distance to trace before returning a miss
-const float stride = 8.f;
-const float zThickness = 1.5f;              // Camera space thickness to ascribe to each pixel in the depth buffer
-const float strideZCutoff = 100.f;
-const float screenEdgeFadeStart = 0.75f;
-const float eyeFadeStart = 0.5f;
-const float eyeFadeEnd = 1.f;
-const float maxRoughnessMipMap = 4.0;
+
 
 float DistanceSquared(in vec2 a, in vec2 b) {
     a -= b;
@@ -139,7 +141,6 @@ bool FindSSRHit(vec3 csOrig,          // Camera-space ray origin, which must be 
     return intersect;
 }
 
-
 float ComputeBlendFactorForIntersection(float iterationCount,
                                         vec2 hitPixel,
                                         vec3 hitPoint,
@@ -166,33 +167,37 @@ float ComputeBlendFactorForIntersection(float iterationCount,
     return alpha;
 }
 
-
-vec3 computeFresnelSchlickRoughness(in float NdotV, in vec3 F0, in float roughness) {
-    return F0 + (max(vec3(1.0f - roughness), F0) - F0) * pow(1.0f - NdotV, 5.0f);
-}
-
-bool detail_isInFrustum(in vec2 pixelCoord) {
-    return all(bvec4(pixelCoord.x >= 0.0f,
-                     pixelCoord.x <= 1.0f,
-                     pixelCoord.y >= 0.0f,
-                     pixelCoord.y <= 1.0f));
+bool isInFrustum(in vec2 texCoord) {
+    return all(bvec4(texCoord.x >= 0.0f,
+                     texCoord.x <= 1.0f,
+                     texCoord.y >= 0.0f,
+                     texCoord.y <= 1.0f));
 }
 
 void main() {
-    // Sample GBuffer information
-    const float depth = texture(texDepth, VAR._texCoord).r;
+    _colourOut = vec4(0.f, 0.f, 0.f, 1.f);
 
-    if (depth >= INV_Z_TEST_SIGMA) {
-        _colourOut = vec4(0.f);
+    if (dvd_materialDebugFlag != DEBUG_COUNT && dvd_materialDebugFlag != DEBUG_SSR) {
         return;
     }
+
+    const float depth = texture(texDepth, VAR._texCoord).r;
+    if (depth >= INV_Z_TEST_SIGMA) {
+        return;
+    }
+
     const vec4 normalsAndMaterialData = texture(texNormal, VAR._texCoord);
+    const uint probeID = uint(normalsAndMaterialData.a);
+    if (probeID == PROBE_ID_NO_REFLECTIONS) {
+        return;
+    }
 
     const vec2 packedNormals = normalsAndMaterialData.rg;
-    const float metalness = normalsAndMaterialData.b;
-    const float roughness = normalsAndMaterialData.a;
+    const vec2 MR = unpackVec2(normalsAndMaterialData.b);
+    const float metalness = saturate(MR.x);
+    const float roughness = saturate(MR.y);
+
     if (roughness >= INV_Z_TEST_SIGMA) {
-        _colourOut = vec4(0.f);
         return;
     }
 
@@ -202,25 +207,29 @@ void main() {
     const vec3 vsRayDir = normalize(vsPos);
     const vec3 vsReflect = reflect(vsRayDir, vsNormal);
     const vec3 worldReflect = (invViewMatrix * vec4(vsReflect.xyz, 0.f)).xyz;
+    const vec3 worldPos = (invViewMatrix * vec4(vsPos.xyz, 1.f)).xyz;
+    const vec3 worldNormal = (invViewMatrix * vec4(vsNormal.xyz, 0.f)).xyz;
 
-    const vec2 uv2 = VAR._texCoord * dvd_screenDimensions;
-    const float jitter = mod((uv2.x + uv2.y) * 0.25f, 1.f);
-
-    vec3 hitPoint = vec3(0.f);
-    vec2 hitPixel = vec2(0.f);
-    float iterations = 0;
-    const bool hit = FindSSRHit(vsPos, vsReflect, jitter * jitterAmount, hitPixel, hitPoint, iterations);
-
-    if (hit && detail_isInFrustum(hitPixel)) {
-        const float reflBlend = ComputeBlendFactorForIntersection(iterations, hitPixel, hitPoint, vsPos, vsReflect);
-
-        const vec3 ambientReflected = mix(vec3(0.f),
-                                          textureLod(texScreen, hitPixel, roughness * maxRoughnessMipMap).rgb,
-                                          reflBlend);
-
-        _colourOut = vec4(ambientReflected, 0.f);
-        return;
+    vec3 ambientReflected = vec3(0.f);
+    if (probeID != PROBE_ID_NO_ENV_REFLECTIONS) {
+        ambientReflected = GetCubeReflection(worldReflect, worldNormal, worldPos, probeID, roughness);
     }
 
-    _colourOut = vec4(0.f, 0.f, 0.f, 0.f);
+    if (ssrEnabled && probeID != PROBE_ID_NO_SSR) {
+        const vec2 uv2 = VAR._texCoord * dvd_screenDimensions;
+        const float jitter = mod((uv2.x + uv2.y) * 0.25f, 1.f);
+
+        vec3 hitPoint = vec3(0.f);
+        vec2 hitPixel = vec2(0.f);
+        float iterations = 0;
+        const bool hit = FindSSRHit(vsPos, vsReflect, jitter * jitterAmount, hitPixel, hitPoint, iterations);
+        if (hit && isInFrustum(hitPixel)) {
+            const float reflBlend = ComputeBlendFactorForIntersection(iterations, hitPixel, hitPoint, vsPos, vsReflect);
+            ambientReflected = mix(ambientReflected,
+                                   textureLod(texScreen, hitPixel, roughness * MAX_SCREEN_MIPS).rgb,
+                                   reflBlend);
+        }
+    }
+
+    _colourOut = vec4(ambientReflected, 1.f);
 }

@@ -35,7 +35,7 @@
 
 namespace Divide {
 
-constexpr U32 RT_MAX_COLOUR_ATTACHMENTS = 4;
+constexpr U32 RT_MAX_COLOUR_ATTACHMENTS = 6;
 
 using SamplerAddress = U64;
 
@@ -70,28 +70,45 @@ enum class RenderTargetUsage : U8 {
 /// A list of built-in sampler slots. Use these if possible and keep them sorted by how often they are used
 enum class TextureUsage : U8 {
     UNIT0 = 0,
-    NORMALMAP = 1,
-    HEIGHTMAP = 2,
-    SHADOW_LAYERED = 3,
-    DEPTH = 4,
-    SHADOW_SINGLE = 5,
-    REFLECTION_CUBE = 6,
-    SHADOW_CUBE = 7,
-    OPACITY = 8,
-    OCCLUSION_METALLIC_ROUGHNESS = 9,
-    UNIT1 = 10,
-    PROJECTION = 11,
-    REFLECTION_PLANAR = 12,
-    REFRACTION_PLANAR = 13,
-    POST_FX_DATA = 14,
-    SCENE_NORMALS = 15,
+    NORMALMAP,
+    HEIGHTMAP,
+    SHADOW_LAYERED,
+    DEPTH,
+    SHADOW_SINGLE,
+    SHADOW_CUBE,
+    OPACITY,
+    OCCLUSION_METALLIC_ROUGHNESS,
+    UNIT1,
+    PROJECTION,
+    REFLECTION,
+    REFRACTION,
+    REFLECTION_ENV,
+    REFLECTION_SKY,
+    POST_FX_DATA,
+    SCENE_NORMALS,
     COUNT,
 };
 
 namespace Names {
     static const char* textureUsage[] = {
-        "UNIT0", "NORMALMAP", "HEIGHTMAP", "SHADOW_LAYERED", "DEPTH", "SHADOW_SINGLE", "REFLECTION_CUBE", "SHADOW_CUBE", "OPACITY",
-        "OCCLUSION_METALLIC_ROUGHNESS", "UNIT1", "PROJECTION", "REFLECTION_PLANAR", "REFRACTION_PLANAR", "POST_FX_DATA", "SCENE_NORMALS", "NONE"
+        "UNIT0",
+        "NORMALMAP",
+        "HEIGHTMAP",
+        "SHADOW_LAYERED",
+        "DEPTH",
+        "SHADOW_SINGLE",
+        "SHADOW_CUBE",
+        "OPACITY",
+        "OCCLUSION_METALLIC_ROUGHNESS",
+        "UNIT1",
+        "PROJECTION",
+        "REFLECTION",
+        "REFRACTION",
+        "REFLECTION_ENV",
+        "REFLECTION_SKY",
+        "POST_FX_DATA",
+        "SCENE_NORMALS",
+        "NONE"
     };
 };
 

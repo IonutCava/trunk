@@ -46,6 +46,6 @@ void PreRenderOperator::idle(const Configuration& config) {
 }
 
 void PreRenderOperator::onToggle(const bool state) {
-    ACKNOWLEDGE_UNUSED(state);
+    _enabled = state;
 }
 } //namespace Divide

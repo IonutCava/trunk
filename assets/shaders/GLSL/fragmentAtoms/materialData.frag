@@ -10,9 +10,6 @@
 
 #if !defined(PRE_PASS)
 layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
-#if defined(USE_PLANAR_REFRACTION)
-layout(binding = TEXTURE_REFRACTION_PLANAR) uniform sampler2D texRefractPlanar;
-#endif //USE_PLANAR_REFRACTION
 #endif //!PRE_PASS
 
 #if defined(COMPUTE_TBN)

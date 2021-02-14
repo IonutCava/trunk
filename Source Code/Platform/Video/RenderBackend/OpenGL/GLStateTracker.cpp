@@ -194,7 +194,6 @@ void GLStateTracker::ProcessMipMapQueue(const GLuint textureCount, const GLuint*
                         continue;
                     }
                     glGenerateTextureMipmap(crtHandle);
-                    GL_API::DequeueMipMapRequired(crtHandle);
                     tempHandles.push_back(crtHandle);
                 }
             }
@@ -211,32 +210,12 @@ void GLStateTracker::ProcessMipMapQueue(const GLuint textureCount, const GLuint*
     tempHandles.resize(0);
 }
 
-void GLStateTracker::ValidateBindQueue(const GLuint textureCount, const GLuint* textureHandles) {
-    if_constexpr(Config::Build::IS_DEBUG_BUILD) {
-        if (textureCount > 0 && textureHandles != nullptr) {
-            if (!GL_API::s_mipmapCheckQueue.empty()) {
-                SharedLock<SharedMutex> r_lock(GL_API::s_mipmapCheckQueueSetLock);
-                if (!GL_API::s_mipmapCheckQueue.empty()) {
-                    for (GLuint i = 0; i < textureCount; ++i) {
-                        const GLuint crtHandle = textureHandles[i];
-                        if (crtHandle > 0u && GL_API::s_mipmapCheckQueue.find(crtHandle) != cend(GL_API::s_mipmapCheckQueue)) {
-                            DIVIDE_UNEXPECTED_CALL();
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
 /// Bind a texture specified by a GL handle and GL type to the specified unit using the sampler object defined by hash value
 bool GLStateTracker::bindTexture(const GLushort unit, const TextureType type, GLuint handle, GLuint samplerHandle) {
     // Fail if we specified an invalid unit. Assert instead of returning false because this might be related to a bad algorithm
     DIVIDE_ASSERT(unit < static_cast<GLuint>(GL_API::s_maxTextureUnits), "GLStates error: invalid texture unit specified as a texture binding slot!");
 
     ProcessMipMapQueue(1, &handle);
-    ValidateBindQueue(1, &handle);
-
     return bindTexturesNoMipMap(unit, 1, type, &handle, &samplerHandle);
 }
 
@@ -247,8 +226,6 @@ bool GLStateTracker::bindTextures(const GLushort unitOffset,
                                   GLuint* const samplerHandles) {
 
     ProcessMipMapQueue(textureCount, textureHandles);
-    ValidateBindQueue(textureCount, textureHandles);
-
     return bindTexturesNoMipMap(unitOffset, textureCount, texturesType, textureHandles, samplerHandles);
 }
 

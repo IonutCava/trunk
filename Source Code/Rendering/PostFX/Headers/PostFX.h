@@ -133,6 +133,8 @@ public:
 
     [[nodiscard]] static const char* FilterName(FilterType filter) noexcept;
 
+    // Use this to change various PostFX settings that depend on the time of day (e.g. exterior cube reflections, LUT correction, etc)
+    PROPERTY_RW(bool, isDayTime, true);
 private:
     PreRenderBatch _preRenderBatch;
     /// Screen Border

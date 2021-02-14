@@ -288,8 +288,8 @@ void fillEnumTables() {
 
     glTypeSizeInBytes[GL_UNSIGNED_INT] = sizeof(int);
     glTypeSizeInBytes[GL_UNSIGNED_INT_VEC2] = sizeof(int) * 2;
-    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC3] = sizeof(int) * 2;
-    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC4] = sizeof(int) * 2;
+    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC3] = sizeof(int) * 3;
+    glTypeSizeInBytes[GL_UNSIGNED_INT_VEC4] = sizeof(int) * 4;
 
     glTypeSizeInBytes[GL_FLOAT_MAT2] = sizeof(float) * 4;
     glTypeSizeInBytes[GL_FLOAT_MAT3] = sizeof(float) * 9;

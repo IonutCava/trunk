@@ -179,6 +179,7 @@ public:
         ALBEDO = 0,
         VELOCITY,
         NORMALS_AND_MATERIAL_PROPERTIES,
+        SPECULAR,
         MODULATE,
         COUNT,
         ACCUMULATION = ALBEDO,

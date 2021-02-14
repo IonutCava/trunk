@@ -134,7 +134,6 @@ namespace Divide {
         void getActiveViewport(GLint* vp) const;
 
         static void ProcessMipMapQueue(GLuint textureCount, const GLuint* textureHandles);
-        static void ValidateBindQueue(GLuint textureCount, const GLuint* textureHandles);
 
       public:
           struct BindConfigEntry

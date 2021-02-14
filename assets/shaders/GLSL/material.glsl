@@ -21,7 +21,8 @@ void main (void) {
     }
 #endif
     const vec3 normalWV = getNormalWV(VAR._texCoord);
-    vec2 MetalnessRoughness = vec2(0.f, 1.f);
-    const vec4 rgba = getPixelColour(albedo, data, normalWV, VAR._texCoord, 0u, MetalnessRoughness);
-    writeScreenColour(rgba, normalWV, MetalnessRoughness);
+    vec3 MetalnessRoughnessProbeID = vec3(0.f, 1.f, 0.f);
+    vec3 SpecularColourOut = vec3(0.f);
+    const vec4 rgba = getPixelColour(albedo, data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+    writeScreenColour(rgba, normalWV, SpecularColourOut, MetalnessRoughnessProbeID);
 }

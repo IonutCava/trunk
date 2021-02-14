@@ -60,6 +60,8 @@ namespace Divide {
                 MemoryManager::SAFE_DELETE_ARRAY(_uniformBlockBuffer);
             }
             _uniformBlockBuffer = MemoryManager_NEW Byte[_uniformBlockSize]();
+        } else {
+            std::memset(_uniformBlockBuffer, 0, _uniformBlockSize);
         }
 
         if (_uniformBlockBufferHandle == GLUtil::k_invalidObjectID) {

@@ -485,6 +485,7 @@ layout(early_fragment_tests) in;
 #define SHADOW_INTENSITY_FACTOR 0.5f
 #define USE_CUSTOM_TBN
 #define SKIP_TEX1
+#define NO_IBL
 
 layout(location = 10) in flat uint dvd_LoD;
 
@@ -517,7 +518,8 @@ void main(void) {
     const vec4 albedo = BuildTerrainData(normalWV);
     _private_roughness = albedo.a;
 
-    vec2 MetalnessRoughness = vec2(0.f, 1.f);
+    vec3 MetalnessRoughnessProbeID = vec3(0.f, 1.f, 0.f);
+    vec3 SpecularColourOut = vec3(0.f);
 #if defined (TOGGLE_LODS)
     vec4 colourOut = vec4(0.0f);
     switch (dvd_LoD) {
@@ -540,7 +542,7 @@ void main(void) {
     }
 #else //TOGGLE_BLEND_MAP
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
-    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, dvd_LoD, MetalnessRoughness);
+    vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
 #endif //TOGGLE_BLEND_MAP
 #endif //TOGGLE_TESS_LEVEL
 
@@ -560,5 +562,5 @@ void main(void) {
 #endif //TOGGLE_DEBUG
 
 #endif //TOGGLE_LODS
-    writeScreenColour(colourOut, normalWV, MetalnessRoughness);
+    writeScreenColour(colourOut, normalWV, SpecularColourOut, MetalnessRoughnessProbeID);
 }

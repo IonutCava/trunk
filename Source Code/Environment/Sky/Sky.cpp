@@ -543,22 +543,18 @@ bool Sky::load() {
         _curlNoiseTex = CreateResource<Texture>(_parentCache, curlDescriptor);
     }
     {
-        TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_MAP);
+        TextureDescriptor skyboxTexture(TextureType::TEXTURE_CUBE_ARRAY);
         skyboxTexture.srgb(true);
     
-        ResourceDescriptor skyboxTextures("DayTextures");
-        skyboxTextures.assetName(ResourcePath{ "skyboxDay_FRONT.jpg, skyboxDay_BACK.jpg, skyboxDay_UP.jpg, skyboxDay_DOWN.jpg, skyboxDay_LEFT.jpg, skyboxDay_RIGHT.jpg" });
+        ResourceDescriptor skyboxTextures("SkyTextures");
+        skyboxTextures.assetName(ResourcePath{ 
+            "skyboxDay_FRONT.jpg, skyboxDay_BACK.jpg, skyboxDay_UP.jpg, skyboxDay_DOWN.jpg, skyboxDay_LEFT.jpg, skyboxDay_RIGHT.jpg," //Day
+            "Milkyway_posx.jpg, Milkyway_negx.jpg, Milkyway_posy.jpg, Milkyway_negy.jpg, Milkyway_posz.jpg, Milkyway_negz.jpg"  //Night
+        });
         skyboxTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation + "/SkyBoxes/");
         skyboxTextures.propertyDescriptor(skyboxTexture);
         skyboxTextures.waitForReady(false);
-        _skybox[0] = CreateResource<Texture>(_parentCache, skyboxTextures, loadTasks);
-
-        ResourceDescriptor nightTextures("NightTextures");
-        nightTextures.assetName(ResourcePath{ "Milkyway_posx.jpg, Milkyway_negx.jpg, Milkyway_posy.jpg, Milkyway_negy.jpg, Milkyway_posz.jpg, Milkyway_negz.jpg" });
-        nightTextures.assetLocation(Paths::g_assetsLocation + Paths::g_imagesLocation + "/SkyBoxes/");
-        nightTextures.propertyDescriptor(skyboxTexture);
-        nightTextures.waitForReady(false);
-        _skybox[1] = CreateResource<Texture>(_parentCache, nightTextures, loadTasks);
+        _skybox = CreateResource<Texture>(_parentCache, skyboxTextures, loadTasks);
     }
 
     const F32 radius = _diameter * 0.5f;
@@ -646,6 +642,10 @@ SunDetails Sky::getCurrentDetails() const noexcept {
     return _sun.GetDetails();
 }
 
+bool Sky::isDay() const noexcept {
+    return getCurrentDetails()._intensity > 0.f;
+}
+
 SimpleTime Sky::GetTimeOfDay() const noexcept {
     return _sun.GetTimeOfDay();
 }
@@ -656,7 +656,7 @@ void Sky::setAtmosphere(const Atmosphere& atmosphere) noexcept {
 }
 
 const Texture_ptr& Sky::activeSkyBox() const noexcept {
-    return _skybox[getCurrentDetails()._intensity <= 0.0f ? 1 : 0];
+    return _skybox;
 }
 
 void Sky::sceneUpdate(const U64 deltaTimeUS, SceneGraphNode* sgn, SceneState& sceneState) {
@@ -739,8 +739,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
     pkgInOut.add(pipelineCommand);
 
     GFX::BindDescriptorSetsCommand bindDescriptorSetsCommand = {};
-    bindDescriptorSetsCommand._set._textureData.add({ _skybox[0]->data(), _skyboxSampler, TextureUsage::UNIT0 });
-    bindDescriptorSetsCommand._set._textureData.add({ _skybox[1]->data(), _skyboxSampler, TextureUsage::UNIT1 });
+    bindDescriptorSetsCommand._set._textureData.add({ _skybox->data(), _skyboxSampler, TextureUsage::UNIT0 });
     bindDescriptorSetsCommand._set._textureData.add({ _weatherTex->data(), _noiseSamplerLinear, TextureUsage::HEIGHTMAP });
     bindDescriptorSetsCommand._set._textureData.add({ _curlNoiseTex->data(), _noiseSamplerLinear, TextureUsage::OPACITY });
     bindDescriptorSetsCommand._set._textureData.add({ _worlNoiseTex->data(), _noiseSamplerMipMap, TextureUsage::OCCLUSION_METALLIC_ROUGHNESS });

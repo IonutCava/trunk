@@ -21,7 +21,6 @@ RenderTarget::RenderTarget(GFXDevice& context, const RenderTargetDescriptor& des
         }
     }
     assert(_colourAttachmentCount < RT_MAX_COLOUR_ATTACHMENTS);
-
 }
 
 bool RenderTarget::create() {

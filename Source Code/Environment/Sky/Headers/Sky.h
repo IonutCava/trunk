@@ -81,6 +81,7 @@ class Sky final : public SceneNode {
     SimpleTime GetTimeOfDay() const noexcept;
 
     [[nodiscard]] SunDetails getCurrentDetails() const noexcept;
+    [[nodiscard]] bool isDay() const noexcept;
 
     PROPERTY_R(Atmosphere, atmosphere);
     void setAtmosphere(const Atmosphere& atmosphere) noexcept;
@@ -129,7 +130,7 @@ class Sky final : public SceneNode {
 protected:
     GFXDevice& _context;
     Sun _sun;
-    Texture_ptr  _skybox[2] = { nullptr, nullptr };
+    Texture_ptr  _skybox = nullptr;
     Texture_ptr _weatherTex = nullptr;
     Texture_ptr _curlNoiseTex = nullptr;
     Texture_ptr _worlNoiseTex = nullptr;

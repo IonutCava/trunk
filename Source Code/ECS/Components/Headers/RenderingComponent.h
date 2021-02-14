@@ -152,7 +152,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     [[nodiscard]] bool lodLocked(const RenderStage stage) const noexcept { return _lodLockLevels[to_base(stage)].first; }
 
-    void getMaterialData(RenderStage stage, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const;
+    void getMaterialData(NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) const;
 
     void getRenderingProperties(RenderStage stage, NodeRenderingProperties& propertiesOut) const;
 
@@ -168,7 +168,7 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
 
     void rebuildMaterial();
 
-    void setReflectionAndRefractionType(const ReflectorType reflectType, const RefractorType refractType) noexcept { _reflectorType = reflectType;  _refractorType = refractType; }
+    void setReflectionAndRefractionType(const ReflectorType reflectType, const RefractorType refractType) noexcept;
     void setReflectionCallback(const RenderCallback& cbk) { _reflectionCallback = cbk; }
     void setRefractionCallback(const RenderCallback& cbk) { _refractionCallback = cbk; }
 
@@ -213,9 +213,8 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
                                         const SceneRenderState& renderState,
                                         GFX::CommandBuffer& bufferInOut);
 
-    void updateNearestProbes(const SceneEnvironmentProbePool& probePool, const vec3<F32>& position);
-    void useSkyReflection(RenderStage stage);
-
+    void updateNearestProbes(const vec3<F32>& position);
+ 
     PROPERTY_R(bool, showAxis, false);
     PROPERTY_R(bool, receiveShadows, false);
     PROPERTY_R(bool, castsShadows, false);
@@ -246,18 +245,22 @@ class RenderingComponent final : public BaseComponentType<RenderingComponent, Co
     RenderCallback _reflectionCallback{};
     RenderCallback _refractionCallback{};
 
+    enum class DataType : U8 {
+        REFLECT = 0,
+        REFRACT,
+        COUNT
+    };
     struct ReflectRefractData {
-        mutable SharedMutex _reflectionLock{};
-        TextureViewEntry _reflectionTexture;
-        U16 _reflectionTextureWidth = 2u;
-        U16 _probeIndex = 0u; //<Offset by 1 (and dec by 1 in shader) as 0 is the sky cubemap
-
-        mutable SharedMutex _refractionLock{};
-        TextureViewEntry _refractionTexture;
+        mutable SharedMutex _lock{};
+        TextureData _texture;
+        size_t _samplerHash = 0u;
+        SamplerAddress _gpuAddress = 0u;
     };
 
-    // One for the reflection pass (usually just the sky texture) and one for the other passes (usually the result of the reflection pass)
-    std::array<ReflectRefractData, 2> _reflectRefractData{};
+    U16 _reflectionProbeIndex = 0u; //<Offset by 2 (and dec by 2 in shader) as 0 & 1 are the sky cubemaps (day & night respectively)
+    
+    // One for the reflection pass and one for the other passes
+    std::array<ReflectRefractData, to_base(DataType::COUNT)> _reflectRefractData{};
 
     vectorEASTL<EnvironmentProbeComponent*> _envProbes{};
     vectorEASTL<ShaderBufferBinding> _externalBufferBindings{};

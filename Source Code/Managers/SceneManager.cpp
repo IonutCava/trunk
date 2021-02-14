@@ -535,8 +535,7 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     //_sceneData->skyColour(horizonColour, zenithColour);
 
     FogDetails fog = activeScene.state()->renderState().fogDetails();
-    const bool fogEnabled = _platformContext->config().rendering.enableFog;
-    fog._colourAndDensity.a = fogEnabled ? fog._colourAndDensity.a : 0.0f;
+    fog._colourAndDensity.a = fog._colourAndDensity.a;
     fog._colourSunScatter.rgb = sunColour;
     _sceneData->fogDetails(fog);
 
@@ -560,6 +559,9 @@ void SceneManager::updateSceneState(const U64 deltaTimeUS) {
     if (_saveTimer >= Time::SecondsToMicroseconds(Config::Build::IS_DEBUG_BUILD ? 5 : 10)) {
         saveActiveScene(true, true);
         _saveTimer = 0ULL;
+    }
+    if (dayNightData._skyInstance != nullptr) {
+        _parent.platformContext().gfx().getRenderer().postFX().isDayTime(dayNightData._skyInstance->isDay());
     }
 }
 
@@ -767,6 +769,20 @@ SceneNode_ptr SceneManager::createNode(const SceneNodeType type, const ResourceD
 SceneEnvironmentProbePool* SceneManager::getEnvProbes() const {
     return Attorney::SceneManager::getEnvProbes(getActiveScene());
 }
+
+std::pair<Texture_ptr, size_t> SceneManager::getSkyTexture() const {
+    const auto& skies = getActiveScene().sceneGraph()->getNodesByType(SceneNodeType::TYPE_SKY);
+    if (!skies.empty()) {
+        const Sky& sky = skies.front()->getNode<Sky>();
+        return std::make_pair(
+            sky.activeSkyBox(),
+            sky.skyboxSampler()
+        );
+    }
+
+    return { nullptr, 0u };
+}
+
 ///--------------------------Input Management-------------------------------------///
 
 bool SceneManager::onKeyDown(const Input::KeyEvent& key) {

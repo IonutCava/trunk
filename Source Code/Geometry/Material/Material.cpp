@@ -109,9 +109,9 @@ void Material::ApplyDefaultStateBlocks(Material& target) {
 
 Material::Material(GFXDevice& context, ResourceCache* parentCache, const size_t descriptorHash, const Str256& name)
     : CachedResource(ResourceType::DEFAULT, descriptorHash, name),
+      _useBindlessTextures(context.context().config().rendering.useBindlessTextures),
       _context(context),
-      _parentCache(parentCache),
-      _useBindlessTextures(context.context().config().rendering.useBindlessTextures)
+      _parentCache(parentCache)
 {
     receivesShadows(_context.context().config().rendering.shadowMapping.enabled);
 
@@ -157,6 +157,8 @@ Material_ptr Material::clone(const Str256& nameSuffix) {
     cloneMat->_transparencyEnabled = base._transparencyEnabled;
     cloneMat->_receivesShadows = base._receivesShadows;
     cloneMat->_isStatic = base._isStatic;
+    cloneMat->_usePlanarReflections = base._usePlanarReflections;
+    cloneMat->_usePlanarRefractions = base._usePlanarRefractions;
     cloneMat->_hardwareSkinning = base._hardwareSkinning;
     cloneMat->_isRefractive = base._isRefractive;
     cloneMat->_textureUseForDepth = _textureUseForDepth;
@@ -236,10 +238,6 @@ bool Material::setTexture(const TextureUsage textureUsageSlot, const Texture_ptr
     if (textureUsageSlot == TextureUsage::UNIT1) {
         _textureOperation = op;
     }
-    
-    assert(textureUsageSlot != TextureUsage::REFLECTION_PLANAR &&
-           textureUsageSlot != TextureUsage::REFRACTION_PLANAR &&
-           textureUsageSlot != TextureUsage::REFLECTION_CUBE);
 
     {
         UniqueLock<SharedMutex> w_lock(_textureLock);
@@ -620,6 +618,18 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         fragDefines.emplace_back("NODE_STATIC", true);
     }
 
+    if (usePlanarReflections()) {
+        shaderName += ".PRefl";
+        vertDefines.emplace_back("USE_PLANAR_REFLECTION", true);
+        fragDefines.emplace_back("USE_PLANAR_REFLECTION", true);
+    }
+
+    if (usePlanarRefractions()) {
+        shaderName += ".PRefr";
+        vertDefines.emplace_back("USE_PLANAR_REFRACTION", true);
+        fragDefines.emplace_back("USE_PLANAR_REFRACTION", true);
+    }
+
     if (!isDepthPass) {
         switch (_shadingMode) {
             default:
@@ -701,7 +711,7 @@ bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDat
         return true;
     }
 
-    const auto RegisterTexture = [this](const U8 slot, const bool condition, TextureDataContainer& textureData) {
+    const auto registerTexture = [this](const U8 slot, const bool condition, TextureDataContainer& textureData) {
         if (condition) {
             const Texture_ptr& crtTexture = _textures[slot];
             if (crtTexture != nullptr) {
@@ -720,11 +730,11 @@ bool Material::getTextureData(const RenderStagePass& renderStagePass, TextureDat
 
     SharedLock<SharedMutex> r_lock(_textureLock);
     for (const U8 slot : g_TransparentSlots) {
-        ret = RegisterTexture(slot, (transparencyState || !depthStage || _textureUseForDepth[slot]), textureData) || ret;
+        ret = registerTexture(slot, (transparencyState || !depthStage || _textureUseForDepth[slot]), textureData) || ret;
     }
 
     for (const U8 slot : g_ExtraSlots) {
-        ret = RegisterTexture(slot, (!depthStage || _textureUseForDepth[slot]), textureData) || ret;
+        ret = registerTexture(slot, (!depthStage || _textureUseForDepth[slot]), textureData) || ret;
     }
 
     return ret;
@@ -807,6 +817,32 @@ void Material::isStatic(const bool state, const bool applyToInstances) {
     if (applyToInstances) {
         for (Material* instance : _instances) {
             instance->isStatic(state, true);
+        }
+    }
+}
+
+void Material::usePlanarReflections(const bool state, const bool applyToInstances) {
+    if (_usePlanarReflections != state) {
+        _usePlanarReflections = state;
+        _needsNewShader = true;
+    }
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->usePlanarReflections(state, true);
+        }
+    }
+}
+
+void Material::usePlanarRefractions(const bool state, const bool applyToInstances) {
+    if (_usePlanarRefractions != state) {
+        _usePlanarRefractions = state;
+        _needsNewShader = true;
+    }
+
+    if (applyToInstances) {
+        for (Material* instance : _instances) {
+            instance->usePlanarRefractions(state, true);
         }
     }
 }
@@ -1069,7 +1105,7 @@ F32 Material::getRoughness(bool& hasTextureOverride, Texture*& textureOut) const
 void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& dataOut, NodeMaterialTextures& texturesOut) {
     constexpr F32 reserved = 1.f;
 
-    for (U8 i = 0; i < MATERIAL_TEXTURE_COUNT; ++i) {
+    for (U8 i = 0u; i < MATERIAL_TEXTURE_COUNT; ++i) {
         texturesOut[i] = _textureAddresses[to_base(g_materialTextures[i])];
     }
 
@@ -1079,7 +1115,7 @@ void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& d
     dataOut._albedo.set(baseColour());
     dataOut._emissiveAndParallax.set(emissive(), parallaxFactor());
     dataOut._data.x = matPropertiesPacked;
-    dataOut._data.y = 2u; //IBL Texture Size
+    dataOut._data.y = to_U32(reserved);
     dataOut._data.z = matTexturingPropertiesPacked;
 
     // Hacky, but do this here, before the hashing so that we generate unique materials for selected/hovered nodes

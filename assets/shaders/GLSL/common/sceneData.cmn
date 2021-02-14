@@ -35,16 +35,6 @@ layout(binding = BUFFER_SCENE_DATA, std140) uniform dvd_SceneData {
 #define dvd_LightBleedBias dvd_shadowingSettings.x
 #define dvd_MinVariance dvd_shadowingSettings.y
 
-struct ProbeData
-{
-    vec4 _positionW;
-    vec4 _halfExtents;
-};
-
-layout(binding = BUFFER_PROBE_DATA, std140) uniform dvd_ProbeBlock {
-    ProbeData dvd_Probes[GLOBAL_PROBE_COUNT];
-};
-
 #endif //FRAG_SHADER || NEED_SCENE_DATA
 
 #endif //_SCENE_DATA_INPUT_CMN_

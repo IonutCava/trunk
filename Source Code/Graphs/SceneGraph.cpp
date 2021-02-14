@@ -272,7 +272,6 @@ const vectorEASTL<SceneGraphNode*>& SceneGraph::getNodesByType(const SceneNodeTy
     return _nodesByType[to_base(type)];
 }
 
-
 ECS::EntityManager* SceneGraph::GetEntityManager() {
     return GetECSEngine().GetEntityManager();
 }

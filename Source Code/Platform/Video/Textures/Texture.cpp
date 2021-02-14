@@ -130,13 +130,13 @@ void Texture::threadedLoad() {
             }
         }
 
-        if (_descriptor.texType() == TextureType::TEXTURE_CUBE_ARRAY) {
+        /*if (_descriptor.texType() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (dataStorage.layerCount() / 6 != _numLayers) {
                 Console::errorfn(
                     Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                     resourceName().c_str());
             }
-        }
+        }*/
     }
 }
 

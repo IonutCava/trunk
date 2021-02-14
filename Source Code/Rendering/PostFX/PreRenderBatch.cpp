@@ -66,6 +66,7 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
     desc._attachmentCount = 1u;
 
     TextureDescriptor outputDescriptor = _screenRTs._hdr._screenRef._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO)).texture()->descriptor();
+    outputDescriptor.mipMapsRequired(false);
     {
         RTAttachmentDescriptors att = { { outputDescriptor, screenSampler.getHash(), RTAttachmentType::Colour } };
         desc._name = "PostFX Output HDR";
@@ -224,11 +225,11 @@ PreRenderBatch::PreRenderBatch(GFXDevice& context, PostFX& parent, ResourceCache
 
 
         ShaderProgramDescriptor applySSAOSSRDescriptor{};
-        fragModule._variant = "Apply.SSAO.SSR";
+        fragModule._variant = "Apply.FOG.SSAO.SSR";
         applySSAOSSRDescriptor._modules.push_back(vertModule);
         applySSAOSSRDescriptor._modules.push_back(fragModule);
 
-        ResourceDescriptor applySSAOSSR("toneMap.Apply.SSAO.SSR");
+        ResourceDescriptor applySSAOSSR("toneMap.Apply.FOG.SSAO.SSR");
         applySSAOSSR.waitForReady(false);
         applySSAOSSR.propertyDescriptor(applySSAOSSRDescriptor);
         _applySSAOSSR = CreateResource<ShaderProgram>(_resCache, applySSAOSSR, loadTasks);
@@ -464,9 +465,11 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     pipelineDescriptor._shaderProgramHandle = _lineariseDepthBuffer->getGUID();
     EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
-    DescriptorSet depthSet = {};
     const auto& depthAtt = screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
-    depthSet._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
+    const TextureData depthTexData = depthAtt.texture()->data();
+
+    DescriptorSet depthSet = {};
+    depthSet._textureData.add({ depthTexData, depthAtt.samplerHash(), TextureUsage::DEPTH });
     EnqueueCommand(bufferInOut, GFX::BindDescriptorSetsCommand{ depthSet });
 
     GFX::SendPushConstantsCommand pushConstants = {};
@@ -623,17 +626,30 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         EnqueueCommand(bufferInOut, computeMipMapsCommand);
     }
 
+    const auto executeHDROp = [this, &camera](PreRenderOperator* op, GFX::CommandBuffer& bufferInOut) {
+        EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ Util::StringFormat("PostFX: Execute HDR (1) operator [ %s ]", PostFX::FilterName(op->operatorType())).c_str() });
+        if (op->execute(camera, getInput(true), getOutput(true), bufferInOut)) {
+            _screenRTs._swappedHDR = !_screenRTs._swappedHDR;
+        }
+        EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+    };
+
     // Execute all HDR based operators that need to loop back to the screen target (SSAO, SSR, etc)
     for (auto& op : hdrBatch) {
         if (BitCompare(filterStack, 1u << to_U32(op->operatorType()))) {
-            EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ Util::StringFormat("PostFX: Execute HDR (1) operator [ %s ]", PostFX::FilterName(op->operatorType())).c_str() });
-            if (op->execute(camera, getInput(true), getOutput(true), bufferInOut)) {
-                _screenRTs._swappedHDR = !_screenRTs._swappedHDR;
-            }
-            EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
+            executeHDROp(op.get(), bufferInOut);
         }
     }
 
+    if (!BitCompare(filterStack, 1u << to_U32(FilterType::FILTER_SS_REFLECTIONS))) {
+        // We need at least environment mapped reflections if we decided to disable SSR
+        for (auto& op : hdrBatch) {
+            if (op->operatorType() == FilterType::FILTER_SS_REFLECTIONS) {
+                executeHDROp(op.get(), bufferInOut);
+                break;
+            }
+        }
+    }
     { // Apply HDR batch to main target ... somehow
         EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{"PostFX: Apply SSAO and SSR"});
 
@@ -660,13 +676,25 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         const auto& materialAtt = screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
         const TextureData materialData = materialAtt.texture()->data();
+        
+        const auto& specularAtt = screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::SPECULAR));
+        const TextureData specularData = specularAtt.texture()->data();
 
         GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
-        descriptorSetCmd._set._textureData.add({ screenData,  screenAtt.samplerHash(),  TextureUsage::UNIT0 });
-        descriptorSetCmd._set._textureData.add({ fxData,      fxDataAtt.samplerHash(),  TextureUsage::OPACITY });
-        descriptorSetCmd._set._textureData.add({ ssrData,     ssrDataAtt.samplerHash(), TextureUsage::PROJECTION });
-        descriptorSetCmd._set._textureData.add({ materialData,materialAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
+        descriptorSetCmd._set._textureData.add({ screenData,   screenAtt.samplerHash(),   TextureUsage::UNIT0 });
+        descriptorSetCmd._set._textureData.add({ fxData,       fxDataAtt.samplerHash(),   TextureUsage::OPACITY });
+        descriptorSetCmd._set._textureData.add({ ssrData,      ssrDataAtt.samplerHash(),  TextureUsage::PROJECTION });
+        descriptorSetCmd._set._textureData.add({ specularData, specularAtt.samplerHash(), TextureUsage::UNIT1 });
+        descriptorSetCmd._set._textureData.add({ materialData, materialAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
+        descriptorSetCmd._set._textureData.add({ depthTexData, depthAtt.samplerHash(),    TextureUsage::DEPTH });
         EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        GFX::SendPushConstantsCommand pushConstantsCmd{};
+        pushConstantsCmd._constants.set(_ID("invProjectionMatrix"), GFX::PushConstantType::MAT4, GetInverse(camera->projectionMatrix()));
+        pushConstantsCmd._constants.set(_ID("invViewMatrix"), GFX::PushConstantType::MAT4, camera->worldMatrix());
+        pushConstantsCmd._constants.set(_ID("cameraPosition"), GFX::PushConstantType::VEC3, camera->getEye());
+        pushConstantsCmd._constants.set(_ID("enableFog"), GFX::PushConstantType::BOOL, _parent.context().config().rendering.enableFog);
+        EnqueueCommand(bufferInOut, pushConstantsCmd);
 
         EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
 

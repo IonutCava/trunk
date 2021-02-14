@@ -2,6 +2,7 @@
 #define _OUTPUT_FRAG_
 
 layout(location = TARGET_NORMALS_AND_MATERIAL_DATA) out vec4 _matDataOut;
+layout(location = TARGET_SPECULAR) out vec3 _specularDataOut;
 
 #if !defined(OIT_PASS)
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
@@ -47,19 +48,33 @@ void writePixel(in vec4 premultipliedReflect, in vec3 transmit) {
 }
 #endif //OIT_PASS
 
-void writeScreenColour(in vec4 colour, in vec3 normalWV, in vec2 MetalnessRoughness) {
+void writeScreenColour(in vec4 colour, in vec3 normalWV, in vec3 specularColour, in vec3 MetalnessRoughnessProbeID) {
 #if defined(OIT_PASS)
     const vec3 transmit = vec3(0.0f);// texture(texTransmitance, dvd_screenPositionNormalised).rgb;
     writePixel(vec4(colour.rgb * colour.a, colour.a), transmit);
 #else //OIT_PASS
     _colourOut = colour;
 #endif //OIT_PASS
-
+    _specularDataOut = specularColour;
     _matDataOut.rg = packNormal(normalWV);
-    _matDataOut.ba = MetalnessRoughness;
+    _matDataOut.b = packVec2(MetalnessRoughnessProbeID.xy);
+#if defined(NO_IBL)
+    _matDataOut.a = float(PROBE_ID_NO_REFLECTIONS);
+#elif defined(NO_ENV_MAPPING)
+    _matDataOut.a = float(PROBE_ID_NO_ENV_REFLECTIONS);
+#elif defined(NO_SSR)
+    _matDataOut.a = float(PROBE_ID_NO_SSR);
+#else // NO_IBL
+    _matDataOut.a = MetalnessRoughnessProbeID.z;
+#endif // NO_IBL
+
+}
+
+void writeScreenColour(in vec4 colour, in vec3 normalWV, in vec3 specularColour) {
+    writeScreenColour(colour, normalWV, specularColour, vec3(0.f, 1.f, 0.f));
 }
 
 void writeScreenColour(in vec4 colour, in vec3 normalWV) {
-    writeScreenColour(colour, normalWV, vec2(0.f, 1.f));
+    writeScreenColour(colour, normalWV, vec3(0.f), vec3(0.f, 1.f, 0.f));
 }
 #endif //_OUTPUT_FRAG_

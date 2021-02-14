@@ -144,6 +144,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
                 clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::VELOCITY), true);
                 clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), true);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::SPECULAR), true);
                 clearMainTarget._descriptor = clearDescriptor;
 
                 RTDrawDescriptor velocityAndDepthPolicy = {};
@@ -157,6 +158,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
 
                 RTDrawDescriptor oitCompositionPassPolicy = mainPassPolicy;
                 oitCompositionPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), false);
+                oitCompositionPassPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::SPECULAR), false);
 
                 params._passName = "MainRenderPass";
                 params._stagePass = RenderStagePass{ _stageFlag, RenderPassType::COUNT };

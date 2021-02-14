@@ -164,6 +164,8 @@ bool WaterPlane::load() {
     ModuleDefines globalDefines = {};
     globalDefines.emplace_back("COMPUTE_TBN", true);
     globalDefines.emplace_back("NODE_STATIC", true);
+    globalDefines.emplace_back("USE_PLANAR_REFLECTION", true);
+    globalDefines.emplace_back("USE_PLANAR_REFRACTION", true);
 
     ProcessShadowMappingDefines(_parentCache->context().config(), globalDefines);
 

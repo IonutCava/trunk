@@ -74,7 +74,7 @@ class glTexture final : public Texture,
 
    protected:
     void threadedLoad() override;
-    void reserveStorage() const;
+    void reserveStorage(bool fromFile) const;
     void updateMipsInternal() const;
 
     void processTextureType() noexcept;
