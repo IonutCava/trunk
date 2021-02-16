@@ -64,7 +64,7 @@ ErrorCode PlatformPostInit(const int argc, char** argv) {
     ErrorCode err = ErrorCode::WRONG_WORKING_DIRECTORY;
     if (pathExists(Paths::g_exePath + Paths::g_assetsLocation)) {
         // Read language table
-        err = Locale::init();
+        err = Locale::Init();
         if (err == ErrorCode::NO_ERR) {
             Console::start();
             // Print a copyright notice in the log file
@@ -95,7 +95,7 @@ bool PlatformClose() {
     Runtime::resetMainThreadID();
     if (PlatformCloseImpl()) {
         Console::stop();
-        Locale::clear();
+        Locale::Clear();
         return true;
     }
 

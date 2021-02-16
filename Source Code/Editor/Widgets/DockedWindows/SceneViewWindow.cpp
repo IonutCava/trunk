@@ -96,6 +96,14 @@ namespace Divide {
         Attorney::EditorSceneViewWindow::autoFocusEditor(_parent, autoFocusEditor);
         ImGui::SameLine();
 
+        bool emissiveSelections = Attorney::EditorSceneViewWindow::emissiveSelections(_parent);
+        ImGui::Text("Emissive Selections:"); ImGui::SameLine(); ImGui::ToggleButton("Emissive Selections", &emissiveSelections);
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("If on, selected scene nodes will have an emissive component attached to them for easier navigation.\nDisable if editing materials!");
+        }
+        Attorney::EditorSceneViewWindow::emissiveSelections(_parent, emissiveSelections);
+        ImGui::SameLine();
+
         const bool enableGizmo = Attorney::EditorSceneViewWindow::editorEnabledGizmo(_parent);
         TransformSettings settings = _parent.getTransformSettings();
 

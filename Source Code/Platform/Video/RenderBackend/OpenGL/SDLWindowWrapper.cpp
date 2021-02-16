@@ -199,21 +199,21 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIB_BINDINGS, s_maxAttribBindings);
 
     if (to_base(TextureUsage::COUNT) >= s_maxTextureUnits) {
-        Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
+        Console::errorfn(Locale::Get(_ID("ERROR_INSUFFICIENT_TEXTURE_UNITS")));
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
 
     if (to_base(AttribLocation::COUNT) >= s_maxAttribBindings) {
-        Console::errorfn(Locale::get(_ID("ERROR_INSUFFICIENT_ATTRIB_BINDS")));
+        Console::errorfn(Locale::Get(_ID("ERROR_INSUFFICIENT_ATTRIB_BINDS")));
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
 
     GLint majGLVersion = GLUtil::getGLValue(GL_MAJOR_VERSION);
     GLint minGLVersion = GLUtil::getGLValue(GL_MINOR_VERSION);
-    Console::printfn(Locale::get(_ID("GL_MAX_VERSION")), majGLVersion, minGLVersion);
+    Console::printfn(Locale::Get(_ID("GL_MAX_VERSION")), majGLVersion, minGLVersion);
 
     if (majGLVersion <= 4 && minGLVersion < 3) {
-        Console::errorfn(Locale::get(_ID("ERROR_OPENGL_VERSION_TO_OLD")));
+        Console::errorfn(Locale::Get(_ID("ERROR_OPENGL_VERSION_TO_OLD")));
         return ErrorCode::GFX_NOT_SUPPORTED;
     }
 
@@ -224,7 +224,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     if (s_stateTracker._opengl46Supported) {
         glMaxShaderCompilerThreadsARB(0xFFFFFFFF);
-        Console::printfn(Locale::get(_ID("GL_SHADER_THREADS")), GLUtil::getGLValue(GL_MAX_SHADER_COMPILER_THREADS_ARB));
+        Console::printfn(Locale::Get(_ID("GL_SHADER_THREADS")), GLUtil::getGLValue(GL_MAX_SHADER_COMPILER_THREADS_ARB));
     }
 
     glEnable(GL_MULTISAMPLE);
@@ -252,30 +252,30 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Print all of the OpenGL functionality info to the console and log
     // How many uniforms can we send to fragment shaders
-    Console::printfn(Locale::get(_ID("GL_MAX_UNIFORM")),
+    Console::printfn(Locale::Get(_ID("GL_MAX_UNIFORM")),
                      GLUtil::getGLValue(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS));
     // How many uniforms can we send to vertex shaders
-    Console::printfn(Locale::get(_ID("GL_MAX_VERT_UNIFORM")),
+    Console::printfn(Locale::Get(_ID("GL_MAX_VERT_UNIFORM")),
                      GLUtil::getGLValue(GL_MAX_VERTEX_UNIFORM_COMPONENTS));
     // How many attributes can we send to a vertex shader
-    Console::printfn(Locale::get(_ID("GL_MAX_VERT_ATTRIB")),
+    Console::printfn(Locale::Get(_ID("GL_MAX_VERT_ATTRIB")),
                      GLUtil::getGLValue(GL_MAX_VERTEX_ATTRIBS));
     // Maximum number of texture units we can address in shaders
-    Console::printfn(Locale::get(_ID("GL_MAX_TEX_UNITS")),
+    Console::printfn(Locale::Get(_ID("GL_MAX_TEX_UNITS")),
                      GLUtil::getGLValue(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS),
                      s_maxTextureUnits);
     // Query shading language version support
-    Console::printfn(Locale::get(_ID("GL_GLSL_SUPPORT")),
+    Console::printfn(Locale::Get(_ID("GL_GLSL_SUPPORT")),
                      glGetString(GL_SHADING_LANGUAGE_VERSION));
     // GPU info, including vendor, gpu and driver
-    Console::printfn(Locale::get(_ID("GL_VENDOR_STRING")),
+    Console::printfn(Locale::Get(_ID("GL_VENDOR_STRING")),
                      gpuVendorStr, gpuRendererStr, glGetString(GL_VERSION));
     // In order: Maximum number of uniform buffer binding points,
     //           maximum size in basic machine units of a uniform block and
     //           minimum required alignment for uniform buffer sizes and offset
     GLUtil::getGLValue(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, s_UBOffsetAlignment);
     GLUtil::getGLValue(GL_MAX_UNIFORM_BLOCK_SIZE, s_UBMaxSize);
-    Console::printfn(Locale::get(_ID("GL_UBO_INFO")),
+    Console::printfn(Locale::Get(_ID("GL_UBO_INFO")),
                      GLUtil::getGLValue(GL_MAX_UNIFORM_BUFFER_BINDINGS),
                      s_UBMaxSize / 1024,
                      s_UBOffsetAlignment);
@@ -289,7 +289,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     GLUtil::getGLValue(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT, s_SSBOffsetAlignment);
     GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE, s_SSBMaxSize);
     Console::printfn(
-        Locale::get(_ID("GL_SSBO_INFO")),
+        Locale::Get(_ID("GL_SSBO_INFO")),
         GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS),
         GLUtil::getGLValue(GL_MAX_SHADER_STORAGE_BLOCK_SIZE) / 1024 / 1024,
         GLUtil::getGLValue(GL_MAX_COMBINED_SHADER_STORAGE_BLOCKS),
@@ -297,7 +297,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
 
     // Maximum number of subroutines and maximum number of subroutine uniform
     // locations usable in a shader
-    Console::printfn(Locale::get(_ID("GL_SUBROUTINE_INFO")),
+    Console::printfn(Locale::Get(_ID("GL_SUBROUTINE_INFO")),
                      GLUtil::getGLValue(GL_MAX_SUBROUTINES),
                      GLUtil::getGLValue(GL_MAX_SUBROUTINE_UNIFORM_LOCATIONS));
 
@@ -319,7 +319,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     // 512x512 atlas with bottom-left origin
     _fonsContext = glfonsCreate(512, 512, FONS_ZERO_BOTTOMLEFT);
     if (_fonsContext == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_FONT_INIT")));
+        Console::errorfn(Locale::Get(_ID("ERROR_FONT_INIT")));
         return ErrorCode::FONT_INIT_ERROR;
     }
 
@@ -373,7 +373,7 @@ ErrorCode GL_API::initRenderingAPI(GLint argc, char** argv, Configuration& confi
     glShaderProgram::InitStaticData();
     if (InitGLSW(config)) {
         // That's it. Everything should be ready for draw calls
-        Console::printfn(Locale::get(_ID("START_OGL_API_OK")));
+        Console::printfn(Locale::Get(_ID("START_OGL_API_OK")));
         return ErrorCode::NO_ERR;
     }
 

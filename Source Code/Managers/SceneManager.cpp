@@ -133,9 +133,9 @@ void SceneManager::destroy() {
         Vegetation::destroyStaticData();
         MemoryManager::SAFE_DELETE(_sceneData);
         _platformContext->kernel().frameListenerMgr().removeFrameListener(this);
-        Console::printfn(Locale::get(_ID("STOP_SCENE_MANAGER")));
-        // Console::printfn(Locale::get("SCENE_MANAGER_DELETE"));
-        Console::printfn(Locale::get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
+        Console::printfn(Locale::Get(_ID("STOP_SCENE_MANAGER")));
+        // Console::printfn(Locale::Get("SCENE_MANAGER_DELETE"));
+        Console::printfn(Locale::Get(_ID("SCENE_MANAGER_REMOVE_SCENES")));
         MemoryManager::DELETE(_scenePool);
         MemoryManager::DELETE(_renderPassCuller);
         _recast.reset();
@@ -149,7 +149,7 @@ Scene* SceneManager::load(const Str256& sceneName) {
     Scene* loadingScene = _scenePool->getOrCreateScene(*_platformContext, parent().resourceCache(), *this, sceneName, foundInCache);
 
     if (!loadingScene) {
-        Console::errorfn(Locale::get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
+        Console::errorfn(Locale::Get(_ID("ERROR_XML_LOAD_INVALID_SCENE")));
         return nullptr;
     }
 

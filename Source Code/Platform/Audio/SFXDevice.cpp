@@ -39,7 +39,7 @@ ErrorCode SFXDevice::initAudioAPI(PlatformContext& context) {
             _api = eastl::make_unique<SDL_API>();
         } break;
         default: {
-            Console::errorfn(Locale::get(_ID("ERROR_SFX_DEVICE_API")));
+            Console::errorfn(Locale::Get(_ID("ERROR_SFX_DEVICE_API")));
             return ErrorCode::SFX_NON_SPECIFIED;
         };
     };

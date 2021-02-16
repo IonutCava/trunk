@@ -30,6 +30,7 @@ uniform vec2 _noiseTile;
 uniform vec2 _noiseFactor;
 
 #define NO_ENV_MAPPING
+#define NO_SSAO
 #define USE_SHADING_BLINN_PHONG
 #define SHADOW_INTENSITY_FACTOR 0.5f
 
@@ -43,7 +44,6 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
     const float fresnel = Eta + (1.0f - Eta) * pow(max(0.0f, 1.0f - dot(viewDir, normal)), 5.0f);
     return saturate(fresnel);
 }
-
 
 void main()
 {
@@ -61,14 +61,14 @@ void main()
     const vec3 incident = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
 
     const vec2 waterUV = clamp(0.5f * homogenize(_vertexWVP).xy + 0.5f, vec2(0.001f), vec2(0.999f));
-    const vec3 refractionColour = texture(texRefract, waterUV).rgb + _refractionTint;
+    const vec3 refractionColour = overlayVec(texture(texRefract, waterUV).rgb, _refractionTint);
 
     switch (dvd_materialDebugFlag) {
         case DEBUG_REFRACTIONS:
-            writeScreenColour(vec4(refractionColour, 1.f), normalWV, vec3(0.f, 1.f, 0.f));
+            writeScreenColour(vec4(refractionColour, 1.f), normalWV);
             return;
         case DEBUG_REFLECTIONS:
-            writeScreenColour(vec4(texture(texReflect, waterUV).rgb, 1.f), normalWV, vec3(0.f, 1.f, 0.f));
+            writeScreenColour(texture(texReflect, waterUV), normalWV);
             return;
     }
 

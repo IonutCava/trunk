@@ -59,7 +59,7 @@ RTAttachment_ptr& RTAttachmentPool::checkAndRemoveExistingAttachment(const RTAtt
     RTAttachment_ptr& ptr = getInternal(_attachment, type, index);
     if (ptr != nullptr) {
         // Replacing existing attachment
-        Console::d_printfn(Locale::get(_ID("WARNING_REPLACING_RT_ATTACHMENT")),
+        Console::d_printfn(Locale::Get(_ID("WARNING_REPLACING_RT_ATTACHMENT")),
             _parent.getGUID(),
             getAttachmentName(type),
             index);

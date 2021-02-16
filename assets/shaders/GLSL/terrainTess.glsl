@@ -259,6 +259,9 @@ void main(void)
 
 layout(quads, fractional_even_spacing, cw) in;
 
+// VAR._normalWV is in world-space!!!!
+#define _normalW _normalWV
+
 #define NEED_MATERIAL_DATA
 #include "nodeBufferedInput.cmn"
 #include "terrainUtils.cmn"
@@ -321,7 +324,7 @@ void main()
     _out._vertexW = dvd_WorldMatrix * dvd_terrainWorld * vec4(pos.x, GetHeight(_out._texCoord), pos.z, 1.0f);
     _out._vertexWV = dvd_ViewMatrix * _out._vertexW;
     setClipPlanes(); //Only need world vertex position for clipping
-    _out._normalWV = dvd_NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]) * getNormal(_out._texCoord);
+    _out._normalW = dvd_NormalMatrixW(dvd_Transforms[TRANSFORM_IDX]) * getNormal(_out._texCoord);
 
 #if !defined(PRE_PASS) && !defined(SHADOW_PASS)
     _out._viewDirectionWV = mat3(dvd_ViewMatrix) * normalize(dvd_cameraPosition.xyz - _out._vertexW.xyz);
@@ -481,11 +484,18 @@ void main(void)
 
 layout(early_fragment_tests) in;
 
+// VAR._normalWV is in world-space!!!!
+#define _normalW _normalWV
+
 #define USE_CUSTOM_ROUGHNESS
 #define SHADOW_INTENSITY_FACTOR 0.5f
 #define USE_CUSTOM_TBN
 #define SKIP_TEX1
 #define NO_IBL
+
+#if defined(LOW_QUALITY)
+#define DIRECTIONAL_LIGHT_ONLY
+#endif //LOW_QUALITY
 
 layout(location = 10) in flat uint dvd_LoD;
 
@@ -509,7 +519,7 @@ layout(location = 12) in vec3 tes_debugColour;
 
 float _private_roughness = 0.0f;
 vec3 getOcclusionMetallicRoughness(in NodeMaterialData data, in vec2 uv) {
-    return vec3(0.0f, 0.0f, _private_roughness);
+    return vec3(1.0f, 0.0f, _private_roughness);
 }
 
 void main(void) {
@@ -543,6 +553,7 @@ void main(void) {
 #else //TOGGLE_BLEND_MAP
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
     vec4 colourOut = getPixelColour(vec4(albedo.rgb, 1.0f), data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+
 #endif //TOGGLE_BLEND_MAP
 #endif //TOGGLE_TESS_LEVEL
 

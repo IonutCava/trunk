@@ -1,9 +1,12 @@
---Vertex
+--Vertex.PrePass
 
 #include "vbInputData.vert"
 
+layout(location = 0) out vec4 _scrollingUV;
+
 void main(void) {
     const vec4 vertexWVP = computeData(fetchInputData());
+    _scrollingUV = vec4(0.f);
     setClipPlanes();
     gl_Position = vertexWVP;
 }

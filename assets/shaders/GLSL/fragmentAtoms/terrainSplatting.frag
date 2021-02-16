@@ -7,25 +7,28 @@
 #include "waterData.cmn"
 
 #if defined(LOW_QUALITY) || !defined(REDUCE_TEXTURE_TILE_ARTIFACT)
+
 #define SampleTextureNoTile texture
+
 #else //LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
-vec4 SampleTextureNoTile(in sampler2DArray tex, in vec3 texUV) {
+
+vec4 TextureNoTile(in sampler2DArray tex, in vec3 texUV) {
 #if defined(HIGH_QUALITY_TILE_ARTIFACT_REDUCTION)
-#if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
-    return dvd_LoD < 2 ? textureNoTile(tex, texOMR, 3, texUV, 0.5f) : texture(tex, texUV);
-#else 
     return textureNoTile(tex, texOMR, 3, texUV, 0.5f);
-#endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
-
-#else  //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
-
-#if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
-    return dvd_LoD < 2 ? textureNoTile(tex, texUV) : texture(tex, texUV);
-#else 
+#else //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
     return textureNoTile(tex, texUV);
-#endif //REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
-
 #endif //HIGH_QUALITY_TILE_ARTIFACT_REDUCTION
+}
+
+vec4 SampleTextureNoTile(in sampler2DArray tex, in vec3 texUV)
+{
+#if !defined(REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS)
+    if (dvd_LoD >= 2) {
+        return texture(tex, texUV);
+    }
+#endif //!REDUCE_TEXTURE_TILE_ARTIFACT_ALL_LODS
+
+    return TextureNoTile(tex, texUV);
 }
 
 #endif //LOW_QUALITY || !REDUCE_TEXTURE_TILE_ARTIFACT
@@ -47,16 +50,18 @@ float[TOTAL_LAYER_COUNT] getBlendFactor(in vec2 uv) {
 
 #define scaledTextureCoords(UV) scaledTextureCoords(UV, TEXTURE_TILE_SIZE)
 
-mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv) {
+mat3 cotangentFrame() {
+    const vec3 V = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+
     // get edge vectors of the pixel triangle
-    const vec3 dp1 = dFdx(p);
-    const vec3 dp2 = dFdy(p);
-    const vec2 duv1 = dFdx(uv);
-    const vec2 duv2 = dFdy(uv);
+    const vec3 dp1 = dFdx(-V);
+    const vec3 dp2 = dFdy(-V);
+    const vec2 duv1 = dFdx(VAR._texCoord);
+    const vec2 duv2 = dFdy(VAR._texCoord);
 
     // solve the linear system
-    const vec3 dp2perp = cross(dp2, N);
-    const vec3 dp1perp = cross(N, dp1);
+    const vec3 dp2perp = cross(dp2, VAR._normalW);
+    const vec3 dp1perp = cross(VAR._normalW, dp1);
     const vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
     const vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
 
@@ -64,29 +69,25 @@ mat3 cotangentFrame(in vec3 N, in vec3 p, in vec2 uv) {
     const float invmax = inversesqrt(max(dot(T, T), dot(B, B)));
     return mat3(T * invmax,
                 B * invmax,
-                N);
+                VAR._normalW);
+
 }
 
-mat3 computeTBN() {
-    const vec3 V = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
-    return cotangentFrame(VAR._normalWV, -V, VAR._texCoord);
-}
-
-mat3 getTBNWV() {
-#if 0
-    return mat3(dvd_ViewMatrix) * computeTBN();
-#else
+mat3 getTBNW() {
     // We need to compute tangent and bitengent vectors with 
     // as cotangent_frame's results do not apply for what we need them to do
-    const vec3 N = normalize(VAR._normalWV);
+    const vec3 N = normalize(VAR._normalW);
     const vec3 T1 = cross(N, vec3(0.f, 0.f, 1.f));
     const vec3 T2 = cross(N, vec3(0.f, 1.f, 0.f));
     const vec3 T = normalize(length(T1) > length(T2) ? T1 : T2);
     const vec3 B = normalize(-cross(N, T));
     // Orthogonal matrix(each axis is a perpendicular unit vector)
     // The transpose of an orthogonal matrix equals its inverse
-    return mat3(dvd_ViewMatrix) * mat3(T, B, N);
-#endif
+    return mat3(T, B, N);
+}
+
+mat3 getTBNWV() {
+    return mat3(dvd_ViewMatrix) * getTBNW();
 }
 
 #if defined(HAS_PARALLAX)
@@ -140,45 +141,27 @@ vec2 ParallaxOcclusionMapping(in vec2 scaledCoords, in vec3 viewDirT, float curr
 #define getScaledCoords(UV, AMNT) scaledTextureCoords(UV)
 #else //LOW_QUALITY || !HAS_PARALLAX
 vec2 getScaledCoords(vec2 uv, in float[TOTAL_LAYER_COUNT] amnt) {
-    const vec2 scaledCoords = scaledTextureCoords(uv);
-
-    const uint bumpMethod = dvd_LoD >= 2 ? BUMP_NONE : dvd_bumpMethod(MATERIAL_IDX);
-    if (bumpMethod != BUMP_NONE) {
+    vec2 scaledCoords = scaledTextureCoords(uv);
 #if 0
-        const mat3 TBN = computeTBN());
-#else
-        // We need to compute tangent and bitengent vectors with 
-        // as cotangent_frame's results do not apply for what we need them to do
-        const vec3 N = normalize(VAR._normalWV);
-        const vec3 T1 = cross(N, vec3(0.f, 0.f, 1.f));
-        const vec3 T2 = cross(N, vec3(0.f, 1.f, 0.f));
-        const vec3 T = normalize(length(T1) > length(T2) ? T1 : T2);
-        const vec3 B = normalize(-cross(N, T));
-        // Orthogonal matrix(each axis is a perpendicular unit vector)
-        // The transpose of an orthogonal matrix equals its inverse
-        const mat3 TBN = mat3(T, B, N);
-#endif
-        const vec3 viewDirT = transpose(TBN) * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
-
-#if 0
-        const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
-        switch (bumpMethod) {
-            case BUMP_PARALLAX: {
+    //ToDo: Maybe bump this 1 unit? -Ionut
+    if (dvd_LoD == 0u) {
+        const uint bumpMethod = dvd_bumpMethod(MATERIAL_IDX);
+        if (bumpMethod == BUMP_PARALLAX || bumpMethod == BUMP_PARALLAX_OCCLUSION) {
+            const vec3 viewDirT = transpose(getTBNW()) * normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+            const float currentHeight = getDisplacementValueFromCoords(scaledCoords, amnt);
+            if (bumpMethod == BUMP_PARALLAX) {
                 //ref: https://learnopengl.com/Advanced-Lighting/Parallax-Mapping
-                const vec2 p = viewDirT.xy / viewDirT.z * currentHeight * dvd_parallaxFactor(MATERIAL_IDX);
+                const vec2 p = (viewDirT.xy / viewDirT.z) * currentHeight * dvd_parallaxFactor(MATERIAL_IDX);
                 const vec2 texCoords = uv - p;
                 const vec2 clippedTexCoord = vec2(texCoords.x - floor(texCoords.x),
                                                   texCoords.y - floor(texCoords.y));
-                return scaledTextureCoords(clippedTexCoord);
-                    
-            } break;
-            case BUMP_PARALLAX_OCCLUSION:
-            {
-                return  ParallaxOcclusionMapping(correctedUV, viewDirT, currentHeight, dvd_parallaxFactor(MATERIAL_IDX), amnt);
-            } break;
+                scaledCoords = scaledTextureCoords(clippedTexCoord);
+            } else {
+                scaledCoords = ParallaxOcclusionMapping(uv, viewDirT, currentHeight, dvd_parallaxFactor(MATERIAL_IDX), amnt);
+            }
         }
-#endif
     }
+#endif
 
     return scaledCoords;
 }
@@ -223,21 +206,20 @@ vec4 BuildTerrainData(out vec3 normalWV) {
     const vec2 waterData = GetWaterDetails(VAR._vertexW.xyz, TERRAIN_HEIGHT_OFFSET);
 
 #if defined(LOW_QUALITY)
-    // VAR._normalWV is in world-space
-    normalWV = VAR._normalWV;
-#else //LOW_QUALITY
+    normalWV = normalize(mat3(dvd_ViewMatrix) * VAR._normalW);
+    return getTerrainAlbedo();
+#endif //LOW_QUALITY
+    if (dvd_LoD > 1) {
+        normalWV = normalize(mat3(dvd_ViewMatrix) * cotangentFrame() * (getTerrainNormal() * 255.f / 127.f - 128.f / 127.f));
+        return getTerrainAlbedo();
+    }
+
     const vec3 normalMap = mix(getTerrainNormal(),
                                texture(texOMR, vec3(VAR._texCoord * UNDERWATER_TILE_SCALE, 2)).rgb,
                                saturate(waterData.x));
 
-    normalWV = computeTBN() * (normalMap * 255.f / 127.f - 128.f / 127.f);
-#endif //LOW_QUALITY
-
-    normalWV = normalize(mat3(dvd_ViewMatrix) * normalWV);
-
-    return mix(getTerrainAlbedo(),
-                getUnderwaterAlbedo(VAR._texCoord * UNDERWATER_TILE_SCALE, waterData.y),
-                saturate(waterData.x));
+    normalWV = normalize(mat3(dvd_ViewMatrix) * cotangentFrame() * (normalMap * 255.f / 127.f - 128.f / 127.f));
+    return mix(getTerrainAlbedo(), getUnderwaterAlbedo(VAR._texCoord * UNDERWATER_TILE_SCALE, waterData.y), saturate(waterData.x));
 }
 
 #endif //_TERRAIN_SPLATTING_FRAG_

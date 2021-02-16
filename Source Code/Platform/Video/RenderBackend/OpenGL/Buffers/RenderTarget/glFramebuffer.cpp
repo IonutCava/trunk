@@ -708,43 +708,43 @@ bool glFramebuffer::checkStatus() {
         switch (status)
         {
             case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_ATTACHMENT_INCOMPLETE")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_NO_IMAGE")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_NO_IMAGE")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_INCOMPLETE_DRAW_BUFFER")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_INCOMPLETE_READ_BUFFER")));
                 return false;
             }
             case GL_FRAMEBUFFER_UNSUPPORTED: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_UNSUPPORTED")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_UNSUPPORTED")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_INCOMPLETE_MULTISAMPLE")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_INCOMPLETE_LAYER_TARGETS")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_DIMENSIONS")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_DIMENSIONS")));
                 return false;
             }
             case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT: {
-                Console::errorfn(Locale::get(_ID("ERROR_RT_FORMAT")));
+                Console::errorfn(Locale::Get(_ID("ERROR_RT_FORMAT")));
                 return false;
             }
             default: {
-                Console::errorfn(Locale::get(_ID("ERROR_UNKNOWN")));
+                Console::errorfn(Locale::Get(_ID("ERROR_UNKNOWN")));
             } break;
         };
     }

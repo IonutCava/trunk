@@ -707,27 +707,27 @@ void MenuBar::drawDebugMenu() {
 
             bool temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_AABB);
             if (ImGui::MenuItem("Show AABBs", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), temp ? "On" : "Off");
+                Console::d_printfn(Locale::Get(_ID("TOGGLE_SCENE_BOUNDING_BOXES")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_AABB, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_OBB);
             if (ImGui::MenuItem("Show OBBs", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_ORIENTED_BOUNDING_BOXES")), temp ? "On" : "Off");
+                Console::d_printfn(Locale::Get(_ID("TOGGLE_SCENE_ORIENTED_BOUNDING_BOXES")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_OBB, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_BSPHERES);
             if (ImGui::MenuItem("Show bounding spheres", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), temp ? "On" : "Off");
+                Console::d_printfn(Locale::Get(_ID("TOGGLE_SCENE_BOUNDING_SPHERES")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_BSPHERES, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::RENDER_SKELETONS);
             if (ImGui::MenuItem("Show skeletons", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_SKELETONS")), temp ? "On" : "Off");
+                Console::d_printfn(Locale::Get(_ID("TOGGLE_SCENE_SKELETONS")), temp ? "On" : "Off");
                 renderState.toggleOption(SceneRenderState::RenderOptions::RENDER_SKELETONS, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::SCENE_GIZMO);
             if (ImGui::MenuItem("Show scene axis", "", &temp)) {
-                Console::d_printfn(Locale::get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
+                Console::d_printfn(Locale::Get(_ID("TOGGLE_SCENE_AXIS_GIZMO")));
                 renderState.toggleOption(SceneRenderState::RenderOptions::SCENE_GIZMO, temp);
             }
             temp = renderState.isEnabledOption(SceneRenderState::RenderOptions::SELECTION_GIZMO);

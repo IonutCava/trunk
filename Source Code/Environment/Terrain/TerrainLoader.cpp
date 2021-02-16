@@ -219,7 +219,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
     const vec2<U16> & terrainDimensions = terrainDescriptor->dimensions();
     const vec2<F32> & altitudeRange = terrainDescriptor->altitudeRange();
 
-    Console::d_printfn(Locale::get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
+    Console::d_printfn(Locale::Get(_ID("TERRAIN_INFO")), terrainDimensions.width, terrainDimensions.height);
 
     const F32 underwaterTileScale = terrainDescriptor->getVariablef("underwaterTileScale");
     terrainMaterial->shadingMode(ShadingMode::COOK_TORRANCE);
@@ -497,6 +497,7 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
             if (shaderModule._moduleType == ShaderType::FRAGMENT) {
                 shaderModule._variant = "MainPass";
                 shaderModule._defines.emplace_back("SAMPLER_UNIT1_IS_ARRAY", true);
+                shaderModule._defines.emplace_back("MAIN_DISPLAY_PASS", true);
                 if (hasParallax) {
                     shaderModule._defines.emplace_back("HAS_PARALLAX", true);
                 }
@@ -557,12 +558,23 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
 
         ShaderProgram_ptr terrainColourShaderLQ = CreateResource<ShaderProgram>(resCache, terrainShaderColourLQ);
 
-        matInstance->setShaderProgram(terrainPrePassShaderLQ,      RenderStage::COUNT,   RenderPassType::PRE_PASS);
-        matInstance->setShaderProgram(terrainColourShaderLQ,       RenderStage::COUNT,   RenderPassType::MAIN_PASS);
-        matInstance->setShaderProgram(terrainPrePassShader,        RenderStage::DISPLAY, RenderPassType::PRE_PASS);
-        matInstance->setShaderProgram(terrainColourShader,         RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
-        matInstance->setShaderProgram(terrainShadowShaderVSM,      RenderStage::SHADOW,  RenderPassType::COUNT);
-        matInstance->setShaderProgram(terrainShadowShaderVSMOrtho, RenderStage::SHADOW,  RenderPassType::COUNT, to_base(LightType::DIRECTIONAL));
+        // Reflect Pass LQ
+        ShaderProgramDescriptor lowQualityDescriptorReflect = lowQualityDescriptor;
+        for (ShaderModuleDescriptor& shaderModule : lowQualityDescriptorReflect._modules) {
+            shaderModule._defines.emplace_back("REFLECTION_PASS", true);
+        }
+        ResourceDescriptor terrainShaderColourLQReflect("Terrain_Colour_LowQuality_Reflect-" + name + propName);
+        terrainShaderColourLQReflect.propertyDescriptor(lowQualityDescriptorReflect);
+
+        ShaderProgram_ptr terrainColourShaderLQReflect = CreateResource<ShaderProgram>(resCache, terrainShaderColourLQReflect);
+
+        matInstance->setShaderProgram(terrainPrePassShaderLQ,       RenderStage::COUNT,      RenderPassType::PRE_PASS);
+        matInstance->setShaderProgram(terrainColourShaderLQ,        RenderStage::COUNT,      RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainColourShaderLQReflect, RenderStage::REFLECTION, RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainPrePassShader,         RenderStage::DISPLAY,    RenderPassType::PRE_PASS);
+        matInstance->setShaderProgram(terrainColourShader,          RenderStage::DISPLAY,    RenderPassType::MAIN_PASS);
+        matInstance->setShaderProgram(terrainShadowShaderVSM,       RenderStage::SHADOW,     RenderPassType::COUNT);
+        matInstance->setShaderProgram(terrainShadowShaderVSMOrtho,  RenderStage::SHADOW,     RenderPassType::COUNT, to_base(LightType::DIRECTIONAL));
     };
 
     buildShaders(terrainMaterial.get());
@@ -753,7 +765,7 @@ bool TerrainLoader::loadThreadedResources(const Terrain_ptr& terrain,
     VegetationDetails& vegDetails = initializeVegetationDetails(terrain, context, terrainDescriptor);
     Vegetation::createAndUploadGPUData(context.gfx(), terrain, vegDetails);
 
-    Console::printfn(Locale::get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
+    Console::printfn(Locale::Get(_ID("TERRAIN_LOAD_END")), terrain->resourceName().c_str());
     return terrain->load();
 }
 

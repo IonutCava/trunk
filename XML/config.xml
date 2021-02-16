@@ -64,7 +64,7 @@
 	<!-- higher => better (less tilling, more parallax effects, etc) -->
 	<detailLevel>2</detailLevel>
 	<!-- higher => better -->
-	<parallaxMode>1</parallaxMode>
+	<parallaxMode>0</parallaxMode>
 	<!-- The following debug settings work in cascade mode. The topmost enabled option is the only one considered-->
 	<wireframe>false</wireframe>
 	<showNormals>false</showNormals>

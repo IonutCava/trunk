@@ -138,6 +138,12 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
     particleShaderDescriptor.propertyDescriptor(shaderDescriptor);
     ShaderProgram_ptr particleShader = CreateResource<ShaderProgram>(_parentCache, particleShaderDescriptor);
 
+    ResourceDescriptor particleShaderMainDescriptor(useTexture ? "particles_WithTexture_Main" : "particles_NoTexture_Main");
+    ShaderProgramDescriptor shaderDescriptorMain = shaderDescriptor;
+    shaderDescriptorMain._modules.back()._defines.emplace_back("MAIN_DISPLAY_PASS", true);
+    particleShaderMainDescriptor.propertyDescriptor(shaderDescriptorMain);
+    ShaderProgram_ptr particleShaderMain = CreateResource<ShaderProgram>(_parentCache, particleShaderMainDescriptor);
+
     shaderDescriptor._modules.back()._variant = "PrePass";
     shaderDescriptor._modules.back()._defines.emplace_back("PRE_PASS", true);
     ResourceDescriptor particleDepthShaderDescriptor(useTexture ? "particles_WithTexture" : "particles_NoTexture");
@@ -168,6 +174,7 @@ bool ParticleEmitter::initData(const std::shared_ptr<ParticleData>& particleData
 
         mat->setShaderProgram(particleDepthShader,       RenderStage::COUNT,  RenderPassType::PRE_PASS);
         mat->setShaderProgram(particleShader,            RenderStage::COUNT,  RenderPassType::MAIN_PASS);
+        mat->setShaderProgram(particleShaderMain,        RenderStage::DISPLAY,  RenderPassType::MAIN_PASS);
         mat->setShaderProgram(particleShadowShader,      RenderStage::SHADOW, RenderPassType::COUNT);
         mat->setShaderProgram(particleShadowShaderOrtho, RenderStage::SHADOW, RenderPassType::COUNT, to_base(LightType::DIRECTIONAL));
 

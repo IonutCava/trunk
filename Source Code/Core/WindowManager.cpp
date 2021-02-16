@@ -32,7 +32,7 @@ namespace {
 
     bool Validate(const I32 errCode) {
         if (errCode != 0) {
-            Console::errorfn(Locale::get(_ID("SDL_ERROR")), SDL_GetError());
+            Console::errorfn(Locale::Get(_ID("SDL_ERROR")), SDL_GetError());
             return false;
         }
 
@@ -302,7 +302,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
 
     if (!descriptor.externalClose) {
         window->addEventListener(WindowEvent::CLOSE_REQUESTED, [this](const DisplayWindow::WindowEventArgs& args) {
-            Console::d_printfn(Locale::get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
+            Console::d_printfn(Locale::Get(_ID("WINDOW_CLOSE_EVENT")), args._windowGUID);
 
             if (_mainWindowGUID == args._windowGUID) {
                 _context->app().RequestShutdown();
@@ -310,7 +310,7 @@ DisplayWindow* WindowManager::createWindow(const WindowDescriptor& descriptor, E
                 for (DisplayWindow*& win : _windows) {
                     if (win->getGUID() == args._windowGUID) {
                         if (!destroyWindow(win)) {
-                            Console::errorfn(Locale::get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
+                            Console::errorfn(Locale::Get(_ID("WINDOW_CLOSE_EVENT_ERROR")), args._windowGUID);
                             win->hidden(true);
                         }
                         break;
@@ -444,9 +444,9 @@ ErrorCode WindowManager::applyAPISettings(DisplayWindow* window) const
     }
 
     if (window->_userData == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
-        Console::printfn(Locale::get(_ID("WARN_SWITCH_API")));
-        Console::printfn(Locale::get(_ID("WARN_APPLICATION_CLOSE")));
+        Console::errorfn(Locale::Get(_ID("ERROR_GFX_DEVICE")), SDL_GetError());
+        Console::printfn(Locale::Get(_ID("WARN_SWITCH_API")));
+        Console::printfn(Locale::Get(_ID("WARN_APPLICATION_CLOSE")));
         return ErrorCode::OGL_OLD_HARDWARE;
     }
 

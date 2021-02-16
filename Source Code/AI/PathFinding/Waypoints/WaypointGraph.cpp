@@ -27,7 +27,7 @@ void WaypointGraph::removeWaypoint(Waypoint* wp) {
         _waypoints.erase(wp->ID());
         updateGraph();
     } else {
-        Console::printfn(Locale::get(_ID("WARN_WAYPOINT_NOT_FOUND")), wp->ID(),
+        Console::printfn(Locale::Get(_ID("WARN_WAYPOINT_NOT_FOUND")), wp->ID(),
                          getID());
     }
 }

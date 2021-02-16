@@ -45,7 +45,7 @@ bool glVAOCache::getVAO(const AttribFlags& flags, GLuint& vaoOut, size_t& hashOu
 
     // Otherwise allocate a new VAO and save it in the cache
     vaoOut = GL_API::s_vaoPool.allocate();
-    assert(vaoOut != 0 && Locale::get(_ID("ERROR_VAO_INIT")));
+    assert(vaoOut != 0 && Locale::Get(_ID("ERROR_VAO_INIT")));
     insert(_cache, hashOut, vaoOut);
     return false;
 }

@@ -3,7 +3,7 @@
 <TRANSFORM>
     <Transform>
         <position x="140.618729" y="0" z="0"/>
-        <orientation x="154.316254" y="-2.30031514" z="-180"/>
+        <orientation x="153.626633" y="-2.35005426" z="180"/>
         <scale x="0.99987042" y="0.999870777" z="0.999772847"/>
     </Transform>
 </TRANSFORM>
@@ -19,7 +19,7 @@
 </RENDERING>
 <NETWORKING/>
 <DIRECTIONAL_LIGHT>
-    <Direction x="0.0361885093" y="-0.43349883" z="0.900427163"/>
+    <Direction x="0.0367368534" y="-0.444218844" z="0.895164847"/>
     <Fit__CSM__To__AABB______0____>true</Fit__CSM__To__AABB______0____>
     <Fit__CSM__To__AABB______1____>true</Fit__CSM__To__AABB______1____>
     <Fit__CSM__To__AABB______2____>true</Fit__CSM__To__AABB______2____>

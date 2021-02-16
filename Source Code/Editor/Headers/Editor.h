@@ -218,6 +218,7 @@ class Editor final : public PlatformContextComponent,
     [[nodiscard]] U32 saveItemCount() const  noexcept;
 
     PROPERTY_R_IW(bool, running, false);
+    PROPERTY_R_IW(bool, showEmissiveSelections, true);
     PROPERTY_R_IW(bool, unsavedSceneChanges, false);
     PROPERTY_R_IW(bool, scenePreviewFocused, false);
     PROPERTY_R_IW(bool, scenePreviewHovered, false);
@@ -323,6 +324,14 @@ namespace Attorney {
 
         static void autoFocusEditor(Editor& editor, const bool state) noexcept {
             editor._autoFocusEditor = state;
+        } 
+        
+        [[nodiscard]] static bool emissiveSelections(const Editor& editor) noexcept {
+            return editor._showEmissiveSelections;
+        }
+
+        static void emissiveSelections(Editor& editor, const bool state) noexcept {
+            editor._showEmissiveSelections = state;
         }
 
         friend class Divide::SceneViewWindow;

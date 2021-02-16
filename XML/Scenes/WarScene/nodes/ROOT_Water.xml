@@ -8,7 +8,7 @@
     <Refraction__Plane__Offset>1.75</Refraction__Plane__Offset>
     <Noise__tile__factor x="75" y="75"/>
     <Noise__factor x="0.100000001" y="0.100000001"/>
-    <Refraction__tint r="0" g="0.467000008" b="0.745000005"/>
+    <Refraction__tint r="0.318198264" g="0.649830282" b="0.934065938"/>
     <Specular__Shininess>200</Specular__Shininess>
 </WATER>
 <TRANSFORM>

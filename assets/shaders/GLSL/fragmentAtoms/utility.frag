@@ -29,6 +29,12 @@ vec2 UVDromRayDir(in vec3 dir) {
 
 #define overlay(X, Y) (X < 0.5f) ? (2.f * X * Y) : (1.f - 2.f * (1.f - X) * (1.f - Y))
 
+vec3 overlayVec(in vec3 base, in vec3 blend) {
+    return vec3(overlay(base.r, blend.r),
+                overlay(base.g, blend.g),
+                overlay(base.b, blend.b));
+}
+
 #if defined(PROJECTED_TEXTURE)
 
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
@@ -191,6 +197,16 @@ vec3 viewPositionFromDepth(in float depth,
     return homogenize(invProjectionMatrix * ndc);
 }
 
+bool isInScreenRect(in vec2 coords) {
+    return all(bvec4(coords.x >= 0.f,
+                     coords.x <= 1.f,
+                     coords.y >= 0.f,
+                     coords.y <= 1.f));
+}
+
+bool isInFrustum(in vec3 coords) {
+    return coords.z <= 1.f && isInScreenRect(coords.xy);
+}
 
 #ifndef COLORMAP_SH_HEADER_GUARD
 #define COLORMAP_SH_HEADER_GUARD

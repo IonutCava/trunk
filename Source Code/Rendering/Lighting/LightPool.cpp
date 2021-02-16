@@ -67,7 +67,7 @@ LightPool::~LightPool()
     SharedLock<SharedMutex> r_lock(_lightLock);
     for (const LightList& lightList : _lights) {
         if (!lightList.empty()) {
-            Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
+            Console::errorfn(Locale::Get(_ID("ERROR_LIGHT_POOL_LIGHT_LEAKED")));
         }
     }
 }
@@ -156,7 +156,7 @@ bool LightPool::addLight(Light& light) {
     UniqueLock<SharedMutex> r_lock(_lightLock);
     if (findLightLocked(light.getGUID(), type) != end(_lights[lightTypeIdx])) {
 
-        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
+        Console::errorfn(Locale::Get(_ID("ERROR_LIGHT_POOL_DUPLICATE")),
                          light.getGUID());
         return false;
     }
@@ -172,7 +172,7 @@ bool LightPool::removeLight(Light& light) {
     const LightList::const_iterator it = findLightLocked(light.getGUID(), light.getLightType());
 
     if (it == end(_lights[to_U32(light.getLightType())])) {
-        Console::errorfn(Locale::get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
+        Console::errorfn(Locale::Get(_ID("ERROR_LIGHT_POOL_REMOVE_LIGHT")),
                          light.getGUID());
         return false;
     }

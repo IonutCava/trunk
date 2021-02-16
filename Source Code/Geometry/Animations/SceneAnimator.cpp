@@ -53,7 +53,7 @@ void SceneAnimator::release(const bool releaseAnimations)
 }
 
 bool SceneAnimator::init(PlatformContext& context) {
-    Console::d_printfn(Locale::get(_ID("LOAD_ANIMATIONS_BEGIN")));
+    Console::d_printfn(Locale::Get(_ID("LOAD_ANIMATIONS_BEGIN")));
 
     _transforms.resize(_skeletonDepthCache);
 
@@ -91,7 +91,7 @@ bool SceneAnimator::init(PlatformContext& context) {
         crtAnimation->initBuffers(context.gfx());
     }
 
-     Console::d_printfn(Locale::get(_ID("LOAD_ANIMATIONS_END")), _skeletonDepthCache);
+     Console::d_printfn(Locale::Get(_ID("LOAD_ANIMATIONS_END")), _skeletonDepthCache);
 
     return !_transforms.empty();
 }

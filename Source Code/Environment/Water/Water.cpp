@@ -214,7 +214,7 @@ bool WaterPlane::load() {
         shaderDescriptor = {};
         shaderDescriptor._modules.push_back(vertModule);
         shaderDescriptor._modules.push_back(fragModule);
-
+        shaderDescriptor._modules.back()._defines.emplace_back("MAIN_DISPLAY_PASS", true);
         ResourceDescriptor waterColourShader("waterColourHQ");
         waterColourShader.propertyDescriptor(shaderDescriptor);
         waterColourShader.waitForReady(false);

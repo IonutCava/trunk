@@ -51,7 +51,7 @@ glPixelBuffer::glPixelBuffer(GFXDevice& context, const PBType type, const char* 
             _textureType = TextureType::TEXTURE_3D;
             break;
         default:
-            Console::errorfn(Locale::get(_ID("ERROR_PB_INVALID_TYPE")));
+            Console::errorfn(Locale::Get(_ID("ERROR_PB_INVALID_TYPE")));
             break;
     };
 }
@@ -121,7 +121,7 @@ bool glPixelBuffer::create(GLushort width, GLushort height, const GLushort depth
     _format = GLUtil::glImageFormatTable[to_U32(formatEnum)];
     _dataType = GLUtil::glDataFormat[to_U32(dataTypeEnum)];
 
-    Console::printfn(Locale::get(_ID("GL_PB_GEN")), width, height);
+    Console::printfn(Locale::Get(_ID("GL_PB_GEN")), width, height);
     _width = width;
     _height = height;
     _depth = depth;

@@ -40,7 +40,7 @@ void FrameListenerManager::removeFrameListener(FrameListener* const listener) {
     if (it != cend(_listeners)) {
         _listeners.erase(it);
     } else {
-        Console::errorfn(Locale::get(_ID("ERROR_FRAME_LISTENER_REMOVE")), listener->getListenerName().c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_FRAME_LISTENER_REMOVE")), listener->getListenerName().c_str());
     }
 }
 

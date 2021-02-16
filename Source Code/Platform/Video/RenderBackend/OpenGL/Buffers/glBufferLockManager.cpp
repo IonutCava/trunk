@@ -71,12 +71,12 @@ bool glBufferLockManager::lockRange(const size_t lockBeginBytes, const size_t lo
 
         // See if we can reuse the old lock. Ignore the old fence since the new one will guard the same mem region. Right?
         if (Overlaps(testRange, lock._range) && lock._valid) {
-            glDeleteSync(lock._syncObj);
-
+            const GLsync newSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
             lock._range._startOffset = std::min(testRange._startOffset, lock._range._startOffset);
             lock._range._length = std::max(testRange._length, lock._range._length);
             lock._frameID = frameID;
-            lock._syncObj = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+            glDeleteSync(lock._syncObj);
+            lock._syncObj = newSync;
             return true;
         }
     }

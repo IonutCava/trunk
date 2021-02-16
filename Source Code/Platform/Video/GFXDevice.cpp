@@ -159,7 +159,7 @@ ErrorCode GFXDevice::createAPIInstance(const RenderAPI API) {
             break;
     };
 
-    DIVIDE_ASSERT(_api != nullptr, Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+    DIVIDE_ASSERT(_api != nullptr, Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
     renderAPI(API);
 
     return err;
@@ -186,12 +186,12 @@ ErrorCode GFXDevice::initRenderingAPI(const I32 argc, char** argv, const RenderA
     for (size_t idx = 0; idx < displayCount; ++idx) {
         const vectorEASTL<GPUState::GPUVideoMode>& registeredModes = gpuState().getDisplayModes(idx);
         if (!registeredModes.empty()) {
-            Console::printfn(Locale::get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
+            Console::printfn(Locale::Get(_ID("AVAILABLE_VIDEO_MODES")), idx, registeredModes.size());
 
             for (const GPUState::GPUVideoMode& mode : registeredModes) {
                 // Optionally, output to console/file each display mode
                 refreshRates = Util::StringFormat("%d", mode._refreshRate);
-                Console::printfn(Locale::get(_ID("CURRENT_DISPLAY_MODE")),
+                Console::printfn(Locale::Get(_ID("CURRENT_DISPLAY_MODE")),
                     mode._resolution.width,
                     mode._resolution.height,
                     mode._bitDepth,
@@ -857,7 +857,7 @@ void GFXDevice::closeRenderingAPI() {
     _debugViews.clear();
 
     // Delete the renderer implementation
-    Console::printfn(Locale::get(_ID("CLOSING_RENDERER")));
+    Console::printfn(Locale::Get(_ID("CLOSING_RENDERER")));
     _renderer.reset(nullptr);
 
     RenderStateBlock::clear();
@@ -901,7 +901,7 @@ void GFXDevice::closeRenderingAPI() {
             list.append(" ");
         }
         list += " ]";
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
+        Console::errorfn(Locale::Get(_ID("ERROR_GFX_LEAKED_RESOURCES")), _graphicResources.size());
         Console::errorfn(list.c_str());
     }
     _graphicResources.clear();
@@ -1002,7 +1002,7 @@ void GFXDevice::generateCubeMap(RenderPassParams& params,
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
         // Future formats must be added later (e.g. cube map arrays)
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP")));
+        Console::errorfn(Locale::Get(_ID("ERROR_GFX_DEVICE_INVALID_FB_CUBEMAP")));
         return;
     }
 
@@ -1076,7 +1076,7 @@ void GFXDevice::generateDualParaboloidMap(RenderPassParams& params,
     // Make sure we have a proper render target to draw to
     if (!isValidFB) {
         // Future formats must be added later (e.g. cube map arrays)
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_DEVICE_INVALID_FB_DP")));
+        Console::errorfn(Locale::Get(_ID("ERROR_GFX_DEVICE_INVALID_FB_DP")));
         return;
     }
 
@@ -1505,7 +1505,7 @@ void GFXDevice::flushCommandBuffer(GFX::CommandBuffer& commandBuffer, const bool
 
     const GFX::ErrorType error = commandBuffer.validate();
     if (error != GFX::ErrorType::NONE) {
-        Console::errorfn(Locale::get(_ID("ERROR_GFX_INVALID_COMMAND_BUFFER")), commandBuffer.toString().c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_GFX_INVALID_COMMAND_BUFFER")), commandBuffer.toString().c_str());
         DIVIDE_ASSERT(false, Util::StringFormat("GFXDevice::flushCommandBuffer error [ %s ]: Invalid command buffer. Check error log!", GFX::Names::errorType[to_base(error)]).c_str());
         return;
     }
@@ -2520,7 +2520,7 @@ RenderTarget* GFXDevice::newRT(const RenderTargetDescriptor& descriptor) {
                 temp = new (objectArena()) noRenderTarget(*this, descriptor);
             } break;
             default: {
-                DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+                DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
             } break;
         };
 
@@ -2549,7 +2549,7 @@ IMPrimitive* GFXDevice::newIMP() {
             return nullptr;
         };
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2567,7 +2567,7 @@ bool GFXDevice::destroyIMP(IMPrimitive*& primitive) {
             return false;
         };
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2591,7 +2591,7 @@ VertexBuffer* GFXDevice::newVB() {
             temp = new (objectArena()) noVertexBuffer(*this);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2619,7 +2619,7 @@ PixelBuffer* GFXDevice::newPB(const PBType type, const char* name) {
             temp = new (objectArena()) noPixelBuffer(*this, type, name);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2647,7 +2647,7 @@ GenericVertexData* GFXDevice::newGVD(const U32 ringBufferLength, const char* nam
             temp = new (objectArena()) noGenericVertexData(*this, ringBufferLength, name);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2682,7 +2682,7 @@ Texture* GFXDevice::newTexture(const size_t descriptorHash,
             temp = new (objectArena()) noTexture(*this, descriptorHash, resourceName, assetNames, assetLocations, isFlipped, asyncLoad, texDescriptor);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2730,7 +2730,7 @@ ShaderProgram* GFXDevice::newShaderProgram(const size_t descriptorHash,
             temp = new (objectArena()) noShaderProgram(*this, descriptorHash, resourceName, assetName, assetLocation, descriptor, asyncLoad);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 
@@ -2758,7 +2758,7 @@ ShaderBuffer* GFXDevice::newSB(const ShaderBufferDescriptor& descriptor) {
             temp = new (objectArena()) noUniformBuffer(*this, descriptor);
         } break;
         default: {
-            DIVIDE_UNEXPECTED_CALL_MSG(Locale::get(_ID("ERROR_GFX_DEVICE_API")));
+            DIVIDE_UNEXPECTED_CALL_MSG(Locale::Get(_ID("ERROR_GFX_DEVICE_API")));
         } break;
     };
 

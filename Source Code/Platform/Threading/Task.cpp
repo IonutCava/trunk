@@ -56,7 +56,7 @@ Task& Start(Task& task, const TaskPriority priority, const DELEGATE<void>& onCom
         task._id,
         onCompletionFunction)) 
     {
-        Console::errorfn(Locale::get(_ID("TASK_SCHEDULE_FAIL")), 1);
+        Console::errorfn(Locale::Get(_ID("TASK_SCHEDULE_FAIL")), 1);
         RunLocally(task, priority, hasOnCompletionFunction);
         task._parentPool->flushCallbackQueue();
     }

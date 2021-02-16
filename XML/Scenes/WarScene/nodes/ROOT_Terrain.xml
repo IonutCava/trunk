@@ -8,7 +8,7 @@
 <tileNoiseTexture>bruit_gaussien_2.jpg</tileNoiseTexture>
 <model>Terrain</model>
 <TERRAIN>
-    <Tessellated__Triangle__Width>8</Tessellated__Triangle__Width>
+    <Tessellated__Triangle__Width>16</Tessellated__Triangle__Width>
 </TERRAIN>
 <TRANSFORM>
     <Transform>
@@ -32,7 +32,7 @@
         <roughness>0.800000012</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
-        <bumpMethod>PARALLAX</bumpMethod>
+        <bumpMethod>NONE</bumpMethod>
         <parallaxFactor>0.300000012</parallaxFactor>
         <transparencyEnabled>false</transparencyEnabled>
         <isRefractive>false</isRefractive>

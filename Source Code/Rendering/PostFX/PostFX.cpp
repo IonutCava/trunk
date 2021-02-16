@@ -45,7 +45,7 @@ PostFX::PostFX(PlatformContext& context, ResourceCache* cache)
     _postFXTarget.drawMask().disableAll();
     _postFXTarget.drawMask().setEnabled(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO), true);
 
-    Console::printfn(Locale::get(_ID("START_POST_FX")));
+    Console::printfn(Locale::Get(_ID("START_POST_FX")));
 
     ShaderModuleDescriptor vertModule = {};
     vertModule._moduleType = ShaderType::VERTEX;
@@ -162,7 +162,6 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
     GFX::BindPipelineCommand bindPipelineCmd;
     bindPipelineCmd._pipeline = _drawPipeline;
     EnqueueCommand(bufferInOut, bindPipelineCmd);
-
 
     if (_filtersDirty) {
         _drawConstants.set(_ID("vignetteEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_VIGNETTE));

@@ -70,7 +70,7 @@ RenderingOrder RenderQueue::getSortOrder(const RenderStagePass stagePass, const 
         } break;
         default:
         case RenderBinType::RBT_COUNT: {
-            Console::errorfn(Locale::get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
+            Console::errorfn(Locale::Get(_ID("ERROR_INVALID_RENDER_BIN_CREATION")));
         } break;
     };
     

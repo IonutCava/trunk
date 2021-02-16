@@ -129,12 +129,12 @@ namespace Preprocessor{
             if (work->_firstError) {
                 work->_firstError = false;
                 Console::errorfn("------------------------------------------");
-                Console::errorfn(Locale::get(firstErrorPrint ? _ID("ERROR_GLSL_PARSE_ERROR_NAME_LONG")
+                Console::errorfn(Locale::Get(firstErrorPrint ? _ID("ERROR_GLSL_PARSE_ERROR_NAME_LONG")
                                                              : _ID("ERROR_GLSL_PARSE_ERROR_NAME_SHORT")), work->_fileName);
                 firstErrorPrint = false;
             }
             if (strlen(formatted) != 1 && formatted[0] != '\n') {
-                Console::errorfn(Locale::get(_ID("ERROR_GLSL_PARSE_ERROR_MSG")), formatted);
+                Console::errorfn(Locale::Get(_ID("ERROR_GLSL_PARSE_ERROR_MSG")), formatted);
             } else {
                 Console::errorfn("------------------------------------------\n");
             }
@@ -375,17 +375,17 @@ void glShaderProgram::Idle(PlatformContext& platformContext) {
                 // To avoid overflowing the output buffers (both CEGUI and Console), limit the maximum output size
                 if (validationBuffer.size() > g_validationBufferMaxSize) {
                     // On some systems, the program's disassembly is printed, and that can get quite large
-                    validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
+                    validationBuffer.resize(std::strlen(Locale::Get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
                     // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
                     validationBuffer.append(" ... ");
                 }
                 // Return the final message, whatever it may contain
-                Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), g_validationOutputCache._handle, g_validationOutputCache._name.c_str(), validationBuffer.c_str());
+                Console::errorfn(Locale::Get(_ID("GLSL_VALIDATING_PROGRAM")), g_validationOutputCache._handle, g_validationOutputCache._name.c_str(), validationBuffer.c_str());
             } else {
-                Console::errorfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), g_validationOutputCache._handle, g_validationOutputCache._name.c_str(), "[ Couldn't retrieve info log! ]");
+                Console::errorfn(Locale::Get(_ID("GLSL_VALIDATING_PROGRAM")), g_validationOutputCache._handle, g_validationOutputCache._name.c_str(), "[ Couldn't retrieve info log! ]");
             }
         } else {
-            Console::d_printfn(Locale::get(_ID("GLSL_VALIDATING_PROGRAM")), g_validationOutputCache._handle, g_validationOutputCache._name.c_str(), "[ OK! ]");
+            Console::d_printfn(Locale::Get(_ID("GLSL_VALIDATING_PROGRAM")), g_validationOutputCache._handle, g_validationOutputCache._name.c_str(), "[ OK! ]");
         }
     }
     // Schedule all of the shader dump to text file
@@ -702,7 +702,7 @@ bool glShaderProgram::reloadShaders(const bool reloadExisting) {
                 assert(shader != nullptr);
             } else {
                 shader->AddRef();
-                Console::d_printfn(Locale::get(_ID("SHADER_MANAGER_GET_INC")), shader->name().c_str(), shader->GetRef());
+                Console::d_printfn(Locale::Get(_ID("SHADER_MANAGER_GET_INC")), shader->name().c_str(), shader->GetRef());
             }
             _shaderStage.push_back(shader);
         }
@@ -819,7 +819,7 @@ eastl::string  glShaderProgram::PreprocessIncludes(const ResourcePath& name,
                                                    vectorEASTL<ResourcePath>& foundAtoms,
                                                    bool lock) {
     if (level > 32) {
-        Console::errorfn(Locale::get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
+        Console::errorfn(Locale::Get(_ID("ERROR_GLSL_INCLUD_LIMIT")));
     }
 
     size_t lineNumber = 1;
@@ -856,7 +856,7 @@ eastl::string  glShaderProgram::PreprocessIncludes(const ResourcePath& name,
                 includeString = ShaderFileReadLocked(shaderAtomLocationPrefix[to_U32(typeIndex)], includeFile, true, foundAtoms, wasParsed).c_str();
             }
             if (includeString.empty()) {
-                Console::errorfn(Locale::get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")), name.c_str(), lineNumber, includeFile.c_str());
+                Console::errorfn(Locale::Get(_ID("ERROR_GLSL_NO_INCLUDE_FILE")), name.c_str(), lineNumber, includeFile.c_str());
             }
             if (wasParsed) {
                 output.append(includeString);

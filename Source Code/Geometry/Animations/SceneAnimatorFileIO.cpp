@@ -66,7 +66,7 @@ void AnimEvaluator::save(const AnimEvaluator& evaluator, ByteBuffer& dataOut) {
 }
 
 void AnimEvaluator::load(AnimEvaluator& evaluator, ByteBuffer& dataIn) {
-    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), evaluator._name.c_str());
+    Console::d_printfn(Locale::Get(_ID("CREATE_ANIMATION_BEGIN")), evaluator._name.c_str());
     // the animation name
     dataIn >> evaluator._name;
     // the duration

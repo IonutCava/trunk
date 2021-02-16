@@ -1613,6 +1613,7 @@ bool Editor::saveToXML() const {
     pt.put("showSampleWindow", _showSampleWindow);
     pt.put("autoSaveCamera", _autoSaveCamera);
     pt.put("autoFocusEditor", _autoFocusEditor);
+    pt.put("showEmissiveSelections", _showEmissiveSelections);
     pt.put("themeIndex", to_I32(_currentTheme));
     pt.put("textEditor", _externalTextEditorPath);
 
@@ -1643,6 +1644,7 @@ bool Editor::loadFromXML() {
         _showSampleWindow = pt.get("showSampleWindow", false);
         _autoSaveCamera = pt.get("autoSaveCamera", false);
         _autoFocusEditor = pt.get("autoFocusEditor", true);
+        _showEmissiveSelections = pt.get("showEmissiveSelections", true);
         _externalTextEditorPath = pt.get<stringImpl>("textEditor", "");
         _currentTheme = static_cast<ImGuiStyleEnum>(pt.get("themeIndex", to_I32(_currentTheme)));
         ImGui::ResetStyle(_currentTheme);

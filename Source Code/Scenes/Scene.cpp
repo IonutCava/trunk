@@ -177,7 +177,7 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
     using boost::property_tree::ptree;
     const char* assetsFile = "assets.xml";
 
-    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
+    Console::printfn(Locale::Get(_ID("XML_SAVE_SCENE_START")), resourceName().c_str());
 
     const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
 
@@ -270,7 +270,7 @@ bool Scene::saveXML(const DELEGATE<void, std::string_view>& msgCallback, const D
         }
     }
 
-    Console::printfn(Locale::get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
+    Console::printfn(Locale::Get(_ID("XML_SAVE_SCENE_END")), resourceName().c_str());
 
     if (finishCallback) {
         finishCallback(true);
@@ -285,7 +285,7 @@ bool Scene::loadXML(const Str256& name) {
 
     const ResourcePath scenePath = Paths::g_xmlDataLocation + Paths::g_scenesLocation;
 
-    Console::printfn(Locale::get(_ID("XML_LOAD_SCENE")), name.c_str());
+    Console::printfn(Locale::Get(_ID("XML_LOAD_SCENE")), name.c_str());
     const ResourcePath sceneLocation(scenePath + "/" + name.c_str());
     const ResourcePath sceneDataFile(sceneLocation + ".xml");
 
@@ -459,7 +459,7 @@ void Scene::loadAsset(const Task* parentTask, const XML::SceneNode& sceneNode, S
                     quad->setCorner(Quad3D::CornerLocation::BOTTOM_LEFT,  vec3<F32>(0, 0, 0));
                     quad->setCorner(Quad3D::CornerLocation::BOTTOM_RIGHT, vec3<F32>(1, 0, 0));
                 } else {
-                    Console::errorfn(Locale::get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), sceneNode.name.c_str());
+                    Console::errorfn(Locale::Get(_ID("ERROR_SCENE_UNSUPPORTED_GEOM")), sceneNode.name.c_str());
                 }
             }
             if (ret != nullptr) {
@@ -618,7 +618,7 @@ SceneGraphNode* Scene::addParticleEmitter(const Str64& name,
 }
 
 void Scene::addTerrain(SceneGraphNode* parentNode, const boost::property_tree::ptree& pt, const Str64& nodeName) {
-    Console::printfn(Locale::get(_ID("XML_LOAD_TERRAIN")), nodeName.c_str());
+    Console::printfn(Locale::Get(_ID("XML_LOAD_TERRAIN")), nodeName.c_str());
 
     // Load the rest of the terrain
     std::shared_ptr<TerrainDescriptor> ter = std::make_shared<TerrainDescriptor>((nodeName + "_descriptor").c_str());
@@ -1400,7 +1400,7 @@ void Scene::registerTask(Task& taskItem, const bool start, const TaskPriority pr
 }
 
 void Scene::clearTasks() {
-    Console::printfn(Locale::get(_ID("STOP_SCENE_TASKS")));
+    Console::printfn(Locale::Get(_ID("STOP_SCENE_TASKS")));
     // Performance shouldn't be an issue here
     UniqueLock<SharedMutex> w_lock(_tasksMutex);
     for (Task* task : _tasks) {

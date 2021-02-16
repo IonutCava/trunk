@@ -32,16 +32,16 @@ GUIConsoleCommandParser::GUIConsoleCommandParser(PlatformContext& context, Resou
     _commands[_ID("invalidcommand")] = [this](const stringImpl& args) { handleInvalidCommand(args); };
     _commands[_ID("recompileshader")] = [this](const stringImpl& args) { handleShaderRecompileCommand(args); };
 
-    _commandHelp[_ID("say")] = Locale::get(_ID("CONSOLE_SAY_COMMAND_HELP"));
-    _commandHelp[_ID("quit")] = Locale::get(_ID("CONSOLE_QUIT_COMMAND_HELP"));
-    _commandHelp[_ID("help")] = Locale::get(_ID("CONSOLE_HELP_COMMAND_HELP"));
-    _commandHelp[_ID("editparam")] = Locale::get(_ID("CONSOLE_EDITPARAM_COMMAND_HELP"));
-    _commandHelp[_ID("playsound")] = Locale::get(_ID("CONSOLE_PLAYSOUND_COMMAND_HELP"));
-    _commandHelp[_ID("createnavmesh")] = Locale::get(_ID("CONSOLE_NAVMESH_COMMAND_HELP"));
-    _commandHelp[_ID("recompileshader")] = Locale::get(_ID("CONSOLE_SHADER_RECOMPILE_COMMAND_HELP"));
-    _commandHelp[_ID("setfov")] = Locale::get(_ID("CONSOLE_CHANGE_FOV_COMMAND_HELP"));
-    _commandHelp[_ID("addObject")] = Locale::get(_ID("CONSOLE_ADD_OBJECT_COMMAND_HELP"));
-    _commandHelp[_ID("invalidhelp")] = Locale::get(_ID("CONSOLE_INVALID_HELP_ARGUMENT"));
+    _commandHelp[_ID("say")] = Locale::Get(_ID("CONSOLE_SAY_COMMAND_HELP"));
+    _commandHelp[_ID("quit")] = Locale::Get(_ID("CONSOLE_QUIT_COMMAND_HELP"));
+    _commandHelp[_ID("help")] = Locale::Get(_ID("CONSOLE_HELP_COMMAND_HELP"));
+    _commandHelp[_ID("editparam")] = Locale::Get(_ID("CONSOLE_EDITPARAM_COMMAND_HELP"));
+    _commandHelp[_ID("playsound")] = Locale::Get(_ID("CONSOLE_PLAYSOUND_COMMAND_HELP"));
+    _commandHelp[_ID("createnavmesh")] = Locale::Get(_ID("CONSOLE_NAVMESH_COMMAND_HELP"));
+    _commandHelp[_ID("recompileshader")] = Locale::Get(_ID("CONSOLE_SHADER_RECOMPILE_COMMAND_HELP"));
+    _commandHelp[_ID("setfov")] = Locale::Get(_ID("CONSOLE_CHANGE_FOV_COMMAND_HELP"));
+    _commandHelp[_ID("addObject")] = Locale::Get(_ID("CONSOLE_ADD_OBJECT_COMMAND_HELP"));
+    _commandHelp[_ID("invalidhelp")] = Locale::Get(_ID("CONSOLE_INVALID_HELP_ARGUMENT"));
 }
 
 bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
@@ -76,13 +76,13 @@ bool GUIConsoleCommandParser::processCommand(const stringImpl& commandString) {
 }
 
 void GUIConsoleCommandParser::handleSayCommand(const stringImpl& args) {
-    Console::printfn(Locale::get(_ID("CONSOLE_SAY_NAME_TAG")), args.c_str());
+    Console::printfn(Locale::Get(_ID("CONSOLE_SAY_NAME_TAG")), args.c_str());
 }
 
 void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args) {
     if (!args.empty()) {
         // quit command can take an extra argument. A reason, for example
-        Console::printfn(Locale::get(_ID("CONSOLE_QUIT_COMMAND_ARGUMENT")),
+        Console::printfn(Locale::Get(_ID("CONSOLE_QUIT_COMMAND_ARGUMENT")),
                          args.c_str());
     }
     _context.app().RequestShutdown();
@@ -90,7 +90,7 @@ void GUIConsoleCommandParser::handleQuitCommand(const stringImpl& args) {
 
 void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
     if (args.empty()) {
-        Console::printfn(Locale::get(_ID("HELP_CONSOLE_COMMAND")));
+        Console::printfn(Locale::Get(_ID("HELP_CONSOLE_COMMAND")));
         for (const CommandMap::value_type& it : _commands) {
             if (it.first != _ID("invalidhelp") &&
                 it.first != _ID("invalidcommand")) {
@@ -108,10 +108,10 @@ void GUIConsoleCommandParser::handleHelpCommand(const stringImpl& args) {
 
 void GUIConsoleCommandParser::handleEditParamCommand(const stringImpl& args) {
     if (context().paramHandler().isParam<stringImpl>(_ID(args.c_str()))) {
-        Console::printfn(Locale::get(_ID("CONSOLE_EDITPARAM_FOUND")), args.c_str(),
+        Console::printfn(Locale::Get(_ID("CONSOLE_EDITPARAM_FOUND")), args.c_str(),
                          "N/A", "N/A", "N/A");
     } else {
-        Console::printfn(Locale::get(_ID("CONSOLE_EDITPARAM_NOT_FOUND")), args.c_str());
+        Console::printfn(Locale::Get(_ID("CONSOLE_EDITPARAM_NOT_FOUND")), args.c_str());
     }
 }
 
@@ -125,7 +125,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
         if (!hasExtension(filename, "wav") &&
             !hasExtension(filename, "mp3") &&
             !hasExtension(filename, "ogg")) {
-            Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FORMAT")));
+            Console::errorfn(Locale::Get(_ID("CONSOLE_PLAY_SOUND_INVALID_FORMAT")));
             return;
         }
 
@@ -145,7 +145,7 @@ void GUIConsoleCommandParser::handlePlaySoundCommand(const stringImpl& args) {
             _context.sfx().playSound(_sound);
         }
     } else {
-        Console::errorfn(Locale::get(_ID("CONSOLE_PLAY_SOUND_INVALID_FILE")),
+        Console::errorfn(Locale::Get(_ID("CONSOLE_PLAY_SOUND_INVALID_FILE")),
                          filename.c_str());
     }
 }
@@ -156,7 +156,7 @@ void GUIConsoleCommandParser::handleNavMeshCommand(const stringImpl& args) {
     if (!args.empty()) {
         SceneGraphNode* sgn = sceneGraph->findNode(args.c_str());
         if (!sgn) {
-            Console::errorfn(Locale::get(_ID("CONSOLE_NAVMESH_NO_NODE")), args.c_str());
+            Console::errorfn(Locale::Get(_ID("CONSOLE_NAVMESH_NO_NODE")), args.c_str());
             return;
         }
     }
@@ -191,7 +191,7 @@ void GUIConsoleCommandParser::handleShaderRecompileCommand(const stringImpl& arg
 
 void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
     if (!Util::IsNumber(args)) {
-        Console::errorfn(Locale::get(_ID("CONSOLE_INVALID_NUMBER")));
+        Console::errorfn(Locale::Get(_ID("CONSOLE_INVALID_NUMBER")));
         return;
     }
 
@@ -201,6 +201,6 @@ void GUIConsoleCommandParser::handleFOVCommand(const stringImpl& args) {
 }
 
 void GUIConsoleCommandParser::handleInvalidCommand(const stringImpl& args) {
-    Console::errorfn(Locale::get(_ID("CONSOLE_INVALID_COMMAND")), args.c_str());
+    Console::errorfn(Locale::Get(_ID("CONSOLE_INVALID_COMMAND")), args.c_str());
 }
 };

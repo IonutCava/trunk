@@ -125,7 +125,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
 Renderer::~Renderer()
 {
     // Destroy our post processing system
-    Console::printfn(Locale::get(_ID("STOP_POST_FX")));
+    Console::printfn(Locale::Get(_ID("STOP_POST_FX")));
 }
 
 void Renderer::preRender(RenderStagePass stagePass,

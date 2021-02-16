@@ -43,8 +43,8 @@ ErrorCode Application::start(const stringImpl& entryPoint, const I32 argc, char*
     _timer.reset();
 
     Console::toggleImmediateMode(true);
-    Console::printfn(Locale::get(_ID("START_APPLICATION")));
-    Console::printfn(Locale::get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
+    Console::printfn(Locale::Get(_ID("START_APPLICATION")));
+    Console::printfn(Locale::Get(_ID("START_APPLICATION_CMD_ARGUMENTS")));
     for (I32 i = 1; i < argc; ++i) {
         Console::printfn("%s", argv[i]);
     }
@@ -61,7 +61,7 @@ ErrorCode Application::start(const stringImpl& entryPoint, const I32 argc, char*
         stop();
     } else {
         Attorney::KernelApplication::warmup(_kernel);
-        Console::printfn(Locale::get(_ID("START_MAIN_LOOP")));
+        Console::printfn(Locale::Get(_ID("START_MAIN_LOOP")));
         Console::toggleImmediateMode(false);
         mainLoopActive(true);
     }
@@ -80,7 +80,7 @@ void Application::stop() {
 
         _windowManager.close();
         MemoryManager::DELETE(_kernel);
-        Console::printfn(Locale::get(_ID("STOP_APPLICATION")));
+        Console::printfn(Locale::Get(_ID("STOP_APPLICATION")));
         _isInitialized = false;
 
         if_constexpr(Config::Build::IS_DEBUG_BUILD) {
@@ -89,7 +89,7 @@ void Application::stop() {
             size_t sizeLeaked = 0;
             const stringImpl allocLog = MemoryManager::AllocTracer.Dump(leakDetected, sizeLeaked);
             if (leakDetected) {
-                Console::errorfn(Locale::get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")), to_I32(std::ceil(sizeLeaked / 1024.0f)));
+                Console::errorfn(Locale::Get(_ID("ERROR_MEMORY_NEW_DELETE_MISMATCH")), to_I32(std::ceil(sizeLeaked / 1024.0f)));
             }
             std::ofstream memLog;
             memLog.open((Paths::g_logPath + _memLogBuffer).str());

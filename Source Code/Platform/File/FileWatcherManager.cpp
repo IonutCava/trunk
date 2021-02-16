@@ -3,11 +3,15 @@
 #include "Headers/FileWatcherManager.h"
 
 namespace Divide {
-    vectorEASTL<eastl::unique_ptr<FileWatcher>> FileWatcherManager::s_fileWatchers;
+    namespace {
+        constexpr U32 g_updateFrameInterval = 60;
+    }
+
+    vectorEASTL<std::pair<eastl::unique_ptr<FileWatcher>, U32>> FileWatcherManager::s_fileWatchers;
 
     FileWatcher& FileWatcherManager::allocateWatcher() {
-        s_fileWatchers.emplace_back(eastl::make_unique<FileWatcher>());
-        return *s_fileWatchers.back();
+        s_fileWatchers.emplace_back(std::make_pair(eastl::make_unique<FileWatcher>(), g_updateFrameInterval));
+        return *s_fileWatchers.back().first;
     }
 
     void FileWatcherManager::deallocateWatcher(const FileWatcher& fw) {
@@ -17,24 +21,19 @@ namespace Divide {
     void FileWatcherManager::deallocateWatcher(I64 fileWatcherGUID) {
         s_fileWatchers.erase(
             std::remove_if(std::begin(s_fileWatchers), std::end(s_fileWatchers),
-                           [&fileWatcherGUID](const eastl::unique_ptr<FileWatcher>& it) noexcept
-                           -> bool { return it->getGUID() == fileWatcherGUID; }),
+                           [&fileWatcherGUID](const auto& it) noexcept
+                           -> bool { return it.first->getGUID() == fileWatcherGUID; }),
             std::end(s_fileWatchers));
     }
 
     void FileWatcherManager::update() {
-        // Expensive: update just one per frame
-        for (const eastl::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
-            if (!fw->_updated) {
-                fw->_impl.update();
-                fw->_updated = true;
+        // Expensive: update just once every few frame
+        for (auto& [fw, counter] : s_fileWatchers) {
+            if (--counter == 0u) {
+                counter = g_updateFrameInterval;
+                (*fw)().update();
                 return;
             }
-        }
-
-        // If we got here, we updated all of our watchers at least once
-        for (const eastl::unique_ptr<FileWatcher>& fw : s_fileWatchers) {
-            fw->_updated = false;
         }
     }
 }; //namespace Divide

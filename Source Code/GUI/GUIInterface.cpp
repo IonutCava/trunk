@@ -20,7 +20,7 @@ namespace Divide {
 GUIInterface::GUIInterface(GUI& context)
     : _context(&context)
 {
-    Locale::setChangeLanguageCallback([this](const std::string_view newLanguage) { 
+    Locale::SetChangeLanguageCallback([this](const std::string_view newLanguage) { 
         onLanguageChange(newLanguage);
     });
 }

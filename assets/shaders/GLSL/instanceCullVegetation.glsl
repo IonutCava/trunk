@@ -38,6 +38,18 @@ void CullItem(in uint idx) {
     Data[idx].data.z = 3.0f;
 }
 
+float getLoD(in float dist) {
+    if (dist < dvd_visibilityDistance * 0.15f) {
+        return 0.f;
+    } else if (dist < dvd_visibilityDistance * 0.35f) {
+        return 1.f;
+    } else if (dist < dvd_visibilityDistance * 0.85f) {
+        return 2.f;
+    }
+
+    return 3.f;
+}
+
 layout(local_size_x = WORK_GROUP_SIZE) in;
 void main(void) {
 
@@ -72,6 +84,7 @@ void main(void) {
             Data[nodeIndex].data.z = dist > (dvd_visibilityDistance * 0.33f) ? 2.0f : 1.0f;
 #       else //CULL_TREES
             Data[nodeIndex].data.z = max(1.0f - smoothstep(dvd_visibilityDistance * 0.85f, dvd_visibilityDistance * 0.995f, dist), 0.05f);
+            Data[nodeIndex].data.y = getLoD(dist);
 #       endif //CULL_TREES
         Data[nodeIndex].data.w = dist;
     }

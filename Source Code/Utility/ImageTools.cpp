@@ -55,7 +55,7 @@ bool ImageData::addLayer(const bool srgb, const U16 refWidth, const U16 refHeigh
     }
 
     if (data == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         return false;
     }
 
@@ -163,7 +163,7 @@ bool ImageData::loadDDS_IL(const bool srgb, const U16 refWidth, const U16 refHei
     ilTypeFunc(IL_UNSIGNED_BYTE);
     if (ilLoadImage(filename.c_str()) == IL_FALSE) {
         checkError();
-        Console::errorfn(Locale::get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_IMAGETOOLS_INVALID_IMAGE_FILE")), _name.c_str());
         ilDeleteImage(ilTexture);
         return false;
     }

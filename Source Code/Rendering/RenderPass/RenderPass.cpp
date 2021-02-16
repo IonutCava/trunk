@@ -141,10 +141,11 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 RTClearDescriptor clearDescriptor = {};
                 clearDescriptor.clearColours(true);
                 clearDescriptor.clearDepth(true);
+                // We don't need to clear colour targets as we always overwrite them!
                 clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::ALBEDO), false);
-                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::VELOCITY), true);
-                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), true);
-                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::SPECULAR), true);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::VELOCITY), false);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::SPECULAR), false);
+                clearDescriptor.clearColour(to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), false);
                 clearMainTarget._descriptor = clearDescriptor;
 
                 RTDrawDescriptor velocityAndDepthPolicy = {};

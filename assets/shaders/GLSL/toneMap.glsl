@@ -30,8 +30,6 @@ vec3 applyFog(in vec3  rgb,      // original color of the pixel
 
 void main() {
     vec4 albedo = texture(texScreen, VAR._texCoord);
-    const float ssao = texture(texSSAO, VAR._texCoord).r;
-    const vec4 matData = texture(texNormalsAndMatData, VAR._texCoord).rgba;
 
     if (enableFog) {
         const float depth = texture(texDepth, VAR._texCoord).r;
@@ -44,12 +42,14 @@ void main() {
                               normalize(worldPos - cameraPosition));
     }
 
-    const uint probeID = uint(matData.a);
+    const vec4 matData = texture(texNormalsAndMatData, VAR._texCoord);
+    const uint probeID = uint(abs(matData.a));
     if (probeID == PROBE_ID_NO_REFLECTIONS) {
         _colourOut = vec4(albedo.rgb, 1.f);
         return;
     }
 
+    const float ssao = texture(texSSAO, VAR._texCoord).r;
     const vec3 reflection = texture(texSSR, VAR._texCoord).rgb;
     const vec3 kS = texture(texSpecular, VAR._texCoord).rgb;
     const vec2 MR = unpackVec2(matData.b);

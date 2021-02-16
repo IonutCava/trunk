@@ -48,8 +48,8 @@ void Camera::initPool() {
 }
 
 void Camera::destroyPool() {
-    Console::printfn(Locale::get(_ID("CAMERA_MANAGER_DELETE")));
-    Console::printfn(Locale::get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
+    Console::printfn(Locale::Get(_ID("CAMERA_MANAGER_DELETE")));
+    Console::printfn(Locale::Get(_ID("CAMERA_MANAGER_REMOVE_CAMERAS")));
 
     _utilityCameras.fill(nullptr);
 

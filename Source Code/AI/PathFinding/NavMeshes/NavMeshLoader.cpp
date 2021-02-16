@@ -332,7 +332,7 @@ bool Parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
 
         if (!BitCompare(allowedNodeType, to_U32(nodeType))) {
             if (!BitCompare(ignoredNodeType, to_U32(nodeType))) {
-                Console::printfn(Locale::get(_ID("WARN_NAV_UNSUPPORTED")),
+                Console::printfn(Locale::Get(_ID("WARN_NAV_UNSUPPORTED")),
                                  sn.resourceName().c_str());
                 goto next;
             }
@@ -376,7 +376,7 @@ bool Parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
             nodeSGN = sgn->findChild(_ID("waterPlane"));
         }
 
-        Console::d_printfn(Locale::get(_ID("NAV_MESH_CURRENT_NODE")),
+        Console::d_printfn(Locale::Get(_ID("NAV_MESH_CURRENT_NODE")),
                            sn.resourceName().c_str(), to_U32(level));
 
         U32 currentTriangleIndexOffset = outData.getVertCount();
@@ -435,10 +435,10 @@ bool Parse(const BoundingBox& box, NavModelData& outData, SceneGraphNode* sgn) {
                 }
             }
         } else {
-            Console::errorfn(Locale::get(_ID("ERROR_RECAST_LEVEL")), level);
+            Console::errorfn(Locale::Get(_ID("ERROR_RECAST_LEVEL")), level);
         }
 
-        Console::printfn(Locale::get(_ID("NAV_MESH_ADD_NODE")),
+        Console::printfn(Locale::Get(_ID("NAV_MESH_ADD_NODE")),
                          sn.resourceName().c_str());
     }
 // although labels are bad, skipping here using them is the easiest solution to

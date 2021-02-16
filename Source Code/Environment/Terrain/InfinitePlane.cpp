@@ -63,8 +63,15 @@ bool InfinitePlane::load() {
     vertModule._defines.emplace_back("UNDERWATER_TILE_SCALE 100", true);
     vertModule._defines.emplace_back("NODE_STATIC", true);
 
+    ShaderModuleDescriptor fragModule = {};
+    fragModule._moduleType = ShaderType::FRAGMENT;
+    fragModule._sourceFile = "terrainPlane.glsl";
+    fragModule._variant = "Colour";
+    fragModule._defines.emplace_back("NODE_STATIC", true);
+
     ShaderProgramDescriptor shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor terrainShader("terrainPlane_Colour");
     terrainShader.propertyDescriptor(shaderDescriptor);
@@ -72,10 +79,18 @@ bool InfinitePlane::load() {
 
     planeMaterial->setShaderProgram(terrainColourShader, RenderStage::COUNT, RenderPassType::COUNT);
 
+    shaderDescriptor._modules.back()._defines.emplace_back("MAIN_DISPLAY_PASS", true);
+    ResourceDescriptor terrainShaderMain("terrainPlane_Colour_Main");
+    terrainShaderMain.propertyDescriptor(shaderDescriptor);
+    ShaderProgram_ptr terrainColourShaderMain = CreateResource<ShaderProgram>(_parentCache, terrainShaderMain);
+
+    planeMaterial->setShaderProgram(terrainColourShaderMain, RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
+
     vertModule._variant = "PrePass";
 
     shaderDescriptor = {};
     shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
 
     ResourceDescriptor terrainShaderPrePass("terrainPlane_PrePass");
     terrainShaderPrePass.propertyDescriptor(shaderDescriptor);

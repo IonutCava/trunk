@@ -71,7 +71,7 @@ ShaderProgram::ShaderProgram(GFXDevice& context,
 
 ShaderProgram::~ShaderProgram()
 {
-    Console::d_printfn(Locale::get(_ID("SHADER_PROGRAM_REMOVE")), resourceName().c_str());
+    Console::d_printfn(Locale::Get(_ID("SHADER_PROGRAM_REMOVE")), resourceName().c_str());
     s_shaderCount.fetch_sub(1, std::memory_order_relaxed);
 }
 
@@ -127,7 +127,7 @@ bool ShaderProgram::RecompileShaderProgram(const Str256& name) {
     }
     // If no shaders were found, show an error
     if (!state) {
-        Console::errorfn(Locale::get(_ID("ERROR_RECOMPILE_NOT_FOUND")),  name.c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_RECOMPILE_NOT_FOUND")),  name.c_str());
     }
 
     return state;

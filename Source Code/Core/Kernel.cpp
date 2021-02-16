@@ -143,7 +143,7 @@ void Kernel::idle(const bool fast) {
     OPTICK_EVENT();
 
     if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
-        Locale::idle();
+        Locale::Idle();
     }
 
     _platformContext.idle(fast);
@@ -576,7 +576,7 @@ bool Kernel::presentToScreen(FrameEvent& evt) {
 
 // The first loops compiles all the visible data, so do not render the first couple of frames
 void Kernel::warmup() {
-    Console::printfn(Locale::get(_ID("START_RENDER_LOOP")));
+    Console::printfn(Locale::Get(_ID("START_RENDER_LOOP")));
 
     _platformContext.paramHandler().setParam(_ID("freezeLoopTime"), true);
     onLoop();
@@ -640,10 +640,10 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     Paths::updatePaths(_platformContext);
 
-    Locale::changeLanguage(config.language.c_str());
+    Locale::ChangeLanguage(config.language.c_str());
     ECS::Initialize();
 
-    Console::printfn(Locale::get(_ID("START_RENDER_INTERFACE")));
+    Console::printfn(Locale::Get(_ID("START_RENDER_INTERFACE")));
 
     const RenderAPI renderingAPI = static_cast<RenderAPI>(config.runtime.targetRenderingAPI);
 
@@ -716,7 +716,7 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _renderPassManager->addRenderPass("refractionPass", 2, RenderStage::REFRACTION, { 0 });
     _renderPassManager->addRenderPass("displayStage",   3, RenderStage::DISPLAY, { 1, 2}, true);
 
-    Console::printfn(Locale::get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
+    Console::printfn(Locale::Get(_ID("SCENE_ADD_DEFAULT_CAMERA")));
 
     Attorney::ShaderProgramKernel::UseShaderTextCache(config.debug.useShaderTextCache);
     Attorney::ShaderProgramKernel::UseShaderBinaryCache(config.debug.useShaderBinaryCache);
@@ -739,13 +739,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
 
     startSplashScreen();
 
-    Console::printfn(Locale::get(_ID("START_SOUND_INTERFACE")));
+    Console::printfn(Locale::Get(_ID("START_SOUND_INTERFACE")));
     initError = _platformContext.sfx().initAudioAPI(_platformContext);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
     }
 
-    Console::printfn(Locale::get(_ID("START_PHYSICS_INTERFACE")));
+    Console::printfn(Locale::Get(_ID("START_PHYSICS_INTERFACE")));
     initError = _platformContext.pfx().initPhysicsAPI(Config::TARGET_FRAME_RATE, config.runtime.simSpeed);
     if (initError != ErrorCode::NO_ERR) {
         return initError;
@@ -765,12 +765,12 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
     _platformContext.gfx().idle(true);
 
     if (!_sceneManager->switchScene(entryData.startupScene.c_str(), true, {0, 0, config.runtime.resolution.width, config.runtime.resolution.height}, false)) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_SCENE_LOAD")), entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_DATA;
     }
 
     if (!_sceneManager->checkLoadFlag()) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD_NOT_CALLED")),
+        Console::errorfn(Locale::Get(_ID("ERROR_SCENE_LOAD_NOT_CALLED")),
                          entryData.startupScene.c_str());
         return ErrorCode::MISSING_SCENE_LOAD_CALL;
     }
@@ -785,13 +785,13 @@ ErrorCode Kernel::initialize(const stringImpl& entryPoint) {
             _platformContext.editor().selectionChangeCallback(idx, nodes);
         });
     }
-    Console::printfn(Locale::get(_ID("INITIAL_DATA_LOADED")));
+    Console::printfn(Locale::Get(_ID("INITIAL_DATA_LOADED")));
 
     return initError;
 }
 
 void Kernel::shutdown() {
-    Console::printfn(Locale::get(_ID("STOP_KERNEL")));
+    Console::printfn(Locale::Get(_ID("STOP_KERNEL")));
 
     _platformContext.config().save();
 
@@ -815,7 +815,7 @@ void Kernel::shutdown() {
     resourceCache()->clear();
     MemoryManager::SAFE_DELETE(_resourceCache);
 
-    Console::printfn(Locale::get(_ID("STOP_ENGINE_OK")));
+    Console::printfn(Locale::Get(_ID("STOP_ENGINE_OK")));
 }
 
 bool Kernel::onSizeChange(const SizeChangeParams& params) {

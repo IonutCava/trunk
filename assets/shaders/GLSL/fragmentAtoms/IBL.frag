@@ -8,9 +8,9 @@ layout(binding = TEXTURE_REFLECTION_SKY) uniform samplerCubeArray texEnvironment
 uniform uvec3 mipCounts;
 uniform uint skyLayer;
 
-#define MAX_SCREEN_MIPS mipCounts.x
-#define MAX_ENV_MIPS mipCounts.y
-#define MAX_SKY_MIPS mipCounts.z
+#define MAX_SCREEN_MIPS (mipCounts.x - 1)
+#define MAX_ENV_MIPS (mipCounts.y - 1)
+#define MAX_SKY_MIPS (mipCounts.z - 1)
 
 struct ProbeData
 {

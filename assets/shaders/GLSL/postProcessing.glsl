@@ -55,9 +55,21 @@ vec4 Underwater() {
 
 void main(void){
     switch (dvd_materialDebugFlag) {
-        case DEBUG_DEPTH:          _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y), 1.0f); return;
-        case DEBUG_SSAO:           _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).r), 1.0f); return;
-        case DEBUG_SSR:            _colourOut = vec4(texture(texSSR, VAR._texCoord).rgb, 1.0f); return;
+        case DEBUG_DEPTH:
+        {
+            _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y), 1.0f);
+            return;
+        }
+        case DEBUG_SSAO:
+        {
+            _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).r), 1.0f);
+            return;
+        }
+        case DEBUG_SSR:
+        {
+            _colourOut = vec4(texture(texSSR, VAR._texCoord).rgb, 1.0f);
+            return;
+        }
     }
 
     vec4 colour = underwaterEnabled ? Underwater() : texture(texScreen, VAR._texCoord);

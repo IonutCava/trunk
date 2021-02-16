@@ -50,7 +50,7 @@ SceneGraph::SceneGraph(Scene& parentScene)
 SceneGraph::~SceneGraph()
 { 
     _octree.reset();
-    Console::d_printfn(Locale::get(_ID("DELETE_SCENEGRAPH")));
+    Console::d_printfn(Locale::Get(_ID("DELETE_SCENEGRAPH")));
     // Should recursively delete the entire scene graph
     unload();
 }
@@ -431,7 +431,7 @@ void SceneGraph::loadFromXML(const char* assetsFile) {
         return;
     }
 
-    Console::printfn(Locale::get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
+    Console::printfn(Locale::Get(_ID("XML_LOAD_GEOMETRY")), file.c_str());
 
     ptree pt = {};
     XML::readXML(file.str(), pt);

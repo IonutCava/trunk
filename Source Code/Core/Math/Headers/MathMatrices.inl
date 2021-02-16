@@ -1529,9 +1529,9 @@ mat4<T>::mat4(const vec3<U> &translation) noexcept
 template<typename T>
 template<typename U>
 mat4<T>::mat4(U translationX, U translationY, U translationZ) noexcept
-    : mat4({static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
-            static_cast<U>(0), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+    : mat4({static_cast<U>(1), static_cast<U>(0), static_cast<U>(0), static_cast<U>(0),
+            static_cast<U>(0), static_cast<U>(1), static_cast<U>(0), static_cast<U>(0),
+            static_cast<U>(0), static_cast<U>(0), static_cast<U>(1), static_cast<U>(0),
             translationX,      translationY,      translationZ,      static_cast<U>(1)})
 {
 }

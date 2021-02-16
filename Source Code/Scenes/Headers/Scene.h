@@ -293,7 +293,7 @@ class Scene : public Resource, public PlatformContextComponent {
     /// simple function to load the scene elements.
     bool SCENE_LOAD(const Str256& name) {
         if (!Scene::load(name)) {
-            Console::errorfn(Locale::get(_ID("ERROR_SCENE_LOAD")), "scene load function");
+            Console::errorfn(Locale::Get(_ID("ERROR_SCENE_LOAD")), "scene load function");
             return false;
         }
 

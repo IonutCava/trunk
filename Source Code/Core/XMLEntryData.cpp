@@ -17,7 +17,7 @@ XMLEntryData::XMLEntryData() : IXMLSerializable()
 }
 
 bool XMLEntryData::fromXML(const char* xmlFile) {
-    Console::printfn(Locale::get(_ID("XML_LOAD_SCRIPTS")));
+    Console::printfn(Locale::Get(_ID("XML_LOAD_SCRIPTS")));
 
     if (LoadSave.read(xmlFile)) {
         GET_PARAM(scriptLocation);

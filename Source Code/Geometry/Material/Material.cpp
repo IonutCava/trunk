@@ -12,6 +12,7 @@
 #include "Core/Headers/Kernel.h"
 
 #include "ECS/Components/Headers/RenderingComponent.h"
+#include "Editor/Headers/Editor.h"
 #include "Rendering/RenderPass/Headers/NodeBufferedData.h"
 
 namespace Divide {
@@ -307,7 +308,7 @@ void Material::setShaderProgramInternal(const ShaderProgram_ptr& shader,
             if (newShaderName == nullptr || strlen(newShaderName) == 0 || oldShader->resourceName().compare(newShaderName) != 0) {
                 // We cannot replace a shader that is still loading in the background
                 WAIT_FOR_CONDITION(oldShader->getState() == ResourceState::RES_LOADED);
-                    Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
+                    Console::printfn(Locale::Get(_ID("REPLACE_SHADER")),
                         oldShader->resourceName().c_str(),
                         newShaderName != nullptr ? newShaderName : "NULL",
                         TypeUtil::RenderStageToString(stage),
@@ -334,7 +335,7 @@ void Material::setShaderProgramInternal(const ResourceDescriptor& shaderDescript
     {
         // We cannot replace a shader that is still loading in the background
         WAIT_FOR_CONDITION(info._shaderRef->getState() == ResourceState::RES_LOADED);
-        Console::printfn(Locale::get(_ID("REPLACE_SHADER")),
+        Console::printfn(Locale::Get(_ID("REPLACE_SHADER")),
             info._shaderRef->resourceName().c_str(),
             shaderDescriptor.resourceName().c_str(),
             TypeUtil::RenderStageToString(stagePass._stage),
@@ -539,6 +540,9 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
     if (renderStagePass._passType == RenderPassType::OIT_PASS) {
         shaderName += ".OIT";
         fragDefines.emplace_back("OIT_PASS", true);
+    } else if (renderStagePass._stage == RenderStage::DISPLAY) {
+        shaderName += ".MDP";
+        fragDefines.emplace_back("MAIN_DISPLAY_PASS", true);
     }
 
     if (!_textures[slot0]) {
@@ -1118,12 +1122,21 @@ void Material::getData(const RenderingComponent& parentComp, NodeMaterialData& d
     dataOut._data.y = to_U32(reserved);
     dataOut._data.z = matTexturingPropertiesPacked;
 
-    // Hacky, but do this here, before the hashing so that we generate unique materials for selected/hovered nodes
+    STUBBED("ToDo: [Material] Selection is hacky, but do this here, before the hashing so that we generate unique materials for selected/hovered nodes");
     if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::HOVERED)) {
         dataOut._emissiveAndParallax.g += 1.25f;
     } 
     if (parentComp.getSGN()->hasFlag(SceneGraphNode::Flags::SELECTED)) {
-        dataOut._emissiveAndParallax.b += 1.25f;
+        bool skip = false;
+        if_constexpr(Config::Build::ENABLE_EDITOR) {
+            const Editor& editor = _context.parent().platformContext().editor();
+            if (editor.running() && !editor.showEmissiveSelections()) {
+                skip = true;
+            }
+        }
+        if (!skip) {
+            dataOut._emissiveAndParallax.b += 1.25f;
+        }
     }
 }
 
@@ -1182,7 +1195,7 @@ void Material::loadFromXML(const stringImpl& entryName, const boost::property_tr
     
     const size_t detectedVersion = pt.get<size_t>(entryName + ".version", 0);
     if (detectedVersion != g_materialXMLVersion) {
-        Console::printfn(Locale::get(_ID("MATERIAL_WRONG_VERSION")), assetName().c_str(), detectedVersion, g_materialXMLVersion);
+        Console::printfn(Locale::Get(_ID("MATERIAL_WRONG_VERSION")), assetName().c_str(), detectedVersion, g_materialXMLVersion);
         return;
     }
     

@@ -28,8 +28,6 @@
 namespace Divide {
 
 namespace {
-    constexpr bool g_useDoubleSidedMaterial = true;
-
     constexpr U32 WORK_GROUP_SIZE = 64;
     constexpr I16 g_maxRadiusSteps = 512;
     constexpr F32 g_ArBase = 1.0f; // Starting radius of circle A
@@ -90,7 +88,7 @@ Vegetation::Vegetation(GFXDevice& context,
 
     setBounds(parentChunk.bounds());
 
-    renderState().addToDrawExclusionMask(RenderStage::COUNT, RenderPassType::MAIN_PASS);
+    renderState().addToDrawExclusionMask(RenderStage::DISPLAY, RenderPassType::MAIN_PASS);
     renderState().addToDrawExclusionMask(RenderStage::REFLECTION);
     renderState().addToDrawExclusionMask(RenderStage::REFRACTION);
     renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::POINT));
@@ -158,7 +156,7 @@ Vegetation::Vegetation(GFXDevice& context,
 
 Vegetation::~Vegetation()
 {
-    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_BEGIN")), resourceName().c_str());
+    Console::printfn(Locale::Get(_ID("UNLOAD_VEGETATION_BEGIN")), resourceName().c_str());
     U32 timer = 0;
     while (getState() == ResourceState::RES_LOADING) {
         // wait for the loading thread to finish first;
@@ -173,7 +171,7 @@ Vegetation::~Vegetation()
         destroyStaticData();
     }
 
-    Console::printfn(Locale::get(_ID("UNLOAD_VEGETATION_END")));
+    Console::printfn(Locale::Get(_ID("UNLOAD_VEGETATION_END")));
 }
 
 void Vegetation::destroyStaticData() {
@@ -190,40 +188,70 @@ void Vegetation::destroyStaticData() {
 void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize, const U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
-        constexpr F32 offsetTop = 0.075f;
-        constexpr F32 offsetBottom = 0.30f;
-        constexpr F32 offsetHeight = 0.7525f;
+        constexpr F32 offsetBottom0 = 0.20f;
+        constexpr F32 offsetBottom1 = 0.10f;
 
-        const vec2<F32> pos000(cosf(Angle::to_RADIANS(0.000f)), sinf(Angle::to_RADIANS(0.000f)));
-        const vec2<F32> pos120(cosf(Angle::to_RADIANS(120.0f)), sinf(Angle::to_RADIANS(120.0f)));
-        const vec2<F32> pos240(cosf(Angle::to_RADIANS(240.0f)), sinf(Angle::to_RADIANS(240.0f)));
+        const mat4<F32> transform[] = {
+            mat4<F32>{
+                vec3<F32>(-offsetBottom0, 0.f, -offsetBottom0),
+                VECTOR3_UNIT,
+                GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(25.f), Angle::DEGREES<F32>(0.f), Angle::DEGREES<F32>(0.f)))
+            },
 
-        const vec3<F32> vertices[] = {
-            vec3<F32>(-pos000.x,                -offsetHeight, -pos000.y - offsetBottom),
-            vec3<F32>(-pos000.x,                 1.0f,         -pos000.y + offsetTop),
-            vec3<F32>( pos000.x,                 1.0f,          pos000.y + offsetTop),
-            vec3<F32>( pos000.x,                -offsetHeight,  pos000.y - offsetBottom),
+            mat4<F32>{
+                vec3<F32>(-offsetBottom1, 0.f, offsetBottom1),
+                vec3<F32>(0.85f),
+                GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(-12.5f), Angle::DEGREES<F32>(0.f),  Angle::DEGREES<F32>(0.f)) * //Pitch
+                          Quaternion<F32>(Angle::DEGREES<F32>(0.f),    Angle::DEGREES<F32>(35.f), Angle::DEGREES<F32>(0.f)))  //Yaw
+            },
+
+            mat4<F32>{
+                vec3<F32>(offsetBottom0, 0.f, -offsetBottom1),
+                vec3<F32>(1.1f),
+                GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(30.f), Angle::DEGREES<F32>(0.f),   Angle::DEGREES<F32>(0.f)) * //Pitch
+                          Quaternion<F32>(Angle::DEGREES<F32>(0.f),  Angle::DEGREES<F32>(-75.f), Angle::DEGREES<F32>(0.f)))  //Yaw
+            },
+
+            mat4<F32>{
+                vec3<F32>(offsetBottom1 * 2, 0.f, offsetBottom1),
+                vec3<F32>(0.9f),
+                GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(-25.f), Angle::DEGREES<F32>(0.f),    Angle::DEGREES<F32>(0.f)) * //Pitch
+                          Quaternion<F32>(Angle::DEGREES<F32>(0.f),   Angle::DEGREES<F32>(-125.f), Angle::DEGREES<F32>(0.f)))  //Yaw
+            },
+
+            mat4<F32>{
+                vec3<F32>(-offsetBottom1 * 2, 0.f, -offsetBottom1 * 2),
+                vec3<F32>(1.2f),
+                GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(5.f), Angle::DEGREES<F32>(0.f),    Angle::DEGREES<F32>(0.f)) * //Pitch
+                          Quaternion<F32>(Angle::DEGREES<F32>(0.f), Angle::DEGREES<F32>(-225.f), Angle::DEGREES<F32>(0.f)))  //Yaw
+            },
+
+            mat4<F32>{
+                vec3<F32>(offsetBottom0, 0.f, offsetBottom1 * 2),
+                vec3<F32>(0.75f),
+                GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(-15.f), Angle::DEGREES<F32>(0.f),   Angle::DEGREES<F32>(0.f)) * //Pitch
+                          Quaternion<F32>(Angle::DEGREES<F32>(0.f),   Angle::DEGREES<F32>(305.f), Angle::DEGREES<F32>(0.f)))  //Yaw
+            }
 
 
-            vec3<F32>(-pos120.x + offsetBottom, -offsetHeight, -pos120.y),
-            vec3<F32>(-pos120.x + offsetTop,     1.0f,         -pos120.y), 
-            vec3<F32>( pos120.x + offsetTop,     1.0f,          pos120.y), 
-            vec3<F32>( pos120.x + offsetBottom, -offsetHeight,  pos120.y),
 
-
-            vec3<F32>(-pos240.x - offsetBottom, -offsetHeight, -pos240.y),
-            vec3<F32>(-pos240.x - offsetTop,     1.0f,         -pos240.y), 
-            vec3<F32>( pos240.x - offsetTop,     1.0f,          pos240.y), 
-            vec3<F32>( pos240.x - offsetBottom, -offsetHeight,  pos240.y)
         };
 
-        const size_t billboardsPlaneCount = sizeof vertices / (sizeof(vec3<F32>) * 4);
+        vectorEASTL<vec3<F32>> vertices{};
+
+        const U8 billboardsPlaneCount = to_U8(sizeof(transform) / sizeof(transform[0]));
+        vertices.reserve(sizeof(transform) / sizeof(transform[0]));
+
+        for (U8 i = 0u; i < billboardsPlaneCount; ++i) {
+            vertices.push_back(transform[i] * vec4<F32>(-1.f, 0.f, 0.f, 1.f)); //BL
+            vertices.push_back(transform[i] * vec4<F32>(-1.f, 1.f, 0.f, 1.f)); //TL
+            vertices.push_back(transform[i] * vec4<F32>( 1.f, 1.f, 0.f, 1.f)); //TR
+            vertices.push_back(transform[i] * vec4<F32>( 1.f, 0.f, 0.f, 1.f)); //BR
+        };
 
         const U16 indices[] = { 0, 1, 2, 
                                 0, 2, 3 };
 
-        const U16 indicesBack[] = { 0, 2, 1,
-                                    0, 3, 2 };
         const vec2<F32> texCoords[] = {
             vec2<F32>(0.0f, 0.0f),
             vec2<F32>(0.0f, 1.0f),
@@ -234,12 +262,14 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
         s_buffer = gfxDevice.newVB();
         s_buffer->useLargeIndices(false);
         s_buffer->setVertexCount(billboardsPlaneCount * 4);
-        for (U8 i = 0; i < billboardsPlaneCount * 4; ++i) {
+        for (U8 i = 0u; i < billboardsPlaneCount * 4; ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
+            s_buffer->modifyNormalValue(i, WORLD_Y_AXIS);
+            s_buffer->modifyTangentValue(i, WORLD_X_AXIS);
             s_buffer->modifyTexCoordValue(i, texCoords[i % 4].s, texCoords[i % 4].t);
         }
 
-        for (U8 i = 0; i < billboardsPlaneCount; ++i) {
+        for (U8 i = 0u; i < billboardsPlaneCount; ++i) {
             if (i > 0) {
                 s_buffer->addRestartIndex();
             }
@@ -247,18 +277,7 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
                 s_buffer->addIndex(idx + i * 4);
             }
         }
-        
-        s_buffer->computeNormals();
-        s_buffer->computeTangents();
 
-        if_constexpr(!g_useDoubleSidedMaterial) {
-            for (U8 i = 0; i < billboardsPlaneCount; ++i) {
-                s_buffer->addRestartIndex();
-                for (U16 idx : indicesBack) {
-                    s_buffer->addIndex(idx + i * 4);
-                }
-            }
-        }
         s_buffer->create(true);
         s_buffer->keepData(false);
     }
@@ -350,7 +369,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     vegMaterial->baseColour(DefaultColours::WHITE);
     vegMaterial->roughness(0.9f);
     vegMaterial->metallic(0.02f);
-    vegMaterial->doubleSided(g_useDoubleSidedMaterial);
+    vegMaterial->doubleSided(true);
     vegMaterial->isStatic(false);
 
     Material::ApplyDefaultStateBlocks(*vegMaterial);
@@ -374,9 +393,8 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     fragModule._defines.emplace_back("SKIP_TEX0", true);
     fragModule._defines.emplace_back("RECOMPUTE_NORMALS_IN_COLOUR_PASS", true);
     fragModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
-    if (g_useDoubleSidedMaterial) {
-        fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
-    }
+    fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
+    
     ProcessShadowMappingDefines(gfxDevice.context().config(), fragModule._defines);
     fragModule._variant = "Colour";
 
@@ -391,6 +409,7 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
 
     ShaderProgramDescriptor shaderOitDescriptor = shaderDescriptor;
     shaderOitDescriptor._modules.back()._defines.emplace_back("OIT_PASS", true);
+    shaderOitDescriptor._modules.back()._defines.emplace_back("MAIN_DISPLAY_PASS", true);
     shaderOitDescriptor._modules.back()._variant = "Colour.OIT";
 
     ResourceDescriptor grassColourOITShader("grassColourOIT");
@@ -816,7 +835,7 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
     const U32 ID = _terrainChunk.ID();
 
     const stringImpl cacheFileName = Util::StringFormat("%s_%s_%s_%d.cache", terrain.resourceName().c_str(), resourceName().c_str(), treeData ? "trees" : "grass", ID);
-    Console::printfn(Locale::get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), ID);
+    Console::printfn(Locale::Get(treeData ? _ID("CREATE_TREE_START") : _ID("CREATE_GRASS_BEGIN")), ID);
 
     vectorEASTL<VegetationData>& container = treeData ? _tempTreeData : _tempGrassData;
 
@@ -825,6 +844,16 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
         container.resize(chunkCache.read<size_t>());
         chunkCache.read(reinterpret_cast<Byte*>(container.data()), sizeof(VegetationData) * container.size());
     } else {
+
+        std::discrete_distribution<> distribution[] = {
+            {5, 2, 2, 1},
+            {1, 5, 2, 2},
+            {2, 1, 5, 2},
+            {2, 2, 1, 5}
+        };
+
+        std::default_random_engine generator(to_U32(std::chrono::system_clock::now().time_since_epoch().count()));
+
         const U32 meshID = to_U32(ID % _treeMeshNames.size());
 
         const vec2<F32>& chunkSize = _terrainChunk.getOffsetAndSize().zw;
@@ -869,13 +898,15 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
                 continue;
             }
 
+            const U8 arrayLayer = to_U8(distribution[index](generator));
+
             const F32 xmlScale = scales[treeData ? meshID : index];
             // Don't go under 75% of the scale specified in the data files
             const F32 minXmlScale = xmlScale * 7.5f / 10.0f;
             // Don't go over 75% of the cale specified in the data files
             const F32 maxXmlScale = xmlScale * 1.25f;
 
-            const F32 scale = CLAMPED((colour[index] + 1) / 256.0f * xmlScale, minXmlScale, maxXmlScale);
+            const F32 scale = CLAMPED((colourVal + 1.f) / 256.0f * xmlScale, minXmlScale, maxXmlScale);
 
             assert(scale > std::numeric_limits<F32>::epsilon());
 
@@ -891,7 +922,7 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
 
             entry._orientationQuat = (Quaternion<F32>(vert._normal, Random(360.0f)) * modelRotation).asVec4();
             entry._data = {
-                to_F32(index),
+                to_F32(arrayLayer),
                 to_F32(ID),
                 1.0f,
                 1.0f
@@ -907,7 +938,7 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
             DIVIDE_UNEXPECTED_CALL();
         }
     }
-    Console::printfn(Locale::get(_ID("CREATE_GRASS_END")));
+    Console::printfn(Locale::Get(_ID("CREATE_GRASS_END")));
 }
 
 }

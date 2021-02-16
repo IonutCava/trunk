@@ -65,22 +65,22 @@ private:
 };
 
 /// Reset everything and load the specified language file.
-ErrorCode init(const char* newLanguage = DEFAULT_LANG);
+ErrorCode Init(const char* newLanguage = DEFAULT_LANG);
 /// clear the language table
-void clear() noexcept;
+void Clear() noexcept;
 /// perform maintenance tasks
-void idle();
+void Idle();
 /// Although the language can be set at compile time, in-game options may support
 /// language changes
-ErrorCode changeLanguage(const char* newLanguage);
+ErrorCode ChangeLanguage(const char* newLanguage);
 /// Set a function to be called on each language change
-void setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk);
+void SetChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk);
 /// Query the current language code to detect changes
-const Str64& currentLanguage() noexcept;
-/// usage: Locale::get(_ID("A_B_C")) or Locale::get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want
+const Str64& CurrentLanguage() noexcept;
+/// usage: Locale::Get(_ID("A_B_C")) or Locale::Get(_ID("A_B_C"),"X") where "A_B_C" is the language key we want
 /// and "X" is a default string in case the key does not exist in the INI file
-const char* get(U64 key, const char* defaultValue);
-const char* get(U64 key);
+const char* Get(U64 key, const char* defaultValue);
+const char* Get(U64 key);
 
 }  // namespace Locale
 }  // namespace Divide

@@ -583,6 +583,13 @@ bool Sky::load() {
     shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "NoClouds";
     shaderDescriptor._modules.push_back(fragModule);
     shaderDescriptor._modules.back()._variant = isEnabledSky ? "Clouds" : "PassThrough";
+    
+    ResourceDescriptor skyShaderDescriptorLQ("sky_Display_Clouds_LQ");
+    skyShaderDescriptorLQ.propertyDescriptor(shaderDescriptor);
+    skyShaderDescriptorLQ.waitForReady(false);
+    _skyShaderLQ = CreateResource<ShaderProgram>(_parentCache, skyShaderDescriptorLQ, loadTasks);
+
+    shaderDescriptor._modules.back()._defines.emplace_back("MAIN_DISPLAY_PASS", true);
 
     ResourceDescriptor skyShaderDescriptor("sky_Display_Clouds");
     skyShaderDescriptor.propertyDescriptor(shaderDescriptor);
@@ -603,7 +610,7 @@ bool Sky::load() {
     assert(_skyShader && _skyShaderPrePass);
     setBounds(BoundingBox(vec3<F32>(-radius), vec3<F32>(radius)));
 
-    Console::printfn(Locale::get(_ID("CREATE_SKY_RES_OK")));
+    Console::printfn(Locale::Get(_ID("CREATE_SKY_RES_OK")));
 
     return SceneNode::load();
 }
@@ -731,7 +738,7 @@ void Sky::buildDrawCommands(SceneGraphNode* sgn,
         pipelineDescriptor._stateHash = renderStagePass._stage == RenderStage::REFLECTION && renderStagePass._variant != to_U8(ReflectorType::CUBE)
                                             ? _skyboxRenderStateReflectedHash
                                             : _skyboxRenderStateHash;
-        pipelineDescriptor._shaderProgramHandle = _skyShader->getGUID();
+        pipelineDescriptor._shaderProgramHandle = renderStagePass._stage == RenderStage::DISPLAY ? _skyShader->getGUID() : _skyShaderLQ->getGUID();
     }
 
     GFX::BindPipelineCommand pipelineCommand = {};

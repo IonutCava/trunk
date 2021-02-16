@@ -34,7 +34,7 @@ mat3 getTBNWV() {
 #   endif//COMPUTE_TBN
 #endif //PRE_PASS && !HAS_PRE_PASS_DATA
 }
-#endif//!USE_CUSTOM_TBN
+#endif //USE_CUSTOM_TBN
 
 #define getTangentWV() (getTBNWV()[0])
 #define getBiTangentWV() (getTBNWV()[1])
@@ -177,11 +177,11 @@ vec3 getNormalWV(in UV_TYPE uv) {
 #endif //COMPUTE_TBN && !USE_CUSTOM_NORMAL_MAP
 
     normalWV = normalize(normalWV);
-#if defined (USE_DOUBLE_SIDED)
+#if defined (USE_DOUBLE_SIDED) && !defined(SKIP_DOUBLE_SIDED_NORMALS)
     return gl_FrontFacing ? normalWV : -normalWV;
-#else //USE_DOUBLE_SIDED
+#else //USE_DOUBLE_SIDED && !SKIP_DOUBLE_SIDED_NORMALS
     return normalWV;
-#endif //USE_DOUBLE_SIDED
+#endif //USE_DOUBLE_SIDED && !SKIP_DOUBLE_SIDED_NORMALS
 }
 
 #endif //_MATERIAL_DATA_FRAG_

@@ -26,12 +26,7 @@ vec3 normalLinearBlend(in vec3 n1, in vec3 n2) {
 }
 
 vec3 normalOverlayBlend(vec3 n1, vec3 n2) {
-    vec3 n;
-    n.x = overlay(n1.x, n2.x);
-    n.y = overlay(n1.y, n2.y);
-    n.z = overlay(n1.z, n2.z);
-
-    return normalize(n * 2.0f - 1.0f);
+    return normalize(2.f * overlayVec(n1, n2) - 1.f);
 }
 
 vec3 normalPartialDerivativesBlend(in vec3 n1, in vec3 n2) {

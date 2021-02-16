@@ -31,7 +31,7 @@ bool PhysXSceneInterface::init() {
     PxPhysics* gPhysicsSDK = static_cast<PhysX&>(_parentScene.context().pfx().getImpl()).getSDK();
     // Create the scene
     if (!gPhysicsSDK) {
-        Console::errorfn(Locale::get(_ID("ERROR_PHYSX_SDK")));
+        Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_SDK")));
         return false;
     }
 
@@ -41,7 +41,7 @@ bool PhysXSceneInterface::init() {
     if (!sceneDesc.cpuDispatcher) {
         _cpuDispatcher = PxDefaultCpuDispatcherCreate(3);
         if (!_cpuDispatcher) {
-            Console::errorfn(Locale::get(_ID("ERROR_PHYSX_INTERFACE_CPU_DISPATCH")));
+            Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_INTERFACE_CPU_DISPATCH")));
         }
         sceneDesc.cpuDispatcher = _cpuDispatcher;
     }
@@ -52,7 +52,7 @@ bool PhysXSceneInterface::init() {
 
     _gScene = gPhysicsSDK->createScene(sceneDesc);
     if (!_gScene) {
-        Console::errorfn(Locale::get(_ID("ERROR_PHYSX_INTERFACE_CREATE_SCENE")));
+        Console::errorfn(Locale::Get(_ID("ERROR_PHYSX_INTERFACE_CREATE_SCENE")));
         return false;
     }
 
@@ -73,7 +73,7 @@ void PhysXSceneInterface::release() {
         return;
     }
 
-    Console::d_printfn(Locale::get(_ID("STOP_PHYSX_SCENE_INTERFACE")));
+    Console::d_printfn(Locale::Get(_ID("STOP_PHYSX_SCENE_INTERFACE")));
 
     idle();
     for (PhysXActor* actor : _sceneRigidActors) {

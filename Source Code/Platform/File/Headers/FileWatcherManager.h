@@ -34,16 +34,12 @@ OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _PLATFORM_FILE_FILE_WATCHER_MANAGER_H_
 
 namespace Divide {
-    class FileWatcher final : public GUIDWrapper {
-      public:
+    struct FileWatcher final : GUIDWrapper {
         FW::FileWatcher& operator()() {
             return _impl;
         }
 
-      protected:
-        bool _updated = false;
-        friend class FileWatcherManager;
-        FW::FileWatcher _impl;
+        PROPERTY_RW(FW::FileWatcher, impl);
     };
 
     class FileWatcherManager {
@@ -54,7 +50,7 @@ namespace Divide {
         static void deallocateWatcher(const FileWatcher& fw);
 
       private:
-        static vectorEASTL<eastl::unique_ptr<FileWatcher>> s_fileWatchers;
+        static vectorEASTL<std::pair<eastl::unique_ptr<FileWatcher>, U32>> s_fileWatchers;
     }; //FileWatcherManager
 }; //namespace Divide
 

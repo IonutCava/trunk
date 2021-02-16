@@ -1,8 +1,10 @@
 #ifndef _OUTPUT_FRAG_
 #define _OUTPUT_FRAG_
 
+#if defined(MAIN_DISPLAY_PASS)
 layout(location = TARGET_NORMALS_AND_MATERIAL_DATA) out vec4 _matDataOut;
 layout(location = TARGET_SPECULAR) out vec3 _specularDataOut;
+#endif //MAIN_DISPLAY_PASS
 
 #if !defined(OIT_PASS)
 layout(location = TARGET_ALBEDO) out vec4 _colourOut;
@@ -55,6 +57,7 @@ void writeScreenColour(in vec4 colour, in vec3 normalWV, in vec3 specularColour,
 #else //OIT_PASS
     _colourOut = colour;
 #endif //OIT_PASS
+#if defined(MAIN_DISPLAY_PASS)
     _specularDataOut = specularColour;
     _matDataOut.rg = packNormal(normalWV);
     _matDataOut.b = packVec2(MetalnessRoughnessProbeID.xy);
@@ -67,7 +70,10 @@ void writeScreenColour(in vec4 colour, in vec3 normalWV, in vec3 specularColour,
 #else // NO_IBL
     _matDataOut.a = MetalnessRoughnessProbeID.z;
 #endif // NO_IBL
-
+#if defined(NO_SSAO)
+    _matDataOut.a = -_matDataOut.a;
+#endif //NO_SSAO
+#endif //MAIN_DISPLAY_PASS
 }
 
 void writeScreenColour(in vec4 colour, in vec3 normalWV, in vec3 specularColour) {

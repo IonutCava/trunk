@@ -183,7 +183,7 @@ void GUI::setRenderer(CEGUI::Renderer& renderer) {
 
 bool GUI::init(PlatformContext& context, ResourceCache* cache) {
     if (_init) {
-        Console::d_errorfn(Locale::get(_ID("ERROR_GUI_DOUBLE_INIT")));
+        Console::d_errorfn(Locale::Get(_ID("ERROR_GUI_DOUBLE_INIT")));
         return false;
     }
 
@@ -263,7 +263,7 @@ bool GUI::init(PlatformContext& context, ResourceCache* cache) {
 
 void GUI::destroy() {
     if (_init) {
-        Console::printfn(Locale::get(_ID("STOP_GUI")));
+        Console::printfn(Locale::Get(_ID("STOP_GUI")));
         MemoryManager::DELETE(_console);
 
         {
@@ -284,7 +284,7 @@ void GUI::destroy() {
             CEGUI::System::destroy();
         }
         catch (...) {
-            Console::d_errorfn(Locale::get(_ID("ERROR_CEGUI_DESTROY")));
+            Console::d_errorfn(Locale::Get(_ID("ERROR_CEGUI_DESTROY")));
         }
         _init = false;
     }

@@ -27,9 +27,11 @@ namespace detail {
 
         // If we modify our currently active language, reinit the Locale system
         if ((g_localeFile + g_languageFileExtension).c_str() == languageFile) {
-            changeLanguage(g_localeFile.c_str());
+            ChangeLanguage(g_localeFile.c_str());
         }
     });
+
+    constexpr U32 g_fileWatcherUpdateFrameInterval = 120u;
 
 } //detail
 
@@ -82,9 +84,9 @@ const char* LanguageData::get(const U64 key, const char* defaultValue) {
     return defaultValue;
 }
 
-ErrorCode init(const char* newLanguage) {
+ErrorCode Init(const char* newLanguage) {
     if_constexpr (!Config::Build::IS_SHIPPING_BUILD && Config::ENABLE_LOCALE_FILE_WATCHER) {
-        if (!detail::g_LanguageFileWatcher) {
+        if (detail::g_LanguageFileWatcher == nullptr) {
             detail::g_LanguageFileWatcher.reset(new FW::FileWatcher());
             detail::g_fileWatcherListener.addIgnoredEndCharacter('~');
             detail::g_fileWatcherListener.addIgnoredExtension("tmp");
@@ -96,28 +98,32 @@ ErrorCode init(const char* newLanguage) {
         detail::g_data = eastl::make_unique<LanguageData>();
     }
 
-    return changeLanguage(newLanguage);
+    return ChangeLanguage(newLanguage);
 }
 
-void clear() noexcept {
+void Clear() noexcept {
     detail::g_data.reset();
 }
 
-void idle() {
-    if (detail::g_LanguageFileWatcher) {
-        detail::g_LanguageFileWatcher->update();
+void Idle() {
+    static U32 updateCounter = detail::g_fileWatcherUpdateFrameInterval;
+    if (detail::g_LanguageFileWatcher != nullptr) {
+        if (--updateCounter == 0u) {
+            detail::g_LanguageFileWatcher->update();
+            updateCounter = detail::g_fileWatcherUpdateFrameInterval;
+        }
     }
 }
 
 /// Although the language can be set at compile time, in-game options may support language changes
-ErrorCode changeLanguage(const char* newLanguage) {
+ErrorCode ChangeLanguage(const char* newLanguage) {
     assert(detail::g_data != nullptr);
 
     /// Set the new language code (override old data)
     return detail::g_data->changeLanguage(newLanguage);
 }
 
-const char* get(const U64 key, const char* defaultValue) {
+const char* Get(const U64 key, const char* defaultValue) {
     if (detail::g_data) {
         return detail::g_data->get(key, defaultValue);
     }
@@ -125,17 +131,17 @@ const char* get(const U64 key, const char* defaultValue) {
     return defaultValue;
 }
 
-const char* get(const U64 key) {
-    return get(key, "key not found");
+const char* Get(const U64 key) {
+    return Get(key, "key not found");
 }
 
-void setChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk) {
+void SetChangeLanguageCallback(const DELEGATE<void, std::string_view /*new language*/>& cbk) {
     assert(detail::g_data);
 
     detail::g_data->setChangeLanguageCallback(cbk);
 }
 
-const Str64& currentLanguage() noexcept {
+const Str64& CurrentLanguage() noexcept {
     return detail::g_localeFile;
 }
 

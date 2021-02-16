@@ -2,6 +2,7 @@
 #define _SHADOW_UTILS_FRAG_
 
 #if !defined(DISABLE_SHADOW_MAPPING)
+#define LT(n) n, n, n, n, n, n, n, n, n, n, n, n, n, n, n, n
 
 //dvd_shadowLightDetails:  x = light type, y =  arrayOffset, z - bias, w - strength
 
@@ -10,12 +11,14 @@ struct PointShadowProperties
     vec4  dvd_shadowLightDetails;
     vec4  dvd_shadowLightPosition;
 };
+
 struct SpotShadowProperties
 {
     vec4  dvd_shadowLightDetails;
     vec4  dvd_shadowLightPosition;
     mat4  dvd_shadowLightVP;
 };
+
 struct CSMShadowProperties
 {
     vec4  dvd_shadowLightDetails;

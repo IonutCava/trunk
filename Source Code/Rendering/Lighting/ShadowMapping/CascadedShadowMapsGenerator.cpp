@@ -35,7 +35,7 @@ namespace{
 
 CascadedShadowMapsGenerator::CascadedShadowMapsGenerator(GFXDevice& context)
     : ShadowMapGenerator(context, ShadowType::LAYERED) {
-    Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "EVCSM");
+    Console::printfn(Locale::Get(_ID("LIGHT_CREATE_SHADOW_FB")), "EVCSM");
 
     const RenderTarget& rt = _context.renderTargetPool().renderTarget(g_depthMapID);
 

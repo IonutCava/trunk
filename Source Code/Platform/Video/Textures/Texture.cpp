@@ -114,7 +114,7 @@ void Texture::threadedLoad() {
             _descriptor.texType() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (dataStorage.layerCount() % 6 != 0) {
                 Console::errorfn(
-                    Locale::get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
+                    Locale::Get(_ID("ERROR_TEXTURE_LOADER_CUBMAP_INIT_COUNT")),
                     resourceName().c_str());
                 return;
             }
@@ -124,7 +124,7 @@ void Texture::threadedLoad() {
             _descriptor.texType() == TextureType::TEXTURE_2D_ARRAY_MS) {
             if (dataStorage.layerCount() != _numLayers) {
                 Console::errorfn(
-                    Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
+                    Locale::Get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                     resourceName().c_str());
                 return;
             }
@@ -133,7 +133,7 @@ void Texture::threadedLoad() {
         /*if (_descriptor.texType() == TextureType::TEXTURE_CUBE_ARRAY) {
             if (dataStorage.layerCount() / 6 != _numLayers) {
                 Console::errorfn(
-                    Locale::get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
+                    Locale::Get(_ID("ERROR_TEXTURE_LOADER_ARRAY_INIT_COUNT")),
                     resourceName().c_str());
             }
         }*/
@@ -144,10 +144,10 @@ bool Texture::loadFile(const ResourcePath& name, ImageTools::ImageData& fileData
 
     if (!ImageTools::ImageDataInterface::CreateImageData(name, _width, _height, _descriptor.srgb(), fileData)) {
         if (fileData.layerCount() > 0) {
-            Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
+            Console::errorfn(Locale::Get(_ID("ERROR_TEXTURE_LAYER_LOAD")), name.c_str());
             return false;
         }
-        Console::errorfn(Locale::get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_TEXTURE_LOAD")), name.c_str());
         // Missing texture fallback.
         fileData.flip(false);
         // missing_texture.jpg must be something that really stands out
@@ -221,7 +221,7 @@ bool Texture::checkTransparency(const ResourcePath& name, ImageTools::ImageData&
         }
     }
 
-    Console::printfn(Locale::get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
+    Console::printfn(Locale::Get(_ID("TEXTURE_HAS_TRANSPARENCY_TRANSLUCENCY")),
                                     name.c_str(),
                                     _hasTransparency ? "yes" : "no",
                                     _hasTranslucency ? "yes" : "no");

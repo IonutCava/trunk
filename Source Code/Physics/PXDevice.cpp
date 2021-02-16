@@ -37,7 +37,7 @@ ErrorCode PXDevice::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed)
         case PhysicsAPI::ODE: 
         case PhysicsAPI::Bullet: 
         case PhysicsAPI::COUNT: {
-            Console::errorfn(Locale::get(_ID("ERROR_PFX_DEVICE_API")));
+            Console::errorfn(Locale::Get(_ID("ERROR_PFX_DEVICE_API")));
             return ErrorCode::PFX_NON_SPECIFIED;
         };
     };
@@ -47,11 +47,11 @@ ErrorCode PXDevice::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed)
 
 bool PXDevice::closePhysicsAPI() { 
     if (_api == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_PFX_DEVICE_NO_INIT")));
+        Console::errorfn(Locale::Get(_ID("ERROR_PFX_DEVICE_NO_INIT")));
         return false;
     }
 
-    Console::printfn(Locale::get(_ID("STOP_PHYSICS_INTERFACE")));
+    Console::printfn(Locale::Get(_ID("STOP_PHYSICS_INTERFACE")));
     const bool state = _api->closePhysicsAPI();
     _api.reset();
 

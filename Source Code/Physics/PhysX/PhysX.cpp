@@ -31,7 +31,7 @@ PhysX::~PhysX()
 }
 
 ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
-    Console::printfn(Locale::get(_ID("START_PHYSX_API")));
+    Console::printfn(Locale::Get(_ID("START_PHYSX_API")));
 
     _simulationSpeed = simSpeed;
     // create foundation object with default error and allocator callbacks.
@@ -55,12 +55,12 @@ ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
                         recordMemoryAllocations, _pvd);
 
     if (_gPhysicsSDK == nullptr) {
-        Console::errorfn(Locale::get(_ID("ERROR_START_PHYSX_API")));
+        Console::errorfn(Locale::Get(_ID("ERROR_START_PHYSX_API")));
         return ErrorCode::PHYSX_INIT_ERROR;
     }
 
     if (!PxInitExtensions(*_gPhysicsSDK, _pvd)) {
-        Console::errorfn(Locale::get(_ID("ERROR_EXTENSION_PHYSX_API")));
+        Console::errorfn(Locale::Get(_ID("ERROR_EXTENSION_PHYSX_API")));
         return ErrorCode::PHYSX_EXTENSION_ERROR;
     }
 
@@ -71,7 +71,7 @@ ErrorCode PhysX::initPhysicsAPI(const U8 targetFrameRate, const F32 simSpeed) {
     }
 
     updateTimeStep(targetFrameRate, _simulationSpeed);
-    Console::printfn(Locale::get(_ID("START_PHYSX_API_OK")));
+    Console::printfn(Locale::Get(_ID("START_PHYSX_API_OK")));
 
     return ErrorCode::NO_ERR;
 }
@@ -81,7 +81,7 @@ bool PhysX::closePhysicsAPI() {
         return false;
     }
 
-    Console::printfn(Locale::get(_ID("STOP_PHYSX_API")));
+    Console::printfn(Locale::Get(_ID("STOP_PHYSX_API")));
 
     DIVIDE_ASSERT(_targetScene == nullptr,
                   "PhysX error: target scene not destroyed before calling "
@@ -118,7 +118,7 @@ void PhysX::togglePvdConnection() const {
         _pvd->disconnect();
     } else {
         if (_pvd->connect(*_transport, _pvdFlags)) {
-            Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
+            Console::d_printfn(Locale::Get(_ID("CONNECT_PVD_OK")));
         }
     }
 }
@@ -153,7 +153,7 @@ void PhysX::createPvdConnection(const char* ip, const physx::PxU32 port, const p
     }
     _pvd = physx::PxCreatePvd(*_foundation);
     //if (_pvd->connect(*_transport, _pvdFlags)) {
-    //    Console::d_printfn(Locale::get(_ID("CONNECT_PVD_OK")));
+    //    Console::d_printfn(Locale::Get(_ID("CONNECT_PVD_OK")));
     //}
 }
 
@@ -264,13 +264,13 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
         }
 
         if (!_cooking->cookTriangleMesh(meshDesc, stream)) {
-            Console::errorfn(Locale::get(_ID("ERROR_COOK_TRIANGLE_MESH")));
+            Console::errorfn(Locale::Get(_ID("ERROR_COOK_TRIANGLE_MESH")));
             return;
         }
     } else if (loadState == 0) {
-        Console::printfn(Locale::get(_ID("COLLISION_MESH_LOADED_FROM_RAM")), nodeName.c_str());
+        Console::printfn(Locale::Get(_ID("COLLISION_MESH_LOADED_FROM_RAM")), nodeName.c_str());
     } else if (loadState == 1) {
-        Console::printfn(Locale::get(_ID("COLLISION_MESH_LOADED_FROM_FILE")), nodeName.c_str());
+        Console::printfn(Locale::Get(_ID("COLLISION_MESH_LOADED_FROM_FILE")), nodeName.c_str());
     }
 
     PhysXSceneInterface* targetScene =  dynamic_cast<PhysXSceneInterface*>(_targetScene);
@@ -323,7 +323,7 @@ void PhysX::setPhysicsScene(PhysicsSceneInterface* const targetScene) {
     }
 
     if (!triangleMesh) {
-        Console::errorfn(Locale::get(_ID("ERROR_CREATE_TRIANGLE_MESH")));
+        Console::errorfn(Locale::Get(_ID("ERROR_CREATE_TRIANGLE_MESH")));
         return;
     }
 

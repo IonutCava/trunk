@@ -274,6 +274,10 @@ uniform bool  dvd_enableClouds;
 #define dvd_useDaySkybox (dvd_useSkyboxes.x == 1)
 #define dvd_useNightSkybox (dvd_useSkyboxes.y == 1)
 
+#if !defined(MAIN_DISPLAY_PASS)
+#define LOW_QUALITY
+#endif //!MAIN_DISPLAY_PASS
+
 #define NEED_SCENE_DATA
 #include "sceneData.cmn"
 #include "utility.frag"
@@ -677,7 +681,10 @@ void main() {
         case DEBUG_CSM_SPLITS:    ret = vec3(1.0f); break;
         case DEBUG_LIGHT_HEATMAP:
         case DEBUG_DEPTH_CLUSTERS:
+#if defined(MAIN_DISPLAY_PASS)
+        case DEBUG_REFRACTIONS:
         case DEBUG_REFLECTIONS:
+#endif //MAIN_DISPLAY_PASS
         case DEBUG_MATERIAL_IDS:  ret = vec3(0.0f); break;
         default:                  ret = atmosphereColour(rayDirection, lerpValue); break;
     }

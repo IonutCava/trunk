@@ -121,7 +121,7 @@ void Script::bootstrap() {
 
 void Script::preprocessIncludes(const stringImpl& source, const I32 level /*= 0 */) {
     if (level > 32) {
-        Console::errorfn(Locale::get(_ID("ERROR_SCRIPT_INCLUD_LIMIT")));
+        Console::errorfn(Locale::Get(_ID("ERROR_SCRIPT_INCLUD_LIMIT")));
     }
 
     boost::smatch matches;
@@ -160,7 +160,7 @@ void Script::extractAtoms() {
 }
 
 void Script::handleOutput(const std::string &msg) {
-    Console::printfn(Locale::get(_ID("SCRIPT_CONSOLE_OUTPUT")), msg.c_str());
+    Console::printfn(Locale::Get(_ID("SCRIPT_CONSOLE_OUTPUT")), msg.c_str());
 }
 
 void Script::onScriptModify(const std::string_view script, FileUpdateEvent& /*evt*/) {
@@ -182,7 +182,7 @@ void Script::onScriptModify(const std::string_view script, FileUpdateEvent& /*ev
 }
 
 void Script::caughtException(const char* message, const bool isEvalException) const {
-    Console::printfn(Locale::get(isEvalException ? _ID("SCRIPT_EVAL_EXCEPTION")
+    Console::printfn(Locale::Get(isEvalException ? _ID("SCRIPT_EVAL_EXCEPTION")
                                                  : _ID("SCRIPT_OTHER_EXCEPTION")),
                      message);
 }

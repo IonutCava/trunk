@@ -72,14 +72,14 @@ glShader::glShader(GFXDevice& context, const Str256& name)
 
 glShader::~glShader() {
     if (_programHandle != GLUtil::k_invalidObjectID) {
-        Console::d_printfn(Locale::get(_ID("SHADER_DELETE")), name().c_str());
+        Console::d_printfn(Locale::Get(_ID("SHADER_DELETE")), name().c_str());
         GL_API::DeleteShaderPrograms(1, &_programHandle);
     }
 }
 
 bool glShader::uploadToGPU() {
     if (!_valid) {
-        Console::d_printfn(Locale::get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
+        Console::d_printfn(Locale::Get(_ID("GLSL_LOAD_PROGRAM")), _name.c_str(), getGUID());
 
         const GLuint blockIndex = to_U32(ShaderBufferLocation::UNIFORM_BLOCK) + _loadData._uniformIndex;
         if (!loadFromBinary()) {
@@ -111,7 +111,7 @@ bool glShader::uploadToGPU() {
                 eastl::transform(cbegin(data.sourceCode), cend(data.sourceCode), back_inserter(sourceCodeCstr), std::mem_fn(&eastl::string::c_str));
                 _programHandle = glCreateShaderProgramv(GLUtil::glShaderStageTable[shaderIdx], static_cast<GLsizei>(sourceCodeCstr.size()), sourceCodeCstr.data());
                 if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
+                    Console::errorfn(Locale::Get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                     _valid = false;
                     return false;
                 }
@@ -121,7 +121,7 @@ bool glShader::uploadToGPU() {
                     _programHandle = glCreateProgram();
                 }
                 if (_programHandle == 0 || _programHandle == GLUtil::k_invalidObjectID) {
-                    Console::errorfn(Locale::get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
+                    Console::errorfn(Locale::Get(_ID("ERROR_GLSL_CREATE_PROGRAM")), _name.c_str());
                     _valid = false;
                     return false;
                 }
@@ -154,12 +154,12 @@ bool glShader::uploadToGPU() {
                                 glGetShaderInfoLog(shader, logSize, &logSize, &validationBuffer[0]);
                                 if (validationBuffer.size() > g_validationBufferMaxSize) {
                                     // On some systems, the program's disassembly is printed, and that can get quite large
-                                    validationBuffer.resize(std::strlen(Locale::get(_ID("ERROR_GLSL_COMPILE"))) * 2 + g_validationBufferMaxSize);
+                                    validationBuffer.resize(std::strlen(Locale::Get(_ID("ERROR_GLSL_COMPILE"))) * 2 + g_validationBufferMaxSize);
                                     // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
                                     validationBuffer.append(" ... ");
                                 }
 
-                                Console::errorfn(Locale::get(_ID("ERROR_GLSL_COMPILE")), _name.c_str(), shader, Names::shaderTypes[i], validationBuffer.c_str());
+                                Console::errorfn(Locale::Get(_ID("ERROR_GLSL_COMPILE")), _name.c_str(), shader, Names::shaderTypes[i], validationBuffer.c_str());
 
                                 glDeleteShader(shader);
                             } else {
@@ -197,16 +197,16 @@ bool glShader::uploadToGPU() {
                 glGetProgramInfoLog(_programHandle, logSize, nullptr, &validationBuffer[0]);
                 if (validationBuffer.size() > g_validationBufferMaxSize) {
                     // On some systems, the program's disassembly is printed, and that can get quite large
-                    validationBuffer.resize(std::strlen(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
+                    validationBuffer.resize(std::strlen(Locale::Get(_ID("GLSL_LINK_PROGRAM_LOG"))) + g_validationBufferMaxSize);
                     // Use the simple "truncate and inform user" system (a.k.a. add dots and delete the rest)
                     validationBuffer.append(" ... ");
                 }
 
-                Console::errorfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
+                Console::errorfn(Locale::Get(_ID("GLSL_LINK_PROGRAM_LOG")), _name.c_str(), validationBuffer.c_str(), getGUID());
                 glShaderProgram::Idle(_context.context());
             } else {
                 if_constexpr(Config::ENABLE_GPU_VALIDATION) {
-                    Console::printfn(Locale::get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), "[OK]", getGUID(), _programHandle);
+                    Console::printfn(Locale::Get(_ID("GLSL_LINK_PROGRAM_LOG_OK")), _name.c_str(), "[OK]", getGUID(), _programHandle);
                     glObjectLabel(GL_PROGRAM, _programHandle, -1, _name.c_str());
                 }
                 _valid = true;
@@ -255,7 +255,7 @@ bool glShader::load(const ShaderLoadData& data) {
     }
 
     if (!hasSourceCode) {
-        Console::errorfn(Locale::get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
+        Console::errorfn(Locale::Get(_ID("ERROR_GLSL_NOT_FOUND")), name().c_str());
         return false;
     }
 
@@ -452,7 +452,7 @@ void glShader::addShaderDefine(const stringImpl& define, bool appendPrefix) {
         shouldRecompile(true);
     } else {
         // If we did find it, we'll show an error message in debug builds about double add
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), _name.c_str());
+        Console::d_errorfn(Locale::Get(_ID("ERROR_INVALID_DEFINE_ADD")), define.c_str(), _name.c_str());
     }
 }
 
@@ -469,7 +469,7 @@ void glShader::removeShaderDefine(const stringImpl& define) {
         shouldRecompile(true);
     } else {
         // If we did not find it, we'll show an error message in debug builds
-        Console::d_errorfn(Locale::get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), _name.c_str());
+        Console::d_errorfn(Locale::Get(_ID("ERROR_INVALID_DEFINE_DELETE")), define.c_str(), _name.c_str());
     }
 }
 

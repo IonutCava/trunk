@@ -3,5 +3,6 @@
 <showSampleWindow>false</showSampleWindow>
 <autoSaveCamera>false</autoSaveCamera>
 <autoFocusEditor>true</autoFocusEditor>
+<showEmissiveSelections>false</showEmissiveSelections>
 <themeIndex>6</themeIndex>
 <textEditor>C:/Program Files/Notepad++/notepad++.exe</textEditor>

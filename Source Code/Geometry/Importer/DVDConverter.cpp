@@ -161,7 +161,7 @@ bool DVDConverter::load(PlatformContext& context, Import::ImportData& target) {
     const aiScene* aiScenePointer = importer.ReadFile((filePath.str() + "/" + fileName.str()).c_str(), ppsteps);
 
     if (!aiScenePointer) {
-        Console::errorfn(Locale::get(_ID("ERROR_IMPORTER_FILE")), fileName.c_str(), importer.GetErrorString());
+        Console::errorfn(Locale::Get(_ID("ERROR_IMPORTER_FILE")), fileName.c_str(), importer.GetErrorString());
         return false;
     }
 
@@ -367,7 +367,7 @@ void DVDConverter::loadSubMeshGeometry(const aiMesh* source, Import::SubMeshData
             vertices[j].tangent.set(source->mTangents[j].x, source->mTangents[j].y, source->mTangents[j].z, 1.0f);
         }
     } else {
-        Console::d_printfn(Locale::get(_ID("SUBMESH_NO_TANGENT")), subMeshData.name().c_str());
+        Console::d_printfn(Locale::Get(_ID("SUBMESH_NO_TANGENT")), subMeshData.name().c_str());
     }
 
     if (source->mNumBones > 0) {
@@ -521,7 +521,7 @@ void DVDConverter::loadSubMeshMaterial(Import::MaterialData& material,
     if (AI_SUCCESS == aiGetMaterialColor(mat, AI_MATKEY_COLOR_DIFFUSE, &diffuse)) {
         material.baseColour(FColour4(diffuse.r, diffuse.g, diffuse.b, alpha));
     } else {
-        Console::d_printfn(Locale::get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
+        Console::d_printfn(Locale::Get(_ID("MATERIAL_NO_DIFFUSE")), materialName.c_str());
     }
 
     // default emissive colour

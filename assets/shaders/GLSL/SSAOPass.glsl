@@ -23,6 +23,7 @@ uniform vec4 sampleKernel[SSAO_SAMPLE_COUNT];
 
 // Input screen texture
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
+layout(binding = TEXTURE_UNIT1)         uniform sampler2D texNormalsAndMatData;
 #if defined(COMPUTE_HALF_RES)
 layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
 #else
@@ -44,6 +45,11 @@ out float _ssaoOut;
 //ref2: https://github.com/itoral/vkdf/blob/9622f6a9e6602e06c5a42507202ad5a7daf917a4/data/spirv/ssao.deferred.frag.input
 void main(void) {
     // Calculate out of the current fragment in screen space the view space position.
+    if (sign(texture(texNormalsAndMatData, VAR._texCoord).a) < -0.5f) {
+        _ssaoOut = 1.f;
+        return;
+    }
+
     const float sceneDepth = GetDepth(VAR._texCoord);
     const float linDepth = ToLinearDepth(sceneDepth, zPlanes) / zPlanes.y;
 
@@ -91,7 +97,6 @@ void main(void) {
     } else {
         _ssaoOut = 1.f;
     }
-    
 }
 
 --Fragment.SSAOBlur
@@ -346,11 +351,11 @@ void main()
       textureOffset(texDepthMap, VAR._texCoord, offsets[2]).r,
       textureOffset(texDepthMap, VAR._texCoord, offsets[3]).r);
  
-   vec2 pn[] = vec2[](
-       textureOffset(texNormal, VAR._texCoord, offsets[0]).rg,
-       textureOffset(texNormal, VAR._texCoord, offsets[1]).rg,
-       textureOffset(texNormal, VAR._texCoord, offsets[2]).rg,
-       textureOffset(texNormal, VAR._texCoord, offsets[3]).rg);
+   vec3 pn[] = vec3[](
+       textureOffset(texNormal, VAR._texCoord, offsets[0]).rga,
+       textureOffset(texNormal, VAR._texCoord, offsets[1]).rga,
+       textureOffset(texNormal, VAR._texCoord, offsets[2]).rga,
+       textureOffset(texNormal, VAR._texCoord, offsets[3]).rga);
 
    const float best_depth = most_representative();
 
@@ -361,7 +366,7 @@ void main()
       }
    }
 
-   _outColour = vec3(d[i], pn[i]);
+   _outColour = vec3(d[i], pn[i].rg);
 }
 
 --Fragment.SSAOUpsample

@@ -137,6 +137,7 @@ protected:
     Texture_ptr _perWorlNoiseTex = nullptr;
     Sphere3D_ptr _sky = nullptr;
     ShaderProgram_ptr _skyShader = nullptr;
+    ShaderProgram_ptr _skyShaderLQ = nullptr;
     ShaderProgram_ptr _skyShaderPrePass = nullptr;
     size_t _skyboxRenderStateHash = 0;
     size_t _skyboxRenderStateHashPrePass = 0;

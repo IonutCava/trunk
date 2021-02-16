@@ -31,7 +31,7 @@ SingleShadowMapGenerator::SingleShadowMapGenerator(GFXDevice& context)
     : ShadowMapGenerator(context, ShadowType::SINGLE)
 {
 
-    Console::printfn(Locale::get(_ID("LIGHT_CREATE_SHADOW_FB")), "Single Shadow Map");
+    Console::printfn(Locale::Get(_ID("LIGHT_CREATE_SHADOW_FB")), "Single Shadow Map");
 
     g_shadowSettings = context.context().config().rendering.shadowMapping;
     {

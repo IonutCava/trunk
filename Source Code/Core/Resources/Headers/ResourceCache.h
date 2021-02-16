@@ -92,7 +92,7 @@ public:
             /// If the cache did not contain our resource ...
             wasInCache = ptr != nullptr;
             if (!wasInCache) {
-                Console::printfn(Locale::get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
+                Console::printfn(Locale::Get(_ID("RESOURCE_CACHE_GET_RES")), descriptor.resourceName().c_str(), loadingHash);
 
                 Time::ProfileTimer loadTimer = {};
                 loadTimer.start();
@@ -116,9 +116,9 @@ public:
 
         // Print load times
         if (wasInCache) {
-            Console::printfn(Locale::get(_ID("RESOURCE_CACHE_RETRIEVE")), descriptor.resourceName().c_str());
+            Console::printfn(Locale::Get(_ID("RESOURCE_CACHE_RETRIEVE")), descriptor.resourceName().c_str());
         } else {
-            Console::printfn(Locale::get(_ID("RESOURCE_CACHE_LOAD")), descriptor.resourceName().c_str(), timeInMS);
+            Console::printfn(Locale::Get(_ID("RESOURCE_CACHE_LOAD")), descriptor.resourceName().c_str(), timeInMS);
         }
 
         return ptr;

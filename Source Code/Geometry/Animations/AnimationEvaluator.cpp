@@ -26,7 +26,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) noexcept
     duration(pAnim->mDuration);
     name(pAnim->mName.length > 0 ? pAnim->mName.data : Util::StringFormat("unnamed_anim_%d", idx));
 
-    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_BEGIN")), name().c_str());
+    Console::d_printfn(Locale::Get(_ID("CREATE_ANIMATION_BEGIN")), name().c_str());
 
     _channels.resize(pAnim->mNumChannels);
     for (U32 a = 0; a < pAnim->mNumChannels; a++) {
@@ -52,7 +52,7 @@ AnimEvaluator::AnimEvaluator(const aiAnimation* pAnim, U32 idx) noexcept
 
     _lastPositions.resize(pAnim->mNumChannels, vec3<U32>());
 
-    Console::d_printfn(Locale::get(_ID("CREATE_ANIMATION_END")), _name.c_str());
+    Console::d_printfn(Locale::Get(_ID("CREATE_ANIMATION_END")), _name.c_str());
 }
 
 bool AnimEvaluator::initBuffers(GFXDevice& context) {
@@ -145,7 +145,7 @@ void AnimEvaluator::evaluate(const D64 dt, Bone* skeleton) {
         Bone* bonenode = skeleton->find(channel->_nameKey);
 
         if (bonenode == nullptr) {
-            Console::d_errorfn(Locale::get(_ID("ERROR_BONE_FIND")), channel->_name.c_str());
+            Console::d_errorfn(Locale::Get(_ID("ERROR_BONE_FIND")), channel->_name.c_str());
             continue;
         }
 

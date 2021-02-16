@@ -580,7 +580,7 @@ I32 GL_API::getFont(const Str64& fontName) {
             // If the font is invalid, inform the user, but map it anyway, to avoid
             // loading an invalid font file on every request
             if (_fontCache.second == FONS_INVALID) {
-                Console::errorfn(Locale::get(_ID("ERROR_FONT_FILE")), fontName.c_str());
+                Console::errorfn(Locale::Get(_ID("ERROR_FONT_FILE")), fontName.c_str());
             }
             // Save the font in the font cache
             hashAlg::insert(_fonts, fontNameHash, _fontCache.second);
@@ -918,7 +918,7 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             assert(pipeline != nullptr);
             bool shaderWasReady = false;
             if (!bindPipeline(*pipeline, shaderWasReady) && shaderWasReady) {
-                Console::errorfn(Locale::get(_ID("ERROR_GLSL_INVALID_BIND")), pipeline->shaderProgramHandle());
+                Console::errorfn(Locale::Get(_ID("ERROR_GLSL_INVALID_BIND")), pipeline->shaderProgramHandle());
             }
         } break;
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {

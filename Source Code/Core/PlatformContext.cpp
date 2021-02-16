@@ -63,7 +63,7 @@ void PlatformContext::terminate() {
     MemoryManager::DELETE(_pfx);
     MemoryManager::DELETE(_paramHandler);
 
-    Console::printfn(Locale::get(_ID("STOP_HARDWARE")));
+    Console::printfn(Locale::Get(_ID("STOP_HARDWARE")));
 
     MemoryManager::DELETE(_sfx);
     MemoryManager::DELETE(_gfx);

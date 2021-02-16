@@ -187,7 +187,7 @@ void main() {
     }
 
     const vec4 normalsAndMaterialData = texture(texNormal, VAR._texCoord);
-    const uint probeID = uint(normalsAndMaterialData.a);
+    const uint probeID = uint(abs(normalsAndMaterialData.a));
     if (probeID == PROBE_ID_NO_REFLECTIONS) {
         return;
     }
