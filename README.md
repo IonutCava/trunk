@@ -14,3 +14,7 @@
 ![Sponza rendering](https://divide-studio.com/Rendering.png)
 
 ![ImGUI Docking](https://divide-studio.com/Windows.png)
+
+![SSR](https://divide-studio.com/SSR.png)
+
+![Grass/Sky/Fog](https://divide-studio.com/sky_fog_2.png)
