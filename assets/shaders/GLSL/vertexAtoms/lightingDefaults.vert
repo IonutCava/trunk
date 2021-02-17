@@ -1,43 +1,42 @@
 #ifndef _LIGHTING_DEFAULTS_VERT_
 #define _LIGHTING_DEFAULTS_VERT_
 
-#if !defined(PRE_PASS)
-#define COMPUTE_NORMALS
-#endif //!PRE_PASS
+#if defined(DEPTH_PASS)
 
-void computeLightVectors(in NodeTransformData data) {
-#if !defined(USE_MIN_SHADING)
+#define computeLightVectors(data)
 
-#if (!defined(PRE_PASS) && !defined(SHADOW_PASS)) || defined(COMPUTE_TBN)
-    const vec3 toCamera = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
-#if !defined(PRE_PASS) && !defined(SHADOW_PASS)
-    VAR._viewDirectionWV = normalize(mat3(dvd_ViewMatrix) * toCamera);
-#endif //!PRE_PASS && !SHADOW_PASS
-#endif
+#else //DEPTH_PASS
 
-const mat3 normalMatrixW = dvd_NormalMatrixW(data);
-const vec3 N = normalize(normalMatrixW * dvd_Normal);
-VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * N);
-
-#if !defined(PRE_PASS)
-
-#if defined(COMPUTE_TBN)
+#if defined(COMPUTE_TBN) || defined(NEED_TANGENT)
+mat3 computeTBN(in mat3 normalMatrixW) {
+    const vec3 N = normalize(normalMatrixW * dvd_Normal);
     vec3 T = normalize(normalMatrixW * dvd_Tangent);
     // re-orthogonalize T with respect to N (Gram-Schmidt)
     T = normalize(T - dot(T, N) * N);
     const vec3 B = cross(N, T);
-    const mat3 TBN = mat3(T, B, N);
-    VAR._tbnWV = mat3(dvd_ViewMatrix) * TBN;
-#endif // COMPUTE_TBN
-
-#else  // !PRE_PASS
-
-#if defined(COMPUTE_TBN)
-    VAR._tbnWV = mat3(1.0f);
-#endif // COMPUTE_TBN
-
-#endif // !PRE_PASS
-#endif // USE_MIN_SHADING
+    return mat3(dvd_ViewMatrix) * mat3(T, B, N);
 }
+#endif //COMPUTE_TBN || NEED_TANGNET
+
+void computeViewDirectionWV(in NodeTransformData data) {
+    const vec3 cameraDirection = normalize(dvd_cameraPosition.xyz - VAR._vertexW.xyz);
+    VAR._viewDirectionWV = normalize(mat3(dvd_ViewMatrix) * cameraDirection);
+}
+
+void computeLightVectors(in NodeTransformData data) {
+    computeViewDirectionWV(data);
+
+    const mat3 normalMatrixW = dvd_NormalMatrixW(data);
+#if defined(COMPUTE_TBN)
+    VAR._tbnWV = computeTBN(normalMatrixW);
+    VAR._normalWV = VAR._tbnWV[2];
+#else // COMPUTE_TBN
+    VAR._normalWV = normalize(mat3(dvd_ViewMatrix) * 
+                              normalMatrixW *
+                              dvd_Normal);
+#endif // COMPUTE_TBN
+}
+
+#endif  // DEPTH_PASS
 
 #endif //_LIGHTING_DEFAULTS_VERT_

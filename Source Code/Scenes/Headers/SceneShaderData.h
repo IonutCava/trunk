@@ -114,6 +114,15 @@ class SceneShaderData {
         return false;
     }
 
+    bool probeState(const U16 index, const bool state) {
+        if (index < GLOBAL_PROBE_COUNT) {
+            _probeData[index]._positionW.w = state ? 1.f : 0.f;
+            return true;
+        }
+
+        return false;
+    }
+
     bool probeData(const U16 index, const vec3<F32>& center, const vec3<F32>& halfExtents) {
         if (index < GLOBAL_PROBE_COUNT) {
             _probeData[index]._positionW.xyz = center;

@@ -1,11 +1,14 @@
 #ifndef _BRDF_FRAG_
 #define _BRDF_FRAG_
 
+#if defined(DEPTH_PASS)
+#error BRDF can only be used in coloured passes!
+#endif //DEPTH_PASS
+
 #include "lightInput.cmn"
 
 #include "materialData.frag"
 #include "shadowMapping.frag"
-#include "pbr.frag"
 
 #if 0
 #define GetNdotL(N, L) saturate(dot(N, L))
@@ -261,13 +264,13 @@ vec4 getPixelColour(in uint LoD, in vec4 albedo, in NodeMaterialData materialDat
         case DEBUG_ROUGHNESS:      return vec4(vec3(ROUGHNESS(OMR)), 1.f);
         case DEBUG_METALLIC:       return vec4(vec3(METALLIC(OMR)), 1.f);
         case DEBUG_NORMALS:        return vec4(normalize(mat3(dvd_InverseViewMatrix) * normalWV), 1.f);
-        case DEBUG_TANGENTS:       return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTangentWV()), 1.f);
-        case DEBUG_BITANGENTS:     return vec4(normalize(mat3(dvd_InverseViewMatrix) * getBiTangentWV()), 1.f);
+        case DEBUG_TANGENTS:       return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTBNWV()[0]), 1.f);
+        case DEBUG_BITANGENTS:     return vec4(normalize(mat3(dvd_InverseViewMatrix) * getTBNWV()[1]), 1.f);
         case DEBUG_SHADOW_MAPS:    return vec4(vec3(getShadowMultiplier(normalWV, LoD)), 1.f);
+#if defined(MAIN_DISPLAY_PASS)
         case DEBUG_CSM_SPLITS:     return vec4(CSMSplitColour(), 1.f);
         case DEBUG_LIGHT_HEATMAP:  return vec4(lightClusterColours(false), 1.f);
         case DEBUG_DEPTH_CLUSTERS: return vec4(lightClusterColours(true), 1.f);
-#if defined(MAIN_DISPLAY_PASS)
         case DEBUG_REFRACTIONS:
         case DEBUG_REFLECTIONS:    return vec4(vec3(0.f), 1.f);
 #endif //MAIN_DISPLAY_PASS

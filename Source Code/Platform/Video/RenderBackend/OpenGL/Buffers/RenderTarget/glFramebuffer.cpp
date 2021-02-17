@@ -474,6 +474,11 @@ void glFramebuffer::begin(const RTDrawDescriptor& drawPolicy) {
         setDefaultState(drawPolicy);
     }
 
+    if (_descriptor._msaaSamples > 0u && drawPolicy.alphaToCoverage()) {
+        glEnable(GL_SAMPLE_ALPHA_TO_COVERAGE);
+
+    }
+
     // Memorize the current draw policy to speed up later calls
     _previousPolicy = drawPolicy;
 }
@@ -483,9 +488,14 @@ void glFramebuffer::end(const bool needsUnbind) const {
 
     if (needsUnbind) {
         GL_API::getStateTracker().setActiveFB(RenderTargetUsage::RT_WRITE_ONLY, 0);
-        if (_previousPolicy.setViewport()) {
-            _context.setViewport(_prevViewport);
-        }
+    }
+
+    if (_previousPolicy.setViewport()) {
+        _context.setViewport(_prevViewport);
+    }
+
+    if (_descriptor._msaaSamples > 0u && _previousPolicy.alphaToCoverage()) {
+        glDisable(GL_SAMPLE_ALPHA_TO_COVERAGE);
     }
 
     queueMipMapRecomputation();

@@ -22,6 +22,8 @@ layout(binding = BUFFER_PROBE_DATA, std140) uniform dvd_ProbeBlock {
     ProbeData dvd_Probes[GLOBAL_PROBE_COUNT];
 };
 
+#define IsProbeEnabled(P) (uint(P._positionW.w) == 1u)
+
 //ref: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/IBL.glsl
 vec3 GetSpecularDominantDir(in vec3 normal, in vec3 reflection, in float roughness) {
     const float smoothness = 1.0f - roughness;

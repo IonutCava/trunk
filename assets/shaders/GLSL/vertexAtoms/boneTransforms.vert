@@ -35,17 +35,17 @@ vec4 applyBoneTransforms(in vec4 vertex) {
     const vec4 ret = (transformMatrix[0] * vertex + transformMatrix[1] * vertex +
                       transformMatrix[2] * vertex + transformMatrix[3] * vertex);
 
-#if !defined(SHADOW_PASS)
-    vec4 tempNormal = vec4(dvd_Normal, 0.0f);
+#if !defined(DEPTH_PASS)
+    vec4 tempNormal = vec4(dvd_Normal, 0.f);
     dvd_Normal = vec4(transformMatrix[0] * tempNormal + transformMatrix[1] * tempNormal +
                       transformMatrix[2] * tempNormal + transformMatrix[3] * tempNormal).xyz;
-#if defined(COMPUTE_TBN) 
-    vec4 tempTangent = vec4(dvd_Tangent, 0.0f);
+#if defined(COMPUTE_TBN)  || defined(NEED_TANGENT)
+    vec4 tempTangent = vec4(dvd_Tangent, 0.f);
     dvd_Tangent = vec4(transformMatrix[0] * tempTangent + transformMatrix[1] * tempTangent +
                        transformMatrix[2] * tempTangent + transformMatrix[3] * tempTangent).xyz;
-#endif //COMPUTE_TBN
+#endif //COMPUTE_TBN || NEED_TANGENT
 
-#endif //SHADOW_PASS
+#endif //!DEPTH_PASS
 
     return ret;
 }

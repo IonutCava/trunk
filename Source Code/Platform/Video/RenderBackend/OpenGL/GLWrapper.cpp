@@ -374,9 +374,12 @@ bool GL_API::InitGLSW(Configuration& config) {
     if (s_UseBindlessTextures) {
         AppendToShaderHeader(ShaderType::COUNT, "#define USE_BINDLESS_TEXTURES");
     }
-    AppendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA 0.00001f");
-    AppendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA 0.99999f");
-    AppendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET 0.0000001f");
+
+    constexpr F32 Z_TEST_SIGMA = 0.00001f;// 1.f / std::numeric_limits<U8>::max();
+
+    AppendToShaderHeader(ShaderType::COUNT,    "#define Z_TEST_SIGMA "                    + Util::to_string(Z_TEST_SIGMA) + "f");
+    AppendToShaderHeader(ShaderType::COUNT,    "#define INV_Z_TEST_SIGMA "                + Util::to_string(1.f - Z_TEST_SIGMA) + "f");
+    AppendToShaderHeader(ShaderType::COUNT,    "#define SKY_OFFSET "                      + Util::to_string(Z_TEST_SIGMA) + "f");
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_CSM_SPLITS_PER_LIGHT "        + Util::to_string(Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_LIGHTS "       + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_LIGHTS));
     AppendToShaderHeader(ShaderType::COUNT,    "#define MAX_SHADOW_CASTING_DIR_LIGHTS "   + Util::to_string(Config::Lighting::MAX_SHADOW_CASTING_DIRECTIONAL_LIGHTS));
@@ -922,8 +925,13 @@ void GL_API::flushCommand(const GFX::CommandBuffer::CommandEntry& entry, const G
             }
         } break;
         case GFX::CommandType::SEND_PUSH_CONSTANTS: {
-            DIVIDE_ASSERT(getStateTracker()._activePipeline != nullptr, "GL_API::flushCommand: trying to send push constants with no active pipeline!");
-            sendPushConstants(commandBuffer.get<GFX::SendPushConstantsCommand>(entry)->_constants);
+            if (DIVIDE_ASSERT(getStateTracker()._activePipeline != nullptr, "GL_API::flushCommand: trying to send push constants with no active pipeline!")) {
+                sendPushConstants(commandBuffer.get<GFX::SendPushConstantsCommand>(entry)->_constants);
+            } else if (Config::ENABLE_GPU_VALIDATION) {
+                // Shader failed to compile probably. Dump all shader caches for inspection.
+                glShaderProgram::Idle(_context.context());
+                Console::flush();
+            }
         } break;
         case GFX::CommandType::SET_SCISSOR: {
             getStateTracker().setScissor(commandBuffer.get<GFX::SetScissorCommand>(entry)->_rect);

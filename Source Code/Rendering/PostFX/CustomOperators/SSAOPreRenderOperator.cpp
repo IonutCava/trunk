@@ -538,14 +538,12 @@ bool SSAOPreRenderOperator::execute(const Camera* camera, const RenderTargetHand
                 EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ _context.newPipeline(pipelineDescriptor) });
 
                 const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
-                const auto& screenAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
                 const auto& materialAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
+
                 GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
                 descriptorSetCmd._set._textureData.add({ _noiseTexture->data(), _noiseSampler, TextureUsage::UNIT0 });
-
                 descriptorSetCmd._set._textureData.add({ materialAtt.texture()->data(), materialAtt.samplerHash(), TextureUsage::UNIT1 });
                 descriptorSetCmd._set._textureData.add({ depthAtt.texture()->data(), depthAtt.samplerHash(), TextureUsage::DEPTH });
-                descriptorSetCmd._set._textureData.add({ screenAtt.texture()->data(), screenAtt.samplerHash(), TextureUsage::SCENE_NORMALS });
                 EnqueueCommand(bufferInOut, descriptorSetCmd);
 
                 EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _ssaoGenerateConstants });

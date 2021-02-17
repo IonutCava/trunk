@@ -85,7 +85,6 @@ void SSRPreRenderOperator::parameters(const Parameters& params) noexcept {
     _constants.set(_ID("screenEdgeFadeStart"), GFX::PushConstantType::FLOAT, _parameters._screenEdgeFadeStart);
     _constants.set(_ID("eyeFadeStart"), GFX::PushConstantType::FLOAT, _parameters._eyeFadeStart);
     _constants.set(_ID("eyeFadeEnd"), GFX::PushConstantType::FLOAT, _parameters._eyeFadeEnd);
-    _constants.set(_ID("ssrEnabled"), GFX::PushConstantType::BOOL, _enabled);
     _constantsDirty = true;
 }
 
@@ -128,6 +127,7 @@ bool SSRPreRenderOperator::execute(const Camera* camera, const RenderTargetHandl
     _constants.set(_ID("mipCounts"), GFX::PushConstantType::UVEC3, mipCounts);
     _constants.set(_ID("zPlanes"), GFX::PushConstantType::VEC2, camera->getZPlanes());
     _constants.set(_ID("skyLayer"), GFX::PushConstantType::UINT, _context.getRenderer().postFX().isDayTime() ?  0u : 1u);
+    _constants.set(_ID("ssrEnabled"), GFX::PushConstantType::BOOL, _enabled);
 
     const auto& normalsAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
     const auto& depthAtt = _parent.screenRT()._rt->getAttachment(RTAttachmentType::Depth, 0);
@@ -141,7 +141,6 @@ bool SSRPreRenderOperator::execute(const Camera* camera, const RenderTargetHandl
     computeMipMapsCommand._texture = screenAtt.texture().get();
     computeMipMapsCommand._defer = false;
     EnqueueCommand(bufferInOut, computeMipMapsCommand);
-
 
     GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
     descriptorSetCmd._set._textureData.add({ screenTex, screenAtt.samplerHash(),TextureUsage::UNIT0 });

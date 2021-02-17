@@ -29,8 +29,8 @@
         <shadingMode>COOK_TORRANCE</shadingMode>
         <colour r="1" g="1" b="1" a="1"/>
         <emissive r="0" g="0" b="0"/>
-        <metallic>0</metallic>
-        <roughness>0.129999995</roughness>
+        <metallic>0.0120000001</metallic>
+        <roughness>0</roughness>
         <doubleSided>false</doubleSided>
         <receivesShadows>true</receivesShadows>
         <bumpMethod>NONE</bumpMethod>

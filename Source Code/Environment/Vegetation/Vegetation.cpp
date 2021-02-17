@@ -391,7 +391,6 @@ void Vegetation::createVegetationMaterial(GFXDevice& gfxDevice, const Terrain_pt
     fragModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
     fragModule._defines.emplace_back("NODE_DYNAMIC", true);
     fragModule._defines.emplace_back("SKIP_TEX0", true);
-    fragModule._defines.emplace_back("RECOMPUTE_NORMALS_IN_COLOUR_PASS", true);
     fragModule._defines.emplace_back(Util::StringFormat("MAX_GRASS_INSTANCES %d", s_maxGrassInstances).c_str(), true);
     fragModule._defines.emplace_back("USE_DOUBLE_SIDED", true);
     

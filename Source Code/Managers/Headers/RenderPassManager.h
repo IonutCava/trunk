@@ -129,6 +129,8 @@ private:
     GFXDevice& _context;
 
     ShaderProgram_ptr _OITCompositionShader = nullptr;
+    ShaderProgram_ptr _OITCompositionShaderMS = nullptr;
+    ShaderProgram_ptr _screenResolveShader = nullptr;
 
     vectorEASTL<Task*> _renderTasks{};
     vectorEASTL<RenderPass*> _renderPasses{};

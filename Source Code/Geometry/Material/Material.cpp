@@ -468,8 +468,6 @@ bool Material::canDraw(const RenderStagePass& renderStagePass, bool& shaderJustF
 void Material::computeShader(const RenderStagePass& renderStagePass) {
     OPTICK_EVENT();
 
-    bool hasPrePassData = false;
-
     const bool isDepthPass = renderStagePass.isDepthPass();
     const bool isShadowPass = renderStagePass._stage == RenderStage::SHADOW;
 
@@ -518,23 +516,20 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
     Str32 fragVariant = isDepthPass ? baseShaderData()._depthShaderFragVariant : baseShaderData()._colourShaderFragVariant;
     Str256 shaderName = vertSource + "_" + fragSource;
 
-
-    if (isDepthPass) {
-        if (renderStagePass._stage == RenderStage::SHADOW) {
-            shaderName += ".SHDW";
-            vertVariant += "Shadow";
-            fragVariant += "Shadow.VSM";
-            globalDefines.emplace_back("SHADOW_PASS", true);
-            if (renderStagePass._variant == to_U8(LightType::DIRECTIONAL)) {
-                fragVariant += ".ORTHO";
-                fragDefines.emplace_back("ORTHO_PROJECTION", true);
-            }
-        } else {
-            shaderName += ".PP";
-            vertVariant += "PrePass";
-            fragVariant += "PrePass";
-            globalDefines.emplace_back("PRE_PASS", true);
+    if (isShadowPass) {
+        shaderName += ".SHDW";
+        vertVariant += "Shadow";
+        fragVariant += "Shadow.VSM";
+        globalDefines.emplace_back("SHADOW_PASS", true);
+        if (renderStagePass._variant == to_U8(LightType::DIRECTIONAL)) {
+            fragVariant += ".ORTHO";
+            fragDefines.emplace_back("ORTHO_PROJECTION", true);
         }
+    } else if (isDepthPass) {
+        shaderName += ".PP";
+        vertVariant += "PrePass";
+        fragVariant += "PrePass";
+        globalDefines.emplace_back("PRE_PASS", true);
     }
 
     if (renderStagePass._passType == RenderPassType::OIT_PASS) {
@@ -575,7 +570,6 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         if (renderStagePass._passType != RenderPassType::OIT_PASS) {
             shaderName += ".AD";
             fragDefines.emplace_back("USE_ALPHA_DISCARD", true);
-            hasPrePassData = true;
         }
 
         switch (_translucencySource) {
@@ -588,12 +582,10 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
                 } else {
                     shaderName += ".OMapA";
                 }
-                hasPrePassData = true;
             } break;
             case TranslucencySource::ALBEDO: {
                 shaderName += ".AAlpha";
                 fragDefines.emplace_back("USE_ALBEDO_ALPHA", true);
-                hasPrePassData = true;
             } break;
             default: break;
         };
@@ -615,7 +607,6 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         shaderName += ".D";
         vertDefines.emplace_back("NODE_DYNAMIC", true);
         fragDefines.emplace_back("NODE_DYNAMIC", true);
-        hasPrePassData = true;
     } else {
         shaderName += ".S";
         vertDefines.emplace_back("NODE_STATIC", true);
@@ -688,7 +679,11 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
     vertModule._defines = vertDefines;
 
     ShaderProgramDescriptor shaderDescriptor = {};
-    if (renderStagePass._passType != RenderPassType::PRE_PASS || hasPrePassData) {
+    if (!isDepthPass || // Normal colour pass
+        hasTransparency() || //Has transparency and may need alpha_discard in the PrePass or ShadowPass
+        isShadowPass ||  //Is a shadow pass
+        !_isStatic) // Is a depth pass but with a dynamic node, so output velocity vector
+    {
         ShaderModuleDescriptor fragModule = {};
         fragModule._variant = fragVariant;
         fragModule._sourceFile = (fragSource + ".glsl").c_str();
@@ -696,8 +691,6 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         fragModule._defines = fragDefines;
 
         shaderDescriptor._modules.push_back(fragModule);
-    } else {
-        vertModule._defines.emplace_back("USE_MIN_SHADING", true);
     }
 
     shaderDescriptor._modules.push_back(vertModule);

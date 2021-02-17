@@ -53,6 +53,8 @@ namespace GFX {
 class EnvironmentProbeComponent final : public BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>,
                                         public GUIDWrapper {
 public:
+    using Parent = BaseComponentType<EnvironmentProbeComponent, ComponentType::ENVIRONMENT_PROBE>;
+
     enum class ProbeType {
         TYPE_INFINITE = 0,
         TYPE_LOCAL,
@@ -99,6 +101,8 @@ public:
     //gets rendered that has this probe as the nearest one
     void queueRefresh() noexcept { _queueRefresh = true; }
 
+    void enabled(bool state) override;
+
     PROPERTY_R_IW(I16, rtLayerIndex, 0u);
     PROPERTY_RW(bool, showParallaxAABB, false);
     PROPERTY_RW(bool, dirty, true);
@@ -106,7 +110,6 @@ public:
     PROPERTY_R(UpdateType, updateType, UpdateType::ON_DIRTY);
 
     PROPERTY_R(U16, poolIndex, 0u);
-
 protected:
     friend class SceneEnvironmentProbePool; //for poolIndex(U16)
     void poolIndex(U16 index) noexcept;

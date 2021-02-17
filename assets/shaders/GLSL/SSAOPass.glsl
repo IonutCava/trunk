@@ -24,12 +24,7 @@ uniform vec4 sampleKernel[SSAO_SAMPLE_COUNT];
 // Input screen texture
 layout(binding = TEXTURE_UNIT0)         uniform sampler2D texNoise;
 layout(binding = TEXTURE_UNIT1)         uniform sampler2D texNormalsAndMatData;
-#if defined(COMPUTE_HALF_RES)
 layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
-#else
-layout(binding = TEXTURE_SCENE_NORMALS) uniform sampler2D texNormal;
-layout(binding = TEXTURE_DEPTH_MAP)     uniform sampler2D texDepthMap;
-#endif
 
 out float _ssaoOut;
 
@@ -38,7 +33,7 @@ out float _ssaoOut;
 #if defined(COMPUTE_HALF_RES)
 #define GetNormal(UV) texture(texDepthMap, UV).gb
 #else
-#define GetNormal(UV) texture(texNormal, UV).rg
+#define GetNormal(UV) texture(texNormalsAndMatData, UV).rg
 #endif
 
 //ref1: https://github.com/McNopper/OpenGL/blob/master/Example28/shader/ssao.frag.glsl

@@ -152,6 +152,7 @@ void RenderPass::render(const Task& parentTask, const SceneRenderState& renderSt
                 velocityAndDepthPolicy.drawMask().disableAll();
                 velocityAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, true);
                 velocityAndDepthPolicy.drawMask().setEnabled(RTAttachmentType::Colour, to_base(GFXDevice::ScreenTargets::VELOCITY), true);
+                //velocityAndDepthPolicy.alphaToCoverage(true);
 
                 RTDrawDescriptor mainPassPolicy = {};
                 mainPassPolicy.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);

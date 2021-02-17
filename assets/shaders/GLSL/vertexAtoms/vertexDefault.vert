@@ -30,4 +30,14 @@ layout(location = ATTRIB_GENERIC)
 in vec2 inGenericData;
 #endif
 
+vec4   dvd_Vertex;
+
+#if !defined(DEPTH_PASS)
+vec3   dvd_Normal;
+vec4   dvd_Colour;
+#if defined(COMPUTE_TBN) || defined(NEED_TANGENT)
+vec3   dvd_Tangent;
+#endif //COMPUTE_TBN || NEED_TANGENT
+#endif //DEPTH_PASS
+
 #endif //_VERTEX_DEFAULT_VERT_

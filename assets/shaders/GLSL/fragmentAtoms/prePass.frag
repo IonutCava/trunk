@@ -31,7 +31,7 @@ void writeGBuffer() {
 void writeGBuffer(in float albedoAlpha)
 {
 #if defined(USE_ALPHA_DISCARD)
-    if (albedoAlpha < INV_Z_TEST_SIGMA) {
+    if (albedoAlpha <= INV_Z_TEST_SIGMA) {
         discard;
     }
 #endif //USE_ALPHA_DISCARD

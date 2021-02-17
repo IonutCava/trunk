@@ -1,6 +1,10 @@
 #ifndef _PBR_FRAG_
 #define _PBR_FRAG_
 
+#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
+#define PBR_SHADING
+#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
+
 // AMAZING RESOURCE : http://www.frostbite.com/wp-content/uploads/2014/11/course_notes_moving_frostbite_to_pbr.pdf
 // Reference: https://github.com/urho3d/Urho3D/blob/master/bin/CoreData/Shaders/GLSL/PBR.glsl
 // Following BRDF methods are based upon research Frostbite EA

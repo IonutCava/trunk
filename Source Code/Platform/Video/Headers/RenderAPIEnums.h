@@ -455,13 +455,11 @@ namespace Names {
 };
 
 enum class TextureWrap : U8 {
-    /** Texture coordinates outside [0...1] are clamped to the nearest valid
-       value.     */
+    // Texture coordinates outside [0...1] are clamped to the nearest valid value.
     CLAMP = 0x0,
     CLAMP_TO_EDGE = 0x1,
     CLAMP_TO_BORDER = 0x2,
-    /** If the texture coordinates for a pixel are outside [0...1] the texture
-       is not applied to that pixel */
+    // If the texture coordinates for a pixel are outside [0...1] the texture is not applied to that pixel
     DECAL = 0x3,
     REPEAT = 0x4,
     MIRROR_REPEAT = 0x5,

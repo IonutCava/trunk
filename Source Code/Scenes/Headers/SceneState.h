@@ -56,15 +56,16 @@ enum class MusicType : U8 {
 
 struct WaterBodyData
 {
-    vec4<F32> _positionW = { 0.0f };
+    vec4<F32> _positionW = VECTOR4_ZERO;
     ///length, depth, width
-    vec4<F32> _extents = { 0.0f };
+    vec4<F32> _extents = VECTOR4_ZERO;
 };
 
 struct ProbeData
 {
-    vec4<F32> _positionW;
-    vec4<F32> _halfExtents;
+    // (w == 1) - enabled
+    vec4<F32> _positionW = VECTOR4_ZERO;
+    vec4<F32> _halfExtents = VECTOR4_ZERO;
 };
 
 struct FogDetails

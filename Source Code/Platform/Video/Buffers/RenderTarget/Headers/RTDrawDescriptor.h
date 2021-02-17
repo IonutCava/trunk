@@ -108,6 +108,7 @@ class RTDrawDescriptor {
 
     PROPERTY_RW(bool, setViewport, true);
     PROPERTY_RW(bool, setDefaultState, true);
+    PROPERTY_RW(bool, alphaToCoverage, false);
 
   protected:
     RTDrawMask _drawMask;

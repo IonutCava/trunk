@@ -57,7 +57,7 @@ void main(void){
     switch (dvd_materialDebugFlag) {
         case DEBUG_DEPTH:
         {
-            _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y), 1.0f);
+            _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y + _zPlanes.x), 1.0f);
             return;
         }
         case DEBUG_SSAO:

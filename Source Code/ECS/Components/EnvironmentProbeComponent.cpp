@@ -114,11 +114,13 @@ EnvironmentProbeComponent::EnvironmentProbeComponent(SceneGraphNode* sgn, Platfo
     });
 
     Attorney::SceneEnvironmentProbeComponent::registerProbe(parentScene, this);
+    enabled(true);
 }
 
 EnvironmentProbeComponent::~EnvironmentProbeComponent()
 {
     Attorney::SceneEnvironmentProbeComponent::unregisterProbe(_parentSGN->sceneGraph()->parentScene(), this);
+    enabled(false);
 }
 
 SceneGraphNode* EnvironmentProbeComponent::findNodeToIgnore() const noexcept {
@@ -197,8 +199,17 @@ bool EnvironmentProbeComponent::refresh(GFX::CommandBuffer& bufferInOut) {
     return true;
 }
 
+void EnvironmentProbeComponent::enabled(const bool state) {
+    Parent::enabled(state);
+    const auto sceneData = _context.kernel().sceneManager()->sceneData();
+    if (sceneData != nullptr) {
+        sceneData->probeState(poolIndex(), state);
+    }
+}
+
 void EnvironmentProbeComponent::updateProbeData() const noexcept {
-    _context.kernel().sceneManager()->sceneData()->probeData(poolIndex(), _aabb.getCenter(), _aabb.getHalfExtent());
+    const auto sceneData = _context.kernel().sceneManager()->sceneData();
+    sceneData->probeData(poolIndex(), _aabb.getCenter(), _aabb.getHalfExtent());
 }
 
 void EnvironmentProbeComponent::poolIndex(const U16 index) noexcept {

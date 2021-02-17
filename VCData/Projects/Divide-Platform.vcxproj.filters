@@ -823,9 +823,6 @@
     <None Include="../../assets\shaders\GLSL\blur.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>
-    <None Include="../../assets\shaders\GLSL\deferredPreview.glsl">
-      <Filter>Video\ShaderSource\GLSL</Filter>
-    </None>
     <None Include="../../assets\shaders\GLSL\DepthOfField.glsl">
       <Filter>Video\ShaderSource\GLSL</Filter>
     </None>

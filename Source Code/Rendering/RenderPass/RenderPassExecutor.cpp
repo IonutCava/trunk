@@ -33,6 +33,8 @@ namespace {
 }
 
 Pipeline* RenderPassExecutor::s_OITCompositionPipeline = nullptr;
+Pipeline* RenderPassExecutor::s_OITCompositionMSPipeline = nullptr;
+Pipeline* RenderPassExecutor::s_ResolveScreenTargetsPipeline = nullptr;
 
 RenderPassExecutor::RenderPassExecutor(RenderPassManager& parent, GFXDevice& context, const RenderStage stage)
     : _parent(parent)
@@ -46,12 +48,23 @@ RenderPassExecutor::RenderPassExecutor(RenderPassManager& parent, GFXDevice& con
     }
 }
 
-void RenderPassExecutor::postInit(const ShaderProgram_ptr& OITCompositionShader) const {
+void RenderPassExecutor::postInit(const ShaderProgram_ptr& OITCompositionShader,
+                                  const ShaderProgram_ptr& OITCompositionShaderMS,
+                                  const ShaderProgram_ptr& ResolveScreenTargetsShaderMS) const {
+    PipelineDescriptor pipelineDescriptor;
+    pipelineDescriptor._stateHash = _context.get2DStateBlock();
+
     if (s_OITCompositionPipeline == nullptr) {
-        PipelineDescriptor pipelineDescriptor;
-        pipelineDescriptor._stateHash = _context.get2DStateBlock();
         pipelineDescriptor._shaderProgramHandle = OITCompositionShader->getGUID();
         s_OITCompositionPipeline = _context.newPipeline(pipelineDescriptor);
+    }
+    if (s_OITCompositionMSPipeline == nullptr) {
+        pipelineDescriptor._shaderProgramHandle = OITCompositionShaderMS->getGUID();
+        s_OITCompositionMSPipeline = _context.newPipeline(pipelineDescriptor);
+    }  
+    if (s_ResolveScreenTargetsPipeline == nullptr) {
+        pipelineDescriptor._shaderProgramHandle = ResolveScreenTargetsShaderMS->getGUID();
+        s_ResolveScreenTargetsPipeline = _context.newPipeline(pipelineDescriptor);
     }
 }
 
@@ -635,6 +648,7 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
         beginRenderPassOitCmd._name = "DO_OIT_PASS_1";
         beginRenderPassOitCmd._target = params._targetOIT;
         beginRenderPassOitCmd._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+        //beginRenderPassOitCmd._descriptor.alphaToCoverage(true);
         EnqueueCommand(bufferInOut, beginRenderPassOitCmd);
 
         GFX::SetBlendStateCommand setBlendStateCmd = {};
@@ -652,10 +666,14 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
             state1._blendProperties._blendOp = BlendOperation::ADD;
 
             RTBlendState& state2 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES)];
-            state2._blendProperties._enabled = false; 
-            
+            state2._blendProperties._enabled = true; 
+            state2._blendProperties._blendOp = BlendOperation::MAX;
+            state2._blendProperties._blendOpAlpha = BlendOperation::MAX;
+
             RTBlendState& state3 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::SPECULAR)];
-            state3._blendProperties._enabled = false;
+            state3._blendProperties._enabled = true;
+            state3._blendProperties._blendOp = BlendOperation::MAX;
+            state3._blendProperties._blendOpAlpha = BlendOperation::MAX;
 
             if_constexpr(Config::USE_COLOURED_WOIT) {
                 RTBlendState& state4 = setBlendStateCmd._blendStates[to_U8(GFXDevice::ScreenTargets::MODULATE)];
@@ -666,6 +684,14 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
             }
         }
         EnqueueCommand(bufferInOut, setBlendStateCmd);
+
+        {
+            const RenderTarget& nonMSTarget = _context.renderTargetPool().renderTarget(RenderTargetUsage::SCREEN);
+            GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+            const auto& colourAtt = nonMSTarget.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
+            descriptorSetCmd._set._textureData.add({ colourAtt.texture()->data(), colourAtt.samplerHash(), TextureUsage::POST_FX_DATA });
+            EnqueueCommand(bufferInOut, descriptorSetCmd);
+        }
 
         renderQueueToSubPasses(bufferInOut/*, quality*/);
 
@@ -679,18 +705,7 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
         endRenderPassCmd._setDefaultRTState = isMSAATarget; // We're gonna do a new bind soon enough
         EnqueueCommand(bufferInOut, endRenderPassCmd);
 
-        if (isMSAATarget) {
-            // Blit OIT_MS to OIT
-            GFX::BlitRenderTargetCommand blitOITCmd = {};
-            blitOITCmd._source = params._targetOIT;
-            blitOITCmd._destination = RenderTargetID{ RenderTargetUsage::OIT, params._targetOIT._index };
-
-            for (U8 i = 0; i < 2; ++i) {
-                blitOITCmd._blitColours[i].set(i, i, 0u, 0u);
-            }
-
-            EnqueueCommand(bufferInOut, blitOITCmd);
-        }
+        const bool useMSAA = params._target == RenderTargetUsage::SCREEN_MS;
 
         // Step2: Composition pass
         // Don't clear depth & colours and do not write to the depth buffer
@@ -724,9 +739,9 @@ void RenderPassExecutor::woitPass(const VisibleNodeList<>& nodes, const RenderPa
         }
         EnqueueCommand(bufferInOut, setBlendStateCmd);
 
-        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ s_OITCompositionPipeline });
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ useMSAA ? s_OITCompositionMSPipeline : s_OITCompositionPipeline });
 
-        RenderTarget& oitRT = _context.renderTargetPool().renderTarget(isMSAATarget ? RenderTargetID{ RenderTargetUsage::OIT, params._targetOIT._index } : params._targetOIT);
+        RenderTarget& oitRT = _context.renderTargetPool().renderTarget(params._targetOIT);
         const auto& accumAtt = oitRT.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ACCUMULATION));
         const auto& revAtt = oitRT.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::REVEALAGE));
 
@@ -808,6 +823,8 @@ void RenderPassExecutor::transparencyPass(const VisibleNodeList<>& nodes, const 
             }
 
             EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+
+            resolveMainScreenTarget(params, bufferInOut);
         }
 
         EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
@@ -825,6 +842,48 @@ void RenderPassExecutor::postRender(const RenderStagePass& stagePass,
     if (stagePass._stage == RenderStage::DISPLAY && stagePass._passType == RenderPassType::MAIN_PASS) {
         /// These should be OIT rendered as well since things like debug nav meshes have translucency
         Attorney::SceneManagerRenderPass::debugDraw(sceneManager, stagePass, &camera, bufferInOut);
+    }
+}
+
+void RenderPassExecutor::resolveMainScreenTarget(const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) const {
+    // If we rendered to the multisampled screen target, we can now copy the colour to our regular buffer as we are done with it at this point
+    if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
+        EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ " - Resolve Screen Targets" });
+
+        const RenderTarget& MSSource = _context.renderTargetPool().renderTarget(params._target);
+        const auto& albedoAtt = MSSource.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::ALBEDO));
+        const auto& velocityAtt = MSSource.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::VELOCITY));
+        const auto& normalsAtt = MSSource.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES));
+        const auto& specularAtt = MSSource.getAttachment(RTAttachmentType::Colour, to_U8(GFXDevice::ScreenTargets::SPECULAR));
+
+        const TextureData albedoTex = albedoAtt.texture()->data();
+        const TextureData velocityTex = velocityAtt.texture()->data();
+        const TextureData normalsTex = normalsAtt.texture()->data();
+        const TextureData specularTex = specularAtt.texture()->data();
+
+        GFX::BeginRenderPassCommand beginRenderPassCommand = {};
+        beginRenderPassCommand._target = { RenderTargetUsage::SCREEN, 0u };
+        beginRenderPassCommand._descriptor.drawMask().setEnabled(RTAttachmentType::Depth, 0, false);
+        beginRenderPassCommand._name = "RESOLVE_MAIN_PASS";
+        EnqueueCommand(bufferInOut, beginRenderPassCommand);
+
+        EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ s_ResolveScreenTargetsPipeline });
+
+        GFX::BindDescriptorSetsCommand descriptorSetCmd = {};
+        descriptorSetCmd._set._textureData.add({ albedoTex, albedoAtt.samplerHash(), to_base(TextureUsage::UNIT0) });
+        descriptorSetCmd._set._textureData.add({ velocityTex, velocityAtt.samplerHash(), to_base(TextureUsage::NORMALMAP) });
+        descriptorSetCmd._set._textureData.add({ normalsTex, normalsAtt.samplerHash(), to_base(TextureUsage::HEIGHTMAP) });
+        descriptorSetCmd._set._textureData.add({ specularTex, specularAtt.samplerHash(), to_base(TextureUsage::OPACITY) });
+        EnqueueCommand(bufferInOut, descriptorSetCmd);
+
+        GenericDrawCommand drawCommand = {};
+        drawCommand._primitiveType = PrimitiveType::TRIANGLES;
+
+        EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCommand });
+
+        EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
+
+        EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
     }
 }
 
@@ -923,10 +982,9 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
 #   pragma endregion
 
     RenderTargetID sourceID = params._target;
-    // If we rendered to the multisampled screen target, we can now copy the g-buffer data to our regular buffer as we are done with it at this point
     if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
+        // If we rendered to the multisampled screen target, we can now blit the depth buffer to our resolved target
         const RenderTargetID targetID = { RenderTargetUsage::SCREEN, params._target._index };
-
         GFX::BlitRenderTargetCommand blitScreenDepthCmd = {};
         blitScreenDepthCmd._source = sourceID;
         blitScreenDepthCmd._destination = targetID;
@@ -962,17 +1020,7 @@ void RenderPassExecutor::doCustomPass(RenderPassParams params, GFX::CommandBuffe
     transparencyPass(visibleNodes, params, bufferInOut);
 #   pragma endregion
 
-    // If we rendered to the multisampled screen target, we can now copy the colour to our regular buffer as we are done with it at this point
-    if (params._target._usage == RenderTargetUsage::SCREEN_MS) {
-        GFX::BlitRenderTargetCommand blitScreenColourCmd = {};
-        blitScreenColourCmd._source = params._target;
-        blitScreenColourCmd._destination = { RenderTargetUsage::SCREEN, 0u };
-        blitScreenColourCmd._blitColours[0].set(to_U16(GFXDevice::ScreenTargets::ALBEDO), to_U16(GFXDevice::ScreenTargets::ALBEDO), 0u, 0u);
-        blitScreenColourCmd._blitColours[1].set(to_U16(GFXDevice::ScreenTargets::VELOCITY), to_U16(GFXDevice::ScreenTargets::VELOCITY), 0u, 0u);
-        blitScreenColourCmd._blitColours[2].set(to_U16(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), to_U16(GFXDevice::ScreenTargets::NORMALS_AND_MATERIAL_PROPERTIES), 0u, 0u);
-        blitScreenColourCmd._blitColours[3].set(to_U16(GFXDevice::ScreenTargets::SPECULAR), to_U16(GFXDevice::ScreenTargets::SPECULAR), 0u, 0u);
-        EnqueueCommand(bufferInOut, blitScreenColourCmd);
-    }
+    resolveMainScreenTarget(params, bufferInOut);
 
     EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
 }

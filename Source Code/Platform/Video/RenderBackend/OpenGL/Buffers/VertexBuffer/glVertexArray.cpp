@@ -404,10 +404,10 @@ void glVertexArray::uploadVBAttributes(const GLuint VAO) {
                                                _VBHandle._offset * GLUtil::VBO::MAX_VBO_CHUNK_SIZE_BYTES,
                                                _effectiveEntrySize);
 
-    constexpr U32 positionLoc = to_base(AttribLocation::POSITION);
-    constexpr U32 texCoordLoc = to_base(AttribLocation::TEXCOORD);
-    constexpr U32 normalLoc   = to_base(AttribLocation::NORMAL);
-    constexpr U32 tangentLoc = to_base(AttribLocation::TANGENT);
+    constexpr U32 positionLoc   = to_base(AttribLocation::POSITION);
+    constexpr U32 texCoordLoc   = to_base(AttribLocation::TEXCOORD);
+    constexpr U32 normalLoc     = to_base(AttribLocation::NORMAL);
+    constexpr U32 tangentLoc    = to_base(AttribLocation::TANGENT);
     constexpr U32 colourLoc     = to_base(AttribLocation::COLOR);
     constexpr U32 boneWeightLoc = to_base(AttribLocation::BONE_WEIGHT);
     constexpr U32 boneIndiceLoc = to_base(AttribLocation::BONE_INDICE);

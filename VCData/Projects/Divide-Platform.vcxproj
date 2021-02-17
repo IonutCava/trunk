@@ -238,7 +238,6 @@
     <None Include="../../assets\shaders\GLSL\common\lightInput.cmn" />
     <None Include="../../assets\shaders\GLSL\common\nodeBufferedInput.cmn" />
     <None Include="../../assets\shaders\GLSL\common\nodeDataInput.cmn" />
-    <None Include="../../assets\shaders\GLSL\deferredPreview.glsl" />
     <None Include="../../assets\shaders\GLSL\DepthOfField.glsl" />
     <None Include="../../assets\shaders\GLSL\depthPass.glsl" />
     <None Include="../../assets\shaders\GLSL\fbPreview.glsl" />

@@ -702,7 +702,7 @@ extern void DIVIDE_ASSERT_MSG_BOX(const char* failMessage) noexcept;
 
 namespace Assert {
     /// It is safe to call evaluate expressions and call functions inside the assert check as it will compile for every build type
-    FORCE_INLINE void DIVIDE_ASSERT(const bool expression, const char* file, const I32 line, const char* failMessage = "UNEXPECTED CALL") noexcept {
+    FORCE_INLINE bool DIVIDE_ASSERT(const bool expression, const char* file, const I32 line, const char* failMessage = "UNEXPECTED CALL") noexcept {
         if_constexpr(!Config::Build::IS_SHIPPING_BUILD) {
             if (!expression) {
                 const auto msgOut = fmt::sprintf("[ %s ] [ %s ] AT [ %d ]", failMessage, file, line);
@@ -720,6 +720,8 @@ namespace Assert {
             ACKNOWLEDGE_UNUSED(line);
             ACKNOWLEDGE_UNUSED(failMessage);
         }
+
+        return expression;
     }
 }
 

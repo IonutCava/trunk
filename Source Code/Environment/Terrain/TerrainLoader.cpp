@@ -415,7 +415,6 @@ bool TerrainLoader::loadTerrain(const Terrain_ptr& terrain,
                 }
             }
 
-            shaderModule._defines.emplace_back("COMPUTE_TBN", true);
             shaderModule._defines.emplace_back("OVERRIDE_DATA_IDX", true);
             shaderModule._defines.emplace_back("NODE_STATIC", true);
             shaderModule._defines.emplace_back("SAMPLER_OPACITY_IS_ARRAY", true);

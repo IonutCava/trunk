@@ -119,23 +119,25 @@ GFXDevice::GFXDevice(Kernel & parent)
     temp.colourEnd(UColour4(0, 0, 255, 255));
     _axisLines[2] = temp;
 
-    AttribFlags flags;
+    AttribFlags flags{};
     flags.fill(true);
     VertexBuffer::setAttribMasks(to_size(to_base(RenderStage::COUNT) * to_base(RenderPassType::COUNT)), flags);
 
-    // Don't (currently) need these for shadow passes
-    flags[to_base(AttribLocation::COLOR)] = false;
+    // Keep color attribute in depth passes for stuff like vertex-colour based animations (e.g. trees)
+    //flags[to_base(AttribLocation::COLOR)] = false; 
+    flags[to_base(AttribLocation::NORMAL)] = false;
+    flags[to_base(AttribLocation::TANGENT)] = false;
+
     for (U8 stage = 0; stage < to_base(RenderStage::COUNT); ++stage) {
         VertexBuffer::setAttribMask(RenderStagePass::baseIndex(static_cast<RenderStage>(stage), RenderPassType::PRE_PASS), flags);
     }
-    flags[to_base(AttribLocation::NORMAL)] = false;
-    flags[to_base(AttribLocation::TANGENT)] = false;
     for (U8 pass = 0; pass < to_base(RenderPassType::COUNT); ++pass) {
         VertexBuffer::setAttribMask(RenderStagePass::baseIndex(RenderStage::SHADOW, static_cast<RenderPassType>(pass)), flags);
     }
 }
 
-GFXDevice::~GFXDevice() {
+GFXDevice::~GFXDevice()
+{
     closeRenderingAPI();
 }
 

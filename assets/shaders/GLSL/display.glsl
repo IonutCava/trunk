@@ -21,3 +21,55 @@ void main(void){
     gl_FragDepth = texture(tex, VAR._texCoord).r;
 #endif
 }
+
+
+-- Fragment.ResolveScreen
+
+#include "utility.frag"
+
+layout(binding = TEXTURE_UNIT0)     uniform sampler2DMS colourTex;
+layout(binding = TEXTURE_NORMALMAP) uniform sampler2DMS velocityTex;
+layout(binding = TEXTURE_HEIGHT)    uniform sampler2DMS matDataTex;
+layout(binding = TEXTURE_OPACITY)   uniform sampler2DMS specularDataTex;
+
+layout(location = TARGET_ALBEDO)                    out vec4 _colourOut;
+layout(location = TARGET_VELOCITY)                  out vec2 _velocityOut;
+layout(location = TARGET_NORMALS_AND_MATERIAL_DATA) out vec4 _matDataOut;
+layout(location = TARGET_SPECULAR)                  out vec3 _specularDataOut;
+
+//ToDo: Move this to a compute shader! -Ionut
+void main() {
+    const ivec2 C = ivec2(gl_FragCoord.xy);
+    const int sampleCount = gl_NumSamples;
+
+    { // Average colour, velocity and specular
+        vec4 avgColour = vec4(0.f);
+        vec2 avgVelocity = vec2(0.f);
+        vec3 avgSpecular = vec3(0.f);
+        for (int s = 0; s < sampleCount; ++s) {
+            avgColour += texelFetch(colourTex, C, s);
+            avgVelocity += texelFetch(velocityTex, C, s).rg;
+            avgSpecular += texelFetch(specularDataTex, C, s).rgb;
+        }
+        _colourOut = avgColour / sampleCount;
+        _velocityOut = avgVelocity / sampleCount;
+        _specularDataOut = avgSpecular / sampleCount;
+    }
+    { // Average material data with special consideration for packing and clamping
+        vec2 avgNormalData = vec2(0.f);
+        vec2 avgMetalnessRoughness = vec2(0.f);
+        uint bestProbeID = 0u;
+        for (int s = 0; s < sampleCount; ++s) {
+            const vec4 dataIn = texelFetch(matDataTex, C, s);
+            const uint probeID = uint(dataIn.a);
+            avgNormalData += dataIn.rg;
+            avgMetalnessRoughness += unpackVec2(dataIn.b);
+            if (abs(probeID) > bestProbeID) {
+                bestProbeID = probeID;
+            }
+        }
+        _matDataOut.rg = avgNormalData / sampleCount;
+        _matDataOut.b = packVec2(avgMetalnessRoughness / sampleCount);
+        _matDataOut.a = float(bestProbeID);
+    }
+}

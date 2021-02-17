@@ -3,9 +3,8 @@
 #include "vbInputData.vert"
 
 void main(void){
-    computeData(fetchInputData());
-
-    VAR._vertexW.xyz += dvd_cameraPosition.xyz;
+    const NodeTransformData data = fetchInputData();
+    VAR._vertexW = data._worldMatrix * dvd_Vertex + vec4(dvd_cameraPosition.xyz, 0.f);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
     gl_Position.z = gl_Position.w - SKY_OFFSET;
@@ -199,9 +198,8 @@ void main() {
     const float turbidity = 10.0f;
     const float mieCoefficient = 0.005f;
 
-    computeData(fetchInputData());
-
-    VAR._vertexW.xyz += dvd_cameraPosition.xyz;
+    const NodeTransformData data = fetchInputData();
+    VAR._vertexW = data._worldMatrix * dvd_Vertex + vec4(dvd_cameraPosition.xyz, 0.f);
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
 
     const float lerpValue = saturate(2.95f * (dvd_sunDirection.y + 0.15f));
@@ -274,6 +272,7 @@ uniform bool  dvd_enableClouds;
 #define dvd_useDaySkybox (dvd_useSkyboxes.x == 1)
 #define dvd_useNightSkybox (dvd_useSkyboxes.y == 1)
 
+#define NO_SSAO
 #if !defined(MAIN_DISPLAY_PASS)
 #define LOW_QUALITY
 #endif //!MAIN_DISPLAY_PASS

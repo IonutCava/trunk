@@ -83,7 +83,9 @@ public:
     ~RenderPassExecutor() = default;
 
     void doCustomPass(RenderPassParams params, GFX::CommandBuffer& bufferInOut);
-    void postInit(const ShaderProgram_ptr& OITCompositionShader) const;
+    void postInit(const ShaderProgram_ptr& OITCompositionShader, 
+                  const ShaderProgram_ptr& OITCompositionShaderMS,
+                  const ShaderProgram_ptr& ResolveScreenTargetsShaderMS) const;
 
 private:
     // Returns false if we skipped the pre-pass step
@@ -141,6 +143,7 @@ private:
 
     void addTexturesAt(size_t idx, const NodeMaterialTextures& tempTextures);
 
+    void resolveMainScreenTarget(const RenderPassParams& params, GFX::CommandBuffer& bufferInOut) const;
 private:
     RenderPassManager& _parent;
     GFXDevice& _context;
@@ -159,6 +162,8 @@ private:
     eastl::set<SamplerAddress> _uniqueTextureAddresses{};
 
     static Pipeline* s_OITCompositionPipeline;
+    static Pipeline* s_OITCompositionMSPipeline;
+    static Pipeline* s_ResolveScreenTargetsPipeline;
 };
 } //namespace Divide
 

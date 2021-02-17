@@ -453,12 +453,6 @@ namespace {
             checkBox(FilterType::FILTER_UNDERWATER, PostFX::FilterName(FilterType::FILTER_UNDERWATER), true);
         }
 
-        PushReadOnly();
-        if (ImGui::CollapsingHeader("SS Reflections")) {
-            checkBox(FilterType::FILTER_SS_REFLECTIONS);
-        }
-        PopReadOnly();
-
         if (_previewTexture != nullptr) {
             if (Attorney::EditorGeneralWidget::modalTextureView(_context.editor(), Util::StringFormat("Image Preview: %s", _previewTexture->resourceName().c_str()).c_str(), _previewTexture, vec2<F32>(512, 512), true, false)) {
                 _previewTexture = nullptr;

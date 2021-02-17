@@ -82,7 +82,10 @@ void DebugCallback(const GLenum source,
             GL_API::getStateTracker()._debugScope.c_str(),
             message);
 
+        const bool isConsoleIM = Console::immediateModeEnabled();
+        Console::toggleImmediateMode(true);
         Console::errorfn(outputError.c_str());
+        Console::toggleImmediateMode(isConsoleIM);
     }
 
 }

@@ -78,9 +78,25 @@ void RenderPassManager::postInit() {
     shaderResDesc.propertyDescriptor(shaderDescriptor);
     _OITCompositionShader = CreateResource<ShaderProgram>(parent().resourceCache(), shaderResDesc);
 
+    shaderDescriptor._modules.back()._defines.emplace_back("USE_MSAA_TARGET", true);
+    ResourceDescriptor shaderResMSDesc("OITCompositionMS");
+    shaderResMSDesc.propertyDescriptor(shaderDescriptor);
+    _OITCompositionShaderMS = CreateResource<ShaderProgram>(parent().resourceCache(), shaderResMSDesc);
+
+    fragModule._sourceFile = "display.glsl";
+    fragModule._variant = "ResolveScreen";
+
+    shaderDescriptor = {};
+    shaderDescriptor._modules.push_back(vertModule);
+    shaderDescriptor._modules.push_back(fragModule);
+
+    ResourceDescriptor shaderScreenResolveDesc("ScreenResolveShader");
+    shaderScreenResolveDesc.propertyDescriptor(shaderDescriptor);
+    _screenResolveShader = CreateResource<ShaderProgram>(parent().resourceCache(), shaderScreenResolveDesc);
+
     for (auto& executor : _executors) {
         if (executor != nullptr) {
-            executor->postInit(_OITCompositionShader);
+            executor->postInit(_OITCompositionShader, _OITCompositionShaderMS, _screenResolveShader);
         }
     }
 

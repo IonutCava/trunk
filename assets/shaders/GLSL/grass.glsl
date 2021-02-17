@@ -1,16 +1,21 @@
--- Vertex
+--Vertex
 
 #define HAS_TRANSPARENCY
 #define NO_VELOCITY
 #define NEED_SCENE_DATA
+#if !defined(DEPTH_PASS)
+#define NEED_TANGENT
+#endif //DEPTH_PASS
+
 #include "vbInputData.vert"
-#include "lightingDefaults.vert"
 #include "vegetationData.cmn"
 #include "sceneData.cmn"
+#include "lightingDefaults.vert"
 
 layout(location = 0) flat out uvec2 _layerAndLoD;
-layout(location = 1) flat out uint _instanceID;
-layout(location = 2) out float _alphaFactor;
+layout(location = 1) flat out uint  _instanceID;
+layout(location = 2)      out float _alphaFactor;
+layout(location = 3)      out mat3  _tbnWV;
 
 #define GRASS_DISPLACEMENT_DISTANCE 50.0f
 #define GRASS_DISPLACEMENT_MAGNITUDE 0.5f
@@ -22,15 +27,10 @@ void smallScaleMotion(inout vec4 vertexW, in float heightExtent, in float time) 
 
 void largetScaleMotion(inout vec4 vertexW, in vec4 vertex, in float heightExtent, in float time) {
     const float X = (2.f * sin(1.f * (vertex.x + vertex.y + vertex.z + time))) + 1.0f;
-    const float Y = 0.f;
     const float Z = (1.f * sin(2.f * (vertex.x + vertex.y + vertex.z + time))) + 0.5f;
 
-    vertexW.xyz += heightExtent * vec3(X * dvd_windDetails.x, Y, Z * dvd_windDetails.z);
+    vertexW.xz += heightExtent * vec2(X * dvd_windDetails.x, Z * dvd_windDetails.z);
     smallScaleMotion(vertexW, heightExtent, time * 1.25f);
-}
-
-vec3 rotate_vertex_position(vec3 v, vec4 q) {
-    return v + 2.f * cross(q.xyz, cross(q.xyz, v) + q.w * v);
 }
 
 void main() {
@@ -44,15 +44,11 @@ void main() {
         gl_CullDistance[0] = -1.0f;
     }
     float scale = data.positionAndScale.w;
-#else
+#else //USE_CULL_DISTANCE
     float scale = data.data.z > 2.5f ? 0.0f : data.positionAndScale.w * saturate(data.data.z);
-#endif
+#endif //USE_CULL_DISTANCE
 
-#if defined(PRE_PASS)
-    _alphaFactor = 1.0f;
-#else
     _alphaFactor = saturate(data.data.z);
-#endif
 
     _layerAndLoD.x = uint(data.data.x);
     _layerAndLoD.y = uint(data.data.y);
@@ -60,32 +56,40 @@ void main() {
     const float timeGrass = dvd_windDetails.w * MSToSeconds(dvd_time) * 0.5f;
     const bool animate = _layerAndLoD.y < 2u && dvd_Vertex.y > 0.5f;
 
+    const float height = dvd_Vertex.y;
     dvd_Vertex.xyz *= scale;
-    dvd_Vertex.xyz = rotate_vertex_position(dvd_Vertex.xyz, data.orientationQuad);
-    //dvd_Vertex.y += 0.25f;
+    dvd_Vertex.xyz = QUATERNION_ROTATE(dvd_Vertex.xyz, data.orientationQuad);
+    dvd_Vertex.y -= 0.1f / scale;
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     if (animate) {
-        const float displacement = (GRASS_DISPLACEMENT_MAGNITUDE * (1.f - smoothstep(GRASS_DISPLACEMENT_DISTANCE, GRASS_DISPLACEMENT_DISTANCE * 1.5f, data.data.w)));
-        const vec2 toCamera = normalize(dvd_cameraPosition.xz - VAR._vertexW.xz);
-        VAR._vertexW.xz -= toCamera * displacement;
-        //VAR._vertexW.xz += (mat3(dvd_InverseViewMatrix) * vec3(0.f, 0.f, -1.f)).xz * displacement;
-
         largetScaleMotion(VAR._vertexW, dvd_Vertex, dvd_Vertex.y * 0.075f, timeGrass);
+
+#       if 1
+            const vec2 viewDirection = normalize(VAR._vertexW.xz - dvd_cameraPosition.xz);
+#       else
+            const vec2 viewDirection = normalize(mat3(dvd_InverseViewMatrix) * vec3(0.f, 0.f, -1.f)).xz;
+#       endif
+
+        const float displacement = (GRASS_DISPLACEMENT_MAGNITUDE * (1.f - smoothstep(GRASS_DISPLACEMENT_DISTANCE, GRASS_DISPLACEMENT_DISTANCE * 1.5f, data.data.w)));
+        VAR._vertexW.xz += viewDirection * displacement;
     }
 
 #if !defined(SHADOW_PASS)
     setClipPlanes();
-#endif
-
-    mat3 normalMatrixWV = mat3(dvd_ViewMatrix) * dvd_NormalMatrixW(nodeData);
+#endif //!SHADOW_PASS
 
     VAR._vertexWV = dvd_ViewMatrix * VAR._vertexW;
-    if (_layerAndLoD.y < 2u) {
-        VAR._normalWV = normalize(normalMatrixWV * rotate_vertex_position(dvd_Normal, data.orientationQuad));
-    }
 
-    computeLightVectors(nodeData);
+#if !defined(DEPTH_PASS)
+    computeViewDirectionWV(nodeData);
+
+    dvd_Normal = normalize(QUATERNION_ROTATE(dvd_Normal, data.orientationQuad));
+    _tbnWV = computeTBN(dvd_NormalMatrixW(nodeData));
+    VAR._normalWV = _tbnWV[2];
+#else
+    _tbnWV = mat3(1.f);
+#endif //!DEPTH_PASS
 
     gl_Position = dvd_ProjectionMatrix * VAR._vertexWV;
 }
@@ -100,17 +104,22 @@ layout(early_fragment_tests) in;
 #define HAS_TRANSPARENCY
 #define SKIP_DOUBLE_SIDED_NORMALS
 #define NO_IBL
+#define USE_CUSTOM_TBN
 #define MAX_SHADOW_MAP_LOD 1
 //#define DEBUG_LODS
 
 #include "BRDF.frag"
-
 #include "utility.frag"
 #include "output.frag"
 
 layout(location = 0) flat in uvec2 _layerAndLoD;
-layout(location = 1) flat in uint _instanceID;
-layout(location = 2) in float _alphaFactor;
+layout(location = 1) flat in uint  _instanceID;
+layout(location = 2)      in float _alphaFactor;
+layout(location = 3)      in mat3  _tbnWV;
+
+mat3 getTBNWV() {
+    return _tbnWV;
+}
 
 void main (void){
     NodeMaterialData data = dvd_Materials[MATERIAL_IDX];
@@ -138,12 +147,13 @@ void main (void){
     }
 #endif //DEBUG_LODS
 
-    albedo.a = min(albedo.a, _alphaFactor);
-
-    const vec3 normalWV = getNormalWV(VAR._texCoord);
+    vec4 colour = vec4(albedo.rgb, min(albedo.a, _alphaFactor));
     vec3 MetalnessRoughnessProbeID = vec3(0.f, 1.f, 0.f);
     vec3 SpecularColourOut = vec3(0.f);
-    const vec4 colour = getPixelColour(LoD, albedo, data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+    const vec3 normalWV = getNormalWV(VAR._texCoord);
+    if (albedo.a >= Z_TEST_SIGMA) {
+        colour = getPixelColour(LoD, albedo, data, normalWV, VAR._texCoord, SpecularColourOut, MetalnessRoughnessProbeID);
+    }
     writeScreenColour(colour, normalWV, SpecularColourOut, MetalnessRoughnessProbeID);
 }
 
@@ -157,18 +167,21 @@ void main (void){
 #include "prePass.frag"
 
 layout(location = 0) flat in uvec2 _layerAndLoD;
-layout(location = 1) flat in uint _instanceID;
-layout(location = 2) in float _alphaFactor;
+layout(location = 1) flat in uint  _instanceID;
+layout(location = 2)      in float _alphaFactor;
+layout(location = 3)      in mat3  _tbnWV;
 
 void main() {
-    writeGBuffer(texture(texDiffuse0, vec3(VAR._texCoord, _layerAndLoD.x)).a * _alphaFactor);
+    const float albedoAlpha = texture(texDiffuse0, vec3(VAR._texCoord, _layerAndLoD.x)).a * _alphaFactor;
+    writeGBuffer(albedoAlpha);
 }
 
 --Fragment.Shadow.VSM
 
 layout(location = 0) flat in uvec2 _layerAndLoD;
-layout(location = 1) flat in uint _instanceID;
-layout(location = 2) in float _alphaFactor;
+layout(location = 1) flat in uint  _instanceID;
+layout(location = 2)      in float _alphaFactor;
+layout(location = 3)      in mat3  _tbnWV;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2DArray texDiffuse0;
 
@@ -177,7 +190,8 @@ out vec2 _colourOut;
 
 void main(void) {
     const float albedoAlpha = texture(texDiffuse0, vec3(VAR._texCoord, _layerAndLoD.x)).a;
-    if (albedoAlpha * _alphaFactor < INV_Z_TEST_SIGMA) {
+    // Only discard alhpa == 0
+    if (albedoAlpha < Z_TEST_SIGMA) {
         discard;
     }
 

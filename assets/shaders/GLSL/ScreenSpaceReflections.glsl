@@ -167,13 +167,6 @@ float ComputeBlendFactorForIntersection(float iterationCount,
     return alpha;
 }
 
-bool isInFrustum(in vec2 texCoord) {
-    return all(bvec4(texCoord.x >= 0.0f,
-                     texCoord.x <= 1.0f,
-                     texCoord.y >= 0.0f,
-                     texCoord.y <= 1.0f));
-}
-
 void main() {
     _colourOut = vec4(0.f, 0.f, 0.f, 1.f);
 
@@ -223,7 +216,7 @@ void main() {
         vec2 hitPixel = vec2(0.f);
         float iterations = 0;
         const bool hit = FindSSRHit(vsPos, vsReflect, jitter * jitterAmount, hitPixel, hitPoint, iterations);
-        if (hit && isInFrustum(hitPixel)) {
+        if (hit && isInScreenRect(hitPixel)) {
             const float reflBlend = ComputeBlendFactorForIntersection(iterations, hitPixel, hitPoint, vsPos, vsReflect);
             ambientReflected = mix(ambientReflected,
                                    textureLod(texScreen, hitPixel, roughness * MAX_SCREEN_MIPS).rgb,

@@ -1,16 +1,9 @@
 #ifndef _MATERIAL_DATA_FRAG_
 #define _MATERIAL_DATA_FRAG_
 
-#if defined(USE_SHADING_COOK_TORRANCE) || defined(USE_SHADING_OREN_NAYAR)
-#define PBR_SHADING
-#endif //USE_SHADING_COOK_TORRANCE || USE_SHADING_OREN_NAYAR
-
 #include "nodeBufferedInput.cmn"
 #include "utility.frag"
-
-#if !defined(PRE_PASS)
-layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
-#endif //!PRE_PASS
+#include "pbr.frag"
 
 #if defined(COMPUTE_TBN)
 #include "bumpMapping.frag"
@@ -23,21 +16,13 @@ layout(binding = TEXTURE_DEPTH_MAP) uniform sampler2D texDepthMap;
 #if defined(USE_CUSTOM_TBN)
 mat3 getTBNWV();
 #else //USE_CUSTOM_TBN
-mat3 getTBNWV() {
-#if defined(PRE_PASS) && !defined(HAS_PRE_PASS_DATA)
-    return mat3(1.0f);
-#else //PRE_PASS && !HAS_PRE_PASS_DATA
-#   if defined(COMPUTE_TBN)
-    return VAR._tbnWV;
-#   else //COMPUTE_TBN
-    return mat3(dvd_ViewMatrix);
-#   endif//COMPUTE_TBN
-#endif //PRE_PASS && !HAS_PRE_PASS_DATA
-}
+#if defined(COMPUTE_TBN)
+#define getTBNWV() VAR._tbnWV
+#else //COMPUTE_TBN
+// Default: T - X-axis, B - Z-axis, N - Y-axis
+#define getTBNWV() mat3(vec3(1.f, 0.f, 0.f), vec3(0.f, 0.f, 1.f), vec3(1.f, 0.f, 0.f))
+#endif //COMPUTE_TBN
 #endif //USE_CUSTOM_TBN
-
-#define getTangentWV() (getTBNWV()[0])
-#define getBiTangentWV() (getTBNWV()[1])
 
 #if !defined(PRE_PASS)
 // Reduce specular aliasing by producing a modified roughness value
@@ -166,7 +151,7 @@ vec4 getAlbedo(in NodeMaterialData data, in vec2 uv) {
 #define UV_TYPE vec3
 #else //SAMPLER_NORMALMAP_IS_ARRAY
 #define UV_TYPE vec2
-#endif //SAMPLER_NORMALMAP_IS_ARRAYHAS_PRE_PASS_DATA
+#endif //SAMPLER_NORMALMAP_IS_ARRAY
 
 vec3 getNormalWV(in UV_TYPE uv) {
     vec3 normalWV = VAR._normalWV;
