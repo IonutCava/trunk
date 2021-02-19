@@ -10,6 +10,7 @@ uniform float lodLevel;
 uniform float multiplier;
 uniform bool channelsArePacked;
 uniform bool scaleAndBias;
+uniform bool normalizeOutput;
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texDiffuse0;
 
@@ -48,6 +49,9 @@ void main()
         } else {
             _colourOut.rgb = error();
         }
+    }
+    if (normalizeOutput) {
+        _colourOut.rgb = normalize(_colourOut.rgb);
     }
     if (scaleAndBias) {
         _colourOut.rgb = 0.5f * _colourOut.rgb + 0.5f;

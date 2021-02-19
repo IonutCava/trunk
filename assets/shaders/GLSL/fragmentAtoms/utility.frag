@@ -20,14 +20,20 @@ vec2 UVDromRayDir(in vec3 dir) {
 
     float x = acos(dir.z) / (2.f * M_PI);
 
-    if (x < 0.f) x  = 1.f  - x;
-                 x  = 0.5f - x;
-    if (x < 0.f) x += 1.f;
+    if (x < 0.f) {
+        x = 1.f - x;
+    }
+
+    x  = 0.5f - x;
+
+    if (x < 0.f) {
+        x += 1.f;
+    }
 
     return vec2(x, y);
 }
 
-#define overlay(X, Y) (X < 0.5f) ? (2.f * X * Y) : (1.f - 2.f * (1.f - X) * (1.f - Y))
+#define overlay(X, Y) ((X < 0.5f) ? (2.f * X * Y) : (1.f - 2.f * (1.f - X) * (1.f - Y)))
 
 vec3 overlayVec(in vec3 base, in vec3 blend) {
     return vec3(overlay(base.r, blend.r),
@@ -36,13 +42,12 @@ vec3 overlayVec(in vec3 base, in vec3 blend) {
 }
 
 #if defined(PROJECTED_TEXTURE)
-
 void projectTexture(in vec3 PoxPosInMap, inout vec4 targetTexture){
     targetTexture.xyz = mix(targetTexture.rgb, 
                             texture(texProjected, vec2(PoxPosInMap.s, 1.0 - PoxPosInMap.t)).rgb,
                             projectedTextureMixWeight);
 }
-#endif
+#endif //PROJECTED_TEXTURE
 
 vec2 scaledTextureCoords(in vec2 texCoord, in vec2 scaleFactor) {
     return vec2(texCoord.s * scaleFactor.s,
@@ -134,13 +139,19 @@ vec3 Pow(in vec3 v, in float exp) { return vec3(pow(v.x, exp), pow(v.y, exp), po
 // Accurate variants from Frostbite notes: https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
 
 #define detail__gamma 2.2f
-#define detail__gamma__inv  1.0f / 2.2f
+#define detail__gamma__inv  1.0f / detail__gamma
 
 #define _ToLinear(SRGB) pow(SRGB, vec3(detail__gamma))
 #define _ToSRGB(RGB) pow(RGB, vec3(detail__gamma__inv))
 
-vec3 ToLinear(in vec3 sRGBCol) { return _ToLinear(sRGBCol); }
-vec4 ToLinear(in vec4 sRGBCol) { return vec4(_ToLinear(sRGBCol.rgb), sRGBCol.a); }
+vec3 ToLinear(in vec3 sRGBCol) {
+    return _ToLinear(sRGBCol);
+}
+
+vec4 ToLinear(in vec4 sRGBCol) {
+    return vec4(_ToLinear(sRGBCol.rgb),
+                sRGBCol.a);
+}
 
 vec3 ToLinearAccurate(in vec3 sRGBCol) {
     const vec3 linearRGBLo = sRGBCol / 12.92f; 
@@ -151,21 +162,33 @@ vec3 ToLinearAccurate(in vec3 sRGBCol) {
                 (sRGBCol.b <= 0.04045f) ? linearRGBLo.b : linearRGBHi.b);
 }
 
-vec4 ToLinearAccurate(in vec4 sRGBCol) { return vec4(ToLinearAccurate(sRGBCol.rgb), sRGBCol.a); }
+vec4 ToLinearAccurate(in vec4 sRGBCol) {
+    return vec4(ToLinearAccurate(sRGBCol.rgb),
+                sRGBCol.a);
+}
 
-vec3 ToSRGB(vec3 linearCol) { return _ToSRGB(linearCol); }
-vec4 ToSRGB(vec4 linearCol) { return vec4(_ToSRGB(linearCol.rgb), linearCol.a); }
+vec3 ToSRGB(in vec3 linearCol) {
+    return _ToSRGB(linearCol);
+}
 
-vec3 ToSRGBAccurate(vec3 linearCol) {
+vec4 ToSRGB(in vec4 linearCol) {
+    return vec4(_ToSRGB(linearCol.rgb),
+                linearCol.a);
+}
+
+vec3 ToSRGBAccurate(in vec3 linearCol) {
     const vec3 sRGBLo = linearCol * 12.92f;
-    const vec3 sRGBHi = (pow(abs(linearCol), vec3(1.0f / 2.4f)) * 1.055f) - 0.055f;
+    const vec3 sRGBHi = (pow(abs(linearCol), vec3(1.f / 2.4f)) * 1.055f) - 0.055f;
 
     return vec3((linearCol.r <= 0.0031308f) ? sRGBLo.r : sRGBHi.r,
                 (linearCol.g <= 0.0031308f) ? sRGBLo.g : sRGBHi.g,
                 (linearCol.b <= 0.0031308f) ? sRGBLo.b : sRGBHi.b);
 }
 
-vec4  ToSRGBAccurate(vec4 linearCol) { return vec4(ToSRGBAccurate(linearCol.rgb), linearCol.a); }
+vec4 ToSRGBAccurate(in vec4 linearCol) {
+    return vec4(ToSRGBAccurate(linearCol.rgb), 
+                linearCol.a);
+}
 
 // ---------------------------------------------------------------------
 
@@ -181,8 +204,6 @@ float computeDepth(in vec4 posWV) {
 
     return (((far - near) * ndc_depth) + near + far) * 0.5f;
 }
-
-vec3 homogenize(in vec4 v) { return (v / v.w).xyz; }
 
 vec3 viewPositionFromDepth(in float depth,
                            in mat4 invProjectionMatrix,

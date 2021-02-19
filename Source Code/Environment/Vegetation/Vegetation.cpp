@@ -57,6 +57,7 @@ ShaderProgram_ptr Vegetation::s_cullShaderTrees = nullptr;
 vectorEASTL<Mesh_ptr> Vegetation::s_treeMeshes;
 std::atomic_uint Vegetation::s_bufferUsage = 0;
 U32 Vegetation::s_maxChunks = 0u;
+std::array<U16, 3> Vegetation::s_lodPartitions;
 
 //Per-chunk
 U32 Vegetation::s_maxGrassInstances = 0u;
@@ -96,8 +97,9 @@ Vegetation::Vegetation(GFXDevice& context,
     for (U16 i = 1; i < Config::Lighting::MAX_CSM_SPLITS_PER_LIGHT; ++i) {
         renderState().addToDrawExclusionMask(RenderStage::SHADOW, RenderPassType::COUNT, to_U8(LightType::DIRECTIONAL), g_AllIndicesID, i);
     }
-
-    renderState().maxLodLevel(2u);
+    // Because we span an entire terrain chunk, LoD calculation will always be off unless we use the closest possible point to the camera
+    renderState().useBoundsCenterForLoD(false);
+    renderState().lod0OnCollision(true);
     renderState().drawState(false);
 
     CachedResource::setState(ResourceState::RES_LOADING);
@@ -188,6 +190,8 @@ void Vegetation::destroyStaticData() {
 void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize, const U32 maxChunkCount) {
     // Make sure this is ONLY CALLED FROM THE MAIN LOADING THREAD. All instances should call this in a serialized fashion
     if (s_buffer == nullptr) {
+        s_lodPartitions.fill(0u);
+
         constexpr F32 offsetBottom0 = 0.20f;
         constexpr F32 offsetBottom1 = 0.10f;
 
@@ -232,15 +236,12 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
                 GetMatrix(Quaternion<F32>(Angle::DEGREES<F32>(-15.f), Angle::DEGREES<F32>(0.f),   Angle::DEGREES<F32>(0.f)) * //Pitch
                           Quaternion<F32>(Angle::DEGREES<F32>(0.f),   Angle::DEGREES<F32>(305.f), Angle::DEGREES<F32>(0.f)))  //Yaw
             }
-
-
-
         };
 
         vectorEASTL<vec3<F32>> vertices{};
 
-        const U8 billboardsPlaneCount = to_U8(sizeof(transform) / sizeof(transform[0]));
-        vertices.reserve(sizeof(transform) / sizeof(transform[0]));
+        constexpr U8 billboardsPlaneCount = to_U8(sizeof(transform) / sizeof(transform[0]));
+        vertices.reserve(billboardsPlaneCount * 4);
 
         for (U8 i = 0u; i < billboardsPlaneCount; ++i) {
             vertices.push_back(transform[i] * vec4<F32>(-1.f, 0.f, 0.f, 1.f)); //BL
@@ -253,29 +254,37 @@ void Vegetation::precomputeStaticData(GFXDevice& gfxDevice, const U32 chunkSize,
                                 0, 2, 3 };
 
         const vec2<F32> texCoords[] = {
-            vec2<F32>(0.0f, 0.0f),
-            vec2<F32>(0.0f, 1.0f),
-            vec2<F32>(1.0f, 1.0f),
-            vec2<F32>(1.0f, 0.0f)
+            vec2<F32>(0.f, 0.f),
+            vec2<F32>(0.f, 1.f),
+            vec2<F32>(1.f, 1.f),
+            vec2<F32>(1.f, 0.f)
         };
 
         s_buffer = gfxDevice.newVB();
         s_buffer->useLargeIndices(false);
-        s_buffer->setVertexCount(billboardsPlaneCount * 4);
-        for (U8 i = 0u; i < billboardsPlaneCount * 4; ++i) {
+        s_buffer->setVertexCount(vertices.size());
+
+        for (U8 i = 0u; i < to_U8(vertices.size()); ++i) {
             s_buffer->modifyPositionValue(i, vertices[i]);
             s_buffer->modifyNormalValue(i, WORLD_Y_AXIS);
             s_buffer->modifyTangentValue(i, WORLD_X_AXIS);
             s_buffer->modifyTexCoordValue(i, texCoords[i % 4].s, texCoords[i % 4].t);
         }
 
-        for (U8 i = 0u; i < billboardsPlaneCount; ++i) {
-            if (i > 0) {
-                s_buffer->addRestartIndex();
+        const auto addPlanes = [&indices](const U8 count) {
+            for (U8 i = 0u; i < count; ++i) {
+                if (i > 0) {
+                    s_buffer->addRestartIndex();
+                }
+                for (U16 idx : indices) {
+                    s_buffer->addIndex(idx + i * 4);
+                }
             }
-            for (U16 idx : indices) {
-                s_buffer->addIndex(idx + i * 4);
-            }
+        };
+
+        for (U8 i = 0; i < s_lodPartitions.size(); ++i) {
+            addPlanes(billboardsPlaneCount / (i + 1));
+            s_lodPartitions[i] = s_buffer->partitionBuffer();
         }
 
         s_buffer->create(true);
@@ -563,7 +572,6 @@ void Vegetation::uploadVegetationData(SceneGraphNode* sgn) {
 
     if (hasVegetation) {
         sgn->get<RenderingComponent>()->instantiateMaterial(s_vegetationMaterial);
-        sgn->get<RenderingComponent>()->lockLoD(0u);
         sgn->get<RenderingComponent>()->occlusionCull(false); //< We handle our own culling
 
         WAIT_FOR_CONDITION(s_cullShaderGrass->getState() == ResourceState::RES_LOADED &&
@@ -781,13 +789,26 @@ void Vegetation::buildDrawCommands(SceneGraphNode* sgn,
                                    const Camera& crtCamera,
                                    RenderPackage& pkgInOut) {
 
+    const U16 partitionID = s_lodPartitions[0];
+
     GenericDrawCommand cmd = {};
     cmd._primitiveType = PrimitiveType::TRIANGLE_STRIP;
-    cmd._cmd.indexCount = to_U32(s_buffer->getIndexCount());
     cmd._sourceBuffer = s_buffer->handle();
     cmd._cmd.primCount = _instanceCountGrass;
-
+    cmd._cmd.indexCount = to_U32(s_buffer->getPartitionIndexCount(partitionID));
+    cmd._cmd.firstIndex = to_U32(s_buffer->getPartitionOffset(partitionID));
     pkgInOut.add(GFX::DrawCommand{ cmd });
+
+    U16 prevID = 0;
+    for (U8 i = 0; i < to_U8(s_lodPartitions.size()); ++i) {
+        U16 id = s_lodPartitions[i];
+        if (id == std::numeric_limits<U16>::max()) {
+            assert(i > 0);
+            id = prevID;
+        }
+        pkgInOut.setLoDIndexOffset(i, s_buffer->getPartitionOffset(id), s_buffer->getPartitionIndexCount(id));
+        prevID = id;
+    }
 
     SceneNode::buildDrawCommands(sgn, renderStagePass, crtCamera, pkgInOut);
 }
@@ -887,6 +908,7 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
             if (angle > slopeLimit) {
                 continue;
             }
+            const F32 slopeScaleFactor = 1.f - MAP(angle, 0.f, slopeLimit, 0.f, 0.9f);
 
             assert(vert._position != VECTOR3_ZERO);
 
@@ -896,16 +918,17 @@ void Vegetation::computeVegetationTransforms(bool treeData) {
             if (colourVal <= std::numeric_limits<F32>::epsilon()) {
                 continue;
             }
-
+            
             const U8 arrayLayer = to_U8(distribution[index](generator));
 
             const F32 xmlScale = scales[treeData ? meshID : index];
             // Don't go under 75% of the scale specified in the data files
             const F32 minXmlScale = xmlScale * 7.5f / 10.0f;
-            // Don't go over 75% of the cale specified in the data files
+            // Don't go over 75% of the scale specified in the data files
             const F32 maxXmlScale = xmlScale * 1.25f;
 
-            const F32 scale = CLAMPED((colourVal + 1.f) / 256.0f * xmlScale, minXmlScale, maxXmlScale);
+            const F32 scale = CLAMPED((colourVal + 1.f) / 256.0f * xmlScale, minXmlScale, maxXmlScale) * 
+                              slopeScaleFactor;
 
             assert(scale > std::numeric_limits<F32>::epsilon());
 

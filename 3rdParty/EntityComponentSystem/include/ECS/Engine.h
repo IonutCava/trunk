@@ -129,6 +129,8 @@ namespace ECS
         void PreUpdate(f32 tick_ms);
 		void Update(f32 tick_ms);
         void PostUpdate(f32 tick_ms);
+		void OnFrameStart();
+		void OnFrameEnd();
 	};
 
 } // namespace ECS

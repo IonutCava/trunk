@@ -92,6 +92,25 @@ namespace ECS
 			}
 		}
 	}
+	void SystemManager::OnFrameStart()
+	{
+		OPTICK_EVENT();
+		for (ISystem* system : this->m_SystemWorkOrder) {
+			if (system->m_Enabled == true) {
+				system->OnFrameStart();
+			}
+		}
+	}
+
+	void SystemManager::OnFrameEnd()
+	{
+		OPTICK_EVENT();
+		for (ISystem* system : this->m_SystemWorkOrder) {
+			if (system->m_Enabled == true) {
+				system->OnFrameEnd();
+			}
+		}
+	}
 
 	void SystemManager::UpdateSystemWorkOrder()
 	{

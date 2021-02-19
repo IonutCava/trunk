@@ -92,6 +92,12 @@ namespace ECS
 
 		virtual void PostUpdate(f32 dt)
 		{}
+
+		virtual void OnFrameStart()
+		{}
+
+		virtual void OnFrameEnd()
+		{}
 	}; // class System<T>
 
 	template<class T>

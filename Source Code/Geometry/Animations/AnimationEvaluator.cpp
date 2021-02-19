@@ -63,7 +63,7 @@ bool AnimEvaluator::initBuffers(GFXDevice& context) {
         "AnimEvaluator error: Too many bones for current node! "
         "Increase MAX_BONE_COUNT_PER_NODE in Config!");
 
-    size_t boneCount = _transforms.front().count();
+    const size_t boneCount = _transforms.front().count();
     const U32 numberOfFrames = frameCount();
 
     using FrameData = std::array<mat4<F32>, Config::MAX_BONE_COUNT_PER_NODE>;

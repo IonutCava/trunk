@@ -6,17 +6,15 @@
 
 layout(binding = TEXTURE_UNIT0) uniform sampler2D tex;
 #if !defined(DEPTH_ONLY)
-uniform uint convertToSRGB;
+uniform bool convertToSRGB;
 out vec4 _colourOut;
 #endif
 
 void main(void){
 #if !defined(DEPTH_ONLY)
-    vec4 colour = texture(tex, VAR._texCoord);
-    if (convertToSRGB == 1u) {
-        colour = ToSRGB(colour);
-    }
-    _colourOut = colour;
+    const vec4 colour = texture(tex, VAR._texCoord);
+
+    _colourOut = convertToSRGB ? ToSRGBAccurate(colour) : colour;
 #else
     gl_FragDepth = texture(tex, VAR._texCoord).r;
 #endif
@@ -59,17 +57,19 @@ void main() {
         vec2 avgNormalData = vec2(0.f);
         vec2 avgMetalnessRoughness = vec2(0.f);
         uint bestProbeID = 0u;
+        float bestSign = 0.f;
         for (int s = 0; s < sampleCount; ++s) {
             const vec4 dataIn = texelFetch(matDataTex, C, s);
-            const uint probeID = uint(dataIn.a);
+            const int probeID = int(dataIn.a);
             avgNormalData += dataIn.rg;
             avgMetalnessRoughness += unpackVec2(dataIn.b);
             if (abs(probeID) > bestProbeID) {
                 bestProbeID = probeID;
+                bestSign = sign(probeID);
             }
         }
         _matDataOut.rg = avgNormalData / sampleCount;
         _matDataOut.b = packVec2(avgMetalnessRoughness / sampleCount);
-        _matDataOut.a = float(bestProbeID);
+        _matDataOut.a = bestProbeID * bestSign;
     }
 }

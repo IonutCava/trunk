@@ -100,5 +100,23 @@ namespace Divide {
             comp->PostUpdate(microSec);
         }
     }
+
+    template<class T, class U>
+    void ECSSystem<T, U>::OnFrameStart() {
+        OPTICK_EVENT();
+
+        for (U* comp : _componentCache) {
+            comp->OnFrameStart();
+        }
+    }
+
+    template<class T, class U>
+    void ECSSystem<T, U>::OnFrameEnd() {
+        OPTICK_EVENT();
+
+        for (U* comp : _componentCache) {
+            comp->OnFrameEnd();
+        }
+    }
 }
 #endif //_ECS_SYSTEM_INL_

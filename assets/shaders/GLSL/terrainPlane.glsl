@@ -22,12 +22,8 @@ void main(void) {
     setClipPlanes();
 
     const float time2 = MSToSeconds(dvd_time) * 0.01f;
-    vec2 uvNormal0 = VAR._texCoord * UNDERWATER_TILE_SCALE;
-    _scrollingUV.s += time2;
-    _scrollingUV.t += time2;
-    vec2 uvNormal1 = VAR._texCoord * UNDERWATER_TILE_SCALE;
-    _scrollingUV.p -= time2;
-    _scrollingUV.q += time2;
+    _scrollingUV = vec4(VAR._texCoord + time2.xx, 
+                        VAR._texCoord + vec2(-time2, time2)) * 25.f;
 
     gl_Position = vertexWVP;
 }
@@ -41,13 +37,12 @@ layout(location = 0) in vec4 _scrollingUV;
 #include "utility.frag"
 #include "output.frag"
 
-
 layout(binding = TEXTURE_UNIT0) uniform sampler2D texWaterCaustics;
 
 
 void main(void) {
-    vec4 colourOut = (texture(texWaterCaustics, _scrollingUV.st) +
-                      texture(texWaterCaustics, _scrollingUV.pq)) * 0.5;
+    const vec3 colourOut = overlayVec(texture(texWaterCaustics, _scrollingUV.st).rgb,
+                                      texture(texWaterCaustics, _scrollingUV.pq).rgb);
 
-    writeScreenColour(colourOut, VAR._normalWV);
+    writeScreenColour(vec4(colourOut, 1.f), VAR._normalWV);
 }

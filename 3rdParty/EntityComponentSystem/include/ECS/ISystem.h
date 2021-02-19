@@ -77,6 +77,8 @@ namespace ECS
 		virtual void PreUpdate(f32 dt)	= 0;
 		virtual void Update(f32 dt)		= 0;
 		virtual void PostUpdate(f32 dt) = 0;
+		virtual void OnFrameStart() = 0;
+		virtual void OnFrameEnd() = 0;
 	};
 }
 

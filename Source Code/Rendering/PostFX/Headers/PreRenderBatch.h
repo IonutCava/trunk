@@ -195,7 +195,6 @@ class PreRenderBatch {
     PushConstants     _toneMapConstants;
 
     U64 _lastDeltaTimeUS = 0u;
-    bool _toneMapParamsDirty = true;
 };
 
 }  // namespace Divide

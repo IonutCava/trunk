@@ -47,4 +47,6 @@
 
 #define QUATERNION_ROTATE(V, Q) (V + 2.f * cross(Q.xyz, cross(Q.xyz, V) + Q.w * V))
 
+vec3 homogenize(in vec4 v) { return (v / v.w).xyz; }
+
 #endif //_UTILITY_CMN_

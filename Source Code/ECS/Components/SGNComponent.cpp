@@ -70,4 +70,10 @@ namespace Divide {
         ACKNOWLEDGE_UNUSED(data);
     }
 
+    void SGNComponent::OnFrameStart() {
+    }
+
+    void SGNComponent::OnFrameEnd() {
+    }
+
 } //namespace Divide

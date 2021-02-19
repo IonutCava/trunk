@@ -58,8 +58,8 @@ void main() {
 
     const float height = dvd_Vertex.y;
     dvd_Vertex.xyz *= scale;
+    dvd_Vertex.y -= (1.f - scale) * 0.25f;
     dvd_Vertex.xyz = QUATERNION_ROTATE(dvd_Vertex.xyz, data.orientationQuad);
-    dvd_Vertex.y -= 0.1f / scale;
     VAR._vertexW = dvd_Vertex + vec4(data.positionAndScale.xyz, 0.0f);
 
     if (animate) {

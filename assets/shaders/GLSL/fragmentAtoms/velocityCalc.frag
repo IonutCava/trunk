@@ -9,7 +9,7 @@ vec2 velocityCalc() {
     const vec4 vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
     const vec2 a = 0.5f * (vertexWVP.xy / vertexWVP.w) + 0.5f;
-    const vec2 b = 0.5f * (VAR._prevVertexWVP_XYW.xy / VAR._prevVertexWVP_XYW.z) + 0.5f;
+    const vec2 b = 0.5f * homogenize(VAR._prevVertexWVP).xy + 0.5f;
     return a - b;
 }
 

@@ -66,7 +66,7 @@ TEST(TaskCallbackTest)
     const bool init = test.init(to_U8(HardwareThreadCount()), TaskPool::TaskPoolType::TYPE_BLOCKING);
     CHECK_TRUE(init);
 
-    std::atomic_bool testValue = false;
+    bool testValue = false;
 
     Task* job = CreateTask(test, [](const Task& parentTask) {
         ACKNOWLEDGE_UNUSED(parentTask);
@@ -82,7 +82,7 @@ TEST(TaskCallbackTest)
 
     Start(*job, TaskPriority::DONT_CARE, [&testValue]() {
         std::cout << "TaskCallbackTest: Callback called!" << std::endl;
-        testValue.store(true, std::memory_order_release);
+        testValue = true;
     });
 
     CHECK_FALSE(testValue);
@@ -94,7 +94,7 @@ TEST(TaskCallbackTest)
     std::cout << "TaskCallbackTest: flushing queue!" << std::endl;
     test.flushCallbackQueue();
 
-    CHECK_TRUE(testValue.load(std::memory_order_acquire));
+    CHECK_TRUE(testValue);
 }
 
 namespace {

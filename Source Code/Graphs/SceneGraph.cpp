@@ -137,7 +137,6 @@ bool SceneGraph::removeNode(SceneGraphNode* node) {
 
 bool SceneGraph::frameStarted(const FrameEvent& evt) {
     Attorney::SceneGraphNodeSceneGraph::frameStarted(getRoot(), evt);
-
     {
         UniqueLock<SharedMutex> lock(_pendingDeletionLock);
         if (!_pendingDeletion.empty()) {
@@ -156,6 +155,19 @@ bool SceneGraph::frameStarted(const FrameEvent& evt) {
         _nodeList.resize(0);
         Attorney::SceneGraphNodeSceneGraph::getAllNodes(_root, _nodeList);
         _nodeListChanged = false;
+    }
+
+    {
+        OPTICK_EVENT("ECS::OnFrameStart");
+        GetECSEngine().OnFrameStart();
+    }
+    return true;
+}
+
+bool SceneGraph::frameEnded(const FrameEvent& evt) {
+    {
+        OPTICK_EVENT("ECS::OnFrameEnd");
+        GetECSEngine().OnFrameEnd();
     }
 
     return true;

@@ -160,6 +160,7 @@ class Vegetation final : public SceneNode {
     vectorEASTL<VegetationData> _tempGrassData;
     vectorEASTL<VegetationData> _tempTreeData;
 
+    static std::array<U16, 3> s_lodPartitions;
     static U32 s_maxGrassInstances;
     static U32 s_maxTreeInstances;
     static ShaderProgram_ptr s_cullShaderGrass;

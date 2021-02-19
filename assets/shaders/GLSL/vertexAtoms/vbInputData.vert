@@ -22,15 +22,13 @@ NodeTransformData fetchInputData() {
 #endif //COMPUTE_TBN || NEED_TANGENT
 #endif //DEPTH_PASS
 
-#if defined(USE_GPU_SKINNING)
     const NodeTransformData nodeData = dvd_Transforms[TRANSFORM_IDX];
+#if defined(USE_GPU_SKINNING)
     if (dvd_boneCount(nodeData) > 0) {
         dvd_Vertex = applyBoneTransforms(dvd_Vertex);
     }
-    return nodeData;
-#else //USE_GPU_SKINNING
-    return dvd_Transforms[TRANSFORM_IDX];
 #endif //USE_GPU_SKINNING
+    return nodeData;
 }
 
 vec4 computeData(in NodeTransformData data) {
@@ -38,15 +36,15 @@ vec4 computeData(in NodeTransformData data) {
     VAR._vertexWV  = dvd_ViewMatrix * VAR._vertexW;
     vec4 vertexWVP = dvd_ProjectionMatrix * VAR._vertexWV;
 
-#if !defined(SHADOW_PASS) && defined(HAS_VELOCITY)
+#if defined(HAS_VELOCITY)
+    vec4 inputVertex = vec4(inVertexData, 1.f);
 #if defined(USE_GPU_SKINNING)
-    const vec4 prevVertex = (dvd_frameTicked(data) && dvd_boneCount(data) > 0) ? applyPrevBoneTransforms(dvd_Vertex) : dvd_Vertex;
-#else //USE_GPU_SKINNING
-    const vec4 prevVertex = dvd_Vertex;
+    if (dvd_frameTicked(data) && dvd_boneCount(data) > 0u) {
+        inputVertex = applyPrevBoneTransforms(inputVertex);
+    }
 #endif //USE_GPU_SKINNING
-
-    VAR._prevVertexWVP_XYW = (dvd_PreviousViewProjectionMatrix * vec4(mat4x3(data._prevWorldMatrix) * prevVertex, 1.0f)).xyw;
-#endif //!SHADOW_PASS && HAS_VELOCITY
+    VAR._prevVertexWVP = dvd_PreviousViewProjectionMatrix * data._prevWorldMatrix * inputVertex;
+#endif //HAS_VELOCITY
 
     return vertexWVP;
 }

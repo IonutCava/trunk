@@ -209,21 +209,10 @@ NodeDataIdx RenderPassExecutor::processVisibleNode(const RenderingComponent& rCo
     const vec4<F32> bSphere = bounds->getBoundingSphere().asVec4();
     const vec3<F32> bBoxHalfExtents = bounds->getBoundingBox().getHalfExtent();
 
-    constexpr F32 reserved = 0.0f;
-    transformOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, 0.f});
-
-    transformOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, 1u, 1u));
+    transformOut._normalMatrixW.setRow(3, vec4<F32>{bSphere.xyz, properties._nodeFlagValue});
+    transformOut._normalMatrixW.element(0, 3) = to_F32(Util::PACK_UNORM4x8(boneCount, properties._lod, frameTicked ? 1u : 0u, properties._occlusionCull ? 1u : 0u));
     transformOut._normalMatrixW.element(1, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.xy));
     transformOut._normalMatrixW.element(2, 3) = to_F32(Util::PACK_HALF2x16(bBoxHalfExtents.z, bSphere.w));
-    transformOut._normalMatrixW.element(3, 3) = properties._nodeFlagValue;
-
-    transformOut._prevWorldMatrix.element(0, 3) = to_F32(Util::PACK_UNORM4x8(frameTicked ? 1.0f : 0.0f,
-                                                  properties._occlusionCull ? 1.0f : 0.0f,
-                                                  reserved,
-                                                  reserved));
-    transformOut._prevWorldMatrix.element(1, 3) = reserved;
-    transformOut._prevWorldMatrix.element(2, 3) = reserved;
-    transformOut._prevWorldMatrix.element(3, 3) = reserved;
 
     return ret;
 }

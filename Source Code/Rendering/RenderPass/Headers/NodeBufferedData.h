@@ -56,21 +56,15 @@ using NodeMaterialTextures = std::array<SamplerAddress, MATERIAL_TEXTURE_COUNT>;
     struct NodeTransformData
     {
         mat4<F32> _worldMatrix = MAT4_IDENTITY;
+        mat4<F32> _prevWorldMatrix = MAT4_IDENTITY;
 
         // [0...2][0...2] = normal matrix
         // [3][0...2]     = bounds center
-        // [0][3]         = 4x8U: bone count, lod level, isHovered, reserved
+        // [0][3]         = 4x8U: bone count, lod level, animation ticked this frame (for motion blur), occlusion cull
         // [1][3]         = 2x16F: BBox HalfExtent (X, Y) 
         // [2][3]         = 2x16F: BBox HalfExtent (Z), BSphere Radius
         // [3][3]         = 2x16F: (Data Flag, reserved)
         mat4<F32> _normalMatrixW = MAT4_IDENTITY;
-
-        // [0...3][0...2] = previous world matrix
-        // [0][3]         = 4x8U: animation ticked this frame (for motion blur), occlusion cull, reserved, reserved
-        // [1][3]         = reserved
-        // [2][3]         = reserved
-        // [3][3]         = reserved
-        mat4<F32> _prevWorldMatrix = MAT4_ZERO;
     };
 
     struct NodeMaterialData

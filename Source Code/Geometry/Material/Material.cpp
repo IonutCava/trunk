@@ -605,24 +605,20 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
 
     if (!_isStatic) {
         shaderName += ".D";
-        vertDefines.emplace_back("NODE_DYNAMIC", true);
-        fragDefines.emplace_back("NODE_DYNAMIC", true);
+        globalDefines.emplace_back("NODE_DYNAMIC", true);
     } else {
         shaderName += ".S";
-        vertDefines.emplace_back("NODE_STATIC", true);
-        fragDefines.emplace_back("NODE_STATIC", true);
+        globalDefines.emplace_back("NODE_STATIC", true);
     }
 
     if (usePlanarReflections()) {
         shaderName += ".PRefl";
-        vertDefines.emplace_back("USE_PLANAR_REFLECTION", true);
-        fragDefines.emplace_back("USE_PLANAR_REFLECTION", true);
+        globalDefines.emplace_back("USE_PLANAR_REFLECTION", true);
     }
 
     if (usePlanarRefractions()) {
         shaderName += ".PRefr";
-        vertDefines.emplace_back("USE_PLANAR_REFRACTION", true);
-        fragDefines.emplace_back("USE_PLANAR_REFRACTION", true);
+        globalDefines.emplace_back("USE_PLANAR_REFRACTION", true);
     }
 
     if (!isDepthPass) {
@@ -652,9 +648,8 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
         }
     }
 
-    // Add the GPU skinning module to the vertex shader?
     if (_hardwareSkinning) {
-        vertDefines.emplace_back("USE_GPU_SKINNING", true);
+        globalDefines.emplace_back("USE_GPU_SKINNING", true);
         shaderName += ".Sknd";
     }
 
@@ -662,8 +657,8 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
 
     globalDefines.emplace_back("DEFINE_PLACEHOLDER", false);
 
-    vertDefines.insert(std::cend(vertDefines), std::cbegin(globalDefines), std::cend(globalDefines));
-    fragDefines.insert(std::cend(fragDefines), std::cbegin(globalDefines), std::cend(globalDefines));
+    vertDefines.insert(eastl::cend(vertDefines), eastl::cbegin(globalDefines), eastl::cend(globalDefines));
+    fragDefines.insert(eastl::cend(fragDefines), eastl::cbegin(globalDefines), eastl::cend(globalDefines));
 
     shaderName.append(
         Util::StringFormat("_%zu_%zu",
@@ -679,10 +674,11 @@ void Material::computeShader(const RenderStagePass& renderStagePass) {
     vertModule._defines = vertDefines;
 
     ShaderProgramDescriptor shaderDescriptor = {};
-    if (!isDepthPass || // Normal colour pass
-        hasTransparency() || //Has transparency and may need alpha_discard in the PrePass or ShadowPass
-        isShadowPass ||  //Is a shadow pass
-        !_isStatic) // Is a depth pass but with a dynamic node, so output velocity vector
+    if (!isDepthPass ||       // Normal colour pass
+        hasTransparency() ||  // Has transparency and may need alpha_discard in the PrePass or ShadowPass
+        isShadowPass ||       // Is a shadow pass
+        !_isStatic ||         // Is a depth pass but with a dynamic node, so output velocity vector
+        _hardwareSkinning)    // Node is animated, so we need velocity output
     {
         ShaderModuleDescriptor fragModule = {};
         fragModule._variant = fragVariant;

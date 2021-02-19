@@ -70,6 +70,8 @@ namespace ECS
         void PreUpdate(f32 dt_ms);
         void Update(f32 dt_ms);
         void PostUpdate(f32 dt_ms);
+		void OnFrameStart();
+		void OnFrameEnd();
 	public:
 
 		SystemManager();

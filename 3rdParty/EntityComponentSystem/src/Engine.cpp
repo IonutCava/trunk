@@ -65,6 +65,18 @@ namespace ECS
 		ECS_EventHandler->DispatchEvents();
 	}
 
+	void ECSEngine::OnFrameStart()
+	{
+		ECS_SystemManager->OnFrameStart();
+		ECS_EventHandler->DispatchEvents();
+	}
+
+	void ECSEngine::OnFrameEnd()
+	{
+		ECS_SystemManager->OnFrameEnd();
+		ECS_EventHandler->DispatchEvents();
+	}
+
 	void ECSEngine::UnsubscribeEvent(Event::Internal::IEventDelegate* eventDelegate)
 	{
 		ECS_EventHandler->RemoveEventCallback(eventDelegate);

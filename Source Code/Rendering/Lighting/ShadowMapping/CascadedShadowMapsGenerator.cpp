@@ -364,8 +364,8 @@ void CascadedShadowMapsGenerator::render(const Camera& playerCamera, Light& ligh
     constexpr F32 minExtentsFactors[] = {
       0.025f,
       1.75f,
-      125.0f,
-      250.5f
+      75.0f,
+      125.0f
     };
 
     I16 i = to_I16(numSplits) - 1;

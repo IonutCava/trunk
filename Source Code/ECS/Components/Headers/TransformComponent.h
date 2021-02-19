@@ -46,15 +46,20 @@ namespace Divide {
         TRANSLATION = toBit(1),
         SCALE = toBit(2),
         ROTATION = toBit(3),
-        PREVIOUS_MAT = toBit(4),
         ALL = TRANSLATION | SCALE | ROTATION,
-        COUNT = 5
+        COUNT = 4
     };
 
     class TransformComponent final : public BaseComponentType<TransformComponent, ComponentType::TRANSFORM>,
                                      public ITransform
     {
         friend class Attorney::TransformComponentSGN;
+
+        enum class WorldMatrixType : U8 {
+            CURRENT = 0u,
+            PREVIOUS,
+            COUNT
+        };
 
         public:
          TransformComponent(SceneGraphNode* parentSGN, PlatformContext& context);
@@ -64,6 +69,9 @@ namespace Divide {
 
          void getPreviousWorldMatrix(mat4<F32>& matOut) const;
          void getWorldMatrix(mat4<F32>& matOut) const;
+         mat4<F32> getPreviousWorldMatrix() const;
+         mat4<F32> getWorldMatrix() const;
+
          void getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const;
 
          /// Component <-> Transform interface
@@ -163,6 +171,7 @@ namespace Divide {
 
          void PreUpdate(U64 deltaTimeUS) override;
          void Update(U64 deltaTimeUS) override;
+         void OnFrameEnd() override;
 
          void onParentTransformDirty(U32 transformMask) noexcept;
          void onParentUsageChanged(NodeUsageContext context) noexcept;
@@ -176,8 +185,8 @@ namespace Divide {
          [[nodiscard]] vec3<F32> getLocalScaleLocked(D64 interpolationFactor) const;
          [[nodiscard]] Quaternion<F32> getLocalOrientationLocked(D64 interpolationFactor) const;
 
-         //Called only when transformed chaged in the main update loop!
-         void updateWorldMatrix(U32 updateMask);
+         //Called only when transformed changed in the main update loop!
+         void updateWorldMatrix();
 
          // Local transform interface access (all are in local space)
          void getScale(vec3<F32>& scaleOut) const override;
@@ -196,13 +205,13 @@ namespace Divide {
 
         NodeUsageContext _parentUsageContext;
 
-        bool _uniformScaled{};
-        
-        mutable SharedMutex _worldMatrixLock{};
-        mat4<F32> _worldMatrix;
-        mat4<F32> _prevWorldMatrix;
+        bool _uniformScaled = true;
+        bool _prevWorldMatrixDirty = true;
 
+        mutable SharedMutex _worldMatrixLock{};
         mutable SharedMutex _lock{};
+
+        eastl::array<mat4<F32>, to_base(WorldMatrixType::COUNT)> _worldMatrix;
     };
 
     INIT_COMPONENT(TransformComponent);

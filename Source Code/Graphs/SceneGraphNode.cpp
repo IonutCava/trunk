@@ -560,10 +560,10 @@ void SceneGraphNode::prepareRender(RenderingComponent& rComp, const RenderStageP
                 bufferBinding._elementRange = data._boneBufferRange;
                 pkg.get<GFX::BindDescriptorSetsCommand>(0)->_set._buffers.add(bufferBinding);
             }
-            if (data._prevBoneBuffer != nullptr) {
+            if (data._prevBoneBufferRange.max > 0) {
                 ShaderBufferBinding bufferBinding;
                 bufferBinding._binding = ShaderBufferLocation::BONE_TRANSFORMS_PREV;
-                bufferBinding._buffer = data._prevBoneBuffer;
+                bufferBinding._buffer = data._boneBuffer;
                 bufferBinding._elementRange = data._prevBoneBufferRange;
                 pkg.get<GFX::BindDescriptorSetsCommand>(0)->_set._buffers.add(bufferBinding);
             }

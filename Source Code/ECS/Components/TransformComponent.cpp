@@ -10,7 +10,9 @@ namespace Divide {
       : BaseComponentType<TransformComponent, ComponentType::TRANSFORM>(parentSGN, context),
         _parentUsageContext(parentSGN->usageContext())
     {
-        _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
+        _worldMatrix.fill(MAT4_IDENTITY);
+
+        _transformUpdatedMask.store(to_base(TransformType::ALL));
 
         EditorComponentField transformField = {};
         transformField._name = "Transform";
@@ -77,12 +79,12 @@ namespace Divide {
     }
 
     void TransformComponent::reset() {
-        _worldMatrix.identity();
-        _prevWorldMatrix.identity();
+        _worldMatrix.fill(MAT4_IDENTITY);
+
         while (!_transformStack.empty()) {
             _transformStack.pop();
         }
-        _transformUpdatedMask.store(to_base(TransformType::ALL) | to_base(TransformType::PREVIOUS_MAT));
+        _transformUpdatedMask.store(to_base(TransformType::ALL));
         resetInterpolation();
     }
 
@@ -101,10 +103,9 @@ namespace Divide {
 
     void TransformComponent::Update(const U64 deltaTimeUS) {
         // Cleanup our dirty transforms
-        U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
+        const U32 previousMask = _transformUpdatedMask.exchange(to_U32(TransformType::NONE));
         if (previousMask != to_U32(TransformType::NONE)) {
-            updateWorldMatrix(previousMask);
-            ClearBit(previousMask, TransformType::PREVIOUS_MAT);
+            updateWorldMatrix();
 
             _parentSGN->SendEvent(
             {
@@ -115,6 +116,16 @@ namespace Divide {
         }
 
         BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::Update(deltaTimeUS);
+    }
+
+    void TransformComponent::OnFrameEnd() {
+        if (_prevWorldMatrixDirty) {
+            // Just memcpy the 2
+            _worldMatrix[to_base(WorldMatrixType::PREVIOUS)].set(_worldMatrix[to_base(WorldMatrixType::CURRENT)]);
+            _prevWorldMatrixDirty = false;
+        }
+
+        BaseComponentType<TransformComponent, ComponentType::TRANSFORM>::OnFrameEnd();
     }
 
     void TransformComponent::setOffset(const bool state, const mat4<F32>& offset) {
@@ -460,21 +471,14 @@ namespace Divide {
         return Slerp(_prevTransformValues._orientation, quat, to_F32(interpolationFactor));
     }
 
-    void TransformComponent::updateWorldMatrix(const U32 updateMask) {
-        const bool initPrevMatrix = BitCompare(updateMask, to_U32(TransformType::PREVIOUS_MAT));
+    void TransformComponent::updateWorldMatrix() {
         UniqueLock<SharedMutex> w_lock(_worldMatrixLock);
-        if (!initPrevMatrix) {
-            _prevWorldMatrix = _worldMatrix;
-        }
-        getMatrix(_worldMatrix);
-
-        if (initPrevMatrix) {
-            _prevWorldMatrix = _worldMatrix;
-        }
+        getMatrix(_worldMatrix[to_base(WorldMatrixType::CURRENT)]);
+        _prevWorldMatrixDirty = true;
     }
 
     void TransformComponent::getPreviousWorldMatrix(mat4<F32>& matOut) const {
-        matOut.set(_prevWorldMatrix);
+        matOut.set(_worldMatrix[to_base(WorldMatrixType::PREVIOUS)]);
 
         const SceneGraphNode* grandParentPtr = _parentSGN->parent();
         if (grandParentPtr != nullptr) {
@@ -484,10 +488,21 @@ namespace Divide {
         }
     }
 
+    mat4<F32> TransformComponent::getPreviousWorldMatrix() const {
+        mat4<F32> ret = _worldMatrix[to_base(WorldMatrixType::PREVIOUS)];
+
+        const SceneGraphNode* grandParentPtr = _parentSGN->parent();
+        if (grandParentPtr != nullptr) {
+            ret *= grandParentPtr->get<TransformComponent>()->getPreviousWorldMatrix();
+        }
+
+        return ret;
+    }
+
     void TransformComponent::getWorldMatrix(mat4<F32>& matOut) const {
         {
             SharedLock<SharedMutex> r_lock(_worldMatrixLock);
-            matOut.set(_worldMatrix);
+            matOut.set(_worldMatrix[to_base(WorldMatrixType::CURRENT)]);
         }
 
         const SceneGraphNode* grandParentPtr = _parentSGN->parent();
@@ -496,6 +511,21 @@ namespace Divide {
             grandParentPtr->get<TransformComponent>()->getWorldMatrix(parentMat);
             matOut *= parentMat;
         }
+    }
+
+    mat4<F32> TransformComponent::getWorldMatrix() const {
+        mat4<F32> ret;
+        {
+            SharedLock<SharedMutex> r_lock(_worldMatrixLock);
+            ret.set(_worldMatrix[to_base(WorldMatrixType::CURRENT)]);
+        }
+
+        const SceneGraphNode* grandParentPtr = _parentSGN->parent();
+        if (grandParentPtr != nullptr) {
+            ret *= grandParentPtr->get<TransformComponent>()->getWorldMatrix();
+        }
+
+        return ret;
     }
 
     void TransformComponent::getWorldMatrix(D64 interpolationFactor, mat4<F32>& matrixOut) const {

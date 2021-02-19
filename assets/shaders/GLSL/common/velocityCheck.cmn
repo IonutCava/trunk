@@ -1,12 +1,12 @@
 #ifndef _VELOCITY_CHECK_CMN_
 #define _VELOCITY_CHECK_CMN_
 
-#if !defined(NO_VELOCITY)
+#if !defined(NO_VELOCITY) && !defined(HAS_VELOCITY)
 
-#if defined(NODE_DYNAMIC) || defined(USE_GPU_SKINNING)
+#if !defined(SHADOW_PASS) && (defined(NODE_DYNAMIC) || defined(USE_GPU_SKINNING))
 #   define HAS_VELOCITY
-#endif // NODE_DYNAMIC || USE_GPU_SKINNING
+#endif // !SHADOW_PASS && (NODE_DYNAMIC || USE_GPU_SKINNING)
 
-#endif // NO_VELOCITY
+#endif // !NO_VELOCITY && !HAS_VELOCITY
 
 #endif // _VELOCITY_CHECK_CMN_

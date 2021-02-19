@@ -414,6 +414,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
         editorDesc._attachments = attachments.data();
         _rtPool->allocateRT(RenderTargetUsage::EDITOR, editorDesc);
     }
+
     // Reflection Targets
     SamplerDescriptor reflectionSampler = {};
     reflectionSampler.wrapUVW(TextureWrap::CLAMP_TO_EDGE);
@@ -423,7 +424,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
 
     {
         TextureDescriptor environmentDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-        TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+        TextureDescriptor depthDescriptorPlanar(TextureType::TEXTURE_2D, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
         environmentDescriptorPlanar.mipCount(1u);
         depthDescriptorPlanar.mipCount(1u);
@@ -471,7 +472,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     accumulationDescriptor.mipCount(1u);
 
     //R = revealage
-    TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::FLOAT_16);
+    TextureDescriptor revealageDescriptor(TextureType::TEXTURE_2D_MS, GFXImageFormat::RED, GFXDataFormat::UNSIGNED_BYTE);
     revealageDescriptor.mipCount(1u);
 
     RTAttachmentDescriptors oitAttachments = {
@@ -546,7 +547,7 @@ ErrorCode GFXDevice::postInitRenderingAPI(const vec2<U16> & renderResolution) {
     }
     {
         TextureDescriptor environmentDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::RGB, GFXDataFormat::UNSIGNED_BYTE);
-        TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::FLOAT_32);
+        TextureDescriptor depthDescriptorCube(TextureType::TEXTURE_CUBE_ARRAY, GFXImageFormat::DEPTH_COMPONENT, GFXDataFormat::UNSIGNED_INT);
 
         environmentDescriptorCube.mipCount(1u);
         depthDescriptorCube.mipCount(1u);
@@ -1858,8 +1859,8 @@ void GFXDevice::drawText(const TextElementBatch& batch) {
 void GFXDevice::drawTextureInViewport(const TextureData data, const size_t samplerHash, const Rect<I32>& viewport, const bool convertToSrgb, const bool drawToDepthOnly, GFX::CommandBuffer& bufferInOut) {
     static GFX::BeginDebugScopeCommand beginDebugScopeCmd = { "Draw Texture In Viewport" };
     static GFX::PushCameraCommand push2DCameraCmd = { Camera::utilityCamera(Camera::UtilityCamera::_2D)->snapshot() };
-    static GFX::SendPushConstantsCommand pushConstantsSRGBTrue = {{{_ID("convertToSRGB"), GFX::PushConstantType::UINT, 1u}}};
-    static GFX::SendPushConstantsCommand pushConstantsSRGBFalse = {{{_ID("convertToSRGB"), GFX::PushConstantType::UINT, 0u}}};
+    static GFX::SendPushConstantsCommand pushConstantsSRGBTrue = {{{_ID("convertToSRGB"), GFX::PushConstantType::BOOL, true}}};
+    static GFX::SendPushConstantsCommand pushConstantsSRGBFalse = {{{_ID("convertToSRGB"), GFX::PushConstantType::BOOL, false}}};
 
     GenericDrawCommand drawCmd = {};
     drawCmd._primitiveType = PrimitiveType::TRIANGLES;
@@ -1977,12 +1978,12 @@ void GFXDevice::initDebugViews() {
         VelocityPreview->_name = "Velocity Map";
         VelocityPreview->_shaderData.set(_ID("lodLevel"), GFX::PushConstantType::FLOAT, 0.0f);
         VelocityPreview->_shaderData.set(_ID("scaleAndBias"), GFX::PushConstantType::BOOL, true);
+        VelocityPreview->_shaderData.set(_ID("normalizeOutput"), GFX::PushConstantType::BOOL, true);
         VelocityPreview->_shaderData.set(_ID("channelsArePacked"), GFX::PushConstantType::BOOL, false);
         VelocityPreview->_shaderData.set(_ID("startChannel"), GFX::PushConstantType::UINT, 0u);
         VelocityPreview->_shaderData.set(_ID("channelCount"), GFX::PushConstantType::UINT, 2u);
         VelocityPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 5.0f);
 
-        NormalPreview->_shaderData.set(_ID("multiplier"), GFX::PushConstantType::FLOAT, 1.0f);
         DebugView_ptr SSAOPreview = std::make_shared<DebugView>();
         SSAOPreview->_shader = _renderTargetDraw;
         SSAOPreview->_texture = renderTargetPool().renderTarget(RenderTargetID(RenderTargetUsage::POSTFX_DATA)).getAttachment(RTAttachmentType::Colour, 0u).texture();

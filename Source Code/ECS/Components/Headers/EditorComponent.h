@@ -138,10 +138,16 @@ namespace Divide {
 
         template<typename T>
         void set(const T& dataIn) {
+            if (_readOnly) {
+                return;
+            }
+
             if (_dataSetter) {
                 _dataSetter(&dataIn);
-            } else {
+            } else if (_data) {
                 *static_cast<T*>(_data) = dataIn;
+            } else {
+                DIVIDE_UNEXPECTED_CALL();
             }
         }
 

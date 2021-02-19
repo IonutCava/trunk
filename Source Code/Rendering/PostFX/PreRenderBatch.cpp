@@ -402,7 +402,6 @@ F32 PreRenderBatch::adaptiveExposureValue() const {
 
 void PreRenderBatch::toneMapParams(const ToneMapParams params) noexcept {
     _toneMapParams = params;
-    _toneMapParamsDirty = true;
 }
 
 void PreRenderBatch::update(const U64 deltaTimeUS) noexcept {
@@ -524,7 +523,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
     const Texture_ptr& screenDepth = screenDepthAtt.texture();
 
     // We usually want accurate data when debugging material properties, so tonemapping should probably be disabled
-    if (adaptiveExposureControl() && _context.materialDebugFlag()._value == MaterialDebugFlag::COUNT) {
+    if (adaptiveExposureControl()) {
         const F32 logLumRange = _toneMapParams._maxLogLuminance - _toneMapParams._minLogLuminance;
         const F32 histogramParams[4] = {
                 _toneMapParams._minLogLuminance,
@@ -619,7 +618,6 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
 
     if (_needScreenCopy) {
-      
         GFX::ComputeMipMapsCommand computeMipMapsCommand = {};
         computeMipMapsCommand._texture = _screenCopyPreToneMap._rt->getAttachment(RTAttachmentType::Colour, 0).texture().get();
         computeMipMapsCommand._defer = false;
@@ -747,15 +745,12 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
 
         EnqueueCommand(bufferInOut, GFX::BindPipelineCommand{ adaptiveExposureControl() ? pipelineToneMapAdaptive : pipelineToneMap });
 
-        if (_toneMapParamsDirty || _context.materialDebugFlag()._value != MaterialDebugFlag::COUNT) {
-            _toneMapParamsDirty = false;
-            const auto mappingFunction = to_base(_context.materialDebugFlag()._value == MaterialDebugFlag::COUNT ? _toneMapParams._function : ToneMapParams::MapFunctions::COUNT);
-            _toneMapConstants.set(_ID("useAdaptiveExposure"), GFX::PushConstantType::BOOL, adaptiveExposureControl());
-            _toneMapConstants.set(_ID("manualExposure"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposure);
-            _toneMapConstants.set(_ID("mappingFunction"), GFX::PushConstantType::INT, mappingFunction);
-            EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
-            
-        }
+        const auto mappingFunction = to_base(_context.materialDebugFlag()._value == MaterialDebugFlag::COUNT ? _toneMapParams._function : ToneMapParams::MapFunctions::COUNT);
+        _toneMapConstants.set(_ID("useAdaptiveExposure"), GFX::PushConstantType::BOOL, adaptiveExposureControl());
+        _toneMapConstants.set(_ID("manualExposure"), GFX::PushConstantType::FLOAT, _toneMapParams._manualExposure);
+        _toneMapConstants.set(_ID("mappingFunction"), GFX::PushConstantType::INT, mappingFunction);
+        _toneMapConstants.set(_ID("skipToneMapping"), GFX::PushConstantType::BOOL, _context.materialDebugFlag()._value != MaterialDebugFlag::COUNT);
+        EnqueueCommand(bufferInOut, GFX::SendPushConstantsCommand{ _toneMapConstants });
 
         EnqueueCommand(bufferInOut, GFX::DrawCommand{ drawCmd });
         EnqueueCommand(bufferInOut, GFX::EndRenderPassCommand{});
@@ -765,7 +760,7 @@ void PreRenderBatch::execute(const Camera* camera, U32 filterStack, GFX::Command
         EnqueueCommand(bufferInOut, GFX::EndDebugScopeCommand{});
     }
 
-    // Now that we have a gamma-corrected LDR target, proceed with edge detection
+    // Now that we have an LDR target, proceed with edge detection. This LDR target is NOT GAMMA CORRECTED!
     if (edgeDetectionMethod() != EdgeDetectionMethod::COUNT) {
         EnqueueCommand(bufferInOut, GFX::BeginDebugScopeCommand{ "PostFX: edge detection" });
 

@@ -226,9 +226,9 @@ bool GL_API::InitGLSW(Configuration& config) {
     {
         { "vec4"       , "_vertexW"},
         { "vec4"       , "_vertexWV"},
+        { "vec4"       , "_prevVertexWVP"},
         { "vec3"       , "_normalWV"},
         { "vec3"       , "_viewDirectionWV"},
-        { "vec3"       , "_prevVertexWVP_XYW"},
         { "vec2"       , "_texCoord"},
         { "flat uint"  , "_baseInstance" }
     };

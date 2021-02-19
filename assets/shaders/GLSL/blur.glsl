@@ -272,12 +272,12 @@ uniform int dvd_maxSamples;
 out vec4 _outColour;
 
 void main(void) {
-    const vec2 texelSize = 1.0f / vec2(textureSize(texScreen, 0));
+    const vec2 texelSize = 1.f / vec2(textureSize(texScreen, 0));
     const vec2 screenTexCoords = gl_FragCoord.xy * texelSize;
     const vec2 velocity = texture(texVelocity, screenTexCoords).rg * dvd_velocityScale;
 
-    const int speed = int(length(velocity / texelSize));
-    const int nSamples = clamp(speed, 1, dvd_maxSamples);
+    const float speed = length(velocity / texelSize);
+    const int nSamples = clamp(int(speed), 1, dvd_maxSamples);
 
     _outColour = texture(texScreen, screenTexCoords);
 

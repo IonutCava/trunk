@@ -47,10 +47,9 @@ FWD_DECLARE_MANAGED_CLASS(SceneAnimator);
 class AnimationComponent final : public BaseComponentType<AnimationComponent, ComponentType::ANIMATION> {
    public:
       struct AnimData {
-          vec2<U32> _boneBufferRange;
-          vec2<U32> _prevBoneBufferRange;
+          vec2<U32> _boneBufferRange = { 0u, 0u };
+          vec2<U32> _prevBoneBufferRange = { 0u, 0u };
           ShaderBuffer* _boneBuffer = nullptr;
-          ShaderBuffer* _prevBoneBuffer = nullptr;
       };
 
    public:
@@ -83,7 +82,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     void incParentTimeStamp(U64 timestamp) noexcept;
     void setParentTimeStamp(U64 timestamp) noexcept;
 
-    [[nodiscard]] U64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
+    [[nodiscard]] D64 animationTimeStamp() const noexcept { return _currentTimeStamp; }
     [[nodiscard]] AnimEvaluator::FrameIndex frameIndex() const noexcept { return _frameIndex; }
     [[nodiscard]] I32 frameCount() const noexcept { return frameCount(_currentAnimIndex); }
 
@@ -93,6 +92,7 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     [[nodiscard]] I32 animationIndex() const noexcept { return _currentAnimIndex; }
 
     PROPERTY_R(bool, showSkeleton, false);
+    PROPERTY_RW(F32, animationSpeed, 1.f);
 
                   void playAnimations(const bool state)       noexcept { _playAnimations = state;}
     [[nodiscard]] bool playAnimations()                 const noexcept { return _playAnimations && s_globalAnimationState; }
@@ -112,14 +112,13 @@ class AnimationComponent final : public BaseComponentType<AnimationComponent, Co
     /// Current animation index for the current SGN
     I32 _currentAnimIndex = -1;
     AnimEvaluator::FrameIndex _frameIndex = {};
-    AnimEvaluator::FrameIndex _prevFameIndex = {};
     /// Current animation timestamp for the current SGN
-    U64 _currentTimeStamp = 0UL;
+    D64 _currentTimeStamp = 0.0;
     /// Previous animation index
     I32 _previousAnimationIndex = -1;
     /// Parent time stamp (e.g. Mesh). 
     /// Should be identical for all nodes of the same level with the same parent
-    U64 _parentTimeStamp = 0ul;
+    D64 _parentTimeStamp = 0.0;
 
     bool _playAnimations = true;
 

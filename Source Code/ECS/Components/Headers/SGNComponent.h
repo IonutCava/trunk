@@ -166,6 +166,8 @@ class SGNComponent : protected PlatformContextComponent,
         virtual void PreUpdate(U64 deltaTime);
         virtual void Update(U64 deltaTime);
         virtual void PostUpdate(U64 deltaTime);
+        virtual void OnFrameStart();
+        virtual void OnFrameEnd();
 
         virtual void OnData(const ECS::CustomEvent& data);
 

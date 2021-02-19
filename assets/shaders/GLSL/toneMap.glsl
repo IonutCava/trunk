@@ -83,6 +83,7 @@ layout(binding = TEXTURE_UNIT1) uniform sampler2D texExposure;
 uniform float manualExposure;
 uniform int mappingFunction;
 uniform bool useAdaptiveExposure;
+uniform bool skipToneMapping;
 
 out vec4 _colourOut;
 
@@ -208,9 +209,10 @@ vec3 convertYxy2RGB(vec3 _Yxy) {
 
 void main() {
     const vec4 inputColour = texture(texScreen, VAR._texCoord);
-    
+
     vec3 screenColour = inputColour.rgb;
-    if (mappingFunction != NONE && dvd_materialDebugFlag == DEBUG_COUNT) {
+
+    if (!skipToneMapping && mappingFunction != NONE) {
         vec3 Yxy = convertRGB2Yxy(screenColour * manualExposure);
 
         if (useAdaptiveExposure) {
@@ -239,7 +241,7 @@ void main() {
         screenColour = convertYxy2RGB(Yxy);
     }
 
-    //Apply gamma correction here!
-    _colourOut.rgb = screenColour;// ToSRGBAccurate(screenColour);
+    //Do not apply gamma correction here as edge-detection in subsequent passes work best in linear space
+    _colourOut.rgb = screenColour;//ToSRGBAccurate(screenColour);
     _colourOut.a = Luminance(_colourOut.rgb);
 }

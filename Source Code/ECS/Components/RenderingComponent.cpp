@@ -466,7 +466,14 @@ void RenderingComponent::prepareDrawPackage(const Camera& camera, const SceneRen
     Attorney::SceneGraphNodeComponent::prepareRender(_parentSGN, *this, camera, renderStagePass, refreshData);
 
     if (refreshData) {
-        _lodLevels[to_base(renderStagePass._stage)] = getLoDLevel(_boundsCache.getCenter(), camera.getEye(), renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
+        const vec3<F32> cameraEye = camera.getEye();
+        const SceneNodeRenderState& renderState = _parentSGN->getNode<>().renderState();
+        if (renderState.lod0OnCollision() && _boundsCache.containsPoint(cameraEye)) {
+            _lodLevels[to_base(renderStagePass._stage)] = 0u;
+        } else {
+            const vec3<F32> LoDtarget = renderState.useBoundsCenterForLoD() ? _boundsCache.getCenter() : _boundsCache.nearestPoint(cameraEye);
+            _lodLevels[to_base(renderStagePass._stage)] = getLoDLevel(LoDtarget, cameraEye, renderStagePass._stage, sceneRenderState.lodThresholds(renderStagePass._stage));
+        }
     }
 
     pkg.setDrawOption(CmdRenderOptions::RENDER_GEOMETRY, (renderOptionEnabled(RenderOptions::RENDER_GEOMETRY) &&
@@ -725,8 +732,8 @@ void RenderingComponent::drawDebugAxis(GFX::CommandBuffer& bufferInOut) {
 
 void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
     const SceneNode& node = _parentSGN->getNode();
-    const bool isMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::MESH;
-    if (!isMesh) {
+    const bool isSubMesh = node.type() == SceneNodeType::TYPE_OBJECT3D && static_cast<const Object3D&>(node).getObjectType()._value == ObjectType::SUBMESH;
+    if (!isSubMesh) {
         return;
     }
 
@@ -740,18 +747,14 @@ void RenderingComponent::drawSkeleton(GFX::CommandBuffer& bufferInOut) {
             _skeletonPrimitive->pipeline(*_primitivePipeline[1]);
         }
         // Get the animation component of any submesh. They should be synced anyway.
-        for (U32 i = 0; i < _parentSGN->getChildCount(); ++i) {
-            const SceneGraphNode* child = _parentSGN->getChild(i);
-            AnimationComponent* animComp = child->get<AnimationComponent>();
-            if (animComp != nullptr) {
-                // Get the skeleton lines from the submesh's animation component
-                const vectorEASTL<Line>& skeletonLines = animComp->skeletonLines();
-                // Submit the skeleton lines to the GPU for rendering
-                _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
-                _skeletonPrimitive->worldMatrix(_worldMatrixCache);
-                bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
-                return;
-            }
+        AnimationComponent* animComp = _parentSGN->get<AnimationComponent>();
+        if (animComp != nullptr) {
+            // Get the skeleton lines from the submesh's animation component
+            const vectorEASTL<Line>& skeletonLines = animComp->skeletonLines();
+            // Submit the skeleton lines to the GPU for rendering
+            _skeletonPrimitive->fromLines(skeletonLines.data(), skeletonLines.size());
+            _skeletonPrimitive->worldMatrix(_worldMatrixCache);
+            bufferInOut.add(_skeletonPrimitive->toCommandBuffer());
         }
     } else if (_skeletonPrimitive) {
         _context.destroyIMP(_skeletonPrimitive);
