@@ -1501,7 +1501,7 @@ void Material::loadTextureDataFromXML(const stringImpl& entryName, const boost::
                 }
 
                 TextureOperation op = TextureOperation::NONE;
-                _textureOperations[to_base(usage)] = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", TypeUtil::StringToTextureOperation(_textureOperations[to_base(usage)])));
+                _textureOperations[to_base(usage)] = TypeUtil::StringToTextureOperation(pt.get<stringImpl>(textureNode + ".usage", TypeUtil::TextureOperationToString(_textureOperations[to_base(usage)])));
 
                 {
                     UniqueLock<SharedMutex> w_lock(_textureLock);

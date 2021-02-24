@@ -23,61 +23,57 @@ uniform float _fadeStrength;
 uniform bool vignetteEnabled;
 uniform bool noiseEnabled;
 uniform bool underwaterEnabled;
+uniform bool lutCorrectionEnabled;
 uniform bool _fadeActive;
 
 vec4 Vignette(in vec4 colourIn){
-    vec4 colourOut = colourIn - (vec4(1,1,1,2) - texture(texVignette, VAR._texCoord));
-    return vec4(clamp(colourOut.rgb,0.0,1.0), colourOut.a);
+    const vec4 colourOut = colourIn - (vec4(1.f,1.f,1.f,2.f) - texture(texVignette, VAR._texCoord));
+    return vec4(saturate(colourOut.rgb), colourOut.a);
+}
+
+vec4 LUTCorrect(in vec4 colourIn) {
+    //ToDo: Implement this -Ionut
+    return colourIn;
 }
 
 #define LevelOfGrey(C) vec4(C.rgb * _kLum, C.a)
+
 vec4 Noise(in vec4 colourIn){
     return mix(texture(texNoise, VAR._texCoord + vec2(randomCoeffNoise, randomCoeffNoise)),
-               vec4(1.0), randomCoeffFlash) / 3.0f + 2.0f * LevelOfGrey(colourIn) / 3.0f;
+               vec4(1.0), randomCoeffFlash) / 3.f + 2.f * LevelOfGrey(colourIn) / 3.f;
 }
 
 vec4 Underwater() {
-    float time2 = MSToSeconds(dvd_time) * 0.01f;
-    vec2 uvNormal0 = VAR._texCoord * _noiseTile;
-    uvNormal0.s += time2;
-    uvNormal0.t += time2;
-    vec2 uvNormal1 = VAR._texCoord * _noiseTile;
-    uvNormal1.s -= time2;
-    uvNormal1.t += time2;
+    //ToDo: Move this code, and the one in water.glsl, to a common header (like utility.frag) in a function that both shaders can use
+    const float time2 = MSToSeconds(dvd_time) * 0.05f;
+    const vec2 uvNormal0 = (VAR._texCoord * _noiseTile) + vec2( time2, time2);
+    const vec2 uvNormal1 = (VAR._texCoord * _noiseTile) + vec2(-time2, time2);
 
-    vec3 normal0 = texture(texWaterNoiseNM, uvNormal0).rgb * 2.0f - 1.0f;
-    vec3 normal1 = texture(texWaterNoiseNM, uvNormal1).rgb * 2.0f - 1.0f;
-    vec3 normal = normalize(normal0 + normal1);
+    const vec3 normal0 = 2.f * texture(texWaterNoiseNM, uvNormal0).rgb - 1.f;
+    const vec3 normal1 = 2.f * texture(texWaterNoiseNM, uvNormal1).rgb - 1.f;
+    const vec3 normal = normalize((normal0 + normal1) * 0.5f);
 
-    vec2 coords = VAR._texCoord + (normal.xy * _noiseFactor);
-    return clamp(texture(texScreen, coords) * vec4(0.35), vec4(0.0), vec4(1.0));
+    const vec2 coords = VAR._texCoord + (normal.xy * _noiseFactor);
+    return clamp(texture(texScreen, coords) * vec4(0.35f), vec4(0.f), vec4(1.f));
 }
 
 void main(void){
     switch (dvd_materialDebugFlag) {
-        case DEBUG_DEPTH:
-        {
-            _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y + _zPlanes.x), 1.0f);
-            return;
-        }
-        case DEBUG_SSAO:
-        {
-            _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).r), 1.0f);
-            return;
-        }
-        case DEBUG_SSR:
-        {
-            _colourOut = vec4(texture(texSSR, VAR._texCoord).rgb, 1.0f);
-            return;
-        }
+        case DEBUG_DEPTH: _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).g / _zPlanes.y + _zPlanes.x), 1.0f); return;
+        case DEBUG_SSAO : _colourOut = vec4(vec3(texture(texPostFXData, VAR._texCoord).r), 1.0f); return;
+        case DEBUG_SSR  : _colourOut = vec4(texture(texSSR, VAR._texCoord).rgb, 1.0f); return;
     }
 
     vec4 colour = underwaterEnabled ? Underwater() : texture(texScreen, VAR._texCoord);
+
     if (noiseEnabled) {
         colour = Noise(colour);
     }
     if (vignetteEnabled) {
         colour = Vignette(colour);
+    }
+    if (lutCorrectionEnabled) {
+        colour = LUTCorrect(colour);
     }
 
     if (_fadeActive) {

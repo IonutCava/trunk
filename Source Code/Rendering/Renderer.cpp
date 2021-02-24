@@ -96,6 +96,7 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     }
 
     _postFX = eastl::make_unique<PostFX>(context, cache);
+
     if (config.rendering.postFX.postAA.qualityLevel > 0) {
         _postFX->pushFilter(FilterType::FILTER_SS_ANTIALIASING);
     }
@@ -113,9 +114,6 @@ Renderer::Renderer(PlatformContext& context, ResourceCache* cache)
     }
     if (config.rendering.postFX.bloom.enabled) {
         _postFX->pushFilter(FilterType::FILTER_BLOOM);
-    }
-    if_constexpr(false) {
-        _postFX->pushFilter(FilterType::FILTER_LUT_CORECTION);
     }
 
     WAIT_FOR_CONDITION(_lightBuildClusteredAABBsPipeline != nullptr);

@@ -449,12 +449,12 @@ namespace {
             if (dirty) {
                 batch.toneMapParams(params);
             }
-            checkBox(FilterType::FILTER_LUT_CORECTION, PostFX::FilterName(FilterType::FILTER_LUT_CORECTION), false);
         }
         if (ImGui::CollapsingHeader("Test Effects")) {
             checkBox(FilterType::FILTER_NOISE, PostFX::FilterName(FilterType::FILTER_NOISE), true);
             checkBox(FilterType::FILTER_VIGNETTE, PostFX::FilterName(FilterType::FILTER_VIGNETTE), true);
             checkBox(FilterType::FILTER_UNDERWATER, PostFX::FilterName(FilterType::FILTER_UNDERWATER), true);
+            checkBox(FilterType::FILTER_LUT_CORECTION, PostFX::FilterName(FilterType::FILTER_LUT_CORECTION), true);
         }
 
         if (_previewTexture != nullptr) {

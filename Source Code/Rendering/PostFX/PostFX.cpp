@@ -167,6 +167,7 @@ void PostFX::apply(const Camera* camera, GFX::CommandBuffer& bufferInOut) {
         _drawConstants.set(_ID("vignetteEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_VIGNETTE));
         _drawConstants.set(_ID("noiseEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_NOISE));
         _drawConstants.set(_ID("underwaterEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_UNDERWATER));
+        _drawConstants.set(_ID("lutCorrectionEnabled"), GFX::PushConstantType::BOOL, getFilterState(FilterType::FILTER_LUT_CORECTION));
         _filtersDirty = false;
     };
 

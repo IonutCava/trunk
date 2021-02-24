@@ -48,7 +48,7 @@ float Fresnel(in vec3 viewDir, in vec3 normal) {
 void main()
 {
     const float time2 = MSToSeconds(dvd_time) * 0.05f;
-    const vec2 uvNormal0 = (VAR._texCoord * _noiseTile) + vec2(time2, time2);
+    const vec2 uvNormal0 = (VAR._texCoord * _noiseTile) + vec2( time2, time2);
     const vec2 uvNormal1 = (VAR._texCoord * _noiseTile) + vec2(-time2, time2);
 
     const vec4 normalData0 = getNormalMapAndVariation(texNormalMap, uvNormal0);
